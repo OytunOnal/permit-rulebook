@@ -136,3 +136,16 @@ eşitlendi (insan bulgusu #2). Commit'ler: `visa-rules@98076da`,
 
 **Not:** Bu, S2'nin (information gain) yarısını erkene çekti — S2 senaryosu
 yazılırken budama artık mevcut sayılacak, S2 yalnız *sıralama*ya odaklanır.
+
+---
+
+## 2026-09-02 — Soru aşaması yerleşimi: iki kolon baştan 🛑 (kapı, insan seçti)
+
+**Karar:** Soru aşaması da sonuç ekranıyla aynı iki kolonlu yerleşimi
+kullanır: beyan defteri baştan solda ("—" bekleyen satırlar cevaplandıkça
+dolar), soru kartı sağ ana kolonda. Sunulan alternatifler: kartı ortalamak
+(sihirbaz hissi ama belge dilinden kopuş + geçişte zıplama), mevcut sola
+yaslı hal, tek sayfa akan form (reddedildi — budamayla kötü etkileşir).
+Gerekçe: boş alan "kaydın dolduğu" metaforuna dönüşür, soru→sonuç geçişinde
+yerleşim zıplamaz. Ek: "Change an answer" yalnız sonuçta görünür; qcard'ın
+38rem sınırı kalktı. Commit: `visa-navigator` (iki kolon + hidden CSS fix).
