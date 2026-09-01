@@ -1,0 +1,74 @@
+---
+import "../../tokens.css";
+---
+
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Status — Visa Navigator</title>
+    <style is:global>
+      body {
+        margin: 0;
+        background: var(--color-bg);
+        color: var(--color-ink);
+        font: var(--text-body);
+      }
+
+      .wrap {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 3rem 1.25rem 4rem;
+      }
+
+      .card {
+        background: var(--color-card);
+        border: var(--rule-soft);
+        border-top: var(--rule-card-top);
+        padding: 1.5rem 1.75rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+      }
+
+      h1 {
+        margin: 0 0 1rem;
+        font: var(--text-hero);
+      }
+
+      .mermaid {
+        min-height: 160px;
+        background: transparent;
+      }
+
+      .meta {
+        color: var(--color-muted);
+        font: var(--text-label);
+        letter-spacing: var(--tracking-label);
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <div class="meta">Visa Navigator status</div>
+        <h1>Project flow</h1>
+
+        <pre class="mermaid">
+flowchart LR
+    A[1. Scale Gate ✓] --> B[2. Brainstorm Loop ✓] --> C[3. One-pager ✓]
+    C --> D[4. Design ✓]
+    D --> E[5. Plan ✓]
+    E --> F[6. Slice loop ◀ buradayız]
+    F --> G[v1 real-green]
+        </pre>
+      </div>
+    </div>
+
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+  </body>
+</html>

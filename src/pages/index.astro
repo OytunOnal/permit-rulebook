@@ -48,8 +48,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <script>
     import dataset from "visa-rules/data/de.json";
     import {
-      deriveQuestions, evaluate, formatEUR, routeProvenance, thresholdsForField,
-      deriveBands, type Dataset, type Profile, type RouteResult,
+      deriveQuestions, remainingQuestions, evaluate, formatEUR, routeProvenance,
+      thresholdsForField, deriveBands, type Dataset, type Profile, type RouteResult,
     } from "visa-rules";
 
     const ds = dataset as unknown as Dataset;
@@ -71,10 +71,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
 
     let answers: Profile = {};
-    let step = 0;
+    let history: string[] = []; // answered fields, in order, for Back
 
     const introHeadline = () =>
-      `Which routes could fit? <b>${questions.length} quick questions.</b>`;
+      `Which routes could fit? <b>Up to ${questions.length} quick questions.</b>`;
     headline.innerHTML = introHeadline();
 
     function esc(s: string) {
@@ -82,24 +82,33 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     }
 
     function renderQuestion() {
-      const q = questions[step];
+      // Only questions a still-alive route cares about; e.g. "no job offer"
+      // retires the salary question instead of asking it into the void.
+      const remaining = remainingQuestions(ds, answers);
+      if (remaining.length === 0) return renderResults();
+      const q = remaining[0];
+      const total = history.length + remaining.length;
       main.innerHTML = `
         <section class="qcard" aria-live="polite">
-          <div class="qmeta">Question ${step + 1} of ${questions.length}</div>
+          <div class="qmeta">Question ${history.length + 1} of up to ${total}</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
           <div class="opts">
             ${q.options.map((o) => `<button class="opt" data-value="${esc(o.value)}">${esc(o.label)}</button>`).join("")}
           </div>
-          ${step > 0 ? `<button class="back" id="back">← Back</button>` : ""}
+          ${history.length > 0 ? `<button class="back" id="back">← Back</button>` : ""}
         </section>`;
       main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
         btn.addEventListener("click", () => {
           answers[q.field] = btn.dataset.value!;
-          step += 1;
-          step < questions.length ? renderQuestion() : renderResults();
+          history.push(q.field);
+          renderQuestion();
         }),
       );
-      document.getElementById("back")?.addEventListener("click", () => { step -= 1; renderQuestion(); });
+      document.getElementById("back")?.addEventListener("click", () => {
+        const last = history.pop();
+        if (last) delete answers[last];
+        renderQuestion();
+      });
     }
 
     function railFor(result: RouteResult): string {
@@ -130,7 +139,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (r.status === "near")
         return `The threshold sits above your declared band.`;
       const missing = r.criteria.filter((c) => c.outcome === "fail").map((c) => SHORT[c.criterion.field] ?? c.criterion.field);
-      const unknown = r.unknown_fields.map((f) => SHORT[f] ?? f);
+      // Only fields the user explicitly answered "I don't know" — a question
+      // skipped because the route was already dead is not an unknown, it was
+      // never asked.
+      const unknown = r.unknown_fields.filter((f) => answers[f] !== undefined).map((f) => SHORT[f] ?? f);
       const parts = [];
       if (missing.length) parts.push(`Not met: ${missing.join(", ").toLowerCase()}.`);
       if (unknown.length) parts.push(`Unknown (you answered "I don't know"): ${unknown.join(", ").toLowerCase()} — an open gap, not a no.`);
@@ -152,10 +164,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
       headline.innerHTML = `${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open.` +
         (near.length && near[0].gap_max ? ` <b>One is within ${formatEUR(Math.round(near[0].gap_max))}.</b>` : "");
-      subline.textContent = `Code compared your ${questions.length} answers against ${results.length} published rule sets. ` +
+      subline.textContent = `Code compared your ${history.length} answer${history.length === 1 ? "" : "s"} against ${results.length} published rule sets. ` +
         `Every value below shows its official quote and the date it was read.`;
 
-      declList.innerHTML = questions.map((q) => {
+      declList.innerHTML = questions.filter((q) => answers[q.field] !== undefined).map((q) => {
         const opt = q.options.find((o) => o.value === answers[q.field]);
         return `<div><dt>${esc(SHORT[q.field] ?? q.field)}</dt><dd>${esc(opt?.label ?? "—")}</dd></div>`;
       }).join("");
@@ -178,7 +190,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     document.getElementById("restart")!.addEventListener("click", (e) => {
       e.preventDefault();
-      answers = {}; step = 0;
+      answers = {}; history = [];
       decl.hidden = true;
       app.dataset.state = "questions";
       headline.innerHTML = introHeadline();
@@ -253,7 +265,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .next{font:600 .78rem var(--font-sans);text-decoration:none;white-space:nowrap}
     .next::after{content:" ↗"}
 
-    footer{margin-top:var(--space-6);color:var(--color-muted);font-size:.8rem;max-width:44rem;border-top:var(--rule-heavy);padding-top:.9rem}
+    footer{margin-top:var(--space-6);color:var(--color-muted);font-size:.8rem;border-top:var(--rule-heavy);padding-top:.9rem}
+    footer p{max-width:44rem}
     .health{margin-top:.5rem;font:var(--text-source)}
 
     @media (max-width:760px){
