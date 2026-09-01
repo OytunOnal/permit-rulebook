@@ -141,7 +141,7 @@ yazılırken budama artık mevcut sayılacak, S2 yalnız *sıralama*ya odaklanı
 
 ## 2026-09-02 — Soru aşaması yerleşimi: iki kolon baştan 🛑 (kapı, insan seçti)
 
-**Karar:** Soru aşaması da sonuç ekranıyla aynı iki kolonlu yerleşimi
+**Karar (yerleşim):** Soru aşaması da sonuç ekranıyla aynı iki kolonlu yerleşimi
 kullanır: beyan defteri baştan solda ("—" bekleyen satırlar cevaplandıkça
 dolar), soru kartı sağ ana kolonda. Sunulan alternatifler: kartı ortalamak
 (sihirbaz hissi ama belge dilinden kopuş + geçişte zıplama), mevcut sola
@@ -149,3 +149,40 @@ yaslı hal, tek sayfa akan form (reddedildi — budamayla kötü etkileşir).
 Gerekçe: boş alan "kaydın dolduğu" metaforuna dönüşür, soru→sonuç geçişinde
 yerleşim zıplamaz. Ek: "Change an answer" yalnız sonuçta görünür; qcard'ın
 38rem sınırı kalktı. Commit: `visa-navigator` (iki kolon + hidden CSS fix).
+
+---
+
+## 2026-09-02 — S2 dilim-içi kararlar (ucuz varsayılanlar, Spine seçti)
+
+S2 mock-green; dilim içinde verilen kararlar:
+
+1. **`in` ve `any` op'ları eklendi.** §20a'nın "Fachkraft ODER Punktzahl"
+   ayrımı ve §19c'nin nitelikli-VEYA-IT yolu statünün gerçek yapısı;
+   disjunction'ı düzleştirmek yerine şemaya alındı. `any` başarısız olurken
+   en-yakın-yolun gap/puan bilgisini yukarı taşır (yoksa "2 puan eksik"
+   hikâyesi hold'a düşüyordu — koşumda yakalandı).
+2. **Puan kriteri erken-geçer ama erken-ölmez.** Ulaşılamaz duruma düşünce
+   soruyu kesmek tam skoru ("4/6") gösterilemez kılıyordu; merdiven kısa
+   (≤8 tık) ve her tık görünür skor ürettiğinden tamamlanana dek sorulur.
+3. **"situation" alanı** (teklif / ICT-transfer / hosting / hiçbiri) üç ayrı
+   evet-hayır sorusunu tek soruda katlıyor; ICT ve araştırmacının bileşik
+   önkoşulları route notunda taşınıyor.
+4. **Chancenkarte yalnız situation=none'da gösterilir** — kart "aramak" için
+   var; teklifli kullanıcıyı 6+ puan-sorusuyla yormamak ürün kararı, gerekçe
+   route notunda.
+5. **§21 (öz-istihdam/serbest) v1 dışı** — kriterleri takdirî ("wirtschaftliches
+   Interesse", finansman değerlendirmesi), deterministik kodlanamaz; DE
+   hariç-tutma listesine gerekçesiyle yazıldı. Eski §20 iş-arama vizesi de
+   yok (Chancenkarte'ye devrolmuş — küratör bulgusu).
+6. **45+ yaş kuralları (55% eşiği, emeklilik karşılığı) kriter değil not** —
+   koşullu/alternatifli yapı v1 modeline alınmadı; €55.770 değeri route
+   notlarında anılıyor, kritere dönüştürülmesi backlog.
+7. **Info-gain uniform önselle greedy** — "en çok eleyen soru önce"; bunun
+   sonucu ilk soru citizenship değil situation (ort. 2.0 vs 4.0 canlı route).
+   Gerçek kullanıcı dağılımı önseli (EU nadir) ileride veri alanı olabilir.
+8. **Ray yalnız kartın kendi eşiğini etiketler** — yakın eşikler (€45.630 /
+   €45.934,20) etiket çakıştırıyordu; diğer çentikler etiketsiz bağlam.
+9. **A10 ölçümü:** teklifli yollar 6-7 soru ✓; puan yolu ~13 (assumptions'a
+   işlendi).
+
+Commit'ler: `visa-rules@58977ee,652628e`, `visa-navigator@a338f88`.

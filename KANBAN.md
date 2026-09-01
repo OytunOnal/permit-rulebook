@@ -7,11 +7,11 @@ senaryosuyla ilerler: mock'ta geçince **mock-green**, gerçekte geçince
 
 ## backlog
 
-- **De-mock: S1 eşik değerlerini resmî sayfadan insan gözüyle yeniden doğrula**
-  (doğum: S1 seed verisi research-ajanı fetch'inden geliyor)
-- **S2 — Soru türetme + information gain** · DE'nin tam route seti (8-9);
-  sorular predicate'lerden, bant seçenekleri eşiklerden otomatik; sıra
-  information gain. _Sınar: A10, A15, A14 zemini._
+- **De-mock: S1+S2 değerlerini resmî kaynaktan insan gözüyle doğrula** —
+  liste `docs/spine/scenarios/s2.md`'de (S2'nin real-green koşulu; S1 de-mock
+  görevi bununla birleşti). Ek: buzer.de aynasından alınan statü alıntılarını
+  gesetze-im-internet.de'ye karşı yeniden doğrula.
+- **45+ yaş kurallarını (55% eşiği) kriter modeline al** (S2'de nota indirgendi)
 - **S3 — Gap analizi** · Near-miss hesabı + met/near/hold gruplu tam sonuç
   ekranı + "Official page ↗". Aday: "bilmiyorum" cevaplı alanlar için
   "şuradan öğren" resmî-kaynak linki (DE denklik → Anabin) — insan önerisi
@@ -43,12 +43,15 @@ senaryosuyla ilerler: mock'ta geçince **mock-green**, gerçekte geçince
 
 ## active
 
-_(boş — S2 boundary session bekliyor: S1 senaryosu insanla koşulacak, S2
-senaryosu yazılıp onaylanacak)_
+_(boş — S3 boundary session bekliyor)_
 
 ## mock-green
 
-_(boş)_
+- **S2 — Soru türetme + information gain** · 2026-09-02. DE 8 route / 15 alan;
+  `points`+`in`+`any` op'ları; adaptif info-gain; 33 test; iki akış tarayıcıda
+  koşuldu (`docs/spine/scenarios/s2.md`). Real-green koşulu: insan değer
+  doğrulaması (backlog'daki de-mock). `visa-rules@652628e`,
+  `visa-navigator@a338f88`.
 
 ## real-green
 

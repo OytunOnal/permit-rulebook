@@ -38,8 +38,11 @@ acceptance surface doğrular). Research kanıtları: `research-01.md`.
 
 - **A9 — Gap analizi en değerli çıktı.** run-abroad'un "az kaldı" kategorisi
   destekliyor; gerçek kullanıcıda doğrulanmadı. — `untested`
-- **A10 — 6-7 soru yeter.** Information gain sıralaması, ~40 route'luk derin
-  v1'de de kullanıcıyı 6-7 soruda sonuca götürür. — `untested`
+- **A10 — 6-7 soru yeter.** — `kısmen ölçüldü (S2, 2026-09-02)`: teklifli
+  personalar DE tam setinde 7 ve 6 soruda sonuca vardı ✓; puan-yolu (teklifsiz
+  Chancenkarte) doğası gereği ~13 soru — merdivenin her tıkı görünür skor
+  ürettiğinden kabul edilebilir sayıldı, ama "6-7" iddiası puan yolları için
+  geçerli değil. Çok-ülke ölçeğinde yeniden ölçülecek.
 - **A11 — Bant-sınırı-eşik UX'i çalışır.** Kullanıcı maaşını "€43.759 altı /
   arası / üstü" bandıyla beyan etmekte zorlanmaz. — `untested`
 - **A12 — 3.-ülke-varsayılanı doğruluğu.** Vatandaşlığa özel hükümler additive
