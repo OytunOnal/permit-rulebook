@@ -36,10 +36,8 @@ senaryosuyla ilerler: mock'ta geçince **mock-green**, gerçekte geçince
 
 ## active
 
-- **S1 — Walking skeleton** · Senaryo onaylı (`docs/spine/scenarios/s1.md`,
-  2026-09-01). Şema + DE Blue Card (iki eşik) + engine + statik site (soru
-  akışı → sonuç ekranı, tokens.css) + non-negotiable taban.
-  _Sınar: A11, A15 kısmen._
+_(boş — S2 boundary session bekliyor: S1 senaryosu insanla koşulacak, S2
+senaryosu yazılıp onaylanacak)_
 
 ## mock-green
 
@@ -47,7 +45,10 @@ _(boş)_
 
 ## real-green
 
-_(boş)_
+- **S1 — Walking skeleton** · 2026-09-01. Senaryonun 7 adımı da geçti
+  (`docs/spine/scenarios/s1.md`). `visa-rules@bb348a9` +
+  `visa-navigator@71c3106`. Not: insanla birlikte koşum S2 boundary
+  session'ında; S1 değer-doğrulama de-mock görevi backlog'da duruyor.
 
 ## done
 

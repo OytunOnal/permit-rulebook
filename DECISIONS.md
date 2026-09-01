@@ -90,3 +90,30 @@ kriterin standart modülü; gap kartı rayını mutlaka gösterir; "up to €X"
 dürüstlüğü başlıkta da korunur; her kartta "Official page ↗" yönlendirmesi;
 F'nin ülke-grubu başlıkları 40-route ölçeğinde D'ye taşınacak desen olarak
 not edildi. Varyant dosyaları `docs/spine/design/`'da kalır (audit).
+
+---
+
+## 2026-09-01 — S1 dilim-içi kararlar (ucuz varsayılanlar, Spine seçti)
+
+S1 real-green oldu; dilim içinde gate açılmadan verilen kararlar:
+
+1. **`visa-rules` kardeş dizinde** (`Projects/visa-rules`) ayrı git repo —
+   karar #7'nin fiziksel karşılığı; navigator ona `file:../visa-rules` ile
+   bağlanır.
+2. **Engine saf fonksiyon, veri ayrı export.** Navigator, `data/de.json`'u
+   doğrudan import edip sınırda kendisi doğrular (`visa-rules/validate` ayrı
+   entry — ajv client bundle'a sızmaz; client 9.5 kB).
+3. **Astro 5 → 7 yükseltmesi**: `npm audit` Astro 5 hattında high-severity
+   advisories gösterdi; v7.2.10'a geçildi, 0 zafiyet, build yeşil.
+4. **Şema hata raporu "en derin instancePath"i seçer** — oneOf dallanması ilk
+   hatayı yanıltıcı yapıyordu; artık `.../threshold must have required
+   property 'quote'` gibi tam alan adlanıyor (senaryo adım 6 bunu istiyor).
+5. **mattpocock zinciri kısaltıldı:** to-spec/tdd ayrı ayrı koşulmadı;
+   testler implementasyonla birlikte yazıldı (16 vitest), senaryo tarayıcıda
+   koşuldu. Gerekçe: dilim küçük, senaryo zaten spec. Sonraki dilimlerde
+   büyüklüğe göre yeniden değerlendirilecek.
+6. **Koşum sırasında yakalanan üç kopya hatası düzeltildi:** soru sayısı
+   dinamik, gap notu yön göstermiyor ("check the other cards"), restart
+   başlığı dinamik.
+7. **A15 için erken sinyal:** kazara "I don't know" ile koşulan profil,
+   "unknown = açık eksik, hayır değil" davranışını ekranda doğru gösterdi.
