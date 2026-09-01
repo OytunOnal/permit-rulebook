@@ -193,3 +193,26 @@ o anki soru bekleyen satır olarak eklenir. Gerekçe: adaptif budamayla 15
 satırı baştan göstermek hiç sorulmayacak alanları vaat ediyordu; iki-kolon
 kararının "boş satırlar dolar" detayı bu lehine terk edildi.
 (`visa-navigator@a191702`)
+
+---
+
+## 2026-09-02 — S2 real-green + v0.1/v0.2 damgaları (insan doğrulaması)
+
+**Karar/olay:** İnsan, S2 doğrulama listesinin tamamını resmî kaynaklardan
+doğruladı — gesetze-im-internet.de'ye VPN ile erişti (ajanlara ECONNREFUSED
+veren site insana açık; s4 pipeline kaynak-seçimi için önemli veri noktası).
+S2 "Almanya tam seti" real-green; `## versions` defteri kuruldu: **v0.1**
+Yürüyen iskelet (2026-09-01'e geriye dönük damga), **v0.2** Almanya tam seti.
+Yan görev doğdu: buzer.de ayna URL'lerini resmî URL'lerle değiştirme
+(backlog'da).
+
+## 2026-09-02 — Steward-format defter güncellemeleri (skill güncellemesi, uygulandı)
+
+Genesis/status skill'leri güncellenmiş (insan işaret etti, dosyalardan
+doğrulandı). Uygulananlar: dilimler **yetenek adıyla** anılır (S-ID'ler yalnız
+dosya adı); KANBAN mermaid dilim panosu + `## versions` defteri;
+`docs/spine/ARCHITECTURE.md` (güven sınırı dahil mimari diyagram, her dilim
+çıkışında güncellenir); Product seviyesinde one-pager'a **Viability** bölümü
+şartı → **orta back-edge** açıldı (kanıt: skill güncellemesi + Product
+gereksinimi; para/metrik/hedef kararları insana kapıyla sorulacak); yeni
+ekran getiren dilimlerde senaryoyla birlikte statik mock onayı.

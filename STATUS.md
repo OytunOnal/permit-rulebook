@@ -2,21 +2,21 @@
 
 ## Where are we
 
-Genesis pipeline, ölçek: **Product**. Scale Gate kapandı; Brainstorm Loop başlıyor.
+Genesis, slice loop; ölçek **Product**, sürüm **v0.2 — Almanya tam seti** (KANBAN `## versions`).
 
 ```mermaid
 flowchart LR
-    A[1. Scale Gate ✓] --> B[2. Brainstorm Loop ✓] --> C[3. One-pager ✓]
-    C --> D[4. Design ✓]
-    D --> E[5. Plan ✓]
-    E --> F[6. Slice loop ◀ buradayız]
+    A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓*] --> D[Design ✓] --> E[Plan ✓]
+    E --> F["Slice loop ◀ buradayız<br/>v0.1 iskelet ✓ · v0.2 Almanya ✓<br/>sıradaki: gap analizi"]
     F --> G[v1 real-green]
 ```
 
+\* One-pager'a Product gereği **Viability** bölümü ekleniyor (orta back-edge, 2026-09-02).
+
 ## What is happening now
 
-**S2 mock-green** (2026-09-02): Almanya tam route seti canlı — 8 route (Blue Card ×2, §18a/§18b, §19c deneyimli+IT, §18d, ICT, Chancenkarte doğrudan-veya-6-puan), 15 alan, tüm değerler alıntı+kaynak+tarihli. Engine: `points`/`in`/`any` op'ları, adaptif information-gain sıralaması, "karar değiştiremeyecek soru sorulmaz" budaması (33 test). Tarayıcıda iki uçtan uca akış: teklifli mühendis 7 soruda "3 routes open", teklifsiz gezgin 13 soruda "Points 4 of 6 · Gap: 2 points short". S1 insan koşumundan üç düzeltme de girdi (budama, footer, iki-kolon yerleşim kararı).
+S2 "Almanya tam seti" **real-green** — insan tüm değerleri resmî kaynaklardan (VPN ile gesetze-im-internet dahil) doğruladı; v0.2 damgalandı. Steward-format defter güncellemeleri uygulandı: KANBAN'a mermaid dilim panosu + `## versions` defteri, ilk `docs/spine/ARCHITECTURE.md`, dilimler yetenek adına geçti. Sırada: (1) one-pager'a Viability bölümü — para/metrik/hedef kararları insanda; (2) "Gap analizi sonuç ekranında" dilimi için boundary: senaryo + değişen sonuç ekranının statik mock'u birlikte onaya gelecek.
 
 ## What is expected from you
 
-S2'yi real-green yapmak için **değer doğrulaması** 🛑: `docs/spine/scenarios/s2.md`'deki listedeki ~10 değeri kaynağından gözünle doğrula (ZAV bültenleri, elçilik Merkblatt PDF'i, buzer Anlage). Ayrıca istersen `npm run dev` ile yeni akışı dene. Sonrası: S3 boundary (gap analizi dilimi senaryosu).
+Viability kapısı 🛑 — para kararı, birincil başarı metriği ve 6-12 ay hedefi (soru seti sunuldu/sunulacak); ardından gap-analizi dilimi senaryo+mock onayı.
