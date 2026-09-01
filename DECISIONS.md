@@ -186,3 +186,10 @@ S2 mock-green; dilim içinde verilen kararlar:
    işlendi).
 
 Commit'ler: `visa-rules@58977ee,652628e`, `visa-navigator@a338f88`.
+
+**Ek (insan geri bildirimi, aynı gün):** "You declared" defteri artık yalnız
+sorulan alanları, soruluş sırasında gösterir — cevaplananlar birikir, yalnız
+o anki soru bekleyen satır olarak eklenir. Gerekçe: adaptif budamayla 15
+satırı baştan göstermek hiç sorulmayacak alanları vaat ediyordu; iki-kolon
+kararının "boş satırlar dolar" detayı bu lehine terk edildi.
+(`visa-navigator@a191702`)
