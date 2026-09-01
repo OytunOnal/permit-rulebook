@@ -28,10 +28,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     </header>
 
     <div id="app" class="cols" data-state="questions">
-      <aside class="decl" id="decl" hidden aria-label="Your answers">
+      <aside class="decl" id="decl" aria-label="Your answers">
         <h2>You declared</h2>
         <dl id="decl-list"></dl>
-        <a class="edit" href="#" id="restart">Change an answer</a>
+        <a class="edit" href="#" id="restart" hidden>Change an answer</a>
       </aside>
       <main id="main"></main>
     </div>
@@ -57,8 +57,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const ds = dataset as unknown as Dataset;
     const questions = deriveQuestions(ds);
     const main = document.getElementById("main")!;
-    const decl = document.getElementById("decl")!;
     const declList = document.getElementById("decl-list")!;
+    const restart = document.getElementById("restart")!;
     const headline = document.getElementById("headline")!;
     const subline = document.getElementById("subline")!;
     const app = document.getElementById("app")!;
@@ -83,11 +83,24 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
+    // The ledger fills in as answers land; unanswered rows show a placeholder
+    // so the record reads as a form being stamped, not an empty box.
+    function renderDeclaration(finished: boolean) {
+      declList.innerHTML = questions
+        .filter((q) => !finished || answers[q.field] !== undefined)
+        .map((q) => {
+          const opt = q.options.find((o) => o.value === answers[q.field]);
+          return `<div><dt>${esc(SHORT[q.field] ?? q.field)}</dt><dd${opt ? "" : ` class="pending"`}>${esc(opt?.label ?? "—")}</dd></div>`;
+        }).join("");
+      restart.hidden = !finished;
+    }
+
     function renderQuestion() {
       // Only questions a still-alive route cares about; e.g. "no job offer"
       // retires the salary question instead of asking it into the void.
       const remaining = remainingQuestions(ds, answers);
       if (remaining.length === 0) return renderResults();
+      renderDeclaration(false);
       const q = remaining[0];
       const total = history.length + remaining.length;
       main.innerHTML = `
@@ -169,11 +182,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       subline.textContent = `Code compared your ${history.length} answer${history.length === 1 ? "" : "s"} against ${results.length} published rule sets. ` +
         `Every value below shows its official quote and the date it was read.`;
 
-      declList.innerHTML = questions.filter((q) => answers[q.field] !== undefined).map((q) => {
-        const opt = q.options.find((o) => o.value === answers[q.field]);
-        return `<div><dt>${esc(SHORT[q.field] ?? q.field)}</dt><dd>${esc(opt?.label ?? "—")}</dd></div>`;
-      }).join("");
-      decl.hidden = false;
+      renderDeclaration(true);
       app.dataset.state = "results";
 
       main.innerHTML = `<div class="stack">` + results.map((r) => `
@@ -190,10 +199,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         </article>`).join("") + `</div>`;
     }
 
-    document.getElementById("restart")!.addEventListener("click", (e) => {
+    restart.addEventListener("click", (e) => {
       e.preventDefault();
       answers = {}; history = [];
-      decl.hidden = true;
       app.dataset.state = "questions";
       headline.innerHTML = introHeadline();
       renderQuestion();
@@ -218,17 +226,19 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       font:600 .68rem var(--font-mono);letter-spacing:.16em;padding:.4rem .7rem;text-transform:uppercase;background:rgba(251,249,242,.6)}
     .stamp b{display:block;font-size:.85rem}
 
-    .cols[data-state="results"]{display:grid;grid-template-columns:15.5rem 1fr;gap:1.5rem;align-items:start}
+    .cols{display:grid;grid-template-columns:15.5rem 1fr;gap:1.5rem;align-items:start}
     .decl{background:var(--color-card);border:var(--rule-soft);padding:1.1rem 1.2rem;position:sticky;top:1rem}
     .decl h2{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted);
       margin-bottom:.6rem;border-bottom:2px solid var(--color-ink);padding-bottom:.4rem}
     .decl dl div{display:flex;justify-content:space-between;gap:.6rem;border-bottom:var(--rule-dotted);padding:.42rem 0}
     .decl dt{color:var(--color-muted);font-size:.78rem}
     .decl dd{font:var(--text-value);text-align:right}
+    .decl dd.pending{color:var(--color-muted);font-weight:400}
     .decl .edit{display:inline-block;margin-top:.8rem;font-size:.8rem}
+    .decl .edit[hidden]{display:none}
 
     /* Question mode */
-    .qcard{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:1.6rem 1.8rem;max-width:38rem}
+    .qcard{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:1.6rem 1.8rem}
     .qmeta{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted)}
     .qlabel{font:var(--text-route);font-size:1.25rem;margin:.5rem 0 1rem}
     .opts{display:grid;gap:.5rem}
