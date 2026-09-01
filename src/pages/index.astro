@@ -67,8 +67,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).replaceAll("/", " · ");
 
     const SHORT: Record<string, string> = {
-      citizenship: "Citizenship", degree_recognized: "Degree",
-      occupation_shortage: "Shortage list", offer_de: "Job offer", salary_eur_year: "Salary",
+      citizenship: "Citizenship", situation: "Situation", qualification: "Qualification",
+      recognition_de: "Recognition", experience: "Experience",
+      occupation_shortage: "Shortage list", occupation_it: "IT work",
+      salary_eur_year: "Salary", language_base: "Base language", german: "German",
+      english_c1: "English C1", age_band: "Age", de_stay6m: "Stay in DE",
+      partner_ck: "Partner", funds_eur_month: "Monthly funds",
     };
     const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
 
@@ -138,8 +142,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const pct = (v: number) => Math.max(2, Math.min(98, ((v - lo) / (hi - lo)) * 100));
       const bMin = pct(band.min ?? lo), bMax = pct(band.max ?? hi);
       const ticks = ts.map((t) => `<span class="tick" style="left:${pct(t)}%"></span>`).join("");
-      const labels = ts.map((t) =>
-        `<span class="lbl" style="left:${pct(t)}%"><b>${formatEUR(t)}</b></span>`).join("");
+      // Label only this route's own threshold — neighbouring ticks stay as
+      // unlabeled context so close thresholds can't collide.
+      const own = salary.threshold.amount;
+      const labels = `<span class="lbl" style="left:${pct(own)}%"><b>${formatEUR(own)}</b>${
+        salary.threshold_label ? esc(salary.threshold_label) : ""}</span>`;
       return `
         <div class="rail" aria-label="Salary thresholds">
           <div class="bar"><span class="you" style="left:${bMin}%;width:${bMax - bMin}%"></span>${ticks}</div>
@@ -152,7 +159,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     function whyFor(r: RouteResult): string {
       if (r.status === "met") return esc(r.route.summary ?? "All published criteria appear met by your declaration.");
       if (r.status === "near")
-        return `The threshold sits above your declared band.`;
+        return r.gap_points
+          ? "The points requirement is within reach — the ladder below shows your score."
+          : "The threshold sits above your declared band.";
       const missing = r.criteria.filter((c) => c.outcome === "fail").map((c) => SHORT[c.criterion.field] ?? c.criterion.field);
       // Only fields the user explicitly answered "I don't know" — a question
       // skipped because the route was already dead is not an unknown, it was
@@ -165,11 +174,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     }
 
     function provenanceFor(r: RouteResult): string {
-      return routeProvenance(r.route).map(({ label, value }) => {
+      const lines = routeProvenance(r.route).map(({ label, value }) => {
         const host = new URL(value.source_url).hostname.replace(/^www\./, "");
-        return `<span class="src"><i>“${esc(value.quote)}”</i> · ${esc(host)}${label ? ` · ${esc(label)}` : ""}${
-          value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b></span>`;
-      }).join("<br/>");
+        return `<div class="src"><i>“${esc(value.quote)}”</i> · ${esc(host)}${label ? ` · ${esc(label)}` : ""}${
+          value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b></div>`;
+      });
+      return lines.length ? `<div class="srcs">${lines.join("")}</div>` : "";
     }
 
     function renderResults() {
@@ -177,8 +187,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const met = results.filter((r) => r.status === "met").length;
       const near = results.filter((r) => r.status === "near");
 
-      headline.innerHTML = `${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open.` +
-        (near.length && near[0].gap_max ? ` <b>One is within ${formatEUR(Math.round(near[0].gap_max))}.</b>` : "");
+      const nearNote = near.length
+        ? near[0].gap_max
+          ? ` <b>One is within ${formatEUR(Math.round(near[0].gap_max))}.</b>`
+          : near[0].gap_points
+            ? ` <b>One is ${near[0].gap_points} point${near[0].gap_points === 1 ? "" : "s"} away.</b>`
+            : ""
+        : "";
+      headline.innerHTML = `${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open.` + nearNote;
       subline.textContent = `Code compared your ${history.length} answer${history.length === 1 ? "" : "s"} against ${results.length} published rule sets. ` +
         `Every value below shows its official quote and the date it was read.`;
 
@@ -193,8 +209,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             <span class="st ${r.status}">${STATUS_LABEL[r.status]}</span>
           </div>
           <p class="why">${whyFor(r)}</p>
+          ${r.points ? `<div class="ptsline"><b>Points ${r.points.scored} of ${r.points.required}</b>${
+            r.points.items.length ? " — " + r.points.items.map((i) => `${esc(SHORT[i.field] ?? i.field)} +${i.points}`).join(" · ") : ""
+          }</div>` : ""}
           ${r.status !== "hold" ? railFor(r) : ""}
           ${r.status === "near" && r.gap_max ? `<div class="gapnote"><b>Gap: up to ${formatEUR(Math.round(r.gap_max))}.</b> A route with a lower threshold may already apply — check the other cards.</div>` : ""}
+          ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Gap: ${r.gap_points} point${r.gap_points === 1 ? "" : "s"} short.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
           <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" rel="noopener">Official page</a></div>
         </article>`).join("") + `</div>`;
     }
@@ -269,9 +289,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .lbl.you-l,.lbl.you-l b{color:var(--color-band)}
     .gapnote{font-size:.85rem;background:var(--color-near-soft);border-left:3px solid var(--color-near);color:#63430f;
       padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
+    .ptsline{font:500 .8rem var(--font-mono);color:var(--color-ink);margin:.5rem 0 .1rem}
+    .ptsline b{color:var(--color-met)}
 
     .foot{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;border-top:var(--rule-dotted);
       margin-top:.85rem;padding-top:.6rem;flex-wrap:wrap}
+    .srcs{display:grid;gap:.3rem;flex:1;min-width:16rem}
     .src{font:var(--text-source);color:var(--color-muted)}
     .src b{color:var(--color-met);font-weight:500}
     .next{font:600 .78rem var(--font-sans);text-decoration:none;white-space:nowrap}
