@@ -1,0 +1,268 @@
+---
+import "../../tokens.css";
+import rawDataset from "visa-rules/data/de.json";
+import { assertValidDataset } from "visa-rules/validate";
+import { datasetMeta } from "visa-rules";
+
+// Boundary validation: an invalid dataset must kill the build, loudly.
+const dataset = assertValidDataset(rawDataset);
+const meta = datasetMeta(dataset);
+console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundary", ...meta }));
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Which European work-permit routes do you appear to meet? Deterministic check against dated, source-quoted official rules. Your answers never leave this device." />
+  <title>Visa Navigator — which work-permit routes fit?</title>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">Visa Navigator · Eligibility record</div>
+      <h1 id="headline">Which routes could fit? <b>A few quick questions.</b></h1>
+      <p class="sub" id="subline">Code compares your answers against published rules — every value shows its
+      official quote and the date it was read. Your answers never leave this device.</p>
+      <div class="stamp" aria-hidden="true">Record generated<b id="stamp-date"></b></div>
+    </header>
+
+    <div id="app" class="cols" data-state="questions">
+      <aside class="decl" id="decl" hidden aria-label="Your answers">
+        <h2>You declared</h2>
+        <dl id="decl-list"></dl>
+        <a class="edit" href="#" id="restart">Change an answer</a>
+      </aside>
+      <main id="main"></main>
+    </div>
+
+    <footer>
+      <p>Visa Navigator makes no immigration decision and authorities won't consider these results —
+      the tool compares published values with what you declared, nothing more.</p>
+      <p class="health">dataset <span id="h-dv">{meta.dataset_version}</span> ·
+        schema <span id="h-sv">{meta.schema_version}</span> ·
+        newest value read <span id="h-rd">{meta.newest_retrieved_at}</span></p>
+    </footer>
+  </div>
+
+  <script>
+    import dataset from "visa-rules/data/de.json";
+    import {
+      deriveQuestions, evaluate, formatEUR, routeProvenance, thresholdsForField,
+      deriveBands, type Dataset, type Profile, type RouteResult,
+    } from "visa-rules";
+
+    const ds = dataset as unknown as Dataset;
+    const questions = deriveQuestions(ds);
+    const main = document.getElementById("main")!;
+    const decl = document.getElementById("decl")!;
+    const declList = document.getElementById("decl-list")!;
+    const headline = document.getElementById("headline")!;
+    const subline = document.getElementById("subline")!;
+    const app = document.getElementById("app")!;
+
+    document.getElementById("stamp-date")!.textContent =
+      new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).replaceAll("/", " · ");
+
+    const SHORT: Record<string, string> = {
+      citizenship: "Citizenship", degree_recognized: "Degree",
+      occupation_shortage: "Shortage list", offer_de: "Job offer", salary_eur_year: "Salary",
+    };
+    const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
+
+    let answers: Profile = {};
+    let step = 0;
+
+    const introHeadline = () =>
+      `Which routes could fit? <b>${questions.length} quick questions.</b>`;
+    headline.innerHTML = introHeadline();
+
+    function esc(s: string) {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function renderQuestion() {
+      const q = questions[step];
+      main.innerHTML = `
+        <section class="qcard" aria-live="polite">
+          <div class="qmeta">Question ${step + 1} of ${questions.length}</div>
+          <h2 class="qlabel">${esc(q.label)}</h2>
+          <div class="opts">
+            ${q.options.map((o) => `<button class="opt" data-value="${esc(o.value)}">${esc(o.label)}</button>`).join("")}
+          </div>
+          ${step > 0 ? `<button class="back" id="back">← Back</button>` : ""}
+        </section>`;
+      main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
+        btn.addEventListener("click", () => {
+          answers[q.field] = btn.dataset.value!;
+          step += 1;
+          step < questions.length ? renderQuestion() : renderResults();
+        }),
+      );
+      document.getElementById("back")?.addEventListener("click", () => { step -= 1; renderQuestion(); });
+    }
+
+    function railFor(result: RouteResult): string {
+      const salary = result.route.criteria.find((c) => c.op === "gte");
+      if (!salary || salary.op !== "gte") return "";
+      const field = salary.field;
+      const ts = thresholdsForField(ds, field);
+      const bands = deriveBands(ds, field);
+      const band = bands.find((b) => b.id === answers[field]);
+      if (!band || ts.length === 0) return "";
+      const lo = Math.min(...ts) * 0.88, hi = Math.max(...ts) * 1.1;
+      const pct = (v: number) => Math.max(2, Math.min(98, ((v - lo) / (hi - lo)) * 100));
+      const bMin = pct(band.min ?? lo), bMax = pct(band.max ?? hi);
+      const ticks = ts.map((t) => `<span class="tick" style="left:${pct(t)}%"></span>`).join("");
+      const labels = ts.map((t) =>
+        `<span class="lbl" style="left:${pct(t)}%"><b>${formatEUR(t)}</b></span>`).join("");
+      return `
+        <div class="rail" aria-label="Salary thresholds">
+          <div class="bar"><span class="you" style="left:${bMin}%;width:${bMax - bMin}%"></span>${ticks}</div>
+          <div class="lbls">${labels}
+            <span class="lbl you-l" style="left:${(bMin + bMax) / 2}%;top:1.35rem"><b>your band</b></span>
+          </div>
+        </div>`;
+    }
+
+    function whyFor(r: RouteResult): string {
+      if (r.status === "met") return esc(r.route.summary ?? "All published criteria appear met by your declaration.");
+      if (r.status === "near")
+        return `The threshold sits above your declared band.`;
+      const missing = r.criteria.filter((c) => c.outcome === "fail").map((c) => SHORT[c.criterion.field] ?? c.criterion.field);
+      const unknown = r.unknown_fields.map((f) => SHORT[f] ?? f);
+      const parts = [];
+      if (missing.length) parts.push(`Not met: ${missing.join(", ").toLowerCase()}.`);
+      if (unknown.length) parts.push(`Unknown (you answered "I don't know"): ${unknown.join(", ").toLowerCase()} — an open gap, not a no.`);
+      return esc(parts.join(" "));
+    }
+
+    function provenanceFor(r: RouteResult): string {
+      return routeProvenance(r.route).map(({ label, value }) => {
+        const host = new URL(value.source_url).hostname.replace(/^www\./, "");
+        return `<span class="src"><i>“${esc(value.quote)}”</i> · ${esc(host)}${label ? ` · ${esc(label)}` : ""}${
+          value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b></span>`;
+      }).join("<br/>");
+    }
+
+    function renderResults() {
+      const results = evaluate(ds, answers);
+      const met = results.filter((r) => r.status === "met").length;
+      const near = results.filter((r) => r.status === "near");
+
+      headline.innerHTML = `${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open.` +
+        (near.length && near[0].gap_max ? ` <b>One is within ${formatEUR(Math.round(near[0].gap_max))}.</b>` : "");
+      subline.textContent = `Code compared your ${questions.length} answers against ${results.length} published rule sets. ` +
+        `Every value below shows its official quote and the date it was read.`;
+
+      declList.innerHTML = questions.map((q) => {
+        const opt = q.options.find((o) => o.value === answers[q.field]);
+        return `<div><dt>${esc(SHORT[q.field] ?? q.field)}</dt><dd>${esc(opt?.label ?? "—")}</dd></div>`;
+      }).join("");
+      decl.hidden = false;
+      app.dataset.state = "results";
+
+      main.innerHTML = `<div class="stack">` + results.map((r) => `
+        <article class="route">
+          <div class="top">
+            <div><span class="country">${esc(ds.countries.find((c) => c.code === r.country)?.name ?? r.country)}</span>
+              <h3>${esc(r.route.name)}</h3></div>
+            <span class="st ${r.status}">${STATUS_LABEL[r.status]}</span>
+          </div>
+          <p class="why">${whyFor(r)}</p>
+          ${r.status !== "hold" ? railFor(r) : ""}
+          ${r.status === "near" && r.gap_max ? `<div class="gapnote"><b>Gap: up to ${formatEUR(Math.round(r.gap_max))}.</b> A route with a lower threshold may already apply — check the other cards.</div>` : ""}
+          <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" rel="noopener">Official page</a></div>
+        </article>`).join("") + `</div>`;
+    }
+
+    document.getElementById("restart")!.addEventListener("click", (e) => {
+      e.preventDefault();
+      answers = {}; step = 0;
+      decl.hidden = true;
+      app.dataset.state = "questions";
+      headline.innerHTML = introHeadline();
+      renderQuestion();
+    });
+
+    renderQuestion();
+  </script>
+
+  <style is:global>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:var(--color-bg);color:var(--color-ink);font:var(--text-body);padding:2.8rem 1.2rem 4rem}
+    .wrap{max-width:var(--max-content);margin:0 auto}
+    :focus-visible{outline:2px solid var(--color-stamp);outline-offset:2px}
+    a{color:var(--color-stamp)}
+
+    header{border-bottom:var(--rule-heavy);padding-bottom:1.3rem;margin-bottom:var(--space-5);position:relative}
+    .brand{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted)}
+    h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}
+    h1 b{color:var(--color-near)}
+    .sub{color:var(--color-muted);max-width:38rem;font-size:.92rem}
+    .stamp{position:absolute;right:0;top:.2rem;transform:rotate(var(--stamp-rotate));border:var(--stamp-border);color:var(--color-stamp);
+      font:600 .68rem var(--font-mono);letter-spacing:.16em;padding:.4rem .7rem;text-transform:uppercase;background:rgba(251,249,242,.6)}
+    .stamp b{display:block;font-size:.85rem}
+
+    .cols[data-state="results"]{display:grid;grid-template-columns:15.5rem 1fr;gap:1.5rem;align-items:start}
+    .decl{background:var(--color-card);border:var(--rule-soft);padding:1.1rem 1.2rem;position:sticky;top:1rem}
+    .decl h2{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted);
+      margin-bottom:.6rem;border-bottom:2px solid var(--color-ink);padding-bottom:.4rem}
+    .decl dl div{display:flex;justify-content:space-between;gap:.6rem;border-bottom:var(--rule-dotted);padding:.42rem 0}
+    .decl dt{color:var(--color-muted);font-size:.78rem}
+    .decl dd{font:var(--text-value);text-align:right}
+    .decl .edit{display:inline-block;margin-top:.8rem;font-size:.8rem}
+
+    /* Question mode */
+    .qcard{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:1.6rem 1.8rem;max-width:38rem}
+    .qmeta{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted)}
+    .qlabel{font:var(--text-route);font-size:1.25rem;margin:.5rem 0 1rem}
+    .opts{display:grid;gap:.5rem}
+    .opt{font:600 .92rem var(--font-sans);text-align:left;background:var(--color-bg);border:var(--rule-soft);
+      padding:.7rem .9rem;cursor:pointer;color:var(--color-ink)}
+    .opt:hover{border-color:var(--color-ink);background:var(--color-band-soft)}
+    .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.85rem}
+
+    /* Result cards */
+    .stack{display:grid;gap:var(--gap-cards)}
+    .route{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:var(--pad-card)}
+    .top{display:flex;justify-content:space-between;gap:1rem;align-items:baseline}
+    .country{font:700 .68rem var(--font-sans);letter-spacing:.22em;text-transform:uppercase;color:var(--color-muted)}
+    h3{font:var(--text-route);margin:.15rem 0 .25rem}
+    .st{font:700 .66rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;padding:.3rem .65rem;white-space:nowrap}
+    .st.met{background:var(--color-met-soft);color:var(--color-met)}
+    .st.near{background:var(--color-near-soft);color:var(--color-near)}
+    .st.hold{background:var(--color-hold-soft);color:var(--color-hold)}
+    .why{color:#54513f;font-size:.88rem;max-width:var(--max-prose)}
+
+    .rail{margin:.95rem 0 .2rem;max-width:34rem}
+    .bar{position:relative;height:var(--rail-h);background:var(--rail-track);border-radius:99px}
+    .you{position:absolute;top:0;bottom:0;background:var(--rail-band);border-radius:99px}
+    .tick{position:absolute;top:-5px;width:2px;height:17px;background:var(--rail-tick);opacity:.6}
+    .lbls{position:relative;height:2.4rem;margin-top:.4rem;font:500 .68rem var(--font-mono)}
+    .lbl{position:absolute;transform:translateX(-50%);text-align:center;color:var(--color-muted);line-height:1.35}
+    .lbl b{display:block;color:var(--color-ink)}
+    .lbl.you-l,.lbl.you-l b{color:var(--color-band)}
+    .gapnote{font-size:.85rem;background:var(--color-near-soft);border-left:3px solid var(--color-near);color:#63430f;
+      padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
+
+    .foot{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;border-top:var(--rule-dotted);
+      margin-top:.85rem;padding-top:.6rem;flex-wrap:wrap}
+    .src{font:var(--text-source);color:var(--color-muted)}
+    .src b{color:var(--color-met);font-weight:500}
+    .next{font:600 .78rem var(--font-sans);text-decoration:none;white-space:nowrap}
+    .next::after{content:" ↗"}
+
+    footer{margin-top:var(--space-6);color:var(--color-muted);font-size:.8rem;max-width:44rem;border-top:var(--rule-heavy);padding-top:.9rem}
+    .health{margin-top:.5rem;font:var(--text-source)}
+
+    @media (max-width:760px){
+      .cols[data-state="results"]{grid-template-columns:1fr}
+      .decl{position:static}
+      h1{font-size:1.6rem}
+      .stamp{position:static;display:inline-block;margin-top:.8rem}
+    }
+    @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  </style>
+</body>
+</html>

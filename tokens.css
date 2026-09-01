@@ -1,0 +1,60 @@
+/* Visa Navigator — design tokens
+ * Kaynak: docs/spine/design/variant-d.html ("Damgalı Panel"), insan seçimi 2026-09-01.
+ * Kural: yeni ekranlar bu tokenlar İÇİNDE tasarlanır; token dışına çıkan değer
+ * greplenebilir bir sapmadır ve DECISIONS.md kaydı ister.
+ */
+:root {
+  /* ---- Renk: zemin ve mürekkep ---- */
+  --color-bg: #f1eee4;          /* sayfa zemini — sıcak arşiv kâğıdı */
+  --color-card: #fbf9f2;        /* kart/panel zemini */
+  --color-ink: #2b2a22;         /* birincil metin */
+  --color-muted: #6f6c5d;       /* ikincil metin, etiketler */
+  --color-line: #d9d3c0;        /* çizgiler, kart kenarları */
+
+  /* ---- Renk: anlam taşıyanlar ---- */
+  --color-stamp: #8c2b2b;       /* mühür kırmızısı — kayıt ritüeli, linkler, vurgu */
+  --color-met: #2e5b3f;         /* statü: criteria met + kaynak tarihi vurgusu */
+  --color-met-soft: #e4efe7;
+  --color-near: #8a5a19;        /* statü: within reach + gap vurgusu */
+  --color-near-soft: #f4ecd8;
+  --color-hold: #7b7869;        /* statü: needs offer / kapalı */
+  --color-hold-soft: #edeadf;
+  --color-band: #31519a;        /* "your band" mavisi — kullanıcının beyanı */
+  --color-band-soft: #e2e8f6;
+
+  /* ---- Tipografi ---- */
+  --font-serif: Cambria, Georgia, serif;            /* hüküm başlıkları, route adları */
+  --font-sans: "Segoe UI", system-ui, sans-serif;   /* gövde, etiket, UI */
+  --font-mono: Consolas, monospace;                 /* değerler, alıntılar, tarihler, beyan */
+  --text-hero: 400 2.2rem/1.2 var(--font-serif);    /* hüküm-başlık; vurgu rengi --color-near */
+  --text-route: 700 1.08rem var(--font-serif);
+  --text-body: 15px/1.6 var(--font-sans);
+  --text-label: 700 .7rem var(--font-sans);         /* + letter-spacing .18em + uppercase */
+  --text-value: 600 .8rem var(--font-mono);
+  --text-source: 400 .72rem var(--font-mono);       /* alıntı italik, tarih --color-met */
+  --tracking-label: .18em;
+
+  /* ---- Çizgi dili ---- */
+  --rule-heavy: 3px double var(--color-ink);        /* bölüm sınırları (masthead, footer) */
+  --rule-card-top: 3px solid var(--color-ink);      /* kart üst şeridi */
+  --rule-soft: 1px solid var(--color-line);
+  --rule-dotted: 1px dotted var(--color-line);      /* defter satırları, kart içi ayraç */
+
+  /* ---- Boşluk ---- */
+  --space-1: .25rem; --space-2: .5rem; --space-3: .85rem;
+  --space-4: 1.3rem; --space-5: 1.6rem; --space-6: 2.8rem;
+  --gap-cards: .85rem;
+  --pad-card: 1rem 1.3rem 1.05rem;
+  --max-content: 56rem;
+  --max-prose: 36rem;
+
+  /* ---- İmza öğeleri ---- */
+  /* Eşik rayı: her sayısal kriterin standart modülü */
+  --rail-track: var(--color-hold-soft);
+  --rail-band: var(--color-band);
+  --rail-tick: var(--color-ink);
+  --rail-h: 7px;
+  /* Mühür: kayıt tarihi ritüeli (başlıkta bir kez; kartlarda kullanılmaz) */
+  --stamp-border: 2.5px solid var(--color-stamp);
+  --stamp-rotate: -6deg;
+}

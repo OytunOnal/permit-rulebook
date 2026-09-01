@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visa Navigator — Variant A: Official Record</title>
+<style>
+  :root{
+    --paper:#f5f3ec; --panel:#fbfaf5; --ink:#26251f; --faint:#6d6a5e;
+    --rule:#cbc5b2; --stamp:#8c2b2b; --met:#2e5b3f; --near:#8a5a19; --closed:#7d7a6e;
+    --mono:Consolas,"Courier New",monospace;
+    --serif:Cambria,Georgia,"Times New Roman",serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font:16px/1.55 var(--serif);padding:2.5rem 1rem}
+  .sheet{max-width:60rem;margin:0 auto;background:var(--panel);border:1px solid var(--rule);padding:2.75rem 3rem 2rem;position:relative}
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
+
+  /* Masthead */
+  .mast{display:flex;justify-content:space-between;align-items:baseline;border-bottom:3px double var(--ink);padding-bottom:.9rem}
+  .mast h1{font-size:1.35rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+  .mast .no{font-family:var(--mono);font-size:.8rem;color:var(--faint)}
+  .subhead{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.78rem;color:var(--faint);padding:.5rem 0 1.4rem;border-bottom:1px solid var(--rule)}
+
+  /* Stamp */
+  .stamp{position:absolute;top:2.2rem;right:2.4rem;transform:rotate(-7deg);border:2.5px solid var(--stamp);color:var(--stamp);
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;padding:.45rem .8rem;text-transform:uppercase;opacity:.85}
+  .stamp b{display:block;font-size:.9rem;letter-spacing:.1em}
+
+  /* Declaration ledger */
+  h2{font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;margin:1.8rem 0 .6rem;color:var(--faint);font-weight:700}
+  .decl{width:100%;border-collapse:collapse;font-size:.92rem}
+  .decl td{border-bottom:1px dotted var(--rule);padding:.32rem .5rem .32rem 0;vertical-align:top}
+  .decl td:first-child{width:34%;color:var(--faint)}
+  .decl td:last-child{font-family:var(--mono);font-size:.85rem}
+
+  /* Routes table */
+  .routes{width:100%;border-collapse:collapse;margin-top:.2rem;font-size:.95rem}
+  .routes th{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;text-align:left;color:var(--faint);
+    border-bottom:2px solid var(--ink);padding:.4rem .6rem .4rem 0;font-weight:700}
+  .routes td{border-bottom:1px solid var(--rule);padding:.65rem .6rem .65rem 0;vertical-align:top}
+  .routes tr:last-child td{border-bottom:2px solid var(--ink)}
+  .st{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;white-space:nowrap}
+  .st.met{color:var(--met)}   .st.met::before{content:"■ "}
+  .st.near{color:var(--near)} .st.near::before{content:"◪ "}
+  .st.closed{color:var(--closed)} .st.closed::before{content:"□ "}
+  .route-name{font-weight:700}
+  .route-name small{display:block;font-weight:400;color:var(--faint);font-size:.82rem}
+  .basis{font-size:.9rem}
+  .basis sup{font-family:var(--mono);font-size:.68rem;color:var(--stamp)}
+  .gap{background:#f3ead8;border-left:3px solid var(--near);padding:.5rem .7rem;margin-top:.45rem;font-size:.88rem}
+  .gap b{color:var(--near)}
+
+  /* Provenance footnotes */
+  .fnotes{margin-top:1.9rem;border-top:3px double var(--ink);padding-top:1rem}
+  .fnotes ol{list-style:none;counter-reset:fn}
+  .fnotes li{counter-increment:fn;font-size:.83rem;padding:.42rem 0;border-bottom:1px dotted var(--rule);display:grid;
+    grid-template-columns:2rem 1fr;gap:.4rem}
+  .fnotes li::before{content:"[" counter(fn) "]";font-family:var(--mono);color:var(--stamp);font-size:.75rem}
+  .fnotes .q{font-style:italic}
+  .fnotes .src{font-family:var(--mono);font-size:.74rem;color:var(--faint);display:block;margin-top:.15rem}
+  .fnotes .src b{color:var(--met);font-weight:400}
+
+  .legal{margin-top:1.6rem;font-size:.8rem;color:var(--faint);border:1px solid var(--rule);padding:.8rem 1rem;background:var(--paper)}
+
+  @media (max-width:640px){
+    .sheet{padding:1.6rem 1.1rem}
+    .stamp{position:static;display:inline-block;margin-top:1rem}
+    .routes thead{display:none}
+    .routes tr{display:block;border-bottom:1px solid var(--rule);padding:.6rem 0}
+    .routes td{display:block;border:none;padding:.2rem 0}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="sheet">
+  <div class="stamp">Record generated<b>01 · 09 · 2026</b></div>
+  <header class="mast">
+    <h1>Visa Navigator</h1>
+    <span class="no">Eligibility record · VN-2026-0901</span>
+  </header>
+  <div class="subhead">
+    <span>Work &amp; residence routes · DE FR ES NL</span>
+    <span>All values carry source, quote and retrieval date</span>
+  </div>
+
+  <h2>Your declaration</h2>
+  <table class="decl">
+    <tr><td>Citizenship</td><td>non-EU / EEA / CH</td></tr>
+    <tr><td>Highest degree</td><td>master's — recognition confirmed</td></tr>
+    <tr><td>Occupation</td><td>software engineer (shortage list)</td></tr>
+    <tr><td>Job offer</td><td>yes — Germany</td></tr>
+    <tr><td>Gross annual salary</td><td>between €45,934 and €50,700</td></tr>
+    <tr><td>Age</td><td>under 35</td></tr>
+  </table>
+
+  <h2>Findings — 3 routes look open · 1 within reach · 2 need a local offer</h2>
+  <table class="routes">
+    <thead><tr><th>Status</th><th>Route</th><th>Basis</th></tr></thead>
+    <tr>
+      <td><span class="st met">CRITERIA MET</span></td>
+      <td class="route-name">EU Blue Card — shortage occupation<small>Germany</small></td>
+      <td class="basis">Reduced threshold €45,934.20 <sup>[1]</sup> is at or below your declared band. Occupation is on the shortage list.</td>
+    </tr>
+    <tr>
+      <td><span class="st near">WITHIN REACH</span></td>
+      <td class="route-name">EU Blue Card — general<small>Germany</small></td>
+      <td class="basis">General threshold €50,700 <sup>[2]</sup> sits above your declared band.
+        <div class="gap"><b>Gap:</b> up to €4,766 below the general threshold. The shortage-occupation route above already meets the reduced one.</div>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="st met">CRITERIA MET</span></td>
+      <td class="route-name">Skilled worker residence permit<small>Germany · §18b AufenthG</small></td>
+      <td class="basis">Recognised degree and a concrete job offer are the operative criteria. <sup>[3]</sup> No fixed salary threshold on this route.</td>
+    </tr>
+    <tr>
+      <td><span class="st met">CRITERIA MET</span></td>
+      <td class="route-name">Opportunity card (Chancenkarte)<small>Germany</small></td>
+      <td class="basis">Points check: 8 of 6 required — degree recognition, experience, age and language each score. <sup>[3]</sup></td>
+    </tr>
+    <tr>
+      <td><span class="st closed">NEEDS LOCAL OFFER</span></td>
+      <td class="route-name">Highly skilled migrant<small>Netherlands</small></td>
+      <td class="basis">Requires employment with an IND-recognised sponsor — you declared no NL offer. Salary criterion itself (€5,942/month, 30+) <sup>[4]</sup> would be within your band.</td>
+    </tr>
+    <tr>
+      <td><span class="st closed">NEEDS LOCAL OFFER</span></td>
+      <td class="route-name">Talent — qualified employee<small>France</small></td>
+      <td class="basis">Requires a French employment contract. Salary criterion (€39,582) <sup>[5]</sup> would be met by your band.</td>
+    </tr>
+  </table>
+
+  <section class="fnotes" aria-label="Official sources">
+    <h2>Official sources — verbatim, dated</h2>
+    <ol>
+      <li><div><span class="q">“kleine Blaue Karte EU: 45.934,20 Euro”</span>
+        <span class="src">Bundesagentur für Arbeit · arbeitsagentur.de · <b>retrieved 01 Sep 2026</b></span></div></li>
+      <li><div><span class="q">“große Blaue Karte EU: 50.700 Euro”</span>
+        <span class="src">Bundesagentur für Arbeit · arbeitsagentur.de · <b>retrieved 01 Sep 2026</b></span></div></li>
+      <li><div><span class="q">“Skilled workers with an academic education”</span>
+        <span class="src">BAMF · bamf.de · <b>retrieved 01 Sep 2026</b></span></div></li>
+      <li><div><span class="q">“Highly skilled migrant, 30 years or older: €5,942.00”</span>
+        <span class="src">IND · ind.nl/en/required-amounts-income-requirements · valid 01 Jul – 31 Dec 2026 · <b>retrieved 01 Sep 2026</b></span></div></li>
+      <li><div><span class="q">“39 582 €” (salarié qualifié, carte talent)</span>
+        <span class="src">service-public.gouv.fr · fiche F16922 · <b>retrieved 01 Sep 2026</b></span></div></li>
+    </ol>
+  </section>
+
+  <p class="legal">This record makes no immigration decision and none will be made from it. Authorities assess
+  applications under the applicable law; the table above only compares published values with what you declared.
+  Rules change — each value links to the official page it was read from.</p>
+</main>
+</body>
+</html>

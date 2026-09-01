@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visa Navigator — Variant F: Border Record</title>
+<style>
+  :root{
+    --desk:#1b2438; --ink:#2a2419; --paper:#f3eddd; --paper-2:#ebe3cd;
+    --navy:#243a63; --burg:#5d2233; --gold:#bd9c45; --cream:#e8e2d0;
+    --met:#2c6144; --near:#a06c1c; --hold:#6e6a5e; --band:#2f5ec4;
+    --disp:Bahnschrift,"Segoe UI",sans-serif; --body:"Segoe UI",system-ui,sans-serif; --mono:Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--desk);background-image:radial-gradient(ellipse at 25% -10%,#293755 0%,var(--desk) 58%);
+    color:var(--cream);font:15px/1.55 var(--body);padding:2.6rem 1.2rem 4rem}
+  .wrap{max-width:58rem;margin:0 auto}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+  header{border-bottom:2px solid var(--gold);padding-bottom:1.2rem;margin-bottom:1.5rem;position:relative}
+  .brand{font:400 .72rem var(--mono);letter-spacing:.4em;text-transform:uppercase;color:var(--gold)}
+  h1{font:700 2.4rem/1.08 var(--disp);text-transform:uppercase;margin:.45rem 0 .4rem;padding-right:11rem}
+  h1 b{color:#e3b04e}
+  .sub{color:#b9c1d6;max-width:37rem;font-size:.92rem}
+  .stamp{position:absolute;right:0;top:.3rem;transform:rotate(6deg);border:2.5px solid var(--gold);color:var(--gold);
+    font:600 .66rem var(--mono);letter-spacing:.16em;padding:.4rem .7rem;text-transform:uppercase}
+  .stamp b{display:block;font-size:.84rem}
+
+  .declrow{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:1.6rem;align-items:center}
+  .declrow span{font:500 .72rem var(--mono);color:#d8dded;border:1px solid #3d4c74;border-radius:3px;padding:.3rem .58rem;background:#162035}
+  .declrow a{font:600 .78rem var(--body);color:var(--gold);margin-left:.35rem}
+
+  .cgroup{margin-bottom:1.4rem}
+  .cgroup h2{font:700 .74rem var(--disp);letter-spacing:.3em;text-transform:uppercase;color:var(--gold);
+    border-bottom:1px solid #3d4c74;padding-bottom:.35rem;margin-bottom:.8rem}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(25rem,1fr));gap:1.1rem}
+
+  .sticker{background:var(--paper);color:var(--ink);border-radius:5px;position:relative;box-shadow:0 10px 22px rgba(0,0,0,.4);
+    background-image:repeating-linear-gradient(115deg,transparent 0 9px,rgba(36,58,99,.05) 9px 10px);
+    display:flex;flex-direction:column}
+  .sticker::before{content:"";position:absolute;inset:5px;border:1.5px solid var(--navy);border-radius:3px;opacity:.45;pointer-events:none}
+  .inner{padding:.9rem 1.05rem .75rem;flex:1}
+  .head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1.5px solid var(--navy);padding-bottom:.4rem}
+  .country{font:700 .72rem var(--disp);letter-spacing:.26em;text-transform:uppercase;color:var(--navy)}
+  .kind{font:400 .64rem var(--mono);color:var(--burg)}
+  h3{font:700 1.04rem var(--disp);text-transform:uppercase;letter-spacing:.03em;margin:.55rem 0 .2rem;padding-right:6rem}
+  .why{font-size:.83rem;color:#4c4536;margin-bottom:.5rem}
+  .stampc{position:absolute;top:2.7rem;right:.8rem;transform:rotate(7deg);border:2.5px solid;border-radius:3px;
+    font:700 .64rem var(--disp);letter-spacing:.18em;text-transform:uppercase;padding:.3rem .5rem;background:rgba(243,237,221,.78)}
+  .stampc.met{color:var(--met);border-color:var(--met)}
+  .stampc.near{color:var(--near);border-color:var(--near)}
+  .stampc.hold{color:var(--hold);border-color:var(--hold)}
+
+  .vals{display:flex;gap:1.4rem;margin:.1rem 0 .45rem}
+  .vals .lab{display:block;font:400 .6rem var(--mono);color:#7a7260;letter-spacing:.1em;text-transform:uppercase}
+  .vals b{font:700 1.06rem var(--disp);color:var(--navy)}
+  .rail{margin:.35rem 0 .45rem}
+  .bar{position:relative;height:6px;background:#ddd4ba;border-radius:99px}
+  .you{position:absolute;top:0;bottom:0;background:var(--band);border-radius:99px}
+  .tick{position:absolute;top:-4px;width:2px;height:14px;background:var(--ink);opacity:.6}
+  .lbls{position:relative;height:2.1rem;margin-top:.3rem;font:500 .62rem var(--mono)}
+  .lbl{position:absolute;transform:translateX(-50%);text-align:center;color:#7a7260;line-height:1.3}
+  .lbl b{display:block;color:var(--ink)}
+  .lbl.you-l,.lbl.you-l b{color:var(--band)}
+  .gap{border:1.5px dashed var(--near);border-radius:3px;padding:.4rem .55rem;font-size:.77rem;color:#6d4c17;background:#f2e9cf;margin-bottom:.5rem}
+
+  .foot{background:var(--paper-2);border-top:1.5px solid var(--navy);padding:.48rem 1.05rem;display:flex;
+    justify-content:space-between;gap:.8rem;align-items:baseline;border-radius:0 0 5px 5px;flex-wrap:wrap}
+  .src{font:400 .65rem var(--mono);color:#6b6352}
+  .src b{color:var(--met)}
+  .next{font:700 .68rem var(--disp);letter-spacing:.08em;text-transform:uppercase;color:var(--burg);text-decoration:none;white-space:nowrap}
+  .next::after{content:" ↗"}
+
+  footer{margin-top:2.3rem;text-align:center;color:#9aa4c0;font-size:.78rem;max-width:42rem;margin-inline:auto}
+  .mrz-foot{font:400 .68rem var(--mono);letter-spacing:.3em;color:#5b6678;margin-top:.55rem}
+
+  @media (max-width:640px){h1{font-size:1.7rem;padding-right:0}.stamp{position:static;display:inline-block;margin-top:.7rem}.grid{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Visa Navigator · Record VN-2026-0901</div>
+    <h1>Three routes open. <b>One within €4,766.</b></h1>
+    <p class="sub">Six answers, 38 published rules, four countries. Every value below carries its official
+    quote and the date it was read.</p>
+    <div class="stamp">Record generated<b>01 · 09 · 2026</b></div>
+  </header>
+
+  <div class="declrow" aria-label="Your answers">
+    <span>NON-EU</span><span>MASTER·RECOGNISED</span><span>SOFTWARE ENG</span>
+    <span>OFFER:DE</span><span>€45,934–50,700</span><span>AGE&lt;35</span>
+    <a href="#">Change an answer</a>
+  </div>
+
+  <section class="cgroup">
+    <h2>Germany — 3 open · 1 within reach</h2>
+    <div class="grid">
+      <article class="sticker">
+        <span class="stampc met">Criteria met</span>
+        <div class="inner">
+          <div class="head"><span class="country">Germany</span><span class="kind">RES·WORK</span></div>
+          <h3>EU Blue Card · Shortage</h3>
+          <p class="why">Reduced threshold cleared by your band; software engineering is on the shortage list.</p>
+          <div class="rail"><div class="bar">
+              <span class="you" style="left:56%;width:30%"></span>
+              <span class="tick" style="left:54%"></span><span class="tick" style="left:86%"></span></div>
+            <div class="lbls">
+              <span class="lbl" style="left:54%"><b>€45,934</b>reduced</span>
+              <span class="lbl" style="left:86%"><b>€50,700</b>general</span>
+              <span class="lbl you-l" style="left:70%;top:1.15rem"><b>your band</b></span>
+            </div></div>
+        </div>
+        <div class="foot"><span class="src">“kleine Blaue Karte EU: 45.934,20 Euro” · BA · <b>01SEP26</b></span><a class="next" href="#">Official page</a></div>
+      </article>
+
+      <article class="sticker">
+        <span class="stampc near">Within reach</span>
+        <div class="inner">
+          <div class="head"><span class="country">Germany</span><span class="kind">RES·WORK</span></div>
+          <h3>EU Blue Card · General</h3>
+          <p class="why">The general threshold sits above your declared band.</p>
+          <div class="gap"><b>GAP: up to €4,766</b> — matters only if your occupation leaves the shortage list.</div>
+          <div class="rail"><div class="bar">
+              <span class="you" style="left:28%;width:40%"></span>
+              <span class="tick" style="left:68%"></span></div>
+            <div class="lbls">
+              <span class="lbl" style="left:68%"><b>€50,700</b>general</span>
+              <span class="lbl you-l" style="left:48%;top:1.15rem"><b>your band</b></span>
+            </div></div>
+        </div>
+        <div class="foot"><span class="src">“große Blaue Karte EU: 50.700 Euro” · BA · <b>01SEP26</b></span><a class="next" href="#">Official page</a></div>
+      </article>
+
+      <article class="sticker">
+        <span class="stampc met">Criteria met</span>
+        <div class="inner">
+          <div class="head"><span class="country">Germany</span><span class="kind">RES·WORK</span></div>
+          <h3>Skilled Worker · §18b</h3>
+          <p class="why">Recognised degree plus concrete offer are the operative criteria — no fixed salary threshold.</p>
+          <div class="vals">
+            <div><span class="lab">Degree</span><b>RECOGNISED</b></div>
+            <div><span class="lab">Offer</span><b>YES · DE</b></div>
+          </div>
+        </div>
+        <div class="foot"><span class="src">BAMF · “academic education” · <b>01SEP26</b></span><a class="next" href="#">Official page</a></div>
+      </article>
+
+      <article class="sticker">
+        <span class="stampc met">Criteria met</span>
+        <div class="inner">
+          <div class="head"><span class="country">Germany</span><span class="kind">SEEK·PTS</span></div>
+          <h3>Opportunity Card</h3>
+          <p class="why">Points check: recognition, experience, age and language each score.</p>
+          <div class="vals"><div><span class="lab">Points</span><b>8 / 6</b></div></div>
+        </div>
+        <div class="foot"><span class="src">make-it-in-germany.com · <b>01SEP26</b></span><a class="next" href="#">Official page</a></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="cgroup">
+    <h2>Netherlands &amp; France — need a local offer</h2>
+    <div class="grid">
+      <article class="sticker">
+        <span class="stampc hold">Needs offer</span>
+        <div class="inner">
+          <div class="head"><span class="country">Netherlands</span><span class="kind">RES·WORK</span></div>
+          <h3>Highly Skilled Migrant</h3>
+          <p class="why">Needs an IND-recognised sponsor — no Dutch offer declared. Salary criterion itself would be met.</p>
+          <div class="vals">
+            <div><span class="lab">Threshold</span><b>€5,942/MO</b></div>
+            <div><span class="lab">Sponsor</span><b>REQUIRED</b></div>
+          </div>
+        </div>
+        <div class="foot"><span class="src">IND · valid to 31DEC26 · <b>01SEP26</b></span><a class="next" href="#">Official page</a></div>
+      </article>
+
+      <article class="sticker">
+        <span class="stampc hold">Needs offer</span>
+        <div class="inner">
+          <div class="head"><span class="country">France</span><span class="kind">RES·WORK</span></div>
+          <h3>Talent · Qualified Employee</h3>
+          <p class="why">Needs a French employment contract. Your band would clear the salary criterion.</p>
+          <div class="vals">
+            <div><span class="lab">Threshold</span><b>€39,582</b></div>
+            <div><span class="lab">Contract</span><b>REQUIRED</b></div>
+          </div>
+        </div>
+        <div class="foot"><span class="src">“39 582 €” · service-public.gouv.fr F16922 · <b>01SEP26</b></span><a class="next" href="#">Official page</a></div>
+      </article>
+    </div>
+  </section>
+
+  <footer>
+    <p>No immigration decision is made here and authorities won't consider these results — the tool compares
+    published values with what you declared, nothing more. Your answers never leave this device.</p>
+    <p class="mrz-foot">EVERY&lt;VALUE&lt;SOURCED&lt;QUOTED&lt;DATED&lt;&lt;&lt;</p>
+  </footer>
+</div>
+</body>
+</html>

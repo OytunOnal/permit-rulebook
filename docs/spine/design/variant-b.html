@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visa Navigator — Variant B: Threshold Rail</title>
+<style>
+  :root{
+    --bg:#f1f3f6; --card:#ffffff; --ink:#28313d; --dim:#68748245; --muted:#5d6a79;
+    --line:#dde2e9; --met:#1e7a5a; --met-soft:#e2f2ec; --near:#a96f1f; --near-soft:#f7edda;
+    --hold:#77808d; --hold-soft:#eceef1; --band:#2f5ec4; --band-soft:#e3eafb;
+    --sans:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+    --disp:"Segoe UI Variable Display","Segoe UI Semibold","Segoe UI",sans-serif;
+    --mono:"Cascadia Mono",Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--sans);padding:3rem 1.2rem 4rem}
+  .wrap{max-width:56rem;margin:0 auto}
+  :focus-visible{outline:2px solid var(--band);outline-offset:2px}
+
+  header{margin-bottom:2.2rem}
+  .brand{font:600 .8rem var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+  h1{font:300 2.3rem/1.15 var(--disp);letter-spacing:-.01em;margin:.4rem 0 .3rem;max-width:34rem}
+  h1 b{font-weight:650}
+  .sub{color:var(--muted);max-width:36rem}
+
+  .cols{display:grid;grid-template-columns:15.5rem 1fr;gap:1.6rem;align-items:start}
+
+  /* Declaration side */
+  .decl{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.3rem;position:sticky;top:1rem}
+  .decl h2{font:600 .72rem var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem}
+  .decl dl{display:grid;gap:.55rem}
+  .decl dt{font-size:.72rem;color:var(--muted)}
+  .decl dd{font-weight:600;font-size:.88rem;border-bottom:1px solid var(--line);padding-bottom:.5rem}
+  .decl dd:last-child{border:none;padding-bottom:0}
+  .decl .edit{display:inline-block;margin-top:.9rem;font-size:.8rem;color:var(--band);text-decoration:none;border-bottom:1px solid currentColor}
+
+  /* Route cards */
+  .stack{display:grid;gap:.9rem}
+  .route{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.15rem 1.4rem 1.3rem}
+  .route .top{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;margin-bottom:.15rem}
+  .route h3{font:600 1.02rem var(--disp)}
+  .route .cc{font:500 .7rem var(--mono);color:var(--muted);letter-spacing:.08em}
+  .pill{font:600 .68rem var(--sans);letter-spacing:.1em;text-transform:uppercase;border-radius:999px;padding:.28rem .7rem;white-space:nowrap}
+  .pill.met{background:var(--met-soft);color:var(--met)}
+  .pill.near{background:var(--near-soft);color:var(--near)}
+  .pill.hold{background:var(--hold-soft);color:var(--hold)}
+  .why{color:var(--muted);font-size:.88rem;max-width:36rem}
+
+  /* Signature: threshold rail */
+  .rail{margin:1.05rem 0 .3rem}
+  .rail .bar{position:relative;height:8px;border-radius:99px;background:var(--hold-soft)}
+  .rail .you{position:absolute;top:0;bottom:0;background:var(--band);border-radius:99px;opacity:.85}
+  .rail .tick{position:absolute;top:-5px;width:2px;height:18px;background:var(--ink);opacity:.55}
+  .rail .lbls{position:relative;height:2.5rem;margin-top:.45rem;font:500 .7rem var(--mono)}
+  .rail .lbl{position:absolute;transform:translateX(-50%);text-align:center;color:var(--muted);line-height:1.3}
+  .rail .lbl b{display:block;color:var(--ink);font-weight:600}
+  .rail .lbl.you-l{color:var(--band)} .rail .lbl.you-l b{color:var(--band)}
+  .gapnote{font-size:.85rem;background:var(--near-soft);color:#6d4c17;border-radius:9px;padding:.55rem .8rem;margin-top:.6rem;max-width:34rem}
+
+  .src{margin-top:.85rem;font:400 .74rem var(--mono);color:var(--muted)}
+  .src b{color:var(--met);font-weight:500}
+  .src a{color:inherit}
+
+  footer{margin-top:2.4rem;color:var(--muted);font-size:.8rem;max-width:44rem;border-top:1px solid var(--line);padding-top:1rem}
+
+  @media (max-width:760px){
+    .cols{grid-template-columns:1fr}
+    .decl{position:static}
+    h1{font-size:1.7rem}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Visa Navigator</div>
+    <h1>Three routes look open. <b>One is €4,766 away.</b></h1>
+    <p class="sub">Code compared your six answers against 38 published rules across Germany, France, Spain
+    and the Netherlands. Every number below shows its official source and the date it was read.</p>
+  </header>
+
+  <div class="cols">
+    <aside class="decl" aria-label="Your answers">
+      <h2>You declared</h2>
+      <dl>
+        <div><dt>Citizenship</dt><dd>non-EU / EEA</dd></div>
+        <div><dt>Degree</dt><dd>Master's · recognised</dd></div>
+        <div><dt>Occupation</dt><dd>Software engineer</dd></div>
+        <div><dt>Job offer</dt><dd>Yes — Germany</dd></div>
+        <div><dt>Salary band</dt><dd>€45,934 – €50,700</dd></div>
+        <div><dt>Age</dt><dd>Under 35</dd></div>
+      </dl>
+      <a class="edit" href="#">Change an answer</a>
+    </aside>
+
+    <div class="stack">
+      <article class="route">
+        <div class="top"><h3>EU Blue Card — shortage occupation <span class="cc">DE</span></h3><span class="pill met">Criteria met</span></div>
+        <p class="why">Your band clears the reduced salary threshold, and software engineering is on the shortage list.</p>
+        <div class="rail" aria-label="Salary thresholds">
+          <div class="bar">
+            <span class="you" style="left:56%;width:30%"></span>
+            <span class="tick" style="left:54%"></span><span class="tick" style="left:86%"></span>
+          </div>
+          <div class="lbls">
+            <span class="lbl" style="left:54%"><b>€45,934</b>reduced</span>
+            <span class="lbl" style="left:86%"><b>€50,700</b>general</span>
+            <span class="lbl you-l" style="left:70%;top:1.4rem"><b>your band</b></span>
+          </div>
+        </div>
+        <p class="src">“kleine Blaue Karte EU: 45.934,20 Euro” — Bundesagentur für Arbeit · <b>read 1 Sep 2026</b></p>
+      </article>
+
+      <article class="route">
+        <div class="top"><h3>EU Blue Card — general <span class="cc">DE</span></h3><span class="pill near">Within reach</span></div>
+        <p class="why">The general threshold sits above your declared band.</p>
+        <div class="gapnote"><b>Gap: up to €4,766.</b> The shortage route above already meets the reduced threshold — the general card only matters if your occupation leaves the shortage list.</div>
+        <p class="src">“große Blaue Karte EU: 50.700 Euro” — Bundesagentur für Arbeit · <b>read 1 Sep 2026</b></p>
+      </article>
+
+      <article class="route">
+        <div class="top"><h3>Skilled worker permit · §18b <span class="cc">DE</span></h3><span class="pill met">Criteria met</span></div>
+        <p class="why">Recognised degree plus a concrete offer are the operative criteria — no fixed salary threshold.</p>
+        <p class="src">BAMF, “Skilled workers with an academic education” · <b>read 1 Sep 2026</b></p>
+      </article>
+
+      <article class="route">
+        <div class="top"><h3>Opportunity card (Chancenkarte) <span class="cc">DE</span></h3><span class="pill met">Criteria met</span></div>
+        <p class="why">Points check: 8 of 6 required — recognition, experience, age and language each score.</p>
+        <p class="src">make-it-in-germany.com · <b>read 1 Sep 2026</b></p>
+      </article>
+
+      <article class="route">
+        <div class="top"><h3>Highly skilled migrant <span class="cc">NL</span></h3><span class="pill hold">Needs a local offer</span></div>
+        <p class="why">Requires employment with an IND-recognised sponsor — you declared no Dutch offer. Your band would clear the salary criterion itself (€5,942/month, 30+).</p>
+        <p class="src">“Highly skilled migrant, 30 or older: €5,942.00” — IND · valid 1 Jul – 31 Dec 2026 · <b>read 1 Sep 2026</b></p>
+      </article>
+
+      <article class="route">
+        <div class="top"><h3>Talent — qualified employee <span class="cc">FR</span></h3><span class="pill hold">Needs a local offer</span></div>
+        <p class="why">Requires a French employment contract. Your band would clear the €39,582 salary criterion.</p>
+        <p class="src">“39 582 €” — service-public.gouv.fr, fiche F16922 · <b>read 1 Sep 2026</b></p>
+      </article>
+    </div>
+  </div>
+
+  <footer>
+    Visa Navigator makes no immigration decision and authorities won't consider these results. The tool compares
+    published values with what you declared — nothing more. Your answers never leave this device.
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,92 @@
+# DECISIONS — Visa Navigator
+
+Append-only. Her giriş: tarih · karar · gerekçe · kapı mı (insan seçti) ucuz varsayılan mı (Spine seçti).
+
+---
+
+## 2026-09-01 — Scale Gate: seviye = Product 🛑 (kapı, insan seçti)
+
+**Karar:** Proje Product seviyesinde yürütülecek (Sketch/Build değil).
+
+**Gerekçe:** Dört sorunun üçü güçlü "evet":
+- *Geri alması zor mu?* Kısmen — açık veri setinin şeması kamuya açılıp topluluk katkı aldığı an kamusal sözleşme olur; sonrası pahalı. Üç-parça mimari (rules engine paketi / navigator web / JobRadar importu) da kurulunca sınır taşımak maliyetli.
+- *Başkası kullanacak mı?* Evet — indekslenebilir public web, arama motorundan gelen kullanıcı, topluluk katkısı beklenen açık dataset.
+- *Para veya kişisel veri?* Para yok; kişisel veri var (vatandaşlık, maaş, diploma) ama local-first / veri saklamama konumlanmasıyla hafifletilmiş.
+- *6 ay sonra yaşamalı mı?* Evet — "canlı, tarihli, kaynaklı veri seti" iddiası ürünün ayrıştırıcısı; izle→doğrula→audit-trail hattı ölü bırakılamaz.
+
+Product sonucu: non-negotiable taban (structured log, hata görünürlüğü, secret hygiene, sınırda şema doğrulama, health sinyali, versiyonlu migration, veri dayanıklılığı kararı, lockfile+audit) walking skeleton'a baştan girer.
+
+**Not:** NOTES.md (2026-08-26) bu karardan önceki tasarım konuşmasının ve rekabet taramasının kaydı; Brainstorm Loop'a girdi olarak alındı, sıfırdan tekrarlanmayacak.
+
+---
+
+## 2026-09-01 — Grill yarı-turu kararları (Brainstorm Loop, insan seçti)
+
+Üç turluk grill'in bağladıkları:
+
+1. **İlk kullanıcı = kullanıcının kendisi; kitle vatandaşlıkla sınırlanmaz.** Herkes genel "3. ülke" hattından doğru cevap alır; istisna küratörlüğü (TR + DE'nin ayrıcalıklı erişim listesi) v1'de, gerisi additive. Arayüz v1'de EN.
+2. **Başarı ölçütü:** birincil = canlı/tarihli/kaynaklı açık dataset kalitesi (portfolyo), ikincil = organik kullanım. Topluluk katkısı hedef değil yan ürün.
+3. **v1 kapsamı: DE/FR/ES/NL derin** (ülke başı 6-8 istihdam route'u). Dalga 2 = CA+AU (puan sistemleri modele tam uyar), dalga 3 = diğer Avrupa (pipeline+topluluk), **ABD = ayrı karar** (kura/işveren-süreci determinizmi kırar; girerse ayrı route tipiyle). Gerekçe: "canlı" sözü izlenen sayfa sayısıyla doğrusal maliyet; geniş+derin+canlı üçü birden v1'de tutulamaz (bkz. varsayım A2).
+4. **LLM rolü = build-time cila.** Soru kümesi/seçenekler/sıra koddan türer; LLM yalnız ifadeyi insanlaştırır, çıktı commit'lenir. Uygunluk kararı ve v1 sonuç metni deterministik. Runtime RAG yok; "route hakkında soru sor" (alıntı-temelli) v1.x backlog'una.
+5. **Pipeline v1 kesiti = izle + hash/diff + bayrak** (değişiklikte otomatik issue; insan alıntı+tarihle günceller). LLM'li çıkarım + kod doğrulama + otomatik PR = v1.x.
+6. **Mimari: sıfır backend.** Statik site, engine tarayıcıda, pipeline dataset repo'sunun CI cron'unda; kişisel veri makineden çıkmaz. Ölçüm gerekirse veri-toplamayan sayaç sonradan.
+7. **İki repo:** `visa-rules` (şema+dataset+engine+pipeline) + `visa-navigator` (statik site). Topluluk sözleşmesi olacak repo tarihçesini baştan kendi repo'sunda biriktirir.
+8. **Lisans: dataset CC-BY-4.0, kod MIT.** Amaç yayılım+atıf, ticari engelleme değil.
+9. **Stack: TypeScript + JSON dataset (JSON Schema sınır doğrulaması) + Astro.**
+
+Varsayım listesi: `docs/spine/assumptions.md` (A1-A14).
+
+---
+
+## 2026-09-01 — Konsept kararı: DEVAM, 4 ülke 🛑 (kapı, insan seçti)
+
+**Karar:** Brainstorm Loop kapandı; konsept devam ediyor, v1 = DE/FR/ES/NL.
+Sunulan alternatifler: ES'yi dalga 2'ye itmek, pivot (önce yalnız dataset), dur.
+
+**Gerekçe (research-01 bulgularıyla):**
+- Boşluk duruyor ve keskinleşti: per-value tarih+alıntı × açık veri × AB
+  çalışma izinleri kombinasyonunu kimse yapmıyor (A2 zayıflamış hali + A7).
+- Talep kanıtı güçlü: run-abroad 3 haftada 491★; awesome-immigration 1.491★.
+- Hukuki konum Smartlaw içtihadıyla destekli, koşullar tasarıma girdi (A1).
+- Maliyet düzeltmeleri kabul edildi: ~40 route (A5 revize), bot-blocking'e
+  dayanıklı kaynak seçimi + ES insan-okur katmanı (A3), dağıtım GitHub/HN
+  önce (A8 revize).
+- ES'nin v1'de kalma gerekçesi: insan-okur katmanı şeması ileride topluluk
+  ülkeleri için zaten gerekli; erken kurulması şemayı dürüstleştirir.
+
+**Loop-until-dry notu:** Tur yeni bulgu üretti (kural gereği döngü "kuru"
+değil) ama bulguların tümü tasarım/plan düzeyi kısıt, konsept düzeyi değil;
+skeleton pace gereği döngü tek turda kapatıldı. Gerekirse one-pager/plan
+aşamasından kanıtlı back-edge ile dönülür.
+
+---
+
+## 2026-09-01 — One-pager onaylandı 🛑 (kapı, insan onayı)
+
+**Karar:** `docs/spine/one-pager.md` delta onayıyla kabul edildi; Stage 3 kapandı.
+
+**Süreç:** Devils-advocate 6 bulgu verdi (0 blocker, 4 risk, 2 nit); altısı da
+düzeltilerek işlendi: (1) DE stabil değer-kaynağı açık problem + plan spike'ı,
+(2) A15 eklendi (kriterler beyanla ifade edilebilir — denklik/Anabin sorunu),
+(3) problem bölümü overclaim düzeltmesi, (4) "6-7 soru" hedef olarak
+işaretlendi, (5) toplam ~35-40 route, (6) tek-kişi + ilk dolum yükü kapsama
+girdi. İnsan delta'yı onayladı.
+
+---
+
+## 2026-09-01 — Tasarım yönü: "Damgalı Panel" (variant-d) 🛑 (kapı, insan seçti)
+
+**Karar:** Çekirdek ekran (sonuç/gap-analizi) tasarımı variant-d — B'nin bilgi
+mimarisi (hüküm-başlık, bitişik per-value kaynak, eşik rayı, beyan paneli) +
+A'nın resmî-belge havası (serif başlık, kayıt mührü, çift-çizgi kurallar),
+açık arşiv-kâğıdı zeminde. Tokenlar `tokens.css`'e çıkarıldı.
+
+**Süreç:** İlk üçlü (A resmî-kayıt / B eşik-rayı / C sınır-artefaktı) kritik
+edildi; insan "C'nin kartları + A'nın damga havası + B'nin netliği" melezi
+istedi. İkinci üçlü (D damgalı-panel / E etiket-defteri / F sınır-kaydı)
+üretildi; öneri F idi, insan D'yi seçti — kurumsal-güvenilir görünüm karakter
+dozuna tercih edildi. Kritikte doğan kalıcı kurallar: eşik rayı her sayısal
+kriterin standart modülü; gap kartı rayını mutlaka gösterir; "up to €X"
+dürüstlüğü başlıkta da korunur; her kartta "Official page ↗" yönlendirmesi;
+F'nin ülke-grubu başlıkları 40-route ölçeğinde D'ye taşınacak desen olarak
+not edildi. Varyant dosyaları `docs/spine/design/`'da kalır (audit).
