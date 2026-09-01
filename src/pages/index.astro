@@ -87,16 +87,19 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // The ledger fills in as answers land; unanswered rows show a placeholder
-    // so the record reads as a form being stamped, not an empty box.
-    function renderDeclaration(finished: boolean) {
-      declList.innerHTML = questions
-        .filter((q) => !finished || answers[q.field] !== undefined)
-        .map((q) => {
-          const opt = q.options.find((o) => o.value === answers[q.field]);
-          return `<div><dt>${esc(SHORT[q.field] ?? q.field)}</dt><dd${opt ? "" : ` class="pending"`}>${esc(opt?.label ?? "—")}</dd></div>`;
-        }).join("");
-      restart.hidden = !finished;
+    // The ledger grows as the record accrues: answered rows accumulate and
+    // only the question currently on the table shows as a pending row. With
+    // adaptive pruning, fields that never get asked never appear — the panel
+    // promises nothing it won't deliver.
+    function renderDeclaration(currentField: string | null) {
+      // Rows in the order they were asked; the pending row appends last.
+      const fields = currentField ? [...history, currentField] : history;
+      declList.innerHTML = fields.map((f) => {
+        const q = questions.find((qq) => qq.field === f)!;
+        const opt = q.options.find((o) => o.value === answers[f]);
+        return `<div><dt>${esc(SHORT[f] ?? f)}</dt><dd${opt ? "" : ` class="pending"`}>${esc(opt?.label ?? "—")}</dd></div>`;
+      }).join("");
+      restart.hidden = currentField !== null;
     }
 
     function renderQuestion() {
@@ -104,8 +107,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // retires the salary question instead of asking it into the void.
       const remaining = remainingQuestions(ds, answers);
       if (remaining.length === 0) return renderResults();
-      renderDeclaration(false);
       const q = remaining[0];
+      renderDeclaration(q.field);
       const total = history.length + remaining.length;
       main.innerHTML = `
         <section class="qcard" aria-live="polite">
@@ -198,7 +201,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       subline.textContent = `Code compared your ${history.length} answer${history.length === 1 ? "" : "s"} against ${results.length} published rule sets. ` +
         `Every value below shows its official quote and the date it was read.`;
 
-      renderDeclaration(true);
+      renderDeclaration(null);
       app.dataset.state = "results";
 
       main.innerHTML = `<div class="stack">` + results.map((r) => `
