@@ -13,7 +13,9 @@ senaryosuyla ilerler: mock'ta geçince **mock-green**, gerçekte geçince
   sorular predicate'lerden, bant seçenekleri eşiklerden otomatik; sıra
   information gain. _Sınar: A10, A15, A14 zemini._
 - **S3 — Gap analizi** · Near-miss hesabı + met/near/hold gruplu tam sonuç
-  ekranı + "Official page ↗". _Sınar: A9._
+  ekranı + "Official page ↗". Aday: "bilmiyorum" cevaplı alanlar için
+  "şuradan öğren" resmî-kaynak linki (DE denklik → Anabin) — insan önerisi
+  2026-09-02. _Sınar: A9._
 - **S4 — DE kaynak spike'ı + izle-bayrak pipeline** · Spike: DE stabil değer
   kaynağı (headless / duyuru indeksi / insan-okur). Sonra: NL+FR+DE izle+
   hash/diff+issue, ES PDF hash. _Sınar: A13, A3 çözümü._
@@ -33,6 +35,11 @@ senaryosuyla ilerler: mock'ta geçince **mock-green**, gerçekte geçince
 - CA + AU (A6) · dalga 3: diğer Avrupa · ABD ayrı karar
 - JobRadar entegrasyonu (çapraz yönlendirme)
 - Veri-toplamayan kullanım sayacı
+- Denklik yardımcısı (insan önerisi 2026-09-02): üniversite+bölüm beyanı alıp
+  Anabin (ve FR/ES/NL muadilleri) kaydını gösterme. Önce araştırma: Anabin
+  erişilebilirliği (API yok, bot-duvarı riski), A1 uyumlu çıktı dili ("Anabin
+  şu statüyü listeliyor, kaynak şu" — karar değil), ülke başına denklik
+  kaynağı envanteri.
 
 ## active
 
