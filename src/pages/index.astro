@@ -39,9 +39,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     <footer>
       <p>Visa Navigator makes no immigration decision and authorities won't consider these results —
       the tool compares published values with what you declared, nothing more.</p>
-      <p class="health">dataset <span id="h-dv">{meta.dataset_version}</span> ·
-        schema <span id="h-sv">{meta.schema_version}</span> ·
-        newest value read <span id="h-rd">{meta.newest_retrieved_at}</span></p>
+      <div class="health">
+        <span>dataset {meta.dataset_version}</span>
+        <span>schema {meta.schema_version}</span>
+        <span>newest value read {meta.newest_retrieved_at}</span>
+      </div>
     </footer>
   </div>
 
@@ -266,8 +268,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .next::after{content:" ↗"}
 
     footer{margin-top:var(--space-6);color:var(--color-muted);font-size:.8rem;border-top:var(--rule-heavy);padding-top:.9rem}
-    footer p{max-width:44rem}
-    .health{margin-top:.5rem;font:var(--text-source)}
+    footer p{margin:0}
+    .health{margin-top:.6rem;padding-top:.55rem;border-top:var(--rule-dotted);font:var(--text-source);
+      display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem 1.5rem}
 
     @media (max-width:760px){
       .cols[data-state="results"]{grid-template-columns:1fr}

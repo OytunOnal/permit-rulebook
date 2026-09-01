@@ -117,3 +117,22 @@ S1 real-green oldu; dilim içinde gate açılmadan verilen kararlar:
    başlığı dinamik.
 7. **A15 için erken sinyal:** kazara "I don't know" ile koşulan profil,
    "unknown = açık eksik, hayır değil" davranışını ekranda doğru gösterdi.
+
+---
+
+## 2026-09-02 — Soru budaması (insan testi bulgusu, dilim-sonrası düzeltme)
+
+**Bulgu (insan, S1'i lokalde test ederken):** "Teklif var mı? → No" dedikten
+sonra maaş sorusu geliyordu — ölü route için anlamsız soru.
+
+**Karar:** Genel, veri-güdümlü budama eklendi (hardcode bağımlılık değil):
+bir cevap bir route'un kriterini kesin düşürürse route ölür; hiçbir canlı
+route'un referans vermediği soru atlanır (`remainingQuestions()`). "I don't
+know" route'u öldürmez. Yan kural: hiç sorulmamış alan sonuç ekranında
+"I don't know" gibi gösterilmez. AB vatandaşı seçilirse anket ilk sorudan
+sonra biter. +5 test (toplam 21). Ayrıca footer/header çizgi genişliği
+eşitlendi (insan bulgusu #2). Commit'ler: `visa-rules@98076da`,
+`visa-navigator@98b78d4`.
+
+**Not:** Bu, S2'nin (information gain) yarısını erkene çekti — S2 senaryosu
+yazılırken budama artık mevcut sayılacak, S2 yalnız *sıralama*ya odaklanır.
