@@ -1,96 +1,99 @@
 # KANBAN — Visa Navigator
 
-Dilimler **yetenek adıyla** anılır (S-ID'ler yalnız dosya adlarında sıralama
-anahtarıdır). Dilim ancak koşulmuş acceptance senaryosuyla ilerler: mock'ta
-geçince **mock-green**, gerçekte geçince **real-green**. Doğan her mock,
-doğduğu anda backlog'a de-mock görevi ekler.
+Slices go by their **capability name**; short IDs (s1, s2…) are filename sort
+keys only. A slice advances only on a run acceptance scenario: **mock-green**
+when it passes on mocks, **real-green** when it passes for real. The moment a
+mock is born, its de-mock task is appended to backlog.
 
 ```mermaid
 flowchart LR
-    A["Yürüyen iskelet ✅ real-green (v0.1)"] --> B["Almanya tam seti ✅ real-green (v0.2)"]
-    B --> C["Gap analizi sonuç ekranında ✅ real-green (v0.3)"]
-    C --> C2["Kaldıraç analizi: adımlar ne açar ✅ real-green (v0.4-v0.5)"]
-    C2 --> D["Kaynak izleme + değişiklik bayrağı ◀ sıradaki"]
-    D --> E["Dört ülke dolu: FR·ES·NL"]
-    E --> F["Kamuya açılış 🏁 v1"]
-    F -.-> G["Dalga 2: CA + AU"]
-    G -.-> H["Dalga 3: diğer Avrupa + topluluk"]
+    A["Walking skeleton ✅ real-green (v0.1)"] --> B["Full Germany route set ✅ real-green (v0.2)"]
+    B --> C["Gap analysis on results ✅ real-green (v0.3)"]
+    C --> C2["Leverage analysis: what each step unlocks ✅ real-green (v0.4–v0.5)"]
+    C2 --> D["Source watch + change flag ◀ next"]
+    D --> E["Four countries filled: FR·ES·NL"]
+    E --> F["Public launch 🏁 v1"]
+    F -.-> G["Wave 2: CA + AU"]
+    G -.-> H["Wave 3: rest of Europe + community"]
 ```
 
 ## backlog
 
-- **Buzer→resmî kaynak URL göçü** · Dataset'teki buzer.de ayna linklerini
-  doğrulanmış resmî gesetze-im-internet.de URL'leriyle değiştir (insan resmî
-  siteye VPN'le erişip doğruladı; ajanlar erişemiyordu — pipeline kaynak
-  seçiminde not).
-- **45+ yaş kurallarını (55% eşiği) kriter modeline al** (S2'de nota indirgendi)
-- **Kaynak izleme + değişiklik bayrağı** (s4) · Önce spike: DE stabil değer
-  kaynağı (headless / duyuru indeksi / insan-okur). Sonra NL+FR+DE izle+
-  hash/diff+issue, ES PDF hash. _Sınar: A13, A3 çözümü._
-- **Dört ülke dolu: FR·ES·NL** (s5) · ~35-40 route, ülke başı yazılı
-  hariç-tutma listesi; CI şema zorlaması. _Sınar: A5 revize, A12, A4._
-- **Kamuya açılış** (s6) · `visa-rules` public (CC-BY-4.0, CONTRIBUTING,
-  kapsam katmanları), site deploy, route-başına mikro-sayfalar, disclaimer/
-  hukuk dili (A1 koşulları), GitHub/HN lansmanı. _Sınar: A2, A7, A8 gerçekte._
+- **Migrate remaining Turkish docs to English** (steward-3 language rule):
+  one-pager, assumptions, research-01, scenarios s1–s3b, older DECISIONS
+  entries (STATUS/KANBAN/ARCHITECTURE already translated).
+- **Buzer → official-source URL migration** · Replace buzer.de mirror links
+  in the dataset with the verified gesetze-im-internet.de URLs (human
+  verified them via VPN; agents cannot reach the official site — relevant to
+  s4 source selection).
+- **Model the 45+ age rules (55% threshold) as criteria** (currently notes).
+- **Source watch + change flag** (s4) · Spike first: stable DE value source
+  (headless / announcement index / human-read tier). Then watch + hash/diff +
+  flag for NL+FR+DE, ES PDF hash. _Tests A13, resolves A3._
+- **Four countries filled: FR·ES·NL** (s5) · ~35–40 routes, written per-country
+  exclusion lists; CI schema enforcement. _Tests revised A5, A12, A4._
+- **Public launch** (s6) · `visa-rules` public (CC-BY-4.0, CONTRIBUTING,
+  coverage tiers), site deploy, per-route micro-pages, disclaimer/legal
+  wording (A1 conditions), GitHub/HN launch. _Tests A2, A7, A8 for real._
 
-### v1.x / dalga 2 (v1 sonrası)
-- **Affiliate katmanı** (viability kararı 2026-09-02): route'a göre mecburi
-  hizmet linkleri (Sperrkonto, vize sigortası, dil) — "affiliate" etiketli,
-  çok sağlayıcılı, disclosure disclaimer yanında; uygunluk kararına etkisiz.
-  (GitHub Sponsors linki küçük iş — s6 açılışa girebilir.)
-- İzlemesiz reklam değerlendirmesi — yalnız 25-50k ziyaret/ay eşiği aşılırsa
-- LLM çıkarım + kod doğrulama + otomatik PR (pipeline tam hattı)
-- "Route hakkında soru sor" (alıntı-temelli RAG)
-- LLM build-time soru-ifadesi cilası (A14)
-- TR arayüz
-- CA + AU (A6) · dalga 3: diğer Avrupa · ABD ayrı karar
-- JobRadar entegrasyonu (çapraz yönlendirme)
-- Veri-toplamayan kullanım sayacı
-- Denklik yardımcısı: üniversite+bölüm beyanıyla Anabin (ve FR/ES/NL
-  muadilleri) kaydını gösterme — önce araştırma (erişilebilirlik, A1 uyumlu
-  çıktı dili, ülke başına denklik kaynağı envanteri)
+### v1.x / wave 2 (post-v1)
+- **Affiliate layer** (viability decision 2026-09-02): route-relevant
+  mandatory services (blocked account, visa insurance, language) — labelled
+  "affiliate", multi-provider, disclosure next to the disclaimer; never
+  affects eligibility. (GitHub Sponsors link is small — may join s6.)
+- Trackerless ads evaluation — only if 25–50k visits/month is crossed
+- LLM extraction + code validation + auto-PR (full pipeline)
+- "Ask about this route" (quote-grounded RAG)
+- LLM build-time question-wording polish (A14)
+- Turkish UI
+- CA + AU (A6) · wave 3: rest of Europe · US as a separate decision
+- JobRadar integration (cross-referral)
+- Privacy-preserving usage counter
+- Recognition helper: look up the user's university/program in Anabin (and
+  FR/ES/NL equivalents) — research first (reachability, A1-compatible output
+  wording, per-country recognition source inventory)
 
 ## active
 
-_(boş — "Kaynak izleme + değişiklik bayrağı" boundary session bekliyor)_
+_(empty — "Source watch + change flag" boundary session in progress)_
 
 ## mock-green
 
-_(boş)_
+_(empty)_
 
 ## real-green
 
-_(boş — v0.1 ve v0.2 done'a damgalandı)_
+_(empty — v0.1–v0.5 stamped into done)_
 
 ## done
 
-- **Yürüyen iskelet** (s1) · 2026-09-01 real-green; insan koşumu 2026-09-02
+- **Walking skeleton** (s1) · real-green 2026-09-01; human run 2026-09-02
   (`docs/spine/scenarios/s1.md`). → **v0.1**
-- **Almanya tam seti** (s2) · 2026-09-02 real-green — insan tüm değerleri
-  resmî kaynaklardan doğruladı (`docs/spine/scenarios/s2.md`). → **v0.2**
-- **Gap analizi sonuç ekranında** (s3) · 2026-09-02 real-green
-  (`docs/spine/scenarios/s3.md`; kalan tek pürüz: iki learn URL'sinin insan
-  tıklaması — de-mock listede). → **v0.3**
-- **Kaldıraç analizi: "teklif alırsan şunlar açılır"** (s3b) · 2026-09-02
-  real-green (`docs/spine/scenarios/s3b.md`; insan sorusundan doğdu). → **v0.4**
+- **Full Germany route set** (s2) · real-green 2026-09-02 — human verified
+  every value against official sources (`docs/spine/scenarios/s2.md`). → **v0.2**
+- **Gap analysis on results** (s3) · real-green 2026-09-02
+  (`docs/spine/scenarios/s3.md`; last loose end: human click-check of the two
+  learn links — in de-mock list). → **v0.3**
+- **Leverage analysis: what each step unlocks** (s3b) · real-green 2026-09-02
+  (`docs/spine/scenarios/s3b.md`; born from a human question). → **v0.4–v0.5**
 
 ## versions
 
-- **v0.1** — Yürüyen iskelet: tek route ailesi (DE Blue Card ×2) uçtan uca —
-  veriden türeyen sorular, sınırda şema doğrulaması, alıntı+tarihli sonuç
-  ekranı, sıfır backend. (2026-09-01)
-- **v0.2** — Almanya tam seti: 8 route, 12 kalemli Chancenkarte puan motoru,
-  `in`/`any` kriterleri, adaptif information-gain soru akışı, insan-doğrulanmış
-  değerler. (2026-09-02)
-- **v0.3** — Gap analizi ekranı: özet şeridi + OPEN/WITHIN REACH/NOT YET
-  grupları, kompakt hold satırları, "bilmiyorum → resmî kaynaktan öğren"
-  kutuları (veriden). (2026-09-02)
-- **v0.4** — Kaldıraç analizi: path-alanları için karşı-olgusal "bu adım
-  şunları açar" bölümü + iş-arama kartı köprü notu; hold satırlarında
-  kriter-bazlı "gereken/beyanın" dökümü. (2026-09-02)
-- **v0.5** — Kaldıraç her değiştirilebilir alana genellendi (dil, para, maaş,
-  deneyim, denklik — `kind: improvable`); "With German B2 → Chancenkarte met"
-  tarzı kanıtlanabilir öneriler; language_base sorusu kaldırılıp taban-dil
-  şartı dil seviyelerinden türetildi (çelişki imkânsız, 1 soru azaldı).
-  Ek düzeltme: sınırlı gap'ler (para bandı/puan) route'u öldürmez — görüşme
-  tamamlanır, route "within reach + alan-farkında gap" olur. (2026-09-02)
+- **v0.1** — Walking skeleton: one route family (DE Blue Card ×2) end to end —
+  questions derived from data, boundary schema validation, quoted+dated
+  result screen, zero backend. (2026-09-01)
+- **v0.2** — Full Germany: 8 routes, 12-item Chancenkarte points engine,
+  `in`/`any` criteria, adaptive information-gain flow, human-verified values.
+  (2026-09-02)
+- **v0.3** — Gap analysis screen: summary strip + OPEN/WITHIN REACH/NOT YET
+  groups, compact hold rows, data-driven "don't know → learn from the
+  official source" boxes. (2026-09-02)
+- **v0.4** — Leverage analysis: counterfactual "this step unlocks…" section
+  for path fields + job-search-card bridge note; per-criterion
+  "needs X / you declared Y" breakdowns on hold rows. (2026-09-02)
+- **v0.5** — Leverage generalized to every improvable field (language, funds,
+  salary, experience, recognition); provable "With German B2 → Chancenkarte
+  met" recommendations; base-language question removed (derived from language
+  levels — contradictions impossible, one question fewer). Follow-up: bounded
+  gaps (money band / points / improvable fails) never end the interview —
+  routes finish as "within reach" with field-aware gap notes. (2026-09-02)

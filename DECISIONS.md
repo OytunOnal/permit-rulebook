@@ -280,3 +280,42 @@ route'u öldürmez** — yalnız gap'siz "hard fail" öldürür; görüşme sür
 sonda "within reach — Gap: up to €1.091 — monthly funds" olur. Beklenmedik
 güzel yan etki: info-gain, artık kimseyi elemediği için fon sorusunu geriye
 attı. Gap notu alan-farkında oldu. 45 test; akış tarayıcıda doğrulandı.
+
+---
+
+## 2026-09-02 — Improvable-fail liveness + property-test suite (user-driven)
+
+Third user-found behavior gap: a no-language explorer saw no language levers,
+because the base-language hard fail killed Chancenkarte before funds/age were
+asked, leaving nothing provable. Rule generalized: a failed criterion whose
+referenced fields are ALL improvable is a closable shortfall — the interview
+continues; only fixed-attribute/path fails (citizenship, qualification,
+situation) end a route for real. Verified end-to-end in the browser with the
+user's exact profile ("With German B2 → Chancenkarte met" now appears, with
+the Anabin learn box on the open unknown).
+
+In response to "were tests written for every possibility": added
+`tests/properties.test.ts` — four invariants over 2,900 seeded-random
+profiles: (1) interview terminates, never repeats; (2) status consistency
+(met=all pass; near=only bounded-gap fails); (3) unlock rows are sound AND
+complete single-step recommendations (no false promises, no missed levers,
+never fallback/unknown targets); (4) once the interview ends, no unanswered
+question can change any verdict. 51 tests total. Also saved a standing
+feedback memory: pre-handover browser testing must include weak/edge
+profiles, boundary values, and back/restart.
+
+---
+
+## 2026-09-02 — steward-3 skill update adopted (verified in skill files)
+
+From here on, **everything written to disk is English** (docs, ledgers,
+scenarios, decision entries), regardless of conversation language. Living
+documents (STATUS, KANBAN, ARCHITECTURE) translated immediately; historical
+entries and past scenarios stay as written — a backlog task covers migrating
+the remaining Turkish docs (one-pager, assumptions, research-01, s1-s3b
+scenarios). Scenario discipline tightened: every scenario carries at least
+one weak/edge-profile line and names engine invariants with property-test
+pointers; `tdd` + `code-review` are non-negotiable slice exits (skips need a
+DECISIONS entry plus a compensating surface check). Deferral-fork rule noted:
+s4 (the riskiest slice, deferred three boundaries) is being entered now
+rather than deferred again.

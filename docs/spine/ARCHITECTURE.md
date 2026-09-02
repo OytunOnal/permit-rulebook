@@ -1,49 +1,53 @@
-# ARCHITECTURE — Visa Navigator (v0.5 itibarıyla)
+# ARCHITECTURE — Visa Navigator (as of v0.5)
 
-Her dilim çıkışında güncellenir; her zaman son real-green durumu resmeder.
+Updated at every slice exit; always depicts the latest real-green state.
 
 ```mermaid
 flowchart LR
-    subgraph rules["visa-rules (kardeş repo — tek doğruluk kaynağı)"]
-        DATA["data/de.json<br/>8 route · 14 alan (kind/learn/short)<br/>her değer: alıntı+kaynak+tarih+history"]
+    subgraph rules["visa-rules (sibling repo — single source of truth)"]
+        DATA["data/de.json<br/>8 routes · 14 fields (kind/learn/short)<br/>every value: quote+source+date+history"]
         SCHEMA["schema/ruleset.schema.json<br/>JSON Schema 2020-12"]
-        ENGINE["src/engine + questions<br/>evaluate · deriveBands · points/in/any<br/>remainingQuestions (info-gain + budama)<br/>unlocks (path+improvable karşı-olgusalı)"]
-        VALIDATE["src/validate (ajv)<br/>+ cli-validate (ndjson log)"]
+        ENGINE["src/engine + questions<br/>evaluate · deriveBands · points/in/any<br/>remainingQuestions (info-gain + pruning)<br/>unlocks (path+improvable counterfactuals)"]
+        VALIDATE["src/validate (ajv)<br/>+ cli-validate (ndjson logs)"]
     end
 
-    subgraph nav["visa-navigator (bu repo)"]
-        BUILD["Astro build<br/>sınır doğrulaması: geçersiz dataset → build kırılır"]
-        SITE["Statik çıktı (dist/)<br/>tek sayfa + 9.5kB client JS"]
+    subgraph nav["visa-navigator (this repo)"]
+        BUILD["Astro build<br/>boundary validation: invalid dataset breaks the build"]
+        SITE["Static output (dist/)<br/>single page + ~10kB client JS"]
     end
 
-    subgraph device["Kullanıcı cihazı — GÜVEN SINIRI"]
-        UI["Tarayıcı: soru akışı → gruplu sonuç ekranı<br/>(özet şeridi · statü grupları · öğren-linkleri)<br/>değerlendirme tamamen client-side"]
+    subgraph device["User's device — TRUST BOUNDARY"]
+        UI["Browser: question flow → grouped results<br/>(summary strip · status groups · learn links · unlock steps)<br/>evaluation is fully client-side"]
     end
 
     DATA --> VALIDATE --> BUILD
     SCHEMA --> VALIDATE
     DATA --> BUILD
     ENGINE --> BUILD --> SITE --> UI
-    UI -. "cevaplar cihazdan ÇIKMAZ<br/>(backend yok, telemetri yok)" .-> UI
+    UI -. "answers NEVER leave the device<br/>(no backend, no telemetry)" .-> UI
 ```
 
-Bileşenler, birer satır:
+Components, one line each:
 
-- **data/de.json** — kural veri seti; sayısal her değer resmî kaynak URL'si,
-  birebir alıntı, okunma tarihi ve append-only `history` taşır (CC-BY-4.0).
-- **ruleset.schema.json** — kamusal sözleşme; alıntısız/tarihsiz değer şemadan
-  geçemez.
-- **engine** — saf fonksiyonlar: uygunluk `if` ile (`eq`/`in`/`gte`/`points`/
-  `any`), bant sınırları = eşikler, met/near/hold + gap; sorular kurallardan
-  türer, sıralama greedy information-gain, karar değiştiremeyecek soru sorulmaz.
-- **validate / cli-validate** — sınır doğrulaması; CI ve build kapısı, ndjson
-  yapılandırılmış log.
-- **Astro build** — dataset'i sınırda doğrular, engine'i tek küçük island
-  olarak paketler; ajv client'a sızmaz.
-- **Statik site** — health satırı (dataset/şema sürümü + en yeni okuma tarihi),
-  IRCC-tarzı disclaimer; tokens.css ("Damgalı Panel") tasarım sistemi.
-- **Güven sınırı** — kişisel beyanlar (vatandaşlık, maaş bandı, yaş…) yalnız
-  tarayıcı belleğinde; hiçbir ağ isteğiyle dışarı çıkmaz.
+- **data/de.json** — the rules dataset; every numeric value carries its
+  official source URL, verbatim quote, retrieval date and an append-only
+  `history` (CC-BY-4.0).
+- **ruleset.schema.json** — the public contract; a value without its quote or
+  date cannot pass the schema.
+- **engine** — pure functions: eligibility by `if` (`eq`/`in`/`gte`/`points`/
+  `any`), band edges = the thresholds themselves, met/near/hold + gaps;
+  questions derive from rules, ordering by greedy information gain, no
+  question is asked that cannot change a verdict; `unlocks` computes provable
+  single-step counterfactual recommendations. Invariants guarded by property
+  tests over 2,900 seeded-random profiles.
+- **validate / cli-validate** — boundary validation; CI and build gate,
+  ndjson structured logs.
+- **Astro build** — validates the dataset at the boundary, bundles the engine
+  as one small island; ajv never reaches the client bundle.
+- **Static site** — health line (dataset/schema version + newest retrieval
+  date), IRCC-style disclaimer; tokens.css ("Stamped Panel") design system.
+- **Trust boundary** — personal declarations (citizenship, salary band, age…)
+  live only in browser memory; no network request carries them out.
 
-Henüz yok (planlı): kaynak izleme cron'u (s4, `visa-rules` CI'ında koşacak),
-FR/ES/NL veri dosyaları (s5), deploy hedefi (s6).
+Not built yet (planned): source-watch cron (s4, runs in `visa-rules` CI),
+FR/ES/NL data files (s5), deploy target (s6).
