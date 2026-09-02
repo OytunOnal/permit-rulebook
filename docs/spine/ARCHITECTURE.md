@@ -1,4 +1,4 @@
-# ARCHITECTURE — Visa Navigator (as of v0.5)
+# ARCHITECTURE — Visa Navigator (as of v0.6)
 
 Updated at every slice exit; always depicts the latest real-green state.
 
@@ -9,6 +9,7 @@ flowchart LR
         SCHEMA["schema/ruleset.schema.json<br/>JSON Schema 2020-12"]
         ENGINE["src/engine + questions<br/>evaluate · deriveBands · points/in/any<br/>remainingQuestions (info-gain + pruning)<br/>unlocks (path+improvable counterfactuals)"]
         VALIDATE["src/validate (ajv)<br/>+ cli-validate (ndjson logs)"]
+        WATCH["src/watch + watch/<br/>watchlist (html/pdf/human tiers) · state (append-only)<br/>coverage gate both ways · flags with quoted diff<br/>daily CI cron (fires when public)"]
     end
 
     subgraph nav["visa-navigator (this repo)"]
@@ -20,6 +21,8 @@ flowchart LR
         UI["Browser: question flow → grouped results<br/>(summary strip · status groups · learn links · unlock steps)<br/>evaluation is fully client-side"]
     end
 
+    OFFICIAL["Official sources<br/>(ZAV, embassy PDF, statute mirror)"] -.->|fetch+hash daily| WATCH
+    WATCH -.->|change flags| DATA
     DATA --> VALIDATE --> BUILD
     SCHEMA --> VALIDATE
     DATA --> BUILD
@@ -49,5 +52,11 @@ Components, one line each:
 - **Trust boundary** — personal declarations (citizenship, salary band, age…)
   live only in browser memory; no network request carries them out.
 
-Not built yet (planned): source-watch cron (s4, runs in `visa-rules` CI),
-FR/ES/NL data files (s5), deploy target (s6).
+- **watch** — declared watchlist over every dataset source (coverage enforced
+  both ways in CI); html text-hash, pdf byte-hash, human tier with
+  verification-age reminders; change flags carry quoted context; the daily
+  cron workflow persists state before filing issues and survives unreachable
+  sources without losing alerts.
+
+Not built yet (planned): FR/ES/NL data files (s5), deploy target + live cron
+firing (s6).

@@ -10,8 +10,8 @@ flowchart LR
     A["Walking skeleton ✅ real-green (v0.1)"] --> B["Full Germany route set ✅ real-green (v0.2)"]
     B --> C["Gap analysis on results ✅ real-green (v0.3)"]
     C --> C2["Leverage analysis: what each step unlocks ✅ real-green (v0.4–v0.5)"]
-    C2 --> D["Source watch + change flag ◀ next"]
-    D --> E["Four countries filled: FR·ES·NL"]
+    C2 --> D["Source watch + change flag ✅ real-green (v0.6)"]
+    D --> E["Four countries filled: FR·ES·NL ◀ next"]
     E --> F["Public launch 🏁 v1"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
@@ -52,10 +52,7 @@ flowchart LR
 
 ## active
 
-- **Source watch + change flag** (s4) · Scenario approved & run
-  (`docs/spine/scenarios/s4.md`): spike resolved (no headless), live run
-  green, 65 tests. Awaiting the mandatory code-review exit before the
-  real-green stamp.
+_(empty — "Four countries filled: FR·ES·NL" boundary session is next)_
 
 ## mock-green
 
@@ -76,6 +73,10 @@ _(empty — v0.1–v0.5 stamped into done)_
   learn links — in de-mock list). → **v0.3**
 - **Leverage analysis: what each step unlocks** (s3b) · real-green 2026-09-02
   (`docs/spine/scenarios/s3b.md`; born from a human question). → **v0.4–v0.5**
+- **Source watch + change flag** (s4) · real-green 2026-09-02 on the
+  review-fixed revision (`docs/spine/scenarios/s4.md`): live run 5/5 sources,
+  change-detection demoed, 10 code-review findings fixed, 69 tests.
+  Deferred bit tracked: daily cron fires once the repo is public (s6). → **v0.6**
 
 ## versions
 
@@ -97,3 +98,7 @@ _(empty — v0.1–v0.5 stamped into done)_
   levels — contradictions impossible, one question fewer). Follow-up: bounded
   gaps (money band / points / improvable fails) never end the interview —
   routes finish as "within reach" with field-aware gap notes. (2026-09-02)
+- **v0.6** — Source watch: both-way coverage gate, watch CLI (html/pdf/human
+  tiers, ndjson, commit-gated state, flag files with quoted context), DE via
+  ZAV edition-index sentinel, daily CI workflow hardened against alert loss.
+  (2026-09-02)
