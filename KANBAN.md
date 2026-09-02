@@ -8,8 +8,8 @@ doğduğu anda backlog'a de-mock görevi ekler.
 ```mermaid
 flowchart LR
     A["Yürüyen iskelet ✅ real-green (v0.1)"] --> B["Almanya tam seti ✅ real-green (v0.2)"]
-    B --> C["Gap analizi sonuç ekranında ◀ sıradaki"]
-    C --> D["Kaynak izleme + değişiklik bayrağı"]
+    B --> C["Gap analizi sonuç ekranında ✅ real-green (v0.3)"]
+    C --> D["Kaynak izleme + değişiklik bayrağı ◀ sıradaki"]
     D --> E["Dört ülke dolu: FR·ES·NL"]
     E --> F["Kamuya açılış 🏁 v1"]
     F -.-> G["Dalga 2: CA + AU"]
@@ -51,9 +51,7 @@ flowchart LR
 
 ## active
 
-- **Gap analizi sonuç ekranında** (s3) · Senaryo+mock onaylı (2026-09-02,
-  `docs/spine/scenarios/s3.md`). Özet şeridi, statü grupları, kompakt hold
-  satırları, veriden gelen "bilmiyorum → öğren" linkleri. _Sınar: A9._
+_(boş — "Kaynak izleme + değişiklik bayrağı" boundary session bekliyor)_
 
 ## mock-green
 
@@ -69,6 +67,9 @@ _(boş — v0.1 ve v0.2 done'a damgalandı)_
   (`docs/spine/scenarios/s1.md`). → **v0.1**
 - **Almanya tam seti** (s2) · 2026-09-02 real-green — insan tüm değerleri
   resmî kaynaklardan doğruladı (`docs/spine/scenarios/s2.md`). → **v0.2**
+- **Gap analizi sonuç ekranında** (s3) · 2026-09-02 real-green
+  (`docs/spine/scenarios/s3.md`; kalan tek pürüz: iki learn URL'sinin insan
+  tıklaması — de-mock listede). → **v0.3**
 
 ## versions
 
@@ -78,3 +79,6 @@ _(boş — v0.1 ve v0.2 done'a damgalandı)_
 - **v0.2** — Almanya tam seti: 8 route, 12 kalemli Chancenkarte puan motoru,
   `in`/`any` kriterleri, adaptif information-gain soru akışı, insan-doğrulanmış
   değerler. (2026-09-02)
+- **v0.3** — Gap analizi ekranı: özet şeridi + OPEN/WITHIN REACH/NOT YET
+  grupları, kompakt hold satırları, "bilmiyorum → resmî kaynaktan öğren"
+  kutuları (veriden). (2026-09-02)

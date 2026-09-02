@@ -1,11 +1,11 @@
-# ARCHITECTURE — Visa Navigator (v0.2 itibarıyla)
+# ARCHITECTURE — Visa Navigator (v0.3 itibarıyla)
 
 Her dilim çıkışında güncellenir; her zaman son real-green durumu resmeder.
 
 ```mermaid
 flowchart LR
     subgraph rules["visa-rules (kardeş repo — tek doğruluk kaynağı)"]
-        DATA["data/de.json<br/>8 route · 15 alan<br/>her değer: alıntı+kaynak+tarih+history"]
+        DATA["data/de.json<br/>8 route · 15 alan (+learn kaynakları)<br/>her değer: alıntı+kaynak+tarih+history"]
         SCHEMA["schema/ruleset.schema.json<br/>JSON Schema 2020-12"]
         ENGINE["src/engine + questions<br/>evaluate · deriveBands · points/in/any<br/>remainingQuestions (info-gain + budama)"]
         VALIDATE["src/validate (ajv)<br/>+ cli-validate (ndjson log)"]
@@ -17,7 +17,7 @@ flowchart LR
     end
 
     subgraph device["Kullanıcı cihazı — GÜVEN SINIRI"]
-        UI["Tarayıcı: soru akışı → sonuç ekranı<br/>değerlendirme tamamen client-side"]
+        UI["Tarayıcı: soru akışı → gruplu sonuç ekranı<br/>(özet şeridi · statü grupları · öğren-linkleri)<br/>değerlendirme tamamen client-side"]
     end
 
     DATA --> VALIDATE --> BUILD

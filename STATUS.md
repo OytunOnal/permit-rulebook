@@ -2,21 +2,21 @@
 
 ## Where are we
 
-Genesis, slice loop; ölçek **Product**, sürüm **v0.2 — Almanya tam seti** (KANBAN `## versions`).
+Genesis, slice loop; ölçek **Product**, sürüm **v0.3 — Gap analizi ekranı** (KANBAN `## versions`).
 
 ```mermaid
 flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓*] --> D[Design ✓] --> E[Plan ✓]
-    E --> F["Slice loop ◀ buradayız<br/>v0.1 iskelet ✓ · v0.2 Almanya ✓<br/>sıradaki: gap analizi"]
+    E --> F["Slice loop ◀ buradayız<br/>v0.1 ✓ · v0.2 ✓ · v0.3 ✓<br/>sıradaki: kaynak izleme"]
     F --> G[v1 real-green]
 ```
 
-\* One-pager'a Product gereği **Viability** bölümü ekleniyor (orta back-edge, 2026-09-02).
+\* One-pager Viability bölümüyle tamam (insan onayı 2026-09-02).
 
 ## What is happening now
 
-S2 "Almanya tam seti" **real-green** — insan tüm değerleri resmî kaynaklardan (VPN ile gesetze-im-internet dahil) doğruladı; v0.2 damgalandı. Steward-format defter güncellemeleri uygulandı: KANBAN'a mermaid dilim panosu + `## versions` defteri, ilk `docs/spine/ARCHITECTURE.md`, dilimler yetenek adına geçti. Sırada: (1) one-pager'a Viability bölümü — para/metrik/hedef kararları insanda; (2) "Gap analizi sonuç ekranında" dilimi için boundary: senaryo + değişen sonuç ekranının statik mock'u birlikte onaya gelecek.
+**v0.3 "Gap analizi ekranı" real-green** — özet şeridi, OPEN/WITHIN REACH/NOT YET grupları, kompakt hold satırları ve veriden gelen "bilmiyorum → resmî kaynaktan öğren" kutuları (Anabin, §18g) canlıda; senaryonun 6 adımı tarayıcıda koşuldu, 32 test yeşil. Viability bölümü onaylanıp one-pager'a girdi (affiliate+sponsors modeli, dataset-canlılığı metriği, 1 haftalık v1 temposu). Sırada: "Kaynak izleme + değişiklik bayrağı" boundary'si — DE stabil değer-kaynağı spike'ı dahil.
 
 ## What is expected from you
 
-Viability kapısı 🛑 — para kararı, birincil başarı metriği ve 6-12 ay hedefi (soru seti sunuldu/sunulacak); ardından gap-analizi dilimi senaryo+mock onayı.
+(1) ~1 dk: iki learn linkini tıklayıp açıldığını doğrula (s3 de-mock listesi); (2) sıradaki boundary 🛑: "Kaynak izleme + değişiklik bayrağı" senaryosu onaya gelecek (yeni ekran yok — mock'suz).
