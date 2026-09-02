@@ -19,11 +19,15 @@
   .strip .s-near{border-left:3px solid var(--color-near);color:var(--color-near)}
   .strip .s-hold{border-left:3px solid var(--color-hold);color:var(--color-hold)}
 
-  /* NEW: country sections (design-F pattern promised at the design gate) */
-  .chead{display:flex;justify-content:space-between;align-items:baseline;
+  /* NEW: collapsible country sections (design-F headers; hopeful countries
+     open by default, all-not-yet ones collapsed with the tally visible) */
+  details.country > summary{display:flex;justify-content:space-between;align-items:baseline;cursor:pointer;list-style:none;
     font:700 .78rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-ink);
     border-bottom:2px solid var(--color-ink);padding-bottom:.4rem;margin:1.8rem 0 .8rem}
-  .chead .tally{font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none}
+  details.country > summary::-webkit-details-marker{display:none}
+  details.country > summary::before{content:"▸ ";color:var(--color-muted)}
+  details.country[open] > summary::before{content:"▾ "}
+  .tally{font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none}
 
   .ghead{font:700 .68rem var(--font-sans);letter-spacing:.24em;text-transform:uppercase;color:var(--color-muted);margin:.9rem 0 .5rem}
   .ghead b{color:var(--color-met)} .ghead.near b{color:var(--color-near)}
@@ -42,6 +46,13 @@
   details.route-hold summary{cursor:pointer;display:flex;gap:.8rem;align-items:baseline;list-style:none;font-size:.86rem}
   .hold-name{font:600 .9rem var(--font-serif)}
   .hold-why{color:var(--color-muted);font-size:.78rem;margin-left:auto;text-align:right}
+  .unlock{background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-band);padding:.7rem 1rem;margin:.7rem 0}
+  .unlock h4{font:600 .9rem var(--font-serif)}
+  .unlock h4 b{color:var(--color-band)}
+  .unlock li{list-style:none;font-size:.84rem;color:#54513f}
+  .unlock li::before{content:"→ ";color:var(--color-met);font-weight:700}
+  .unlock li b{color:var(--color-met)}
+  .tally i{font-style:normal;color:var(--color-band)}
 </style>
 </head>
 <body>
@@ -55,7 +66,7 @@
     <span class="s-hold">9 not yet</span>
   </div>
 
-  <div class="chead">Germany <span class="tally">2 open · 1 within reach · 5 not yet</span></div>
+  <details class="country" open><summary>Germany <span class="tally">2 open · 1 within reach · 5 not yet</span></summary><div>
   <div class="ghead"><b>Open</b></div>
   <article class="route">
     <div class="top"><h3>EU Blue Card — shortage occupation</h3><span class="st met">Criteria met</span></div>
@@ -69,8 +80,13 @@
     <div class="src">“große Blaue Karte EU: 50.700 Euro” · arbeitsagentur.de · <b>read 2026-09-01</b></div>
   </article>
   <details class="route-hold"><summary><span class="hold-name">Opportunity Card (Chancenkarte)</span><span class="hold-why">Not met: situation</span></summary></details>
+  <article class="unlock">
+    <h4>With <b>a research hosting agreement</b></h4>
+    <ul><li>Researcher (§ 18d) — <b>criteria met</b></li></ul>
+  </article>
 
-  <div class="chead">Netherlands <span class="tally">1 open · 1 within reach · 2 not yet</span></div>
+  </div></details>
+  <details class="country" open><summary>Netherlands <span class="tally">1 open · 1 within reach · 2 not yet</span></summary><div>
   <div class="ghead"><b>Open</b></div>
   <article class="route">
     <div class="top"><h3>Highly Skilled Migrant</h3><span class="st met">Criteria met</span></div>
@@ -84,11 +100,18 @@
     <div class="src">“EU Blue Card: €5,942.00” · ind.nl · <b>read 2026-09-03</b></div>
   </article>
 
-  <div class="chead">France <span class="tally">2 not yet</span></div>
+  </div></details>
+  <details class="country"><summary>France <span class="tally">2 not yet · <i>1 unlocking step</i></span></summary><div>
   <details class="route-hold"><summary><span class="hold-name">Talent — qualified employee</span><span class="hold-why">Not met: French contract</span></summary></details>
+  <article class="unlock">
+    <h4>With <b>a French employment contract</b></h4>
+    <ul><li>Talent — qualified employee — <b>criteria met</b> (your band clears €39,582)</li></ul>
+  </article>
 
-  <div class="chead">Spain <span class="tally">2 not yet — 1 has an open unknown</span></div>
+  </div></details>
+  <details class="country"><summary>Spain <span class="tally">2 not yet — 1 has an open unknown</span></summary><div>
   <details class="route-hold"><summary><span class="hold-name">Highly Qualified Professional (Ley 14/2013)</span><span class="hold-why">Unknown: recognition in Spain</span></summary></details>
+  </div></details>
 </div>
 </body>
 </html>
