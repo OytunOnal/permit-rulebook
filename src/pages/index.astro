@@ -299,7 +299,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const strip = `<div class="strip" aria-label="Summary">
           <span class="s-met">${byStatus.met.length} open</span>
           <span class="s-near">${byStatus.near.length} within reach</span>
-          <span class="s-hold">${byStatus.hold.length} not yet${openUnknowns ? ` — ${openUnknowns} has an open unknown` : ""}</span>
+          <span class="s-hold">${byStatus.hold.length} not yet${openUnknowns ? ` — ${openUnknowns} ${openUnknowns === 1 ? "has" : "have"} an open unknown` : ""}</span>
         </div>`;
 
       const section = (title: string, cls: string, inner: string, count: number) =>
