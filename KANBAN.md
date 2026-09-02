@@ -23,9 +23,6 @@ flowchart LR
   siteye VPN'le erişip doğruladı; ajanlar erişemiyordu — pipeline kaynak
   seçiminde not).
 - **45+ yaş kurallarını (55% eşiği) kriter modeline al** (S2'de nota indirgendi)
-- **Gap analizi sonuç ekranında** (s3) · met/near/hold gruplu tam sonuç
-  ekranı; "bilmiyorum" alanlarına "şuradan öğren" resmî-kaynak linki (DE
-  denklik → Anabin); ülke-grubu başlıkları (tasarım F'den). _Sınar: A9._
 - **Kaynak izleme + değişiklik bayrağı** (s4) · Önce spike: DE stabil değer
   kaynağı (headless / duyuru indeksi / insan-okur). Sonra NL+FR+DE izle+
   hash/diff+issue, ES PDF hash. _Sınar: A13, A3 çözümü._
@@ -54,7 +51,9 @@ flowchart LR
 
 ## active
 
-_(boş — "Gap analizi sonuç ekranında" boundary session bekliyor)_
+- **Gap analizi sonuç ekranında** (s3) · Senaryo+mock onaylı (2026-09-02,
+  `docs/spine/scenarios/s3.md`). Özet şeridi, statü grupları, kompakt hold
+  satırları, veriden gelen "bilmiyorum → öğren" linkleri. _Sınar: A9._
 
 ## mock-green
 

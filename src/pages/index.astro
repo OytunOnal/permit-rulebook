@@ -185,6 +185,55 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       return lines.length ? `<div class="srcs">${lines.join("")}</div>` : "";
     }
 
+    // s3: "I don't know" answers get an official find-out link — driven by the
+    // dataset's field `learn` sources, never hardcoded in the UI.
+    function learnBoxFor(r: RouteResult): string {
+      const links = r.unknown_fields
+        .filter((f) => answers[f] !== undefined)
+        .map((f) => ds.fields.find((d) => d.id === f)?.learn)
+        .filter((l): l is { label: string; url: string } => !!l);
+      if (!links.length) return "";
+      return `<div class="learn">You can find out yourself: ${links
+        .map((l) => `<a href="${esc(l.url)}" rel="noopener">${esc(l.label)}</a>`)
+        .join(" · ")}.</div>`;
+    }
+
+    function fullCard(r: RouteResult): string {
+      return `
+        <article class="route">
+          <div class="top">
+            <div><span class="country">${esc(ds.countries.find((c) => c.code === r.country)?.name ?? r.country)}</span>
+              <h3>${esc(r.route.name)}</h3></div>
+            <span class="st ${r.status}">${STATUS_LABEL[r.status]}</span>
+          </div>
+          <p class="why">${whyFor(r)}</p>
+          ${r.points ? `<div class="ptsline"><b>Points ${r.points.scored} of ${r.points.required}</b>${
+            r.points.items.length ? " — " + r.points.items.map((i) => `${esc(SHORT[i.field] ?? i.field)} +${i.points}`).join(" · ") : ""
+          }</div>` : ""}
+          ${r.status !== "hold" ? railFor(r) : ""}
+          ${r.status === "near" && r.gap_max ? `<div class="gapnote"><b>Gap: up to ${formatEUR(Math.round(r.gap_max))}.</b> A route with a lower threshold may already apply — check the other cards.</div>` : ""}
+          ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Gap: ${r.gap_points} point${r.gap_points === 1 ? "" : "s"} short.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
+          ${learnBoxFor(r)}
+          <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" rel="noopener">Official page</a></div>
+        </article>`;
+    }
+
+    function holdRow(r: RouteResult): string {
+      const hasUnknown = r.unknown_fields.some((f) => answers[f] !== undefined);
+      const why = whyFor(r);
+      const short = why.split(". ")[0].replace(/\.$/, "");
+      const fullWhy = short === why.replace(/\.$/, "") ? "" : `<p class="why">${why}</p>`;
+      return `
+        <details class="route-hold"${hasUnknown ? " open" : ""}>
+          <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(r.route.name)}</span><span class="hold-why">${short}</span></summary>
+          <div class="hold-body">
+            ${fullWhy}
+            ${learnBoxFor(r)}
+            <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" rel="noopener">Official page</a></div>
+          </div>
+        </details>`;
+    }
+
     function renderResults() {
       const results = evaluate(ds, answers);
       const met = results.filter((r) => r.status === "met").length;
@@ -204,22 +253,27 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       renderDeclaration(null);
       app.dataset.state = "results";
 
-      main.innerHTML = `<div class="stack">` + results.map((r) => `
-        <article class="route">
-          <div class="top">
-            <div><span class="country">${esc(ds.countries.find((c) => c.code === r.country)?.name ?? r.country)}</span>
-              <h3>${esc(r.route.name)}</h3></div>
-            <span class="st ${r.status}">${STATUS_LABEL[r.status]}</span>
-          </div>
-          <p class="why">${whyFor(r)}</p>
-          ${r.points ? `<div class="ptsline"><b>Points ${r.points.scored} of ${r.points.required}</b>${
-            r.points.items.length ? " — " + r.points.items.map((i) => `${esc(SHORT[i.field] ?? i.field)} +${i.points}`).join(" · ") : ""
-          }</div>` : ""}
-          ${r.status !== "hold" ? railFor(r) : ""}
-          ${r.status === "near" && r.gap_max ? `<div class="gapnote"><b>Gap: up to ${formatEUR(Math.round(r.gap_max))}.</b> A route with a lower threshold may already apply — check the other cards.</div>` : ""}
-          ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Gap: ${r.gap_points} point${r.gap_points === 1 ? "" : "s"} short.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
-          <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" rel="noopener">Official page</a></div>
-        </article>`).join("") + `</div>`;
+      const byStatus = {
+        met: results.filter((r) => r.status === "met"),
+        near: results.filter((r) => r.status === "near"),
+        hold: results.filter((r) => r.status === "hold"),
+      };
+      const openUnknowns = byStatus.hold.filter((r) =>
+        r.unknown_fields.some((f) => answers[f] !== undefined)).length;
+
+      const strip = `<div class="strip" aria-label="Summary">
+          <span class="s-met">${byStatus.met.length} open</span>
+          <span class="s-near">${byStatus.near.length} within reach</span>
+          <span class="s-hold">${byStatus.hold.length} not yet${openUnknowns ? ` — ${openUnknowns} has an open unknown` : ""}</span>
+        </div>`;
+
+      const section = (title: string, cls: string, inner: string, count: number) =>
+        count ? `<div class="ghead ${cls}"><b>${title}</b> (${count})</div><div class="stack">${inner}</div>` : "";
+
+      main.innerHTML = strip +
+        section("Open — criteria met", "", byStatus.met.map(fullCard).join(""), byStatus.met.length) +
+        section("Within reach", "near", byStatus.near.map(fullCard).join(""), byStatus.near.length) +
+        section("Not yet", "hold", byStatus.hold.map(holdRow).join(""), byStatus.hold.length);
     }
 
     restart.addEventListener("click", (e) => {
@@ -269,6 +323,25 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       padding:.7rem .9rem;cursor:pointer;color:var(--color-ink)}
     .opt:hover{border-color:var(--color-ink);background:var(--color-band-soft)}
     .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.85rem}
+
+    /* Result summary + groups (s3) */
+    .strip{display:flex;gap:.6rem;margin:0 0 .4rem;flex-wrap:wrap}
+    .strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase;padding:.45rem .8rem;border:var(--rule-soft);background:var(--color-card)}
+    .strip .s-met{border-left:3px solid var(--color-met);color:var(--color-met)}
+    .strip .s-near{border-left:3px solid var(--color-near);color:var(--color-near)}
+    .strip .s-hold{border-left:3px solid var(--color-hold);color:var(--color-hold)}
+    .ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
+      border-bottom:var(--rule-soft);padding-bottom:.35rem;margin:1.4rem 0 .8rem}
+    .ghead b{color:var(--color-met)} .ghead.near b{color:var(--color-near)} .ghead.hold b{color:var(--color-hold)}
+    details.route-hold{background:var(--color-card);border:var(--rule-soft);padding:.55rem .9rem}
+    details.route-hold summary{cursor:pointer;display:flex;gap:.8rem;align-items:baseline;list-style:none;font-size:.88rem}
+    details.route-hold summary::-webkit-details-marker{display:none}
+    .hold-name{font:600 .92rem var(--font-serif)}
+    .hold-why{color:var(--color-muted);font-size:.8rem;margin-left:auto;text-align:right}
+    .hold-body{padding:.6rem 0 .3rem;border-top:var(--rule-dotted);margin-top:.5rem}
+    .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
+    .learn a{color:var(--color-band);font-weight:600;text-decoration:none}
+    .learn a::after{content:" ↗"}
 
     /* Result cards */
     .stack{display:grid;gap:var(--gap-cards)}

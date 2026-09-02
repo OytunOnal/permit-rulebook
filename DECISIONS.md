@@ -216,3 +216,25 @@ dosya adı); KANBAN mermaid dilim panosu + `## versions` defteri;
 şartı → **orta back-edge** açıldı (kanıt: skill güncellemesi + Product
 gereksinimi; para/metrik/hedef kararları insana kapıyla sorulacak); yeni
 ekran getiren dilimlerde senaryoyla birlikte statik mock onayı.
+
+---
+
+## 2026-09-02 — Viability onaylandı 🛑 (kapı, insan)
+
+Kararlar insanın: **para** = şeffaf affiliate (mecburi hizmetler; etiketli,
+çok sağlayıcılı, karara etkisiz) + GitHub Sponsors ilk günden; izlemesiz
+reklam yalnız 25-50k/ay eşiğinde; AdSense hiç. **Metrik** = dataset
+canlılığı (≤48s işleme + kapsam). **Hedef** = insanın temposu: v1 ≈ 1 hafta,
+dalga 2 ≈ +2 hafta. Kitle çapası BAMF'tan temellendi (41.000+ ilk Blue Card
+2023; genişletme çıkarım işaretli); kitle *tanımı* grill'deki haliyle insanca
+teyit edildi. DA deltada 2 bulgu verdi, ikisi düzeltildi (tek-küratör riski
+açık; affiliate sınırı açık).
+
+## 2026-09-02 — s3 boundary onayı 🛑 (kapı, insan)
+
+"Gap analizi sonuç ekranında" senaryosu (6 adım) + ekran mock'u
+(`docs/spine/design/s3-results.html`: özet şeridi, OPEN/WITHIN REACH/NOT YET
+grupları, kompakt hold satırları, veriden gelen "bilmiyorum → öğren" kutusu)
+birlikte onaylandı. İlk turda insan ekranın bağlamını sordu; mock'un yalnız
+sağ kolonu (değişen kısım) gösterdiği, "You declared" panelinin yerinde
+kaldığı netleştirilip onay alındı.
