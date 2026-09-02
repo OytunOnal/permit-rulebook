@@ -27,9 +27,9 @@ Product sonucu: non-negotiable taban (structured log, hata görünürlüğü, se
 1. **İlk kullanıcı = kullanıcının kendisi; kitle vatandaşlıkla sınırlanmaz.** Herkes genel "3. ülke" hattından doğru cevap alır; istisna küratörlüğü (TR + DE'nin ayrıcalıklı erişim listesi) v1'de, gerisi additive. Arayüz v1'de EN.
 2. **Başarı ölçütü:** birincil = canlı/tarihli/kaynaklı açık dataset kalitesi (portfolyo), ikincil = organik kullanım. Topluluk katkısı hedef değil yan ürün.
 3. **v1 kapsamı: DE/FR/ES/NL derin** (ülke başı 6-8 istihdam route'u). Dalga 2 = CA+AU (puan sistemleri modele tam uyar), dalga 3 = diğer Avrupa (pipeline+topluluk), **ABD = ayrı karar** (kura/işveren-süreci determinizmi kırar; girerse ayrı route tipiyle). Gerekçe: "canlı" sözü izlenen sayfa sayısıyla doğrusal maliyet; geniş+derin+canlı üçü birden v1'de tutulamaz (bkz. varsayım A2).
-4. **LLM rolü = build-time cila.** Soru kümesi/seçenekler/sıra koddan türer; LLM yalnız ifadeyi insanlaştırır, çıktı commit'lenir. Uygunluk kararı ve v1 sonuç metni deterministik. Runtime RAG yok; "route hakkında soru sor" (alıntı-temelli) v1.x backlog'una.
+4. **LLM rolü = build-time cila.** Soru kümesi/seçenekler/sıra koddan türer; LLM yalnız ifadeyi insanlaştırır, çıktı commit'lenir. Uygunluk kararı ve v1 sonuç metni deterministik. Runtime RAG yok; "route hakkında soru sor" (alıntı-temelli) v1.x backlog'una. → Graduated to ADR: `docs/adr/0001-eligibility-computed-by-code-never-llm.md`
 5. **Pipeline v1 kesiti = izle + hash/diff + bayrak** (değişiklikte otomatik issue; insan alıntı+tarihle günceller). LLM'li çıkarım + kod doğrulama + otomatik PR = v1.x.
-6. **Mimari: sıfır backend.** Statik site, engine tarayıcıda, pipeline dataset repo'sunun CI cron'unda; kişisel veri makineden çıkmaz. Ölçüm gerekirse veri-toplamayan sayaç sonradan.
+6. **Mimari: sıfır backend.** Statik site, engine tarayıcıda, pipeline dataset repo'sunun CI cron'unda; kişisel veri makineden çıkmaz. Ölçüm gerekirse veri-toplamayan sayaç sonradan. → Graduated to ADR: `docs/adr/0003-zero-backend-client-side-evaluation.md`
 7. **İki repo:** `visa-rules` (şema+dataset+engine+pipeline) + `visa-navigator` (statik site). Topluluk sözleşmesi olacak repo tarihçesini baştan kendi repo'sunda biriktirir.
 8. **Lisans: dataset CC-BY-4.0, kod MIT.** Amaç yayılım+atıf, ticari engelleme değil.
 9. **Stack: TypeScript + JSON dataset (JSON Schema sınır doğrulaması) + Astro.**
@@ -46,6 +46,7 @@ Sunulan alternatifler: ES'yi dalga 2'ye itmek, pivot (önce yalnız dataset), du
 **Gerekçe (research-01 bulgularıyla):**
 - Boşluk duruyor ve keskinleşti: per-value tarih+alıntı × açık veri × AB
   çalışma izinleri kombinasyonunu kimse yapmıyor (A2 zayıflamış hali + A7).
+  → Graduated to ADR: `docs/adr/0002-per-value-provenance-enforced-by-schema.md`
 - Talep kanıtı güçlü: run-abroad 3 haftada 491★; awesome-immigration 1.491★.
 - Hukuki konum Smartlaw içtihadıyla destekli, koşullar tasarıma girdi (A1).
 - Maliyet düzeltmeleri kabul edildi: ~40 route (A5 revize), bot-blocking'e
@@ -280,6 +281,8 @@ route'u öldürmez** — yalnız gap'siz "hard fail" öldürür; görüşme sür
 sonda "within reach — Gap: up to €1.091 — monthly funds" olur. Beklenmedik
 güzel yan etki: info-gain, artık kimseyi elemediği için fon sorusunu geriye
 attı. Gap notu alan-farkında oldu. 45 test; akış tarayıcıda doğrulandı.
+→ Graduated (with the improvable-fail rule) to ADR:
+`docs/adr/0004-bounded-gaps-keep-the-interview-alive.md`
 
 ---
 
@@ -319,3 +322,33 @@ pointers; `tdd` + `code-review` are non-negotiable slice exits (skips need a
 DECISIONS entry plus a compensating surface check). Deferral-fork rule noted:
 s4 (the riskiest slice, deferred three boundaries) is being entered now
 rather than deferred again.
+
+---
+
+## 2026-09-02 — s4 Part 0 spike: DE stable value source (resolved, no headless needed)
+
+Live probe: the ZAV newsletter **index page**
+(arbeitsagentur.de/…/newsletter-iss) is on a stable URL, plain-fetchable, and
+lists all editions ("Ausgabe 01/2025 … 04/2026"). Decision: DE watch strategy =
+(1) sentinel watch on the index — a new edition appearing raises a "new ZAV
+edition, check thresholds" flag (human reads; ~quarterly); (2) content watch
+on the known value pages (03-2026/blaue-karte, 04-2026/berufserfahrene), both
+confirmed plain-fetchable. Candidates (c) headless and (d) human-tier not
+needed for DE. gesetze-im-internet.de stays a human-tier reminder entry
+(agents blocked, human reachable via VPN).
+
+---
+
+## 2026-09-02 — steward-3+4 additions adopted; remotes wired
+
+Verified in the skill files: (1) target-project `CONTEXT.md` in the
+domain-modeling format, retrofitted with the coined domain terms (route,
+criterion, provenance, band, open unknown, met/within reach/not yet, bounded
+gap vs hard fail, attribute/path/improvable, leverage step, watch
+vocabulary); new terms land there at every slice exit. (2) ADR graduation:
+four DECISIONS entries met all three criteria (hard to reverse, surprising
+without context, real trade-off) and graduated to `docs/adr/0001–0004`; their
+log lines now carry pointers. (3) Steward triage labels (`bug` /
+`design-flaw` / `new-need`) created on both GitHub repos. (4) Remotes exist
+(github.com/OytunOnal/visa-rules, /visa-navigator) — pushing to origin from
+now on, per the human's instruction.

@@ -27,9 +27,6 @@ flowchart LR
   verified them via VPN; agents cannot reach the official site — relevant to
   s4 source selection).
 - **Model the 45+ age rules (55% threshold) as criteria** (currently notes).
-- **Source watch + change flag** (s4) · Spike first: stable DE value source
-  (headless / announcement index / human-read tier). Then watch + hash/diff +
-  flag for NL+FR+DE, ES PDF hash. _Tests A13, resolves A3._
 - **Four countries filled: FR·ES·NL** (s5) · ~35–40 routes, written per-country
   exclusion lists; CI schema enforcement. _Tests revised A5, A12, A4._
 - **Public launch** (s6) · `visa-rules` public (CC-BY-4.0, CONTRIBUTING,
@@ -55,7 +52,10 @@ flowchart LR
 
 ## active
 
-_(empty — "Source watch + change flag" boundary session in progress)_
+- **Source watch + change flag** (s4) · Scenario approved & run
+  (`docs/spine/scenarios/s4.md`): spike resolved (no headless), live run
+  green, 65 tests. Awaiting the mandatory code-review exit before the
+  real-green stamp.
 
 ## mock-green
 
