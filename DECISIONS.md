@@ -258,3 +258,17 @@ yalnız *mevcut cevaplarla karara bağlanabilen* route'ları listeler
 kriter-bazlı "gereken: X · beyanın: Y" dökümü de bu turda eklendi (insan
 bulgusu: açılan satır boştu). Commit'ler: `visa-rules@76255f4`,
 `visa-navigator@c654fc5,e5b42ff`.
+
+**Uzantı (insan sorusu, aynı gün) → v0.5:** "Neden yalnız situation? Dil
+öğrenmesi, para biriktirmesi gerekenler?" — kaldıraç, eylemle değiştirilebilir
+her alana genellendi (`kind: improvable`: dil, para, maaş, deneyim, denklik;
+yaş/vatandaşlık attribute kalır — asla önerilmez). Yön filtresi bedava: düşüş
+hiçbir route açmadığından satırı kendiliğinden yok. Tek-adım dürüstlüğü
+korunur: cevaplanmamış alanlara yaslanan "açılır" iddiası yapılmaz (dilsiz
+profile "A1 yeter" değil, ancak kanıtlanabilen "B2 → met" gösterildi;
+tarayıcıda doğrulandı). Yan kazanım: `language_base` sorusu veri çelişkisi
+üretebiliyordu ("hayır" + Almanca A2), kaldırıldı — taban-dil şartı §20a'daki
+haliyle any(Almanca A1+ / İngilizce B2+) olarak dil seviyelerinden türüyor;
+soru sayısı 15→14. Qualification bilinçli olarak improvable YAPILMADI
+("üniversite bitir" önerisi kapsam dışı; ileride tartışılabilir). 43 test.
+Commit'ler: `visa-rules@c5d2a49`, `visa-navigator@2b74eba`.

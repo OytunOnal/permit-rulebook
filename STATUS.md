@@ -2,12 +2,12 @@
 
 ## Where are we
 
-Genesis, slice loop; ölçek **Product**, sürüm **v0.4 — Kaldıraç analizi** (KANBAN `## versions`).
+Genesis, slice loop; ölçek **Product**, sürüm **v0.5 — Genel kaldıraç analizi** (KANBAN `## versions`).
 
 ```mermaid
 flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓*] --> D[Design ✓] --> E[Plan ✓]
-    E --> F["Slice loop ◀ buradayız<br/>v0.1-v0.4 ✓<br/>sıradaki: kaynak izleme"]
+    E --> F["Slice loop ◀ buradayız<br/>v0.1-v0.5 ✓<br/>sıradaki: kaynak izleme"]
     F --> G[v1 real-green]
 ```
 
@@ -15,7 +15,7 @@ flowchart LR
 
 ## What is happening now
 
-**v0.4 "Kaldıraç analizi" real-green** — insan sorusundan doğan mini dilim aynı gün kapandı: sonuç ekranında "If your situation changes" bölümü her alternatif adımın *gerçekten* açacağı route'ları karşı-olgusal değerlendirmeyle listeliyor (yalnız mevcut cevaplarla karara bağlanabilenler — bilinmeyen "açılır" sayılmaz); iş-arama kartı köprü notu; hold satırlarında kriter-bazlı "gereken/beyanın" dökümü (önceki insan bulgusu). 38 test yeşil. Sırada: "Kaynak izleme + değişiklik bayrağı" boundary'si — DE stabil değer-kaynağı spike'ı dahil.
+**v0.5 real-green** — kaldıraç analizi, ikinci insan sorusuyla ("dil öğrenmesi, para biriktirmesi gerekenler?") tüm değiştirilebilir alanlara genellendi: "Steps that would unlock more" bölümü artık dil/para/maaş/deneyim/denklik adımlarının *kanıtlanabilir* açtıklarını listeliyor ("With German B2 → Chancenkarte met"); düşüş-önerisi yapısal olarak imkânsız; language_base sorusu kaldırılıp taban-dil şartı §20a'ya sadık any(DE A1+/EN B2+) olarak türetildi (14 soru). 43 test; dilsiz-gezgin akışı tarayıcıda doğrulandı. Sırada: "Kaynak izleme + değişiklik bayrağı" (s4) boundary'si.
 
 ## What is expected from you
 
