@@ -401,3 +401,27 @@ Build decisions inside the approved s5 scenario, each reversible and logged:
 7. **Countries the destination rules out disappear from results** — their
    routes fail on a fact the user chose, which is not information. Single
    destination keeps the flat v0.5 layout; multi gets country sections.
+
+---
+
+## 2026-09-02 — s5 review round + the uppercase catch (human report)
+
+Code review (visa-rules 891ed60^..HEAD, medium) returned 10 findings; 8 fixed,
+1 mitigated (frozen bands + immutability contract), 1 promoted to backlog
+(criterion-note provenance). The two that mattered most were both silent
+product lies: (a) pooled band edges made German "within reach" verdicts depend
+on which OTHER countries had nearby thresholds — bounded-gap semantics now
+ignore adjacency entirely; (b) the qualifier fork admitted any attribute enum,
+producing advice like "a job offer · under 30" — forks now require an explicit
+is_qualifier mark in the dataset. schema_version bumped to 0.2.0 for the
+band-id/option renames. Fixed in visa-rules@8757cc8.
+
+Separately the human reported "why is everything uppercase and bigger?" on the
+multi-country screen: the new country section reused class "country", which is
+also the small uppercase chip on route cards — text-transform and
+letter-spacing inherited into the whole section. Renamed to country-sec.
+Verification workflow while the Chrome extension was down: headless-Chrome
+screenshots via a dev-only ?dev-profile= hook (stripped from prod builds by
+import.meta.env.DEV) — also how the destination-first scenario deviation was
+caught on screen. astro check wired into the navigator build after it found a
+real bug (failing any-criteria rendered "Not met: undefined").
