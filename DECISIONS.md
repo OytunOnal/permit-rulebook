@@ -352,3 +352,52 @@ log lines now carry pointers. (3) Steward triage labels (`bug` /
 `design-flaw` / `new-need`) created on both GitHub repos. (4) Remotes exist
 (github.com/OytunOnal/visa-rules, /visa-navigator) — pushing to origin from
 now on, per the human's instruction.
+
+---
+
+## 2026-09-02 — s5 boundary approved 🛑 (gate, human; three iterations)
+
+"Four countries filled: FR·ES·NL" scenario + country-grouped mock approved
+after three human-driven refinements at the boundary: (1) collapsible country
+sections — hopeful countries open, all-not-yet collapsed with tallies;
+(2) leverage preserved per country, rendered inside the owning country's
+section, with collapsed-section tallies carrying an "unlocking step" hint so
+a closed panel never hides hope; (3) unlock wording made conditional ("would
+be met" / "would come within reach") — the human caught that "criteria met"
+read as an achievement; fixed in the live v0.5 UI in the same commit. Design
+decisions locked: destination question (attribute; single country skips other
+countries' questions entirely), country-scoped fields, NL salaries stay
+monthly with own bands, committed per-country exclusion lists. Real-green
+requires the human VPN verification pass over FR/ES/NL sources.
+
+---
+
+## 2026-09-02 — s5 in-slice defaults (Spine chose; surfacing at this boundary)
+
+Build decisions inside the approved s5 scenario, each reversible and logged:
+
+1. **age_band split at 30** (u30 / 30–35 / 36–40 / over 40): NL HSM tiers
+   break at 30; both under-35 options keep 2 Chancenkarte points (Anlage says
+   under 35). One age question serves all four countries.
+2. **Reduced thresholds not modeled** (NL HSM €3,122 / NL Blue Card €4,754 /
+   ES Blue Card €33,085.09): each needs a "recent graduation" or
+   shortage-catalogue field; noted in route summaries + exclusions.md,
+   backlog for a later pass. ES SEPE catalogue URL still unverified.
+3. **FR ICT resources floor rides the monthly-salary field** with an explicit
+   note (fiche frames it as « justificatif de ressources », SMIC-indexed) —
+   a separate resources question for one route wasn't worth the bloat.
+4. **Unlocks qualifier fork**: a path-step counterfactual blocked ONLY by one
+   unanswered attribute enum (situation_country for destination=all
+   explorers) forks per option — rows read "a job offer in Spain"; both
+   assumptions stated, every route fully proven. Plain rows keep the exact
+   single-step oracle; qualifier rows got their own property-test oracle.
+5. **deriveBands memoized per dataset** after the 4-country dataset pushed the
+   property suite to 146s and broke vitest worker heartbeats; suite now 5.5s.
+   thresholdsForField also walks nested any-paths (NL ICT thresholds).
+6. **Watch slice hardening** (found live): buzer.de serves rotating ad
+   variants per request — three page hashes, identical legal text. Watch
+   entries can now hash only the region between two markers; a missing marker
+   reports unreachable, never silent no-change. Buzer re-baselined sliced.
+7. **Countries the destination rules out disappear from results** — their
+   routes fail on a fact the user chose, which is not information. Single
+   destination keeps the flat v0.5 layout; multi gets country sections.

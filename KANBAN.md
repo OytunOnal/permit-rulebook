@@ -27,8 +27,6 @@ flowchart LR
   verified them via VPN; agents cannot reach the official site — relevant to
   s4 source selection).
 - **Model the 45+ age rules (55% threshold) as criteria** (currently notes).
-- **Four countries filled: FR·ES·NL** (s5) · ~35–40 routes, written per-country
-  exclusion lists; CI schema enforcement. _Tests revised A5, A12, A4._
 - **Public launch** (s6) · `visa-rules` public (CC-BY-4.0, CONTRIBUTING,
   coverage tiers), site deploy, per-route micro-pages, disclaimer/legal
   wording (A1 conditions), GitHub/HN launch. _Tests A2, A7, A8 for real._
@@ -52,7 +50,11 @@ flowchart LR
 
 ## active
 
-_(empty — "Four countries filled: FR·ES·NL" boundary session is next)_
+- **Four countries filled: FR·ES·NL** (s5) · Scenario+mock approved
+  2026-09-02 (`docs/spine/scenarios/s5.md`): destination question,
+  country-scoped fields, NL monthly bands, exclusion lists, collapsible
+  country sections with per-country leverage + hint tallies, conditional
+  unlock wording. Real-green awaits the human verification pass.
 
 ## mock-green
 

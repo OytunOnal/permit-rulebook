@@ -5,11 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro check && astro build",
     "preview": "astro preview"
   },
   "dependencies": {
     "astro": "^7.2.10",
     "visa-rules": "file:../visa-rules"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^6.0.3"
   }
 }
+

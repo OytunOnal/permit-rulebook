@@ -1,6 +1,6 @@
 ---
 import "../../tokens.css";
-import rawDataset from "visa-rules/data/de.json";
+import rawDataset from "visa-rules/data/dataset.json";
 import { assertValidDataset } from "visa-rules/validate";
 import { datasetMeta } from "visa-rules";
 
@@ -48,7 +48,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   </div>
 
   <script>
-    import dataset from "visa-rules/data/de.json";
+    import dataset from "visa-rules/data/dataset.json";
     import {
       deriveQuestions, remainingQuestions, evaluate, formatEUR, routeProvenance,
       thresholdsForField, deriveBands, unlocks, type Dataset, type Profile, type RouteResult,
@@ -67,12 +67,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).replaceAll("/", " · ");
 
     const SHORT: Record<string, string> = {
+      destination: "Destination", situation_country: "Offer country",
       citizenship: "Citizenship", situation: "Situation", qualification: "Qualification",
       recognition_de: "Recognition", experience: "Experience",
       occupation_shortage: "Shortage list", occupation_it: "IT work",
-      salary_eur_year: "Salary", german: "German",
+      salary_eur_year: "Salary", salary_eur_month: "Monthly salary", german: "German",
       english: "English", age_band: "Age", de_stay6m: "Stay in DE",
       partner_ck: "Partner", funds_eur_month: "Monthly funds",
+      fr_degree: "French degree", nl_grad3y: "NL/top-200 degree",
     };
     const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
 
@@ -165,7 +167,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         return r.gap_points
           ? "The points requirement is within reach — the ladder below shows your score."
           : "The threshold sits above your declared band.";
-      const missing = r.criteria.filter((c) => c.outcome === "fail").map((c) => SHORT[c.criterion.field] ?? c.criterion.field);
+      const missing = r.criteria.filter((c) => c.outcome === "fail").map((c) =>
+        "field" in c.criterion ? (SHORT[c.criterion.field] ?? c.criterion.field)
+        : c.criterion.op === "any" ? (c.criterion.label ?? "requirements")
+        : "points requirement");
       // Only fields the user explicitly answered "I don't know" — a question
       // skipped because the route was already dead is not an unknown, it was
       // never asked.
@@ -226,11 +231,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       return rows.length ? `<ul class="faildetail">${rows.join("")}</ul>` : "";
     }
 
-    function fullCard(r: RouteResult): string {
+    function fullCard(r: RouteResult, showCountry = true): string {
       return `
         <article class="route">
           <div class="top">
-            <div><span class="country">${esc(ds.countries.find((c) => c.code === r.country)?.name ?? r.country)}</span>
+            <div>${showCountry ? `<span class="country">${esc(ds.countries.find((c) => c.code === r.country)?.name ?? r.country)}</span>` : ""}
               <h3>${esc(r.route.name)}</h3></div>
             <span class="st ${r.status}">${STATUS_LABEL[r.status]}</span>
           </div>
@@ -269,10 +274,46 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         </details>`;
     }
 
+    function unlockTitle(u: ReturnType<typeof unlocks>[number]): string {
+      const def = ds.fields.find((d) => d.id === u.field);
+      let title = (u.option.short ?? u.option.label) +
+        (def?.type === "money_band" ? ` — ${(SHORT[u.field] ?? u.field).toLowerCase()}` : "");
+      if (u.qualifier)
+        title += u.qualifier.field === "situation_country"
+          ? ` in ${u.qualifier.option.label}`
+          : ` · ${u.qualifier.option.label}`;
+      return title;
+    }
+
+    function unlockCard(u: ReturnType<typeof unlocks>[number], routes: RouteResult[]): string {
+      return `
+        <article class="unlock">
+          <h4>With <b>${esc(unlockTitle(u))}</b></h4>
+          <ul>${routes.map((r) =>
+            `<li>${esc(r.route.name)} — ${r.status === "met"
+              ? `<b>would be met</b>`
+              : `<i>would come within reach${r.gap_max ? ` (${formatEUR(Math.round(r.gap_max))})` : r.gap_points ? ` (${r.gap_points} pt${r.gap_points === 1 ? "" : "s"} more)` : ""}</i>`}</li>`).join("")}
+          </ul>
+        </article>`;
+    }
+
     function renderResults() {
-      const results = evaluate(ds, answers);
-      const met = results.filter((r) => r.status === "met").length;
-      const near = results.filter((r) => r.status === "near");
+      // s5: countries the destination answer rules out disappear entirely —
+      // their routes fail on a fact the user chose, which is not information.
+      const dest = answers["destination"];
+      const visible = ds.countries.filter((c) =>
+        dest === undefined || dest === "all" || c.code.toLowerCase() === dest);
+      const visibleCodes = new Set(visible.map((c) => c.code));
+      const results = evaluate(ds, answers).filter((r) => visibleCodes.has(r.country));
+
+      const byStatus = {
+        met: results.filter((r) => r.status === "met"),
+        near: results.filter((r) => r.status === "near"),
+        hold: results.filter((r) => r.status === "hold"),
+      };
+      const met = byStatus.met.length;
+      const near = byStatus.near;
+      const metCountries = new Set(byStatus.met.map((r) => r.country));
 
       const nearNote = near.length
         ? near[0].gap_max
@@ -281,20 +322,17 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             ? ` <b>One is ${near[0].gap_points} point${near[0].gap_points === 1 ? "" : "s"} away.</b>`
             : ""
         : "";
-      headline.innerHTML = `${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open.` + nearNote;
+      const across = metCountries.size > 1 ? ` across ${metCountries.size} countries` : "";
+      headline.innerHTML = `${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open${across}.` + nearNote;
       subline.textContent = `Code compared your ${history.length} answer${history.length === 1 ? "" : "s"} against ${results.length} published rule sets. ` +
         `Every value below shows its official quote and the date it was read.`;
 
       renderDeclaration(null);
       app.dataset.state = "results";
 
-      const byStatus = {
-        met: results.filter((r) => r.status === "met"),
-        near: results.filter((r) => r.status === "near"),
-        hold: results.filter((r) => r.status === "hold"),
-      };
-      const openUnknowns = byStatus.hold.filter((r) =>
-        r.unknown_fields.some((f) => answers[f] !== undefined)).length;
+      const openUnknownCount = (rs: RouteResult[]) =>
+        rs.filter((r) => r.status === "hold" && r.unknown_fields.some((f) => answers[f] !== undefined)).length;
+      const openUnknowns = openUnknownCount(results);
 
       const strip = `<div class="strip" aria-label="Summary">
           <span class="s-met">${byStatus.met.length} open</span>
@@ -307,33 +345,62 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
       // s3b: counterfactual leverage — what each alternative step would unlock.
       const ups = unlocks(ds, answers);
-      const hasOpenSeek = results.some((r) => r.route.kind === "seek" && r.status !== "hold");
-      const unlockSection = ups.length
-        ? `<div class="ghead unlockh"><b>Steps that would unlock more</b> — each re-checked against the rules</div>` +
-          ups.map((u) => {
-            const def = ds.fields.find((d) => d.id === u.field);
-            const title = (u.option.short ?? u.option.label) +
-              (def?.type === "money_band" ? ` — ${(SHORT[u.field] ?? u.field).toLowerCase()}` : "");
-            return `
-            <article class="unlock">
-              <h4>With <b>${esc(title)}</b></h4>
-              <ul>${u.routes.map((r) =>
-                `<li>${esc(r.route.name)} — ${r.status === "met"
-                  ? `<b>would be met</b>`
-                  : `<i>would come within reach${r.gap_max ? ` (${formatEUR(Math.round(r.gap_max))})` : r.gap_points ? ` (${r.gap_points} pt${r.gap_points === 1 ? "" : "s"} more)` : ""}</i>`}</li>`).join("")}
-              </ul>
-            </article>`;
-          }).join("") +
-          (hasOpenSeek
-            ? `<p class="unlock-hint">Your job-search card above is exactly for this: up to a year in Germany, working part-time up to 20h/week, to land that offer.</p>`
-            : "")
-        : "";
 
-      main.innerHTML = strip +
-        section("Open — criteria met", "", byStatus.met.map(fullCard).join(""), byStatus.met.length) +
-        section("Within reach", "near", byStatus.near.map(fullCard).join(""), byStatus.near.length) +
-        unlockSection +
-        section("Not yet", "hold", byStatus.hold.map(holdRow).join(""), byStatus.hold.length);
+      const seekHint = (rs: RouteResult[], hasUnlocks: boolean) =>
+        hasUnlocks && rs.some((r) => r.route.kind === "seek" && r.status !== "hold")
+          ? `<p class="unlock-hint">Your job-search permit above is exactly for this — lawful time in the country to land that offer.</p>`
+          : "";
+
+      if (visible.length === 1) {
+        // Single destination: the flat s3 layout, no country chrome.
+        const unlockSection = ups.length
+          ? `<div class="ghead unlockh"><b>Steps that would unlock more</b> — each re-checked against the rules</div>` +
+            ups.map((u) => unlockCard(u, u.routes)).join("") +
+            seekHint(results, true)
+          : "";
+        main.innerHTML = strip +
+          section("Open — criteria met", "", byStatus.met.map((r) => fullCard(r)).join(""), byStatus.met.length) +
+          section("Within reach", "near", byStatus.near.map((r) => fullCard(r)).join(""), byStatus.near.length) +
+          unlockSection +
+          section("Not yet", "hold", byStatus.hold.map(holdRow).join(""), byStatus.hold.length);
+        return;
+      }
+
+      // Multi destination: collapsible country sections; hopeful countries open,
+      // all-hold ones collapsed with the tally (and any unlocking steps) visible.
+      main.innerHTML = strip + visible.map((c) => {
+        const rs = results.filter((r) => r.country === c.code);
+        const g = {
+          met: rs.filter((r) => r.status === "met"),
+          near: rs.filter((r) => r.status === "near"),
+          hold: rs.filter((r) => r.status === "hold"),
+        };
+        // Country-scoped unlock rows: each row's routes narrowed to this country.
+        const cUps = ups
+          .map((u) => ({ u, routes: u.routes.filter((r) => r.country === c.code) }))
+          .filter((x) => x.routes.length);
+        const unknowns = openUnknownCount(rs);
+        const tallyParts = [
+          g.met.length ? `${g.met.length} open` : "",
+          g.near.length ? `${g.near.length} within reach` : "",
+          g.hold.length ? `${g.hold.length} not yet${unknowns ? ` — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown` : ""}` : "",
+          cUps.length ? `<i>${cUps.length} unlocking step${cUps.length === 1 ? "" : "s"}</i>` : "",
+        ].filter(Boolean).join(" · ");
+        const open = g.met.length + g.near.length > 0;
+        const inner =
+          section("Open — criteria met", "", g.met.map((r) => fullCard(r, false)).join(""), g.met.length) +
+          section("Within reach", "near", g.near.map((r) => fullCard(r, false)).join(""), g.near.length) +
+          (cUps.length
+            ? `<div class="ghead unlockh"><b>Steps that would unlock more here</b></div>` +
+              cUps.map((x) => unlockCard(x.u, x.routes)).join("") +
+              seekHint(rs, true)
+            : "") +
+          section("Not yet", "hold", g.hold.map(holdRow).join(""), g.hold.length);
+        return `<details class="country"${open ? " open" : ""}>
+            <summary>${esc(c.name)} <span class="tally">${tallyParts}</span></summary>
+            <div class="cbody">${inner}</div>
+          </details>`;
+      }).join("");
     }
 
     restart.addEventListener("click", (e) => {
@@ -392,6 +459,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .strip .s-hold{border-left:3px solid var(--color-hold);color:var(--color-hold)}
     .ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
       border-bottom:var(--rule-soft);padding-bottom:.35rem;margin:1.4rem 0 .8rem}
+
+    /* s5: collapsible country sections (multi-destination results) */
+    details.country > summary{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;cursor:pointer;list-style:none;
+      font:700 .8rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-ink);
+      border-bottom:2px solid var(--color-ink);padding-bottom:.4rem;margin:1.8rem 0 .4rem}
+    details.country > summary::-webkit-details-marker{display:none}
+    details.country > summary::before{content:"▸ ";color:var(--color-muted)}
+    details.country[open] > summary::before{content:"▾ "}
+    .tally{font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none;text-align:right}
+    .tally i{font-style:normal;color:var(--color-band)}
+    .cbody{padding-bottom:.4rem}
+    .cbody .ghead{margin:1rem 0 .6rem}
     .ghead b{color:var(--color-met)} .ghead.near b{color:var(--color-near)} .ghead.hold b{color:var(--color-hold)}
     details.route-hold{background:var(--color-card);border:var(--rule-soft);padding:.55rem .9rem}
     details.route-hold summary{cursor:pointer;display:flex;gap:.8rem;align-items:baseline;list-style:none;font-size:.88rem}
