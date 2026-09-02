@@ -272,3 +272,11 @@ haliyle any(Almanca A1+ / İngilizce B2+) olarak dil seviyelerinden türüyor;
 soru sayısı 15→14. Qualification bilinçli olarak improvable YAPILMADI
 ("üniversite bitir" önerisi kapsam dışı; ileride tartışılabilir). 43 test.
 Commit'ler: `visa-rules@c5d2a49`, `visa-navigator@2b74eba`.
+
+**İkinci uzantı (insan testi bulgusu, aynı gün):** Fon "€1.091 altı" cevabı
+Chancenkarte'yi anında öldürüp görüşmeyi 3 soruda bitiriyordu — puanla
+tutarsız. Kural düzeltildi: **sınırlı gap (bitişik para bandı, puan eksiği)
+route'u öldürmez** — yalnız gap'siz "hard fail" öldürür; görüşme sürer, route
+sonda "within reach — Gap: up to €1.091 — monthly funds" olur. Beklenmedik
+güzel yan etki: info-gain, artık kimseyi elemediği için fon sorusunu geriye
+attı. Gap notu alan-farkında oldu. 45 test; akış tarayıcıda doğrulandı.

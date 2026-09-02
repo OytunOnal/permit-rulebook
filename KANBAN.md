@@ -92,4 +92,5 @@ _(boş — v0.1 ve v0.2 done'a damgalandı)_
   deneyim, denklik — `kind: improvable`); "With German B2 → Chancenkarte met"
   tarzı kanıtlanabilir öneriler; language_base sorusu kaldırılıp taban-dil
   şartı dil seviyelerinden türetildi (çelişki imkânsız, 1 soru azaldı).
-  (2026-09-02)
+  Ek düzeltme: sınırlı gap'ler (para bandı/puan) route'u öldürmez — görüşme
+  tamamlanır, route "within reach + alan-farkında gap" olur. (2026-09-02)
