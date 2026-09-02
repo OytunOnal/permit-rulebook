@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S3 mock — grouped results with gap actions</title>
+<link rel="stylesheet" href="../../../tokens.css">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--color-bg);color:var(--color-ink);font:var(--text-body);font-family:var(--font-sans);padding:2.8rem 1.2rem 4rem}
+  .wrap{max-width:var(--max-content);margin:0 auto}
+  header{border-bottom:var(--rule-heavy);padding-bottom:1.1rem;margin-bottom:1.2rem}
+  .brand{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted)}
+  h1{font:var(--text-hero);margin:.45rem 0 .3rem}
+  h1 b{color:var(--color-near)}
+
+  /* NEW: summary strip — the verdict at a glance */
+  .strip{display:flex;gap:.6rem;margin:0 0 1.4rem;flex-wrap:wrap}
+  .strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase;padding:.45rem .8rem;border:var(--rule-soft);background:var(--color-card)}
+  .strip .s-met{border-left:3px solid var(--color-met);color:var(--color-met)}
+  .strip .s-near{border-left:3px solid var(--color-near);color:var(--color-near)}
+  .strip .s-hold{border-left:3px solid var(--color-hold);color:var(--color-hold)}
+
+  /* NEW: status group headers (F'in ülke-başlığı deseni, statüye uyarlanmış) */
+  .ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
+    border-bottom:1px solid var(--color-line);padding-bottom:.35rem;margin:1.5rem 0 .8rem}
+  .ghead b{color:var(--color-met)} .ghead.near b{color:var(--color-near)} .ghead.hold b{color:var(--color-hold)}
+
+  .stack{display:grid;gap:var(--gap-cards)}
+  .route{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:var(--pad-card)}
+  .top{display:flex;justify-content:space-between;gap:1rem;align-items:baseline}
+  .country{font:700 .68rem var(--font-sans);letter-spacing:.22em;text-transform:uppercase;color:var(--color-muted)}
+  h3{font:var(--text-route);font-family:var(--font-serif);margin:.15rem 0 .25rem}
+  .st{font:700 .66rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;padding:.3rem .65rem}
+  .st.met{background:var(--color-met-soft);color:var(--color-met)}
+  .st.near{background:var(--color-near-soft);color:var(--color-near)}
+  .why{color:#54513f;font-size:.88rem;max-width:var(--max-prose)}
+  .gapnote{font-size:.85rem;background:var(--color-near-soft);border-left:3px solid var(--color-near);color:#63430f;padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
+  .src{font:var(--text-source);font-family:var(--font-mono);color:var(--color-muted);margin-top:.6rem}
+  .src b{color:var(--color-met)}
+  .next{font:600 .78rem var(--font-sans);color:var(--color-stamp);text-decoration:none}
+  .next::after{content:" ↗"}
+
+  /* NEW: hold cards collapse to compact rows; detail on demand */
+  details.route-hold{background:var(--color-card);border:var(--rule-soft);padding:.55rem .9rem}
+  details.route-hold summary{cursor:pointer;display:flex;gap:.8rem;align-items:baseline;list-style:none;font-size:.88rem}
+  details.route-hold summary::-webkit-details-marker{display:none}
+  .hold-name{font:600 .92rem var(--font-serif)}
+  .hold-why{color:var(--color-muted);font-size:.8rem;margin-left:auto;text-align:right}
+  .hold-body{padding:.6rem 0 .3rem;border-top:var(--rule-dotted);margin-top:.5rem}
+
+  /* NEW: "I don't know" → resmî kaynağa öğrenme linki */
+  .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.5rem;max-width:34rem}
+  .learn a{color:var(--color-band);font-weight:600;text-decoration:none}
+  .learn a::after{content:" ↗"}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Visa Navigator · Eligibility record</div>
+    <h1>2 routes look open. <b>One is within €4,766.</b></h1>
+  </header>
+
+  <div class="strip" aria-label="Summary">
+    <span class="s-met">2 open</span>
+    <span class="s-near">1 within reach</span>
+    <span class="s-hold">5 not yet — 1 has an open unknown</span>
+  </div>
+
+  <div class="ghead"><b>Open</b> — criteria met (2)</div>
+  <div class="stack">
+    <article class="route">
+      <div class="top"><div><span class="country">Germany</span><h3>EU Blue Card — shortage occupation</h3></div><span class="st met">Criteria met</span></div>
+      <p class="why">Reduced salary threshold cleared; software engineering is on the shortage list.</p>
+      <div class="src">“kleine Blaue Karte EU: 45.934,20 Euro” · arbeitsagentur.de · reduced · § 18g AufenthG · <b>read 2026-09-01</b> &nbsp; <a class="next" href="#">Official page</a></div>
+    </article>
+    <article class="route">
+      <div class="top"><div><span class="country">Germany</span><h3>Skilled worker — academic (§ 18b)</h3></div><span class="st met">Criteria met</span></div>
+      <p class="why">Recognised degree plus a concrete offer matching the qualification.</p>
+      <div class="src">BAMF · “recognised foreign university degree” · <b>read 2026-09-02</b> &nbsp; <a class="next" href="#">Official page</a></div>
+    </article>
+  </div>
+
+  <div class="ghead near"><b>Within reach</b> (1)</div>
+  <div class="stack">
+    <article class="route">
+      <div class="top"><div><span class="country">Germany</span><h3>EU Blue Card — general</h3></div><span class="st near">Within reach</span></div>
+      <p class="why">The threshold sits above your declared band.</p>
+      <div class="gapnote"><b>Gap: up to €4,766.</b> Your shortage-occupation card above already meets the reduced threshold — this one matters only if your occupation leaves the shortage list.</div>
+      <div class="src">“große Blaue Karte EU: 50.700 Euro” · arbeitsagentur.de · general · <b>read 2026-09-01</b> &nbsp; <a class="next" href="#">Official page</a></div>
+    </article>
+  </div>
+
+  <div class="ghead hold"><b>Not yet</b> (5)</div>
+  <div class="stack">
+    <details class="route-hold" open>
+      <summary><span class="country">DE</span><span class="hold-name">Experienced worker (§ 19c)</span><span class="hold-why">Unknown: shortage list — an open gap, not a no</span></summary>
+      <div class="hold-body">
+        <p class="why">Everything else is met; you answered “I don't know” for the shortage list.</p>
+        <div class="learn">You can find out yourself: the official shortage-occupation groups are listed in § 18g —
+          <a href="#">check the official list</a>. Degree recognition can be checked in the <a href="#">Anabin database</a>.</div>
+      </div>
+    </details>
+    <details class="route-hold">
+      <summary><span class="country">DE</span><span class="hold-name">Opportunity Card (Chancenkarte)</span><span class="hold-why">Not met: situation — the card exists to seek work</span></summary>
+    </details>
+    <details class="route-hold">
+      <summary><span class="country">DE</span><span class="hold-name">Researcher (§ 18d)</span><span class="hold-why">Not met: situation (no hosting agreement)</span></summary>
+    </details>
+    <details class="route-hold">
+      <summary><span class="country">DE</span><span class="hold-name">ICT Card (§ 19)</span><span class="hold-why">Not met: situation (no intra-corporate transfer)</span></summary>
+    </details>
+    <details class="route-hold">
+      <summary><span class="country">DE</span><span class="hold-name">Skilled worker — vocational (§ 18a)</span><span class="hold-why">Not met: qualification type</span></summary>
+    </details>
+  </div>
+</div>
+</body>
+</html>

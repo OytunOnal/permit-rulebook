@@ -65,6 +65,36 @@ kaynak gösterme; JobRadar ile çapraz yönlendirme sonraki dönem.
   LLM yalnız build-time soru-ifadesi cilası; runtime RAG yok ("route'a soru
   sor" v1.x backlog).
 
+## Viability (Product gereği; orta back-edge 2026-09-02, kararlar insan kapısından)
+
+- **Kitle (mertebe, grounded):** Yalnız Almanya'da 2023'te **41.000+ ilk Blue
+  Card** verildi; dönem sonunda ~113.500 aktif taşıyıcı (BAMF istatistik
+  sayfası, 2026-09-02 okundu). Blue Card, modellediğimiz 8 DE route'undan
+  yalnız biri; dört hedef ülke ve tüm istihdam route'larıyla adreslenebilir
+  kitle **yılda yüz binlerce başvuran** mertebesi (*bu genişletme çıkarımdır*,
+  çapa sayı yalnız DE Blue Card).
+- **Para:** Şeffaf **affiliate** (kullanıcının route'u için mecburi hizmetler:
+  Sperrkonto, vize sigortası, dil — "affiliate" etiketli, çok sağlayıcılı,
+  disclosure disclaimer'ın yanında) + **GitHub Sponsors** ilk günden.
+  İzlemesiz reklam yalnız 25-50k ziyaret/ay eşiğinde yeniden değerlendirilir;
+  AdSense/izlemeli ağ hiç (danışman reklamı + izleme, konum ve gizlilik
+  çizgilerini bozar). Affiliate entegrasyonu v1.x dilimi — v1'i geciktirmez,
+  gelir v1 sonrası başlar. **Sınır:** affiliate linkleri uygunluk sonucunu
+  asla etkilemez (karar kodda, linkler sonuçtan sonra) ve hiçbir kişisel veri
+  taşımaz (düz çıkış linki).
+- **Başarı metriği (birincil):** **Dataset canlılığı** — resmî değişikliğin
+  dataset'e işlenme süresi hedefi **≤48 saat** (izleme dilimi s4'ten itibaren
+  ölçülür; öncesinde elle nokta kontrolü) + kapsam: v1'de 4 ülke, ~35-40
+  route, %100 alıntı+tarihli. İkincil: organik kullanım (veri-toplamayan
+  sayaç kurulunca). *Tek-küratör riski (A13):* tatil/yoğunlukta ≤48s "en iyi
+  çaba"ya düşer; ihlal gizlenmez — her değerin okunma tarihi zaten kamuya
+  açık, gecikme sayfada görünür.
+- **Hedefler (insanın temposu):** **v1 ≈ 1 hafta** (kalan dilimler: gap
+  analizi, izleme+bayrak, FR/ES/NL dolumu, açılış — kayma riski s5
+  küratörlüğünde; kayarsa ülke ülke açılır, FR önce). **Dalga 2 (CA+AU) ≈ +2
+  hafta.** 6-12 ay ufku: canlılık sözü ölçülür biçimde tutuluyor, dalga 2-3
+  yayında; dış katkı hedef değil yan ürün.
+
 ## Harvest
 
 WhereToEmigrate'in bayatlık-ceza modeli (doğrulama yaşı şemada birinci sınıf) ·

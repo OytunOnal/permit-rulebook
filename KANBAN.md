@@ -36,6 +36,11 @@ flowchart LR
   hukuk dili (A1 koşulları), GitHub/HN lansmanı. _Sınar: A2, A7, A8 gerçekte._
 
 ### v1.x / dalga 2 (v1 sonrası)
+- **Affiliate katmanı** (viability kararı 2026-09-02): route'a göre mecburi
+  hizmet linkleri (Sperrkonto, vize sigortası, dil) — "affiliate" etiketli,
+  çok sağlayıcılı, disclosure disclaimer yanında; uygunluk kararına etkisiz.
+  (GitHub Sponsors linki küçük iş — s6 açılışa girebilir.)
+- İzlemesiz reklam değerlendirmesi — yalnız 25-50k ziyaret/ay eşiği aşılırsa
 - LLM çıkarım + kod doğrulama + otomatik PR (pipeline tam hattı)
 - "Route hakkında soru sor" (alıntı-temelli RAG)
 - LLM build-time soru-ifadesi cilası (A14)
