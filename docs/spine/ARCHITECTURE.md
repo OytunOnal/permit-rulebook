@@ -1,4 +1,4 @@
-# ARCHITECTURE — Visa Navigator (v0.3 itibarıyla)
+# ARCHITECTURE — Visa Navigator (v0.4 itibarıyla)
 
 Her dilim çıkışında güncellenir; her zaman son real-green durumu resmeder.
 
@@ -7,7 +7,7 @@ flowchart LR
     subgraph rules["visa-rules (kardeş repo — tek doğruluk kaynağı)"]
         DATA["data/de.json<br/>8 route · 15 alan (+learn kaynakları)<br/>her değer: alıntı+kaynak+tarih+history"]
         SCHEMA["schema/ruleset.schema.json<br/>JSON Schema 2020-12"]
-        ENGINE["src/engine + questions<br/>evaluate · deriveBands · points/in/any<br/>remainingQuestions (info-gain + budama)"]
+        ENGINE["src/engine + questions<br/>evaluate · deriveBands · points/in/any<br/>remainingQuestions (info-gain + budama)<br/>unlocks (path-alanı karşı-olgusalı)"]
         VALIDATE["src/validate (ajv)<br/>+ cli-validate (ndjson log)"]
     end
 

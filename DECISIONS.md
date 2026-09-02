@@ -238,3 +238,23 @@ grupları, kompakt hold satırları, veriden gelen "bilmiyorum → öğren" kutu
 birlikte onaylandı. İlk turda insan ekranın bağlamını sordu; mock'un yalnız
 sağ kolonu (değişen kısım) gösterdiği, "You declared" panelinin yerinde
 kaldığı netleştirilip onay alındı.
+
+---
+
+## 2026-09-02 — s3b "Kaldıraç analizi" (insan sorusundan doğan mini dilim) 🛑→✅
+
+**Doğum:** İnsan sorusu — "durumsuzlara hepsine 'not met: situation' diyoruz,
+öneri veremiyoruz; ayrıca eksik olanı LLM mi söyleyecek?" **Cevap/karar:**
+(1) "yakınlık" tahmin edilmez (falcılık) ama **kaldıraç** deterministik
+hesaplanır: path-tipi alanlar (yeni `kind` ayrımı) alternatif değerleriyle
+karşı-olgusal koşulur, met/near'a dönen route'lar "bu adım şunları açar" diye
+listelenir; `is_fallback` seçenekleri (ör. "none") asla hedef olmaz — "teklifi
+bırak" önerisi çıkamaz. (2) LLM sınırı yeniden teyit: eksik/gap her zaman
+kodda hesaplanır; LLM'in gelecekteki rolü yalnız anlatım cilası + kaynak-temelli
+soru-cevap (backlog'daki kararlar değişmedi). Senaryo+mock kapıyla onaylandı,
+aynı gün real-green → **v0.4**. Dilim içi dürüstlük kuralı: karşı-olgusal
+yalnız *mevcut cevaplarla karara bağlanabilen* route'ları listeler
+(cevaplanmamış maaşla "Blue Card açılır" denmez). Hold satırlarına
+kriter-bazlı "gereken: X · beyanın: Y" dökümü de bu turda eklendi (insan
+bulgusu: açılan satır boştu). Commit'ler: `visa-rules@76255f4`,
+`visa-navigator@c654fc5,e5b42ff`.

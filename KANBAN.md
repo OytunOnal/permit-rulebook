@@ -9,7 +9,8 @@ doğduğu anda backlog'a de-mock görevi ekler.
 flowchart LR
     A["Yürüyen iskelet ✅ real-green (v0.1)"] --> B["Almanya tam seti ✅ real-green (v0.2)"]
     B --> C["Gap analizi sonuç ekranında ✅ real-green (v0.3)"]
-    C --> D["Kaynak izleme + değişiklik bayrağı ◀ sıradaki"]
+    C --> C2["Kaldıraç analizi: 'teklif alırsan şunlar açılır' ✅ real-green (v0.4)"]
+    C2 --> D["Kaynak izleme + değişiklik bayrağı ◀ sıradaki"]
     D --> E["Dört ülke dolu: FR·ES·NL"]
     E --> F["Kamuya açılış 🏁 v1"]
     F -.-> G["Dalga 2: CA + AU"]
@@ -70,6 +71,8 @@ _(boş — v0.1 ve v0.2 done'a damgalandı)_
 - **Gap analizi sonuç ekranında** (s3) · 2026-09-02 real-green
   (`docs/spine/scenarios/s3.md`; kalan tek pürüz: iki learn URL'sinin insan
   tıklaması — de-mock listede). → **v0.3**
+- **Kaldıraç analizi: "teklif alırsan şunlar açılır"** (s3b) · 2026-09-02
+  real-green (`docs/spine/scenarios/s3b.md`; insan sorusundan doğdu). → **v0.4**
 
 ## versions
 
@@ -82,3 +85,6 @@ _(boş — v0.1 ve v0.2 done'a damgalandı)_
 - **v0.3** — Gap analizi ekranı: özet şeridi + OPEN/WITHIN REACH/NOT YET
   grupları, kompakt hold satırları, "bilmiyorum → resmî kaynaktan öğren"
   kutuları (veriden). (2026-09-02)
+- **v0.4** — Kaldıraç analizi: path-alanları için karşı-olgusal "bu adım
+  şunları açar" bölümü + iş-arama kartı köprü notu; hold satırlarında
+  kriter-bazlı "gereken/beyanın" dökümü. (2026-09-02)

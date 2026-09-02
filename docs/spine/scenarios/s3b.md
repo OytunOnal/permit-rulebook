@@ -1,6 +1,6 @@
 # s3b — "Kaldıraç analizi: teklif alırsan şunlar açılır" · Acceptance senaryosu
 
-Statü: TASLAK — boundary onayı bekliyor.
+Statü: ONAYLANDI (insan, 2026-09-02) ve KOŞULDU.
 Ekran mock'u: `docs/spine/design/s3b-unlocks.html`.
 Doğum: insan sorusu 2026-09-02 — "hangisini sağlamaya yakın olduğunu
 bilmiyoruz, öneri veremiyoruz".
@@ -32,5 +32,8 @@ eklenir (varsayılan attribute); karşı-olgusal YALNIZ path alanlarında koşar
 
 ## Koşumlar
 
-- mock-green: —
-- real-green: —
+- mock-green + real-green: 2026-09-02 — mock yok, tek koşum: gezgin akışı
+  tarayıcıda üç unlock satırı + CK köprü notu + NOT YET grubu; 6 yeni test
+  (toplam 38) adım 2/4/5'i kapsıyor. Dürüstlük davranışı doğrulandı: teklif
+  karşı-olgusalı yalnız *mevcut cevaplarla karara bağlanabilen* route'ları
+  listeler (maaş sorulmamışsa BC "açılır" diye gösterilmez).
