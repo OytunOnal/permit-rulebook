@@ -319,8 +319,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
               <h4>With <b>${esc(title)}</b></h4>
               <ul>${u.routes.map((r) =>
                 `<li>${esc(r.route.name)} — ${r.status === "met"
-                  ? `<b>criteria met</b>`
-                  : `<i>within reach${r.gap_max ? ` (${formatEUR(Math.round(r.gap_max))})` : r.gap_points ? ` (${r.gap_points} pt${r.gap_points === 1 ? "" : "s"} more)` : ""}</i>`}</li>`).join("")}
+                  ? `<b>would be met</b>`
+                  : `<i>would come within reach${r.gap_max ? ` (${formatEUR(Math.round(r.gap_max))})` : r.gap_points ? ` (${r.gap_points} pt${r.gap_points === 1 ? "" : "s"} more)` : ""}</i>`}</li>`).join("")}
               </ul>
             </article>`;
           }).join("") +
