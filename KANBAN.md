@@ -27,6 +27,12 @@ flowchart LR
   verified them via VPN; agents cannot reach the official site — relevant to
   s4 source selection).
 - **Model the 45+ age rules (55% threshold) as criteria** (currently notes).
+- **Criterion-note provenance** (s5 review catch): verbatim legal quotes on
+  eq/in/any criteria ride as bare `note` strings — no source_url/retrieved_at,
+  so 7 routes (§18a/b, §18d, §19, es-ict, es-researcher, nl-orientation-year)
+  show zero provenance and their source pages escape watch coverage. Needs a
+  provenanced `basis` structure on non-numeric criteria + watchlist growth
+  (BAMF pages, IND route pages).
 - **Public launch** (s6) · `visa-rules` public (CC-BY-4.0, CONTRIBUTING,
   coverage tiers), site deploy, per-route micro-pages, disclaimer/legal
   wording (A1 conditions), GitHub/HN launch. _Tests A2, A7, A8 for real._
@@ -50,15 +56,17 @@ flowchart LR
 
 ## active
 
-- **Four countries filled: FR·ES·NL** (s5) · Scenario+mock approved
-  2026-09-02 (`docs/spine/scenarios/s5.md`): destination question,
-  country-scoped fields, NL monthly bands, exclusion lists, collapsible
-  country sections with per-country leverage + hint tallies, conditional
-  unlock wording. Real-green awaits the human verification pass.
+_(empty)_
 
 ## mock-green
 
-_(empty)_
+- **Four countries filled: FR·ES·NL** (s5) · mock-green 2026-09-02
+  (`docs/spine/scenarios/s5.md`): 21 routes / 4 countries, destination-first
+  interview, NL monthly bands, qualifier-forked leverage ("a job offer in
+  Spain"), collapsible country sections verified on screen (headless Chrome,
+  3 personas). 93 engine tests + review round (10 findings triaged) done.
+  **Real-green needs the human**: VPN pass over `visa-rules/data/verify-s5.md`
+  + an interactive browser run (Back/restart, section toggles).
 
 ## real-green
 

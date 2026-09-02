@@ -396,7 +396,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
               seekHint(rs, true)
             : "") +
           section("Not yet", "hold", g.hold.map(holdRow).join(""), g.hold.length);
-        return `<details class="country"${open ? " open" : ""}>
+        return `<details class="country-sec"${open ? " open" : ""}>
             <summary>${esc(c.name)} <span class="tally">${tallyParts}</span></summary>
             <div class="cbody">${inner}</div>
           </details>`;
@@ -410,6 +410,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       headline.innerHTML = introHeadline();
       renderQuestion();
     });
+
+    // Dev-only screenshot hook (stripped from production builds): pre-fill a
+    // profile via ?dev-profile={"destination":"de",...} to land on any screen.
+    if (import.meta.env.DEV) {
+      const raw = new URLSearchParams(location.search).get("dev-profile");
+      if (raw) {
+        try {
+          answers = JSON.parse(raw);
+          history = Object.keys(answers);
+        } catch { /* fall through to the normal flow */ }
+      }
+    }
 
     renderQuestion();
   </script>
@@ -460,13 +472,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
       border-bottom:var(--rule-soft);padding-bottom:.35rem;margin:1.4rem 0 .8rem}
 
-    /* s5: collapsible country sections (multi-destination results) */
-    details.country > summary{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;cursor:pointer;list-style:none;
+    /* s5: collapsible country sections (multi-destination results).
+       NB: named .country-sec — .country is the small chip on cards, and the
+       chip's uppercase/letter-spacing would inherit into the whole section. */
+    details.country-sec > summary{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;cursor:pointer;list-style:none;
       font:700 .8rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-ink);
       border-bottom:2px solid var(--color-ink);padding-bottom:.4rem;margin:1.8rem 0 .4rem}
-    details.country > summary::-webkit-details-marker{display:none}
-    details.country > summary::before{content:"▸ ";color:var(--color-muted)}
-    details.country[open] > summary::before{content:"▾ "}
+    details.country-sec > summary::-webkit-details-marker{display:none}
+    details.country-sec > summary::before{content:"▸ ";color:var(--color-muted)}
+    details.country-sec[open] > summary::before{content:"▾ "}
     .tally{font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none;text-align:right}
     .tally i{font-style:normal;color:var(--color-band)}
     .cbody{padding-bottom:.4rem}

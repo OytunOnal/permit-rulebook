@@ -5,7 +5,7 @@ Updated at every slice exit; always depicts the latest real-green state.
 ```mermaid
 flowchart LR
     subgraph rules["visa-rules (sibling repo — single source of truth)"]
-        DATA["data/de.json<br/>8 routes · 14 fields (kind/learn/short)<br/>every value: quote+source+date+history"]
+        DATA["data/dataset.json<br/>21 routes · 4 countries · 19 fields<br/>every value: quote+source+date+history"]
         SCHEMA["schema/ruleset.schema.json<br/>JSON Schema 2020-12"]
         ENGINE["src/engine + questions<br/>evaluate · deriveBands · points/in/any<br/>remainingQuestions (info-gain + pruning)<br/>unlocks (path+improvable counterfactuals)"]
         VALIDATE["src/validate (ajv)<br/>+ cli-validate (ndjson logs)"]
@@ -32,7 +32,7 @@ flowchart LR
 
 Components, one line each:
 
-- **data/de.json** — the rules dataset; every numeric value carries its
+- **data/dataset.json** — the rules dataset; every numeric value carries its
   official source URL, verbatim quote, retrieval date and an append-only
   `history` (CC-BY-4.0).
 - **ruleset.schema.json** — the public contract; a value without its quote or

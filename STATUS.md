@@ -2,19 +2,19 @@
 
 ## Where are we
 
-Genesis, slice loop; scale **Product**; current version **v0.6 — source watch** (see KANBAN `## versions`).
+Genesis, slice loop; scale **Product**; current version **v0.6** with **s5 "Four countries filled: FR·ES·NL" at mock-green** (v0.7 stamps at real-green; see KANBAN `## versions`).
 
 ```mermaid
 flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓] --> D[Design ✓] --> E[Plan ✓]
-    E --> F["Slice loop ◀ here<br/>v0.1–v0.6 ✓<br/>next: four countries"]
+    E --> F["Slice loop ◀ here<br/>v0.1–v0.6 ✓ · s5 mock-green<br/>last: public launch"]
     F --> G[v1 real-green]
 ```
 
 ## What is happening now
 
-**v0.6 "Source watch + change flag" is real-green.** The code-review exit returned 10 verified findings — three independent alert-loss paths in the CI workflow, entity hash-blindness (&ge;/&le; hashed equal), a crashing code-point path, non-exhaustive criterion walks, reminder pile-up, and two lesser ones — all 10 fixed and re-tested (69 tests, pushed as `visa-rules@374c9c5`). The liveness promise now has scaffolding: every dataset source is watched (coverage enforced both ways), changes produce quoted-context flags, and the daily cron is hardened to never lose an alert. Next: the s5 "Four countries filled: FR·ES·NL" boundary — the last big curation slice before launch.
+**s5 is built and mock-green.** The dataset holds 21 employment-based routes across DE·FR·ES·NL (agent-curated, quote+source+date each; every excluded route recorded with its reason in `data/exclusions.md`). The interview opens with the destination question and never asks another country's questions; NL salaries stay monthly with their own bands; leverage now forks per country for "show me everything" explorers ("a job offer **in Spain** → ICT would be met"). The results screen groups by collapsible country sections with per-country leverage and tally hints, verified on screen. The watch grew to 12 sources (all fetching clean) and learned to slice rotating-ad pages (buzer served 3 page variants per request). Two review rounds ran this slice: 10 findings on the s4 code earlier, 10 more on s5 — including two silent-verdict bugs (adjacency-dependent gaps, unconstrained qualifier forks), both fixed and regression-tested. 93 engine tests green; `astro check` now gates the site build.
 
 ## What is expected from you
 
-The s5 boundary scenario will come to you next 🛑. Still open on your side: click-check the two learn links (Anabin + § 18g) to close s3's last de-mock item.
+**Real-green needs your two passes** 🛑: (1) the VPN verification checklist `visa-rules/data/verify-s5.md` — every FR/ES/NL value against its official page (the ES thresholds come from a PDF the policy says a human must read); (2) an interactive browser run on http://localhost:4321 — happy path, weak profile, Back/restart, country-section toggles. Also still open: the s3 learn-link click-check (Anabin + § 18g).
