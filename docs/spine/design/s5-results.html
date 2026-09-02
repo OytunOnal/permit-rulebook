@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>s5 mock — country-grouped multi-destination results</title>
+<link rel="stylesheet" href="../../../tokens.css">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--color-bg);color:var(--color-ink);font:var(--text-body);font-family:var(--font-sans);padding:2.5rem 1.2rem}
+  .wrap{max-width:var(--max-content);margin:0 auto}
+  .note{font:var(--text-source);font-family:var(--font-mono);color:var(--color-muted);margin-bottom:1rem}
+  h1{font:var(--text-hero);margin-bottom:.4rem}
+  h1 b{color:var(--color-near)}
+
+  .strip{display:flex;gap:.6rem;margin:1rem 0 1.4rem;flex-wrap:wrap}
+  .strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase;padding:.45rem .8rem;border:var(--rule-soft);background:var(--color-card)}
+  .strip .s-met{border-left:3px solid var(--color-met);color:var(--color-met)}
+  .strip .s-near{border-left:3px solid var(--color-near);color:var(--color-near)}
+  .strip .s-hold{border-left:3px solid var(--color-hold);color:var(--color-hold)}
+
+  /* NEW: country sections (design-F pattern promised at the design gate) */
+  .chead{display:flex;justify-content:space-between;align-items:baseline;
+    font:700 .78rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-ink);
+    border-bottom:2px solid var(--color-ink);padding-bottom:.4rem;margin:1.8rem 0 .8rem}
+  .chead .tally{font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none}
+
+  .ghead{font:700 .68rem var(--font-sans);letter-spacing:.24em;text-transform:uppercase;color:var(--color-muted);margin:.9rem 0 .5rem}
+  .ghead b{color:var(--color-met)} .ghead.near b{color:var(--color-near)}
+
+  .route{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:.9rem 1.2rem;margin-bottom:.7rem}
+  .top{display:flex;justify-content:space-between;gap:1rem;align-items:baseline}
+  h3{font:var(--text-route);font-family:var(--font-serif)}
+  .st{font:700 .64rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;padding:.28rem .6rem}
+  .st.met{background:var(--color-met-soft);color:var(--color-met)}
+  .st.near{background:var(--color-near-soft);color:var(--color-near)}
+  .why{color:#54513f;font-size:.86rem;max-width:var(--max-prose)}
+  .gapnote{font-size:.83rem;background:var(--color-near-soft);border-left:3px solid var(--color-near);color:#63430f;padding:.45rem .7rem;margin-top:.5rem;max-width:34rem}
+  .src{font:var(--text-source);font-family:var(--font-mono);color:var(--color-muted);margin-top:.5rem}
+  .src b{color:var(--color-met)}
+  details.route-hold{background:var(--color-card);border:var(--rule-soft);padding:.5rem .9rem;margin-bottom:.45rem}
+  details.route-hold summary{cursor:pointer;display:flex;gap:.8rem;align-items:baseline;list-style:none;font-size:.86rem}
+  .hold-name{font:600 .9rem var(--font-serif)}
+  .hold-why{color:var(--color-muted);font-size:.78rem;margin-left:auto;text-align:right}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="note">// mock: multi-destination result — declaration panel stays on the left in the real app; countries are sections, statuses group within each</p>
+
+  <h1>3 routes look open across 2 countries. <b>One is within €4,766.</b></h1>
+  <div class="strip">
+    <span class="s-met">3 open</span>
+    <span class="s-near">2 within reach</span>
+    <span class="s-hold">9 not yet</span>
+  </div>
+
+  <div class="chead">Germany <span class="tally">2 open · 1 within reach · 5 not yet</span></div>
+  <div class="ghead"><b>Open</b></div>
+  <article class="route">
+    <div class="top"><h3>EU Blue Card — shortage occupation</h3><span class="st met">Criteria met</span></div>
+    <p class="why">Reduced salary threshold cleared; software engineering is on the shortage list.</p>
+    <div class="src">“kleine Blaue Karte EU: 45.934,20 Euro” · arbeitsagentur.de · <b>read 2026-09-01</b></div>
+  </article>
+  <div class="ghead near"><b>Within reach</b></div>
+  <article class="route">
+    <div class="top"><h3>EU Blue Card — general</h3><span class="st near">Within reach</span></div>
+    <div class="gapnote"><b>Gap: up to €4,766</b> — salary.</div>
+    <div class="src">“große Blaue Karte EU: 50.700 Euro” · arbeitsagentur.de · <b>read 2026-09-01</b></div>
+  </article>
+  <details class="route-hold"><summary><span class="hold-name">Opportunity Card (Chancenkarte)</span><span class="hold-why">Not met: situation</span></summary></details>
+
+  <div class="chead">Netherlands <span class="tally">1 open · 1 within reach · 2 not yet</span></div>
+  <div class="ghead"><b>Open</b></div>
+  <article class="route">
+    <div class="top"><h3>Highly Skilled Migrant</h3><span class="st met">Criteria met</span></div>
+    <p class="why">Monthly salary criterion cleared; requires an IND-recognised sponsor (your declared offer).</p>
+    <div class="src">“Highly skilled migrant, 30 or older: €5,942.00” · ind.nl · valid to 31 Dec 2026 · <b>read 2026-09-03</b></div>
+  </article>
+  <div class="ghead near"><b>Within reach</b></div>
+  <article class="route">
+    <div class="top"><h3>EU Blue Card (NL)</h3><span class="st near">Within reach</span></div>
+    <div class="gapnote"><b>Gap: up to €188/month</b> — monthly salary.</div>
+    <div class="src">“EU Blue Card: €5,942.00” · ind.nl · <b>read 2026-09-03</b></div>
+  </article>
+
+  <div class="chead">France <span class="tally">2 not yet</span></div>
+  <details class="route-hold"><summary><span class="hold-name">Talent — qualified employee</span><span class="hold-why">Not met: French contract</span></summary></details>
+
+  <div class="chead">Spain <span class="tally">2 not yet — 1 has an open unknown</span></div>
+  <details class="route-hold"><summary><span class="hold-name">Highly Qualified Professional (Ley 14/2013)</span><span class="hold-why">Unknown: recognition in Spain</span></summary></details>
+</div>
+</body>
+</html>
