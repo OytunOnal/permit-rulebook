@@ -198,6 +198,34 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         .join(" · ")}.</div>`;
     }
 
+    function optLabel(field: string, value: string | undefined): string {
+      if (value === undefined) return "no answer";
+      const def = ds.fields.find((d) => d.id === field);
+      if (def?.type === "money_band")
+        return deriveBands(ds, field).find((b) => b.id === value)?.label ?? value;
+      return def?.options?.find((o) => o.value === value)?.label ?? value;
+    }
+
+    // Expanded hold rows: per-criterion "needs X — you declared Y" lines, so
+    // "Not met: qualification" always unfolds into something concrete.
+    function failDetail(r: RouteResult): string {
+      const rows = r.criteria
+        .filter((cr) => cr.outcome === "fail")
+        .map((cr) => {
+          const c = cr.criterion;
+          if (c.op === "any")
+            return `<li><b>${esc(c.label ?? "requirements")}</b> — no qualifying path (${esc(c.paths.map((p) => p.label ?? "path").join(" / "))})</li>`;
+          const req =
+            c.op === "eq" ? optLabel(c.field, c.value) :
+            c.op === "in" ? c.values.map((v) => optLabel(c.field, v)).join(" or ") :
+            c.op === "gte" ? `${formatEUR(c.threshold.amount)} or more` :
+            `${c.required.value} points`;
+          const field = "field" in c ? c.field : "";
+          return `<li><b>${esc(SHORT[field] ?? field)}</b> — needs: ${esc(req)} · you declared: ${esc(optLabel(field, answers[field]))}</li>`;
+        });
+      return rows.length ? `<ul class="faildetail">${rows.join("")}</ul>` : "";
+    }
+
     function fullCard(r: RouteResult): string {
       return `
         <article class="route">
@@ -222,12 +250,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const hasUnknown = r.unknown_fields.some((f) => answers[f] !== undefined);
       const why = whyFor(r);
       const short = why.split(". ")[0].replace(/\.$/, "");
-      const fullWhy = short === why.replace(/\.$/, "") ? "" : `<p class="why">${why}</p>`;
       return `
         <details class="route-hold"${hasUnknown ? " open" : ""}>
           <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(r.route.name)}</span><span class="hold-why">${short}</span></summary>
           <div class="hold-body">
-            ${fullWhy}
+            ${r.route.summary ? `<p class="why">${esc(r.route.summary)}</p>` : ""}
+            ${failDetail(r)}
             ${learnBoxFor(r)}
             <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" rel="noopener">Official page</a></div>
           </div>
@@ -339,6 +367,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .hold-name{font:600 .92rem var(--font-serif)}
     .hold-why{color:var(--color-muted);font-size:.8rem;margin-left:auto;text-align:right}
     .hold-body{padding:.6rem 0 .3rem;border-top:var(--rule-dotted);margin-top:.5rem}
+    .faildetail{list-style:none;display:grid;gap:.3rem;margin:.5rem 0 .2rem;font-size:.84rem;color:#54513f}
+    .faildetail li::before{content:"✗ ";color:var(--color-stamp)}
+    .faildetail b{color:var(--color-ink)}
     .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
     .learn a{color:var(--color-band);font-weight:600;text-decoration:none}
     .learn a::after{content:" ↗"}
