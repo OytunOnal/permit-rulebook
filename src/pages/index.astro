@@ -239,7 +239,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             r.points.items.length ? " — " + r.points.items.map((i) => `${esc(SHORT[i.field] ?? i.field)} +${i.points}`).join(" · ") : ""
           }</div>` : ""}
           ${r.status !== "hold" ? railFor(r) : ""}
-          ${r.status === "near" && r.gap_max ? `<div class="gapnote"><b>Gap: up to ${formatEUR(Math.round(r.gap_max))}.</b> A route with a lower threshold may already apply — check the other cards.</div>` : ""}
+          ${r.status === "near" && r.gap_max ? (() => {
+            const gapCrit = r.criteria.find((c) => c.gap_max !== undefined)?.criterion;
+            const gapField = gapCrit && "field" in gapCrit ? gapCrit.field : "";
+            const hint = gapField === "salary_eur_year"
+              ? " A route with a lower threshold may already apply — check the other cards."
+              : "";
+            return `<div class="gapnote"><b>Gap: up to ${formatEUR(Math.round(r.gap_max))}</b> — ${esc((SHORT[gapField] ?? gapField).toLowerCase())}.${hint}</div>`;
+          })() : ""}
           ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Gap: ${r.gap_points} point${r.gap_points === 1 ? "" : "s"} short.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
           ${learnBoxFor(r)}
           <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" rel="noopener">Official page</a></div>
