@@ -70,8 +70,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       citizenship: "Citizenship", situation: "Situation", qualification: "Qualification",
       recognition_de: "Recognition", experience: "Experience",
       occupation_shortage: "Shortage list", occupation_it: "IT work",
-      salary_eur_year: "Salary", language_base: "Base language", german: "German",
-      english_c1: "English C1", age_band: "Age", de_stay6m: "Stay in DE",
+      salary_eur_year: "Salary", german: "German",
+      english: "English", age_band: "Age", de_stay6m: "Stay in DE",
       partner_ck: "Partner", funds_eur_month: "Monthly funds",
     };
     const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
@@ -302,16 +302,21 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const ups = unlocks(ds, answers);
       const hasOpenSeek = results.some((r) => r.route.kind === "seek" && r.status !== "hold");
       const unlockSection = ups.length
-        ? `<div class="ghead unlockh"><b>If your situation changes</b> — what each step unlocks</div>` +
-          ups.map((u) => `
+        ? `<div class="ghead unlockh"><b>Steps that would unlock more</b> — each re-checked against the rules</div>` +
+          ups.map((u) => {
+            const def = ds.fields.find((d) => d.id === u.field);
+            const title = (u.option.short ?? u.option.label) +
+              (def?.type === "money_band" ? ` — ${(SHORT[u.field] ?? u.field).toLowerCase()}` : "");
+            return `
             <article class="unlock">
-              <h4>With <b>${esc(u.option.short ?? u.option.label)}</b></h4>
+              <h4>With <b>${esc(title)}</b></h4>
               <ul>${u.routes.map((r) =>
                 `<li>${esc(r.route.name)} — ${r.status === "met"
                   ? `<b>criteria met</b>`
-                  : `<i>within reach${r.gap_max ? ` (${formatEUR(Math.round(r.gap_max))})` : r.gap_points ? ` (${r.gap_points} pts)` : ""}</i>`}</li>`).join("")}
+                  : `<i>within reach${r.gap_max ? ` (${formatEUR(Math.round(r.gap_max))})` : r.gap_points ? ` (${r.gap_points} pt${r.gap_points === 1 ? "" : "s"} more)` : ""}</i>`}</li>`).join("")}
               </ul>
-            </article>`).join("") +
+            </article>`;
+          }).join("") +
           (hasOpenSeek
             ? `<p class="unlock-hint">Your job-search card above is exactly for this: up to a year in Germany, working part-time up to 20h/week, to land that offer.</p>`
             : "")
