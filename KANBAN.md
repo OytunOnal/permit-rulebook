@@ -33,6 +33,10 @@ flowchart LR
   show zero provenance and their source pages escape watch coverage. Needs a
   provenanced `basis` structure on non-numeric criteria + watchlist growth
   (BAMF pages, IND route pages).
+- **Print / save the record** (golden G5): the "eligibility record" metaphor
+  has no export; refresh destroys it. Print stylesheet + "save as PDF" hint,
+  possibly a shareable-by-URL profile (privacy: answers in the fragment,
+  never sent). Joins s6.
 - **Public launch** (s6) · `visa-rules` public (CC-BY-4.0, CONTRIBUTING,
   coverage tiers), site deploy, per-route micro-pages, disclaimer/legal
   wording (A1 conditions), GitHub/HN launch. _Tests A2, A7, A8 for real._

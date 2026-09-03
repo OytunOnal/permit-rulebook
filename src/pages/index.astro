@@ -21,17 +21,19 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <div class="wrap">
     <header>
       <div class="brand">Visa Navigator · Eligibility record</div>
-      <h1 id="headline">Which routes could fit? <b>A few quick questions.</b></h1>
+      <h1 id="headline">Which work-permit routes could fit? <b>A few quick questions.</b></h1>
       <p class="sub" id="subline">Code compares your answers against published rules — every value shows its
-      official quote and the date it was read. Your answers never leave this device.</p>
-      <div class="stamp" aria-hidden="true">Record generated<b id="stamp-date"></b></div>
+      official quote and the date we read it from the source. Your answers never leave this device.
+      At the end: which routes (visa types) look open, how close the near-misses are, and which
+      single step would unlock more.</p>
+      <div class="stamp" aria-hidden="true" id="stamp" hidden>Record generated<b id="stamp-date"></b></div>
     </header>
 
     <div id="app" class="cols" data-state="questions">
       <aside class="decl" id="decl" aria-label="Your answers">
         <h2>You declared</h2>
         <dl id="decl-list"></dl>
-        <a class="edit" href="#" id="restart" hidden>Change an answer</a>
+        <a class="edit" href="#" id="restart" hidden>Start over</a>
       </aside>
       <main id="main"></main>
     </div>
@@ -63,6 +65,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const subline = document.getElementById("subline")!;
     const app = document.getElementById("app")!;
 
+    // The stamp belongs to the finished record — it appears with the results
+    // (a "record generated" mark on question 1 stamps nothing).
+    const stamp = document.getElementById("stamp")!;
     document.getElementById("stamp-date")!.textContent =
       new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).replaceAll("/", " · ");
 
@@ -82,7 +87,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     let history: string[] = []; // answered fields, in order, for Back
 
     const introHeadline = () =>
-      `Which routes could fit? <b>Up to ${questions.length} quick questions.</b>`;
+      `Which work-permit routes could fit? <b>Up to ${questions.length} quick questions.</b>`;
     headline.innerHTML = introHeadline();
 
     function esc(s: string) {
@@ -95,12 +100,32 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // promises nothing it won't deliver.
     function renderDeclaration(currentField: string | null) {
       // Rows in the order they were asked; the pending row appends last.
+      // Answered rows are edit points: clicking one resumes the interview at
+      // that question, keeping everything before it (a full reset destroyed
+      // every answer — human catch, golden G3).
       const fields = currentField ? [...history, currentField] : history;
       declList.innerHTML = fields.map((f) => {
         const q = questions.find((qq) => qq.field === f)!;
         const opt = q.options.find((o) => o.value === answers[f]);
-        return `<div><dt>${esc(SHORT[f] ?? f)}</dt><dd${opt ? "" : ` class="pending"`}>${esc(opt?.label ?? "—")}</dd></div>`;
+        return opt
+          ? `<div class="done" data-field="${esc(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(SHORT[f] ?? f)}</dt><dd>${esc(opt.label)} <span class="pen" aria-hidden="true">✎</span></dd></div>`
+          : `<div><dt>${esc(SHORT[f] ?? f)}</dt><dd class="pending">—</dd></div>`;
       }).join("");
+      declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
+        const jump = () => {
+          const f = row.dataset.field!;
+          const i = history.indexOf(f);
+          if (i < 0) return;
+          for (const later of history.slice(i)) delete answers[later];
+          history = history.slice(0, i);
+          stamp.hidden = true;
+          app.dataset.state = "questions";
+          headline.innerHTML = introHeadline();
+          renderQuestion();
+        };
+        row.addEventListener("click", jump);
+        row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); } });
+      });
       restart.hidden = currentField !== null;
     }
 
@@ -146,7 +171,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const lo = Math.min(...ts) * 0.88, hi = Math.max(...ts) * 1.1;
       const pct = (v: number) => Math.max(2, Math.min(98, ((v - lo) / (hi - lo)) * 100));
       const bMin = pct(band.min ?? lo), bMax = pct(band.max ?? hi);
-      const ticks = ts.map((t) => `<span class="tick" style="left:${pct(t)}%"></span>`).join("");
+      const ticks = ts.map((t) => `<span class="tick" style="left:${pct(t)}%" title="${formatEUR(t)} — a threshold on another route"></span>`).join("");
       // Label only this route's own threshold — neighbouring ticks stay as
       // unlabeled context so close thresholds can't collide.
       const own = salary.threshold.amount;
@@ -199,7 +224,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         .filter((l): l is { label: string; url: string } => !!l);
       if (!links.length) return "";
       return `<div class="learn">You can find out yourself: ${links
-        .map((l) => `<a href="${esc(l.url)}" rel="noopener">${esc(l.label)}</a>`)
+        .map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`)
         .join(" · ")}.</div>`;
     }
 
@@ -254,7 +279,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           })() : ""}
           ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Gap: ${r.gap_points} point${r.gap_points === 1 ? "" : "s"} short.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
           ${learnBoxFor(r)}
-          <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" rel="noopener">Official page</a></div>
+          <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
         </article>`;
     }
 
@@ -269,7 +294,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             ${r.route.summary ? `<p class="why">${esc(r.route.summary)}</p>` : ""}
             ${failDetail(r)}
             ${learnBoxFor(r)}
-            <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" rel="noopener">Official page</a></div>
+            <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
           </div>
         </details>`;
     }
@@ -329,6 +354,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
       renderDeclaration(null);
       app.dataset.state = "results";
+      stamp.hidden = false;
 
       const openUnknownCount = (rs: RouteResult[]) =>
         rs.filter((r) => r.status === "hold" && r.unknown_fields.some((f) => answers[f] !== undefined)).length;
@@ -407,6 +433,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       e.preventDefault();
       answers = {}; history = [];
       app.dataset.state = "questions";
+      stamp.hidden = true;
       headline.innerHTML = introHeadline();
       renderQuestion();
     });
@@ -424,6 +451,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     }
 
     renderQuestion();
+
+    // Dev-only layout probe: ?dev-probe=1 writes the widest offenders into the
+    // title so headless --dump-dom can report horizontal overflow (golden G1).
+    if (import.meta.env.DEV && new URLSearchParams(location.search).has("dev-probe")) {
+      const w = document.documentElement.clientWidth;
+      const bad = [...document.querySelectorAll<HTMLElement>("body *")]
+        .map((el) => ({ el, r: el.getBoundingClientRect() }))
+        .filter((x) => x.r.right > w + 1)
+        .slice(0, 8)
+        .map((x) => `${x.el.tagName.toLowerCase()}.${x.el.className || "-"}:${Math.round(x.r.right)}`);
+      document.title = `probe w=${w} sw=${document.documentElement.scrollWidth} | ${bad.join(" ; ")}`;
+    }
   </script>
 
   <style is:global>
@@ -449,6 +488,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .decl dl div{display:flex;justify-content:space-between;gap:.6rem;border-bottom:var(--rule-dotted);padding:.42rem 0}
     .decl dt{color:var(--color-muted);font-size:.78rem}
     .decl dd{font:var(--text-value);text-align:right}
+    .decl div.done{cursor:pointer}
+    .decl div.done:hover dd,.decl div.done:focus-visible dd{color:var(--color-stamp)}
+    .decl .pen{color:var(--color-muted);font-size:.75rem;margin-left:.2rem}
+    .decl div.done:hover .pen{color:var(--color-stamp)}
     .decl dd.pending{color:var(--color-muted);font-weight:400}
     .decl .edit{display:inline-block;margin-top:.8rem;font-size:.8rem}
     .decl .edit[hidden]{display:none}
@@ -547,10 +590,17 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem 1.5rem}
 
     @media (max-width:760px){
-      .cols[data-state="results"]{grid-template-columns:1fr}
+      body{padding:1.4rem .9rem 3rem}
+      .cols{grid-template-columns:1fr}
       .decl{position:static}
+      .qcard{padding:1.1rem 1rem}
+      .opt{white-space:normal}
+      .top{flex-wrap:wrap}
+      details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
+      .tally{text-align:left}
       h1{font-size:1.6rem}
       .stamp{position:static;display:inline-block;margin-top:.8rem}
+      .stamp[hidden]{display:none}
     }
     @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   </style>

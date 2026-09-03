@@ -425,3 +425,38 @@ screenshots via a dev-only ?dev-profile= hook (stripped from prod builds by
 import.meta.env.DEV) — also how the destination-first scenario deviation was
 caught on screen. astro check wired into the navigator build after it found a
 real bug (failing any-criteria rendered "Not met: undefined").
+
+---
+
+## 2026-09-03 — steward-5 skill update adopted; product-critique golden set applied
+
+Re-read genesis/product-critique/builder/researcher after the human's
+"skills updated". New rules taken on: product-critique anchors (first
+user-facing slice + v1 gate; light mode at other boundaries), builder agent
+for slice implementation with review in the main session, everything on
+disk in English (already the case). The human's own evaluation run left a
+golden set of 10 live defects (`~/.claude/skills/spine/evaluate/golden/
+visa-navigator-2026-09-03.md`); all 10 applied in this change, verified on
+screen through a Chrome DevTools Protocol harness (device emulation at
+390px — plain headless clamps windows to 500px, so earlier "phone" shots
+were cropped desktop layouts; the probe reports zero overflow now):
+
+- G1 responsive: single column for the whole flow at ≤760px, wrapping
+  option buttons and section headers.
+- G2 external links open in a new tab (same-tab + browser-back had wiped
+  every answer).
+- G3 "Change an answer" was a full reset — every answered row in the
+  declaration panel is now an edit point that resumes the interview at that
+  question with earlier answers intact; the link became "Start over".
+- G4 "Somewhere else (third country)" → "Any other country"; question
+  reframed as "Which passport will you apply with?" (dataset change).
+- G5 record metaphor: deferred — print/export is an s6 launch item (noted in
+  KANBAN), since the stamp/record framing is the design's signature.
+- G6 the "Record generated" stamp now appears only with the results.
+- G7 "the date it was read" → "the date we read it from the source".
+- G8/G10 first screen names the outcome: work-permit routes (visa types),
+  near-misses, the single unlocking step.
+- G9 unlabeled ticks carry a hover title naming the amount and that it
+  belongs to another route (full labels collide on narrow rails).
+
+Cheap default, Spine chose: G5 deferral. Everything else reversible copy/UI.
