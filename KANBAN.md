@@ -11,7 +11,7 @@ flowchart LR
     B --> C["Gap analysis on results ✅ real-green (v0.3)"]
     C --> C2["Leverage analysis: what each step unlocks ✅ real-green (v0.4–v0.5)"]
     C2 --> D["Source watch + change flag ✅ real-green (v0.6)"]
-    D --> E["Four countries filled: FR·ES·NL ◀ next"]
+    D --> E["Four countries filled: FR·ES·NL + honest verdicts ◀ here"]
     E --> F["Public launch 🏁 v1"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
@@ -63,6 +63,17 @@ flowchart LR
 _(empty)_
 
 ## mock-green
+
+- **Honest verdicts and designed edge states** (s5b) · mock-green 2026-09-03
+  (`docs/spine/scenarios/s5b.md`, spec `docs/spine/specs/s5b-honest-verdicts.md`):
+  born from the product-critique run — dataset notices (EU free movement),
+  route preconditions ("Also required — not checked here"), zero-open
+  headlines that carry the steps, learn boxes only where the unknown binds,
+  step-gated hold rows grouped under a data-derived summary, period-aware
+  money everywhere, the NL orientation-year question split in two.
+  Built by the builder agent (113 tests, test-first), reviewed in the main
+  session: 6 findings verified by measurement and fixed. **Real-green rides
+  on the same human pass as s5.**
 
 - **Four countries filled: FR·ES·NL** (s5) · mock-green 2026-09-02
   (`docs/spine/scenarios/s5.md`): 21 routes / 4 countries, destination-first

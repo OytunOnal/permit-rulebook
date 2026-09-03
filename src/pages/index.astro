@@ -52,11 +52,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <script>
     import dataset from "visa-rules/data/dataset.json";
     import {
-      deriveQuestions, remainingQuestions, evaluate, formatEUR, routeProvenance,
-      thresholdsForField, deriveBands, unlocks, type Dataset, type Profile, type RouteResult,
+      deriveQuestions, remainingQuestions, evaluate, formatEUR, formatEURPer, routeProvenance,
+      thresholdsForField, deriveBands, unlocks, notices, referencedFields, forEachCriterion,
+      type Criterion, type Dataset, type Notice, type Profile, type RouteResult,
     } from "visa-rules";
 
     const ds = dataset as unknown as Dataset;
+    // One field-lookup idiom for the whole page: the dataset never changes
+    // after load, and six copies of the same scan drift (review).
+    const fieldById = new Map(ds.fields.map((f) => [f.id, f]));
+    const fieldOf = (id: string) => fieldById.get(id);
     const questions = deriveQuestions(ds);
     const main = document.getElementById("main")!;
     const declList = document.getElementById("decl-list")!;
@@ -79,7 +84,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       salary_eur_year: "Salary", salary_eur_month: "Monthly salary", german: "German",
       english: "English", age_band: "Age", de_stay6m: "Stay in DE",
       partner_ck: "Partner", funds_eur_month: "Monthly funds",
-      fr_degree: "French degree", nl_grad3y: "NL/top-200 degree",
+      fr_degree: "French degree",
+      nl_recent_grad: "Dutch graduate", top200_grad: "Top-200 graduate",
     };
     const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
 
@@ -161,8 +167,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     }
 
     function railFor(result: RouteResult): string {
-      const salary = result.route.criteria.find((c) => c.op === "gte");
-      if (!salary || salary.op !== "gte") return "";
+      // Nested too: NL ICT states its thresholds inside an any-disjunction, so
+      // a top-level-only scan drew no rail on exactly those near cards (review).
+      const salary = gapCriterionOf(result) ??
+        gteCriteriaOf(result).find((c) => answers[c.field] !== undefined);
+      if (!salary) return "";
       const field = salary.field;
       const ts = thresholdsForField(ds, field);
       const bands = deriveBands(ds, field);
@@ -177,13 +186,76 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const own = salary.threshold.amount;
       const labels = `<span class="lbl" style="left:${pct(own)}%"><b>${formatEUR(own)}</b>${
         salary.threshold_label ? esc(salary.threshold_label) : ""}</span>`;
+      // The two labels overprint when the band meets the threshold (critique
+      // #10). Shifting sideways only moved the collision — the labels are
+      // wider than the narrow bands — so the second label drops to its own
+      // line, where no width can bring them back together.
+      const centre = (bMin + bMax) / 2;
+      const collides = Math.abs(pct(own) - centre) < 14;
+      const youStyle = `left:${centre}%;top:${collides ? "2.5rem" : "1.35rem"}`;
       return `
         <div class="rail" aria-label="Salary thresholds">
           <div class="bar"><span class="you" style="left:${bMin}%;width:${bMax - bMin}%"></span>${ticks}</div>
           <div class="lbls">${labels}
-            <span class="lbl you-l" style="left:${(bMin + bMax) / 2}%;top:1.35rem"><b>your band</b></span>
+            <span class="lbl you-l" style="${youStyle}"><b>your band</b></span>
           </div>
         </div>`;
+    }
+
+    type CritResult = RouteResult["criteria"][number];
+
+    /**
+     * A criterion the user "failed" by having more: the route wants the
+     * "none of these" answer (Chancenkarte: no offer yet) and the user
+     * declared a real step. "Not met: situation" reads to an offer-holder as
+     * "lose your offer" — the honest line names what they already have.
+     */
+    function notNeededWith(cr: CritResult): string | null {
+      const c = cr.criterion;
+      if (c.op !== "eq") return null;
+      const def = fieldOf(c.field);
+      const required = def?.options?.find((o) => o.value === c.value);
+      const declared = def?.options?.find((o) => o.value === answers[c.field]);
+      return required?.is_fallback && declared?.short ? declared.short : null;
+    }
+
+    /** How a failing criterion names itself in a verdict line. The field name
+     * alone ("age") reads as a verdict on the person, so the dataset's
+     * short_reason qualifies it ("age — for 30 or older"). */
+    function failLabel(cr: CritResult): string {
+      const c = cr.criterion;
+      const base =
+        c.op === "any" ? (c.label ?? "requirements") :
+        c.op === "points" ? "points requirement" :
+        (SHORT[c.field] ?? c.field);
+      return c.short_reason ? `${base} — ${c.short_reason}` : base;
+    }
+
+    /** Unknowns the user can still act on: on a hard-failed route nothing the
+     * person finds out can change the verdict, so none of them is open. Every
+     * consumer (verdict line, strip count, auto-open, learn box) reads this one
+     * list, or they contradict each other on the same row (review). */
+    function liveUnknowns(r: RouteResult): string[] {
+      if (r.hard_fail) return [];
+      return r.unknown_fields.filter((f) => answers[f] !== undefined);
+    }
+    const hasLiveUnknown = (r: RouteResult) => liveUnknowns(r).length > 0;
+
+    /** Every gte criterion in a route, at any depth. */
+    function gteCriteriaOf(r: RouteResult): Extract<Criterion, { op: "gte" }>[] {
+      const out: Extract<Criterion, { op: "gte" }>[] = [];
+      forEachCriterion(r.route.criteria, (c) => { if (c.op === "gte") out.push(c); });
+      return out;
+    }
+
+    /** The gte criterion a bounded gap was measured on — matched by amount, so
+     * a gap propagated out of a disjunction still finds its field (review). */
+    function gapCriterionOf(r: RouteResult): Extract<Criterion, { op: "gte" }> | undefined {
+      if (r.gap_max === undefined) return undefined;
+      return gteCriteriaOf(r).find((c) => {
+        const band = deriveBands(ds, c.field).find((b) => b.id === answers[c.field]);
+        return band !== undefined && Math.abs(c.threshold.amount - (band.min ?? 0) - r.gap_max!) < 0.005;
+      });
     }
 
     function whyFor(r: RouteResult): string {
@@ -192,18 +264,27 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         return r.gap_points
           ? "The points requirement is within reach — the ladder below shows your score."
           : "The threshold sits above your declared band.";
-      const missing = r.criteria.filter((c) => c.outcome === "fail").map((c) =>
-        "field" in c.criterion ? (SHORT[c.criterion.field] ?? c.criterion.field)
-        : c.criterion.op === "any" ? (c.criterion.label ?? "requirements")
-        : "points requirement");
-      // Only fields the user explicitly answered "I don't know" — a question
-      // skipped because the route was already dead is not an unknown, it was
-      // never asked.
-      const unknown = r.unknown_fields.filter((f) => answers[f] !== undefined).map((f) => SHORT[f] ?? f);
+      const fails = r.criteria.filter((c) => c.outcome === "fail");
+      const moot: string[] = [], missing: string[] = [];
+      for (const cr of fails) {
+        const m = notNeededWith(cr);
+        if (m) moot.push(m); else missing.push(failLabel(cr));
+      }
+      const unknown = liveUnknowns(r).map((f) => SHORT[f] ?? f);
       const parts = [];
+      if (moot.length) parts.push(`Not needed with ${moot.join(", ")}.`);
       if (missing.length) parts.push(`Not met: ${missing.join(", ").toLowerCase()}.`);
       if (unknown.length) parts.push(`Unknown (you answered "I don't know"): ${unknown.join(", ").toLowerCase()} — an open gap, not a no.`);
       return esc(parts.join(" "));
+    }
+
+    /** Conditions the authority applies that the interview never asked —
+     * stated on every card so "criteria met" cannot overpromise. */
+    function precondFor(r: RouteResult): string {
+      const items = r.route.preconditions;
+      if (!items?.length) return "";
+      return `<div class="precond"><b>Also required — not checked here:</b> ${
+        items.map((t) => esc(t)).join(" · ")}</div>`;
     }
 
     function provenanceFor(r: RouteResult): string {
@@ -218,9 +299,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // s3: "I don't know" answers get an official find-out link — driven by the
     // dataset's field `learn` sources, never hardcoded in the UI.
     function learnBoxFor(r: RouteResult): string {
-      const links = r.unknown_fields
-        .filter((f) => answers[f] !== undefined)
-        .map((f) => ds.fields.find((d) => d.id === f)?.learn)
+      // Only where the unknown still binds: on a hard-failed route (wrong
+      // qualification, no offer) finding out changes nothing, and the link
+      // sends the user down a path that cannot open (critique #4).
+      const links = liveUnknowns(r)
+        .map((f) => fieldOf(f)?.learn)
         .filter((l): l is { label: string; url: string } => !!l);
       if (!links.length) return "";
       return `<div class="learn">You can find out yourself: ${links
@@ -228,9 +311,19 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         .join(" · ")}.</div>`;
     }
 
+    const periodOf = (field: string) => fieldOf(field)?.period;
+
+    /** The money field a route's bounded gap is measured on — its period is
+     * what makes "€1,585" readable as monthly or annual (critique #7). */
+    const gapFieldOf = (r: RouteResult) => gapCriterionOf(r)?.field ?? "";
+
+    /** One gap, one format, everywhere it is printed (card, headline, unlock). */
+    const gapAmount = (r: RouteResult) =>
+      formatEURPer(Math.round(r.gap_max!), periodOf(gapFieldOf(r)));
+
     function optLabel(field: string, value: string | undefined): string {
       if (value === undefined) return "no answer";
-      const def = ds.fields.find((d) => d.id === field);
+      const def = fieldOf(field);
       if (def?.type === "money_band")
         return deriveBands(ds, field).find((b) => b.id === value)?.label ?? value;
       return def?.options?.find((o) => o.value === value)?.label ?? value;
@@ -243,15 +336,17 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         .filter((cr) => cr.outcome === "fail")
         .map((cr) => {
           const c = cr.criterion;
+          const moot = notNeededWith(cr);
+          if (moot) return `<li class="moot"><b>Not needed</b> — you already have ${esc(moot)}</li>`;
           if (c.op === "any")
-            return `<li><b>${esc(c.label ?? "requirements")}</b> — no qualifying path (${esc(c.paths.map((p) => p.label ?? "path").join(" / "))})</li>`;
+            return `<li><b>${esc(failLabel(cr))}</b> — no qualifying path (${esc(c.paths.map((p) => p.label ?? "path").join(" / "))})</li>`;
           const req =
             c.op === "eq" ? optLabel(c.field, c.value) :
             c.op === "in" ? c.values.map((v) => optLabel(c.field, v)).join(" or ") :
-            c.op === "gte" ? `${formatEUR(c.threshold.amount)} or more` :
+            c.op === "gte" ? `${formatEURPer(c.threshold.amount, periodOf(c.field))} or more` :
             `${c.required.value} points`;
           const field = "field" in c ? c.field : "";
-          return `<li><b>${esc(SHORT[field] ?? field)}</b> — needs: ${esc(req)} · you declared: ${esc(optLabel(field, answers[field]))}</li>`;
+          return `<li><b>${esc(failLabel(cr))}</b> — needs: ${esc(req)} · you declared: ${esc(optLabel(field, answers[field]))}</li>`;
         });
       return rows.length ? `<ul class="faildetail">${rows.join("")}</ul>` : "";
     }
@@ -265,17 +360,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             <span class="st ${r.status}">${STATUS_LABEL[r.status]}</span>
           </div>
           <p class="why">${whyFor(r)}</p>
+          ${precondFor(r)}
           ${r.points ? `<div class="ptsline"><b>Points ${r.points.scored} of ${r.points.required}</b>${
             r.points.items.length ? " — " + r.points.items.map((i) => `${esc(SHORT[i.field] ?? i.field)} +${i.points}`).join(" · ") : ""
           }</div>` : ""}
           ${r.status !== "hold" ? railFor(r) : ""}
           ${r.status === "near" && r.gap_max ? (() => {
-            const gapCrit = r.criteria.find((c) => c.gap_max !== undefined)?.criterion;
-            const gapField = gapCrit && "field" in gapCrit ? gapCrit.field : "";
+            const gapField = gapFieldOf(r);
             const hint = gapField === "salary_eur_year"
               ? " A route with a lower threshold may already apply — check the other cards."
               : "";
-            return `<div class="gapnote"><b>Gap: up to ${formatEUR(Math.round(r.gap_max))}</b> — ${esc((SHORT[gapField] ?? gapField).toLowerCase())}.${hint}</div>`;
+            const label = gapField ? ` — ${esc((SHORT[gapField] ?? gapField).toLowerCase())}` : "";
+            return `<div class="gapnote"><b>Gap: up to ${gapAmount(r)}</b>${label}.${hint}</div>`;
           })() : ""}
           ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Gap: ${r.gap_points} point${r.gap_points === 1 ? "" : "s"} short.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
           ${learnBoxFor(r)}
@@ -284,14 +380,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     }
 
     function holdRow(r: RouteResult): string {
-      const hasUnknown = r.unknown_fields.some((f) => answers[f] !== undefined);
       const why = whyFor(r);
       const short = why.split(". ")[0].replace(/\.$/, "");
+      // Auto-open only where the unknown still binds — a row opened on a dead
+      // route promises an answer that cannot change it (critique #4).
       return `
-        <details class="route-hold"${hasUnknown ? " open" : ""}>
+        <details class="route-hold"${hasLiveUnknown(r) ? " open" : ""}>
           <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(r.route.name)}</span><span class="hold-why">${short}</span></summary>
           <div class="hold-body">
             ${r.route.summary ? `<p class="why">${esc(r.route.summary)}</p>` : ""}
+            ${precondFor(r)}
             ${failDetail(r)}
             ${learnBoxFor(r)}
             <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
@@ -299,8 +397,79 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         </details>`;
     }
 
+    /** Every failing criterion of this row sits on a step the user hasn't
+     * taken (an offer, a transfer, a hosting agreement) and nothing else is
+     * open on it — the row says only what the step above already says. */
+    function isStepGated(r: RouteResult): boolean {
+      const fails = r.criteria.filter((c) => c.outcome === "fail");
+      if (!fails.length || hasLiveUnknown(r)) return false;
+      // "Not needed with a job offer" is the opposite story — never file a
+      // route the user has outgrown under "needs a job offer".
+      if (fails.some((cr) => notNeededWith(cr) !== null)) return false;
+      return fails.every((cr) => {
+        const fields = referencedFields(cr.criterion);
+        // A criterion referencing no field is not "path-gated" — engine parity.
+        return fields.length > 0 && fields.every((f) => fieldOf(f)?.kind === "path");
+      });
+    }
+
+    /** The steps a set of gated rows actually asks for, named by the dataset.
+     * Fixed copy ("a job offer, transfer or hosting agreement") told a user who
+     * had declared a transfer that they needed one (review). */
+    function stepNamesFor(rows: RouteResult[]): string[] {
+      const names = new Set<string>();
+      for (const r of rows)
+        for (const cr of r.criteria.filter((c) => c.outcome === "fail")) {
+          const c = cr.criterion;
+          if (!("field" in c)) continue;
+          const def = fieldOf(c.field);
+          if (def?.kind !== "path") continue;
+          const wanted = c.op === "eq" ? [c.value] : c.op === "in" ? c.values : [];
+          for (const v of wanted) {
+            const opt = def.options?.find((o) => o.value === v);
+            if (opt && !opt.is_fallback) names.add(opt.short ?? opt.label);
+          }
+        }
+      return [...names];
+    }
+
+    const joinOr = (xs: string[]) =>
+      xs.length < 2 ? (xs[0] ?? "") : `${xs.slice(0, -1).join(", ")} or ${xs.at(-1)}`;
+
+    /**
+     * One "Not met: situation" row per country was information; sixteen were
+     * noise (critique #5). Rows gated on the step alone collapse into one
+     * group; anything with its own reason keeps its own row.
+     */
+    function holdList(rows: RouteResult[], hasUnlocks: boolean): string {
+      const gated: RouteResult[] = [], individual: RouteResult[] = [];
+      for (const r of rows) (isStepGated(r) ? gated : individual).push(r);
+      if (gated.length < 3) return rows.map(holdRow).join("");
+      const steps = joinOr(stepNamesFor(gated));
+      return individual.map(holdRow).join("") +
+        `<details class="hold-group">
+          <summary>${gated.length} routes need ${esc(steps)}${
+            hasUnlocks ? " — see the steps above" : ""}</summary>
+          <div class="hold-group-body">${gated.map(holdRow).join("")}</div>
+        </details>`;
+    }
+
+    function noticeCard(n: Notice): string {
+      const host = new URL(n.source.source_url).hostname.replace(/^www\./, "");
+      return `
+        <article class="notice">
+          <h3>${esc(n.title)}</h3>
+          <p class="why">${esc(n.body)}</p>
+          <div class="foot">
+            <div class="srcs"><div class="src"><i>“${esc(n.source.quote)}”</i> · ${esc(host)}${
+              n.source.legal_basis ? ` · ${esc(n.source.legal_basis)}` : ""} · <b>read ${esc(n.source.retrieved_at)}</b></div></div>
+            <a class="next" href="${esc(n.source.source_url)}" target="_blank" rel="noopener">Official page</a>
+          </div>
+        </article>`;
+    }
+
     function unlockTitle(u: ReturnType<typeof unlocks>[number]): string {
-      const def = ds.fields.find((d) => d.id === u.field);
+      const def = fieldOf(u.field);
       let title = (u.option.short ?? u.option.label) +
         (def?.type === "money_band" ? ` — ${(SHORT[u.field] ?? u.field).toLowerCase()}` : "");
       if (u.qualifier)
@@ -317,7 +486,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <ul>${routes.map((r) =>
             `<li>${esc(r.route.name)} — ${r.status === "met"
               ? `<b>would be met</b>`
-              : `<i>would come within reach${r.gap_max ? ` (${formatEUR(Math.round(r.gap_max))})` : r.gap_points ? ` (${r.gap_points} pt${r.gap_points === 1 ? "" : "s"} more)` : ""}</i>`}</li>`).join("")}
+              : `<i>would come within reach${r.gap_max ? ` (${gapAmount(r)})` : r.gap_points ? ` (${r.gap_points} pt${r.gap_points === 1 ? "" : "s"} more)` : ""}</i>`}</li>`).join("")}
           </ul>
         </article>`;
     }
@@ -340,24 +509,63 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const near = byStatus.near;
       const metCountries = new Set(byStatus.met.map((r) => r.country));
 
-      const nearNote = near.length
-        ? near[0].gap_max
-          ? ` <b>One is within ${formatEUR(Math.round(near[0].gap_max))}.</b>`
-          : near[0].gap_points
-            ? ` <b>One is ${near[0].gap_points} point${near[0].gap_points === 1 ? "" : "s"} away.</b>`
-            : ""
-        : "";
-      const across = metCountries.size > 1 ? ` across ${metCountries.size} countries` : "";
-      headline.innerHTML = `${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open${across}.` + nearNote;
-      subline.textContent = `Code compared your ${history.length} answer${history.length === 1 ? "" : "s"} against ${results.length} published rule sets. ` +
-        `Every value below shows its official quote and the date it was read.`;
-
       renderDeclaration(null);
       app.dataset.state = "results";
       stamp.hidden = false;
 
-      const openUnknownCount = (rs: RouteResult[]) =>
-        rs.filter((r) => r.status === "hold" && r.unknown_fields.some((f) => answers[f] !== undefined)).length;
+      const applicable = notices(ds, answers);
+      const zeroOpen = met + near.length === 0;
+      const baseSub = `Code compared your ${history.length} answer${history.length === 1 ? "" : "s"} against ${results.length} published rule sets. ` +
+        `Every value below shows its official quote and the date we read it from the source.`;
+
+      // The screen no route can produce: this passport needs no permit at all.
+      // "0 routes look open" is the worst news for the best-placed user and it
+      // isn't even true (critique #1) — here the notice IS the result.
+      if (applicable.length && zeroOpen) {
+        // The headline is the notice's own title: a second copy of it here
+        // would drift the moment the dataset states a different notice.
+        headline.innerHTML = esc(applicable[0].title) + ".";
+        subline.textContent = "Nothing to compare: the published rule below answers your situation directly.";
+        main.innerHTML = applicable.map(noticeCard).join("");
+        return;
+      }
+
+      // s3b: counterfactual leverage — what each alternative step would unlock.
+      const ups = unlocks(ds, answers);
+      // A notice that matched while something is still open rides above the
+      // normal layout (cannot happen today — the guard keeps it honest).
+      const noticeCards = applicable.map(noticeCard).join("");
+
+      if (zeroOpen && ups.length) {
+        // The step worth naming: one that would fully meet a route beats one
+        // that only brings routes within reach, then breadth, then dataset
+        // order (strict >, so ties keep the engine's order).
+        const rank = (u: (typeof ups)[number]) =>
+          (u.routes.some((r) => r.status === "met") ? 1e6 : 0) + u.routes.length;
+        const bestUp = ups.reduce((best, u) => (rank(u) > rank(best) ? u : best));
+        // Zero open is a starting point, not a dead end — the steps are the news.
+        headline.innerHTML = `Nothing open yet — ${ups.length} step${ups.length === 1 ? "" : "s"} would change that.`;
+        subline.textContent = `${baseSub} Nearest: ${unlockTitle(bestUp)}.`;
+      } else if (zeroOpen) {
+        // Nothing open and no single step would open one: no false hope.
+        headline.innerHTML = "Nothing open on these answers.";
+        subline.textContent = `${baseSub} Change an answer on the left to explore — or see each country's reasons below.`;
+      } else {
+        const nearNote = near.length
+          ? near[0].gap_max
+            ? ` <b>One is within ${gapAmount(near[0])}.</b>`
+            : near[0].gap_points
+              ? ` <b>One is ${near[0].gap_points} point${near[0].gap_points === 1 ? "" : "s"} away.</b>`
+              : ""
+          : "";
+        const across = metCountries.size > 1 ? ` across ${metCountries.size} countries` : "";
+        headline.innerHTML = `${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open${across}.` + nearNote;
+        subline.textContent = baseSub;
+      }
+
+      // Counted the way the rows read: an unknown on a hard-failed route is
+      // moot, and no learn box offers to resolve it (critique #4).
+      const openUnknownCount = (rs: RouteResult[]) => rs.filter(hasLiveUnknown).length;
       const openUnknowns = openUnknownCount(results);
 
       const strip = `<div class="strip" aria-label="Summary">
@@ -368,9 +576,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
       const section = (title: string, cls: string, inner: string, count: number) =>
         count ? `<div class="ghead ${cls}"><b>${title}</b> (${count})</div><div class="stack">${inner}</div>` : "";
-
-      // s3b: counterfactual leverage — what each alternative step would unlock.
-      const ups = unlocks(ds, answers);
 
       const seekHint = (rs: RouteResult[], hasUnlocks: boolean) =>
         hasUnlocks && rs.some((r) => r.route.kind === "seek" && r.status !== "hold")
@@ -384,17 +589,21 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             ups.map((u) => unlockCard(u, u.routes)).join("") +
             seekHint(results, true)
           : "";
-        main.innerHTML = strip +
+        main.innerHTML = noticeCards + strip +
           section("Open — criteria met", "", byStatus.met.map((r) => fullCard(r)).join(""), byStatus.met.length) +
           section("Within reach", "near", byStatus.near.map((r) => fullCard(r)).join(""), byStatus.near.length) +
           unlockSection +
-          section("Not yet", "hold", byStatus.hold.map(holdRow).join(""), byStatus.hold.length);
+          section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length);
         return;
       }
 
       // Multi destination: collapsible country sections; hopeful countries open,
       // all-hold ones collapsed with the tally (and any unlocking steps) visible.
-      main.innerHTML = strip + visible.map((c) => {
+      // With nothing open anywhere, the first country that has steps opens
+      // instead — the hope is the point, and it was hidden in 10px tally text.
+      const withUps = new Set(ups.flatMap((u) => u.routes.map((r) => r.country)));
+      const firstWithUps = visible.find((c) => withUps.has(c.code))?.code;
+      main.innerHTML = noticeCards + strip + visible.map((c) => {
         const rs = results.filter((r) => r.country === c.code);
         const g = {
           met: rs.filter((r) => r.status === "met"),
@@ -412,7 +621,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           g.hold.length ? `${g.hold.length} not yet${unknowns ? ` — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown` : ""}` : "",
           cUps.length ? `<i>${cUps.length} unlocking step${cUps.length === 1 ? "" : "s"}</i>` : "",
         ].filter(Boolean).join(" · ");
-        const open = g.met.length + g.near.length > 0;
+        const open = g.met.length + g.near.length > 0 || (zeroOpen && c.code === firstWithUps);
         const inner =
           section("Open — criteria met", "", g.met.map((r) => fullCard(r, false)).join(""), g.met.length) +
           section("Within reach", "near", g.near.map((r) => fullCard(r, false)).join(""), g.near.length) +
@@ -421,7 +630,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
               cUps.map((x) => unlockCard(x.u, x.routes)).join("") +
               seekHint(rs, true)
             : "") +
-          section("Not yet", "hold", g.hold.map(holdRow).join(""), g.hold.length);
+          section("Not yet", "hold", holdList(g.hold, cUps.length > 0), g.hold.length);
         return `<details class="country-sec"${open ? " open" : ""}>
             <summary>${esc(c.name)} <span class="tally">${tallyParts}</span></summary>
             <div class="cbody">${inner}</div>
@@ -547,6 +756,24 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .unlock li b{color:var(--color-met)}
     .unlock li i{color:var(--color-near);font-style:normal;font-weight:600}
     .unlock-hint{font-size:.8rem;color:var(--color-muted);margin:-.2rem 0 .4rem;max-width:38rem}
+    /* s5b: conditions the authority applies that the interview never asked —
+       the card must not read as a green light on them (critique #2). */
+    .precond{font-size:.83rem;color:#54513f;border-left:3px solid var(--color-hold);padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}
+    .precond b{color:var(--color-hold)}
+    /* s5b: the situation-gated rows, said once (critique #5b). */
+    details.hold-group{margin-top:.1rem}
+    details.hold-group > summary{cursor:pointer;list-style:none;font:600 .82rem var(--font-sans);color:var(--color-muted);
+      background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-hold);padding:.55rem .9rem}
+    details.hold-group > summary::-webkit-details-marker{display:none}
+    details.hold-group > summary::before{content:"▸ ";color:var(--color-muted)}
+    details.hold-group[open] > summary::before{content:"▾ "}
+    .hold-group-body{display:grid;gap:var(--gap-cards);padding:.5rem 0 .2rem .9rem}
+    /* s5b: the passport that needs no permit (critique #1). */
+    .notice{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);border-left:3px solid var(--color-met);
+      padding:var(--pad-card);margin-bottom:var(--gap-cards)}
+    .notice h3{font:var(--text-route);color:var(--color-met);margin-bottom:.35rem}
+    .faildetail li.moot::before{content:"— ";color:var(--color-muted)}
+    .faildetail li.moot b{color:var(--color-met)}
     .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
     .learn a{color:var(--color-band);font-weight:600;text-decoration:none}
     .learn a::after{content:" ↗"}
@@ -567,7 +794,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .bar{position:relative;height:var(--rail-h);background:var(--rail-track);border-radius:99px}
     .you{position:absolute;top:0;bottom:0;background:var(--rail-band);border-radius:99px}
     .tick{position:absolute;top:-5px;width:2px;height:17px;background:var(--rail-tick);opacity:.6}
-    .lbls{position:relative;height:2.4rem;margin-top:.4rem;font:500 .68rem var(--font-mono)}
+    .lbls{position:relative;height:3.6rem;margin-top:.4rem;font:500 .68rem var(--font-mono)}
     .lbl{position:absolute;transform:translateX(-50%);text-align:center;color:var(--color-muted);line-height:1.35}
     .lbl b{display:block;color:var(--color-ink)}
     .lbl.you-l,.lbl.you-l b{color:var(--color-band)}

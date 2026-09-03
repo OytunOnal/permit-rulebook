@@ -53,6 +53,9 @@
   .unlock li::before{content:"→ ";color:var(--color-met);font-weight:700}
   .unlock li b{color:var(--color-met)}
   .tally i{font-style:normal;color:var(--color-band)}
+  /* s5b: conditions the authority applies that the interview never asks */
+  .precond{font-size:.83rem;color:#54513f;border-left:3px solid var(--color-hold);padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}
+  .precond b{color:var(--color-hold)}
 </style>
 </head>
 <body>
@@ -90,7 +93,8 @@
   <div class="ghead"><b>Open</b></div>
   <article class="route">
     <div class="top"><h3>Highly Skilled Migrant</h3><span class="st met">Criteria met</span></div>
-    <p class="why">Monthly salary criterion cleared; requires an IND-recognised sponsor (your declared offer).</p>
+    <p class="why">Monthly salary criterion cleared.</p>
+    <div class="precond"><b>Also required — not checked here:</b> The employer is an IND-recognised sponsor · Salary in line with the market rate (IND assessment) · Regulated professions (e.g. nurses, doctors): BIG registration</div>
     <div class="src">“Highly skilled migrant, 30 or older: €5,942.00” · ind.nl · valid to 31 Dec 2026 · <b>read 2026-09-03</b></div>
   </article>
   <div class="ghead near"><b>Within reach</b></div>
@@ -112,6 +116,10 @@
   <details class="country"><summary>Spain <span class="tally">2 not yet — 1 has an open unknown</span></summary><div>
   <details class="route-hold"><summary><span class="hold-name">Highly Qualified Professional (Ley 14/2013)</span><span class="hold-why">Unknown: recognition in Spain</span></summary></details>
   </div></details>
+
+  <p class="note" style="margin-top:2.4rem">// variant: zero open — same screen, headline and subline when no route is open or within reach anywhere (the steps carry the news; with no steps at all the headline reads "Nothing open on these answers.")</p>
+  <h1>Nothing open yet — <b>6 steps would change that.</b></h1>
+  <p class="note">Nearest: an intra-corporate transfer in Germany.</p>
 </div>
 </body>
 </html>

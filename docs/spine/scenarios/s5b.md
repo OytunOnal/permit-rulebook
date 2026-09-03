@@ -40,10 +40,19 @@ The four critique personas:
 4. **Explorer (C):** headline "Nothing open yet — 6 steps would change that."
    and subline "Nearest: …" naming an unlock step; Germany's section is open
    (first section with unlocking steps), the other three collapsed. Inside
-   Germany the situation-gated routes sit in one group "7 routes need a job
-   offer, transfer or hosting agreement — see the steps above"; the
-   Opportunity Card stays an individual row ("Not met: monthly funds") with
-   its Anabin box. The NL question came as two plain questions ("Dutch
+   Germany the routes gated on the step **alone** sit in one group — measured:
+   "5 routes need a job offer, a research hosting agreement or an
+   intra-corporate transfer — see the steps above" (the step list is derived
+   from the dataset, so it never names a step the group doesn't ask for; §18a
+   and §19c keep their own rows because they also fail on qualification and
+   experience). The Opportunity Card stays an individual row ("Not met:
+   monthly funds") with its Anabin box.
+   _(Corrected 2026-09-03 after the build: this line originally said "7
+   routes … job offer, transfer or hosting agreement" — an arithmetic slip of
+   mine (8 DE routes minus the Opportunity Card) that contradicted the spec's
+   own predicate and the critique's pinned count of 16 grouped rows across
+   four countries. Evidence: the built page measures DE 5 · FR 3 · ES 4 ·
+   NL 4 = 16. Recorded in DECISIONS.)_ The NL question came as two plain questions ("Dutch
    graduate", "Top-200 graduate"), the second offering "I don't know".
 5. **Edge (mandatory):** explorer C with English "below B2" and no other
    change — every route hard-fails or stays hold; if no unlock row survives,
@@ -62,6 +71,28 @@ The four critique personas:
 
 ## Runs
 
-- mock-green: —
+- mock-green: 2026-09-03 — all six steps walked on the running product
+  (CDP harness, `crit/`+`s5b/` screenshots): EU notice screen with its quote
+  and no rejection list; nurse card carrying the three unasked preconditions
+  and "€1,585/month"; engineer's learn boxes on exactly the three rows where
+  the unknown still binds and "Not needed — you already have a job offer" on
+  the Opportunity Card; explorer's "Nothing open yet — 6 steps would change
+  that. Nearest: an intra-corporate transfer in Germany." with Germany open
+  and per-country groups; the no-steps branch verified on a reachable NL
+  profile; 113 engine tests + `astro check` green. Review round after the
+  build: 6 findings verified by measurement and fixed (below).
 - real-green: — (rides on the s5 human pass; the europa.eu quote is
   human-verifiable without VPN)
+
+## Review round (main session, after the builder's report)
+
+Verified on the running page, then fixed: (1) a bounded gap propagated out of
+an `any` disjunction lost its field — NL ICT read "Gap: up to €2,490 — ." with
+no period and no rail; (2) the verdict line still promised "an open gap, not a
+no" on hard-failed routes while the strip, auto-open and learn box called it
+moot; (3) the rail label fix didn't fire — labels still overprinted (measured
+boxes), now the second label drops to its own line; (4) unlock rows printed
+bare amounts ("€4,766") while cards printed "/year"; (5) the group summary was
+fixed copy telling a user who had declared a transfer that they needed one —
+now derived from the dataset's own step names; (6) the notice screen hardcoded
+its headline instead of using the notice's title.

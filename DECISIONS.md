@@ -460,3 +460,63 @@ were cropped desktop layouts; the probe reports zero overflow now):
   belongs to another route (full labels collide on narrow rails).
 
 Cheap default, Spine chose: G5 deferral. Everything else reversible copy/UI.
+
+
+---
+
+## 2026-09-03 — product-critique "apply all" → slice s5b, built by the builder agent
+
+The human picked all three Recommended Adjustments from the first
+product-critique run (2 blockers, 5 friction, 5 polish; 29/40 on RUBRIC 1.1).
+First slice run under the steward-5 split: specs and scenario written here
+(judgment), implementation delegated to the `spine:builder` agent (test-first,
+no gates, no ledger access), review back in the main session. The builder
+returned 113 green tests, zero mocks born, and nine flagged deviations —
+the value of the split showed up there: it refused to invent precondition
+strings the dataset could not back, and it named three places where the spec
+contradicted itself rather than papering over them.
+
+**Design decisions this slice locks:**
+1. **Notices are data, not UI copy** — a dataset-level provenanced statement
+   with a `when` match, watched like any value (europa.eu, read 2026-09-03).
+   The EU-passport screen is now the notice, not "0 routes look open".
+2. **Preconditions are declared, not scored** — every route lists what the
+   authority also requires but the interview never asks. "Criteria met" now
+   means "on what you declared", visibly.
+3. **hard_fail is a first-class result field** — one predicate decides route
+   aliveness, learn boxes, auto-open and the unknown count, so the screen
+   cannot contradict itself row by row.
+4. **schema_version 0.3.0** — notices, preconditions, `period`,
+   `short_reason`, and the `nl_grad3y` → `nl_recent_grad` + `top200_grad`
+   split are breaking for stored profiles.
+
+**Back-edge (evidence, not hunch):** the s5b scenario's step 4 said the German
+group would read "7 routes need a job offer, transfer or hosting agreement".
+The spec's own predicate (rows failing on path fields *only*) yields 5 — §18a
+and §19c also fail on qualification and experience and keep their own rows —
+and 5+3+4+4 = 16 is exactly the count the critique pinned. The scenario line
+was my arithmetic slip; corrected in place with the measurement and this
+record. The builder implemented the spec and flagged the mismatch instead of
+bending either side: the exam stayed held-out.
+
+**Review round (6 findings, all verified on the running page before fixing):**
+a bounded gap propagated out of an `any` lost its field, so NL ICT rendered
+"Gap: up to €2,490 — ." with no period and no rail — the very ambiguity the
+slice set out to remove; the verdict line still promised "an open gap, not a
+no" on hard-failed routes while three other places called it moot; the rail
+label fix never fired (measured boxes still overlapped) — the second label now
+drops to its own line, where no width can bring them back together; unlock
+rows printed bare amounts; the group summary was fixed copy that told a user
+who had declared a transfer that they needed one — it now derives the step
+names from the dataset; the notice screen hardcoded the headline the notice
+already carries. Cleanups taken with them: one field-lookup map instead of six
+scans, one live-unknown list instead of three, one gap formatter instead of
+three, single-pass partition, `forEachCriterion` exported so the page stops
+re-implementing the criterion walk.
+
+**Deferred, with reasons:** critique #11 (4.55:1 contrast on small mono text)
+and #12 ("Up to 19 quick questions" — now 20 after the field split) are
+tracker issues #1 and #2 under `design-flaw`; the report's own scope was
+adjustments 1–3. The nl-ind-work-index sentinel flagged a change (unrelated
+ECHR permit copy) — flag file kept for a human read, no dataset value rides
+on it.

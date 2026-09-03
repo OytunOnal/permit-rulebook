@@ -78,8 +78,43 @@ _Avoid_: soft fail, near miss
 
 **Hard fail**:
 A definitive miss on a fixed attribute or a path choice. Only hard fails
-retire a route (and with it, its remaining questions).
+retire a route (and with it, its remaining questions). Carried on every
+result, it also decides what the screen may still promise: on a hard-failed
+route an unknown is moot, so no learn box offers to resolve it.
 _Avoid_: rejection, disqualification
+
+**Live unknown**:
+An unknown the person can still act on — one they answered "I don't know" on
+a route that has not hard-failed. Only live unknowns are counted, auto-opened
+and offered a learn box.
+_Avoid_: open question, missing answer
+
+**Notice**:
+A dataset-level, provenanced statement that answers a person no route can
+answer ("no work permit needed" for an EU passport). It sits beside routes,
+carries quote + source + date like any value, and is watched like one.
+_Avoid_: banner, message, info box
+
+**Precondition**:
+A plain-language condition the authority applies that the interview never
+asks (a recognised sponsor, market-rate pay, a professional registration).
+Shown on the card as "Also required — not checked here", never scored — so
+"criteria met" cannot overpromise.
+_Avoid_: extra requirement, fine print
+
+**Short reason**:
+How a criterion names itself in a verdict line ("age — for 30 or older"), so
+a bare field name does not read as a verdict on the person.
+
+**Moot criterion**:
+A "failure" caused by having more than the route wants — the Opportunity Card
+wants no offer yet and the person has one. Reads as "not needed with a job
+offer", never as a miss.
+_Avoid_: irrelevant, N/A
+
+**Step-gated row**:
+A not-yet route whose only genuine failure is a path step. These collapse
+into one group naming the steps the group actually asks for.
 
 ### Change and leverage
 
