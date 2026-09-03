@@ -520,3 +520,28 @@ tracker issues #1 and #2 under `design-flaw`; the report's own scope was
 adjustments 1–3. The nl-ind-work-index sentinel flagged a change (unrelated
 ECHR permit copy) — flag file kept for a human read, no dataset value rides
 on it.
+
+---
+
+## 2026-09-03 — the daily watch fired on its own; two flags read
+
+The GitHub Actions watch ran unattended at 09:54 UTC (visa-rules@05699f8) and
+committed two flags, which is the liveness promise working without us. Read:
+
+- **buzer-anlage-aufenthg (value-source): our own doing, not a source change.**
+  The flag's diff context begins at the very first character of the sliced
+  region, which is exactly where the s5-review marker widening moved the
+  slice start ("Merkmal nach § 20b…" → "Tabelle Anlage hat…"). The statute
+  table and "Die Mindestpunktzahl beträgt sechs Punkte." are byte-identical.
+  Flag dropped, the widened baseline stands, and today's three independent
+  runs agree on it. **Lesson recorded**: a slice-marker edit must be followed
+  by `watch:sources --commit` in the same change, or the next run reports our
+  edit as a source change — the watch cannot tell them apart.
+- **nl-ind-work-index (sentinel): a real change, kept for a human.** IND's
+  work index moved (diff context shows article-8 ECHR private-life copy).
+  It backs no dataset value; the action is a skim for a new or renamed work
+  route. Flag file left in `visa-rules/watch/flags/`.
+
+Local work rebased onto the CI commit; state.json kept ours (12 snapshots
+including the new europa.eu notice source — a superset of CI's 11, with the
+same hashes for both changed entries).
