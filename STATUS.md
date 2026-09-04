@@ -2,80 +2,54 @@
 
 ## Where are we
 
-Genesis, slice loop; scale **Product**; **v0.6** shipped, with **s5 (four countries)** and **s5b (honest verdicts)** both at mock-green — v0.7 stamps when the human pass lands.
+Genesis, slice loop; scale **Product**; **v0.6** shipped, with **s5 · s5b · s5c** at mock-green (v0.7 stamps when the human pass lands). 9 candidates on the roadmap (5 unversioned).
 
 ```mermaid
 flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓] --> D[Design ✓] --> E[Plan ✓]
-    E --> F["Slice loop ◀ here<br/>v0.1–v0.6 ✓ · s5 + s5b mock-green<br/>last: public launch"]
-    F --> G[v1 real-green]
+    E --> F["Slice loop ◀ here<br/>v0.1–v0.6 ✓<br/>four countries · honest verdicts · exceptions"]
+    F --> G[v1: public launch]
 ```
 
 ## What is happening now
 
-**The product was walked as a product, and it answered back.** The first
-`product-critique` run (four personas + a hostile walk, every control
-operated) scored 29/40 on RUBRIC 1.1 and found two blockers: an EU passport
-ended on a rejection screen ("0 routes look open · Not met: citizenship ×8")
-when the true answer is free movement, and cards said "Criteria met" on
-preconditions the interview never asks — for a nurse, the missing BIG
-registration. You picked **apply all**, and slice s5b delivered it: notices as
-provenanced data (the EU screen is now a sourced "No work permit needed"),
-preconditions declared on every card, zero-open results that lead with the
-steps that would change them, learn links only where the unknown still binds,
-sixteen "Not met: situation" rows collapsed into per-country groups that name
-the steps they actually ask for, and money that always says /month or /year.
+An **isolated product-critique** — the first walk by a session that had not
+done the work — found six things on a frozen build, one of them a blocker that
+was still live at HEAD: **Dutch amounts rendered with no unit.** A card read
+"€5,942" beside a German card reading "45.630 Euro im Jahr"; the same glance
+compared a month against a year and was wrong by twelve. The engine knew the
+period all along — the field carries it — and every place an amount reached the
+screen dropped it. Now the rails read `€4,357/month` and `€45,630/year`, the
+tick tooltips carry it, and the source line says `· per month` beside a quote
+that never did.
 
-Built by the `spine:builder` agent test-first (113 engine tests, no mocks
-born), then reviewed here: six findings, each verified on the running page
-before it was fixed — including a bounded gap that lost its field inside a
-disjunction and printed "Gap: up to €2,490 — ." on the NL ICT card. Two
-tracker issues carry the deferred polish (#1 contrast, #2 question count).
+Two more from that run are fixed. A person comparing all four countries used to
+get a wall of "Not met: located in France" — a criterion they never answered by
+that name, on a fact they had given us; it now reads "5 France routes — you
+told us Germany" and collapses to one line. And a zero-result screen that
+announced "6 steps would change that" was hiding two of them in collapsed
+sections; every section holding a step now opens. A fourth is answered on the
+cards: routes with no numeric threshold say so, rather than leaving the
+"every value carries its quote and date" promise quietly unmet.
 
-Since then the daily watch fired on its own and the flags were read: the IND
-sentinel had woken on an unrelated menu item (now sliced to the Work block),
-and chasing the second flag uncovered — and fixed — double-encoded snapshots
-plus **five quotes that were condensations rather than quotes**. Numbers were
-never wrong; the quotation marks were. `npm run check` now verifies that every
-shipped sentence is still on its source (14 verified, 3 PDF-tier by policy).
+The light critique that preceded it **has had its scores withdrawn**. It did
+not walk blind and never opened its own screenshots; a run that breaks its own
+conditions publishes findings, not numbers. Its findings stand — and two of its
+scores were wrong within the day.
 
-**The human verification pass came back** (2026-09-04): 18 of 20 checklist
-items confirmed at the source, 2 checklist statements wrong, 8 findings it
-never asked for. All corrections are in. The one that mattered: IND grants the
-Blue Card to IT professionals on 3 years of experience within 7, not 5 — we
-modelled only the 5-year rule, so IT applicants with 3–5 years were wrongly
-told "not yet". Fixed with a question that only appears when it can decide
-that route. Also removed: a top-200 ranking rule the IND page never states.
-
-**s5c is built and mock-green.** The passport question now asks a country: 198
-passport issuers, each carrying its class through a new `implies` mechanism, so
-all twenty-one citizenship criteria stayed untouched and the next agreement is
-one line of data. Reduced salary thresholds landed as second paths inside the
-routes that already exist (NL €3,122 / €4,754, ES €33,085.09), two French talent
-routes were modelled, and a Turkish passport now draws a sourced note about the
-rights the EU–Türkiye agreement adds after employment — beside the results,
-never instead of them, and never changing a verdict.
-
-Three passes found what the 165 tests could not: the country list had classed
-Åland and Guadeloupe residents as third-country when they hold Finnish and
-French passports; the EU membership claim was sourced to page furniture; and a
-light product-critique found that typing "turkey" returned "check the spelling"
-with no way to reach the country. All fixed and verified on screen.
-
-Skills were updated again today and the new rule bit immediately: **a cleared
-blocker must leave a permanent check that targets the symptom, not the path.**
-The EU-passport blocker cleared in s5b had come back through the country data
-in s5c; there are now sweeps that would have caught it, and writing them
-surfaced a fresh one — Kosovo was missing from the passport list entirely, so a
-Kosovar user could not answer at all. Fixed. 175 tests.
+Before that: s5c shipped the passport question as a country (199 issuers, class
+carried by `implies`, so no route criterion changed), reduced thresholds as
+second paths inside existing routes, two French talent routes, and the
+EU–Türkiye rights as a sourced note beside the results. Three review passes
+caught what 176 tests could not — Åland and Guadeloupe residents classed as
+third-country, an EU membership claim resting on page furniture, and "turkey"
+returning "check the spelling".
 
 ## What is expected from you
 
-**Real-green needs your two passes** 🛑: (1) the VPN verification checklist
-`visa-rules/data/verify-s5.md` — every FR/ES/NL value against its official
-page (the ES thresholds come from a PDF the policy says a human must read);
-the europa.eu notice quote needs no VPN. (2) An interactive browser run on
-http://localhost:4321 — happy path, weak profile, Back/restart, country
-sections, and the EU-passport screen. Also still open: the s3 learn-link
-click-check (Anabin + § 18g), and a human read of the `nl-ind-work-index`
-watch flag in `visa-rules/watch/flags/`.
+- [ ] **Verify the FR/ES/NL values at their official pages** — `visa-rules/data/verify-s5.md`. Yours because the Spanish thresholds come from a PDF that project policy says a human must read; the europa.eu and EFTA quotes need no VPN.
+- [ ] **Verify the s5c additions** — `visa-rules/data/verify-s5c.md`: the reduced Spanish threshold (€33,085.09, PDF tier) and the EEA leg of the passport class.
+- [ ] **Walk it on a real phone** — the isolated critique could not resize its viewport, so phone width is un-assessed by it. I measured 390 px through device emulation (no overflow, 54 px rows), but a handset is yours: open the dev server on your phone and run one flow.
+- [ ] **Click the two learn links** — Anabin and § 18g — the last open item from s3.
+- [ ] **Confirm the two watch-flag verdicts** — nothing is pending; this is your agreement that the buzer flag (our own marker edit) and the IND flag (an unrelated menu item) were closed correctly. `DECISIONS.md`, 2026-09-04.
+- [ ] **Open the s6 boundary when you want the launch slice** — I will bring roadmap promotions to it, and the v1 gate's full critique runs in isolation, not by me.

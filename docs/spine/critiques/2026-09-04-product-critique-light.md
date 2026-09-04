@@ -50,19 +50,26 @@ typing, the declaration panel, and the same flow again at 390 px.
 5. The class hint is the smallest text on the screen (10.9 px) and carries the
    only difference between two adjacent rows.
 
-## Rubric scores — affected lenses only
+## Rubric scores — WITHDRAWN
 
-| Lens | Score | Δ vs 2026-09-03 | Evidence |
-|---|---|---|---|
-| 2 Flow friction | 4 | = | Eight questions for a German offer-holder, unchanged by the country list; the picker is fast once a name matches — it was 2 before the alias fix, when a whole class of users could not answer at all. |
-| 3 Copy & framing | 4 | +1 | "Which passport will you apply with?" is plain; the reduced card names the fact that earned the lower number; #2 is the one label that misleads. |
-| 4 Trust surfacing | 5 | +2 | The met card quotes the €3,122 row it actually used, and the notice carries quote, host, legal basis (Decision 1/80 art. 6) and read date. |
-| 6 Edge states | 4 | +2 | No-match is a designed state; zero-open still leads with the steps; an EU passport ends on the free-movement notice; the extra-rights notice never replaces results. |
-| 7 Accessibility basics | 4 | = | Focus ring on rows, a hidden status announcing match counts, the result list out of the live region, Enter no longer answers on an untouched box. Not verified: a real screen-reader pass. |
-| 8 Responsive | 5 | = | 390 px: no overflow, filter and rows legible, 54 px touch targets. |
+**This run broke its own conditions, so it reports findings and no numbers.**
+Two conditions failed: it did not walk blind (the walker had written the
+previous report and carried its findings into the walk), and it took
+screenshots without opening them as images — the screenshot pass is what
+catches a render the design did not intend. Under PRODUCT_RUBRIC 1.2 a run in
+that state publishes findings and withdraws its scores, because a number
+produced under those conditions is a claim about the product that the method
+did not earn.
 
-Not re-scored (untouched by this slice): first-run clarity, result
-actionability.
+The scores this section carried (Flow friction 4, Copy 4, Trust 5, Edge states
+4, Accessibility 4, Responsive 5, against RUBRIC 1.1) are withdrawn. Two of
+them were demonstrably wrong within the day: Copy 4 was scored on cards whose
+prose the human then found unreadable, and the isolated run that followed found
+a live blocker — Dutch amounts rendered with no unit — that this walk passed
+straight through.
+
+Findings above stand. They were pinned to screens and each was verified before
+it was fixed.
 
 ## Adoption verdict — the walked flow
 

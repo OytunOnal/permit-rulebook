@@ -339,11 +339,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const lo = Math.min(...ts) * 0.88, hi = Math.max(...ts) * 1.1;
       const pct = (v: number) => Math.max(2, Math.min(98, ((v - lo) / (hi - lo)) * 100));
       const bMin = pct(band.min ?? lo), bMax = pct(band.max ?? hi);
-      const ticks = ts.map((t) => `<span class="tick" style="left:${pct(t)}%" title="${formatEUR(t)} — a threshold on another route"></span>`).join("");
+      const ticks = ts.map((t) => `<span class="tick" style="left:${pct(t)}%" title="${formatEURPer(t, periodOf(field))} — a threshold on another route"></span>`).join("");
       // Label only this route's own threshold — neighbouring ticks stay as
       // unlabeled context so close thresholds can't collide.
       const own = salary.threshold.amount;
-      const labels = `<span class="lbl" style="left:${pct(own)}%"><b>${formatEUR(own)}</b>${
+      const labels = `<span class="lbl" style="left:${pct(own)}%"><b>${formatEURPer(own, periodOf(field))}</b>${
         salary.threshold_label ? esc(salary.threshold_label) : ""}</span>`;
       // The two labels overprint when the band meets the threshold (critique
       // #10). Shifting sideways only moved the collision — the labels are
@@ -424,6 +424,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           ? "The points requirement is within reach — the ladder below shows your score."
           : "The threshold sits above your declared band.";
       const fails = r.criteria.filter((c) => c.outcome === "fail");
+      if (isPlacedElsewhere(r)) {
+        const place = declaredPlace();
+        const country = ds.countries.find((c) => c.code === r.country)?.name ?? r.country;
+        return esc(place
+          ? `A ${country} route — you told us ${place}.`
+          : `A ${country} route.`);
+      }
       const moot: string[] = [], missing: string[] = [];
       for (const cr of fails) {
         const m = notNeededWith(cr);
@@ -446,13 +453,29 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         items.map((t) => esc(t)).join(" · ")}</div>`;
     }
 
+    /** The period a provenanced amount is stated per, when the dataset knows it
+     * and the quote does not say it. A Dutch monthly figure beside a German
+     * annual one is a twelvefold error at a glance (isolated critique). */
+    function periodCaption(r: RouteResult, amount: number | undefined): string {
+      if (amount === undefined) return "";
+      const c = gteCriteriaOf(r).find((x) => x.threshold.amount === amount);
+      const p = c ? periodOf(c.field) : undefined;
+      return p ? ` · per ${p}` : "";
+    }
+
     function provenanceFor(r: RouteResult): string {
-      const lines = routeProvenance(r.route).map(({ label, value }) => {
+      const lines = routeProvenance(r.route).map(({ label, value, amount }) => {
         const host = new URL(value.source_url).hostname.replace(/^www\./, "");
         return `<div class="src"><i>“${esc(value.quote)}”</i> · ${esc(host)}${label ? ` · ${esc(label)}` : ""}${
+          periodCaption(r, amount)}${
           value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b></div>`;
       });
-      return lines.length ? `<div class="srcs">${lines.join("")}</div>` : "";
+      // The promise on the first screen is that every value shows its quote and
+      // its read date. A route with no numeric threshold has no value to quote,
+      // and silence there reads as if the promise held (isolated critique #5).
+      if (!lines.length)
+        return `<div class="srcs"><div class="src nosrc">No numeric threshold on this route, so there is no dated value to quote — its conditions are the ones stated above, and the official page carries their wording.</div></div>`;
+      return `<div class="srcs">${lines.join("")}</div>`;
     }
 
     // s3: "I don't know" answers get an official find-out link — driven by the
@@ -496,6 +519,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           const c = cr.criterion;
           const moot = notNeededWith(cr);
           if (moot) return `<li class="moot"><b>Not needed</b> — you already have ${esc(moot)}</li>`;
+          if (isLocalization(cr)) {
+            const country = ds.countries.find((x) => x.code === r.country)?.name ?? r.country;
+            const place = declaredPlace();
+            return `<li class="moot"><b>Where</b> — this route is ${esc(country)}${
+              place ? `, and you told us ${esc(place)}` : ""}</li>`;
+          }
           if (c.op === "any")
             return `<li><b>${esc(failLabel(cr))}</b> — no qualifying path (${esc(c.paths.map((p) => p.label ?? "path").join(" / "))})</li>`;
           const req =
@@ -558,6 +587,31 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /** Every failing criterion of this row sits on a step the user hasn't
      * taken (an offer, a transfer, a hosting agreement) and nothing else is
      * open on it — the row says only what the step above already says. */
+    /** A criterion that only asks WHERE a route applies: it reads the
+     * destination and the country of the offer, both of which the person
+     * already told us. Failing it is not a shortfall — the route is simply
+     * somewhere else (isolated critique #2). */
+    function isLocalization(cr: CritResult): boolean {
+      const fields = referencedFields(cr.criterion);
+      return fields.length > 0 && fields.every((f) => f === "destination" || f === "situation_country");
+    }
+
+    /** Where the person said they are headed, in their own words. */
+    function declaredPlace(): string {
+      const viaOffer = answers["situation_country"] !== undefined;
+      const field = viaOffer ? "situation_country" : "destination";
+      const value = answers[field];
+      if (!value || (field === "destination" && value === "all")) return "";
+      return optionsOf(field).find((o) => o.value === value)?.label ?? "";
+    }
+
+    /** Once a route is in the wrong country, nothing else about it is news:
+     * whether a French degree or a Spanish salary would have matched is a
+     * question nobody asked. One localization failure decides the row. */
+    function isPlacedElsewhere(r: RouteResult): boolean {
+      return r.criteria.some((c) => c.outcome === "fail" && isLocalization(c)) && !hasLiveUnknown(r);
+    }
+
     function isStepGated(r: RouteResult): boolean {
       const fails = r.criteria.filter((c) => c.outcome === "fail");
       if (!fails.length || hasLiveUnknown(r)) return false;
@@ -600,16 +654,34 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * group; anything with its own reason keeps its own row.
      */
     function holdList(rows: RouteResult[], hasUnlocks: boolean): string {
-      const gated: RouteResult[] = [], individual: RouteResult[] = [];
-      for (const r of rows) (isStepGated(r) ? gated : individual).push(r);
-      if (gated.length < 3) return rows.map(holdRow).join("");
+      const gated: RouteResult[] = [], elsewhere: RouteResult[] = [], individual: RouteResult[] = [];
+      for (const r of rows)
+        (isPlacedElsewhere(r) ? elsewhere : isStepGated(r) ? gated : individual).push(r);
+
+      // Routes that are simply in another country collapse into one line: a
+      // wall of "Not met: located in Spain" answers a question the reader
+      // never asked, on a fact they gave us themselves.
+      const place = declaredPlace();
+      const elsewhereCountry = elsewhere.length
+        ? (ds.countries.find((c) => c.code === elsewhere[0].country)?.name ?? elsewhere[0].country)
+        : "";
+      const elsewhereGroup = elsewhere.length >= 2
+        ? `<details class="hold-group">
+            <summary>${elsewhere.length} ${esc(elsewhereCountry)} routes — ${
+              place ? `you told us ${esc(place)}` : "not where you are looking"}</summary>
+            <div class="hold-group-body">${elsewhere.map(holdRow).join("")}</div>
+          </details>`
+        : elsewhere.map(holdRow).join("");
+
+      if (gated.length < 3)
+        return individual.map(holdRow).join("") + gated.map(holdRow).join("") + elsewhereGroup;
       const steps = joinOr(stepNamesFor(gated));
       return individual.map(holdRow).join("") +
         `<details class="hold-group">
           <summary>${gated.length} routes need ${esc(steps)}${
             hasUnlocks ? " — see the steps above" : ""}</summary>
           <div class="hold-group-body">${gated.map(holdRow).join("")}</div>
-        </details>`;
+        </details>` + elsewhereGroup;
     }
 
     /** A quote long enough to bury the card is shown to its first sentence,
@@ -798,7 +870,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           g.hold.length ? `${g.hold.length} not yet${unknowns ? ` — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown` : ""}` : "",
           cUps.length ? `<i>${cUps.length} unlocking step${cUps.length === 1 ? "" : "s"}</i>` : "",
         ].filter(Boolean).join(" · ");
-        const open = g.met.length + g.near.length > 0 || (zeroOpen && c.code === firstWithUps);
+        // With nothing open, the steps ARE the news: every section holding one
+        // opens. Announcing "6 steps" and hiding two inside collapsed sections
+        // is the withholding the headline exists to end (critique #4).
+        const open = g.met.length + g.near.length > 0 || (zeroOpen && withUps.has(c.code));
         const inner =
           section("Open — criteria met", "", g.met.map((r) => fullCard(r, false)).join(""), g.met.length) +
           section("Within reach", "near", g.near.map((r) => fullCard(r, false)).join(""), g.near.length) +
@@ -1015,6 +1090,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .srcs{display:grid;gap:.3rem;flex:1;min-width:16rem}
     .src{font:var(--text-source);color:var(--color-muted)}
     .src b{color:var(--color-met);font-weight:500}
+    .src.nosrc{font-style:italic}
     .next{font:600 .78rem var(--font-sans);text-decoration:none;white-space:nowrap}
     .next::after{content:" ↗"}
 

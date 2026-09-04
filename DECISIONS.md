@@ -919,3 +919,61 @@ carried a fact* rather than the fact: an ES precondition containing the string
 disclosed, nl-ict carries only the full thresholds (4357, 5942), the French
 mission states three months with the group. Copy is allowed to improve without
 breaking the suite; facts are not allowed to disappear quietly.
+
+---
+
+## 2026-09-04 — steward-7 adopted, and an isolated critique found what I had not
+
+Re-read genesis, status, product-critique and the agents. Four rules land here,
+and the isolated run that came with them proved three of them in one go.
+
+**The blocker: Dutch amounts carried no unit.** Cards read "€5,942" while the
+German card read "45.630 Euro im Jahr" — a twelvefold error for anyone
+comparing them, and the dataset knew better the whole time (`salary_eur_month`
+carries its period). Fixed at every point an amount reaches the screen: rail
+labels, tick tooltips, and a `· per month` caption beside the quote, since the
+quote is the source's words and cannot be edited to say it.
+**Cost:** the caption is ours, not the source's, so a reader now sees one clause
+on the provenance line that no official page wrote. The alternative — a bare
+number that reads as annual — is worse.
+
+**"Not met: located in France" was answering a question nobody asked.** Once a
+route is in the wrong country nothing else about it is news, so a single
+localization failure now decides the row: "A France route — you told us
+Germany", collapsed into "5 France routes — you told us Germany".
+**Cost:** a route that is both in the wrong country *and* short on salary no
+longer shows the salary gap. That is deliberate — the gap would be advice about
+a country the person is not going to.
+
+**A zero-result screen was hiding the steps it counted.** "6 steps would change
+that" with two of them inside collapsed sections. Every section holding a step
+now opens when nothing is open anywhere.
+**Cost:** on a four-country zero result the page is longer; the alternative is a
+headline that promises what the screen withholds.
+
+**Routes with no numeric threshold now say so.** The first screen promises that
+every value shows its quote and read date; on a route with no value there was
+simply silence, which reads as if the promise held. The card now says there is
+no dated value to quote and points at the official page.
+**Cost:** an extra line on seven cards, and it advertises a gap. Better
+advertised than implied.
+
+**Scores withdrawn from the light run.** It did not walk blind (I had written
+the previous report) and it never opened its own screenshots. A run that breaks
+its conditions publishes findings and no numbers — and within the day two of
+those numbers were shown wrong: Copy 4/5 on cards the human then found
+unreadable, and a walk that passed straight over the unit blocker.
+
+**Still open, deliberately:** the gap figure is imprecise by up to the width of
+a salary band (isolated finding 3) — "up to €X" is honest but coarse, and
+asking an exact salary is a roadmap candidate, not a patch. Phone width stays
+un-assessed by the critique's own environment; I measured 390 px via device
+emulation and put a real handset on the human's checklist.
+
+**Rules adopted beyond this slice:** checks require decisions, not content
+(a rule that can be silenced by writing something will be — it produced a false
+precondition and a page-furniture quote here); scenarios are verified by
+reading each screen as prose, not by matching substrings; DECISIONS entries
+state their cost, not only what they buy — this entry is the first written that
+way; and every report's human-facing residue goes in the message and into
+STATUS.md's checklist, not only into a file.
