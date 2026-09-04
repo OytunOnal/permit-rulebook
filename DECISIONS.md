@@ -545,3 +545,55 @@ committed two flags, which is the liveness promise working without us. Read:
 Local work rebased onto the CI commit; state.json kept ours (12 snapshots
 including the new europa.eu notice source — a superset of CI's 11, with the
 same hashes for both changed entries).
+
+
+---
+
+## 2026-09-04 — the NL watch flag, read; and what it uncovered
+
+Reading one sentinel flag properly turned into the most valuable hour of the
+week. In order:
+
+**1. The flag itself: benign.** The IND work index changed because one item
+was added to the site-wide menu ("Residence permit under article 8 ECHR
+private life"). Diffed old against new snapshot text: that line is the entire
+change. The work inventory is intact — all five modelled info_urls still
+resolve on the live index (no slug drift), and of the fifteen work routes we
+do not model, fourteen were already named in `exclusions.md`; the fifteenth
+("Recognition as sponsor" / "Employing a foreign national") is employer-side,
+now recorded there too.
+
+**2. The sentinel was too wide.** It hashed the whole page, so any edit to any
+permit family anywhere on ind.nl woke it. Sliced to the Work block
+(`Work Terug` … `Study Terug`, 2.6 kB of the 14.7 kB page) and re-baselined
+**in the same change** — yesterday's lesson, applied. A sentinel that cries
+wolf gets ignored, and this one guards the route inventory of a whole country.
+
+**3. A second flag was waiting: europa.eu (value-source, backs the EU notice).**
+Also benign — the page gained a "See also" block and moved its "Last checked"
+date. The quoted sentence is untouched.
+
+**4. Trying to prove point 3 exposed an encoding bug.** Every stored snapshot
+of a non-ASCII page was double-encoded mojibake ("beträgt" → "betrÃ¤gt"),
+caused by a PowerShell round-trip of `state.json` on 2026-09-02 (Get-Content
+reads cp1252, Out-File writes UTF-8). **Change detection was never affected** —
+hashes come from a fresh decode each run — but every flag's diff context was
+unreadable for exactly the German, French and Spanish sources. Repaired all
+ten html snapshots; a test now fails if mojibake reappears in state.
+
+**5. And that exposed the real finding: five quotes were not quotes.** With
+the text finally readable, an audit of every shipped quote against its source
+showed two German ones were curator condensations ("kleine Blaue Karte EU:
+45.934,20 Euro" appears nowhere on the ZAV page) and three Dutch ones were
+reconstructed table rows using a "|" the page does not print. The numbers were
+right and the human had verified them; the quotation marks around them were
+the lie. All five replaced with spans extracted from the snapshots — never
+retyped — and marked read 2026-09-04.
+
+**The gate that makes it stick:** `checkQuotes` joins `checkCoverage` in
+`npm run check`. Coverage says the source is watched; fidelity says the
+sentence is still on it. It tolerates only our own tag-stripping artifacts (a
+swallowed space in "45.630Euro", an added one in "EU ."), never different
+words — a test pins both halves of that line. Today: 14 verified, 0 missing,
+3 unverifiable by policy (the PDF tier a human must read). dataset_version
+2026.09.04.

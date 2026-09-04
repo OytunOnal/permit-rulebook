@@ -32,6 +32,13 @@ before it was fixed — including a bounded gap that lost its field inside a
 disjunction and printed "Gap: up to €2,490 — ." on the NL ICT card. Two
 tracker issues carry the deferred polish (#1 contrast, #2 question count).
 
+Since then the daily watch fired on its own and the flags were read: the IND
+sentinel had woken on an unrelated menu item (now sliced to the Work block),
+and chasing the second flag uncovered — and fixed — double-encoded snapshots
+plus **five quotes that were condensations rather than quotes**. Numbers were
+never wrong; the quotation marks were. `npm run check` now verifies that every
+shipped sentence is still on its source (14 verified, 3 PDF-tier by policy).
+
 ## What is expected from you
 
 **Real-green needs your two passes** 🛑: (1) the VPN verification checklist
