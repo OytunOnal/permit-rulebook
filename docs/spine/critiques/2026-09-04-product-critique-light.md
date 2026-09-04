@@ -85,3 +85,9 @@ list of 60 rows, #5 the length of the Türkiye quote. Finding #5 of this report
 (hint legibility) is folded into the standing contrast issue #1, not filed
 twice. A recommendation that lives only in a report is a recommendation nobody
 acts on.
+
+**Follow-up (same day, human catch):** the first pass at #4 put "Start typing to
+find your country" under a box whose placeholder already said "Start typing…" —
+the instruction twice on one screen. The input keeps the instruction; the area
+below now states the scope and surfaces the aliases, which were otherwise
+invisible: "199 countries — former names work too, try “Holland”."

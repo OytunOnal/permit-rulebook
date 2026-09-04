@@ -215,7 +215,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             // Before aliases existed the cold list was the only escape hatch
             // for someone who could not spell the official name; now typing
             // finds them, so opening on sixty rows is just noise (tracker #4).
-            list.innerHTML = `<p class="cnone">Start typing to find your country — ${q.options.length} to choose from.</p>`;
+            list.innerHTML = `<p class="cnone">${q.options.length} countries — former names work too, try &ldquo;Holland&rdquo;.</p>`;
             const s0 = document.getElementById("cstatus");
             if (s0) s0.textContent = "";
             return;
