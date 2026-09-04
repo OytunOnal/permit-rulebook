@@ -107,13 +107,27 @@ Slice exits: `tdd` (builder) + `code-review` (main session) — mandatory.
 1. **Fresh graduate, Netherlands, €3,400/month.** Degree obtained last year,
    job offer in Amsterdam, age 28. The highly-skilled-migrant card reads
    **criteria met** on the reduced criterion, and its provenance line quotes
-   the €3,122 row. Before this slice the same person was told "not yet".
+   the €3,122 row. Before this slice the same person was **not met** — held
+   short of €4,357 with no path to close it.
 2. **The same graduate at €2,900/month** reads **within reach** with a gap
    measured to €3,122 per month — not to €4,357, and never a bare number
    without its period.
-3. **Non-graduate, Netherlands, €3,400/month.** Still "not yet": the reduced
-   path needs the fact, and the card says which one. `qualification_recent` is
-   asked exactly once, and never appears for a German or Spanish flow.
+3. **Non-graduate, Netherlands, €3,400/month.** **Not met**, and the gap is
+   measured to the full €4,357 because the reduced path is closed to them —
+   the card names the fact it wants. `qualification_recent` is asked exactly
+   once, never in a German flow, and in a Spanish flow only when the salary
+   sits between the reduced and the full threshold.
+
+   _(Corrected 2026-09-04 after the build. This step originally said "not yet"
+   in steps 1 and 3, and claimed the field never appears in a Spanish flow.
+   Both were mine and both were wrong: a declared band with a finite ceiling
+   below a threshold is a **bounded gap**, which the engine has read as "within
+   reach" since s5 — "not yet" was unreachable for these personas; and spec A6
+   gives `es-blue-card` a reduced path, so Spain does read the field. The
+   builder implemented the spec and reported the contradiction instead of
+   bending either side. Measured on the built page: €3,400 with the fact →
+   met; €2,900 with it → near, gap €1,254.98 (= €3,122 − €1,867.02); €3,400
+   without it → near, gap €1,235 (= €4,357 − €3,122).)_
 4. **Turkish passport, Germany, job offer.** The passport question offers a
    country list with a filter; typing "tür" finds Türkiye. Every German route
    then evaluates exactly as it does for any other third-country passport (no

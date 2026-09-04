@@ -53,8 +53,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import dataset from "visa-rules/data/dataset.json";
     import {
       deriveQuestions, remainingQuestions, evaluate, formatEUR, formatEURPer, routeProvenance,
-      thresholdsForField, deriveBands, unlocks, notices, referencedFields, forEachCriterion,
-      type Criterion, type Dataset, type Notice, type Profile, type RouteResult,
+      thresholdsForField, deriveBands, unlocks, notices, referencedFields, forEachCriterion, fieldOptions,
+      countryClasses,
+      type Criterion, type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
     } from "visa-rules";
 
     const ds = dataset as unknown as Dataset;
@@ -78,7 +79,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     const SHORT: Record<string, string> = {
       destination: "Destination", situation_country: "Offer country",
-      citizenship: "Citizenship", situation: "Situation", qualification: "Qualification",
+      citizenship: "Passport", situation: "Situation", qualification: "Qualification",
       recognition_de: "Recognition", experience: "Experience",
       occupation_shortage: "Shortage list", occupation_it: "IT work",
       salary_eur_year: "Salary", salary_eur_month: "Monthly salary", german: "German",
@@ -86,6 +87,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       partner_ck: "Partner", funds_eur_month: "Monthly funds",
       fr_degree: "French degree", experience_7y: "3 yrs in last 7",
       nl_recent_grad: "Dutch graduate", top200_grad: "Top-200 graduate",
+      qualification_recent: "Recent qualification",
+      fr_innovative_employer: "Innovative employer", fr_local_contract: "French contract",
     };
     const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
 
@@ -98,6 +101,37 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     function esc(s: string) {
       return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    /** A field's answer set. Some fields declare their options by reference
+     * (the country list lives in its own file), so the engine's own accessor is
+     * the single place the page reads them — the derived question would hand
+     * back band pseudo-options for money fields (review). */
+    const optionsOf = (field: string): FieldOption[] => fieldOptions(ds, field);
+
+    // s5c: above a dozen options the question becomes a filter over a list
+    // instead of a wall of buttons; at or below a dozen, nothing changes.
+    const LONG_LIST_ABOVE = 12;
+    const LONG_LIST_SHOWN = 60;
+
+    /** Case- and diacritic-insensitive folding for the filter: Unicode
+     * decomposition separates the marks and we drop them, so "turk" finds
+     * "Türkiye" without a hand-rolled character map. Letters that carry no
+     * combining mark (ø, ł, đ) do not decompose — those still need their own
+     * character typed. */
+    const fold = (s: string) =>
+      s.toLocaleLowerCase("en").normalize("NFD").replace(/\p{Diacritic}/gu, "");
+
+    /** What an option's class reads as beside it. Derived from the dataset —
+     * the class the option implies, or the fact that a notice would fire on
+     * this answer — never a string keyed to one country. */
+    function classHint(field: string, o: FieldOption): string {
+      // A notice that adds rights says so in its own title; naming one treaty
+      // here would print the wrong one for the next agreement (review).
+      const extra = notices(ds, { [field]: o.value }).find((n) => n.kind === "extra-rights");
+      if (extra) return "extra rights — see the note with your results";
+      const cls = o.implies?.[0];
+      return cls ? (countryClasses[cls]?.label ?? cls) : "";
     }
 
     // The ledger grows as the record accrues: answered rows accumulate and
@@ -143,22 +177,80 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const q = remaining[0];
       renderDeclaration(q.field);
       const total = history.length + remaining.length;
+      const answer = (value: string) => {
+        answers[q.field] = value;
+        history.push(q.field);
+        renderQuestion();
+      };
+      // A list this long is a search, not a choice between buttons — but it is
+      // still a choice from the dataset's own options: no free text, no
+      // guessing at spellings.
+      const longList = q.options.length > LONG_LIST_ABOVE;
+      const classed = q.options.some((o) => o.implies !== undefined);
       main.innerHTML = `
-        <section class="qcard" aria-live="polite">
-          <div class="qmeta">Question ${history.length + 1} of up to ${total}</div>
+        <section class="qcard">
+          <div class="qmeta" role="status" aria-live="polite">Question ${history.length + 1} of up to ${total}</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
-          <div class="opts">
+          ${longList ? `
+            <div class="csearch">
+              <span class="mag" aria-hidden="true">⌕</span>
+              <input type="text" id="cfilter" autocomplete="off" spellcheck="false"
+                aria-label="Search the list" aria-controls="clist" placeholder="Start typing…">
+            </div>
+            <div class="clist" id="clist" aria-label="${esc(q.label)}"></div>
+            <p class="visually-hidden" id="cstatus" role="status" aria-live="polite"></p>
+            ${classed ? `<p class="hint">Every non-EU passport is checked against the same rules. A few countries
+              have agreements that add rights on top — those are stated with their source when they apply to you.</p>` : ""}`
+          : `<div class="opts">
             ${q.options.map((o) => `<button class="opt" data-value="${esc(o.value)}">${esc(o.label)}</button>`).join("")}
-          </div>
+          </div>`}
           ${history.length > 0 ? `<button class="back" id="back">← Back</button>` : ""}
         </section>`;
-      main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
-        btn.addEventListener("click", () => {
-          answers[q.field] = btn.dataset.value!;
-          history.push(q.field);
-          renderQuestion();
-        }),
-      );
+
+      if (longList) {
+        const filter = document.getElementById("cfilter") as HTMLInputElement;
+        const list = document.getElementById("clist")!;
+        const draw = () => {
+          const needle = fold(filter.value.trim());
+          const matches = needle ? q.options.filter((o) => fold(o.label).includes(needle)) : q.options;
+          if (!matches.length) {
+            // An empty box says nothing; this says what to do about it.
+            list.innerHTML = `<p class="cnone">No country matches — check the spelling</p>`;
+            return;
+          }
+          const status = document.getElementById("cstatus");
+          if (status) status.textContent = `${matches.length} match${matches.length === 1 ? "" : "es"}`;
+          const shown = matches.slice(0, LONG_LIST_SHOWN);
+          const highlight = filter.value.trim() !== "";
+          list.innerHTML = shown.map((o, i) =>
+            `<button class="copt${i === 0 && highlight ? " on" : ""}" data-value="${esc(o.value)}"><span>${esc(o.label)}</span>${
+              classed ? `<span class="cls">${esc(classHint(q.field, o))}</span>` : ""}</button>`).join("") +
+            (matches.length > shown.length
+              ? `<p class="cmore">${matches.length - shown.length} more — keep typing to narrow the list</p>`
+              : "");
+          list.querySelectorAll<HTMLButtonElement>(".copt").forEach((b) =>
+            b.addEventListener("click", () => answer(b.dataset.value!)));
+        };
+        filter.addEventListener("input", draw);
+        filter.addEventListener("keydown", (e) => {
+          // Enter takes the highlighted row — but only once typing has narrowed
+          // the list to it. On an untouched box the first row is the first
+          // country in the alphabet, and a habitual Enter would answer
+          // "Afghanistan" for someone who never chose it (review).
+          // isComposing: an IME's committing Enter belongs to the IME.
+          if (e.key !== "Enter" || e.isComposing) return;
+          e.preventDefault();
+          if (!filter.value.trim()) return;
+          const first = list.querySelector<HTMLButtonElement>(".copt");
+          if (first) answer(first.dataset.value!);
+        });
+        draw();
+        filter.focus();
+      } else {
+        main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
+          btn.addEventListener("click", () => answer(btn.dataset.value!)));
+      }
+
       document.getElementById("back")?.addEventListener("click", () => {
         const last = history.pop();
         if (last) delete answers[last];
@@ -214,8 +306,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const c = cr.criterion;
       if (c.op !== "eq") return null;
       const def = fieldOf(c.field);
-      const required = def?.options?.find((o) => o.value === c.value);
-      const declared = def?.options?.find((o) => o.value === answers[c.field]);
+      const required = optionsOf(c.field).find((o) => o.value === c.value);
+      const declared = optionsOf(c.field).find((o) => o.value === answers[c.field]);
       return required?.is_fallback && declared?.short ? declared.short : null;
     }
 
@@ -323,10 +415,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     function optLabel(field: string, value: string | undefined): string {
       if (value === undefined) return "no answer";
-      const def = fieldOf(field);
-      if (def?.type === "money_band")
+      if (fieldOf(field)?.type === "money_band")
         return deriveBands(ds, field).find((b) => b.id === value)?.label ?? value;
-      return def?.options?.find((o) => o.value === value)?.label ?? value;
+      return optionsOf(field).find((o) => o.value === value)?.label ?? value;
     }
 
     // Expanded hold rows: per-criterion "needs X — you declared Y" lines, so
@@ -426,7 +517,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           if (def?.kind !== "path") continue;
           const wanted = c.op === "eq" ? [c.value] : c.op === "in" ? c.values : [];
           for (const v of wanted) {
-            const opt = def.options?.find((o) => o.value === v);
+            const opt = optionsOf(c.field).find((o) => o.value === v);
             if (opt && !opt.is_fallback) names.add(opt.short ?? opt.label);
           }
         }
@@ -457,7 +548,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     function noticeCard(n: Notice): string {
       const host = new URL(n.source.source_url).hostname.replace(/^www\./, "");
       return `
-        <article class="notice">
+        <article class="notice ${esc(n.kind)}">
           <h3>${esc(n.title)}</h3>
           <p class="why">${esc(n.body)}</p>
           <div class="foot">
@@ -521,19 +612,26 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // The screen no route can produce: this passport needs no permit at all.
       // "0 routes look open" is the worst news for the best-placed user and it
       // isn't even true (critique #1) — here the notice IS the result.
-      if (applicable.length && zeroOpen) {
+      // Only a notice that ANSWERS instead of the routes may take the screen:
+      // "you need no permit at all" is the whole story. An extra-rights notice
+      // adds to a verdict the rules computed, so it never suppresses one — the
+      // zero-open screen keeps its headline and its unlocking steps (s5c).
+      const replacing = applicable.filter((n) => n.kind === "no-permit-needed");
+      if (replacing.length && zeroOpen) {
         // The headline is the notice's own title: a second copy of it here
         // would drift the moment the dataset states a different notice.
-        headline.innerHTML = esc(applicable[0].title) + ".";
+        headline.innerHTML = esc(replacing[0].title) + ".";
         subline.textContent = "Nothing to compare: the published rule below answers your situation directly.";
-        main.innerHTML = applicable.map(noticeCard).join("");
+        // Any other applicable notice still belongs on the screen — dropping
+        // it silenced, say, the Türkiye note (review).
+        main.innerHTML = [...replacing, ...applicable.filter((n) => !replacing.includes(n))]
+          .map(noticeCard).join("");
         return;
       }
 
       // s3b: counterfactual leverage — what each alternative step would unlock.
       const ups = unlocks(ds, answers);
-      // A notice that matched while something is still open rides above the
-      // normal layout (cannot happen today — the guard keeps it honest).
+      // Notices ride above the normal layout, with the results intact.
       const noticeCards = applicable.map(noticeCard).join("");
 
       if (zeroOpen && ups.length) {
@@ -715,6 +813,28 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .opt:hover{border-color:var(--color-ink);background:var(--color-band-soft)}
     .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.85rem}
 
+    /* s5c: the question whose answer set is a list, not a handful of buttons.
+       Type to filter; the list below is the same option set the engine derives.
+       NB: .hint is scoped to .qcard — a bare .hint would reach any future
+       hint text on the results side (the .country/.country-sec lesson). */
+    .csearch{position:relative;max-width:26rem}
+    .csearch input{width:100%;font:600 .95rem var(--font-sans);color:var(--color-ink);background:var(--color-bg);
+      border:var(--rule-soft);border-bottom:2px solid var(--color-ink);padding:.65rem .8rem .65rem 2rem}
+    .csearch input::placeholder{color:var(--color-muted);font-weight:400}
+    .csearch .mag{position:absolute;left:.7rem;top:.72rem;color:var(--color-muted);font-size:.9rem}
+    .clist{margin-top:.5rem;max-height:15rem;overflow-y:auto;border:var(--rule-soft);background:var(--color-bg)}
+    .copt{display:flex;justify-content:space-between;align-items:baseline;gap:.8rem;width:100%;text-align:left;
+      background:none;border:none;border-bottom:var(--rule-dotted);padding:.55rem .8rem;cursor:pointer;
+      font:600 .9rem var(--font-sans);color:var(--color-ink)}
+    .copt:hover{background:var(--color-band-soft)}
+    .copt .cls{font:500 .68rem var(--font-mono);color:var(--color-muted);text-transform:none;letter-spacing:0;
+      text-align:right;flex-shrink:0}
+    .copt.on{background:var(--color-band-soft);box-shadow:inset 3px 0 0 var(--color-band)}
+    .copt.on .cls{color:var(--color-band)}
+    .visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+    .cnone,.cmore{font:500 .8rem var(--font-mono);color:var(--color-muted);padding:.7rem .8rem}
+    .qcard .hint{font-size:.8rem;color:var(--color-muted);margin-top:.6rem;max-width:32rem}
+
     /* Result summary + groups (s3) */
     .strip{display:flex;gap:.6rem;margin:0 0 .4rem;flex-wrap:wrap}
     .strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase;padding:.45rem .8rem;border:var(--rule-soft);background:var(--color-card)}
@@ -772,6 +892,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .notice{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);border-left:3px solid var(--color-met);
       padding:var(--pad-card);margin-bottom:var(--gap-cards)}
     .notice h3{font:var(--text-route);color:var(--color-met);margin-bottom:.35rem}
+    /* s5c: an extra-rights notice sits BESIDE a computed verdict — the met
+       green would read as a route the rules opened, which it is not. */
+    .notice.extra-rights{border-left-color:var(--color-band)}
+    .notice.extra-rights h3{color:var(--color-ink)}
     .faildetail li.moot::before{content:"— ";color:var(--color-muted)}
     .faildetail li.moot b{color:var(--color-met)}
     .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
@@ -822,6 +946,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       .decl{position:static}
       .qcard{padding:1.1rem 1rem}
       .opt{white-space:normal}
+      .copt{flex-wrap:wrap;gap:.15rem}
+      .copt .cls{text-align:left}
       .top{flex-wrap:wrap}
       details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
       .tally{text-align:left}
