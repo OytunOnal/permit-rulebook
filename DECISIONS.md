@@ -834,3 +834,30 @@ twice. Measured on the running page:
 The edit screen says what it is doing ("Changing one answer — the rest are
 kept") and its Back button reads "Cancel", because during an edit there is no
 "back" to walk to. A row being edited no longer appears twice in the panel.
+
+---
+
+## 2026-09-04 — a revisited question shows the answer you gave
+
+Human catch, following the edit-in-place fix: going back to an answered
+question showed an empty screen, as if the answer had been thrown away. It had
+been — `jump()` deleted it so the interview would ask again.
+
+The answer now stays on screen while it is being reconsidered:
+
+- The option you chose renders selected (band-coloured bar, tinted row, a tick,
+  `aria-pressed`), and picking another replaces it.
+- The country picker opens with your country in the box and its row marked, so
+  the passport question behaves like every other one.
+- **Back walks answers instead of erasing them.** It steps to the previous
+  answer and shows it; nothing is lost on the way, and the same replay decides
+  what survives once you change something.
+- "Keep this answer" leaves the question untouched — the escape hatch that used
+  to be Cancel, now that nothing needs restoring.
+- The meta line says what the screen is for: "Your answer — pick another to
+  change it, the rest are kept."
+
+Verified on the running page: revisit qualification (University degree marked),
+Back to situation (job offer marked), revisit the passport (box holds "Brazil",
+row marked), then Keep this answer → straight back to the same eight-answer
+result. The two buttons no longer run together.

@@ -94,10 +94,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     let answers: Profile = {};
     let history: string[] = []; // answered fields, in order, for Back
-    /** The field being changed from the declaration panel, and the value it
-     * held — so cancelling an edit costs nothing. */
+    /** The field being reconsidered — from the declaration panel or from Back.
+     * The answer is never deleted while it is on screen: it renders as the
+     * selected option, and picking another replaces it. */
     let editing: string | null = null;
-    let editingWas: string | undefined;
 
     // The count is the whole field set, which nobody answers: pruning stops
     // the interview as soon as no remaining question could change a verdict.
@@ -157,8 +157,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           const f = row.dataset.field!;
           if (history.indexOf(f) < 0) return;
           editing = f;
-          editingWas = answers[f];
-          delete answers[f];
           stamp.hidden = true;
           app.dataset.state = "questions";
           headline.innerHTML = introHeadline();
@@ -207,7 +205,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           // The edited answer keeps its place in the order; everything after it
           // survives unless the flow no longer asks it.
           editing = null;
-          editingWas = undefined;
           replayAnswers();
         } else {
           history.push(q.field);
@@ -222,23 +219,31 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       main.innerHTML = `
         <section class="qcard">
           <div class="qmeta" role="status" aria-live="polite">${
-            editing ? "Changing one answer — the rest are kept" : `Question ${history.length + 1} of up to ${total}`
+            editing ? "Your answer — pick another to change it, the rest are kept" : `Question ${history.length + 1} of up to ${total}`
           }</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
           ${longList ? `
             <div class="csearch">
               <span class="mag" aria-hidden="true">⌕</span>
               <input type="text" id="cfilter" autocomplete="off" spellcheck="false"
-                aria-label="Search the list" aria-controls="clist" placeholder="Start typing…">
+                aria-label="Search the list" aria-controls="clist" placeholder="Start typing…"
+                value="${esc(q.options.find((o) => o.value === answers[q.field])?.label ?? "")}">
             </div>
             <div class="clist" id="clist" aria-label="${esc(q.label)}"></div>
             <p class="visually-hidden" id="cstatus" role="status" aria-live="polite"></p>
             ${classed ? `<p class="hint">Every non-EU passport is checked against the same rules. A few countries
               have agreements that add rights on top — those are stated with their source when they apply to you.</p>` : ""}`
           : `<div class="opts">
-            ${q.options.map((o) => `<button class="opt" data-value="${esc(o.value)}">${esc(o.label)}</button>`).join("")}
+            ${q.options.map((o) => {
+              const chosen = answers[q.field] === o.value;
+              return `<button class="opt${chosen ? " sel" : ""}" data-value="${esc(o.value)}"${
+                chosen ? ` aria-pressed="true"` : ""}>${esc(o.label)}${
+                chosen ? `<span class="tick" aria-hidden="true">✓</span>` : ""}</button>`;
+            }).join("")}
           </div>`}
-          ${history.length > 0 || editing ? `<button class="back" id="back">${editing ? "Cancel" : "← Back"}</button>` : ""}
+          ${(editing ? history.indexOf(editing) > 0 : history.length > 0)
+            ? `<button class="back" id="back">← Back</button>` : ""}
+          ${editing ? `<button class="back" id="done">Keep this answer</button>` : ""}
         </section>`;
 
       if (longList) {
@@ -269,9 +274,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           if (status) status.textContent = `${matches.length} match${matches.length === 1 ? "" : "es"}`;
           const shown = matches.slice(0, LONG_LIST_SHOWN);
           const highlight = filter.value.trim() !== "";
-          list.innerHTML = shown.map((o, i) =>
-            `<button class="copt${i === 0 && highlight ? " on" : ""}" data-value="${esc(o.value)}"><span>${esc(o.label)}</span>${
-              classed ? `<span class="cls">${esc(classHint(q.field, o))}</span>` : ""}</button>`).join("") +
+          list.innerHTML = shown.map((o, i) => {
+            const chosen = answers[q.field] === o.value;
+            return `<button class="copt${i === 0 && highlight ? " on" : ""}${chosen ? " sel" : ""}" data-value="${esc(o.value)}"${
+              chosen ? ` aria-pressed="true"` : ""}><span>${esc(o.label)}${
+              chosen ? ` <span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
+              classed ? `<span class="cls">${esc(classHint(q.field, o))}</span>` : ""}</button>`;
+          }).join("") +
             (matches.length > shown.length
               ? `<p class="cmore">${matches.length - shown.length} more — keep typing to narrow the list</p>`
               : "");
@@ -298,17 +307,20 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           btn.addEventListener("click", () => answer(btn.dataset.value!)));
       }
 
+      document.getElementById("done")?.addEventListener("click", () => {
+        editing = null;
+        renderQuestion();
+      });
       document.getElementById("back")?.addEventListener("click", () => {
-        if (editing) {
-          // Cancelling an edit restores what was there; nothing else moves.
-          if (editingWas !== undefined) answers[editing] = editingWas;
-          editing = null;
-          editingWas = undefined;
-          renderQuestion();
-          return;
-        }
-        const last = history.pop();
-        if (last) delete answers[last];
+        // Back is the same gesture as editing a declared row: step to the
+        // previous answer and show it. Nothing is erased on the way.
+        const at = editing ? history.indexOf(editing) : history.length;
+        const prev = history[at - 1];
+        if (prev === undefined) return;
+        editing = prev;
+        stamp.hidden = true;
+        app.dataset.state = "questions";
+        headline.innerHTML = introHeadline();
         renderQuestion();
       });
     }
@@ -879,6 +891,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       padding:.7rem .9rem;cursor:pointer;color:var(--color-ink)}
     .opt:hover{border-color:var(--color-ink);background:var(--color-band-soft)}
     .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.85rem}
+    .back + .back{margin-left:1.4rem;color:var(--color-band);font-weight:600}
 
     /* s5c: the question whose answer set is a list, not a handful of buttons.
        Type to filter; the list below is the same option set the engine derives.
@@ -897,6 +910,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .copt .cls{font:500 .68rem var(--font-mono);color:var(--color-muted);text-transform:none;letter-spacing:0;
       text-align:right;flex-shrink:0}
     .copt.on{background:var(--color-band-soft);box-shadow:inset 3px 0 0 var(--color-band)}
+    .opt.sel,.copt.sel{border-color:var(--color-band);box-shadow:inset 3px 0 0 var(--color-band)}
+    .opt.sel{background:var(--color-band-soft)}
+    .tick{color:var(--color-band);font-weight:700;margin-left:.35rem}
     .copt.on .cls{color:var(--color-band)}
     .visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
     .cnone,.cmore{font:500 .8rem var(--font-mono);color:var(--color-muted);padding:.7rem .8rem}
