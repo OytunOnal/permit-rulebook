@@ -62,6 +62,13 @@ French passports; the EU membership claim was sourced to page furniture; and a
 light product-critique found that typing "turkey" returned "check the spelling"
 with no way to reach the country. All fixed and verified on screen.
 
+Skills were updated again today and the new rule bit immediately: **a cleared
+blocker must leave a permanent check that targets the symptom, not the path.**
+The EU-passport blocker cleared in s5b had come back through the country data
+in s5c; there are now sweeps that would have caught it, and writing them
+surfaced a fresh one — Kosovo was missing from the passport list entirely, so a
+Kosovar user could not answer at all. Fixed. 175 tests.
+
 ## What is expected from you
 
 **Real-green needs your two passes** 🛑: (1) the VPN verification checklist

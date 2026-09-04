@@ -717,3 +717,57 @@ with measurements: "not yet" where the engine computes "within reach" (a
 bounded gap has meant within reach since s5), and a claim that
 `qualification_recent` never appears in a Spanish flow when the spec itself
 gives es-blue-card a reduced path.
+
+
+---
+
+## 2026-09-04 — skill update adopted: cleared blockers now leave permanent checks
+
+Re-read genesis, product-critique, devils-advocate and the new
+product-critique-agent. Four changes land on this project, and the first one
+indicts something that happened here this week.
+
+**1. "A cleared blocker leaves a permanent check on the surface, and that check
+targets the symptom, not the path."** The EU-passport blocker was cleared in
+s5b through the citizenship criterion — and came back in s5c through the
+country *data*, where Åland and Guadeloupe residents (Finnish and French
+passport holders) were classed third-country. A path-shaped test could not see
+it. `tests/blockers.test.ts` now holds symptom-shaped sweeps for the three
+blockers cleared so far:
+- every EU/EEA/CH passport in the list draws the no-permit notice and produces
+  no pursuable route; no other passport draws it;
+- the vocabulary lists passport issuers only, with the dependent territories
+  named so re-adding one has to answer "whose passport do its residents hold?";
+- every route states its unasked preconditions;
+- every country is reachable by its own name, and by the names people actually
+  type ("turkey", "holland", "drc").
+
+The last sweep failed the moment it was written: **Kosovo was not in the list
+at all**, so a Kosovar user could not answer the question. XK is user-assigned
+rather than official ISO, which is exactly why it fell out of a generated list
+— and exactly the kind of gap a symptom check catches and a path check does
+not. Added, classed third country like any non-EU passport.
+
+The matcher moved from the page into the engine (`matchOptions`,
+`foldForSearch`) so "can this person find their country" has a test that
+outlives the control rendering it.
+
+**2. Walk blind.** The critique must not open previous reports, DECISIONS,
+KANBAN or the git log until its scores are written. My light walk yesterday did
+not: I had written the previous report myself and carried its findings into the
+walk. Recorded as a miss, not a technicality — the rule exists because prior
+findings steer a walk toward confirming them.
+
+**3. The score is not a gate.** Blocker-clearance is. Two rules keep the number
+honest: no silent regression within a rubric version (a dropped lens is a
+finding or a recorded trade-off), and any lens at 2 or below owes at least one
+finding. The light report satisfies both — no lens dropped, none scored 2.
+
+**4. The v1-gate critique runs in isolation**, via the new
+`product-critique-agent`, so the walk is not done by the session that made the
+fixes. That is the plan for s6: I will spawn it rather than walking it myself,
+and it walks blind by construction.
+
+Also adopted: devils-advocate now names "page furniture" explicitly as a
+non-source — the same failure caught here two days apart (the EU-27 membership
+claim rested on "Click on the map and filters below…").

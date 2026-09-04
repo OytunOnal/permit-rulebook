@@ -17,6 +17,30 @@ flowchart LR
     G -.-> H["Wave 3: rest of Europe + community"]
 ```
 
+## roadmap
+
+Candidates, not commitments: capability · why it came up · the bet it rests on.
+Promoted (or dropped, with evidence) at a boundary session.
+
+### v1 — launch
+- **Public launch** · the dataset is only useful in public · bet: an open,
+  dated, source-quoted ruleset earns links and contributions faster than a
+  closed one earns users. (Slice s6.)
+
+### v1.x
+- **Print or save the record** · the "eligibility record" metaphor has no
+  export and a refresh destroys it · bet: people take this to an appointment.
+- **Affiliate layer** · the money model from the viability gate · bet:
+  route-relevant mandatory services convert without touching eligibility.
+- **More citizenship exceptions** · the mechanism shipped in s5c, the data did
+  not · bet: association agreements matter to enough users to earn a question.
+- **Reduced thresholds, remaining limbs** · ES shortage catalogue, NL follow-up
+  criteria · bet: the SEPE catalogue is watchable once located.
+
+### later
+- CA + AU · rest of Europe · Turkish UI · quote-grounded "ask about this route"
+  · recognition helper (Anabin and its FR/ES/NL equivalents).
+
 ## backlog
 
 - **Migrate remaining Turkish docs to English** (steward-3 language rule):

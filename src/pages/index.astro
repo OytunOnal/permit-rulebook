@@ -53,7 +53,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import dataset from "visa-rules/data/dataset.json";
     import {
       deriveQuestions, remainingQuestions, evaluate, formatEUR, formatEURPer, routeProvenance,
-      thresholdsForField, deriveBands, unlocks, notices, referencedFields, forEachCriterion, fieldOptions,
+      thresholdsForField, deriveBands, unlocks, notices, referencedFields, forEachCriterion, fieldOptions, matchOptions,
       countryClasses,
       type Criterion, type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
     } from "visa-rules";
@@ -113,14 +113,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // instead of a wall of buttons; at or below a dozen, nothing changes.
     const LONG_LIST_ABOVE = 12;
     const LONG_LIST_SHOWN = 60;
-
-    /** Case- and diacritic-insensitive folding for the filter: Unicode
-     * decomposition separates the marks and we drop them, so "turk" finds
-     * "Türkiye" without a hand-rolled character map. Letters that carry no
-     * combining mark (ø, ł, đ) do not decompose — those still need their own
-     * character typed. */
-    const fold = (s: string) =>
-      s.toLocaleLowerCase("en").normalize("NFD").replace(/\p{Diacritic}/gu, "");
 
     /** What an option's class reads as beside it. Derived from the dataset —
      * the class the option implies, or the fact that a notice would fire on
@@ -211,12 +203,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         const filter = document.getElementById("cfilter") as HTMLInputElement;
         const list = document.getElementById("clist")!;
         const draw = () => {
-          const needle = fold(filter.value.trim());
+          const needle = filter.value.trim();
           // Aliases are searched, never shown: a person typing the name they
           // grew up with ("Turkey", "Holland") must find their country, and the
-          // label they then see is the official one (product-critique).
-          const hay = (o: FieldOption) => fold([o.label, ...(o.aliases ?? [])].join(" "));
-          const matches = needle ? q.options.filter((o) => hay(o).includes(needle)) : q.options;
+          // label they then see is the official one (product-critique). The
+          // matcher lives in the engine, where the promise has a test.
+          const matches = matchOptions(q.options, needle);
           if (!matches.length) {
             // An empty box says nothing; this says what to do about it.
             list.innerHTML = `<p class="cnone">No country matches. Try fewer letters, or the country's own name.</p>`;
