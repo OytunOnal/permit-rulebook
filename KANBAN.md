@@ -42,16 +42,21 @@ flowchart LR
   for CNO 1–2 shortage occupations or a qualification obtained in the last 3
   years (and NOT for PAC nacional — it is per-route, not a global flag).
   Needs a declarable "recent graduate" fact and the SEPE catalogue.
-- **Citizenship-specific exceptions** (s5 verification 4.6): IND states
-  "Different requirements may apply to Turkish citizens and their family
-  members." The one-pager always planned these as additive data; it needs the
-  citizenship question to ask a country, not just EU / third country.
+- **More citizenship exceptions** — the mechanism shipped in s5c (`implies`
+  plus a notice keyed to a country); what is missing is data. Candidates: the
+  EU association agreements beyond Türkiye, and the countries whose nationals
+  have privileged access to Germany (§ 26 BeschV).
 - **FR talent subtypes — entreprise innovante, salarié en mission** (s5
   verification 2.1): both thresholds equal €39,582 and are on F16922; what is
   missing is a qualifier field for the employer/mission type, not a number.
 - **Orientation-year English requirement**: IELTS 6.0 / equivalent / an
   English- or Dutch-taught programme. Stated as a precondition today; a gap
   row would be better once there is a declarable field.
+- **Country vocabulary follow-ups** (s5c review + light critique): dependent
+  territories are deliberately absent — adding one back means sourcing which
+  passport its residents hold; CLDR labels "Congo - Kinshasa" and "Hong Kong
+  SAR China" read oddly; alias coverage is the 35 names people most often
+  type, not a complete exonym list.
 - **Public launch** (s6) · `visa-rules` public (CC-BY-4.0, CONTRIBUTING,
   coverage tiers), site deploy, per-route micro-pages, disclaimer/legal
   wording (A1 conditions), GitHub/HN launch. _Tests A2, A7, A8 for real._
@@ -78,6 +83,16 @@ flowchart LR
 _(empty)_
 
 ## mock-green
+
+- **Exceptions and reduced thresholds** (s5c) · mock-green 2026-09-04
+  (`docs/spine/scenarios/s5c.md`, spec `docs/spine/specs/s5c-exceptions-and-reduced.md`):
+  the passport question asks a country (198 issuers, class carried by
+  `implies`, three sourced legs), reduced thresholds as second paths
+  (NL €3,122 / €4,754, ES €33,085.09), two French talent routes, and the
+  Türkiye rights as a notice beside the results. Built by the builder agent
+  (165 tests), two code reviews and a light product-critique acted on.
+  **Real-green rides on the same human pass as s5/s5b** — `data/verify-s5c.md`
+  adds the ES reduced number and the EEA leg.
 
 - **Honest verdicts and designed edge states** (s5b) · mock-green 2026-09-03
   (`docs/spine/scenarios/s5b.md`, spec `docs/spine/specs/s5b-honest-verdicts.md`):

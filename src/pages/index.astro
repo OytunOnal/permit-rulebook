@@ -212,10 +212,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         const list = document.getElementById("clist")!;
         const draw = () => {
           const needle = fold(filter.value.trim());
-          const matches = needle ? q.options.filter((o) => fold(o.label).includes(needle)) : q.options;
+          // Aliases are searched, never shown: a person typing the name they
+          // grew up with ("Turkey", "Holland") must find their country, and the
+          // label they then see is the official one (product-critique).
+          const hay = (o: FieldOption) => fold([o.label, ...(o.aliases ?? [])].join(" "));
+          const matches = needle ? q.options.filter((o) => hay(o).includes(needle)) : q.options;
           if (!matches.length) {
             // An empty box says nothing; this says what to do about it.
-            list.innerHTML = `<p class="cnone">No country matches — check the spelling</p>`;
+            list.innerHTML = `<p class="cnone">No country matches. Try fewer letters, or the country's own name.</p>`;
             return;
           }
           const status = document.getElementById("cstatus");

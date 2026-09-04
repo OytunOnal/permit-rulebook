@@ -47,6 +47,21 @@ modelled only the 5-year rule, so IT applicants with 3–5 years were wrongly
 told "not yet". Fixed with a question that only appears when it can decide
 that route. Also removed: a top-200 ranking rule the IND page never states.
 
+**s5c is built and mock-green.** The passport question now asks a country: 198
+passport issuers, each carrying its class through a new `implies` mechanism, so
+all twenty-one citizenship criteria stayed untouched and the next agreement is
+one line of data. Reduced salary thresholds landed as second paths inside the
+routes that already exist (NL €3,122 / €4,754, ES €33,085.09), two French talent
+routes were modelled, and a Turkish passport now draws a sourced note about the
+rights the EU–Türkiye agreement adds after employment — beside the results,
+never instead of them, and never changing a verdict.
+
+Three passes found what the 165 tests could not: the country list had classed
+Åland and Guadeloupe residents as third-country when they hold Finnish and
+French passports; the EU membership claim was sourced to page furniture; and a
+light product-critique found that typing "turkey" returned "check the spelling"
+with no way to reach the country. All fixed and verified on screen.
+
 ## What is expected from you
 
 **Real-green needs your two passes** 🛑: (1) the VPN verification checklist

@@ -655,3 +655,65 @@ the reduced thresholds in three countries (NL €3,122 / €4,754, ES €33,085.
 each needs a "recent graduate" or shortage-catalogue fact); citizenship-specific
 exceptions, which IND names explicitly for Turkish citizens and which the
 one-pager always planned as additive data.
+
+
+---
+
+## 2026-09-04 — s5c built: the passport became a country, and the reviews earned their keep
+
+The human took all three scope items and then made the call that shaped the
+slice: ask *which country*, not *are you Turkish* — "ilerisi için elimizde veri
+olur". That turned a stopgap into a mechanism.
+
+**What the slice locks in:**
+1. **`implies` on an option.** An answer satisfies values beyond its own, so
+   all twenty-one `citizenship eq third_country` criteria stayed untouched
+   while the answer set became 198 passports. One predicate serves criteria and
+   notices, so a country can never satisfy a route but miss its note.
+2. **A passport class is a rule, not a vocabulary.** `countries.json` separates
+   the two: the country list needs no provenance, but the member list of
+   `eu_eea_ch` decides who needs a permit at all, so it carries three sourced
+   legs (EU-27 enumeration, EEA Agreement, EU–Switzerland agreement) and every
+   leg is watched and quote-verified.
+3. **A reduced threshold is a second path inside the same route.** IND issues
+   one permit with two salary criteria; a second card would invent a
+   distinction the authority does not make. Gaps measure to whichever
+   threshold the profile can actually reach — verified on screen: €2,900 with a
+   recent qualification reads €1,254.98 to €3,122, the same salary without it
+   reads €1,235 to €4,357.
+4. **Long answer lists get a control that fits them**, above twelve options.
+
+**The reviews found what the tests could not.** Two independent passes, both
+verified by measurement before anything was changed:
+
+- **The vocabulary listed dependent territories and classed them all third
+  country.** An Åland resident holds a Finnish passport and a Guadeloupe
+  resident a French one; the tool told them they needed a work permit and
+  suppressed the free-movement notice — the same harm as the EU-passport
+  blocker the first product-critique found, reintroduced through data. The
+  question asks which *passport*, and passports are issued by states, so the
+  territories left the list (249 → 198) and the states whose passports their
+  residents hold stayed.
+- **The EU-27 class was sourced to page furniture** ("Click on the map and
+  filters below…"), which says nothing about who is a member. Replaced with the
+  page's own enumeration, and page 2 promoted to a value-source so all
+  twenty-seven are inside quotes the fidelity gate checks.
+- Enter on an untouched filter answered "Afghanistan"; the result list sat
+  inside an aria-live region and re-announced sixty rows per keystroke; the
+  coverage and quote gates had stopped being functions of their dataset
+  argument; the equivalence cache ignored the value list it was asked about.
+
+**Product-critique, light mode** (the genesis anchor for a non-v1 boundary)
+walked the new flow and found a blocker the reviews had no reason to look for:
+typing **"turkey"** — the name the affected user has used their whole life —
+returned "No country matches — check the spelling", and the cold list shows 60
+of 198 with no way to page, so they could not reach their country at all. Fixed
+in the same pass with searchable aliases that are never displayed, so the label
+stays the official name. Report:
+`docs/spine/critiques/2026-09-04-product-critique-light.md`.
+
+**Two scenario lines were mine and wrong**, caught by the builder and corrected
+with measurements: "not yet" where the engine computes "within reach" (a
+bounded gap has meant within reach since s5), and a claim that
+`qualification_recent` never appears in a Spanish flow when the spec itself
+gives es-blue-card a reduced path.
