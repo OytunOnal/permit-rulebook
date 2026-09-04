@@ -94,6 +94,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     let answers: Profile = {};
     let history: string[] = []; // answered fields, in order, for Back
+    /** The field being changed from the declaration panel, and the value it
+     * held — so cancelling an edit costs nothing. */
+    let editing: string | null = null;
+    let editingWas: string | undefined;
 
     // The count is the whole field set, which nobody answers: pruning stops
     // the interview as soon as no remaining question could change a verdict.
@@ -138,7 +142,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // Answered rows are edit points: clicking one resumes the interview at
       // that question, keeping everything before it (a full reset destroyed
       // every answer — human catch, golden G3).
-      const fields = currentField ? [...history, currentField] : history;
+      const fields = currentField && !history.includes(currentField)
+        ? [...history, currentField]
+        : history;
       declList.innerHTML = fields.map((f) => {
         const q = questions.find((qq) => qq.field === f)!;
         const opt = q.options.find((o) => o.value === answers[f]);
@@ -149,10 +155,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
         const jump = () => {
           const f = row.dataset.field!;
-          const i = history.indexOf(f);
-          if (i < 0) return;
-          for (const later of history.slice(i)) delete answers[later];
-          history = history.slice(0, i);
+          if (history.indexOf(f) < 0) return;
+          editing = f;
+          editingWas = answers[f];
+          delete answers[f];
           stamp.hidden = true;
           app.dataset.state = "questions";
           headline.innerHTML = introHeadline();
@@ -164,17 +170,48 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       restart.hidden = currentField !== null;
     }
 
+    /**
+     * Replay the stored answers through the interview and keep the ones it
+     * still asks for. Changing "destination: Netherlands" to "Germany" drops
+     * the Dutch-only answers because the flow no longer reaches them; it does
+     * not drop citizenship, age or salary, which it still does. Anything the
+     * interview would not ask is silently forgotten rather than shown as a
+     * stale row (human catch: editing question 2 re-asked everything after it).
+     */
+    function replayAnswers() {
+      const kept: Profile = {};
+      const keptOrder: string[] = [];
+      for (const f of history) {
+        if (answers[f] === undefined) continue;
+        if (!remainingQuestions(ds, kept).some((q) => q.field === f)) continue;
+        kept[f] = answers[f];
+        keptOrder.push(f);
+      }
+      answers = kept;
+      history = keptOrder;
+    }
+
     function renderQuestion() {
       // Only questions a still-alive route cares about; e.g. "no job offer"
       // retires the salary question instead of asking it into the void.
       const remaining = remainingQuestions(ds, answers);
-      if (remaining.length === 0) return renderResults();
-      const q = remaining[0];
+      if (!editing && remaining.length === 0) return renderResults();
+      const q = editing
+        ? (remaining.find((x) => x.field === editing) ?? questions.find((x) => x.field === editing)!)
+        : remaining[0];
       renderDeclaration(q.field);
       const total = history.length + remaining.length;
       const answer = (value: string) => {
         answers[q.field] = value;
-        history.push(q.field);
+        if (editing) {
+          // The edited answer keeps its place in the order; everything after it
+          // survives unless the flow no longer asks it.
+          editing = null;
+          editingWas = undefined;
+          replayAnswers();
+        } else {
+          history.push(q.field);
+        }
         renderQuestion();
       };
       // A list this long is a search, not a choice between buttons — but it is
@@ -184,7 +221,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const classed = q.options.some((o) => o.implies !== undefined);
       main.innerHTML = `
         <section class="qcard">
-          <div class="qmeta" role="status" aria-live="polite">Question ${history.length + 1} of up to ${total}</div>
+          <div class="qmeta" role="status" aria-live="polite">${
+            editing ? "Changing one answer — the rest are kept" : `Question ${history.length + 1} of up to ${total}`
+          }</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
           ${longList ? `
             <div class="csearch">
@@ -199,7 +238,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           : `<div class="opts">
             ${q.options.map((o) => `<button class="opt" data-value="${esc(o.value)}">${esc(o.label)}</button>`).join("")}
           </div>`}
-          ${history.length > 0 ? `<button class="back" id="back">← Back</button>` : ""}
+          ${history.length > 0 || editing ? `<button class="back" id="back">${editing ? "Cancel" : "← Back"}</button>` : ""}
         </section>`;
 
       if (longList) {
@@ -260,6 +299,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       }
 
       document.getElementById("back")?.addEventListener("click", () => {
+        if (editing) {
+          // Cancelling an edit restores what was there; nothing else moves.
+          if (editingWas !== undefined) answers[editing] = editingWas;
+          editing = null;
+          editingWas = undefined;
+          renderQuestion();
+          return;
+        }
         const last = history.pop();
         if (last) delete answers[last];
         renderQuestion();

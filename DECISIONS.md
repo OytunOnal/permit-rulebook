@@ -807,3 +807,30 @@ that reads as finished.
 The rule this follows: a recommendation that lives only in a report is a
 recommendation nobody acts on. They were filed as issues first, fixed second,
 and the report now carries their numbers.
+
+---
+
+## 2026-09-04 — editing an answer stopped costing every answer after it
+
+Human catch: changing question 2 forced re-answering everything below it. That
+was my s5b design — clicking a declared row truncated the history — and the
+reasoning was sound but the bill went to the wrong party: an early answer *can*
+invalidate later ones, so I dropped them all rather than work out which.
+
+Now the interview decides. `replayAnswers()` walks the stored answers in the
+order they were asked and keeps each one the flow still asks for, using
+`remainingQuestions` — the same function that drives the interview, so "would
+this still be asked?" is answered by the engine rather than by a rule written
+twice. Measured on the running page:
+
+- Change **Shortage list** yes → no: every other answer survives, and the
+  screen goes straight back to the results.
+- Change **Situation** offer → transfer: destination, passport and situation
+  are kept; qualification, recognition, shortage, experience and salary are
+  dropped, because an intra-corporate transfer never asks them. Straight to
+  results again — no re-answering, and nothing stale left behind.
+- **Cancel** restores the previous value and changes nothing else.
+
+The edit screen says what it is doing ("Changing one answer — the rest are
+kept") and its Back button reads "Cancel", because during an edit there is no
+"back" to walk to. A row being edited no longer appears twice in the panel.
