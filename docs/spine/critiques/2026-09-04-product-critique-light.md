@@ -79,3 +79,9 @@ place to lose them, since the tool's whole first exception is about them.
 2. **Open the list empty** with a one-line prompt instead of 60 rows. Closes #3.
 3. Leave #5 with the standing contrast issue (tracker #1) — it is the same
    token, and worth one decision rather than two.
+
+**Filed** (2026-09-04, `design-flaw`): #3 the class-hint wording, #4 the cold
+list of 60 rows, #5 the length of the Türkiye quote. Finding #5 of this report
+(hint legibility) is folded into the standing contrast issue #1, not filed
+twice. A recommendation that lives only in a report is a recommendation nobody
+acts on.
