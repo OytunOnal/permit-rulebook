@@ -771,3 +771,39 @@ and it walks blind by construction.
 Also adopted: devils-advocate now names "page furniture" explicitly as a
 non-source — the same failure caught here two days apart (the EU-27 membership
 claim rested on "Click on the map and filters below…").
+
+---
+
+## 2026-09-04 — the five open design-flaw issues, cleared
+
+The human read the light critique's leftovers and said fix them all. None was
+a blocker; together they were the difference between a tool that works and one
+that reads as finished.
+
+- **#1 contrast.** `--color-muted` was #6f6c5d: 4.55:1 on the page ground, AA
+  by a hair, carrying the smallest text in the product (source lines, tallies,
+  hold reasons at 10.9–12.8px). Darkened to #5a5747 — **6.26:1 on the ground,
+  6.90:1 on cards** — and `--text-source` raised from .72rem to .76rem. A
+  token change to a human-approved palette, taken because the token was the
+  problem: the character is unchanged, the legibility is not.
+- **#2 the first number a skimmer saw was the largest one.** "Up to 24 quick
+  questions" is the whole field set, which nobody answers; the interview stops
+  as soon as no remaining question could change a verdict. The headline is
+  plain again and the subline states the mechanism; the per-question counter
+  keeps the honest number, and it shrinks as pruning bites.
+- **#3 "extra rights" read like a better passport** in a passport picker, while
+  the note it points at says the criteria are identical. Now "a note applies to
+  this passport".
+- **#4 the picker opened on sixty rows** nobody scrolls. It now opens empty:
+  "Start typing to find your country — 199 to choose from." Safe only because
+  aliases landed first — before them the cold list was the one escape hatch for
+  a user who could not spell the official name.
+- **#5 the Türkiye card carried ninety words of Decision 1/80.** The card shows
+  the first sentence with an ellipsis; the full passage stays in the data,
+  on the element, and a click away at the source. The evidence is complete,
+  the card is readable — and the legal basis stays printed, because that is
+  the part that makes it checkable.
+
+The rule this follows: a recommendation that lives only in a report is a
+recommendation nobody acts on. They were filed as issues first, fixed second,
+and the report now carries their numbers.

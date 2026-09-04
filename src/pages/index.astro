@@ -25,7 +25,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       <p class="sub" id="subline">Code compares your answers against published rules — every value shows its
       official quote and the date we read it from the source. Your answers never leave this device.
       At the end: which routes (visa types) look open, how close the near-misses are, and which
-      single step would unlock more.</p>
+      single step would unlock more. It stops as soon as nothing left to ask could change your result.</p>
       <div class="stamp" aria-hidden="true" id="stamp" hidden>Record generated<b id="stamp-date"></b></div>
     </header>
 
@@ -95,8 +95,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     let answers: Profile = {};
     let history: string[] = []; // answered fields, in order, for Back
 
+    // The count is the whole field set, which nobody answers: pruning stops
+    // the interview as soon as no remaining question could change a verdict.
+    // The per-question meta carries the real number, and it shrinks (tracker #2).
     const introHeadline = () =>
-      `Which work-permit routes could fit? <b>Up to ${questions.length} quick questions.</b>`;
+      `Which work-permit routes could fit? <b>A few quick questions.</b>`;
     headline.innerHTML = introHeadline();
 
     function esc(s: string) {
@@ -121,7 +124,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // A notice that adds rights says so in its own title; naming one treaty
       // here would print the wrong one for the next agreement (review).
       const extra = notices(ds, { [field]: o.value }).find((n) => n.kind === "extra-rights");
-      if (extra) return "extra rights — see the note with your results";
+      if (extra) return "a note applies to this passport";
       const cls = o.implies?.[0];
       return cls ? (countryClasses[cls]?.label ?? cls) : "";
     }
@@ -208,6 +211,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           // grew up with ("Turkey", "Holland") must find their country, and the
           // label they then see is the official one (product-critique). The
           // matcher lives in the engine, where the promise has a test.
+          if (!needle) {
+            // Before aliases existed the cold list was the only escape hatch
+            // for someone who could not spell the official name; now typing
+            // finds them, so opening on sixty rows is just noise (tracker #4).
+            list.innerHTML = `<p class="cnone">Start typing to find your country — ${q.options.length} to choose from.</p>`;
+            const s0 = document.getElementById("cstatus");
+            if (s0) s0.textContent = "";
+            return;
+          }
           const matches = matchOptions(q.options, needle);
           if (!matches.length) {
             // An empty box says nothing; this says what to do about it.
@@ -541,6 +553,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         </details>`;
     }
 
+    /** A quote long enough to bury the card is shown to its first sentence,
+     * with the whole passage on the element and its source a click away — the
+     * evidence stays complete, the card stays readable (tracker #5). */
+    function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
+      if (quote.length <= 200) return { shown: quote, trimmed: false };
+      const end = quote.indexOf(". ");
+      if (end < 0 || end > 200) return { shown: quote.slice(0, 200).trimEnd() + "…", trimmed: true };
+      return { shown: quote.slice(0, end + 1) + " …", trimmed: true };
+    }
+
     function noticeCard(n: Notice): string {
       const host = new URL(n.source.source_url).hostname.replace(/^www\./, "");
       return `
@@ -548,7 +570,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <h3>${esc(n.title)}</h3>
           <p class="why">${esc(n.body)}</p>
           <div class="foot">
-            <div class="srcs"><div class="src"><i>“${esc(n.source.quote)}”</i> · ${esc(host)}${
+            <div class="srcs"><div class="src"${
+              quoteForCard(n.source.quote).trimmed ? ` title="${esc(n.source.quote)}"` : ""
+            }><i>“${esc(quoteForCard(n.source.quote).shown)}”</i> · ${esc(host)}${
               n.source.legal_basis ? ` · ${esc(n.source.legal_basis)}` : ""} · <b>read ${esc(n.source.retrieved_at)}</b></div></div>
             <a class="next" href="${esc(n.source.source_url)}" target="_blank" rel="noopener">Official page</a>
           </div>

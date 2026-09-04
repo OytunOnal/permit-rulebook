@@ -8,7 +8,9 @@
   --color-bg: #f1eee4;          /* sayfa zemini — sıcak arşiv kâğıdı */
   --color-card: #fbf9f2;        /* kart/panel zemini */
   --color-ink: #2b2a22;         /* birincil metin */
-  --color-muted: #6f6c5d;       /* ikincil metin, etiketler */
+  --color-muted: #5a5747;       /* ikincil metin, etiketler — 6.26:1 on bg,
+                                    6.90:1 on card (was #6f6c5d at 4.55:1,
+                                    AA by a hair under 13px; tracker #1) */
   --color-line: #d9d3c0;        /* çizgiler, kart kenarları */
 
   /* ---- Renk: anlam taşıyanlar ---- */
@@ -31,7 +33,7 @@
   --text-body: 15px/1.6 var(--font-sans);
   --text-label: 700 .7rem var(--font-sans);         /* + letter-spacing .18em + uppercase */
   --text-value: 600 .8rem var(--font-mono);
-  --text-source: 400 .72rem var(--font-mono);       /* alıntı italik, tarih --color-met */
+  --text-source: 400 .76rem var(--font-mono);       /* alıntı italik, tarih --color-met */
   --tracking-label: .18em;
 
   /* ---- Çizgi dili ---- */
