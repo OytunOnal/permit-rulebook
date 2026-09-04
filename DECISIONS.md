@@ -861,3 +861,27 @@ Verified on the running page: revisit qualification (University degree marked),
 Back to situation (job offer marked), revisit the passport (box holds "Brazil",
 row marked), then Keep this answer → straight back to the same eight-answer
 result. The two buttons no longer run together.
+
+---
+
+## 2026-09-04 — "Also required" was stating what the permit allows
+
+Human catch: the Opportunity Card listed **"Also required — not checked here:
+Part-time work limited to 20 hours/week while searching."** That is not a
+requirement the applicant must satisfy — it is what the card *permits*. Under a
+heading that says "Also required", it read as one more hurdle on a card whose
+whole point is that it has few.
+
+Removed. The fact still stands where it belongs: the route summary already
+reads "One-year job-search card with part-time work (20h/week)".
+
+**The rule that invited it is fixed too.** `blockers.test.ts` demanded a
+precondition line from every route, so a route with no unasked condition we can
+source got filler instead of an exemption. Now the exemption is explicit
+(`NO_UNASKED_CONDITIONS`, currently just the Chancenkarte) and a second check
+rejects any precondition phrased as a permission — "permitted", "allowed",
+"hours/week", "renewable", "valid for". A guard that forces text into a field
+will get text; it should force a decision instead.
+
+Scanned every other route's preconditions for the same mistake: this was the
+only one.
