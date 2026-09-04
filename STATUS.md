@@ -39,6 +39,14 @@ plus **five quotes that were condensations rather than quotes**. Numbers were
 never wrong; the quotation marks were. `npm run check` now verifies that every
 shipped sentence is still on its source (14 verified, 3 PDF-tier by policy).
 
+**The human verification pass came back** (2026-09-04): 18 of 20 checklist
+items confirmed at the source, 2 checklist statements wrong, 8 findings it
+never asked for. All corrections are in. The one that mattered: IND grants the
+Blue Card to IT professionals on 3 years of experience within 7, not 5 — we
+modelled only the 5-year rule, so IT applicants with 3–5 years were wrongly
+told "not yet". Fixed with a question that only appears when it can decide
+that route. Also removed: a top-200 ranking rule the IND page never states.
+
 ## What is expected from you
 
 **Real-green needs your two passes** 🛑: (1) the VPN verification checklist

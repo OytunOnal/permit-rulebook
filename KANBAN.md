@@ -37,6 +37,21 @@ flowchart LR
   has no export; refresh destroys it. Print stylesheet + "save as PDF" hint,
   possibly a shareable-by-URL profile (privacy: answers in the fragment,
   never sent). Joins s6.
+- **Reduced thresholds, three countries** (s5 verification 4.2): NL HSM
+  €3,122 and Blue Card €4,754 for recent graduates; ES Blue Card €33,085.09
+  for CNO 1–2 shortage occupations or a qualification obtained in the last 3
+  years (and NOT for PAC nacional — it is per-route, not a global flag).
+  Needs a declarable "recent graduate" fact and the SEPE catalogue.
+- **Citizenship-specific exceptions** (s5 verification 4.6): IND states
+  "Different requirements may apply to Turkish citizens and their family
+  members." The one-pager always planned these as additive data; it needs the
+  citizenship question to ask a country, not just EU / third country.
+- **FR talent subtypes — entreprise innovante, salarié en mission** (s5
+  verification 2.1): both thresholds equal €39,582 and are on F16922; what is
+  missing is a qualifier field for the employer/mission type, not a number.
+- **Orientation-year English requirement**: IELTS 6.0 / equivalent / an
+  English- or Dutch-taught programme. Stated as a precondition today; a gap
+  row would be better once there is a declarable field.
 - **Public launch** (s6) · `visa-rules` public (CC-BY-4.0, CONTRIBUTING,
   coverage tiers), site deploy, per-route micro-pages, disclaimer/legal
   wording (A1 conditions), GitHub/HN launch. _Tests A2, A7, A8 for real._

@@ -597,3 +597,61 @@ swallowed space in "45.630Euro", an added one in "EU ."), never different
 words — a test pins both halves of that line. Today: 14 verified, 0 missing,
 3 unverifiable by policy (the PDF tier a human must read). dataset_version
 2026.09.04.
+
+
+---
+
+## 2026-09-04 — s5 human verification returned; 18/20 confirmed, and the misses were the valuable part
+
+The held-out verification pass over `visa-rules/data/verify-s5.md` came back:
+18 of 20 items confirmed against the live sources, 2 statements wrong, 8
+findings the checklist never thought to ask for, 2 items left open. Acted on
+in full; what needed a scope decision is a gate, not a silent choice.
+
+**Corrected (the checklist was wrong, not the data):**
+- The French exclusion reason claimed F16922 gives no per-subtype threshold
+  for « entreprise innovante » and « salarié en mission ». It does, and both
+  equal the salarié qualifié figure (€39,582) — what separates the subtypes is
+  the employer/mission qualifier, not the money. `exclusions.md` now says so;
+  modelling them is a scope question (below), no longer a data gap.
+- The checklist quoted its own ES PDF hash wrong (…f543f609 → …053f4609).
+
+**Fixed in the dataset (correctness, no scope change):**
+- **The Blue Card's IT rule** — the highest-value finding. IND: "Are you an IT
+  manager or IT professional? A minimum of 3 years of relevant work experience
+  is required during the period of 7 years before the application." We modelled
+  only the 5-year rule, so an IT professional with 3–5 years — the centre of
+  our audience — was wrongly held. Modelled as a new field `experience_7y`
+  referenced only by that route, so information-gain pruning asks it only when
+  it can decide the Blue Card: a German applicant still answers 8 questions and
+  never sees it. Verified: met with the 3-in-7 fact, honestly held without it.
+- **The orientation year no longer asserts a rule its source does not state.**
+  The "top 200 in 2 of 3 ranking publishers" mechanic is nowhere on the IND
+  page (human check); the page frames foreign schools as "a designated foreign
+  educational institution". Question relabelled to what is actually asked, the
+  claim removed from the criterion note, and the English-proficiency
+  requirement (IELTS 6.0 or equivalent) added as a stated precondition.
+- Regulated professions are not an HSM speciality — the same requirement sits
+  on the ICT route; precondition added there too.
+- The researcher amount appears twice on the amounts page (once under "The
+  sponsor is a single parent"), so its quote now carries the validity-window
+  sentence that pins the right row.
+- The Spanish threshold's derivation chain (INE average 29.540,26 € published
+  28 May 2026 → Orden PJC/44/2026) is recorded on both ES routes: it says when
+  the number will move, not just what it is.
+
+**A structural finding: five of six IND route pages are invisible to us.**
+Our fetcher sees a 1.4 kB client-rendered shell for every ind.nl route page
+(the amounts page is the exception, which is why the numbers were checkable at
+all). DE (BAMF), FR (service-public) and ES (UGE) route pages all return real
+bodies. So the Dutch route rules — the diploma leg, the designated-institution
+list, the English requirement, the regulated professions — cannot be
+machine-watched at all. Two human-tier watch entries added (orientation year,
+Blue Card) with a 90-day re-read, and the constraint is now written down
+instead of assumed.
+
+**Left open deliberately** (scope, put to the human): the FR talent subtypes;
+the reduced thresholds in three countries (NL €3,122 / €4,754, ES €33,085.09 —
+each needs a "recent graduate" or shortage-catalogue fact); citizenship-specific
+exceptions, which IND names explicitly for Turkish citizens and which the
+one-pager always planned as additive data.
