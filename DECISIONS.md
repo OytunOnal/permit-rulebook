@@ -885,3 +885,37 @@ will get text; it should force a decision instead.
 
 Scanned every other route's preconditions for the same mistake: this was the
 only one.
+
+---
+
+## 2026-09-04 — the cards were written in the source's language, not the reader's
+
+Human catch, from one line: "German appropriate to the occupation · Secured
+livelihood" says nothing to someone who has not read § 18a. Looking at the
+rest, most summaries had the same problem, and three of them leaked *modelling*
+notes into user-facing text ("modelled as a second path on the salary
+criterion", "so none is modelled", "the shortage-occupation limb is stated as a
+precondition, not scored"). All 23 routes rewritten.
+
+The line the human pointed at now reads:
+- "Enough German for the job itself — how much depends on the work"
+- "Enough income to live on without state support, plus health insurance (the
+  salary from the job normally covers this)"
+
+The rule this pass follows: **a quote is the source's words and never changes;
+a summary and a precondition are ours and owe plain English.** Jargon that
+survived translation went out or gained its meaning inline — "Engpassberufe"
+became "Germany's shortage list", "collectively bound" became "covered by a
+collective wage agreement", "positive administrative silence" became "if they
+do not answer in time the application counts as approved", UGE/TWV/BIG/CNO-2011
+either explained or dropped. Nothing became more specific than its source: the
+German-language line still says "how much depends on the work", because the
+law does not name a level.
+
+Three tests failed on the rewrite because they asserted the *phrasing that
+carried a fact* rather than the fact: an ES precondition containing the string
+"CNO-2011", an NL summary containing "reduced", an FR precondition matching
+`/3 months' seniority/`. Each now asserts the fact — the shortage limb is
+disclosed, nl-ict carries only the full thresholds (4357, 5942), the French
+mission states three months with the group. Copy is allowed to improve without
+breaking the suite; facts are not allowed to disappear quietly.
