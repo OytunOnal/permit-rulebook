@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>s5c mock — the passport question as a country</title>
+<link rel="stylesheet" href="../../../tokens.css">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--color-bg);color:var(--color-ink);font:var(--text-body);font-family:var(--font-sans);padding:2.5rem 1.2rem}
+  .wrap{max-width:var(--max-content);margin:0 auto}
+  .note{font:var(--text-source);font-family:var(--font-mono);color:var(--color-muted);margin-bottom:1rem}
+  .cols{display:grid;grid-template-columns:15.5rem 1fr;gap:1.5rem;align-items:start}
+  .decl{background:var(--color-card);border:var(--rule-soft);padding:1.1rem 1.2rem}
+  .decl h2{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted);
+    margin-bottom:.6rem;border-bottom:2px solid var(--color-ink);padding-bottom:.4rem}
+  .decl div{display:flex;justify-content:space-between;gap:.6rem;border-bottom:var(--rule-dotted);padding:.42rem 0}
+  .decl dt{color:var(--color-muted);font-size:.78rem}
+  .decl dd{font:var(--text-value);text-align:right}
+  .decl dd.pending{color:var(--color-muted);font-weight:400}
+
+  .qcard{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:1.6rem 1.8rem}
+  .qmeta{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted)}
+  .qlabel{font:var(--text-route);font-size:1.25rem;margin:.5rem 0 1rem}
+
+  /* NEW: the one question whose answer set is a list, not a handful of buttons.
+     Type to filter; the list below is the same option set the engine derives. */
+  .csearch{position:relative;max-width:26rem}
+  .csearch input{width:100%;font:600 .95rem var(--font-sans);color:var(--color-ink);background:var(--color-bg);
+    border:var(--rule-soft);border-bottom:2px solid var(--color-ink);padding:.65rem .8rem .65rem 2rem}
+  .csearch input::placeholder{color:var(--color-muted);font-weight:400}
+  .csearch .mag{position:absolute;left:.7rem;top:.72rem;color:var(--color-muted);font-size:.9rem}
+  .clist{margin-top:.5rem;max-height:15rem;overflow-y:auto;border:var(--rule-soft);background:var(--color-bg)}
+  .copt{display:flex;justify-content:space-between;align-items:baseline;gap:.8rem;width:100%;text-align:left;
+    background:none;border:none;border-bottom:var(--rule-dotted);padding:.55rem .8rem;cursor:pointer;
+    font:600 .9rem var(--font-sans);color:var(--color-ink)}
+  .copt:hover{background:var(--color-band-soft)}
+  .copt .cls{font:500 .68rem var(--font-mono);color:var(--color-muted);text-transform:none;letter-spacing:0}
+  .copt.on .cls{color:var(--color-band)}
+  .hint{font-size:.8rem;color:var(--color-muted);margin-top:.6rem;max-width:32rem}
+  .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.85rem}
+  h3.v{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
+    border-bottom:var(--rule-soft);padding-bottom:.35rem;margin:2.6rem 0 .9rem}
+  .notice{background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-band);padding:.9rem 1.15rem;max-width:44rem}
+  .notice h3{font:var(--text-route);font-family:var(--font-serif);font-size:1.05rem;margin-bottom:.3rem}
+  .notice p{color:#54513f;font-size:.88rem;max-width:var(--max-prose)}
+  .src{font:var(--text-source);font-family:var(--font-mono);color:var(--color-muted);margin-top:.55rem}
+  .src b{color:var(--color-met);font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="note">// mock: the passport question becomes a country — one control change, and the rules read it through option classes</p>
+
+  <div class="cols">
+    <aside class="decl">
+      <h2>You declared</h2>
+      <div><dt>Destination</dt><dd>Germany</dd></div>
+      <div><dt>Situation</dt><dd>a job offer there</dd></div>
+      <div><dt>Passport</dt><dd class="pending">—</dd></div>
+    </aside>
+
+    <main>
+      <section class="qcard">
+        <div class="qmeta">Question 3 of up to 8</div>
+        <h2 class="qlabel">Which passport will you apply with?</h2>
+
+        <div class="csearch">
+          <span class="mag" aria-hidden="true">⌕</span>
+          <input type="text" value="tür" aria-label="Search for your country" placeholder="Start typing your country…">
+        </div>
+
+        <div class="clist" role="listbox">
+          <button class="copt on"><span>Türkiye</span><span class="cls">extra rights under the EU agreement</span></button>
+          <button class="copt"><span>Turkmenistan</span><span class="cls">non-EU passport</span></button>
+        </div>
+
+        <p class="hint">Every non-EU passport is checked against the same rules. A few countries have
+          agreements that add rights on top — those are stated with their source when they apply to you.</p>
+
+        <button class="back">← Back</button>
+      </section>
+
+      <h3 class="v">// what the answer changes on the results screen</h3>
+      <article class="notice">
+        <h3>Türkiye: extra rights once you are legally employed</h3>
+        <p>Your route options are the same as for any other non-EU passport — the EU–Türkiye agreement
+          adds rights after you are working, not different entry criteria.</p>
+        <div class="src">“As a national of Türkiye, your rights to live and work in an EU country depend entirely on
+          the national rules of that country. When employed legally in the EU, you enjoy the same working conditions
+          as the nationals of that country…” · europa.eu · <b>read 2026-09-04</b></div>
+      </article>
+    </main>
+  </div>
+</div>
+</body>
+</html>

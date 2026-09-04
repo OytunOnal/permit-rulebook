@@ -1,19 +1,24 @@
 # s5c — "Exceptions and reduced thresholds" · Acceptance scenario
 
-Status: PROPOSED (written 2026-09-04, before implementation — awaiting the
-human's approval). Born from the human's s5 verification report: three scope
-items taken in full ("3'ünü de alalım").
-Screen change: none new. The notice-beside-results path that s5b built as a
-guard gets its first real user; everything else is existing cards, questions
-and gap rows.
+Status: PROPOSED (written 2026-09-04, amended the same day on the human's
+call to ask the passport as a country rather than as a yes/no about Türkiye —
+"ilerisi için elimizde veri olur"). Born from the human's s5 verification
+report: three scope items taken in full.
+Screen change: one new control — the country question (mock:
+`docs/spine/design/s5c-country-question.html`). The notice-beside-results
+path that s5b built as a guard also gets its first real user; everything else
+is existing cards, questions and gap rows.
 Slice exits: `tdd` (builder) + `code-review` (main session) — mandatory.
 
 ## The three things this slice buys
 
 1. **Reduced salary thresholds** stop being invisible. NL €3,122 (highly
    skilled migrant) and €4,754 (Blue Card), ES €33,085.09 (Blue Card).
-2. **A Turkish passport stops being just "third country".** The rights that
-   follow from the EU–Türkiye agreement are stated, sourced and dated.
+2. **The passport question asks a country.** Not "are you Turkish?" but
+   "which passport?" — so every agreement we add later hangs on an answer the
+   interview already has, and the question never has to change again. The
+   EU–Türkiye rights are the first thing hung on it, stated with source and
+   date.
 3. **Two French talent routes** the dataset had excluded on a wrong reason
    (entreprise innovante, salarié en mission) are modelled.
 
@@ -32,17 +37,38 @@ Slice exits: `tdd` (builder) + `code-review` (main session) — mandatory.
    your research permit end, in the last 3 years?" It is referenced only by
    the reduced paths, so information-gain pruning asks it only when it can
    change a verdict.
-3. **Citizenship exceptions are additive data, not a rewrite.** A new
-   `implies` on a field option lets "Türkiye" imply "third country": every
-   existing `citizenship eq third_country` criterion keeps passing untouched,
-   and adding the next country is one option, not twenty-one edits. The
-   question gains an option; nobody answers an extra question.
+3. **The country is the answer; the rules read it through classes.** A new
+   `implies` on a field option lets every country imply its class
+   ("Türkiye" → third country, "Ireland" → EU/EEA/CH): all twenty-one
+   `citizenship eq third_country` criteria keep passing untouched, and the
+   next agreement is one line of data, not twenty-one edits. Nobody answers an
+   extra question — the existing question gains a real answer set.
+   The list lives in `data/countries.json` (ISO 3166 code, name, class), so
+   `dataset.json` stays readable; the field declares `options_from:
+   "countries"` and the engine expands it at derive time. The EU/EEA/CH
+   membership in that file is itself a claim, so it carries a source and a
+   read date like any value, and joins the watch.
 4. **The Türkiye rights land as a notice beside the results**, not as a route
    and not instead of the results (that screen is reserved for "you need no
    permit"). Source: the same europa.eu page the EU free-movement notice
    already rests on — machine-watched, so the quote-fidelity gate covers it.
    The tool states the rights; it never claims they change a verdict it
-   computed.
+   computed. The notice's own wording says so: the criteria are the same, the
+   agreement adds rights *after* legal employment.
+
+4b. **A long answer list gets a control that fits it.** Above a dozen options
+   the question renders a filter box over the list instead of a wall of
+   buttons (mock approved with this scenario); at or below a dozen, nothing
+   changes. It is still a choice from the dataset's own options — no free
+   text, no guessing at spellings.
+
+4c. **Scoring must not walk two hundred options.** Question ordering scores a
+   candidate by averaging the live-route count over its options; with a
+   country list that is ~200 route evaluations per scoring pass, on every
+   question of every interview. Options that are indistinguishable to the
+   rules (every third-country passport, today) collapse into one equivalence
+   class and are scored once — provably the same ordering, at the old cost.
+   Guarded by a test that fails if the interview's timing regresses.
 5. **ES ships only the limb it can source.** The reduced Spanish threshold has
    two limbs: a CNO 1–2 shortage occupation, and a qualification obtained
    within three years. Only the second is declarable today — the SEPE
@@ -88,10 +114,13 @@ Slice exits: `tdd` (builder) + `code-review` (main session) — mandatory.
 3. **Non-graduate, Netherlands, €3,400/month.** Still "not yet": the reduced
    path needs the fact, and the card says which one. `qualification_recent` is
    asked exactly once, and never appears for a German or Spanish flow.
-4. **Turkish passport, Germany, job offer.** Every German route evaluates
-   exactly as it does for any other third-country passport (no verdict moves),
-   and a notice sits above the results stating the Türkiye rights with its
-   quote, source and read date. Choosing "Any other country" shows no notice.
+4. **Turkish passport, Germany, job offer.** The passport question offers a
+   country list with a filter; typing "tür" finds Türkiye. Every German route
+   then evaluates exactly as it does for any other third-country passport (no
+   verdict moves), and a notice sits above the results stating the Türkiye
+   rights with its quote, source and read date. Picking Brazil shows no notice
+   and identical verdicts; picking Ireland ends the interview on the
+   free-movement notice, exactly as "EU / EEA / Switzerland" did before.
 5. **French innovative-company hire, €40,000.** "Talent — salarié d'une
    entreprise innovante" reads met; the R&D-link condition and the ministry
    recognition are stated on the card as required-but-not-checked. Answering
@@ -114,8 +143,13 @@ Slice exits: `tdd` (builder) + `code-review` (main session) — mandatory.
 
 - Everything from s5 and s5b.
 - New: an option that `implies` another value satisfies every criterion the
-  implied value satisfies — for any profile, swapping "third country" for
-  "Türkiye" changes no route verdict anywhere in the dataset.
+  implied value satisfies — for any profile and ANY country in the list,
+  swapping the passport for another country of the same class changes no route
+  verdict anywhere in the dataset. (This is the invariant that makes the
+  country list safe to grow.)
+- New: every country in `countries.json` carries exactly one class, and every
+  class the dataset's criteria reference exists in that file — the same
+  both-ways gate the watch coverage uses.
 - New: a reduced path never produces a verdict better than the full path would
   for the same salary; and no route reports a gap measured against a threshold
   whose path the profile cannot reach.
