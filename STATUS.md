@@ -36,11 +36,10 @@ and demands its country back. 178 tests green, `astro check` clean.
 
 ## What is expected from you
 
-- [ ] **Confirm the two watch-flag verdicts** — nothing is pending; this is your agreement that the buzer flag (our own marker edit) and the IND flag (an unrelated menu item) were closed correctly. `DECISIONS.md`, 2026-09-04.
-- [ ] **Send back the IND researcher row wording** — checklist item 24 is ticked but the text never arrived; our quote is the bare €1,635.90 while the page states the period and "without holiday allowance" in the same row. Paste the row and I will replace the quote.
-- [ ] **Open the s6 boundary when you want the launch slice.** Two gates wait there that are cheap now and expensive after launch: the **name** (never chosen — "visa-navigator" is the folder name) and the **dataset licence**. I bring roadmap promotions to it, and the v1 gate's full critique runs in isolation, not by me.
+- [ ] **Open the s6 boundary when you want the launch slice.** It is the only thing left. Two gates wait there that are cheap now and expensive after launch: the **name** (never chosen — "visa-navigator" is the folder name) and the **dataset licence**. I bring roadmap promotions to it, the phone walk happens on the deploy preview before any announcement, and the v1 gate's full critique runs in isolation, not by me.
 
-**Everything else from before v0.7 is closed.** Both verification checklists
-(39 items), the country-label gate, and all four learn links. The phone walk
-moved into s6 at the human's call: it happens on the deployed site, sequenced
-before the launch announcement — a preview URL is a deploy, an audience is not.
+**Everything else from before v0.7 is closed:** both verification checklists
+(39 items, including the Spanish PDF tier), the country-label gate, all four
+learn links, and the two watch-flag verdicts. The slices stay **mock-green**
+until their acceptance scenarios are walked with the human — those walks are
+the first work of the s6 boundary, and the v0.7 stamp lands with them.

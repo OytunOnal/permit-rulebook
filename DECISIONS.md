@@ -1047,3 +1047,25 @@ value sources. The checklist had aged past what it covered.
 **Closed 2026-09-06:** all four learn links clicked and confirmed by the human —
 buzer.de § 18g, Anabin, the French innovative-employer page, the IND
 designated-institutions page. The last item carried over from s3 is done.
+
+
+**Closed 2026-09-06: the watch-flag verdicts, confirmed by the human.** The
+buzer flag was our own marker edit and the IND flag an unrelated menu item;
+both closures stand.
+
+**Withdrawn the same day: my own request for the IND researcher row wording.**
+I had been asking for a sentence the dataset already carries. The quote was
+rebuilt from the watched snapshot on 2026-09-04 — "These amounts are valid from
+1 July 2026 up to and including 31 December 2026. Gross SV salary per month
+without holiday allowance € 1,635.90" — and it is contiguous in the snapshot,
+directly under "Application for a residence permit as a researcher, guest
+lecturer or physician in training to be a specialist". The checklist line
+describing it as a bare number predated the rebuild and I carried it forward
+three times without re-reading the value it described. The criterion's stale
+"Row wording flagged for human re-verification" note is removed.
+
+Worth keeping in view: €1,635.90 appears six times on that page, because many
+permit types share the minimum. The number identifies nothing on its own; what
+places it is the section it sits in, which the quote does not include and
+`legal_basis` does. That is a weakness of quoting a row from a table, not of
+this row.
