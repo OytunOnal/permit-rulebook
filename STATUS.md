@@ -36,7 +36,7 @@ and demands its country back. 178 tests green, `astro check` clean.
 
 ## What is expected from you
 
-- [ ] **Click the two learn links** — Anabin and § 18g — the last open item from s3, and the only unchecked thing left from before v0.7.
+- [ ] **Re-click the German shortage-list link** — it now goes to buzer.de (`§ 18g AufenthG`), because gesetze-im-internet.de times out from Türkiye. Anabin you already confirmed. While you are there, the two links added later and never checked: the French innovative-employer page and the IND designated-institutions page.
 - [ ] **Confirm the two watch-flag verdicts** — nothing is pending; this is your agreement that the buzer flag (our own marker edit) and the IND flag (an unrelated menu item) were closed correctly. `DECISIONS.md`, 2026-09-04.
 - [ ] **Send back the IND researcher row wording** — checklist item 24 is ticked but the text never arrived; our quote is the bare €1,635.90 while the page states the period and "without holiday allowance" in the same row. Paste the row and I will replace the quote.
 - [ ] **Open the s6 boundary when you want the launch slice.** Two gates wait there that are cheap now and expensive after launch: the **name** (never chosen — "visa-navigator" is the folder name) and the **dataset licence**. I bring roadmap promotions to it, and the v1 gate's full critique runs in isolation, not by me.

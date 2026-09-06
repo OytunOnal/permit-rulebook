@@ -1008,3 +1008,37 @@ the seam between a label and an alias. This is the third time this control has
 hidden a country from the person who owns that passport ("turkey", the
 dependent territories, now the apostrophe); the permanent check is the test
 that types each displaced form and demands its country back.
+
+
+## 2026-09-06 — the learn links are watched, and one of them was dead
+
+**The human clicked both s3 learn links: Anabin opens, § 18g does not.** Not a
+broken URL — `gesetze-im-internet.de` resolves and then times out from Türkiye,
+where this project's first readers are. The link had been in the product since
+s3, verified once by eye at a moment when it happened to answer, and nothing
+had looked at it since.
+
+**Cheap default: point it at buzer.de.** The project already reads German law
+there, the consolidated § 18g is the same text, and it answers from here. The
+label now names what the reader will actually find — the ISCO-08 groups (132,
+133, 134, 21, 221, 222, 225, 226, 23, 25) — because a statute page in German
+is a poor answer to "is my occupation on the shortage list" unless you are told
+what to look for.
+
+**Learn links now join the coverage gate,** via a new `link` watch tier. It
+checks liveness and nothing else: a learn link backs no value, so its wording
+may change freely, and hashing it would raise a flag every time an unrelated
+paragraph moved — the flag that cries weekly is the flag nobody reads. Silence
+is the only news, and silence already reports as `unreachable`.
+
+**Cost, stated plainly:** the watch runs from CI, not from the reader's chair.
+It proves the page answers *somewhere*. § 18g would have passed this gate every
+day while being dead for the person the tool is for. The gate catches a page
+that disappears; it cannot catch a page that disappears only for you. What it
+does buy is that choosing a widely reachable mirror over a canonical host is
+now a recorded decision rather than an accident.
+
+**Also found while looking:** two learn links added in s5/s5c (the French
+innovative-employer page, the IND designated-institutions page) were never on
+the s3 checklist. They happen to be watched already, because they are also
+value sources. The checklist had aged past what it covered.
