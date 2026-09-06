@@ -154,8 +154,26 @@ default:
   launched and no inbound links exist — so the switching cost is near zero
   today and rises every day after launch.
 
-## Round 1 status
+## Round 1 fork — the human's answer, 2026-09-06
 
-Awaiting the human's fork: **which directions are alive, which are dead.**
-Rounds 2 (deep critique in a fresh context) and 3 (availability lookups on
-survivors) run only on the live directions.
+> "I did not like any of them except the dataset direction — but the tool and
+> the promise could turn into a name when combined with the dataset. The
+> invented word is completely off-base."
+
+- **The dataset direction is the anchor.** Alive.
+- **The tool and the promise are dead as pure directions, alive as crossings**
+  with the dataset.
+- **The invented word is dead.** No coinages in later rounds — Tesera, Erga,
+  Idonea, Limena, Fontis, Tekmera, Portalis, Datera, Regulis, Tolim and Nimara
+  are buried here, and the direction's own generator supplied the argument:
+  brand equity compounds with repeat use, and this product is used once or
+  twice in a lifetime.
+
+**Round 2 (recombination) is running** — one Opus pass, deliberately not blind,
+briefed with every batch, every ceiling, the landmines and the fork above, to
+produce **dataset × tool** and **dataset × promise** intersections. A crossing
+only counts if it escapes two ceilings at once; a dataset word glued to a tool
+word escapes nothing.
+
+Then the deep critique on Fable in a fresh context, over the round-1 survivors
+and the recombinations together. Then availability lookups, on survivors only.
