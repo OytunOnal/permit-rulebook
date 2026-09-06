@@ -11,8 +11,8 @@ flowchart LR
     B --> C["Gap analysis on results ✅ real-green (v0.3)"]
     C --> C2["Leverage analysis: what each step unlocks ✅ real-green (v0.4–v0.5)"]
     C2 --> D["Source watch + change flag ✅ real-green (v0.6)"]
-    D --> E["Four countries filled: FR·ES·NL + honest verdicts ◀ here"]
-    E --> F["Public launch 🏁 v1"]
+    D --> E["Four countries · honest verdicts · exceptions ✅ real-green (v0.7)"]
+    E --> F["Public launch ◀ here 🏁 v1"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
 ```
@@ -108,12 +108,23 @@ _(empty)_
 
 ## mock-green
 
-**Value verification closed 2026-09-06.** `verify-s5.md` 21/21 and
-`verify-s5c.md` 18/18 — every shipped number and quote confirmed at its source
-by a human, including the Spanish PDF tier no machine here can read. That
-settles the data these three slices rest on. It does **not** make them
-real-green: real-green is the acceptance scenario walked with the human, and
-those walks belong to the s6 boundary session.
+_(empty — s5 · s5b · s5c stamped into done as **v0.7**, 2026-09-06)_
+
+## real-green
+
+_(empty — everything real-green so far is stamped into done)_
+
+## done
+
+- **Four countries filled: FR·ES·NL + honest verdicts + exceptions**
+  (s5 · s5b · s5c) · real-green 2026-09-06. Two gates cleared on the same day:
+  the human verified all 39 checklist values at their official sources
+  (`verify-s5.md` 21/21, `verify-s5c.md` 18/18, including the Spanish PDF tier
+  no machine here can read), and then walked the acceptance scenarios on the
+  live product — the DE regression, the NL monthly flow, the "anywhere" weak
+  profile, back-and-edit, and the EU-passport notice. → **v0.7**
+
+  What the three slices carry, for the record:
 
 - **Exceptions and reduced thresholds** (s5c) · mock-green 2026-09-04
   (`docs/spine/scenarios/s5c.md`, spec `docs/spine/specs/s5c-exceptions-and-reduced.md`):
@@ -141,14 +152,8 @@ those walks belong to the s6 boundary session.
   interview, NL monthly bands, qualifier-forked leverage ("a job offer in
   Spain"), collapsible country sections verified on screen (headless Chrome,
   3 personas). 93 engine tests + review round (10 findings triaged) done.
-  **Real-green needs the human**: VPN pass over `visa-rules/data/verify-s5.md`
-  + an interactive browser run (Back/restart, section toggles).
-
-## real-green
-
-_(empty — v0.1–v0.5 stamped into done)_
-
-## done
+  Human pass complete 2026-09-06 (`visa-rules/data/verify-s5.md` + the
+  interactive browser run).
 
 - **Walking skeleton** (s1) · real-green 2026-09-01; human run 2026-09-02
   (`docs/spine/scenarios/s1.md`). → **v0.1**
@@ -188,3 +193,12 @@ _(empty — v0.1–v0.5 stamped into done)_
   tiers, ndjson, commit-gated state, flag files with quoted context), DE via
   ZAV edition-index sentinel, daily CI workflow hardened against alert loss.
   (2026-09-02)
+- **v0.7** — Four countries, honest verdicts, exceptions: 23 routes across
+  DE/FR/ES/NL with a destination-first interview; notices that answer "do you
+  even need a permit"; route preconditions stated rather than implied;
+  period-aware money everywhere; the passport asked as a country (199 issuers,
+  free-movement class carried by `implies` on four sourced legs); reduced
+  thresholds as second paths inside existing routes. Guarded by a
+  quote-fidelity gate that re-reads every shipped quote in the latest snapshot,
+  and by symptom-level regression tests for each cleared blocker. Every value
+  verified by a human at its source. (2026-09-06)

@@ -1101,3 +1101,22 @@ not raise — the German link's unreachability took one fetch to establish, and 
 put it on the human's list instead. So did the country-name spot-check I could
 have run, and the IND researcher wording I asked for three times while the
 dataset already carried it.
+
+## 2026-09-06 — v0.7: s5, s5b and s5c are real-green
+
+The human walked the acceptance scenarios on the live product and confirmed
+them: the Germany regression, the Dutch monthly flow, the "anywhere" weak
+profile, back-and-edit, and the EU-passport notice. With the 39 verified values
+already in, both halves of real-green are done — the data is right and the
+screens read right to a person who is not the one who built them.
+
+**v0.7 stamped:** four countries, 23 routes, honest verdicts, exceptions.
+
+**Cost of the stamp:** the product-critique cadence now owes v0.7 a full walk,
+and the walk is mine rather than the isolated agent's, because v0.7 does not
+reach real users. That is a real obligation, not a formality: the last two
+stamped states each hid a live defect that only a walk found — Dutch amounts
+with no unit, and card prose the human could not read.
+
+**Not stamped, deliberately:** nothing about the name, the licence or the
+roadmap. Those are the release gate, and they open the s6 boundary as forks.

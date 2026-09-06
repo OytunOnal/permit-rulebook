@@ -75,10 +75,12 @@ Components, one line each:
 
 ## Not yet real-green
 
-- **s5 · s5b · s5c** are mock-green. Every value they ship is human-verified at
-  its source (39/39 checklist items, 2026-09-06); what remains is walking their
-  acceptance scenarios with the human, which is the first work of the s6
-  boundary.
-- **Deploy target and the live cron** land in s6: the daily watch fires once
-  `visa-rules` is public.
-- **Per-route micro-pages** and the launch surface: s6.
+Everything above is real-green as of **v0.7** (2026-09-06): values verified at
+their sources by a human, acceptance scenarios walked on the live product.
+
+Still to come in s6:
+
+- **Deploy target and the live cron** — the daily watch fires once `visa-rules`
+  is public.
+- **Per-route micro-pages** and the launch surface.
+- **The name and the licence** — release-gate decisions, not code.
