@@ -108,9 +108,16 @@ _(empty)_
 
 ## mock-green
 
+**Value verification closed 2026-09-06.** `verify-s5.md` 21/21 and
+`verify-s5c.md` 18/18 — every shipped number and quote confirmed at its source
+by a human, including the Spanish PDF tier no machine here can read. That
+settles the data these three slices rest on. It does **not** make them
+real-green: real-green is the acceptance scenario walked with the human, and
+those walks belong to the s6 boundary session.
+
 - **Exceptions and reduced thresholds** (s5c) · mock-green 2026-09-04
   (`docs/spine/scenarios/s5c.md`, spec `docs/spine/specs/s5c-exceptions-and-reduced.md`):
-  the passport question asks a country (198 issuers, class carried by
+  the passport question asks a country (199 issuers, class carried by
   `implies`, three sourced legs), reduced thresholds as second paths
   (NL €3,122 / €4,754, ES €33,085.09), two French talent routes, and the
   Türkiye rights as a notice beside the results. Built by the builder agent

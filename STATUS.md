@@ -36,9 +36,12 @@ and demands its country back. 178 tests green, `astro check` clean.
 
 ## What is expected from you
 
-- [ ] **Two items left on the verification checklists** — `visa-rules/data/verify-s5c.md`: read the twelve new country labels in the live control and say they look right, and the rest of the name spot-check (Türkiye, Czechia, Côte d'Ivoire, Kosovo — old names still find them).
-- [ ] **Walk it on a real phone** — the isolated critique could not resize its viewport, so phone width is un-assessed by it. I measured 390 px through device emulation (no overflow, 54 px rows), but a handset is yours: open the dev server on your phone and run one flow.
-- [ ] **Click the two learn links** — Anabin and § 18g — the last open item from s3.
+- [ ] **Click the two learn links** — Anabin and § 18g — the last open item from s3, and the only unchecked thing left from before v0.7.
 - [ ] **Confirm the two watch-flag verdicts** — nothing is pending; this is your agreement that the buzer flag (our own marker edit) and the IND flag (an unrelated menu item) were closed correctly. `DECISIONS.md`, 2026-09-04.
 - [ ] **Send back the IND researcher row wording** — checklist item 24 is ticked but the text never arrived; our quote is the bare €1,635.90 while the page states the period and "without holiday allowance" in the same row. Paste the row and I will replace the quote.
-- [ ] **Open the s6 boundary when you want the launch slice** — two gates wait there that are cheap now and expensive after launch: the **name** (never chosen; "visa-navigator" is the folder name) and the **dataset licence**. I will bring roadmap promotions, and the v1 gate's full critique runs in isolation, not by me.
+- [ ] **Open the s6 boundary when you want the launch slice.** Two gates wait there that are cheap now and expensive after launch: the **name** (never chosen — "visa-navigator" is the folder name) and the **dataset licence**. I bring roadmap promotions to it, and the v1 gate's full critique runs in isolation, not by me.
+
+**Moved into s6, at your call:** the phone walk happens on the deployed site. It
+is sequenced before the launch announcement, not after — a preview URL is a
+deploy, an audience is not, and a responsive defect found by strangers is found
+too late.
