@@ -13,43 +13,32 @@ flowchart LR
 
 ## What is happening now
 
-An **isolated product-critique** — the first walk by a session that had not
-done the work — found six things on a frozen build, one of them a blocker that
-was still live at HEAD: **Dutch amounts rendered with no unit.** A card read
-"€5,942" beside a German card reading "45.630 Euro im Jahr"; the same glance
-compared a month against a year and was wrong by twelve. The engine knew the
-period all along — the field carries it — and every place an amount reached the
-screen dropped it. Now the rails read `€4,357/month` and `€45,630/year`, the
-tick tooltips carry it, and the source line says `· per month` beside a quote
-that never did.
+**The human verification pass came back: 35 of 39 items confirmed at their
+sources.** `verify-s5.md` is closed 21/21 — France, the Netherlands, the four
+BOE articles, and the Spanish salary PDF, which is the tier no machine here can
+read and the reason this pass was the gate. `verify-s5c.md` is 16/18. One
+earlier finding is reversed by it: the Dutch top-200 mechanic that a report
+called absent is in the source verbatim, two of three ranking publishers.
 
-Two more from that run are fixed. A person comparing all four countries used to
-get a wall of "Not met: located in France" — a criterion they never answered by
-that name, on a fact they had given us; it now reads "5 France routes — you
-told us Germany" and collapses to one line. And a zero-result screen that
-announced "6 steps would change that" was hiding two of them in collapsed
-sections; every section holding a step now opens. A fourth is answered on the
-cards: routes with no numeric threshold say so, rather than leaving the
-"every value carries its quote and date" promise quietly unmet.
+The one open question in that pass — whether to keep CLDR's country labels —
+was answered **hand-edit them**. Twelve now read as the names people use:
+"Saint Kitts and Nevis", not "St. Kitts & Nevis"; "Democratic Republic of the
+Congo", not "Congo - Kinshasa"; "Hong Kong", not "Hong Kong SAR China". Every
+displaced form survives as an alias.
 
-The light critique that preceded it **has had its scores withdrawn**. It did
-not walk blind and never opened its own screenshots; a run that breaks its own
-conditions publishes findings, not numbers. Its findings stand — and two of its
-scores were wrong within the day.
-
-Before that: s5c shipped the passport question as a country (199 issuers, class
-carried by `implies`, so no route criterion changed), reduced thresholds as
-second paths inside existing routes, two French talent routes, and the
-EU–Türkiye rights as a sourced note beside the results. Three review passes
-caught what 176 tests could not — Åland and Guadeloupe residents classed as
-third-country, an EU membership claim resting on page furniture, and "turkey"
-returning "check the spelling".
+Doing it uncovered a live defect the checklist was not looking for. Search
+ignored diacritics but not punctuation, so "Côte d'Ivoire" — whose label
+carries a typographic apostrophe — was unreachable to anyone typing a straight
+one, and "guinea bissau" without its hyphen found nothing. That is the third
+time this control has hidden a country from the person holding that passport.
+Folding now drops punctuation entirely, and a test types each displaced form
+and demands its country back. 178 tests green, `astro check` clean.
 
 ## What is expected from you
 
-- [ ] **Verify the FR/ES/NL values at their official pages** — `visa-rules/data/verify-s5.md`. Yours because the Spanish thresholds come from a PDF that project policy says a human must read; the europa.eu and EFTA quotes need no VPN.
-- [ ] **Verify the s5c additions** — `visa-rules/data/verify-s5c.md`: the reduced Spanish threshold (€33,085.09, PDF tier) and the EEA leg of the passport class.
+- [ ] **Two items left on the verification checklists** — `visa-rules/data/verify-s5c.md`: read the twelve new country labels in the live control and say they look right, and the rest of the name spot-check (Türkiye, Czechia, Côte d'Ivoire, Kosovo — old names still find them).
 - [ ] **Walk it on a real phone** — the isolated critique could not resize its viewport, so phone width is un-assessed by it. I measured 390 px through device emulation (no overflow, 54 px rows), but a handset is yours: open the dev server on your phone and run one flow.
 - [ ] **Click the two learn links** — Anabin and § 18g — the last open item from s3.
 - [ ] **Confirm the two watch-flag verdicts** — nothing is pending; this is your agreement that the buzer flag (our own marker edit) and the IND flag (an unrelated menu item) were closed correctly. `DECISIONS.md`, 2026-09-04.
-- [ ] **Open the s6 boundary when you want the launch slice** — I will bring roadmap promotions to it, and the v1 gate's full critique runs in isolation, not by me.
+- [ ] **Send back the IND researcher row wording** — checklist item 24 is ticked but the text never arrived; our quote is the bare €1,635.90 while the page states the period and "without holiday allowance" in the same row. Paste the row and I will replace the quote.
+- [ ] **Open the s6 boundary when you want the launch slice** — two gates wait there that are cheap now and expensive after launch: the **name** (never chosen; "visa-navigator" is the folder name) and the **dataset licence**. I will bring roadmap promotions, and the v1 gate's full critique runs in isolation, not by me.

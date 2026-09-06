@@ -977,3 +977,34 @@ reading each screen as prose, not by matching substrings; DECISIONS entries
 state their cost, not only what they buy — this entry is the first written that
 way; and every report's human-facing residue goes in the message and into
 STATUS.md's checklist, not only into a file.
+
+
+## 2026-09-06 — the human verification pass, and country labels written by hand
+
+**35 of 39 checklist items confirmed at their sources.** `verify-s5.md` closed
+21/21; `verify-s5c.md` closed 16/18, including the Spanish PDF tier — the four
+values no machine here can read. The top-200 mechanic the earlier report called
+absent is in the source after all, verbatim: two of three ranking publishers.
+Two items stay open and both now point at new text (below).
+
+**Gate (human chose): country labels are hand-written, not CLDR's.** The list
+was generated from `Intl.DisplayNames`, which abbreviates ("St. Kitts &
+Nevis"), punctuates oddly ("Congo - Kinshasa") and disambiguates in ways no
+passport does ("Hong Kong SAR China"). Twelve labels were rewritten to the
+names people use. Every displaced form is kept as an alias, so nothing became
+unfindable, and a test fails if an abbreviation or localisation artefact
+returns — the generator script no longer exists, so `countries.json` is the
+source of truth and only a test can hold the line.
+
+**Cost:** the labels are now ours to maintain. A future country added by hand
+gets no localisation for free, and the exonym list grows by hand with it.
+
+**A live defect fell out of doing it.** Search folded away diacritics but not
+punctuation, so the label "Côte d'Ivoire" — carrying a typographic apostrophe —
+could not be found by anyone typing a straight one. "guinea bissau" without the
+hyphen found nothing either. Folding now drops everything that is not a letter
+or a digit, and each name is folded on its own so a needle cannot match across
+the seam between a label and an alias. This is the third time this control has
+hidden a country from the person who owns that passport ("turkey", the
+dependent territories, now the apostrophe); the permanent check is the test
+that types each displaced form and demands its country back.
