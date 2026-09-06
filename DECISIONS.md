@@ -1069,3 +1069,35 @@ permit types share the minimum. The number identifies nothing on its own; what
 places it is the section it sits in, which the quote does not include and
 `legal_basis` does. That is a weakness of quoting a row from a table, not of
 this row.
+
+
+## 2026-09-06 — the name is a working name, and skills reload at the boundary
+
+**Recorded, not chosen: "visa-navigator" is a working name.** It was the
+directory's name, became the repo's, and was never decided. Spine's own notes
+place naming as an early gate — cheap before launch, expensive after, because a
+domain, GitHub URLs, inbound links and a launch post all harden around it. The
+name fork opens the s6 boundary session, alongside the dataset licence.
+
+**Cost of leaving it: none yet, and rising.** Every day before launch costs
+nothing; every day after costs a redirect, a rename, and whatever links already
+point at the old one.
+
+**Boundary sessions now begin by reloading the Spine skill files.** This run has
+twice inherited a contract it never read — s2 landed without the screen-mock
+rule because genesis was invoked before that rule existed. Reloaded today at
+`steward-17`; the stamp lives in STATUS's *Where are we* so a future session can
+see which contract this one ran under.
+
+**Applied from that reload, immediately:** STATUS's expected-from-you list now
+carries the hand-off test (exact target · exact thing to look for · what a pass
+looks like · why it is the human's), and `docs/spine/ARCHITECTURE.md` was
+redrawn — it still described 21 routes and "FR/ES/NL not built yet" four slices
+after they landed.
+
+**The rule that indicts three of my own asks this week:** *do not hand over what
+you can do.* "These links need verifying" was an item I was supposed to close,
+not raise — the German link's unreachability took one fetch to establish, and I
+put it on the human's list instead. So did the country-name spot-check I could
+have run, and the IND researcher wording I asked for three times while the
+dataset already carried it.
