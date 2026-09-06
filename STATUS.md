@@ -41,24 +41,37 @@ you, in this order:
    candidates have watched three versions ship without being versioned, so
    their aging fork is due at this session too.
 
-Owed by me before s6 ships, and started rather than filed: **a full
-product-critique walk of v0.7**, because the cadence gives every stamped version
-one. The v1 gate's walk runs in isolation via the critique agent; this one does
-not, because v0.7 does not reach real users.
+**v0.7's full walk ran in isolation and found four blockers** — the critique
+agent, not this session, because a scorer must not grade its own repairs
+(`docs/spine/critiques/2026-09-06-product-critique-v0.7.md`, RUBRIC 1.2,
+27/45). One of them is a wrong-verdict bug I confirmed in the data: the
+country-less question "did you graduate… in the last 3 years?" gates the Dutch
+reduced salary criterion, but the IND's own third case requires the applicant to
+*meet the orientation-year requirements* — which is where the Dutch-or-designated
+institution restriction lives. The product already ships the strict wording one
+screen away. Blockers must clear before v1; none of them is a launch-slice task.
 
 184 tests green, `astro check` clean, ARCHITECTURE.md redrawn.
 
 ## What is expected from you
 
-- [ ] **Say which naming directions are alive and which are dead.** The four
-      are: **the tool** (Gapcheck · Test Fit · Rulecheck), **the dataset**
-      (Work Permit Sourcebook · Register · Almanac), **the promise** (Verbatim ·
-      Footnote · Says Who), **the invented word** (Tesera · Erga · Idonea).
-      Each direction's honest ceiling is written out in `docs/spine/naming.md` —
-      read that if you want the argument rather than the shortlist. **A pass
-      looks like:** two or three directions named live, the rest named dead, so
-      rounds 2 and 3 have a smaller space to work in. Killing a direction
-      outright is a good answer; so is "none of these, go wider". **Why it is
-      yours:** people know what they want when they see options, not when asked
-      to constrain a space they have not seen — and the name is the one decision
-      here that is expensive to unmake after launch.
+- [ ] **One name or two?** Round 2 surfaced this before the shortlist can settle.
+      Either the corpus carries the name and the site becomes "the ⟨name⟩ — check
+      yours" (**Permit Index**, **Permit Source Index**, **Permit Watch** — Watch
+      only works this way, it hosts no verb), or one name does both jobs
+      (**Permit Lookup**, **Permit Rulebook**, **Permit Criteria**). **A pass
+      looks like:** "one name" or "two names". **Why it is yours:** it is a
+      product decision about how the thing is presented, not an analysis result —
+      and it changes which candidates survive to the critique round.
+- [ ] **Pick the critique adjustments** — 1, 2, 3, or "apply all". They are laid
+      out in the message and in the report; 1 and 2 between them close all four
+      blockers.
+- [ ] **Check one link destination.** On the German Blue Card card the quote line
+      reads *"mind. 45.630 Euro im Jahr 2026" · arbeitsagentur.de · 45% BBG ·
+      § 6 BeschV · read 2026-09-02*, but "Official page ↗" beside it goes to
+      `https://www.bamf.de/EN/Themen/MigrationAufenthalt/ZuwandererDrittstaaten/Arbeit/FachkraefteOhneAusbildung/fachkraefte-ohne-ausbildung-node.html`.
+      **A pass looks like:** that German sentence is on the linked page. If it is
+      not, the card is pointing at a route overview while claiming it is the
+      quote's source, and I will split the two links. **Why it is yours:** the
+      critique agent had no outbound network, and bamf.de refuses connections
+      from here — it is one of the German hosts that answers you and not us.
