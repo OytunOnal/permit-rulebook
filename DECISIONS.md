@@ -1042,3 +1042,8 @@ now a recorded decision rather than an accident.
 innovative-employer page, the IND designated-institutions page) were never on
 the s3 checklist. They happen to be watched already, because they are also
 value sources. The checklist had aged past what it covered.
+
+
+**Closed 2026-09-06:** all four learn links clicked and confirmed by the human —
+buzer.de § 18g, Anabin, the French innovative-employer page, the IND
+designated-institutions page. The last item carried over from s3 is done.
