@@ -177,3 +177,94 @@ word escapes nothing.
 
 Then the deep critique on Fable in a fresh context, over the round-1 survivors
 and the recombinations together. Then availability lookups, on survivors only.
+
+---
+
+# Round 2 — recombination (2026-09-06)
+
+One Opus pass, not blind: it read every round-1 batch, every ceiling, the
+landmines and the fork above. Rule applied — the dataset is the anchor, so a
+candidate must escape the **dataset ceiling** (comprehension for the anxious
+searcher; not leaving the consumer tool nameless) **plus one other**.
+
+## Family A — dataset × tool (a record you consult)
+
+| Candidate | Escapes | Biggest weakness |
+|---|---|---|
+| **Permit Index** | dataset (an index is *maintained*, never bound/finished/annual — the direct repair of Sourcebook's and Almanac's wound) + tool (an index is the corpus half, citable by name) | the composite-score misread (Democracy Index), which implies we rank countries |
+| **Permit Lookup** | dataset (the searcher's own words; the verb *is* the name) + tool (a lookup is retrieval from a table, not a verdict, so a bare checker cannot wear it) | round 1 already buried its sibling — "Permit Check: a label, not a name, unownable, mistakable for a government service" — and that verdict mostly carries over |
+| **Permit Rulebook** | dataset (highest warmth, most natural verb: "what does the rulebook say about the Blue Card?") + tool (a rulebook is the corpus) | trades away *source*, the actual differentiator, for warmth — strictly weaker than Sourcebook, and "book" still hides the daily watch |
+| **Permit Criteria** | dataset ("eligibility criteria" is already in the reader's head; near-cognate in all five languages) + tool (criteria are the published requirements, not an assessment of you) | bureaucratic register, the one the reader is already drowning in; leans toward the eligibility claim the product refuses |
+| Sourcecheck | tool (the object of the check is a *source*, so it asserts a corpus) + the nameless-tool half of dataset (a brand, not a label) | declared **partial** escape — no domain word at all, and it reads as misinformation fact-checking |
+
+## Family B — dataset × promise (a record that is quoted and dated)
+
+| Candidate | Escapes | Biggest weakness |
+|---|---|---|
+| **Second Source** | promise (an artifact, not an adjective; "second" cedes primacy to the ministry, immunising against both Ground Truth's self-awarded title and Gazette's state costume) + dataset (names the reader's *situation* — checking what a recruiter told you) | no domain word at all; search comprehension rests entirely on the SEO micro-pages |
+| **Permit Watch** | promise (names a *practice*, not a virtue — lead-gen can call itself honest, it cannot call itself a watch) + dataset (kills the static wound; repairs Gazette by naming the observing rather than the publishing) | hosts no consumer verb, and it takes a cadence hostage that A13 already concedes will be broken |
+| **Permit Source Index** | promise (keeps *source*, the differentiator) + dataset (replaces *book* — Sourcebook's only stated wound — with a head noun that implies maintenance) | reads as an index *of sources*, a link list, rather than rules with sources attached |
+| Open Permit Index | promise ("open" is the one integrity claim falsifiable by inspection, and structurally uncopyable — closed data is the competition's moat) + dataset (as Permit Index) | three words, and "open" spends the first impression on something a developer infers from the licence anyway |
+| Just the Rules | promise (a *refusal*, not a claim — Not Advice with the negation inverted, so it stops reading as "this will not help you") + dataset (A1 vocabulary, "rules" is the reader's own noun) | a slogan in a name's clothes; "just" undersells, and See For Yourself's verdict — three words, nearly unfindable — applies unchanged |
+
+**Family B is genuinely thin, and the round said so** rather than padding: only
+Permit Watch and Second Source escape cleanly; the other three each fail a
+column, named. "Quoted and dated" only becomes a lay-legible noun as a practice,
+a position, or jargon. Ten candidates, not fourteen.
+
+## The three defended hardest
+
+- **Permit Index** — the only candidate that repairs the anchor direction's own
+  stated wound (static, bound, annual) without giving up citability, aimed at
+  the project's primary success metric, which is dataset liveness.
+  *Trade-off: warmth and the "this is for me" feeling, for citability — and it
+  accepts one specific misread, that an Index is a composite score implying we
+  rank countries.*
+- **Permit Lookup** — highest comprehension in either family, strongest verb,
+  corrects the visa error, promises nothing.
+  *Trade-off: ownability and any hope of affection, for maximum comprehension.
+  It is a label; if the corpus becomes the thing people cite, contributors have
+  no name to cite it by.*
+- **Second Source** — the only candidate that is a name rather than a
+  description, and the only one that cedes primacy to the official source in
+  the name itself.
+  *Trade-off: search comprehension entirely — every head term must be carried by
+  the SEO pages — for memorability and a stance no lead-gen site can honestly
+  copy. And it can be heard as "secondary, therefore lesser".*
+
+## What recombination could NOT fix
+
+**The domain costs a word, and nothing dissolved that.** The product's noun
+phrase is two words — *work permit* — so every crossing either spends its
+opening word on the domain and becomes a label (Permit Lookup, Permit Criteria,
+Permit Index), or drops the domain and becomes unfindable by the frightened
+searcher (Second Source, Sourcecheck, Just the Rules). Round 1 hit this as a
+trade *between* directions; recombination relocated it *inside* individual
+names. Every candidate pays it somewhere, and none escaped it.
+
+## The gate this round surfaced: one name or two?
+
+Not an analysis result — a product decision.
+
+- **Strongest only with two names** (the corpus carries the name, the consumer
+  site is "the ⟨name⟩ — check yours"): Permit Index, Permit Source Index, Open
+  Permit Index, and **Permit Watch absolutely**, since it hosts no consumer verb
+  and must be paired.
+- **Work as a single name doing both jobs**, hosting the verb natively: Permit
+  Lookup, Permit Rulebook, Permit Criteria.
+- **In between:** Second Source and Just the Rules — memorable enough to be the
+  only name, but they leave every search term to the SEO layer.
+
+If one name must do both jobs, **Permit Lookup and Permit Rulebook rise and
+Permit Watch drops out entirely.** So the architecture decision, not the
+shortlist, is the next gate.
+
+## Not checked in this round (stated, not guessed)
+
+- All availability: domains, code host, package registries, trademarks.
+- Whether the label-shaped candidates are already occupied by government pages —
+  exactly the failure round 1 predicted for Permit Check.
+- Whether *index* or *criteria* carries an unwanted **term of art** in DE/FR/ES/NL
+  immigration law; only ordinary-language false friends were swept.
+- Mandarin and Hindi readings. The sweep covered German, Dutch, Spanish, French
+  and Turkish only.
