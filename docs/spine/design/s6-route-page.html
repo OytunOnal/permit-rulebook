@@ -53,6 +53,10 @@ a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0; ma
 
 /* ---- masthead ---- */
 .masthead { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); border-bottom: var(--rule-heavy); padding-bottom: var(--space-4); }
+/* The text column stops at 37rem; the stamp pair sits centred in the space that
+   is left, not flush against the edge (human, 2026-09-07). */
+.masthead > div:first-child { flex: 0 1 37rem; }
+.masthead .stamps { margin: 0 auto; }
 .crumbs { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
 .crumbs a { text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap-min); }
 .crumbs .sep { color: var(--color-line); }
@@ -140,7 +144,8 @@ footer .health a { display: inline-flex; align-items: center; min-height: var(--
 
 @media (max-width: 760px) {
   .masthead { flex-direction: column; }
-  .stamps { align-self: flex-end; }
+  .masthead > div:first-child { flex: 0 1 auto; }
+  .stamps { align-self: flex-end; margin: 0 0 0 auto; }
   .src { flex-direction: column; }
   .src a { padding-left: 0; }
   .cta { flex-direction: column; align-items: stretch; }
