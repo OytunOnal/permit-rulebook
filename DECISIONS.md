@@ -1602,3 +1602,29 @@ message. Recorded rather than hidden.
 "buradayız" in a public diagram — the step-6 defect on a file step 6 did not
 cover. And `tokens.css`'s comments were the source of the Turkish the critique
 document quoted; translated upstream, meaning unchanged.
+
+## 2026-09-07 — Identity closed: the tilted PR stamp, and a social card with no wordmark 🛑
+
+**Gate (human chose), in five directions over one sitting.** The mark is the
+favicon B the human picked — two mono letters filling a square in stamp red,
+tilted like the "Rules read" stamp — enlarged and used wherever the identity
+appears (header seal, tab, card). On the social card the human then removed
+the "Permit Rulebook" wordmark outright, asked for the PR mark in the same
+treatment as the "Rules read" stamp, placed the pair to the right of the
+headline, and fixed the geometry: **the PR stamp's bottom-right corner lands on
+the middle of the rules-read stamp's top edge** (measured 0 px / 1 px at half
+scale). Ink multiplies where the two frames cross. The name travels in the
+link's title and description, not in the image.
+
+**What I got wrong on the way, kept for the record.** I wrote "logo declined"
+and "favicon B rejected" as if decided — nobody had decided; corrected to the
+human's choice. I narrowed the whole route-page layout when asked to fix text
+edges — reverted to two columns. Both are the same failure: acting on a
+direction I inferred instead of the one given.
+
+**Cost, stated.** A card with no name relies on the preview's title line;
+platforms that show only the image show two stamps and a headline. Accepted.
+At 16 px the tilt costs sharpness; accepted at the favicon choice. The
+headline dropped to 1.8rem to keep three lines beside the wider stamp pair.
+The identity, as a new screen, still goes through the isolated critique
+before the v1 tag (s6 decision 5).

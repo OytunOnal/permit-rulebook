@@ -53,14 +53,13 @@ declared unsourced with a reason; every document on disk in English.
       pass when the English claims no more than the Turkish did. **Why it is
       yours:** the machine proved the direction; only a person can agree that
       someone in that position *should* see what they now see.
-- [ ] **s6, three approvals in one word each:** the scenario
-      (`docs/spine/scenarios/s6.md`, 13 decisions), the route-page mock
+- [ ] **s6, two approvals in one word each:** the scenario
+      (`docs/spine/scenarios/s6.md`, 13 decisions) and the route-page mock
       (`docs/spine/design/s6-route-page.html`, two columns, revised after the
-      isolated critique and your three corrections), and the identity
-      (`docs/spine/design/s6-identity-a.html`: the tilted PR stamp, enlarged
-      as you asked, overprinting the rules-read stamp on the social card at the
-      opposite angle). The open question on the last is only size: say if the
-      seal in the header or the mark on the card should be larger still.
+      isolated critique and your three corrections). The identity is closed:
+      you approved the card on 2026-09-07 (DECISIONS). **Why it is yours:** the
+      scenario is the exam the build is graded on, and the screen is the one
+      new thing a stranger sees.
 - [ ] **One line, optional:** the copyright holder in the three LICENSE files
       reads "Oytun", the git author. Say so if you want the full name before
       the repositories go public.
