@@ -522,7 +522,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <p class="why">${whyFor(r)}</p>
           ${precondFor(r)}
           ${r.points ? `<div class="ptsline"><b>${r.points.scored} point${r.points.scored === 1 ? "" : "s"} — ${r.points.required} needed</b>${
-            r.points.items.length ? " — " + r.points.items.map((i) => `${esc(shortLabelOf(ds, i.field))} +${i.points}`).join(" · ") : ""
+            r.points.items.length ? " · " + r.points.items.map((i) => `${esc(shortLabelOf(ds, i.field))} +${i.points}`).join(" · ") : ""
           }</div>` : ""}
           ${r.status !== "hold" ? railFor(r) : ""}
           ${r.status === "near" && r.gap_max ? (() => {
