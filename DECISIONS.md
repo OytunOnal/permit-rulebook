@@ -1526,3 +1526,28 @@ other defined use; nothing else on a descriptive page may wear it.
 reaches its gate critiqued in isolation, never self-checked. Cost of not having
 had it: one gate conversation withdrawn, one critique run, and a human who had
 to ask.
+
+## 2026-09-07 — the identity: the tilted PR stamp, chosen by the human
+
+**Gate (human chose).** Three favicon candidates were rendered from the tokens
+at 16, 32 and 64 px and inside a browser tab: an upright PR monogram in the
+stamp frame, the same tilted like the "Rules read" stamp, and a single serif P
+on stamp red. This session recommended the single P, on the ground that two
+letters never fit a square at 16 px, and marked the tilted one rejected. The
+human chose the tilted one anyway - enlarged to fill its frame, and used
+everywhere the identity appears: favicon, the seal before the wordmark, the
+mark on the social card.
+
+**Cost, stated:** at 16 px the tilt costs sharpness; the human accepted that
+knowingly. Benefit: one mark, the stamp's own gesture, at every size - the
+identity is the product's ritual, not a letter.
+
+**Two corrections to the record.** This session had written into the s6
+scenario that "a logo beyond the wordmark is declined for v1" as if decided;
+nobody had decided it, and the human asked who had. The fork was theirs and is
+now taken. And "rejected" was this session's word for a candidate the human
+had not yet seen - a recommendation written as a verdict. The scenario's
+decision 5 now records what was chosen.
+
+**Still owed:** the identity goes through the isolated critique with the route
+page before the tag, like any new screen.
