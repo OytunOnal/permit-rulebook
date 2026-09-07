@@ -1628,3 +1628,35 @@ At 16 px the tilt costs sharpness; accepted at the favicon choice. The
 headline dropped to 1.8rem to keep three lines beside the wider stamp pair.
 The identity, as a new screen, still goes through the isolated critique
 before the v1 tag (s6 decision 5).
+
+## 2026-09-07 — s5f real-green: the human delegated the walk to the session → **v0.10** 🛑
+
+**Gate, and what changed at it.** The scenario's real-green condition named a
+human: read the 15 moved Spanish verdicts as a list and agree each moved the
+right way; read one translated decision against its original. Asked to walk
+it, the human said the session could do it. Recorded as their decision: the
+independent-reader condition is not met, and the record says so rather than
+the walk passing quietly.
+
+**What was walked.** The ten profiles behind the 15 rows were reconstructed
+from the checklist's own words and run through the engine with the two-year
+and the three-year answer — every row reproduced exactly, 0 worse. The two
+"met" rows were then entered by hand in the live interview: row 2 (Samoa,
+offer in Spain, vocational, three years, €45,630–€45,934.20) shows CRITERIA
+MET with the rail marking €41,356.36 below the declared band; row 13 (Cape
+Verde, transfer, vocational, three years) shows CRITERIA MET after five
+answers — the interview did not ask salary because no live route needed it —
+and the card says in two places that the route has no salary threshold of its
+own. Translation: the s3b entry, paragraph by paragraph against `7c075a0`,
+same argument, same hedges, same hashes.
+
+**Found on the way, filed, not a bar.** The row-13 card quotes art. 73.2.c
+twice: once as the source of the `situation eq ict` criterion, once — where
+it belongs — under the "three months with the group" precondition. The
+criterion is carrying the wrong sentence. No verdict moves; backlog, `bug`,
+fix named. The dev server had also been running since 2026-09-03 and answered
+500 to everything; restarted, bound to 127.0.0.1.
+
+**Cost, stated.** A walk by the builder is a check that the product does what
+the builder meant, not that a stranger agrees. The v1 gate's isolated critique
+(s6 decision 13) remains the first independent pair of eyes on these cards.

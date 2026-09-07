@@ -111,7 +111,11 @@ pages, all already watched after s5e.
 - mock-green: 2026-09-07 — built and reviewed on both axes (15 findings
   applied); 323 engine + 70 navigator tests; `human_tier: 0`; 120 quotes
   verified; fixed-population differential 15 rows better, 0 worse.
-- real-green: — (requires the human: read the moved Spanish verdicts as a
+- real-green: 2026-09-07 — walked by the session at the human's delegation
+  (see DECISIONS): 15 / 15 moved rows agreed, two "met" cards read in the live
+  interview, the s3b decision read against its Turkish original — pass.
+  → **v0.10**
+- (original condition, kept:) real-green requires the human: read the moved Spanish verdicts as a
   list and agree each moved the right way; read one translated decision
   against its Turkish original and confirm the argument is the same)
 

@@ -14,7 +14,7 @@ flowchart LR
     D --> E["Four countries · honest verdicts · exceptions ✅ real-green (v0.7)"]
     E --> E2["Answers recorded as given ✅ real-green (v0.8)"]
     E2 --> E3["Every sentence carries its source ✅ real-green (v0.9)"]
-    E3 --> E4["Launch-readiness sweep ◀ here (s5f, mock-green)"]
+    E3 --> E4["Launch-readiness sweep ✅ real-green (v0.10)"]
     E4 --> F["Public launch 🏁 v1 (s6)"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
@@ -66,6 +66,15 @@ Promoted (or dropped, with evidence) at a boundary session.
   exists. Kept.
 
 ## backlog
+
+- **es-ict's `situation` criterion carries the precondition's quote** (found on
+  the s5f real-green walk, 2026-09-07, `bug`): `dataset.json` gives the
+  `situation eq ict` criterion art. 73.2.c ("relación laboral … de 3 meses") as
+  its source — the same sentence the precondition "three months with the group"
+  rightly carries — so the card quotes it twice. Fix: source the criterion from
+  the sentence that defines the transfer (art. 73.1, the traslado
+  intraempresarial definition), read from the BOE snapshot; no verdict changes;
+  the quote-fidelity gate must stay `ok`. Small; candidate for s6's sweep.
 
 - ~~PDF text extraction for the watch~~ → **promoted into s5f** (2026-09-07): both PDF-tier sources
   carry a text layer behind embedded TrueType fonts; decoding the glyph tables
@@ -159,16 +168,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## mock-green
 
-- **Launch-readiness sweep** (s5f) · mock-green 2026-09-07
-  (docs/spine/scenarios/s5f.md). Spain measured against three years on two
-  routes (es-highly-qualified and es-ict, the second ruled in scope); the
-  ladder made ordinal after the review caught a regression the guard could not
-  see; a pdf-text watch strategy — human tier 0, quotes verified 78 → 120;
-  37 bare preconditions given a kind (34 sourced, 2 ours, 1 deleted as
-  repealed law); every document on disk English. Reviewed on both axes, 15
-  findings applied. 323 + 70 tests. **Real-green needs the human**: read the
-  15 moved verdicts as a list and agree each moved the right way; read one
-  translated decision against its original.
+_(empty — s5f stamped into done as **v0.10**, 2026-09-07)_
 
 ## real-green
 
@@ -262,6 +262,13 @@ _(empty — everything real-green so far is stamped into done)_
   tiers, ndjson, commit-gated state, flag files with quoted context), DE via
   ZAV edition-index sentinel, daily CI workflow hardened against alert loss.
   (2026-09-02)
+- **v0.10** — Launch-readiness sweep: Spain measured against three years on
+  two routes (es-highly-qualified, es-ict); the experience ladder made ordinal
+  (y3in7 implies y2in5) after the review caught a regression the guard could
+  not see; pdf-text watch strategy — human tier 0, quotes verified 78 → 120;
+  37 bare preconditions given a kind (34 sourced, 2 ours, 1 deleted as
+  repealed law); every document on disk English. Real-green walked by the
+  session at the human's delegation. 323 + 70 tests. (2026-09-07)
 - **v0.9** — Every sentence carries its source: 55 sourced conditions, 8
   readings declared ours, 1 declared unsourced with a reason; machine-verified
   quotes 28 → 78; the provenance gate keyed to a declared kind; slice markers on
