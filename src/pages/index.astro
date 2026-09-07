@@ -73,7 +73,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The reason column's markup, beside the page rather than in it, so what
     // it renders can be read by a test (review S4).
     import { esc, failDetailHtml, whyHtml } from "../lib/reason.js";
-    import { caveatHtml, precondHtml, provenanceHtml, railHtml, measuredCriterionOf } from "../lib/card.js";
+    import { caveatHtml, modellingHtml, precondHtml, provenanceHtml, railHtml, measuredCriterionOf } from "../lib/card.js";
 
     const ds = dataset as unknown as Dataset;
     // One field-lookup idiom for the whole page: the dataset never changes
@@ -403,6 +403,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * and never under the "Also required" heading, which would turn "you may
      * qualify for less" into one more bar to clear (human catch 2026-09-07). */
     const caveatFor = (r: RouteResult): string => caveatHtml(r.route);
+    /** Our own reading — what we modelled, what we did not, and where a number
+     * was read by a person. Never presented as an authority's words, and never
+     * in the quote list (s5e). */
+    const modellingFor = (r: RouteResult): string => modellingHtml(r.route);
     /** The rail, labelled with the threshold this result was measured
      * against — the path that was met, or the nearest reachable one. */
     const railFor = (r: RouteResult): string => railHtml(ds, r, answers);
@@ -452,6 +456,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <p class="why">${whyFor(r)}</p>
           ${precondFor(r)}
           ${caveatFor(r)}
+          ${modellingFor(r)}
           ${r.points ? `<div class="ptsline"><b>${r.points.scored} point${r.points.scored === 1 ? "" : "s"} — ${r.points.required} needed</b>${
             r.points.items.length ? " · " + r.points.items.map((i) => `${esc(shortLabelOf(ds, i.field))} +${i.points}`).join(" · ") : ""
           }</div>` : ""}
@@ -482,6 +487,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             ${r.route.summary ? `<p class="why">${esc(r.route.summary)}</p>` : ""}
             ${precondFor(r)}
             ${caveatFor(r)}
+          ${modellingFor(r)}
             ${failDetail(r)}
             ${learnBoxFor(r)}
             <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
@@ -1054,6 +1060,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /* A caveat we could not find the wording for says so in its own voice,
        and says why (human catch 2026-09-07). */
     .caveat.nosrc i{font-style:italic;opacity:.85}
+    .caveat.ours{border-left-style:dashed}
     /* s5b: the situation-gated rows, said once (critique #5b). */
     details.hold-group{margin-top:.1rem}
     details.hold-group > summary{cursor:pointer;list-style:none;font:600 .82rem var(--font-sans);color:var(--color-muted);

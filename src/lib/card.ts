@@ -31,6 +31,15 @@ export function gteCriteriaOf(route: Route): Gte[] {
   return out;
 }
 
+/** Does anything on this route turn on a number — a salary rail or a points
+ * score? A route where nothing does has no threshold to fall short of, and the
+ * card says so rather than leaving the absence to be read as a pass. */
+function decidesOnANumber(route: Route): boolean {
+  let found = false;
+  forEachCriterion(route.criteria, (c) => { if (c.op === "gte" || c.op === "points") found = true; });
+  return found;
+}
+
 const bandOf = (ds: Dataset, field: string, answers: Profile) =>
   deriveBands(ds, field).find((b) => b.id === answers[field]);
 
@@ -145,6 +154,25 @@ export function caveatHtml(route: Route): string {
 }
 
 /**
+ * Our own reading — what we modelled, what we did not, and where a number came
+ * from a page no machine re-reads. It is not a claim about the law and no
+ * authority said it, so it gets a heading that says so in the reader's
+ * language rather than the dataset's: "modelling" is a word for whoever
+ * maintains this, and a stranger owes it nothing.
+ *
+ * It is the only text on a card that may carry quotation marks with no source
+ * beside it, because the kind itself is the attribution — which is exactly why
+ * it may never appear in the quote list or under a heading that says an
+ * authority spoke (s5e).
+ */
+export function modellingHtml(route: Route): string {
+  const items = routeStatements(route).filter((s) => s.kind === "modelling");
+  if (!items.length) return "";
+  return `<div class="caveat ours"><b>Our reading, not the authority's words:</b> ${
+    items.map((s) => esc(s.text)).join(" ")}</div>`;
+}
+
+/**
  * The salary rail: every threshold on this field as context, the declared band
  * as a bar, and ONE labelled threshold — the one this result was measured
  * against. Neighbouring ticks stay unlabeled so close thresholds cannot
@@ -218,9 +246,12 @@ export function provenanceHtml(ds: Dataset, r: RouteResult): string {
       value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b></div>`;
   });
   // The promise on the first screen is that every value shows its quote and
-  // its read date. A route with no numeric threshold has no value to quote,
-  // and silence there reads as if the promise held (isolated critique #5).
-  if (!lines.length)
-    return `<div class="srcs"><div class="src nosrc">No numeric threshold on this route, so there is no dated value to quote — its conditions are the ones stated above, and the official page carries their wording.</div></div>`;
+  // its read date. A route that decides nothing on a number has no AMOUNT to
+  // quote, and silence about that reads as if the promise held (isolated
+  // critique #5). Since s5e its conditions do carry quotes, so the line is no
+  // longer a substitute for an empty list — it says the one thing the list
+  // cannot: there is no threshold here to be short of.
+  if (!decidesOnANumber(r.route))
+    lines.push(`<div class="src nosrc">No salary or points threshold on this route — nothing here to fall short of. What it asks for is in the conditions above, each with the official wording behind it.</div>`);
   return `<div class="srcs">${lines.join("")}</div>`;
 }
