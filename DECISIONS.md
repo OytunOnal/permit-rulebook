@@ -1395,3 +1395,41 @@ yesterday, the PDFs today — and twice the classification was wrong in the
 direction that costs the human a task. The rule that now applies: before a
 source goes on the human tier, the session tries to read it the way a reader
 would, not the way a fetch does.
+
+## 2026-09-07 — the licence gate: MIT, CC BY 4.0, and a NOTICE
+
+**Gate (human chose), three decisions, one each.**
+
+**Code — MIT**, both repositories. What it obliges a reuser to do: keep the
+licence text and the copyright line. Chosen over Apache-2.0 (a patent grant and
+a NOTICE obligation this project does not need) and AGPL-3.0 (copyleft that
+would stop a lead-generation site closing a modified engine, at the cost of
+deterring embedding and contribution — and the engine is the replaceable half;
+the value is the dataset). Cost: anyone may take the engine and close it.
+Accepted, because the engine is not what is scarce.
+
+**Dataset — CC BY 4.0.** What it obliges: attribution and a link back, and a
+note if changed. This is the licence the positioning asks for: the whole bet is
+that an open, dated, source-quoted ruleset earns links and citations, and CC BY
+makes the link mandatory rather than hoped for. Chosen over CC BY-SA (share-
+alike on data creates friction with ODbL and with anyone mixing into a
+product, and deters exactly the tool-builders the dataset exists for), ODbL
+(the strongest protection and the least understood, heavy for 23 routes), and
+CC0 (maximum reuse, but it makes the link back voluntary). Cost: a copy can be
+taken and kept closed as long as it credits the source. Accepted.
+
+**Derived material — a NOTICE file.** countries.json was generated from
+Unicode CLDR and hand-edited; the Unicode licence requires its notice to travel
+with derivatives, and skipping it would have been a breach. The quotes are
+short excerpts of official texts and are not relicensed; the terms known to
+apply are recorded per source. Cost: one more file to keep true as sources are
+added.
+
+**What this reverses:** nothing decided — the README had carried "MIT /
+CC-BY-4.0" since an agent wrote it, unchosen. Now it is chosen, and the files
+exist. The copyright line reads "Oytun", the git author; the human may want the
+full name there before publication, and it is a one-line change.
+
+**The gate this closes:** the release gate's second decision. The name (Permit
+Rulebook, one name) was the first. Both are now made, both before anything is
+public, which is the only time they are cheap.
