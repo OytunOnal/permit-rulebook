@@ -1,66 +1,67 @@
 /* Visa Navigator — design tokens
- * Kaynak: docs/spine/design/variant-d.html ("Damgalı Panel"), insan seçimi 2026-09-01.
- * Kural: yeni ekranlar bu tokenlar İÇİNDE tasarlanır; token dışına çıkan değer
- * greplenebilir bir sapmadır ve DECISIONS.md kaydı ister.
+ * Source: docs/spine/design/variant-d.html ("Stamped Panel"), chosen by the human 2026-09-01.
+ * The rule: new screens are designed INSIDE these tokens; a value that steps
+ * outside a token is a greppable deviation and needs a DECISIONS.md entry.
  */
 :root {
-  /* ---- Renk: zemin ve mürekkep ---- */
-  --color-bg: #f1eee4;          /* sayfa zemini — sıcak arşiv kâğıdı */
-  --color-card: #fbf9f2;        /* kart/panel zemini */
-  --color-ink: #2b2a22;         /* birincil metin */
-  --color-muted: #5a5747;       /* ikincil metin, etiketler — 6.26:1 on bg,
+  /* ---- Colour: ground and ink ---- */
+  --color-bg: #f1eee4;          /* page ground — warm archive paper */
+  --color-card: #fbf9f2;        /* card/panel ground */
+  --color-ink: #2b2a22;         /* primary text */
+  --color-muted: #5a5747;       /* secondary text, labels — 6.26:1 on bg,
                                     6.90:1 on card (was #6f6c5d at 4.55:1,
                                     AA by a hair under 13px; tracker #1) */
-  --color-line: #d9d3c0;        /* çizgiler, kart kenarları */
+  --color-line: #d9d3c0;        /* rules, card edges */
 
-  /* ---- Renk: anlam taşıyanlar ---- */
-  --color-stamp: #8c2b2b;       /* mühür kırmızısı — kayıt ritüeli, linkler, vurgu */
-  --color-met: #2e5b3f;         /* statü: criteria met + kaynak tarihi vurgusu */
+  /* ---- Colour: the ones that carry meaning ---- */
+  --color-stamp: #8c2b2b;       /* stamp red — the recording ritual, links, emphasis */
+  --color-met: #2e5b3f;         /* status: criteria met + the source-date emphasis */
   --color-met-soft: #e4efe7;
-  --color-near: #8a5a19;        /* statü: within reach + gap vurgusu */
+  --color-near: #8a5a19;        /* status: within reach + the gap emphasis */
   --color-near-soft: #f4ecd8;
-  --color-hold: #7b7869;        /* statü: needs offer / kapalı */
+  --color-hold: #7b7869;        /* status: needs offer / closed */
   --color-hold-soft: #edeadf;
-  --color-band: #31519a;        /* "your band" mavisi — kullanıcının beyanı */
+  --color-band: #31519a;        /* the "your band" blue — the user's own declaration */
   --color-band-soft: #e2e8f6;
 
-  /* ---- Tipografi ---- */
-  --font-serif: Cambria, Georgia, serif;            /* hüküm başlıkları, route adları */
-  --font-sans: "Segoe UI", system-ui, sans-serif;   /* gövde, etiket, UI */
-  --font-mono: Consolas, monospace;                 /* değerler, alıntılar, tarihler, beyan */
-  --text-hero: 400 2.2rem/1.2 var(--font-serif);    /* hüküm-başlık; vurgu rengi --color-near */
+  /* ---- Typography ---- */
+  --font-serif: Cambria, Georgia, serif;            /* verdict headings, route names */
+  --font-sans: "Segoe UI", system-ui, sans-serif;   /* body, labels, UI */
+  --font-mono: Consolas, monospace;                 /* values, quotes, dates, declarations */
+  --text-hero: 400 2.2rem/1.2 var(--font-serif);    /* verdict heading; emphasis colour --color-near */
   --text-route: 700 1.08rem var(--font-serif);
   --text-body: 15px/1.6 var(--font-sans);
   --text-label: 700 .7rem var(--font-sans);         /* + letter-spacing .18em + uppercase */
   --text-value: 600 .8rem var(--font-mono);
-  --text-source: 400 .76rem var(--font-mono);       /* alıntı italik, tarih --color-met */
+  --text-source: 400 .76rem var(--font-mono);       /* quote in italic, date in --color-met */
   --tracking-label: .18em;
 
-  /* ---- Çizgi dili ---- */
-  --rule-heavy: 3px double var(--color-ink);        /* bölüm sınırları (masthead, footer) */
-  --rule-card-top: 3px solid var(--color-ink);      /* kart üst şeridi */
+  /* ---- The line language ---- */
+  --rule-heavy: 3px double var(--color-ink);        /* section boundaries (masthead, footer) */
+  --rule-card-top: 3px solid var(--color-ink);      /* the card's top band */
   --rule-soft: 1px solid var(--color-line);
-  --rule-dotted: 1px dotted var(--color-line);      /* defter satırları, kart içi ayraç */
+  --rule-dotted: 1px dotted var(--color-line);      /* ledger rules, in-card separator */
 
-  /* ---- Boşluk ---- */
+  /* ---- Space ---- */
   --space-1: .25rem; --space-2: .5rem; --space-3: .85rem;
   --space-4: 1.3rem; --space-5: 1.6rem; --space-6: 2.8rem;
   --gap-cards: .85rem;
   --pad-card: 1rem 1.3rem 1.05rem;
   --max-content: 56rem;
   --max-prose: 36rem;
-  /* Dokunma hedefi tabanı. Telefonda düzeltme kontrolleri 34/22/20 px ölçüldü
-     (isolated product-critique v0.7, F8) — üç düzeltme yolu, ekranın en küçük
-     üç hedefi. Her etkileşimli satır bu değerin altına inemez. */
+  /* The tap-target floor. On a phone the correction controls measured
+     34/22/20 px (isolated product-critique v0.7, F8) — three ways to correct
+     an answer, the three smallest targets on the screen. No interactive row
+     may go below this value. */
   --tap-min: 44px;
 
-  /* ---- İmza öğeleri ---- */
-  /* Eşik rayı: her sayısal kriterin standart modülü */
+  /* ---- Signature elements ---- */
+  /* The threshold rail: the standard module for every numeric criterion */
   --rail-track: var(--color-hold-soft);
   --rail-band: var(--color-band);
   --rail-tick: var(--color-ink);
   --rail-h: 7px;
-  /* Mühür: kayıt tarihi ritüeli (başlıkta bir kez; kartlarda kullanılmaz) */
+  /* The stamp: the recording-date ritual (once in the masthead; never on a card) */
   --stamp-border: 2.5px solid var(--color-stamp);
   --stamp-rotate: -6deg;
 }

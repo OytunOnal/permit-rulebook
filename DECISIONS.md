@@ -1551,3 +1551,54 @@ decision 5 now records what was chosen.
 
 **Still owed:** the identity goes through the isolated critique with the route
 page before the tag, like any new screen.
+
+## 2026-09-07 — s5f reviewed: the sweep fixed one wrong verdict and introduced another, then fixed both
+
+**The regression, and why the guard missed it.** The three-year experience
+option shipped with no `implies`. Germany's experienced-worker route reads
+`["y2in5","y5in7"]` and the Chancenkarte points table pays 2 for `y2in5` — so a
+person with three recent years who answered honestly lost a route and two
+points. The scenario's condition read "every other route keeps its verdicts"
+and was met in letter: no criterion text changed. It was broken in substance:
+verdicts moved *away* from the reader for anyone choosing the new answer. The
+builder's guard stripped the option from both datasets before comparing, which
+makes it a tautology for exactly that case. The Spec reviewer found it.
+
+**Fixed as the ladder demands.** `y3in7` implies `y2in5`, because the ladder is
+ordinal. That forced a decision the engine's own comment had deferred: points
+tables key on the raw answer, and with `implies` on `experience` one now reads
+a class-bearing field. Points score the best row an answer satisfies, never the
+sum; the Chancenkarte's quoted table stays as the Anlage names it. The guard
+now compares the same person answering `y3in7` against `y2in5`, every route,
+600 profiles: 0 worse. Fixed population, old rules vs new: 0 rows moved for
+anyone who could already answer; 15 better, 0 worse, for those answering the
+new option.
+
+**`es-ict` — ruled in scope.** Decision 5 said "nothing else changes"; the
+route read five years beside its own quote of three. A known wrong verdict is
+what the sweep exists to remove, and I ruled it in. 8 of the 15 improved rows
+are its.
+
+**Two counts in the record were wrong, and neither was the builder's.** The
+scenario said 38 bare preconditions; the file held 37 at every commit s5f
+could have started from — my count. And the build report's 27 moved rows (and
+the code's 26) reproduce under no construction the reviewer or the builder
+could find; the honest figure is the fixed-population 15, and the test now
+says so.
+
+**Corrections became decisions.** The glyph-substitution table left
+TypeScript for the watch entry, each with a reason and a date, bounded to one
+glyph run for another of the same length — "PAO nacional → PAC nacional" was a
+phrase and is "PAO → PAC" now. A malformed entry can never make a quote verify
+and fails the coverage gate. Cost: a decoder confusion must be declared where
+the source is, in data, not fixed quietly in code.
+
+**One vocabulary for the scan.** `no_text_layer` was a second spelling of the
+enumerated reason `scanned-image`; there is one word now. Cost: scenario step
+3's exact phrase "no text layer" moved into the prose tail of the gate's
+message. Recorded rather than hidden.
+
+**Outside the scope, fixed anyway:** the status page shipped the Turkish word
+"buradayız" in a public diagram — the step-6 defect on a file step 6 did not
+cover. And `tokens.css`'s comments were the source of the Turkish the critique
+document quoted; translated upstream, meaning unchanged.

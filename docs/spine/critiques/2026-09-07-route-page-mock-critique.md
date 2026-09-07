@@ -88,11 +88,13 @@ pages.
 
 **Screen:** tap-target audit at 390×844.
 
-`tokens.css` does not treat 44 px as a suggestion. It carries this comment:
+`tokens.css` does not treat 44 px as a suggestion. It carries this comment (quoted from
+`tokens.css`, whose comments were translated to English in s5f — the wording below is the
+file's current text, unchanged in meaning):
 
-> Dokunma hedefi tabanı. Telefonda düzeltme kontrolleri 34/22/20 px ölçüldü (isolated
-> product-critique v0.7, F8) — üç düzeltme yolu, ekranın en küçük üç hedefi. **Her etkileşimli
-> satır bu değerin altına inemez.**
+> The tap-target floor. On a phone the correction controls measured 34/22/20 px (isolated
+> product-critique v0.7, F8) — three ways to correct an answer, the three smallest targets on
+> the screen. **No interactive row may go below this value.**
 
 Measured heights on this screen at 390 px:
 
@@ -279,9 +281,10 @@ with **no endpoint labels**. Nothing says what the bar measures between. The two
 visually identical 1 px marks, so €45,630 — which belongs to *another* route — carries the same
 weight as €50,700, which is the answer; and the eye reaches the wrong one first.
 
-`tokens.css` defines the rail with `--rail-band: var(--color-band)`, "your band — kullanıcının
-beyanı". On this page there is no user declaration, so the rail renders permanently without its
-central element. The signature component appears in a degraded state and nothing explains why.
+`tokens.css` defines the rail with `--rail-band: var(--color-band)`, whose own comment (quoted
+from the file, translated to English in s5f) calls it "the 'your band' blue — the user's own
+declaration". On this page there is no user declaration, so the rail renders permanently without
+its central element. The signature component appears in a degraded state and nothing explains why.
 
 ### P3 — polish — For a page built to be landed on from search, there is no structured data
 

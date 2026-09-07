@@ -263,14 +263,21 @@ export function provenanceHtml(ds: Dataset, r: RouteResult): string {
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
       value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b></div>`;
   });
-  // One sentence, one line. Two claims may honestly rest on the same sentence
-  // — the Dutch Blue Card's `situation` criterion and the "also required" line
-  // about the contract's length are both answered by "Your employment contract
-  // is valid for at least 6 months." — and after s5f sourced every
-  // precondition, eight routes quoted a sentence twice. Printing it twice is
-  // not twice the provenance; it is a longer list saying the same thing. Only
-  // an EXACTLY identical rendered line is dropped, so a quote that carries a
-  // different label, amount or applies-to-you mark still gets its own row.
+  // One sentence, one line.
+  //
+  // This IS a change to what a card shows, and nobody asked for it as a
+  // feature: s5f's decision 3 forced it. Attaching a quote to every bare
+  // precondition made eight cards print the same sentence twice, because two
+  // claims may honestly rest on one sentence — the Dutch Blue Card's
+  // `situation` criterion and the "also required" line about the contract's
+  // length are both answered by "Your employment contract is valid for at
+  // least 6 months." Printing it twice is not twice the provenance; it is a
+  // longer list saying the same thing.
+  //
+  // What it does: drops a rendered provenance line that is EXACTLY identical
+  // to one already printed. A quote carrying a different label, amount or
+  // applies-to-you mark differs in the rendered line and still gets its own
+  // row, so nothing a reader needs is deduplicated away.
   const seen = new Set<string>();
   const lines = rendered.filter((line) => {
     if (seen.has(line)) return false;

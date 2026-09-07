@@ -14,7 +14,7 @@ flowchart LR
     D --> E["Four countries · honest verdicts · exceptions ✅ real-green (v0.7)"]
     E --> E2["Answers recorded as given ✅ real-green (v0.8)"]
     E2 --> E3["Every sentence carries its source ✅ real-green (v0.9)"]
-    E3 --> E4["Launch-readiness sweep ◀ here (s5f)"]
+    E3 --> E4["Launch-readiness sweep ◀ here (s5f, mock-green)"]
     E4 --> F["Public launch 🏁 v1 (s6)"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
@@ -147,11 +147,6 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **Launch-readiness sweep** (s5f) · APPROVED 2026-09-07, with the builder.
-  docs/spine/scenarios/s5f.md — the Spanish three-year experience option, a
-  pdf-text watch strategy, the 38 bare preconditions given a kind, the
-  remaining Turkish docs translated without changing meaning. Nothing else.
-
 - **Answers recorded as given, verdicts in plain words** (s5d) ·
   `docs/spine/scenarios/s5d.md`. Built, code-reviewed on both axes (10 findings,
   all applied), and extended twice by findings from the human's own walk: the
@@ -164,7 +159,16 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## mock-green
 
-_(empty — s5e stamped into done as **v0.9**, 2026-09-07)_
+- **Launch-readiness sweep** (s5f) · mock-green 2026-09-07
+  (docs/spine/scenarios/s5f.md). Spain measured against three years on two
+  routes (es-highly-qualified and es-ict, the second ruled in scope); the
+  ladder made ordinal after the review caught a regression the guard could not
+  see; a pdf-text watch strategy — human tier 0, quotes verified 78 → 120;
+  37 bare preconditions given a kind (34 sourced, 2 ours, 1 deleted as
+  repealed law); every document on disk English. Reviewed on both axes, 15
+  findings applied. 323 + 70 tests. **Real-green needs the human**: read the
+  15 moved verdicts as a list and agree each moved the right way; read one
+  translated decision against its original.
 
 ## real-green
 

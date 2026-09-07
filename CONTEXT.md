@@ -83,6 +83,42 @@ many are declared unsourced with a reason, how many sit on the human tier. A
 number a person reads, not a test that passes.
 _Avoid_: coverage, completeness
 
+**Pdf-text**:
+The watch strategy that decodes a PDF's embedded-font text layer and decides
+change on the words, keeping the file's own hash beside them — so a re-typeset
+document that says the same sentences reports `unchanged`.
+_Avoid_: pdf parsing, text extraction, OCR
+
+**Scanned-image**:
+The one word for a document published as a picture of a page with no text layer
+to read: an enumerated Unsourced reason on a statement, and the same word a
+Pdf-text snapshot records when the decoder finds no words. A text strategy may
+never answer anything else about such a document, and never `verified`.
+_Avoid_: no text layer, scan, image-only PDF, OCR needed
+
+**Known glyph substitution**:
+A declared, dated correction on a watch entry, naming where our decoder's
+reading of one source disagrees with the document a person holds. Bounded to
+one glyph run for another of the same length with no whitespace, so it can only
+fix a confusion and never write content. Applied to the snapshot for the quote
+comparison only, never to what the dataset ships.
+_Avoid_: fixup, patch, normalisation, cleanup
+
+**Bytes hash**:
+A Pdf-text snapshot's hash of the file itself, kept beside the hash of its
+words. The words are what a change means; the bytes are what a re-export moves.
+Keeping both lets the watch stay quiet about the second and loud about the
+first.
+_Avoid_: file hash, checksum, digest (unqualified)
+
+**y3in7** (UI: "3+ years within the last 7"):
+The experience rung between the two-year and five-year bands, added so a person
+can declare what Ley 14/2013 art. 71.2 and art. 73.2.b actually count. It
+declares `implies: ["y2in5"]` because the ladder is ordinal: every route that
+reads experience pays this answer at least what the rung below it pays, and
+points score the best row an answer satisfies, never the sum.
+_Avoid_: three years, mid experience, the Spanish option
+
 **Still reachable**:
 A criterion result that did not fail, or failed only by a Bounded gap. The
 single predicate behind route status, hard fail and question selection — it was
@@ -208,10 +244,14 @@ official-recheck reminder) but announces that values may have moved.
 _Avoid_: extra source, misc
 
 **Human tier**:
-A source machines cannot or should not read (bot-walled statute site,
-glyph-encoded PDF); it carries a verification age and raises reminders
-instead of being fetched.
-_Avoid_: manual source
+A source no machine here can read — since s5f that means a page whose
+operative text never reaches a fetch (a bot wall, a form-gated render that
+stays a shell), not a PDF: embedded-font PDFs are read by Pdf-text, and a
+scanned one is declared Scanned-image rather than left for a person. A
+human-tier entry carries a verification age and raises reminders instead of
+being fetched. As of 2026-09-07 the tier is empty (`human_tier: 0`); the term
+stays because the condition can return.
+_Avoid_: manual source, glyph-encoded PDF (a reason it once had)
 
 **Flag**:
 The artifact a detected change or due reminder produces — named source,
