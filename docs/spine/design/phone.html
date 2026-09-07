@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>390 px frame — design mocks</title>
+<style>
+  /* A harness, not a design: renders a mock inside a true 390×844 viewport so
+     its media queries fire, on a machine whose window will not resize. Pass
+     ?page=<file> to frame another mock. Not part of the product. */
+  body { margin: 0; background: #555; display: flex; gap: 24px; padding: 24px; align-items: flex-start; font: 13px system-ui; color: #eee; }
+  figure { margin: 0; }
+  figcaption { margin-bottom: 8px; }
+  iframe { width: 390px; height: 844px; border: 0; background: #fff; display: block; }
+</style>
+</head>
+<body>
+  <figure>
+    <figcaption>390 × 844 — top</figcaption>
+    <iframe id="a" title="mock at 390px, top"></iframe>
+  </figure>
+  <figure>
+    <figcaption>390 × 844 — scrolled to the first source line</figcaption>
+    <iframe id="b" title="mock at 390px, mid"></iframe>
+  </figure>
+  <figure>
+    <figcaption>390 × 844 — call to action and data block</figcaption>
+    <iframe id="c" title="mock at 390px, bottom"></iframe>
+  </figure>
+  <script>
+    const page = new URLSearchParams(location.search).get("page") || "s6-route-page.html";
+    const frames = [["a", 0], ["b", 900], ["c", 2100]];
+    for (const [id, y] of frames) {
+      const f = document.getElementById(id);
+      f.src = page + "?frame=" + id;
+      f.addEventListener("load", () => { try { f.contentWindow.scrollTo(0, y); } catch (e) {} });
+    }
+  </script>
+</body>
+</html>
