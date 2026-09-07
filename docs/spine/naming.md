@@ -268,3 +268,128 @@ shortlist, is the next gate.
   immigration law; only ordinary-language false friends were swept.
 - Mandarin and Hindi readings. The sweep covered German, Dutch, Spanish, French
   and Turkish only.
+
+---
+
+# Round 3 — critique, fresh context (2026-09-07)
+
+The `analyst` as defined (Fable), spawned blind to rounds 1 and 2's authorship:
+it wrote none of these names. Set: the ten crossings, the three round-1 dataset
+survivors, and keeping the working name. The architecture was deliberately left
+undecided — the human said either could work — so every candidate was judged
+under both readings.
+
+**Verdict up front, in its words: the set is workable, not strong.** Two things
+neither earlier round swept, and both weaken the Permit family:
+
+1. **Bare "permit" is not the audience's word, and it is ambiguous in the largest
+   English market.** US English defaults *permit* to building, parking and
+   learner's permits; "Permit Lookup" is the literal title of municipal
+   building-permit portals, and "building permits" is a published economic
+   index. The audience types "Germany work visa". Dropping *work* saved a
+   syllable and bought the wrong domain.
+2. **Neither "visa" nor "permit" survives all three waves.** v1's instruments are
+   residence permits, so round 1 is right for v1 — but the audience's first step
+   for all four countries is a national D visa, Canada is work permit plus PR,
+   and Australia's skilled instruments (482, 189, 190) are *visas*. "Permit"
+   becomes a lie in wave 2 exactly as "EU" would have. **The product's own
+   wave-proof noun is *route*** — already this project's internal vocabulary (23
+   routes in the dataset, the noun on every card) and the UK Home Office's public
+   vocabulary ("Skilled Worker route"), and untried by any round.
+
+## Shortlist
+
+1. **Permit Rulebook** — either architecture, strongest as one name. Highest
+   comprehension in the set: a frightened phone reader knows what a rulebook is
+   and does not know what a sourcebook or an index is. Sits in none of the
+   registers the reader has learned to distrust — it sounds like the thing the
+   recruiter should have read. *Trade-off: it drops "source", the
+   differentiator, for comprehension; the quote-and-date promise moves to the
+   tagline and the page, which is where round 1 already concluded trust is
+   bought.* The critic reverses round 2 here: "strictly weaker than Sourcebook"
+   is wrong for this audience, because *sourcebook* is academic-publishing
+   vocabulary the reader has never met.
+2. **Permit Index** — needs two names. The composite-ranking misread is
+   **stronger** than round 2 scored it: the "Open X Index" precedents (Open Data
+   Index, Democracy Index) really are country rankings, and "which country is
+   easiest" is an attractive misread the product then refuses to answer. Citable
+   by name better than anything else here. *Trade-off: citability and liveness
+   for warmth, and being asked "so which country is number one?" in every
+   thread.*
+3. **Second Source** — one name, tolerates two. The only candidate that is a name
+   rather than a description, and the only one a lead-gen site cannot honestly
+   copy. But the critic lands a hit round 2 missed: *second source* is a term of
+   art in supply chains and journalism, and it **misdescribes the product** — a
+   second source corroborates independently; this re-quotes the first source with
+   a date. *Trade-off: memorability and a wave-proof stance for zero search
+   comprehension, plus a claim of independent corroboration the product does not
+   make.*
+4. **Permit Watch** — conditional, two names only, as the corpus name. Encodes
+   the primary success metric and the watchdog register. *Trade-off: it bets the
+   name on the freshness metric A13 already concedes will slip; every stale date
+   then reads as a broken promise in the title.*
+
+## The working name: rename — but not for round 1's reason
+
+Its advantages, stated as advantages: the switching cost avoided (two repos,
+every path, the ledgers, ~50 DECISIONS entries — a full-day sweep with breakage
+risk), **and the highest search comprehension of any candidate**, because *visa*
+is the word the audience actually types and is correct for wave-2 Australia and
+for the entry step of every v1 route.
+
+**Round 1's "factually wrong" is overstated** — imprecise for v1, not false.
+What kills it is the second word: *navigator* is the lead-gen register verbatim,
+the VisaHQ / iVisa / Visa Navigator pattern belonging to the sites the one-pager
+positions against. The distribution bet is that this does not look like those,
+and the name files it beside them on a results page. Switching cost is at its
+lifetime minimum. **Verdict: rename** — and if a Permit-family name wins, rename
+`visa-rules` in the same sweep or the inconsistency lives forever.
+
+## Graveyard — round 3
+
+| Candidate | Why it died |
+|---|---|
+| Permit Lookup | The exact title of US municipal building-permit portals; lookup / look up / look-up is three URLs from one hearing; round 1's Permit Check verdict carries over in full |
+| Permit Criteria | Coin-flip spelling for the audience (TR *kriter*, ES *criterio*); a plural as a name; leans toward the eligibility claim |
+| Sourcecheck | No domain word; reads as misinformation fact-checking; /s/-initial with an internal *c* — round 1's own named landmine |
+| Permit Source Index | Three words that read as a directory of links |
+| Open Permit Index | The "Open X Index" pattern *is* country rankings; it strengthens the misread it inherits |
+| Just the Rules | A slogan; unfindable. **Steal it for the tagline** — "Just the rules, quoted and dated" |
+| Work Permit Sourcebook | *Sourcebook* is academic vocabulary the audience has not met; three words; the book wound |
+| Work Permit Register | Worse than round 1 scored: Germany's *Ausländerzentralregister* is the central foreigner database, so a privacy-first product would name itself after the thing the audience fears |
+| Work Permit Almanac | almanac / almanach / almanack / almanaque / almanak — four spellings across the audience; annual cadence |
+
+## Against its own top pick
+
+Permit Rulebook is the safe choice of a set with no bold one: two common nouns,
+a label with a friendlier suffix. *Book* still says bound-and-finished, so the
+daily watch — the best engineering in the project — is invisible in the title.
+It carries *permit* bare, inheriting the building-permit ambiguity and the
+wave-2 lie. And nothing in it is uncopyable: a lead-gen shop could call itself
+Permit Rulebook tomorrow, because the stance that makes this product different
+is entirely outsourced to the page. In its own summary: Second Source is the only
+candidate with a spine; Rulebook is the only one a scared reader understands.
+
+## The fork round 3 hands back
+
+**Two decisions precede any further generation, and both are the human's:**
+
+1. **The domain noun** — *visa* (what the audience types; imprecise for v1),
+   *permit* (accurate for v1; a lie in wave 2; ambiguous in US English), or
+   **route** (wave-proof, already this project's own vocabulary and the UK Home
+   Office's, and untried by any round).
+2. **The prefix** — "Work Permit X" fixes the building-permit ambiguity at the
+   cost of a third word; "Permit X" is sayable but ambiguous. Orthogonal to the
+   head noun; set once.
+
+If those are settled and a round 4 is wanted, the untried direction is
+*route/work × rulebook-class head nouns*. If not, stop the loop and take Permit
+Rulebook — recombining this set again will not improve it.
+
+## Un-assessed in round 3 (stated, not guessed)
+
+Mandarin, Hindi, Arabic, Russian and Portuguese readings of every candidate; all
+availability; whether *index*, *register* or *criteria* is a term of art in
+DE/FR/ES/NL immigration law. The US building-permit occupation of "Permit
+Lookup", the Australian visa-subclass point and the Ausländerzentralregister
+point are from memory, **not looked up** — the availability round settles them.
