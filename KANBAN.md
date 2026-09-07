@@ -67,7 +67,8 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## backlog
 
-- **es-ict's `situation` criterion carries the precondition's quote** (found on
+- ~~es-ict's `situation` criterion carries the precondition's quote~~ → **fixed the same hour** (visa-rules `1399abc`, 2026-09-07): the criterion now cites art. 73.1, the sentence that defines the transfer; the live card quotes each sentence once; 120 quotes verified, 323 tests. Original entry kept:
+  **es-ict's `situation` criterion carries the precondition's quote** (found on
   the s5f real-green walk, 2026-09-07, `bug`): `dataset.json` gives the
   `situation eq ict` criterion art. 73.2.c ("relación laboral … de 3 meses") as
   its source — the same sentence the precondition "three months with the group"

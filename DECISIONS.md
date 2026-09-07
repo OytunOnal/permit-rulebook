@@ -1660,3 +1660,10 @@ fix named. The dev server had also been running since 2026-09-03 and answered
 **Cost, stated.** A walk by the builder is a check that the product does what
 the builder meant, not that a stranger agrees. The v1 gate's isolated critique
 (s6 decision 13) remains the first independent pair of eyes on these cards.
+
+**Addendum, same day:** the es-ict quote was fixed within the hour — the
+criterion now cites art. 73.1 ("Aquellos extranjeros que se desplacen a España
+en el marco de una relación laboral … autorización de residencia por traslado
+intraempresarial"), read from the BOE snapshot; the precondition keeps art.
+73.2.c. Quote gate ok, 120 verified, 323 tests; the live card re-read: each
+sentence once. The board entry is struck through with the fix beside it.

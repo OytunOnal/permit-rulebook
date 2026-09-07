@@ -28,9 +28,10 @@ plainly on the other. The translation check passed on the s3b entry. The walk
 was the session's, not an independent reader's, by the human's decision; the
 record says so.
 
-**One dataset bug found on the way**, filed: the es-ict transfer criterion
-carries the precondition's quote, so one card shows the same sentence twice.
-No verdict moves. Fix named on the board.
+**One dataset bug found on the way, and fixed:** the es-ict transfer criterion
+carried the precondition's quote, so one card showed the same sentence twice.
+It now cites art. 73.1, the sentence that defines the transfer; the live card
+was re-read. No verdict moved; quote gate ok.
 
 Numbers: 323 tests in visa-rules, 70 in the navigator; 120 quotes verified,
 `human_tier: 0`; every rendered sentence sourced, ours, or declared unsourced
