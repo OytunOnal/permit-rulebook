@@ -73,6 +73,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The reason column's markup, beside the page rather than in it, so what
     // it renders can be read by a test (review S4).
     import { esc, failDetailHtml, whyHtml } from "../lib/reason.js";
+    import { caveatHtml, precondHtml } from "../lib/card.js";
 
     const ds = dataset as unknown as Dataset;
     // One field-lookup idiom for the whole page: the dataset never changes
@@ -446,13 +447,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * (product-critique v0.7, B3). */
     const whyFor = (r: RouteResult): string => whyHtml(ds, r, answers);
     /** Conditions the authority applies that the interview never asked —
-     * stated on every card so "criteria met" cannot overpromise. */
-    function precondFor(r: RouteResult): string {
-      const items = r.route.preconditions;
-      if (!items?.length) return "";
-      return `<div class="precond"><b>Also required — not checked here:</b> ${
-        items.map((t) => esc(t)).join(" · ")}</div>`;
-    }
+     * stated on every card so "criteria met" cannot overpromise. Both blocks
+     * are rendered beside the page (lib/card.ts) so a test can read them. */
+    const precondFor = (r: RouteResult): string => precondHtml(r.route);
+    /** What the source says its own answer does not settle. Never a failure. */
+    const caveatFor = (r: RouteResult): string => caveatHtml(r.route);
 
     /** The period a provenanced amount is stated per, when the dataset knows it
      * and the quote does not say it. A Dutch monthly figure beside a German
@@ -519,6 +518,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           </div>
           <p class="why">${whyFor(r)}</p>
           ${precondFor(r)}
+          ${caveatFor(r)}
           ${r.points ? `<div class="ptsline"><b>${r.points.scored} point${r.points.scored === 1 ? "" : "s"} — ${r.points.required} needed</b>${
             r.points.items.length ? " · " + r.points.items.map((i) => `${esc(shortLabelOf(ds, i.field))} +${i.points}`).join(" · ") : ""
           }</div>` : ""}
@@ -548,6 +548,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <div class="hold-body">
             ${r.route.summary ? `<p class="why">${esc(r.route.summary)}</p>` : ""}
             ${precondFor(r)}
+            ${caveatFor(r)}
             ${failDetail(r)}
             ${learnBoxFor(r)}
             <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
@@ -1113,6 +1114,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        the card must not read as a green light on them (critique #2). */
     .precond{font-size:.83rem;color:#54513f;border-left:3px solid var(--color-hold);padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}
     .precond b{color:var(--color-hold)}
+    /* A caveat is not a hurdle — it reads as an aside, not as one more bar. */
+    .caveat{font-size:.83rem;color:var(--color-muted);border-left:3px solid var(--color-muted);
+      padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}
+    .caveat b{color:var(--color-ink)}
     /* s5b: the situation-gated rows, said once (critique #5b). */
     details.hold-group{margin-top:.1rem}
     details.hold-group > summary{cursor:pointer;list-style:none;font:600 .82rem var(--font-sans);color:var(--color-muted);
