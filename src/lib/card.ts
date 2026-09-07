@@ -2,6 +2,7 @@ import {
   decidingCriteria, deriveBands, forEachCriterion, formatEURPer, resultProvenance, routeStatements,
   thresholdsForField,
   type Criterion, type Dataset, type Profile, type Route, type RouteResult,
+  type RouteStatement, type UnsourcedReason,
 } from "visa-rules";
 import { esc } from "./reason.js";
 
@@ -41,14 +42,18 @@ function gapAgainst(ds: Dataset, c: Gte, answers: Profile): number | undefined {
 }
 
 /**
- * The threshold this result was actually measured against: the path that was
- * met, or — where none was — the nearest reachable one, which is the path the
- * engine measured the gap to. A route whose salary criterion is a choice of
- * paths used to render whichever the dataset wrote first, which is how a
- * graduate met through €3,122 was shown a rail labelled €4,357 with his own
- * band under the line (human catch 2026-09-07).
+ * The gte CRITERION this result was measured against — the glossary fixes both
+ * words and this returns the criterion, not the threshold it carries (review
+ * 2026-09-07). The path that was met, or — where none was — the nearest
+ * reachable one, which is the path the engine measured the gap to. A route
+ * whose salary criterion is a choice of paths used to render whichever the
+ * dataset wrote first, which is how a graduate met through €3,122 was shown a
+ * rail labelled €4,357 with his own band under the line (human catch
+ * 2026-09-07). Where nothing has decided the choice, it names a threshold the
+ * person can at least locate their band against; it draws a rail, it never
+ * marks a quote.
  */
-export function appliedThresholdOf(ds: Dataset, r: RouteResult, answers: Profile): Gte | undefined {
+export function measuredCriterionOf(ds: Dataset, r: RouteResult, answers: Profile): Gte | undefined {
   const decided = decidingCriteria(r.criteria)
     .flatMap((cr) => (cr.criterion.op === "gte" ? [cr.criterion] : []))
     .filter((c) => answers[c.field] !== undefined);
@@ -63,16 +68,18 @@ export function appliedThresholdOf(ds: Dataset, r: RouteResult, answers: Profile
 }
 
 /**
- * Conditions the authority applies that the interview never asked — stated on
- * every card so "criteria met" cannot overpromise. A condition statement is a
- * precondition that carries its quote, and it belongs in exactly the same
+ * Preconditions the authority applies that the interview never asked — stated
+ * on every card so "criteria met" cannot overpromise. A precondition statement
+ * is a Precondition that carries its quote, and it belongs in exactly the same
  * sentence: the reader is being told what else they must satisfy, not where
- * the dataset keeps it.
+ * the dataset keeps it. The kind was called `condition` until the glossary was
+ * read back — a coined synonym for Criterion's own Avoid list (review
+ * 2026-09-07).
  */
 export function precondHtml(route: Route): string {
   const items = [
     ...(route.preconditions ?? []),
-    ...routeStatements(route).filter((s) => s.kind === "condition").map((s) => s.text),
+    ...routeStatements(route).filter((s) => s.kind === "precondition").map((s) => s.text),
   ];
   if (!items.length) return "";
   return `<div class="precond"><b>Also required — not checked here:</b> ${
@@ -88,11 +95,29 @@ export function precondHtml(route: Route): string {
  * are here and not there (human catch 2026-09-07). The quote behind each one
  * is in the card's source list, like every other value.
  */
-export function caveatHtml(route: Route): string {
+export function sourcedCaveatHtml(route: Route): string {
   const items = routeStatements(route).filter((s) => s.kind === "caveat" && s.source);
   if (!items.length) return "";
   return `<div class="caveat"><b>The official page also says:</b> ${
     items.map((s) => esc(s.text)).join(" ")}</div>`;
+}
+
+/**
+ * Why we have no quote, said to the reader. The dataset carries the decision —
+ * a reason from a fixed set and the day we last looked — and this is where it
+ * becomes a sentence; the free prose beside it (which document, what was
+ * tried) is an addition, never the whole answer (review 2026-09-07).
+ */
+const REASON_SAID: Record<UnsourcedReason["reason"], string> = {
+  "scanned-image": "The authority publishes it only as a scan, so there is no text to quote.",
+  "not-published-in-words": "The authority states it as a list or a table, never in a sentence to quote.",
+  "unreachable": "We cannot reach the source from here.",
+};
+
+function unsourcedSaid(s: RouteStatement): string {
+  const why = s.unsourced;
+  if (!why) return "";
+  return `${REASON_SAID[why.reason]}${why.note ? ` ${why.note}` : ""} Last checked ${why.checked_at}.`;
 }
 
 /**
@@ -102,11 +127,21 @@ export function caveatHtml(route: Route): string {
  * quote, and why. Nothing here is ever given a neighbouring quote that does
  * not cover it.
  */
-export function unsourcedHtml(route: Route): string {
+export function unsourcedCaveatHtml(route: Route): string {
   const items = routeStatements(route).filter((s) => s.kind === "caveat" && !s.source);
   if (!items.length) return "";
   return `<div class="caveat nosrc"><b>Worth knowing — we have not found the official wording:</b> ${
-    items.map((s) => `${esc(s.text)} <i>${esc(s.unsourced ?? "")}</i>`).join(" ")}</div>`;
+    items.map((s) => `${esc(s.text)} <i>${esc(unsourcedSaid(s))}</i>`).join(" ")}</div>`;
+}
+
+/**
+ * Every caveat of a card, each under the heading its provenance earns. One
+ * call, because which blocks a card shows is a rendering decision and the page
+ * was making it — gluing the two together at the call site, which is exactly
+ * what the seam above exists to stop (review 2026-09-07).
+ */
+export function caveatHtml(route: Route): string {
+  return sourcedCaveatHtml(route) + unsourcedCaveatHtml(route);
 }
 
 /**
@@ -116,7 +151,7 @@ export function unsourcedHtml(route: Route): string {
  * collide.
  */
 export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string {
-  const salary = appliedThresholdOf(ds, r, answers);
+  const salary = measuredCriterionOf(ds, r, answers);
   if (!salary) return "";
   const field = salary.field;
   const ts = thresholdsForField(ds, field);
@@ -155,9 +190,13 @@ export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string 
  */
 export function provenanceHtml(ds: Dataset, r: RouteResult): string {
   const entries = resultProvenance(r);
-  // Only where there was a choice of NUMBERS to make: a lone threshold needs
-  // no telling apart from anything, and a losing path that quotes no amount
-  // leaves nothing for the reader to mistake for their own.
+  // A lone threshold needs no telling apart from anything, and a losing path
+  // that quotes no amount leaves nothing for the reader to mistake for theirs.
+  // Only where a choice of NUMBERS was actually settled ONE WAY OR THE OTHER.
+  // `applied` reads three states now: an undecided disjunction leaves it
+  // undefined, and treating that as "lost" told a reader who had not yet
+  // reached the salary question that both of the route's thresholds were
+  // against them (review 2026-09-07).
   const contested = entries.some((e) => e.amount !== undefined && e.applied === false);
   const periodOf = (amount: number | undefined) => {
     if (amount === undefined) return "";
@@ -167,12 +206,14 @@ export function provenanceHtml(ds: Dataset, r: RouteResult): string {
   };
   const lines = entries.map(({ label, value, amount, applied }) => {
     const host = new URL(value.source_url).hostname.replace(/^www\./, "");
-    const mark = !contested || amount === undefined
+    // Per entry, not per card: one settled disjunction on a route must not put
+    // a ruled-out mark under a second one nobody has decided.
+    const mark = !contested || amount === undefined || applied === undefined
       ? ""
       : applied
         ? ` · <b class="applies">applies to you</b>`
         : ` · <span class="applies-not">does not apply to you</span>`;
-    return `<div class="src${contested && amount !== undefined && !applied ? " unapplied" : ""}"><i>“${esc(value.quote)}”</i> · ${esc(host)}${
+    return `<div class="src${contested && amount !== undefined && applied === false ? " unapplied" : ""}"><i>“${esc(value.quote)}”</i> · ${esc(host)}${
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
       value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b></div>`;
   });

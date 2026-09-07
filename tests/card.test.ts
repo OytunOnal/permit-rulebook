@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import dataset from "visa-rules/data/dataset.json";
-import { deriveBands, evaluate, type Dataset, type Profile, type Route, type RouteResult } from "visa-rules";
 import {
-  appliedThresholdOf, caveatHtml, precondHtml, provenanceHtml, railHtml, unsourcedHtml,
+  deriveBands, evaluate,
+  type Criterion, type Dataset, type Profile, type Route, type RouteResult,
+} from "visa-rules";
+import {
+  caveatHtml, measuredCriterionOf, precondHtml, provenanceHtml, railHtml,
+  sourcedCaveatHtml, unsourcedCaveatHtml,
 } from "../src/lib/card.js";
 
 const ds = dataset as unknown as Dataset;
@@ -97,7 +101,7 @@ describe("the rail names the threshold the reader was measured against", () => {
   });
 
   it("the caption under the number is the deciding path's own label", () => {
-    expect(appliedThresholdOf(ds, resultOf(dutchGraduate, "nl-hsm-under30"), dutchGraduate)!.threshold_label)
+    expect(measuredCriterionOf(ds, resultOf(dutchGraduate, "nl-hsm-under30"), dutchGraduate)!.threshold_label)
       .toBe("lower amount for a recent graduate, 2026");
   });
 
@@ -142,6 +146,61 @@ describe("the source list says which quote applied to this reader", () => {
     expect(full).toContain("does not apply to you");
   });
 
+  it("an undecided route marks nothing — it has ruled the reader out of nothing", () => {
+    // The scenario's own step 5, "I don't know wherever it is offered", with
+    // the salary question not yet reached. `applied` was one boolean carrying
+    // both LOST and NOT YET DECIDED, and an undecided disjunction decides
+    // nothing — so both quotes came back false and the card told the reader
+    // that each of its two thresholds was not theirs (review 2026-09-07).
+    const undecided: Profile = {
+      destination: "nl", citizenship: "third_country", situation: "offer",
+      age_band: "u30", qualification: "degree", experience: "y2in5",
+    };
+    const r = resultOf(undecided, "nl-hsm-under30");
+    expect(r.status).toBe("hold");
+    const html = provenanceHtml(ds, r);
+    // Both quotes still render: the reader may want to know they exist.
+    expect(html).toContain("€ 3,122.00");
+    expect(html).toContain("€ 4,357.00");
+    expect(html).not.toContain("does not apply to you");
+    expect(html).not.toContain("applies to you");
+  });
+
+  it("one settled choice on a card never marks a second one nobody has decided", () => {
+    // The guard is per entry, not per card, and the shipped dataset has no
+    // route with two disjunctions — so this builds one. The Chancenkarte's
+    // living-costs threshold is lifted onto the graduate's route as a second
+    // choice of numbers and left unanswered. The salary choice IS settled, so
+    // the card is marking; the living-costs quote must still carry no mark,
+    // because nothing has decided it (review 2026-09-07).
+    const twoChoices = structuredClone(ds);
+    const route = twoChoices.countries.flatMap((c) => c.routes).find((r) => r.id === "nl-hsm-under30")!;
+    const funds = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-chancenkarte")!
+      .criteria.flatMap(function flat(c): Criterion[] {
+        return c.op === "any" ? c.paths.flatMap((pa) => pa.criteria.flatMap(flat)) : [c];
+      })
+      .find((c) => c.op === "gte" && c.field === "funds_eur_month")!;
+    route.criteria.push({ op: "any", label: "living costs", paths: [{ criteria: [funds] }] });
+
+    const r = evaluate(twoChoices, dutchGraduate).find((x) => x.route.id === "nl-hsm-under30")!;
+    const html = provenanceHtml(twoChoices, r);
+    const near = (needle: string) => html.slice(html.indexOf(needle), html.indexOf(needle) + 400);
+    // The settled choice is still marked, both ways.
+    expect(near("€ 3,122.00")).toContain("applies to you");
+    expect(near("€ 4,357.00")).toContain("does not apply to you");
+    // The unsettled one is not marked at all — neither in words, nor by the
+    // dimming that says "this one is not yours" without saying it.
+    const fundsQuote = funds.op === "gte" ? funds.threshold.quote.slice(0, 30) : "";
+    const rows = html.split(`<div class="src`).slice(1);
+    const fundsRow = rows.find((row) => row.includes(fundsQuote))!;
+    expect(fundsRow).toBeDefined();
+    expect(fundsRow).not.toContain("apply to you");
+    expect(fundsRow.startsWith(`"`), "an undecided row must not be dimmed as ruled out").toBe(true);
+    // And the row that WAS ruled out still is, so the check above is not
+    // passing because nothing is ever dimmed.
+    expect(rows.find((row) => row.includes("€ 4,357.00"))!.startsWith(" unapplied")).toBe(true);
+  });
+
   it("a route with a single threshold marks nothing — there is nothing to tell apart", () => {
     const profile: Profile = {
       destination: "de", citizenship: "TR", situation: "offer", qualification: "degree",
@@ -171,23 +230,46 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
 
   it("each moved line now renders as an aside instead", () => {
     for (const id of CARRIERS) {
-      const aside = caveatHtml(routeOf(id)) + unsourcedHtml(routeOf(id));
+      const aside = caveatHtml(routeOf(id));
       expect(aside, id).toMatch(/orientation year|collective wage|shortage occupation/i);
       expect(precondHtml(routeOf(id)), id).not.toMatch(/orientation year|collective wage|shortage occupation/i);
     }
   });
 
+  it("the card's aside is one block the page asks for, not two it glues", () => {
+    // The seam exists so a rendering decision does not sit in the page. The
+    // page composed the sourced and unsourced blocks itself (review
+    // 2026-09-07), which is the thing this module's own comment says it is for.
+    // A route carrying only one kind is the case that hid it: the glue looked
+    // harmless right up until the page had to decide the order of the two.
+    for (const country of ds.countries)
+      for (const route of country.routes)
+        expect(caveatHtml(route), route.id)
+          .toBe(sourcedCaveatHtml(route) + unsourcedCaveatHtml(route));
+    expect(caveatHtml(routeOf("es-blue-card"))).toContain("we have not found the official wording");
+    expect(caveatHtml(routeOf("de-chancenkarte"))).toContain("The official page also says:");
+  });
+
+  it("the reason there is no quote reaches the card as words, with the day we looked", () => {
+    // The payoff of making the absence a decision rather than an essay: the
+    // card can now say WHY in its own voice and print a date a reader can age,
+    // instead of reprinting whatever prose the dataset happened to carry.
+    const html = unsourcedCaveatHtml(routeOf("es-blue-card"));
+    expect(html).toContain("only as a scan");
+    expect(html).toContain("Last checked 2026-09-07");
+  });
+
   it("the one with no quote says so, in the open, and says why", () => {
-    const html = unsourcedHtml(routeOf("es-blue-card"));
+    const html = unsourcedCaveatHtml(routeOf("es-blue-card"));
     expect(html).toContain("we have not found the official wording");
     expect(html).toMatch(/shortage occupations/);
     expect(html).toMatch(/Orden PJC\/44\/2026/);
     // And it is not passed off as something the official page says.
-    expect(caveatHtml(routeOf("es-blue-card"))).not.toMatch(/shortage occupations/);
+    expect(sourcedCaveatHtml(routeOf("es-blue-card"))).not.toMatch(/shortage occupations/);
   });
 
   it("the Opportunity Card's 20-hour limit is an aside about the permit, not a bar", () => {
-    expect(caveatHtml(routeOf("de-chancenkarte"))).toMatch(/20 hours a week/);
+    expect(sourcedCaveatHtml(routeOf("de-chancenkarte"))).toMatch(/20 hours a week/);
     expect(precondHtml(routeOf("de-chancenkarte"))).toBe("");
   });
 });

@@ -73,7 +73,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The reason column's markup, beside the page rather than in it, so what
     // it renders can be read by a test (review S4).
     import { esc, failDetailHtml, whyHtml } from "../lib/reason.js";
-    import { caveatHtml, precondHtml, provenanceHtml, railHtml, unsourcedHtml, appliedThresholdOf } from "../lib/card.js";
+    import { caveatHtml, precondHtml, provenanceHtml, railHtml, measuredCriterionOf } from "../lib/card.js";
 
     const ds = dataset as unknown as Dataset;
     // One field-lookup idiom for the whole page: the dataset never changes
@@ -402,7 +402,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /** What the source says its own answer does not settle. Never a failure —
      * and never under the "Also required" heading, which would turn "you may
      * qualify for less" into one more bar to clear (human catch 2026-09-07). */
-    const caveatFor = (r: RouteResult): string => caveatHtml(r.route) + unsourcedHtml(r.route);
+    const caveatFor = (r: RouteResult): string => caveatHtml(r.route);
     /** The rail, labelled with the threshold this result was measured
      * against — the path that was met, or the nearest reachable one. */
     const railFor = (r: RouteResult): string => railHtml(ds, r, answers);
@@ -430,7 +430,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     /** The money field a route's bounded gap is measured on — its period is
      * what makes "€1,585" readable as monthly or annual (critique #7). */
-    const gapFieldOf = (r: RouteResult) => appliedThresholdOf(ds, r, answers)?.field ?? "";
+    const gapFieldOf = (r: RouteResult) => measuredCriterionOf(ds, r, answers)?.field ?? "";
 
     /** One gap, one format, everywhere it is printed (card, headline, unlock). */
     const gapAmount = (r: RouteResult) =>
