@@ -72,17 +72,17 @@ h1 em { font-style: normal; color: var(--color-near); }
    labels leave the track and stack as a list under it, in reading order. */
 .rail { position: relative; height: var(--rail-h); background: var(--rail-track); margin: var(--space-4) 0 1.9rem; }
 .rail .tick { position: absolute; top: -4px; width: 1px; height: calc(var(--rail-h) + 8px); background: var(--rail-tick); }
-.rail .lbl { position: absolute; top: 12px; transform: translateX(-50%); text-align: center; font: var(--text-value); white-space: nowrap; }
-.rail .lbl small { display: block; font: var(--text-source); color: var(--color-muted); }
-.rail-list { display: none; }
-@media (max-width: 760px) {
-  .rail { margin-bottom: var(--space-3); }
-  .rail .lbl { display: none; }
-  .rail-list { display: block; margin: 0 0 var(--space-2); padding: 0; list-style: none; }
-  .rail-list li { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-1) 0; border-bottom: var(--rule-dotted); }
-  .rail-list li span:first-child { font: var(--text-value); }
-  .rail-list li span:last-child { font: var(--text-source); color: var(--color-muted); text-align: right; }
-}
+/* Labels never sit on the track. Positioned labels collided at phone widths
+   (critique B1) and abutted in the single reading column at desktop; the list
+   under the rail is the one form that cannot collide at any width, so it is
+   the only form. The ticks stay on the track as the picture; the list is the
+   text. */
+.rail { margin-bottom: var(--space-3); }
+.rail .lbl { display: none; }
+.rail-list { display: block; margin: 0 0 var(--space-2); padding: 0; list-style: none; }
+.rail-list li { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-1) 0; border-bottom: var(--rule-dotted); }
+.rail-list li span:first-child { font: var(--text-value); }
+.rail-list li span:last-child { font: var(--text-source); color: var(--color-muted); text-align: right; }
 
 /* Source line: the quote is the proof, so it is framed — language tagged, the
    separator difference explained once — and its link reaches 44 px. */
