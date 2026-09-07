@@ -1758,3 +1758,17 @@ break; the CDP tap measurement measures elements, not behaviour. Rule, kept:
 **a slice is mock-green only after its scenario is walked from the surface,
 every screen, by the session** — not after the numbers. The fix carries a
 real-browser smoke test gated in CI so this class fails loudly next time.
+
+**Addendum — mock-green re-stamped after the walk.** The cause was removed
+(`exclusions.ts` is a pure parser; the package index exports nothing that
+touches a Node built-in, and a test walks the import graph to prove it). The
+smoke test runs against `astro dev` and `dist/` both — only the dev surface
+showed this fault, because the bundler drops the unused module from the
+build; a test on the built site alone would have passed. Two harness lessons
+kept: Astro 7's `astro dev` daemonises itself silently when it detects an
+agent, and a daemon that answers 404 to every route still reports healthy —
+so the harness owns a foreground child, binds ephemeral ports, and proves a
+server serves this project before using it. The session then walked the
+interview, a route page, the call to action, the social card and the footer
+in a real browser: 0 console errors. 342 + 116 tests; commits `744dbfb`,
+`b5a71a3`.

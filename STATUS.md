@@ -4,9 +4,8 @@
 
 Genesis, slice loop; scale **Product**; **v0.10 shipped** (s5f real-green
 2026-09-07, walked by the session at the human's delegation). The release
-gate is closed; the identity is closed. **s6 (public launch) is built and reviewed, mock-green
-pending one blocker** (the interview broken in the browser, found after the
-commit; fix in progress).
+gate is closed; the identity is closed. **s6 (public launch) is mock-green** (re-stamped 2026-09-07
+after the surface walk); real-green is the human's, below.
 Spine skills reloaded 2026-09-07 at steward-29.
 
 ```mermaid
@@ -20,14 +19,17 @@ flowchart LR
 
 ## What is happening now
 
-**Correction, same hour: s6 is NOT mock-green.** After the commit I opened
-the site: the interview renders no question — a module added in the review
-round reads `node:fs` at import time and reaches the browser bundle, so the
-client script dies. 111 Node tests and the tap measurement could not see it.
-The builder is fixing it with a real-browser smoke test gated in CI; the
-board entry below stands corrected once that passes. Everything else on disk is
+**s6 is mock-green — the second time, after a walk, not a count.** The
+first stamp was withdrawn within the hour: the interview rendered nothing in
+a browser because a review-round module read `node:fs` at import and reached
+the client bundle. Fixed, with a real-browser smoke test on both the dev and
+the built surface, gated in CI, and an import-graph guard in the data package
+that names the importer of any Node built-in. Then walked here: first
+question, a persisted record, results with the scope line, a route page at
+desktop and 390 px, the call to action pre-scoping the interview, the social
+card, the footer links. Console errors: 0. Everything on disk is
 built and committed in both
-repositories (`b5e8ec3`, `87d12b1`): 23 route pages generated from the
+repositories (`b5a71a3`, `744dbfb`): 23 route pages generated from the
 dataset, the name sweep, the identity, the social card, the Pages workflow,
 the contributor files, six invariants as tests. The review round found what
 the build's green could not — a name gate that inspected none of the new
@@ -36,7 +38,7 @@ of an invariant — and the scope value stopped being one constant (22 / 1 / 0).
 Nothing is on GitHub yet: the repositories still carry the old names, Pages
 is off, no domain is bound. The daily watch still dry-runs.
 
-Numbers: 338 tests in the data repository, 111 in the site; 120 quotes
+Numbers: 342 tests in the data repository, 116 in the site; 120 quotes
 verified, `human_tier: 0`; 25 pages, 0 tap targets under 44 px at 390 px.
 
 ## What is expected from you
