@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import dataset from "visa-rules/data/dataset.json";
 import {
-  deriveBands, evaluate, fieldOptions, quotedSpans, resultProvenance, routeStatements,
+  deriveBands, evaluate, fieldOptions, hasUnbalancedQuotationMark, quotedSpans, resultProvenance,
+  routeReadings, routeStatements,
   type Dataset, type FieldDef, type Profile, type Route, type RouteResult,
 } from "visa-rules";
-import { caveatHtml, modellingHtml, precondHtml, provenanceHtml } from "../src/lib/card.js";
+import { caveatHtml, precondHtml, provenanceHtml, readingHtml } from "../src/lib/card.js";
 import { whyHtml } from "../src/lib/reason.js";
 
 const ds = dataset as unknown as Dataset;
@@ -21,14 +22,11 @@ const routeOf = (id: string): Route => routes().find((r) => r.id === id)!;
  */
 const cardProse = (r: RouteResult, answers: Profile): string =>
   whyHtml(ds, r, answers) + precondHtml(r.route) + caveatHtml(r.route) +
-  modellingHtml(r.route) + provenanceHtml(ds, r);
+  readingHtml(r.route) + provenanceHtml(ds, r);
 
 /** The provenance list — the one place an authority's words may appear. */
 const sourceLines = (html: string): string[] =>
   [...html.matchAll(/<div class="src[^"]*">([\s\S]*?)<\/div>/g)].map((m) => m[1]);
-
-/** A quoted run WITH its marks, so stripping them leaves any lone mark behind. */
-const SPAN_WITH_MARKS = /"[^"]+"|“[^”]+”|„[^“”]+[“”]|«\s*[^»]+?\s*»/g;
 
 /** What a person actually reads: the card with its markup taken away, so the
  * quotation marks left are the ones the page shows, not the ones HTML uses. */
@@ -77,12 +75,16 @@ describe("s5e — nothing reaches the screen in quotation marks without provenan
     const offenders: string[] = [];
     for (const { r, html } of generatedCards(2468, 40)) {
       const said = resultProvenance(r).map((p) => p.value.quote.replace(/\s+/g, " "));
-      const ours = routeStatements(r.route).filter((s) => s.kind === "modelling").map((s) => s.text.replace(/\s+/g, " "));
+      const ours = routeReadings(r.route).map((s) => s.text.replace(/\s+/g, " "));
       for (const span of quotedSpans(visible(html)))
         if (!said.some((q) => q.includes(span)) && !ours.some((t) => t.includes(span)) && !MINE.has(span))
           offenders.push(`${r.route.id}: “${span.slice(0, 90)}”`);
       // An unbalanced mark is its own offence: a reader cannot read it back.
-      if (/["“”„«»]/.test(visible(html).replace(SPAN_WITH_MARKS, " ")))
+      // The predicate is the dataset's own — this file re-derived prose.ts's
+      // QUOTED_SPAN two lines below importing quotedSpans from it, so a change
+      // to what counts as a quoted run would have moved only one of them
+      // (review 2026-09-07).
+      if (hasUnbalancedQuotationMark(visible(html)))
         offenders.push(`${r.route.id}: a quotation mark that closes nothing`);
     }
     expect([...new Set(offenders)]).toEqual([]);
@@ -99,24 +101,26 @@ describe("s5e — nothing reaches the screen in quotation marks without provenan
 });
 
 describe("s5e — what is ours says so, in words a stranger understands", () => {
-  const withModelling = () => routes().filter((r) => routeStatements(r).some((s) => s.kind === "modelling"));
+  const withReadings = () => routes().filter((r) => routeReadings(r).length > 0);
 
   it("some routes carry our own reading, and it renders under its own heading", () => {
-    expect(withModelling().length).toBeGreaterThan(0);
-    const html = modellingHtml(withModelling()[0]);
-    // Not the word "modelling": the reader is not a maintainer of this dataset.
+    expect(withReadings().length).toBeGreaterThan(0);
+    const html = readingHtml(withReadings()[0]);
+    // "Our reading" is the reader's phrase and belongs here. The dataset's own
+    // vocabulary does not: a stranger owes `modelling`, `readings` and
+    // `statement` nothing, and they were all names for this block at some
+    // point in two days.
     expect(html).toMatch(/Our reading, not the authority's words/i);
-    expect(html).not.toMatch(/\bmodelling\b/);
+    expect(html).not.toMatch(/\bmodelling\b|\breadings\b|\bstatements?\b/i);
   });
 
-  it("a route that makes no such statement renders nothing at all", () => {
-    expect(modellingHtml(routeOf("de-blue-card-general"))).toBe("");
+  it("a route that offers no reading renders nothing at all", () => {
+    expect(readingHtml(routeOf("de-blue-card-general"))).toBe("");
   });
 
-  it("modelling text never renders as an authority's words, in any state", () => {
-    for (const { r, html } of generatedCards(9753, 30)) {
-      for (const s of routeStatements(r.route)) {
-        if (s.kind !== "modelling") continue;
+  it("a reading never renders as an authority's words, in any state", () => {
+    for (const { r, html } of generatedCards(9753, 30))
+      for (const s of routeReadings(r.route)) {
         // Not under "Also required", not under "The official page also says",
         // and never inside the quote list where every other line is somebody
         // else's sentence.
@@ -124,24 +128,32 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
         expect(caveatHtml(r.route), `${r.route.id}:${s.id}`).not.toContain(s.text);
         for (const line of sourceLines(html))
           expect(line, `${r.route.id}:${s.id}`).not.toContain(s.text);
-        expect(modellingHtml(r.route), `${r.route.id}:${s.id}`).toContain(s.text);
+        expect(readingHtml(r.route), `${r.route.id}:${s.id}`).toContain(s.text);
       }
-    }
+  });
+
+  it("a reading is a different construct from a statement, not a labelled one", () => {
+    // The type system says what the glossary says: a statement is something a
+    // SOURCE says about the route, a reading is ours. Nothing on a route can
+    // be both, and no consumer has to read a kind enum to tell them apart.
+    for (const r of routes())
+      for (const s of routeStatements(r))
+        expect(["precondition", "caveat"], `${r.id}:${s.id}`).toContain(s.kind);
   });
 
   it("dataset prose reaches the page as text, never as markup", () => {
     const route: Route = {
       ...routeOf("de-blue-card-general"),
-      statements: [{ id: "x", kind: "modelling", text: "a & b <em>c</em>" }],
+      readings: [{ id: "x", text: "a & b <em>c</em>" }],
     };
-    expect(modellingHtml(route)).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
+    expect(readingHtml(route)).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
   });
 
   it("the page renders the block — on the full card and on a collapsed row alike", () => {
     // The seam exists so a rendering decision does not sit in the page; a
     // block the page forgets to call is a block that does not exist.
     const page = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
-    expect(page.match(/\$\{modellingFor\(r\)\}/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    expect(page.match(/\$\{readingFor\(r\)\}/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
   });
 });
 

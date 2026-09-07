@@ -1,6 +1,6 @@
 import {
-  decidingCriteria, deriveBands, forEachCriterion, formatEURPer, resultProvenance, routeStatements,
-  thresholdsForField,
+  decidingCriteria, deriveBands, forEachCriterion, formatEURPer, resultProvenance, routeReadings,
+  routeStatements, thresholdsForField,
   type Criterion, type Dataset, type Profile, type Route, type RouteResult,
   type RouteStatement, type UnsourcedReason,
 } from "visa-rules";
@@ -86,13 +86,27 @@ export function measuredCriterionOf(ds: Dataset, r: RouteResult, answers: Profil
  * 2026-09-07).
  */
 export function precondHtml(route: Route): string {
-  const items = [
-    ...(route.preconditions ?? []),
-    ...routeStatements(route).filter((s) => s.kind === "precondition").map((s) => s.text),
-  ];
+  return proseBlock(
+    "precond", "Also required — not checked here:",
+    [
+      ...(route.preconditions ?? []),
+      ...routeStatements(route).filter((s) => s.kind === "precondition").map((s) => s.text),
+    ].map(esc),
+    " · ",
+  );
+}
+
+/**
+ * One block of dataset prose under one heading. The three blocks below were
+ * three structural copies of the same six lines, differing only in which
+ * sentences they select, what class they carry and what the heading claims
+ * about who said them (review 2026-09-07) — and the heading is the only part
+ * that matters, because it is the part that tells the reader whose words these
+ * are. Parameterising it puts those three claims side by side in one place.
+ */
+function proseBlock(cls: string, heading: string, items: string[], join = " "): string {
   if (!items.length) return "";
-  return `<div class="precond"><b>Also required — not checked here:</b> ${
-    items.map((t) => esc(t)).join(" · ")}</div>`;
+  return `<div class="${cls}"><b>${heading}</b> ${items.join(join)}</div>`;
 }
 
 /**
@@ -105,10 +119,10 @@ export function precondHtml(route: Route): string {
  * is in the card's source list, like every other value.
  */
 export function sourcedCaveatHtml(route: Route): string {
-  const items = routeStatements(route).filter((s) => s.kind === "caveat" && s.source);
-  if (!items.length) return "";
-  return `<div class="caveat"><b>The official page also says:</b> ${
-    items.map((s) => esc(s.text)).join(" ")}</div>`;
+  return proseBlock(
+    "caveat", "The official page also says:",
+    routeStatements(route).filter((s) => s.kind === "caveat" && s.source).map((s) => esc(s.text)),
+  );
 }
 
 /**
@@ -137,10 +151,12 @@ function unsourcedSaid(s: RouteStatement): string {
  * not cover it.
  */
 export function unsourcedCaveatHtml(route: Route): string {
-  const items = routeStatements(route).filter((s) => s.kind === "caveat" && !s.source);
-  if (!items.length) return "";
-  return `<div class="caveat nosrc"><b>Worth knowing — we have not found the official wording:</b> ${
-    items.map((s) => `${esc(s.text)} <i>${esc(unsourcedSaid(s))}</i>`).join(" ")}</div>`;
+  return proseBlock(
+    "caveat nosrc", "Worth knowing — we have not found the official wording:",
+    routeStatements(route)
+      .filter((s) => s.kind === "caveat" && !s.source)
+      .map((s) => `${esc(s.text)} <i>${esc(unsourcedSaid(s))}</i>`),
+  );
 }
 
 /**
@@ -157,19 +173,21 @@ export function caveatHtml(route: Route): string {
  * Our own reading — what we modelled, what we did not, and where a number came
  * from a page no machine re-reads. It is not a claim about the law and no
  * authority said it, so it gets a heading that says so in the reader's
- * language rather than the dataset's: "modelling" is a word for whoever
- * maintains this, and a stranger owes it nothing.
+ * language rather than the dataset's: a stranger owes our vocabulary nothing.
  *
  * It is the only text on a card that may carry quotation marks with no source
- * beside it, because the kind itself is the attribution — which is exactly why
+ * beside it, because being a reading IS the attribution — which is exactly why
  * it may never appear in the quote list or under a heading that says an
- * authority spoke (s5e).
+ * authority spoke (s5e). It read `routeStatements(route).filter(s => s.kind
+ * === "modelling")` until this review, one of nine such filters across two
+ * repos; readings are their own construct now, so there is one accessor and no
+ * predicate to keep in step (review 2026-09-07).
  */
-export function modellingHtml(route: Route): string {
-  const items = routeStatements(route).filter((s) => s.kind === "modelling");
-  if (!items.length) return "";
-  return `<div class="caveat ours"><b>Our reading, not the authority's words:</b> ${
-    items.map((s) => esc(s.text)).join(" ")}</div>`;
+export function readingHtml(route: Route): string {
+  return proseBlock(
+    "caveat ours", "Our reading, not the authority's words:",
+    routeReadings(route).map((r) => esc(r.text)),
+  );
 }
 
 /**

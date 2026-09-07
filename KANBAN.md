@@ -13,7 +13,7 @@ flowchart LR
     C2 --> D["Source watch + change flag ✅ real-green (v0.6)"]
     D --> E["Four countries · honest verdicts · exceptions ✅ real-green (v0.7)"]
     E --> E2["Answers recorded as given ✅ real-green (v0.8)"]
-    E2 --> E3["Every sentence carries its source ◀ here (s5e)"]
+    E2 --> E3["Every sentence carries its source ◀ here (s5e, mock-green)"]
     E3 --> F["Public launch 🏁 v1"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
@@ -44,6 +44,16 @@ Promoted (or dropped, with evidence) at a boundary session.
   · recognition helper (Anabin and its FR/ES/NL equivalents).
 
 ## backlog
+
+- **Bare preconditions carry no provenance** (s5e review, 2026-09-07): 38
+  route preconditions state what an authority requires with no source; s5d
+  built sourced precondition statements for exactly this and the conversion
+  was never finished. Source: s5e review, Standards axis.
+- **es-highly-qualified fails people Spain would pass** (s5e, 2026-09-07):
+  Ley 14/2013 art. 71.2 counts three years of experience; the nearest option
+  asks five in seven. Changes verdicts — **back-edge candidate**, needs a
+  declarable three-year option or a rewording of the band. Source: s5e build
+  report; stated on the card as a reading meanwhile.
 
 - **Migrate remaining Turkish docs to English** (steward-3 language rule):
   one-pager, assumptions, research-01, scenarios s1–s3b, older DECISIONS
@@ -116,18 +126,17 @@ Promoted (or dropped, with evidence) at a boundary session.
   requirement, settled against § 20a. Awaiting the human's scenario walk on the
   finished build.
 
-- **Every sentence carries its source, not only every number** (s5e) ·
-  APPROVED 2026-09-07, queued behind s5d because it touches the same files.
-  46 criterion notes ship, none carrying a source or a read date, 39 of them
-  containing a quotation mark. Notes move into s5d's `Route.statements` shape,
-  a `modelling` kind marks what is ours, and the build fails on a quote with no
-  provenance — where the honest escape is an attributable decision, not a
-  deletion of the quotation marks. Expected to produce a `verify-s5e.md`
-  checklist whose size is not known until the work is done.
-
 ## mock-green
 
-_(empty — s5 · s5b · s5c stamped into done as **v0.7**, 2026-09-06)_
+- **Every sentence carries its source, not only every number** (s5e) ·
+  mock-green 2026-09-07 (docs/spine/scenarios/s5e.md). 45 criterion notes
+  with no provenance became 55 sourced conditions, 8 readings declared ours,
+  1 declared unsourced with a reason; machine-verified quotes 28 → 78; value
+  set and verdict SHA unchanged. Reviewed on both axes, 12 findings applied —
+  the gate re-keyed from quotation marks to a declared kind, and slice markers
+  on every IND and BAMF entry so an intermittent shell response reports
+  unreachable instead of overwriting the snapshot. **Real-green needs the
+  human**: five PDF-tier quotes in visa-rules/data/verify-s5e.md.
 
 ## real-green
 

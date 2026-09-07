@@ -1313,3 +1313,58 @@ extended four times, every extension by a finding rather than an idea. The tests
 were green at every point where a human then found something. Three false
 requirements were removed, all three of them our own editorial reasoning shipped
 in the shape of a rule, and none of the three was ever caught by a suite.
+
+## 2026-09-07 — s5e built and reviewed: every sentence carries its source
+
+**Measured, before and after.** 45 criterion notes shipped with no source and
+no read date, 39 of them containing a quotation mark; the schema typed the field
+as a bare string. After the slice: 55 conditions carry a covering source, 8
+sentences are declared ours, 1 is declared unsourced with an enumerated reason,
+5 sit on the human tier. Quotes the machine verifies on every check: 28 to 78.
+Value set byte-identical; verdicts pinned by a SHA over 400 seeded profiles,
+recomputed independently by the Spec reviewer against the pre-slice dataset.
+
+**Two deviations from the approved scenario, kept and recorded (cheap default).**
+Group B went onto a new `Criterion.source` rather than into `Route.statements`
+— a third provenance carrier, defensible because a condition that is not a
+number should quote its authority the way a threshold does. And the card's
+"no numeric value" honesty line was rewritten, unrequested, because the new
+quotes made the old sentence false. Cost: one more shape to keep in step.
+
+**The scenario itself was wrong twice, and both were this session's.** It
+counted 46 notes; the measurement is 45. And its design decision 3 keyed the
+gate to "text containing a quotation mark" — a surface feature. The Spine rule
+that landed the same day names exactly this: *a quotation mark standing in for
+"an authority is being quoted"*. The builder built what was written; the
+reviewer caught it; the gate now keys on a declared kind, and the § 6 BeschV
+sentence that passed with no marks and no source fails the build in three
+slots. Criterion.note — the one slot with no kind — is deleted rather than
+policed.
+
+**The cost priced into the scenario did not fall due, and the reason is
+unexplained.** The IND route pages and the BAMF pages answered the watch fetcher
+in full, so their quotes went to the machine tier. But a bare fetch of the same
+IND URL returned a 1.4 kB shell twice the same day and the full page later,
+with no identified cause. The review found that a shell would have reported
+`changed`, been committed as the snapshot, and put ~35 verified quotes into
+`missing` — the signal that tells a curator to overwrite correct data. Every
+IND and BAMF entry now carries slice markers, so a shell reports `unreachable`
+and touches nothing. Cost: ten markers to keep true as those pages evolve, and
+an intermittency nobody has explained.
+
+**`modelling` was filed under the wrong term.** The scenario asked for it as a
+Route statement kind; the glossary defines a statement as the source's own
+words. It is now `Route.readings`, its own construct, and CONTEXT.md declares
+it as the second exception to Provenance rather than leaving it implied.
+
+**Found and left, for their own slice:** 38 bare preconditions state what an
+authority requires with no provenance carrier — s5d built sourced precondition
+statements for exactly this and the conversion was never finished. And
+`es-highly-qualified` fails people Spain would pass: art. 71.2 counts three
+years of experience, the nearest option asks for five in seven. That one
+changes verdicts and is a back-edge candidate.
+
+**A false statement by this session, corrected the same hour:** it told the
+human a two-axis review was running on s5e when none had been spawned. The
+review ran once the slip was noticed. Same defect class as the builder's
+unpinned-test claim the day before, recorded for the same reason.

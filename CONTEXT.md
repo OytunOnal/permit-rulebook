@@ -58,6 +58,31 @@ marked as not theirs. **Where nothing has decided, no path is claimed and
 nothing is marked either way** — a card that has decided nothing marks nothing.
 _Avoid_: matched path, winning branch, chosen path, first path
 
+**Route reading**:
+Our own reading of a route — what we did or did not model, and why — shown on
+the card as "Our reading, not the authority's words" and never scored. It is
+the second declared exception to Provenance, and it lives in its own place
+(`Route.readings`), not inside Route statement, because a statement is the
+source's words and a reading is ours. The type system says what this entry
+says.
+_Avoid_: modelling, note, editorial, commentary, statement
+
+**Renderable kind**:
+The declared kind of every string the dataset can put in front of a person:
+**authority** (the source's words — must carry a covering quote or a declared
+absence), **ours** (a Route reading), or **label** (a route name, an option, a
+ledger heading). The provenance gate reads this declaration. A quotation mark
+is evidence, never the key: a check that keys on a surface feature is passed by
+editing the feature.
+_Avoid_: text type, string class, prose category
+
+**Prose provenance**:
+The measurement `npm run check` prints for sentences, beside the one it prints
+for numbers: how many carry a covering source, how many are declared ours, how
+many are declared unsourced with a reason, how many sit on the human tier. A
+number a person reads, not a test that passes.
+_Avoid_: coverage, completeness
+
 **Still reachable**:
 A criterion result that did not fail, or failed only by a Bounded gap. The
 single predicate behind route status, hard fail and question selection — it was
