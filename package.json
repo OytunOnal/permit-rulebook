@@ -11,7 +11,9 @@
     "test": "vitest run",
     "assets": "node scripts/render-assets.mjs",
     "assets:check": "node scripts/render-assets.mjs --check",
-    "measure:taps": "node scripts/measure-taps.mjs"
+    "measure:taps": "node scripts/measure-taps.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "smoke:dev": "node scripts/smoke.mjs --dev"
   },
   "dependencies": {
     "astro": "^7.2.10",

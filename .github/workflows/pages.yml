@@ -94,6 +94,14 @@ jobs:
         working-directory: site
         run: npm run measure:taps
 
+      # And the page is alive at all. `measure:taps` counts elements, so it read
+      # a completely dead interview as "0 controls under the floor"; this loads
+      # the site in a real browser, on both the dev and the built surface, and
+      # fails on anything the page throws (2026-09-07).
+      - name: The site renders and throws nothing
+        working-directory: site
+        run: npm run smoke
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site/dist

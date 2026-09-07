@@ -8,15 +8,22 @@ import { existsSync } from "node:fs";
  * kind of difference nobody notices until CI behaves unlike a laptop.
  */
 const CANDIDATES = [
-  process.env.CHROME_PATH,
   "C:/Program Files/Google/Chrome/Application/chrome.exe",
   "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
   "/usr/bin/google-chrome",
   "/usr/bin/chromium",
-].filter(Boolean);
+];
 
 export function chromePath() {
+  // An explicit override is an instruction, not a hint: if it names a path that
+  // is not there, say so instead of quietly using a different browser than the
+  // one that was asked for.
+  const told = process.env.CHROME_PATH;
+  if (told) {
+    if (!existsSync(told)) throw new Error(`CHROME_PATH is set to ${told}, and there is nothing there`);
+    return told;
+  }
   const found = CANDIDATES.find((p) => existsSync(p));
   if (!found)
     throw new Error(
