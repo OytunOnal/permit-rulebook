@@ -1,77 +1,67 @@
-# STATUS — Visa Navigator
+# STATUS — Visa Navigator *(working name; the project is named **Permit Rulebook** from the v1 tag)*
 
 ## Where are we
 
-Genesis, slice loop; scale **Product**; **v0.7 shipped** — s5 · s5b · s5c are
-real-green. **s6 (public launch) is the last slice before v1.** 9 candidates on
-the roadmap (5 unversioned). Spine skills reloaded 2026-09-06 at the
-release-gate revision.
+Genesis, slice loop; scale **Product**; **v0.7 shipped**. **s5d** — the slice
+that closes the v0.7 critique's four blockers — is built and reviewed, awaiting
+the human's scenario walk. **s6 (public launch) is the last slice before v1.**
+9 candidates on the roadmap (5 unversioned). Spine skills reloaded 2026-09-07 at
+the reviewer-agent revision.
 
 ```mermaid
 flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓] --> D[Design ✓] --> E[Plan ✓]
     E --> F["Slice loop<br/>v0.1–v0.7 ✓"]
-    F --> G["s6 boundary ◀ here<br/>release gate + launch slice"]
-    G --> H[v1: public launch]
+    F --> G["s5d ◀ here<br/>blockers closed, review applied"]
+    G --> H[s6: release gate + launch]
+    H --> I[v1: public]
 ```
 
 ## What is happening now
 
-**v0.7 is stamped.** Two gates cleared on the same day: the human verified all
-39 checklist values at their official sources — France, the Netherlands, the
-four BOE articles, the Spanish salary PDF that no machine here can read, the
-four sourced legs of the free-movement class — and then walked the acceptance
-scenarios on the live product and confirmed they hold. Four countries, 23
-routes, honest verdicts, exceptions.
+**The name gate is closed: the project is *Permit Rulebook*, one name.** Two
+cycles, six generator passes, two critiques and an availability round produced
+59 buried candidates with their reasons (`docs/spine/naming.md`), and the honest
+result was that nothing beat the name already on the table. The reset's
+apparent convergence on *rulebook* was contamination — this session had put the
+benchmark into every generator's brief — but the first cycle had run some
+twenty-five head nouns with no benchmark at all, and *rulebook* won there on
+reader comprehension. The rename happens at the v1 tag, not before: nothing is
+public, so it buys nothing today.
 
-**The s6 boundary is open, and it is the release gate.** Three forks wait for
-you, in this order:
+**s5d is built and reviewed.** The builder closed the four blockers; two
+`reviewer` agents then read the diff on separate axes and returned ten findings
+— worst on Standards, `outgrown` displacing the glossary's fixed term *Moot
+criterion* across two repos; worst on Spec, the "a screen that has compared
+nothing claims nothing" invariant testing a pure function rather than the reset
+and edit paths the scenario names. All ten went back. Two carry a deliberate
+escape hatch: where no honest automated check exists at that layer, the builder
+records the gap and names the compensating surface check rather than leaving a
+guard that can be silenced by rewording.
 
-1. **The name.** Round 1 is done: four `analyst` agents on Opus, one per
-   direction, each blind to the others, produced 47 candidates with their
-   graveyards (`docs/spine/naming.md`). All four independently found that
-   `visa-navigator` is not merely unchosen but *wrong* — this product answers
-   questions about work and residence permits, and a visa is a different
-   instrument. Your fork is which directions are alive; rounds 2 (deep critique
-   in a fresh context) and 3 (real availability lookups) run only on those.
-2. **The licence** — separately for the code, the dataset, and anything derived
-   from a source with its own terms. Relicensing after publication needs every
-   contributor's and reuser's cooperation, which is why it is decided here.
-3. **The roadmap** — promotions, keeps and drops, argued risk-first. Five
-   candidates have watched three versions ship without being versioned, so
-   their aging fork is due at this session too.
-
-**v0.7's full walk ran in isolation and found four blockers** — the critique
-agent, not this session, because a scorer must not grade its own repairs
-(`docs/spine/critiques/2026-09-06-product-critique-v0.7.md`, RUBRIC 1.2,
-27/45). One of them is a wrong-verdict bug I confirmed in the data: the
-country-less question "did you graduate… in the last 3 years?" gates the Dutch
-reduced salary criterion, but the IND's own third case requires the applicant to
-*meet the orientation-year requirements* — which is where the Dutch-or-designated
-institution restriction lives. The product already ships the strict wording one
-screen away. Blockers must clear before v1; none of them is a launch-slice task.
-
-184 tests green, `astro check` clean, ARCHITECTURE.md redrawn.
+Independently verified clean by the Spec reviewer: the Dutch reduced-threshold
+correctness fix, Spain deliberately untouched with its unverified scope noted,
+the excluded orientation-year limbs written in both places, and the acceptance
+scenario itself unedited after approval.
 
 ## What is expected from you
 
-- [ ] **One name or two?** Round 2 surfaced this before the shortlist can settle.
-      Either the corpus carries the name and the site becomes "the ⟨name⟩ — check
-      yours" (**Permit Index**, **Permit Source Index**, **Permit Watch** — Watch
-      only works this way, it hosts no verb), or one name does both jobs
-      (**Permit Lookup**, **Permit Rulebook**, **Permit Criteria**). **A pass
-      looks like:** "one name" or "two names". **Why it is yours:** it is a
-      product decision about how the thing is presented, not an analysis result —
-      and it changes which candidates survive to the critique round.
-- [ ] **Pick the critique adjustments** — 1, 2, 3, or "apply all". They are laid
-      out in the message and in the report; 1 and 2 between them close all four
-      blockers.
-- [ ] **Check one link destination.** On the German Blue Card card the quote line
-      reads *"mind. 45.630 Euro im Jahr 2026" · arbeitsagentur.de · 45% BBG ·
-      § 6 BeschV · read 2026-09-02*, but "Official page ↗" beside it goes to
-      `https://www.bamf.de/EN/Themen/MigrationAufenthalt/ZuwandererDrittstaaten/Arbeit/FachkraefteOhneAusbildung/fachkraefte-ohne-ausbildung-node.html`.
-      **A pass looks like:** that German sentence is on the linked page. If it is
-      not, the card is pointing at a route overview while claiming it is the
-      quote's source, and I will split the two links. **Why it is yours:** the
-      critique agent had no outbound network, and bamf.de refuses connections
-      from here — it is one of the German hosts that answers you and not us.
+- [ ] **Walk s5d on the live product** once the review fixes land — I will say
+      when. `http://localhost:4321`. Five things, each a blocker this slice
+      closes: type `niger`, press ↓ once, press Enter — **the country recorded
+      must be the one that was highlighted**, and the next screen must name it ·
+      a 27-year-old with a Dutch offer at €3,500/month and a degree from an
+      institution that is neither Dutch nor IND-designated must be measured
+      against **€4,357**, not €3,122 · every "not met" line must read as a
+      sentence, with no lowercase identifier in it · after "Start over",
+      question 1 must claim nothing about answers given or values compared ·
+      and after "Start over", a **reload** must begin at question 1, not restore
+      the old answers. **Why it is yours:** real-green is a person reading the
+      screens as prose; two of these four blockers were invisible to the tests
+      that were passing at the time.
+- [ ] **The licence** — the last release-gate decision, and it is separate for
+      three things: the code, the dataset, and anything derived from a source
+      with its own terms. Relicensing after publication needs every
+      contributor's and reuser's cooperation, which is why it is decided before
+      the repo goes public. I will bring the options with what each obliges a
+      reuser to do; say when you want them.

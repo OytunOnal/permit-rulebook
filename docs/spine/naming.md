@@ -844,3 +844,59 @@ the maker maintains this for years — Route Rulebook is right.*
 - **One name or two.** Only `Permit Rulebook` holds under both.
 - If two names, **`Permit Watch` as the corpus name reopens** and has not been
   argued.
+
+---
+
+# DECIDED (human, 2026-09-07): **Permit Rulebook**, one name
+
+The gate is closed. One name serves both the open ruleset and the consumer
+site; the two-name architecture is not adopted, so `Permit Watch` as a corpus
+name does not reopen.
+
+## What was chosen, and against what
+
+Chosen over **Route Rulebook**, whose case was real and is recorded in full
+above: it matches the schema, survives every planned wave, and never contradicts
+the docs. Two things resolved it:
+
+1. **The product name does not have to equal the schema noun.** `route` stays in
+   the data, the types, the cards and the SEO micro-pages at no cost. The
+   consistency argument buys much less than it appears to.
+2. **Permit forces no future rename.** When Australia lands, a book called
+   *Permit Rulebook* lists instruments called visas in its Australian section —
+   a general title, not a contradiction. "EU" would have been categorically
+   false in Canada and *would* have forced one.
+
+What remained was the only difference that touches the reader: a frightened
+person reading in a second language knows what a rulebook is, and reads *route*
+as a road.
+
+## Cost of the choice, stated
+
+- The Australian section of a book called *Permit* will list visas. Accepted
+  knowingly.
+- *route* is now an internal word only. Anyone reading the code and then the
+  product will meet two vocabularies, and the glossary must say why.
+- The name is copyable in principle — a lead-gen shop could take it tomorrow.
+  What it cannot copy is the register: a rulebook has no agency, and "here are
+  the rules, work it out" is not a sales funnel.
+
+## What ships with it
+
+- **Do not add "Work".** `CONTEXT.md` says "work/residence permit" and the Blue
+  Card is a residence title: *Work Permit Rulebook* sounds more precise and is
+  narrower.
+- **Slugs:** site `permit-rulebook`. The corpus repo must **not** be
+  `permit-rules` — `permit.io` is a live developer-authorisation company
+  (fetched 2026-09-07, "Authorization Infrastructure for Developers"), so that
+  slug reads as authz policy to the GitHub/HN audience, which is the declared
+  first channel. Use `permit-rulebook-data` or similar.
+- **Tagline:** "Every route, quoted and dated" — keeping *route* where it earns
+  its place, and carrying the per-value promise the name cannot.
+- **Timing: the rename happens at the v1 tag, not before.** Nothing is public,
+  so the rename buys nothing today and costs a week of one person's time.
+
+## Still open at the release gate
+
+**The licence** — separately for the code, the dataset, and anything derived
+from a source with its own terms. Unchanged by this decision.
