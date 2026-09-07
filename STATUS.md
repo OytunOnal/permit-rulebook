@@ -2,56 +2,67 @@
 
 ## Where are we
 
-Genesis, slice loop; scale **Product**; **v0.9 shipped**. **The release gate is
-closed** — name and licence both decided. **s6 (public launch) is the last
-slice before v1**, and its boundary session is the next thing that happens.
-9 candidates on the roadmap (5 unversioned). Spine skills reloaded 2026-09-07
-at steward-26.
+Genesis, slice loop; scale **Product**; **v0.9 shipped**, **s5f mock-green**
+(built, reviewed on both axes, 15 findings applied). The release gate is
+closed. **s6 (public launch) is drafted and waiting** — its scenario, its
+route-page mock (critiqued in isolation and revised) and its identity mock
+are all in front of the human; nothing in s6 starts before s5f is real-green.
+Spine skills reloaded 2026-09-07 at steward-29.
 
 ```mermaid
 flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓] --> D[Design ✓] --> E[Plan ✓]
     E --> F["Slice loop<br/>v0.1–v0.9 ✓"]
-    F --> RG["Release gate ✓<br/>Permit Rulebook · MIT + CC BY 4.0"]
-    RG --> G["s6 boundary ◀ here<br/>roadmap forks · launch scenario"]
+    F --> S5F["s5f sweep ◀ here<br/>mock-green · human walk pending"]
+    S5F --> G["s6 boundary<br/>scenario + mocks awaiting approval"]
     G --> H[v1: public]
 ```
 
 ## What is happening now
 
-**The licence is decided and the files exist.** Code MIT in both repositories;
-the dataset CC BY 4.0, with an attribution line and a statement of what the
-licence does not cover; a NOTICE carrying the Unicode CLDR attribution that
-countries.json owes and the terms known to apply to the official texts behind
-every quote. The README had said "MIT / CC-BY-4.0" since an agent wrote it —
-nobody had chosen. Now chosen, with the costs written into DECISIONS.
+**s5f is built and reviewed, and the review earned its place.** The sweep
+shipped the three-year experience answer without declaring the band it clears,
+so a person answering honestly lost Germany's experienced-worker route and two
+Chancenkarte points — a regression the scenario's guard could not see because
+it compared a stripped dataset with itself. The Spec reviewer caught it; the
+ladder is ordinal now (`y3in7` implies `y2in5`), points score the best row an
+answer satisfies, and the guard compares the same person on the two answers
+over 600 profiles: 0 worse. `es-ict` read five years beside its own quote of
+three; ruled in scope and fixed. Two counts in the record were mine and wrong
+(38 bare preconditions was 37; "27 moved rows" reproduces under nothing — the
+honest figure is 15). Glyph corrections became declared, dated, bounded data
+on the watch entry; the scan has one word, `scanned-image`.
 
-**The Spanish shortage caveat has its quote.** It shipped as unsourced on the
-belief the Orden was a scanned PDF; the UGE salary PDF states the conditions in
-words, read from its text layer. `declared_unsourced` is 0. The source also
-settled the institution question in favour of what was modelled, and narrowed
-the caveat's plain English to what the PDF says: shortage occupations within
-CNO-2011 groups 1 and 2, not the list at large.
-
-Tests: 289 in visa-rules, 69 in the navigator. Every value and every sentence a
-card can render carries its source or is declared ours.
+Numbers: 323 tests in visa-rules, 70 in the navigator; 120 quotes verified,
+0 unverifiable, `human_tier: 0`; every rendered sentence sourced, ours, or
+declared unsourced with a reason; every document on disk in English.
 
 ## What is expected from you
 
-- [ ] **Say "s6" to open the boundary session.** It is the only thing left
-      before the launch slice, and it is a gate conversation, not a task. What
-      happens, in order: (1) the roadmap forks — I bring each candidate with a
-      promote / keep / drop argument, risk-first, and five `later` candidates
-      have now watched more than three versions ship, so each gets an explicit
-      keep / version / drop rather than rolling over; (2) the s6 acceptance
-      scenario, written in human language with its edge cases before any code,
-      for your approval; (3) the deferral check — the riskiest backlog item
-      (`es-highly-qualified` fails people Spain would pass) is a back-edge
-      candidate and must be chosen for or against, not skipped. **Why it is
-      yours:** every one of those is a choice with consequences that outlive
-      the slice.
+- [ ] **s5f real-green — read `visa-rules/data/verify-s5f.md` and mark it.**
+      Section 1 is the list the scenario asks for: the 15 verdicts that moved
+      because of the three-year answer, ten people across the two Spanish
+      routes, each row "from → to" with a yes/no column. Two rows turn *met*
+      (row 2, row 13); thirteen stop being dead and stay open. **Pass:** every
+      row moved toward the reader, and row 2 is met with the €41,356.36
+      threshold genuinely cleared; row 13 is met with no salary of its own
+      and the card says so. **Fail:** any row worse for the three-year
+      answerer, or "met" without its threshold — a rule bug, raise it. Section
+      2 is the translation check: DECISIONS line 245 (s3b, "Leverage
+      analysis") against its Turkish original via `git show 7c075a0:DECISIONS.md`;
+      pass when the English claims no more than the Turkish did. **Why it is
+      yours:** the machine proved the direction; only a person can agree that
+      someone in that position *should* see what they now see.
+- [ ] **s6, three approvals in one word each:** the scenario
+      (`docs/spine/scenarios/s6.md`, 13 decisions), the route-page mock
+      (`docs/spine/design/s6-route-page.html`, two columns, revised after the
+      isolated critique and your three corrections), and the identity
+      (`docs/spine/design/s6-identity-a.html`: the tilted PR stamp, enlarged
+      as you asked, overprinting the rules-read stamp on the social card at the
+      opposite angle). The open question on the last is only size: say if the
+      seal in the header or the mark on the card should be larger still.
 - [ ] **One line, optional:** the copyright holder in the three LICENSE files
-      reads "Oytun", the git author. If you want the full name there before
-      the repositories go public, say so — it is a one-line change in each.
+      reads "Oytun", the git author. Say so if you want the full name before
+      the repositories go public.
 
 Nothing else is open.
