@@ -15,6 +15,7 @@ flowchart LR
     E --> E2["Answers recorded as given ✅ real-green (v0.8)"]
     E2 --> E3["Every sentence carries its source ✅ real-green (v0.9)"]
     E3 --> E4["Launch-readiness sweep ✅ real-green (v0.10)"]
+    E4 --> E5["Public launch ◀ here (s6, building)"]
     E4 --> F["Public launch 🏁 v1 (s6)"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
@@ -156,6 +157,15 @@ Promoted (or dropped, with evidence) at a boundary session.
   wording, per-country recognition source inventory)
 
 ## active
+
+- **Public launch** (s6) · APPROVED 2026-09-07, with the builder
+  (docs/spine/scenarios/s6.md, 13 decisions + one amendment). Name sweep to
+  Permit Rulebook; 23 route pages generated from the dataset; coverage value
+  per route; CONTRIBUTING + issue templates + tracker link on the product;
+  favicon / OG card / identity pair; GitHub Pages workflow; one-sentence
+  disclaimer; ISO dates; invariants. What stays the human's: the GitHub
+  repository renames, Pages + domain, the first live watch flag, the phone walk
+  on the preview, the 48-hour lines, the announcement.
 
 - **Answers recorded as given, verdicts in plain words** (s5d) ·
   `docs/spine/scenarios/s5d.md`. Built, code-reviewed on both axes (10 findings,

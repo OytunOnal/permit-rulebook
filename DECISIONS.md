@@ -1667,3 +1667,25 @@ en el marco de una relación laboral … autorización de residencia por traslad
 intraempresarial"), read from the BOE snapshot; the precondition keeps art.
 73.2.c. Quote gate ok, 120 verified, 323 tests; the live card re-read: each
 sentence once. The board entry is struck through with the fix beside it.
+
+## 2026-09-07 — s6 "Public launch" approved 🛑, with one amendment
+
+**Gate (human chose).** The scenario's 13 decisions and the route-page mock
+were approved as written ("onun dışında hepsi tamam") after the human asked
+one question: does the route page's "Rules read" stamp carry the logo? It does
+now — the identity pair from the social card, at page scale, the PR mark's
+bottom-right corner on the middle of the stamp's top edge (measured −1 / 0
+px), and the small seal before the name in the crumbs. Decision 5 says so;
+the mock shows it at desktop and 390 px.
+
+**What the build may and may not do.** Everything on disk is the builder's:
+strings, package names, pages, assets, workflow files. The folder names and
+the GitHub repositories keep their old names until the human renames them at
+the tag — a rename under a running session, or of a public repository, is the
+human's act. The watch cron's first live flag, the phone walk on the preview,
+the 48-hour lines and the announcement are real-green items and stay theirs.
+
+**Cost, stated.** The identity pair now appears in three places (header seal,
+route-page stamp, social card); a fourth would make it wallpaper. The results
+page's "Record generated" stamp stays a single stamp on purpose — it is the
+reader's document, not ours.
