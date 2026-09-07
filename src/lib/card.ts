@@ -250,7 +250,7 @@ export function provenanceHtml(ds: Dataset, r: RouteResult): string {
     const p = c ? ds.fields.find((f) => f.id === c.field)?.period : undefined;
     return p ? ` · per ${p}` : "";
   };
-  const lines = entries.map(({ label, value, amount, applied }) => {
+  const rendered = entries.map(({ label, value, amount, applied }) => {
     const host = new URL(value.source_url).hostname.replace(/^www\./, "");
     // Per entry, not per card: one settled disjunction on a route must not put
     // a ruled-out mark under a second one nobody has decided.
@@ -263,6 +263,21 @@ export function provenanceHtml(ds: Dataset, r: RouteResult): string {
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
       value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b></div>`;
   });
+  // One sentence, one line. Two claims may honestly rest on the same sentence
+  // — the Dutch Blue Card's `situation` criterion and the "also required" line
+  // about the contract's length are both answered by "Your employment contract
+  // is valid for at least 6 months." — and after s5f sourced every
+  // precondition, eight routes quoted a sentence twice. Printing it twice is
+  // not twice the provenance; it is a longer list saying the same thing. Only
+  // an EXACTLY identical rendered line is dropped, so a quote that carries a
+  // different label, amount or applies-to-you mark still gets its own row.
+  const seen = new Set<string>();
+  const lines = rendered.filter((line) => {
+    if (seen.has(line)) return false;
+    seen.add(line);
+    return true;
+  });
+
   // The promise on the first screen is that every value shows its quote and
   // its read date. A route that decides nothing on a number has no AMOUNT to
   // quote, and silence about that reads as if the promise held (isolated

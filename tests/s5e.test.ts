@@ -178,9 +178,39 @@ describe("s5e — the card's source list grew without burying the verdict", () =
       }
   });
 
+  it("one sentence gets one line, however many claims rest on it", () => {
+    // Eight routes quote a sentence twice in the data since s5f — the Dutch
+    // Blue Card's `situation` criterion and its "an employment contract that
+    // runs for at least six months" line are both answered by the same
+    // sentence — and printing it twice is a longer list, not more provenance.
+    for (const { r, html } of generatedCards(4826, 30)) {
+      const lines = sourceLines(html);
+      expect(new Set(lines).size, r.route.id).toBe(lines.length);
+    }
+    // And the de-duplication is real work on the cards that needed it, not a
+    // no-op the test would pass either way.
+    const blueCard = evaluate(ds, { destination: "nl", citizenship: "TR", situation: "offer" })
+      .find((x) => x.route.id === "nl-blue-card")!;
+    expect(resultProvenance(blueCard).map((e) => e.value.quote))
+      .toContain("Your employment contract is valid for at least 6 months.");
+    expect(resultProvenance(blueCard).filter((e) => e.value.quote === "Your employment contract is valid for at least 6 months.").length)
+      .toBe(2);
+    expect(sourceLines(provenanceHtml(ds, blueCard))
+      .filter((l) => l.includes("valid for at least 6 months")).length).toBe(1);
+  });
+
   it("no card turns into a wall of quotes", () => {
+    // Eight until s5f, nine after it, and the extra line is the price of that
+    // slice rather than a drift: sourcing the 37 bare preconditions put a
+    // quote under sentences that had none, and the Dutch cards carrying the
+    // most of them grew by exactly the lines that used to make a claim with
+    // nothing behind it. It would have been eleven; eight routes ended up
+    // quoting one sentence twice, because a criterion and an "also required"
+    // line can honestly rest on the same sentence, and `provenanceHtml` prints
+    // an identical line once. The cap still bites: a route reaching ten is
+    // news, and has to be argued for rather than raised past.
     for (const { r, html } of generatedCards(4826, 30))
-      expect(sourceLines(html).length, r.route.id).toBeLessThanOrEqual(8);
+      expect(sourceLines(html).length, r.route.id).toBeLessThanOrEqual(9);
   });
 
   it("the \"no numeric value\" honesty line still appears where it did", () => {

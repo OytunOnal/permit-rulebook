@@ -45,8 +45,11 @@ describe("the orientation year, on the card", () => {
     const html = precondHtml(routeOf("nl-orientation-year"));
     expect(html).toContain("Also required — not checked here");
     expect(html).toMatch(/must not have previously held an orientation year permit/i);
-    // Beside the plain lines, not in a block of its own.
-    expect(html).toMatch(/three years of graduating/);
+    // Beside the plain lines, not in a block of its own. The deadline reads
+    // as the immigration service states it since s5f — "in the three years
+    // before the date of application" — because the page it is quoted from
+    // never makes a doctoral defence a deadline of its own.
+    expect(html).toMatch(/three years before the date of application/);
     expect(html.match(/class="precond"/g)).toHaveLength(1);
   });
 
@@ -216,6 +219,32 @@ describe("the source list says which quote applied to this reader", () => {
  * sentences saying the reader may qualify for LESS were rendered as things
  * demanded of them.
  */
+/**
+ * A route whose caveat carries no quote.
+ *
+ * It used to be a shipped one: the es-blue-card shortage-occupation caveat
+ * stood on a declared, dated "scanned-image" reason until the UGE PDF turned
+ * out to state the same conditions in words, and s5f's `pdf-text` strategy
+ * made even that machine-readable. `declared_unsourced` is 0 across the
+ * dataset now, and that is the healthy state for an exception — but the
+ * exception still exists, the card still has to render it honestly, and this
+ * is what proves it does. The text is the one that shipped, so what a reader
+ * would have seen is still the thing under test.
+ */
+const unsourcedRoute = (): Route => ({
+  ...routeOf("es-blue-card"),
+  statements: [{
+    id: "reduced-also-for-shortage-occupations",
+    kind: "caveat",
+    text: "The lower salary can also apply to shortage occupations that fall in the managerial and professional groups of Spain’s occupation classification (CNO-2011 groups 1 and 2) — we do not check that list.",
+    unsourced: {
+      reason: "scanned-image",
+      checked_at: "2026-09-07",
+      note: "Orden PJC/44/2026 is published as a scan of the printed bulletin.",
+    },
+  }],
+});
+
 describe("nothing that says \"you may qualify for less\" renders as a requirement", () => {
   const CARRIERS = ["nl-hsm-30plus", "nl-hsm-under30", "de-experienced-worker", "es-blue-card"];
 
@@ -246,7 +275,7 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
       for (const route of country.routes)
         expect(caveatHtml(route), route.id)
           .toBe(sourcedCaveatHtml(route) + unsourcedCaveatHtml(route));
-    expect(caveatHtml(routeOf("es-blue-card"))).toContain("we have not found the official wording");
+    expect(caveatHtml(unsourcedRoute())).toContain("we have not found the official wording");
     expect(caveatHtml(routeOf("de-chancenkarte"))).toContain("The official page also says:");
   });
 
@@ -254,18 +283,19 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
     // The payoff of making the absence a decision rather than an essay: the
     // card can now say WHY in its own voice and print a date a reader can age,
     // instead of reprinting whatever prose the dataset happened to carry.
-    const html = unsourcedCaveatHtml(routeOf("es-blue-card"));
+    const html = unsourcedCaveatHtml(unsourcedRoute());
     expect(html).toContain("only as a scan");
     expect(html).toContain("Last checked 2026-09-07");
   });
 
   it("the one with no quote says so, in the open, and says why", () => {
-    const html = unsourcedCaveatHtml(routeOf("es-blue-card"));
+    const route = unsourcedRoute();
+    const html = unsourcedCaveatHtml(route);
     expect(html).toContain("we have not found the official wording");
     expect(html).toMatch(/shortage occupations/);
     expect(html).toMatch(/Orden PJC\/44\/2026/);
     // And it is not passed off as something the official page says.
-    expect(sourcedCaveatHtml(routeOf("es-blue-card"))).not.toMatch(/shortage occupations/);
+    expect(sourcedCaveatHtml(route)).not.toMatch(/shortage occupations/);
   });
 
   it("the Opportunity Card's 20-hour limit is an aside about the permit, not a bar", () => {
