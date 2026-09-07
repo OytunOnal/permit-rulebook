@@ -1,6 +1,6 @@
 # s5f — "Launch-readiness sweep" · Acceptance scenario
 
-Status: DRAFT — awaiting human approval (2026-09-07).
+Status: APPROVED (human, 2026-09-07).
 Born from: the s6 boundary session — four backlog items promoted so that the
 launch slice is launch and nothing else (forks A1, D1, D2, D3).
 Screen change: none new. Cards gain sources on lines that had none; one

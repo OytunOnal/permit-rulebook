@@ -147,6 +147,11 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
+- **Launch-readiness sweep** (s5f) · APPROVED 2026-09-07, with the builder.
+  docs/spine/scenarios/s5f.md — the Spanish three-year experience option, a
+  pdf-text watch strategy, the 38 bare preconditions given a kind, the
+  remaining Turkish docs translated without changing meaning. Nothing else.
+
 - **Answers recorded as given, verdicts in plain words** (s5d) ·
   `docs/spine/scenarios/s5d.md`. Built, code-reviewed on both axes (10 findings,
   all applied), and extended twice by findings from the human's own walk: the
