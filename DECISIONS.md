@@ -1120,3 +1120,36 @@ with no unit, and card prose the human could not read.
 
 **Not stamped, deliberately:** nothing about the name, the licence or the
 roadmap. Those are the release gate, and they open the s6 boundary as forks.
+
+## 2026-09-07 — the record persists on the device, and the privacy promise stands
+
+The v0.7 critique asked for a record that survives leaving the page. Three ways
+were put to the human: answers in the URL fragment, a print-only record, or
+server-side records with shareable links. They rejected the fragment, and said
+plainly that data reaching a server would be acceptable — the privacy promise
+was not, in their words, that important.
+
+**Chosen (gate, human): `localStorage` plus a print stylesheet.** Reload,
+browser Back and closing the tab all keep the answers; the record prints as a
+PDF that can be taken to an appointment. Nothing is transmitted.
+
+**Why the concern was raised before the fork:** "answers never leave the device"
+is not only a slogan on the page. It is in the one-pager's positioning, it is
+the trust boundary in ARCHITECTURE.md, and it is one of the reasons the Scale
+Gate landed on **Product** — the project touches personal data, and local-first
+was the recorded mitigation. Citizenship, salary and age in a migration context
+are GDPR personal data; storing them would bring a privacy notice, a lawful
+basis, a retention policy and a breach surface, all to be maintained by one
+person for the six months the project is meant to stay alive.
+
+**Cost of the choice, stated:** no sharing by link, and the record does not
+follow the user to another device — `localStorage` is per-browser. That limit is
+recorded in the backlog as chosen, not as a defect. A second cost the fork did
+not raise and the slice now carries: stored answers on a shared or borrowed
+computer, which is why "Start over" must clear the store and not only the
+screen.
+
+**Not reopened:** the privacy promise itself. The human's remark that it matters
+less than assumed is on the record here, and if it returns it should return as
+its own fork — a promise printed on the page is not withdrawn as a side effect
+of choosing where a Save button writes.

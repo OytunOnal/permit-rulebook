@@ -1,6 +1,8 @@
 # s5d — "Answers recorded as given, verdicts in plain words" · Acceptance scenario
 
-Status: DRAFT — awaiting human approval (2026-09-07).
+Status: APPROVED (human, 2026-09-07) — "apply all three adjustments", with the
+record-persistence fork settled the same day: `localStorage` plus a print
+stylesheet, no URL fragment and no server.
 Born from: the isolated product-critique of v0.7
 (`docs/spine/critiques/2026-09-06-product-critique-v0.7.md`), four blockers.
 Human decision 2026-09-07: **apply all three recommended adjustments.**
@@ -59,10 +61,16 @@ the launch slice.
 8. **The phone gets the question first.** At narrow widths the question card
    precedes "You declared", which collapses to a one-line expandable summary;
    the intro shortens after Q1; every interactive row reaches 44 px.
-9. **The record survives leaving the page.** Answers live in the URL fragment,
-   so browser Back, reload and sharing a link all work — and because it is the
-   fragment, the answers still never reach a server. A print stylesheet is the
-   fallback if the fragment proves unworkable; one of the two ships.
+9. **The record survives leaving the page, and still never leaves the device.**
+   Answers persist in `localStorage`, so reload, browser Back and closing the
+   tab and returning all find them. A print stylesheet ships alongside, so the
+   record can be taken to an appointment as a PDF. **Sharing by link is out of
+   scope, deliberately** — the human considered a URL fragment and a server-side
+   record and chose neither (2026-09-07). The privacy promise stands unchanged:
+   nothing is transmitted, and `localStorage` is per-browser, so the answers do
+   not reach the user's other devices either. A visible "Start over" clears the
+   stored answers as well as the screen — a shared or borrowed computer must not
+   hand the next person a stranger's salary.
 
 ## Seed data
 
@@ -104,10 +112,14 @@ untouched — `npm run check` must show the same value set before and after.
    the first thing on screen from Q1 to the last question, `scrollWidth` never
    exceeds 390, and "← Back", "Start over" and every edit row measure at least
    44 px.
-7. **The record survives (step 9's promise).** Answer three questions, reload
-   the page: the answers are still there. Press browser Back from the results:
-   it returns to the interview rather than wiping it. Nothing in the fragment
-   is ever sent — verified by the absence of any request carrying it.
+7. **The record survives, and can be cleared (step 9's promise).** Answer three
+   questions, reload the page: the answers are still there. Close the tab,
+   reopen the site: still there. Press browser Back from the results: it returns
+   to the interview rather than wiping it. Press "Start over": the stored
+   answers are gone, and a reload after it starts from question 1. Print the
+   results: the record prints as a readable page, quotes and dates included, no
+   navigation furniture. No network request carries any answer — verified on the
+   network panel, not assumed.
 8. **Regression.** All 184 existing tests stay green; the value set is
    unchanged; `astro check` reports zero errors.
 
@@ -132,7 +144,8 @@ untouched — `npm run check` must show the same value set before and after.
 
 ## De-mock births
 
-- If the print stylesheet ships instead of the URL fragment, "the record cannot
-  be shared or reloaded" returns to the backlog as an open need.
+- "The record cannot be shared with anyone else, and does not follow the user to
+  another device" joins the backlog as a known, chosen limit — not a defect.
+  Revisit only if people ask for it.
 - `es-blue-card`'s unverified institution scope joins the backlog: it needs a
   human read of the Orden, which is the PDF tier.
