@@ -14,7 +14,8 @@ flowchart LR
     D --> E["Four countries · honest verdicts · exceptions ✅ real-green (v0.7)"]
     E --> E2["Answers recorded as given ✅ real-green (v0.8)"]
     E2 --> E3["Every sentence carries its source ✅ real-green (v0.9)"]
-    E3 --> F["Public launch ◀ here 🏁 v1"]
+    E3 --> E4["Launch-readiness sweep ◀ here (s5f)"]
+    E4 --> F["Public launch 🏁 v1 (s6)"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
 ```
@@ -25,61 +26,82 @@ Candidates, not commitments: capability · why it came up · the bet it rests on
 Promoted (or dropped, with evidence) at a boundary session.
 
 ### v1 — launch
-- **Public launch** · the dataset is only useful in public · bet: an open,
+- **Launch-readiness sweep** (s5f) · the last known wrong verdict, the last
+  human-tier quotes, the last unsourced sentences and the last Turkish docs
+  must not go public · bet: a launch with zero known defects earns more trust
+  than a faster one. Source: s6 boundary 2026-09-07 (forks A1, D1, D2, D3).
+- **Public launch** (s6) · the dataset is only useful in public · bet: an open,
   dated, source-quoted ruleset earns links and contributions faster than a
-  closed one earns users. (Slice s6.)
+  closed one earns users. Carries the research harvest routed *now* at the
+  boundary: per-route coverage tiers (research-01, PathWise), per-route page
+  shape (research-01, Workbeyond), micro-page SEO (research-01, Visaora).
 
 ### v1.x
-- **Print or save the record** · the "eligibility record" metaphor has no
-  export and a refresh destroys it · bet: people take this to an appointment.
+- ~~Print or save the record~~ · **dropped 2026-09-07 — done in s5d** (print
+  stylesheet, localStorage record).
 - **Affiliate layer** · the money model from the viability gate · bet:
   route-relevant mandatory services convert without touching eligibility.
 - **More citizenship exceptions** · the mechanism shipped in s5c, the data did
   not · bet: association agreements matter to enough users to earn a question.
-- **Reduced thresholds, remaining limbs** · ES shortage catalogue, NL follow-up
-  criteria · bet: the SEPE catalogue is watchable once located.
+- **Reduced thresholds, remaining limb** · only the SEPE shortage catalogue
+  remains — NL and ES reduced thresholds shipped in s5c/s5d · bet: the SEPE
+  catalogue is watchable once located. Source: s5 verification 4.2.
 
-### later
-- CA + AU · rest of Europe · Turkish UI · quote-grounded "ask about this route"
-  · recognition helper (Anabin and its FR/ES/NL equivalents).
+### v2 — wave 2
+- **CA + AU** · points systems; the one-pager's own second wave · bet A6: the
+  model fits points-based systems without a new engine. Versioned at the s6
+  boundary 2026-09-07 after three versions in *later*.
+
+### v3 — wave 3
+- **Rest of Europe** · versioned at the s6 boundary 2026-09-07.
+
+### later (aging counter reset 2026-09-07 — next fork after three more versions)
+- **Turkish UI** · the first audience is Turkish, the product is English · bet:
+  worth it only once A8 shows organic traffic; trigger: Turkish share of
+  post-launch traffic. Kept.
+- **Quote-grounded "ask about this route"** · a presentation layer over the
+  quotes, not a decision layer · bet: value unproven before launch. Kept.
+- **Recognition helper** (Anabin and FR/ES/NL equivalents) · research first;
+  Anabin is reachable now · bet: a per-country recognition source inventory
+  exists. Kept.
 
 ## backlog
 
-- **PDF text extraction for the watch** (2026-09-07): both PDF-tier sources
+- ~~PDF text extraction for the watch~~ → **promoted into s5f** (2026-09-07): both PDF-tier sources
   carry a text layer behind embedded TrueType fonts; decoding the glyph tables
   yields verbatim text. A pdf strategy that extracts text would move the five
   unverifiable quotes to the machine tier and let the fidelity gate read them.
   Source: the s5e human pass, done by the session.
 
-- **Bare preconditions carry no provenance** (s5e review, 2026-09-07): 38
+- ~~Bare preconditions carry no provenance~~ → **promoted into s5f** (s5e review, 2026-09-07): 38
   route preconditions state what an authority requires with no source; s5d
   built sourced precondition statements for exactly this and the conversion
   was never finished. Source: s5e review, Standards axis.
-- **es-highly-qualified fails people Spain would pass** (s5e, 2026-09-07):
+- ~~es-highly-qualified fails people Spain would pass~~ → **promoted into s5f, back-edge chosen FOR** (s5e, 2026-09-07):
   Ley 14/2013 art. 71.2 counts three years of experience; the nearest option
   asks five in seven. Changes verdicts — **back-edge candidate**, needs a
   declarable three-year option or a rewording of the band. Source: s5e build
   report; stated on the card as a reading meanwhile.
 
-- **Migrate remaining Turkish docs to English** (steward-3 language rule):
+- ~~Migrate remaining Turkish docs to English~~ → **promoted into s5f** (steward-3 language rule):
   one-pager, assumptions, research-01, scenarios s1–s3b, older DECISIONS
   entries (STATUS/KANBAN/ARCHITECTURE already translated).
-- **Buzer → official-source URL migration** · Replace buzer.de mirror links
+- ~~Buzer → official-source URL migration~~ · **dropped 2026-09-07, with evidence:** gesetze-im-internet.de times out from Türkiye (measured 2026-09-06); buzer.de is the reachable consolidated mirror and NOTICE says so. The migration would have killed the link for the reader the tool exists for. · Replace buzer.de mirror links
   in the dataset with the verified gesetze-im-internet.de URLs (human
   verified them via VPN; agents cannot reach the official site — relevant to
   s4 source selection).
 - **Model the 45+ age rules (55% threshold) as criteria** (currently notes).
-- **Criterion-note provenance** (s5 review catch): verbatim legal quotes on
+- ~~Criterion-note provenance~~ · **dropped 2026-09-07 — done by s5e** (s5 review catch): verbatim legal quotes on
   eq/in/any criteria ride as bare `note` strings — no source_url/retrieved_at,
   so 7 routes (§18a/b, §18d, §19, es-ict, es-researcher, nl-orientation-year)
   show zero provenance and their source pages escape watch coverage. Needs a
   provenanced `basis` structure on non-numeric criteria + watchlist growth
   (BAMF pages, IND route pages).
-- **Print / save the record** (golden G5): the "eligibility record" metaphor
+- ~~Print / save the record~~ · **dropped 2026-09-07 — done in s5d** (golden G5): the "eligibility record" metaphor
   has no export; refresh destroys it. Print stylesheet + "save as PDF" hint,
   possibly a shareable-by-URL profile (privacy: answers in the fragment,
   never sent). Joins s6.
-- **Reduced thresholds, three countries** (s5 verification 4.2): NL HSM
+- ~~Reduced thresholds, three countries~~ · **folded into the roadmap item 2026-09-07; only SEPE remains** (s5 verification 4.2): NL HSM
   €3,122 and Blue Card €4,754 for recent graduates; ES Blue Card €33,085.09
   for CNO 1–2 shortage occupations or a qualification obtained in the last 3
   years (and NOT for PAC nacional — it is per-route, not a global flag).
@@ -88,7 +110,7 @@ Promoted (or dropped, with evidence) at a boundary session.
   plus a notice keyed to a country); what is missing is data. Candidates: the
   EU association agreements beyond Türkiye, and the countries whose nationals
   have privileged access to Germany (§ 26 BeschV).
-- **FR talent subtypes — entreprise innovante, salarié en mission** (s5
+- ~~FR talent subtypes — entreprise innovante, salarié en mission~~ · **dropped 2026-09-07 — done in s5c** (two routes shipped) (s5
   verification 2.1): both thresholds equal €39,582 and are on F16922; what is
   missing is a qualifier field for the employer/mission type, not a number.
 - **Orientation-year English requirement**: IELTS 6.0 / equivalent / an
@@ -99,9 +121,12 @@ Promoted (or dropped, with evidence) at a boundary session.
   passport its residents hold; CLDR labels "Congo - Kinshasa" and "Hong Kong
   SAR China" read oddly; alias coverage is the 35 names people most often
   type, not a complete exonym list.
-- **Public launch** (s6) · `visa-rules` public (CC-BY-4.0, CONTRIBUTING,
-  coverage tiers), site deploy, per-route micro-pages, disclaimer/legal
-  wording (A1 conditions), GitHub/HN launch. _Tests A2, A7, A8 for real._
+- **Public launch** (s6) · `visa-rules` public (licence ✓ MIT + CC BY 4.0,
+  CONTRIBUTING, per-route coverage tiers), site deploy with the phone walk on
+  the preview before any announcement, per-route micro-pages, disclaimer/legal
+  wording (A1 conditions), the rename to **Permit Rulebook** at the v1 tag, a
+  GitHub Sponsors link, GitHub/HN launch, and the v1-gate full critique in
+  isolation. _Tests A2, A7, A8 for real._
 
 ### v1.x / wave 2 (post-v1)
 - **Affiliate layer** (viability decision 2026-09-02): route-relevant

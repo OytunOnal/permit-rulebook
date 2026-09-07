@@ -1433,3 +1433,47 @@ full name there before publication, and it is a one-line change.
 **The gate this closes:** the release gate's second decision. The name (Permit
 Rulebook, one name) was the first. Both are now made, both before anything is
 public, which is the only time they are cheap.
+
+## 2026-09-07 — the s6 boundary: every fork taken with its recommendation
+
+**Gate (human chose): all forks accepted as recommended.** Recorded here so
+each can be defended, with what it costs.
+
+**Back-edge, chosen FOR:** `es-highly-qualified` fails people Spain would pass
+— Ley 14/2013 art. 71.2 counts three years, the interview's nearest option is
+five in seven. Promoted into the pre-launch sweep as a launch precondition. A
+known wrong verdict does not go public. Cost: an experience option changes and
+every persona's answer set moves with it.
+
+**Roadmap:** *Print or save the record* dropped as done (s5d). *Affiliate
+layer* and *more citizenship exceptions* kept at v1.x — both wait on traffic
+evidence. *Reduced thresholds* narrowed to the SEPE catalogue, the rest having
+shipped. The five `later` candidates, which had watched three versions ship,
+each got the fork the rule demands: CA+AU versioned to v2 and rest-of-Europe to
+v3 (the one-pager's own waves), Turkish UI kept with a trigger (Turkish share of
+post-launch traffic — the first audience is Turkish, but a second UI before A8
+is a blind bet), quote-grounded Q&A and the recognition helper kept with their
+counters reset.
+
+**Backlog:** PDF text extraction, the 38 unsourced preconditions and the
+Turkish docs promoted into the sweep; buzer→official migration **dropped with
+evidence** (the official host times out from Türkiye; the migration would have
+killed the link for the reader); criterion-note provenance, FR talent subtypes
+and print/save dropped as done; reduced-thresholds folded into its roadmap
+item.
+
+**The research harvest, routed at last.** research-01 listed seven harvest
+items on 2026-09-01 and nobody was ever asked to act on them. Three are done in
+the product (staleness as a first-class date, the "read <date>" source line,
+the IRCC-style disclaimer); three go into s6 as *now* (PathWise's coverage
+tiers per route, Workbeyond's per-route page shape, Visaora's micro-page SEO);
+one is spent (awesome-immigration as the inventory source). Cost of the delay:
+none visible — but the rule that harvest becomes proposals exists because this
+list sat unrouted for six days.
+
+**The split (cheap default, surfaced and accepted):** the launch slice was
+carrying four defects-to-fix beside the launch itself. They become **s5f —
+launch-readiness sweep**, a small slice with its own scenario, so s6 is launch
+and nothing else. Cost: one more boundary; two scenarios instead of one.
+Benefit: each is green on its own terms, and a launch does not wait on a
+Spanish experience band.
