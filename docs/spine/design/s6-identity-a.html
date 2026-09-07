@@ -27,10 +27,12 @@ h2 small { font-weight: 400; color: #bbb; }
 .panel { background: var(--color-bg); color: var(--color-ink); font: var(--text-body); }
 
 /* ---- the wordmark: serif, two words, one weight; the stamp is the only ornament ---- */
-.wordmark { font: 700 1.25rem/1 var(--font-serif); letter-spacing: .01em; color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; gap: .55rem; min-height: var(--tap-min); }
+.wordmark { font: 700 1.25rem/1 var(--font-serif); letter-spacing: .01em; color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; gap: .65rem; min-height: var(--tap-min); }
 /* The seal is a stamp, so it is wider than tall: two letters in a square did
    not fit at any size (human: "PR has not fit in the stamp square"). */
-.wordmark .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.15em; height: 1.15em; border: 2px solid var(--color-stamp); color: var(--color-stamp); font: 700 .62em/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); }
+/* Enlarged (human: "use B enlarged, elsewhere too"): the seal is bigger than
+   the cap height, so it reads as the stamp beside the name, not as a bullet. */
+.wordmark .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.6em; height: 1.6em; border: 2.5px solid var(--color-stamp); color: var(--color-stamp); font: 700 .8em/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); margin-right: .15em; }
 .tagline { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
 
 /* ---- 1. the site header ---- */
