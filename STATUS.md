@@ -4,8 +4,9 @@
 
 Genesis, slice loop; scale **Product**; **v0.10 shipped** (s5f real-green
 2026-09-07, walked by the session at the human's delegation). The release
-gate is closed; the identity is closed. **s6 (public launch) is mock-green** — built,
-reviewed on both axes, fixes applied; real-green is the human's, below.
+gate is closed; the identity is closed. **s6 (public launch) is built and reviewed, mock-green
+pending one blocker** (the interview broken in the browser, found after the
+commit; fix in progress).
 Spine skills reloaded 2026-09-07 at steward-29.
 
 ```mermaid
@@ -19,7 +20,13 @@ flowchart LR
 
 ## What is happening now
 
-**s6 is mock-green.** Everything on disk is built and committed in both
+**Correction, same hour: s6 is NOT mock-green.** After the commit I opened
+the site: the interview renders no question — a module added in the review
+round reads `node:fs` at import time and reaches the browser bundle, so the
+client script dies. 111 Node tests and the tap measurement could not see it.
+The builder is fixing it with a real-browser smoke test gated in CI; the
+board entry below stands corrected once that passes. Everything else on disk is
+built and committed in both
 repositories (`b5e8ec3`, `87d12b1`): 23 route pages generated from the
 dataset, the name sweep, the identity, the social card, the Pages workflow,
 the contributor files, six invariants as tests. The review round found what

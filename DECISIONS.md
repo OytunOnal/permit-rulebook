@@ -1748,3 +1748,13 @@ it. One regression in the round was caught by a screenshot and by no test
 the next net for. 338 + 111 tests. Mock-green; real-green is the human's:
 GitHub renames, Pages and the domain, the first live flag, the phone walk on
 the preview, the announcement.
+
+**Addendum, same hour — mock-green withdrawn.** I stamped mock-green on the
+strength of green suites, a built `dist/`, and my own look at two route pages
+and the social card. I had not opened the interview. It renders nothing: the
+review-round module `exclusions.ts` reads `node:fs` at import and is exported
+from the package index the client imports. Node tests cannot see a browser
+break; the CDP tap measurement measures elements, not behaviour. Rule, kept:
+**a slice is mock-green only after its scenario is walked from the surface,
+every screen, by the session** — not after the numbers. The fix carries a
+real-browser smoke test gated in CI so this class fails loudly next time.

@@ -170,7 +170,9 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## mock-green
 
-- **Public launch** (s6) · mock-green 2026-09-07 (docs/spine/scenarios/s6.md).
+- **Public launch** (s6) · mock-green **withdrawn** 2026-09-07, same hour: the
+  interview renders nothing in a browser (a `node:fs` read reached the client
+  bundle); re-stamped when the browser smoke test passes.
   Name sweep to Permit Rulebook; 23 route pages generated from the dataset
   with the identity pair; scope value per route (22 / 1 / 0), exclusions twin;
   CONTRIBUTING, issue templates, tracker link on the product; favicon, social
