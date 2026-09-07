@@ -1368,3 +1368,30 @@ changes verdicts and is a back-edge candidate.
 human a two-axis review was running on s5e when none had been spawned. The
 review ran once the slip was noticed. Same defect class as the builder's
 unpinned-test claim the day before, recorded for the same reason.
+
+## 2026-09-07 — v0.9: s5e real-green, and the PDFs were readable after all
+
+The human asked whether this session could read the two PDFs itself rather than
+hand them over. It could. Neither file is a scanned image: both carry a text
+layer behind embedded TrueType fonts, and decoding the fonts' glyph tables
+yields the full text. All five shipped quotes and the derivation sentence were
+found verbatim by string match — a stronger read than an eye pass. The leaflet
+is "Stand: April 2026"; the UGE PDF is "Junio 2026".
+
+**v0.9 stamped.** Every sentence carries its source.
+
+**Two things this read overturned.** The es-blue-card shortage-occupation caveat
+was shipped as `unsourced: scanned-image` on the claim that the Orden was a
+scanned PDF with no text; the UGE PDF states the reduced-threshold conditions
+in words — "Ocupaciones de dificil cobertura incluidas en los grupos 1 y 2 de
+la CNO-2011" — so that caveat can carry a covering quote, and is being given
+one. And "pdf tier — no text snapshot" was a limit of the watch's fetcher, not
+of the files: a PDF text strategy would move those five quotes to the machine
+tier. Recorded in the backlog with its source.
+
+**Cost of the lesson, stated:** twice this project classified a source as
+human-only because a bare fetch or an assumption said so — the IND pages
+yesterday, the PDFs today — and twice the classification was wrong in the
+direction that costs the human a task. The rule that now applies: before a
+source goes on the human tier, the session tries to read it the way a reader
+would, not the way a fetch does.

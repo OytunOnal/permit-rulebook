@@ -13,8 +13,8 @@ flowchart LR
     C2 --> D["Source watch + change flag ✅ real-green (v0.6)"]
     D --> E["Four countries · honest verdicts · exceptions ✅ real-green (v0.7)"]
     E --> E2["Answers recorded as given ✅ real-green (v0.8)"]
-    E2 --> E3["Every sentence carries its source ◀ here (s5e, mock-green)"]
-    E3 --> F["Public launch 🏁 v1"]
+    E2 --> E3["Every sentence carries its source ✅ real-green (v0.9)"]
+    E3 --> F["Public launch ◀ here 🏁 v1"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
 ```
@@ -44,6 +44,12 @@ Promoted (or dropped, with evidence) at a boundary session.
   · recognition helper (Anabin and its FR/ES/NL equivalents).
 
 ## backlog
+
+- **PDF text extraction for the watch** (2026-09-07): both PDF-tier sources
+  carry a text layer behind embedded TrueType fonts; decoding the glyph tables
+  yields verbatim text. A pdf strategy that extracts text would move the five
+  unverifiable quotes to the machine tier and let the fidelity gate read them.
+  Source: the s5e human pass, done by the session.
 
 - **Bare preconditions carry no provenance** (s5e review, 2026-09-07): 38
   route preconditions state what an authority requires with no source; s5d
@@ -128,21 +134,22 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## mock-green
 
-- **Every sentence carries its source, not only every number** (s5e) ·
-  mock-green 2026-09-07 (docs/spine/scenarios/s5e.md). 45 criterion notes
-  with no provenance became 55 sourced conditions, 8 readings declared ours,
-  1 declared unsourced with a reason; machine-verified quotes 28 → 78; value
-  set and verdict SHA unchanged. Reviewed on both axes, 12 findings applied —
-  the gate re-keyed from quotation marks to a declared kind, and slice markers
-  on every IND and BAMF entry so an intermittent shell response reports
-  unreachable instead of overwriting the snapshot. **Real-green needs the
-  human**: five PDF-tier quotes in visa-rules/data/verify-s5e.md.
+_(empty — s5e stamped into done as **v0.9**, 2026-09-07)_
 
 ## real-green
 
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **Every sentence carries its source, not only every number** (s5e) ·
+  **real-green 2026-09-07** — the five PDF-tier quotes read from the PDFs' own text layers by the session (verbatim string match), at the human's request (docs/spine/scenarios/s5e.md). 45 criterion notes
+  with no provenance became 55 sourced conditions, 8 readings declared ours,
+  1 declared unsourced with a reason; machine-verified quotes 28 → 78; value
+  set and verdict SHA unchanged. Reviewed on both axes, 12 findings applied —
+  the gate re-keyed from quotation marks to a declared kind, and slice markers
+  on every IND and BAMF entry so an intermittent shell response reports
+  unreachable instead of overwriting the snapshot. → **v0.9**
 
 - **Four countries filled: FR·ES·NL + honest verdicts + exceptions**
   (s5 · s5b · s5c) · real-green 2026-09-06. Two gates cleared on the same day:
@@ -221,6 +228,11 @@ _(empty — everything real-green so far is stamped into done)_
   tiers, ndjson, commit-gated state, flag files with quoted context), DE via
   ZAV edition-index sentinel, daily CI workflow hardened against alert loss.
   (2026-09-02)
+- **v0.9** — Every sentence carries its source: 55 sourced conditions, 8
+  readings declared ours, 1 declared unsourced with a reason; machine-verified
+  quotes 28 → 78; the provenance gate keyed to a declared kind; slice markers on
+  every IND and BAMF entry so a shell response reports unreachable. Value set
+  and verdicts unchanged. 289 + 69 tests. (2026-09-07)
 - **v0.8** — Answers recorded as given, verdicts in plain words: real listbox
   semantics on the country picker (Enter commits the highlighted row, exact
   matches first), the Dutch reduced salary criterion gated on where you
