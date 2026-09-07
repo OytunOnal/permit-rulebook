@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import rawDataset from "visa-rules/data/dataset.json";
-import { deriveBands, evaluate, fieldOptions, type Dataset, type FieldDef, type Profile } from "visa-rules";
+import rawDataset from "permit-rulebook-data/data/dataset.json";
+import { deriveBands, evaluate, fieldOptions, type Dataset, type FieldDef, type Profile } from "permit-rulebook-data";
 import { esc, failDetailHtml, whyHtml } from "../src/lib/reason.js";
 
 const dataset = rawDataset as unknown as Dataset;
@@ -57,7 +57,7 @@ function renderedReasons(): Array<[string, string]> {
 }
 
 describe("the reason column reads as prose, as rendered (blocker B3)", () => {
-  // The permanent form of B3 at THIS layer. `visa-rules` proves the engine
+  // The permanent form of B3 at THIS layer. `permit-rulebook-data` proves the engine
   // never produces a field id; what this proves is that the page never puts
   // one on screen — over what it actually draws, not over the source text it
   // draws it with. Renaming a table or rewording a fallback cannot satisfy

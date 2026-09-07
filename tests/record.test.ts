@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import rawDataset from "visa-rules/data/dataset.json";
-import type { Dataset } from "visa-rules";
+import rawDataset from "permit-rulebook-data/data/dataset.json";
+import type { Dataset } from "permit-rulebook-data";
 import {
-  clearRecord, loadRecord, restore, saveRecord, serialize, STORAGE_KEY, type RecordStore,
+  clearRecord, loadRecord, restore, saveRecord, serialize, LEGACY_STORAGE_KEY, STORAGE_KEY,
+  type RecordStore,
 } from "../src/lib/record.js";
 
 const dataset = rawDataset as unknown as Dataset;
@@ -126,5 +127,39 @@ describe("the record never leaves the device", () => {
     expect(source).not.toMatch(/<form\b/);
     expect(source).not.toMatch(/new WebSocket/);
     expect(source).not.toMatch(/location\.hash\s*=/); // sharing by link is out of scope, deliberately
+  });
+});
+
+/**
+ * s6 decision 1 — the key the record lives under carries the product's name,
+ * and a record written under the old one is carried across rather than thrown
+ * away. The comment said the old key went with the first save; nothing did it,
+ * and "Start over" removed only the new key, so the stale record came back
+ * (Standards review, 2026-09-07).
+ */
+describe("the rename does not cost anybody their answers", () => {
+  it("reads a record left under the old key, then migrates it on the first save", () => {
+    const store = fakeStore();
+    const answers = { destination: "de", citizenship: "TR" };
+    const history = ["destination", "citizenship"];
+    store.setItem(LEGACY_STORAGE_KEY, serialize(answers, history));
+
+    // It is found where it was left.
+    expect(loadRecord(store, known)).toEqual({ answers, history });
+
+    // The first save puts it under the new key and takes the old one away.
+    saveRecord(store, answers, history);
+    expect(store.getItem(STORAGE_KEY)).toBe(serialize(answers, history));
+    expect(store.getItem(LEGACY_STORAGE_KEY)).toBeNull();
+    expect(store.size).toBe(1);
+  });
+
+  it("Start over clears both keys, so nothing stale comes back", () => {
+    const store = fakeStore();
+    store.setItem(LEGACY_STORAGE_KEY, serialize({ destination: "nl" }, ["destination"]));
+    store.setItem(STORAGE_KEY, serialize({ destination: "de" }, ["destination"]));
+    clearRecord(store);
+    expect(store.size).toBe(0);
+    expect(loadRecord(store, known)).toEqual({ answers: {}, history: [] });
   });
 });

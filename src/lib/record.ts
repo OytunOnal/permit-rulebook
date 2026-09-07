@@ -1,4 +1,4 @@
-import type { Profile } from "visa-rules";
+import type { Profile } from "permit-rulebook-data";
 
 /**
  * The interview record, kept where it can survive a reload and nowhere else.
@@ -13,7 +13,19 @@ import type { Profile } from "visa-rules";
  * no URL fragment, no server. The consequence — the record does not follow the
  * person to another device — is a chosen limit, not a defect.
  */
-export const STORAGE_KEY = "visa-navigator.record.v1";
+export const STORAGE_KEY = "permit-rulebook.record.v1";
+
+/**
+ * The key the record was written under before the name changed (s6, decision
+ * 1). A key is not a user-facing string, but it is a string in this repository
+ * carrying the old name, and the sweep is checked by grep rather than by eye.
+ *
+ * It is read once and never written: someone who answered questions yesterday
+ * comes back today and finds their record where they left it, and the old key
+ * goes with the first save. Dropping it silently would have thrown away a
+ * thirteen-question interview to tidy a name.
+ */
+export const LEGACY_STORAGE_KEY = "visa-navigator.record.v1";
 
 export interface StoredRecord {
   version: 1;
@@ -78,14 +90,21 @@ export function saveRecord(store: RecordStore | null, answers: Profile, history:
   try {
     if (history.length === 0) store?.removeItem(STORAGE_KEY);
     else store?.setItem(STORAGE_KEY, serialize(answers, history));
+    // The migration, actually performed. The comment above said the old key
+    // went with the first save and nothing did it, so a record written before
+    // the rename sat there for ever — and "Start over", which removed only the
+    // new key, handed the next person the stale one back (Standards review,
+    // 2026-09-07). One write, then it is gone.
+    store?.removeItem(LEGACY_STORAGE_KEY);
   } catch { /* no storage: the interview still runs, it just won't persist */ }
 }
 
 /** "Start over": a shared or borrowed computer must not hand the next person
- * a stranger's salary. */
+ * a stranger's salary — under either key. */
 export function clearRecord(store: RecordStore | null): void {
   try {
     store?.removeItem(STORAGE_KEY);
+    store?.removeItem(LEGACY_STORAGE_KEY);
   } catch { /* nothing to clear */ }
 }
 
@@ -95,7 +114,7 @@ export function loadRecord(
 ): { answers: Profile; history: string[] } {
   let raw: string | null = null;
   try {
-    raw = store?.getItem(STORAGE_KEY) ?? null;
+    raw = store?.getItem(STORAGE_KEY) ?? store?.getItem(LEGACY_STORAGE_KEY) ?? null;
   } catch { return { answers: {}, history: [] }; }
   return restore(raw, knownFields);
 }

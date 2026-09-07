@@ -1,9 +1,9 @@
-import { reasonFor, type Dataset, type Profile, type RouteResult } from "visa-rules";
+import { reasonFor, type Dataset, type Profile, type RouteResult } from "permit-rulebook-data";
 
 /**
  * The reason column, rendered.
  *
- * Every word here comes from `visa-rules`, which is where the promise "the
+ * Every word here comes from `permit-rulebook-data`, which is where the promise "the
  * reason column is prose, never engine output" has its property test. What
  * this file adds is the only step left between that prose and a person: the
  * markup. It lives beside the page rather than inside it so the rendered
@@ -15,6 +15,20 @@ import { reasonFor, type Dataset, type Profile, type RouteResult } from "visa-ru
 /** Dataset prose reaches the screen as text, never as markup. */
 export function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/**
+ * The same, for a value going inside an attribute.
+ *
+ * `esc` leaves quotation marks alone, which is right in text and wrong in an
+ * attribute: a route name or a source URL carrying a `"` closes the attribute
+ * and everything after it becomes markup. It was used in fifteen attribute
+ * positions on the route page (Standards review, 2026-09-07). Nothing in the
+ * dataset carries one today, which is exactly why this had to be fixed before
+ * something does.
+ */
+export function escAttr(s: string): string {
+  return esc(s).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 /** The one line a card leads with. */

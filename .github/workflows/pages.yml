@@ -1,0 +1,109 @@
+name: deploy
+
+# Decision 6: the site is static, on GitHub Pages, out of the repository it
+# lives in. One vendor, zero cost, nothing server-side — which this product has
+# promised never to need. The cost is stated: no headers we control and no
+# redirects. If a CSP or a redirect ever matters, Cloudflare Pages is the move.
+#
+# Nothing here switches Pages on. That is a repository setting, and a person
+# does it: Settings -> Pages -> Source: GitHub Actions.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time, and a run already in flight finishes rather than being
+# cancelled: a half-deployed static site is worse than a slightly stale one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # The site reads the dataset as a `file:` dependency, so the two have to
+      # sit beside each other on disk. The site therefore lands in a
+      # subdirectory of its own, or that `..` would climb out of the workspace.
+      - name: Check out the site
+        uses: actions/checkout@v4
+        with:
+          path: site
+
+      # Where the data has to end up is a fact the site's own manifest already
+      # holds. It is read from there rather than typed here: the directory still
+      # carries the working name — the folders are the human's to rename — and a
+      # workflow that spells it out is one more place to keep in step.
+      - name: Where the manifest expects the data
+        id: data
+        working-directory: site
+        run: |
+          path=$(node -p "require('./package.json').dependencies['permit-rulebook-data'].replace(/^file:/, '')")
+          dir=$(basename "$path")
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the data
+        uses: actions/checkout@v4
+        with:
+          repository: OytunOnal/permit-rulebook-data
+          path: ${{ steps.data.outputs.dir }}
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - name: Build and check the dataset package
+        working-directory: ${{ steps.data.outputs.dir }}
+        run: |
+          npm ci
+          npm run check
+
+      - name: Install
+        working-directory: site
+        run: npm ci
+
+      - name: Test
+        working-directory: site
+        run: npm test
+
+      - name: The first minute's assets are committed and still true
+        working-directory: site
+        run: npm run assets:check
+
+      # `npm run build` is `astro check && astro build`. The dataset is
+      # validated at the build boundary too, so an invalid one kills the deploy
+      # rather than shipping a page with a value nobody sourced.
+      - name: Build
+        working-directory: site
+        env:
+          # Where the site believes it lives. Set this as a repository variable
+          # once the custom domain is bound; unset, the build uses the default
+          # in astro.config.mjs.
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: npm run build
+
+      # The invariant, measured rather than argued: a real 390 px viewport over
+      # every built page. The runner image ships Chrome; if a future image does
+      # not, this step says so instead of passing quietly.
+      - name: Every control reaches the tap floor at 390 px
+        working-directory: site
+        run: npm run measure:taps
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

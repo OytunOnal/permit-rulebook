@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Permit Rulebook">
+  <!-- Identity B, chosen by the human 2026-09-07: the tilted PR stamp, enlarged
+       to fill its frame. The letters take the whole square, the frame is as thin
+       as the size allows, and the tilt is the stamp's own (-6deg). Accepted cost,
+       stated at the choice: at 16 px the tilt costs a little sharpness.
+       The square is inset so its rotated corners stay inside the box. -->
+  <rect width="64" height="64" fill="#f1eee4"/>
+  <g transform="rotate(-6 32 32)">
+    <rect x="4.5" y="4.5" width="55" height="55" fill="none" stroke="#8c2b2b" stroke-width="3"/>
+    <text x="32" y="33" fill="#8c2b2b" text-anchor="middle" dominant-baseline="middle"
+          font-family="Consolas, 'DejaVu Sans Mono', ui-monospace, monospace"
+          font-weight="700" font-size="40" letter-spacing="-1.6">PR</text>
+  </g>
+</svg>

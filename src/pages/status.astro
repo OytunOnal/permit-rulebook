@@ -1,13 +1,14 @@
 ---
 import "../../tokens.css";
+import { PRODUCT_NAME } from "../lib/copy.js";
 ---
 
 <!doctype html>
-<html lang="tr">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Status — Visa Navigator</title>
+    <title>Status — {PRODUCT_NAME}</title>
     <style is:global>
       body {
         margin: 0;
@@ -52,7 +53,7 @@ import "../../tokens.css";
   <body>
     <div class="wrap">
       <div class="card">
-        <div class="meta">Visa Navigator status</div>
+        <div class="meta">{PRODUCT_NAME} status</div>
         <h1>Project flow</h1>
 
         <pre class="mermaid">

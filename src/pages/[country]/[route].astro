@@ -1,0 +1,25 @@
+---
+import rawDataset from "permit-rulebook-data/data/dataset.json";
+import { assertValidDataset } from "permit-rulebook-data/validate";
+import { routeAddresses } from "../../lib/slug.js";
+import { routePage } from "../../lib/route-page.js";
+
+/**
+ * One page per route, generated from the dataset — 23 at launch.
+ *
+ * The page itself is built in `lib/route-page.ts` and handed over as a string,
+ * for the reason `lib/card.ts` and `lib/reason.ts` exist: what ships has to be
+ * readable by a test. Nothing here composes markup, so nothing here can drift
+ * from what the invariants check.
+ */
+export async function getStaticPaths() {
+  const dataset = assertValidDataset(rawDataset);
+  return routeAddresses(dataset).map((address) => ({
+    params: { country: address.countrySlug, route: address.routeSlug },
+    props: { html: routePage(dataset, address).html },
+  }));
+}
+
+const { html } = Astro.props;
+---
+<Fragment set:html={html} />

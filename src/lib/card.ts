@@ -3,7 +3,7 @@ import {
   routeStatements, thresholdsForField,
   type Criterion, type Dataset, type Profile, type Route, type RouteResult,
   type RouteStatement, type UnsourcedReason,
-} from "visa-rules";
+} from "permit-rulebook-data";
 import { esc } from "./reason.js";
 
 /**

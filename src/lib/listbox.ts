@@ -1,4 +1,4 @@
-import { matchOptions, type FieldOption } from "visa-rules";
+import { matchOptions, type FieldOption } from "permit-rulebook-data";
 
 /**
  * The selection semantics of the country control, as a pure state machine.

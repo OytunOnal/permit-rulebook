@@ -1,5 +1,5 @@
 {
-  "name": "visa-navigator",
+  "name": "permit-rulebook",
   "private": true,
   "license": "MIT",
   "version": "0.1.0",
@@ -8,11 +8,14 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "assets": "node scripts/render-assets.mjs",
+    "assets:check": "node scripts/render-assets.mjs --check",
+    "measure:taps": "node scripts/measure-taps.mjs"
   },
   "dependencies": {
     "astro": "^7.2.10",
-    "visa-rules": "file:../visa-rules"
+    "permit-rulebook-data": "file:../visa-rules"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

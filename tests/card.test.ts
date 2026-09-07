@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import dataset from "visa-rules/data/dataset.json";
+import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   deriveBands, evaluate,
   type Criterion, type Dataset, type Profile, type Route, type RouteResult,
-} from "visa-rules";
+} from "permit-rulebook-data";
 import {
   caveatHtml, measuredCriterionOf, precondHtml, provenanceHtml, railHtml,
   sourcedCaveatHtml, unsourcedCaveatHtml,

@@ -1,12 +1,16 @@
 ---
 import "../../tokens.css";
-import rawDataset from "visa-rules/data/dataset.json";
-import { assertValidDataset } from "visa-rules/validate";
-import { datasetMeta } from "visa-rules";
+import rawDataset from "permit-rulebook-data/data/dataset.json";
+import { assertValidDataset } from "permit-rulebook-data/validate";
+import { datasetMeta } from "permit-rulebook-data";
 // The masthead is one function of which screen is showing, server and client
 // alike — a second copy of the intro copy here is how "Start over" left a
 // stale claim on question 1 (product-critique v0.7, B4).
 import { mastheadFor } from "../lib/screen.js";
+// The product's own words, in one place: the name, the tagline and the
+// disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
+import { DISCLAIMER, PRODUCT_NAME, PROMISE, SEAL_LETTERS, TAGLINE } from "../lib/copy.js";
+import { DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH, TRACKER_URL, absolute } from "../lib/site.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
 const dataset = assertValidDataset(rawDataset);
@@ -19,13 +23,30 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Which European work-permit routes do you appear to meet? Deterministic check against dated, source-quoted official rules. Your answers never leave this device." />
-  <title>Visa Navigator — which work-permit routes fit?</title>
+  <meta name="description" content="Which European work-permit routes fit? A check against dated, source-quoted official rules. Your answers never leave this device." />
+  <title>{PRODUCT_NAME} — which work-permit routes fit?</title>
+  <link rel="canonical" href={absolute("/")} />
+  <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 64x64" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/favicon-64.png" />
+  <meta property="og:site_name" content={PRODUCT_NAME} />
+  <meta property="og:title" content={`${PRODUCT_NAME} — ${TAGLINE.toLowerCase().replace(/\.$/, "")}`} />
+  <meta property="og:description" content={PROMISE} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={absolute("/")} />
+  <meta property="og:image" content={absolute(SOCIAL_CARD_PATH)} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={`${PRODUCT_NAME} — ${TAGLINE.toLowerCase().replace(/\.$/, "")}`} />
+  <meta name="twitter:description" content={PROMISE} />
+  <meta name="twitter:image" content={absolute(SOCIAL_CARD_PATH)} />
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="brand">Visa Navigator · Eligibility record</div>
+      <a class="wordmark" href="/"><span class="seal" aria-hidden="true">{SEAL_LETTERS}</span>{PRODUCT_NAME}</a>
+      <div class="brand">{TAGLINE}</div>
       <h1 id="headline" set:html={intro.headline}></h1>
       <p class="sub" id="subline">{intro.subline}</p>
       <div class="stamp" aria-hidden="true" id="stamp" hidden>Record generated<b id="stamp-date"></b></div>
@@ -45,10 +66,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     </div>
 
     <footer>
-      <p>Visa Navigator makes no immigration decision and authorities won't consider these results —
-      the tool compares published values with what you declared, nothing more.</p>
+      <p>{DISCLAIMER}</p>
+      {/* The way back in: the first stranger's feedback needs somewhere to land
+          on the day the link goes out (decision 4). */}
+      <nav class="foot-links" aria-label="The data behind this">
+        <a href={REPO_DATA} target="_blank" rel="noopener">The dataset on GitHub</a>
+        <a href={TRACKER_URL} target="_blank" rel="noopener">Report a wrong value</a>
+        <a href={DATA_LICENCE_URL} target="_blank" rel="noopener">Open data · {DATA_LICENCE_NAME}</a>
+      </nav>
       <div class="health">
-        <span>dataset {meta.dataset_version}</span>
+        <span>dataset {meta.dataset_version.replace(/\./g, "-")}</span>
         <span>schema {meta.schema_version}</span>
         <span>newest value read {meta.newest_retrieved_at}</span>
       </div>
@@ -56,7 +83,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   </div>
 
   <script>
-    import dataset from "visa-rules/data/dataset.json";
+    import dataset from "permit-rulebook-data/data/dataset.json";
     import {
       deriveQuestions, remainingQuestions, evaluate, formatEURPer,
       deriveBands, unlocks, notices, fieldOptions, matchOptions, referencedFields,
@@ -65,14 +92,23 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // page holds no field-id-to-label table of its own to fall through
       // (product-critique v0.7, B3).
       shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
+      // s6: what the interview asks of a route, in the words the route page
+      // shows — the same declared fact, said the same way in both places.
+      scopeWords,
       type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
-    } from "visa-rules";
+    } from "permit-rulebook-data";
+    import { routePath } from "../lib/slug.js";
+    // Arriving from a route page's call to action: what goes on the record and
+    // what sorts first, beside the page rather than inside it (step 10).
+    import { arrivalFrom, destinationFor, scopedFirst, type ScopedArrival } from "../lib/scope.js";
     import { activeOption, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
     import { mastheadFor, screenAfter, type Explore, type FlowAction } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     // The reason column's markup, beside the page rather than in it, so what
     // it renders can be read by a test (review S4).
     import { esc, failDetailHtml, whyHtml } from "../lib/reason.js";
+    // One date format, everywhere a date prints (decision 12).
+    import { isoDay } from "../lib/copy.js";
     import { caveatHtml, precondHtml, provenanceHtml, railHtml, readingHtml, measuredCriterionOf } from "../lib/card.js";
 
     const ds = dataset as unknown as Dataset;
@@ -92,8 +128,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The stamp belongs to the finished record — it appears with the results
     // (a "record generated" mark on question 1 stamps nothing).
     const stamp = document.getElementById("stamp")!;
-    document.getElementById("stamp-date")!.textContent =
-      new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).replaceAll("/", " · ");
+    // ISO, like every other date the product prints (s6 decision 12). It read
+    // `07 · 09 · 2026` until this slice — a second format on a screen whose
+    // whole differentiator is when a thing was read, and ambiguous to exactly
+    // the reader most likely to be reading it (route-page critique F3). Local
+    // time, not UTC: the stamp is the day the person in front of it is having.
+    document.getElementById("stamp-date")!.textContent = isoDay(new Date());
 
     const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
     const declCount = document.getElementById("decl-count")!;
@@ -111,6 +151,37 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * whole record was computed for the wrong nationality in silence
      * (product-critique v0.7, B1). */
     let justRecorded: { field: string; label: string } | null = null;
+
+    /**
+     * The route a reader arrived from, when the call to action on a route page
+     * sent them here (`/?route=de-blue-card-general`).
+     *
+     * It does two things and no more: the destination goes on the record, so
+     * the interview starts where the reader already is, and that route sorts
+     * first in its own group when the results come. It never overrides an
+     * answer the person gave — a link is not louder than a declaration — so a
+     * stored record with a destination in it is left exactly as it stands.
+     */
+    let scopedRouteId: string | null = null;
+    let cameFrom: ScopedArrival | null = null;
+    /** Whether this arrival is what put the destination on the record. */
+    let scopeRecorded = false;
+
+    function scopeFromLink() {
+      cameFrom = arrivalFrom(ds, location.search);
+      if (!cameFrom) return;
+      scopedRouteId = cameFrom.route.id;
+      const destination = destinationFor(cameFrom, answers);
+      // "already on the record" is only true when this arrival put it there. A
+      // reader who had answered a different destination was told her own answer
+      // had just been overwritten, which is the one thing the link may not do
+      // (Standards review, 2026-09-07).
+      if (destination === null) return;
+      answers["destination"] = destination;
+      asked.push("destination");
+      scopeRecorded = true;
+      saveRecord();
+    }
 
     /** One masthead, one writer. Every gesture names itself, and only the two
      * that compare something can produce a screen that says so — no path back
@@ -241,6 +312,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const declared = q.options.find((o) => o.value === answers[q.field]);
       main.innerHTML = `
         <section class="qcard">
+          ${cameFrom ? `<p class="recorded" role="status">Coming from <b>${esc(cameFrom.route.name)}</b>${
+            scopeRecorded ? ` — ${esc(cameFrom.country.name)} is already on the record.` : "."
+          }</p>` : ""}
           ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(ds, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${
             editing ? "Your answer — pick another to change it, the rest are kept" : `Question ${asked.length + 1} of up to ${total}`
@@ -360,6 +434,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       }
       // Shown once, on the screen straight after the commit.
       justRecorded = null;
+      // The same rule for the line that says where the reader came from.
+      cameFrom = null;
+      scopeRecorded = false;
 
       document.getElementById("done")?.addEventListener("click", () => {
         editing = null;
@@ -445,6 +522,20 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // the engine — the page no longer names fields (B3).
     const failDetail = (r: RouteResult): string => failDetailHtml(ds, r, answers);
 
+    /**
+     * What the interview asks of this route, in the plain words the route page
+     * shows, and the door to the page itself. It is the same declared fact in
+     * both places: "fully modelled" was a badge that overclaimed and retracted
+     * itself two sentences later (route-page critique B3), and a value said one
+     * way here and another way there is two facts.
+     */
+    function scopeLine(r: RouteResult): string {
+      const country = ds.countries.find((c) => c.code === r.country);
+      if (!country) return "";
+      return `<div class="scoped">${esc(scopeWords(r.route.scope.value))} · <a href="${
+        esc(routePath(country, r.route))}">The rules of this route</a></div>`;
+    }
+
     function fullCard(r: RouteResult, showCountry = true): string {
       return `
         <article class="route">
@@ -454,6 +545,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             <span class="st ${r.status}">${STATUS_LABEL[r.status]}</span>
           </div>
           <p class="why">${whyFor(r)}</p>
+          ${scopeLine(r)}
           ${precondFor(r)}
           ${caveatFor(r)}
           ${readingFor(r)}
@@ -485,6 +577,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(r.route.name)}</span><span class="hold-why">${short}</span></summary>
           <div class="hold-body">
             ${r.route.summary ? `<p class="why">${esc(r.route.summary)}</p>` : ""}
+            ${scopeLine(r)}
             ${precondFor(r)}
             ${caveatFor(r)}
           ${readingFor(r)}
@@ -631,7 +724,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const visible = ds.countries.filter((c) =>
         dest === undefined || dest === "all" || c.code.toLowerCase() === dest);
       const visibleCodes = new Set(visible.map((c) => c.code));
-      const results = evaluate(ds, answers).filter((r) => visibleCodes.has(r.country));
+      // A reader who came from a route page is here about that route: it goes
+      // first in whatever group it lands in, and everything else keeps the
+      // order the engine gave it (scenario step 10).
+      const results = scopedFirst(
+        evaluate(ds, answers).filter((r) => visibleCodes.has(r.country)),
+        scopedRouteId,
+      );
 
       const byStatus = {
         met: results.filter((r) => r.status === "met"),
@@ -749,7 +848,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // With nothing open anywhere, the first country that has steps opens
       // instead — the hope is the point, and it was hidden in 10px tally text.
       const withUps = new Set(ups.flatMap((u) => u.routes.map((r) => r.country)));
-      const firstWithUps = visible.find((c) => withUps.has(c.code))?.code;
       main.innerHTML = noticeCards + strip + visible.map((c) => {
         const rs = results.filter((r) => r.country === c.code);
         const g = {
@@ -896,6 +994,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     });
 
     loadRecord();
+    // A route page's call to action lands here already scoped to its country.
+    scopeFromLink();
 
     // Dev-only screenshot hook (stripped from production builds): pre-fill a
     // profile via ?dev-profile={"destination":"de",...} to land on any screen.
@@ -934,7 +1034,21 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     a{color:var(--color-stamp)}
 
     header{border-bottom:var(--rule-heavy);padding-bottom:1.3rem;margin-bottom:var(--space-5);position:relative}
-    .brand{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted)}
+    .brand{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted);margin-top:.35rem}
+    /* The identity: the seal before the wordmark, set from the token serif
+       (decision 5, chosen by the human 2026-09-07). The seal is bigger than the
+       cap height, so it reads as the stamp beside the name, not as a bullet. */
+    .wordmark{font:700 1.25rem/1 var(--font-serif);letter-spacing:.01em;color:var(--color-ink);text-decoration:none;
+      display:inline-flex;align-items:center;gap:.65rem;min-height:var(--tap-min)}
+    .wordmark .seal{display:inline-flex;align-items:center;justify-content:center;width:1.9em;height:1.9em;
+      border:2.5px solid var(--color-stamp);color:var(--color-stamp);font:700 .95em/1 var(--font-mono);
+      letter-spacing:-.04em;transform:rotate(var(--stamp-rotate));margin-right:.15em}
+    /* What the interview asks of a route, said on the card in the same words
+       the route page uses — ink on card, no new colour and no verdict colour. */
+    .scoped{font:var(--text-source);color:var(--color-muted);margin:.35rem 0 .1rem}
+    .scoped a{font-weight:600;text-decoration:none;display:inline-flex;align-items:center;min-height:var(--tap-min)}
+    .foot-links{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;margin-top:.6rem;font-size:.8rem}
+    .foot-links a{display:inline-flex;align-items:center;min-height:var(--tap-min)}
     h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}
     h1 b{color:var(--color-near)}
     .sub{color:var(--color-muted);max-width:38rem;font-size:.92rem}

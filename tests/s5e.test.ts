@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import dataset from "visa-rules/data/dataset.json";
+import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   deriveBands, evaluate, fieldOptions, hasUnbalancedQuotationMark, quotedSpans, resultProvenance,
   routeReadings, routeStatements,
   type Dataset, type FieldDef, type Profile, type Route, type RouteResult,
-} from "visa-rules";
+} from "permit-rulebook-data";
 import { caveatHtml, precondHtml, provenanceHtml, readingHtml } from "../src/lib/card.js";
 import { whyHtml } from "../src/lib/reason.js";
 

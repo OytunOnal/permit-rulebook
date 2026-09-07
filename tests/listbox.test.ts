@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { fieldOptions, matchOptions, type Dataset } from "visa-rules";
-import rawDataset from "visa-rules/data/dataset.json";
+import { fieldOptions, matchOptions, type Dataset } from "permit-rulebook-data";
+import rawDataset from "permit-rulebook-data/data/dataset.json";
 import {
   activeOption, onKey, shownOptions, stateFor, type ListboxKey, type ListboxState,
 } from "../src/lib/listbox.js";
