@@ -125,6 +125,16 @@ reads experience pays this answer at least what the rung below it pays, and
 points score the best row an answer satisfies, never the sum.
 _Avoid_: three years, mid experience, the Spanish option
 
+**Scope statement** (UI: "What the checker asks, and what it does not"):
+A route's declared fact about how much of it the interview decides, in one of
+three values — every deciding rule asked · some conditions stated, not asked ·
+rules quoted, nothing asked — plus the limbs it does not ask, named. Authored
+by a person, never derived by a test; schema-required; rendered on the route
+page and the results card. Called `scope` in the dataset, because "coverage"
+already names the watch's both-way check and sits on Prose provenance's
+avoid-list (Standards review, 2026-09-07).
+_Avoid_: coverage, completeness, fully modelled, modelled
+
 **Still reachable**:
 A criterion result that did not fail, or failed only by a Bounded gap. The
 single predicate behind route status, hard fail and question selection — it was
