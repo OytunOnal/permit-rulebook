@@ -59,7 +59,14 @@ a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0; ma
 h1 { font: var(--text-hero); margin: var(--space-2) 0 var(--space-2); }
 h1 em { font-style: normal; color: var(--color-near); }
 .lede { margin: 0; color: var(--color-muted); }
-.stamp { flex: none; font: var(--text-value); color: var(--color-stamp); border: var(--stamp-border); padding: .35rem .6rem; transform: rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: .1em; line-height: 1.25; text-align: center; }
+/* The identity pair (decision 5, human 2026-09-07): the PR mark in the stamp's
+   own treatment, tilted the other way, its bottom-right corner on the middle of
+   the rules-read stamp's top edge — the same pair as the social card, at page
+   scale. The seal before the name in the crumbs is the same mark, small. */
+.stamps { flex: none; position: relative; width: 7.8rem; height: 6.3rem; }
+.stamps .mark { position: absolute; left: .6rem; top: 0; width: 3.4rem; height: 3.4rem; display: flex; align-items: center; justify-content: center; border: 3px solid var(--color-stamp); color: var(--color-stamp); font: 700 1.75rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(calc(-1 * var(--stamp-rotate))); mix-blend-mode: multiply; }
+.stamp { position: absolute; left: 4rem; top: 3.55rem; white-space: nowrap; font: var(--text-value); color: var(--color-stamp); border: var(--stamp-border); padding: .35rem .6rem; transform: translateX(-50%) rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: .1em; line-height: 1.25; text-align: center; mix-blend-mode: multiply; }
+.crumbs .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border: 2px solid var(--color-stamp); color: var(--color-stamp); font: 700 .72rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); margin-right: .35rem; }
 
 /* ---- what this page checks: plain words, no verdict colour, no pipeline vocabulary ---- */
 .scope { margin: 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-left: 4px solid var(--color-ink); }
@@ -133,7 +140,7 @@ footer .health a { display: inline-flex; align-items: center; min-height: var(--
 
 @media (max-width: 760px) {
   .masthead { flex-direction: column; }
-  .stamp { align-self: flex-end; }
+  .stamps { align-self: flex-end; }
   .src { flex-direction: column; }
   .src a { padding-left: 0; }
   .cta { flex-direction: column; align-items: stretch; }
@@ -148,12 +155,12 @@ footer .health a { display: inline-flex; align-items: center; min-height: var(--
   <header class="masthead">
     <div>
       <nav class="crumbs label" aria-label="Where you are">
-        <a href="#">Permit Rulebook</a><span class="sep">·</span><a href="#">Germany</a><span class="sep">·</span><span>EU Blue Card — general</span>
+        <a href="#"><span class="seal" aria-hidden="true">PR</span>Permit Rulebook</a><span class="sep">·</span><a href="#">Germany</a><span class="sep">·</span><span>EU Blue Card — general</span>
       </nav>
       <h1>EU Blue Card — general. <em>The rules, quoted and dated.</em></h1>
       <p class="lede">The standard EU Blue Card: a recognised university degree and a salary above the general threshold, in any qualified job. Every number on this page is the authority's own sentence, with the page it came from and the day we read it. This page describes the rules; it does not decide on you — that needs your answers, and the <strong>checker</strong> at the bottom asks for them.</p>
     </div>
-    <div class="stamp" aria-label="Rules last read 6 September 2026"><time datetime="2026-09-06">Rules read<br>2026-09-06</time></div>
+    <div class="stamps"><span class="mark" aria-hidden="true">PR</span><div class="stamp" aria-label="Rules last read 6 September 2026"><time datetime="2026-09-06">Rules read<br>2026-09-06</time></div></div>
   </header>
 
   <div class="page">
