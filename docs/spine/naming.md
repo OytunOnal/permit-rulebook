@@ -716,3 +716,131 @@ audience types — does not hold for Turkish readers.
 Three candidates are clear on availability: **Permit Rulebook**, **Route
 Rulebook**, **Route Transcript**. The decision is no longer about what is free;
 it is the domain-word trade-off, now with evidence attached on both sides.
+
+---
+
+# Reset critique — the verdict (2026-09-07)
+
+Fable, fresh context, premise pass first. It wrote none of the candidates.
+
+## Premise pass
+
+**1. The convergence was contamination — struck from the record.** Every
+generator was told to beat `Permit Rulebook` "on some axis", and the cheapest
+way to beat a two-word name on one axis is to change one word. Three did. "The
+disagreement is now one variable wide" was the brief's shape reflected back, not
+a finding, and this session reported it as evidence. **But the gate's search was
+not contaminated**: cycle 1 ran roughly twenty-five head nouns with no bar in
+any brief — sourcebook, register, almanac, ledger, gazette, atlas, commons,
+record, tables, index, lookup, criteria, watch — and *rulebook* emerged from
+that on a reader-comprehension argument. Other head nouns did get a fair run:
+in cycle 1, not in the reset.
+
+**One shape neither cycle ran:** the *dated reference about the world*
+(bulletin, digest) as distinct from the *dated document about the person*
+(report, statement, transcript). The artifact direction conflated the two, and
+its ceiling — "the audience's relationship to paperwork is fear" — applies only
+to the second. The critic dismissed it from memory rather than from a
+generator's defence, and says so: *digest* condenses, which is the opposite of
+verbatim; *bulletin* is a newsletter with a doubled letter, and the US Visa
+Bulletin owns the collocation.
+
+**2. The artifact objection fails — by inversion, and this is the sharpest
+finding of the gate.** "A rulebook implies timelessness" is false on its face:
+rulebooks are edition-stamped (the Laws of the Game are revised yearly; Visa
+Inc.'s own rulebook carries edition dates). What *book* hides is the **watch** —
+the mechanism — which is how round 2 originally worded the wound before the
+artifact direction slid it to "timelessness".
+
+And then the decisive point: **the one-pager's differentiator is *per-value*
+dating, and it names *page-level* dating — VisaMind — as the insufficient
+competitor.** A report, statement or transcript is dated *as a whole*. That is
+the competitor's granularity. A genre that is "as of a date by grammar" names
+precisely what this product refuses to settle for. Round 1 already found the
+per-cell promise is not nameable ("As Of … fails everything else"), only
+demonstrable. **The rulebook family is not named against the promise; the
+artifact family is named at the wrong resolution.**
+
+**3. *Permit* is the survivor, and with two corrections the best.**
+- *"A lie in wave 2"* was overstated: **Canada issues work permits**, so the
+  mismatch is Australia alone — and in ordinary English a visa *is* a permit, an
+  official authorisation. "EU" would have been categorically false for CA and
+  AU; "permit" for a subclass 482 is a hyponym mismatch. *Route* is the
+  superordinate in the project's vocabulary; *permit* is the superordinate in
+  the dictionary's.
+- **Route was declared dead by its own generator, which was motivated to keep
+  it** — it needed a domain word to put in front of *rulebook*. That makes the
+  verdict more credible, not less.
+
+**4. Two beliefs no round tested.** That the name is *heard*: both declared
+channels are text (GitHub/HN and SEO micro-pages), and immigrant word-of-mouth
+today is a pasted link in a WhatsApp group — so the spell-after-one-hearing test,
+which buried a third of the graveyard, was over-weighted. And that "book hides
+the watch" is the *reader's* problem: readers ask *is this current*, which dates
+on the page answer. That wound was the maker's, projected.
+
+## Verdict: **nothing beats the bar**
+
+A reset that finds nothing better is a legitimate result, and this is one.
+
+**`Permit Rulebook`.** *Trade-off: it gives up the wave-proof precision and
+schema match of `route` for a name a frightened reader understands on first
+contact — and you accept that the Australian section of a book called Permit
+will list instruments called visas.*
+
+- **Do not add "Work".** A sixth syllable, and it is *less* accurate:
+  `CONTEXT.md` says "work/residence permit" and the Blue Card is a residence
+  title, so *Work Permit Rulebook* sounds more precise while being narrower.
+- **Rename at the v1 tag, not before it.** The switching cost is smaller than
+  round 3 costed — DECISIONS history stays history; the live surface is two repo
+  names and a handful of files — but it is a week of one person's time, and the
+  rename buys nothing until something is public.
+- Tagline keeps *route* where it already earns its place: **"Every route, quoted
+  and dated."**
+
+## Killed here
+
+- **Route Transcript** — the third instance of the pattern that killed *Register*
+  and *Watchlist*: a records word landing on the document the reader fears.
+  "Transcript of Records" is the Bologna-standard document every Anabin
+  applicant already holds; the name is literally in their dossier.
+- **Route Rulebook** — wins every maker's axis (schema, waves, cascade), loses
+  every reader's: a logistics tool to a first-time reader, a road in all five
+  audience languages, GIS on a repo list.
+- **Keep `visa-navigator`** — rename confirmed, and one wound added: the Visa
+  Inc. finding is *not* specific to "Visa Rulebook". A two-word consumer
+  wordmark headed *Visa* in visa services is the *eVisa* shape, and the working
+  name was never put through the availability table at all.
+
+## Checked after the critique, because it named them un-assessed
+
+- **`permit.io` is real** — fetched 2026-09-07, title "Permit.io | Authorization
+  Infrastructure for Developers". So the cascade `permit-rulebook` +
+  **`permit-rules`** would read as authorisation policy to the GitHub/HN
+  audience, which is the declared *first* channel. **The corpus repo needs a
+  different slug** — `permit-rulebook-data` or similar — not `permit-rules`.
+- `permitrulebook.com` — ENOTFOUND (nothing served).
+- `visanavigator.com` — ECONNRESET; a failed lookup, not a free one.
+
+## The critic against itself
+
+*"I was handed the bar and three finalists shaped by it, and I endorsed the
+bar."* Its axes were the reader's, not the brief's — but it had no un-anchored
+alternative to test them against, because the artifact direction's non-rulebook
+names died on availability before reaching it. Its rescue of *permit* leans on
+ordinary English, which is the exact colloquial move `CONTEXT.md` forbids in the
+other direction. And *"the watch is the maker's concern"* is weakest for the
+first channel: HN reads READMEs and cares about mechanism, so *book* undersells
+the only uncopyable engineering to the one audience that would value it.
+
+Route's case, argued at its strongest: the results screen teaches the word in
+thirty seconds, every micro-page already says it, the name never contradicts the
+docs, no wave ever forces a rename, and the spelling wound assumes a spoken
+channel this project does not have. *If the human weights the maker's axes — and
+the maker maintains this for years — Route Rulebook is right.*
+
+## Still open, and the human's
+
+- **One name or two.** Only `Permit Rulebook` holds under both.
+- If two names, **`Permit Watch` as the corpus name reopens** and has not been
+  argued.
