@@ -1207,3 +1207,29 @@ as a road.
 
 **The licence** — separately for the code, the dataset, and anything derived
 from a source with its own terms. Unchanged by this decision.
+
+## 2026-09-07 — criterion-note provenance closes before launch, not in s6
+
+**Gate (human chose).** The audit measured it: 46 criterion notes ship, none
+carries a source_url or a retrieved_at, and 39 contain a quotation mark. The
+schema types `note` as a bare string, so provenance is impossible there by
+construction. The options were to close it before launch or to publish the open
+dataset with the gap and say so in the README. The human chose before launch.
+
+**Reasoning:** the product's whole claim is that every value carries its source,
+its quote and the date it was read. That holds for numbers and fails for
+sentences — including sentences that quote an authority. The first person to
+download the open dataset is exactly the person who would find the
+inconsistency, and finding it there costs more than fixing it here.
+
+**Cost:** a slice (s5e) before s6, plus a human verification checklist for the
+subset whose sources no machine here can read — the Spanish PDF, the German
+hosts that refuse us, the IND pages that render client-side. That checklist's
+size is not known until the work is done, and the human may reasonably decide
+on seeing it that some notes should be deleted rather than verified.
+
+**Evidence this is not a cosmetic gap:** three times in two days an unsourced
+note turned out to be doing a rule's job — the Chancenkarte "part-time work"
+line, `nl-orientation-year`'s `situation = none`, and `de-chancenkarte`'s twin
+of it. Each was found by a human reading a screen, not by a test. A field that
+permits claims without evidence produces them.
