@@ -12,7 +12,9 @@ flowchart LR
     C --> C2["Leverage analysis: what each step unlocks ✅ real-green (v0.4–v0.5)"]
     C2 --> D["Source watch + change flag ✅ real-green (v0.6)"]
     D --> E["Four countries · honest verdicts · exceptions ✅ real-green (v0.7)"]
-    E --> F["Public launch ◀ here 🏁 v1"]
+    E --> E2["Answers recorded as given ◀ here (s5d)"]
+    E2 --> E3["Every sentence carries its source (s5e)"]
+    E3 --> F["Public launch 🏁 v1"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
 ```
@@ -104,7 +106,24 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-_(empty)_
+- **Answers recorded as given, verdicts in plain words** (s5d) ·
+  `docs/spine/scenarios/s5d.md`. Built, code-reviewed on both axes (10 findings,
+  all applied), and extended twice by findings from the human's own walk: the
+  orientation-year false requirement, and a four-part package now in flight —
+  a card must name the threshold it was measured against · preconditions must
+  read as requirements, not as claims about the reader · five caveats must leave
+  the "Also required" heading · the Chancenkarte's twin of the false
+  requirement, settled against § 20a. Awaiting the human's scenario walk on the
+  finished build.
+
+- **Every sentence carries its source, not only every number** (s5e) ·
+  APPROVED 2026-09-07, queued behind s5d because it touches the same files.
+  46 criterion notes ship, none carrying a source or a read date, 39 of them
+  containing a quotation mark. Notes move into s5d's `Route.statements` shape,
+  a `modelling` kind marks what is ours, and the build fails on a quote with no
+  provenance — where the honest escape is an attributable decision, not a
+  deletion of the quotation marks. Expected to produce a `verify-s5e.md`
+  checklist whose size is not known until the work is done.
 
 ## mock-green
 

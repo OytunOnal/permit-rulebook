@@ -1,6 +1,6 @@
 # s5e — "Every sentence carries its source, not only every number" · Acceptance scenario
 
-Status: DRAFT — awaiting human approval (2026-09-07).
+Status: APPROVED (human, 2026-09-07).
 Human decision the same day: **close this before launch**, not in s6.
 Born from: the audit the builder returned while fixing the orientation-year
 false requirement — asked for the size of the problem, not a fix.
