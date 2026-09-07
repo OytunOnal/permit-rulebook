@@ -1689,3 +1689,13 @@ the 48-hour lines and the announcement are real-green items and stay theirs.
 route-page stamp, social card); a fourth would make it wallpaper. The results
 page's "Record generated" stamp stays a single stamp on purpose — it is the
 reader's document, not ours.
+
+**Addendum, same day — the route-page mock is final ("tamam şu an iyi").**
+Four amendments from the human while the build ran, each applied to the mock,
+rendered at desktop and 390 px, and relayed to the builder as it came: the h1
+is two lines by design (route name, then the tagline one step smaller); the
+masthead's text column stops at 37rem and the stamp pair sits centred in the
+space that remains; the pair is level with the middle of the text block; and
+above 760 px the pair is one size up (mark 4.3rem), the corner geometry kept.
+Below 760 px nothing changed. The mock at `a45dfbc` is the screen the build
+is graded against.
