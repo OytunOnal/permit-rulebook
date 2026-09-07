@@ -49,6 +49,10 @@
   --pad-card: 1rem 1.3rem 1.05rem;
   --max-content: 56rem;
   --max-prose: 36rem;
+  /* Dokunma hedefi tabanı. Telefonda düzeltme kontrolleri 34/22/20 px ölçüldü
+     (isolated product-critique v0.7, F8) — üç düzeltme yolu, ekranın en küçük
+     üç hedefi. Her etkileşimli satır bu değerin altına inemez. */
+  --tap-min: 44px;
 
   /* ---- İmza öğeleri ---- */
   /* Eşik rayı: her sayısal kriterin standart modülü */

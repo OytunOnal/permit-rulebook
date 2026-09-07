@@ -3,10 +3,15 @@ import "../../tokens.css";
 import rawDataset from "visa-rules/data/dataset.json";
 import { assertValidDataset } from "visa-rules/validate";
 import { datasetMeta } from "visa-rules";
+// The masthead is one function of which screen is showing, server and client
+// alike — a second copy of the intro copy here is how "Start over" left a
+// stale claim on question 1 (product-critique v0.7, B4).
+import { mastheadFor } from "../lib/screen.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
 const dataset = assertValidDataset(rawDataset);
 const meta = datasetMeta(dataset);
+const intro = mastheadFor({ kind: "question", started: false });
 console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundary", ...meta }));
 ---
 <!doctype html>
@@ -21,21 +26,22 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <div class="wrap">
     <header>
       <div class="brand">Visa Navigator · Eligibility record</div>
-      <h1 id="headline">Which work-permit routes could fit? <b>A few quick questions.</b></h1>
-      <p class="sub" id="subline">Code compares your answers against published rules — every value shows its
-      official quote and the date we read it from the source. Your answers never leave this device.
-      At the end: which routes (visa types) look open, how close the near-misses are, and which
-      single step would unlock more. It stops as soon as nothing left to ask could change your result.</p>
+      <h1 id="headline" set:html={intro.headline}></h1>
+      <p class="sub" id="subline">{intro.subline}</p>
       <div class="stamp" aria-hidden="true" id="stamp" hidden>Record generated<b id="stamp-date"></b></div>
     </header>
 
     <div id="app" class="cols" data-state="questions">
-      <aside class="decl" id="decl" aria-label="Your answers">
-        <h2>You declared</h2>
+      {/* The question comes first in the document. On a phone the single
+          column then opens on the question instead of on the masthead, the
+          intro and a growing ledger (product-critique v0.7, F8); on a wide
+          screen the grid puts the ledger back on the left. */}
+      <main id="main"></main>
+      <details class="decl" id="decl" open>
+        <summary><span class="decl-title">You declared</span><span class="decl-count" id="decl-count"></span></summary>
         <dl id="decl-list"></dl>
         <a class="edit" href="#" id="restart" hidden>Start over</a>
-      </aside>
-      <main id="main"></main>
+      </details>
     </div>
 
     <footer>
@@ -52,11 +58,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <script>
     import dataset from "visa-rules/data/dataset.json";
     import {
-      deriveQuestions, remainingQuestions, evaluate, formatEUR, formatEURPer, routeProvenance,
-      thresholdsForField, deriveBands, unlocks, notices, referencedFields, forEachCriterion, fieldOptions, matchOptions,
+      deriveQuestions, remainingQuestions, evaluate, formatEURPer, routeProvenance,
+      thresholdsForField, deriveBands, unlocks, notices, forEachCriterion, fieldOptions, matchOptions, referencedFields,
       countryClasses,
+      // s5d: every word a verdict says comes from here, beside the rules — the
+      // page holds no field-id-to-label table of its own to fall through
+      // (product-critique v0.7, B3).
+      reasonFor, shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, joinOr,
       type Criterion, type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
     } from "visa-rules";
+    import { activeOption, onKey, onType, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
+    import { mastheadFor, type Screen } from "../lib/screen.js";
+    import { restore, serialize, STORAGE_KEY } from "../lib/record.js";
 
     const ds = dataset as unknown as Dataset;
     // One field-lookup idiom for the whole page: the dataset never changes
@@ -65,6 +78,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const fieldOf = (id: string) => fieldById.get(id);
     const questions = deriveQuestions(ds);
     const main = document.getElementById("main")!;
+    const decl = document.getElementById("decl") as HTMLDetailsElement;
     const declList = document.getElementById("decl-list")!;
     const restart = document.getElementById("restart")!;
     const headline = document.getElementById("headline")!;
@@ -77,34 +91,33 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     document.getElementById("stamp-date")!.textContent =
       new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).replaceAll("/", " · ");
 
-    const SHORT: Record<string, string> = {
-      destination: "Destination", situation_country: "Offer country",
-      citizenship: "Passport", situation: "Situation", qualification: "Qualification",
-      recognition_de: "Recognition", experience: "Experience",
-      occupation_shortage: "Shortage list", occupation_it: "IT work",
-      salary_eur_year: "Salary", salary_eur_month: "Monthly salary", german: "German",
-      english: "English", age_band: "Age", de_stay6m: "Stay in DE",
-      partner_ck: "Partner", funds_eur_month: "Monthly funds",
-      fr_degree: "French degree", experience_7y: "3 yrs in last 7",
-      nl_recent_grad: "Dutch graduate", top200_grad: "Top-200 graduate",
-      qualification_recent: "Recent qualification",
-      fr_innovative_employer: "Innovative employer", fr_local_contract: "French contract",
-    };
     const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
+    const declCount = document.getElementById("decl-count")!;
 
     let answers: Profile = {};
-    let history: string[] = []; // answered fields, in order, for Back
+    let asked: string[] = []; // answered fields, in order, for Back
     /** The field being reconsidered — from the declaration panel or from Back.
      * The answer is never deleted while it is on screen: it renders as the
      * selected option, and picking another replaces it. */
     let editing: string | null = null;
 
-    // The count is the whole field set, which nobody answers: pruning stops
-    // the interview as soon as no remaining question could change a verdict.
-    // The per-question meta carries the real number, and it shrinks (tracker #2).
-    const introHeadline = () =>
-      `Which work-permit routes could fit? <b>A few quick questions.</b>`;
-    headline.innerHTML = introHeadline();
+    /** What the country picker just put on the record. The control commits a
+     * row that need not be the text in the box, so the commit is stated in
+     * words on the next screen — the side ledger was the only feedback, and a
+     * whole record was computed for the wrong nationality in silence
+     * (product-critique v0.7, B1). */
+    let justRecorded: { field: string; label: string } | null = null;
+
+    /** One masthead, one source. Every screen that is not a result gets the
+     * question masthead, so no path back into the interview — "Start over",
+     * an edit, browser Back — can leave a claim about a comparison standing
+     * (product-critique v0.7, B4). */
+    function showMasthead(screen: Screen) {
+      const m = mastheadFor(screen);
+      headline.innerHTML = m.headline;
+      subline.textContent = m.subline;
+    }
+    const showQuestionMasthead = () => showMasthead({ kind: "question", started: asked.length > 0 });
 
     function esc(s: string) {
       return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -119,7 +132,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // s5c: above a dozen options the question becomes a filter over a list
     // instead of a wall of buttons; at or below a dozen, nothing changes.
     const LONG_LIST_ABOVE = 12;
-    const LONG_LIST_SHOWN = 60;
 
     /** What an option's class reads as beside it. Derived from the dataset —
      * the class the option implies, or the fact that a notice would fire on
@@ -142,29 +154,34 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // Answered rows are edit points: clicking one resumes the interview at
       // that question, keeping everything before it (a full reset destroyed
       // every answer — human catch, golden G3).
-      const fields = currentField && !history.includes(currentField)
-        ? [...history, currentField]
-        : history;
+      const fields = currentField && !asked.includes(currentField)
+        ? [...asked, currentField]
+        : asked;
       declList.innerHTML = fields.map((f) => {
-        const q = questions.find((qq) => qq.field === f)!;
-        const opt = q.options.find((o) => o.value === answers[f]);
+        const opt = optionsOf(f).find((o) => o.value === answers[f]) ??
+          deriveBands(ds, f).find((b) => b.id === answers[f]);
         return opt
-          ? `<div class="done" data-field="${esc(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(SHORT[f] ?? f)}</dt><dd>${esc(opt.label)} <span class="pen" aria-hidden="true">✎</span></dd></div>`
-          : `<div><dt>${esc(SHORT[f] ?? f)}</dt><dd class="pending">—</dd></div>`;
+          ? `<div class="done" data-field="${esc(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(ds, f))}</dt><dd>${esc(opt.label)} <span class="pen" aria-hidden="true">✎</span></dd></div>`
+          : `<div><dt>${esc(shortLabelOf(ds, f))}</dt><dd class="pending">—</dd></div>`;
       }).join("");
       declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
         const jump = () => {
           const f = row.dataset.field!;
-          if (history.indexOf(f) < 0) return;
+          if (asked.indexOf(f) < 0) return;
           editing = f;
           stamp.hidden = true;
           app.dataset.state = "questions";
-          headline.innerHTML = introHeadline();
+          showQuestionMasthead();
           renderQuestion();
         };
         row.addEventListener("click", jump);
         row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); } });
       });
+      // On a phone the ledger collapses to this one line; on a wide screen the
+      // summary is hidden and the panel is always open.
+      declCount.textContent = asked.length
+        ? `${asked.length} answer${asked.length === 1 ? "" : "s"} — tap to review or change`
+        : "nothing yet";
       restart.hidden = currentField !== null;
     }
 
@@ -179,14 +196,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     function replayAnswers() {
       const kept: Profile = {};
       const keptOrder: string[] = [];
-      for (const f of history) {
+      for (const f of asked) {
         if (answers[f] === undefined) continue;
         if (!remainingQuestions(ds, kept).some((q) => q.field === f)) continue;
         kept[f] = answers[f];
         keptOrder.push(f);
       }
       answers = kept;
-      history = keptOrder;
+      asked = keptOrder;
     }
 
     function renderQuestion() {
@@ -197,8 +214,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const q = editing
         ? (remaining.find((x) => x.field === editing) ?? questions.find((x) => x.field === editing)!)
         : remaining[0];
+      showQuestionMasthead();
       renderDeclaration(q.field);
-      const total = history.length + remaining.length;
+      const total = asked.length + remaining.length;
       const answer = (value: string) => {
         answers[q.field] = value;
         if (editing) {
@@ -207,8 +225,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           editing = null;
           replayAnswers();
         } else {
-          history.push(q.field);
+          asked.push(q.field);
         }
+        saveRecord();
         renderQuestion();
       };
       // A list this long is a search, not a choice between buttons — but it is
@@ -216,21 +235,25 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // guessing at spellings.
       const longList = q.options.length > LONG_LIST_ABOVE;
       const classed = q.options.some((o) => o.implies !== undefined);
+      const declared = q.options.find((o) => o.value === answers[q.field]);
       main.innerHTML = `
         <section class="qcard">
+          ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(ds, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${
-            editing ? "Your answer — pick another to change it, the rest are kept" : `Question ${history.length + 1} of up to ${total}`
+            editing ? "Your answer — pick another to change it, the rest are kept" : `Question ${asked.length + 1} of up to ${total}`
           }</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
           ${longList ? `
             <div class="csearch">
               <span class="mag" aria-hidden="true">⌕</span>
               <input type="text" id="cfilter" autocomplete="off" spellcheck="false"
+                role="combobox" aria-expanded="false" aria-autocomplete="list"
                 aria-label="Search the list" aria-controls="clist" placeholder="Start typing…"
-                value="${esc(q.options.find((o) => o.value === answers[q.field])?.label ?? "")}">
+                value="${esc(declared?.label ?? "")}">
             </div>
-            <div class="clist" id="clist" aria-label="${esc(q.label)}"></div>
+            <div class="clist" id="clist" role="listbox" aria-label="${esc(q.label)}"></div>
             <p class="visually-hidden" id="cstatus" role="status" aria-live="polite"></p>
+            <p class="recorded" id="crecorded"${declared ? "" : " hidden"}>Your answer on file: <b>${esc(declared?.label ?? "")}</b></p>
             ${classed ? `<p class="hint">Every non-EU passport is checked against the same rules. A few countries
               have agreements that add rights on top — those are stated with their source when they apply to you.</p>` : ""}`
           : `<div class="opts">
@@ -241,7 +264,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
                 chosen ? `<span class="tick" aria-hidden="true">✓</span>` : ""}</button>`;
             }).join("")}
           </div>`}
-          ${(editing ? history.indexOf(editing) > 0 : history.length > 0)
+          ${(editing ? asked.indexOf(editing) > 0 : asked.length > 0)
             ? `<button class="back" id="back">← Back</button>` : ""}
           ${editing ? `<button class="back" id="done">Keep this answer</button>` : ""}
         </section>`;
@@ -249,63 +272,91 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (longList) {
         const filter = document.getElementById("cfilter") as HTMLInputElement;
         const list = document.getElementById("clist")!;
+        const recorded = document.getElementById("crecorded")!;
+        // The control's selection semantics live in one pure model, and the DOM
+        // is only its picture: what Enter commits is decided there, where a
+        // property test can hold it (product-critique v0.7, B1).
+        let box: ListboxState = stateFor(filter.value);
         const draw = () => {
-          const needle = filter.value.trim();
-          // Aliases are searched, never shown: a person typing the name they
-          // grew up with ("Turkey", "Holland") must find their country, and the
-          // label they then see is the official one (product-critique). The
-          // matcher lives in the engine, where the promise has a test.
-          if (!needle) {
+          filter.setAttribute("aria-expanded", String(box.open && box.query.trim() !== ""));
+          const status = document.getElementById("cstatus");
+          if (!box.query.trim() || !box.open) {
             // Before aliases existed the cold list was the only escape hatch
             // for someone who could not spell the official name; now typing
             // finds them, so opening on sixty rows is just noise (tracker #4).
-            list.innerHTML = `<p class="cnone">${q.options.length} countries — former names work too, try &ldquo;Holland&rdquo;.</p>`;
-            const s0 = document.getElementById("cstatus");
-            if (s0) s0.textContent = "";
+            list.innerHTML = `<p class="cnone">${q.options.length} countries — the name you grew up with works too.</p>`;
+            filter.removeAttribute("aria-activedescendant");
+            if (status) status.textContent = "";
             return;
           }
-          const matches = matchOptions(q.options, needle);
+          const matches = matchOptions(q.options, box.query);
           if (!matches.length) {
             // An empty box says nothing; this says what to do about it.
             list.innerHTML = `<p class="cnone">No country matches. Try fewer letters, or the country's own name.</p>`;
+            filter.removeAttribute("aria-activedescendant");
+            if (status) status.textContent = "No country matches";
             return;
           }
-          const status = document.getElementById("cstatus");
-          if (status) status.textContent = `${matches.length} match${matches.length === 1 ? "" : "es"}`;
-          const shown = matches.slice(0, LONG_LIST_SHOWN);
-          const highlight = filter.value.trim() !== "";
+          const shown = shownOptions(q.options, box);
+          const active = activeOption(q.options, box);
+          if (status)
+            status.textContent = `${matches.length} match${matches.length === 1 ? "" : "es"}` +
+              (active ? `. ${active.label} highlighted — press Enter to record it` : "");
           list.innerHTML = shown.map((o, i) => {
             const chosen = answers[q.field] === o.value;
-            return `<button class="copt${i === 0 && highlight ? " on" : ""}${chosen ? " sel" : ""}" data-value="${esc(o.value)}"${
-              chosen ? ` aria-pressed="true"` : ""}><span>${esc(o.label)}${
+            return `<button class="copt${i === box.active ? " on" : ""}${chosen ? " sel" : ""}" role="option" id="${rowId(i)}"
+              aria-selected="${i === box.active}" data-value="${esc(o.value)}"><span>${esc(o.label)}${
               chosen ? ` <span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
               classed ? `<span class="cls">${esc(classHint(q.field, o))}</span>` : ""}</button>`;
           }).join("") +
             (matches.length > shown.length
               ? `<p class="cmore">${matches.length - shown.length} more — keep typing to narrow the list</p>`
               : "");
+          if (box.active >= 0) filter.setAttribute("aria-activedescendant", rowId(box.active));
+          else filter.removeAttribute("aria-activedescendant");
+          list.querySelector<HTMLElement>(".copt.on")?.scrollIntoView({ block: "nearest" });
           list.querySelectorAll<HTMLButtonElement>(".copt").forEach((b) =>
-            b.addEventListener("click", () => answer(b.dataset.value!)));
+            b.addEventListener("click", () => {
+              const chosen = q.options.find((o) => o.value === b.dataset.value);
+              if (chosen) justRecorded = { field: q.field, label: chosen.label };
+              answer(b.dataset.value!);
+            }));
         };
-        filter.addEventListener("input", draw);
+        filter.addEventListener("input", () => { box = onType(box, filter.value); draw(); });
         filter.addEventListener("keydown", (e) => {
-          // Enter takes the highlighted row — but only once typing has narrowed
-          // the list to it. On an untouched box the first row is the first
-          // country in the alphabet, and a habitual Enter would answer
-          // "Afghanistan" for someone who never chose it (review).
           // isComposing: an IME's committing Enter belongs to the IME.
-          if (e.key !== "Enter" || e.isComposing) return;
+          if (e.isComposing) return;
+          const keys = ["ArrowDown", "ArrowUp", "Home", "End", "Enter", "Escape"];
+          if (!keys.includes(e.key)) return;
+          // Home/End inside a text box move the caret; claim them only once a
+          // row is highlighted, so typing still behaves like typing.
+          if ((e.key === "Home" || e.key === "End") && box.active < 0) return;
           e.preventDefault();
-          if (!filter.value.trim()) return;
-          const first = list.querySelector<HTMLButtonElement>(".copt");
-          if (first) answer(first.dataset.value!);
+          const result = onKey(q.options, box, e.key as ListboxKey);
+          box = result.state;
+          if (result.commit) {
+            // Say what was recorded, in the question card — the side ledger is
+            // not where a person looks after pressing Enter.
+            recorded.innerHTML = `Recorded: <b>${esc(result.commit.label)}</b>`;
+            recorded.hidden = false;
+            justRecorded = { field: q.field, label: result.commit.label };
+            answer(result.commit.value);
+            return;
+          }
+          draw();
         });
         draw();
         filter.focus();
+        // A correction starts by replacing, not by prepending: the caret sat at
+        // position 0 and the first keystroke produced "nigeriaNiger"
+        // (product-critique v0.7, F3).
+        filter.select();
       } else {
         main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
           btn.addEventListener("click", () => answer(btn.dataset.value!)));
       }
+      // Shown once, on the screen straight after the commit.
+      justRecorded = null;
 
       document.getElementById("done")?.addEventListener("click", () => {
         editing = null;
@@ -314,15 +365,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       document.getElementById("back")?.addEventListener("click", () => {
         // Back is the same gesture as editing a declared row: step to the
         // previous answer and show it. Nothing is erased on the way.
-        const at = editing ? history.indexOf(editing) : history.length;
-        const prev = history[at - 1];
+        const at = editing ? asked.indexOf(editing) : asked.length;
+        const prev = asked[at - 1];
         if (prev === undefined) return;
         editing = prev;
         stamp.hidden = true;
         app.dataset.state = "questions";
-        headline.innerHTML = introHeadline();
         renderQuestion();
       });
+
+      pushScreen();
     }
 
     function railFor(result: RouteResult): string {
@@ -363,42 +415,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     type CritResult = RouteResult["criteria"][number];
 
-    /**
-     * A criterion the user "failed" by having more: the route wants the
-     * "none of these" answer (Chancenkarte: no offer yet) and the user
-     * declared a real step. "Not met: situation" reads to an offer-holder as
-     * "lose your offer" — the honest line names what they already have.
-     */
-    function notNeededWith(cr: CritResult): string | null {
-      const c = cr.criterion;
-      if (c.op !== "eq") return null;
-      const def = fieldOf(c.field);
-      const required = optionsOf(c.field).find((o) => o.value === c.value);
-      const declared = optionsOf(c.field).find((o) => o.value === answers[c.field]);
-      return required?.is_fallback && declared?.short ? declared.short : null;
-    }
-
-    /** How a failing criterion names itself in a verdict line. The field name
-     * alone ("age") reads as a verdict on the person, so the dataset's
-     * short_reason qualifies it ("age — for 30 or older"). */
-    function failLabel(cr: CritResult): string {
-      const c = cr.criterion;
-      const base =
-        c.op === "any" ? (c.label ?? "requirements") :
-        c.op === "points" ? "points requirement" :
-        (SHORT[c.field] ?? c.field);
-      return c.short_reason ? `${base} — ${c.short_reason}` : base;
-    }
-
-    /** Unknowns the user can still act on: on a hard-failed route nothing the
-     * person finds out can change the verdict, so none of them is open. Every
-     * consumer (verdict line, strip count, auto-open, learn box) reads this one
-     * list, or they contradict each other on the same row (review). */
-    function liveUnknowns(r: RouteResult): string[] {
-      if (r.hard_fail) return [];
-      return r.unknown_fields.filter((f) => answers[f] !== undefined);
-    }
-    const hasLiveUnknown = (r: RouteResult) => liveUnknowns(r).length > 0;
+    /** Unknowns the user can still act on. Every consumer (verdict line, strip
+     * count, auto-open, learn box) reads this one list, or they contradict each
+     * other on the same row (review). */
+    const openUnknownsOf = (r: RouteResult) => liveUnknowns(r, answers);
+    const hasLiveUnknown = (r: RouteResult) => openUnknownsOf(r).length > 0;
 
     /** Every gte criterion in a route, at any depth. */
     function gteCriteriaOf(r: RouteResult): Extract<Criterion, { op: "gte" }>[] {
@@ -417,33 +438,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       });
     }
 
-    function whyFor(r: RouteResult): string {
-      if (r.status === "met") return esc(r.route.summary ?? "All published criteria appear met by your declaration.");
-      if (r.status === "near")
-        return r.gap_points
-          ? "The points requirement is within reach — the ladder below shows your score."
-          : "The threshold sits above your declared band.";
-      const fails = r.criteria.filter((c) => c.outcome === "fail");
-      if (isPlacedElsewhere(r)) {
-        const place = declaredPlace();
-        const country = ds.countries.find((c) => c.code === r.country)?.name ?? r.country;
-        return esc(place
-          ? `A ${country} route — you told us ${place}.`
-          : `A ${country} route.`);
-      }
-      const moot: string[] = [], missing: string[] = [];
-      for (const cr of fails) {
-        const m = notNeededWith(cr);
-        if (m) moot.push(m); else missing.push(failLabel(cr));
-      }
-      const unknown = liveUnknowns(r).map((f) => SHORT[f] ?? f);
-      const parts = [];
-      if (moot.length) parts.push(`Not needed with ${moot.join(", ")}.`);
-      if (missing.length) parts.push(`Not met: ${missing.join(", ").toLowerCase()}.`);
-      if (unknown.length) parts.push(`Unknown (you answered "I don't know"): ${unknown.join(", ").toLowerCase()} — an open gap, not a no.`);
-      return esc(parts.join(" "));
-    }
-
+    /** Why this route reads the way it does — a sentence, from the engine.
+     * The page used to compose this itself out of field names, which is how
+     * "Not met: situation" became the verdict on 22 of 23 cards
+     * (product-critique v0.7, B3). */
+    const whyFor = (r: RouteResult): string => esc(reasonFor(ds, r, answers).line);
     /** Conditions the authority applies that the interview never asked —
      * stated on every card so "criteria met" cannot overpromise. */
     function precondFor(r: RouteResult): string {
@@ -484,7 +483,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // Only where the unknown still binds: on a hard-failed route (wrong
       // qualification, no offer) finding out changes nothing, and the link
       // sends the user down a path that cannot open (critique #4).
-      const links = liveUnknowns(r)
+      const links = openUnknownsOf(r)
         .map((f) => fieldOf(f)?.learn)
         .filter((l): l is { label: string; url: string } => !!l);
       if (!links.length) return "";
@@ -503,38 +502,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const gapAmount = (r: RouteResult) =>
       formatEURPer(Math.round(r.gap_max!), periodOf(gapFieldOf(r)));
 
-    function optLabel(field: string, value: string | undefined): string {
-      if (value === undefined) return "no answer";
-      if (fieldOf(field)?.type === "money_band")
-        return deriveBands(ds, field).find((b) => b.id === value)?.label ?? value;
-      return optionsOf(field).find((o) => o.value === value)?.label ?? value;
-    }
-
-    // Expanded hold rows: per-criterion "needs X — you declared Y" lines, so
-    // "Not met: qualification" always unfolds into something concrete.
+    // Expanded hold rows: one sentence per failing criterion, so a one-line
+    // reason always unfolds into something concrete. The sentences come from
+    // the engine — the page no longer names fields (B3).
     function failDetail(r: RouteResult): string {
-      const rows = r.criteria
-        .filter((cr) => cr.outcome === "fail")
-        .map((cr) => {
-          const c = cr.criterion;
-          const moot = notNeededWith(cr);
-          if (moot) return `<li class="moot"><b>Not needed</b> — you already have ${esc(moot)}</li>`;
-          if (isLocalization(cr)) {
-            const country = ds.countries.find((x) => x.code === r.country)?.name ?? r.country;
-            const place = declaredPlace();
-            return `<li class="moot"><b>Where</b> — this route is ${esc(country)}${
-              place ? `, and you told us ${esc(place)}` : ""}</li>`;
-          }
-          if (c.op === "any")
-            return `<li><b>${esc(failLabel(cr))}</b> — no qualifying path (${esc(c.paths.map((p) => p.label ?? "path").join(" / "))})</li>`;
-          const req =
-            c.op === "eq" ? optLabel(c.field, c.value) :
-            c.op === "in" ? c.values.map((v) => optLabel(c.field, v)).join(" or ") :
-            c.op === "gte" ? `${formatEURPer(c.threshold.amount, periodOf(c.field))} or more` :
-            `${c.required.value} points`;
-          const field = "field" in c ? c.field : "";
-          return `<li><b>${esc(failLabel(cr))}</b> — needs: ${esc(req)} · you declared: ${esc(optLabel(field, answers[field]))}</li>`;
-        });
+      const rows = reasonFor(ds, r, answers).rows.map((row) =>
+        `<li class="${row.kind}">${esc(row.text)}</li>`);
       return rows.length ? `<ul class="faildetail">${rows.join("")}</ul>` : "";
     }
 
@@ -548,8 +521,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           </div>
           <p class="why">${whyFor(r)}</p>
           ${precondFor(r)}
-          ${r.points ? `<div class="ptsline"><b>Points ${r.points.scored} of ${r.points.required}</b>${
-            r.points.items.length ? " — " + r.points.items.map((i) => `${esc(SHORT[i.field] ?? i.field)} +${i.points}`).join(" · ") : ""
+          ${r.points ? `<div class="ptsline"><b>${r.points.scored} point${r.points.scored === 1 ? "" : "s"} — ${r.points.required} needed</b>${
+            r.points.items.length ? " — " + r.points.items.map((i) => `${esc(shortLabelOf(ds, i.field))} +${i.points}`).join(" · ") : ""
           }</div>` : ""}
           ${r.status !== "hold" ? railFor(r) : ""}
           ${r.status === "near" && r.gap_max ? (() => {
@@ -557,10 +530,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             const hint = gapField === "salary_eur_year"
               ? " A route with a lower threshold may already apply — check the other cards."
               : "";
-            const label = gapField ? ` — ${esc((SHORT[gapField] ?? gapField).toLowerCase())}` : "";
-            return `<div class="gapnote"><b>Gap: up to ${gapAmount(r)}</b>${label}.${hint}</div>`;
+            const label = gapField ? ` on ${esc(shortLabelOf(ds, gapField).toLowerCase())}` : "";
+            return `<div class="gapnote"><b>Short by up to ${gapAmount(r)}</b>${label}.${hint}</div>`;
           })() : ""}
-          ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Gap: ${r.gap_points} point${r.gap_points === 1 ? "" : "s"} short.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
+          ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Short by ${r.gap_points} point${r.gap_points === 1 ? "" : "s"}.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
           ${learnBoxFor(r)}
           <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
         </article>`;
@@ -587,29 +560,19 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /** Every failing criterion of this row sits on a step the user hasn't
      * taken (an offer, a transfer, a hosting agreement) and nothing else is
      * open on it — the row says only what the step above already says. */
-    /** A criterion that only asks WHERE a route applies: it reads the
-     * destination and the country of the offer, both of which the person
-     * already told us. Failing it is not a shortfall — the route is simply
-     * somewhere else (isolated critique #2). */
-    function isLocalization(cr: CritResult): boolean {
-      const fields = referencedFields(cr.criterion);
-      return fields.length > 0 && fields.every((f) => f === "destination" || f === "situation_country");
-    }
+    /** Which rows a hold list collapses. `isLocalization`, `declaredPlace` and
+     * `isPlacedElsewhere` are the engine's — one definition, so a row's reason
+     * and its grouping can never disagree. */
+    const placedElsewhere = (r: RouteResult) => isPlacedElsewhere(r, answers);
+    const place = () => declaredPlace(ds, answers);
 
-    /** Where the person said they are headed, in their own words. */
-    function declaredPlace(): string {
-      const viaOffer = answers["situation_country"] !== undefined;
-      const field = viaOffer ? "situation_country" : "destination";
-      const value = answers[field];
-      if (!value || (field === "destination" && value === "all")) return "";
-      return optionsOf(field).find((o) => o.value === value)?.label ?? "";
-    }
-
-    /** Once a route is in the wrong country, nothing else about it is news:
-     * whether a French degree or a Spanish salary would have matched is a
-     * question nobody asked. One localization failure decides the row. */
-    function isPlacedElsewhere(r: RouteResult): boolean {
-      return r.criteria.some((c) => c.outcome === "fail" && isLocalization(c)) && !hasLiveUnknown(r);
+    /** A criterion the person "failed" by having MORE: the route wants the
+     * "none of these" answer and they declared a real step. */
+    function outgrown(cr: CritResult): boolean {
+      const c = cr.criterion;
+      if (c.op !== "eq") return false;
+      return optionsOf(c.field).find((o) => o.value === c.value)?.is_fallback === true &&
+        optionsOf(c.field).find((o) => o.value === answers[c.field])?.short !== undefined;
     }
 
     function isStepGated(r: RouteResult): boolean {
@@ -617,7 +580,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (!fails.length || hasLiveUnknown(r)) return false;
       // "Not needed with a job offer" is the opposite story — never file a
       // route the user has outgrown under "needs a job offer".
-      if (fails.some((cr) => notNeededWith(cr) !== null)) return false;
+      if (fails.some(outgrown)) return false;
       return fails.every((cr) => {
         const fields = referencedFields(cr.criterion);
         // A criterion referencing no field is not "path-gated" — engine parity.
@@ -645,30 +608,27 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       return [...names];
     }
 
-    const joinOr = (xs: string[]) =>
-      xs.length < 2 ? (xs[0] ?? "") : `${xs.slice(0, -1).join(", ")} or ${xs.at(-1)}`;
-
     /**
-     * One "Not met: situation" row per country was information; sixteen were
+     * One "needs a job offer" row per country was information; sixteen were
      * noise (critique #5). Rows gated on the step alone collapse into one
      * group; anything with its own reason keeps its own row.
      */
     function holdList(rows: RouteResult[], hasUnlocks: boolean): string {
       const gated: RouteResult[] = [], elsewhere: RouteResult[] = [], individual: RouteResult[] = [];
       for (const r of rows)
-        (isPlacedElsewhere(r) ? elsewhere : isStepGated(r) ? gated : individual).push(r);
+        (placedElsewhere(r) ? elsewhere : isStepGated(r) ? gated : individual).push(r);
 
       // Routes that are simply in another country collapse into one line: a
-      // wall of "Not met: located in Spain" answers a question the reader
-      // never asked, on a fact they gave us themselves.
-      const place = declaredPlace();
+      // wall of "this route is Spain" answers a question the reader never
+      // asked, on a fact they gave us themselves.
+      const told = place();
       const elsewhereCountry = elsewhere.length
         ? (ds.countries.find((c) => c.code === elsewhere[0].country)?.name ?? elsewhere[0].country)
         : "";
       const elsewhereGroup = elsewhere.length >= 2
         ? `<details class="hold-group">
             <summary>${elsewhere.length} ${esc(elsewhereCountry)} routes — ${
-              place ? `you told us ${esc(place)}` : "not where you are looking"}</summary>
+              told ? `you told us ${esc(told)}` : "not where you are looking"}</summary>
             <div class="hold-group-body">${elsewhere.map(holdRow).join("")}</div>
           </details>`
         : elsewhere.map(holdRow).join("");
@@ -676,8 +636,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (gated.length < 3)
         return individual.map(holdRow).join("") + gated.map(holdRow).join("") + elsewhereGroup;
       const steps = joinOr(stepNamesFor(gated));
+      // Open when it is the only thing on screen: a collapsed group was the
+      // whole result for the emptiest profile, and every quote and read date
+      // the product exists to show was folded away inside it (F7).
+      const alone = individual.length === 0 && elsewhere.length === 0 && !hasUnlocks;
       return individual.map(holdRow).join("") +
-        `<details class="hold-group">
+        `<details class="hold-group"${alone ? " open" : ""}>
           <summary>${gated.length} routes need ${esc(steps)}${
             hasUnlocks ? " — see the steps above" : ""}</summary>
           <div class="hold-group-body">${gated.map(holdRow).join("")}</div>
@@ -710,21 +674,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         </article>`;
     }
 
-    function unlockTitle(u: ReturnType<typeof unlocks>[number]): string {
-      const def = fieldOf(u.field);
-      let title = (u.option.short ?? u.option.label) +
-        (def?.type === "money_band" ? ` — ${(SHORT[u.field] ?? u.field).toLowerCase()}` : "");
-      if (u.qualifier)
-        title += u.qualifier.field === "situation_country"
-          ? ` in ${u.qualifier.option.label}`
-          : ` · ${u.qualifier.option.label}`;
-      return title;
-    }
-
     function unlockCard(u: ReturnType<typeof unlocks>[number], routes: RouteResult[]): string {
       return `
         <article class="unlock">
-          <h4>With <b>${esc(unlockTitle(u))}</b></h4>
+          <h4>With <b>${esc(unlockTitleOf(ds, u))}</b></h4>
           <ul>${routes.map((r) =>
             `<li>${esc(r.route.name)} — ${r.status === "met"
               ? `<b>would be met</b>`
@@ -734,6 +687,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     }
 
     function renderResults() {
+      // The commit banner belongs to the screen after the commit, and the
+      // verdict is not it.
+      justRecorded = null;
       // s5: countries the destination answer rules out disappear entirely —
       // their routes fail on a fact the user chose, which is not information.
       const dest = answers["destination"];
@@ -757,8 +713,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
       const applicable = notices(ds, answers);
       const zeroOpen = met + near.length === 0;
-      const baseSub = `Code compared your ${history.length} answer${history.length === 1 ? "" : "s"} against ${results.length} published rule sets. ` +
-        `Every value below shows its official quote and the date we read it from the source.`;
 
       // The screen no route can produce: this passport needs no permit at all.
       // "0 routes look open" is the worst news for the best-placed user and it
@@ -771,12 +725,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (replacing.length && zeroOpen) {
         // The headline is the notice's own title: a second copy of it here
         // would drift the moment the dataset states a different notice.
-        headline.innerHTML = esc(replacing[0].title) + ".";
-        subline.textContent = "Nothing to compare: the published rule below answers your situation directly.";
+        showMasthead({ kind: "notice", title: replacing[0].title });
         // Any other applicable notice still belongs on the screen — dropping
         // it silenced, say, the Türkiye note (review).
         main.innerHTML = [...replacing, ...applicable.filter((n) => !replacing.includes(n))]
           .map(noticeCard).join("");
+        pushScreen();
         return;
       }
 
@@ -784,6 +738,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const ups = unlocks(ds, answers);
       // Notices ride above the normal layout, with the results intact.
       const noticeCards = applicable.map(noticeCard).join("");
+
+      // The subtitle states what was compared, and only a result screen can
+      // produce it — the count and the tense come from the same place (B4).
+      const said = (headlineHtml: string, nearest?: string) =>
+        showMasthead({ kind: "results", answered: asked.length, ruleSets: results.length, headline: headlineHtml, nearest });
 
       if (zeroOpen && ups.length) {
         // The step worth naming: one that would fully meet a route beats one
@@ -793,23 +752,26 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           (u.routes.some((r) => r.status === "met") ? 1e6 : 0) + u.routes.length;
         const bestUp = ups.reduce((best, u) => (rank(u) > rank(best) ? u : best));
         // Zero open is a starting point, not a dead end — the steps are the news.
-        headline.innerHTML = `Nothing open yet — ${ups.length} step${ups.length === 1 ? "" : "s"} would change that.`;
-        subline.textContent = `${baseSub} Nearest: ${unlockTitle(bestUp)}.`;
+        said(`Nothing open yet — ${ups.length} step${ups.length === 1 ? "" : "s"} would change that.`,
+          unlockTitleOf(ds, bestUp));
       } else if (zeroOpen) {
-        // Nothing open and no single step would open one: no false hope.
-        headline.innerHTML = "Nothing open on these answers.";
-        subline.textContent = `${baseSub} Change an answer on the left to explore — or see each country's reasons below.`;
+        // Nothing open and no single step would open one: no false hope. The
+        // single-country result has no country sections to send anyone to, so
+        // it does not pretend otherwise (F7).
+        said("Nothing open on these answers.");
+        subline.textContent += visible.length === 1
+          ? " Change an answer to explore — every route below says what it asks for, and quotes it."
+          : " Change an answer to explore — or see each country's reasons below.";
       } else {
         const nearNote = near.length
           ? near[0].gap_max
-            ? ` <b>One is within ${gapAmount(near[0])}.</b>`
+            ? ` <b>One is short by ${gapAmount(near[0])}.</b>`
             : near[0].gap_points
               ? ` <b>One is ${near[0].gap_points} point${near[0].gap_points === 1 ? "" : "s"} away.</b>`
               : ""
           : "";
         const across = metCountries.size > 1 ? ` across ${metCountries.size} countries` : "";
-        headline.innerHTML = `${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open${across}.` + nearNote;
-        subline.textContent = baseSub;
+        said(`${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open${across}.` + nearNote);
       }
 
       // Counted the way the rows read: an unknown on a hard-failed route is
@@ -888,16 +850,123 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             <div class="cbody">${inner}</div>
           </details>`;
       }).join("");
+      pushScreen();
+    }
+
+    /**
+     * The record, kept on this device so a reload, a closed tab or the phone's
+     * Back button no longer destroys a thirteen-question interview
+     * (product-critique v0.7, F2/F10). Nothing is transmitted; `localStorage`
+     * is per-browser, so the answers do not reach the person's other devices
+     * either. Storage can be unavailable (private mode, blocked site data) —
+     * the interview must still work, just without surviving the tab.
+     */
+    function saveRecord() {
+      try {
+        // Nothing answered is nothing to keep: an empty record left behind
+        // still says someone was here.
+        if (asked.length === 0) localStorage.removeItem(STORAGE_KEY);
+        else localStorage.setItem(STORAGE_KEY, serialize(answers, asked));
+      } catch { /* no storage: the interview still runs, it just won't persist */ }
+    }
+    function clearRecord() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch { /* nothing to clear */ }
+    }
+    function loadRecord() {
+      let raw: string | null = null;
+      try {
+        raw = localStorage.getItem(STORAGE_KEY);
+      } catch { return; }
+      const kept = restore(raw, ds.fields.map((f) => f.id));
+      answers = kept.answers;
+      asked = kept.history;
+      // The rules may have moved since it was written: replay drops anything
+      // this interview would no longer ask.
+      replayAnswers();
     }
 
     restart.addEventListener("click", (e) => {
       e.preventDefault();
-      answers = {}; history = [];
+      // A shared or borrowed computer must not hand the next person a
+      // stranger's salary: the stored record goes with the screen.
+      answers = {}; asked = []; editing = null;
+      clearRecord();
+      // Back must not undo it: the snapshots go with the record, so the
+      // entries that referenced them now restore nothing.
+      snapshots.length = 0;
       app.dataset.state = "questions";
       stamp.hidden = true;
-      headline.innerHTML = introHeadline();
       renderQuestion();
     });
+
+    /**
+     * Browser Back is the phone's "previous question" gesture, and from the
+     * results it should return to the interview rather than wipe it. Each
+     * screen pushes an entry carrying a snapshot index; Back restores that
+     * snapshot instead of leaving the page.
+     */
+    const snapshots: Array<{ answers: Profile; asked: string[]; editing: string | null }> = [];
+    let restoring = false;
+    function pushScreen() {
+      if (restoring) return;
+      snapshots.push({ answers: { ...answers }, asked: [...asked], editing });
+      const state = { step: snapshots.length - 1 };
+      // The first screen REPLACES the page's own entry rather than adding one:
+      // pushing there would trap the visitor on the site, because Back would
+      // always land on another of our own screens.
+      if (snapshots.length === 1) window.history.replaceState(state, "");
+      else window.history.pushState(state, "");
+    }
+    window.addEventListener("popstate", (e) => {
+      const step = (e.state as { step?: number } | null)?.step;
+      // An entry we did not write, or one "Start over" has since invalidated:
+      // leave the screen alone rather than restoring a stranger's answers.
+      if (typeof step !== "number") return;
+      const snap = snapshots[step];
+      if (!snap) return;
+      restoring = true;
+      answers = { ...snap.answers };
+      asked = [...snap.asked];
+      editing = snap.editing;
+      saveRecord();
+      stamp.hidden = true;
+      app.dataset.state = "questions";
+      renderQuestion();
+      restoring = false;
+    });
+
+    /**
+     * The ledger is a fixed panel on a wide screen and a one-line disclosure
+     * on a phone, where it sat between the intro and the question and pushed
+     * the question below the fold (product-critique v0.7, F8). Wide always
+     * open — its summary is not a control there. Narrow starts collapsed, and
+     * once the person opens or closes it themselves, that decision stands.
+     */
+    const wide = window.matchMedia("(min-width: 761px)");
+    let ledgerChosen = false;
+    const syncLedger = () => { if (!ledgerChosen || wide.matches) decl.open = wide.matches; };
+    decl.addEventListener("toggle", () => { if (!wide.matches) ledgerChosen = true; });
+    wide.addEventListener("change", syncLedger);
+    syncLedger();
+
+    /**
+     * A printed record that hides its own evidence is not a record: every
+     * collapsed section opens for the print and closes again afterwards. CSS
+     * alone cannot do it — a closed <details> hides its contents below the
+     * level a stylesheet reaches.
+     */
+    const printOpened: HTMLDetailsElement[] = [];
+    window.addEventListener("beforeprint", () => {
+      for (const d of document.querySelectorAll<HTMLDetailsElement>("details"))
+        if (!d.open) { d.open = true; printOpened.push(d); }
+    });
+    window.addEventListener("afterprint", () => {
+      for (const d of printOpened.splice(0)) d.open = false;
+    });
+
+    loadRecord();
 
     // Dev-only screenshot hook (stripped from production builds): pre-fill a
     // profile via ?dev-profile={"destination":"de",...} to land on any screen.
@@ -906,7 +975,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (raw) {
         try {
           answers = JSON.parse(raw);
-          history = Object.keys(answers);
+          asked = Object.keys(answers);
         } catch { /* fall through to the normal flow */ }
       }
     }
@@ -942,19 +1011,27 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       font:600 .68rem var(--font-mono);letter-spacing:.16em;padding:.4rem .7rem;text-transform:uppercase;background:rgba(251,249,242,.6)}
     .stamp b{display:block;font-size:.85rem}
 
+    /* The question is first in the DOM so a phone opens on it; on a wide
+       screen `order` puts the ledger back in the left column (F8). */
     .cols{display:grid;grid-template-columns:15.5rem 1fr;gap:1.5rem;align-items:start}
-    .decl{background:var(--color-card);border:var(--rule-soft);padding:1.1rem 1.2rem;position:sticky;top:1rem}
-    .decl h2{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted);
-      margin-bottom:.6rem;border-bottom:2px solid var(--color-ink);padding-bottom:.4rem}
+    .decl{order:1;background:var(--color-card);border:var(--rule-soft);padding:1.1rem 1.2rem;position:sticky;top:1rem}
+    main{order:2;min-width:0}
+    .decl > summary{list-style:none;cursor:pointer;font:var(--text-label);letter-spacing:var(--tracking-label);
+      text-transform:uppercase;color:var(--color-muted);border-bottom:2px solid var(--color-ink);
+      padding-bottom:.4rem;margin-bottom:.6rem;display:flex;justify-content:space-between;gap:.6rem;
+      align-items:baseline;min-height:var(--tap-min)}
+    .decl > summary::-webkit-details-marker{display:none}
+    .decl-title{white-space:nowrap}
+    .decl-count{font:500 .7rem var(--font-mono);text-transform:none;letter-spacing:0;text-align:right}
     .decl dl div{display:flex;justify-content:space-between;gap:.6rem;border-bottom:var(--rule-dotted);padding:.42rem 0}
     .decl dt{color:var(--color-muted);font-size:.78rem}
     .decl dd{font:var(--text-value);text-align:right}
-    .decl div.done{cursor:pointer}
+    .decl div.done{cursor:pointer;min-height:var(--tap-min);align-items:center}
     .decl div.done:hover dd,.decl div.done:focus-visible dd{color:var(--color-stamp)}
     .decl .pen{color:var(--color-muted);font-size:.75rem;margin-left:.2rem}
     .decl div.done:hover .pen{color:var(--color-stamp)}
     .decl dd.pending{color:var(--color-muted);font-weight:400}
-    .decl .edit{display:inline-block;margin-top:.8rem;font-size:.8rem}
+    .decl .edit{display:inline-flex;align-items:center;margin-top:.8rem;font-size:.85rem;min-height:var(--tap-min)}
     .decl .edit[hidden]{display:none}
 
     /* Question mode */
@@ -963,9 +1040,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .qlabel{font:var(--text-route);font-size:1.25rem;margin:.5rem 0 1rem}
     .opts{display:grid;gap:.5rem}
     .opt{font:600 .92rem var(--font-sans);text-align:left;background:var(--color-bg);border:var(--rule-soft);
-      padding:.7rem .9rem;cursor:pointer;color:var(--color-ink)}
+      padding:.7rem .9rem;min-height:var(--tap-min);cursor:pointer;color:var(--color-ink)}
     .opt:hover{border-color:var(--color-ink);background:var(--color-band-soft)}
-    .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.85rem}
+    .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.9rem;
+      min-height:var(--tap-min);padding:.2rem .1rem}
     .back + .back{margin-left:1.4rem;color:var(--color-band);font-weight:600}
 
     /* s5c: the question whose answer set is a list, not a handful of buttons.
@@ -978,9 +1056,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .csearch input::placeholder{color:var(--color-muted);font-weight:400}
     .csearch .mag{position:absolute;left:.7rem;top:.72rem;color:var(--color-muted);font-size:.9rem}
     .clist{margin-top:.5rem;max-height:15rem;overflow-y:auto;border:var(--rule-soft);background:var(--color-bg)}
-    .copt{display:flex;justify-content:space-between;align-items:baseline;gap:.8rem;width:100%;text-align:left;
-      background:none;border:none;border-bottom:var(--rule-dotted);padding:.55rem .8rem;cursor:pointer;
-      font:600 .9rem var(--font-sans);color:var(--color-ink)}
+    .copt{display:flex;justify-content:space-between;align-items:center;gap:.8rem;width:100%;text-align:left;
+      background:none;border:none;border-bottom:var(--rule-dotted);padding:.6rem .8rem;cursor:pointer;
+      min-height:var(--tap-min);font:600 .9rem var(--font-sans);color:var(--color-ink)}
     .copt:hover{background:var(--color-band-soft)}
     .copt .cls{font:500 .68rem var(--font-mono);color:var(--color-muted);text-transform:none;letter-spacing:0;
       text-align:right;flex-shrink:0}
@@ -992,6 +1070,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
     .cnone,.cmore{font:500 .8rem var(--font-mono);color:var(--color-muted);padding:.7rem .8rem}
     .qcard .hint{font-size:.8rem;color:var(--color-muted);margin-top:.6rem;max-width:32rem}
+    /* B1: after Enter, the card itself says which country went on the record —
+       a monospace line in the side panel is not where a person is looking. */
+    .recorded{margin-top:.6rem;font-size:.88rem;color:var(--color-ink)}
+    .recorded b{color:var(--color-band)}
+    .recorded[hidden]{display:none}
 
     /* Result summary + groups (s3) */
     .strip{display:flex;gap:.6rem;margin:0 0 .4rem;flex-wrap:wrap}
@@ -1024,6 +1107,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .hold-body{padding:.6rem 0 .3rem;border-top:var(--rule-dotted);margin-top:.5rem}
     .faildetail{list-style:none;display:grid;gap:.3rem;margin:.5rem 0 .2rem;font-size:.84rem;color:#54513f}
     .faildetail li::before{content:"✗ ";color:var(--color-stamp)}
+    .faildetail li.unknown::before{content:"? ";color:var(--color-hold);font-weight:700}
     .faildetail b{color:var(--color-ink)}
     .ghead.unlockh b{color:var(--color-band)}
     .unlock{background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-band);padding:.85rem 1.05rem;margin-bottom:.7rem}
@@ -1054,8 +1138,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        green would read as a route the rules opened, which it is not. */
     .notice.extra-rights{border-left-color:var(--color-band)}
     .notice.extra-rights h3{color:var(--color-ink)}
-    .faildetail li.moot::before{content:"— ";color:var(--color-muted)}
-    .faildetail li.moot b{color:var(--color-met)}
+    .faildetail li.outgrown::before,.faildetail li.where::before{content:"— ";color:var(--color-muted)}
+    .faildetail li.outgrown{color:var(--color-met)}
     .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
     .learn a{color:var(--color-band);font-weight:600;text-decoration:none}
     .learn a::after{content:" ↗"}
@@ -1102,7 +1186,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     @media (max-width:760px){
       body{padding:1.4rem .9rem 3rem}
       .cols{grid-template-columns:1fr}
-      .decl{position:static}
+      /* The question card comes first; "You declared" follows it, collapsed to
+         one line that expands on tap (F8). */
+      main{order:1}
+      .decl{order:2;position:static}
+      .decl > summary{margin-bottom:0}
+      .decl[open] > summary{margin-bottom:.6rem}
       .qcard{padding:1.1rem 1rem}
       .opt{white-space:normal}
       .copt{flex-wrap:wrap;gap:.15rem}
@@ -1113,6 +1202,36 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       h1{font-size:1.6rem}
       .stamp{position:static;display:inline-block;margin-top:.8rem}
       .stamp[hidden]{display:none}
+    }
+    /* Wide: the ledger is a fixed panel, so its disclosure control is not a
+       control at all — the script keeps it open. */
+    /* Wide: the ledger is a fixed panel, so its disclosure control is not a
+       control at all — it stays the panel heading, and the script keeps the
+       panel open. */
+    @media (min-width:761px){
+      .decl > summary{cursor:default;pointer-events:none;min-height:0}
+      .decl-count{display:none}
+    }
+
+    /* The record, on paper. A person can take the printout to an appointment:
+       the quotes and the read dates are the point, and the navigation is not
+       (product-critique v0.7, F10). */
+    @media print{
+      body{background:#fff;color:#000;padding:0;font-size:11pt}
+      .decl > summary,.back,.edit,.next,#restart,.strip,.cnone,.cmore,.csearch,.clist{display:none!important}
+      .wrap{max-width:none}
+      .stamp{position:static;display:inline-block;transform:none;border:1px solid #000;color:#000;background:none}
+      .cols{display:block}
+      .decl{border:1px solid #000;margin-bottom:1rem;position:static;page-break-inside:avoid}
+      details{display:block}
+      details > summary{list-style:none}
+      /* Everything folded away on screen prints open: a printed record that
+         hides its own evidence is not a record. */
+      details > *{display:revert!important}
+      .route,.unlock,.notice,details.route-hold{page-break-inside:avoid;border:1px solid #999}
+      .src{color:#000;font-size:9pt}
+      a[href]::after{content:" (" attr(href) ")";font-size:8pt;word-break:break-all}
+      .learn a::after,.next::after{content:none}
     }
     @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   </style>

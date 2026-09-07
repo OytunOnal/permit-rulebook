@@ -393,3 +393,259 @@ availability; whether *index*, *register* or *criteria* is a term of art in
 DE/FR/ES/NL immigration law. The US building-permit occupation of "Permit
 Lookup", the Australian visa-subclass point and the Ausländerzentralregister
 point are from memory, **not looked up** — the availability round settles them.
+
+---
+
+# RESET — the premise was refuted, not the candidates (2026-09-07)
+
+Round 3's critique showed every round had searched the wrong space: all three
+assumed the domain word was *visa* or *permit*, and the project's own glossary
+had already litigated that question. Under the release-gate rule, a premise
+failure resets the cycle rather than earning a patched fourth round — counter to
+zero, direction set rebuilt. **One reset per gate**; a second premise failure is
+a back-edge to the one-pager's positioning.
+
+Carried across: the graveyard (58 buried candidates), the four ceilings, the
+linguistic landmines, and **the bar — `Permit Rulebook`** — so the new space
+cannot win on novelty. Every generator was told to say, per candidate, whether
+it beats the bar and on what axis.
+
+New rule applied: **one direction is always the project's own vocabulary.**
+
+## The four directions
+
+1. **The project's own glossary** (`CONTEXT.md`) — mandatory.
+2. **Route as the domain noun** — briefed to solve the travel reading that
+   killed Routebook, or report the direction dead.
+3. **The audience's own words** — including *visa*, deliberately rehabilitated,
+   since round 3 overturned "factually wrong" to "imprecise, not false".
+4. **The artifact the person walks away with** — the dated, quoted record the
+   product hands over and stamps `RECORD GENERATED`.
+
+---
+
+## What the reset found
+
+### The convergence
+
+**Three of the four directions independently landed on the same head noun:
+*rulebook*.** They differ only on the domain word. That is the strongest signal
+either cycle has produced: the disagreement is now one variable wide.
+
+| | Permit Rulebook (the bar) | Route Rulebook | Visa Rulebook |
+|---|---|---|---|
+| v1 legal precision | correct | correct (superordinate) | imprecise |
+| Wave 2 (CA + AU) | **becomes a lie** | survives | correct for AU |
+| Adjacency bought | US building permits | **travel / navigation** | lead-gen neighbourhood |
+| Words needed | 3 (*Work* Permit X) | 2 | 2 |
+| Spellable after one hearing | yes | **no** — route/root/rout/ruta/rota | yes |
+| Matches schema and UI | no | **yes** — 23 routes, the noun on every card | no |
+
+### Direction 2 declared itself dead, and argued it well
+
+The route generator's own verdict: *"the critique was right that route is the
+wave-proof **concept** and wrong that it is therefore a usable **name** — the
+property that makes it wave-proof (an abstraction over visas and permits) is the
+same property that makes it uninformative to someone who does not already know
+the domain."*
+
+Its evidence, which the glossary direction independently confirmed:
+
+- **The cognate hurts.** *Route* transfers into all four v1 languages and
+  Turkish — and carries the **travel** sense, not the legal one. FR *route* is a
+  road (*code de la route* is the highway code), DE *Route* is what a
+  Routenplaner computes, NL is the country of *fietsroutes*, ES *ruta* is
+  travel-only, TR *rota* is a nautical or aviation course. The legal sense is
+  British administrative English and exists in none of the audience's languages.
+- **Four-way spelling fork after one hearing:** route / root / rout / ruta /
+  rota. English does not even agree with itself (US /raʊt/ vs UK /ruːt/). This
+  is the exact test that killed Work Permit Almanac.
+- **Framework collision:** the site is Astro, where `routes` is the framework's
+  own noun; `route-rules` reads as Istio or Express config to the GitHub/HN
+  audience that is the declared *first* channel.
+- **Route hosts no verb this product can use** — every verb that collocates with
+  it is a movement verb (take, find, plan, follow).
+- **The only reliable disambiguator is the word the direction existed to
+  escape:** *visa* or *permit*.
+
+**Adjacency, not accuracy, is the argument:** building permits are an unrelated,
+institutional, unsalesy neighbourhood — nobody searching for German work rules
+concludes this is about driveways. Travel is *adjacent*, and adjacency is what
+misfiles you: it lands the product beside relocation and visa-agency services,
+the exact register the one-pager positions against.
+
+**Salvage, and it costs nothing:** keep *route* where it already earns its place
+— the schema noun, the UI noun, the SEO micro-page noun — and in the tagline,
+where a full sentence supplies what a name cannot: **"Every route, quoted and
+dated."**
+
+### The glossary direction found the project had already decided
+
+`CONTEXT.md`, first entry:
+
+> **Route**: One work/residence permit category of one country … *Avoid*: visa
+> (colloquial), program, pathway
+
+The project litigated the domain noun during the build and wrote the verdict
+down. *Route* is also the dataset's container key, the code's type
+(`RouteResult`) and the word in the shipped `<title>`.
+
+And it recomputed two numbers that matter: the dataset holds **23 routes**
+against the one-pager's v1 target of 35–40 (so no name may encode a count), and
+the one-pager's own schedule is **v1 ≈ 1 week, wave 2 ≈ +2 weeks** — which makes
+*permit*'s wave-2 problem a **three-week horizon, not a someday one**.
+
+Its ceiling is the sharpest thing in the reset: **a domain glossary is built by
+excluding the audience's words, so a name drawn from it systematically selects
+against recognition.** Every `CONTEXT.md` entry carries an *Avoid* list, and
+those lists are stocked with exactly the ambient vocabulary. The glossary's
+precision is *purchased* by rejecting what people say.
+
+### The audience direction found the mechanism, and a way out
+
+**The lead-gen register is a grammar, not a word list:** `[domain word] +
+[agent noun]`. VisaHQ, iVisa, Visa Navigator, VisaGuide — the second word always
+acts on your behalf (navigator, guide, adviser), processes you (HQ, place, hub,
+portal) or promises speed (express, direct). So the escape is a second word
+whose business model is incompatible with lead generation: **a rulebook has no
+agency — it can only be read, and reading it yourself is the outcome a lead-gen
+site exists to prevent.** Two tests it applied to every candidate: could this
+name sit on an ad ending in *Apply Now*? Does it slot into the VisaHQ roster
+unnoticed? *Visa Guide* slots in; *Visa Manual* does not.
+
+Two structural prizes nobody had claimed:
+
+- ***Visa* dissolves the prefix fork.** *Permit* needs *work* in front of it
+  because US English defaults it to buildings; *visa* means immigration to
+  everyone and needs no prefix. Two words where the permit family needed three.
+- ***Visa*'s error is flat across waves; *permit*'s grows.** v1 imprecise →
+  wave 2 correct for Australia → a US wave would make *visa* exactly right and
+  *permit* flatly wrong.
+
+Its ceiling, quoting the one-pager against itself: *"SERP baş terimleri lead-gen
+duvarı, ilk yıl beklenti yok"* — head terms are a wall with no expectation in
+year one. **So a name assembled from head terms buys comprehension in
+conversation and almost nothing in search, because the project has already
+written off the terms the name is made of.** The two channels pull opposite
+ways: year one is GitHub/HN, where *visa* reads as the imprecise word.
+
+And a risk no round had named: **Visa Inc.** The generic immigration sense lets
+VisaHQ and iVisa exist, but a two-word consumer wordmark is a different posture.
+Also untested: whether a Turkish reader types *visa*, *viza* or *vize*.
+
+### The artifact direction found a new axis
+
+**The artifact genre is the only word-class in English that is inherently
+dated.** A rulebook implies timelessness — its stated wound is that "book"
+hides the daily watch. A report, a statement, a transcript are "as of a date" by
+grammar rather than by tagline. That is the one axis on which this direction can
+beat the bar without novelty.
+
+Its three: **Route Report** (the best cascade on the board — site
+`route-report`, corpus `route-rules`, one sweep, nothing inconsistent left
+behind — but half the readers hear a traffic bulletin), **Route Transcript**
+(the only head noun in five directions that carries the verbatim promise *as a
+fact of the genre* rather than as a claim — and the AI-transcription industry
+owns the word, plus a domain-local misread as diploma evaluation), and **On
+Paper** (warm, uncopyable because it concedes a limit rather than claiming a
+virtue, and the calque holds in all five audience languages: *auf dem Papier*,
+*op papier*, *sur le papier*, *sobre el papel*, *kağıt üzerinde* — but zero
+domain signal and no cascade).
+
+Its ceiling: **the artifact is invisible before first use.** Someone searching
+"am I eligible for the German Blue Card" has never seen this document. And the
+audience's relationship to paperwork is fear — every document they own is one to
+obtain, apostille, translate and be judged on. A product named after a document
+joins that pile in the reader's head, even though ours is the only one that is
+*for* them rather than *about* them.
+
+Against its own pick: **the artifact is downstream of the corpus.** Naming the
+corpus after its own output inverts the dependency, and the human anchored on
+the dataset.
+
+---
+
+## New landmines (constraints for any later round)
+
+From the artifact sweep, and they are the most useful thing it produced:
+
+**Note/Notes** — a school grade in DE, FR, ES and TR, in a product that refuses
+to grade the person. **Card** — the EU Blue Card makes "Route Card" read as an
+issued document. **Profile** — profiling is toxic here, and it implies an
+account, contradicting the zero-backend promise. **Sheet** — the /ʃiːt/–/ʃɪt/
+minimal pair, the classic ESL failure; kill the whole family. **Passbook** —
+apartheid pass laws. **Citation** — a traffic summons in US English, inside an
+enforcement-adjacent domain. **Notice** — Notice to Appear. **Return** and
+**Settlement** — deportation and settlement visas. **Papers** — "papers,
+please". **Missing** — missing persons. **Receipt** — silent *p*. **Proof** —
+lands on *prova*/*Probe* (rehearsal, sample) in TR/DE and claims what the
+product refuses. **Account** — reads as sign-up. **Position** — reads as a job
+vacancy in a product where the user has a job offer.
+
+From the glossary sweep: **Watchlist** — in this audience's world, a no-fly
+list. The project's own glossary contains a word that would be catastrophic on
+the masthead; it joins *Register*/*Ausländerzentralregister* as the second time
+a records word turned into the thing the reader fears.
+
+## Reset graveyard
+
+**Route family:** Route Requirements (*q* has no Turkish letter; five-syllable
+plural) · Route Thresholds (*th* unavailable to TR/FR/ES speakers) · Route Rules
+(routing/service-mesh vocabulary to the launch channel) · Route Index / Route
+Table / Route Register (all literal networking terms, plus the inherited
+composite-ranking and AZR wounds) · Work Routes ("route to work" is the commute;
+US delivery-route sense; UK welfare-to-work jargon) · **Legal Routes** (kill on
+sight — "safe and legal routes" is asylum-policy vocabulary; raising that hope
+in the most desperate reader is harm-adjacent) · Permit Routes / Visa Routes
+(the disambiguator is the word the direction existed to escape) · Open Routes
+(OpenRouteService) · Route Quotes (*q*; and "quote" means price quote in a
+market full of paid relocation services) · Which Route (pure navigation).
+
+**Glossary family:** Sourced Routes (keeps *source*, but /sɔːst ruːts/
+transcribes as "sourced roots") · Threshold (unspellable from speech; TR has no
+/θ/) · Within Reach (names one of three verdicts — a lie told before the first
+question to the person whose every route is "not yet") · Declaration (the
+customs form; *déclaration*/*declaración* are tax returns) · Provenance
+(art-market vocabulary) · Watchlist (above) · Notice · Band · Baseline ·
+Sentinel · Flag · Points Ladder · Route Card · Route Table · Route Schedule ·
+Eligibility.
+
+**Audience family:** Visa Handbook (a step toward the consultant-ebook register)
+· Visa Minimums (minimums/minima fork; under-describes — several criteria are
+categorical) · Visa Thresholds (the *th* wound again) · Visa Facts (on a bad
+line it is "Visa Fax"; and *facts* is an honesty claim) · Visa Requirements (the
+most-typed phrase in the domain, therefore the most occupied) · **Visa
+Checklist** (the canonical lead-gen lead-magnet noun — comprehensible,
+spellable, and squarely inside the register; the case that proves the register
+test works) · Do I Qualify (promises the verdict the product forbids) · Visa
+Conditions (a term of art: restrictions on a *granted* visa) · Visa Numbers (US
+Visa Bulletin vocabulary) · Visa Law · Visa Tracker · Visa Score/Points ·
+anything with **Actual** (*aktuell*/*actuel*/*actual*/*actueel* all mean
+*current*).
+
+**Artifact family:** Permit Report (trades traffic collision for construction
+collision, keeps the wave-2 lie) · Threshold Report · Gap Report (names the
+arithmetic and hides the sourcing; purely negative framing) · Permit Statement
+(DE/NL *Statement* means a public utterance — an opinion, the one thing refused;
+plus the state-costume wound) · Route Standing (DE/NL *Standing* is social
+reputation; English "standings" is a league table) · Route Brief (a brief argues
+a side) · The Long Answer (tells an anxious reader it will take long) · Permit
+Summary (a label; implies condensing something the reader already had).
+
+**Verbs and phrases worth stealing rather than burying:** *see where you stand*
+(from Route Standing) · **"Every route, quoted and dated"** (from the route
+direction) · "Just the rules, quoted and dated" (from round 3).
+
+## Where the reset leaves it
+
+The decision has narrowed to **one variable**: the domain word in front of
+*Rulebook* — **Permit** (correct now, a lie in about three weeks, needs a third
+word) · **Route** (wave-proof, matches the schema, unspellable from speech,
+travel adjacency) · **Visa** (the audience's word, two words, flat error across
+waves, lead-gen adjacency escaped only by the head noun, Visa Inc. unassessed) —
+against two genuinely different alternatives from the artifact direction:
+**Route Report** (inherently dated, best cascade) and **On Paper** (warm,
+uncopyable, no cascade, no domain signal).
+
+Next: the recombination round, then the critique with its premise pass, then
+availability lookups on survivors.
