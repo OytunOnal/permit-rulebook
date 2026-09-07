@@ -649,3 +649,70 @@ uncopyable, no cascade, no domain signal).
 
 Next: the recombination round, then the critique with its premise pass, then
 availability lookups on survivors.
+
+---
+
+# Availability round (2026-09-07)
+
+Two `fast-researcher` agents, grounding rules enforced: a claim lives only if the
+page was fetched this session; a lookup that failed is reported as **failed**,
+never as "free".
+
+## The table
+
+| Candidate | .com | npm | PyPI | GitHub | Verdict |
+|---|---|---|---|---|---|
+| **Permit Rulebook** | NXDOMAIN | free | free | none | **clear** |
+| **Route Rulebook** | NXDOMAIN | free | free | none | **clear** |
+| **Route Transcript** | NXDOMAIN | free | free | none | **clear** |
+| Visa Rulebook | NXDOMAIN | free | free | none | domains clear, **the name is not** — see below |
+| Visa Manual | `visamanual.com` resolves (208.91.197.46, TLS refused — occupied, content unverified) | free | free | — | occupied |
+| Route Report | NXDOMAIN | **`route-report` taken** — "Generate a list of routes in your app" | free | `cmosig/route-report` exists | collides |
+| On Paper | **`on-paper.com` live** — a UK photography magazine, "an offline hard copy of online photo stories" | free | free | ambiguous | occupied |
+| Second Source | **lookup failed** (DNS server error — not free, not taken: unknown) | free | free | none | unresolved |
+
+## The finding that decides one candidate
+
+**Visa Rulebook is dead, twice over.**
+
+1. **The phrase already belongs to Visa Inc.** "Visa Rulebook" in search returns
+   Visa Inc.'s own *Visa Core Rules and Visa Product and Service Rules* — the
+   card network's operating rules document. The name we would be claiming is the
+   name of their rulebook.
+2. **Visa Inc. has litigated and won against a structurally identical name in
+   this exact space.** *Visa International Service Association v. JSL Corp.*
+   (9th Cir., 2010): the court held that **eVisa** — a visa-services brand —
+   diluted Visa Inc.'s mark, the two being "effectively identical" apart from
+   the prefix. Visa's own brand materials assert it "owns and manages the Visa
+   brand" and that its marks "may only be used by approved partners".
+
+VisaHQ, iVisa and VisaGuide.World coexist with Visa Inc. today, so the word is
+not blocked outright for immigration services — but whether "Visa Rulebook"
+falls in the tolerated cluster or the litigated one is a lawyer's judgment, not
+a naming round's. **Risk named, not adjudicated** — and there is no reason to
+spend a legal opinion when three candidates are clear.
+
+## The Turkish audience, checked at the source
+
+Turkey's own consular and migration bodies use **"Vize"**, not "visa" or "viza":
+`konsolosluk.gov.tr/Vize/` ("Vize Bilgisi", "Vize Ön Başvuru") and
+`goc.gov.tr/vize-sss`. So for the project owner's own first audience, an English
+name starting with "Visa" is a foreign word to be translated, not a label to be
+recognised. The one advantage the *visa* direction claimed — it is the word the
+audience types — does not hold for Turkish readers.
+
+## Claims from earlier rounds, now settled
+
+| Claim, asserted from memory | Verdict |
+|---|---|
+| openrouteservice is a prominent open routing API | **CONFIRMED** — Heidelberg University GIScience, OSM-based, with official PyPI and GitHub clients. Any `route-*` name lands in the GIS neighbourhood on a repo list. |
+| "safe and legal routes" is asylum-policy vocabulary | **CONFIRMED** — Amnesty UK, House of Commons Library briefing "Safe and legal humanitarian routes to the UK". *Legal Routes* stays buried, and the harm-adjacency reasoning holds. |
+| "Permit Lookup" is the title of US building-permit portals | **CONFIRMED** — live example headed "Building Permit Lookup by Address", plus the same convention across US jurisdictions. |
+| Ausländerzentralregister is Germany's central foreigner register | **CONFIRMED** — BAMF-run, ~26 million people, 6,000+ partner authorities, and a documented source of distrust among affected populations. The *Register* collision is real. |
+| "route report" is an existing document genre | **not found as an exact title** — but a UK road/rail infrastructure company trades as **Route Reports**, and npm's `route-report` is a routing tool. The traffic adjacency is evidenced by occupation rather than by genre. |
+
+## Where this leaves the gate
+
+Three candidates are clear on availability: **Permit Rulebook**, **Route
+Rulebook**, **Route Transcript**. The decision is no longer about what is free;
+it is the domain-word trade-off, now with evidence attached on both sides.
