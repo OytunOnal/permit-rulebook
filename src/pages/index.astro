@@ -58,14 +58,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <script>
     import dataset from "visa-rules/data/dataset.json";
     import {
-      deriveQuestions, remainingQuestions, evaluate, formatEURPer, routeProvenance,
-      thresholdsForField, deriveBands, unlocks, notices, forEachCriterion, fieldOptions, matchOptions, referencedFields,
+      deriveQuestions, remainingQuestions, evaluate, formatEURPer,
+      deriveBands, unlocks, notices, fieldOptions, matchOptions, referencedFields,
       countryClasses,
       // s5d: every word a verdict says comes from here, beside the rules — the
       // page holds no field-id-to-label table of its own to fall through
       // (product-critique v0.7, B3).
       shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
-      type Criterion, type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
+      type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
     } from "visa-rules";
     import { activeOption, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
     import { mastheadFor, screenAfter, type Explore, type FlowAction } from "../lib/screen.js";
@@ -73,7 +73,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The reason column's markup, beside the page rather than in it, so what
     // it renders can be read by a test (review S4).
     import { esc, failDetailHtml, whyHtml } from "../lib/reason.js";
-    import { caveatHtml, precondHtml } from "../lib/card.js";
+    import { caveatHtml, precondHtml, provenanceHtml, railHtml, unsourcedHtml, appliedThresholdOf } from "../lib/card.js";
 
     const ds = dataset as unknown as Dataset;
     // One field-lookup idiom for the whole page: the dataset never changes
@@ -380,41 +380,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       pushScreen();
     }
 
-    function railFor(result: RouteResult): string {
-      // Nested too: NL ICT states its thresholds inside an any-disjunction, so
-      // a top-level-only scan drew no rail on exactly those near cards (review).
-      const salary = gapCriterionOf(result) ??
-        gteCriteriaOf(result).find((c) => answers[c.field] !== undefined);
-      if (!salary) return "";
-      const field = salary.field;
-      const ts = thresholdsForField(ds, field);
-      const bands = deriveBands(ds, field);
-      const band = bands.find((b) => b.id === answers[field]);
-      if (!band || ts.length === 0) return "";
-      const lo = Math.min(...ts) * 0.88, hi = Math.max(...ts) * 1.1;
-      const pct = (v: number) => Math.max(2, Math.min(98, ((v - lo) / (hi - lo)) * 100));
-      const bMin = pct(band.min ?? lo), bMax = pct(band.max ?? hi);
-      const ticks = ts.map((t) => `<span class="tick" style="left:${pct(t)}%" title="${formatEURPer(t, periodOf(field))} — a threshold on another route"></span>`).join("");
-      // Label only this route's own threshold — neighbouring ticks stay as
-      // unlabeled context so close thresholds can't collide.
-      const own = salary.threshold.amount;
-      const labels = `<span class="lbl" style="left:${pct(own)}%"><b>${formatEURPer(own, periodOf(field))}</b>${
-        salary.threshold_label ? esc(salary.threshold_label) : ""}</span>`;
-      // The two labels overprint when the band meets the threshold (critique
-      // #10). Shifting sideways only moved the collision — the labels are
-      // wider than the narrow bands — so the second label drops to its own
-      // line, where no width can bring them back together.
-      const centre = (bMin + bMax) / 2;
-      const collides = Math.abs(pct(own) - centre) < 14;
-      const youStyle = `left:${centre}%;top:${collides ? "2.5rem" : "1.35rem"}`;
-      return `
-        <div class="rail" aria-label="Salary thresholds">
-          <div class="bar"><span class="you" style="left:${bMin}%;width:${bMax - bMin}%"></span>${ticks}</div>
-          <div class="lbls">${labels}
-            <span class="lbl you-l" style="${youStyle}"><b>your band</b></span>
-          </div>
-        </div>`;
-    }
 
     type CritResult = RouteResult["criteria"][number];
 
@@ -424,22 +389,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const openUnknownsOf = (r: RouteResult) => liveUnknowns(r, answers);
     const hasLiveUnknown = (r: RouteResult) => openUnknownsOf(r).length > 0;
 
-    /** Every gte criterion in a route, at any depth. */
-    function gteCriteriaOf(r: RouteResult): Extract<Criterion, { op: "gte" }>[] {
-      const out: Extract<Criterion, { op: "gte" }>[] = [];
-      forEachCriterion(r.route.criteria, (c) => { if (c.op === "gte") out.push(c); });
-      return out;
-    }
-
-    /** The gte criterion a bounded gap was measured on — matched by amount, so
-     * a gap propagated out of a disjunction still finds its field (review). */
-    function gapCriterionOf(r: RouteResult): Extract<Criterion, { op: "gte" }> | undefined {
-      if (r.gap_max === undefined) return undefined;
-      return gteCriteriaOf(r).find((c) => {
-        const band = deriveBands(ds, c.field).find((b) => b.id === answers[c.field]);
-        return band !== undefined && Math.abs(c.threshold.amount - (band.min ?? 0) - r.gap_max!) < 0.005;
-      });
-    }
 
     /** Why this route reads the way it does — a sentence, from the engine.
      * The page used to compose this itself out of field names, which is how
@@ -450,33 +399,17 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * stated on every card so "criteria met" cannot overpromise. Both blocks
      * are rendered beside the page (lib/card.ts) so a test can read them. */
     const precondFor = (r: RouteResult): string => precondHtml(r.route);
-    /** What the source says its own answer does not settle. Never a failure. */
-    const caveatFor = (r: RouteResult): string => caveatHtml(r.route);
+    /** What the source says its own answer does not settle. Never a failure —
+     * and never under the "Also required" heading, which would turn "you may
+     * qualify for less" into one more bar to clear (human catch 2026-09-07). */
+    const caveatFor = (r: RouteResult): string => caveatHtml(r.route) + unsourcedHtml(r.route);
+    /** The rail, labelled with the threshold this result was measured
+     * against — the path that was met, or the nearest reachable one. */
+    const railFor = (r: RouteResult): string => railHtml(ds, r, answers);
+    /** Every value the route rests on, quoted, dated, and — where the route
+     * states more than one threshold — marked with which one applied. */
+    const provenanceFor = (r: RouteResult): string => provenanceHtml(ds, r);
 
-    /** The period a provenanced amount is stated per, when the dataset knows it
-     * and the quote does not say it. A Dutch monthly figure beside a German
-     * annual one is a twelvefold error at a glance (isolated critique). */
-    function periodCaption(r: RouteResult, amount: number | undefined): string {
-      if (amount === undefined) return "";
-      const c = gteCriteriaOf(r).find((x) => x.threshold.amount === amount);
-      const p = c ? periodOf(c.field) : undefined;
-      return p ? ` · per ${p}` : "";
-    }
-
-    function provenanceFor(r: RouteResult): string {
-      const lines = routeProvenance(r.route).map(({ label, value, amount }) => {
-        const host = new URL(value.source_url).hostname.replace(/^www\./, "");
-        return `<div class="src"><i>“${esc(value.quote)}”</i> · ${esc(host)}${label ? ` · ${esc(label)}` : ""}${
-          periodCaption(r, amount)}${
-          value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b></div>`;
-      });
-      // The promise on the first screen is that every value shows its quote and
-      // its read date. A route with no numeric threshold has no value to quote,
-      // and silence there reads as if the promise held (isolated critique #5).
-      if (!lines.length)
-        return `<div class="srcs"><div class="src nosrc">No numeric threshold on this route, so there is no dated value to quote — its conditions are the ones stated above, and the official page carries their wording.</div></div>`;
-      return `<div class="srcs">${lines.join("")}</div>`;
-    }
 
     // s3: "I don't know" answers get an official find-out link — driven by the
     // dataset's field `learn` sources, never hardcoded in the UI.
@@ -497,7 +430,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     /** The money field a route's bounded gap is measured on — its period is
      * what makes "€1,585" readable as monthly or annual (critique #7). */
-    const gapFieldOf = (r: RouteResult) => gapCriterionOf(r)?.field ?? "";
+    const gapFieldOf = (r: RouteResult) => appliedThresholdOf(ds, r, answers)?.field ?? "";
 
     /** One gap, one format, everywhere it is printed (card, headline, unlock). */
     const gapAmount = (r: RouteResult) =>
@@ -1118,6 +1051,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .caveat{font-size:.83rem;color:var(--color-muted);border-left:3px solid var(--color-muted);
       padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}
     .caveat b{color:var(--color-ink)}
+    /* A caveat we could not find the wording for says so in its own voice,
+       and says why (human catch 2026-09-07). */
+    .caveat.nosrc i{font-style:italic;opacity:.85}
     /* s5b: the situation-gated rows, said once (critique #5b). */
     details.hold-group{margin-top:.1rem}
     details.hold-group > summary{cursor:pointer;list-style:none;font:600 .82rem var(--font-sans);color:var(--color-muted);
@@ -1171,6 +1107,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .src{font:var(--text-source);color:var(--color-muted)}
     .src b{color:var(--color-met);font-weight:500}
     .src.nosrc{font-style:italic}
+    /* Where a route states two thresholds, both quotes stay — the reader may
+       want to know the other exists — but only one of them is theirs. */
+    .src .applies{color:var(--color-met)}
+    .src.unapplied{opacity:.72}
+    .src .applies-not{font-style:italic}
     .next{font:600 .78rem var(--font-sans);text-decoration:none;white-space:nowrap}
     .next::after{content:" ↗"}
 
