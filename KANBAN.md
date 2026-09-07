@@ -12,8 +12,8 @@ flowchart LR
     C --> C2["Leverage analysis: what each step unlocks ✅ real-green (v0.4–v0.5)"]
     C2 --> D["Source watch + change flag ✅ real-green (v0.6)"]
     D --> E["Four countries · honest verdicts · exceptions ✅ real-green (v0.7)"]
-    E --> E2["Answers recorded as given ◀ here (s5d)"]
-    E2 --> E3["Every sentence carries its source (s5e)"]
+    E --> E2["Answers recorded as given ✅ real-green (v0.8)"]
+    E2 --> E3["Every sentence carries its source ◀ here (s5e)"]
     E3 --> F["Public launch 🏁 v1"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
@@ -212,6 +212,17 @@ _(empty — everything real-green so far is stamped into done)_
   tiers, ndjson, commit-gated state, flag files with quoted context), DE via
   ZAV edition-index sentinel, daily CI workflow hardened against alert loss.
   (2026-09-02)
+- **v0.8** — Answers recorded as given, verdicts in plain words: real listbox
+  semantics on the country picker (Enter commits the highlighted row, exact
+  matches first), the Dutch reduced salary criterion gated on where you
+  studied rather than on a country-less question, every not-met reason a
+  sentence rather than a field id, a masthead that cannot claim a comparison
+  that has not happened, localStorage persistence with a print stylesheet, and
+  cards that name the threshold that actually decided them. Three false
+  requirements removed — Chancenkarte part-time work, the orientation year and
+  the Chancenkarte both conditioned on having no job offer — each our own
+  reasoning shipped as a rule, each found by a human reading a screen.
+  264 + 57 tests. (2026-09-07)
 - **v0.7** — Four countries, honest verdicts, exceptions: 23 routes across
   DE/FR/ES/NL with a destination-first interview; notices that answer "do you
   even need a permit"; route preconditions stated rather than implied;

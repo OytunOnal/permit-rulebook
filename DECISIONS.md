@@ -1279,3 +1279,37 @@ new expectations carry the reason.
 **Glossary:** `Route statement`, `Caveat`, `Unsourced`, `Deciding path` and
 `Still reachable` are now in CONTEXT.md. `Unsourced` had to declare itself an
 exception to `Provenance` rather than quietly contradict it.
+
+## 2026-09-07 — v0.8: s5d is real-green, and who checked what
+
+The acceptance walk was split, and the split is part of the record. The human
+walked the country picker (typed `niger`, arrowed once, pressed Enter — the
+highlighted country was the one recorded) and the Start over / reload pair
+(question 1 claims nothing; a reload after Start over begins at question 1).
+They asked this session to take the other three, and it did:
+
+- **The deciding path, confirmed on screen.** With no Dutch degree the card is
+  within reach against €4,357 and marks the €3,122 quote "does not apply to
+  you"; with a Dutch degree it is criteria met against €3,122, the band starts
+  at the label, and the two marks swap. The contradiction the human found — a
+  met card over a threshold the reader had not met — is gone.
+- **The Chancenkarte, confirmed on screen.** It now appears for someone holding
+  a job offer, with no "Also required" block, and § 20a(2) beside it: "The card
+  allows work of up to 20 hours a week on average… That is a limit on what it
+  lets you do, not a condition of getting it."
+- **The undecided-marking case is not reachable by clicking, and the walk step
+  asking for it was written wrong by this session.** Salary is the last question
+  of the interview, so no results screen exists with it unanswered, and the
+  shipped dataset has no route carrying two disjunctions. The defect was real in
+  the engine's provenance output and never on a screen. It is pinned by a test
+  that asserts both quotes render with no mark, and that carries a negative
+  control so it cannot pass by marking nothing anywhere.
+
+**v0.8 stamped.** Answers recorded as given, verdicts in plain words, cards
+naming the threshold that decided them.
+
+**What this slice cost, and it is worth stating plainly:** it was built once and
+extended four times, every extension by a finding rather than an idea. The tests
+were green at every point where a human then found something. Three false
+requirements were removed, all three of them our own editorial reasoning shipped
+in the shape of a rule, and none of the three was ever caught by a suite.
