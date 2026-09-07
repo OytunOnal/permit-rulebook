@@ -52,7 +52,7 @@ a { color: var(--color-stamp); }
 a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0; margin: calc((1.6em - var(--tap-min)) / 2) 0; }
 
 /* ---- masthead ---- */
-.masthead { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); border-bottom: var(--rule-heavy); padding-bottom: var(--space-4); }
+.masthead { display: flex; justify-content: space-between; align-items: center; /* the pair sits level with the middle of the text block (human, 2026-09-07) */ gap: var(--space-4); border-bottom: var(--rule-heavy); padding-bottom: var(--space-4); }
 /* The text column stops at 37rem; the stamp pair sits centred in the space that
    is left, not flush against the edge (human, 2026-09-07). */
 .masthead > div:first-child { flex: 0 1 37rem; }
@@ -143,7 +143,7 @@ footer .health { display: flex; justify-content: space-between; gap: var(--space
 footer .health a { display: inline-flex; align-items: center; min-height: var(--tap-min); }
 
 @media (max-width: 760px) {
-  .masthead { flex-direction: column; }
+  .masthead { flex-direction: column; align-items: stretch; }
   .masthead > div:first-child { flex: 0 1 auto; }
   .stamps { align-self: flex-end; margin: 0 0 0 auto; }
   .src { flex-direction: column; }
