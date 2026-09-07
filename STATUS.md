@@ -28,7 +28,18 @@ invariants. Then the two-axis code review, then the human's real-green items.
 
 ## What is expected from you
 
-- [ ] **Nothing until the build returns.** When it does, the real-green items
+- [ ] **The first 48 hours, written now (decision 11, before any link goes out):**
+      *Watch:* the tracker on `permit-rulebook-data` (new issues, all three
+      labels), the watch workflow's flag issues, and the Show HN thread — every
+      two hours the first day, morning and evening the second.
+      *Where:* GitHub notifications for both repositories, the workflow-run
+      page for the daily watch, the HN thread itself; nothing else is
+      instrumented, and no analytics ships at v1.
+      *Pull the post if:* a reported wrong verdict is confirmed against the
+      source; a watch flag shows a value on a live page has gone stale; or a
+      legal objection to a quote arrives. Any one of the three, the post comes
+      down first and the fix comes second.
+- [ ] **Nothing else until the review round closes.** When it does, the real-green items
       come to you one at a time, each with the exact screen and what a pass
       looks like: the phone walk on the deploy preview; the GitHub renames,
       Pages and the domain; the first live watch flag read against its source;

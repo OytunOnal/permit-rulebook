@@ -16,7 +16,11 @@ _Avoid_: visa (colloquial), program, pathway
 **Criterion**:
 A single testable requirement of a route. A route is the AND of its criteria;
 a disjunction ("Fachkraft OR points") is itself one criterion with paths.
-_Avoid_: rule, condition, requirement
+_Avoid_ (in code, tests and these ledgers): rule, condition, requirement.
+**In front of a reader the word is "condition"** (a rule card's kind label,
+"some conditions stated, not asked"): the avoid-list guards the engineering
+vocabulary, and "criterion" itself is on the reader-facing avoid-list. One
+concept, two registers, both declared (s6, 2026-09-07).
 
 **Threshold**:
 An official numeric minimum (salary, monthly funds, points), always carried
@@ -33,7 +37,9 @@ _Avoid_: citation, reference, metadata
 Something a source says about one route that no criterion can compute, carried
 in the source's own words — either a Precondition that ships with its quote, or
 a Caveat. Watched and quote-checked like every other value.
-_Avoid_: note, editorial, prose, footnote, condition
+_Avoid_ (in code and ledgers): note, editorial, prose, footnote, condition —
+the reader sees "condition" for a Precondition, by the same register rule as
+Criterion.
 
 **Caveat**:
 A qualification a source puts on its own answer, shown beside the verdict and
