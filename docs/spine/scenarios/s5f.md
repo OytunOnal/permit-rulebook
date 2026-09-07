@@ -31,8 +31,9 @@ that keeps most of it.
    text layer behind its embedded fonts (the decoder written on 2026-09-07 is
    the starting point), normalises it, and stores it as `text` beside the
    byte-hash. The quote-fidelity gate then reads PDF quotes like html ones.
-   **A PDF with no text layer reports `unverifiable — pdf tier — no text
-   layer`**, as now — the strategy must not invent text from an image. A
+   **A PDF with no text layer reports `unverifiable — scanned-image`** (the
+   enumerated Unsourced reason; review ruling 2026-09-07 — the old "pdf tier —
+   no text layer" wording was a second spelling) — the strategy must not invent text from an image. A
    changed text layer with an unchanged hash cannot happen; a re-typeset PDF
    with the same words reports `unchanged` on text, which is the point.
 3. **Every bare precondition becomes a sourced precondition statement, or a
@@ -76,8 +77,8 @@ pages, all already watched after s5e.
 3. **The last human tier closes.** `npm run check` reports the PDF quotes as
    verified, `human_tier: 0`, and `verify-s5e.md` is marked closed by the
    machine with the date. Feed the strategy a PDF with no text layer: it
-   reports `unverifiable — no text layer`, never verified.
-4. **The 38 lines.** `npm run check` prints the prose-provenance line with
+   reports `unverifiable — scanned-image` (the enumerated word; the message tail still says "no text layer" — review ruling 2026-09-07), never verified.
+4. **The 37 lines** (the scenario said 38; the file held 37 at every commit s5f could start from — my miscount, DECISIONS 2026-09-07)**.** `npm run check` prints the prose-provenance line with
    every precondition accounted for — sourced, ours, or gone — and the count of
    each. Walk a German and a Dutch card and read "Also required" aloud: every
    line either carries a quote with a host and date or is under "Our reading".
@@ -107,7 +108,9 @@ pages, all already watched after s5e.
 
 ## Runs
 
-- mock-green: —
+- mock-green: 2026-09-07 — built and reviewed on both axes (15 findings
+  applied); 323 engine + 70 navigator tests; `human_tier: 0`; 120 quotes
+  verified; fixed-population differential 15 rows better, 0 worse.
 - real-green: — (requires the human: read the moved Spanish verdicts as a
   list and agree each moved the right way; read one translated decision
   against its Turkish original and confirm the argument is the same)
