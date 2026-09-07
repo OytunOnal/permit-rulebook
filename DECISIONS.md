@@ -1233,3 +1233,49 @@ note turned out to be doing a rule's job — the Chancenkarte "part-time work"
 line, `nl-orientation-year`'s `situation = none`, and `de-chancenkarte`'s twin
 of it. Each was found by a human reading a screen, not by a test. A field that
 permits claims without evidence produces them.
+
+## 2026-09-07 — s5d closes, after four rounds of findings and one false claim
+
+The slice was built once and then extended four times, every extension by a
+finding rather than by an idea: the two-axis code review (10 findings), the
+human's own walk (the orientation-year false requirement, then the rail naming
+the wrong threshold, then the precondition voice), and a second review round on
+the package that answered them (15 findings). 264 tests in visa-rules, 57 in
+the navigator, from 184 at the slice's start.
+
+**What kept being true:** the tests were green at every point where a human
+then found something. Three false requirements — Chancenkarte "part-time work",
+`nl-orientation-year`'s `situation = none`, `de-chancenkarte`'s twin of it —
+were all found by a person reading a screen, never by a suite. Each was our own
+editorial reasoning shipped in the shape of a rule.
+
+**The rule that produced them, now closed:** unsourced prose could say anything.
+`Route.statements` gives a source's own words a place to live, and s5e will
+finish the job for the 46 criterion notes.
+
+**A claim in a build report was wrong, and the correction matters both ways.**
+The builder reported pinning the now-unreachable `moot` kind with a test. The
+Spec reviewer grepped the four *new* test files, found nothing, and reported
+the test did not exist; this session repeated that to the human as fact. Both
+were wrong: the test is in `reason.test.ts`, which was *modified*, not new. The
+builder's own error was different and real — that test pins rendered row
+classes over 60 sampled profiles, not `mootWith` at all. A dataset-driven pin
+now exists. **Cost of the lesson:** a grep scoped to new files is not a search,
+and a session that relays a reviewer's negative without checking it inherits
+the mistake.
+
+**Scope creep, kept deliberately:** `openBounded`. A disjunction whose paths
+fail only by bounded gaps, but whose own answers are still open, was reporting
+an ungapped fail — which retires the route and its remaining questions. A
+transferee declaring €0 read as a dead route because nobody asked their age.
+Outside the scenario, outside the four fixes, found by the property suite, and
+kept: it is a wrong verdict, not a feature.
+
+**Cost of the slice, stated:** the interview lengthened for offer-holders, 8
+questions to 11, because two routes that genuinely apply to them stopped being
+hidden. An earlier slice's "few questions" measurement moved with it, and the
+new expectations carry the reason.
+
+**Glossary:** `Route statement`, `Caveat`, `Unsourced`, `Deciding path` and
+`Still reachable` are now in CONTEXT.md. `Unsourced` had to declare itself an
+exception to `Provenance` rather than quietly contradict it.

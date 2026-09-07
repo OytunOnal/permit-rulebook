@@ -25,8 +25,44 @@ _Avoid_: limit, cutoff
 
 **Provenance**:
 What every value must carry to exist: official source URL, verbatim quote,
-retrieval date, and an append-only history of prior values.
+retrieval date, and an append-only history of prior values. One declared
+exception: **Unsourced**.
 _Avoid_: citation, reference, metadata
+
+**Route statement**:
+Something a source says about one route that no criterion can compute, carried
+in the source's own words — either a Precondition that ships with its quote, or
+a Caveat. Watched and quote-checked like every other value.
+_Avoid_: note, editorial, prose, footnote, condition
+
+**Caveat**:
+A qualification a source puts on its own answer, shown beside the verdict and
+never scored — it fails nobody. Several say the reader may qualify for *less*,
+which is why a caveat never appears under "Also required — not checked here".
+_Avoid_: precondition, requirement, warning, disclaimer, fine print
+
+**Unsourced**:
+The one declared exception to Provenance: a Route statement carrying no
+verbatim quote, because the source does not publish one we can read. Recorded
+as an enumerated reason — `scanned-image`, `not-published-in-words`,
+`unreachable` — plus the date we last looked, never as prose, which would make
+the gate optional by writing. The card says in the open that it has no quote
+and why; a neighbouring quote is never borrowed to cover it.
+_Avoid_: undocumented, unverified, missing source, TODO, "no source found"
+
+**Deciding path**:
+The single path of a disjunction an outcome actually rested on — the one that
+passed, or, where none did, the nearest reachable one the gap was measured to.
+It names the threshold the reader was measured against, and other paths are
+marked as not theirs. **Where nothing has decided, no path is claimed and
+nothing is marked either way** — a card that has decided nothing marks nothing.
+_Avoid_: matched path, winning branch, chosen path, first path
+
+**Still reachable**:
+A criterion result that did not fail, or failed only by a Bounded gap. The
+single predicate behind route status, hard fail and question selection — it was
+once spelled four different ways, and the spellings drifted.
+_Avoid_: alive, open, possible, not-yet-failed
 
 **Points ladder**:
 A criterion scored across several declared items against a required total
