@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Identity A — wordmark only · Permit Rulebook</title>
+<style>
+/* Option A for the launch identity: no drawn mark. Everything is set from the
+   token set — the serif wordmark and the stamp motif are the identity. Shown at
+   the three places someone meets it in the first minute: the header (desktop
+   and 390), the browser tab (favicon at 16/32/64), and the social card that a
+   pasted link renders (1200×630). Tokens pasted so the mock opens standalone. */
+:root {
+  --color-bg: #f1eee4; --color-card: #fbf9f2; --color-ink: #2b2a22; --color-muted: #5a5747; --color-line: #d9d3c0;
+  --color-stamp: #8c2b2b; --color-met: #2e5b3f; --color-near: #8a5a19; --color-hold: #7b7869; --color-hold-soft: #edeadf; --color-band: #31519a;
+  --font-serif: Cambria, Georgia, serif; --font-sans: "Segoe UI", system-ui, sans-serif; --font-mono: Consolas, monospace;
+  --text-hero: 400 2.2rem/1.2 var(--font-serif); --text-body: 15px/1.6 var(--font-sans);
+  --text-label: 700 .7rem var(--font-sans); --text-value: 600 .8rem var(--font-mono); --text-source: 400 .76rem var(--font-mono); --tracking-label: .18em;
+  --rule-heavy: 3px double var(--color-ink); --rule-soft: 1px solid var(--color-line); --rule-dotted: 1px dotted var(--color-line);
+  --space-2: .5rem; --space-3: .85rem; --space-4: 1.3rem; --space-5: 1.6rem; --space-6: 2.8rem; --max-content: 56rem; --tap-min: 44px;
+  --stamp-border: 2.5px solid var(--color-stamp); --stamp-rotate: -6deg;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #555; color: #eee; font: 13px/1.5 system-ui; padding: 24px; }
+h2 { font: 600 14px system-ui; margin: 32px 0 8px; color: #eee; }
+h2 small { font-weight: 400; color: #bbb; }
+.panel { background: var(--color-bg); color: var(--color-ink); font: var(--text-body); }
+
+/* ---- the wordmark: serif, two words, one weight; the stamp is the only ornament ---- */
+.wordmark { font: 700 1.25rem/1 var(--font-serif); letter-spacing: .01em; color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; gap: .55rem; min-height: var(--tap-min); }
+.wordmark .seal { display: inline-block; width: 1.05em; height: 1.05em; border: 2px solid var(--color-stamp); color: var(--color-stamp); font: 700 .55em/1 var(--font-mono); letter-spacing: 0; display: inline-flex; align-items: center; justify-content: center; transform: rotate(var(--stamp-rotate)); }
+.tagline { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
+
+/* ---- 1. the site header ---- */
+.site { max-width: var(--max-content); margin: 0 auto; padding: var(--space-4); }
+.hdr { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); border-bottom: var(--rule-heavy); padding-bottom: var(--space-3); }
+.hdr nav { display: flex; gap: var(--space-4); }
+.hdr nav a { color: var(--color-ink); text-decoration: none; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; display: inline-flex; align-items: center; min-height: var(--tap-min); }
+.below { padding-top: var(--space-4); }
+.below h1 { font: var(--text-hero); margin: 0; }
+.below h1 em { font-style: normal; color: var(--color-near); }
+.phone { width: 390px; padding: var(--space-3) var(--space-4); }
+.phone .hdr { align-items: center; }
+.phone .hdr nav { display: none; }
+.phone .hdr .burger { width: var(--tap-min); height: var(--tap-min); display: grid; place-items: center; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); }
+
+/* ---- 2. the favicon: three candidates at the three sizes a tab uses ---- */
+.favs { display: flex; gap: 40px; align-items: flex-end; padding: var(--space-4); flex-wrap: wrap; }
+.fav { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.fav .row { display: flex; gap: 14px; align-items: flex-end; }
+.fav .cap { font: var(--text-source); color: var(--color-muted); text-align: center; max-width: 12rem; }
+.ico { display: inline-flex; align-items: center; justify-content: center; background: var(--color-bg); color: var(--color-stamp); border: 2px solid var(--color-stamp); font: 700 1em var(--font-mono); }
+.ico.p { font-family: var(--font-serif); }
+.ico.tilt { transform: rotate(var(--stamp-rotate)); }
+.ico.solid { background: var(--color-stamp); color: var(--color-bg); border-color: var(--color-stamp); }
+.s16 { width: 16px; height: 16px; font-size: 9px; border-width: 1px; }
+.s32 { width: 32px; height: 32px; font-size: 17px; }
+.s64 { width: 64px; height: 64px; font-size: 34px; border-width: 3px; }
+.tab { display: inline-flex; align-items: center; gap: 8px; background: #dfe1e5; color: #202124; font: 12px system-ui; padding: 6px 12px; border-radius: 8px 8px 0 0; }
+
+/* ---- 3. the social card, 1200×630, shown at half size ---- */
+.og { width: 600px; height: 315px; background: var(--color-bg); color: var(--color-ink); padding: 34px 40px; display: flex; flex-direction: column; justify-content: space-between; position: relative; border: var(--rule-soft); }
+.og .top { display: flex; justify-content: space-between; align-items: flex-start; }
+.og .wordmark { font-size: 1.4rem; }
+.og .stamp { font: var(--text-value); color: var(--color-stamp); border: var(--stamp-border); padding: .35rem .6rem; transform: rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: .1em; line-height: 1.25; text-align: center; }
+.og h1 { font: 400 2rem/1.15 var(--font-serif); margin: 0; max-width: 24rem; }
+.og h1 em { font-style: normal; color: var(--color-near); }
+.og .foot { display: flex; justify-content: space-between; align-items: flex-end; border-top: var(--rule-heavy); padding-top: 10px; font: var(--text-source); color: var(--color-muted); }
+.og .foot b { color: var(--color-met); font-weight: 600; }
+.preview { display: inline-block; background: #fff; border: 1px solid #ccc; border-radius: 12px; overflow: hidden; margin-top: 10px; width: 420px; font: 13px system-ui; color: #222; }
+.preview .img { width: 420px; height: 220px; overflow: hidden; }
+.preview .img .og { transform: scale(.7); transform-origin: top left; }
+.preview .meta { padding: 10px 12px; }
+.preview .meta .t { font-weight: 600; }
+.preview .meta .d { color: #555; margin-top: 2px; }
+.preview .meta .u { color: #888; font-size: 11px; margin-top: 4px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<h2>1 · The header <small>— desktop, then 390 px</small></h2>
+<div class="panel">
+  <div class="site">
+    <header class="hdr">
+      <a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a>
+      <nav><a href="#">Routes</a><a href="#">Check yours</a><a href="#">The data</a></nav>
+    </header>
+    <div class="below"><h1>Which work-permit routes could fit? <em>A few quick questions.</em></h1></div>
+  </div>
+</div>
+<div class="panel phone" style="margin-top:12px">
+  <header class="hdr">
+    <a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a>
+    <span class="burger">Menu</span>
+  </header>
+  <div class="below"><span class="tagline">Every route, quoted and dated.</span></div>
+</div>
+
+<h2>2 · The tab <small>— three favicon candidates at 16 / 32 / 64 px, and how each sits in a tab</small></h2>
+<div class="panel favs">
+  <div class="fav">
+    <div class="row"><span class="ico s16">PR</span><span class="ico s32">PR</span><span class="ico s64">PR</span></div>
+    <span class="tab"><span class="ico s16">PR</span> Permit Rulebook</span>
+    <span class="cap">A · monogram in the stamp frame, mono</span>
+  </div>
+  <div class="fav">
+    <div class="row"><span class="ico s16 tilt">PR</span><span class="ico s32 tilt">PR</span><span class="ico s64 tilt">PR</span></div>
+    <span class="tab"><span class="ico s16 tilt">PR</span> Permit Rulebook</span>
+    <span class="cap">B · the same, tilted like the stamp — at 16 px the tilt reads as a smudge</span>
+  </div>
+  <div class="fav">
+    <div class="row"><span class="ico s16 p solid">P</span><span class="ico s32 p solid">P</span><span class="ico s64 p solid">P</span></div>
+    <span class="tab"><span class="ico s16 p solid">P</span> Permit Rulebook</span>
+    <span class="cap">C · a single serif P on stamp red — the one that survives 16 px</span>
+  </div>
+</div>
+
+<h2>3 · The social card <small>— what a pasted link shows (1200 × 630, at half size), then inside a preview</small></h2>
+<div class="og">
+  <div class="top">
+    <span class="wordmark"><span class="seal">PR</span>Permit Rulebook</span>
+    <span class="stamp">Rules read<br>2026-09-07</span>
+  </div>
+  <h1>Which work-permit routes could fit? <em>Every route, quoted and dated.</em></h1>
+  <div class="foot"><span>Germany · France · Spain · Netherlands · 23 routes</span><span>every value with its official sentence · <b>checked daily</b></span></div>
+</div>
+<div class="preview">
+  <div class="img"><div class="og">
+    <div class="top"><span class="wordmark"><span class="seal">PR</span>Permit Rulebook</span><span class="stamp">Rules read<br>2026-09-07</span></div>
+    <h1>Which work-permit routes could fit? <em>Every route, quoted and dated.</em></h1>
+    <div class="foot"><span>Germany · France · Spain · Netherlands · 23 routes</span><span>every value with its official sentence · <b>checked daily</b></span></div>
+  </div></div>
+  <div class="meta"><div class="t">Permit Rulebook — every route, quoted and dated</div><div class="d">An open, dated, source-quoted work-permit ruleset for four countries. Code compares published values with what you declare — nothing more.</div><div class="u">permitrulebook.com</div></div>
+</div>
+
+</body>
+</html>
