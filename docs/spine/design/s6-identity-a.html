@@ -30,7 +30,7 @@ h2 small { font-weight: 400; color: #bbb; }
 .wordmark { font: 700 1.25rem/1 var(--font-serif); letter-spacing: .01em; color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; gap: .55rem; min-height: var(--tap-min); }
 /* The seal is a stamp, so it is wider than tall: two letters in a square did
    not fit at any size (human: "PR has not fit in the stamp square"). */
-.wordmark .seal { display: inline-flex; align-items: center; justify-content: center; height: 1.05em; padding: 0 .3em; border: 2px solid var(--color-stamp); color: var(--color-stamp); font: 700 .5em/1 var(--font-mono); letter-spacing: .08em; transform: rotate(var(--stamp-rotate)); }
+.wordmark .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.15em; height: 1.15em; border: 2px solid var(--color-stamp); color: var(--color-stamp); font: 700 .62em/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); }
 .tagline { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
 
 /* ---- 1. the site header ---- */
@@ -52,13 +52,16 @@ h2 small { font-weight: 400; color: #bbb; }
 .fav .row { display: flex; gap: 14px; align-items: flex-end; }
 .fav .cap { font: var(--text-source); color: var(--color-muted); text-align: center; max-width: 12rem; }
 .fav.rej { opacity: .55; }
-.ico { display: inline-flex; align-items: center; justify-content: center; background: var(--color-bg); color: var(--color-stamp); border: 2px solid var(--color-stamp); font: 700 1em var(--font-mono); }
+/* Chosen 2026-09-07 (human): B — the tilted PR stamp, enlarged to fill its
+   frame, used everywhere the identity appears. The letters take the whole
+   square; the frame is as thin as the size allows; the tilt is the stamp's. */
+.ico { display: inline-flex; align-items: center; justify-content: center; background: var(--color-bg); color: var(--color-stamp); border: 2px solid var(--color-stamp); font: 700 1em/1 var(--font-mono); letter-spacing: -.04em; }
 .ico.p { font-family: var(--font-serif); }
 .ico.tilt { transform: rotate(var(--stamp-rotate)); }
 .ico.solid { background: var(--color-stamp); color: var(--color-bg); border-color: var(--color-stamp); }
-.s16 { width: 16px; height: 16px; font-size: 9px; border-width: 1px; }
-.s32 { width: 32px; height: 32px; font-size: 17px; }
-.s64 { width: 64px; height: 64px; font-size: 34px; border-width: 3px; }
+.s16 { width: 16px; height: 16px; font-size: 10px; border-width: 1px; }
+.s32 { width: 32px; height: 32px; font-size: 21px; border-width: 2px; }
+.s64 { width: 64px; height: 64px; font-size: 42px; border-width: 3px; }
 .tab { display: inline-flex; align-items: center; gap: 8px; background: #dfe1e5; color: #202124; font: 12px system-ui; padding: 6px 12px; border-radius: 8px 8px 0 0; }
 
 /* ---- 3. the social card, 1200×630, shown at half size ---- */
@@ -99,22 +102,22 @@ h2 small { font-weight: 400; color: #bbb; }
   <div class="below"><span class="tagline">Every route, quoted and dated.</span></div>
 </div>
 
-<h2>2 · The tab <small>— a favicon is square, so two letters never fit at 16 px; the two-letter attempts are shown as rejected, the single letter is the candidate</small></h2>
+<h2>2 · The tab <small>— B chosen (human, 2026-09-07): the tilted PR stamp, enlarged to fill the frame. A and C shown dimmed as the ones not taken.</small></h2>
 <div class="panel favs">
   <div class="fav rej">
     <div class="row"><span class="ico s16">PR</span><span class="ico s32">PR</span><span class="ico s64">PR</span></div>
     <span class="tab"><span class="ico s16">PR</span> Permit Rulebook</span>
-    <span class="cap">A · rejected — two letters in a square: cramped at 32, illegible at 16</span>
-  </div>
-  <div class="fav rej">
-    <div class="row"><span class="ico s16 tilt">PR</span><span class="ico s32 tilt">PR</span><span class="ico s64 tilt">PR</span></div>
-    <span class="tab"><span class="ico s16 tilt">PR</span> Permit Rulebook</span>
-    <span class="cap">B · rejected — the same, tilted: a smudge at 16</span>
+    <span class="cap">A · not taken — upright</span>
   </div>
   <div class="fav">
+    <div class="row"><span class="ico s16 tilt">PR</span><span class="ico s32 tilt">PR</span><span class="ico s64 tilt">PR</span></div>
+    <span class="tab"><span class="ico s16 tilt">PR</span> Permit Rulebook</span>
+    <span class="cap">B · chosen — the stamp, enlarged; at 16 px the tilt costs a little sharpness, which the human accepted knowingly</span>
+  </div>
+  <div class="fav rej">
     <div class="row"><span class="ico s16 p solid">P</span><span class="ico s32 p solid">P</span><span class="ico s64 p solid">P</span></div>
     <span class="tab"><span class="ico s16 p solid">P</span> Permit Rulebook</span>
-    <span class="cap">C · the candidate — one serif P on stamp red; the wordmark beside it carries the second letter</span>
+    <span class="cap">C · not taken — single letter</span>
   </div>
 </div>
 
