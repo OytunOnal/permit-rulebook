@@ -522,8 +522,8 @@ Two structural prizes nobody had claimed:
   wave 2 correct for Australia → a US wave would make *visa* exactly right and
   *permit* flatly wrong.
 
-Its ceiling, quoting the one-pager against itself: *"SERP baş terimleri lead-gen
-duvarı, ilk yıl beklenti yok"* — head terms are a wall with no expectation in
+Its ceiling, quoting the one-pager against itself: *"SERP head terms are a lead-gen wall,
+no expectation in the first year"* — head terms are a wall with no expectation in
 year one. **So a name assembled from head terms buys comprehension in
 conversation and almost nothing in search, because the project has already
 written off the terms the name is made of.** The two channels pull opposite

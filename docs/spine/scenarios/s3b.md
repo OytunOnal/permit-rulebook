@@ -1,39 +1,39 @@
-# s3b — "Kaldıraç analizi: teklif alırsan şunlar açılır" · Acceptance senaryosu
+# s3b — "Leverage analysis: these open up if you get an offer" · Acceptance scenario
 
-Statü: ONAYLANDI (insan, 2026-09-02) ve KOŞULDU.
-Ekran mock'u: `docs/spine/design/s3b-unlocks.html`.
-Doğum: insan sorusu 2026-09-02 — "hangisini sağlamaya yakın olduğunu
-bilmiyoruz, öneri veremiyoruz".
+Status: APPROVED (human, 2026-09-02) and RUN.
+Screen mock: `docs/spine/design/s3b-unlocks.html`.
+Born from: a human question 2026-09-02 — "we do not know which one they are close
+to meeting, we cannot give a recommendation".
 
-## Yaklaşım (deterministik, LLM'siz)
+## Approach (deterministic, without an LLM)
 
-"situation" bir özellik değil bir **adımdır**; yakınlığı bilinemez ama
-**kaldıracı** hesaplanabilir: profil, path-alanının her alternatif değeriyle
-karşı-olgusal yeniden değerlendirilir; met/near'a dönen route'lar o adımın
-"açtıkları" olarak listelenir. Şemaya alan başına `kind: attribute | path`
-eklenir (varsayılan attribute); karşı-olgusal YALNIZ path alanlarında koşar —
-"genç olsaydın" önerilmez.
+"situation" is not an attribute but a **step**; its nearness cannot be known
+but its **leverage** can be computed: the profile is re-evaluated
+counterfactually with every alternative value of the path field; the routes
+that turn met/near are listed as what that step "unlocks". `kind: attribute |
+path` is added to the schema per field (default attribute); the counterfactual
+runs ONLY on path fields — "if you were younger" is not suggested.
 
-## Adımlar
+## Steps
 
-1. Gezgin profili (situation=none) sonuç ekranında, NOT YET grubunun üstünde
-   yeni bölüm: **"If your situation changes — what each step unlocks"**;
-   teklif satırı §18b/BC-shortage/§19c (met) + BC-general (within reach,
-   €4.766) listeler; transfer → ICT; hosting → Researcher.
-2. Yalnız gerçekten açılanlar listelenir; bir alternatif hiçbir route
-   açmıyorsa satırı hiç görünmez. Bölüm, hiçbir path-alanı başarısız değilse
-   (ör. tekliflisin) hiç render edilmez.
-3. Teklif satırının altında Chancenkarte köprü notu ("bir yıl arayarak geçir,
-   20h/hafta çalış") — yalnız Chancenkarte o profilde canlı/açıksa.
-4. Hesap saf `evaluate` karşı-olgusalı; testler: gezgin → 3 satır, doğru
-   route kümeleri; attribute alanları (yaş, vatandaşlık) asla karşı-olgusala
-   girmez; tekliflide bölüm yok.
-5. Regresyon: mevcut 32+ test ve gruplu ekran davranışı aynen.
+1. On the explorer profile's (situation=none) results screen, above the NOT
+   YET group, a new section: **"If your situation changes — what each step
+   unlocks"**; the offer row lists §18b/BC-shortage/§19c (met) + BC-general
+   (within reach, €4,766); transfer → ICT; hosting → Researcher.
+2. Only what really opens is listed; if an alternative opens no route its row
+   does not appear at all. The section is not rendered at all if no path field
+   fails (e.g. you have an offer).
+3. Below the offer row the Chancenkarte bridge note ("spend a year searching,
+   work 20h/week") — only if the Chancenkarte is live/open on that profile.
+4. The computation is a pure `evaluate` counterfactual; tests: explorer → 3
+   rows, the correct route sets; attribute fields (age, citizenship) never
+   enter the counterfactual; with an offer there is no section.
+5. Regression: the existing 32+ tests and the grouped screen behaviour exactly as before.
 
-## Koşumlar
+## Runs
 
-- mock-green + real-green: 2026-09-02 — mock yok, tek koşum: gezgin akışı
-  tarayıcıda üç unlock satırı + CK köprü notu + NOT YET grubu; 6 yeni test
-  (toplam 38) adım 2/4/5'i kapsıyor. Dürüstlük davranışı doğrulandı: teklif
-  karşı-olgusalı yalnız *mevcut cevaplarla karara bağlanabilen* route'ları
-  listeler (maaş sorulmamışsa BC "açılır" diye gösterilmez).
+- mock-green + real-green: 2026-09-02 — no mock, a single run: the explorer flow
+  in the browser, three unlock rows + the CK bridge note + the NOT YET group; 6
+  new tests (38 in total) cover steps 2/4/5. The honesty behaviour was verified:
+  the offer counterfactual lists only the routes that *can be decided with the
+  existing answers* (if salary has not been asked, BC is not shown as "opening").

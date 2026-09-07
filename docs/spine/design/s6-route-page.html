@@ -4,11 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EU Blue Card — general · Germany · Permit Rulebook</title>
-<meta name="description" content="The rules for Germany's EU Blue Card (general) as published by the authorities: the €50,700 salary threshold for 2026, the recognised-degree condition, the six-month contract — every value quoted from its official page with the date it was read.">
+<meta name="description" content="Germany's EU Blue Card (general): the €50,700 salary threshold for 2026, the recognised-degree condition, the six-month contract — every value quoted from its official page with the date it was read.">
+<meta property="og:title" content="EU Blue Card — general · Germany · Permit Rulebook">
+<meta property="og:description" content="Every route, quoted and dated. The rules for Germany's EU Blue Card with the official sentence behind each number and the day it was read.">
+<meta property="og:type" content="article">
 <style>
-/* ---- tokens.css, pasted so the mock opens standalone. No value below is
-   outside the token set; the one addition (--tier-*) is proposed as a token
-   and flagged in the scenario. ---- */
+/* ---- tokens.css, pasted so the mock opens standalone. Every value below is
+   from the token set. Two semantic calls recorded in DECISIONS (2026-09-07):
+   the hero accent keeps --color-near because that is the token's own defined
+   use on every screen; the page's own status-free elements use no verdict
+   colour at all. ---- */
 :root {
   --color-bg: #f1eee4; --color-card: #fbf9f2; --color-ink: #2b2a22; --color-muted: #5a5747; --color-line: #d9d3c0;
   --color-stamp: #8c2b2b; --color-met: #2e5b3f; --color-met-soft: #e4efe7; --color-near: #8a5a19; --color-near-soft: #f4ecd8;
@@ -28,47 +33,79 @@ a { color: var(--color-stamp); }
 .wrap { max-width: var(--max-content); margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-6); }
 .label { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
 .mono { font: var(--text-value); }
+/* Every interactive element reaches the token's tap minimum — the v0.7 critique
+   measured 34/22/20 px controls, the token was written for it, and the first
+   mock after it broke it (route-page critique B2). Inline links get vertical
+   padding rather than a taller line; block links get min-height. */
+a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0; margin: calc((1.6em - var(--tap-min)) / 2) 0; }
 
-/* ---- masthead: the rulebook's running head + the route as the page title ---- */
+/* ---- masthead ---- */
 .masthead { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); border-bottom: var(--rule-heavy); padding-bottom: var(--space-4); }
 .crumbs { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
-.crumbs a { text-decoration: none; }
+.crumbs a { text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap-min); }
 .crumbs .sep { color: var(--color-line); }
 h1 { font: var(--text-hero); margin: var(--space-2) 0 var(--space-2); max-width: var(--max-prose); }
 h1 em { font-style: normal; color: var(--color-near); }
 .lede { max-width: var(--max-prose); margin: 0; color: var(--color-muted); }
 .stamp { flex: none; font: var(--text-value); color: var(--color-stamp); border: var(--stamp-border); padding: .35rem .6rem; transform: rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: .1em; line-height: 1.25; text-align: center; }
 
-/* ---- coverage tier: the one new element; proposed token colours reuse the status trio ---- */
-.tier { display: flex; gap: var(--space-3); align-items: baseline; margin: var(--space-4) 0 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-left: 4px solid var(--color-met); }
-.tier b { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-met); white-space: nowrap; }
-.tier p { margin: 0; }
+/* ---- what this page checks: plain words, no verdict colour, no pipeline vocabulary ---- */
+.scope { margin: var(--space-4) 0 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-left: 4px solid var(--color-ink); }
+.scope b { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); display: block; margin-bottom: var(--space-1); }
+.scope p { margin: 0; max-width: var(--max-prose); }
 
-/* ---- the rules, one article per criterion — same card vocabulary as results ---- */
+/* ---- the rules ---- */
 .rules { margin-top: var(--space-5); display: grid; gap: var(--gap-cards); }
 .rule { background: var(--color-card); border-top: var(--rule-card-top); border-bottom: var(--rule-soft); padding: var(--pad-card); }
 .rule .top { display: flex; justify-content: space-between; gap: var(--space-3); align-items: baseline; }
 .rule h2 { font: var(--text-route); margin: 0; }
-.kind { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
+.kind { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); white-space: nowrap; }
 .rule p.plain { margin: var(--space-2) 0 0; max-width: var(--max-prose); }
+
+/* Threshold rail. On phones the two labels collided into one unreadable run
+   (route-page critique B1, measured 57 px overlap at 390); below 760 px the
+   labels leave the track and stack as a list under it, in reading order. */
 .rail { position: relative; height: var(--rail-h); background: var(--rail-track); margin: var(--space-4) 0 1.9rem; }
 .rail .tick { position: absolute; top: -4px; width: 1px; height: calc(var(--rail-h) + 8px); background: var(--rail-tick); }
 .rail .lbl { position: absolute; top: 12px; transform: translateX(-50%); text-align: center; font: var(--text-value); white-space: nowrap; }
 .rail .lbl small { display: block; font: var(--text-source); color: var(--color-muted); }
-.src { font: var(--text-source); color: var(--color-muted); border-top: var(--rule-dotted); padding-top: var(--space-2); margin-top: var(--space-3); display: flex; justify-content: space-between; gap: var(--space-3); align-items: baseline; }
-.src i { font-style: italic; color: var(--color-ink); }
+.rail-list { display: none; }
+@media (max-width: 760px) {
+  .rail { margin-bottom: var(--space-3); }
+  .rail .lbl { display: none; }
+  .rail-list { display: block; margin: 0 0 var(--space-2); padding: 0; list-style: none; }
+  .rail-list li { display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-1) 0; border-bottom: var(--rule-dotted); }
+  .rail-list li span:first-child { font: var(--text-value); }
+  .rail-list li span:last-child { font: var(--text-source); color: var(--color-muted); text-align: right; }
+}
+
+/* Source line: the quote is the proof, so it is framed — language tagged, the
+   separator difference explained once — and its link reaches 44 px. */
+.src { font: var(--text-source); color: var(--color-muted); border-top: var(--rule-dotted); padding-top: var(--space-2); margin-top: var(--space-3); display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
+.src q { font-style: italic; color: var(--color-ink); quotes: "“" "”"; }
 .src b { color: var(--color-met); font-weight: 600; }
-.src a { white-space: nowrap; }
+.src a { white-space: nowrap; display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-2); }
+.src .note { display: block; margin-top: var(--space-1); }
+
+/* Precondition block: the label was --color-hold on --color-hold-soft, 3.68:1
+   at 11 px — the most consequential line on the page was its least legible
+   (route-page critique, accessibility). Ink on the soft tint clears AA. */
 .precond, .reading { margin: var(--space-3) 0 0; padding: var(--space-3) var(--space-4); border-left: 3px solid var(--color-hold); background: var(--color-hold-soft); max-width: var(--max-prose); }
-.precond b, .reading b { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-hold); display: block; margin-bottom: var(--space-1); }
+.precond b, .reading b { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); display: block; margin-bottom: var(--space-1); }
 .precond ul { margin: 0; padding-left: 1.1rem; }
 
-/* ---- the one thing to do: check yours. A rulebook page describes; it never rules on the reader. ---- */
+/* ---- check yours ---- */
 .cta { margin: var(--space-5) 0 0; padding: var(--space-4); background: var(--color-card); border: var(--rule-soft); display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
 .cta p { margin: 0; max-width: var(--max-prose); }
 .cta a.btn { display: inline-block; min-height: var(--tap-min); line-height: var(--tap-min); padding: 0 var(--space-4); background: var(--color-ink); color: var(--color-bg); text-decoration: none; font: 700 .95rem var(--font-sans); }
 
-/* ---- neighbours: the same country's other routes, so a stranger can move sideways ---- */
+/* ---- the data behind the page: the developer's door ---- */
+.data { margin-top: var(--space-5); padding: var(--space-3) var(--space-4); border: var(--rule-soft); display: flex; gap: var(--space-4); flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.data p { margin: 0; max-width: var(--max-prose); }
+.data nav { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.data nav a { display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-3); border: var(--rule-soft); text-decoration: none; font: var(--text-value); }
+
+/* ---- neighbours ---- */
 .neighbours { margin-top: var(--space-6); border-top: var(--rule-heavy); padding-top: var(--space-4); }
 .neighbours ul { list-style: none; padding: 0; margin: var(--space-3) 0 0; display: grid; gap: var(--space-2); grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
 .neighbours li a { display: block; min-height: var(--tap-min); padding: var(--space-2) var(--space-3); background: var(--color-card); border-bottom: var(--rule-soft); text-decoration: none; color: var(--color-ink); }
@@ -76,14 +113,17 @@ h1 em { font-style: normal; color: var(--color-near); }
 
 footer { margin-top: var(--space-6); border-top: var(--rule-heavy); padding-top: var(--space-4); color: var(--color-muted); }
 footer .disclaimer { max-width: var(--max-prose); }
-footer .health { display: flex; justify-content: space-between; gap: var(--space-3); font: var(--text-source); margin-top: var(--space-3); flex-wrap: wrap; }
+footer .health { display: flex; justify-content: space-between; gap: var(--space-3); font: var(--text-source); margin-top: var(--space-3); flex-wrap: wrap; align-items: center; }
+footer .health a { display: inline-flex; align-items: center; min-height: var(--tap-min); }
 
 @media (max-width: 760px) {
   .masthead { flex-direction: column; }
   .stamp { align-self: flex-end; }
   .src { flex-direction: column; }
+  .src a { padding-left: 0; }
   .cta { flex-direction: column; align-items: stretch; }
   .cta a.btn { text-align: center; }
+  .rule .top { flex-direction: column; gap: var(--space-1); }
 }
 </style>
 </head>
@@ -96,28 +136,33 @@ footer .health { display: flex; justify-content: space-between; gap: var(--space
         <a href="#">Permit Rulebook</a><span class="sep">·</span><a href="#">Germany</a><span class="sep">·</span><span>EU Blue Card — general</span>
       </nav>
       <h1>EU Blue Card — general. <em>The rules, quoted and dated.</em></h1>
-      <p class="lede">The standard EU Blue Card: a recognised university degree and a salary above the general threshold, in any qualified job. Every value on this page is the authority's own sentence, with the page it came from and the day we read it. This page describes the rules; it does not decide on you — that needs your answers.</p>
+      <p class="lede">The standard EU Blue Card: a recognised university degree and a salary above the general threshold, in any qualified job. Every number on this page is the authority's own sentence, with the page it came from and the day we read it. This page describes the rules; it does not decide on you — that needs your answers, and the <strong>checker</strong> at the bottom asks for them.</p>
     </div>
-    <div class="stamp" aria-label="Rules last read 4 September 2026">Rules read<br>04 · 09 · 2026</div>
+    <div class="stamp" aria-label="Rules last read 6 September 2026"><time datetime="2026-09-06">Rules read<br>2026-09-06</time></div>
   </header>
 
-  <section class="tier" aria-label="How completely this route is modelled">
-    <b>Fully modelled</b>
-    <p>Every condition that decides this route is a question the checker asks, and every number on it is quoted from an official page that is watched daily. Two conditions are stated but not checked — they are listed under each rule as "Also required".</p>
+  <section class="scope" aria-label="What this page checks">
+    <b>What the checker asks, and what it does not</b>
+    <p>Every rule that decides this route is a question the checker asks, and every number is quoted from an official page that is re-read daily. Two conditions are stated by the authority but not asked — they are listed under the rule they belong to as "Also required — not checked here".</p>
   </section>
 
   <section class="rules" aria-label="The rules">
 
     <article class="rule">
       <div class="top"><h2>Gross annual salary in the offer</h2><span class="kind">Threshold · 2026</span></div>
-      <p class="plain">The offer must pay at least <span class="mono">€50,700/year</span>. This is the general Blue Card threshold; a lower one exists for shortage occupations and recent graduates, on <a href="#">its own route</a>.</p>
+      <p class="plain">The offer must pay at least <span class="mono">€50,700/year</span>. This is the general Blue Card threshold; a lower one exists for shortage occupations and recent graduates, on <a class="tap" href="#">its own route</a>.</p>
       <div class="rail" aria-hidden="true">
         <span class="tick" style="left:33%"></span><span class="lbl" style="left:33%">€45,630/year<small>shortage · another route</small></span>
         <span class="tick" style="left:58%"></span><span class="lbl" style="left:58%"><strong>€50,700/year</strong><small>this route, 2026</small></span>
       </div>
+      <ul class="rail-list" aria-label="Thresholds on this rail">
+        <li><span>€45,630/year</span><span>shortage occupations — another route</span></li>
+        <li><span><strong>€50,700/year</strong></span><span>this route, 2026</span></li>
+      </ul>
       <div class="src">
-        <span><i>“Für die „große“ Blaue Karte EU muss ein Mindestbruttojahresgehalt erreicht werden, welches im Jahr 2026 50.700 Euro beträgt.”</i> · arbeitsagentur.de · per year · § 18g AufenthG · <b>read 2026-09-04</b></span>
-        <a href="https://www.arbeitsagentur.de/vor-ort/zav/working-and-living-in-germany/newsletter-iss/03-2026/blaue-karte" rel="noopener">Official page ↗</a>
+        <span><q lang="de">Für die „große“ Blaue Karte EU muss ein Mindestbruttojahresgehalt erreicht werden, welches im Jahr 2026 50.700 Euro beträgt.</q> · arbeitsagentur.de · per year · § 18g AufenthG (the Residence Act section for the Blue Card) · <b><time datetime="2026-09-04">read 2026-09-04</time></b>
+          <span class="note">German, from the Federal Employment Agency. German writes 50.700 where English writes 50,700 — same number.</span></span>
+        <a href="https://www.arbeitsagentur.de/vor-ort/zav/working-and-living-in-germany/newsletter-iss/03-2026/blaue-karte" target="_blank" rel="noopener">Official page ↗</a>
       </div>
     </article>
 
@@ -125,15 +170,16 @@ footer .health { display: flex; justify-content: space-between; gap: var(--space
       <div class="top"><h2>A recognised university degree</h2><span class="kind">Condition</span></div>
       <p class="plain">Your degree must be one Germany recognises as equivalent to a German university degree. The checker asks where recognition stands — recognised, assessed as partial, not yet assessed — and if you do not know, it says so rather than guessing.</p>
       <div class="src">
-        <span><i>“Fachkräfte mit akademischer Ausbildung … einen deutschen, einen anerkannten ausländischen oder einen einem deutschen Hochschulabschluss vergleichbaren ausländischen Hochschulabschluss”</i> · buzer.de (mirror of § 18g AufenthG) · <b>read 2026-09-06</b></span>
-        <a href="https://www.buzer.de/18g_AufenthG.htm" rel="noopener">Official text ↗</a>
+        <span><q lang="de">Fachkräfte mit akademischer Ausbildung … einen deutschen, einen anerkannten ausländischen oder einen einem deutschen Hochschulabschluss vergleichbaren ausländischen Hochschulabschluss</q> · buzer.de, a consolidated mirror of the statute · § 18g AufenthG · <b><time datetime="2026-09-06">read 2026-09-06</time></b>
+          <span class="note">German, from the Residence Act itself.</span></span>
+        <a href="https://www.buzer.de/18g_AufenthG.htm" target="_blank" rel="noopener">Official text ↗</a>
       </div>
-      <p class="plain" style="margin-top:var(--space-3)">Not sure whether yours counts? <a href="https://anabin.kmk.org/anabin.html" rel="noopener">Check your degree in the official Anabin database</a>.</p>
+      <p class="plain" style="margin-top:var(--space-3)">Not sure whether yours counts? <a class="tap" href="https://anabin.kmk.org/anabin.html" target="_blank" rel="noopener">Check your degree in the official Anabin database ↗</a></p>
     </article>
 
     <article class="rule">
       <div class="top"><h2>A job offer in Germany</h2><span class="kind">Condition</span></div>
-      <p class="plain">The card is tied to an offer for qualified work. Looking for work without an offer is a different route — the <a href="#">Opportunity Card</a>.</p>
+      <p class="plain">The card is tied to an offer for qualified work. Looking for work without an offer is a different route — the <a class="tap" href="#">Opportunity Card</a>.</p>
       <div class="precond">
         <b>Also required — not checked here</b>
         <ul>
@@ -147,16 +193,25 @@ footer .health { display: flex; justify-content: space-between; gap: var(--space
       <div class="top"><h2>A non-EU passport</h2><span class="kind">Who this is for</span></div>
       <p class="plain">EU, EEA and Swiss citizens do not need a work permit in Germany, so this route does not apply to them. Citizens of Türkiye follow the same rules as other non-EU nationals to enter; the EU–Türkiye agreement adds rights once legally employed, not a different way in.</p>
       <div class="src">
-        <span><i>“As an EU national you generally don't need a work permit to work anywhere in the EU.”</i> · europa.eu · <b>read 2026-09-04</b></span>
-        <a href="https://europa.eu/youreurope/citizens/work/work-abroad/work-permits/index_en.htm" rel="noopener">Official page ↗</a>
+        <span><q>As an EU national you generally don't need a work permit to work anywhere in the EU.</q> · europa.eu · <b><time datetime="2026-09-04">read 2026-09-04</time></b></span>
+        <a href="https://europa.eu/youreurope/citizens/work/work-abroad/work-permits/index_en.htm" target="_blank" rel="noopener">Official page ↗</a>
       </div>
     </article>
 
   </section>
 
   <section class="cta" aria-label="Check your own situation">
-    <p><strong>Where do you stand on this route?</strong> Seven questions, answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>
+    <p><strong>Where do you stand on this route?</strong> The checker asks seven questions, answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>
     <a class="btn" href="#">Check yours — Germany, EU Blue Card</a>
+  </section>
+
+  <section class="data" aria-label="The data behind this page">
+    <p>This page is generated from an open dataset: every number and quote above is a record in it, with its source and read date. Reuse it under CC BY 4.0 — credit and link back.</p>
+    <nav>
+      <a href="#">This route as JSON</a>
+      <a href="#">The dataset on GitHub</a>
+      <a href="#">Report a wrong value</a>
+    </nav>
   </section>
 
   <nav class="neighbours" aria-label="Other routes in Germany">
@@ -173,7 +228,7 @@ footer .health { display: flex; justify-content: space-between; gap: var(--space
 
   <footer>
     <p class="disclaimer">Permit Rulebook makes no immigration decision and authorities won't consider these pages — it compares published values with what you declare, nothing more. Rules change; the date beside each quote is the day we last read it, and a daily check re-reads every source.</p>
-    <div class="health"><span>dataset 2026.09.07</span><span>schema 0.4.0</span><span>open data · CC BY 4.0 · <a href="#">the rules behind this page</a></span></div>
+    <div class="health"><span>dataset <time datetime="2026-09-07">2026-09-07</time></span><span>schema 0.4.0</span><span>open data · <a href="#">CC BY 4.0</a></span></div>
   </footer>
 
 </div>

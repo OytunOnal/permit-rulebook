@@ -2,111 +2,111 @@
 
 ## Problem
 
-Avrupa'ya çalışmak için bakan biri "hangi izin route'larına uygunum, neyim
-eksik" sorusuna güvenilir cevap bulamıyor. Resmî kaynaklar dağınık, dilleri
-karışık ve eşik değerleri her yıl değişiyor; ticari araçların çoğu lead-gen
-(hesaplayıcı bahane, satış asıl), en iyileri bile ya sayfa-düzeyi tarihleme
-(VisaMind — ve AB kapsamı yok) ya kapalı+ücretli provenance (WhereToEmigrate)
-sunuyor. **Değer başına** "bu sayı şu resmî sayfadan, şu tarihte, şu alıntıyla"
-diyen yok; kural değişince kullanıcı bunu fark edemiyor.
+Someone looking to work in Europe cannot find a reliable answer to the question "which
+permit routes am I eligible for, what am I missing". Official sources are scattered,
+their languages mixed, and threshold values change every year; most commercial tools are
+lead-gen (the calculator a pretext, the sale the real thing), and even the best of them
+offer either page-level dating (VisaMind — and no EU coverage) or closed+paid provenance
+(WhereToEmigrate). Nobody says, **per value**, "this number is from that official page,
+on that date, with that quote"; when a rule changes the user cannot notice it.
 
-## Kullanıcı
+## User
 
-AB dışından DE/FR/ES/NL'ye bakan bilgi işçisi — teklifi olan ya da olmak üzere
-olan. İlk kullanıcı: proje sahibi. Vatandaşlıkla sınırlama yok: herkes genel
-"3. ülke" hattından doğru cevap alır; vatandaşlığa özel hükümler (TR anlaşma
-hükümleri, DE ayrıcalıklı erişim listesi) additive istisna verisi. Arayüz EN.
+A knowledge worker from outside the EU looking at DE/FR/ES/NL — one who has an offer or is
+about to have one. First user: the project owner. No limitation by citizenship: everyone gets
+the correct answer from the general "third country" line; citizenship-specific provisions (TR
+agreement provisions, the DE privileged-access list) are additive exception data. Interface EN.
 
-## Ürün
+## Product
 
-Çoktan seçmeli sorular (hedef 6-7 — A10, dilimle doğrulanacak) → hangi
-route'ların kriterleri karşılanmış göründüğü +
-**gap analizi** ("Blue Card eşiğine €4.000 var; meslek shortage listesindeyse
-alt eşik geçerli"). Uygunluğu kod hesaplar (LLM değil); her değer resmî
-kaynak URL + birebir alıntı + alınma tarihi taşır. Çıktı dili kategorik:
-"uygunsun" asla — "eşik X, beyanın Y" + IRCC-tarzı disclaimer (hukuki koşul,
-bkz. A1/Smartlaw). Çoktan-seçmeliye sığmayan kriterler (ör. diploma
-denkliği/tanınma — Anabin) beyanla sorulur ("tanınıyor / tanınmıyor /
-bilmiyorum"); araç denklik kararı vermez, resmî denklik kaynağına yönlendirir
-ve "bilmiyorum" cevabını gap analizinde açık eksik olarak gösterir (A15).
-Kişisel veri makineden çıkmaz: statik site, engine tarayıcıda, backend yok.
+Multiple-choice questions (target 6-7 — A10, to be verified with a slice) → which routes'
+criteria appear to be met + **gap analysis** ("€4,000 to go to the Blue Card threshold;
+if the occupation is on the shortage list the lower threshold applies"). Code computes
+eligibility (not an LLM); every value carries an official source URL + verbatim quote +
+retrieval date. The output language is categorical: never "you are eligible" — "threshold
+X, your declaration Y" + an IRCC-style disclaimer (a legal condition, see A1/Smartlaw).
+Criteria that do not fit into multiple choice (e.g. diploma equivalence/recognition —
+Anabin) are asked by declaration ("recognised / not recognised / I don't know"); the tool
+makes no equivalence decision, it points to the official equivalence source and shows the
+"I don't know" answer as an open gap in the gap analysis (A15). Personal data does not
+leave the machine: static site, engine in the browser, no backend.
 
-## Konumlanma (research-01'e karşı)
+## Positioning (against research-01)
 
-**"Değer başına tarih + birebir resmî alıntı taşıyan açık AB-çalışma-izni
-kural veri seti"** — bu kombinasyon boş. WhereToEmigrate provenance yayınlıyor
-ama kapalı+ücretli+200 ülkeye yayılmış; VisaMind per-widget tarih basıyor ama
-yalnız US/CA/UK/AU; Visaora/Workbeyond blanket-tarihli; GitHub'da yeni oyuncu
-yok (10 arama, 2026-09-01). Talep kanıtı: run-abroad 3 haftada 491★,
-awesome-immigration 1.491★. Dağıtım: önce açık veri + GitHub/HN (SERP baş
-terimleri lead-gen duvarı, ilk yıl beklenti yok); SEO uzun kuyruk ikinci kanal
-(kurallardan otomatik üretilen mikro-sayfalar). Ürün "araç", satış değil
-kaynak gösterme; JobRadar ile çapraz yönlendirme sonraki dönem.
+**"An open EU-work-permit rules dataset carrying a date + a verbatim official quote
+per value"** — this combination is empty. WhereToEmigrate publishes provenance but
+closed+paid+spread over 200 countries; VisaMind stamps a per-widget date but only
+US/CA/UK/AU; Visaora/Workbeyond are blanket-dated; there is no new player on GitHub
+(10 searches, 2026-09-01). Evidence of demand: run-abroad 491★ in 3 weeks,
+awesome-immigration 1,491★. Distribution: open data + GitHub/HN first (SERP head terms
+are a lead-gen wall, no expectation in the first year); SEO long tail as the second
+channel (micro-pages generated automatically from the rules). The product is a "tool",
+not selling but citing sources; cross-referral with JobRadar in a later period.
 
-## Kapsam
+## Scope
 
-- **v1:** DE/FR/ES/NL, istihdam-temelli route'lar, ülke başı 8-10 (~35-40
-  toplam; FR "talent" tek aile + alt-tip ayrıştırıcı sayılarak), ülke başı
-  yazılı hariç-tutma listesi (mevsimlik/stajyer/denizci/sanatçı/yatırımcı).
-  Tek kişilik yan proje: ilk dolum ≈ yüzü aşkın kaynaklı veri (route × kriter ×
-  URL+alıntı+tarih) — plan aşaması bunu dilimlere yayar (ülke ülke açılış).
-- **Pipeline v1:** izle + hash/diff + bayrak (issue açar, insan alıntı+tarihle
-  günceller). Kaynak seçimi bot-duvarına göre: NL ind.nl (ideal), FR
-  service-public F16922, ES UGE PDF hash'i + kalıcı insan-okur katmanı.
-  **DE'nin stabil değer-kaynağı açık problem** (make-it-in-germany bot-duvarlı,
-  BA duyurusu yıllık-URL'li): plan aşamasında spike — adaylar: headless fetch,
-  BA/BMI duyuru indeks sayfasını izlemek, ya da DE'yi de insan-okur katmanına
-  almak. Tam otomasyon (LLM çıkarım + kod doğrulama) v1.x.
-- **Dalga 2:** CA + AU (puan sistemleri). **Dalga 3:** diğer Avrupa
-  (topluluk + pipeline). **ABD:** ayrı karar, ayrı route tipi (kura determinizmi
-  kırar).
-- **Yapı:** iki repo — `visa-rules` (şema+dataset+engine+pipeline; dataset
-  CC-BY-4.0, kod MIT, TS+JSON Schema) + `visa-navigator` (Astro statik site).
-  LLM yalnız build-time soru-ifadesi cilası; runtime RAG yok ("route'a soru
-  sor" v1.x backlog).
+- **v1:** DE/FR/ES/NL, employment-based routes, 8-10 per country (~35-40 total; counting
+  FR "talent" as a single family + a sub-type discriminator), a written exclusion list
+  per country (seasonal/trainee/seafarer/artist/investor). A one-person side project:
+  the first fill ≈ over a hundred sourced data points (route × criterion ×
+  URL+quote+date) — the plan stage spreads this over slices (country-by-country launch).
+- **Pipeline v1:** watch + hash/diff + flag (opens an issue, a human updates it with
+  quote+date). Source selection according to the bot wall: NL ind.nl (ideal), FR
+  service-public F16922, ES the hash of the UGE PDF + a permanent human-reader tier.
+  **DE's stable value source is an open problem** (make-it-in-germany is bot-walled,
+  the BA announcement has a yearly URL): a spike in the plan stage — candidates:
+  headless fetch, watching the BA/BMI announcement index page, or taking DE into the
+  human-reader tier as well. Full automation (LLM extraction + code verification) v1.x.
+- **Wave 2:** CA + AU (points systems). **Wave 3:** the rest of Europe
+  (community + pipeline). **USA:** a separate decision, a separate route type
+  (the lottery breaks determinism).
+- **Structure:** two repos — `visa-rules` (schema+dataset+engine+pipeline;
+  dataset CC-BY-4.0, code MIT, TS+JSON Schema) + `visa-navigator` (Astro
+  static site). LLM only for build-time polish of the question wording; no
+  runtime RAG ("ask the route a question" v1.x backlog).
 
-## Viability (Product gereği; orta back-edge 2026-09-02, kararlar insan kapısından)
+## Viability (required by Product; middle back-edge 2026-09-02, decisions through the human gate)
 
-- **Kitle (mertebe, grounded):** Yalnız Almanya'da 2023'te **41.000+ ilk Blue
-  Card** verildi; dönem sonunda ~113.500 aktif taşıyıcı (BAMF istatistik
-  sayfası, 2026-09-02 okundu). Blue Card, modellediğimiz 8 DE route'undan
-  yalnız biri; dört hedef ülke ve tüm istihdam route'larıyla adreslenebilir
-  kitle **yılda yüz binlerce başvuran** mertebesi (*bu genişletme çıkarımdır*,
-  çapa sayı yalnız DE Blue Card).
-- **Para:** Şeffaf **affiliate** (kullanıcının route'u için mecburi hizmetler:
-  Sperrkonto, vize sigortası, dil — "affiliate" etiketli, çok sağlayıcılı,
-  disclosure disclaimer'ın yanında) + **GitHub Sponsors** ilk günden.
-  İzlemesiz reklam yalnız 25-50k ziyaret/ay eşiğinde yeniden değerlendirilir;
-  AdSense/izlemeli ağ hiç (danışman reklamı + izleme, konum ve gizlilik
-  çizgilerini bozar). Affiliate entegrasyonu v1.x dilimi — v1'i geciktirmez,
-  gelir v1 sonrası başlar. **Sınır:** affiliate linkleri uygunluk sonucunu
-  asla etkilemez (karar kodda, linkler sonuçtan sonra) ve hiçbir kişisel veri
-  taşımaz (düz çıkış linki).
-- **Başarı metriği (birincil):** **Dataset canlılığı** — resmî değişikliğin
-  dataset'e işlenme süresi hedefi **≤48 saat** (izleme dilimi s4'ten itibaren
-  ölçülür; öncesinde elle nokta kontrolü) + kapsam: v1'de 4 ülke, ~35-40
-  route, %100 alıntı+tarihli. İkincil: organik kullanım (veri-toplamayan
-  sayaç kurulunca). *Tek-küratör riski (A13):* tatil/yoğunlukta ≤48s "en iyi
-  çaba"ya düşer; ihlal gizlenmez — her değerin okunma tarihi zaten kamuya
-  açık, gecikme sayfada görünür.
-- **Hedefler (insanın temposu):** **v1 ≈ 1 hafta** (kalan dilimler: gap
-  analizi, izleme+bayrak, FR/ES/NL dolumu, açılış — kayma riski s5
-  küratörlüğünde; kayarsa ülke ülke açılır, FR önce). **Dalga 2 (CA+AU) ≈ +2
-  hafta.** 6-12 ay ufku: canlılık sözü ölçülür biçimde tutuluyor, dalga 2-3
-  yayında; dış katkı hedef değil yan ürün.
+- **Audience (order of magnitude, grounded):** In Germany alone **41,000+ first Blue
+  Cards** were issued in 2023; ~113,500 active holders at the end of the period (BAMF
+  statistics page, read 2026-09-02). The Blue Card is only one of the 8 DE routes we
+  model; with the four target countries and all employment routes the addressable
+  audience is of the order of **hundreds of thousands of applicants per year** (*this
+  extrapolation is an inference*, the anchor number is only the DE Blue Card).
+- **Money:** Transparent **affiliate** (services mandatory for the user's route:
+  Sperrkonto, visa insurance, language — labelled "affiliate", multi-provider,
+  the disclosure next to the disclaimer) + **GitHub Sponsors** from day one.
+  Tracking-free advertising is only reconsidered at the 25-50k visits/month
+  threshold; AdSense/tracking networks never (consultant advertising + tracking
+  break the positioning and privacy lines). Affiliate integration is a v1.x slice
+  — it does not delay v1, revenue starts after v1. **Limit:** affiliate links
+  never affect the eligibility result (the decision is in the code, the links
+  come after the result) and carry no personal data (a plain outbound link).
+- **Success metric (primary):** **Dataset liveness** — the target for the time it
+  takes an official change to be written into the dataset is **≤48 hours** (measured
+  from the watch slice s4 onwards; before that, manual spot checks) + coverage: in
+  v1 4 countries, ~35-40 routes, 100% with quote+date. Secondary: organic usage
+  (once a non-data-collecting counter is set up). *Single-curator risk (A13):* on
+  holidays/under load ≤48h falls back to "best effort"; a violation is not hidden —
+  the read date of every value is already public, the delay is visible on the page.
+- **Targets (the human's tempo):** **v1 ≈ 1 week** (remaining slices: gap
+  analysis, watch+flag, the FR/ES/NL fill, launch — the slippage risk is in the s5
+  curation; if it slips it opens country by country, FR first). **Wave 2 (CA+AU) ≈
+  +2 weeks.** 6-12 month horizon: the liveness promise is kept in a measurable
+  way, waves 2-3 are live; outside contribution is not a target but a by-product.
 
 ## Harvest
 
-WhereToEmigrate'in bayatlık-ceza modeli (doğrulama yaşı şemada birinci sınıf) ·
-VisaMind'ın "Fetched <tarih>; view official table" UI deseni (per-value'ya
-itilmiş hali) · IRCC+relokate disclaimer metinleri · PathWise rule-pack
-sözlüğü + kapsam katmanları (fully modeled / partial / source-captured-only) ·
-Workbeyond per-route sayfa şekli · awesome-immigration route envanteri
-(tarama kaynağı).
+WhereToEmigrate's staleness-penalty model (verification age first-class in the
+schema) · VisaMind's "Fetched <date>; view official table" UI pattern (pushed
+down to per-value) · IRCC+relokate disclaimer texts · the PathWise rule-pack
+vocabulary + coverage tiers (fully modeled / partial / source-captured-only) ·
+Workbeyond's per-route page shape · the awesome-immigration route inventory (a
+scanning source).
 
-## Varsayımlar
+## Assumptions
 
-`docs/spine/assumptions.md` (A1-A15; research durumlarıyla). Dilimle
-doğrulanacak en kritikler: A9 (gap analizi değeri), A10 (6-7 soru yeter),
-A13 (izle+bayrak solo sürdürülebilir), A15 (kriterler beyanla ifade
-edilebilir).
+`docs/spine/assumptions.md` (A1-A15; with their research statuses). The most
+critical ones to be verified with a slice: A9 (the value of the gap analysis),
+A10 (6-7 questions are enough), A13 (watch+flag is sustainable solo), A15
+(criteria can be expressed by declaration).

@@ -1,286 +1,286 @@
 # DECISIONS — Visa Navigator
 
-Append-only. Her giriş: tarih · karar · gerekçe · kapı mı (insan seçti) ucuz varsayılan mı (Spine seçti).
+Append-only. Each entry: date · decision · rationale · gate (human chose) or cheap default (Spine chose).
 
 ---
 
-## 2026-09-01 — Scale Gate: seviye = Product 🛑 (kapı, insan seçti)
+## 2026-09-01 — Scale Gate: level = Product 🛑 (gate, human chose)
 
-**Karar:** Proje Product seviyesinde yürütülecek (Sketch/Build değil).
+**Decision:** The project will be run at the Product level (not Sketch/Build).
 
-**Gerekçe:** Dört sorunun üçü güçlü "evet":
-- *Geri alması zor mu?* Kısmen — açık veri setinin şeması kamuya açılıp topluluk katkı aldığı an kamusal sözleşme olur; sonrası pahalı. Üç-parça mimari (rules engine paketi / navigator web / JobRadar importu) da kurulunca sınır taşımak maliyetli.
-- *Başkası kullanacak mı?* Evet — indekslenebilir public web, arama motorundan gelen kullanıcı, topluluk katkısı beklenen açık dataset.
-- *Para veya kişisel veri?* Para yok; kişisel veri var (vatandaşlık, maaş, diploma) ama local-first / veri saklamama konumlanmasıyla hafifletilmiş.
-- *6 ay sonra yaşamalı mı?* Evet — "canlı, tarihli, kaynaklı veri seti" iddiası ürünün ayrıştırıcısı; izle→doğrula→audit-trail hattı ölü bırakılamaz.
+**Rationale:** Three of the four questions are a strong "yes":
+- *Hard to reverse?* Partly — the moment the open dataset's schema is made public and takes community contributions it becomes a public contract; after that it is expensive. The three-part architecture (rules engine package / navigator web / JobRadar import) is also costly to move boundaries in once it is set up.
+- *Will anyone else use it?* Yes — an indexable public web, users arriving from a search engine, an open dataset where community contribution is expected.
+- *Money or personal data?* No money; there is personal data (citizenship, salary, diploma) but mitigated by the local-first / no-data-retention positioning.
+- *Must it live 6 months from now?* Yes — the "live, dated, sourced dataset" claim is the product's differentiator; the watch→verify→audit-trail line cannot be left dead.
 
-Product sonucu: non-negotiable taban (structured log, hata görünürlüğü, secret hygiene, sınırda şema doğrulama, health sinyali, versiyonlu migration, veri dayanıklılığı kararı, lockfile+audit) walking skeleton'a baştan girer.
+Consequence of Product: the non-negotiable baseline (structured log, error visibility, secret hygiene, schema validation at the boundary, health signal, versioned migration, data durability decision, lockfile+audit) goes into the walking skeleton from the start.
 
-**Not:** NOTES.md (2026-08-26) bu karardan önceki tasarım konuşmasının ve rekabet taramasının kaydı; Brainstorm Loop'a girdi olarak alındı, sıfırdan tekrarlanmayacak.
-
----
-
-## 2026-09-01 — Grill yarı-turu kararları (Brainstorm Loop, insan seçti)
-
-Üç turluk grill'in bağladıkları:
-
-1. **İlk kullanıcı = kullanıcının kendisi; kitle vatandaşlıkla sınırlanmaz.** Herkes genel "3. ülke" hattından doğru cevap alır; istisna küratörlüğü (TR + DE'nin ayrıcalıklı erişim listesi) v1'de, gerisi additive. Arayüz v1'de EN.
-2. **Başarı ölçütü:** birincil = canlı/tarihli/kaynaklı açık dataset kalitesi (portfolyo), ikincil = organik kullanım. Topluluk katkısı hedef değil yan ürün.
-3. **v1 kapsamı: DE/FR/ES/NL derin** (ülke başı 6-8 istihdam route'u). Dalga 2 = CA+AU (puan sistemleri modele tam uyar), dalga 3 = diğer Avrupa (pipeline+topluluk), **ABD = ayrı karar** (kura/işveren-süreci determinizmi kırar; girerse ayrı route tipiyle). Gerekçe: "canlı" sözü izlenen sayfa sayısıyla doğrusal maliyet; geniş+derin+canlı üçü birden v1'de tutulamaz (bkz. varsayım A2).
-4. **LLM rolü = build-time cila.** Soru kümesi/seçenekler/sıra koddan türer; LLM yalnız ifadeyi insanlaştırır, çıktı commit'lenir. Uygunluk kararı ve v1 sonuç metni deterministik. Runtime RAG yok; "route hakkında soru sor" (alıntı-temelli) v1.x backlog'una. → Graduated to ADR: `docs/adr/0001-eligibility-computed-by-code-never-llm.md`
-5. **Pipeline v1 kesiti = izle + hash/diff + bayrak** (değişiklikte otomatik issue; insan alıntı+tarihle günceller). LLM'li çıkarım + kod doğrulama + otomatik PR = v1.x.
-6. **Mimari: sıfır backend.** Statik site, engine tarayıcıda, pipeline dataset repo'sunun CI cron'unda; kişisel veri makineden çıkmaz. Ölçüm gerekirse veri-toplamayan sayaç sonradan. → Graduated to ADR: `docs/adr/0003-zero-backend-client-side-evaluation.md`
-7. **İki repo:** `visa-rules` (şema+dataset+engine+pipeline) + `visa-navigator` (statik site). Topluluk sözleşmesi olacak repo tarihçesini baştan kendi repo'sunda biriktirir.
-8. **Lisans: dataset CC-BY-4.0, kod MIT.** Amaç yayılım+atıf, ticari engelleme değil.
-9. **Stack: TypeScript + JSON dataset (JSON Schema sınır doğrulaması) + Astro.**
-
-Varsayım listesi: `docs/spine/assumptions.md` (A1-A14).
+**Note:** NOTES.md (2026-08-26) is the record of the design conversation and the competitive scan that preceded this decision; it was taken as input to the Brainstorm Loop, and will not be repeated from scratch.
 
 ---
 
-## 2026-09-01 — Konsept kararı: DEVAM, 4 ülke 🛑 (kapı, insan seçti)
+## 2026-09-01 — Grill half-round decisions (Brainstorm Loop, human chose)
 
-**Karar:** Brainstorm Loop kapandı; konsept devam ediyor, v1 = DE/FR/ES/NL.
-Sunulan alternatifler: ES'yi dalga 2'ye itmek, pivot (önce yalnız dataset), dur.
+What the three-round grill bound:
 
-**Gerekçe (research-01 bulgularıyla):**
-- Boşluk duruyor ve keskinleşti: per-value tarih+alıntı × açık veri × AB
-  çalışma izinleri kombinasyonunu kimse yapmıyor (A2 zayıflamış hali + A7).
+1. **First user = the user themselves; the audience is not limited by citizenship.** Everyone gets a correct answer from the general "third country" line; exception curation (TR + DE's privileged-access list) is in v1, the rest is additive. The interface is EN in v1.
+2. **Success measure:** primary = the quality of the live/dated/sourced open dataset (portfolio), secondary = organic usage. Community contribution is not a goal but a by-product.
+3. **v1 scope: DE/FR/ES/NL deep** (6-8 employment routes per country). Wave 2 = CA+AU (points systems fit the model exactly), wave 3 = the rest of Europe (pipeline+community), **the US = a separate decision** (the lottery/employer-process breaks determinism; if it enters, with its own route type). Rationale: the "live" promise costs linearly with the number of watched pages; broad+deep+live cannot all three be held in v1 (see assumption A2).
+4. **LLM role = build-time polish.** The question set/options/order derive from the code; the LLM only humanises the wording, and the output is committed. The eligibility decision and the v1 result text are deterministic. No runtime RAG; "ask a question about the route" (quote-based) goes to the v1.x backlog. → Graduated to ADR: `docs/adr/0001-eligibility-computed-by-code-never-llm.md`
+5. **Pipeline v1 slice = watch + hash/diff + flag** (an automatic issue on a change; a human updates it with quote+date). LLM extraction + code verification + automatic PR = v1.x.
+6. **Architecture: zero backend.** Static site, engine in the browser, pipeline on the CI cron of the dataset repo; personal data does not leave the machine. If measurement is needed, a non-data-collecting counter later. → Graduated to ADR: `docs/adr/0003-zero-backend-client-side-evaluation.md`
+7. **Two repos:** `visa-rules` (schema+dataset+engine+pipeline) + `visa-navigator` (static site). The repo that is to become the community contract accumulates its history in its own repo from the start.
+8. **Licence: dataset CC-BY-4.0, code MIT.** The aim is spread+attribution, not commercial blocking.
+9. **Stack: TypeScript + JSON dataset (JSON Schema boundary validation) + Astro.**
+
+Assumption list: `docs/spine/assumptions.md` (A1-A14).
+
+---
+
+## 2026-09-01 — Concept decision: CONTINUE, 4 countries 🛑 (gate, human chose)
+
+**Decision:** The Brainstorm Loop closed; the concept continues, v1 = DE/FR/ES/NL.
+Alternatives presented: pushing ES to wave 2, a pivot (dataset only first), stop.
+
+**Rationale (with the research-01 findings):**
+- The gap stands and has sharpened: nobody is doing the combination of
+  per-value date+quote × open data × EU work permits (A2 in its weakened form + A7).
   → Graduated to ADR: `docs/adr/0002-per-value-provenance-enforced-by-schema.md`
-- Talep kanıtı güçlü: run-abroad 3 haftada 491★; awesome-immigration 1.491★.
-- Hukuki konum Smartlaw içtihadıyla destekli, koşullar tasarıma girdi (A1).
-- Maliyet düzeltmeleri kabul edildi: ~40 route (A5 revize), bot-blocking'e
-  dayanıklı kaynak seçimi + ES insan-okur katmanı (A3), dağıtım GitHub/HN
-  önce (A8 revize).
-- ES'nin v1'de kalma gerekçesi: insan-okur katmanı şeması ileride topluluk
-  ülkeleri için zaten gerekli; erken kurulması şemayı dürüstleştirir.
+- Demand evidence is strong: run-abroad 491★ in 3 weeks; awesome-immigration 1.491★.
+- The legal position is supported by the Smartlaw case law, and its conditions went into the design (A1).
+- The cost corrections were accepted: ~40 routes (A5 revised), bot-blocking-
+  resistant source selection + an ES human-reader tier (A3), distribution
+  GitHub/HN first (A8 revised).
+- The rationale for ES staying in v1: the human-reader tier's schema is needed
+  anyway for the community countries later; setting it up early makes the schema honest.
 
-**Loop-until-dry notu:** Tur yeni bulgu üretti (kural gereği döngü "kuru"
-değil) ama bulguların tümü tasarım/plan düzeyi kısıt, konsept düzeyi değil;
-skeleton pace gereği döngü tek turda kapatıldı. Gerekirse one-pager/plan
-aşamasından kanıtlı back-edge ile dönülür.
-
----
-
-## 2026-09-01 — One-pager onaylandı 🛑 (kapı, insan onayı)
-
-**Karar:** `docs/spine/one-pager.md` delta onayıyla kabul edildi; Stage 3 kapandı.
-
-**Süreç:** Devils-advocate 6 bulgu verdi (0 blocker, 4 risk, 2 nit); altısı da
-düzeltilerek işlendi: (1) DE stabil değer-kaynağı açık problem + plan spike'ı,
-(2) A15 eklendi (kriterler beyanla ifade edilebilir — denklik/Anabin sorunu),
-(3) problem bölümü overclaim düzeltmesi, (4) "6-7 soru" hedef olarak
-işaretlendi, (5) toplam ~35-40 route, (6) tek-kişi + ilk dolum yükü kapsama
-girdi. İnsan delta'yı onayladı.
+**Loop-until-dry note:** The round produced new findings (by the rule the loop is
+not "dry") but all of the findings are design/plan-level constraints, not
+concept-level; for skeleton pace the loop was closed in a single round. If needed,
+we come back from the one-pager/plan stage with an evidenced back-edge.
 
 ---
 
-## 2026-09-01 — Tasarım yönü: "Damgalı Panel" (variant-d) 🛑 (kapı, insan seçti)
+## 2026-09-01 — One-pager approved 🛑 (gate, human approval)
 
-**Karar:** Çekirdek ekran (sonuç/gap-analizi) tasarımı variant-d — B'nin bilgi
-mimarisi (hüküm-başlık, bitişik per-value kaynak, eşik rayı, beyan paneli) +
-A'nın resmî-belge havası (serif başlık, kayıt mührü, çift-çizgi kurallar),
-açık arşiv-kâğıdı zeminde. Tokenlar `tokens.css`'e çıkarıldı.
+**Decision:** `docs/spine/one-pager.md` was accepted with a delta approval; Stage 3 closed.
 
-**Süreç:** İlk üçlü (A resmî-kayıt / B eşik-rayı / C sınır-artefaktı) kritik
-edildi; insan "C'nin kartları + A'nın damga havası + B'nin netliği" melezi
-istedi. İkinci üçlü (D damgalı-panel / E etiket-defteri / F sınır-kaydı)
-üretildi; öneri F idi, insan D'yi seçti — kurumsal-güvenilir görünüm karakter
-dozuna tercih edildi. Kritikte doğan kalıcı kurallar: eşik rayı her sayısal
-kriterin standart modülü; gap kartı rayını mutlaka gösterir; "up to €X"
-dürüstlüğü başlıkta da korunur; her kartta "Official page ↗" yönlendirmesi;
-F'nin ülke-grubu başlıkları 40-route ölçeğinde D'ye taşınacak desen olarak
-not edildi. Varyant dosyaları `docs/spine/design/`'da kalır (audit).
+**Process:** Devils-advocate returned 6 findings (0 blocker, 4 risk, 2 nit); all six
+were processed with fixes: (1) the DE stable value-source is an open problem + a plan
+spike, (2) A15 added (criteria can be expressed by declaration — the equivalence/Anabin
+problem), (3) an overclaim fix in the problem section, (4) "6-7 questions" was marked
+as a target, (5) ~35-40 routes in total, (6) single-person + the initial fill load went
+into scope. The human approved the delta.
 
 ---
 
-## 2026-09-01 — S1 dilim-içi kararlar (ucuz varsayılanlar, Spine seçti)
+## 2026-09-01 — Design direction: "Stamped Panel" (variant-d) 🛑 (gate, human chose)
 
-S1 real-green oldu; dilim içinde gate açılmadan verilen kararlar:
+**Decision:** The core screen (results/gap-analysis) design is variant-d — B's
+information architecture (provision-heading, adjacent per-value source, threshold rail,
+declaration panel) + A's official-document air (serif heading, record seal, double-line
+rules), on a light archive-paper ground. The tokens were extracted to `tokens.css`.
 
-1. **`visa-rules` kardeş dizinde** (`Projects/visa-rules`) ayrı git repo —
-   karar #7'nin fiziksel karşılığı; navigator ona `file:../visa-rules` ile
-   bağlanır.
-2. **Engine saf fonksiyon, veri ayrı export.** Navigator, `data/de.json`'u
-   doğrudan import edip sınırda kendisi doğrular (`visa-rules/validate` ayrı
-   entry — ajv client bundle'a sızmaz; client 9.5 kB).
-3. **Astro 5 → 7 yükseltmesi**: `npm audit` Astro 5 hattında high-severity
-   advisories gösterdi; v7.2.10'a geçildi, 0 zafiyet, build yeşil.
-4. **Şema hata raporu "en derin instancePath"i seçer** — oneOf dallanması ilk
-   hatayı yanıltıcı yapıyordu; artık `.../threshold must have required
-   property 'quote'` gibi tam alan adlanıyor (senaryo adım 6 bunu istiyor).
-5. **mattpocock zinciri kısaltıldı:** to-spec/tdd ayrı ayrı koşulmadı;
-   testler implementasyonla birlikte yazıldı (16 vitest), senaryo tarayıcıda
-   koşuldu. Gerekçe: dilim küçük, senaryo zaten spec. Sonraki dilimlerde
-   büyüklüğe göre yeniden değerlendirilecek.
-6. **Koşum sırasında yakalanan üç kopya hatası düzeltildi:** soru sayısı
-   dinamik, gap notu yön göstermiyor ("check the other cards"), restart
-   başlığı dinamik.
-7. **A15 için erken sinyal:** kazara "I don't know" ile koşulan profil,
-   "unknown = açık eksik, hayır değil" davranışını ekranda doğru gösterdi.
+**Process:** The first trio (A official-record / B threshold-rail / C border-artefact) was
+critiqued; the human wanted a hybrid of "C's cards + A's stamp air + B's clarity". A
+second trio (D stamped-panel / E label-ledger / F border-record) was produced; the
+recommendation was F, the human chose D — an institutional-trustworthy look was preferred
+over a dose of character. The lasting rules born in the critique: the threshold rail is
+the standard module of every numeric criterion; a gap card must show its rail; the "up to
+€X" honesty is preserved in the heading too; an "Official page ↗" pointer on every card;
+F's country-group headings were noted as a pattern to be carried over to D at 40-route
+scale. The variant files stay in `docs/spine/design/` (audit).
 
 ---
 
-## 2026-09-02 — Soru budaması (insan testi bulgusu, dilim-sonrası düzeltme)
+## 2026-09-01 — S1 in-slice decisions (cheap defaults, Spine chose)
 
-**Bulgu (insan, S1'i lokalde test ederken):** "Teklif var mı? → No" dedikten
-sonra maaş sorusu geliyordu — ölü route için anlamsız soru.
+S1 went real-green; the decisions taken inside the slice without opening a gate:
 
-**Karar:** Genel, veri-güdümlü budama eklendi (hardcode bağımlılık değil):
-bir cevap bir route'un kriterini kesin düşürürse route ölür; hiçbir canlı
-route'un referans vermediği soru atlanır (`remainingQuestions()`). "I don't
-know" route'u öldürmez. Yan kural: hiç sorulmamış alan sonuç ekranında
-"I don't know" gibi gösterilmez. AB vatandaşı seçilirse anket ilk sorudan
-sonra biter. +5 test (toplam 21). Ayrıca footer/header çizgi genişliği
-eşitlendi (insan bulgusu #2). Commit'ler: `visa-rules@98076da`,
+1. **`visa-rules` in a sibling directory** (`Projects/visa-rules`), a separate git repo —
+   the physical counterpart of decision #7; the navigator links to it with
+   `file:../visa-rules`.
+2. **The engine is a pure function, the data a separate export.** The navigator imports
+   `data/de.json` directly and validates it itself at the boundary (`visa-rules/validate`
+   is a separate entry — ajv does not leak into the client bundle; client 9.5 kB).
+3. **Astro 5 → 7 upgrade**: `npm audit` showed high-severity advisories on the Astro 5
+   line; moved to v7.2.10, 0 vulnerabilities, build green.
+4. **The schema error report picks the "deepest instancePath"** — oneOf branching made the
+   first error misleading; now the full field is named, as in `.../threshold must have
+   required property 'quote'` (scenario step 6 asks for this).
+5. **The mattpocock chain was shortened:** to-spec/tdd were not run separately; the tests
+   were written together with the implementation (16 vitest), and the scenario was run in
+   the browser. Rationale: the slice is small, the scenario is already the spec. To be
+   reassessed in later slices according to size.
+6. **Three copy errors caught during the run were fixed:** the question count is
+   dynamic, the gap note does not point a direction ("check the other cards"), the
+   restart heading is dynamic.
+7. **An early signal for A15:** a profile run accidentally with "I don't know" correctly
+   showed the "unknown = an open gap, not a no" behaviour on screen.
+
+---
+
+## 2026-09-02 — Question pruning (human testing finding, post-slice fix)
+
+**Finding (human, while testing S1 locally):** after saying "Is there an offer? → No"
+the salary question was coming — a meaningless question for a dead route.
+
+**Decision:** A general, data-driven pruning was added (not a hardcoded dependency):
+if an answer definitely fails a route's criterion the route dies; a question that no
+live route references is skipped (`remainingQuestions()`). "I don't know" does not
+kill a route. Side rule: a field that was never asked is not shown on the results
+screen as if it were "I don't know". If EU citizen is selected the interview ends
+after the first question. +5 tests (21 in total). The footer/header line width was
+also equalised (human finding #2). Commits: `visa-rules@98076da`,
 `visa-navigator@98b78d4`.
 
-**Not:** Bu, S2'nin (information gain) yarısını erkene çekti — S2 senaryosu
-yazılırken budama artık mevcut sayılacak, S2 yalnız *sıralama*ya odaklanır.
+**Note:** This pulled half of S2 (information gain) forward — when the S2 scenario is
+written, pruning will now count as existing, and S2 focuses only on *ordering*.
 
 ---
 
-## 2026-09-02 — Soru aşaması yerleşimi: iki kolon baştan 🛑 (kapı, insan seçti)
+## 2026-09-02 — Question-stage layout: two columns from the start 🛑 (gate, human chose)
 
-**Karar (yerleşim):** Soru aşaması da sonuç ekranıyla aynı iki kolonlu yerleşimi
-kullanır: beyan defteri baştan solda ("—" bekleyen satırlar cevaplandıkça
-dolar), soru kartı sağ ana kolonda. Sunulan alternatifler: kartı ortalamak
-(sihirbaz hissi ama belge dilinden kopuş + geçişte zıplama), mevcut sola
-yaslı hal, tek sayfa akan form (reddedildi — budamayla kötü etkileşir).
-Gerekçe: boş alan "kaydın dolduğu" metaforuna dönüşür, soru→sonuç geçişinde
-yerleşim zıplamaz. Ek: "Change an answer" yalnız sonuçta görünür; qcard'ın
-38rem sınırı kalktı. Commit: `visa-navigator` (iki kolon + hidden CSS fix).
+**Decision (layout):** The question stage also uses the same two-column layout as the
+results screen: the declaration ledger on the left from the start (the "—" waiting rows
+fill in as they are answered), the question card in the right main column. Alternatives
+presented: centring the card (a wizard feel but a break from the document language + a
+jump at the transition), the current left-aligned state, a single-page flowing form
+(rejected — it interacts badly with pruning). Rationale: empty space turns into the "the
+record is filling" metaphor, and the layout does not jump at the question→results
+transition. Also: "Change an answer" appears only in the results; the qcard's 38rem limit was removed. Commit: `visa-navigator` (two columns + hidden CSS fix).
 
 ---
 
-## 2026-09-02 — S2 dilim-içi kararlar (ucuz varsayılanlar, Spine seçti)
+## 2026-09-02 — S2 in-slice decisions (cheap defaults, Spine chose)
 
-S2 mock-green; dilim içinde verilen kararlar:
+S2 mock-green; the decisions taken inside the slice:
 
-1. **`in` ve `any` op'ları eklendi.** §20a'nın "Fachkraft ODER Punktzahl"
-   ayrımı ve §19c'nin nitelikli-VEYA-IT yolu statünün gerçek yapısı;
-   disjunction'ı düzleştirmek yerine şemaya alındı. `any` başarısız olurken
-   en-yakın-yolun gap/puan bilgisini yukarı taşır (yoksa "2 puan eksik"
-   hikâyesi hold'a düşüyordu — koşumda yakalandı).
-2. **Puan kriteri erken-geçer ama erken-ölmez.** Ulaşılamaz duruma düşünce
-   soruyu kesmek tam skoru ("4/6") gösterilemez kılıyordu; merdiven kısa
-   (≤8 tık) ve her tık görünür skor ürettiğinden tamamlanana dek sorulur.
-3. **"situation" alanı** (teklif / ICT-transfer / hosting / hiçbiri) üç ayrı
-   evet-hayır sorusunu tek soruda katlıyor; ICT ve araştırmacının bileşik
-   önkoşulları route notunda taşınıyor.
-4. **Chancenkarte yalnız situation=none'da gösterilir** — kart "aramak" için
-   var; teklifli kullanıcıyı 6+ puan-sorusuyla yormamak ürün kararı, gerekçe
-   route notunda.
-5. **§21 (öz-istihdam/serbest) v1 dışı** — kriterleri takdirî ("wirtschaftliches
-   Interesse", finansman değerlendirmesi), deterministik kodlanamaz; DE
-   hariç-tutma listesine gerekçesiyle yazıldı. Eski §20 iş-arama vizesi de
-   yok (Chancenkarte'ye devrolmuş — küratör bulgusu).
-6. **45+ yaş kuralları (55% eşiği, emeklilik karşılığı) kriter değil not** —
-   koşullu/alternatifli yapı v1 modeline alınmadı; €55.770 değeri route
-   notlarında anılıyor, kritere dönüştürülmesi backlog.
-7. **Info-gain uniform önselle greedy** — "en çok eleyen soru önce"; bunun
-   sonucu ilk soru citizenship değil situation (ort. 2.0 vs 4.0 canlı route).
-   Gerçek kullanıcı dağılımı önseli (EU nadir) ileride veri alanı olabilir.
-8. **Ray yalnız kartın kendi eşiğini etiketler** — yakın eşikler (€45.630 /
-   €45.934,20) etiket çakıştırıyordu; diğer çentikler etiketsiz bağlam.
-9. **A10 ölçümü:** teklifli yollar 6-7 soru ✓; puan yolu ~13 (assumptions'a
-   işlendi).
+1. **The `in` and `any` ops were added.** §20a's "Fachkraft ODER Punktzahl"
+   distinction and §19c's qualified-OR-IT path are the real structure of the
+   status; instead of flattening the disjunction it was taken into the schema.
+   When `any` fails it carries the nearest path's gap/points information up
+   (otherwise the "2 points short" story fell into hold — caught in the run).
+2. **The points criterion passes early but does not die early.** Cutting off the question
+   once it fell into an unreachable state made the full score ("4/6") unshowable; since
+   the ladder is short (≤8 clicks) and every click produces a visible score, it is asked until complete.
+3. **The "situation" field** (offer / ICT-transfer / hosting / none) folds three
+   separate yes-no questions into a single question; the compound preconditions of
+   the ICT and the researcher are carried in the route note.
+4. **The Chancenkarte is shown only when situation=none** — the card exists for
+   "searching"; not tiring a user who has an offer with 6+ points questions is a product
+   decision, with the rationale in the route note.
+5. **§21 (self-employment/freelance) is out of v1** — its criteria are discretionary
+   ("wirtschaftliches Interesse", a financing assessment) and cannot be coded
+   deterministically; it was written into the DE exclusion list with its rationale. The
+   old §20 job-seeker visa is gone too (rolled into the Chancenkarte — curator finding).
+6. **The 45+ age rules (the 55% threshold, the pension equivalent) are a note, not a
+   criterion** — the conditional/alternative structure was not taken into the v1 model;
+   the €55.770 value is mentioned in the route notes, turning it into a criterion is backlog.
+7. **Info-gain is greedy with a uniform prior** — "the question that eliminates the most
+   first"; the result of this is that the first question is not citizenship but situation
+   (avg. 2.0 vs 4.0 live routes). A real user-distribution prior (EU is rare) could be a data field later.
+8. **The rail labels only the card's own threshold** — nearby thresholds (€45.630 /
+   €45.934,20) made the labels collide; the other ticks are unlabelled context.
+9. **A10 measurement:** the offer paths are 6-7 questions ✓; the points path ~13 (written
+   into assumptions).
 
-Commit'ler: `visa-rules@58977ee,652628e`, `visa-navigator@a338f88`.
+Commits: `visa-rules@58977ee,652628e`, `visa-navigator@a338f88`.
 
-**Ek (insan geri bildirimi, aynı gün):** "You declared" defteri artık yalnız
-sorulan alanları, soruluş sırasında gösterir — cevaplananlar birikir, yalnız
-o anki soru bekleyen satır olarak eklenir. Gerekçe: adaptif budamayla 15
-satırı baştan göstermek hiç sorulmayacak alanları vaat ediyordu; iki-kolon
-kararının "boş satırlar dolar" detayı bu lehine terk edildi.
+**Addition (human feedback, same day):** The "You declared" ledger now shows only the
+fields that are asked, in the order they are asked — the answered ones accumulate, and
+only the current question is added as a waiting row. Rationale: with adaptive pruning,
+showing 15 rows from the start promised fields that would never be asked; the two-column
+decision's "the empty rows fill in" detail was abandoned in favour of this.
 (`visa-navigator@a191702`)
 
 ---
 
-## 2026-09-02 — S2 real-green + v0.1/v0.2 damgaları (insan doğrulaması)
+## 2026-09-02 — S2 real-green + the v0.1/v0.2 stamps (human verification)
 
-**Karar/olay:** İnsan, S2 doğrulama listesinin tamamını resmî kaynaklardan
-doğruladı — gesetze-im-internet.de'ye VPN ile erişti (ajanlara ECONNREFUSED
-veren site insana açık; s4 pipeline kaynak-seçimi için önemli veri noktası).
-S2 "Almanya tam seti" real-green; `## versions` defteri kuruldu: **v0.1**
-Yürüyen iskelet (2026-09-01'e geriye dönük damga), **v0.2** Almanya tam seti.
-Yan görev doğdu: buzer.de ayna URL'lerini resmî URL'lerle değiştirme
-(backlog'da).
+**Decision/event:** The human verified the whole of the S2 verification list against
+official sources — reached gesetze-im-internet.de over VPN (the site that gives agents
+ECONNREFUSED is open to a human; an important data point for s4 pipeline source-selection).
+S2 "the full Germany set" is real-green; the `## versions` ledger was set up: **v0.1**
+Walking skeleton (a stamp backdated to 2026-09-01), **v0.2** the full Germany set.
+A side task was born: replacing the buzer.de mirror URLs with the official URLs
+(in the backlog).
 
-## 2026-09-02 — Steward-format defter güncellemeleri (skill güncellemesi, uygulandı)
+## 2026-09-02 — Steward-format ledger updates (skill update, applied)
 
-Genesis/status skill'leri güncellenmiş (insan işaret etti, dosyalardan
-doğrulandı). Uygulananlar: dilimler **yetenek adıyla** anılır (S-ID'ler yalnız
-dosya adı); KANBAN mermaid dilim panosu + `## versions` defteri;
-`docs/spine/ARCHITECTURE.md` (güven sınırı dahil mimari diyagram, her dilim
-çıkışında güncellenir); Product seviyesinde one-pager'a **Viability** bölümü
-şartı → **orta back-edge** açıldı (kanıt: skill güncellemesi + Product
-gereksinimi; para/metrik/hedef kararları insana kapıyla sorulacak); yeni
-ekran getiren dilimlerde senaryoyla birlikte statik mock onayı.
-
----
-
-## 2026-09-02 — Viability onaylandı 🛑 (kapı, insan)
-
-Kararlar insanın: **para** = şeffaf affiliate (mecburi hizmetler; etiketli,
-çok sağlayıcılı, karara etkisiz) + GitHub Sponsors ilk günden; izlemesiz
-reklam yalnız 25-50k/ay eşiğinde; AdSense hiç. **Metrik** = dataset
-canlılığı (≤48s işleme + kapsam). **Hedef** = insanın temposu: v1 ≈ 1 hafta,
-dalga 2 ≈ +2 hafta. Kitle çapası BAMF'tan temellendi (41.000+ ilk Blue Card
-2023; genişletme çıkarım işaretli); kitle *tanımı* grill'deki haliyle insanca
-teyit edildi. DA deltada 2 bulgu verdi, ikisi düzeltildi (tek-küratör riski
-açık; affiliate sınırı açık).
-
-## 2026-09-02 — s3 boundary onayı 🛑 (kapı, insan)
-
-"Gap analizi sonuç ekranında" senaryosu (6 adım) + ekran mock'u
-(`docs/spine/design/s3-results.html`: özet şeridi, OPEN/WITHIN REACH/NOT YET
-grupları, kompakt hold satırları, veriden gelen "bilmiyorum → öğren" kutusu)
-birlikte onaylandı. İlk turda insan ekranın bağlamını sordu; mock'un yalnız
-sağ kolonu (değişen kısım) gösterdiği, "You declared" panelinin yerinde
-kaldığı netleştirilip onay alındı.
+The genesis/status skills had been updated (the human pointed it out, verified from the
+files). What was applied: slices are referred to **by capability name** (S-IDs are only a
+file name); the KANBAN mermaid slice board + the `## versions` ledger;
+`docs/spine/ARCHITECTURE.md` (an architecture diagram including the trust boundary,
+updated at every slice exit); at Product level the requirement of a **Viability** section
+in the one-pager → a **medium back-edge** was opened (evidence: the skill update + the
+Product requirement; money/metric/target decisions will be put to the human at a gate);
+for slices that bring a new screen, static mock approval alongside the scenario.
 
 ---
 
-## 2026-09-02 — s3b "Kaldıraç analizi" (insan sorusundan doğan mini dilim) 🛑→✅
+## 2026-09-02 — Viability approved 🛑 (gate, human)
 
-**Doğum:** İnsan sorusu — "durumsuzlara hepsine 'not met: situation' diyoruz,
-öneri veremiyoruz; ayrıca eksik olanı LLM mi söyleyecek?" **Cevap/karar:**
-(1) "yakınlık" tahmin edilmez (falcılık) ama **kaldıraç** deterministik
-hesaplanır: path-tipi alanlar (yeni `kind` ayrımı) alternatif değerleriyle
-karşı-olgusal koşulur, met/near'a dönen route'lar "bu adım şunları açar" diye
-listelenir; `is_fallback` seçenekleri (ör. "none") asla hedef olmaz — "teklifi
-bırak" önerisi çıkamaz. (2) LLM sınırı yeniden teyit: eksik/gap her zaman
-kodda hesaplanır; LLM'in gelecekteki rolü yalnız anlatım cilası + kaynak-temelli
-soru-cevap (backlog'daki kararlar değişmedi). Senaryo+mock kapıyla onaylandı,
-aynı gün real-green → **v0.4**. Dilim içi dürüstlük kuralı: karşı-olgusal
-yalnız *mevcut cevaplarla karara bağlanabilen* route'ları listeler
-(cevaplanmamış maaşla "Blue Card açılır" denmez). Hold satırlarına
-kriter-bazlı "gereken: X · beyanın: Y" dökümü de bu turda eklendi (insan
-bulgusu: açılan satır boştu). Commit'ler: `visa-rules@76255f4`,
+The decisions are the human's: **money** = transparent affiliate (compulsory services;
+labelled, multi-provider, with no effect on the verdict) + GitHub Sponsors from day one;
+non-tracking advertising only at the 25-50k/month threshold; AdSense never. **Metric** =
+dataset liveness (≤48h processing + coverage). **Target** = the human's tempo: v1 ≈ 1 week,
+wave 2 ≈ +2 weeks. The audience anchor was grounded in BAMF (41.000+ first Blue Cards in
+2023; the extrapolation is marked as inference); the audience *definition* was confirmed
+by the human as it stood in the grill. DA returned 2 findings on the delta, both were fixed
+(the single-curator risk is stated; the affiliate boundary is stated).
+
+## 2026-09-02 — s3 boundary approval 🛑 (gate, human)
+
+The "Gap analysis on the results screen" scenario (6 steps) + the screen mock
+(`docs/spine/design/s3-results.html`: summary strip, OPEN/WITHIN REACH/NOT YET
+groups, compact hold rows, the data-driven "I don't know → learn" box) were approved
+together. In the first round the human asked about the screen's context; approval was
+given once it was clarified that the mock shows only the right column (the part that
+changes) and that the "You declared" panel stays where it is.
+
+---
+
+## 2026-09-02 — s3b "Leverage analysis" (a mini slice born from a human question) 🛑→✅
+
+**Birth:** A human question — "to everyone with no situation we say 'not met: situation',
+we cannot give a recommendation; also, is the LLM going to say what is missing?"
+**Answer/decision:** (1) "closeness" is not predicted (fortune-telling) but **leverage**
+is computed deterministically: path-type fields (the new `kind` distinction) are run
+counterfactually with their alternative values, and the routes that turn to met/near are
+listed as "this step opens these"; `is_fallback` options (e.g. "none") are never a target
+— a "drop the offer" recommendation cannot come out. (2) The LLM boundary was reconfirmed:
+the missing/gap is always computed in code; the LLM's future role is only narrative polish
++ source-based question-and-answer (the decisions in the backlog did not change).
+Scenario+mock approved at a gate, real-green the same day → **v0.4**. In-slice honesty rule:
+the counterfactual lists only the routes that *can be decided with the existing answers*
+(with an unanswered salary it is not said that "the Blue Card opens"). A criterion-based
+"required: X · you declared: Y" breakdown was also added to the hold rows in this round
+(human finding: the opened row was empty). Commits: `visa-rules@76255f4`,
 `visa-navigator@c654fc5,e5b42ff`.
 
-**Uzantı (insan sorusu, aynı gün) → v0.5:** "Neden yalnız situation? Dil
-öğrenmesi, para biriktirmesi gerekenler?" — kaldıraç, eylemle değiştirilebilir
-her alana genellendi (`kind: improvable`: dil, para, maaş, deneyim, denklik;
-yaş/vatandaşlık attribute kalır — asla önerilmez). Yön filtresi bedava: düşüş
-hiçbir route açmadığından satırı kendiliğinden yok. Tek-adım dürüstlüğü
-korunur: cevaplanmamış alanlara yaslanan "açılır" iddiası yapılmaz (dilsiz
-profile "A1 yeter" değil, ancak kanıtlanabilen "B2 → met" gösterildi;
-tarayıcıda doğrulandı). Yan kazanım: `language_base` sorusu veri çelişkisi
-üretebiliyordu ("hayır" + Almanca A2), kaldırıldı — taban-dil şartı §20a'daki
-haliyle any(Almanca A1+ / İngilizce B2+) olarak dil seviyelerinden türüyor;
-soru sayısı 15→14. Qualification bilinçli olarak improvable YAPILMADI
-("üniversite bitir" önerisi kapsam dışı; ileride tartışılabilir). 43 test.
-Commit'ler: `visa-rules@c5d2a49`, `visa-navigator@2b74eba`.
+**Extension (human question, same day) → v0.5:** "Why only situation? What about those who
+need to learn the language, to save money?" — leverage was generalised to every field that
+can be changed by action (`kind: improvable`: language, money, salary, experience,
+equivalence; age/citizenship stay attributes — they are never recommended). The direction
+filter is free: since a decrease opens no route, its row is absent by itself. Single-step
+honesty is preserved: an "opens" claim leaning on unanswered fields is not made (for a
+profile with no language it was not "A1 is enough" but only the provable "B2 → met" that
+was shown; verified in the browser). Side gain: the `language_base` question could produce
+a data contradiction ("no" + German A2), and was removed — the base-language condition, as
+it stands in §20a, derives from the language levels as any(German A1+ / English B2+); the
+question count 15→14. Qualification was deliberately NOT made improvable ("finish
+university" as a recommendation is out of scope; it can be discussed later). 43 tests.
+Commits: `visa-rules@c5d2a49`, `visa-navigator@2b74eba`.
 
-**İkinci uzantı (insan testi bulgusu, aynı gün):** Fon "€1.091 altı" cevabı
-Chancenkarte'yi anında öldürüp görüşmeyi 3 soruda bitiriyordu — puanla
-tutarsız. Kural düzeltildi: **sınırlı gap (bitişik para bandı, puan eksiği)
-route'u öldürmez** — yalnız gap'siz "hard fail" öldürür; görüşme sürer, route
-sonda "within reach — Gap: up to €1.091 — monthly funds" olur. Beklenmedik
-güzel yan etki: info-gain, artık kimseyi elemediği için fon sorusunu geriye
-attı. Gap notu alan-farkında oldu. 45 test; akış tarayıcıda doğrulandı.
+**Second extension (human testing finding, same day):** The funds answer "below €1.091"
+killed the Chancenkarte instantly and ended the interview in 3 questions — inconsistent
+with the points. The rule was fixed: **a bounded gap (an adjacent money band, a points
+shortfall) does not kill a route** — only a gapless "hard fail" kills; the interview
+continues, and at the end the route becomes "within reach — Gap: up to €1.091 — monthly
+funds". An unexpected nice side effect: info-gain pushed the funds question back, since it
+now eliminates nobody. The gap note became field-aware. 45 tests; the flow was verified in the browser.
 → Graduated (with the improvable-fail rule) to ADR:
 `docs/adr/0004-bounded-gaps-keep-the-interview-alive.md`
 
@@ -1477,3 +1477,52 @@ launch-readiness sweep**, a small slice with its own scenario, so s6 is launch
 and nothing else. Cost: one more boundary; two scenarios instead of one.
 Benefit: each is green on its own terms, and a launch does not wait on a
 Spanish experience band.
+
+## 2026-09-07 — the route-page mock: self-checked, then critiqued in isolation
+
+**What happened.** The s6 boundary needed a static mock for the one new screen
+the launch introduces — the per-route page. This session designed it, looked at
+it in a browser, found nothing, and put it in front of the human for approval.
+The human asked whether it had been through visual critique. It had not. The
+session had graded its own work, the failure this project has now named on
+four separate days.
+
+**The isolated critique found three blockers in the screen the session had
+called clean:**
+
+- The threshold rail's two labels collided into one unreadable run on every
+  phone width — 57 px of overlap at 390 px. The one number the page exists to
+  deliver, drawn as garbage on the searcher's device, times 23 pages.
+- Seven of sixteen controls below the 44 px tap minimum — the token written
+  after the v0.7 critique measured 34/22/20 px controls, broken on the first
+  screen designed after it, worst on the "Official page" links that carry the
+  differentiator.
+- "FULLY MODELLED" — pipeline vocabulary in a green banner, retracted by its
+  own second sentence, wearing `--color-met`, the criteria-met colour, on a
+  page whose rule is that it never rules on the reader. Kept the verdict rule
+  in words and broke it in signal.
+
+Plus: AA contrast failure on the "Also required" label (3.68:1), German quotes
+with no `lang`, three date formats on one page with the stamp carrying the
+stalest, "50.700 Euro" beside "€50,700" with no note that they are the same
+number, and no door from the page to the data for the developer who arrived
+from the README.
+
+**All applied to the mock.** Rail labels stack as a list below 760 px; every
+control reaches 44 px; the banner is "What the checker asks, and what it does
+not", in ink, no verdict colour; the caveat label is ink on the tint; quotes
+carry `lang="de"` and a one-line frame; one date format, ISO, and the stamp is
+the newest read date on the page; a "data behind this page" block links the
+JSON, the repository and the tracker.
+
+**Two token-semantics calls, recorded rather than left implied:** the hero
+accent keeps `--color-near`, because tokens.css defines that as the hero
+accent on every screen — the critic's objection is real and the fix is a token
+split, which is a design-system change for its own entry, not a mock edit. And
+`--color-met` stays reserved for the source-date emphasis on the read line, its
+other defined use; nothing else on a descriptive page may wear it.
+
+**The rule, now in the skill as steward-28 the same hour:** a new screen's mock
+reaches its gate critiqued in isolation, never self-checked. Cost of not having
+had it: one gate conversation withdrawn, one critique run, and a human who had
+to ask.

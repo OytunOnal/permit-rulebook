@@ -1,162 +1,162 @@
-# Research 01 — Varsayım sınaması (2026-09-01)
+# Research 01 — Assumption testing (2026-09-01)
 
-Brainstorm Loop'un ilk research yarı-turu. Dört paralel ajan, A1-A8'i fetch
-edilmiş kaynaklarla sınadı. Her satır **found** (sayfada görüldü) ya da
-**inferred** (görülenden çıkarım) işaretli; fetch edilemeyenler "Unverified"
-altında. Ajan raporlarının tamamı oturum kaydında; burada karara girenler var.
-
----
-
-## Karar girdisi (decision input)
-
-**Öneri: DEVAM** — konum revizyonlarıyla. Fikri öldürecek bulgu çıkmadı;
-üç varsayım zayıfladı ama zayıflamış halleri hâlâ savunulabilir bir konum
-tanımlıyor:
-
-> **"Değer başına tarih + resmî kaynaktan birebir alıntı taşıyan, açık,
-> AB-çalışma-izni kural veri seti"** — bu kombinasyonu kimse yapmıyor (A2
-> zayıflamış hali + A7), yapılabilirliği tek kişilik bir repo kanıtlamış
-> (PathWise), talep kanıtı güçlü (run-abroad: 3 haftada 491 yıldız), ve dağıtım
-> kanalı SEO değil önce GitHub/HN (A8 revize).
-
-Revizyonlar (one-pager'a girecek):
-1. **Kapsam sayısı:** ülke başı 6-8 değil **8-12 route, toplam ~40** (A5);
-   her ülke için yazılı **hariç tutma listesi** (mevsimlik, stajyer, denizci,
-   sanatçı, yatırımcı) bir tasarım eseri olarak gerekli. FR "talent" ailesi tek
-   route + alt-tip ayrıştırıcısı olarak modellenmeli (2024 reformu alt-tipleri
-   birleştiriyor: kaynak aşağıda).
-2. **Pipeline gerçeği:** 1 numaralı tehdit JS değil **bot-blocking** (A3).
-   make-it-in-germany (Radware), france-visas + immigration.interieur (403)
-   düz fetcher'ı engelliyor. Tasarım: ülke başına *izlenebilir* kaynak seçimi
-   (NL: ind.nl, FR: service-public.gouv.fr F16922, DE: BAMF metin + yıllık
-   değer duyurusu, ES: UGE PDF hash'i) + "değişti-bayrağı sonrası insan okur"
-   katmanı. ES'te değerler glyph-encoded PDF'te → İspanya kalıcı olarak
-   insan-okur katmanında.
-3. **Şemaya çift atıf:** DE ve ES'te yasa **formül** verir (Beitragsbemessungs-
-   grenze oranı; 1,4× INE ortalaması), euro değeri başka yerde duyurulur.
-   Alan: `value_source` (duyuru) + `legal_basis` (yasa/madde).
-4. **Çıktı dili hukuki tasarım gereğidir** (A1): "uygunsun" asla; "eşik X,
-   beyanın Y" + IRCC-tarzı disclaimer. Serbest metin vaka girişi yok — bu
-   RDG'nin "rechtliche Prüfung des Einzelfalls" çizgisinin dışında kalmanın
-   koşulu.
+The Brainstorm Loop's first research half-round. Four parallel agents tested A1-A8 against
+fetched sources. Every line is marked **found** (seen on the page) or **inferred** (an
+inference from what was seen); those that could not be fetched are under "Unverified". The
+agent reports are in full in the session record; what is here is what entered the decision.
 
 ---
 
-## Varsayım kararları
+## Decision input
 
-### A1 — Hukuki konum → `research-confirmed` (koşullu)
+**Recommendation: CONTINUE** — with positioning revisions. No finding emerged
+that would kill the idea; three assumptions weakened but their weakened forms
+still define a defensible position:
+
+> **"An open, EU-work-permit rules dataset carrying a date per value + a verbatim
+> quote from the official source"** — nobody is doing this combination (A2's
+> weakened form + A7), its feasibility has been proven by a one-person repo
+> (PathWise), the evidence of demand is strong (run-abroad: 491 stars in 3 weeks),
+> and the distribution channel is not SEO but GitHub/HN first (A8 revised).
+
+Revisions (to go into the one-pager):
+1. **Scope count:** not 6-8 per country but **8-12 routes, ~40 total** (A5); a
+   written **exclusion list** for each country (seasonal, trainee, seafarer,
+   artist, investor) is necessary as a design artefact. The FR "talent" family
+   should be modelled as a single route + a sub-type discriminator (the 2024
+   reform merges the sub-types: source below).
+2. **The pipeline reality:** threat number 1 is not JS but **bot-blocking**
+   (A3). make-it-in-germany (Radware), france-visas + immigration.interieur
+   (403) block a plain fetcher. Design: a *watchable* source selection per
+   country (NL: ind.nl, FR: service-public.gouv.fr F16922, DE: BAMF text + the
+   yearly value announcement, ES: the hash of the UGE PDF) + a "human reads
+   after the changed-flag" tier. In ES the values are in a glyph-encoded PDF →
+   Spain is permanently in the human-reader tier.
+3. **Double citation in the schema:** in DE and ES the law gives a **formula** (the
+   Beitragsbemessungsgrenze ratio; 1.4× the INE average), the euro value is announced
+   elsewhere. Field: `value_source` (the announcement) + `legal_basis` (the law/article).
+4. **The output language is a legal design requirement** (A1): never "you are
+   eligible"; "threshold X, your declaration Y" + an IRCC-style disclaimer. No
+   free-text case entry — this is the condition for staying outside the RDG's
+   "rechtliche Prüfung des Einzelfalls" line.
+
+---
+
+## Assumption decisions
+
+### A1 — The legal position → `research-confirmed` (conditional)
 - **found:** § 2 Abs. 1 RDG: "Rechtsdienstleistung ist jede Tätigkeit in
   konkreten fremden Angelegenheiten, sobald sie eine rechtliche Prüfung des
   Einzelfalls erfordert." (https://dejure.org/gesetze/RDG/2.html)
-- **found:** BGH 09.09.2021 – I ZR 113/20 (Smartlaw): çoktan-seçmeli
-  cevaplardan standart çıktı üreten yazılım RDG kapsamında *değil* — "feste
-  Routine", kullanıcı "rechtliche Prüfung seines konkreten Falls" beklemiyor
+- **found:** BGH 09.09.2021 – I ZR 113/20 (Smartlaw): software producing standard
+  output from multiple-choice answers is *not* within the scope of the RDG — "feste
+  Routine", the user does not expect a "rechtliche Prüfung seines konkreten Falls"
   (https://www.lto.de/recht/juristen/b/bgh-izr11320-vertragsgenerator-smartlaw-legal-tech-keine-unzulaessige-rechtsdienstleistung-rdg-rechtsberatung).
-- **found:** Alman devletinin kendi Quick-Check'i disclaimer taşımıyor; korunma
-  tamamen ifade yumuşatması: "you have good chances", "You may be eligible"
-  (https://www.make-it-in-germany.com/en/visa-residence/quick-check).
-- **found:** IRCC şablonu (devşirilecek): "We won't make any immigration
-  decision based on your answers. … They won't consider any result you get
-  through this questionnaire in their decision."
+- **found:** The German state's own Quick-Check carries no disclaimer; the
+  protection is entirely a softening of wording: "you have good chances", "You may
+  be eligible" (https://www.make-it-in-germany.com/en/visa-residence/quick-check).
+- **found:** The IRCC template (to be harvested): "We won't make any
+  immigration decision based on your answers. … They won't consider any result
+  you get through this questionnaire in their decision."
   (https://ircc.canada.ca/english/helpcentre/answer.asp?qnum=010&top=4)
-- **inferred:** Visa Navigator'ın mekanizması Smartlaw desenine oturuyor,
-  hatta daha temiz (belge bile üretmiyor). Koşullar: kategorik çıktı dili,
-  serbest metin vaka girişi yok, LLM/insan yorumu yok, IRCC-tarzı disclaimer.
-- **Sınır:** FR/ES/NL için özgül araştırma yapılmadı — analoji. Smartlaw
-  sözleşme belgesi hakkında, göç değil. Tam kanıt değil, destek.
+- **inferred:** Visa Navigator's mechanism sits on the Smartlaw pattern, even more
+  cleanly (it does not even produce a document). Conditions: categorical output language,
+  no free-text case entry, no LLM/human interpretation, an IRCC-style disclaimer.
+- **Limit:** no specific research was done for FR/ES/NL — analogy. Smartlaw is
+  about a contract document, not migration. Not full proof, support.
 
-### A2 — "Dar+canlı > geniş+bayat" → `research-confirmed` (zayıflamış halde)
-- Güçlü hali ("rakipler tarih/kaynak hiç göstermiyor") **çürüdü**:
-  - **found:** WhereToEmigrate methodology sayfası provenance log yayınlıyor:
-    "Of the 12,275 individual visa-rule facts in our provenance log, 10,164
-    (83%) are attributed to a statutory public agency" + bayatlık-ceza modeli
-    ("6–12 months · −5", "12+ months · −15") (https://wheretoemigrate.io/methodology).
-  - **found:** VisaMind sayfa-düzeyi tarih basıyor: "Fetched Jul 29, 2026"
-    (https://www.visamind.com/en/united-states/tools/processing-time-tracker) —
-    ama kapsamı yalnız US/CA/UK/AU.
-- Zayıflamış hali **her yerde tuttu**: hiçbir rakip **değer-başına**
-  tarih + kaynak URL + birebir alıntı çiftini vermiyor; Visaora hiç vermiyor
-  ("No links to official government sources, retrieval dates, or last-updated
-  timestamps", https://visaora.io/), Workbeyond sayfa-düzeyi "Updated Jun 2026".
-- **Ayrıştırıcı daraldı ve netleşti:** per-value provenance × açık veri ×
-  AB çalışma izinleri.
+### A2 — "Narrow+live > broad+stale" → `research-confirmed` (in weakened form)
+- The strong form ("competitors show no date/source at all") **collapsed**:
+  - **found:** The WhereToEmigrate methodology page publishes a provenance log: "Of
+    the 12,275 individual visa-rule facts in our provenance log, 10,164 (83%) are
+    attributed to a statutory public agency" + a staleness-penalty model ("6–12
+    months · −5", "12+ months · −15") (https://wheretoemigrate.io/methodology).
+  - **found:** VisaMind stamps a page-level date: "Fetched Jul 29, 2026"
+    (https://www.visamind.com/en/united-states/tools/processing-time-tracker)
+    — but its coverage is only US/CA/UK/AU.
+- The weakened form **held everywhere**: no competitor gives the date + source
+  URL + verbatim quote pair **per value**; Visaora gives none at all ("No
+  links to official government sources, retrieval dates, or last-updated
+  timestamps", https://visaora.io/), Workbeyond page-level "Updated Jun 2026".
+- **The differentiator narrowed and became clearer:** per-value provenance ×
+  open data × EU work permits.
 
-### A3 — Resmî sayfalar izlenebilir → kısmen; ülke-bazlı tablo (`research-confirmed` NL/FR, `research-refuted` ES-HTML, DE riskli)
-| Ülke | Durum | Kanıt |
+### A3 — Official pages can be watched → partly; country-by-country table (`research-confirmed` NL/FR, `research-refuted` ES-HTML, DE risky)
+| Country | Status | Evidence |
 |---|---|---|
-| NL | **En iyi.** Tek stabil EN HTML URL, tüm eşikler, tarihçeli | "€5,942.00" HSM 30+, ind.nl/en/required-amounts-income-requirements (**found**) |
-| FR | Geçer — france-visas 403, ama service-public.gouv.fr F16922 tüm talent eşiklerini HTML taşıyor | "39 582 €", "59 373,00 € brut annuel" (**found**) |
-| DE | Riskli — make-it-in-germany Radware bot-duvarı; BAMF temiz ama sayısız; değerler yıllık-URL'li BA bülteninde | "50.700 Euro" / "45.934,20 Euro" (arbeitsagentur.de newsletter 03-2026, **found**) |
-| ES | HTML olarak kalır — değerler UGE PDF'inde, PDF metin katmanı makine-okunmaz (glyph-encoded) | BOE emri formül veriyor: "1,4 veces la ganancia media anual bruta" (https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-2142, **found**) |
+| NL | **The best.** A single stable EN HTML URL, all thresholds, with history | "€5,942.00" HSM 30+, ind.nl/en/required-amounts-income-requirements (**found**) |
+| FR | Passes — france-visas 403, but service-public.gouv.fr F16922 carries all the talent thresholds in HTML | "39 582 €", "59 373,00 € brut annuel" (**found**) |
+| DE | Risky — make-it-in-germany Radware bot wall; BAMF is clean but carries no numbers; the values are in the BA bulletin with a yearly URL | "50.700 Euro" / "45.934,20 Euro" (arbeitsagentur.de newsletter 03-2026, **found**) |
+| ES | Fails as HTML — the values are in the UGE PDF, the PDF text layer is machine-unreadable (glyph-encoded) | The BOE order gives the formula: "1,4 veces la ganancia media anual bruta" (https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-2142, **found**) |
 
-### A4 — Kaynak dili engel değil → `research-confirmed` (ES kısmi)
-- **found:** BAMF sayfası EN **ve TR** dahil 6 dilde; make-it-in-germany tam EN
-  portal (insan için erişilebilir, bot için değil). FR: F16922 EN toggle'lı.
-  NL: ind.nl/en tam portal. ES: UGE'nin EN HTML sayfaları var ama işlevsel
-  belgeler İspanyolca PDF; make-it-in-germany-tarzı EN toplayıcı yok.
+### A4 — Source language is not an obstacle → `research-confirmed` (ES partial)
+- **found:** The BAMF page is in 6 languages including EN **and TR**; make-it-in-germany
+  is a full EN portal (accessible to a human, not to a bot). FR: F16922 has an EN
+  toggle. NL: ind.nl/en a full portal. ES: UGE has EN HTML pages but the functional
+  documents are Spanish PDFs; there is no make-it-in-germany-style EN aggregator.
 
-### A5 — Ülke başı 6-8 route → `research-refuted` (revize: 8-12, toplam ~40)
-- **found:** DE 8-9 (BAMF kategorileri + Blue Card + Chancenkarte + job-seeker).
-  ES 7-8. FR: talent ailesi ~8 varyant + 4 talent-dışı ≈ 12 (service-public
-  N110; info-droits-etrangers.org; 2024 birleşme reformu). NL: IND resmî
-  listesi **20** kayıt, ana istihdam ~10 (ind.nl/en/residence-permits/work).
-- **inferred:** Patlama yok ama dürüst sayı ~40; hariç tutma listesi şart.
+### A5 — 6-8 routes per country → `research-refuted` (revised: 8-12, ~40 total)
+- **found:** DE 8-9 (BAMF categories + Blue Card + Chancenkarte + job-seeker). ES
+  7-8. FR: the talent family ~8 variants + 4 non-talent ≈ 12 (service-public N110;
+  info-droits-etrangers.org; the 2024 merger reform). NL: the IND official list
+  has **20** entries, main employment ~10 (ind.nl/en/residence-permits/work).
+- **inferred:** No explosion, but the honest number is ~40; an exclusion list is essential.
 
-### A6 — CA/AU uyumu → `untested` (dalga 2, bu tur kapsam dışı)
+### A6 — CA/AU fit → `untested` (wave 2, out of scope this round)
 
-### A7 — Açık dataset boşluğu duruyor → `research-confirmed`
-- **found:** 10 GitHub/web araması; yeni oyuncu yok. En yakın: **PathWise**
-  (https://github.com/SandeepMadhavarapu/PathWise, 1 yıldız) — "Every
-  regulatory value … lives in a versioned rule pack carrying its authority,
-  source URL and verification date" — ama alanı ABD öğrenci statüsü. Rakip
-  değil; desenin tek kişiyle kurulabildiğinin kanıtı ve şema sözlüğü kaynağı.
+### A7 — The open-dataset gap still stands → `research-confirmed`
+- **found:** 10 GitHub/web searches; no new player. The closest: **PathWise**
+  (https://github.com/SandeepMadhavarapu/PathWise, 1 star) — "Every regulatory value …
+  lives in a versioned rule pack carrying its authority, source URL and verification
+  date" — but its field is US student status. Not a competitor; proof that the pattern
+  can be set up by one person, and a source for the schema vocabulary.
 
-### A8 — Statik site SEO'da yaşar → `research-refuted` baş-terimlerde, `research-confirmed` topluluk kanalında (revize)
-- **found:** "blue card germany salary threshold 2026" sorgusunda dönen sonuçlar
-  lead-gen/hukuk bürosu duvarı (jobbatical, savoryandpartners, aldaglegal...);
-  resmî siteler yok. NL sorgusunda ind.nl yok, Big-4 var.
-- **found:** run-abroad **491 yıldız, 12 Ağustos 2026'da açılmış** (~3 hafta)
+### A8 — A static site survives in SEO → `research-refuted` on head terms, `research-confirmed` on the community channel (revised)
+- **found:** The results returned for the query "blue card germany salary threshold
+  2026" are a lead-gen/law-firm wall (jobbatical, savoryandpartners, aldaglegal...);
+  no official sites. In the NL query there is no ind.nl, there is the Big-4.
+- **found:** run-abroad **491 stars, opened on 12 August 2026** (~3 weeks)
   (https://api.github.com/repos/RadishXN/run-abroad); awesome-immigration
-  **1.491 yıldız**; Visalist Show HN "565 points, 252 comments".
-- **inferred (revize konum):** dağıtım = önce açık veri + GitHub/HN; SEO uzun
-  kuyruk ikinci kanal; baş terimlerden ilk yıl beklenti sıfır.
+  **1,491 stars**; Visalist Show HN "565 points, 252 comments".
+- **inferred (revised positioning):** distribution = open data + GitHub/HN first; SEO
+  long tail as the second channel; zero expectation from head terms in the first year.
 
 ---
 
-## Harvest (devşirme listesi)
+## Harvest (harvesting list)
 
-1. **WhereToEmigrate bayatlık-ceza modeli** → şemada doğrulama yaşı birinci
-   sınıf alan; UI eski değeri sessizce sunmak yerine güveni düşürür.
-2. **VisaMind'ın "Fetched <tarih>; <kurum> data updates monthly. View official
-   table" satır deseni** → per-value versiyonuyla birebir kopyalanacak UI dili.
-3. **IRCC + relokate disclaimer metinleri** → hazır şablon (research'te birebir
-   alıntıları var).
-4. **PathWise sözlüğü** → "versioned rule pack carrying its authority, source
-   URL and verification date" + bilinmeyeni söyleme ("it says so when it
-   doesn't know") + kapsam katmanları (fully modeled / partial /
-   source-captured-only) — ES'nin insan-okur katmanı bu üçlüye oturuyor.
-5. **Workbeyond per-visa sayfa yapısı** (eşik tablosu+ücret+süre+SSS) → tüketilebilir
-   route sayfası şekli; farkımız hücre başına tarih+alıntı+kaynak.
-6. **Visaora'nın mikro-sayfa SEO deseni** → kurallardan otomatik üretilen
-   route/soru sayfaları (uzun kuyruk kanalı için).
-7. **awesome-immigration** → route envanterinin ilk tarama kaynağı (rakip değil).
+1. **The WhereToEmigrate staleness-penalty model** → verification age as a first-class
+   field in the schema; instead of silently serving the old value the UI lowers confidence.
+2. **VisaMind's "Fetched <date>; <agency> data updates monthly. View official table"
+   line pattern** → UI language to be copied verbatim in its per-value version.
+3. **IRCC + relokate disclaimer texts** → a ready template (their verbatim
+   quotes are in the research).
+4. **The PathWise vocabulary** → "versioned rule pack carrying its authority,
+   source URL and verification date" + saying the unknown ("it says so when it
+   doesn't know") + coverage tiers (fully modeled / partial /
+   source-captured-only) — the ES human-reader tier sits on this triple.
+5. **The Workbeyond per-visa page structure** (threshold table+fee+duration+FAQ)
+   → a consumable route page shape; our difference is date+quote+source per cell.
+6. **Visaora's micro-page SEO pattern** → route/question pages generated
+   automatically from the rules (for the long-tail channel).
+7. **awesome-immigration** → the first scanning source for the route inventory (not a competitor).
 
-## Yeni bulgular (loop-until-dry girdisi)
+## New findings (loop-until-dry input)
 
-Bu tur **yeni bulgu üretti** (bot-blocking, ES PDF sorunu, FR talent ailesi,
-formül/değer ayrımı, SERP kompozisyonu) — kurala göre döngü kuru değil. Ancak
-bulguların tümü *tasarım/plan düzeyi* kısıt; hiçbiri konsepti sorgulatan
-türden değil ve hepsi one-pager + plan aşamalarında adreslenebilir. Skeleton
-pace gereği döngü burada kapanıyor; ikinci research turu ihtiyacı doğarsa
-(one-pager devils-advocate'i ya da plan aşaması kanıt gösterirse) back-edge
-ile dönülür.
+This round **produced new findings** (bot-blocking, the ES PDF problem, the FR talent
+family, the formula/value distinction, SERP composition) — by the rule the loop is
+not dry. But all of the findings are *design/plan level* constraints; none of them is
+of the kind that puts the concept in question and all of them can be addressed in the
+one-pager + plan stages. As the skeleton pace requires, the loop closes here; if the
+need for a second research round arises (if the one-pager devils-advocate or the plan
+stage shows evidence) it is returned to with a back-edge.
 
-## Unverified (bu tur fetch edilemeyenler)
+## Unverified (what could not be fetched this round)
 
-- gesetze-im-internet.de (ECONNREFUSED ×4) — §18g formül iddiası inferred.
-- BGH I ZR 113/20 mahkeme metni (LTO üzerinden aktarıldı).
-- ES güncel euro eşikleri (≈€41.356 / €33.085 — yalnız arama sonucu; resmî
-  taşıyıcı okunamayan UGE PDF'i).
-- WhereToEmigrate ücretli rapor içi per-value tarihleme (paywall).
-- IAA practice note PDF (UK, hedef ülke değil).
-- FR/ES/NL yetkisiz-hukuk-hizmeti kuralları (A1 analojiyle duruyor).
+- gesetze-im-internet.de (ECONNREFUSED ×4) — the §18g formula claim is inferred.
+- BGH I ZR 113/20 court text (relayed via LTO).
+- Current ES euro thresholds (≈€41,356 / €33,085 — search results only; the
+  official carrier is the unreadable UGE PDF).
+- Per-value dating inside the WhereToEmigrate paid report (paywall).
+- IAA practice note PDF (UK, not a target country).
+- FR/ES/NL unauthorised-legal-service rules (A1 stands by analogy).
