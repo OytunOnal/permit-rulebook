@@ -59,3 +59,43 @@ export function restore(raw: string | null, knownFields: readonly string[]): { a
   for (const field of Object.keys(answers)) if (!history.includes(field)) delete answers[field];
   return { answers, history };
 }
+
+/**
+ * The slice of `Storage` the record needs. Storage can be unavailable
+ * (private mode, blocked site data) and can throw on the property access
+ * itself, so the page may have nothing to hand over — the interview must
+ * still run, it just won't survive the tab.
+ */
+export interface RecordStore {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+
+/** Keep what has been answered. Nothing answered is nothing to keep: an empty
+ * record left behind still says someone was here. */
+export function saveRecord(store: RecordStore | null, answers: Profile, history: string[]): void {
+  try {
+    if (history.length === 0) store?.removeItem(STORAGE_KEY);
+    else store?.setItem(STORAGE_KEY, serialize(answers, history));
+  } catch { /* no storage: the interview still runs, it just won't persist */ }
+}
+
+/** "Start over": a shared or borrowed computer must not hand the next person
+ * a stranger's salary. */
+export function clearRecord(store: RecordStore | null): void {
+  try {
+    store?.removeItem(STORAGE_KEY);
+  } catch { /* nothing to clear */ }
+}
+
+/** What the last visit left, filtered to what this dataset still asks. */
+export function loadRecord(
+  store: RecordStore | null, knownFields: readonly string[],
+): { answers: Profile; history: string[] } {
+  let raw: string | null = null;
+  try {
+    raw = store?.getItem(STORAGE_KEY) ?? null;
+  } catch { return { answers: {}, history: [] }; }
+  return restore(raw, knownFields);
+}

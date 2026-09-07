@@ -64,12 +64,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // s5d: every word a verdict says comes from here, beside the rules — the
       // page holds no field-id-to-label table of its own to fall through
       // (product-critique v0.7, B3).
-      reasonFor, shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, joinOr,
+      shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
       type Criterion, type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
     } from "visa-rules";
-    import { activeOption, onKey, onType, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
-    import { mastheadFor, type Screen } from "../lib/screen.js";
-    import { restore, serialize, STORAGE_KEY } from "../lib/record.js";
+    import { activeOption, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
+    import { mastheadFor, screenAfter, type Explore, type FlowAction } from "../lib/screen.js";
+    import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
+    // The reason column's markup, beside the page rather than in it, so what
+    // it renders can be read by a test (review S4).
+    import { esc, failDetailHtml, whyHtml } from "../lib/reason.js";
 
     const ds = dataset as unknown as Dataset;
     // One field-lookup idiom for the whole page: the dataset never changes
@@ -108,19 +111,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * (product-critique v0.7, B1). */
     let justRecorded: { field: string; label: string } | null = null;
 
-    /** One masthead, one source. Every screen that is not a result gets the
-     * question masthead, so no path back into the interview — "Start over",
-     * an edit, browser Back — can leave a claim about a comparison standing
-     * (product-critique v0.7, B4). */
-    function showMasthead(screen: Screen) {
-      const m = mastheadFor(screen);
+    /** One masthead, one writer. Every gesture names itself, and only the two
+     * that compare something can produce a screen that says so — no path back
+     * into the interview ("Start over", an edit, browser Back) can leave a
+     * claim about a comparison standing (product-critique v0.7, B4). The
+     * transitions themselves live in `screen.ts`, where a property test walks
+     * them in every order (review H1). */
+    function advance(action: FlowAction) {
+      const m = mastheadFor(screenAfter(action, { answered: asked.length }));
       headline.innerHTML = m.headline;
       subline.textContent = m.subline;
-    }
-    const showQuestionMasthead = () => showMasthead({ kind: "question", started: asked.length > 0 });
-
-    function esc(s: string) {
-      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     /** A field's answer set. Some fields declare their options by reference
@@ -171,8 +171,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           editing = f;
           stamp.hidden = true;
           app.dataset.state = "questions";
-          showQuestionMasthead();
-          renderQuestion();
+          renderQuestion({ kind: "edit" });
         };
         row.addEventListener("click", jump);
         row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); } });
@@ -206,7 +205,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       asked = keptOrder;
     }
 
-    function renderQuestion() {
+    /** Draw the question screen the gesture lands on. Rendering and advancing
+     * the masthead are one call, so a path back into the interview cannot
+     * render without saying which gesture brought it here (B4). */
+    function renderQuestion(action: FlowAction) {
       // Only questions a still-alive route cares about; e.g. "no job offer"
       // retires the salary question instead of asking it into the void.
       const remaining = remainingQuestions(ds, answers);
@@ -214,7 +216,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const q = editing
         ? (remaining.find((x) => x.field === editing) ?? questions.find((x) => x.field === editing)!)
         : remaining[0];
-      showQuestionMasthead();
+      advance(action);
       renderDeclaration(q.field);
       const total = asked.length + remaining.length;
       const answer = (value: string) => {
@@ -228,7 +230,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           asked.push(q.field);
         }
         saveRecord();
-        renderQuestion();
+        renderQuestion({ kind: "answer" });
       };
       // A list this long is a search, not a choice between buttons — but it is
       // still a choice from the dataset's own options: no free text, no
@@ -322,7 +324,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
               answer(b.dataset.value!);
             }));
         };
-        filter.addEventListener("input", () => { box = onType(box, filter.value); draw(); });
+        filter.addEventListener("input", () => { box = stateFor(filter.value); draw(); });
         filter.addEventListener("keydown", (e) => {
           // isComposing: an IME's committing Enter belongs to the IME.
           if (e.isComposing) return;
@@ -360,7 +362,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
       document.getElementById("done")?.addEventListener("click", () => {
         editing = null;
-        renderQuestion();
+        renderQuestion({ kind: "answer" });
       });
       document.getElementById("back")?.addEventListener("click", () => {
         // Back is the same gesture as editing a declared row: step to the
@@ -371,7 +373,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         editing = prev;
         stamp.hidden = true;
         app.dataset.state = "questions";
-        renderQuestion();
+        renderQuestion({ kind: "edit" });
       });
 
       pushScreen();
@@ -442,7 +444,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * The page used to compose this itself out of field names, which is how
      * "Not met: situation" became the verdict on 22 of 23 cards
      * (product-critique v0.7, B3). */
-    const whyFor = (r: RouteResult): string => esc(reasonFor(ds, r, answers).line);
+    const whyFor = (r: RouteResult): string => whyHtml(ds, r, answers);
     /** Conditions the authority applies that the interview never asked —
      * stated on every card so "criteria met" cannot overpromise. */
     function precondFor(r: RouteResult): string {
@@ -505,11 +507,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // Expanded hold rows: one sentence per failing criterion, so a one-line
     // reason always unfolds into something concrete. The sentences come from
     // the engine — the page no longer names fields (B3).
-    function failDetail(r: RouteResult): string {
-      const rows = reasonFor(ds, r, answers).rows.map((row) =>
-        `<li class="${row.kind}">${esc(row.text)}</li>`);
-      return rows.length ? `<ul class="faildetail">${rows.join("")}</ul>` : "";
-    }
+    const failDetail = (r: RouteResult): string => failDetailHtml(ds, r, answers);
 
     function fullCard(r: RouteResult, showCountry = true): string {
       return `
@@ -566,21 +564,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const placedElsewhere = (r: RouteResult) => isPlacedElsewhere(r, answers);
     const place = () => declaredPlace(ds, answers);
 
-    /** A criterion the person "failed" by having MORE: the route wants the
-     * "none of these" answer and they declared a real step. */
-    function outgrown(cr: CritResult): boolean {
-      const c = cr.criterion;
-      if (c.op !== "eq") return false;
-      return optionsOf(c.field).find((o) => o.value === c.value)?.is_fallback === true &&
-        optionsOf(c.field).find((o) => o.value === answers[c.field])?.short !== undefined;
-    }
+    /** A moot criterion: the route wants the "none of these" answer and the
+     * person declared a real step, so they "failed" it by having MORE. The
+     * shape is the engine's — the page re-derived it, and a second definition
+     * of the same thing can disagree with the reason it prints (review S5). */
+    const isMoot = (cr: CritResult): boolean => mootWith(ds, cr, answers) !== null;
 
     function isStepGated(r: RouteResult): boolean {
       const fails = r.criteria.filter((c) => c.outcome === "fail");
       if (!fails.length || hasLiveUnknown(r)) return false;
       // "Not needed with a job offer" is the opposite story — never file a
-      // route the user has outgrown under "needs a job offer".
-      if (fails.some(outgrown)) return false;
+      // route whose criterion is moot under "needs a job offer".
+      if (fails.some(isMoot)) return false;
       return fails.every((cr) => {
         const fields = referencedFields(cr.criterion);
         // A criterion referencing no field is not "path-gated" — engine parity.
@@ -725,7 +720,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (replacing.length && zeroOpen) {
         // The headline is the notice's own title: a second copy of it here
         // would drift the moment the dataset states a different notice.
-        showMasthead({ kind: "notice", title: replacing[0].title });
+        advance({ kind: "answered-outright", title: replacing[0].title });
         // Any other applicable notice still belongs on the screen — dropping
         // it silenced, say, the Türkiye note (review).
         main.innerHTML = [...replacing, ...applicable.filter((n) => !replacing.includes(n))]
@@ -739,10 +734,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // Notices ride above the normal layout, with the results intact.
       const noticeCards = applicable.map(noticeCard).join("");
 
-      // The subtitle states what was compared, and only a result screen can
+      // The subtitle states what was compared, and only a comparison can
       // produce it — the count and the tense come from the same place (B4).
-      const said = (headlineHtml: string, nearest?: string) =>
-        showMasthead({ kind: "results", answered: asked.length, ruleSets: results.length, headline: headlineHtml, nearest });
+      const said = (headlineHtml: string, rest: { nearest?: string; explore?: Explore } = {}) =>
+        advance({ kind: "compare", routes: results.length, headline: headlineHtml, ...rest });
 
       if (zeroOpen && ups.length) {
         // The step worth naming: one that would fully meet a route beats one
@@ -753,15 +748,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         const bestUp = ups.reduce((best, u) => (rank(u) > rank(best) ? u : best));
         // Zero open is a starting point, not a dead end — the steps are the news.
         said(`Nothing open yet — ${ups.length} step${ups.length === 1 ? "" : "s"} would change that.`,
-          unlockTitleOf(ds, bestUp));
+          { nearest: unlockTitleOf(ds, bestUp) });
       } else if (zeroOpen) {
         // Nothing open and no single step would open one: no false hope. The
         // single-country result has no country sections to send anyone to, so
         // it does not pretend otherwise (F7).
-        said("Nothing open on these answers.");
-        subline.textContent += visible.length === 1
-          ? " Change an answer to explore — every route below says what it asks for, and quotes it."
-          : " Change an answer to explore — or see each country's reasons below.";
+        // What to do next is part of the one line, not a second sentence
+        // appended to the element afterwards (review J2).
+        said("Nothing open on these answers.", {
+          explore: visible.length === 1 ? "one-country" : "several-countries",
+        });
       } else {
         const nearNote = near.length
           ? near[0].gap_max
@@ -861,25 +857,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * either. Storage can be unavailable (private mode, blocked site data) —
      * the interview must still work, just without surviving the tab.
      */
-    function saveRecord() {
+    /** The browser's own store, if it has one: reading the property itself
+     * throws where site data is blocked. What is done with it — what is kept,
+     * what is dropped, what "Start over" takes with it — belongs to
+     * `record.ts`, where it is tested against a store in a bottle. */
+    const store: RecordStore | null = (() => {
       try {
-        // Nothing answered is nothing to keep: an empty record left behind
-        // still says someone was here.
-        if (asked.length === 0) localStorage.removeItem(STORAGE_KEY);
-        else localStorage.setItem(STORAGE_KEY, serialize(answers, asked));
-      } catch { /* no storage: the interview still runs, it just won't persist */ }
-    }
-    function clearRecord() {
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch { /* nothing to clear */ }
-    }
+        return window.localStorage;
+      } catch { return null; }
+    })();
+    const saveRecord = () => writeRecord(store, answers, asked);
     function loadRecord() {
-      let raw: string | null = null;
-      try {
-        raw = localStorage.getItem(STORAGE_KEY);
-      } catch { return; }
-      const kept = restore(raw, ds.fields.map((f) => f.id));
+      const kept = readRecord(store, ds.fields.map((f) => f.id));
       answers = kept.answers;
       asked = kept.history;
       // The rules may have moved since it was written: replay drops anything
@@ -892,13 +881,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // A shared or borrowed computer must not hand the next person a
       // stranger's salary: the stored record goes with the screen.
       answers = {}; asked = []; editing = null;
-      clearRecord();
+      clearRecord(store);
       // Back must not undo it: the snapshots go with the record, so the
       // entries that referenced them now restore nothing.
       snapshots.length = 0;
       app.dataset.state = "questions";
       stamp.hidden = true;
-      renderQuestion();
+      renderQuestion({ kind: "reset" });
     });
 
     /**
@@ -933,7 +922,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       saveRecord();
       stamp.hidden = true;
       app.dataset.state = "questions";
-      renderQuestion();
+      renderQuestion({ kind: "restore" });
       restoring = false;
     });
 
@@ -980,7 +969,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       }
     }
 
-    renderQuestion();
+    // The first screen is whatever the stored record left behind — a fresh
+    // interview when there is none.
+    renderQuestion({ kind: "restore" });
 
     // Dev-only layout probe: ?dev-probe=1 writes the widest offenders into the
     // title so headless --dump-dom can report horizontal overflow (golden G1).
@@ -1138,8 +1129,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        green would read as a route the rules opened, which it is not. */
     .notice.extra-rights{border-left-color:var(--color-band)}
     .notice.extra-rights h3{color:var(--color-ink)}
-    .faildetail li.outgrown::before,.faildetail li.where::before{content:"— ";color:var(--color-muted)}
-    .faildetail li.outgrown{color:var(--color-met)}
+    .faildetail li.moot::before,.faildetail li.where::before{content:"— ";color:var(--color-muted)}
+    .faildetail li.moot{color:var(--color-met)}
     .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
     .learn a{color:var(--color-band);font-weight:600;text-decoration:none}
     .learn a::after{content:" ↗"}

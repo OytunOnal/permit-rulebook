@@ -26,7 +26,9 @@ export type ListboxKey = "ArrowDown" | "ArrowUp" | "Home" | "End" | "Enter" | "E
 export const SHOWN_LIMIT = 60;
 
 /**
- * A fresh state for a query. An untouched box highlights nothing: on an empty
+ * A fresh state for a query — which is the whole of what typing does: the
+ * list is re-ranked and the highlight returns to the top of it. An untouched
+ * box highlights nothing: on an empty
  * needle the first row is the first country in the alphabet, and a habitual
  * Enter would answer "Afghanistan" for someone who never chose it.
  */
@@ -46,11 +48,6 @@ export function activeOption(
 ): FieldOption | undefined {
   if (!state.open || state.active < 0) return undefined;
   return shownOptions(options, state, limit)[state.active];
-}
-
-/** Typing re-ranks the list, so the highlight returns to the top of it. */
-export function onType(state: ListboxState, query: string): ListboxState {
-  return stateFor(query);
 }
 
 export interface KeyResult {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fieldOptions, matchOptions, type Dataset } from "visa-rules";
 import rawDataset from "visa-rules/data/dataset.json";
 import {
-  activeOption, onKey, onType, shownOptions, stateFor, type ListboxKey, type ListboxState,
+  activeOption, onKey, shownOptions, stateFor, type ListboxKey, type ListboxState,
 } from "../src/lib/listbox.js";
 
 const dataset = rawDataset as unknown as Dataset;
@@ -15,7 +15,7 @@ function lcg(seed: number) {
 
 /** Type a needle, then press these keys. Returns what was committed, if any. */
 function drive(query: string, keys: ListboxKey[]) {
-  let state: ListboxState = onType(stateFor(""), query);
+  let state: ListboxState = stateFor(query);
   const seen: Array<{ before: ListboxState; key: ListboxKey }> = [];
   for (const key of keys) {
     seen.push({ before: state, key });
@@ -99,7 +99,9 @@ describe("invariant: the committed country equals the highlighted option (B1)", 
     let state = stateFor("niger");
     state = onKey(countries, state, "ArrowDown").state;
     expect(state.active).toBe(1);
-    state = onType(state, "nigeria");
+    // Typing re-ranks the list, and a fresh state for the new query is the
+    // whole of that: the highlight returns to the top.
+    state = stateFor("nigeria");
     expect(state.active).toBe(0);
     expect(activeOption(countries, state)!.value).toBe("NG");
   });
