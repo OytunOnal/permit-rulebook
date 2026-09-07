@@ -15,7 +15,7 @@ flowchart LR
     E --> E2["Answers recorded as given ✅ real-green (v0.8)"]
     E2 --> E3["Every sentence carries its source ✅ real-green (v0.9)"]
     E3 --> E4["Launch-readiness sweep ✅ real-green (v0.10)"]
-    E4 --> E5["Public launch ◀ here (s6, building)"]
+    E4 --> E5["Public launch ◀ here (s6, mock-green)"]
     E4 --> F["Public launch 🏁 v1 (s6)"]
     F -.-> G["Wave 2: CA + AU"]
     G -.-> H["Wave 3: rest of Europe + community"]
@@ -158,15 +158,6 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **Public launch** (s6) · APPROVED 2026-09-07, with the builder
-  (docs/spine/scenarios/s6.md, 13 decisions + one amendment). Name sweep to
-  Permit Rulebook; 23 route pages generated from the dataset; coverage value
-  per route; CONTRIBUTING + issue templates + tracker link on the product;
-  favicon / OG card / identity pair; GitHub Pages workflow; one-sentence
-  disclaimer; ISO dates; invariants. What stays the human's: the GitHub
-  repository renames, Pages + domain, the first live watch flag, the phone walk
-  on the preview, the 48-hour lines, the announcement.
-
 - **Answers recorded as given, verdicts in plain words** (s5d) ·
   `docs/spine/scenarios/s5d.md`. Built, code-reviewed on both axes (10 findings,
   all applied), and extended twice by findings from the human's own walk: the
@@ -179,7 +170,16 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## mock-green
 
-_(empty — s5f stamped into done as **v0.10**, 2026-09-07)_
+- **Public launch** (s6) · mock-green 2026-09-07 (docs/spine/scenarios/s6.md).
+  Name sweep to Permit Rulebook; 23 route pages generated from the dataset
+  with the identity pair; scope value per route (22 / 1 / 0), exclusions twin;
+  CONTRIBUTING, issue templates, tracker link on the product; favicon, social
+  card checked against the dataset; Pages workflow; one-sentence disclaimer;
+  ISO dates; six invariants as tests. Reviewed on both axes: 3 blockers, 12
+  should-fix, 10 nits applied. 338 + 111 tests. **Real-green needs the
+  human**: GitHub renames, Pages + domain, labels, the watch live, the phone
+  walk on the preview, the first flag read against its source, the go; and
+  the isolated v1-gate critique on the deployed preview.
 
 ## real-green
 

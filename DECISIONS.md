@@ -1699,3 +1699,52 @@ space that remains; the pair is level with the middle of the text block; and
 above 760 px the pair is one size up (mark 4.3rem), the corner geometry kept.
 Below 760 px nothing changed. The mock at `a45dfbc` is the screen the build
 is graded against.
+
+## 2026-09-07 — s6 reviewed on both axes: three blockers, and the scope value learned to discriminate
+
+**What the review caught that the build's own green did not.** (1) The name
+sweep — the slice's headline gate — enumerated `git ls-files`, so it inspected
+none of the 14 files the slice added and would have turned red on the first
+commit with five offenders. It reads tracked and untracked files now, the
+workflow's checkout path is read from the site manifest rather than typed,
+and the one allowed line is identified by file and declaration, so the gate
+no longer reports itself. (2) `esc()` never escaped a quotation mark and was
+used in fifteen attribute positions; a `"` in any dataset string would have
+closed an `href`. `escAttr()` exists and a test injects one. (3) The
+invariant "the limbs the page names as not asked are the limbs `exclusions.md`
+records" was dead code — its file-reading half could never change the
+outcome. The file gained a machine-readable twin, the scope value carries
+`not_asked` ids, and the test fails in both directions.
+
+**Rulings.** `coverage` became `scope` (the word already named the watch's
+both-way check and sat on a glossary avoid-list; CONTEXT.md has Scope
+statement). The value is authored, never derived: the first cut's test forced
+one word onto all 23 routes from `statedNotAsked() > 0`, which no route could
+fail — a declared fact that was one constant. On the builder's own argument,
+`de-chancenkarte` earns "every deciding rule asked": its single statement is a
+caveat on what the card allows, not a condition of getting it. 22 / 1 / 0
+today; the third value is held by a synthetic pin. The reader's word is
+"condition" and the engineer's is "criterion" — one concept, two registers,
+both now written in the glossary instead of the code deciding it. Step 4's
+premise ("most exclusions": `es-highly-qualified`, `de-chancenkarte`) was
+wrong — one each; corrected to the real top three. Step 13's "24 pages" is 25.
+The social card painted "checked daily" in the criteria-met green; ink now.
+A reverse invariant joined the scenario: every amount printed is one the
+dataset holds for that route or its rail neighbours, so a typed number cannot
+be added either.
+
+**Accepted departures (builder's, agreed).** Statements as their own blocks,
+not nested under a rule the dataset does not record; no country index screen
+(the crumb is a label, not a link to an undesigned page); localization
+criteria not rendered on a page that *is* the destination; schema 0.5.0 for a
+new required field; `ours` 8 → 31 with the pin updated, not loosened;
+`not_asked` lists every limb the page names rather than a curated subset —
+the checkable thing is twin agreement.
+
+**Cost, stated.** The builder also deleted a pre-existing dead helper
+(`firstWithUps`) unasked; kept, since `astro check` is at zero warnings for
+it. One regression in the round was caught by a screenshot and by no test
+(block-label scoping inside nested quotes) — a gap the isolated critique is
+the next net for. 338 + 111 tests. Mock-green; real-green is the human's:
+GitHub renames, Pages and the domain, the first live flag, the phone walk on
+the preview, the announcement.
