@@ -26,9 +26,14 @@ flowchart LR
 gists, "stated" only of the source's words, one head-meta source, the shared
 footer on every page with its critique applied, the `/data` headings
 unclipped, the amended disclaimer everywhere, "Check yours" in the header.
-The builder is adding the Cloudflare beacon (the human's counter) with the
-never-leaves-the-device test naming it; then one two-axis review covers this
-round and the beacon; then v1 waits only on the checklist below.
+**CI is red on that push while the same tree is green locally:** the header's
+nav row wraps on the runner's fallback fonts (no Cambria/Segoe UI there), and
+the route-page fingerprint test depends on the environment. The footer and
+the new disclaimer are therefore not on the live site yet; the builder is
+fixing the design (a fold width that holds with any font) and the test, then
+the beacon and the pipeline hardening (actions pinned by SHA, read-only
+token); then a three-axis review (Standards, Spec, Security); then v1 waits
+only on the checklist below.
 
 Numbers: 400 tests in the data repository, 233 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
