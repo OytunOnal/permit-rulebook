@@ -80,10 +80,9 @@ judgement on a live source.
 - [ ] **Tomorrow's card date:** after the daily rebuild lands, paste any route
       link into Slack again. *Pass:* the card reads tomorrow's date under
       "Rules read". *Fail:* yesterday's — the rebuild did not run; tell me.
-- [ ] **French and Spanish question paths, once, on the phone:** choose France,
-      then Spain, and answer through to results. *Pass:* the question counter
-      does not swing wildly, salary bands read sensibly, no wording assumes a
-      job offer when you declared a transfer.
+- [x] **French and Spanish question paths** (human, 2026-09-08): pass — counter
+      steady, bands sensible, no offer wording on a transfer. One bug found on
+      the way: Back goes two questions back — being fixed.
 - [ ] **`DISPATCH_TOKEN` (a credential, so yours):** GitHub → Settings → Developer
       settings → Fine-grained tokens → new token, repository access:
       `permit-rulebook` only, permission Contents: read and write; then on
