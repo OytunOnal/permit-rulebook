@@ -33,6 +33,14 @@ retrieval date, and an append-only history of prior values. One declared
 exception: **Unsourced**.
 _Avoid_: citation, reference, metadata
 
+**Reading history** (dataset: `history[]` on a value):
+The append-only record of what a value was and when it was read. Since
+2026-09-08 each entry carries a declared **reason** — `re-read-unchanged`,
+`value-changed`, `source-moved`, `quote-corrected` — and the date it was
+checked; prose is optional and never the gate. A re-read that found the same
+value is recorded like a change, so "read 2026-09-08" on a page is earned.
+_Avoid_: note (as the record), log, changelog
+
 **Route statement**:
 Something a source says about one route that no criterion can compute, carried
 in the source's own words — either a Precondition that ships with its quote, or
