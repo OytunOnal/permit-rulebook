@@ -62,13 +62,10 @@ action, a real device, or a judgement on a live source.
       `design-flaw`, `new-need` on `permit-rulebook-data`, in the token colours;
       the three templates carry them. Still yours to see once: one test issue
       from a route page's "Report a wrong value" lands labelled.
-- [x] **4 · Live at the domain** (2026-09-08): the first successful deploy
-      (run 34207003365) put the site at http://permitrulebook.com — 200 on the
-      interview and the route pages, the Pages URL redirects there. HTTPS: the
-      certificate is being issued by GitHub; I enforce it the moment it
-      exists. Until then the address bar says "not secure" — expected for the
-      first hour, not a defect.
-- [ ] **5 · Phone walk on the preview, real handset:** the interview end to
+- [x] **4 · Live over HTTPS** (2026-09-08): https://permitrulebook.com —
+      certificate issued (apex + www, to 2026-12-07), HTTPS enforced, the Pages
+      URL redirects there. `SITE_URL` is the domain.
+- [ ] **5 · Phone walk on the live site, real handset** (https://permitrulebook.com): the interview end to
       end and one route page. *Pass:* nothing overflows, every tap target is
       comfortable, the rail's labels read as a list, the scope statement reads
       without zooming.

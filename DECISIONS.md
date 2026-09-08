@@ -1907,3 +1907,29 @@ now reads the base from the same `SITE_URL` the build reads. Accepted gap,
 stated: a subpath bug that shows only in dev will be seen only by a developer
 running `npm run smoke` locally, which walks both surfaces. Timeouts set from
 measurement (property tests ran at 78% of the 5 s default on a laptop).
+
+## 2026-09-08 — Live at https://permitrulebook.com
+
+**What happened, in order.** Domain bought by the human at Cloudflare
+Registrar; four A records and a `www` CNAME, DNS-only; bound under Pages;
+`SITE_URL` moved to the domain. The first successful deploy (run 34207003365)
+served the site over HTTP; GitHub issued the certificate within the hour
+(apex + www, expires 2026-12-07); HTTPS enforced by the session. The Pages URL
+redirects to the domain. Three small lessons kept: Windows `nslookup` answered
+nothing for a zone that every DNS-over-HTTPS resolver had live — verify DNS
+with DoH, not the local stub; Cloudflare's "proxy required" nudge is a sales
+banner, GitHub Pages needs DNS-only for verification and its certificate; and
+`curl` on Windows (schannel) loops on renegotiation against the `www` host
+while the handshake itself succeeds — not a site fault.
+
+**The human's walk of the live site produced two amendments, applied the
+same hour:** the identity pair on every interview screen ("Rules read" with
+the dataset's newest read date on the questions, "Record generated" on the
+results, one markup, one placement, no jump on the swap), and the interview's
+h1 as two lines from the same rule the route page uses — the `<em>` tagline
+is a block, the `<b>` inside a results headline stays inline, because they are
+two jobs.
+
+**What is not done, deliberately:** the announcement. Decision 13's isolated
+critique runs on the live site first; the phone walk (step 7) is the human's,
+on the live site now that it exists; the 48-hour lines are already in STATUS.
