@@ -51,8 +51,12 @@ a mid-interview reload the two Backs disagreed again (the screens list is
 empty after a reload) — plus sixteen smaller items (gists cut mid-sentence,
 "stated" said of our own reading, a loosened "scored" guard, header CSS
 leaking from the interview page, duplicated head meta). One more builder
-round is running on all of it; it ships when green. Then v1 waits only on the
-checklist below.
+round is running on all of it; it ships when green. **And the footer** (the
+human: "düzgünce düzenleyelim") — today it differs page by page; one footer
+from the header's source is mocked (`docs/spine/design/s6-footer.html`:
+disclaimer · Routes / Do / The data / Feedback · the data line) and is in its
+isolated critique; it comes to the human next, then the builder. Then v1
+waits only on the checklist below.
 
 Numbers: 397 tests in the data repository, 214 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
