@@ -4,50 +4,46 @@
 
 Genesis, slice loop; scale **Product**; **v0.10 shipped**, **s6 "public launch"
 mock-green and live at https://permitrulebook.com** (HTTPS enforced,
-2026-09-08). The v1-gate isolated critique has run: 32/45, four blockers, fixed and
-verified cleared on the live site. v1 is stamped when the blockers are cleared on the live
-site and the human's real-green items below are done. Roadmap: v1.1 holds the
-14 excluded active routes as "quoted, not asked" pages; 9 further candidates
-(5 unversioned). Spine skills at steward-40 (a threat model, a Security review axis, ten
-launch dimensions, devils-advocate over the launch scenario).
+2026-09-08). Two isolated critiques have run — 32/45 on RUBRIC 1.2, then
+36/50 on 1.3 after the rubric grew its Orientation lens — and every blocker
+from both is fixed and read on the live site. v1 is stamped when the human's
+real-green items below are done. Roadmap: v1.1 holds the 14 excluded active
+routes as "quoted, not asked" pages; 9 further candidates (5 unversioned).
+Spine skills at steward-41.
 
 ```mermaid
 flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓] --> D[Design ✓] --> E[Plan ✓]
     E --> F["Slice loop<br/>v0.1–v0.10 ✓"]
-    F --> G["s6 ◀ here<br/>live · critique blockers being fixed"]
+    F --> G["s6 ◀ here<br/>live · blockers cleared · awaiting the human's list"]
     G --> H[v1: announced]
 ```
 
 ## What is happening now
 
-**The navigation review round and the footer are pushed and deploying** (site
-`d77471d`, data `4741d3d`): reload-safe browser history, whole-sentence
-gists, "stated" only of the source's words, one head-meta source, the shared
-footer on every page with its critique applied, the `/data` headings
-unclipped, the amended disclaimer everywhere, "Check yours" in the header.
-**The review round is pushed and deploying** (site `51a7af5`, data `90d9fba`):
-three-axis review applied — the 390 px overflow was the results stamp,
-bounded now on any font; the counter reports one view per page load and
-`/data` says what the wire carries; reruns build against `data.lock` and
-never move it; the footer packs the mock's columns on every page. **Deploy 34251263552 is green (site `0ff33a6`, data `9e3eed2`) and the live
-site now carries everything since the navigation round:** the shared footer,
-the amended disclaimer, the counter (one view per page load), the meta CSP,
-the watch's last run, and the re-read date 2026-09-08 on the German Blue
-Card page — **the whole loop, source → history line → commit → rebuild →
-live page, has now run once for real.** **The critique-2 round and its review are shipped** (site `4a60ce9`, data
-`c6d5be3`): half-open band labels on the union ladder, a pre-scoped arrival
-that re-scopes a saved record and says what is kept and what the new country
-still asks, one upward unlock step per numeric field, the separator before
-the language note, headings and one live region on the results, every
-results control at the tap floor, the translation policy on /data, history
-entries with a declared reason, the data repository's tests typechecked.
-Deploying; then I read the arrival sentence on the live site; then v1 waits
-only on the checklist below.
+**The build is done and read.** Everything the two critiques and the three
+review rounds asked for is on the live site: half-open band labels on the
+union ladder, an arrival that re-scopes a saved record and says what is kept
+and what the new country still asks, one upward unlock step per numeric
+field, headings and one live region on the results, every results control at
+the tap floor, the shared header and footer on every page, the amended
+disclaimer, the counter, the meta CSP, the translation policy on `/data`,
+history entries with a declared reason, both repositories' tests typechecked.
+The whole loop — source → history line → commit → rebuild → live page — has
+run once for real; the German Blue Card page reads 2026-09-08.
+
+Read live today, after the deploy: the arrival line prints on a country
+change and prints nothing when nothing changed. One thing it got wrong was
+fixed by reading it rather than testing it — from a country's own page it
+said "Starting from France — France is on the record. … France asks 1 more
+question."; it now names the country once ("France is on the record now.").
+Site `0c2d18a`, data `c6d5be3`.
+
+**Nothing is waiting on me.** v1 waits on your list below.
 
 Numbers: 426 tests in the data repository, 274 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
-at 390 px; critique 32/45 on RUBRIC 1.2 (v0.7: 27/45).
+at 390 px; critique 36/50 on RUBRIC 1.3 (1.2 runs: 32/45, and v0.7's 27/45).
 
 ## What is expected from you
 
