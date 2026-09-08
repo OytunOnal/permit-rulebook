@@ -186,9 +186,16 @@ export function arrivalSentence(dataset: Dataset, o: {
   from: string; place: string; rescoped: boolean;
   kept: readonly string[]; asks: number;
 }): string {
-  const opening = o.rescoped
-    ? `Starting from ${o.from} — ${o.place} is on the record.`
-    : `Coming from ${o.from} — ${o.place} is on the record.`;
+  // A reader who clicked France's own page is not told they came from France
+  // to France: where the origin and the place are the same name, the sentence
+  // states the place once (read live, 2026-09-08 — "Starting from France —
+  // France is on the record. … France asks 1 more question." said France three
+  // times before it said anything).
+  const opening = o.from === o.place
+    ? (o.rescoped ? `${o.place} is on the record now.` : `${o.place} is on the record.`)
+    : o.rescoped
+      ? `Starting from ${o.from} — ${o.place} is on the record.`
+      : `Coming from ${o.from} — ${o.place} is on the record.`;
   // A reader who has answered nothing has no answers to account for, and the
   // question counter under this line already says how many are coming.
   if (!o.rescoped) return opening;

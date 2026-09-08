@@ -206,7 +206,7 @@ describe("the arrival line says what actually happens next", () => {
           from: to.name, place: to.name, rescoped: true, kept: plan.kept, asks: plan.asks,
         });
         // One sentence, in the dataset's own words, with no field id in it.
-        expect(line, where).toMatch(/^Starting from .*\.$/);
+        expect(line, where).toMatch(new RegExp(`^${to.name} is on the record now\\.`));
         expect(line, where).not.toMatch(/_/);
         expect(line, where).not.toContain("  ");
         for (const field of plan.kept)
@@ -236,13 +236,17 @@ describe("the arrival line says what actually happens next", () => {
     expect(arrivalSentence(ds, {
       from: "France", place: "France", rescoped: true, kept: ["citizenship", "german"], asks: 2,
     })).toBe(
-      "Starting from France — France is on the record."
+      "France is on the record now."
       + " Your answers about the passport you would apply with and your German level are kept;"
       + " France asks 2 more questions.",
     );
     // One question, singular; nothing kept, no clause about answers.
     expect(arrivalSentence(ds, { from: "Spain", place: "Spain", rescoped: true, kept: [], asks: 1 }))
-      .toBe("Starting from Spain — Spain is on the record. Spain asks 1 more question.");
+      .toBe("Spain is on the record now. Spain asks 1 more question.");
+    // A country's own page names the country once, not three times.
+    expect(arrivalSentence(ds, {
+      from: "Germany", place: "Germany", rescoped: false, kept: [], asks: 12,
+    })).toBe("Germany is on the record.");
     // A first arrival narrates itself the way the route pages always did, and
     // says no more: the reader has answered nothing, and the question counter
     // under the line already states how many are coming.
