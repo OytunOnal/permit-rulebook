@@ -95,9 +95,18 @@ describe("the site, in a real browser", () => {
       // Said positively too, so a check that stopped checking cannot pass quietly.
       for (const r of results) {
         expect(r.thrown, `[${r.surface}] ${r.path} threw`).toEqual([]);
+        // Said positively per page, so a check that stopped checking cannot
+        // pass quietly. Four surfaces now: the interview, a route page, a
+        // country page and the data page (site map, 2026-09-08).
         if (r.path === "/") {
           expect(r.value.question.length, `[${r.surface}] no question`).toBeGreaterThan(0);
           expect(r.value.options, `[${r.surface}] no answers`).toBeGreaterThan(0);
+        } else if (r.path === "/data/") {
+          expect(r.value.heading, `[${r.surface}] no heading`).toContain("The data");
+          expect(r.value.facts, `[${r.surface}] no facts about the dataset`).toBeGreaterThan(4);
+        } else if (r.path === "/germany/") {
+          expect(r.value.cards, `[${r.surface}] no route cards`).toBeGreaterThan(7);
+          expect(r.value.here, `[${r.surface}] the header marks nothing`).toBe("Germany");
         } else {
           expect(r.value.rules, `[${r.surface}] no rule cards`).toBeGreaterThan(2);
           expect(r.value.stamp, `[${r.surface}] no stamp`).toMatch(/^\d{4}-\d{2}-\d{2}$/);

@@ -76,6 +76,49 @@ export const CHECKS = [
       return problems;
     },
   },
+  {
+    path: "/germany/",
+    what: "a country page",
+    probe: `JSON.stringify({
+      nav: [...document.querySelectorAll(".site-head .nav a")].map((a) => a.textContent.trim()),
+      here: document.querySelector('.site-head .nav a[aria-current="page"]')?.textContent?.trim() ?? "",
+      cards: document.querySelectorAll(".routes a.card").length,
+      first: document.querySelector(".routes .name")?.textContent?.trim() ?? "",
+      stamp: document.querySelector(".stamp time")?.getAttribute("datetime") ?? "",
+    })`,
+    expect(v) {
+      const problems = [];
+      // The header is the site's own orientation: four countries, the checker
+      // and the data page, on every page (site map, 2026-09-08).
+      for (const label of ["Germany", "France", "Spain", "Netherlands", "Checker", "The data"])
+        if (!v.nav.includes(label)) problems.push(`the header does not offer ${label}`);
+      if (v.here !== "Germany") problems.push(`the header marks "${v.here}", not the country you are on`);
+      if (v.cards < 8) problems.push(`only ${v.cards} route cards rendered`);
+      if (!v.first) problems.push("the first route has no name");
+      if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v.stamp)) problems.push(`the rules-read stamp is "${v.stamp}"`);
+      return problems;
+    },
+  },
+  {
+    path: "/data/",
+    what: "the data page",
+    probe: `JSON.stringify({
+      heading: document.querySelector("h1")?.textContent?.trim() ?? "",
+      facts: document.querySelectorAll(".facts div").length,
+      downloads: [...document.querySelectorAll("nav[aria-label='Downloads'] a")].map((a) => a.getAttribute("href")),
+      marked: document.querySelectorAll('.site-head .nav a[aria-current]').length,
+    })`,
+    expect(v) {
+      const problems = [];
+      if (!v.heading.startsWith("The data")) problems.push(`the heading is "${v.heading}"`);
+      if (v.facts < 5) problems.push(`only ${v.facts} facts about the dataset`);
+      if (!v.downloads.some((h) => h.endsWith("/dataset.json")))
+        problems.push("the whole dataset is not offered");
+      // Nothing is marked here: this page belongs to no country.
+      if (v.marked !== 0) problems.push(`${v.marked} nav items are marked current on a page under no country`);
+      return problems;
+    },
+  },
 ];
 
 async function walk(target, surface) {

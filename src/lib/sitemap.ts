@@ -2,6 +2,7 @@ import type { Dataset } from "permit-rulebook-data";
 import { audienceNotice, stampDate } from "./route-page.js";
 import { countryAddresses, countryReadDate, siteReadDate } from "./country-page.js";
 import { absolute } from "./site.js";
+import { DATA_PATH } from "./identity.js";
 import { routeAddresses } from "./slug.js";
 
 /**
@@ -22,7 +23,9 @@ import { routeAddresses } from "./slug.js";
 
 /** Every page the build emits, including the one no crawler should index. */
 export function builtPaths(dataset: Dataset): string[] {
-  return [...indexedPaths(dataset), "/404"];
+  // Everything the build emits: the indexed pages, the error page nobody is
+  // invited to, and the old address of the data page.
+  return [...indexedPaths(dataset), "/404", "/status"];
 }
 
 /**
@@ -46,7 +49,10 @@ export function sitemapEntries(dataset: Dataset): SitemapEntry[] {
   const newest = siteReadDate(dataset);
   return [
     { path: "/", lastmod: newest },
-    { path: "/status", lastmod: newest },
+    // The data page carries the same date the pages do, because what it
+    // reports IS that date. `/status` is its old address and is deliberately
+    // absent: a crawler is invited to the page, not to the sign pointing at it.
+    { path: DATA_PATH, lastmod: newest },
     ...countryAddresses(dataset).map(({ country, path }) => ({
       path,
       lastmod: countryReadDate(dataset, country),

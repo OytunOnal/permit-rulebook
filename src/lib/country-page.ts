@@ -1,19 +1,21 @@
-import { joinAnd, type Country, type Dataset, type Route } from "permit-rulebook-data";
+import { joinAnd, scopeLine, type Country, type Dataset, type Route } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import {
-  PAGE_CSS, audienceNotice, audienceSentence, gist, stampDate, withArticle,
+  PAGE_CSS, audienceNotice, audienceSentence, gist, routeFigure, stampDate, withArticle,
 } from "./route-page.js";
 import {
-  DISCLAIMER, FRESHNESS_NOTE, PRODUCT_NAME, SEAL_LETTERS, TAGLINE, datasetDay,
+  DISCLAIMER, FRESHNESS_NOTE, PRODUCT_NAME, TAGLINE,
 } from "./copy.js";
 import {
-  DATA_LICENCE_NAME, DATA_LICENCE_URL, SOCIAL_CARD_PATH, absolute, url,
+  DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, SOCIAL_CARD_PATH, TRACKER_URL, absolute, url,
 } from "./site.js";
 import { countryPath, countrySlug, routePath } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
 // already explained: a country page is a crawl landing page like any other
 // (Standards and Spec review, 2026-09-08).
-import { crumbs, iconLinks, rulesRead } from "./identity.js";
+import {
+  DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteHeader, type NavLink,
+} from "./identity.js";
 import { type Glossary, glossSection } from "./gloss.js";
 
 /**
@@ -70,6 +72,18 @@ export function countryLinks(dataset: Dataset): CountryLink[] {
   return countryAddresses(dataset).map(({ country, path }) => ({ path, name: country.name }));
 }
 
+/** The same four, in the shape the shared header's nav takes. */
+export function navCountries(dataset: Dataset): NavLink[] {
+  return countryLinks(dataset).map(({ path, name }) => ({ path, label: name }));
+}
+
+/**
+ * A count in a heading is read, not scanned: "Germany: eight routes." A number
+ * large enough to be scanned stays a numeral.
+ */
+const NUMBER_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+const countWords = (n: number): string => (n < NUMBER_WORDS.length ? NUMBER_WORDS[n]! : String(n));
+
 export interface CountryPage {
   path: string;
   title: string;
@@ -124,6 +138,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
   const seen: Glossary = new Set();
+  const notice = audienceNotice(dataset);
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -147,40 +162,50 @@ ${iconLinks()}
 
   const body = `<div class="wrap">
 
-  <header class="masthead masthead-with-stamps">
+  ${siteHeader(navCountries(dataset), { countryPath: path, current: "page" })}
+
+  <div class="masthead-with-stamps">
     <div>
-      ${crumbs([{ label: country.name }])}
-      <h1>Work permits in ${esc(withArticle(country))}. <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">${esc(audienceSentence(country))} These are the ${count} routes we hold rules for here. Each one has a page of its own, where every value is the authority's own sentence with the page it came from and the day we read it.</p>
+      <h1>${esc(withArticle(country))}: ${esc(countWords(count))} routes. <em>${esc(TAGLINE)}</em></h1>
+      <p class="lede">Every employment route ${esc(withArticle(country))} publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. ${
+    esc(audienceSentence(country))} Routes that turn on an official's discretion are <a class="tap" href="${
+    escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">listed with their reasons</a>, not here.</p>
     </div>
-    ${rulesRead(siteReadDate(dataset))}
-  </header>
+    ${rulesRead(read)}
+  </div>
 
   <main>
-    <nav class="neighbours" aria-labelledby="routes-h">
-      <h2 class="label" id="routes-h">The ${count} routes in ${esc(withArticle(country))}</h2>
-      <ul>${country.routes.map((route) => `
-        <li><a class="tap-min" href="${escAttr(url(routePath(country, route)))}">${
-    esc(glossSection(route.name, seen))}<small>${esc(gist(route))}</small></a></li>`).join("")}
-      </ul>
-    </nav>
+    <ul class="routes" aria-label="The routes in ${escAttr(withArticle(country))}">${
+    country.routes.map((route) => {
+      const figure = routeFigure(dataset, route);
+      return `
+      <li><a class="card tap-min" href="${escAttr(url(routePath(country, route)))}"><span class="name">${
+        esc(glossSection(route.name, seen))}</span><p class="gist">${esc(gist(route))}</p><p class="meta"><span>${
+        esc(figure.label)}${figure.value ? ` <b>${esc(figure.value)}</b>` : ""}</span><span>${
+        esc(scopeLine(route))}</span><span class="read"><time datetime="${
+        escAttr(stampDate(route, notice))}">read ${esc(stampDate(route, notice))}</time></span></p></a></li>`;
+    }).join("")}
+    </ul>
 
-    <section class="cta" aria-labelledby="cta-h">
-      <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
-      <p><strong>Not sure which of these to read?</strong> The questions are answered on this device only — nothing is sent anywhere.</p>
-      <a class="btn tap-min" href="${escAttr(url("/"))}">Check yours — ${esc(country.name)}</a>
-    </section>
+    <div class="cta">
+      <a class="btn tap-min" href="${escAttr(`${url("/")}?country=${country.code.toLowerCase()}`)}">Check yours — ${
+    esc(country.name)}</a>
+      <span class="note">Answered on this device only. The result names which of these routes fit.</span>
+    </div>
   </main>
 
   <footer>
     <p class="disclaimer">${esc(DISCLAIMER)} ${esc(FRESHNESS_NOTE)}</p>
-    <div class="health"><span>dataset <time datetime="${
-    escAttr(datasetDay(dataset.dataset_version))}">${esc(datasetDay(dataset.dataset_version))}</time></span><span>newest value read <time datetime="${
-    escAttr(read)}">${esc(read)}</time></span><span>open data · <a class="tap" href="${
-    escAttr(DATA_LICENCE_URL)}" target="_blank" rel="noopener">${esc(DATA_LICENCE_NAME)}</a></span></div>
+    <nav class="ends" aria-label="Beside this page">
+      <a class="tap" href="${escAttr(url(DATA_PATH))}">The data — versions, downloads, the daily check</a>
+      <a class="tap" href="${escAttr(TRACKER_URL)}" target="_blank" rel="noopener">Report a wrong value</a>
+      <a class="tap" href="${escAttr(DATA_LICENCE_URL)}" target="_blank" rel="noopener">Open data · ${
+    esc(DATA_LICENCE_NAME)}</a>
+    </nav>
   </footer>
 
-</div>`;
+</div>
+<script>${MENU_SCRIPT}</script>`;
 
   return {
     path, title, description: desc,

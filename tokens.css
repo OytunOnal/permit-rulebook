@@ -70,3 +70,13 @@
   --stamp-border: 2.5px solid var(--color-stamp);
   --stamp-rotate: -6deg;
 }
+
+/**
+ * The focus ring, once, for the whole site.
+ *
+ * It was declared twice — in the route page's stylesheet and in the interview's
+ * — which is two chances for a keyboard reader to find a different outline on
+ * the two halves of the same product. The site header made it three
+ * (human, 2026-09-08), so it moved here, where every screen already reads.
+ */
+:focus-visible { outline: 2px solid var(--color-stamp); outline-offset: 2px; }

@@ -13,13 +13,13 @@ import { datasetMeta } from "permit-rulebook-data";
 import { mastheadFor } from "../lib/screen.js";
 // The seal, the icon links and the pair: one set of elements, four screens
 // (Standards review, 2026-09-08).
-import { iconLinks, seal, stamps } from "../lib/identity.js";
-// The four country pages, generated beside the route pages they list: the home
-// page linked no route page at all until now (product critique B2).
-import { countryLinks } from "../lib/country-page.js";
+import { MENU_SCRIPT, iconLinks, siteHeader, stamps } from "../lib/identity.js";
+// The four country pages, generated beside the route pages they list, and the
+// four links the shared header carries (product critique B2; site map, 2026-09-08).
+import { countryLinks, navCountries } from "../lib/country-page.js";
 // The product's own words, in one place: the name, the tagline and the
 // disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
-import { DISCLAIMER, PRODUCT_NAME, PROMISE, SEAL_LETTERS, TAGLINE } from "../lib/copy.js";
+import { DISCLAIMER, PRODUCT_NAME, PROMISE, TAGLINE } from "../lib/copy.js";
 import { DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH, TRACKER_URL, absolute, url } from "../lib/site.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
@@ -52,9 +52,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 </head>
 <body>
   <div class="wrap">
+    <Fragment set:html={siteHeader(navCountries(dataset))} />
+
     <header class="masthead-with-stamps">
       <div>
-        <a class="wordmark" href={url("/")}><Fragment set:html={seal()} />{PRODUCT_NAME}</a>
         <div class="brand">{TAGLINE}</div>
         <h1 id="headline" set:html={intro.headline}></h1>
         <p class="sub" id="subline">{intro.subline}</p>
@@ -115,7 +116,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
       // s6: what the interview asks of a route, in the words the route page
       // shows — the same declared fact, said the same way in both places.
-      scopeWords,
+      scopeLine as routeScopeWords,
       // What an answer means here, where the label alone leaves two answers
       // hard to tell apart (human walk, 2026-09-08).
       optionMeans, unlockMeansOf,
@@ -127,12 +128,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { url } from "../lib/site.js";
     // Arriving from a route page's call to action: what goes on the record and
     // what sorts first, beside the page rather than inside it (step 10).
-    import { arrivalFrom, destinationFor, scopedFirst, type ScopedArrival } from "../lib/scope.js";
+    import {
+      arrivalFrom, countryArrivalFrom, destinationFor, destinationForCountry, scopedFirst,
+      type ScopedArrival,
+    } from "../lib/scope.js";
     // A symbol a stranger cannot read is explained the first time a screen uses
     // it, by the same module the route pages use (human, 2026-09-08).
     import { type Glossary, glossSection } from "../lib/gloss.js";
     import { activeOption, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
-    import { mastheadFor, screenAfter, type Explore, type FlowAction } from "../lib/screen.js";
+    import {
+      emptyHistory, mastheadFor, recordScreen as recordEntry, screenAfter, screenAt,
+      type Explore, type FlowAction,
+    } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     // The reason column's markup, beside the page rather than in it, so what
     // it renders can be read by a test (review S4).
@@ -217,7 +224,17 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     function scopeFromLink() {
       cameFrom = arrivalFrom(ds, location.search);
-      if (!cameFrom) return;
+      if (!cameFrom) {
+        // A country page's own call to action names a country and no route:
+        // the destination goes on the record, nothing sorts first.
+        const country = countryArrivalFrom(ds, location.search);
+        const only = destinationForCountry(country, answers);
+        if (only === null) return;
+        answers["destination"] = only;
+        asked.push("destination");
+        saveRecord();
+        return;
+      }
       scopedRouteId = cameFrom.route.id;
       const destination = destinationFor(cameFrom, answers);
       // "already on the record" is only true when this arrival put it there. A
@@ -520,8 +537,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         renderQuestion({ kind: "answer" });
       });
       document.getElementById("back")?.addEventListener("click", () => {
-        // Back is the same gesture as editing a declared row: step to the
-        // previous answer and show it. Nothing is erased on the way.
+        // The screen's Back and the phone's Back are one gesture, so they can
+        // never land on different screens (human, 2026-09-08): this asks the
+        // browser to go back, and the popstate handler shows the question that
+        // entry was showing. Nothing is erased on the way.
+        if (screens.current > 0) { window.history.back(); return; }
+        // Standing on our first entry: there is nothing of ours behind, so the
+        // step is the one editing a declared row makes.
         const at = editing ? asked.indexOf(editing) : asked.length;
         const prev = asked[at - 1];
         if (prev === undefined) return;
@@ -531,7 +553,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         renderQuestion({ kind: "edit" });
       });
 
-      pushScreen();
+      // One entry per question screen: answering moves forward, everything
+      // else — editing, restoring, starting over — stands where it is.
+      recordScreen(q.field, action.kind === "answer");
     }
 
 
@@ -613,8 +637,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     function scopeLine(r: RouteResult): string {
       const country = ds.countries.find((c) => c.code === r.country);
       if (!country) return "";
-      return `<div class="scoped">${esc(scopeWords(r.route.scope.value))} · <a href="${
-        esc(url(routePath(country, r.route)))}">The rules of this route</a></div>`;
+      // The reader's words, the same ones the country index and the route page
+      // print (decision 3 amended by the human, 2026-09-08).
+      return `<div class="scoped">${esc(routeScopeWords(r.route))} · <a href="${
+        escAttr(url(routePath(country, r.route)))}">The rules of this route</a></div>`;
     }
 
     function fullCard(r: RouteResult, showCountry = true): string {
@@ -848,7 +874,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         // it silenced, say, the Türkiye note (review).
         main.innerHTML = [...replacing, ...applicable.filter((n) => !replacing.includes(n))]
           .map(noticeCard).join("");
-        pushScreen();
+        // The notice screen IS the result for this reader: one entry, like any
+        // other screen they can go back from.
+        recordScreen(null, true);
         return;
       }
 
@@ -980,7 +1008,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             <div class="cbody">${inner}</div>
           </details>`;
       }).join("");
-      pushScreen();
+      recordScreen(null, true);
     }
 
     /**
@@ -1016,47 +1044,70 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // stranger's salary: the stored record goes with the screen.
       answers = {}; asked = []; editing = null;
       clearRecord(store);
-      // Back must not undo it: the snapshots go with the record, so the
-      // entries that referenced them now restore nothing.
-      snapshots.length = 0;
+      // Back must not undo it: the entries go with the record, so anything
+      // behind us now restores nothing and the browser simply leaves the page.
+      screens.entries.length = 0;
+      screens.current = -1;
       app.dataset.state = "questions";
       setStamp("rules-read");
       renderQuestion({ kind: "reset" });
     });
 
     /**
-     * Browser Back is the phone's "previous question" gesture, and from the
-     * results it should return to the interview rather than wipe it. Each
-     * screen pushes an entry carrying a snapshot index; Back restores that
-     * snapshot instead of leaving the page.
+     * Browser Back is the phone's "previous question" gesture, and it has to
+     * mean exactly what the screen's own "← Back" means.
+     *
+     * It did not. Every render pushed an entry — answering, editing, going
+     * back, a notice — so the entries stopped corresponding to the questions:
+     * on the human's phone walk of 2026-09-08 three answers grew `history` by
+     * one entry while the page's own counter reached 7, the first back gesture
+     * jumped three questions, and the second went FORWARD. (A phone throttles
+     * a burst of `pushState` calls and drops the extra entries; the page kept
+     * counting, so its state numbers named snapshots the browser no longer
+     * had.)
+     *
+     * One entry per question screen, then, and one gesture behind both Backs:
+     * advancing to a new question pushes, every other render replaces the entry
+     * it is standing on, and "← Back" IS `history.back()`. An entry remembers
+     * which question it was showing rather than a copy of the answers, so
+     * stepping back keeps everything answered since — the same thing editing an
+     * earlier row has always done.
      */
-    const snapshots: Array<{ answers: Profile; asked: string[]; editing: string | null }> = [];
+    const screens = emptyHistory();
+    /** Whether we are the ones moving the reader, rather than the browser. */
     let restoring = false;
-    function pushScreen() {
+
+    function recordScreen(field: string | null, advance: boolean) {
       if (restoring) return;
-      snapshots.push({ answers: { ...answers }, asked: [...asked], editing });
-      const state = { step: snapshots.length - 1 };
+      const move = recordEntry(screens, field, advance);
+      const state = { step: move.step };
       // The first screen REPLACES the page's own entry rather than adding one:
       // pushing there would trap the visitor on the site, because Back would
       // always land on another of our own screens.
-      if (snapshots.length === 1) window.history.replaceState(state, "");
-      else window.history.pushState(state, "");
+      if (move.how === "push") window.history.pushState(state, "");
+      else window.history.replaceState(state, "");
     }
+
     window.addEventListener("popstate", (e) => {
       const step = (e.state as { step?: number } | null)?.step;
       // An entry we did not write, or one "Start over" has since invalidated:
       // leave the screen alone rather than restoring a stranger's answers.
       if (typeof step !== "number") return;
-      const snap = snapshots[step];
-      if (!snap) return;
+      const screen = screenAt(screens, step);
+      if (!screen) return;
+      screens.current = step;
       restoring = true;
-      answers = { ...snap.answers };
-      asked = [...snap.asked];
-      editing = snap.editing;
-      saveRecord();
-      setStamp("rules-read");
-      app.dataset.state = "questions";
-      renderQuestion({ kind: "restore" });
+      if (screen.field === null) {
+        editing = null;
+        renderResults();
+      } else {
+        // The question that entry was showing, with everything answered since
+        // still on the record — back is a step, not an undo.
+        editing = screen.field;
+        setStamp("rules-read");
+        app.dataset.state = "questions";
+        renderQuestion({ kind: "restore" });
+      }
       restoring = false;
     });
 
@@ -1126,7 +1177,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:var(--color-bg);color:var(--color-ink);font:var(--text-body);padding:2.8rem 1.2rem 4rem}
     .wrap{max-width:var(--max-content);margin:0 auto}
-    :focus-visible{outline:2px solid var(--color-stamp);outline-offset:2px}
     a{color:var(--color-stamp)}
 
     header{border-bottom:var(--rule-heavy);padding-bottom:1.3rem;margin-bottom:var(--space-5)}

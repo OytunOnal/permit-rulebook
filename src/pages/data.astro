@@ -1,0 +1,12 @@
+---
+import rawDataset from "permit-rulebook-data/data/dataset.json";
+import { assertValidDataset } from "permit-rulebook-data/validate";
+import { dataPage } from "../lib/data-page.js";
+
+/**
+ * `/data` — what the dataset holds today, what checks it, and where to take it.
+ * The header's "The data" and the footer's, on every page.
+ */
+const { html } = dataPage(assertValidDataset(rawDataset));
+---
+<Fragment set:html={html} />

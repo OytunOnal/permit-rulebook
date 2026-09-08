@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  scopeWords, forEachCriterion, formatEUR, formatEURPer, provenancedValuesOf, quoteLanguage,
+  scopeLine, forEachCriterion, formatEUR, formatEURPer, provenancedValuesOf, quoteLanguage,
   routeStatements, type Dataset, type Route,
 } from "permit-rulebook-data";
 import {
@@ -128,7 +128,12 @@ describe("s6 — one page per route, generated from the dataset", () => {
     const near = [...PAGE_CSS.matchAll(/([^;{}\n]*var\(--color-near\)[^;{}\n]*)/g)].map((m) => m[1].trim());
     // One declaration each, in the token block's own definitions plus the one
     // place the page uses it.
-    expect(met.filter((d) => !d.startsWith("--color-met"))).toEqual(["color: var(--color-met)"]);
+    // Three uses now, and all three are a read date: the quote's own date on a
+    // route page, the date on a country-index card, and the date beside a
+    // route's JSON on the data page (2026-09-08). The colour still says
+    // "when this was read" and never "how you did".
+    expect(met.filter((d) => !d.startsWith("--color-met")))
+      .toEqual(["color: var(--color-met)", "color: var(--color-met)", "color: var(--color-met)"]);
     expect(near.filter((d) => !d.startsWith("--color-near"))).toEqual(["color: var(--color-near)"]);
     // And they belong to the read-date emphasis and the hero accent.
     expect(PAGE_CSS).toContain(".src b { color: var(--color-met);");
@@ -154,7 +159,8 @@ describe("s6 — one page per route, generated from the dataset", () => {
     for (const page of pages) {
       const text = textOf(page.html);
       const route = routeAddresses(ds).find((a) => a.path === page.path)!.route;
-      expect(text, page.path).toContain(scopeWords(route.scope.value));
+      // The reader's words, counted for this route (decision 3 amended, 2026-09-08).
+      expect(text, page.path).toContain(scopeLine(route));
       expect(text, page.path).toContain(route.scope.reason);
       // The key never reaches a reader.
       expect(text, page.path).not.toContain(route.scope.value);
@@ -494,11 +500,21 @@ describe("s6 — one page per route, generated from the dataset", () => {
   /**
    * R12 — a crumb separator cannot be left behind when the last crumb wraps.
    */
-  it("crumb separators belong to the crumb they introduce", () => {
+  /**
+   * There are no crumbs any more (human, revision 3 of the nav mock,
+   * 2026-09-08): the shared header's wordmark and its marked country say where
+   * you are, and the h1 names the page. The case that pinned the separator's
+   * placement now pins the absence of the row it belonged to — a rule that
+   * loses its subject should lose it visibly.
+   */
+  it("no page carries a crumb row: the header says where you are", () => {
     for (const page of pages) {
-      expect(page.html, page.path).not.toContain('class="sep"');
-      expect(PAGE_CSS).toContain(".crumbs > * + *::before");
+      expect(page.html, page.path).not.toContain('class="crumbs');
+      expect(page.html, page.path).toContain('class="site-head"');
+      // And the header marks this page's country as the one it sits under.
+      expect(page.html, page.path).toContain('aria-current="true"');
     }
+    expect(PAGE_CSS, "the crumb styles outlived the crumbs").not.toContain(".crumbs");
   });
 
   it("every source on every page can name its language", () => {

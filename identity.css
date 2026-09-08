@@ -72,3 +72,28 @@
  * own line — two jobs, two elements, one rule each.
  */
 .masthead-with-stamps h1 em { font-style: normal; color: var(--color-near); display: block; font-size: .82em; margin-top: .15em; }
+
+/* ---------------------------------------------------------------------------
+   The site header: identity and navigation, one rule set for one markup.
+
+   Below 960 px the row folds behind a single Menu control. The band between
+   761 and 939 px had no state in the first revision of the mock — the row was
+   too wide to sit beside the wordmark and too early to fold — and the critique
+   read that as a defect (F1, 2026-09-08).
+   --------------------------------------------------------------------------- */
+.site-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding-bottom: var(--space-3); border-bottom: var(--rule-soft); flex-wrap: wrap; }
+.site-head .wordmark { font: 700 1.1rem/1 var(--font-serif); color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; gap: .55rem; min-height: var(--tap-min); white-space: nowrap; }
+.site-head .wordmark .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.7em; height: 1.7em; border: var(--stamp-border); color: var(--color-stamp); font: 700 .85em/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); }
+.site-head .nav { display: flex; gap: var(--space-2); align-items: center; }
+.site-head .nav a { color: var(--color-ink); text-decoration: none; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 .6rem; border-bottom: 2px solid transparent; white-space: nowrap; }
+.site-head .nav a[aria-current] { border-bottom-color: var(--color-stamp); color: var(--color-stamp); }
+.site-head .nav .sep { width: 1px; height: 1.1rem; background: var(--color-line); margin: 0 .3rem; }
+.site-head .nav a.check { border: 1.5px solid var(--color-ink); padding: 0 .8rem; }
+.site-head .menu { display: none; }
+
+@media (max-width: 959px) {
+  .site-head .nav { display: none; }
+  .site-head .menu { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap-min); min-width: var(--tap-min); padding: 0 .6rem; border: 1.5px solid var(--color-ink); background: none; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); cursor: pointer; }
+  .site-head .nav.open { display: grid; grid-template-columns: 1fr; width: 100%; border-top: var(--rule-soft); padding-top: var(--space-2); }
+  .site-head .nav.open .sep { display: none; }
+}

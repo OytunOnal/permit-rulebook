@@ -111,3 +111,39 @@ describe.skipIf(skipped !== null)("measured in a browser", () => {
       }
     }, 180000);
 });
+
+/**
+ * A country page answers a different question in its first screen: not "what is
+ * the number" — it has no single number — but "what is here". So the thing that
+ * must be above the fold is the first route card, at both widths (human,
+ * 2026-09-08).
+ */
+describe.skipIf(skipped !== null)("a country page's first route is in the first screen", () => {
+  for (const [width, height, mobile] of [[1100, 900, false], [390, 844, true]] as const)
+    it(`the first card is above the fold at ${width} px`, async () => {
+      const server = await serve(dist);
+      try {
+        const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
+          await page.goto(server.url("/germany/"), 500);
+          return page.evaluate(
+            'JSON.stringify((() => {'
+            + ' const y = (el) => el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;'
+            + ' const card = document.querySelector(".routes li");'
+            + ' return { head: y(document.querySelector(".site-head")), h1: y(document.querySelector("h1")),'
+            + '   card: y(card), name: y(card && card.querySelector(".name")),'
+            + '   page: document.documentElement.scrollHeight };'
+            + '})())',
+          );
+        }, { viewport: { width, height }, mobile }) as string) as
+          { head: number; h1: number; card: number; name: number; page: number };
+
+        for (const what of ["head", "h1", "card", "name"] as const) {
+          expect(seen[what], `${what} was not found at ${width} px`).toBeGreaterThanOrEqual(0);
+          expect(seen[what], `${what} sits at y=${seen[what]} of a ${seen.page} px page, below the ${height} px fold`)
+            .toBeLessThan(height);
+        }
+      } finally {
+        server.close();
+      }
+    }, 180000);
+});

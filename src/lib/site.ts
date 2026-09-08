@@ -61,6 +61,14 @@ export const REPO_DATA = "https://github.com/OytunOnal/permit-rulebook-data";
  * it has somewhere to land the day the link goes out (decision 4). */
 export const TRACKER_URL = `${REPO_DATA}/issues/new/choose`;
 
+/**
+ * Every route researched and deliberately left out, with the reason. A country
+ * index says what it does not hold as well as what it does; until that file has
+ * a page of its own, the link goes to the file in the data repository (human,
+ * 2026-09-08).
+ */
+export const EXCLUSIONS_URL = `${REPO_DATA}/blob/master/data/exclusions.md`;
+
 /** The dataset licence, linked rather than stated as unlinked text (the mock's
  * P4: a door with no handle). */
 export const DATA_LICENCE_URL = `${REPO_DATA}/blob/master/data/LICENSE`;

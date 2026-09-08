@@ -55,3 +55,31 @@ export function scopedFirst<T extends { route: { id: string } }>(rows: T[], rout
   return [...rows].sort((a, b) =>
     Number(b.route.id === routeId) - Number(a.route.id === routeId));
 }
+
+/**
+ * Arriving from a country page's "Check yours — Germany".
+ *
+ * The country index's one call to action is `/?country=<code>`, and it does the
+ * lesser half of what a route link does: the destination goes on the record, so
+ * the interview starts where the reader already is, and nothing sorts first
+ * because no route was named (human, 2026-09-08).
+ *
+ * A code the dataset does not have is ignored, for the reason a stale route id
+ * is: a stranger with an old link gets the ordinary interview, not an error.
+ */
+export function countryArrivalFrom(dataset: Dataset, search: string): Country | null {
+  const code = new URLSearchParams(search).get("country");
+  if (!code) return null;
+  return dataset.countries.find((c) => c.code.toLowerCase() === code.toLowerCase()) ?? null;
+}
+
+/**
+ * The destination a country arrival puts on the record, or nothing. Same rule
+ * as a route arrival: a link is never louder than a declaration.
+ */
+export function destinationForCountry(
+  country: Country | null, answers: Record<string, string>,
+): string | null {
+  if (!country || answers["destination"] !== undefined) return null;
+  return country.code.toLowerCase();
+}

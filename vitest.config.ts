@@ -23,5 +23,11 @@ export default defineConfig({
     css: true,
     testTimeout: 60_000,
     hookTimeout: 60_000,
+    // Six test files drive a real browser now, and a whole-suite run launched
+    // enough Chromes at once to make two of them fail together while each
+    // passed alone (2026-09-08). Four workers is enough parallelism to keep
+    // the suite quick and few enough that the launches do not fight over the
+    // machine; a flaky suite is a suite nobody reads.
+    maxWorkers: 4,
   },
 });

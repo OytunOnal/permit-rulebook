@@ -153,3 +153,61 @@ export function claimsAComparison(text: string): boolean {
     /\bbelow\b/i.test(text) ||
     /\b\d+\s+(?:answers?|routes?|published|rule)/i.test(text);
 }
+
+/**
+ * The history the interview keeps, as a value rather than as a side effect.
+ *
+ * One entry per screen the reader can go back to, and each entry remembers
+ * which question it was showing — never a copy of the answers, so stepping
+ * back keeps everything answered since. The page turns these into
+ * `pushState`/`replaceState`; the rule about WHEN each happens lives here,
+ * where it can be read by a test.
+ *
+ * It went wrong the other way round: every render pushed, so answering,
+ * editing and going back all added entries, the numbers stopped naming the
+ * questions, and a phone that throttles a burst of pushes dropped some of them
+ * — three answers, one entry, and a back gesture that jumped three questions
+ * and then went forward (human's phone walk, 2026-09-08).
+ */
+export interface HistoryEntry {
+  /** The question this entry shows; null on the results or a notice screen. */
+  field: string | null;
+}
+
+export interface ScreenHistory {
+  entries: HistoryEntry[];
+  /** Which entry the reader is standing on; -1 before the first render. */
+  current: number;
+}
+
+export const emptyHistory = (): ScreenHistory => ({ entries: [], current: -1 });
+
+/** What the page should do with the browser's history for this render. */
+export interface HistoryMove {
+  /** `push` adds an entry; `replace` rewrites the one being stood on. */
+  how: "push" | "replace";
+  step: number;
+}
+
+/**
+ * Advancing to a new question (or to the results) pushes; every other render —
+ * an edit, a restore, starting over — replaces the entry it is standing on. A
+ * new answer after going back drops what was ahead, exactly as the browser's
+ * own forward stack does.
+ */
+export function recordScreen(history: ScreenHistory, field: string | null, advance: boolean): HistoryMove {
+  if (advance && history.current >= 0) {
+    history.current += 1;
+    history.entries.length = history.current;
+    history.entries.push({ field });
+    return { how: "push", step: history.current };
+  }
+  if (history.current < 0) history.current = 0;
+  history.entries[history.current] = { field };
+  return { how: "replace", step: history.current };
+}
+
+/** The screen an entry names, or nothing where it is not ours to restore. */
+export function screenAt(history: ScreenHistory, step: number): HistoryEntry | undefined {
+  return history.entries[step];
+}

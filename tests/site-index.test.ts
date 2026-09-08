@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { countryAddresses, countryLinks, countryPage, countryPages } from "../src/lib/country-page.js";
+import { DATA_PATH } from "../src/lib/identity.js";
 import { PAGE_CSS, routePages } from "../src/lib/route-page.js";
 import { builtPaths, indexedPaths, robotsTxt, sitemapXml } from "../src/lib/sitemap.js";
 import { SITE_URL, absolute, url } from "../src/lib/site.js";
@@ -61,11 +62,13 @@ describe("B2 — the site can be crawled and browsed", () => {
     const xml = sitemapXml(ds);
     const locs = [...xml.matchAll(/<loc>([^<]*)<\/loc>/g)].map((m) => m[1]);
 
-    // Everything the build emits, derived: the interview, the status page, one
-    // page per country, one page per route.
+    // Everything a crawler is invited to, derived: the interview, the data
+    // page, one page per country, one page per route. The 404 and `/status`
+    // — the data page's old address — are built and deliberately unlisted:
+    // a sitemap is an invitation, and neither is a place to arrive at.
     const expected = [
       absolute("/"),
-      absolute("/status"),
+      absolute(DATA_PATH),
       ...ds.countries.map((c) => absolute(countryPath(c))),
       ...routes.map((p) => absolute(p.path)),
     ];
@@ -216,7 +219,10 @@ describe("B2 — the site can be crawled and browsed", () => {
       const linked = hrefsOf(page.html).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+$/.test(h));
       expect(new Set(linked).size, page.path).toBe(country.routes.length);
       // The crumbs, the heading and the way into the interview.
-      expect(page.html, page.path).toContain('class="crumbs label"');
+      // No crumb row any more: the shared header's marked country says where
+      // you are (human, revision 3 of the nav mock, 2026-09-08).
+      expect(page.html, page.path).not.toContain('class="crumbs');
+      expect(page.html, page.path).toContain('aria-current="page"');
       expect(page.html, page.path).toContain(`href="${url("/")}"`);
       expect(text, page.path).toContain("Permit Rulebook makes no immigration decision");
       // The page's own stylesheet is the route page's, not a second one.

@@ -1,0 +1,206 @@
+import {
+  countryVocabulary, datasetMeta, proseProvenance, routeProvenance,
+  type Dataset,
+} from "permit-rulebook-data";
+import { esc, escAttr } from "./reason.js";
+import { PAGE_CSS, audienceNotice, stampDate, withArticle } from "./route-page.js";
+import { navCountries, siteReadDate } from "./country-page.js";
+import { DISCLAIMER, FRESHNESS_NOTE, PRODUCT_NAME, TAGLINE, datasetDay } from "./copy.js";
+import {
+  DATA_LICENCE_FULL, DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH,
+  TRACKER_URL, absolute, url,
+} from "./site.js";
+import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteHeader } from "./identity.js";
+import { routeJsonPath } from "./slug.js";
+
+/**
+ * The data page — the header's "The data", and the footer's.
+ *
+ * The critique's developer persona found "open data · CC BY 4.0" as unlinked
+ * text with no repository, no JSON and no way to consume a product whose whole
+ * claim is freshness (B3, 2026-09-08); the site map found the old `/status`
+ * page — a Spine flow diagram written for us, not for a reader — reachable from
+ * nowhere at all. This is the page that proves the liveness, one step from
+ * anywhere: what the dataset holds today, what checks it, where to download it,
+ * and where to say it is wrong.
+ *
+ * `/status` still answers, because a URL that has been shared is a promise.
+ */
+
+export interface DataPage {
+  path: string;
+  title: string;
+  description: string;
+  html: string;
+}
+
+/** The full dataset, as the site serves it. */
+export const DATASET_JSON_PATH = "/dataset.json";
+/** The country vocabulary the passport question is built from. */
+export const COUNTRIES_JSON_PATH = "/countries.json";
+
+/** Every value in the dataset that carries a quote and a date. */
+export function quotedValues(dataset: Dataset): number {
+  let count = 0;
+  for (const country of dataset.countries)
+    for (const route of country.routes) count += routeProvenance(route).length;
+  return count;
+}
+
+export function dataPage(dataset: Dataset): DataPage {
+  const read = siteReadDate(dataset);
+  const notice = audienceNotice(dataset);
+  const prose = proseProvenance(dataset);
+  const routes = dataset.countries.flatMap((c) => c.routes);
+  const title = `The data · ${PRODUCT_NAME}`;
+  const desc = `What ${PRODUCT_NAME} holds today: ${routes.length} routes across ${
+    dataset.countries.length} countries, every value carrying its source and the day it was read — with the downloads, the checks and the tracker.`;
+
+  const head = `<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta name="description" content="${escAttr(desc)}">
+<link rel="canonical" href="${escAttr(absolute(DATA_PATH))}">
+${iconLinks()}
+<meta property="og:site_name" content="${escAttr(PRODUCT_NAME)}">
+<meta property="og:title" content="${escAttr(title)}">
+<meta property="og:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="${escAttr(absolute(DATA_PATH))}">
+<meta property="og:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${escAttr(title)}">
+<meta name="twitter:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
+<meta name="twitter:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">
+<style>${PAGE_CSS}</style>`;
+
+  const body = `<div class="wrap">
+
+  ${siteHeader(navCountries(dataset))}
+
+  <div class="masthead-with-stamps">
+    <div>
+      <h1>The data. <em>${esc(TAGLINE)}</em></h1>
+      <p class="lede">Everything this site shows is one open dataset: ${routes.length} routes across ${
+    dataset.countries.length} countries, every threshold and condition carrying the authority's own sentence, the page it came from and the day we read it. Take it, check it, or tell us it is wrong.</p>
+    </div>
+    ${rulesRead(read)}
+  </div>
+
+  <main>
+    <section class="answer" aria-labelledby="holds-h">
+      <h2 class="label" id="holds-h">What it holds today</h2>
+      <dl class="facts">
+        <div><dt>Dataset version</dt><dd><time datetime="${escAttr(datasetDay(dataset.dataset_version))}">${
+    esc(dataset.dataset_version)}</time></dd></div>
+        <div><dt>Schema version</dt><dd>${esc(dataset.schema_version)}</dd></div>
+        <div><dt>Newest value read</dt><dd><time datetime="${escAttr(read)}">${esc(read)}</time></dd></div>
+        <div><dt>Routes</dt><dd>${routes.length} in ${dataset.countries.length} countries</dd></div>
+        <div><dt>Quoted values</dt><dd>${quotedValues(dataset)} with a source and a date</dd></div>
+        <div><dt>Sentences of ours</dt><dd>${prose.ours}, declared and shown as ours</dd></div>
+      </dl>
+    </section>
+
+    <section class="rules" aria-labelledby="checks-h">
+      <h2 class="label" id="checks-h">What checks it</h2>
+      <p>Four gates run on every change, and the build stops on any of them.</p>
+      <ul class="checks">
+        <li><b>Schema validation</b> — every value has a source URL, a verbatim quote and a read date, or the dataset does not build. This page exists, so this one passed.</li>
+        <li><b>Quote fidelity</b> — every sentence the dataset claims to have quoted is looked for again in a fresh snapshot of the page it cites. It runs where the snapshots live, in the data repository.</li>
+        <li><b>Watch coverage</b> — every source a value cites is on the watchlist, and every entry on the watchlist backs a value.</li>
+        <li><b>Prose provenance</b> — anything in quotation marks carries the source it is quoting, and what is ours is declared ours: ${
+    prose.with_provenance} sourced, ${prose.ours} ours, ${prose.declared_unsourced} standing on a dated reason.</li>
+      </ul>
+      <p class="lede">The daily check is live, not a dry run: every watched source is re-read each morning, a changed one files an issue in the tracker, and a new reading asks this site to rebuild — which is why the date in the corner moves on its own.</p>
+    </section>
+
+    <section class="data" aria-labelledby="take-h">
+      <h2 class="label" id="take-h">Take it</h2>
+      <nav aria-label="Downloads">
+        <a class="tap-min" href="${escAttr(url(DATASET_JSON_PATH))}">The whole dataset as JSON</a>
+        <a class="tap-min" href="${escAttr(url(COUNTRIES_JSON_PATH))}">countries.json — the passport vocabulary</a>
+        <a class="tap-min" href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">The dataset on GitHub</a>
+        <a class="tap-min" href="${escAttr(TRACKER_URL)}" target="_blank" rel="noopener">Report a wrong value</a>
+      </nav>
+      <p class="lede">Reuse it under ${esc(DATA_LICENCE_FULL)} — credit and link back. Every route is also served on its own, with the day it was read:</p>
+      ${dataset.countries.map((country) => `
+      <nav class="jsonlinks" aria-label="${escAttr(`${withArticle(country)} as JSON`)}">
+        <b class="label">${esc(withArticle(country))}</b>${country.routes.map((route) => `
+        <a class="tap" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>read ${
+    esc(stampDate(route, notice))}</small></a>`).join("")}
+      </nav>`).join("")}
+    </section>
+  </main>
+
+  <footer>
+    <p class="disclaimer">${esc(DISCLAIMER)} ${esc(FRESHNESS_NOTE)}</p>
+    <nav class="ends" aria-label="Beside this page">
+      <a class="tap" href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">The dataset on GitHub</a>
+      <a class="tap" href="${escAttr(TRACKER_URL)}" target="_blank" rel="noopener">Report a wrong value</a>
+      <a class="tap" href="${escAttr(DATA_LICENCE_URL)}" target="_blank" rel="noopener">Open data · ${
+    esc(DATA_LICENCE_NAME)}</a>
+    </nav>
+  </footer>
+
+</div>
+<script>${MENU_SCRIPT}</script>`;
+
+  return {
+    path: DATA_PATH,
+    title,
+    description: desc,
+    html: `<!doctype html>\n<html lang="en">\n<head>\n${head}\n</head>\n<body>\n${body}\n</body>\n</html>\n`,
+  };
+}
+
+/**
+ * The old address, kept working.
+ *
+ * `/status` was linked from nowhere on the site, but a URL that has been shared
+ * is a promise: it now says where the page went, links there, and sends a
+ * browser after it. A static host has no redirect to offer, so the page is the
+ * redirect — and it names its destination in words, for a reader whose browser
+ * ignores the refresh.
+ */
+export function statusAlias(dataset: Dataset): DataPage {
+  const target = url(DATA_PATH);
+  const title = `Moved to The data · ${PRODUCT_NAME}`;
+  const body = `<div class="wrap">
+  ${siteHeader(navCountries(dataset))}
+  <header class="masthead masthead-with-stamps">
+    <div>
+      <h1>This page is now <a class="tap" href="${escAttr(target)}">The data</a>. <em>${esc(TAGLINE)}</em></h1>
+      <p class="lede">Same page, a better name: what the dataset holds today, what checks it, and where to download it. Your browser should be on its way; if it is not, the link above is it.</p>
+    </div>
+    ${rulesRead(siteReadDate(dataset))}
+  </header>
+</div>
+<script>${MENU_SCRIPT}</script>`;
+  return {
+    path: "/status",
+    title,
+    description: `This page is now called The data, at ${absolute(DATA_PATH)}.`,
+    html: `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta http-equiv="refresh" content="0; url=${escAttr(target)}">
+<link rel="canonical" href="${escAttr(absolute(DATA_PATH))}">
+<meta name="robots" content="noindex, follow">
+${iconLinks()}
+<style>${PAGE_CSS}</style>
+</head>
+<body>
+${body}
+</body>
+</html>
+`,
+  };
+}
+
+/** The vocabulary the passport question is built from, as the site serves it. */
+export const countriesJson = (): unknown => countryVocabulary;

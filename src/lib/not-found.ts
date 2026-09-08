@@ -1,11 +1,11 @@
 import type { Dataset } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { PAGE_CSS } from "./route-page.js";
-import { countryLinks, siteReadDate } from "./country-page.js";
-import { DISCLAIMER, PRODUCT_NAME, SEAL_LETTERS, TAGLINE } from "./copy.js";
+import { countryLinks, navCountries, siteReadDate } from "./country-page.js";
+import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "./copy.js";
 import { url } from "./site.js";
 // One set of elements for the identity the shared CSS places (2026-09-08).
-import { crumbs, iconLinks, rulesRead } from "./identity.js";
+import { MENU_SCRIPT, iconLinks, rulesRead, siteHeader } from "./identity.js";
 
 /**
  * The page a wrong address lands on.
@@ -48,9 +48,10 @@ ${iconLinks()}
 
   const body = `<div class="wrap">
 
+  ${siteHeader(navCountries(dataset))}
+
   <header class="masthead masthead-with-stamps">
     <div>
-      ${crumbs()}
       <h1>This page does not exist. <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">Nothing is published at that address — a link may have lost a character, or a page may have been renamed since it was shared.</p>
     </div>
@@ -76,7 +77,8 @@ ${iconLinks()}
     <p class="disclaimer">${esc(DISCLAIMER)}</p>
   </footer>
 
-</div>`;
+</div>
+<script>${MENU_SCRIPT}</script>`;
 
   return {
     path: "/404",

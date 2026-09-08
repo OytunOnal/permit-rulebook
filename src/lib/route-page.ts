@@ -1,5 +1,5 @@
 import {
-  scopeWords, criterionPhrase, deriveQuestions, formatEUR, formatEURPer, forEachCriterion,
+  scopeLine, criterionPhrase, deriveQuestions, formatEUR, formatEURPer, forEachCriterion,
   isLocalization, joinAnd, joinOr, LANGUAGE_NAMES, provenancedValuesOf, quoteLanguage,
   referencedFields, routeReadings, routeStatements, shortLabelOf, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
@@ -19,7 +19,8 @@ import IDENTITY from "../../identity.css?raw";
 // say the same words for the same token (2026-09-08).
 import { type Glossary, glossSection, glossed } from "./gloss.js";
 // One set of elements for the identity the shared CSS places (2026-09-08).
-import { crumbs, iconLinks, rulesRead } from "./identity.js";
+import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteHeader } from "./identity.js";
+import { navCountries } from "./country-page.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
 import { quoteFrame } from "./quote.js";
@@ -424,9 +425,45 @@ function statedBlocks(route: Route, seen: Glossary): string {
  * first sentence, and no more than a line of it: the aside is a way across, not
  * a second card, and four routes' full summaries turned it into a wall.
  */
+/**
+ * The one figure a route turns on, with the label its own field gives it.
+ *
+ * The country index prints it beside every route, and an unlabelled number on
+ * an index is a number a reader has to open the page to understand: "€1,091"
+ * is a salary to anyone who does not already know the Opportunity Card asks for
+ * living costs (isolated critique of the nav mock, B2/F3, 2026-09-08). The
+ * label is derived from the field, never typed per route.
+ */
+export interface RouteFigure {
+  label: string;
+  /** Empty where the route asks for no number at all. */
+  value: string;
+}
+
+export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
+  const amounts = ruleCriteria(dataset, route).flatMap(gteUnder)
+    .sort((a, b) => a.threshold.amount - b.threshold.amount);
+  const points = route.criteria.flatMap((c) => (c.op === "points" ? [c] : []));
+  if (amounts.length) {
+    const own = amounts[0]!;
+    const field = dataset.fields.find((f) => f.id === own.field);
+    // "Salary threshold" and "funds to show" are the two things money means on
+    // these routes, and the field says which: one is what a job pays you, the
+    // other is what you must be able to show you have.
+    const label = /funds/.test(own.field) ? "funds to show" : "salary threshold";
+    const from = amounts.some((c) => c.threshold.amount !== own.threshold.amount) ? "from " : "";
+    return {
+      label,
+      value: `${from}${formatEURPer(own.threshold.amount, field?.period)}`,
+    };
+  }
+  if (points.length) return { label: "points needed", value: String(points[0]!.required.value) };
+  return { label: "no salary threshold", value: "" };
+}
+
 export function gist(route: Route): string {
   const first = (route.summary ?? "").split(/(?<=\.)\s/)[0] ?? "";
-  if (!first) return scopeWords(route.scope.value);
+  if (!first) return scopeLine(route);
   if (first.length <= 110) return first;
   const cut = first.slice(0, 107);
   const lastSpace = cut.lastIndexOf(" ");
@@ -555,9 +592,10 @@ ${iconLinks()}
 
   const body = `<div class="wrap">
 
+  ${siteHeader(navCountries(dataset), { countryPath: countryPath(country), current: "true" })}
+
   <header class="masthead masthead-with-stamps">
     <div>
-      ${crumbs([{ label: country.name, path: countryPath(country) }, { label: route.name }])}
       <h1>${esc(heading)}. <em>The rules, quoted and dated.</em></h1>
       <p class="lede">${route.summary ? `${esc(route.summary)} ` : ""}Every number on this page is the authority's own sentence, with the page it came from and the day we read it. ${esc(audienceSentence(country))} ${esc(ROUTE_PAGE_ADDENDUM)}</p>
     </div>
@@ -577,7 +615,7 @@ ${answerBlock(dataset, country, route, read)}
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">What the checker asks, and what it does not</b>
     <p>Every number below is quoted from an official page, and a daily check re-reads every source. On this route — <strong>${
-    esc(scopeWords(route.scope.value))}</strong>. ${esc(route.scope.reason)}</p>
+    esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)}</p>
   </section>
 
   <section class="rules" aria-labelledby="rules-h">
@@ -611,7 +649,8 @@ ${neighbours(country, route)}
     escAttr(DATA_LICENCE_URL)}" target="_blank" rel="noopener">${esc(DATA_LICENCE_NAME)}</a></span></div>
   </footer>
 
-</div>`;
+</div>
+<script>${MENU_SCRIPT}</script>`;
 
   return {
     path, jsonPath, title, description: desc, readDate: read,
@@ -653,7 +692,6 @@ ${TOKENS}
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: var(--text-body); }
 a { color: var(--color-stamp); }
-:focus-visible { outline: 2px solid var(--color-stamp); outline-offset: 2px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .wrap { max-width: var(--max-content); margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-6); }
 .page { display: grid; grid-template-columns: minmax(0, 1fr) 17rem; gap: var(--space-5); align-items: start; margin-top: var(--space-4); }
@@ -669,17 +707,9 @@ a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0; ma
 
 /* ---- masthead ---- */
 .masthead { border-bottom: var(--rule-heavy); padding-bottom: var(--space-4); }
-.crumbs { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
-.crumbs a { text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap-min); }
-/* The separator belongs to the item that follows it. As its own element it was
-   laid out as its own flex item, so a long last crumb wrapped and left the "·"
-   dangling at the end of the line above (seen on spain/intra-company-transfer).
-   As a ::before it cannot be separated from the word it introduces. */
-.crumbs > * + *::before { content: "·"; color: var(--color-line); margin-right: var(--space-2); }
 h1 { font: var(--text-hero); margin: var(--space-2) 0 var(--space-2); }
 .lede { margin: 0; color: var(--color-muted); }
 ${IDENTITY}
-.crumbs .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border: 2px solid var(--color-stamp); color: var(--color-stamp); font: 700 .72rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); margin-right: .35rem; }
 
 /* ---- what this page checks: plain words, ink on card, no verdict colour ---- */
 .scope { margin: 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-left: 4px solid var(--color-ink); }
@@ -755,6 +785,37 @@ ${IDENTITY}
 .answer-figure b { font-weight: 600; }
 .answer-label { font: var(--text-source); color: var(--color-muted); }
 .answer-read { margin: var(--space-2) 0 0; font: var(--text-source); color: var(--color-muted); }
+
+/* ---- the data page ---- */
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: var(--space-3); margin: var(--space-3) 0 0; }
+.facts > div { border-top: var(--rule-dotted); padding-top: var(--space-2); }
+.facts dt { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
+.facts dd { margin: .2rem 0 0; font: var(--text-value); font-size: 1rem; color: var(--color-ink); }
+.checks { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: var(--space-2); }
+.checks li { border-top: var(--rule-dotted); padding-top: var(--space-2); }
+.checks b { color: var(--color-ink); }
+.jsonlinks { display: grid; gap: 0; margin-top: var(--space-3); }
+.jsonlinks .label { display: block; margin-top: var(--space-2); color: var(--color-muted); }
+.jsonlinks a { display: flex; justify-content: space-between; gap: var(--space-3); align-items: baseline; min-height: var(--tap-min); padding: var(--space-2) 0; border-top: var(--rule-dotted); text-decoration: none; color: var(--color-stamp); }
+.jsonlinks a small { font: var(--text-source); color: var(--color-met); white-space: nowrap; }
+
+/* ---- the country index: the whole card is the link ---- */
+/* One target, not three: the name, the gist and the meta line sit inside a
+   single link, so a thumb has the whole card and a reader has one thing to
+   click (nav-mock critique F2, 2026-09-08). The title carries the link colour,
+   because the card itself cannot. */
+.routes { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: grid; gap: var(--gap-cards); }
+.routes li { background: var(--color-card); border: var(--rule-soft); }
+.routes li:hover, .routes li:focus-within { border-color: var(--color-stamp); }
+.routes a.card { display: block; padding: var(--pad-card); color: inherit; text-decoration: none; }
+.routes .name { font: var(--text-route); line-height: 1.3; color: var(--color-stamp); text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: .2em; }
+.routes .gist { margin: .25rem 0 0; color: var(--color-ink); }
+.routes .meta { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: .45rem 0 0; font: 500 .85rem/1.4 var(--font-sans); color: var(--color-muted); }
+.routes .meta b { font-weight: 600; color: var(--color-ink); }
+.routes .meta .read { font: var(--text-source); color: var(--color-met); align-self: center; }
+.cta .note { color: var(--color-muted); }
+footer .ends { display: flex; gap: var(--space-4); flex-wrap: wrap; }
+footer .ends a { color: var(--color-muted); display: inline-flex; align-items: center; min-height: var(--tap-min); }
 
 /* ---- neighbours ---- */
 .neighbours { margin: 0; padding: var(--space-3) var(--space-4) var(--space-2); background: var(--color-card); border-top: var(--rule-card-top); border-bottom: var(--rule-soft); }
