@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { PAGE_CSS } from "../src/lib/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
@@ -48,8 +48,13 @@ describe("the identity pair has one definition", () => {
   it("the results page links the same file", () => {
     const page = read("src/pages/index.astro");
     expect(page).toContain('import "../../identity.css";');
-    expect(page).toContain('class="stamps"');
-    expect(page).toContain('class="mark"');
+    // What it renders, read off what it renders — the markup comes from
+    // `identity.ts` now, so the page's own source says nothing about it
+    // (Standards review, 2026-09-08).
+    const built = read("dist/index.html");
+    expect(built).toContain('class="stamps"');
+    expect(built).toContain('class="mark"');
+    expect(built).toContain('id="stamp-label"');
     // And states nothing about the pair at all any more — not what it is made
     // of, and since 2026-09-08 not where it goes either.
     expect(page).toContain('<header class="masthead-with-stamps">');
@@ -412,4 +417,61 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
       server.close();
     }
   }, 120000);
+});
+
+/**
+ * The identity was written out four times — the route page, the country page,
+ * the 404 and the interview — with the same words, the same classes and four
+ * chances to drift (Standards review, 2026-09-08). `identity.css` holds the one
+ * set of rules that places it; `identity.ts` holds the one set of elements
+ * those rules place.
+ */
+describe("the identity has one set of elements too", () => {
+  const emitters = (dir: string, out: string[] = []): string[] => {
+    for (const name of readdirSync(root(dir))) {
+      const path = `${dir}/${name}`;
+      if (statSync(root(path)).isDirectory()) emitters(path, out);
+      else if (/[.](ts|astro)$/.test(name)) out.push(path);
+    }
+    return out;
+  };
+
+  /**
+   * The one exception, named rather than left to be discovered: the social card
+   * is a 1,200×630 image rendered by a browser at a fixed size, with its own
+   * geometry in pixels (a 224 px mark, a 404 px pair). It is not a page inside
+   * the shared stylesheet, and giving it the page's markup would make it the
+   * wrong size in a link preview.
+   */
+  const OWN_GEOMETRY = ["src/lib/social-card.ts"];
+
+  it("only identity.ts writes the seal, the mark or the pair", () => {
+    const offenders: string[] = [];
+    for (const file of emitters("src")) {
+      if (file === "src/lib/identity.ts" || OWN_GEOMETRY.includes(file)) continue;
+      const text = read(file);
+      for (const marker of ['class="seal"', 'class="stamps"', 'class="mark"'])
+        if (text.includes(marker)) offenders.push(`${file}: ${marker}`);
+    }
+    expect(offenders, "the identity is being written out a second time").toEqual([]);
+  });
+
+  it("and only identity.ts writes the icon links", () => {
+    const offenders: string[] = [];
+    for (const file of emitters("src")) {
+      if (file === "src/lib/identity.ts") continue;
+      if (read(file).includes('rel="apple-touch-icon"')) offenders.push(file);
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("every built page carries the same three icon links", () => {
+    const pages = ["dist/index.html", "dist/404.html", "dist/germany/index.html",
+      "dist/germany/eu-blue-card-general/index.html"];
+    for (const page of pages) {
+      const html = read(page);
+      expect(html, page).toContain('rel="apple-touch-icon"');
+      expect((html.match(/rel="icon"/g) ?? []).length, page).toBe(2);
+    }
+  });
 });

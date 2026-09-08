@@ -56,7 +56,9 @@ Beside the interview there is a page for every route in the dataset, at
 `/{country}/{route}` — `/germany/eu-blue-card-general` and twenty-two others.
 A route page describes the rules and never rules on the reader: every number on
 it is the authority's own sentence, with the page it came from, the day it was
-read, and the language it is written in.
+read, and the language it is written in. Each one carries its own door to the
+data: **this route as JSON**, at `/{country}/{route}.json`, beside the dataset
+and the tracker.
 
 Permit Rulebook makes no immigration decision and authorities won't consider
 these results — it compares published values with what you declare, nothing
@@ -73,6 +75,17 @@ it: [docs/spine/ARCHITECTURE.md](docs/spine/ARCHITECTURE.md).
   can read exactly what ships
 - `src/lib/copy.ts` — the name, the tagline and the disclaimer, in one place
 - `tokens.css` — the design tokens every screen is built inside
+
+The rest of the commands, and what each is for:
+
+```
+npm run dev            # astro dev
+npm test               # vitest — includes the browser-driven cases
+npm run smoke          # load the real pages in a real browser, dev and dist
+npm run measure:taps   # every control at 390 px on the built site
+npm run check:base     # build under a subpath and read every link back
+npm run assets         # re-render the favicon and the social card (needs Chrome)
+```
 
 `SITE_URL` sets where the build believes it lives; every absolute URL a link
 preview reads follows it. Unset, it uses `https://permitrulebook.com`.

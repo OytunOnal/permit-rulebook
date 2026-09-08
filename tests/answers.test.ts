@@ -117,4 +117,37 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
       server.close();
     }
   }, 180000);
+
+  /**
+   * The interview prints "§" too — the shortage question's own help cites
+   * § 18g AufenthG — and a screen explains a symbol the first time it uses it,
+   * wherever that use is (Spec review, 2026-09-08).
+   */
+  it("explains the section symbol on the screen that prints it", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
+        await page.goto(server.url("/"), 300);
+        await page.evaluate(seed({
+          destination: "de", citizenship: "third_country", situation: "offer",
+          qualification: "degree", recognition_de: "recognized",
+        }));
+        await page.goto(server.url("/"), 1200);
+        return page.evaluate(
+          'JSON.stringify({'
+          + ' question: document.querySelector(".qlabel").textContent.trim(),'
+          + ' help: document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : null })',
+        );
+      }, { viewport: { width: 1100, height: 900 }, mobile: false }) as string) as
+        { question: string; help: string | null };
+
+      expect(seen.question.toLowerCase()).toContain("shortage");
+      expect(seen.help, "the shortage question offers no help at all").toBeTruthy();
+      expect(seen.help!, "the symbol is printed and never said").toContain("section 18g");
+      // The citation itself survives whole — it is what a reader searches for.
+      expect(seen.help!).toContain("§ 18g AufenthG");
+    } finally {
+      server.close();
+    }
+  }, 180000);
 });

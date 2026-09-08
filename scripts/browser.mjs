@@ -123,7 +123,7 @@ export async function serve(dir, { base = siteBase() } = {}) {
  *   evaluate(expr)   run an expression in the page, return its value
  *   problems()       everything the page has thrown or logged as an error
  */
-export async function withBrowser(run, { viewport = { width: 390, height: 844 }, mobile = true } = {}) {
+export async function withBrowser(run, { viewport = { width: 390, height: 844 }, mobile = true, network = false } = {}) {
   // A profile of its own, per launch. Three test files drive a browser, vitest
   // runs them in parallel, and Chrome exits 21 when a second instance opens the
   // same user-data-dir — which read as "the identity pair is missing" and "the
@@ -160,6 +160,8 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
   let nextId = 0;
   const pending = new Map();
   const problems = [];
+  /** Every request the page made, when the caller asked to watch. */
+  const requests = [];
   socket.addEventListener("message", (event) => {
     const message = JSON.parse(event.data);
     if (message.method === "Runtime.exceptionThrown") {
@@ -169,6 +171,17 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
     }
     if (message.method === "Runtime.consoleAPICalled" && message.params.type === "error") {
       problems.push(`console.error: ${message.params.args.map((a) => a.value ?? a.description ?? "").join(" ")}`);
+      return;
+    }
+    if (message.method === "Network.requestWillBeSent") {
+      const { request, type } = message.params;
+      requests.push({
+        url: request.url,
+        method: request.method,
+        type: type ?? "",
+        postData: request.postData ?? "",
+        hasPostData: request.hasPostData === true,
+      });
       return;
     }
     if (message.method === "Log.entryAdded" && message.params.entry.level === "error") {
@@ -201,6 +214,11 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
   await send("Page.enable", {}, sessionId);
   await send("Runtime.enable", {}, sessionId);
   await send("Log.enable", {}, sessionId);
+  // Off by default: only the case that asks a question about the network pays
+  // for the events. "Answers never leave the device" is a promise about what
+  // the page DOES, so the only honest check is what it actually sent
+  // (human, 2026-09-08).
+  if (network) await send("Network.enable", {}, sessionId);
   await send("Emulation.setDeviceMetricsOverride", {
     width: viewport.width, height: viewport.height, deviceScaleFactor: 2, mobile,
   }, sessionId);
@@ -226,6 +244,8 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
       return Buffer.from(data, "base64");
     },
     problems: () => [...problems],
+    requests: () => requests.map((r) => ({ ...r })),
+    forgetRequests: () => { requests.length = 0; },
   };
 
   try {

@@ -144,22 +144,21 @@ describe("B2 — the site can be crawled and browsed", () => {
   });
 
   it("the home page's footer is where the first click lives, and it renders the same four links", () => {
-    const home = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8")
-      .split("\r\n").join("\n");
-    const footer = home.slice(home.indexOf("<footer>"), home.indexOf("</footer>"));
-    // The nav is in the footer, it is generated, and every href goes through
-    // the base-path helper.
-    expect(footer).toContain("countryLinks(dataset)");
-    expect(footer).toContain("href={url(link.path)}");
-    expect(home).toContain('import { countryLinks } from "../lib/country-page.js";');
-    // What the built page actually emits, when there is one to read.
+    // Read off what ships, not off how it is written: a page that listed the
+    // four links by hand would pass a source grep and fail a reader the day a
+    // fifth country lands (Standards review, 2026-09-08).
     const index = `${dist}/index.html`;
-    if (existsSync(index)) {
-      const html = readFileSync(index, "utf8");
-      for (const link of countryLinks(ds))
-        expect(html, `the built home page does not link ${link.path}`)
-          .toContain(`href="${url(link.path)}"`);
-    }
+    if (!existsSync(index)) return;
+    const built = readFileSync(index, "utf8");
+    const footer = built.slice(built.lastIndexOf("<footer"), built.lastIndexOf("</footer>"));
+    expect(footer.length, "no footer in the built home page").toBeGreaterThan(0);
+    for (const link of countryLinks(ds))
+      expect(footer, `the footer does not link ${link.path}`).toContain(`href="${url(link.path)}"`);
+    // And every country link in it is one the build actually emitted.
+    const built_countries = new Set(countryLinks(ds).map((l) => url(l.path)));
+    for (const href of [...footer.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!))
+      if (/^[/][a-z-]+[/]?$/.test(href.replace(/[/]$/, "/")) && href !== url("/"))
+        expect(built_countries.has(href), `the footer links ${href}, which is no country page`).toBe(true);
   });
 
   it("a route page's country crumb is a link now that the country page exists", () => {
@@ -203,7 +202,13 @@ describe("B2 — the site can be crawled and browsed", () => {
       // Every one of that country's routes, by name, with its one-line gist,
       // and nobody else's.
       for (const route of country.routes) {
-        expect(text, `${page.path}: ${route.id}`).toContain(route.name);
+        // The name as it is known, whole. One of them may carry the page's
+        // first-use gloss of "§" — a country page is a landing page like any
+        // other (Spec review, 2026-09-08) — and a gloss is appended after the
+        // citation, never cut into it.
+        expect(text, `${page.path}: ${route.id}`).toContain(
+          route.name.includes("(§") ? route.name.slice(0, route.name.lastIndexOf(")")) : route.name,
+        );
         const summary = (route.summary ?? "").split(/(?<=\.)\s/)[0] ?? "";
         if (summary && summary.length <= 110)
           expect(text, `${page.path}: ${route.id} gist`).toContain(summary);
@@ -240,5 +245,25 @@ describe("B2 — the site can be crawled and browsed", () => {
         if (/^https?:/.test(href)) continue;
         expect(href, `${page.path}: ${href}`).toBe(url(href));
       }
+  });
+});
+
+/**
+ * A country page is where a stranger arrives from a search result, so it
+ * explains what it shows for the first time here too — the same rule the route
+ * pages follow (Spec review, 2026-09-08).
+ */
+describe("a country page explains the symbol it prints", () => {
+  it("glosses the first section citation, once, and leaves the rest short", () => {
+    const germany = countries.find((p) => p.path === "/germany")!;
+    const text = textOf(germany.html);
+    const glosses = text.match(/sections? [0-9]+[a-z]?/g) ?? [];
+    expect(glosses.length, `glosses seen: ${glosses.join(", ")}`).toBe(1);
+    // On the first name that carries one, in reading order.
+    const at = text.indexOf(glosses[0]!);
+    expect(text.slice(0, at).split("§").length - 1, "a bare § came first").toBe(1);
+    // And a country with no citation at all grows none.
+    for (const page of countries.filter((p) => p.path !== "/germany"))
+      expect(textOf(page.html), page.path).not.toMatch(/sections? [0-9]/);
   });
 });

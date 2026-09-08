@@ -34,17 +34,25 @@ describe("the section symbol is said in words, once per page", () => {
     expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (section 6 of the Employment Ordinance)");
   });
 
-  it("expands nothing but the symbol in a name", () => {
-    // A route is known by its name; the act beside the number is not expanded
-    // inside it, or "Experienced worker (§ 19c / § 6 BeschV)" grows a bracket
-    // inside its own bracket on the results card (human, 2026-09-08).
+  it("expands nothing but the symbol in a name, and never inside the citation", () => {
+    // A route is known by its name, and a citation is a string a person pastes
+    // into a search box: "§ 19c / § 6 BeschV" has to survive whole. The words
+    // follow the whole run, and name every section in it (Spec review,
+    // 2026-09-08; it used to cut the run in half).
     expect(glossSection("Experienced worker (§ 19c / § 6 BeschV)", new Set()))
-      .toBe("Experienced worker (§ 19c, section 19c / § 6 BeschV)");
-    // The citation need not sit first inside the bracket.
+      .toBe("Experienced worker (§ 19c / § 6 BeschV; sections 19c and 6)");
+    // One citation in the bracket keeps the shorter form.
     expect(glossSection("Opportunity Card (Chancenkarte, § 20a)", new Set()))
       .toBe("Opportunity Card (Chancenkarte, § 20a, section 20a)");
     // Outside a bracket the gloss brings its own.
     expect(glossSection("§ 18d states it", new Set())).toBe("§ 18d (section 18d) states it");
+    // And the citation itself is untouched in every case.
+    for (const name of [
+      "Experienced worker (§ 19c / § 6 BeschV)",
+      "Opportunity Card (Chancenkarte, § 20a)",
+      "Skilled worker — academic (§ 18b)",
+    ])
+      expect(glossSection(name, new Set()), name).toContain(name.slice(name.indexOf("§"), name.indexOf(")")));
   });
 
   it("leaves text with no citation alone", () => {

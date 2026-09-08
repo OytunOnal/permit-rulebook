@@ -52,10 +52,16 @@ describe("B4 — a wrong URL lands on a page of this product's own", () => {
     expect(page.html).toContain('<div class="stamps">');
     expect(page.html).toContain('class="mark"');
     expect(page.html).toContain(`<style>${PAGE_CSS}</style>`);
-    // The geometry comes from that stylesheet and from nowhere else: the module
-    // that builds this page states none of the pair's own rules.
-    const source = readFileSync(new URL("../src/lib/not-found.ts", import.meta.url), "utf8");
-    expect(source).not.toMatch(/\.stamps\s*[.\s]*\{/);
+    // The geometry comes from that stylesheet and from nowhere else. Read off
+    // what ships: the page's own <style> is the shared sheet, and the pair's
+    // rules appear in it exactly as often as they appear there (Standards
+    // review, 2026-09-08 — this used to grep the module's source).
+    const own = page.html.slice(page.html.indexOf("<style>"), page.html.indexOf("</style>"));
+    for (const selector of [".stamps {", ".stamps .mark {", ".stamps .stamp {"]) {
+      expect(own, selector).toContain(selector);
+      expect(own.split(selector).length - 1, `${selector} is declared twice`)
+        .toBe(PAGE_CSS.split(selector).length - 1);
+    }
     // And it says the product's name where the mark stands.
     expect(page.html).toContain('title="Permit Rulebook"');
   });

@@ -18,10 +18,11 @@ import IDENTITY from "../../identity.css?raw";
 // One module explains an abbreviation, so the route page and the results card
 // say the same words for the same token (2026-09-08).
 import { type Glossary, glossSection, glossed } from "./gloss.js";
+// One set of elements for the identity the shared CSS places (2026-09-08).
+import { crumbs, iconLinks, rulesRead } from "./identity.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
-import { hostOf, quoteFrame, separatorNote } from "./quote.js";
-export { separatorNote };
+import { quoteFrame } from "./quote.js";
 import { esc, escAttr } from "./reason.js";
 import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH, TRACKER_URL,
@@ -537,9 +538,7 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
 <title>${esc(title)}</title>
 <meta name="description" content="${escAttr(desc)}">
 <link rel="canonical" href="${escAttr(absolute(path))}">
-<link rel="icon" href="${escAttr(url("/favicon.ico"))}" sizes="16x16 32x32 64x64">
-<link rel="icon" href="${escAttr(url("/favicon.svg"))}" type="image/svg+xml">
-<link rel="apple-touch-icon" href="${escAttr(url("/favicon-64.png"))}">
+${iconLinks()}
 <meta property="og:site_name" content="${escAttr(PRODUCT_NAME)}">
 <meta property="og:title" content="${escAttr(title)}">
 <meta property="og:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
@@ -558,17 +557,11 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
 
   <header class="masthead masthead-with-stamps">
     <div>
-      <nav class="crumbs label" aria-label="Where you are">
-        <a ${tapMin()} href="${escAttr(url("/"))}"><span class="seal" title="${escAttr(PRODUCT_NAME)}" aria-hidden="true">${
-    SEAL_LETTERS}</span>${esc(PRODUCT_NAME)}</a><a ${tapMin()} href="${
-    escAttr(url(countryPath(country)))}">${esc(country.name)}</a><span>${esc(route.name)}</span>
-      </nav>
+      ${crumbs([{ label: country.name, path: countryPath(country) }, { label: route.name }])}
       <h1>${esc(heading)}. <em>The rules, quoted and dated.</em></h1>
       <p class="lede">${route.summary ? `${esc(route.summary)} ` : ""}Every number on this page is the authority's own sentence, with the page it came from and the day we read it. ${esc(audienceSentence(country))} ${esc(ROUTE_PAGE_ADDENDUM)}</p>
     </div>
-    <div class="stamps"><span class="mark" role="img" title="${escAttr(PRODUCT_NAME)}" aria-label="${
-    escAttr(PRODUCT_NAME)}">${SEAL_LETTERS}</span><div class="stamp"><time datetime="${
-    escAttr(read)}">Rules read<br>${esc(read)}</time></div></div>
+    ${rulesRead(read)}
   </header>
 
   <div class="page">
@@ -780,8 +773,7 @@ footer .health a { display: inline-flex; align-items: center; min-height: var(--
   /* On a phone the button leads its own section: the sentence about privacy
      is worth reading, and worth reading second (2026-09-08). */
   .cta { flex-direction: column; align-items: stretch; }
-  .cta a.btn { order: -1; }
-  .cta a.btn { text-align: center; }
+  .cta a.btn { order: -1; text-align: center; }
   .rule .top { flex-direction: column; gap: var(--space-1); }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

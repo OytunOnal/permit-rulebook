@@ -6,12 +6,15 @@ import {
   routeStatements, type Dataset, type Route,
 } from "permit-rulebook-data";
 import {
-  PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, routePage, routePages, separatorNote,
+  PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, routePage, routePages,
   stampDate,
 } from "../src/lib/route-page.js";
 import { datasetDay } from "../src/lib/copy.js";
 import { esc } from "../src/lib/reason.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
+// The frame round a quote lives with the quote, not with the page that shows
+// one: the results card puts the same words round the same sentence.
+import { separatorNote } from "../src/lib/quote.js";
 
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds);
@@ -405,7 +408,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
       const text = textOf(page.html);
       expect((text.match(/§/g) ?? []).length, page.path).toBeGreaterThan(0);
       // Exactly one gloss on the page, however many citations it carries.
-      const glosses = text.match(/section [0-9]+[a-z]?/g) ?? [];
+      // Singular or plural: a name that cites two sections is glossed once,
+      // after the whole citation ("§ 19c / § 6 BeschV; sections 19c and 6").
+      const glosses = text.match(/sections? [0-9]+[a-z]?/g) ?? [];
       expect(glosses.length, page.path).toBe(1);
       // Never inside a quote: what a source said is verbatim by contract.
       for (const q of page.html.matchAll(/<blockquote[^>]*>([^]*?)<[/]blockquote>/g))
@@ -420,7 +425,7 @@ describe("s6 — one page per route, generated from the dataset", () => {
     expect(textOf(academic.html)).toContain("Skilled worker — vocational (§ 18a)");
     // Nothing outside Germany grows a section gloss it has no citation for.
     for (const page of pages.filter((x) => !x.path.startsWith("/germany/")))
-      expect(textOf(page.html), page.path).not.toMatch(/section [0-9]/);
+      expect(textOf(page.html), page.path).not.toMatch(/sections? [0-9]/);
   });
 
   /**

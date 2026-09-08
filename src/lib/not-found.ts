@@ -4,6 +4,8 @@ import { PAGE_CSS } from "./route-page.js";
 import { countryLinks, siteReadDate } from "./country-page.js";
 import { DISCLAIMER, PRODUCT_NAME, SEAL_LETTERS, TAGLINE } from "./copy.js";
 import { url } from "./site.js";
+// One set of elements for the identity the shared CSS places (2026-09-08).
+import { crumbs, iconLinks, rulesRead } from "./identity.js";
 
 /**
  * The page a wrong address lands on.
@@ -41,25 +43,18 @@ export function notFoundPage(dataset: Dataset): NotFoundPage {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="robots" content="noindex">
-<link rel="icon" href="${escAttr(url("/favicon.ico"))}" sizes="16x16 32x32 64x64">
-<link rel="icon" href="${escAttr(url("/favicon.svg"))}" type="image/svg+xml">
-<link rel="apple-touch-icon" href="${escAttr(url("/favicon-64.png"))}">
+${iconLinks()}
 <style>${PAGE_CSS}</style>`;
 
   const body = `<div class="wrap">
 
   <header class="masthead masthead-with-stamps">
     <div>
-      <nav class="crumbs label" aria-label="Where you are">
-        <a class="tap-min" href="${escAttr(url("/"))}"><span class="seal" title="${
-    escAttr(PRODUCT_NAME)}" aria-hidden="true">${SEAL_LETTERS}</span>${esc(PRODUCT_NAME)}</a>
-      </nav>
+      ${crumbs()}
       <h1>This page does not exist. <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">Nothing is published at that address — a link may have lost a character, or a page may have been renamed since it was shared.</p>
     </div>
-    <div class="stamps"><span class="mark" role="img" title="${escAttr(PRODUCT_NAME)}" aria-label="${
-    escAttr(PRODUCT_NAME)}">${SEAL_LETTERS}</span><div class="stamp"><time datetime="${
-    escAttr(read)}">Rules read<br>${esc(read)}</time></div></div>
+    ${rulesRead(read)}
   </header>
 
   <main>

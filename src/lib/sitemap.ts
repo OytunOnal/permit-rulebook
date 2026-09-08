@@ -59,13 +59,24 @@ export function sitemapEntries(dataset: Dataset): SitemapEntry[] {
 }
 
 /**
+ * A URL going inside an element. A slug is lower-case letters and hyphens today
+ * and `absolute()` is built from `SITE_URL`, so nothing here carries an
+ * ampersand — but a sitemap that becomes invalid XML is dropped silently by
+ * every crawler that reads it, and "nothing carries one today" is the reason to
+ * escape rather than the reason not to (Standards review, 2026-09-08).
+ */
+export const escXml = (value: string): string =>
+  value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+
+/**
  * The sitemap itself. Absolute, because a sitemap that is not is ignored, and
  * through `absolute()` so a build under a subpath names its own pages rather
  * than the domain root's.
  */
 export function sitemapXml(dataset: Dataset): string {
   const urls = sitemapEntries(dataset).map((e) =>
-    `  <url>\n    <loc>${absolute(e.path)}</loc>\n    <lastmod>${e.lastmod}</lastmod>\n  </url>`);
+    `  <url>\n    <loc>${escXml(absolute(e.path))}</loc>\n    <lastmod>${escXml(e.lastmod)}</lastmod>\n  </url>`);
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',

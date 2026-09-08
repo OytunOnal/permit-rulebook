@@ -10,6 +10,11 @@ import {
   DATA_LICENCE_NAME, DATA_LICENCE_URL, SOCIAL_CARD_PATH, absolute, url,
 } from "./site.js";
 import { countryPath, countrySlug, routePath } from "./slug.js";
+// One set of elements for the identity, and one memory of what a page has
+// already explained: a country page is a crawl landing page like any other
+// (Standards and Spec review, 2026-09-08).
+import { crumbs, iconLinks, rulesRead } from "./identity.js";
+import { type Glossary, glossSection } from "./gloss.js";
 
 /**
  * One page per country — the address a route page's crumb climbs to.
@@ -27,10 +32,13 @@ import { countryPath, countrySlug, routePath } from "./slug.js";
  * verdict vocabulary — and it links `route-page.ts`'s own stylesheet rather
  * than growing a second one, so the two screens cannot drift apart.
  *
- * The route names here are navigation, not use: a name in a list is a
- * cross-reference, and it keeps the short form the route page's own heading
- * glosses ("§ 18b"). That is the rule `route-page.ts` already states for its
- * crumbs and its neighbours list.
+ * A stranger arrives here from a search result, so this page explains what it
+ * prints: the first "§" in its list of routes is glossed the way a route page
+ * glosses its own heading (Spec review, 2026-09-08 — it used to keep the short
+ * form on the grounds that a list is navigation, which is true of a crumb and
+ * not of a landing page). It carries the identity pair for the same reason, and
+ * stamps the day the dataset itself was last read, because nothing on it is
+ * quoted (human amendment to decision 12, 2026-09-08).
  */
 
 export interface CountryAddress {
@@ -70,9 +78,11 @@ export interface CountryPage {
 }
 
 /**
- * The newest read date behind any of this country's routes. Nothing on this
- * page is quoted, so it carries no stamp; the date is here because the head of
- * a page a crawler reads should say when its content last moved.
+ * The newest read date behind any of this country's routes — what the head of a
+ * page a crawler reads says about when its content last moved. The pair in the
+ * masthead stamps the site's own newest read date instead: this page quotes
+ * nothing, and the promise it can honestly make is the one the interview's
+ * question screens make (human amendment to decision 12, 2026-09-08).
  */
 export function countryReadDate(dataset: Dataset, country: Country): string {
   const notice = audienceNotice(dataset);
@@ -111,15 +121,16 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   const desc = description(country);
   const read = countryReadDate(dataset, country);
   const count = country.routes.length;
+  // One page, one memory of what it has already explained. A stranger meets
+  // "§" here as readily as on a route page — this is a landing page too.
+  const seen: Glossary = new Set();
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${escAttr(desc)}">
 <link rel="canonical" href="${escAttr(absolute(path))}">
-<link rel="icon" href="${escAttr(url("/favicon.ico"))}" sizes="16x16 32x32 64x64">
-<link rel="icon" href="${escAttr(url("/favicon.svg"))}" type="image/svg+xml">
-<link rel="apple-touch-icon" href="${escAttr(url("/favicon-64.png"))}">
+${iconLinks()}
 <meta property="og:site_name" content="${escAttr(PRODUCT_NAME)}">
 <meta property="og:title" content="${escAttr(title)}">
 <meta property="og:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
@@ -136,14 +147,13 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
 
   const body = `<div class="wrap">
 
-  <header class="masthead">
-    <nav class="crumbs label" aria-label="Where you are">
-      <a class="tap-min" href="${escAttr(url("/"))}"><span class="seal" title="${
-    escAttr(PRODUCT_NAME)}" aria-hidden="true">${SEAL_LETTERS}</span>${
-    esc(PRODUCT_NAME)}</a><span>${esc(country.name)}</span>
-    </nav>
-    <h1>Work permits in ${esc(withArticle(country))}</h1>
-    <p class="lede">${esc(audienceSentence(country))} These are the ${count} routes we hold rules for here. Each one has a page of its own, where every value is the authority's own sentence with the page it came from and the day we read it.</p>
+  <header class="masthead masthead-with-stamps">
+    <div>
+      ${crumbs([{ label: country.name }])}
+      <h1>Work permits in ${esc(withArticle(country))}. <em>${esc(TAGLINE)}</em></h1>
+      <p class="lede">${esc(audienceSentence(country))} These are the ${count} routes we hold rules for here. Each one has a page of its own, where every value is the authority's own sentence with the page it came from and the day we read it.</p>
+    </div>
+    ${rulesRead(siteReadDate(dataset))}
   </header>
 
   <main>
@@ -151,7 +161,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
       <h2 class="label" id="routes-h">The ${count} routes in ${esc(withArticle(country))}</h2>
       <ul>${country.routes.map((route) => `
         <li><a class="tap-min" href="${escAttr(url(routePath(country, route)))}">${
-    esc(route.name)}<small>${esc(gist(route))}</small></a></li>`).join("")}
+    esc(glossSection(route.name, seen))}<small>${esc(gist(route))}</small></a></li>`).join("")}
       </ul>
     </nav>
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import {
@@ -9,6 +10,7 @@ import {
 
 const dataset = rawDataset as unknown as Dataset;
 const known = dataset.fields.map((f) => f.id);
+const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 describe("the record survives leaving the page (F2, F10)", () => {
   it("comes back exactly as it went in", () => {
@@ -110,24 +112,118 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
   });
 });
 
-describe("the record never leaves the device", () => {
-  const source = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
+/**
+ * The one-pager's first non-negotiable: the answers never leave the device.
+ *
+ * This used to be checked by reading the page's own source for `fetch`,
+ * `sendBeacon` and friends — a surface trace, and this project does not accept
+ * those: a bundled dependency, an inlined helper or a renamed call would walk
+ * straight past it, and the promise is about what the page DOES. So the page is
+ * driven in a real browser with the network watched, and the only thing
+ * asserted is what it actually sent (human, 2026-09-08).
+ */
+const { chromePath } = await import("../scripts/chrome.mjs");
+const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
-  it("the page makes no network call carrying an answer", () => {
-    // The privacy promise is on the first screen. Nothing here transmits: no
-    // fetch, no XHR, no beacon, no form post, no socket. These read the
-    // source, and stay source-level deliberately: they are absences, so
-    // writing anything at all — a rename, a comment — can only make them
-    // fire, never silence them. The positive half of this promise (the
-    // answers ARE stored, and "Start over" clears them) is a behaviour, and
-    // is tested as one above rather than by grepping for a word (review S4).
-    expect(source).not.toMatch(/\bfetch\s*\(/);
-    expect(source).not.toMatch(/XMLHttpRequest/);
-    expect(source).not.toMatch(/sendBeacon/);
-    expect(source).not.toMatch(/<form\b/);
-    expect(source).not.toMatch(/new WebSocket/);
-    expect(source).not.toMatch(/location\.hash\s*=/); // sharing by link is out of scope, deliberately
-  });
+function why(): string | null {
+  try { chromePath(); } catch (e) { return (e as Error).message; }
+  if (!existsSync(dist)) return "no dist/ — run npm run build first";
+  return null;
+}
+const skipped = why();
+if (skipped)
+  process.stderr.write([
+    "",
+    `  !! THE PRIVACY PROMISE WAS NOT WALKED IN A BROWSER: ${skipped}.`,
+    "     Run: npm run build && npm test",
+    "",
+    "",
+  ].join(String.fromCharCode(10)));
+
+interface Sent { url: string; method: string; postData: string; hasPostData: boolean }
+interface BrowserPage {
+  goto(url: string, settleMs?: number): Promise<void>;
+  evaluate(expression: string): Promise<string>;
+  requests(): Sent[];
+  forgetRequests(): void;
+}
+
+/** Click through whatever the current question offers, whatever kind it is. */
+const ANSWER_ONE = `(() => {
+  const opt = document.querySelector(".qcard .opts .opt");
+  if (opt) { opt.click(); return "opt"; }
+  const row = document.querySelector(".clist [role=option]");
+  if (row) { row.click(); return "row"; }
+  const input = document.querySelector("#cfilter");
+  if (input) { input.value = "Turkey"; input.dispatchEvent(new Event("input", { bubbles: true })); return "typed"; }
+  return "none";
+})()`;
+
+describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave the device", () => {
+  it("a whole walk, and an answer changed after it, sends nothing but this page's own files", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage) => {
+        await page.goto(server.url("/"), 900);
+        const answered: string[] = [];
+        for (let step = 0; step < 25; step++) {
+          const state = await page.evaluate('document.querySelector("#app").dataset.state');
+          if (state === "results") break;
+          answered.push(await page.evaluate(ANSWER_ONE));
+          await new Promise((r) => setTimeout(r, 260));
+        }
+        const reached = await page.evaluate('document.querySelector("#app").dataset.state');
+        const walk = page.requests();
+
+        // Now the gesture the promise is most easily broken by: changing an
+        // answer once a verdict is on the screen.
+        page.forgetRequests();
+        await page.evaluate('document.querySelector("#app .done").click()');
+        await new Promise((r) => setTimeout(r, 400));
+        await page.evaluate(ANSWER_ONE);
+        await new Promise((r) => setTimeout(r, 600));
+        const afterEdit = page.requests();
+
+        const declared = await page.evaluate(
+          'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
+        );
+        return { answered, reached, walk, afterEdit, declared: JSON.parse(declared) as string[] };
+      }, { viewport: { width: 1100, height: 900 }, mobile: false, network: true }) as {
+        answered: string[]; reached: string; walk: Sent[]; afterEdit: Sent[]; declared: string[];
+      };
+
+      expect(seen.reached, `the walk never reached a verdict: ${seen.answered.join(", ")}`).toBe("results");
+      expect(seen.declared.length, "the walk answered nothing").toBeGreaterThan(5);
+
+      const origin = server.origin as string;
+      for (const [where, sent] of [["the walk", seen.walk], ["the edit", seen.afterEdit]] as const)
+        for (const request of sent) {
+          // Same origin: no third-party host, ever.
+          expect(request.url.startsWith(origin), `${where}: a request left this origin — ${request.url}`).toBe(true);
+          // GET only: nothing is submitted anywhere.
+          expect(request.method, `${where}: ${request.method} ${request.url}`).toBe("GET");
+          expect(request.hasPostData, `${where}: a body was sent to ${request.url}`).toBe(false);
+          expect(request.postData, `${where}: a body was sent to ${request.url}`).toBe("");
+          // No query string: an answer smuggled into one is still an answer
+          // leaving the device.
+          expect(request.url.includes("?"), `${where}: a query string on ${request.url}`).toBe(false);
+          // And nothing the reader declared appears in the URL as a value of
+          // its own. Matched on token boundaries: "de" is inside the word
+          // "index", and a hashed asset name is not a leak.
+          for (const answer of seen.declared) {
+            const token = new RegExp(`(^|[^a-z0-9])${answer.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
+            expect(token.test(request.url.toLowerCase()), `${where}: ${answer} reached ${request.url}`).toBe(false);
+          }
+        }
+
+      // The edit repainted the screen without asking anyone anything.
+      expect(seen.afterEdit.filter((r) => !r.url.endsWith(".css") && !r.url.endsWith(".js")))
+        .toEqual(seen.afterEdit.filter((r) => !r.url.endsWith(".css") && !r.url.endsWith(".js")));
+      expect(seen.afterEdit.length, `the edit sent ${seen.afterEdit.length} requests`).toBeLessThan(3);
+    } finally {
+      server.close();
+    }
+  }, 180000);
 });
 
 /**

@@ -11,6 +11,9 @@ import { datasetMeta } from "permit-rulebook-data";
 // alike — a second copy of the intro copy here is how "Start over" left a
 // stale claim on question 1 (product-critique v0.7, B4).
 import { mastheadFor } from "../lib/screen.js";
+// The seal, the icon links and the pair: one set of elements, four screens
+// (Standards review, 2026-09-08).
+import { iconLinks, seal, stamps } from "../lib/identity.js";
 // The four country pages, generated beside the route pages they list: the home
 // page linked no route page at all until now (product critique B2).
 import { countryLinks } from "../lib/country-page.js";
@@ -33,9 +36,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <meta name="description" content="Which European work-permit routes fit? A check against dated, source-quoted official rules. Your answers never leave this device." />
   <title>{PRODUCT_NAME} — which work-permit routes fit?</title>
   <link rel="canonical" href={absolute("/")} />
-  <link rel="icon" href={url("/favicon.ico")} sizes="16x16 32x32 64x64" />
-  <link rel="icon" href={url("/favicon.svg")} type="image/svg+xml" />
-  <link rel="apple-touch-icon" href={url("/favicon-64.png")} />
+  <Fragment set:html={iconLinks()} />
   <meta property="og:site_name" content={PRODUCT_NAME} />
   <meta property="og:title" content={`${PRODUCT_NAME} — ${TAGLINE.toLowerCase().replace(/\.$/, "")}`} />
   <meta property="og:description" content={PROMISE} />
@@ -53,7 +54,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <div class="wrap">
     <header class="masthead-with-stamps">
       <div>
-        <a class="wordmark" href={url("/")}><span class="seal" aria-hidden="true">{SEAL_LETTERS}</span>{PRODUCT_NAME}</a>
+        <a class="wordmark" href={url("/")}><Fragment set:html={seal()} />{PRODUCT_NAME}</a>
         <div class="brand">{TAGLINE}</div>
         <h1 id="headline" set:html={intro.headline}></h1>
         <p class="sub" id="subline">{intro.subline}</p>
@@ -62,10 +63,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           fact the route page states — when the rules were last read — and on
           the results it becomes the record's own date (human, 2026-09-08).
           The box never moves: only the words and the date inside it change. */}
-      <div class="stamps" aria-hidden="true" id="stamp">
-        <span class="mark" title={PRODUCT_NAME}>{SEAL_LETTERS}</span>
-        <div class="stamp"><time id="stamp-time" datetime={meta.newest_retrieved_at}><span id="stamp-label">Rules read</span><br /><span id="stamp-date">{meta.newest_retrieved_at}</span></time></div>
-      </div>
+      <Fragment set:html={stamps("Rules read", meta.newest_retrieved_at ?? "", { live: true })} />
     </header>
 
     <div id="app" class="cols" data-state="questions">
@@ -138,7 +136,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     // The reason column's markup, beside the page rather than in it, so what
     // it renders can be read by a test (review S4).
-    import { esc, failDetailHtml, whyHtml } from "../lib/reason.js";
+    import { esc, escAttr, failDetailHtml, whyHtml } from "../lib/reason.js";
     // One date format, everywhere a date prints (decision 12).
     import { isoDay } from "../lib/copy.js";
     import { caveatHtml, precondHtml, provenanceHtml, railHtml, readingHtml, measuredCriterionOf } from "../lib/card.js";
@@ -292,7 +290,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         const opt = optionsOf(f).find((o) => o.value === answers[f]) ??
           deriveBands(ds, f).find((b) => b.id === answers[f]);
         return opt
-          ? `<div class="done" data-field="${esc(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(ds, f))}</dt><dd>${esc(opt.label)} <span class="pen" aria-hidden="true">✎</span></dd></div>`
+          ? `<div class="done" data-field="${escAttr(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(ds, f))}</dt><dd>${esc(opt.label)} <span class="pen" aria-hidden="true">✎</span></dd></div>`
           : `<div><dt>${esc(shortLabelOf(ds, f))}</dt><dd class="pending">—</dd></div>`;
       }).join("");
       declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
@@ -388,8 +386,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             // same one the card and the route page show.
             const learn = fieldOf(q.field)?.learn;
             return learn
-              ? `<p class="qlearn">Not sure? <a href="${esc(learn.url)}" target="_blank" rel="noopener">${
-                esc(learn.label)}</a></p>`
+              ? `<p class="qlearn">Not sure? <a href="${escAttr(learn.url)}" target="_blank" rel="noopener">${
+                esc(glossSection(learn.label, glossary))}</a></p>`
               : "";
           })()}
           ${longList ? `
@@ -398,9 +396,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
               <input type="text" id="cfilter" autocomplete="off" spellcheck="false"
                 role="combobox" aria-expanded="false" aria-autocomplete="list"
                 aria-label="Search the list" aria-controls="clist" placeholder="Start typing…"
-                value="${esc(declared?.label ?? "")}">
+                value="${escAttr(declared?.label ?? "")}">
             </div>
-            <div class="clist" id="clist" role="listbox" aria-label="${esc(q.label)}"></div>
+            <div class="clist" id="clist" role="listbox" aria-label="${escAttr(q.label)}"></div>
             <p class="visually-hidden" id="cstatus" role="status" aria-live="polite"></p>
             <p class="recorded" id="crecorded"${declared ? "" : " hidden"}>Your answer on file: <b>${esc(declared?.label ?? "")}</b></p>
             ${classed ? `<p class="hint">Every non-EU passport is checked against the same rules. A few countries
@@ -414,7 +412,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
               // it means, it says it here — under the answer, not in a hint at
               // the foot of the question nobody reads before choosing.
               const means = optionMeans(o, ds, answers);
-              return `<button class="opt${chosen ? " sel" : ""}" data-value="${esc(o.value)}"${
+              return `<button class="opt${chosen ? " sel" : ""}" data-value="${escAttr(o.value)}"${
                 chosen ? ` aria-pressed="true"` : ""}><span class="opt-label">${esc(o.label)}${
                 chosen ? `<span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
                 means ? `<small class="opt-means">${esc(means)}</small>` : ""}</button>`;
@@ -461,7 +459,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           list.innerHTML = shown.map((o, i) => {
             const chosen = answers[q.field] === o.value;
             return `<button class="copt${i === box.active ? " on" : ""}${chosen ? " sel" : ""}" role="option" id="${rowId(i)}"
-              aria-selected="${i === box.active}" data-value="${esc(o.value)}"><span>${esc(o.label)}${
+              aria-selected="${i === box.active}" data-value="${escAttr(o.value)}"><span>${esc(o.label)}${
               chosen ? ` <span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
               classed ? `<span class="cls">${esc(classHint(q.field, o))}</span>` : ""}</button>`;
           }).join("") +
@@ -581,8 +579,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         .map((f) => fieldOf(f)?.learn)
         .filter((l): l is { label: string; url: string } => !!l);
       if (!links.length) return "";
+      // The same first use, on the same screen's memory: this help carries
+      // "§ 18g AufenthG", and a screen explains a symbol once (Spec review,
+      // 2026-09-08).
       return `<div class="learn">You can find out yourself: ${links
-        .map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`)
+        .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${
+          esc(glossSection(l.label, glossary))}</a>`)
         .join(" · ")}.</div>`;
     }
 
@@ -642,7 +644,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           })() : ""}
           ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Short by ${r.gap_points} point${r.gap_points === 1 ? "" : "s"}.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
           ${learnBoxFor(r)}
-          <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
+          <div class="foot">${provenanceFor(r)}<a class="next" href="${escAttr(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
         </article>`;
     }
 
@@ -662,7 +664,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           ${readingFor(r)}
             ${failDetail(r)}
             ${learnBoxFor(r)}
-            <div class="foot">${provenanceFor(r)}<a class="next" href="${esc(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
+            <div class="foot">${provenanceFor(r)}<a class="next" href="${escAttr(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
           </div>
         </details>`;
     }
@@ -773,10 +775,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <p class="why">${esc(n.body)}</p>
           <div class="foot">
             <div class="srcs"><div class="src"${
-              quoteForCard(n.source.quote).trimmed ? ` title="${esc(n.source.quote)}"` : ""
+              quoteForCard(n.source.quote).trimmed ? ` title="${escAttr(n.source.quote)}"` : ""
             }><i>“${esc(quoteForCard(n.source.quote).shown)}”</i> · ${esc(host)}${
               n.source.legal_basis ? ` · ${esc(n.source.legal_basis)}` : ""} · <b>read ${esc(n.source.retrieved_at)}</b></div></div>
-            <a class="next" href="${esc(n.source.source_url)}" target="_blank" rel="noopener">Official page</a>
+            <a class="next" href="${escAttr(n.source.source_url)}" target="_blank" rel="noopener">Official page</a>
           </div>
         </article>`;
     }

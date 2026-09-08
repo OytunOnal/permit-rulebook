@@ -46,33 +46,73 @@ const ACTS: Readonly<Record<string, string>> = {
 };
 
 /**
- * Where the gloss goes: a bracket inside a bracket is not how anyone reads, and
- * a route's name already parenthesises its citation ("Skilled worker — academic
- * (§ 18b)"). Inside one, the words follow a comma instead.
+ * The citation a reader would copy, and where the gloss may go without breaking
+ * it.
+ *
+ * A route's name already parenthesises its citation ("Skilled worker — academic
+ * (§ 18b)"), and some name two at once ("Experienced worker (§ 19c / § 6
+ * BeschV)"). Splitting that run — "(§ 19c, section 19c / § 6 BeschV)" — breaks
+ * the string a person would paste into a search box, which is the one thing a
+ * citation is for (Spec review, 2026-09-08). So inside a bracket the words go
+ * after the whole run, and outside one they bring their own bracket.
  */
-function joined(prefix: string, citation: string, words: string): string {
-  const inside = prefix.split("(").length > prefix.split(")").length;
-  return inside ? `${citation}, ${words}` : `${citation} (${words})`;
+function bracketRun(text: string, at: number): { open: number; close: number } | null {
+  const open = text.lastIndexOf("(", at);
+  if (open < 0) return null;
+  const closed = text.slice(open, at).includes(")");
+  if (closed) return null;
+  const close = text.indexOf(")", at);
+  return { open, close: close < 0 ? text.length : close };
+}
+
+/** "section 19c" — or, for a run that cites several, "sections 19c and 6". */
+function sectionWords(numbers: string[], act?: string): string {
+  const named = act ? ACTS[act.trim()] : undefined;
+  if (numbers.length === 1) return `section ${numbers[0]}${named ? ` of ${named}` : ""}`;
+  const last = numbers[numbers.length - 1]!;
+  return `sections ${numbers.slice(0, -1).join(", ")} and ${last}`;
 }
 
 /**
  * The section symbol, said in words the first time a page uses it. Safe on a
  * name: it expands nothing but the symbol, so a route keeps the name it is
- * known by.
+ * known by — and it never lands inside a citation, only after it.
  */
 export function glossSection(text: string, seen: Glossary): string {
-  if (seen.has(SECTION_KEY) || !SECTION.test(text)) return text;
+  if (seen.has(SECTION_KEY)) return text;
+  const first = SECTION.exec(text);
+  if (!first) return text;
   seen.add(SECTION_KEY);
-  return text.replace(SECTION, (whole, num: string, act: string | undefined, offset: number) => {
-    const named = act ? ACTS[act.trim()] : undefined;
-    // The act's own gloss is spent here too, or one breath would explain the
-    // same abbreviation twice.
-    if (act) {
-      const entry = ABBREVIATIONS.find(([token]) => token.test(act));
-      if (entry) seen.add(entry[0].source);
-    }
-    return joined(text.slice(0, offset), whole, `section ${num}${named ? ` of ${named}` : ""}`);
-  });
+
+  const at = first.index;
+  const act = first[2];
+  // The act's own gloss is spent here too, or one breath would explain the same
+  // abbreviation twice.
+  const spendAct = (which: string | undefined) => {
+    if (!which) return;
+    const entry = ABBREVIATIONS.find(([token]) => token.test(which));
+    if (entry) seen.add(entry[0].source);
+  };
+
+  const run = bracketRun(text, at);
+  if (!run) {
+    spendAct(act);
+    return `${text.slice(0, at)}${first[0]} (${sectionWords([first[1]!], act)})${text.slice(at + first[0].length)}`;
+  }
+
+  // Every citation the bracket holds, in the order it holds them: the gloss
+  // follows the run rather than cutting into it.
+  const inside = text.slice(run.open, run.close);
+  const numbers: string[] = [];
+  let onlyAct: string | undefined;
+  for (const m of inside.matchAll(new RegExp(SECTION.source, "g"))) {
+    numbers.push(m[1]!);
+    if (m[2]) onlyAct = numbers.length === 1 ? m[2] : onlyAct;
+  }
+  if (numbers.length === 1) spendAct(onlyAct);
+  const words = sectionWords(numbers, numbers.length === 1 ? onlyAct : undefined);
+  const separator = numbers.length === 1 ? ", " : "; ";
+  return `${text.slice(0, run.close)}${separator}${words}${text.slice(run.close)}`;
 }
 
 /** The section symbol and every abbreviation: our prose, never a name. */
