@@ -2497,3 +2497,14 @@ a wrong verdict. Ruling: union ladder, half-open labels ("€X – under €Y")
 so no amount sits in two bands — B1's substance — and the €6,048 assertion
 restored. Cost: a reader sees rungs that belong to other countries' rules;
 accepted, and the card names each rung's country where it labels one.
+
+**Addendum, 2026-09-08 — the critique-2 round shipped** (site `c97181a`,
+data `de9094e`). Half-open band labels, the union ladder kept; a pre-scoped
+arrival re-scopes a saved record and says so; one upward money step per
+field — tightened by the builder to a step that *meets* a rule, because the
+"nearest rung that changes a verdict" on the pooled ladder was the ladder
+read back one rung at a time; the separator, the headings, the status line,
+the tap floor on the results screen now measured; the translation policy on
+/data. The stored record stays version 1 (nothing an answer means moved);
+`RECORD_VERSION` exists so every writer seeds from one constant. 427 + 270
+tests. Two-axis review runs after the push, in parallel with the deploy.

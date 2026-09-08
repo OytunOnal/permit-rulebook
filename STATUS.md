@@ -35,14 +35,16 @@ site now carries everything since the navigation round:** the shared footer,
 the amended disclaimer, the counter (one view per page load), the meta CSP,
 the watch's last run, and the re-read date 2026-09-08 on the German Blue
 Card page — **the whole loop, source → history line → commit → rebuild →
-live page, has now run once for real.** The isolated critique's second run (RUBRIC 1.3) scored 36/50 and found three
-blockers — money bands whose labels share their edges (opposite verdicts at
-the threshold), the pre-scoped "Check yours" ignoring a saved record, the
-unlock rail enumerating the salary ladder — all with the builder now, plus
-the rubric's adjustment 3; then a review, a deploy, a re-read of the three
-blockers on the live site, and v1 waits only on the checklist below.
+live page, has now run once for real.** **The critique-2 round is pushed and deploying** (site `c97181a`, data
+`de9094e`): half-open band labels (no amount in two bands, the union ladder
+and its fine gaps kept), a pre-scoped arrival that re-scopes a saved record
+and marks the route, one upward unlock step per numeric field, the
+separator before the language note, headings and a status line on the
+results, every results control at the tap floor, the translation policy on
+/data. Two reviewers run on it; when the deploy is green I re-read the three
+blockers on the live site; then v1 waits only on the checklist below.
 
-Numbers: 415 tests in the data repository, 261 in the site; 122 quotes
+Numbers: 427 tests in the data repository, 270 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
 at 390 px; critique 32/45 on RUBRIC 1.2 (v0.7: 27/45).
 
