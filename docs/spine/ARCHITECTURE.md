@@ -55,8 +55,8 @@ click on the tracker link. Answers never leave the device.
 - **Watch** — the daily re-read (`src/watch`, GitHub Actions): strategies
   html, pdf-text (embedded-font text layer, bytes hash beside words hash) and
   link liveness; slices bind each page to its operative text; glyph
-  corrections are declared data; `human_tier: 0`; dry-run until the human
-  says live.
+  corrections are declared data; `human_tier: 0`; runs daily in GitHub
+  Actions and files an issue (`source-change`) per flag.
 - **Flags** — one file per change with the quoted diff; read by a person, who
   edits the dataset or records a false alarm.
 - **Dataset** — `data/dataset.json` (schema 0.5.0): 23 routes, 4 countries;
