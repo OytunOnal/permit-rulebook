@@ -45,7 +45,8 @@ shared header on every page, country pages to the approved mock, `/data` with
 `/status` kept as an alias, no crumbs, the reader's scope words everywhere,
 eleven orientation tests. The phone's Back bug went with it: every render had
 been pushing a history entry; now one entry per question and the on-screen
-Back is the browser's own. Deploying; the two-axis review runs in parallel;
+Back is the browser's own. Deployed (run 34228597071; the header is on every
+live page probed). The two-axis review runs in parallel;
 its findings get one more round if needed. Then v1 waits only on the
 checklist below.
 
