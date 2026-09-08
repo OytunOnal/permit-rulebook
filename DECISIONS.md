@@ -1772,3 +1772,47 @@ server serves this project before using it. The session then walked the
 interview, a route page, the call to action, the social card and the footer
 in a real browser: 0 console errors. 342 + 116 tests; commits `744dbfb`,
 `b5a71a3`.
+
+## 2026-09-08 — The human's first walk of the s6 build: three findings, three rulings 🛑
+
+**1 · The results stamp carries the identity pair (gate — reverses yesterday's
+line).** Yesterday's identity entry said the results page's "Record generated"
+stamp "stays a single stamp on purpose — the reader's document, not ours". The
+human looked and chose otherwise: the pair everywhere the stamp appears. One
+source now — `identity.css`, written in tokens, inlined by the route page and
+linked by the results page — and a test that nothing else draws the pair, so
+the two screens cannot drift. Measured equal on both screens at both widths
+(corner on the top-edge midpoint, −0.7 / 0.0 px).
+
+**2 · "Job offer" versus "transfer" (finding — a reader's question the copy
+could not answer).** On a Netherlands transfer profile the leverage box said
+"With a job offer → highly skilled migrant would be met", and the human asked
+whether the branch that is transferring them does not already count as a job
+offer. The IND's own sentence answers it: an employment contract with a company
+outside the EU plus a transfer as manager, specialist or trainee makes you an
+intra corporate transferee, and other requirements apply. So "job offer" on our
+side means a contract with the Dutch employer itself. Rulings: the leverage
+row says so in prose beside the step, from a dataset string with a `{place}`
+token (no country name in code; the article "the" moved into `countries.json`,
+retiring the DEBT comment); each situation option that needs it carries a
+`means` line under the answer; and the IND sentence becomes a sourced
+precondition on both highly-skilled routes. **Cheap default, surfaced:** that
+sentence sits above the watch slice's `from: "Requirements"` anchor, so the
+slice moves up to the page's lede — one paragraph more under daily watch, with
+the rotating menu and the "Last update" line still outside it. The builder
+stopped rather than declare the quote unsourced or invent a date; right.
+
+**3 · The salary rail on the results card (finding — "the lines mean nothing
+and the band misses them").** Six ticks, one labelled; the other five were
+other routes' thresholds with only a hover title. The band started 6 px off
+its tick — not rounding: `.tick` was already the chosen-answer checkmark's
+class on that screen, with a margin, the same class collision this project
+recorded for `.country`. Rulings: the results card draws only what it
+labels — this route's deciding amounts and the person's band; one scale, one
+rounding, the same string for a band edge and its tick; labels as a list under
+the bar with swatches, never absolutely positioned. Neighbouring thresholds
+stay on the route page, where the label list explains them. 347 + 135 tests.
+
+**Kept for the record:** the human found all three in one sitting on a
+product the session had walked and called mock-green. The walk was real; the
+reader's chair still sees what the builder's does not.
