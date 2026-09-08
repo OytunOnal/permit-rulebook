@@ -1,104 +1,104 @@
-# STATUS — Visa Navigator *(working name; the project is named **Permit Rulebook** from the v1 tag)*
+# STATUS — Permit Rulebook
 
 ## Where are we
 
-Genesis, slice loop; scale **Product**; **v0.10 shipped** (s5f real-green
-2026-09-07, walked by the session at the human's delegation). The release
-gate is closed; the identity is closed. **s6 (public launch) is mock-green** (re-stamped 2026-09-07
-after the surface walk); real-green is the human's, below.
-Spine skills reloaded 2026-09-07 at steward-29.
+Genesis, slice loop; scale **Product**; **v0.10 shipped**, **s6 "public launch"
+mock-green and live at https://permitrulebook.com** (HTTPS enforced,
+2026-09-08). The v1-gate isolated critique has run: 32/45, four blockers, all
+in the fix round now. v1 is stamped when the blockers are cleared on the live
+site and the human's real-green items below are done. Roadmap: v1.1 holds the
+14 excluded active routes as "quoted, not asked" pages; 9 further candidates
+(5 unversioned). Spine skills at steward-34.
 
 ```mermaid
 flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓] --> D[Design ✓] --> E[Plan ✓]
-    E --> F["Slice loop<br/>v0.1–v0.9 ✓"]
-    F --> S5F["s5f sweep ✓ v0.10"]
-    S5F --> G["s6 ◀ here<br/>mock-green · real-green needs you"]
-    G --> H[v1: public]
+    E --> F["Slice loop<br/>v0.1–v0.10 ✓"]
+    F --> G["s6 ◀ here<br/>live · critique blockers being fixed"]
+    G --> H[v1: announced]
 ```
 
 ## What is happening now
 
-**s6 is mock-green — the second time, after a walk, not a count.** The
-first stamp was withdrawn within the hour: the interview rendered nothing in
-a browser because a review-round module read `node:fs` at import and reached
-the client bundle. Fixed, with a real-browser smoke test on both the dev and
-the built surface, gated in CI, and an import-graph guard in the data package
-that names the importer of any Node built-in. Then walked here: first
-question, a persisted record, results with the scope line, a route page at
-desktop and 390 px, the call to action pre-scoping the interview, the social
-card, the footer links. Console errors: 0. Everything on disk is
-built and committed in both
-repositories (see git log, 2026-09-08): 23 route pages generated from the
-dataset, the name sweep, the identity, the social card, the Pages workflow,
-the contributor files, six invariants as tests. The review round found what
-the build's green could not — a name gate that inspected none of the new
-files, an escaper that let a quotation mark out of an attribute, a dead half
-of an invariant — and the scope value stopped being one constant (22 / 1 / 0).
-Nothing is on GitHub yet: the repositories still carry the old names, Pages
-is off, no domain is bound. The daily watch still dry-runs.
+**The site is public and live** at the domain, over HTTPS, with the Pages URL
+redirecting there; both repositories are public under their final names with
+About boxes filled; the three triage labels exist; the daily watch still
+dry-runs. Today's walk by the human and the isolated critique together
+produced one fix round, all of it with the builder now, in this order:
 
-Numbers: 351 tests in the data repository, 135 in the site; 122 quotes
-verified, `human_tier: 0`; 25 pages, 0 tap targets under 44 px at 390 px.
+1. the leverage row composing a wrong place phrase ("in your offer, transfer
+   or agreement in Germany"), seen twice on the live site;
+2. "§" glossed on first use (a reader asked what it means);
+3. both READMEs' first screen in the launch shape — an image first, five
+   answers, one command tried from a fresh clone, a link to the live site;
+4. `NOTES.md` moved under `docs/spine/` as pre-history;
+5. the four buzer.de watch entries sliced to the statute body (a false alarm
+   on page furniture this morning);
+6. the critique's four blockers: the "within reach" sentence blaming salary
+   whichever rule was missed · sitemap, robots, country index pages and a
+   door from the home page into the route pages · the data README linking the
+   product · a 404 page in our own design — plus a daily scheduled rebuild so
+   the social card's date cannot go stale;
+7. the critique's adjustment 3, approved by the human: the threshold above
+   the fold on route pages, situation-aware question wording, the Anabin link
+   on the recognition question, a notice when two declarations contradict;
+8. the watch bot committing as `github-actions[bot]` (its noreply address was
+   mapping to a stranger's account on GitHub);
+9. the favicon as option C — transparent outside, cream paper inside the
+   tilted frame.
+
+When the builder returns: verify, merge the cron's commit into the data
+repository (a buzer flag, already read: false alarm), push both, deploy,
+re-read the four blockers on the live site, then stamp.
+
+Numbers: 356 tests in the data repository, 145 in the site; 122 quotes
+verified, `human_tier: 0`; 25 pages, 0 tap targets under 44 px at 390 px;
+critique 32/45 on RUBRIC 1.2 (v0.7: 27/45).
 
 ## What is expected from you
 
-Real-green, in this order. Each is yours because it is a GitHub account
-action, a real device, or a judgement on a live source.
+Each of these is yours because it is a real device, a preview renderer, or a
+judgement on a live source.
 
-- [x] **1 · Renamed** (session, 2026-09-08): `permit-rulebook`, `permit-rulebook-data`;
-      remotes repointed; both pushed.
-- [x] **2 · Public** (human, 2026-09-08): both repositories public; Pages enabled
-      (GitHub Actions source) at https://oytunonal.github.io/permit-rulebook/;
-      `SITE_URL` set to it. Deploy re-run in progress; the site must still learn
-      to live under the `/permit-rulebook/` subpath (builder) unless a domain
-      is bound first.
-- [x] **2b · The first sentinel flag, read** (session, at the human's word,
-      2026-09-08): "Ausgabe 05/2026" is a regional issue about Kassel — no
-      threshold, amount, law or date of effect; no value moved; resolved on the
-      flag file. The FR flag of 09-05 was a false alarm (opening-hours widget),
-      the slice is bounded to the fiche's accordions now.
-- [x] **3 · Labels** (session, at the human's word, 2026-09-08): `bug`,
-      `design-flaw`, `new-need` on `permit-rulebook-data`, in the token colours;
-      the three templates carry them. Still yours to see once: one test issue
-      from a route page's "Report a wrong value" lands labelled.
-- [x] **4 · Live over HTTPS** (2026-09-08): https://permitrulebook.com —
-      certificate issued (apex + www, to 2026-12-07), HTTPS enforced, the Pages
-      URL redirects there. `SITE_URL` is the domain.
-- [ ] **Critique, adjustment 3 — your pick:** the v1-gate critique (32/45; four
-      blockers, all being fixed) also proposes a third, non-blocking adjustment:
-      lift the threshold, its read date and "Check yours" above the scope box on
-      route pages (the number sits at y≈1400 of 2500 on desktop); word the
-      salary/funds questions from the declared situation; put the Anabin link
-      on the recognition question itself; show a one-line notice when two
-      declarations cannot both be true. Say "3 too" or "3 later" (it goes to
-      the tracker as design-flaw). *Why yours:* it costs a build round before
-      the tag.
-- [ ] **Critique, only you can check (five):** (1) the favicon on a Mac and an
-      Android phone — pass: "PR" centred in the tilted square with margin; (2)
-      after the daily rebuild lands, paste a route link into Slack/WhatsApp
-      tomorrow — pass: the card shows tomorrow's date; (3) paste
+- [ ] **Phone walk on the live site, real handset:** https://permitrulebook.com
+      — the interview end to end, then one route page from a results card's
+      "The rules of this route". *Pass:* nothing overflows sideways, every tap
+      target is comfortable, the rail's labels read as a list, the scope
+      statement reads without zooming, the address bar shows the lock. *If it
+      fails:* paste the screen's heading here. (Two rows you already found —
+      the place phrase and "§" — are in the fix round.)
+- [ ] **One test issue from the product:** on any route page click "Report a
+      wrong value", file a one-line test issue, then close it. *Pass:* it
+      lands on `permit-rulebook-data` with the `bug` label already applied.
+- [ ] **Favicon on a Mac and on an Android phone** (after the next deploy,
+      which ships option C): open https://permitrulebook.com and look at the
+      tab icon. *Pass:* "PR" centred in the tilted square with margin both
+      sides. *Fail:* letters touching or overflowing the frame — say so and
+      the letterforms get outlined to paths.
+- [ ] **Link preview:** paste
       https://permitrulebook.com/germany/eu-blue-card-general into Slack,
-      WhatsApp and X — pass: the per-route title and the €50,700 description
-      beside the card; (4) ~~scope~~ decided: v1 ships 23, the 14 excluded active
-      routes become v1.1 "quoted, not asked" pages (DECISIONS); (5) walk the French and Spanish question paths once
-      on the phone (the critique walked their route pages, not their
-      questions).
-- [ ] **5 · Phone walk on the live site, real handset** (https://permitrulebook.com): the interview end to
-      end and one route page. *Pass:* nothing overflows, every tap target is
-      comfortable, the rail's labels read as a list, the scope statement reads
-      without zooming.
-- [ ] **6 · The watch goes live:** say "watch live" and I switch the daily
-      workflow from dry-run to filing issues. *Pass:* the first real flag
-      becomes an issue; you read the flagged source against the quote; the
-      outcome goes in DECISIONS.
-- [ ] **7 · Sponsors (optional):** enable GitHub Sponsors; then I add the
-      small link beside the licence in both READMEs.
-- [ ] **8 · `NOTES.md`:** Turkish design notes from before Genesis, titled
-      with the old name. Keep as pre-history (excluded from the name gate),
-      move under `docs/spine`, or delete — one word.
-- [ ] **9 · The go:** after 1–6 pass and the isolated critique (which I run on
-      the preview after step 2) has no open blocker, say "go" and the
-      announcement text — the README's first screen, told once — is yours to
-      post.
-Nothing else is open.
+      WhatsApp and X. *Pass:* the title "EU Blue Card — general · Germany ·
+      Permit Rulebook" and a description naming €50,700 appear beside the card
+      image. *Fail:* a generic site name or a cropped card.
+- [ ] **Tomorrow's card date:** after the daily rebuild lands, paste any route
+      link into Slack again. *Pass:* the card reads tomorrow's date under
+      "Rules read". *Fail:* yesterday's — the rebuild did not run; tell me.
+- [ ] **French and Spanish question paths, once, on the phone:** choose France,
+      then Spain, and answer through to results. *Pass:* the question counter
+      does not swing wildly, salary bands read sensibly, no wording assumes a
+      job offer when you declared a transfer.
+- [ ] **"watch live":** say it once the fix round has deployed; I switch the
+      daily workflow from dry-run to filing issues. *Pass:* the next real flag
+      appears as an issue on `permit-rulebook-data` with the `bug` label.
+- [ ] **"go":** after the items above pass and the blockers are verified
+      cleared on the live site, say it; v1 is stamped and the README's first
+      screen is the announcement, told once.
+
+The first 48 hours after "go" (decision 11), written now:
+*Watch:* the tracker on `permit-rulebook-data`, the watch's flag issues, the
+Show HN thread — every two hours the first day, morning and evening the second.
+*Where:* GitHub notifications for both repositories, the watch workflow's run
+page, the thread itself; nothing else is instrumented, no analytics at v1.
+*Pull the post if:* a reported wrong verdict is confirmed against the source; a
+watch flag shows a value on a live page has gone stale; a legal objection to a
+quote arrives. Any one of the three: the post comes down first, the fix second.
