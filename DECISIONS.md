@@ -2437,3 +2437,11 @@ re-read that did not move. Quote fidelity counts the history quote too (122
 → verified with the history entry). Next: the live page shows the new date
 after the deploy — that closes the path the devils-advocate said had never
 run; the dispatch half still waits on the human's token.
+
+**Addendum, 2026-09-08 — green, live, and the loop closed.** Deploy
+34251263552 put the footer, the amended disclaimer, the counter, the CSP and
+the watch's last run on the live site, and the German Blue Card page shows
+"read 2026-09-08": the value-change path the devils-advocate said had never
+run — source re-read, history line, commit, rebuild, live page — has run once
+for real. What still waits on the human's token is only the same-hour
+rebuild after a watch commit; the daily schedule covers the rest.

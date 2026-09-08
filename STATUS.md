@@ -30,16 +30,13 @@ unclipped, the amended disclaimer everywhere, "Check yours" in the header.
 three-axis review applied — the 390 px overflow was the results stamp,
 bounded now on any font; the counter reports one view per page load and
 `/data` says what the wire carries; reruns build against `data.lock` and
-never move it; the footer packs the mock's columns on every page. The last 390 px overflow was the footer's data line (one unbreakable run;
-it breaks at the separators now, tested with widened glyphs on five pages);
-site `0ff33a6` is deploying. The first real re-read went through the loop
-(data `9e3eed2`: the German Blue Card threshold read again today, history
-note, quote verified); the live page should show 2026-09-08 after this
-deploy. When the deploy is
-green: the footer and the amended disclaimer are live, the phone
-walk can happen, one real value re-read goes through the whole loop, the
-isolated critique re-runs on RUBRIC 1.3, and v1 waits only on the checklist
-below.
+never move it; the footer packs the mock's columns on every page. **Deploy 34251263552 is green (site `0ff33a6`, data `9e3eed2`) and the live
+site now carries everything since the navigation round:** the shared footer,
+the amended disclaimer, the counter (one view per page load), the meta CSP,
+the watch's last run, and the re-read date 2026-09-08 on the German Blue
+Card page — **the whole loop, source → history line → commit → rebuild →
+live page, has now run once for real.** The isolated critique re-runs on
+RUBRIC 1.3 against this site; then v1 waits only on the checklist below.
 
 Numbers: 415 tests in the data repository, 261 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
