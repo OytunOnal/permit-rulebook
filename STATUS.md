@@ -33,7 +33,10 @@ body read off the wire, actions pinned by SHA with least privilege,
 `data.lock`, the `/data` liveness copy corrected with the watch's last run,
 trailing slashes consistent, a meta CSP with the inline script hashed, a
 failed watch run now files an issue. Three reviewers run on it (Standards,
-Spec, Security). When the deploy is green: the footer and the amended
+Spec, Security). **CI is red on one test** — at 390 px on the runner's
+fallback fonts the interview page overflows by 17 px (the same font family
+as the header, one more element); the builder is on it. When the deploy is
+green: the footer and the amended
 disclaimer are live, the phone walk can happen, one real value re-read goes
 through the whole loop, the isolated critique re-runs on RUBRIC 1.3, and v1
 waits only on the checklist below.
