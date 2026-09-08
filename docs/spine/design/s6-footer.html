@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The site footer · Permit Rulebook</title>
 <style>
-/* One footer on every page, from the same source as the header (identity.ts).
+/* Revision 2 (human): the "Do" column is gone — "Check yours" is the one action and
+   sits under the countries; print and start over belong to the results screen.
+   One footer on every page, from the same source as the header (identity.ts).
    Four short columns at desktop, one column at 390 px. Rows, top to bottom:
    the disclaimer sentence (decision 9, one sentence everywhere) · the columns ·
    the data line (dataset version · schema · newest value read) with the licence.
@@ -33,12 +35,14 @@ h2.mock small { font-weight: 400; color: #bbb; }
 /* ---- the footer ---- */
 .site-foot { border-top: var(--rule-heavy); padding-top: var(--space-4); color: var(--color-muted); }
 .site-foot .disclaimer { margin: 0 0 var(--space-4); max-width: 44rem; }
-.site-foot .cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); border-top: var(--rule-soft); padding-top: var(--space-4); }
+.site-foot .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); border-top: var(--rule-soft); padding-top: var(--space-4); }
 .site-foot .col h3 { margin: 0 0 .2rem; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); }
 .site-foot .col ul { list-style: none; margin: 0; padding: 0; }
 .site-foot .col a { color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap-min); border-bottom: 1px solid var(--color-line); }
 .site-foot .col a:hover { border-bottom-color: var(--color-stamp); color: var(--color-stamp); }
 .site-foot .col a[aria-current] { color: var(--color-stamp); border-bottom-color: var(--color-stamp); }
+.site-foot .col .act { margin-top: .5rem; padding-top: .5rem; border-top: var(--rule-soft); }
+.site-foot .col .act a { color: var(--color-stamp); }
 .site-foot .col .out::after { content: " ↗"; color: var(--color-muted); }
 .site-foot .line { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; border-top: var(--rule-soft); margin-top: var(--space-4); padding-top: var(--space-3); font: var(--text-source); }
 .site-foot .line b { color: var(--color-met); font-weight: 600; }
@@ -62,9 +66,7 @@ h2.mock small { font-weight: 400; color: #bbb; }
     <p class="disclaimer">Permit Rulebook makes no immigration decision and authorities won't consider these results — it compares published values with what you declare, nothing more.</p>
     <div class="cols">
       <div class="col"><h3>Routes</h3><ul>
-        <li><a href="#" aria-current="true">Germany</a></li><li><a href="#">France</a></li><li><a href="#">Spain</a></li><li><a href="#">Netherlands</a></li></ul></div>
-      <div class="col"><h3>Do</h3><ul>
-        <li><a href="#">Check yours</a></li><li><a href="#">Print this record</a></li><li><a href="#">Start over</a></li></ul></div>
+        <li><a href="#" aria-current="true">Germany</a></li><li><a href="#">France</a></li><li><a href="#">Spain</a></li><li><a href="#">Netherlands</a></li><li class="act"><a href="#">Check yours</a></li></ul></div>
       <div class="col"><h3>The data</h3><ul>
         <li><a href="#">What it holds, and its gates</a></li><li><a href="#">This route as JSON</a></li><li><a href="#" class="out">The repository</a></li><li><a href="#">Open data · CC BY 4.0</a></li></ul></div>
       <div class="col"><h3>Feedback</h3><ul>
