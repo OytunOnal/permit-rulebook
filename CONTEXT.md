@@ -129,7 +129,10 @@ _Avoid_: three years, mid experience, the Spanish option
 A route's declared fact about how much of it the interview decides, in one of
 three values, shown to the reader as what they get — "quoted and dated ·
 scored against your answers" · "quoted and dated · scored, N conditions
-stated but not asked" · "quoted and dated · not scored" (the first wording,
+stated but not asked" · "quoted and dated · not scored" — and, where the
+unasked limbs are Route readings rather than the source's words, "… scored,
+N conditions stated but not asked and M in our own reading" ("our own
+reading" is the reader's name for a Route reading; never "we note") (the first wording,
 "some conditions stated, not asked", read as an apology; amended 2026-09-08)
 — plus the limbs it does not ask, named. Authored
 by a person, never derived by a test; schema-required; rendered on the route
