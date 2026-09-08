@@ -53,12 +53,11 @@ action, a real device, or a judgement on a live source.
       `SITE_URL` set to it. Deploy re-run in progress; the site must still learn
       to live under the `/permit-rulebook/` subpath (builder) unless a domain
       is bound first.
-- [ ] **2b · The first sentinel flag, yours to read** (decision 7):
-      `watch/flags/zav-newsletter-index-2026-09-07.md` — a new "Ausgabe
-      05/2026" appeared on the ZAV newsletter index. Open the source and say
-      whether any German threshold moved. *Pass:* one line — "no value moved"
-      or which one — and it goes into DECISIONS. (The FR flag of 09-05 was a
-      false alarm from an opening-hours widget; being bounded.)
+- [x] **2b · The first sentinel flag, read** (session, at the human's word,
+      2026-09-08): "Ausgabe 05/2026" is a regional issue about Kassel — no
+      threshold, amount, law or date of effect; no value moved; resolved on the
+      flag file. The FR flag of 09-05 was a false alarm (opening-hours widget),
+      the slice is bounded to the fiche's accordions now.
 - [x] **3 · Labels** (session, at the human's word, 2026-09-08): `bug`,
       `design-flaw`, `new-need` on `permit-rulebook-data`, in the token colours;
       the three templates carry them. Still yours to see once: one test issue
