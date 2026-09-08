@@ -1,0 +1,30 @@
+/* Permit Rulebook — the identity pair, in one place
+ *
+ * The PR mark above a stamp, tilted the other way, its bottom-right corner
+ * landing on the middle of the stamp's top edge. The human chose it on
+ * 2026-09-07 for the route page's "Rules read" stamp and the social card, and
+ * on 2026-09-08 for the results page's "Record generated" stamp as well.
+ *
+ * It lives in its own file for the reason `tokens.css` gives for tokens: the
+ * route page inlines this text and the results page links it, so there is one
+ * definition and the two screens cannot drift into two identities. It is not a
+ * token — a token is a value, and this is a component — so it sits beside
+ * tokens.css rather than inside it, and it is written entirely in tokens.
+ *
+ * What belongs here: the pair's own geometry — the box, the two elements
+ * inside it, their sizes at each width. What does not: where the box sits on a
+ * page. The route page centres it in the space beside the heading; the results
+ * page pins it to the right of the masthead. Placement is the page's business,
+ * and each page states its own.
+ */
+
+.stamps { flex: none; position: relative; width: 7.8rem; height: 6.3rem; }
+.stamps .mark { position: absolute; left: .6rem; top: 0; width: 3.4rem; height: 3.4rem; display: flex; align-items: center; justify-content: center; border: 3px solid var(--color-stamp); color: var(--color-stamp); font: 700 1.75rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(calc(-1 * var(--stamp-rotate))); mix-blend-mode: multiply; }
+.stamps .stamp { position: absolute; left: 4rem; top: 3.55rem; white-space: nowrap; font: var(--text-value); color: var(--color-stamp); border: var(--stamp-border); padding: .35rem .6rem; transform: translateX(-50%) rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: .1em; line-height: 1.25; text-align: center; mix-blend-mode: multiply; }
+
+/* Desktop: the pair one size up (human, 2026-09-07); the corner geometry is kept. */
+@media (min-width: 761px) {
+  .stamps { width: 9.8rem; height: 8.7rem; }
+  .stamps .mark { left: .7rem; width: 4.3rem; height: 4.3rem; font-size: 2.2rem; border-width: 3.5px; }
+  .stamps .stamp { left: 5rem; top: 4.5rem; font-size: .95rem; padding: .45rem .75rem; border-width: 3px; }
+}

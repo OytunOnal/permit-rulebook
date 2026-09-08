@@ -1,5 +1,9 @@
 ---
 import "../../tokens.css";
+// The identity pair (the PR mark above the stamp) comes from the one file the
+// route page inlines, so the "Record generated" stamp and the "Rules read"
+// stamp are the same drawing and cannot drift (human, 2026-09-08).
+import "../../identity.css";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { assertValidDataset } from "permit-rulebook-data/validate";
 import { datasetMeta } from "permit-rulebook-data";
@@ -49,7 +53,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       <div class="brand">{TAGLINE}</div>
       <h1 id="headline" set:html={intro.headline}></h1>
       <p class="sub" id="subline">{intro.subline}</p>
-      <div class="stamp" aria-hidden="true" id="stamp" hidden>Record generated<b id="stamp-date"></b></div>
+      <div class="stamps" aria-hidden="true" id="stamp" hidden>
+        <span class="mark" title={PRODUCT_NAME}>{SEAL_LETTERS}</span>
+        <div class="stamp"><time id="stamp-time">Record generated<br /><span id="stamp-date"></span></time></div>
+      </div>
     </header>
 
     <div id="app" class="cols" data-state="questions">
@@ -95,6 +102,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // s6: what the interview asks of a route, in the words the route page
       // shows — the same declared fact, said the same way in both places.
       scopeWords,
+      // What an answer means here, where the label alone leaves two answers
+      // hard to tell apart (human walk, 2026-09-08).
+      optionMeans,
       type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
     } from "permit-rulebook-data";
     import { routePath } from "../lib/slug.js";
@@ -133,7 +143,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // whole differentiator is when a thing was read, and ambiguous to exactly
     // the reader most likely to be reading it (route-page critique F3). Local
     // time, not UTC: the stamp is the day the person in front of it is having.
-    document.getElementById("stamp-date")!.textContent = isoDay(new Date());
+    const stampedToday = isoDay(new Date());
+    document.getElementById("stamp-date")!.textContent = stampedToday;
+    document.getElementById("stamp-time")!.setAttribute("datetime", stampedToday);
 
     const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
     const declCount = document.getElementById("decl-count")!;
@@ -336,9 +348,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           : `<div class="opts">
             ${q.options.map((o) => {
               const chosen = answers[q.field] === o.value;
+              // A reader whose employer was moving them to a branch abroad read
+              // "a job offer there" as their situation and took a route as open
+              // that is not (human walk, 2026-09-08). Where an answer says what
+              // it means, it says it here — under the answer, not in a hint at
+              // the foot of the question nobody reads before choosing.
+              const means = optionMeans(o, ds, answers);
               return `<button class="opt${chosen ? " sel" : ""}" data-value="${esc(o.value)}"${
-                chosen ? ` aria-pressed="true"` : ""}>${esc(o.label)}${
-                chosen ? `<span class="tick" aria-hidden="true">✓</span>` : ""}</button>`;
+                chosen ? ` aria-pressed="true"` : ""}><span class="opt-label">${esc(o.label)}${
+                chosen ? `<span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
+                means ? `<small class="opt-means">${esc(means)}</small>` : ""}</button>`;
             }).join("")}
           </div>`}
           ${(editing ? asked.indexOf(editing) > 0 : asked.length > 0)
@@ -706,6 +725,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       return `
         <article class="unlock">
           <h4>With <b>${esc(unlockTitleOf(ds, u))}</b></h4>
+          ${(() => { const means = optionMeans(u.option, ds, answers);
+            return means ? `<p class="unlock-means">${esc(means)}</p>` : ""; })()}
           <ul>${routes.map((r) =>
             `<li>${esc(r.route.name)} — ${r.status === "met"
               ? `<b>would be met</b>`
@@ -1052,9 +1073,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}
     h1 b{color:var(--color-near)}
     .sub{color:var(--color-muted);max-width:38rem;font-size:.92rem}
-    .stamp{position:absolute;right:0;top:.2rem;transform:rotate(var(--stamp-rotate));border:var(--stamp-border);color:var(--color-stamp);
-      font:600 .68rem var(--font-mono);letter-spacing:.16em;padding:.4rem .7rem;text-transform:uppercase;background:rgba(251,249,242,.6)}
-    .stamp b{display:block;font-size:.85rem}
+    /* Where the pair sits on THIS screen — right of the masthead, as it has
+       always been. Everything the pair is made of comes from identity.css;
+       nothing about it is restated here, or the two screens drift. */
+    header .stamps{position:absolute;right:0;top:.2rem}
 
     /* The question is first in the DOM so a phone opens on it; on a wide
        screen `order` puts the ledger back in the left column (F8). */
@@ -1085,7 +1107,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .qlabel{font:var(--text-route);font-size:1.25rem;margin:.5rem 0 1rem}
     .opts{display:grid;gap:.5rem}
     .opt{font:600 .92rem var(--font-sans);text-align:left;background:var(--color-bg);border:var(--rule-soft);
-      padding:.7rem .9rem;min-height:var(--tap-min);cursor:pointer;color:var(--color-ink)}
+      padding:.7rem .9rem;min-height:var(--tap-min);cursor:pointer;color:var(--color-ink);display:block}
+    /* What the answer means, under the answer. Muted and lighter than the
+       label: it settles a choice, it does not compete with it. */
+    .opt-means{display:block;margin-top:.3rem;font:400 .8rem var(--font-sans);color:var(--color-muted);
+      white-space:normal;line-height:1.45}
+    .opt.sel .opt-means{color:var(--color-ink)}
     .opt:hover{border-color:var(--color-ink);background:var(--color-band-soft)}
     .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.9rem;
       min-height:var(--tap-min);padding:.2rem .1rem}
@@ -1157,6 +1184,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .ghead.unlockh b{color:var(--color-band)}
     .unlock{background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-band);padding:.85rem 1.05rem;margin-bottom:.7rem}
     .unlock h4{font:600 .95rem var(--font-serif);margin-bottom:.35rem}
+    .unlock-means{font-size:.82rem;color:var(--color-muted);margin:-.15rem 0 .4rem;max-width:34rem}
     .unlock h4 b{color:var(--color-band)}
     .unlock ul{list-style:none;display:grid;gap:.3rem;font-size:.86rem;color:#54513f}
     .unlock li::before{content:"→ ";color:var(--color-met);font-weight:700}
@@ -1212,11 +1240,26 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .rail{margin:.95rem 0 .2rem;max-width:34rem}
     .bar{position:relative;height:var(--rail-h);background:var(--rail-track);border-radius:99px}
     .you{position:absolute;top:0;bottom:0;background:var(--rail-band);border-radius:99px}
-    .tick{position:absolute;top:-5px;width:2px;height:17px;background:var(--rail-tick);opacity:.6}
-    .lbls{position:relative;height:3.6rem;margin-top:.4rem;font:500 .68rem var(--font-mono)}
-    .lbl{position:absolute;transform:translateX(-50%);text-align:center;color:var(--color-muted);line-height:1.35}
-    .lbl b{display:block;color:var(--color-ink)}
-    .lbl.you-l,.lbl.you-l b{color:var(--color-band)}
+    /* NB: named .rail-tick — .tick is the chosen-answer checkmark above, and its
+       margin-left was pushing every line on this bar off the amount it marks. */
+    .rail-tick{position:absolute;top:-5px;width:2px;height:17px;background:var(--rail-tick)}
+    /* One line per mark on the bar, in reading order, each with the swatch of
+       the thing it names. The labels used to be positioned over the bar and
+       wrapped into a three-line stack at the right edge; a list cannot collide
+       at any width, which is the same conclusion the route page's rail reached
+       (critique B1, human walk 2026-09-08). */
+    .rail-rows{list-style:none;margin:.55rem 0 0;padding:0;display:grid;gap:.15rem;
+      font:500 .72rem var(--font-mono)}
+    .rail-rows li{display:flex;align-items:baseline;gap:.5rem;padding:.12rem 0;
+      border-bottom:var(--rule-dotted)}
+    .rail-rows li:last-child{border-bottom:none}
+    .rail-rows b{color:var(--color-ink);font-weight:600;white-space:nowrap}
+    .rail-rows li > span:last-child{color:var(--color-muted);text-align:right;margin-left:auto;
+      white-space:normal;line-height:1.35}
+    .sw{flex:none;width:.62rem;height:.62rem;border-radius:2px;align-self:center}
+    .sw-asks{background:var(--rail-tick)}
+    .sw-you{background:var(--rail-band)}
+    .rail-rows li:last-child b{color:var(--color-band)}
     .gapnote{font-size:.85rem;background:var(--color-near-soft);border-left:3px solid var(--color-near);color:#63430f;
       padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
     .ptsline{font:500 .8rem var(--font-mono);color:var(--color-ink);margin:.5rem 0 .1rem}
@@ -1258,8 +1301,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
       .tally{text-align:left}
       h1{font-size:1.6rem}
-      .stamp{position:static;display:inline-block;margin-top:.8rem}
-      .stamp[hidden]{display:none}
+      header .stamps{position:static;margin:.9rem 0 0 auto}
+      .stamps[hidden]{display:none}
     }
     /* Wide: the ledger is a fixed panel, so its disclosure control is not a
        control at all — the script keeps it open. */
@@ -1278,7 +1321,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       body{background:#fff;color:#000;padding:0;font-size:11pt}
       .decl > summary,.back,.edit,.next,#restart,.strip,.cnone,.cmore,.csearch,.clist{display:none!important}
       .wrap{max-width:none}
-      .stamp{position:static;display:inline-block;transform:none;border:1px solid #000;color:#000;background:none}
+      header .stamps{position:static;margin:.6rem 0 0 auto;height:auto}
+      .stamps .mark{display:none}
+      .stamps .stamp{position:static;transform:none;border:1px solid #000;color:#000;background:none;white-space:normal}
       .cols{display:block}
       .decl{border:1px solid #000;margin-bottom:1rem;position:static;page-break-inside:avoid}
       details{display:block}

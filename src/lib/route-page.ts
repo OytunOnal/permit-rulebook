@@ -11,6 +11,10 @@ import {
 // 2026-09-07). Inlined into the page rather than linked because a route page is
 // one file a stranger and a crawler both fetch cold.
 import TOKENS from "../../tokens.css?raw";
+// The identity pair, from the one file both screens read. The results page
+// links the same stylesheet, so the mark and the stamp cannot drift apart
+// into two identities (human, 2026-09-08).
+import IDENTITY from "../../identity.css?raw";
 import { esc, escAttr } from "./reason.js";
 import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH, TRACKER_URL,
@@ -699,14 +703,7 @@ a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0; ma
 h1 { font: var(--text-hero); margin: var(--space-2) 0 var(--space-2); }
 h1 em { font-style: normal; color: var(--color-near); display: block; font-size: .82em; margin-top: .15em; }
 .lede { margin: 0; color: var(--color-muted); }
-.stamps { flex: none; position: relative; width: 7.8rem; height: 6.3rem; }
-.stamps .mark { position: absolute; left: .6rem; top: 0; width: 3.4rem; height: 3.4rem; display: flex; align-items: center; justify-content: center; border: 3px solid var(--color-stamp); color: var(--color-stamp); font: 700 1.75rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(calc(-1 * var(--stamp-rotate))); mix-blend-mode: multiply; }
-.stamp { position: absolute; left: 4rem; top: 3.55rem; white-space: nowrap; font: var(--text-value); color: var(--color-stamp); border: var(--stamp-border); padding: .35rem .6rem; transform: translateX(-50%) rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: .1em; line-height: 1.25; text-align: center; mix-blend-mode: multiply; }
-@media (min-width: 761px) {
-  .stamps { width: 9.8rem; height: 8.7rem; }
-  .stamps .mark { left: .7rem; width: 4.3rem; height: 4.3rem; font-size: 2.2rem; border-width: 3.5px; }
-  .stamp { left: 5rem; top: 4.5rem; font-size: .95rem; padding: .45rem .75rem; border-width: 3px; }
-}
+${IDENTITY}
 .crumbs .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border: 2px solid var(--color-stamp); color: var(--color-stamp); font: 700 .72rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); margin-right: .35rem; }
 
 /* ---- what this page checks: plain words, ink on card, no verdict colour ---- */

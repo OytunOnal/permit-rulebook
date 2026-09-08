@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readdirSync, rmSync, statSync } from "node:fs";
 import { createServer } from "node:http";
+import { tmpdir } from "node:os";
 import { extname, join } from "node:path";
 import { chromePath } from "./chrome.mjs";
 
@@ -30,6 +31,23 @@ import { chromePath } from "./chrome.mjs";
  * process closes the lot on its way out however it leaves.
  */
 const openThings = new Set();
+
+/** Distinguishes concurrent browsers within one process. */
+let nextProfile = 0;
+const PROFILE_PREFIX = "permit-rulebook-browser-";
+
+/** Profiles left by runs that are over. A dead pid cannot still be browsing. */
+function sweepStaleProfiles() {
+  let entries = [];
+  try { entries = readdirSync(tmpdir()); } catch { return; }
+  for (const name of entries) {
+    if (!name.startsWith(PROFILE_PREFIX)) continue;
+    const pid = Number(name.slice(PROFILE_PREFIX.length).split("-")[0]);
+    if (!Number.isInteger(pid) || pid === process.pid) continue;
+    try { process.kill(pid, 0); continue; } catch { /* gone: sweep it */ }
+    try { rmSync(join(tmpdir(), name), { recursive: true, force: true }); } catch { /* in use */ }
+  }
+}
 
 function closeEverything() {
   for (const close of [...openThings]) {
@@ -94,7 +112,17 @@ export async function serve(dir) {
  *   problems()       everything the page has thrown or logged as an error
  */
 export async function withBrowser(run, { viewport = { width: 390, height: 844 }, mobile = true } = {}) {
-  const userDataDir = join(process.cwd(), "node_modules", ".cache", "browser-harness");
+  // A profile of its own, per launch. Three test files drive a browser, vitest
+  // runs them in parallel, and Chrome exits 21 when a second instance opens the
+  // same user-data-dir — which read as "the identity pair is missing" and "the
+  // interview threw", three failures with one cause (2026-09-08).
+  //
+  // Under the OS temp directory, not the repository: Windows still holds a lock
+  // on the profile when the browser is killed, so removing it on the way out
+  // only sometimes works. Stale ones from processes that have gone are swept at
+  // launch instead, which is the sweep that always works.
+  sweepStaleProfiles();
+  const userDataDir = join(tmpdir(), `${PROFILE_PREFIX}${process.pid}-${nextProfile++}`);
   const browser = spawn(chromePath(), [
     "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
     "--remote-debugging-port=0", `--user-data-dir=${userDataDir}`, "about:blank",
@@ -152,6 +180,8 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
   const release = owned(() => {
     try { socket.close(); } catch { /* already closed */ }
     try { browser.kill(); } catch { /* already gone */ }
+    // The profile goes with the browser that made it.
+    try { rmSync(userDataDir, { recursive: true, force: true }); } catch { /* in use */ }
   });
 
   const { targetId } = await send("Target.createTarget", { url: "about:blank" });

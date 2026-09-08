@@ -1,7 +1,7 @@
 import {
-  decidingCriteria, deriveBands, forEachCriterion, formatEURPer, resultProvenance, routeReadings,
-  routeStatements, thresholdsForField,
-  type Criterion, type Dataset, type Profile, type Route, type RouteResult,
+  decidingCriteria, deriveBands, forEachCriterion, formatEUR, formatEURPer, resultProvenance,
+  routeReadings, routeStatements,
+  type Band, type Criterion, type Dataset, type Profile, type Route, type RouteResult,
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc } from "./reason.js";
@@ -191,39 +191,101 @@ export function readingHtml(route: Route): string {
 }
 
 /**
- * The salary rail: every threshold on this field as context, the declared band
- * as a bar, and ONE labelled threshold — the one this result was measured
- * against. Neighbouring ticks stay unlabeled so close thresholds cannot
- * collide.
+ * The thresholds this route actually asks of this reader — the amounts on the
+ * deciding path, deduplicated, in order.
+ *
+ * Not every threshold in the dataset on the same field: the card drew six ticks
+ * for a Dutch salary, five of them belonging to other routes and carrying
+ * nothing but a hover title, which is invisible to a reader and to a finger
+ * (human walk, 2026-09-08). Neighbouring amounts are context, and the route
+ * page's own rail is where context belongs.
+ */
+export function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile): Gte[] {
+  const measured = measuredCriterionOf(ds, r, answers);
+  if (!measured) return [];
+  const decided = decidingCriteria(r.criteria)
+    .flatMap((cr) => (cr.criterion.op === "gte" ? [cr.criterion] : []))
+    .filter((c) => c.field === measured.field);
+  const all = decided.length ? decided : [measured];
+  const seen = new Set<number>();
+  return all
+    .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
+    .sort((a, b) => a.threshold.amount - b.threshold.amount);
+}
+
+/**
+ * Where the reader's band stands against one amount, in the words the card
+ * already uses elsewhere.
+ */
+export function bandStandsAt(band: Band, amount: number): string {
+  if (band.max !== undefined && band.max <= amount)
+    return `up to ${formatEUR(amount - (band.min ?? 0))} short`;
+  if (band.min !== undefined && band.min >= amount) return "above the amount";
+  return "crosses the amount";
+}
+
+/**
+ * The salary rail: this route's own amounts, the reader's band, and a line of
+ * words for each — nothing drawn that is not named.
+ *
+ * Three things it will not do again, all seen on one NL ICT card. It will not
+ * draw a mark it does not label: five of six ticks said what they were only in
+ * a `title` nobody hovers. It will not measure the bar and the band on two
+ * roundings: the band began five pixels left of the tick it starts on, so the
+ * picture disagreed with itself. And it will not position labels absolutely:
+ * they wrapped into a three-line stack at the right edge, which is the same
+ * collision the route page's rail was rebuilt to end (critique B1).
  */
 export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string {
-  const salary = measuredCriterionOf(ds, r, answers);
-  if (!salary) return "";
-  const field = salary.field;
-  const ts = thresholdsForField(ds, field);
+  const thresholds = decidingThresholds(ds, r, answers);
+  if (!thresholds.length) return "";
+  const field = thresholds[0].field;
   const band = bandOf(ds, field, answers);
-  if (!band || ts.length === 0) return "";
+  if (!band) return "";
   const period = ds.fields.find((f) => f.id === field)?.period;
-  const lo = Math.min(...ts) * 0.88, hi = Math.max(...ts) * 1.1;
-  const pct = (v: number) => Math.max(2, Math.min(98, ((v - lo) / (hi - lo)) * 100));
-  const bMin = pct(band.min ?? lo), bMax = pct(band.max ?? hi);
-  const ticks = ts.map((t) => `<span class="tick" style="left:${pct(t)}%" title="${formatEURPer(t, period)} — a threshold on another route"></span>`).join("");
-  const own = salary.threshold.amount;
-  const labels = `<span class="lbl" style="left:${pct(own)}%"><b>${formatEURPer(own, period)}</b>${
-    salary.threshold_label ? esc(salary.threshold_label) : ""}</span>`;
-  // The two labels overprint when the band meets the threshold (critique
-  // #10). Shifting sideways only moved the collision — the labels are
-  // wider than the narrow bands — so the second label drops to its own
-  // line, where no width can bring them back together.
-  const centre = (bMin + bMax) / 2;
-  const collides = Math.abs(pct(own) - centre) < 14;
-  const youStyle = `left:${centre}%;top:${collides ? "2.5rem" : "1.35rem"}`;
+  const amounts = thresholds.map((c) => c.threshold.amount);
+
+  // The band's own edges, where it has none: a band open below starts under the
+  // lowest amount, one open above runs past the highest.
+  const bandLo = band.min ?? Math.min(...amounts) * 0.8;
+  const bandHi = band.max ?? Math.max(...amounts) * 1.3;
+  const lo = Math.min(...amounts, bandLo) * 0.94;
+  const hi = Math.max(...amounts, bandHi) * 1.04;
+
+  /**
+   * One scale and one rounding for everything on the bar. The band's left edge
+   * and a tick at the same amount have to be the same string, or a reader sees
+   * the band miss the line it starts on.
+   */
+  const at = (v: number): string =>
+    `${Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100)).toFixed(2)}%`;
+  const span = (from: number, to: number): string =>
+    `${(Number.parseFloat(at(to)) - Number.parseFloat(at(from))).toFixed(2)}%`;
+
+  // `rail-tick`, not `tick`: the results screen already used `.tick` for the
+  // chosen-answer checkmark, whose `margin-left:.35rem` was silently shifting
+  // every line on this bar six pixels right of the amount it marks. That is the
+  // "the band does not meet the lines" the walk reported — a class collision,
+  // not a rounding error, and the same shape as the `.country` one this
+  // codebase has met before (human walk, 2026-09-08).
+  const ticks = amounts
+    .map((a) => `<span class="rail-tick" style="left:${at(a)}"></span>`)
+    .join("");
+
+  const rows = [
+    ...thresholds.map((c) => {
+      const label = c.threshold_label ? ` — ${esc(c.threshold_label)}` : "";
+      return `<li><span class="sw sw-asks"></span><b>${esc(formatEURPer(c.threshold.amount, period))}</b>` +
+        `<span>what this route asks${label} · ${esc(bandStandsAt(band, c.threshold.amount))}</span></li>`;
+    }),
+    `<li><span class="sw sw-you"></span><b>${esc(band.label)}</b><span>your answer</span></li>`,
+  ].join("");
+
   return `
-        <div class="rail" aria-label="Salary thresholds">
-          <div class="bar"><span class="you" style="left:${bMin}%;width:${bMax - bMin}%"></span>${ticks}</div>
-          <div class="lbls">${labels}
-            <span class="lbl you-l" style="${youStyle}"><b>your band</b></span>
-          </div>
+        <div class="rail">
+          <div class="bar" aria-hidden="true"><span class="you" style="left:${at(bandLo)};width:${
+    span(bandLo, bandHi)}"></span>${ticks}</div>
+          <ul class="rail-rows" aria-label="What this route asks, and what you answered">${rows}</ul>
         </div>`;
 }
 

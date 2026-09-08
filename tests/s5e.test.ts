@@ -200,17 +200,29 @@ describe("s5e — the card's source list grew without burying the verdict", () =
   });
 
   it("no card turns into a wall of quotes", () => {
-    // Eight until s5f, nine after it, and the extra line is the price of that
+    // Eight until s5f, nine after it, and the extra line was the price of that
     // slice rather than a drift: sourcing the 37 bare preconditions put a
     // quote under sentences that had none, and the Dutch cards carrying the
     // most of them grew by exactly the lines that used to make a claim with
     // nothing behind it. It would have been eleven; eight routes ended up
     // quoting one sentence twice, because a criterion and an "also required"
     // line can honestly rest on the same sentence, and `provenanceHtml` prints
-    // an identical line once. The cap still bites: a route reaching ten is
-    // news, and has to be argued for rather than raised past.
+    // an identical line once.
+    //
+    // Ten since 2026-09-08, on `nl-hsm-under30` alone, and here is the argument
+    // the cap demands rather than being raised past.
+    //
+    // A person whose employer was moving them to its Dutch branch read this
+    // route as open to them. The IND says on its own page that a contract with
+    // a company outside the EU plus a transfer as a manager, specialist or
+    // trainee makes you an intra corporate transferee, with other requirements
+    // — the one sentence that tells that reader this card is not theirs. It sat
+    // outside the watched slice until the slice was widened for it. A tenth
+    // line on one card is a smaller cost than a reader believing a verdict that
+    // was never about them, and it is the only line added to any card since
+    // s5f. The cap still bites: eleven is news, and has to be argued again.
     for (const { r, html } of generatedCards(4826, 30))
-      expect(sourceLines(html).length, r.route.id).toBeLessThanOrEqual(9);
+      expect(sourceLines(html).length, r.route.id).toBeLessThanOrEqual(10);
   });
 
   it("the \"no numeric value\" honesty line still appears where it did", () => {
