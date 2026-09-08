@@ -18,7 +18,7 @@ import IDENTITY from "../../identity.css?raw";
 import { esc, escAttr } from "./reason.js";
 import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH, TRACKER_URL,
-  absolute,
+  absolute, url,
 } from "./site.js";
 import {
   DISCLAIMER, FRESHNESS_NOTE, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, SEAL_LETTERS, TAGLINE, datasetDay,
@@ -500,7 +500,7 @@ function neighbours(country: Country, route: Route): string {
     <nav class="neighbours" aria-labelledby="also-here">
       <h2 class="label" id="also-here">Also in ${esc(country.name)}</h2>
       <ul>${others.map((r) => `
-        <li><a ${tapMin()} href="${escAttr(routePath(country, r))}">${esc(r.name)}<small>${
+        <li><a ${tapMin()} href="${escAttr(url(routePath(country, r)))}">${esc(r.name)}<small>${
     esc(gist(r))}</small></a></li>`).join("")}
       </ul>
     </nav>`;
@@ -555,9 +555,9 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
 <title>${esc(title)}</title>
 <meta name="description" content="${escAttr(desc)}">
 <link rel="canonical" href="${escAttr(absolute(path))}">
-<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 64x64">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/favicon-64.png">
+<link rel="icon" href="${escAttr(url("/favicon.ico"))}" sizes="16x16 32x32 64x64">
+<link rel="icon" href="${escAttr(url("/favicon.svg"))}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="${escAttr(url("/favicon-64.png"))}">
 <meta property="og:site_name" content="${escAttr(PRODUCT_NAME)}">
 <meta property="og:title" content="${escAttr(title)}">
 <meta property="og:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
@@ -577,7 +577,7 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
   <header class="masthead masthead-with-stamps">
     <div>
       <nav class="crumbs label" aria-label="Where you are">
-        <a ${tapMin()} href="/"><span class="seal" title="${escAttr(PRODUCT_NAME)}" aria-hidden="true">${
+        <a ${tapMin()} href="${escAttr(url("/"))}"><span class="seal" title="${escAttr(PRODUCT_NAME)}" aria-hidden="true">${
     SEAL_LETTERS}</span>${esc(PRODUCT_NAME)}</a><span>${esc(country.name)}</span><span>${esc(route.name)}</span>
       </nav>
       <h1>${esc(route.name)}. <em>The rules, quoted and dated.</em></h1>
@@ -605,7 +605,7 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
   <section class="cta" aria-labelledby="cta-h">
     <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
     <p><strong>Where do you stand on this route?</strong> The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>
-    <a ${tapMin("btn")} href="/?route=${escAttr(route.id)}">Check yours — ${esc(country.name)}, ${
+    <a ${tapMin("btn")} href="${escAttr(`${url("/")}?route=${route.id}`)}">Check yours — ${esc(country.name)}, ${
     esc(route.name)}</a>
   </section>
 
@@ -616,7 +616,7 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
     <p>This page is generated from an open dataset: every number and quote above is a record in it, with its source and read date. Reuse it under ${
     esc(DATA_LICENCE_FULL)} — credit and link back.</p>
     <nav aria-label="The data behind this page">
-      <a ${tapMin()} href="${escAttr(jsonPath)}">This route as JSON</a>
+      <a ${tapMin()} href="${escAttr(url(jsonPath))}">This route as JSON</a>
       <a ${tapMin()} href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">The dataset on GitHub</a>
       <a ${tapMin()} href="${escAttr(TRACKER_URL)}" target="_blank" rel="noopener">Report a wrong value</a>
     </nav>

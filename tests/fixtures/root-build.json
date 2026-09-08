@@ -1,0 +1,29 @@
+{
+  "note": "sha256 of every route page as rendered at the site root, captured 2026-09-08 before the base-path change. Regenerating this is a deliberate act: it means the root build moved.",
+  "base": "/",
+  "pages": {
+    "/germany/eu-blue-card-shortage-occupation": "953035b3a67833f962abb111822d9373f018e0692a63ea075803764914d6be56",
+    "/germany/eu-blue-card-general": "946a9c6d5b45a75f4a56eab90a188bc8d8cdc7b83f0125d5ad20de835e4c4713",
+    "/germany/skilled-worker-academic": "853d0a78db523fbced8c1e1c86f6c117f79f59047994e49d74150f4cd7b156c5",
+    "/germany/skilled-worker-vocational": "8f8756bead2463543aceebe83cbe8a73ab3e7099615401ebfef6dc45e12afb57",
+    "/germany/experienced-worker": "f4d8176f473dc17e4ca8ecd3cf3bff1777901eabb506c36043ac6df95266e0d7",
+    "/germany/researcher": "3261ab00fb928042c8242d4e019d8234d04b57be511adf05f7cd2809142520b5",
+    "/germany/ict-card-intra-corporate-transfer": "a7d7418700e86afcd4fc3a7c9ac78fddbbdbb4c5cbee25dbacff448d7ae71059",
+    "/germany/opportunity-card": "3cba5cfc70c292f173d975c091630e62d60e696d3ce91ae2fc117e4c1ac1b690",
+    "/france/talent-qualified-employee": "64afb00d6b39da8189a309971defbacd9290464ab50ed532cecbb04fb1d7c66d",
+    "/france/eu-blue-card": "3da8f4c73076b34b0d603913b9fcdf900707b3ccda7aa24560c6e44cb9c5471c",
+    "/france/ict-seconded-employee": "ba2d14e90824bc93ee5a57471d76093dd60dca61a64ce2533c18a9be00796e48",
+    "/france/talent-employee-of-an-innovative-company": "c30a6b96165fa654979c2b2e93921d47c2c92ea29d958ed1f4396a64d90f6fa5",
+    "/france/talent-employee-on-assignment": "a452a3513ed70c69a3b1253eb9e06160b85c19c2ef73268c164e0e0df0a3999b",
+    "/spain/eu-blue-card": "a1b0e44ba41395d9247a590b93ae3a556fa60a1fc8238cda1f058161800dfaa4",
+    "/spain/highly-qualified-professional": "795f388a789a177505a8fffab26d93e080d5360c8c31be24c625df079dce6fd7",
+    "/spain/intra-company-transfer": "230f33c3d265c5c2c72d5528048847b31706e84bafa17f5d42c0848762c50f70",
+    "/spain/researcher": "5c64ba3ce324eb860f0b1fcb43f20fe250e90a0bafb076e28233dec052379a65",
+    "/netherlands/highly-skilled-migrant-30-or-older": "d9a096d9c7c713965d086efb67e6c453db32fd48d68163f4b2f57cdf6941f514",
+    "/netherlands/highly-skilled-migrant-under-30": "ab6c8e1329cd207139d7f7db43b95380b2bf0d1e3455cf09c06fc79eb6c56272",
+    "/netherlands/eu-blue-card": "acca04e5d6a0eb98884789fffd02464190023598dec455bba71968c21ce3c74d",
+    "/netherlands/intra-corporate-transferee": "aceefb610c4a2b2849d38d4e07982334fbfe8ff79ee45262a568f692fe021f54",
+    "/netherlands/researcher": "73f7b828c11ed94e09da7faad735be718bbd726ac8765f8b545bacffffa128d9",
+    "/netherlands/orientation-year": "4ef8444430895e42438b8add588d135fbcad10d5d63186718ba4885ff606da3a"
+  }
+}

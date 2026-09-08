@@ -13,7 +13,8 @@
     "assets:check": "node scripts/render-assets.mjs --check",
     "measure:taps": "node scripts/measure-taps.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "smoke:dev": "node scripts/smoke.mjs --dev"
+    "smoke:dev": "node scripts/smoke.mjs --dev",
+    "check:base": "node scripts/check-base.mjs"
   },
   "dependencies": {
     "astro": "^7.2.10",

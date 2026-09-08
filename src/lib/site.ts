@@ -14,12 +14,40 @@
  */
 const DEFAULT_SITE_URL = "https://permitrulebook.com";
 
-const configured = (import.meta as { env?: Record<string, string | undefined> }).env?.SITE;
 
-export const SITE_URL: string = (configured ?? DEFAULT_SITE_URL).replace(/\/+$/, "");
+export const SITE_URL: string = (import.meta.env.SITE ?? DEFAULT_SITE_URL).replace(/[/]+$/, "");
 
-/** An absolute URL for a site-root path, for the meta a link preview reads. */
-export const absolute = (path: string): string => `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+/**
+ * The path the site is served under, with no trailing slash: "" at a domain
+ * root, "/permit-rulebook" on GitHub Pages. Astro sets `BASE_URL` from the
+ * `base` config, which `astro.config.mjs` reads off SITE_URL's own path.
+ *
+ * Empty in the test runner and in any plain-Node caller, which is the root
+ * case and therefore the right default.
+ */
+const BASE = import.meta.env.BASE_URL.replace(/[/]+$/, "");
+
+/**
+ * Every internal URL the site emits goes through here.
+ *
+ * A root-absolute `/germany/…` is correct at a domain root and broken under a
+ * subpath: GitHub Pages serves a project repository at
+ * `https://oytunonal.github.io/permit-rulebook/`, where every such link lands
+ * outside the site (2026-09-08). One helper, so there is one place that can be
+ * wrong — and at the root it returns the path unchanged, so the root build is
+ * byte-for-byte what it was.
+ *
+ * `base` is a parameter only so a test can ask what a path becomes under a
+ * subpath without building the whole site; nothing passes it in production.
+ */
+export const url = (path: string, base: string = BASE): string =>
+  `${base.replace(/[/]+$/, "")}/${String(path).replace(/^[/]+/, "")}`;
+
+/** The origin alone, for the absolute URLs a link preview reads. */
+const ORIGIN = new URL(SITE_URL).origin;
+
+/** An absolute URL for an internal path, base included. */
+export const absolute = (path: string): string => `${ORIGIN}${url(path)}`;
 
 /**
  * The data repository, by the name decision 1 gives it. It does not exist under

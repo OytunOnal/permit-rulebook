@@ -5,8 +5,13 @@ name: deploy
 # promised never to need. The cost is stated: no headers we control and no
 # redirects. If a CSP or a redirect ever matters, Cloudflare Pages is the move.
 #
-# Nothing here switches Pages on. That is a repository setting, and a person
-# does it: Settings -> Pages -> Source: GitHub Actions.
+# Pages is on, with GitHub Actions as the source. `SITE_URL` decides both where
+# the site thinks it lives and, from that URL's own path, the base every
+# internal link is written under — a project repository is served at
+# `https://oytunonal.github.io/permit-rulebook/`, and a root-absolute link there
+# lands outside the site. The repository variable is the human's to set; the
+# fallback below is the Pages URL, so a run with nothing set still deploys a
+# correct site.
 
 on:
   push:
@@ -23,6 +28,9 @@ permissions:
 concurrency:
   group: pages
   cancel-in-progress: false
+
+env:
+  SITE_URL: ${{ vars.SITE_URL || 'https://oytunonal.github.io/permit-rulebook/' }}
 
 jobs:
   build:
@@ -45,8 +53,7 @@ jobs:
         working-directory: site
         run: |
           path=$(node -p "require('./package.json').dependencies['permit-rulebook-data'].replace(/^file:/, '')")
-          dir=$(basename "$path")
-          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          echo "dir=$(basename "$path")" >> "$GITHUB_OUTPUT"
 
       - name: Check out the data
         uses: actions/checkout@v4
@@ -67,6 +74,23 @@ jobs:
         working-directory: site
         run: npm ci
 
+      # The build comes BEFORE the tests, and that order is load-bearing: the
+      # suite drives a real browser over `dist/`, and its own guard refuses to
+      # skip that check in CI. Running the tests first failed with
+      # "CI cannot skip: no dist/" — the guard working exactly as written
+      # (2026-09-08).
+      #
+      # `npm run build` is `astro check && astro build`. The dataset is
+      # validated at the build boundary too, so an invalid one kills the deploy
+      # rather than shipping a page with a value nobody sourced.
+      - name: Build
+        working-directory: site
+        run: npm run build
+
+      # Now the suite, which includes the browser smoke over `astro dev` and
+      # over the `dist/` just built. There is no separate `npm run smoke` step:
+      # it would drive the same two surfaces a second time for the same answer.
+      # `npm run smoke` stays available for a person at a terminal.
       - name: Test
         working-directory: site
         run: npm test
@@ -75,32 +99,18 @@ jobs:
         working-directory: site
         run: npm run assets:check
 
-      # `npm run build` is `astro check && astro build`. The dataset is
-      # validated at the build boundary too, so an invalid one kills the deploy
-      # rather than shipping a page with a value nobody sourced.
-      - name: Build
+      # The site is served from a subpath unless a custom domain is bound, so
+      # every internal link is written under a base. This builds under one and
+      # reads every emitted page back.
+      - name: Correct under a subpath
         working-directory: site
-        env:
-          # Where the site believes it lives. Set this as a repository variable
-          # once the custom domain is bound; unset, the build uses the default
-          # in astro.config.mjs.
-          SITE_URL: ${{ vars.SITE_URL }}
-        run: npm run build
+        run: npm run check:base
 
       # The invariant, measured rather than argued: a real 390 px viewport over
-      # every built page. The runner image ships Chrome; if a future image does
-      # not, this step says so instead of passing quietly.
+      # every built page.
       - name: Every control reaches the tap floor at 390 px
         working-directory: site
         run: npm run measure:taps
-
-      # And the page is alive at all. `measure:taps` counts elements, so it read
-      # a completely dead interview as "0 controls under the floor"; this loads
-      # the site in a real browser, on both the dev and the built surface, and
-      # fails on anything the page throws (2026-09-07).
-      - name: The site renders and throws nothing
-        working-directory: site
-        run: npm run smoke
 
       - uses: actions/upload-pages-artifact@v3
         with:

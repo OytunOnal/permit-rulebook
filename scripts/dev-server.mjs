@@ -4,6 +4,7 @@ import { createServer } from "node:net";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PRODUCT_NAME } from "../src/lib/copy.ts";
+import { childEnv } from "./child-env.mjs";
 
 /**
  * `astro dev`, owned by this process and proved before it is used.
@@ -32,23 +33,6 @@ import { PRODUCT_NAME } from "../src/lib/copy.ts";
 
 const SITE_ROOT = fileURLToPath(new URL("..", import.meta.url));
 const ASTRO_BIN = join(SITE_ROOT, "node_modules", "astro", "bin", "astro.mjs");
-
-/**
- * The environment a dev server should be started in, which is not always the
- * one we are running in.
- *
- * Under Vitest the worker exports `VITEST`, `VITEST_MODE` and friends, and Vite
- * reads them: the child came up, said "ready", accepted TCP connections and
- * then reset every HTTP request (raw socket connected, `fetch` got
- * ECONNRESET). The same code from a plain `node` process was fine. The child is
- * not part of the test run — it is the site — so it gets the environment the
- * site would have.
- */
-function childEnv() {
-  const env = { ...process.env };
-  for (const key of Object.keys(env)) if (/^VITEST(_|$)/.test(key)) delete env[key];
-  return env;
-}
 
 /** A port nothing is listening on, chosen by the OS. */
 async function freePort() {
@@ -106,18 +90,13 @@ export async function startDev({ timeoutMs = 90000 } = {}) {
       // is what the leaked daemon turned out to be.
       cwd: SITE_ROOT,
       stdio: ["ignore", "pipe", "pipe"],
-      env: {
-        ...childEnv(),
-        // Astro 7 detects an agent environment and silently daemonises `astro
-        // dev` — which is how a background server came to exist here at all,
-        // and why it outlived its run. This is the CLI's own opt-out from that
-        // detection (`agentDetected = !process.env.ASTRO_DEV_BACKGROUND &&
-        // isRunByAgent()`), and with no `--background` flag the result is a
-        // plain foreground child. Together with `--ignore-lock` no lock file is
-        // written or read, so this server is invisible to `astro dev status`
-        // and dies with the process that started it — which is the point.
-        ASTRO_DEV_BACKGROUND: "0",
-      },
+            // Astro 7 detects an agent environment and silently daemonises `astro
+      // dev`. This is the CLI's own opt-out from that detection, and with no
+      // `--background` flag the result is a plain foreground child. Together
+      // with `--ignore-lock` no lock file is written or read, so this server is
+      // invisible to `astro dev status` and dies with the process that started
+      // it — which is the point.
+      env: childEnv({ ASTRO_DEV_BACKGROUND: "0" }),
     });
   child.stdout.on("data", (c) => output.push(c.toString()));
   child.stderr.on("data", (c) => output.push(c.toString()));

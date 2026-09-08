@@ -14,7 +14,7 @@ import { mastheadFor } from "../lib/screen.js";
 // The product's own words, in one place: the name, the tagline and the
 // disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
 import { DISCLAIMER, PRODUCT_NAME, PROMISE, SEAL_LETTERS, TAGLINE } from "../lib/copy.js";
-import { DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH, TRACKER_URL, absolute } from "../lib/site.js";
+import { DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH, TRACKER_URL, absolute, url } from "../lib/site.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
 const dataset = assertValidDataset(rawDataset);
@@ -30,9 +30,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <meta name="description" content="Which European work-permit routes fit? A check against dated, source-quoted official rules. Your answers never leave this device." />
   <title>{PRODUCT_NAME} — which work-permit routes fit?</title>
   <link rel="canonical" href={absolute("/")} />
-  <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 64x64" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/favicon-64.png" />
+  <link rel="icon" href={url("/favicon.ico")} sizes="16x16 32x32 64x64" />
+  <link rel="icon" href={url("/favicon.svg")} type="image/svg+xml" />
+  <link rel="apple-touch-icon" href={url("/favicon-64.png")} />
   <meta property="og:site_name" content={PRODUCT_NAME} />
   <meta property="og:title" content={`${PRODUCT_NAME} — ${TAGLINE.toLowerCase().replace(/\.$/, "")}`} />
   <meta property="og:description" content={PROMISE} />
@@ -50,7 +50,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <div class="wrap">
     <header class="masthead-with-stamps">
       <div>
-        <a class="wordmark" href="/"><span class="seal" aria-hidden="true">{SEAL_LETTERS}</span>{PRODUCT_NAME}</a>
+        <a class="wordmark" href={url("/")}><span class="seal" aria-hidden="true">{SEAL_LETTERS}</span>{PRODUCT_NAME}</a>
         <div class="brand">{TAGLINE}</div>
         <h1 id="headline" set:html={intro.headline}></h1>
         <p class="sub" id="subline">{intro.subline}</p>
@@ -110,6 +110,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
     } from "permit-rulebook-data";
     import { routePath } from "../lib/slug.js";
+    // Every internal URL the client writes goes through the same helper the
+    // server side uses, or the site breaks under a subpath (2026-09-08).
+    import { url } from "../lib/site.js";
     // Arriving from a route page's call to action: what goes on the record and
     // what sorts first, beside the page rather than inside it (step 10).
     import { arrivalFrom, destinationFor, scopedFirst, type ScopedArrival } from "../lib/scope.js";
@@ -554,7 +557,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const country = ds.countries.find((c) => c.code === r.country);
       if (!country) return "";
       return `<div class="scoped">${esc(scopeWords(r.route.scope.value))} · <a href="${
-        esc(routePath(country, r.route))}">The rules of this route</a></div>`;
+        esc(url(routePath(country, r.route)))}">The rules of this route</a></div>`;
     }
 
     function fullCard(r: RouteResult, showCountry = true): string {
