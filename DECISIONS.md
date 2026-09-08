@@ -2531,3 +2531,16 @@ the very family the revert left behind. One live region, filled after each
 render. The README screenshot shows an Indian passport rather than a
 Turkish one because the Türkiye notice took the top third of the frame —
 the builder's call, kept. 426 + 274 tests.
+
+**Addendum, 2026-09-08 — the arrival line names the country once.** Read
+live after the deploy: a reader who clicks France's own page and carries a
+German record was told "Starting from France — France is on the record. …
+France asks 1 more question." — three Frances before the sentence said
+anything, because the opening names the page the reader came from and the
+place now on the record, and from a country page those are the same word.
+Where the two are the same name the opening states it once: "France is on
+the record now." on a re-scope, "Germany is on the record." on a first
+arrival. A route-page arrival still names both, because there they differ
+("Coming from EU Blue Card — general — Germany is on the record."). Found by
+reading the live site, not by a test: the test asserted the shape the ruling
+wrote, and the ruling had not read the country case aloud.
