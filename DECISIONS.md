@@ -1989,3 +1989,11 @@ the one-pager is amended to say so rather than left disagreeing in public.
 v1.1 costs research per route (source page, quotes, dates, a watch entry),
 days not hours; the third scope value stays held by a synthetic pin until
 the first real page arrives.
+
+**Addendum, 2026-09-08 — favicon background (human: "C").** Three variants
+shown on light and dark tab strips (`docs/spine/design/favicon-bg.html`): the
+shipped cream square, fully transparent, and transparent outside with cream
+paper inside the tilted frame. The human chose the third: the stamp alone on
+the tab, still legible at 16 px on a dark strip where the fully transparent
+variant's dark red sank into the grey. Cost: a small light tilted square on
+dark tabs — the stamp on its paper, accepted.
