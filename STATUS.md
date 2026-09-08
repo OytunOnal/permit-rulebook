@@ -97,13 +97,10 @@ judgement on a live source.
       licence in both READMEs; the Sponsor button shows on both repositories.
 - [x] **Disclaimer** (human, 2026-09-08: "change"): "…and no authority is bound
       by these results…" — in the footer build, every surface, both READMEs.
-- [ ] **Search Console (your Google account):** https://search.google.com/search-console
-      → Add property → Domain `permitrulebook.com` → add the TXT record it gives
-      you to Cloudflare DNS (paste it here and I add it) → once verified, submit
-      https://permitrulebook.com/sitemap.xml under Sitemaps; then Bing Webmaster
-      Tools (import from Search Console). *Pass:* the sitemap shows as
-      "Success" with 29 discovered URLs. Indexing takes days; do this before
-      "go" so the announcement day is not the crawl's first sight of us.
+- [x] **Search Console and Bing** (human, 2026-09-08): the domain property is
+      verified, `sitemap.xml` submitted, indexing requested for the home page
+      and a route page ("added to a priority crawl queue"); Bing verified via
+      `BingSiteAuth.xml`. Indexing itself takes days — nothing more to do.
 - [ ] **Traffic counter — your pick** (the one-pager promised a non-data-collecting
       counter; the 48-hour lines said none at v1, which would leave A2 untested):
       "Cloudflare" (free, cookieless, your account; a public site token, not a
