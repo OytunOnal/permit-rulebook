@@ -1832,3 +1832,27 @@ The builder also caught itself overwriting an existing sourced quote — quote
 fidelity failing to rise was the tell — and restored it byte for byte. Cost,
 stated: the wall-of-quotes cap moved 9 → 10 for one Dutch card; eleven is the
 news now. Quotes verified 122; 351 + 135 tests.
+
+## 2026-09-08 — Renamed on GitHub; the first deploy stopped at visibility 🛑
+
+**Done at the human's word ("1 ve 2 yi yapamaz mısın"):** both repositories
+renamed on GitHub — `permit-rulebook`, `permit-rulebook-data` — with `gh`;
+remotes repointed; both pushed. The data repository's remote carried two
+commits the dry-run cron had made on its own (state updates of 09-05 and
+09-07); rebased cleanly, gates green (122 verified, 351 tests), pushed.
+
+**Stopped, and why.** Both repositories are private on a free plan, so (a)
+`POST /pages` answers "Your current plan does not support GitHub Pages for
+this repository", and (b) the deploy workflow's first run failed at "Check out
+the data": the workflow token cannot read a private sibling. Both clear the
+moment the repositories are public — which is the launch itself, and the
+human's decision, not a setting to flip on the way to one. Alternative kept
+in view: stay private with a paid plan plus a token for the sibling checkout.
+
+**The first two flags arrived before the watch went live**, from the dry-run:
+`fr-f16922-talent` (09-05) — the excerpt is the fiche's opening-hours widget
+and every FR quote still verifies: a false alarm from text outside the
+values; the slice is being bounded so it cannot recur. `zav-newsletter-index`
+(09-07) — a new "Ausgabe 05/2026" appeared on the ZAV index, exactly what the
+sentinel exists to say; **this one is the human's to read** (decision 7): does
+the new edition move any German threshold?

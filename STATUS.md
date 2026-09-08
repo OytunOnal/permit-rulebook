@@ -46,15 +46,22 @@ verified, `human_tier: 0`; 25 pages, 0 tap targets under 44 px at 390 px.
 Real-green, in this order. Each is yours because it is a GitHub account
 action, a real device, or a judgement on a live source.
 
-- [ ] **1 · Rename the repositories on GitHub:** `visa-navigator` →
-      `permit-rulebook`, `visa-rules` → `permit-rulebook-data`. Do not rename
-      the folders on disk. *Pass:* the old URLs redirect; `git remote -v` in
-      both folders still fetches without editing.
-- [ ] **2 · Turn Pages on:** `permit-rulebook` → Settings → Pages → Source:
-      **GitHub Actions**. Then push both repositories (I will push on your
-      word, or you do). *Pass:* the `deploy` workflow reaches its last step and
-      prints a preview URL; the `measure:taps` step prints 25 lines and
-      "0 with a problem".
+- [x] **1 · Renamed** (session, 2026-09-08): `permit-rulebook`, `permit-rulebook-data`;
+      remotes repointed; both pushed.
+- [ ] **2 · Visibility — your decision:** both repositories are private on a
+      free plan, so Pages cannot be enabled and the deploy workflow cannot
+      check out the data repository. Say **"public"** and I make both public,
+      enable Pages (GitHub Actions source) and re-run the deploy — that is the
+      launch's first public moment, so it is yours; or say "private" and we
+      go paid plan + a token for the sibling checkout. *Pass:* the deploy run
+      reaches its last step and prints the preview URL; `measure:taps` and
+      `smoke` print 0 problems.
+- [ ] **2b · The first sentinel flag, yours to read** (decision 7):
+      `watch/flags/zav-newsletter-index-2026-09-07.md` — a new "Ausgabe
+      05/2026" appeared on the ZAV newsletter index. Open the source and say
+      whether any German threshold moved. *Pass:* one line — "no value moved"
+      or which one — and it goes into DECISIONS. (The FR flag of 09-05 was a
+      false alarm from an opening-hours widget; being bounded.)
 - [ ] **3 · Labels on `permit-rulebook-data`:** create `bug`, `design-flaw`,
       `new-need`. *Pass:* "New issue" shows the three templates; one test issue
       filed from a route page's "Report a wrong value" lands labelled.
