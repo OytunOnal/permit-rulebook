@@ -45,8 +45,12 @@ results, every results control at the tap floor, the translation policy on
 half-open (B1 cleared), the unknown-heavy walk shows two steps and no ladder
 rungs (B3 cleared), and a French arrival over a German record re-scopes and
 re-asks (B2) — but its sentence is broken ("we ask again about it work", a
-failed substitution); one small fix with the builder, then the two reviews'
-findings, then v1 waits only on the checklist below.
+failed substitution); the two reviews returned (Standards: the history note was a
+content gate — now a declared reason; per-country remnants; Spec: the
+arrival line named the dropped answers instead of the questions that follow;
+the data README's screenshot not retaken; the status region not announced)
+— one more builder round is running on all of it; then push, deploy, live
+re-read, and v1 waits only on the checklist below.
 
 Numbers: 427 tests in the data repository, 270 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
