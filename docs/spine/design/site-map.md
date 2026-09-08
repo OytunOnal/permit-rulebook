@@ -74,3 +74,14 @@ No crumbs: the header (wordmark + marked country) and the h1 say where you
 are (human, 2026-09-08). The nav is the same markup from one source
 (`masthead()`), so it cannot differ between pages — the Orientation lens
 reads that as a finding.
+
+## The footer (mocked 2026-09-08, `s6-footer.html`)
+
+One footer on every page, from the same source as the header: the disclaimer
+sentence; four columns — Routes (the four countries, current marked), Do
+(Check yours · Print this record · Start over), The data (what it holds and
+its gates · this route as JSON on route pages · the repository · the licence),
+Feedback (report a wrong value · suggest a route or a country · sponsor); then
+the data line (dataset version · schema · newest value read · checked daily)
+beside the small seal and the licences. It repeats the header's four countries
+on purpose: at the bottom of a long page the header is a screen away.

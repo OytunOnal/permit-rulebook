@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The site footer · Permit Rulebook</title>
+<style>
+/* One footer on every page, from the same source as the header (identity.ts).
+   Four short columns at desktop, one column at 390 px. Rows, top to bottom:
+   the disclaimer sentence (decision 9, one sentence everywhere) · the columns ·
+   the data line (dataset version · schema · newest value read) with the licence.
+   Tokens pasted so the mock opens standalone. Open ?view=page for the iframe. */
+:root {
+  --color-bg: #f1eee4; --color-card: #fbf9f2; --color-ink: #2b2a22; --color-muted: #5a5747; --color-line: #d9d3c0;
+  --color-stamp: #8c2b2b; --color-met: #2e5b3f; --color-near: #8a5a19; --color-hold: #6a6759; --color-hold-soft: #edeadf; --color-band: #31519a;
+  --font-serif: Cambria, Georgia, serif; --font-sans: "Segoe UI", system-ui, sans-serif; --font-mono: Consolas, monospace;
+  --text-body: 15px/1.6 var(--font-sans); --text-label: 700 .7rem var(--font-sans); --text-source: 400 .76rem var(--font-mono); --tracking-label: .18em;
+  --rule-heavy: 3px double var(--color-ink); --rule-soft: 1px solid var(--color-line);
+  --space-2: .5rem; --space-3: .85rem; --space-4: 1.3rem; --space-5: 1.6rem; --space-6: 2.8rem; --max-content: 56rem; --tap-min: 44px;
+  --stamp-rotate: -6deg;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #555; color: #eee; font: 13px/1.5 system-ui; padding: 24px; }
+body.page-only { background: var(--color-bg); padding: 0; }
+h2.mock { font: 600 14px system-ui; margin: 28px 0 8px; color: #eee; }
+h2.mock small { font-weight: 400; color: #bbb; }
+.page-only h2.mock, .page-only .frames, .page-only .filler { display: none; }
+.panel { background: var(--color-bg); color: var(--color-ink); font: var(--text-body); }
+.wrap { max-width: var(--max-content); margin: 0 auto; padding: var(--space-4) var(--space-4) var(--space-5); }
+.filler { color: var(--color-muted); border: 1px dashed var(--color-line); padding: var(--space-4); text-align: center; margin-bottom: var(--space-6); }
+:focus-visible { outline: 2px solid var(--color-stamp); outline-offset: 2px; }
+
+/* ---- the footer ---- */
+.site-foot { border-top: var(--rule-heavy); padding-top: var(--space-4); color: var(--color-muted); }
+.site-foot .disclaimer { margin: 0 0 var(--space-4); max-width: 44rem; }
+.site-foot .cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); border-top: var(--rule-soft); padding-top: var(--space-4); }
+.site-foot .col h3 { margin: 0 0 .2rem; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); }
+.site-foot .col ul { list-style: none; margin: 0; padding: 0; }
+.site-foot .col a { color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap-min); border-bottom: 1px solid var(--color-line); }
+.site-foot .col a:hover { border-bottom-color: var(--color-stamp); color: var(--color-stamp); }
+.site-foot .col a[aria-current] { color: var(--color-stamp); border-bottom-color: var(--color-stamp); }
+.site-foot .col .out::after { content: " ↗"; color: var(--color-muted); }
+.site-foot .line { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; border-top: var(--rule-soft); margin-top: var(--space-4); padding-top: var(--space-3); font: var(--text-source); }
+.site-foot .line b { color: var(--color-met); font-weight: 600; }
+.site-foot .line .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; height: 1.4rem; border: 2px solid var(--color-stamp); color: var(--color-stamp); font: 700 .62rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); margin-right: .45rem; vertical-align: middle; }
+@media (max-width: 760px) {
+  .site-foot .cols { grid-template-columns: 1fr 1fr; }
+  .site-foot .line { flex-direction: column; gap: .2rem; }
+}
+@media (max-width: 480px) { .site-foot .cols { grid-template-columns: 1fr; } }
+.frames { display: flex; gap: 24px; align-items: flex-start; }
+.frames iframe { width: 390px; height: 620px; border: 0; background: #fff; }
+.frames figure { margin: 0; } .frames figcaption { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<h2 class="mock">1 · The footer, desktop <small>— shown under a route page; the same block on every page, the current country marked</small></h2>
+<div class="panel"><div class="wrap">
+  <div class="filler">… the page's content ends here …</div>
+  <footer class="site-foot">
+    <p class="disclaimer">Permit Rulebook makes no immigration decision and authorities won't consider these results — it compares published values with what you declare, nothing more.</p>
+    <div class="cols">
+      <div class="col"><h3>Routes</h3><ul>
+        <li><a href="#" aria-current="true">Germany</a></li><li><a href="#">France</a></li><li><a href="#">Spain</a></li><li><a href="#">Netherlands</a></li></ul></div>
+      <div class="col"><h3>Do</h3><ul>
+        <li><a href="#">Check yours</a></li><li><a href="#">Print this record</a></li><li><a href="#">Start over</a></li></ul></div>
+      <div class="col"><h3>The data</h3><ul>
+        <li><a href="#">What it holds, and its gates</a></li><li><a href="#">This route as JSON</a></li><li><a href="#" class="out">The repository</a></li><li><a href="#">Open data · CC BY 4.0</a></li></ul></div>
+      <div class="col"><h3>Feedback</h3><ul>
+        <li><a href="#" class="out">Report a wrong value</a></li><li><a href="#" class="out">Suggest a route or a country</a></li><li><a href="#" class="out">Sponsor this work</a></li></ul></div>
+    </div>
+    <div class="line">
+      <span><span class="seal" aria-hidden="true">PR</span>Permit Rulebook · code MIT · data CC BY 4.0 · © 2026 Oytun Onal</span>
+      <span>dataset 2026-09-08 · schema 0.5.0 · newest value <b>read 2026-09-08</b> · checked daily</span>
+    </div>
+  </footer>
+</div></div>
+
+<h2 class="mock">2 · 390 px, a true viewport <small>— two columns, then one below 480</small></h2>
+<div class="frames">
+  <figure><figcaption>390 × 620</figcaption><iframe title="footer at 390" src="?view=page"></iframe></figure>
+</div>
+
+<script>
+  const q = new URLSearchParams(location.search);
+  if (q.get('view') === 'page') { document.body.classList.add('page-only'); }
+</script>
+</body>
+</html>
