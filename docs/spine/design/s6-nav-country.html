@@ -14,7 +14,9 @@
    "Checker", the page's is "Check yours — Germany" (F4); the menu works (F5);
    the 390 view is a true viewport in an iframe (F6); identity.css measures,
    token names, aria-current="true" on an ancestor, a focus style (P1–P4);
-   prose cleaned and one string per slot (P5, P6).
+   prose cleaned and one string per slot (P5, P6). Revision 3 (human): the crumb
+   row is gone on both pages — the header's wordmark and the marked country
+   already say where you are; the h1 names the page.
    Open ?view=page to render the page alone (the iframe uses it). */
 :root {
   --color-bg: #f1eee4; --color-card: #fbf9f2; --color-ink: #2b2a22; --color-muted: #5a5747; --color-line: #d9d3c0;
@@ -118,7 +120,6 @@ footer a { color: var(--color-muted); display: inline-flex; align-items: center;
   </header>
   <div class="masthead-with-stamps">
     <div>
-      <nav class="crumbs" aria-label="Where you are"><a href="#">Permit Rulebook</a><span>Germany</span></nav>
       <h1>Germany: eight routes. <em>The rules, quoted and dated.</em></h1>
       <p class="lede">Every employment route Germany publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. Routes that turn on an official's discretion are <a href="#">listed with their reasons</a>, not here.</p>
     </div>
@@ -144,7 +145,6 @@ footer a { color: var(--color-muted); display: inline-flex; align-items: center;
   </header>
   <div class="masthead-with-stamps">
     <div>
-      <nav class="crumbs" aria-label="Where you are"><a href="#">Permit Rulebook</a><a href="#">Germany</a><span>EU Blue Card — general</span></nav>
       <h1>EU Blue Card — general. <em>The rules, quoted and dated.</em></h1>
       <p class="lede">The standard EU Blue Card: a recognised university degree and a salary above the general threshold, in any qualified job.</p>
     </div>

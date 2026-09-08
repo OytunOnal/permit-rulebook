@@ -69,6 +69,7 @@ flowchart LR
 - Footer keeps the tracker, the licence and the status page link (the status
   page's first door).
 
-Every page's crumb stays; the nav is the same markup from one source
+No crumbs: the header (wordmark + marked country) and the h1 say where you
+are (human, 2026-09-08). The nav is the same markup from one source
 (`masthead()`), so it cannot differ between pages — the Orientation lens
 reads that as a finding.
