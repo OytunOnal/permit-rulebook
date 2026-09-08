@@ -2213,3 +2213,25 @@ published values with what you declare, nothing more." One source
 (`copy.ts`), every surface, both READMEs. Cost: the old sentence is quoted in
 earlier ledger entries and in the s6 scenario; they stay as written, this
 line points forward.
+
+## 2026-09-08 — A traffic counter: Cloudflare Web Analytics 🛑
+
+**Gate (human chose "Cloudflare" from Cloudflare / GoatCounter / none).** The
+one-pager promised a non-data-collecting counter as the secondary metric; the
+48-hour lines had said "no analytics at v1", which would have left A2 (does
+organic traffic come to open data) untested on the very days it is tested.
+Cloudflare Web Analytics: cookieless, no personal identifier, no IP stored;
+it records page views, the page address, the referrer, country and device
+class. Installed as the manual JS snippet (the DNS is not proxied, so
+automatic injection cannot apply); the token is a public site id.
+
+**What the promise still says.** "Answers never leave the device" holds:
+the beacon carries the page URL and nothing a reader declared; the
+real-browser test now names the beacon as the one allowed outbound call and
+asserts its body carries no answer. The data page says in one sentence what
+is counted and what is not.
+
+**Cost, stated.** One script per page (~6 KB) and one request to Cloudflare
+per view; ad blockers stop it, so the count under-reads — true of every
+counter. The route page a person viewed is visible in aggregate; who viewed
+it is not.

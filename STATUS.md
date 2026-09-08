@@ -101,12 +101,9 @@ judgement on a live source.
       verified, `sitemap.xml` submitted, indexing requested for the home page
       and a route page ("added to a priority crawl queue"); Bing verified via
       `BingSiteAuth.xml`. Indexing itself takes days — nothing more to do.
-- [ ] **Traffic counter — your pick** (the one-pager promised a non-data-collecting
-      counter; the 48-hour lines said none at v1, which would leave A2 untested):
-      "Cloudflare" (free, cookieless, your account; a public site token, not a
-      secret) · "GoatCounter" · "none". On your word the snippet goes in, the
-      never-leaves-the-device test learns the one allowed beacon and asserts it
-      carries no answer, and DECISIONS says what is and is not collected.
+- [x] **Traffic counter** (human, 2026-09-08: Cloudflare Web Analytics, manual
+      snippet): going in with the current builder round; the data page says what
+      is counted; the never-leaves-the-device test names the one allowed beacon.
 - [ ] **`DISPATCH_TOKEN` (a credential, so yours):** GitHub → Settings → Developer
       settings → Fine-grained tokens → new token, repository access:
       `permit-rulebook` only, permission Contents: read and write; then on
@@ -128,7 +125,8 @@ The first 48 hours after "go" (decision 11), written now:
 *Watch:* the tracker on `permit-rulebook-data`, the watch's flag issues, the
 Show HN thread — every two hours the first day, morning and evening the second.
 *Where:* GitHub notifications for both repositories, the watch workflow's run
-page, the thread itself; nothing else is instrumented, no analytics at v1.
+page, the thread itself, and Cloudflare Web Analytics for page views and
+referrers (cookieless; decided 2026-09-08).
 *Pull the post if:* a reported wrong verdict is confirmed against the source; a
 watch flag shows a value on a live page has gone stale; a legal objection to a
 quote arrives. Any one of the three: the post comes down first, the fix second.
