@@ -26,23 +26,19 @@ flowchart LR
 gists, "stated" only of the source's words, one head-meta source, the shared
 footer on every page with its critique applied, the `/data` headings
 unclipped, the amended disclaimer everywhere, "Check yours" in the header.
-**CI is red on that push while the same tree is green locally:** the header's
-nav row wraps on the runner's fallback fonts (no Cambria/Segoe UI there), and
-the route-page fingerprint test depends on the environment. The footer and
-the new disclaimer are therefore not on the live site yet; the builder is
-fixing the design (a fold width that holds with any font) and the test, then
-the beacon and the pipeline hardening (actions pinned by SHA, read-only
-token); then a three-axis review (Standards, Spec, Security). The devils-advocate
-pass over the launch scenario returned three blockers and ten risks; all are
-routed (DECISIONS 2026-09-08): the `/data` liveness sentence, a failed watch
-run filing an issue, trailing slashes, a meta CSP, `data.lock` (builder);
-the scenario's false premises and the 48-hour lines (amended); then, before
-"go": one real value re-read through the whole loop (source → history line →
-commit → rebuild → live date), and the isolated critique re-run on RUBRIC
-1.3 against the site that will actually be tagged. Then v1 waits only on the
-checklist below.
+**The security round is pushed and deploying** (site `cb9d042`, data
+`c76dd7d`): the header holds one row on any font, the fingerprint measures
+the template not the data, the Cloudflare beacon is on every page with its
+body read off the wire, actions pinned by SHA with least privilege,
+`data.lock`, the `/data` liveness copy corrected with the watch's last run,
+trailing slashes consistent, a meta CSP with the inline script hashed, a
+failed watch run now files an issue. Three reviewers run on it (Standards,
+Spec, Security). When the deploy is green: the footer and the amended
+disclaimer are live, the phone walk can happen, one real value re-read goes
+through the whole loop, the isolated critique re-runs on RUBRIC 1.3, and v1
+waits only on the checklist below.
 
-Numbers: 400 tests in the data repository, 233 in the site; 122 quotes
+Numbers: 406 tests in the data repository, 249 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
 at 390 px; critique 32/45 on RUBRIC 1.2 (v0.7: 27/45).
 

@@ -2348,3 +2348,33 @@ this entry's routing, not in a file the human must open.
 **Addendum, 2026-09-08 — 2FA confirmed by the human** ("2fa tamam") on GitHub
 and Cloudflare. The threat model's accounts row is met on their word; the API
 cannot verify it with this session's token scopes.
+
+## 2026-09-08 — The security round shipped (site `cb9d042`, data `c76dd7d`); what it decided
+
+- **The counter's script sits at the end of the body**, not in the head: in
+  the head it is fetched before the page's own module and, when Cloudflare is
+  unreachable, delays the interview by a second. Cost: none to the count.
+- **`style-src 'unsafe-inline'` accepted** in the meta CSP: the pages inline
+  their whole stylesheet, and hashing it buys nothing against script
+  injection; every inline script is hashed, every external script is the
+  beacon. A meta policy carries no `frame-ancestors` or reporting; HSTS
+  stays absent on the custom domain (threats.md). Residual exposure named:
+  an injected style could restyle, not execute.
+- **Trailing slashes `always`** rather than `build.format: "file"`: the second
+  renames every page to `x.html` and changes 29 public addresses to fix a
+  redirect; the first keeps the addresses and removes the redirect.
+- **`data.lock`** names the data commit the site builds against; pushes and
+  reruns build against it, the schedule and the watch's dispatch build
+  against the data commit they carry and write the lock back when green — so
+  a rerun of an old run rebuilds the past, which the rollback trial showed it
+  could not. Trust model: the bot commits a lock only for a combination that
+  passed every gate.
+- **The header holds one row at 1100 px on any font**: spacing tightened
+  (nav gap, padding, the nav's own tracking), labels untouched, measured with
+  the generic font stack forced (17% headroom; the old spacing had 6%).
+- **A failed watch run files or updates one `watch`-labelled issue**; every
+  run writes `last_run` into `state.json`, which is also the repository's
+  heartbeat against GitHub's 60-day schedule cutoff; the data page and the
+  footer print that day.
+- Review of this round runs on three axes — Standards, Spec, Security —
+  because it touches an outbound call and the pipeline.
