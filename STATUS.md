@@ -8,7 +8,8 @@ mock-green and live at https://permitrulebook.com** (HTTPS enforced,
 verified cleared on the live site. v1 is stamped when the blockers are cleared on the live
 site and the human's real-green items below are done. Roadmap: v1.1 holds the
 14 excluded active routes as "quoted, not asked" pages; 9 further candidates
-(5 unversioned). Spine skills at steward-36.
+(5 unversioned). Spine skills at steward-38 (RUBRIC 1.3 adds an Orientation lens; the
+site map is now a required record).
 
 ```mermaid
 flowchart LR
@@ -34,7 +35,13 @@ screenshot and links the live site; the favicon is option C; "§ 20a, section
 (the watch's new rebuild-dispatch step sat between the state commit and the
 flag-issue step, so a missing token would have silenced the first real flag)
 plus nine should-fix items — one more builder round is running on them; it
-ships as soon as it is green. Then v1 waits only on the checklist below.
+ships as soon as it is green. **And one more slice-sized item before v1, from the human's walk:** the site
+has no shared navigation — the four country links live only in the home
+footer, a country page leads nowhere but its routes. The site map is written
+(`docs/spine/design/site-map.md`, the first one; Spine now requires it from
+the second screen on) and names the gaps; next: the header navigation and
+the country page mocked in the token set, critiqued in isolation, brought to
+the human, then built. v1 waits for it.
 
 Numbers: 384 tests in the data repository, 187 in the site; 122 quotes
 verified, `human_tier: 0`; 30 pages + 24 endpoints, 0 tap targets under 44 px
