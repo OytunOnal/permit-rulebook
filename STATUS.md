@@ -36,7 +36,11 @@ Read live today, after the deploy: the arrival line prints on a country
 change and prints nothing when nothing changed. One thing it got wrong was
 fixed by reading it rather than testing it — from a country's own page it
 said "Starting from France — France is on the record. … France asks 1 more
-question."; it now names the country once ("France is on the record now.").
+question."; it now names the country once ("France is on the record now."). All three
+cases re-read on the live site after the deploy: a country change prints the
+short line, the same country prints nothing, a route arrival still names both
+("Starting from EU Blue Card (talent — carte bleue européenne) — France is on
+the record.").
 Site `0c2d18a`, data `c6d5be3`.
 
 **Nothing is waiting on me.** v1 waits on your list below.
