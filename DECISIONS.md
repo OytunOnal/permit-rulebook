@@ -2314,3 +2314,33 @@ and, when green, write it back to the lock — so the lock always names a
 combination that deployed. Until it lands, the live site stays the last
 successful deploy (Pages keeps the artifact), which is the real rollback and
 the reason the site is still serving.
+
+## 2026-09-08 — Devils-advocate over the launch scenario: three blockers, ten risks, and the ledger caught being ahead of the site
+
+**Blockers, and their routing.** (1) The `/data` page claimed the corner
+date "moves on its own" when the watch never writes the dataset — the copy
+is corrected and the watch's last run is printed from `state.json` (builder).
+(2) CI red on HEAD while STATUS marked the amended disclaimer "every surface":
+the ledger was ahead of the site; STATUS now says so and the fix round is
+running. (3) The v1-gate critique walked a product that no longer exists —
+the isolated critique re-runs on RUBRIC 1.3 after a green deploy, before the
+tag.
+
+**Risks recorded as decisions.** Decision 6's premise ("the same repository
+the cron runs in") was false — amended. Decision 7's "dry-running" — amended.
+The 48-hour lines named an action Show HN does not afford ("pull the post");
+they now name the one it does: fix, correct the README, top comment, e-mail
+for a legal objection. A7's weak reading is refuted by wheretoemigrate's open
+CSVs; the strong claim stands and is the only one the announcement makes;
+the numbers that decide A2/A7/A8 are written in `assumptions.md` before the
+post. The watch failed three of its last six runs silently — a failed run now
+files an issue (builder). Every sitemap URL redirected to its slash form —
+trailing slashes made consistent (builder). HSTS is absent on the custom
+domain — threats.md corrected, a meta CSP added (builder). Decision 12
+holds as written; STATUS's "tomorrow's card date" test was wrong and is
+rewritten. The end-to-end value-change path has never run: one real re-read
+with a history line goes through the whole loop before "go" (below).
+
+**Cost, stated.** A day of a pass the scenario should have had at approval;
+the rule that requires it arrived the same day (steward-40). The report is in
+this entry's routing, not in a file the human must open.

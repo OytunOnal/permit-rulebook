@@ -32,8 +32,15 @@ the route-page fingerprint test depends on the environment. The footer and
 the new disclaimer are therefore not on the live site yet; the builder is
 fixing the design (a fold width that holds with any font) and the test, then
 the beacon and the pipeline hardening (actions pinned by SHA, read-only
-token); then a three-axis review (Standards, Spec, Security); then v1 waits
-only on the checklist below.
+token); then a three-axis review (Standards, Spec, Security). The devils-advocate
+pass over the launch scenario returned three blockers and ten risks; all are
+routed (DECISIONS 2026-09-08): the `/data` liveness sentence, a failed watch
+run filing an issue, trailing slashes, a meta CSP, `data.lock` (builder);
+the scenario's false premises and the 48-hour lines (amended); then, before
+"go": one real value re-read through the whole loop (source → history line →
+commit → rebuild → live date), and the isolated critique re-run on RUBRIC
+1.3 against the site that will actually be tagged. Then v1 waits only on the
+checklist below.
 
 Numbers: 400 tests in the data repository, 233 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
@@ -62,9 +69,10 @@ judgement on a live source.
       the letterforms get outlined to paths.
 - [x] **Link preview** (human, 2026-09-08): the route title and the €50,700
       description appear beside the card image — pass.
-- [ ] **Tomorrow's card date:** after the daily rebuild lands, paste any route
-      link into Slack again. *Pass:* the card reads tomorrow's date under
-      "Rules read". *Fail:* yesterday's — the rebuild did not run; tell me.
+- [ ] **Tomorrow's rebuild:** the card's date is the newest read date in the
+      dataset and moves only when a value is re-read — not every day. *Pass:*
+      `gh run list -R OytunOnal/permit-rulebook --workflow=pages.yml` shows a
+      green `schedule` run near 06:40 UTC tomorrow (I check it and tell you).
 - [x] **French and Spanish question paths** (human, 2026-09-08): pass — counter
       steady, bands sensible, no offer wording on a transfer. One bug found on
       the way (Back jumping questions) — fixed in the navigation round.
@@ -103,6 +111,12 @@ judgement on a live source.
       answers in your voice). *Pass:* you would say every sentence yourself;
       change any you would not. Then name a day and hour you can stay in the
       thread for three hours — the post goes out then, not before.
+- [ ] **Folder rename on disk (yours, per DECISIONS):** `visa-rules` →
+      `permit-rulebook-data` and `visa-navigator` → `permit-rulebook` under
+      Projects; then the site's `package.json` dependency path and the README's
+      clone line follow (I do those). *Pass:* the name sweep over both
+      repositories returns only ledgers and `docs/spine/`. Not before this
+      session ends — a rename under a running session breaks its paths.
 - [ ] **"go":** after the items above pass and the blockers are verified
       cleared on the live site, say it; v1 is stamped and the README's first
       screen is the announcement, told once.
@@ -113,6 +127,10 @@ Show HN thread — every two hours the first day, morning and evening the second
 *Where:* GitHub notifications for both repositories, the watch workflow's run
 page, the thread itself, and Cloudflare Web Analytics for page views and
 referrers (cookieless; decided 2026-09-08).
-*Pull the post if:* a reported wrong verdict is confirmed against the source; a
-watch flag shows a value on a live page has gone stale; a legal objection to a
-quote arrives. Any one of the three: the post comes down first, the fix second.
+*If a reported wrong verdict is confirmed, a flag shows a live value stale, or
+a legal objection to a quote arrives:* fix the value (history line, rebuild),
+correct the README, post the correction as a top comment in the thread, and
+for a legal objection e-mail hn@ycombinator.com — a Show HN thread cannot be
+pulled once it has comments, so the response is the correction, in the open.
+Expected load: about one watch flag every day or two, each a person's read;
+the German thresholds all move on 1 January.

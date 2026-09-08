@@ -58,3 +58,23 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   by devils-advocate 2026-09-01; written into the one-pager.) — `untested`
 - **A14 — Build-time polish stays in sync.** The LLM's polish of the question wording prevents the
   generated text from falling out of sync with the rule set through commit-review discipline. — `untested`
+
+
+## Pre-registered before the announcement (2026-09-08, devils-advocate pass)
+
+- **A7 — the gap in open work-permit data is real.** Counter-evidence found
+  before posting: wheretoemigrate.io/open-data offers CC BY 4.0 CSV snapshots
+  (July 2026) including income thresholds for 34 countries, free, no signup —
+  without a per-value source sentence or retrieval date, labelled an archival
+  research release, not a live database. The weak claim ("nobody offers open
+  work-permit data") is refuted; the strong claim (per value: the authority's
+  sentence, the read date, re-read daily) stands. The announcement says the
+  strong claim only.
+- **Numbers that decide, written first (thirty days after the announcement):**
+  A2 (organic traffic comes to open data) — `slice-verified` if Cloudflare
+  Web Analytics shows ≥ 300 visits from search or referrals other than the
+  announcement thread in days 8–30; `refuted` below 100. A7 — verified if a
+  stranger files or comments on a data issue, or a route page is cited
+  elsewhere with its date; refuted if no stranger touches the data in 30 days.
+  A8 (a static tool plus open data earns links) — verified at ≥ 3 referring
+  domains excluding the thread and the repositories; refuted at 0.

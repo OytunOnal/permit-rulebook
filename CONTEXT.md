@@ -1,4 +1,4 @@
-# Visa Navigator
+# Permit Rulebook (working name Visa Navigator until the release gate, 2026-09-07)
 
 The domain of deterministic work-permit eligibility: a person declares facts
 about themselves, code compares them against sourced official rules, and the
