@@ -1941,3 +1941,31 @@ gate excludes that path as it excludes the ledgers. Not maintained, not
 deleted: the record of where the idea started. Copyright lines in the three
 LICENSE files now read "Oytun Onal" (human), and the dataset licence's
 attribution example points at the real repository instead of a placeholder.
+
+## 2026-09-08 — v1-gate critique (isolated, live site): 32/45, four blockers, one regression
+
+**Result.** PRODUCT_RUBRIC 1.2, 32/45 against v0.7's 27/45 on the same rubric:
+six lenses up, two level, **Edge states 4 → 3**. All four v0.7 blockers
+verified cleared by operation. Four new blockers, three of them visible only
+now that the site is live and looked at from outside: B1 every "within reach"
+card blames salary whichever rule was missed (a hard-coded sentence); B2 every
+route page is orphaned — no sitemap, no robots, no country index, no route
+link on the home page; B3 the data repository does not link to the product;
+B4 a wrong URL lands on GitHub's own 404.
+
+**Routing.** Adjustments 1 and 2 clear the blockers and are the builder's now,
+plus one pipeline gap the critique handed to the human that is really ours:
+the social card's date goes stale because the site rebuilds only on a push to
+the site repository — a daily scheduled deploy and a dispatch from the watch
+fix that. The GitHub About boxes (description, website, topics) are filled.
+Adjustment 3 (number above the fold, situation-aware question wording,
+contradiction notice) is friction, not a blocker: the human's pick.
+
+**The regression is not accepted as a trade-off.** Edge states dropped on B4
+and F7 (two mutually exclusive declarations return "criteria met" unnoticed);
+both are being fixed rather than recorded as a deliberate cost.
+
+**Kept for the record.** The critique found what neither the reviews nor the
+builder's walks nor mine could: what a stranger meets first — the address bar,
+the 404, the repository's About box, the home page's lack of a door into the
+route pages. Distribution is a surface, and nobody had walked it.

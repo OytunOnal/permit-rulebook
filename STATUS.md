@@ -65,6 +65,27 @@ action, a real device, or a judgement on a live source.
 - [x] **4 · Live over HTTPS** (2026-09-08): https://permitrulebook.com —
       certificate issued (apex + www, to 2026-12-07), HTTPS enforced, the Pages
       URL redirects there. `SITE_URL` is the domain.
+- [ ] **Critique, adjustment 3 — your pick:** the v1-gate critique (32/45; four
+      blockers, all being fixed) also proposes a third, non-blocking adjustment:
+      lift the threshold, its read date and "Check yours" above the scope box on
+      route pages (the number sits at y≈1400 of 2500 on desktop); word the
+      salary/funds questions from the declared situation; put the Anabin link
+      on the recognition question itself; show a one-line notice when two
+      declarations cannot both be true. Say "3 too" or "3 later" (it goes to
+      the tracker as design-flaw). *Why yours:* it costs a build round before
+      the tag.
+- [ ] **Critique, only you can check (five):** (1) the favicon on a Mac and an
+      Android phone — pass: "PR" centred in the tilted square with margin; (2)
+      after the daily rebuild lands, paste a route link into Slack/WhatsApp
+      tomorrow — pass: the card shows tomorrow's date; (3) paste
+      https://permitrulebook.com/germany/eu-blue-card-general into Slack,
+      WhatsApp and X — pass: the per-route title and the €50,700 description
+      beside the card; (4) **scope:** the one-pager promised 35–40 routes at
+      v1, the product ships 23 with the exclusions list carrying the
+      difference — say "23 is v1" and I amend the one-pager, or name the
+      routes to add first; (5) walk the French and Spanish question paths once
+      on the phone (the critique walked their route pages, not their
+      questions).
 - [ ] **5 · Phone walk on the live site, real handset** (https://permitrulebook.com): the interview end to
       end and one route page. *Pass:* nothing overflows, every tap target is
       comfortable, the rail's labels read as a list, the scope statement reads
