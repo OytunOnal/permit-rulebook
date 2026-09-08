@@ -2204,3 +2204,12 @@ in header and footer. Not changed: the disclaimer's wording (decision 9, the
 human's) — the critique's reading that "authorities won't consider these
 results" is ambiguous is put to the human; the centred lines and the fourth
 seal are the human's choices and stand.
+
+**Addendum, 2026-09-08 — decision 9's sentence amended (human: "change").**
+"…and authorities won't consider these results…" read as a prediction about
+behaviour; it now says the legal fact: "Permit Rulebook makes no immigration
+decision and **no authority is bound by these results** — it compares
+published values with what you declare, nothing more." One source
+(`copy.ts`), every surface, both READMEs. Cost: the old sentence is quoted in
+earlier ledger entries and in the s6 scenario; they stay as written, this
+line points forward.
