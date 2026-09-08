@@ -58,11 +58,8 @@ judgement on a live source.
       tab icon. *Pass:* "PR" centred in the tilted square with margin both
       sides. *Fail:* letters touching or overflowing the frame — say so and
       the letterforms get outlined to paths.
-- [ ] **Link preview:** paste
-      https://permitrulebook.com/germany/eu-blue-card-general into Slack,
-      WhatsApp and X. *Pass:* the title "EU Blue Card — general · Germany ·
-      Permit Rulebook" and a description naming €50,700 appear beside the card
-      image. *Fail:* a generic site name or a cropped card.
+- [x] **Link preview** (human, 2026-09-08): the route title and the €50,700
+      description appear beside the card image — pass.
 - [ ] **Tomorrow's card date:** after the daily rebuild lands, paste any route
       link into Slack again. *Pass:* the card reads tomorrow's date under
       "Rules read". *Fail:* yesterday's — the rebuild did not run; tell me.
