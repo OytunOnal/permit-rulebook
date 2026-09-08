@@ -545,3 +545,64 @@ describe.skipIf(notMeasured !== null)("the header is one object, measured", () =
   }, 180000);
 });
 
+/**
+ * And it has to hold with fonts this machine has never seen.
+ *
+ * CI runs on ubuntu, where there is no Segoe UI and no Cambria: the fallback
+ * stack is wider, the nav row wrapped onto a second line on the narrower
+ * generated pages, and the header measured 59 px on the interview against
+ * 123 px on a route page (2026-09-08). The design had about 6% of slack, which
+ * is not slack. This forces the generic stack — whatever this machine falls
+ * back to — and asks for room to spare on the narrowest page the site builds.
+ */
+describe.skipIf(notMeasured !== null)("the header holds on a machine with none of our fonts", () => {
+  /** Drop the named families: what is left is the generic fallback. */
+  const FALLBACK = '(() => { const s = document.createElement("style");'
+    + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
+    + ' document.head.appendChild(s); return "forced"; })()';
+
+  const ROW = 'JSON.stringify((() => {'
+    + ' const head = document.querySelector(".site-head");'
+    + ' const mark = document.querySelector(".site-head .wordmark");'
+    + ' const nav = document.querySelector(".site-head .nav");'
+    + ' return { height: Math.round(head.getBoundingClientRect().height),'
+    + '   have: Math.round(head.getBoundingClientRect().width),'
+    + '   need: Math.round(mark.getBoundingClientRect().width + nav.getBoundingClientRect().width),'
+    + '   rows: new Set([...nav.querySelectorAll("a")]'
+    + '     .map((a) => Math.round(a.getBoundingClientRect().top))).size }; })())';
+
+  it("one row at 1100 px, with room to spare, on every page", async () => {
+    const server = await serveDir(dist);
+    try {
+      const seen = await withChrome(async (page: Page) => {
+        const at: Record<string, unknown> = {};
+        for (const [name, path] of [
+          ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
+          ["country", "/germany/"], ["data", "/data/"], ["error", "/404.html"],
+        ] as const) {
+          await page.goto(server.url(path), 500);
+          await page.evaluate(FALLBACK);
+          await new Promise((r) => setTimeout(r, 200));
+          at[name] = JSON.parse(await page.evaluate(ROW));
+        }
+        return at;
+      }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, {
+        height: number; have: number; need: number; rows: number;
+      }>;
+
+      const heights = new Set(Object.values(seen).map((v) => v.height));
+      expect(heights.size, `header heights: ${[...heights].join(", ")}`).toBe(1);
+      for (const [name, box] of Object.entries(seen)) {
+        // Every nav item on the same line: a wrapped row is the defect itself.
+        expect(box.rows, `${name}: the nav wrapped onto ${box.rows} rows`).toBe(1);
+        // And room for a stack wider still than this machine's fallback.
+        const headroom = (box.have - box.need) / box.have;
+        expect(headroom, `${name}: ${box.need} px of row in ${box.have} px — ${
+          Math.round(headroom * 100)}% spare`).toBeGreaterThan(0.12);
+      }
+    } finally {
+      server.close();
+    }
+  }, 180000);
+});
+

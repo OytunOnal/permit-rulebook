@@ -115,8 +115,10 @@ describe("everything is reachable, and not only from a footer", () => {
     const first = new Set(hrefsOf(home!.html));
     const second = new Set<string>(first);
     for (const href of first) {
-      const page = pages.find((p) => p.path === `${href === url("/") ? "" : href}/index.html`
-        || p.path === `${href}.html`);
+      // Every internal page address ends in a slash now, so the file behind it
+      // is that address plus `index.html`.
+      const page = pages.find((p) => p.path === `${href.replace(/[/]$/, "")}/index.html`
+        || p.path === `${href.replace(/[/]$/, "")}.html`);
       if (page) for (const next of hrefsOf(page.html)) second.add(next);
     }
     for (const route of routePages(ds))
@@ -335,5 +337,41 @@ describe.skipIf(skipped !== null)("the data page's headings sit clear of their l
         server.close();
       }
     }, 180000);
+});
+
+/** And the pages still work under their own policy, in a browser. */
+describe.skipIf(skipped !== null)("nothing the site does is refused by its own policy", () => {
+  it("every kind of page loads, renders and opens its menu with no CSP violation", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage & { allProblems(): string[] }) => {
+        const out: Record<string, unknown> = {};
+        for (const [name, path] of [
+          ["interview", "/"], ["country", "/germany/"], ["data", "/data/"],
+          ["route", "/germany/researcher/"], ["error", "/404.html"],
+        ] as const) {
+          await page.goto(server.url(path), 1500);
+          out[name] = {
+            menu: await page.evaluate(
+              '(() => { const b = document.querySelector(".menu"); if (!b) return "no button";'
+              + ' b.click(); return b.getAttribute("aria-expanded"); })()',
+            ),
+            refused: page.allProblems().filter((p) => /Content Security Policy|Refused to/i.test(p)),
+          };
+        }
+        return out;
+      }, { viewport: { width: 390, height: 844 }, mobile: true }) as Record<string, {
+        menu: string; refused: string[];
+      }>;
+
+      for (const [name, page] of Object.entries(seen)) {
+        expect(page.refused, `${name}: the policy refused something`).toEqual([]);
+        // The inline menu script is hashed, so it still runs.
+        expect(page.menu, `${name}: the menu did not open`).toBe("true");
+      }
+    } finally {
+      server.close();
+    }
+  }, 180000);
 });
 

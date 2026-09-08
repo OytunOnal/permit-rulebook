@@ -115,6 +115,13 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
 /**
  * The one-pager's first non-negotiable: the answers never leave the device.
  *
+ * Since 2026-09-08 the pages carry a cookieless traffic counter (Cloudflare Web
+ * Analytics, the human's decision), so "nothing leaves" is no longer the same
+ * sentence as "no request leaves". Exactly two addresses outside this site are
+ * allowed — the beacon script, and the beacon's own endpoint — and what the
+ * beacon SENDS is read back off the wire and checked: the page's address, the
+ * browser, the site token, and nothing a reader answered.
+ *
  * This used to be checked by reading the page's own source for `fetch`,
  * `sendBeacon` and friends — a surface trace, and this project does not accept
  * those: a bundled dependency, an inlined helper or a renamed call would walk
@@ -141,6 +148,10 @@ if (skipped)
   ].join(String.fromCharCode(10)));
 
 interface Sent { url: string; method: string; postData: string; hasPostData: boolean }
+
+/** The two addresses outside this site that a page may talk to, and no others. */
+const BEACON_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
+const BEACON_ENDPOINT = "https://cloudflareinsights.com/cdn-cgi/rum";
 interface BrowserPage {
   goto(url: string, settleMs?: number): Promise<void>;
   evaluate(expression: string): Promise<string>;
@@ -187,17 +198,53 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
         const declared = await page.evaluate(
           'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
         );
-        return { answered, reached, walk, afterEdit, declared: JSON.parse(declared) as string[] };
+        // Every route the verdict named: none of these may reach the counter
+        // either — which of them fit is the reader's business.
+        const routes = await page.evaluate(
+          'JSON.stringify([...document.querySelectorAll("#app a[href]")]'
+          + '.map((a) => a.getAttribute("href")).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+$/.test(h))'
+          + '.map((h) => h.split("/").pop()))',
+        );
+        return {
+          answered, reached, walk, afterEdit,
+          declared: JSON.parse(declared) as string[], routes: JSON.parse(routes) as string[],
+        };
       }, { viewport: { width: 1100, height: 900 }, mobile: false, network: true }) as {
-        answered: string[]; reached: string; walk: Sent[]; afterEdit: Sent[]; declared: string[];
+        answered: string[]; reached: string; walk: Sent[]; afterEdit: Sent[];
+        declared: string[]; routes: string[];
       };
 
       expect(seen.reached, `the walk never reached a verdict: ${seen.answered.join(", ")}`).toBe("results");
       expect(seen.declared.length, "the walk answered nothing").toBeGreaterThan(5);
 
       const origin = server.origin as string;
+      const token = (value: string) =>
+        new RegExp(`(^|[^a-z0-9])${value.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
+
       for (const [where, sent] of [["the walk", seen.walk], ["the edit", seen.afterEdit]] as const)
         for (const request of sent) {
+          // The counter, and only the counter.
+          if (request.url.startsWith(BEACON_SCRIPT)) {
+            expect(request.method, `${where}: the beacon script was fetched with ${request.method}`).toBe("GET");
+            expect(request.url, `${where}: a query string on the beacon script`).toBe(BEACON_SCRIPT);
+            expect(request.hasPostData, `${where}: a body was sent to the beacon script`).toBe(false);
+            continue;
+          }
+          if (request.url.startsWith(BEACON_ENDPOINT)) {
+            // The preflight and the report itself, and nothing smuggled into
+            // the address.
+            expect(["POST", "OPTIONS"], `${where}: ${request.method} to the beacon`).toContain(request.method);
+            expect(request.url, `${where}: a query string on the beacon`).toBe(BEACON_ENDPOINT);
+            // What it actually sends, read off the wire. The page's own address
+            // is the one place a route id may legitimately appear.
+            const body = String(request.postData ?? "").replace(/"location":"[^"]*"/g, '"location":""');
+            for (const answer of seen.declared)
+              expect(token(answer).test(body.toLowerCase()), `${where}: ${answer} reached the beacon`).toBe(false);
+            for (const route of seen.routes)
+              expect(body.toLowerCase().includes(route.toLowerCase()), `${where}: ${route} reached the beacon`)
+                .toBe(false);
+            continue;
+          }
           // Same origin: no third-party host, ever.
           expect(request.url.startsWith(origin), `${where}: a request left this origin — ${request.url}`).toBe(true);
           // GET only: nothing is submitted anywhere.
@@ -216,10 +263,11 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
           }
         }
 
-      // The edit repainted the screen without asking anyone anything.
-      expect(seen.afterEdit.filter((r) => !r.url.endsWith(".css") && !r.url.endsWith(".js")))
-        .toEqual(seen.afterEdit.filter((r) => !r.url.endsWith(".css") && !r.url.endsWith(".js")));
-      expect(seen.afterEdit.length, `the edit sent ${seen.afterEdit.length} requests`).toBeLessThan(3);
+      // The edit repainted the screen without asking THIS SITE anything: the
+      // counter reports a view when the history entry changes, which is the
+      // page's address and nothing else.
+      const ours = seen.afterEdit.filter((r) => r.url.startsWith(origin));
+      expect(ours.length, `the edit sent ${ours.length} requests to this site`).toBeLessThan(3);
     } finally {
       server.close();
     }

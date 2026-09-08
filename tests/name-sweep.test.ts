@@ -106,9 +106,29 @@ const DEPENDENCY_PATH: string = JSON.parse(
 /** The directory's own name, without the `../`. */
 const DEPENDENCY_DIR = DEPENDENCY_PATH.replace(/^(\.\.\/)+/, "");
 
-/** Everything left on a line once every mention of that path is taken away. */
-const withoutThePath = (line: string): string =>
-  line.split(DEPENDENCY_PATH).join(" ").split(DEPENDENCY_DIR).join(" ");
+/**
+ * The two lines that may name the directory on disk, each because it IS the
+ * path and not a name a reader meets — and no others.
+ *
+ * It used to be forgiven on any line at all: every mention of the dependency's
+ * directory was stripped before the pattern ran, which is a blanket exemption
+ * wearing the shape of a rule (Standards review, 2026-09-08). These two are
+ * named, and the folder rename that would end them is the human's.
+ */
+const isTheDependencyPath = (file: string, line: string): boolean => {
+  const bare = line.split(DEPENDENCY_PATH).join(" ").split(DEPENDENCY_DIR).join(" ");
+  if (WORKING_NAME.test(bare)) return false;
+  // The manifest's own `file:` dependency — the one fact that fixes the
+  // directory's name for everything else — and the lock file npm derives from
+  // it, which nobody writes by hand.
+  if (file === "package.json" && /"permit-rulebook-data":\s*"file:/.test(line)) return true;
+  if (file === "package-lock.json") return true;
+  // This file states the rule, so it has to be able to describe it.
+  if (file === "tests/name-sweep.test.ts") return true;
+  // The README's clone command, which has to put the data repository where the
+  // manifest expects to find it.
+  return file === "README.md" && line.startsWith("git clone ");
+};
 
 /**
  * Exact lines that may keep the old name, each for a reason that is not "we
@@ -139,10 +159,7 @@ describe("s6 — the working name is gone from everything a reader can see (ledg
         try { text = read(repo, file); } catch { continue; }
         for (const line of text.split("\n")) {
           if (!WORKING_NAME.test(line)) continue;
-          // A path on disk is not a name a reader sees: what is left of the
-          // line once every mention of the dependency's own directory is taken
-          // away decides it.
-          if (!WORKING_NAME.test(withoutThePath(line))) continue;
+          if (isTheDependencyPath(file, line)) continue;
           if (isTheMigratedKey(file, line)) continue;
           offenders.push(`${file}: ${line.trim().slice(0, 120)}`);
         }

@@ -1,0 +1,841 @@
+{
+  "schema_version": "0.5.0",
+  "dataset_version": "2026.01.01",
+  "fields": [
+    {
+      "id": "destination",
+      "label": "Where are you looking to go?",
+      "short_label": "Destination",
+      "subject": "where you are looking to go",
+      "type": "enum",
+      "ask_first": true,
+      "options": [
+        {
+          "value": "de",
+          "label": "Germany",
+          "short": "Germany as your destination"
+        },
+        {
+          "value": "fr",
+          "label": "France",
+          "short": "France as your destination"
+        },
+        {
+          "value": "es",
+          "label": "Spain",
+          "short": "Spain as your destination"
+        },
+        {
+          "value": "nl",
+          "label": "Netherlands",
+          "short": "the Netherlands as your destination"
+        },
+        {
+          "value": "all",
+          "label": "Any of these four — show me everything",
+          "short": "any of these four as your destination"
+        }
+      ]
+    },
+    {
+      "id": "citizenship",
+      "label": "Which passport will you apply with?",
+      "short_label": "Passport",
+      "subject": "the passport you would apply with",
+      "type": "enum",
+      "options_from": "countries"
+    },
+    {
+      "id": "situation",
+      "label": "Which best describes your situation?",
+      "short_label": "Situation",
+      "subject": "whether you have an offer, a transfer or a hosting agreement",
+      "type": "enum",
+      "kind": "path",
+      "options": [
+        {
+          "value": "offer",
+          "label": "I have (or am about to get) a job offer there",
+          "short": "a job offer",
+          "means": "An employment contract with an employer {place} itself — including one you already hold — not a transfer to a branch on a contract you hold abroad."
+        },
+        {
+          "value": "ict",
+          "label": "My employer is transferring me to a branch there",
+          "short": "an intra-corporate transfer",
+          "means": "Your contract stays with the company abroad and it moves you to its branch {place}."
+        },
+        {
+          "value": "research",
+          "label": "I have (or expect) a hosting agreement with a research institution there",
+          "short": "a research hosting agreement"
+        },
+        {
+          "value": "none",
+          "label": "None of these yet — exploring my options",
+          "short": "no offer, transfer or hosting agreement yet",
+          "is_fallback": true
+        }
+      ]
+    },
+    {
+      "id": "situation_country",
+      "label": "Which country is that offer, transfer or agreement in?",
+      "short_label": "Offer country",
+      "subject": "which country your offer, transfer or agreement is in",
+      "type": "enum",
+      "is_qualifier": true,
+      "options": [
+        {
+          "value": "de",
+          "label": "Germany",
+          "short": "your offer, transfer or agreement in Germany"
+        },
+        {
+          "value": "fr",
+          "label": "France",
+          "short": "your offer, transfer or agreement in France"
+        },
+        {
+          "value": "es",
+          "label": "Spain",
+          "short": "your offer, transfer or agreement in Spain"
+        },
+        {
+          "value": "nl",
+          "label": "Netherlands",
+          "short": "your offer, transfer or agreement in the Netherlands"
+        }
+      ]
+    },
+    {
+      "id": "qualification",
+      "label": "Your highest completed qualification?",
+      "short_label": "Qualification",
+      "subject": "your highest completed qualification",
+      "type": "enum",
+      "options": [
+        {
+          "value": "none",
+          "label": "No completed qualification",
+          "short": "no completed qualification"
+        },
+        {
+          "value": "vocational",
+          "label": "Vocational training, 2+ years (state-recognised where completed)",
+          "short": "vocational training of 2+ years"
+        },
+        {
+          "value": "degree",
+          "label": "University degree",
+          "short": "a university degree"
+        }
+      ]
+    },
+    {
+      "id": "qualification_recent",
+      "label": "Did you graduate, take your doctorate, or did a research permit end, within the last 3 years?",
+      "short_label": "Qualification date",
+      "subject": "whether your qualification is from the last 3 years",
+      "type": "enum",
+      "kind": "improvable",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "a qualification from the last 3 years"
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "short": "a qualification older than 3 years"
+        }
+      ]
+    },
+    {
+      "id": "recognition_de",
+      "label": "Where does German recognition of your qualification stand?",
+      "short_label": "German recognition",
+      "subject": "whether Germany recognises your qualification",
+      "type": "enum",
+      "kind": "improvable",
+      "learn": {
+        "label": "Check your degree in the official Anabin database",
+        "url": "https://anabin.kmk.org/anabin.html"
+      },
+      "options": [
+        {
+          "value": "recognized",
+          "label": "Fully recognised (or a German qualification)",
+          "short": "full German recognition"
+        },
+        {
+          "value": "partial",
+          "label": "Assessed as partial — additional measures required",
+          "short": "a partial recognition decision"
+        },
+        {
+          "value": "not_yet",
+          "label": "Not assessed / not recognised",
+          "short": "a qualification that is not assessed or not recognised in Germany"
+        },
+        {
+          "value": "unknown",
+          "label": "I don't know",
+          "is_unknown": true
+        }
+      ]
+    },
+    {
+      "id": "experience",
+      "label": "Skilled work experience related to your qualification, in years?",
+      "short_label": "Experience",
+      "subject": "your skilled work experience",
+      "type": "enum",
+      "kind": "improvable",
+      "options": [
+        {
+          "value": "lt2",
+          "label": "Under 2 years",
+          "short": "under 2 years of related experience"
+        },
+        {
+          "value": "y2in5",
+          "label": "2+ years within the last 5",
+          "short": "2+ years of related experience"
+        },
+        {
+          "value": "y3in7",
+          "label": "3+ years within the last 7",
+          "short": "3+ years of related experience",
+          "implies": [
+            "y2in5"
+          ]
+        },
+        {
+          "value": "y5in7",
+          "label": "5+ years within the last 7",
+          "short": "5+ years of related experience"
+        }
+      ]
+    },
+    {
+      "id": "experience_7y",
+      "label": "Do you have at least 3 years of relevant experience within the last 7?",
+      "short_label": "Experience, last 7 years",
+      "subject": "your relevant experience in the last 7 years",
+      "type": "enum",
+      "kind": "improvable",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "3+ years of experience in the last 7"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ]
+    },
+    {
+      "id": "occupation_shortage",
+      "label": "Is your occupation on Germany's shortage list (IT, engineering, health…)?",
+      "short_label": "Shortage list",
+      "subject": "whether your occupation is on Germany's shortage list",
+      "type": "enum",
+      "learn": {
+        "label": "§ 18g AufenthG lists the shortage groups by ISCO-08 code (132, 133, 134, 21, 221, 222, 225, 226, 23, 25)",
+        "url": "https://www.buzer.de/18g_AufenthG.htm"
+      },
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "an occupation on Germany's shortage list"
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "short": "an occupation that is not on Germany's shortage list"
+        },
+        {
+          "value": "unknown",
+          "label": "I don't know",
+          "is_unknown": true
+        }
+      ]
+    },
+    {
+      "id": "occupation_it",
+      "label": "Is your work in information or communications technology?",
+      "short_label": "IT work",
+      "subject": "whether your work is in information technology",
+      "type": "enum",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "work in information technology"
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "short": "work outside information technology"
+        }
+      ]
+    },
+    {
+      "id": "salary_eur_year",
+      "label": "Gross yearly salary for the job you would do there?",
+      "short_label": "Yearly salary",
+      "unknown_label": "Doesn't apply to me, or I don't know",
+      "subject": "the yearly salary for the job you would do",
+      "type": "money_band",
+      "period": "year",
+      "kind": "improvable"
+    },
+    {
+      "id": "salary_eur_month",
+      "label": "Gross monthly salary for the job you would do there (or monthly income you could show)?",
+      "short_label": "Monthly salary",
+      "unknown_label": "Doesn't apply to me, or I don't know",
+      "subject": "the monthly salary for the job you would do",
+      "type": "money_band",
+      "period": "month",
+      "kind": "improvable"
+    },
+    {
+      "id": "fr_degree",
+      "label": "Did you obtain a master's-level degree (or a Grandes Écoles level-1 diploma) in France?",
+      "short_label": "French degree",
+      "subject": "whether you earned a master's-level degree in France",
+      "type": "enum",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "a French master's-level degree"
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "short": "no master's-level degree from France"
+        }
+      ]
+    },
+    {
+      "id": "fr_innovative_employer",
+      "label": "Is the French employer a recognised innovative company (jeune entreprise innovante, or recognised by the ministry of the economy)?",
+      "short_label": "Innovative employer",
+      "subject": "whether France recognises your employer as an innovative company",
+      "type": "enum",
+      "learn": {
+        "label": "service-public.fr sets out the talent card's innovative-company route",
+        "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F16922"
+      },
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "an employer France recognises as innovative"
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "short": "an employer France does not recognise as innovative"
+        },
+        {
+          "value": "unknown",
+          "label": "I don't know",
+          "is_unknown": true
+        }
+      ]
+    },
+    {
+      "id": "fr_local_contract",
+      "label": "Will you have an employment contract with the French entity you are moving to (not only with your employer abroad)?",
+      "short_label": "French contract",
+      "subject": "whether your contract will be with the French entity",
+      "type": "enum",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "a contract with the French entity"
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "short": "no contract with the French entity"
+        }
+      ]
+    },
+    {
+      "id": "nl_recent_grad",
+      "label": "In the last 3 years, did you graduate from — or do research at — a Dutch university or research institution?",
+      "short_label": "Dutch degree",
+      "subject": "whether you graduated from — or did research at — a Dutch institution in the last 3 years",
+      "type": "enum",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "a degree from a Dutch university or research institution, from the last 3 years"
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "short": "no Dutch degree from the last 3 years"
+        }
+      ]
+    },
+    {
+      "id": "top200_grad",
+      "label": "In the last 3 years, did you graduate from a foreign institution that the Dutch immigration service (IND) designates for its orientation year?",
+      "short_label": "Designated institution",
+      "subject": "whether your foreign institution is one the Dutch immigration service designates",
+      "type": "enum",
+      "learn": {
+        "label": "The Dutch immigration service (IND) lists the designated foreign institutions on its orientation-year page",
+        "url": "https://ind.nl/en/residence-permits/work/residence-permit-for-orientation-year"
+      },
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "a degree from a foreign institution the Dutch immigration service designates"
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "short": "no degree from a designated foreign institution"
+        },
+        {
+          "value": "unknown",
+          "label": "I don't know",
+          "is_unknown": true
+        }
+      ]
+    },
+    {
+      "id": "german",
+      "label": "Your German level?",
+      "short_label": "German",
+      "subject": "your German level",
+      "type": "enum",
+      "kind": "improvable",
+      "options": [
+        {
+          "value": "none",
+          "label": "None / below A1",
+          "short": "German below A1",
+          "is_fallback": true
+        },
+        {
+          "value": "a1",
+          "label": "A1",
+          "short": "German at A1 (beginner)"
+        },
+        {
+          "value": "a2",
+          "label": "A2",
+          "short": "German at A2 (elementary)"
+        },
+        {
+          "value": "b1",
+          "label": "B1",
+          "short": "German at B1 (intermediate)"
+        },
+        {
+          "value": "b2plus",
+          "label": "B2 or higher",
+          "short": "German at B2 (upper intermediate) or higher"
+        }
+      ]
+    },
+    {
+      "id": "english",
+      "label": "Your English level?",
+      "short_label": "English",
+      "subject": "your English level",
+      "type": "enum",
+      "kind": "improvable",
+      "options": [
+        {
+          "value": "none",
+          "label": "Below B2",
+          "short": "English below B2",
+          "is_fallback": true
+        },
+        {
+          "value": "b2",
+          "label": "B2",
+          "short": "English at B2 (upper intermediate)"
+        },
+        {
+          "value": "c1",
+          "label": "C1 or higher",
+          "short": "English at C1 (advanced) or higher"
+        }
+      ]
+    },
+    {
+      "id": "age_band",
+      "label": "Your age?",
+      "short_label": "Age",
+      "subject": "your age",
+      "type": "enum",
+      "options": [
+        {
+          "value": "u30",
+          "label": "Under 30",
+          "short": "an age under 30"
+        },
+        {
+          "value": "a30to35",
+          "label": "30 – 35",
+          "short": "an age of 30 to 35"
+        },
+        {
+          "value": "a35to40",
+          "label": "36 – 40",
+          "short": "an age of 36 to 40"
+        },
+        {
+          "value": "o40",
+          "label": "Over 40",
+          "short": "an age over 40"
+        }
+      ]
+    },
+    {
+      "id": "de_stay6m",
+      "label": "Lawful, uninterrupted stay of 6+ months in Germany during the last 5 years? (Schengen short visits don't count)",
+      "short_label": "Stay in Germany",
+      "subject": "whether you have already had a lawful stay of six months or more in Germany",
+      "type": "enum",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "a lawful stay of six months or more in Germany in the last five years"
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "short": "no lawful stay of six months or more in Germany"
+        }
+      ]
+    },
+    {
+      "id": "partner_ck",
+      "label": "Is your spouse or partner also applying for (and eligible for) an Opportunity Card?",
+      "short_label": "Partner applying too",
+      "subject": "whether your partner is also applying for an Opportunity Card",
+      "type": "enum",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes",
+          "short": "a partner applying for an Opportunity Card too"
+        },
+        {
+          "value": "no",
+          "label": "No",
+          "short": "no partner applying for an Opportunity Card"
+        }
+      ]
+    },
+    {
+      "id": "funds_eur_month",
+      "label": "Monthly money you could show for living costs (a blocked bank account, or a formal sponsorship undertaking)?",
+      "short_label": "Monthly funds",
+      "unknown_label": "Doesn't apply to me, or I don't know",
+      "subject": "the monthly money you could show for living costs",
+      "type": "money_band",
+      "period": "month",
+      "kind": "improvable"
+    }
+  ],
+  "notices": [
+    {
+      "id": "eu-free-movement",
+      "when": {
+        "field": "citizenship",
+        "op": "eq",
+        "value": "eu_eea_ch"
+      },
+      "kind": "no-permit-needed",
+      "title": "No work permit needed",
+      "body": "Citizens of the EU, of Iceland, Liechtenstein and Norway, and of Switzerland, can live and work in Germany, France, Spain and the Netherlands under free movement — the routes on this site are for other passports. Check registration rules after arrival (e.g. Anmeldung in Germany).",
+      "source": {
+        "source_url": "https://europa.eu/youreurope/citizens/work/work-abroad/work-permits/index_en.htm",
+        "quote": "As an EU national you generally don't need a work permit to work anywhere in the EU.",
+        "retrieved_at": "2026-09-03",
+        "legal_basis": "TFEU art. 45 (free movement of workers) — Your Europe",
+        "history": []
+      }
+    },
+    {
+      "id": "tr-ankara-rights",
+      "when": {
+        "field": "citizenship",
+        "op": "eq",
+        "value": "TR"
+      },
+      "kind": "extra-rights",
+      "title": "Türkiye: extra rights once you are legally employed",
+      "body": "Your route options are the same as for any other non-EU passport: the EU–Türkiye agreement adds rights once you are legally working, rather than a separate way in. Where an authority states that its own requirements differ for Turkish citizens, that route's card says so — the Dutch orientation year is one.",
+      "source": {
+        "source_url": "https://europa.eu/youreurope/citizens/work/work-abroad/work-permits/index_en.htm",
+        "quote": "As a national of Türkiye, your rights to live and work in an EU country depend entirely on the national rules of that country. When employed legally in the EU, you enjoy the same working conditions as the nationals of that country and you have the following rights: after one year's legal employment you are entitled to a renewal of your work permit for the same employer if a job is available after three years' legal employment you may change employers and respond to any other employment offer within the same professional qualifications after four years' legal employment you enjoy full access to any paid employment in that EU country.",
+        "retrieved_at": "2026-09-04",
+        "legal_basis": "EEC–Turkey Association Agreement, Decision 1/80 art. 6 — Your Europe",
+        "history": []
+      }
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "graduated-without-a-qualification",
+      "when": [
+        {
+          "field": "qualification",
+          "in": [
+            "none"
+          ]
+        },
+        {
+          "field": "nl_recent_grad",
+          "in": [
+            "yes"
+          ]
+        }
+      ],
+      "say": "You told us you have no completed qualification, and also that you graduated from a Dutch institution in the last three years. Both cannot be true. The rules read each answer where it applies, so change whichever one is wrong before you rely on what is below."
+    },
+    {
+      "id": "designated-graduate-without-a-qualification",
+      "when": [
+        {
+          "field": "qualification",
+          "in": [
+            "none"
+          ]
+        },
+        {
+          "field": "top200_grad",
+          "in": [
+            "yes"
+          ]
+        }
+      ],
+      "say": "You told us you have no completed qualification, and also that you graduated from an institution the Dutch immigration service designates. Both cannot be true. The rules read each answer where it applies, so change whichever one is wrong before you rely on what is below."
+    }
+  ],
+  "countries": [
+    {
+      "code": "DE",
+      "name": "Germany",
+      "routes": [
+        {
+          "id": "de-blue-card-general",
+          "name": "EU Blue Card — general",
+          "kind": "res-work",
+          "summary": "The standard EU Blue Card: a recognised university degree and a salary above the general threshold, in any qualified job.",
+          "info_url": "https://www.bamf.de/EN/Themen/MigrationAufenthalt/ZuwandererDrittstaaten/Migrathek/BlaueKarteEU/blauekarteeu-node.html",
+          "scope": {
+            "value": "some-conditions-stated-not-asked",
+            "reason": "Every rule that decides the general Blue Card is a question you answer, the salary included; two conditions the authority states — the job offer of at least six months, and the licence where the profession is regulated — are listed with the rules below and never asked.",
+            "not_asked": [
+              "job-offer-of-at-least-six-months",
+              "licence-for-a-regulated-profession"
+            ]
+          },
+          "criteria": [
+            {
+              "field": "citizenship",
+              "op": "eq",
+              "value": "third_country"
+            },
+            {
+              "field": "destination",
+              "op": "in",
+              "values": [
+                "de",
+                "all"
+              ]
+            },
+            {
+              "field": "situation",
+              "op": "eq",
+              "value": "offer"
+            },
+            {
+              "op": "any",
+              "label": "located in Germany",
+              "paths": [
+                {
+                  "label": "Germany chosen as destination",
+                  "criteria": [
+                    {
+                      "field": "destination",
+                      "op": "eq",
+                      "value": "de"
+                    }
+                  ]
+                },
+                {
+                  "label": "offer in Germany",
+                  "criteria": [
+                    {
+                      "field": "situation_country",
+                      "op": "eq",
+                      "value": "de"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "field": "qualification",
+              "op": "eq",
+              "value": "degree"
+            },
+            {
+              "field": "recognition_de",
+              "op": "eq",
+              "value": "recognized"
+            },
+            {
+              "field": "salary_eur_year",
+              "op": "gte",
+              "threshold_label": "standard amount",
+              "threshold": {
+                "amount": 50700,
+                "currency": "EUR",
+                "source_url": "https://www.arbeitsagentur.de/vor-ort/zav/working-and-living-in-germany/newsletter-iss/03-2026/blaue-karte",
+                "quote": "Für die „große“ Blaue Karte EU muss ein Mindestbruttojahresgehalt erreicht werden, welches im Jahr 2026 50.700 Euro beträgt.",
+                "retrieved_at": "2026-09-04",
+                "legal_basis": "§ 18g AufenthG",
+                "history": []
+              }
+            }
+          ],
+          "statements": [
+            {
+              "id": "job-offer-of-at-least-six-months",
+              "kind": "precondition",
+              "text": "A concrete job offer from an employer in Germany, for work of at least six months",
+              "source": {
+                "source_url": "https://www.arbeitsagentur.de/vor-ort/zav/working-and-living-in-germany/newsletter-iss/03-2026/blaue-karte",
+                "quote": "Eine weitere Voraussetzung für die Blaue Karte EU ist ein konkretes Stellenangebot von einem Arbeitgeber in Deutschland mit einer Beschäftigungsdauer von mindestens sechs Monaten.",
+                "retrieved_at": "2026-09-07",
+                "legal_basis": "§ 18g AufenthG"
+              }
+            },
+            {
+              "id": "licence-for-a-regulated-profession",
+              "kind": "precondition",
+              "text": "If your profession is regulated, the licence to practise it must already be in hand",
+              "source": {
+                "source_url": "https://www.arbeitsagentur.de/vor-ort/zav/working-and-living-in-germany/newsletter-iss/03-2026/blaue-karte",
+                "quote": "Handelt es sich um einen reglementierten Beruf, muss zusätzlich eine Berufsausübungserlaubnis vorliegen.",
+                "retrieved_at": "2026-09-07",
+                "legal_basis": "§ 18g AufenthG"
+              }
+            }
+          ]
+        },
+        {
+          "id": "de-skilled-academic",
+          "name": "Skilled worker — academic (§ 18b)",
+          "kind": "res-work",
+          "summary": "Your university degree is recognised in Germany and the job matches it. There is no salary threshold — but from age 45 an extra salary requirement applies, or proof of pension provision.",
+          "info_url": "https://www.bamf.de/EN/Themen/MigrationAufenthalt/ZuwandererDrittstaaten/Arbeit/Hochschulabsolvent/hochschulabsolvent-node.html",
+          "scope": {
+            "value": "some-conditions-stated-not-asked",
+            "reason": "Every rule that decides this route is a question you answer; one condition the authority states — that the job can be done with the qualification you hold — is listed with the rules below and never asked.",
+            "not_asked": [
+              "a-job-the-degree-can-do"
+            ]
+          },
+          "criteria": [
+            {
+              "field": "citizenship",
+              "op": "eq",
+              "value": "third_country"
+            },
+            {
+              "field": "destination",
+              "op": "in",
+              "values": [
+                "de",
+                "all"
+              ]
+            },
+            {
+              "field": "situation",
+              "op": "eq",
+              "value": "offer"
+            },
+            {
+              "op": "any",
+              "label": "located in Germany",
+              "paths": [
+                {
+                  "label": "Germany chosen as destination",
+                  "criteria": [
+                    {
+                      "field": "destination",
+                      "op": "eq",
+                      "value": "de"
+                    }
+                  ]
+                },
+                {
+                  "label": "offer in Germany",
+                  "criteria": [
+                    {
+                      "field": "situation_country",
+                      "op": "eq",
+                      "value": "de"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "field": "qualification",
+              "op": "eq",
+              "value": "degree"
+            },
+            {
+              "field": "recognition_de",
+              "op": "eq",
+              "value": "recognized",
+              "source": {
+                "source_url": "https://www.bamf.de/EN/Themen/MigrationAufenthalt/ZuwandererDrittstaaten/Arbeit/Hochschulabsolvent/hochschulabsolvent-node.html",
+                "quote": "Proof of a German or recognised foreign university degree or a foreign university degree which is comparable to a German university degree",
+                "retrieved_at": "2026-09-07"
+              }
+            }
+          ],
+          "statements": [
+            {
+              "id": "a-job-the-degree-can-do",
+              "kind": "precondition",
+              "text": "A job that can be done with the university qualification you hold",
+              "source": {
+                "source_url": "https://www.bamf.de/EN/Themen/MigrationAufenthalt/ZuwandererDrittstaaten/Arbeit/Hochschulabsolvent/hochschulabsolvent-node.html",
+                "quote": "Presentation of a concrete job offer or an employment contract for a job that can be performed with this academic qualification.",
+                "retrieved_at": "2026-09-07"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

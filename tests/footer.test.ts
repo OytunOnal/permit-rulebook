@@ -7,7 +7,8 @@ import { DISCLAIMER } from "../src/lib/copy.js";
 import { countryLinks, footerFacts, navCountries } from "../src/lib/country-page.js";
 import { DATA_PATH, siteFooter } from "../src/lib/identity.js";
 import { routePages } from "../src/lib/route-page.js";
-import { NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, url } from "../src/lib/site.js";
+import { dataPage } from "../src/lib/data-page.js";
+import { NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
 
 /**
@@ -128,7 +129,11 @@ describe("one footer, every page", () => {
     const facts = footerFacts(ds);
     const footer = siteFooter(navCountries(ds), facts);
     expect(footer).toContain(`values read between <b><time datetime="${facts.read.oldest}">`);
-    expect(footer).toContain("re-read daily");
+    // "Re-read daily" is a claim, so the day it last happened is printed with
+    // it, from the watch's own state (devils-advocate, 2026-09-08).
+    expect(footer).toContain(`re-read daily (last run ${facts.lastRun})`);
+    expect(facts.lastRun, "the watch has never recorded a run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+    expect(facts.lastRun).toBe(lastWatchRun());
     expect(footer).toContain(`dataset ${facts.datasetVersion}`);
     // The oldest is really the oldest, and the two ends are different days.
     expect(facts.read.oldest < facts.read.newest, `${facts.read.oldest}..${facts.read.newest}`).toBe(true);
@@ -209,10 +214,37 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
       for (const segment of seen)
         expect(segment.lines, `"${segment.text}" wrapped inside itself`).toBeLessThanOrEqual(1);
       // The segments a reader must never see split.
-      expect(seen.map((s) => s.text)).toContain("re-read daily");
+      expect(seen.some((s) => s.text.startsWith("re-read daily")), seen.map((s) => s.text).join(" | "))
+        .toBe(true);
       expect(seen.some((s) => s.text.includes("Oytun Onal"))).toBe(true);
     } finally {
       server.close();
     }
   }, 180000);
+});
+
+/**
+ * The site said the corner date "moves on its own". It does not: it is the
+ * newest reading in the dataset, and only a person writes one. What moves by
+ * itself is the watch's own run, so that is what is printed — and it is read
+ * from the watch's state rather than described (devils-advocate, 2026-09-08).
+ */
+describe("what the site says about the daily check is what the watch recorded", () => {
+  it("the data page prints the watch's own last-run day", () => {
+    const html = dataPage(ds).html;
+    const run = lastWatchRun();
+    expect(run, "the watch state carries no last_run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+    expect(html).toContain(`last run <b><time datetime="${run}">${run}</time></b>`);
+    // And it no longer claims a mechanism that does not exist.
+    expect(html).not.toContain("moves on its own");
+    expect(html).not.toContain("asks this site to rebuild");
+    // It says who changes a value instead.
+    expect(html).toContain("change when a person changes them");
+  });
+
+  it("the same day, in the footer, on every page", () => {
+    const run = lastWatchRun();
+    for (const page of builtPages())
+      expect(footerOf(page.html), `${page.path}`).toContain(`re-read daily (last run ${run})`);
+  });
 });

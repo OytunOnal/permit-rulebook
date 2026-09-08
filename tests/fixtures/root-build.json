@@ -1,29 +1,8 @@
 {
-  "note": "sha256 of every route page as rendered at the site root. Regenerating this is a deliberate act: it means the root build moved, and the reason belongs in the line below. Captured 2026-09-08 before the base-path change; regenerated 2026-09-08 when the masthead's two-line heading rule moved into identity.css so the interview and the route pages share one rule (human, 2026-09-08); regenerated again 2026-09-08 when the section symbol gained a first-use gloss, so each German route page's h1 now reads \"(§ 18b, section 18b)\" — the eight German pages moved, the fifteen others did not. Regenerated 2026-09-08 when the country crumb became a link: `/germany/` was a 404 and every route page was orphaned (product critique B2), so the crumb that named the country now leads to its page — all twenty-three moved, by one `<span>` becoming an `<a>`. Regenerated 2026-09-08 again when the answer a search visitor came for — the threshold, its read date and the one call to action — moved above the \"what the checker asks\" box (product critique F1), the section symbol gained a first-use gloss in each German route's heading, and the money questions were reworded to fit whoever is answering them (F11). Regenerated 2026-09-08 after the review round: the identity markup moved into src/lib/identity.ts (one set of elements for the shared CSS to place), a compound citation keeps its whole searchable string with the gloss after it, and the money questions gained their third door. Regenerated 2026-09-08 for the navigation build: every page gained the shared site header and lost its crumb row, and the scope line now says what the reader gets rather than what our pipeline did. Regenerated 2026-09-08 for the shared footer: every page's own footer became one siteFooter(), the head's link-preview block became one headMeta(), the scope line now separates what a source states from what we note, gists are whole sentences, and the disclaimer says \"no authority is bound by these results\".",
+  "note": "sha256 of the two route pages the FROZEN dataset (fixtures/frozen-dataset.json) produces at the site root. Regenerating this is a deliberate act: it means the template moved. It was rebased onto the frozen dataset on 2026-09-08, because hashing the live dataset made every page differ in CI the moment a read date moved — the fixture was measuring the data, not the template. Regenerated 2026-09-08 when the traffic counter moved from the head to the end of the body. Regenerated 2026-09-08 when every internal page URL gained the trailing slash the host serves it at. Regenerated 2026-09-08 when every page gained a content-security policy and the footer began printing the watch's last run.",
   "base": "/",
   "pages": {
-    "/germany/eu-blue-card-shortage-occupation": "ffc50a7b25f9fe75b4e79e163992e89a3486820307530159835084e34a3a6031",
-    "/germany/eu-blue-card-general": "9a616d350baef2a80f9f7fdfc8485d9d8343a394e8c8763c597765363b053051",
-    "/germany/skilled-worker-academic": "34bdf66a0d5ae71930c162679afa967b04d1f20bd172c3f59971423c0df2ec07",
-    "/germany/skilled-worker-vocational": "066caa19d99ca90d316d1d5c9345c57fd4c050fe8cc3ec655cb7f49f4599af05",
-    "/germany/experienced-worker": "a3c252cc4c6aa32a42f7cb8e1f2cfb062b00a3278ba2fb3d379507a1e6f0bf9d",
-    "/germany/researcher": "e07810c3bd363e3f7861feca47e6799925112d88919c68188fce447fa70fdc66",
-    "/germany/ict-card-intra-corporate-transfer": "26011a33dbd0198f7d3e268643303c7b995a58f943f5bcf81ef85ec672d0bb65",
-    "/germany/opportunity-card": "290087c328b31b2c2869ab4303942dc9acbabb4a78a03c66840ed4872bd9e4d9",
-    "/france/talent-qualified-employee": "cee155cb6612a66acbbce0c971a3185e2a9957520a39f5177f52f7e05c3e4a32",
-    "/france/eu-blue-card": "b0ae0f8aabb67ce6f9bab64e3bfbcb4c1e5736b76b5b0b1f9cd9c33ca25161e7",
-    "/france/ict-seconded-employee": "31b4dd34383a6b1a3ac42240333c25915cd37afb05df8a662ccd654f7c5673ab",
-    "/france/talent-employee-of-an-innovative-company": "f8c38455da773eecc54a078f348b20ec95a241ce05ded43e24056840473f062d",
-    "/france/talent-employee-on-assignment": "f095eb6b40530069d982f6c0492548c1142667caa6e63cbbb5cd910c62f010ee",
-    "/spain/eu-blue-card": "81662db31b9cec883da42b7e370276574c12bc1d54fd3d0df85b96ffacdc7c57",
-    "/spain/highly-qualified-professional": "463ca5dc7e088f9d468ee05bd4673d7d7848acdf364e372d142f32b562757a00",
-    "/spain/intra-company-transfer": "d2a8a9a9338d1f4f488007165586597d345370a7c77fdd6e180b7f993c756314",
-    "/spain/researcher": "ebcc44e9b528cf29763c177b0b2201a018b6c8f2c3ce7681b75310230afd69b9",
-    "/netherlands/highly-skilled-migrant-30-or-older": "88718c8ebf2e89b2dba5a3df06cb63d60f0bdea4d9d93fd6892845be0f553ace",
-    "/netherlands/highly-skilled-migrant-under-30": "07310f7d63ec989fa970a2c6a8755675a1c55090effdb5721d99fcfa8020e5e8",
-    "/netherlands/eu-blue-card": "f14faa50967513bd4300fac32b5aa9a6118f004a7d9042fae5f789a763d70711",
-    "/netherlands/intra-corporate-transferee": "c60d9d02c87bb8e6e232df90cc70a10a079705f8e496eceb7f5d0f82f8faa06b",
-    "/netherlands/researcher": "4c5178f8f552bcbaf9eea4f15f7813e493387a3b32cffdd64222a23d275a00af",
-    "/netherlands/orientation-year": "8c785a03eb69ca56ba9a81146300727dbe192937857b051e4495485e5d596b85"
+    "/germany/eu-blue-card-general": "770aa592a3f547919b6c0121f838a118006e9adfa1910875bd932bb9acc44af1",
+    "/germany/skilled-worker-academic": "c9df3dc6c802ada5681d7a8bd72f5268efffd1c4b9ed52c8879e0c81177d1535"
   }
 }

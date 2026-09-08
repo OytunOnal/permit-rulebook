@@ -40,10 +40,12 @@ on:
     types: [dataset-updated]
   workflow_dispatch:
 
+# The floor for the whole workflow, and the ceiling for every job that does not
+# raise it: a build that only reads two repositories needs nothing else. The
+# deploy job asks for the two Pages tokens where it needs them, and nowhere
+# above (Spine steward-40, 2026-09-08).
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # One deploy at a time, and a run already in flight finishes rather than being
 # cancelled: a half-deployed static site is worse than a slightly stale one.
@@ -57,12 +59,16 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      # Read both repositories, and write back the one line that records which
+      # data commit deployed — on the schedule and the dispatch only.
+      contents: write
     steps:
       # The site reads the dataset as a `file:` dependency, so the two have to
       # sit beside each other on disk. The site therefore lands in a
       # subdirectory of its own, or that `..` would climb out of the workspace.
       - name: Check out the site
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           path: site
 
@@ -70,20 +76,52 @@ jobs:
       # holds. It is read from there rather than typed here: the directory still
       # carries the working name — the folders are the human's to rename — and a
       # workflow that spells it out is one more place to keep in step.
-      - name: Where the manifest expects the data
+      - name: Where the manifest expects the data, and which commit of it
         id: data
         working-directory: site
         run: |
           path=$(node -p "require('./package.json').dependencies['permit-rulebook-data'].replace(/^file:/, '')")
           echo "dir=$(basename "$path")" >> "$GITHUB_OUTPUT"
+          # `data.lock` names the data commit this site is built against, and a
+          # push or a manual run builds against exactly that. The sibling used
+          # to float at its own origin HEAD, which broke the rollback: re-running
+          # the last green deploy tested old site code against new data and
+          # failed, and any data commit could break this deploy without a single
+          # change here (found by trying it, 2026-09-08).
+          #
+          # The daily schedule and the watch's dispatch are the deliberate
+          # exception — they exist to build against the newest data — and they
+          # write the SHA they used back into the lock when the run goes green,
+          # so the lock always names a combination that actually deployed.
+          locked=$(sed -n 's/^sha=//p' data.lock)
+          case "${{ github.event_name }}" in
+            schedule)            ref="" ;;
+            repository_dispatch) ref="${{ github.event.client_payload.sha }}" ;;
+            *)                   ref="$locked" ;;
+          esac
+          if [ -z "$ref" ] && [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "::error::data.lock names no sha — run npm run data:pin and commit it."
+            exit 1
+          fi
+          echo "locked=$locked" >> "$GITHUB_OUTPUT"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
 
       - name: Check out the data
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: OytunOnal/permit-rulebook-data
           path: ${{ steps.data.outputs.dir }}
+          # Empty on the daily schedule, which means the default branch.
+          ref: ${{ steps.data.outputs.ref }}
 
-      - uses: actions/setup-node@v4
+      - name: Which data commit this run is building
+        id: built
+        run: |
+          sha=$(git -C "${{ steps.data.outputs.dir }}" rev-parse HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Building against data $sha (lock says ${{ steps.data.outputs.locked }})"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with: { node-version: 22 }
 
       - name: Build and check the dataset package
@@ -134,16 +172,46 @@ jobs:
         working-directory: site
         run: npm run measure:taps
 
-      - uses: actions/upload-pages-artifact@v3
+      # Everything above is green, so this combination is one that deploys.
+      # Only the two runs that build against the newest data may move the lock;
+      # a push builds against what the lock already says.
+      - name: Record the data commit that just proved itself
+        if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch'
+        working-directory: site
+        env:
+          BUILT: ${{ steps.built.outputs.sha }}
+          LOCKED: ${{ steps.data.outputs.locked }}
+        run: |
+          if [ "$BUILT" = "$LOCKED" ]; then
+            echo "data.lock already names $BUILT"
+            exit 0
+          fi
+          version=$(node -p "require('../${{ steps.data.outputs.dir }}/data/dataset.json').dataset_version")
+          sed -i "s/^sha=.*/sha=$BUILT/" data.lock
+          sed -i "s/^dataset_version=.*/dataset_version=$version/" data.lock
+          # The canonical bot, so an automated commit is attributed to the
+          # automation and not to whichever account owns a noreply login.
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.lock
+          git commit -m "data.lock: built and deployed against $BUILT ($version)"
+          git push
+
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: site/dist
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # The only job that publishes: an artifact upload and the OIDC token Pages
+    # signs the deployment with.
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

@@ -3,11 +3,12 @@ import {
   type Dataset,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
+import { contentSecurityPolicy } from "./csp.js";
 import { PAGE_CSS, audienceNotice, stampDate, withArticle } from "./route-page.js";
 import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
 import { PRODUCT_NAME, TAGLINE, datasetDay } from "./copy.js";
 import {
-  DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, headMeta, url,
+  DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, analyticsBeacon, headMeta, lastWatchRun, url,
 } from "./site.js";
 import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
@@ -58,6 +59,7 @@ export function dataPage(dataset: Dataset): DataPage {
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
+${contentSecurityPolicy([MENU_SCRIPT])}
 ${iconLinks()}
 ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
 <style>${PAGE_CSS}</style>`;
@@ -99,7 +101,10 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
         <li><b>Prose provenance</b> — anything in quotation marks carries the source it is quoting, and what is ours is declared ours: ${
     prose.with_provenance} sourced, ${prose.ours} ours, ${prose.declared_unsourced} standing on a dated reason.</li>
       </ul>
-      <p class="lede">The daily check is live, not a dry run: every watched source is re-read each morning, a changed one files an issue in the tracker, and a new reading asks this site to rebuild — which is why the date in the corner moves on its own.</p>
+      <p class="lede">A cookieless counter (Cloudflare Web Analytics) records page views, the page's address, where you came from and your country; nothing you answer, nothing that identifies you.</p>
+      <p class="lede">Every source is re-read daily${
+    lastWatchRun() ? ` — last run <b><time datetime="${escAttr(lastWatchRun())}">${esc(lastWatchRun())}</time></b>` : ""
+  }. A source that has moved files an issue in the tracker and a person reads it: the values on this site, and the dates beside them, change when a person changes them, never on their own.</p>
     </section>
 
     <section class="data" aria-labelledby="take-h">
@@ -123,7 +128,8 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
   ${siteFooter(navCountries(dataset), footerFacts(dataset))}
 
 </div>
-<script>${MENU_SCRIPT}</script>`;
+<script>${MENU_SCRIPT}</script>
+${analyticsBeacon()}`;
 
   return {
     path: DATA_PATH,
@@ -156,7 +162,8 @@ export function statusAlias(dataset: Dataset): DataPage {
   </header>
   ${siteFooter(navCountries(dataset), footerFacts(dataset))}
 </div>
-<script>${MENU_SCRIPT}</script>`;
+<script>${MENU_SCRIPT}</script>
+${analyticsBeacon()}`;
   return {
     path: "/status",
     title,
@@ -170,6 +177,7 @@ export function statusAlias(dataset: Dataset): DataPage {
 <meta http-equiv="refresh" content="0; url=${escAttr(target)}">
 <link rel="canonical" href="${escAttr(absolute(DATA_PATH))}">
 <meta name="robots" content="noindex, follow">
+${contentSecurityPolicy([MENU_SCRIPT])}
 ${iconLinks()}
 <style>${PAGE_CSS}</style>
 </head>

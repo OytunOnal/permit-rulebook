@@ -14,7 +14,8 @@
     "measure:taps": "node scripts/measure-taps.mjs",
     "smoke": "node scripts/smoke.mjs",
     "smoke:dev": "node scripts/smoke.mjs --dev",
-    "check:base": "node scripts/check-base.mjs"
+    "check:base": "node scripts/check-base.mjs",
+    "data:pin": "node scripts/data-pin.mjs"
   },
   "dependencies": {
     "astro": "^7.2.10",

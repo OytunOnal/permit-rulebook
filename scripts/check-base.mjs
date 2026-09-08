@@ -87,7 +87,9 @@ try {
   const expected = [
     [home, `<link rel="canonical" href="https://example.org${BASE}/"`],
     [home, `content="https://example.org${BASE}/social-card.png"`],
-    [route, `href="https://example.org${BASE}/germany/eu-blue-card-general"`],
+    // A page's address ends in a slash — the one the host serves and the one
+    // the canonical names (2026-09-08).
+    [route, `href="https://example.org${BASE}/germany/eu-blue-card-general/"`],
     [route, `href="${BASE}/germany/eu-blue-card-general.json"`],
     [route, `href="${BASE}/?route=de-blue-card-general"`],
     [route, `href="${BASE}/favicon.svg"`],

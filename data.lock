@@ -1,0 +1,17 @@
+# The data commit this site is built against.
+#
+# The build checks the sibling data repository out at THIS commit, not at its
+# origin HEAD. Two things go wrong when the sibling floats (found by trying the
+# rollback, 2026-09-08): re-running an old green deploy tests old site code
+# against new data and fails, so a rollback cannot rebuild the past; and any
+# commit in the data repository can break the site's deploy without a single
+# change to the site.
+#
+# The daily schedule and the watch's dispatch build against the newest data on
+# purpose — that is what "checked daily" means — and when they go green they
+# write the SHA they used back here, so this file always names a combination
+# that actually deployed.
+#
+# `npm run data:pin` writes the sibling's HEAD into it for a developer.
+sha=c76dd7d66112bd5cdf178262d2e20aae3567a633
+dataset_version=2026.09.07

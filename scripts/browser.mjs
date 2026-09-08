@@ -174,18 +174,30 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
       return;
     }
     if (message.method === "Network.requestWillBeSent") {
-      const { request, type } = message.params;
-      requests.push({
+      const { request, type, requestId } = message.params;
+      const record = {
         url: request.url,
         method: request.method,
         type: type ?? "",
         postData: request.postData ?? "",
         hasPostData: request.hasPostData === true,
-      });
+      };
+      requests.push(record);
+      // A body Chrome did not inline has to be asked for, and asked for now:
+      // once the request is gone the browser cannot produce it. What a page
+      // SENDS is the only honest way to check what it does not send
+      // (human, 2026-09-08).
+      if (record.hasPostData && !record.postData)
+        send("Network.getRequestPostData", { requestId }, message.sessionId)
+          .then((r) => { record.postData = r.postData ?? ""; })
+          .catch(() => { record.postData = "<unreadable>"; });
       return;
     }
     if (message.method === "Log.entryAdded" && message.params.entry.level === "error") {
-      problems.push(`log: ${message.params.entry.text}`);
+      // The URL belongs in the message: "Failed to load resource" without it
+      // tells a reader of a red run nothing, and a filter nothing either.
+      const { text, url } = message.params.entry;
+      problems.push(`log: ${text}${url ? ` (${url})` : ""}`);
       return;
     }
     const waiter = pending.get(message.id);
@@ -243,7 +255,21 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
       );
       return Buffer.from(data, "base64");
     },
-    problems: () => [...problems],
+    /**
+     * Everything the page threw or logged as an error — except the traffic
+     * counter's own CORS complaint.
+     *
+     * Cloudflare's beacon endpoint answers `Access-Control-Allow-Origin:
+     * http://127.0.0.1`, without the port a local static server has to use, so
+     * every local run logs a preflight failure for a request that is fine in
+     * production (2026-09-08). It is filtered here, once, rather than in each
+     * caller — and the beacon is not silenced: `tests/record.test.ts` asserts
+     * the script and the report are still SENT, so a page that stopped
+     * counting fails there.
+     */
+    problems: () => problems.filter((p) => !p.includes("cloudflareinsights.com")),
+    /** The unfiltered list, for a caller that wants the counter's noise too. */
+    allProblems: () => [...problems],
     requests: () => requests.map((r) => ({ ...r })),
     forgetRequests: () => { requests.length = 0; },
   };

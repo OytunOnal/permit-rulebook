@@ -1,4 +1,8 @@
 import { routeProvenance, type Dataset } from "permit-rulebook-data";
+// The watch's own record of when it last ran. It is a fact about the data
+// repository, not about the dataset, and it is the only date on this site that
+// moves without a person (devils-advocate, 2026-09-08).
+import watchState from "permit-rulebook-data/watch/state.json";
 import { escAttr } from "./reason.js";
 import { PRODUCT_NAME, TAGLINE } from "./copy.js";
 /**
@@ -43,8 +47,17 @@ const BASE = import.meta.env.BASE_URL.replace(/[/]+$/, "");
  * `base` is a parameter only so a test can ask what a path becomes under a
  * subpath without building the whole site; nothing passes it in production.
  */
-export const url = (path: string, base: string = BASE): string =>
-  `${base.replace(/[/]+$/, "")}/${String(path).replace(/^[/]+/, "")}`;
+export const url = (path: string, base: string = BASE): string => {
+  const joined = `${base.replace(/[/]+$/, "")}/${String(path).replace(/^[/]+/, "")}`;
+  // A page's address ends in a slash, because that is the address the host
+  // serves. Without it every URL in the sitemap answered 301 to its own slash
+  // form while the canonical and the og:url named the slash-less one — a
+  // crawler was being pointed at a redirect (devils-advocate, 2026-09-08).
+  // A file keeps its name: `/germany/x.json` is not a directory.
+  const [pathname, rest = ""] = joined.split(/(?=[?#])/, 2) as [string, string?];
+  const isFile = /[.][a-z0-9]+$/i.test(pathname);
+  return `${isFile || pathname.endsWith("/") ? pathname : `${pathname}/`}${rest}`;
+};
 
 /** The origin alone, for the absolute URLs a link preview reads. */
 const ORIGIN = new URL(SITE_URL).origin;
@@ -107,6 +120,12 @@ export const ANALYTICS_BEACON = "https://cloudflareinsights.com/cdn-cgi/rum";
 /**
  * The counter, exactly as Cloudflare issued it. One source, every page: a page
  * that quietly stopped counting would be a number nobody could trust.
+ *
+ * It goes at the END of the body, not in the head. In the head it is a module
+ * script fetched before the page's own, and when it cannot reach Cloudflare —
+ * a sandbox, a blocked network, a slow DNS — the interview rendered a second
+ * late and the smoke check found no question on the screen (2026-09-08). A
+ * traffic counter may never be in front of the product.
  */
 export const analyticsBeacon = (): string =>
   `<script type="module" src="${escAttr(ANALYTICS_SCRIPT)}" data-cf-beacon='{"token": "${
@@ -159,7 +178,6 @@ export function headMeta(o: {
     `<meta name="twitter:title" content="${escAttr(o.title)}">`,
     `<meta name="twitter:description" content="${escAttr(preview)}">`,
     `<meta name="twitter:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">`,
-    analyticsBeacon(),
   ].join(String.fromCharCode(10));
 }
 
@@ -179,3 +197,15 @@ export function readRange(dataset: Dataset): { oldest: string; newest: string } 
   days.sort();
   return { oldest: days[0] ?? "", newest: days[days.length - 1] ?? "" };
 }
+
+/**
+ * The day every watched source was last re-read — written by every run of the
+ * watch, changed or not.
+ *
+ * The site used to say the date in the corner "moves on its own", which was
+ * false: that is the newest `retrieved_at` in the dataset, and only a person
+ * writes it. This is the one that moves by itself, so it is the one printed
+ * beside "re-read daily".
+ */
+export const lastWatchRun = (): string =>
+  (watchState as { last_run?: string }).last_run ?? "";

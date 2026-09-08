@@ -1,9 +1,10 @@
 import type { Dataset } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
+import { contentSecurityPolicy } from "./csp.js";
 import { PAGE_CSS } from "./route-page.js";
 import { countryLinks, footerFacts, navCountries, siteReadDate } from "./country-page.js";
 import { PRODUCT_NAME, TAGLINE } from "./copy.js";
-import { url } from "./site.js";
+import { analyticsBeacon, url } from "./site.js";
 // One set of elements for the identity the shared CSS places (2026-09-08).
 import { MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
 
@@ -43,6 +44,7 @@ export function notFoundPage(dataset: Dataset): NotFoundPage {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="robots" content="noindex">
+${contentSecurityPolicy([MENU_SCRIPT])}
 ${iconLinks()}
 <style>${PAGE_CSS}</style>`;
 
@@ -76,7 +78,8 @@ ${iconLinks()}
   ${siteFooter(navCountries(dataset), footerFacts(dataset))}
 
 </div>
-<script>${MENU_SCRIPT}</script>`;
+<script>${MENU_SCRIPT}</script>
+${analyticsBeacon()}`;
 
   return {
     path: "/404",

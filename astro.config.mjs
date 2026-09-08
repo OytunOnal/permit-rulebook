@@ -21,6 +21,16 @@ const BASE = new URL(SITE_URL).pathname;
 export default defineConfig({
   site: SITE_URL,
   base: BASE,
+  /**
+   * A page's address ends in a slash. GitHub Pages serves `/germany/index.html`
+   * at `/germany/` and 301s `/germany` to it, so every sitemap entry was a
+   * redirect while the canonical pointed at the slash-less form (2026-09-08).
+   * `directory` output plus `always` makes the emitted link, the canonical, the
+   * sitemap and the served path one string. Chosen over `build.format: "file"`
+   * because that would rename every page to `germany.html` and change 29 public
+   * addresses to fix a redirect.
+   */
+  trailingSlash: "always",
   vite: {
     ssr: {
       // Bundle permit-rulebook-data so its JSON imports (dataset, schema) go

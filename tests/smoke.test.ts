@@ -135,8 +135,8 @@ describe("the harness refuses to walk a process it did not start", () => {
       stranger.listen(0, "127.0.0.1", () => r((stranger.address() as { port: number }).port)));
     try {
       const reason = await notOurDevServer(`http://127.0.0.1:${port}`);
-      expect(reason).toContain("/status answered 404");
-      expect(reason).toContain("serves no routes of this project");
+      expect(reason).toContain("/data/ answered 404");
+      expect(reason).toContain("serves no pages of this project");
     } finally {
       stranger.close();
     }

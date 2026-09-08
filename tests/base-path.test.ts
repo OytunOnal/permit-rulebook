@@ -25,15 +25,27 @@ import type { Dataset } from "permit-rulebook-data";
 
 describe("the root build is what it was", () => {
   /**
-   * The 23 route pages, hashed before the base-path change went in. A helper
-   * that returns its argument unchanged at the root has to leave every byte
-   * where it was; regenerating this fixture is a deliberate act, and it means
-   * the root build moved.
+   * The TEMPLATE's own output at the root, over a frozen two-route dataset —
+   * not the data.
+   *
+   * It used to hash the live dataset's pages, so every one of the 23 differed
+   * in CI the moment the data repository was checked out at its own origin
+   * (2026-09-08): a read date moved and the fingerprint called it a template
+   * change. The fixture beside this one holds a dataset that never moves, so
+   * what this measures is what `route-page.ts` does with it — the markup, the
+   * order, and every URL it writes at the root.
+   *
+   * What it does NOT cover: anything that depends on the live dataset. A value
+   * that changes, a route added, a source re-read on a new day — none of those
+   * reach this case, and none of them should. `check:base` reads the real built
+   * site back, and the rest of this suite renders the real dataset.
    */
-  it("every route page is byte-identical to the fingerprint taken before the change", () => {
+  it("the template's own output over a frozen dataset is byte-identical to the fingerprint", () => {
     const fixture = JSON.parse(readFileSync(new URL("fixtures/root-build.json", import.meta.url), "utf8")) as
       { base: string; pages: Record<string, string> };
-    const pages = routePages(dataset as unknown as Dataset);
+    const frozen = JSON.parse(readFileSync(new URL("fixtures/frozen-dataset.json", import.meta.url), "utf8")) as Dataset;
+    const pages = routePages(frozen);
+    expect(pages.length, "the frozen dataset stopped producing its two routes").toBe(2);
     expect(Object.keys(fixture.pages).length).toBe(pages.length);
     const moved: string[] = [];
     for (const page of pages) {
@@ -43,10 +55,13 @@ describe("the root build is what it was", () => {
     expect(moved, "the root build changed — regenerate the fixture only on purpose").toEqual([]);
   });
 
-  it("and the helper is the identity at the root", () => {
-    for (const path of ["/", "/favicon.svg", "/germany/eu-blue-card-general", "/germany/x.json"])
+  it("and the helper is the identity at the root, but for the slash a page ends in", () => {
+    // A file keeps its name; a page gains the slash the host serves it at
+    // (2026-09-08 — every sitemap entry used to answer 301).
+    for (const path of ["/", "/favicon.svg", "/germany/x.json"])
       expect(url(path), path).toBe(path);
-    expect(absolute("/germany/x")).toBe("https://permitrulebook.com/germany/x");
+    expect(url("/germany/eu-blue-card-general")).toBe("/germany/eu-blue-card-general/");
+    expect(absolute("/germany/x")).toBe("https://permitrulebook.com/germany/x/");
   });
 });
 
@@ -56,12 +71,12 @@ describe("the same paths under a subpath", () => {
   it("every internal path is prefixed once, and only once", () => {
     expect(url("/", BASE)).toBe(`${BASE}/`);
     expect(url("/favicon.svg", BASE)).toBe(`${BASE}/favicon.svg`);
-    expect(url("/germany/eu-blue-card-general", BASE)).toBe(`${BASE}/germany/eu-blue-card-general`);
+    expect(url("/germany/eu-blue-card-general", BASE)).toBe(`${BASE}/germany/eu-blue-card-general/`);
     expect(url("/germany/eu-blue-card-general.json", BASE)).toBe(`${BASE}/germany/eu-blue-card-general.json`);
     // A base Astro hands over with its trailing slash, and a path without a
     // leading one, both land in the same place — no doubled or missing slash.
-    expect(url("germany/x", `${BASE}/`)).toBe(`${BASE}/germany/x`);
-    expect(url("/germany/x", `${BASE}/`)).toBe(`${BASE}/germany/x`);
+    expect(url("germany/x", `${BASE}/`)).toBe(`${BASE}/germany/x/`);
+    expect(url("/germany/x", `${BASE}/`)).toBe(`${BASE}/germany/x/`);
   });
 
   it("nothing it returns is root-absolute any more", () => {

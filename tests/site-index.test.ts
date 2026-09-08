@@ -163,7 +163,7 @@ describe("B2 — the site can be crawled and browsed", () => {
     // path that is neither of those has to be a country page the build made.
     const elsewhere = new Set([url("/"), url("/data")]);
     for (const href of [...footer.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!))
-      if (/^[/][a-z-]+[/]?$/.test(href) && !elsewhere.has(href) && !href.includes("?"))
+      if (/^[/][a-z-]+[/]$/.test(href) && !elsewhere.has(href) && !href.includes("?"))
         expect(built_countries.has(href), `the footer links ${href}, which is no country page`).toBe(true);
   });
 
@@ -219,7 +219,7 @@ describe("B2 — the site can be crawled and browsed", () => {
         if (summary && summary.length <= 110)
           expect(text, `${page.path}: ${route.id} gist`).toContain(summary);
       }
-      const linked = hrefsOf(page.html).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+$/.test(h));
+      const linked = hrefsOf(page.html).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+[/]$/.test(h));
       expect(new Set(linked).size, page.path).toBe(country.routes.length);
       // The crumbs, the heading and the way into the interview.
       // No crumb row any more: the shared header's marked country says where
@@ -276,3 +276,38 @@ describe("a country page explains the symbol it prints", () => {
       expect(textOf(page.html), page.path).not.toMatch(/sections? [0-9]/);
   });
 });
+
+/**
+ * Every sitemap URL used to answer 301 to its own slash form, while the
+ * canonical and the og:url named the slash-less one — a crawler was being
+ * pointed at a redirect, and a link preview at a different address from the
+ * sitemap (devils-advocate, 2026-09-08). One address per page now.
+ */
+const { chromePath: chromeFor } = await import("../scripts/chrome.mjs");
+const { serve: serveSite } = await import("../scripts/browser.mjs");
+
+describe("every address the site publishes is the address it serves", () => {
+  it("every sitemap URL answers 200 with no redirect, and matches the page's own canonical", async () => {
+    if (!existsSync(dist)) return;
+    try { chromeFor(); } catch { return; }
+    const server = await serveSite(dist);
+    try {
+      const locs = [...sitemapXml(ds).matchAll(/<loc>([^<]*)<[/]loc>/g)].map((m) => m[1]!);
+      expect(locs.length).toBeGreaterThan(25);
+      for (const loc of locs) {
+        const path = new URL(loc).pathname;
+        const res = await fetch(server.url(path), { redirect: "manual" });
+        expect(res.status, `${path} answered ${res.status}`).toBe(200);
+        // And the page it serves names itself by the same address.
+        const html = await res.text();
+        const canonical = /<link rel="canonical" href="([^"]*)"/.exec(html)?.[1];
+        if (canonical) expect(canonical, `${path}: canonical`).toBe(loc);
+        const og = /<meta property="og:url" content="([^"]*)"/.exec(html)?.[1];
+        if (og) expect(og, `${path}: og:url`).toBe(loc);
+      }
+    } finally {
+      server.close();
+    }
+  }, 180000);
+});
+

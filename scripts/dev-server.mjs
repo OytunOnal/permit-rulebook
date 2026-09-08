@@ -63,10 +63,12 @@ export async function notOurDevServer(origin) {
   // Everything is asked for under the served root, base included.
   const root = origin.endsWith("/") ? origin : origin + "/";
   try {
-    const status = await fetch(`${root}status`, { signal: AbortSignal.timeout(5000) });
-    if (!status.ok) return `${root}status answered ${status.status} — it serves no routes of this project`;
+    // With `trailingSlash: "always"` a page's address ends in a slash, and the
+    // dev server answers 404 without it (2026-09-08).
+    const status = await fetch(`${root}data/`, { signal: AbortSignal.timeout(5000) });
+    if (!status.ok) return `${root}data/ answered ${status.status} — it serves no pages of this project`;
     const html = await status.text();
-    if (!html.includes(PRODUCT_NAME)) return `${root}status does not mention ${PRODUCT_NAME}`;
+    if (!html.includes(PRODUCT_NAME)) return `${root}data/ does not mention ${PRODUCT_NAME}`;
     const client = await fetch(`${root}@vite/client`, { signal: AbortSignal.timeout(5000) });
     if (!client.ok) return `${root}@vite/client answered ${client.status} — not a dev server`;
     return null;

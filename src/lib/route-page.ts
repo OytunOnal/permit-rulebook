@@ -25,8 +25,9 @@ import { footerFacts, navCountries } from "./country-page.js";
 // pages cannot describe the same sentence differently (2026-09-08).
 import { quoteFrame } from "./quote.js";
 import { esc, escAttr } from "./reason.js";
+import { contentSecurityPolicy } from "./csp.js";
 import {
-  DATA_LICENCE_FULL, DATA_LICENCE_NAME, REPO_DATA, TRACKER_URL,
+  DATA_LICENCE_FULL, DATA_LICENCE_NAME, REPO_DATA, TRACKER_URL, analyticsBeacon,
   absolute, headMeta, url,
 } from "./site.js";
 import {
@@ -573,6 +574,7 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
+${contentSecurityPolicy([MENU_SCRIPT])}
 ${iconLinks()}
 ${headMeta({ title, description: desc, path, kind: "article" })}
 <style>${PAGE_CSS}</style>`;
@@ -634,7 +636,8 @@ ${neighbours(country, route)}
   })}
 
 </div>
-<script>${MENU_SCRIPT}</script>`;
+<script>${MENU_SCRIPT}</script>
+${analyticsBeacon()}`;
 
   return {
     path, jsonPath, title, description: desc, readDate: read,

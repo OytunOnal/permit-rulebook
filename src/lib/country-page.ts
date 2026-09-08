@@ -5,6 +5,7 @@ import {
   countedWords, joinAnd, scopeLine, type Country, type Dataset, type Route,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
+import { contentSecurityPolicy } from "./csp.js";
 import {
   PAGE_CSS, audienceNotice, audienceSentence, gist, routeFigure, stampDate, withArticle,
 } from "./route-page.js";
@@ -12,8 +13,8 @@ import {
   DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay,
 } from "./copy.js";
 import {
-  DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, NEW_NEED_URL, OWNER, REPO_DATA,
-  SPONSOR_URL, TRACKER_URL, headMeta, readRange, url,
+  DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, NEW_NEED_URL, OWNER, REPO_DATA, analyticsBeacon,
+  SPONSOR_URL, TRACKER_URL, headMeta, lastWatchRun, readRange, url,
 } from "./site.js";
 import { countryPath, countrySlug, routePath } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
@@ -143,6 +144,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
+${contentSecurityPolicy([MENU_SCRIPT])}
 ${iconLinks()}
 ${headMeta({ title, description: desc, path, kind: "website" })}
 <style>${PAGE_CSS}</style>`;
@@ -186,7 +188,8 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
   })}
 
 </div>
-<script>${MENU_SCRIPT}</script>`;
+<script>${MENU_SCRIPT}</script>
+${analyticsBeacon()}`;
 
   return {
     path, title, description: desc,
@@ -211,6 +214,7 @@ export function footerFacts(dataset: Dataset): FooterFacts {
     // (decision 12): "2026.09.07" beside a read date is a second date format on
     // the same line, which is the thing that rule exists to prevent.
     datasetVersion: datasetDay(dataset.dataset_version),
+    lastRun: lastWatchRun(),
     disclaimer: DISCLAIMER,
     licenceUrl: DATA_LICENCE_URL,
     licenceName: DATA_LICENCE_NAME,

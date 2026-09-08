@@ -175,6 +175,8 @@ export interface FooterFacts {
   /** The span the values were read over, both ends. */
   read: { oldest: string; newest: string };
   datasetVersion: string;
+  /** The day the watch last ran — empty where it never has. */
+  lastRun: string;
   disclaimer: string;
   licenceUrl: string;
   licenceName: string;
@@ -235,7 +237,7 @@ export function siteFooter(
     esc(facts.licenceName)}</span><span> · </span><span>© ${esc(facts.year)} ${esc(facts.owner)}</span></span>
       <span>values read between <b><time datetime="${
     escAttr(facts.read.oldest)}">${esc(facts.read.oldest)}</time></b> and <b><time datetime="${
-    escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b><span> · </span><span>re-read daily</span><span> · </span><span>dataset ${
+    escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b><span> · </span><span>re-read daily${facts.lastRun ? ` (last run ${esc(facts.lastRun)})` : ""}</span><span> · </span><span>dataset ${
     esc(facts.datasetVersion)}</span></span>
     </div>
   </footer>`;

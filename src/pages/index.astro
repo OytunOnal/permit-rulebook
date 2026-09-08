@@ -14,13 +14,15 @@ import { mastheadFor } from "../lib/screen.js";
 // The seal, the icon links and the pair: one set of elements, four screens
 // (Standards review, 2026-09-08).
 import { MENU_SCRIPT, iconLinks, siteFooter, siteHeader, stamps } from "../lib/identity.js";
+// The policy is computed where node:crypto lives — never in the client bundle.
+import { contentSecurityPolicy } from "../lib/csp.js";
 // The four country pages, generated beside the route pages they list, and the
 // four links the shared header carries (product critique B2; site map, 2026-09-08).
 import { footerFacts, navCountries } from "../lib/country-page.js";
 // The product's own words, in one place: the name, the tagline and the
 // disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
 import { PRODUCT_NAME, PROMISE, TAGLINE } from "../lib/copy.js";
-import { SOCIAL_CARD_PATH, absolute } from "../lib/site.js";
+import { SOCIAL_CARD_PATH, absolute, analyticsBeacon } from "../lib/site.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
 const dataset = assertValidDataset(rawDataset);
@@ -33,6 +35,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <Fragment set:html={contentSecurityPolicy([MENU_SCRIPT])} />
   <meta name="description" content="Which European work-permit routes fit? A check against dated, source-quoted official rules. Your answers never leave this device." />
   <title>{PRODUCT_NAME} — which work-permit routes fit?</title>
   <link rel="canonical" href={absolute("/")} />
@@ -1463,5 +1466,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     }
     @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
   </style>
+  <Fragment set:html={analyticsBeacon()} />
 </body>
 </html>
