@@ -30,9 +30,11 @@ living costs", consistent with its rail and banner; the home page links the
 four country pages, the sitemap lists 29 URLs, robots.txt exists, a wrong URL
 lands on our own 404 with the identity pair; the data README opens with the
 screenshot and links the live site; the favicon is option C; "§ 20a, section
-20a" is glossed. The two-axis code review of the round is running; its
-findings get one more round if needed. Then v1 waits only on the checklist
-below.
+20a" is glossed. The two-axis review of the round returned one blocker
+(the watch's new rebuild-dispatch step sat between the state commit and the
+flag-issue step, so a missing token would have silenced the first real flag)
+plus nine should-fix items — one more builder round is running on them; it
+ships as soon as it is green. Then v1 waits only on the checklist below.
 
 Numbers: 384 tests in the data repository, 187 in the site; 122 quotes
 verified, `human_tier: 0`; 30 pages + 24 endpoints, 0 tap targets under 44 px
