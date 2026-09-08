@@ -2055,3 +2055,28 @@ Chancenkarte card names the monthly-funds rule; B2 country links, sitemap of
 29, robots; B3 the data README's first screen; B4 our own 404). The review
 of the round runs after the push, in parallel, because the fixes were
 live-blocking — a deliberate order, recorded.
+
+## 2026-09-08 — The round reviewed: one blocker in the watch's step order, and decision 12 amended
+
+**What the review caught.** Spec: the new "tell the site to rebuild" step
+sits between the watch's state commit and its "open issues for new flags"
+step, and fails on the missing `DISPATCH_TOKEN` — so the launch's first real
+flag would commit silently and file nothing (s6 decision 7 broken). The
+dispatch moves last. Standards: `esc()` in an `href` again — the attribute
+defect this repo fixed and wrote down yesterday, back in one new line; a
+schema-less `unknown_label`; two reader-facing strings outside the prose gate
+(`contradictions[].say`, `unknown_label`); masthead markup in four copies;
+two tests reading source text; an unescaped `<loc>`; unvalidated field ids in
+`contradictions`. All applied in one more round.
+
+**Decision 12 amended (cheap default, surfaced).** "The stamp equals the
+latest read date among the page's quotes" holds for pages with quotes. Pages
+without quotes — the interview's question screens, the country pages, the
+404 — stamp the dataset's newest read date under "Rules read", the same fact
+everywhere; the country pages gain the identity pair they lacked. Cost: on
+those pages the date cannot be derived from lines below; it can be derived
+from the dataset the page names.
+
+**Compound citations stay whole:** "(§ 19c / § 6 BeschV)" is glossed after
+the parenthetical, never split, because the citation is the searchable
+string — the reason the gloss was appended in the first place.
