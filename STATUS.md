@@ -62,11 +62,15 @@ action, a real device, or a judgement on a live source.
 - [ ] **3 · Labels on `permit-rulebook-data`:** create `bug`, `design-flaw`,
       `new-need`. *Pass:* "New issue" shows the three templates; one test issue
       filed from a route page's "Report a wrong value" lands labelled.
-- [ ] **4 · Domain (optional at v1):** bind it under Pages, then set the
-      repository variable `SITE_URL` to it and redeploy. *Pass:* view-source on
-      a route page shows `canonical` and `og:url` on that domain. Without a
-      domain the site lives at the Pages URL and `SITE_URL` must be set to
-      that URL instead — say which and I set it.
+- [ ] **4 · The domain — before "go", not optional** (decision 6 says it is
+      bound at the tag; my earlier "optional" contradicted it): buy
+      `permitrulebook.com` (unregistered as of 2026-09-08; .org and .eu too)
+      at any registrar — the purchase is yours; then add the DNS records I
+      give you (four A records for the apex to GitHub Pages, a CNAME for
+      `www` to `oytunonal.github.io`). I bind it under Pages, HTTPS comes on
+      its own, and `SITE_URL` moves to the domain. *Pass:* the domain serves
+      the site over HTTPS; view-source shows `canonical` and `og:url` on it.
+      Until then the preview lives at the Pages URL.
 - [ ] **5 · Phone walk on the preview, real handset:** the interview end to
       end and one route page. *Pass:* nothing overflows, every tap target is
       comfortable, the rail's labels read as a list, the scope statement reads

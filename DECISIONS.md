@@ -1878,3 +1878,11 @@ repository variable to the Pages URL until a domain exists.
 
 **The first deploy run failed at "Check out the data"** while the sibling
 was still private; re-run after the visibility change.
+
+**Addendum, 2026-09-08 — the domain was in the plan and not in the list.**
+Decision 6 binds the custom domain at the tag; my hand-off list called it
+"optional at v1". The human asked whether buying one was in the plan before
+going live, and the honest answer is: assumed, never written as a step. Now
+written: purchase is the human's (a payment), before "go"; the announcement
+carries the domain, the preview and the critique may run on the Pages URL.
+`permitrulebook.com` was unregistered when checked (RDAP, 2026-09-08).
