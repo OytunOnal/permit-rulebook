@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { RECORD_VERSION } from "../src/lib/record.js";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
@@ -80,7 +81,7 @@ interface BrowserPage {
 
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: 1, answers, history: Object.keys(answers),
+    version: RECORD_VERSION, answers, history: Object.keys(answers),
   }))})`;
 
 /** Still deciding where to go: every step forks per country, so each row has a

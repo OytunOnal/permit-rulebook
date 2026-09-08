@@ -7,7 +7,7 @@ import {
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 // One frame for every quote the product shows (2026-09-08).
-import { quoteFrame } from "./quote.js";
+import { noteHtml, quoteFrame } from "./quote.js";
 
 /**
  * The blocks of a card that state what the dataset itself says: what else is
@@ -311,7 +311,7 @@ export function provenanceHtml(ds: Dataset, r: RouteResult): string {
       lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
       value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b>${
-      note ? `<span class="note">${esc(note)}</span>` : ""}</div>`;
+      noteHtml(note, esc)}</div>`;
   });
   // One sentence, one line.
   //

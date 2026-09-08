@@ -6,7 +6,7 @@ import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import { PAGE_CSS, audienceNotice, stampDate, withArticle } from "./route-page.js";
 import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
-import { PRODUCT_NAME, TAGLINE, datasetDay } from "./copy.js";
+import { PRODUCT_NAME, TAGLINE, TRANSLATION_POLICY, datasetDay } from "./copy.js";
 import {
   DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, analyticsBeacon, headMeta, lastWatchRun, url,
 } from "./site.js";
@@ -102,6 +102,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
     prose.with_provenance} sourced, ${prose.ours} ours, ${prose.declared_unsourced} standing on a dated reason.</li>
       </ul>
       <p class="lede">A cookieless counter (Cloudflare Web Analytics) records each page load: the page's address, where you came from, your country, and your browser and operating system versions; nothing you answer, nothing that identifies you, and nothing while you answer.</p>
+      <p class="lede">${esc(TRANSLATION_POLICY)}</p>
       <p class="lede">Every source is re-read daily${
     lastWatchRun() ? ` — last run <b><time datetime="${escAttr(lastWatchRun())}">${esc(lastWatchRun())}</time></b>` : ""
   }. A source that has moved files an issue in the tracker and a person reads it: the values on this site, and the dates beside them, change when a person changes them, never on their own.</p>

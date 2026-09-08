@@ -334,6 +334,16 @@ describe("a quote on the results card is framed the way it is on a route page", 
     expect(html).toContain("German, from arbeitsagentur.de.");
   });
 
+  it("the read date and the language note never run into each other", () => {
+    // "read 2026-09-04German, from arbeitsagentur.de." — the line carrying the
+    // product's whole differentiator looked like a string-concatenation bug,
+    // on every card in the product (isolated v1-gate critique, 2026-09-08, F2).
+    const html = provenanceHtml(ds, resultOf(german, "de-blue-card-general"));
+    const text = html.replace(/<[^>]*>/g, "").split(/\s+/).join(" ");
+    expect(text, text).not.toMatch(/read [0-9]{4}-[0-9]{2}-[0-9]{2}[A-Za-z]/);
+    expect(text, text).toMatch(/read [0-9]{4}-[0-9]{2}-[0-9]{2} · German, from/);
+  });
+
   it("and says so where the source spells a number its own way", () => {
     const html = provenanceHtml(ds, resultOf(german, "de-blue-card-general"));
     expect(html).toContain("The source writes 50.700 where this page writes 50,700");

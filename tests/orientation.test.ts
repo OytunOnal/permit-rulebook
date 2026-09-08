@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { countryLinks, countryPages, navCountries } from "../src/lib/country-page.js";
 import { dataPage, statusAlias } from "../src/lib/data-page.js";
+import { TRANSLATION_POLICY } from "../src/lib/copy.js";
+import { hasUnbalancedQuotationMark, quotedSpans, routeProvenance } from "permit-rulebook-data";
 import { DATA_PATH, siteHeader } from "../src/lib/identity.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { routePages } from "../src/lib/route-page.js";
@@ -375,3 +377,40 @@ describe.skipIf(skipped !== null)("nothing the site does is refused by its own p
   }, 180000);
 });
 
+
+
+/**
+ * Why the proof is not in English, said on the page that answers for the data.
+ *
+ * A reader from India, Nigeria or Brazil meets six sentences of German statute
+ * on a results card and is told nothing about why they are not translated
+ * (isolated v1-gate critique, 2026-09-08, F4). The human's ruling: they never
+ * will be, and the site says so — a translation would be our words standing
+ * beside the authority's, and the original is the record.
+ */
+describe("the translation policy is stated where the data answers for itself", () => {
+  it("stands beside the counter sentence on the data page, in the product's own register", () => {
+    const html = dataPage(ds).html;
+    expect(TRANSLATION_POLICY, "the sentence does not live in the register").toContain("never translated");
+    expect(html).toContain(TRANSLATION_POLICY);
+    // Beside the counter sentence, not somewhere else on the page.
+    const counter = html.indexOf("A cookieless counter");
+    const policy = html.indexOf(TRANSLATION_POLICY);
+    expect(counter, "the counter sentence is gone").toBeGreaterThan(-1);
+    expect(Math.abs(policy - counter), "the two sentences are not neighbours").toBeLessThan(600);
+  });
+
+  it("passes the prose gate as ours: nothing on the page is in quotation marks without its source", () => {
+    // What a reader sees: the stylesheet and the scripts are not prose.
+    const text = dataPage(ds).html
+      .replace(/<style[^]*?<[/]style>/g, " ").replace(/<script[^]*?<[/]script>/g, " ")
+      .replace(/<[^>]*>/g, " ").split(/\s+/).join(" ");
+    const said = new Set<string>();
+    for (const country of ds.countries)
+      for (const route of country.routes)
+        for (const p of routeProvenance(route)) said.add(p.value.quote.split(/\s+/).join(" "));
+    for (const span of quotedSpans(text))
+      expect([...said].some((q) => q.includes(span)), `“${span.slice(0, 80)}”`).toBe(true);
+    expect(hasUnbalancedQuotationMark(text), "a quotation mark that closes nothing").toBe(false);
+  });
+});

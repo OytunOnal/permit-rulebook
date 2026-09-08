@@ -67,3 +67,18 @@ export function quoteFrame(
     ].filter(Boolean).join(" "),
   };
 }
+
+/**
+ * The note, attached to the citation line the way every other fact on it is.
+ *
+ * Without a separator the line read "read 2026-09-04German, from
+ * arbeitsagentur.de." — date running straight into the next sentence, on every
+ * quote block in the product (isolated v1-gate critique, 2026-09-08, F2). One
+ * function, so the results card and the route page cannot separate it
+ * differently.
+ */
+export const NOTE_SEPARATOR = " · ";
+
+export function noteHtml(note: string, esc: (s: string) => string): string {
+  return note ? `<span class="note">${NOTE_SEPARATOR}${esc(note)}</span>` : "";
+}

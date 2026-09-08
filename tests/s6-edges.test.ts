@@ -79,9 +79,14 @@ describe("s6 step 10 — arriving from a route page's call to action", () => {
       .toEqual(results.filter((r) => r.route.id !== "nl-orientation-year").map((r) => r.route.id));
   });
 
-  it("a declaration outranks a link: an answered destination is never overwritten", () => {
+  it("a link that names a country re-scopes an answer for another one", () => {
+    // This used to read the other way — "a declaration outranks a link" — and
+    // it left a returning reader pressing "Check yours — France" looking at
+    // her German verdicts with France nowhere on the screen (isolated v1-gate
+    // critique, 2026-09-08, B2). A reader standing on a country's page,
+    // pressing that page's own button, is asking about that country.
     const arrival = arrivalFrom(ds, "?route=de-blue-card-general")!;
-    expect(destinationFor(arrival, { destination: "nl" })).toBeNull();
+    expect(destinationFor(arrival, { destination: "nl" })).toBe("de");
   });
 
   it("a route id nothing answers to is ignored, not reported", () => {

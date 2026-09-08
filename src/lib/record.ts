@@ -27,15 +27,27 @@ export const STORAGE_KEY = "permit-rulebook.record.v1";
  */
 export const LEGACY_STORAGE_KEY = "visa-navigator.record.v1";
 
+/**
+ * The record's contract version.
+ *
+ * A money answer is a POSITION in the money ladder, so this number has to move
+ * whenever what a position MEANS moves — a record read against a ladder it was
+ * not written against computes a verdict from a salary nobody declared. The
+ * ladder is pooled across all four countries and has not moved (human ruling,
+ * 2026-09-08), so neither has this. It is a named constant rather than a
+ * literal because the tests and scripts that write a record seed it from here.
+ */
+export const RECORD_VERSION = 1;
+
 export interface StoredRecord {
-  version: 1;
+  version: typeof RECORD_VERSION;
   answers: Profile;
   /** The fields in the order they were asked, which is the order shown. */
   history: string[];
 }
 
 export function serialize(answers: Profile, history: string[]): string {
-  return JSON.stringify({ version: 1, answers, history } satisfies StoredRecord);
+  return JSON.stringify({ version: RECORD_VERSION, answers, history } satisfies StoredRecord);
 }
 
 /**
@@ -55,7 +67,7 @@ export function restore(raw: string | null, knownFields: readonly string[]): { a
   }
   if (typeof parsed !== "object" || parsed === null) return empty;
   const record = parsed as Partial<StoredRecord>;
-  if (record.version !== 1) return empty;
+  if (record.version !== RECORD_VERSION) return empty;
   if (typeof record.answers !== "object" || record.answers === null) return empty;
   if (!Array.isArray(record.history)) return empty;
 

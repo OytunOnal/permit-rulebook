@@ -87,3 +87,18 @@ export function isoDay(date: Date): string {
 export function datasetDay(version: string): string {
   return /^\d{4}\.\d{2}\.\d{2}$/.test(version) ? version.replace(/\./g, "-") : version;
 }
+
+/**
+ * Why the proof is not in English (human decision, 2026-09-08).
+ *
+ * The quotes carrying this product's whole claim are in German, French, Spanish
+ * and Dutch, and a reader from India, Nigeria or Brazil meets them with no
+ * English beside them (isolated v1-gate critique, 2026-09-08, F4). They are not
+ * translated and will not be: a translation is our words standing beside the
+ * authority's, and the sentence the authority wrote is the record. What the
+ * site owes the reader is to say so.
+ */
+export const TRANSLATION_POLICY =
+  "Quotes are shown in the authority's own language and are never translated: a translation " +
+  "would be our words beside theirs, and the original is the record. Each quote names its " +
+  "language and its source.";

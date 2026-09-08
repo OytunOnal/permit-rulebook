@@ -1,4 +1,5 @@
-import type { Country, Dataset, Route } from "permit-rulebook-data";
+import { rescopeProfile } from "permit-rulebook-data";
+import type { Country, Dataset, Profile, Route } from "permit-rulebook-data";
 
 /**
  * Arriving at the interview from a route page.
@@ -36,13 +37,16 @@ export function arrivalFrom(dataset: Dataset, search: string): ScopedArrival | n
 /**
  * The destination this arrival puts on the record, or nothing.
  *
- * A link is not louder than a declaration: where the person has already
- * answered where they are going, that answer stands, even when the link
- * disagrees with it. The route still sorts first — they did come from its page
- * — but nothing they told us is overwritten.
+ * An arrival that names a country IS a declaration: the reader is standing on
+ * that country's page and pressed its own button. The old rule — a link is
+ * never louder than an answer — left a returning reader who pressed "Check
+ * yours — France" looking at her German verdicts with the word France nowhere
+ * on the screen (isolated v1-gate critique, 2026-09-08, B2). A stale answer is
+ * not louder than the question the reader is asking now; it is re-scoped, and
+ * the screen says so.
  */
-export function destinationFor(arrival: ScopedArrival | null, answers: Record<string, string>): string | null {
-  if (!arrival || answers["destination"] !== undefined) return null;
+export function destinationFor(arrival: ScopedArrival | null, _answers: Record<string, string> = {}): string | null {
+  if (!arrival) return null;
   return arrival.country.code.toLowerCase();
 }
 
@@ -75,11 +79,29 @@ export function countryArrivalFrom(dataset: Dataset, search: string): Country | 
 
 /**
  * The destination a country arrival puts on the record, or nothing. Same rule
- * as a route arrival: a link is never louder than a declaration.
+ * as a route arrival: the country the reader pressed is the country they are
+ * asking about.
  */
 export function destinationForCountry(
-  country: Country | null, answers: Record<string, string>,
+  country: Country | null, _answers: Record<string, string> = {},
 ): string | null {
-  if (!country || answers["destination"] !== undefined) return null;
+  if (!country) return null;
   return country.code.toLowerCase();
+}
+
+/**
+ * The record this arrival lands on.
+ *
+ * Everything the reader told us is theirs and is kept, amounts included — the
+ * money ladder is one pooled list for all four countries, so a band means the
+ * same euros wherever they are headed. Only the destination changes, and
+ * `changed` is what the screen says out loud. What the new country's rules no
+ * longer ask is dropped by the interview's own replay, where every other
+ * change of answer is.
+ */
+export function rescopedFor(
+  dataset: Dataset, destination: string, answers: Profile,
+): { answers: Profile; changed: boolean } {
+  const changed = answers["destination"] !== destination;
+  return { answers: rescopeProfile(dataset, answers, destination).profile, changed };
 }

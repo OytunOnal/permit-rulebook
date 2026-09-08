@@ -23,7 +23,7 @@ import { MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./ide
 import { footerFacts, navCountries } from "./country-page.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
-import { quoteFrame } from "./quote.js";
+import { noteHtml, quoteFrame } from "./quote.js";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
@@ -192,7 +192,7 @@ function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen:
         <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
     o.label ? ` · ${esc(o.label)}` : ""}${
     value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b><time datetime="${escAttr(value.retrieved_at)}">read ${esc(value.retrieved_at)}</time></b>${
-    note ? `<span class="note">${esc(note)}</span>` : ""}</span>
+    noteHtml(note, esc)}</span>
         <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
     esc(o.linkText ?? "Official page")} &#8599;</a>
       </div>`;
@@ -734,7 +734,9 @@ ${IDENTITY}
 .src q { font-style: italic; color: var(--color-ink); quotes: "\\201C" "\\201D"; }
 .src b { color: var(--color-met); font-weight: 600; }
 .src a { white-space: nowrap; display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-2); margin: 0; }
-.src .note { display: block; margin-top: var(--space-1); }
+/* The note reads as part of the line it belongs to, separated the way the
+   rest of that line is (F2). */
+.src .note { display: inline; }
 
 /* Ink on the soft tint: the label was --color-hold on --color-hold-soft, 3.68:1
    at 11 px — the most consequential line on the page was its least legible. */

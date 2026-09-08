@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
-import {
+import { RECORD_VERSION,
   clearRecord, loadRecord, restore, saveRecord, serialize, LEGACY_STORAGE_KEY, STORAGE_KEY,
   type RecordStore,
 } from "../src/lib/record.js";
@@ -38,12 +38,12 @@ describe("the record survives leaving the page (F2, F10)", () => {
   });
 
   it("an answer with no place in the order is dropped too — it could never be shown or edited", () => {
-    const raw = JSON.stringify({ version: 1, answers: { destination: "nl", citizenship: "TR" }, history: ["destination"] });
+    const raw = JSON.stringify({ version: RECORD_VERSION, answers: { destination: "nl", citizenship: "TR" }, history: ["destination"] });
     expect(restore(raw, known)).toEqual({ answers: { destination: "nl" }, history: ["destination"] });
   });
 
   it("a duplicated field in the order is recorded once", () => {
-    const raw = JSON.stringify({ version: 1, answers: { destination: "nl" }, history: ["destination", "destination"] });
+    const raw = JSON.stringify({ version: RECORD_VERSION, answers: { destination: "nl" }, history: ["destination", "destination"] });
     expect(restore(raw, known).history).toEqual(["destination"]);
   });
 

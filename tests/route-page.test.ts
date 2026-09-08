@@ -211,6 +211,8 @@ describe("s6 — one page per route, generated from the dataset", () => {
     // And the frame says which language, in the reader's words.
     const de = pages.find((p) => p.path === "/germany/eu-blue-card-general")!;
     expect(textOf(de.html)).toContain("German, from arbeitsagentur.de.");
+    // And it is separated from the date it follows, wherever a quote renders (F2).
+    expect(textOf(de.html)).toMatch(/read [0-9]{4}-[0-9]{2}-[0-9]{2} · German, from/);
   });
 
   it("says once where the source spells a number differently from the page", () => {

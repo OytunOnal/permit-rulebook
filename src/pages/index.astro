@@ -95,7 +95,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // s5d: every word a verdict says comes from here, beside the rules — the
       // page holds no field-id-to-label table of its own to fall through
       // (product-critique v0.7, B3).
-      shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
+      shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinAnd, joinOr,
       // s6: what the interview asks of a route, in the words the route page
       // shows — the same declared fact, said the same way in both places.
       scopeLine as scopeWordsFor,
@@ -111,7 +111,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // Arriving from a route page's call to action: what goes on the record and
     // what sorts first, beside the page rather than inside it (step 10).
     import {
-      arrivalFrom, countryArrivalFrom, destinationFor, destinationForCountry, scopedFirst,
+      arrivalFrom, countryArrivalFrom, destinationFor, destinationForCountry, rescopedFor, scopedFirst,
       type ScopedArrival,
     } from "../lib/scope.js";
     // A symbol a stranger cannot read is explained the first time a screen uses
@@ -201,33 +201,65 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      */
     let scopedRouteId: string | null = null;
     let cameFrom: ScopedArrival | null = null;
+    /** The country an arrival named, when it named one without a route. */
+    let cameFromCountry: string | null = null;
     /** Whether this arrival is what put the destination on the record. */
     let scopeRecorded = false;
+    /** Answers this arrival could not carry to the country it named. */
+    let rescopeDropped: string[] = [];
 
+    /**
+     * Land the reader where the link says they are.
+     *
+     * The country on the link replaces the destination on the record and
+     * everything else they told us is kept, because a reader standing on
+     * France's page pressing France's own button is asking about France —
+     * whatever they asked yesterday. Money answers travel through the engine's
+     * own translation between ladders, and one it cannot read is asked again
+     * rather than guessed (isolated v1-gate critique, 2026-09-08, B2).
+     */
     function scopeFromLink() {
       cameFrom = arrivalFrom(ds, location.search);
-      if (!cameFrom) {
-        // A country page's own call to action names a country and no route:
-        // the destination goes on the record, nothing sorts first.
-        const country = countryArrivalFrom(ds, location.search);
-        const only = destinationForCountry(country, answers);
-        if (only === null) return;
-        answers["destination"] = only;
-        asked.push("destination");
-        saveRecord();
-        return;
-      }
-      scopedRouteId = cameFrom.route.id;
-      const destination = destinationFor(cameFrom, answers);
-      // "already on the record" is only true when this arrival put it there. A
-      // reader who had answered a different destination was told her own answer
-      // had just been overwritten, which is the one thing the link may not do
-      // (Standards review, 2026-09-07).
-      if (destination === null) return;
-      answers["destination"] = destination;
-      asked.push("destination");
+      const country = cameFrom ? cameFrom.country : countryArrivalFrom(ds, location.search);
+      const destination = cameFrom
+        ? destinationFor(cameFrom, answers)
+        : destinationForCountry(country, answers);
+      if (cameFrom) scopedRouteId = cameFrom.route.id;
+      if (destination === null || !country) return;
+      cameFromCountry = country.name;
+      const moved = rescopedFor(ds, destination, answers);
+      answers = moved.answers;
+      if (!asked.includes("destination")) asked.push("destination");
+      // A question the new country's rules do not ask leaves the ledger with
+      // the same replay every other change of answer goes through — and what
+      // it took away is what the line below tells the reader is coming back.
+      const held = asked.filter((f) => answers[f] !== undefined);
+      replayAnswers();
+      rescopeDropped = held.filter((f) => answers[f] === undefined);
       scopeRecorded = true;
       saveRecord();
+    }
+
+    /**
+     * What the arrival did, in one line, on whichever screen the reader lands
+     * on.
+     *
+     * The route path narrated itself and the country path did not (critique
+     * F15), and neither said anything at all to a reader with a record — who
+     * is exactly the reader whose screen just changed country (B2). Where an
+     * answer could not travel to the new ladder, the line says which question
+     * is coming back rather than letting it reappear unexplained.
+     */
+    function arrivalLine(): string {
+      if (!scopeRecorded || (!cameFrom && !cameFromCountry)) return "";
+      const what = cameFrom ? routeName(cameFrom) : cameFromCountry!;
+      const place = cameFrom ? cameFrom.country.name : cameFromCountry!;
+      const again = rescopeDropped.length
+        ? ` Your other answers are kept; we ask again about ${
+          joinAnd(rescopeDropped.map((f) => shortLabelOf(ds, f).toLowerCase()))}.`
+        : "";
+      return `<p class="recorded" role="status">Coming from <b>${esc(what)}</b> — ${
+        esc(place)} is on the record.${esc(again)}</p>`;
     }
 
     /** One masthead, one writer. Every gesture names itself, and only the two
@@ -369,9 +401,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const declared = q.options.find((o) => o.value === answers[q.field]);
       main.innerHTML = `
         <section class="qcard">
-          ${cameFrom ? `<p class="recorded" role="status">Coming from <b>${esc(routeName(cameFrom))}</b>${
-            scopeRecorded ? ` — ${esc(cameFrom.country.name)} is already on the record.` : "."
-          }</p>` : ""}
+          ${arrivalLine()}
           ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(ds, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${
             editing ? "Your answer — pick another to change it, the rest are kept" : `Question ${asked.length + 1} of up to ${total}`
@@ -625,14 +655,50 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         escAttr(url(routePath(country, r.route)))}">The rules of this route</a></div>`;
     }
 
+    /**
+     * Bring the marked card into view, opening whatever it is folded inside.
+     *
+     * Landing "somewhere on the results page" is what the route pages' one
+     * call to action did for a returning reader (B2): the card was there, three
+     * screens down, inside a collapsed group.
+     */
+    function showArrival(): void {
+      const card = main.querySelector<HTMLElement>("[data-came-from]");
+      if (!card) return;
+      for (let node: HTMLElement | null = card; node; node = node.parentElement)
+        if (node instanceof HTMLDetailsElement) node.open = true;
+      // Instant, not smooth: a reader who arrives mid-scroll on a phone should
+      // not watch the page travel.
+      card.scrollIntoView({ block: "start" });
+    }
+
+    /**
+     * The route the reader arrived from, marked and findable.
+     *
+     * "Check yours" from a route page landed on the whole results page with
+     * that route buried inside a collapsed group and nothing scrolled to
+     * (isolated v1-gate critique, 2026-09-08, B2). The mark is on the card
+     * itself, so whichever group it lands in — open, within reach or not yet
+     * — it is the same card the reader was reading a moment ago.
+     */
+    const cameFromMark = (r: RouteResult): string =>
+      r.route.id === scopedRouteId ? `" data-came-from="1` : "";
+
+    /** The line inside the marked card, in the reader's own trail of thought. */
+    const cameFromNote = (r: RouteResult): string =>
+      r.route.id === scopedRouteId
+        ? `<p class="from-here">The route you came from.</p>`
+        : "";
+
     function fullCard(r: RouteResult, showCountry = true): string {
       return `
-        <article class="route">
+        <article class="route${cameFromMark(r)}">
           <div class="top">
             <div>${showCountry ? `<span class="country">${esc(ds.countries.find((c) => c.code === r.country)?.name ?? r.country)}</span>` : ""}
               <h3>${esc(routeName(r))}</h3></div>
             <span class="st ${r.status}">${STATUS_LABEL[r.status]}</span>
           </div>
+          ${cameFromNote(r)}
           <p class="why">${whyFor(r)}</p>
           ${scopeFor(r)}
           ${precondFor(r)}
@@ -662,9 +728,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // Auto-open only where the unknown still binds — a row opened on a dead
       // route promises an answer that cannot change it (critique #4).
       return `
-        <details class="route-hold"${hasLiveUnknown(r) ? " open" : ""}>
+        <details class="route-hold${cameFromMark(r)}"${hasLiveUnknown(r) || r.route.id === scopedRouteId ? " open" : ""}>
           <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(routeName(r))}</span><span class="hold-why">${short}</span></summary>
           <div class="hold-body">
+            ${cameFromNote(r)}
             ${r.route.summary ? `<p class="why">${esc(r.route.summary)}</p>` : ""}
             ${scopeFor(r)}
             ${precondFor(r)}
@@ -878,8 +945,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
       // The subtitle states what was compared, and only a comparison can
       // produce it — the count and the tense come from the same place (B4).
-      const said = (headlineHtml: string, rest: { nearest?: string; explore?: Explore } = {}) =>
+      // What the masthead just said, in plain words, so the screen can announce
+      // it: the verdict arrives with no live region at all, and a reader using
+      // one is told nothing happened (critique F16).
+      let verdictText = "";
+      const said = (headlineHtml: string, rest: { nearest?: string; explore?: Explore } = {}) => {
+        verdictText = headlineHtml.split("<").join(" <").replace(/<[^>]*>/g, "").split(/\s+/).join(" ").trim();
         advance({ kind: "compare", routes: results.length, headline: headlineHtml, ...rest });
+      };
+      const verdictSaid = () =>
+        verdictText ? `<p class="said" role="status">${esc(verdictText)}</p>` : "";
 
       if (zeroOpen && ups.length) {
         // The step worth naming: one that would fully meet a route beats one
@@ -923,8 +998,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <span class="s-hold">${byStatus.hold.length} not yet${openUnknowns ? ` — ${openUnknowns} ${openUnknowns === 1 ? "has" : "have"} an open unknown` : ""}</span>
         </div>`;
 
+      // A heading, not a styled div: the results page had no heading above H3,
+      // so "OPEN — CRITERIA MET (5)" was not a heading at all and no reader
+      // using headings to move could find a section (critique F16).
       const section = (title: string, cls: string, inner: string, count: number) =>
-        count ? `<div class="ghead ${cls}"><b>${title}</b> (${count})</div><div class="stack">${inner}</div>` : "";
+        count ? `<h2 class="ghead ${cls}"><b>${title}</b> (${count})</h2><div class="stack">${inner}</div>` : "";
 
       const seekHint = (rs: RouteResult[], hasUnlocks: boolean) =>
         hasUnlocks && rs.some((r) => r.route.kind === "seek" && r.status !== "hold")
@@ -937,15 +1015,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         // abbreviation on its FIRST use, so what a section renders first must
         // also be what it renders first (human, 2026-09-08).
         const unlockSection = () => ups.length
-          ? `<div class="ghead unlockh"><b>Steps that would unlock more</b> — each re-checked against the rules</div>` +
+          ? `<h2 class="ghead unlockh"><b>Steps that would unlock more</b> — each re-checked against the rules</h2>` +
             ups.map((u) => unlockCard(u, u.routes)).join("") +
             seekHint(results, true)
           : "";
-        main.innerHTML = noticeCards + strip +
+        main.innerHTML = verdictSaid() + arrivalLine() + noticeCards + strip +
           section("Open — criteria met", "", byStatus.met.map((r) => fullCard(r)).join(""), byStatus.met.length) +
           section("Within reach", "near", byStatus.near.map((r) => fullCard(r)).join(""), byStatus.near.length) +
           unlockSection() +
           section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length);
+        showArrival();
         return;
       }
 
@@ -954,7 +1033,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // With nothing open anywhere, the first country that has steps opens
       // instead — the hope is the point, and it was hidden in 10px tally text.
       const withUps = new Set(ups.flatMap((u) => u.routes.map((r) => r.country)));
-      main.innerHTML = noticeCards + strip + visible.map((c) => {
+      main.innerHTML = verdictSaid() + arrivalLine() + noticeCards + strip + visible.map((c) => {
         const rs = results.filter((r) => r.country === c.code);
         const g = {
           met: rs.filter((r) => r.status === "met"),
@@ -980,7 +1059,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           section("Open — criteria met", "", g.met.map((r) => fullCard(r, false)).join(""), g.met.length) +
           section("Within reach", "near", g.near.map((r) => fullCard(r, false)).join(""), g.near.length) +
           (cUps.length
-            ? `<div class="ghead unlockh"><b>Steps that would unlock more here</b></div>` +
+            ? `<h2 class="ghead unlockh"><b>Steps that would unlock more here</b></h2>` +
               cUps.map((x) => unlockCard(x.u, x.routes)).join("") +
               seekHint(rs, true)
             : "") +
@@ -990,6 +1069,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             <div class="cbody">${inner}</div>
           </details>`;
       }).join("");
+      showArrival();
       recordScreen(null, true);
     }
 
@@ -1280,8 +1360,17 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .strip .s-met{border-left:3px solid var(--color-met);color:var(--color-met)}
     .strip .s-near{border-left:3px solid var(--color-near);color:var(--color-near)}
     .strip .s-hold{border-left:3px solid var(--color-hold);color:var(--color-hold)}
-    .ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
+    /* A heading element, sized as the section label it always looked like. */
+    h2.ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
       border-bottom:var(--rule-soft);padding-bottom:.35rem;margin:1.4rem 0 .8rem}
+    /* The verdict, for a reader who is listening rather than looking: the
+       masthead already prints it, so this line is announced, not drawn. */
+    .said{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+      clip-path:inset(50%);white-space:nowrap;border:0}
+    /* The card the reader came from, marked where they left off. */
+    .route[data-came-from],details.route-hold[data-came-from]{border-left:3px solid var(--color-band)}
+    .from-here{font:600 .74rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;
+      color:var(--color-band);margin-bottom:.35rem}
 
     /* s5: collapsible country sections (multi-destination results).
        NB: named .country-sec — .country is the small chip on cards, and the
@@ -1298,7 +1387,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .cbody .ghead{margin:1rem 0 .6rem}
     .ghead b{color:var(--color-met)} .ghead.near b{color:var(--color-near)} .ghead.hold b{color:var(--color-hold)}
     details.route-hold{background:var(--color-card);border:var(--rule-soft);padding:.55rem .9rem}
-    details.route-hold summary{cursor:pointer;display:flex;gap:.8rem;align-items:baseline;list-style:none;font-size:.88rem}
+    details.route-hold summary{cursor:pointer;display:flex;gap:.8rem;align-items:baseline;list-style:none;font-size:.88rem;
+      min-height:var(--tap-min);padding:.35rem 0}
     details.route-hold summary::-webkit-details-marker{display:none}
     .hold-name{font:600 .92rem var(--font-serif)}
     .hold-why{color:var(--color-muted);font-size:.8rem;margin-left:auto;text-align:right}
@@ -1348,7 +1438,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .faildetail li.moot::before,.faildetail li.where::before{content:"— ";color:var(--color-muted)}
     .faildetail li.moot{color:var(--color-met)}
     .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
-    .learn a{color:var(--color-band);font-weight:600;text-decoration:none}
+    .learn a{color:var(--color-band);font-weight:600;text-decoration:none;
+      display:inline-flex;align-items:center;min-height:var(--tap-min)}
     .learn a::after{content:" ↗"}
 
     /* Result cards */
@@ -1402,7 +1493,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .src .applies{color:var(--color-met)}
     .src.unapplied{opacity:.72}
     .src .applies-not{font-style:italic}
-    .next{font:600 .78rem var(--font-sans);text-decoration:none;white-space:nowrap}
+    /* The link that proves the quote was the hardest thing on the page to tap:
+       84×16 px against a floor of 44 (isolated v1-gate critique, 2026-09-08,
+       F6). Its box is the floor now, and the tail keeps its own line height. */
+    .next{font:600 .78rem var(--font-sans);text-decoration:none;white-space:nowrap;
+      display:inline-flex;align-items:center;min-height:var(--tap-min)}
     .next::after{content:" ↗"}
 
     footer{margin-top:var(--space-6);color:var(--color-muted);font-size:.8rem;border-top:var(--rule-heavy);padding-top:.9rem}

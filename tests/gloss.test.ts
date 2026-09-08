@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { RECORD_VERSION } from "../src/lib/record.js";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { type Glossary, glossSection, glossed } from "../src/lib/gloss.js";
@@ -103,7 +104,7 @@ describe.skipIf(skipped !== null)("the results card explains it too", () => {
         await page.goto(server.url("/"), 300);
         await page.evaluate(`localStorage.setItem("permit-rulebook.record.v1", ${
           JSON.stringify(JSON.stringify({
-            version: 1, answers: GERMAN, history: Object.keys(GERMAN),
+            version: RECORD_VERSION, answers: GERMAN, history: Object.keys(GERMAN),
           }))})`);
         await page.goto(server.url("/"), 1400);
         return page.evaluate('document.querySelector("#app").innerText');

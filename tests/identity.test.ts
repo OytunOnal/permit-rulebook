@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { RECORD_VERSION } from "../src/lib/record.js";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { PAGE_CSS } from "../src/lib/route-page.js";
@@ -156,7 +157,7 @@ if (skipped)
  */
 const SEED_FINISHED_RECORD =
   'localStorage.setItem("permit-rulebook.record.v1", ' + JSON.stringify(JSON.stringify({
-    version: 1,
+    version: RECORD_VERSION,
     answers: {
       destination: "nl", citizenship: "TR", situation: "ict", salary_eur_month: "band_6",
       nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",

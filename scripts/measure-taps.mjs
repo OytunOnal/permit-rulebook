@@ -18,6 +18,13 @@
  * What it cannot see, and never could: whether the page is alive at all. It
  * counts elements, so a dead interview measures as "0 controls under the
  * floor". `npm run smoke` is the check for that.
+ *
+ * It also measured only what the BUILD emits, so the results screen — drawn by
+ * the page from a record, and the screen with the most controls in the product
+ * — was never measured at all. Five "Official page" links at 84×16 px and every
+ * collapsed route row at 330×41 px shipped under a floor this script reported
+ * clean (isolated v1-gate critique, 2026-09-08, F6). It now walks the drawn
+ * screens too.
  */
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -39,7 +46,10 @@ const PROBE = `(() => {
     if (r.width === 0 && r.height === 0) continue;
     n++;
     if (r.height + 0.5 < floor)
-      bad.push(Math.round(r.height) + "px \u00b7 " + (el.textContent || el.tagName).trim().replace(/\s+/g, " ").slice(0, 34));
+      // Doubled on purpose: this is a template literal, so a single backslash
+      // would reach the browser as /s+/g and delete the letter s from every
+      // name this script prints.
+      bad.push(Math.round(r.height) + "px \u00b7 " + (el.textContent || el.tagName).trim().replace(/\\s+/g, " ").slice(0, 34));
   }
   return JSON.stringify({
     innerWidth: window.innerWidth,
@@ -65,6 +75,29 @@ function builtPages(dir) {
 if (!existsSync(dist)) { console.error("no dist/ — run npm run build first"); process.exit(2); }
 
 const pages = builtPages(dist);
+
+/**
+ * Screens the page draws rather than the build emits, each with the record
+ * that produces it. A record is written, the page is reloaded, and what the
+ * reader actually taps is measured.
+ */
+const DRAWN = [
+  ["/ (results, one country)", {
+    destination: "de", citizenship: "IN", situation: "offer", qualification: "degree",
+    recognition_de: "unknown", occupation_shortage: "unknown", experience: "y3in7",
+    german: "b1", english: "c1", age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
+    funds_eur_month: "band_1", salary_eur_year: "unknown",
+  }],
+  ["/ (results, all four countries)", {
+    destination: "all", citizenship: "TR", situation: "offer", qualification: "degree",
+    recognition_de: "recognized", occupation_shortage: "yes", experience: "y3in7",
+    german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
+  }],
+];
+
+const seedFor = (answers) =>
+  `localStorage.setItem("permit-rulebook.record.v1", ${
+    JSON.stringify(JSON.stringify({ version: 1, answers, history: Object.keys(answers) }))})`;
 const server = await serve(dist);
 let failures = 0;
 let overflows = 0;
@@ -89,10 +122,27 @@ try {
         console.log(`ok   ${path} — ${m.innerWidth}px, ${m.controls} controls, none under ${TAP_MIN}px, no overflow`);
       }
     }
+    for (const [name, answers] of DRAWN) {
+      await page.goto(server.url("/"), 300);
+      await page.evaluate(seedFor(answers));
+      await page.goto(server.url("/"), 1200);
+      const m = JSON.parse(await page.evaluate(PROBE));
+      const overflow = m.scrollWidth > m.innerWidth + 1;
+      if (overflow) overflows++;
+      if (m.bad.length || overflow) {
+        failures++;
+        console.log(`FAIL ${name}`);
+        console.log(`     viewport ${m.innerWidth}px · scrollWidth ${m.scrollWidth}px · ${m.controls} controls`);
+        for (const b of m.bad) console.log(`     under the floor: ${b}`);
+        if (overflow) console.log(`     horizontal overflow: ${m.scrollWidth - m.innerWidth}px`);
+      } else {
+        console.log(`ok   ${name} — ${m.innerWidth}px, ${m.controls} controls, none under ${TAP_MIN}px, no overflow`);
+      }
+    }
   }, { viewport: VIEWPORT, mobile: true });
 } finally {
   server.close();
 }
 
-console.log(`\n${pages.length} pages at ${VIEWPORT.width} px — ${failures} with a problem (${overflows} overflowing)`);
+console.log(`\n${pages.length + DRAWN.length} screens at ${VIEWPORT.width} px — ${failures} with a problem (${overflows} overflowing)`);
 process.exit(failures === 0 ? 0 : 1);
