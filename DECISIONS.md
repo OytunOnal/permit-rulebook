@@ -2389,3 +2389,18 @@ dispatched the run's starting commit instead of the one it had just pushed
 (the lock could walk backwards) — fixed; `client_payload.sha` passes through
 `env:` with a hex check. No blocker: nothing a stranger can read, spend or
 change; the residual is disclosure, now closed.
+
+**Addendum, 2026-09-08 — the three-axis review of the security round, ruled.**
+Spec's blocker: a rerun of a *scheduled* deploy still floated the data to
+HEAD and moved `data.lock` — the rollback trial's failure, unfixed for the
+trigger that fires daily; a rerun now always builds against the lock and
+never writes it. Two footer facts recorded that the critique ruled and the
+gate text had not caught up with: the data line carries no schema version
+(it moved to the data page — a consumer's footer is not the place) and says
+"re-read daily" beside the watch's last run rather than "checked daily" (same
+fact, the wording that names the mechanism). The footer packs two columns
+at 481–760 px on every page, as the mock drew. Standards' blocker: the
+reading form of the scope line used two avoid-list words; the glossary now
+names the form ("… and one in our own reading"). The scenario's step-13 page
+count was corrected by the devils-advocate pass — it is descriptive, not a
+criterion the builder can tune to. Security: no blocker; disclosure closed.
