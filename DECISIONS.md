@@ -2378,3 +2378,14 @@ cannot verify it with this session's token scopes.
   footer print that day.
 - Review of this round runs on three axes — Standards, Spec, Security —
   because it touches an outbound call and the pipeline.
+
+**Addendum, 2026-09-08 — the Security axis on the beacon.** Measured on the
+wire: Cloudflare's script followed every `pushState` and sent one "page view"
+per answered question, with browser and OS versions in the body — more than
+the data page said. Ruling: SPA tracking off (one view per real page load),
+the sentence amended to name the browser and OS fields, and the wire test
+asserts the body's keys positively so a new field fails. Also: the watch
+dispatched the run's starting commit instead of the one it had just pushed
+(the lock could walk backwards) — fixed; `client_payload.sha` passes through
+`env:` with a hex check. No blocker: nothing a stranger can read, spend or
+change; the residual is disclosure, now closed.
