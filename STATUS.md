@@ -82,7 +82,4 @@ action, a real device, or a judgement on a live source.
       the preview after step 2) has no open blocker, say "go" and the
       announcement text — the README's first screen, told once — is yours to
       post.
-- [ ] **One line, optional:** the copyright holder in the three LICENSE files
-      reads "Oytun", the git author.
-
 Nothing else is open.
