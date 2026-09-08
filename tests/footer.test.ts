@@ -45,6 +45,14 @@ const footerOf = (html: string): string => {
   return html.slice(start, html.indexOf("</footer>", start) + "</footer>".length);
 };
 
+/**
+ * What a reader sees, with the markup taken out. The data line holds its
+ * unbreakable tokens in their own elements, so its sentences live across tags
+ * and only the rendered text can be asserted whole.
+ */
+const readerSees = (html: string): string =>
+  html.replace(/<[^>]*>/g, "").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
+
 /** The footer with the two things that legitimately differ taken out. */
 const shared = (footer: string): string =>
   footer
@@ -131,7 +139,7 @@ describe("one footer, every page", () => {
     expect(footer).toContain(`values read between <b><time datetime="${facts.read.oldest}">`);
     // "Re-read daily" is a claim, so the day it last happened is printed with
     // it, from the watch's own state (devils-advocate, 2026-09-08).
-    expect(footer).toContain(`re-read daily (last run ${facts.lastRun})`);
+    expect(readerSees(footer)).toContain(`re-read daily (last run ${facts.lastRun})`);
     expect(facts.lastRun, "the watch has never recorded a run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
     expect(facts.lastRun).toBe(lastWatchRun());
     expect(footer).toContain(`dataset ${facts.datasetVersion}`);
@@ -208,27 +216,62 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
       }
     }, 180000);
 
-  it("at 390 the two centred lines break only at their separators", async () => {
+  it("at 390 nothing that cannot break is wider than its column", async () => {
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
         await page.goto(server.url("/germany/eu-blue-card-general/"), 500);
-        return page.evaluate(
-          // An inline span that wraps occupies more than one line box, which
-          // is the honest measure of "it broke inside itself".
-          'JSON.stringify([...document.querySelectorAll(".site-foot .line > span > span")].map((s) => ({'
-          + ' text: s.textContent.trim(), lines: s.getClientRects().length })))',
+        // The runner's fonts are wider than this machine's, and a family wider
+        // still is only a matter of time: measure the widened case.
+        await page.evaluate(
+          '(() => { const s = document.createElement("style");'
+          + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}"'
+          + ' + "body{letter-spacing:0.11em}";'
+          + ' document.head.appendChild(s); return 1; })()',
         );
-      }, { viewport: { width: 390, height: 844 }, mobile: true }) as string) as
-        { text: string; lines: number }[];
+        await new Promise((r) => setTimeout(r, 250));
+        return page.evaluate(
+          // An inline element that wraps sits on more than one line: its
+          // fragments start at more than one top edge. (A count of fragments
+          // would not do, since a token holding a `time` child has one per
+          // child on a single line.)
+          'JSON.stringify({ column: Math.round(document.querySelector(".site-foot .line")'
+          + '.getBoundingClientRect().width),'
+          + ' lines: [...document.querySelectorAll(".site-foot .line > span")]'
+          + '  .map((el) => ({ text: el.textContent.trim().slice(0, 30),'
+          + '    width: Math.round(el.getBoundingClientRect().width) })),'
+          + ' held: [...document.querySelectorAll(".site-foot .line *")]'
+          + '  .filter((el) => getComputedStyle(el).whiteSpace === "nowrap")'
+          + '  .map((el) => ({ text: el.textContent.trim(),'
+          + '    width: Math.round(el.getBoundingClientRect().width),'
+          + '    lines: new Set([...el.getClientRects()]'
+          + '      .map((r) => Math.round(r.top))).size })) })',
+        );
+      }, { viewport: { width: 390, height: 844 }, mobile: true }) as string) as {
+        column: number; lines: { text: string; width: number }[];
+        held: { text: string; width: number; lines: number }[];
+      };
 
-      expect(seen.length, "the lines carry no segments to keep whole").toBeGreaterThan(5);
-      for (const segment of seen)
-        expect(segment.lines, `"${segment.text}" wrapped inside itself`).toBeLessThanOrEqual(1);
-      // The segments a reader must never see split.
-      expect(seen.some((s) => s.text.startsWith("re-read daily")), seen.map((s) => s.text).join(" | "))
-        .toBe(true);
-      expect(seen.some((s) => s.text.includes("Oytun Onal"))).toBe(true);
+      // Each of the two lines fits its column: a line that cannot break inside
+      // itself is exactly how the page came to scroll sideways in CI.
+      expect(seen.lines.length, "the data line is missing").toBe(2);
+      for (const line of seen.lines)
+        expect(line.width, `"${line.text}..." is ${line.width} px in a ${seen.column} px column`)
+          .toBeLessThanOrEqual(seen.column);
+      expect(seen.held.length, "the lines hold no token whole").toBeGreaterThan(5);
+      for (const token of seen.held) {
+        // The design rule: nothing may be nowrap wider than the column it sits
+        // in, or the column cannot hold it and the page scrolls sideways.
+        expect(token.width, `"${token.text}" is ${token.width} px in a ${seen.column} px column`)
+          .toBeLessThanOrEqual(seen.column);
+        expect(token.lines, `"${token.text}" wrapped inside itself`).toBeLessThanOrEqual(1);
+      }
+      // The tokens a reader must never see split.
+      const texts = seen.held.map((t) => t.text);
+      expect(texts.some((t) => t.includes("Oytun Onal")), texts.join(" | ")).toBe(true);
+      expect(texts.some((t) => t.startsWith("(last run ")), texts.join(" | ")).toBe(true);
+      expect(texts.filter((t) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(t)).length,
+        `read dates held whole: ${texts.join(" | ")}`).toBeGreaterThanOrEqual(2);
     } finally {
       server.close();
     }
@@ -257,6 +300,7 @@ describe("what the site says about the daily check is what the watch recorded", 
   it("the same day, in the footer, on every page", () => {
     const run = lastWatchRun();
     for (const page of builtPages())
-      expect(footerOf(page.html), `${page.path}`).toContain(`re-read daily (last run ${run})`);
+      expect(readerSees(footerOf(page.html)), `${page.path}`)
+        .toContain(`re-read daily (last run ${run})`);
   });
 });

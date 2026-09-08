@@ -654,18 +654,34 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
     + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
     + ' document.head.appendChild(s); return "forced"; })()';
 
-  /** What sticks out, if anything, with the element that does it. */
+  /**
+   * What sticks out, if anything, named well enough to find: its class if it
+   * has one, otherwise the words it holds. The element that pushed CI sideways
+   * was a `span` with no class, which a tag name alone does not locate.
+   */
   const OVERFLOW = 'JSON.stringify((() => {'
     + ' const w = document.documentElement.clientWidth;'
     + ' const worst = [];'
     + ' for (const el of document.querySelectorAll("body *")) {'
     + '   const r = el.getBoundingClientRect();'
     + '   if (r.width === 0 || r.right <= w + 0.5) continue;'
-    + '   worst.push(`${el.tagName.toLowerCase()}.${(el.className || "").toString().slice(0, 24)}`'
-    + '     + ` at ${Math.round(r.right)} of ${w}`);'
+    + '   const cls = (el.className || "").toString().trim();'
+    + '   const said = (el.textContent || "").split(/\\s+/).join(" ").trim().slice(0, 40);'
+    + '   worst.push(`${el.tagName.toLowerCase()}${cls ? "." + cls.slice(0, 24) : ` "${said}"`}`'
+    + '     + ` ${Math.round(r.width)} px wide, right edge ${Math.round(r.right)} of ${w}`);'
     + ' }'
     + ' return { overflow: document.documentElement.scrollWidth - w, worst: worst.slice(0, 4) };'
     + '})())';
+
+  /**
+   * A font drawn wider than any installed here, standing in as extra tracking
+   * on the body — the same trick the stamp is sized by. The runner's fonts are
+   * wider than this machine's emulated fallback, so the widened measurement is
+   * the truth and the plain one is the optimistic case.
+   */
+  const WIDER = (extra: string): string => '(() => { const s = document.createElement("style");'
+    + ` s.textContent = "body{letter-spacing:${extra}em}";`
+    + ' document.head.appendChild(s); return 1; })()';
 
   it("the interview, the results, a route page, a country page and the data page", async () => {
     const server = await serveDir(dist);
@@ -686,6 +702,12 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
           await page.evaluate(FALLBACK_STACK);
           await new Promise((r) => setTimeout(r, 250));
           at[name] = JSON.parse(await page.evaluate(OVERFLOW));
+          // And again as a wider family would draw it.
+          for (const extra of ["0.055", "0.11"]) {
+            await page.evaluate(WIDER(extra));
+            await new Promise((r) => setTimeout(r, 200));
+            at[`${name} at +${extra}em`] = JSON.parse(await page.evaluate(OVERFLOW));
+          }
         }
         return at;
       }, { viewport: { width: 390, height: 1000 }, mobile: true }) as Record<string, {

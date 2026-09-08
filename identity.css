@@ -143,10 +143,12 @@
 .site-foot .col .out::after { content: " \2197"; color: var(--color-muted); }
 .site-foot .line { display: flex; flex-direction: column; align-items: center; text-align: center; gap: .25rem; border-top: var(--rule-soft); margin-top: var(--space-4); padding-top: var(--space-3); font: var(--text-source); }
 .site-foot .line b { color: var(--color-met); font-weight: 600; }
-/* The two centred lines break at their separators and nowhere else: never
-   inside "© 2026 Oytun Onal", never inside a read date. */
-.site-foot .line > span { display: block; }
-.site-foot .line > span > span { white-space: nowrap; }
+/* The two centred lines break at their separators first, and a line box can
+   never be wider than the column that holds it. */
+.site-foot .line > span { display: block; max-width: 100%; }
+/* Only a token a reader must never see split is held whole: a date, the
+   copyright, a licence name. Everything else breaks, at a separator first. */
+.site-foot .line .keep, .site-foot .line time { white-space: nowrap; }
 .site-foot .line .mark { display: inline-flex; align-items: center; min-height: var(--tap-min); color: var(--color-ink); text-decoration: none; white-space: nowrap; }
 .site-foot .line .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; height: 1.4rem; border: var(--stamp-border); color: var(--color-stamp); font: 700 .62rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); margin-right: .45rem; }
 

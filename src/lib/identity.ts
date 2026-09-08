@@ -191,6 +191,14 @@ export interface FooterFacts {
 const out = (href: string, label: string): string =>
   `<a class="out tap-min" href="${escAttr(href)}" target="_blank" rel="noopener">${esc(label)}</a>`;
 
+/**
+ * The separator between the footer's data tokens. The space before the dot is
+ * non-breaking, so the dot ends the line it belongs to and the break falls
+ * after it: the data line breaks at its separators before it breaks anywhere
+ * else, and nothing that cannot break is ever wider than its column.
+ */
+const SEP = String.fromCharCode(160, 183) + " ";
+
 export function siteFooter(
   countries: NavLink[], facts: FooterFacts, place: FooterPlace = {},
 ): string {
@@ -233,11 +241,12 @@ export function siteFooter(
       </div>
     </div>
     <div class="line">
-      <span><a class="mark tap-min" href="${escAttr(url("/"))}">${seal()}${esc(PRODUCT_NAME)}</a><span> · </span><span>code MIT</span><span> · </span><span>data ${
-    esc(facts.licenceName)}</span><span> · </span><span>© ${esc(facts.year)} ${esc(facts.owner)}</span></span>
+      <span><a class="mark tap-min" href="${escAttr(url("/"))}">${seal()}${esc(PRODUCT_NAME)}</a>${SEP}<span class="keep">code MIT</span>${SEP}<span class="keep">data ${
+    esc(facts.licenceName)}</span>${SEP}<span class="keep">© ${esc(facts.year)} ${esc(facts.owner)}</span></span>
       <span>values read between <b><time datetime="${
     escAttr(facts.read.oldest)}">${esc(facts.read.oldest)}</time></b> and <b><time datetime="${
-    escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b><span> · </span><span>re-read daily${facts.lastRun ? ` (last run ${esc(facts.lastRun)})` : ""}</span><span> · </span><span>dataset ${
+    escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b>${SEP}re-read daily${facts.lastRun ? ` <span class="keep">(last run <time datetime="${
+    escAttr(facts.lastRun)}">${esc(facts.lastRun)}</time>)</span>` : ""}${SEP}<span class="keep">dataset ${
     esc(facts.datasetVersion)}</span></span>
     </div>
   </footer>`;
