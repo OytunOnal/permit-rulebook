@@ -2189,3 +2189,18 @@ lines. Approved while its isolated critique was still running — the
 critique's findings are applied where they do not contradict these choices;
 a blocker would reopen the gate. Cost: the countries appear in the header and
 the footer both, on purpose (a long page's header is a screen away).
+
+**Addendum, 2026-09-08 — the footer's isolated critique, applied after the
+gate.** Three blockers: links with no resting affordance (a hover-only
+underline on a phone is no affordance) — restored as an underline under the
+text, not the old boxes; "checked daily" — kept, it is true (the watch runs
+daily; the one-pager's ≤48 h is the time to write a change into the dataset,
+a different promise); "newest value read <date>" flattering a page whose
+values are older — the line now states the range, oldest to newest. Labels:
+"Routes" over four countries was wrong ("Countries"); "What it holds, and its
+gates" was pipeline vocabulary (the header mock's own "The data — status,
+versions, downloads" replaces it); one name for the checker, "Check yours",
+in header and footer. Not changed: the disclaimer's wording (decision 9, the
+human's) — the critique's reading that "authorities won't consider these
+results" is ambiguous is put to the human; the centred lines and the fourth
+seal are the human's choices and stand.
