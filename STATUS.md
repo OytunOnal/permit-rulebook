@@ -95,6 +95,13 @@ judgement on a live source.
 - [x] **GitHub Sponsors** (human, 2026-09-08): profile live at
       https://github.com/sponsors/OytunOnal; the small link sits beside the
       licence in both READMEs; the Sponsor button shows on both repositories.
+- [ ] **The disclaimer's middle clause — your call** (decision 9 is yours): the
+      footer critique read "authorities won't consider these results" as
+      ambiguous for a non-native reader (a prediction about behaviour, not the
+      intended "no authority is bound by this"). Options: keep as is · "…makes
+      no immigration decision and no authority is bound by these results — it
+      compares published values with what you declare, nothing more." One
+      word: "keep" or "change".
 - [ ] **Search Console (your Google account):** https://search.google.com/search-console
       → Add property → Domain `permitrulebook.com` → add the TXT record it gives
       you to Cloudflare DNS (paste it here and I add it) → once verified, submit
