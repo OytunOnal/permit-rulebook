@@ -127,13 +127,18 @@ _Avoid_: three years, mid experience, the Spanish option
 
 **Scope statement** (UI: "What the checker asks, and what it does not"):
 A route's declared fact about how much of it the interview decides, in one of
-three values — every deciding rule asked · some conditions stated, not asked ·
-rules quoted, nothing asked — plus the limbs it does not ask, named. Authored
+three values, shown to the reader as what they get — "quoted and dated ·
+scored against your answers" · "quoted and dated · scored, N conditions
+stated but not asked" · "quoted and dated · not scored" (the first wording,
+"some conditions stated, not asked", read as an apology; amended 2026-09-08)
+— plus the limbs it does not ask, named. Authored
 by a person, never derived by a test; schema-required; rendered on the route
 page and the results card. Called `scope` in the dataset, because "coverage"
 already names the watch's both-way check and sits on Prose provenance's
 avoid-list (Standards review, 2026-09-07).
-_Avoid_: coverage, completeness, fully modelled, modelled
+_Avoid_: coverage, completeness, fully modelled, modelled, "some conditions
+stated, not asked" (the retired wording). "Scored" is allowed only in the full
+reader phrase "scored against your answers" / "scored, …", never bare.
 
 **Still reachable**:
 A criterion result that did not fail, or failed only by a Bounded gap. The
@@ -145,7 +150,7 @@ _Avoid_: alive, open, possible, not-yet-failed
 A criterion scored across several declared items against a required total
 (the Chancenkarte model). It can be satisfied early but is never failed until
 every item is answered.
-_Avoid_: score, quiz
+_Avoid_: score (as a noun for the ladder), quiz
 
 ### The person's side
 
