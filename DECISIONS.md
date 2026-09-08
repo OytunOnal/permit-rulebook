@@ -2486,3 +2486,14 @@ ilerisi için olabilir").** Results stay in dataset order; "start with this
 one" would be advice with no published basis. Roadmap candidate for v1.1:
 published facts on each card (duration, family, permanence) so the reader
 compares — data, not a verdict.
+
+**Addendum, 2026-09-08 — the money ladder stays a union of every country's
+thresholds.** The critique's adjustment asked for per-country ladders (a
+Spain reader was offered German cut points); the builder did it and showed
+the cost: a German earning €40,000 could only declare "under €45,630", and
+the card's gap went from "up to €6,048 short" to "up to €45,630 short". The
+gap story is the differentiator; foreign cut points are a label oddity, not
+a wrong verdict. Ruling: union ladder, half-open labels ("€X – under €Y")
+so no amount sits in two bands — B1's substance — and the €6,048 assertion
+restored. Cost: a reader sees rungs that belong to other countries' rules;
+accepted, and the card names each rung's country where it labels one.
