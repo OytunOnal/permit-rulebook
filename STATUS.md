@@ -26,22 +26,17 @@ flowchart LR
 gists, "stated" only of the source's words, one head-meta source, the shared
 footer on every page with its critique applied, the `/data` headings
 unclipped, the amended disclaimer everywhere, "Check yours" in the header.
-**The security round is pushed and deploying** (site `cb9d042`, data
-`c76dd7d`): the header holds one row on any font, the fingerprint measures
-the template not the data, the Cloudflare beacon is on every page with its
-body read off the wire, actions pinned by SHA with least privilege,
-`data.lock`, the `/data` liveness copy corrected with the watch's last run,
-trailing slashes consistent, a meta CSP with the inline script hashed, a
-failed watch run now files an issue. Three reviewers run on it (Standards,
-Spec, Security). **CI is red on one test** — at 390 px on the runner's
-fallback fonts the interview page overflows by 17 px (the same font family
-as the header, one more element); the builder is on it. When the deploy is
-green: the footer and the amended
-disclaimer are live, the phone walk can happen, one real value re-read goes
-through the whole loop, the isolated critique re-runs on RUBRIC 1.3, and v1
-waits only on the checklist below.
+**The review round is pushed and deploying** (site `51a7af5`, data `90d9fba`):
+three-axis review applied — the 390 px overflow was the results stamp,
+bounded now on any font; the counter reports one view per page load and
+`/data` says what the wire carries; reruns build against `data.lock` and
+never move it; the footer packs the mock's columns on every page. When the
+deploy is green: the footer and the amended disclaimer are live, the phone
+walk can happen, one real value re-read goes through the whole loop, the
+isolated critique re-runs on RUBRIC 1.3, and v1 waits only on the checklist
+below.
 
-Numbers: 406 tests in the data repository, 249 in the site; 122 quotes
+Numbers: 413 tests in the data repository, 255 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
 at 390 px; critique 32/45 on RUBRIC 1.2 (v0.7: 27/45).
 

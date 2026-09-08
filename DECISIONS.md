@@ -2404,3 +2404,15 @@ reading form of the scope line used two avoid-list words; the glossary now
 names the form ("… and one in our own reading"). The scenario's step-13 page
 count was corrected by the devils-advocate pass — it is descriptive, not a
 criterion the builder can tune to. Security: no blocker; disclosure closed.
+
+**Addendum, 2026-09-08 — the review round shipped** (site `51a7af5`, data
+`90d9fba`). The 390 px overflow on the runner was the results stamp: centred
+under the mark's corner with `nowrap` and no bound, its right edge was a
+function of how wide a font draws "RECORD GENERATED" — 17 px of slack
+locally, 17 px over on CI; bounded now, proven by widening the glyphs until
+the stamp grows taller, never wider. The beacon's SPA tracking is off (13
+reports per walk → 1), its body's field list asserted positively; a rerun
+never advances `data.lock`; the build job is read-only again with the lock
+written by its own `pin` job; the failure notice is the watch's last step;
+"in our own reading" is the reading form of the scope line; the footer packs
+the mock's columns on every page. 413 + 255 tests, both repositories green.
