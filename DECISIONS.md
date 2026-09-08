@@ -2474,3 +2474,9 @@ quotes get an English rendering or a stated no-translation policy.
 
 **Cost, stated.** One more build-and-review round before the tag; the
 critique's scores are recorded, not gated on — the blockers are the gate.
+
+**Addendum, 2026-09-08 — quotes are never translated (human: "politika").**
+A translation would be our words beside the authority's; the original is the
+record. Stated on /data in one sentence; each quote names its language and
+source. Cost: a phone card can end in three untranslated German sentences —
+accepted; the reader has the language tag and the source link.
