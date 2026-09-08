@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Favicon background — three options · Permit Rulebook</title>
+<style>
+  /* A comparison, not a design: the chosen PR stamp with three backgrounds,
+     at the three sizes a tab uses, on a light and a dark tab strip. */
+  body { margin: 0; background: #555; color: #eee; font: 13px/1.5 system-ui; padding: 24px; }
+  h2 { font: 600 14px system-ui; margin: 24px 0 8px; }
+  .strip { display: flex; gap: 56px; padding: 18px 22px; border-radius: 8px; margin-bottom: 10px; align-items: flex-end; }
+  .light { background: #dfe1e5; color: #202124; }
+  .dark { background: #202124; color: #e8eaed; }
+  .opt { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  .row { display: flex; gap: 16px; align-items: flex-end; }
+  .cap { font: 12px system-ui; opacity: .8; text-align: center; max-width: 13rem; }
+  .tab { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px 8px 0 0; font: 12px system-ui; }
+  .light .tab { background: #fff; }
+  .dark .tab { background: #35363a; }
+  img { image-rendering: auto; }
+</style>
+</head>
+<body>
+<h2>Light tab strip</h2>
+<div class="strip light" id="light"></div>
+<h2>Dark tab strip</h2>
+<div class="strip dark" id="dark"></div>
+<script>
+  const mark = (bg, paper) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    ${bg ? '<rect width="64" height="64" fill="#f1eee4"/>' : ''}
+    <g transform="rotate(-6 32 32)">
+      <rect x="4.5" y="4.5" width="55" height="55" fill="${paper ? '#f1eee4' : 'none'}" stroke="#8c2b2b" stroke-width="3"/>
+      <text x="32" y="33" fill="#8c2b2b" text-anchor="middle" dominant-baseline="middle"
+            font-family="Consolas, 'DejaVu Sans Mono', ui-monospace, monospace"
+            font-weight="700" font-size="40" letter-spacing="-1.6">PR</text>
+    </g></svg>`;
+  const opts = [
+    ["A · as shipped — cream square behind the stamp", mark(true, false)],
+    ["B · transparent — the stamp alone on the tab", mark(false, false)],
+    ["C · transparent outside, cream paper inside the frame", mark(false, true)],
+  ];
+  const uri = (svg) => "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+  for (const id of ["light", "dark"]) {
+    const strip = document.getElementById(id);
+    for (const [cap, svg] of opts) {
+      const d = document.createElement("div"); d.className = "opt";
+      d.innerHTML = `<div class="row">${[16, 32, 64].map(s => `<img src="${uri(svg)}" width="${s}" height="${s}" alt="">`).join("")}</div>
+        <span class="tab"><img src="${uri(svg)}" width="16" height="16" alt=""> Permit Rulebook</span>
+        <span class="cap">${cap}</span>`;
+      strip.appendChild(d);
+    }
+  }
+</script>
+</body>
+</html>
