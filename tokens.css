@@ -77,6 +77,17 @@
   /* The stamp: the recording-date ritual (once in the masthead; never on a card) */
   --stamp-border: 2.5px solid var(--color-stamp);
   --stamp-rotate: -6deg;
+  /* The stamp's own type, sized so its LONGEST label — "RECORD GENERATED" —
+     stays on one line inside the stamp's bound on a machine with none of our
+     fonts. Measured with the generic stack forced and a further .11em of
+     tracking standing in for a font drawn wider still (about twice the step
+     from Consolas to DejaVu Sans Mono): 152 px of a 166 px bound at 390, and
+     177 of 198 at desktop (CI, ubuntu, 2026-09-08). A stamp that wraps on one
+     screen and not on another is two drawings, which is the thing the pair may
+     never be. */
+  --stamp-text-390: 600 .7rem var(--font-mono);
+  --stamp-text: 600 .8rem var(--font-mono);
+  --stamp-tracking: .06em;
 }
 
 /**

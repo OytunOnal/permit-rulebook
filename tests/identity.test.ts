@@ -189,6 +189,24 @@ const HEADING = `(() => {
   });
 })()`;
 
+/**
+ * The fonts the runner has and this machine does not.
+ *
+ * CI is ubuntu: no Segoe UI, no Cambria, no Consolas. Every case in this file
+ * runs twice — once with the fonts here, once with whatever the machine falls
+ * back to — because the pair and the header have now been broken twice by a
+ * width this machine could not see (CI, 2026-09-08).
+ */
+const FALLBACK_STACK = '(() => { const s = document.createElement("style");'
+  + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
+  + ' document.head.appendChild(s); return "forced"; })()';
+
+/** The two runs every browser case in this file makes. */
+const STACKS = [
+  { name: "our fonts", force: false },
+  { name: "the fallback stack", force: true },
+] as const;
+
 const PLACEMENT = `(() => {
   const head = document.querySelector('.masthead-with-stamps');
   if (!head) return JSON.stringify({ missing: true });
@@ -245,20 +263,23 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
   const RESULTS = "/";
   const ROUTE = "/germany/eu-blue-card-general/";
 
+  for (const { name: stack, force } of STACKS)
   for (const [width, label] of [[1100, "desktop"], [390, "390 px"]] as const) {
-    it(`is the same drawing on the results page and a route page at ${label}`, async () => {
+    it(`is the same drawing on the results page and a route page at ${label}, in ${stack}`, async () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
           const out: Record<string, Measure> = {};
           for (const path of [RESULTS, ROUTE]) {
             await page.goto(server.url(path), 400);
+            if (force) await page.evaluate(FALLBACK_STACK);
             if (path === RESULTS) {
               // The results screen, which is where this page carries the
               // "Record generated" stamp; unseeded, `/` is question one and
               // states the rules-read date instead (human, 2026-09-08).
               await page.evaluate(SEED_FINISHED_RECORD);
               await page.goto(server.url(path), 1400);
+              if (force) await page.evaluate(FALLBACK_STACK);
             }
             out[path] = JSON.parse(await page.evaluate(PROBE)) as Measure;
           }
@@ -290,17 +311,20 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
     }, 120000);
   }
 
+  for (const { name: stack, force } of STACKS)
   for (const [width, label] of [[1100, "desktop"], [390, "390 px"]] as const) {
-    it(`sits in the same place on both screens at ${label}`, async () => {
+    it(`sits in the same place on both screens at ${label}, in ${stack}`, async () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
           const out: Record<string, Measure> = {};
           for (const path of [RESULTS, ROUTE]) {
             await page.goto(server.url(path), 400);
+            if (force) await page.evaluate(FALLBACK_STACK);
             if (path === RESULTS) {
               await page.evaluate(SEED_FINISHED_RECORD);
               await page.goto(server.url(path), 1400);
+              if (force) await page.evaluate(FALLBACK_STACK);
             }
             out[path] = JSON.parse(await page.evaluate(PLACEMENT)) as Measure;
           }
@@ -357,18 +381,21 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
    * becomes the record's own date. One pair, two states, and the box does not
    * move between them.
    */
-  it("states the rules-read date on the questions and the record's date on the results", async () => {
+  for (const { name: stack, force } of STACKS)
+  it(`states the rules-read date on the questions and the record's date on the results, in ${stack}`, async () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const read = () => page.evaluate(STAMP_STATE);
         await page.goto(server.url("/"), 900);
+        if (force) await page.evaluate(FALLBACK_STACK);
         const first = JSON.parse(await read()) as Measure;
         await page.evaluate('document.querySelector(".qcard .opt").click()');
         await new Promise((r) => setTimeout(r, 500));
         const answered = JSON.parse(await read()) as Measure;
         await page.evaluate(SEED_FINISHED_RECORD);
         await page.goto(server.url("/"), 1400);
+        if (force) await page.evaluate(FALLBACK_STACK);
         const results = JSON.parse(await read()) as Measure;
         // The words alone, with the masthead's own copy untouched.
         await page.evaluate('document.getElementById("stamp-label").textContent = "Rules read"');
@@ -399,13 +426,15 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
   /**
    * The masthead heading is two lines by design, from one rule.
    */
-  it("keeps the tagline on a line of its own, at every width", async () => {
+  for (const { name: stack, force } of STACKS)
+  it(`keeps the tagline on a line of its own, at every width, in ${stack}`, async () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const out: Record<string, Measure> = {};
         for (const [label, path] of [["interview", "/"], ["route", ROUTE]] as const) {
           await page.goto(server.url(path), 900);
+          if (force) await page.evaluate(FALLBACK_STACK);
           out[label] = JSON.parse(await page.evaluate(HEADING)) as Measure;
         }
         return out;
@@ -671,38 +700,55 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
     }
   }, 180000);
 
-  it("and the pair's stamp stays inside the page however wide its glyphs are", async () => {
+  /**
+   * The stamp is ONE line of label, on any font (human ruling, 2026-09-08). It
+   * is sized for its longest label — "RECORD GENERATED", which the results
+   * screen carries — with room for a font drawn wider than the runner's: the
+   * margin below is about twice the step from Consolas to DejaVu Sans Mono.
+   * Beyond that margin the bound still holds the page, which is the safety net
+   * rather than the design.
+   */
+  it("keeps its longest label on one line under a font wider than the runner's", async () => {
     const server = await serveDir(dist);
     try {
       const seen = await withChrome(async (page: Page) => {
         await page.goto(server.url("/"), 600);
         await page.evaluate(SEED_FINISHED_RECORD);
         await page.goto(server.url("/"), 1400);
-        const at: Record<string, unknown> = {};
-        // Letter-spacing stands in for a font drawn wider than any we have.
-        for (const spacing of [".1", ".2", ".35"]) {
+        await page.evaluate(FALLBACK_STACK);
+        const box = 'JSON.stringify({ overflow: document.documentElement.scrollWidth'
+          + ' - document.documentElement.clientWidth,'
+          + ' height: document.querySelector(".stamps .stamp").offsetHeight,'
+          + ' width: document.querySelector(".stamps .stamp").offsetWidth,'
+          + ' bound: Math.round(parseFloat(getComputedStyle('
+          + '   document.querySelector(".stamps .stamp")).maxWidth)) })';
+        const at: Record<string, unknown> = { own: JSON.parse(await page.evaluate(box)) };
+        // Extra tracking stands in for a family drawn wider than any here.
+        for (const extra of [".055", ".11", ".22"]) {
           await page.evaluate(
             '(() => { const s = document.createElement("style");'
-            + ` s.textContent = ".stamps .stamp{letter-spacing:${spacing}em}";`
+            + ` s.textContent = ".stamps .stamp{letter-spacing:calc(var(--stamp-tracking) + ${extra}em)}";`
             + ' document.head.appendChild(s); return 1; })()',
           );
           await new Promise((r) => setTimeout(r, 200));
-          at[spacing] = JSON.parse(await page.evaluate(
-            'JSON.stringify({ overflow: document.documentElement.scrollWidth'
-            + ' - document.documentElement.clientWidth,'
-            + ' lines: Math.round(document.querySelector(".stamps .stamp").getBoundingClientRect().height) })',
-          ));
+          at[extra] = JSON.parse(await page.evaluate(box));
         }
         return at;
       }, { viewport: { width: 390, height: 1000 }, mobile: true }) as Record<string, {
-        overflow: number; lines: number;
+        overflow: number; height: number; width: number; bound: number;
       }>;
 
-      for (const [spacing, box] of Object.entries(seen))
-        expect(box.overflow, `at ${spacing}em the page scrolls ${box.overflow} px`).toBeLessThanOrEqual(0);
-      // It grew taller rather than wider: the label wrapped inside its bound.
-      expect(seen[".2"]!.lines, "the stamp did not wrap when its text outgrew the box")
-        .toBeGreaterThan(seen[".1"]!.lines);
+      // Never a sideways scroll, at any width of glyph.
+      for (const [where, box] of Object.entries(seen))
+        expect(box.overflow, `at +${where}em the page scrolls ${box.overflow} px`).toBeLessThanOrEqual(0);
+      // And up to twice the widening a real fallback costs, the label is still
+      // one line: the box is the height it is with our own fonts.
+      const own = seen.own!;
+      for (const margin of [".055", ".11"]) {
+        expect(seen[margin]!.height, `at +${margin}em the label wrapped`).toBe(own.height);
+        expect(seen[margin]!.width, `at +${margin}em the stamp outgrew its bound`)
+          .toBeLessThanOrEqual(own.bound);
+      }
     } finally {
       server.close();
     }

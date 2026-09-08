@@ -1,8 +1,8 @@
 {
-  "note": "sha256 of the two route pages the FROZEN dataset (fixtures/frozen-dataset.json) produces at the site root. Regenerating this is a deliberate act: it means the template moved. It was rebased onto the frozen dataset on 2026-09-08, because hashing the live dataset made every page differ in CI the moment a read date moved — the fixture was measuring the data, not the template. Regenerated 2026-09-08 when the traffic counter moved from the head to the end of the body. Regenerated 2026-09-08 when every internal page URL gained the trailing slash the host serves it at. Regenerated 2026-09-08 when every page gained a content-security policy and the footer began printing the watch's last run. Regenerated 2026-09-08 for the review round: every attribute interpolation now goes through escAttr, and the scope line says \"in our own reading\" where a condition is ours.",
+  "note": "sha256 of the two route pages the FROZEN dataset (fixtures/frozen-dataset.json) produces at the site root. Regenerating this is a deliberate act: it means the template moved. It was rebased onto the frozen dataset on 2026-09-08, because hashing the live dataset made every page differ in CI the moment a read date moved — the fixture was measuring the data, not the template. Regenerated 2026-09-08 when the traffic counter moved from the head to the end of the body. Regenerated 2026-09-08 when every internal page URL gained the trailing slash the host serves it at. Regenerated 2026-09-08 when every page gained a content-security policy and the footer began printing the watch's last run. Regenerated 2026-09-08 for the review round: every attribute interpolation now goes through escAttr, and the scope line says \"in our own reading\" where a condition is ours. Regenerated 2026-09-08 when the stamp's type moved into tokens, sized so its longest label stays on one line under a font wider than the runner's.",
   "base": "/",
   "pages": {
-    "/germany/eu-blue-card-general": "88329554bc40273c214644aa2204d9d7b20472b55503c69823c4e2f304ba5100",
-    "/germany/skilled-worker-academic": "4ca231ece2c51886fcfc3332f79d1d4a14e8f4f4ca62c3840aba8e2deac8adb3"
+    "/germany/eu-blue-card-general": "4277438164c8a4a4a160e0f4ab7849390634eb2e95454aba6ec597a365bd4684",
+    "/germany/skilled-worker-academic": "1f787e256c8eaf6200b6b0c1610fbece40e365bf1898402aa0ff99aec6d2c197"
   }
 }

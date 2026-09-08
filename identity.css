@@ -39,13 +39,13 @@
    line at all: an absolutely positioned box with only a `left` shrinks to the
    space left of its container's edge, which would wrap the label even in our
    own fonts. */
-.stamps .stamp { position: absolute; left: 4rem; top: 3.55rem; width: max-content; max-width: 10.4rem; font: var(--text-value); color: var(--color-stamp); border: var(--stamp-border); padding: .35rem .6rem; transform: translateX(-50%) rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: .1em; line-height: 1.25; text-align: center; mix-blend-mode: multiply; }
+.stamps .stamp { position: absolute; left: 4rem; top: 3.55rem; width: max-content; max-width: 10.4rem; font: var(--stamp-text-390); color: var(--color-stamp); border: var(--stamp-border); padding: .35rem .6rem; transform: translateX(-50%) rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: var(--stamp-tracking); line-height: 1.25; text-align: center; mix-blend-mode: multiply; }
 
 /* Desktop: the pair one size up (human, 2026-09-07); the corner geometry is kept. */
 @media (min-width: 761px) {
   .stamps { width: 11.2rem; height: 8.7rem; }
   .stamps .mark { left: .7rem; width: 4.3rem; height: 4.3rem; font-size: 2.2rem; border-width: 3.5px; }
-  .stamps .stamp { left: 5rem; top: 4.5rem; width: max-content; max-width: 12.4rem; font-size: .95rem; padding: .45rem .75rem; border-width: 3px; }
+  .stamps .stamp { left: 5rem; top: 4.5rem; width: max-content; max-width: 12.4rem; font: var(--stamp-text); letter-spacing: var(--stamp-tracking); padding: .45rem .75rem; border-width: 3px; }
 }
 
 /* ---- where the pair sits, on every screen that carries one ----
