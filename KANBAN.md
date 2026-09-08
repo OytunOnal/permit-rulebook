@@ -59,6 +59,12 @@ Promoted (or dropped, with evidence) at a boundary session.
   boundary 2026-09-07 after three versions in *later*.
 
 ### v3 — wave 3
+
+- **A countries menu in the header** (v3, session 2026-09-08) · why: the
+  one-row header holds four country names with ~23 px of slack at the 56 rem
+  cap; the rest of Europe does not fit in a row · bet: a grouped menu keeps
+  every country one step away without a second nav row · source: the isolated
+  critique of the navigation mock (F1), .
 - **Rest of Europe** · versioned at the s6 boundary 2026-09-07.
 
 ### later (aging counter reset 2026-09-07 — next fork after three more versions)
