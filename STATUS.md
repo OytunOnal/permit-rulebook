@@ -21,45 +21,16 @@ flowchart LR
 
 ## What is happening now
 
-**The critique-and-walk round is built, committed and pushed** (site `2c30584`,
-data `bc2ba49`): the four blockers and adjustment 3, the two READMEs
-image-first, "§" glossed, the leverage place bug, the buzer slices, the bot
-identity, favicon C, `NOTES.md` as pre-history. Deployed (run 34218847195) and **re-read on
-https://permitrulebook.com: all four blockers cleared** — the Chancenkarte card
-now says "Up to €1,091/month short of the monthly funds this route asks for —
-living costs", consistent with its rail and banner; the home page links the
-four country pages, the sitemap lists 29 URLs, robots.txt exists, a wrong URL
-lands on our own 404 with the identity pair; the data README opens with the
-screenshot and links the live site; the favicon is option C; "§ 20a, section
-20a" is glossed. The two-axis review of the round found one blocker (the watch's
-new rebuild-dispatch step sat between the state commit and the flag-issue
-step) and nine should-fix items; all applied, committed (site `a8d50db`, data
-`e03649d`), pushed, deployed (run 34222781612; the country pages carry the pair and the
-gloss on the live site). The round also gave the site one masthead
-source (`identity.ts`), an attribute-escaping gate, and the one-pager's
-"answers never leave the device" promise checked in a real browser (proved red
-by an injected request, green on the clean build). 397 + 196 tests.
+**The navigation review round and the footer are pushed and deploying** (site
+`d77471d`, data `4741d3d`): reload-safe browser history, whole-sentence
+gists, "stated" only of the source's words, one head-meta source, the shared
+footer on every page with its critique applied, the `/data` headings
+unclipped, the amended disclaimer everywhere, "Check yours" in the header.
+The builder is adding the Cloudflare beacon (the human's counter) with the
+never-leaves-the-device test naming it; then one two-axis review covers this
+round and the beacon; then v1 waits only on the checklist below.
 
-**The navigation is built and pushed** (site `f8737da`, data `d3cbbd7`): the
-shared header on every page, country pages to the approved mock, `/data` with
-`/status` kept as an alias, no crumbs, the reader's scope words everywhere,
-eleven orientation tests. The phone's Back bug went with it: every render had
-been pushing a history entry; now one entry per question and the on-screen
-Back is the browser's own. Deployed (run 34228597071; the header is on every
-live page probed). The two-axis review found one blocker — after
-a mid-interview reload the two Backs disagreed again (the screens list is
-empty after a reload) — plus sixteen smaller items (gists cut mid-sentence,
-"stated" said of our own reading, a loosened "scored" guard, header CSS
-leaking from the interview page, duplicated head meta). One more builder
-round is running on all of it; it ships when green. **And the footer** (the
-human: "düzgünce düzenleyelim") — today it differs page by page; one footer
-from the header's source is mocked (`docs/spine/design/s6-footer.html`:
-disclaimer · Routes / Do / The data / Feedback · the data line) and was **approved by the human** (five revisions with them; the isolated
-critique still returns and its findings are folded in); the builder takes it
-after the current round. Then v1
-waits only on the checklist below.
-
-Numbers: 397 tests in the data repository, 214 in the site; 122 quotes
+Numbers: 400 tests in the data repository, 233 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
 at 390 px; critique 32/45 on RUBRIC 1.2 (v0.7: 27/45).
 

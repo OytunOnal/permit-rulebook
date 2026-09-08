@@ -2235,3 +2235,15 @@ is counted and what is not.
 per view; ad blockers stop it, so the count under-reads — true of every
 counter. The route page a person viewed is visible in aggregate; who viewed
 it is not.
+
+**Addendum, 2026-09-08 — the navigation review round and the footer shipped**
+(site `d77471d`, data `4741d3d`). The reload path is history-safe (the entry
+list is rebuilt from the record; both Backs agree; proven red without it);
+gists are whole sentences; a scope line distinguishes what the source states
+from what we note; the footer is one block on every page with the critique's
+amendments; the `/data` headings sat under their lists because an inline
+tap class carried a negative margin into a grid — fixed and measured. Two
+notes kept: the footer prints the dataset version as an ISO date (decision
+12's one spelling) rather than the raw dotted string; the header's action is
+"Check yours" everywhere now. The Cloudflare beacon follows in a small
+separate round, then one two-axis review covers both.
