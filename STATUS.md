@@ -41,8 +41,9 @@ and its fine gaps kept), a pre-scoped arrival that re-scopes a saved record
 and marks the route, one upward unlock step per numeric field, the
 separator before the language note, headings and a status line on the
 results, every results control at the tap floor, the translation policy on
-/data. Two reviewers run on it; when the deploy is green I re-read the three
-blockers on the live site; then v1 waits only on the checklist below.
+/data. Deploy 34263141644 is green; two reviewers run on it; I am re-reading the
+three blockers on the live site now; then v1 waits only on the checklist
+below.
 
 Numbers: 427 tests in the data repository, 270 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
