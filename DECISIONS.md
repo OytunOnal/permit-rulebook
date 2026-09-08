@@ -2113,3 +2113,16 @@ one-row layout has ~23 px of slack at the 56 rem cap; wave 3's extra
 countries will need a countries menu — recorded on the roadmap, not solved
 now. Crumbs removed means no "up" link on a route page other than the
 country in the header; accepted.
+
+**Addendum, 2026-09-08 — the watch was never dry-running.** The ledgers said
+the daily watch "still dry-runs" and waited for the human's "watch live". The
+workflow has no such switch: it has filed issues (`source-change` label) on
+the data repository since the repository went public — two so far, the ZAV
+edition and the buzer § 6 page, both read the same day and closed with their
+resolutions. So decision 7's "starts filing issues before the announcement"
+is already true, the first flag has been walked with a person in it, and
+"watch live" leaves the human's list. A watch issue carries `source-change`,
+not `bug`: a flag is a change to read, and it becomes a `bug` only when a
+value on a live page turns out to be wrong — the triage happens on the issue.
+The human's test issue from a route page landed with `bug` applied (step 9
+passed) and was closed.

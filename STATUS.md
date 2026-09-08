@@ -67,9 +67,8 @@ judgement on a live source.
       statement reads without zooming, the address bar shows the lock. *If it
       fails:* paste the screen's heading here. (Two rows you already found —
       the place phrase and "§" — are in the fix round.)
-- [ ] **One test issue from the product:** on any route page click "Report a
-      wrong value", file a one-line test issue, then close it. *Pass:* it
-      lands on `permit-rulebook-data` with the `bug` label already applied.
+- [x] **Test issue from the product** (human, 2026-09-08): landed on
+      `permit-rulebook-data` with the `bug` label — pass; closed.
 - [ ] **Favicon on a Mac and on an Android phone** (after the next deploy,
       which ships option C): open https://permitrulebook.com and look at the
       tab icon. *Pass:* "PR" centred in the tilted square with margin both
@@ -92,9 +91,10 @@ judgement on a live source.
       run starts in the site repository within a minute. Until then the
       daily 06:40 UTC schedule rebuilds the site anyway; only the same-hour
       rebuild after a data change waits on the token.
-- [ ] **"watch live":** say it once the fix round has deployed; I switch the
-      daily workflow from dry-run to filing issues. *Pass:* the next real flag
-      appears as an issue on `permit-rulebook-data` with the `bug` label.
+- [x] **The watch is live** — it always was: no dry-run switch exists; it has
+      filed two issues since the repositories went public (ZAV edition, buzer
+      § 6), both read and closed the same day. Watch issues carry
+      `source-change`; `bug` is applied at triage if a value proves wrong.
 - [ ] **"go":** after the items above pass and the blockers are verified
       cleared on the live site, say it; v1 is stamped and the README's first
       screen is the announcement, told once.

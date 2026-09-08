@@ -110,5 +110,4 @@ click on the tracker link. Answers never leave the device.
   `new-need`; reached only by the reader's own click.
 
 Not yet real-green (s6): the phone walk on the live site, the isolated v1-gate
-critique's blockers cleared, the watch switched from dry-run to filing issues,
-and the announcement.
+critique's blockers cleared, and the announcement.
