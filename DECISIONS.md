@@ -1886,3 +1886,24 @@ going live, and the honest answer is: assumed, never written as a step. Now
 written: purchase is the human's (a payment), before "go"; the announcement
 carries the domain, the preview and the critique may run on the Pages URL.
 `permitrulebook.com` was unregistered when checked (RDAP, 2026-09-08).
+
+## 2026-09-08 — The first sentinel flag, read; and CI walks the artifact
+
+**The first flag (decision 7), delegated by the human to the session.** The
+ZAV edition index gained "Ausgabe 05/2026". Read: a regional issue about
+Kassel — no threshold, no amount, no law, no date of effect. Outcome recorded
+on the flag file: *no value moved.* The sentinel did what it was built for —
+it said "look", we looked, nothing had to change — and the value pages it
+guards are watched on their own, all German quotes still verified. Cost of
+the delegation: the loop has now been exercised with a person choosing to
+hand the reading over rather than doing it; recorded, not hidden.
+
+**CI walks `dist/`, the artifact that deploys; the dev surface is a local
+check.** The runner's failures had one cause: the build was made for a
+subpath (`/permit-rulebook/`) and the harness probed and served the root —
+`astro dev` was up the whole time, the dist server mounted the site where it
+did not live, and every "measurement" was of an unstyled page. The harness
+now reads the base from the same `SITE_URL` the build reads. Accepted gap,
+stated: a subpath bug that shows only in dev will be seen only by a developer
+running `npm run smoke` locally, which walks both surfaces. Timeouts set from
+measurement (property tests ran at 78% of the 5 s default on a laptop).
