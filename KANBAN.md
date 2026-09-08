@@ -35,6 +35,13 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ### v1.x
 
+- **Compare, don't rank: published facts on each open route card** (v1.1,
+  human 2026-09-08) · why: a reader with five open routes gets no help
+  choosing, and "start with this one" would be advice with no published
+  basis · bet: facts an authority publishes — permit duration, family
+  reunification, path to permanent residence — beside each card let the
+  reader rank for themselves without the product ruling · source: the
+  second v1-gate critique (2026-09-08), "only you can decide" item 4.
 - **Quoted, not asked — pages for the 14 excluded active routes** (v1.1,
   human 2026-09-08) · why: the one-pager promised ~35–40 routes and the
   product ships 23; the excluded routes are real and searched for, and the

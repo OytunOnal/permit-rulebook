@@ -2480,3 +2480,9 @@ A translation would be our words beside the authority's; the original is the
 record. Stated on /data in one sentence; each quote names its language and
 source. Cost: a phone card can end in three untranslated German sentences —
 accepted; the reader has the language tag and the source link.
+
+**Addendum, 2026-09-08 — no ranking of open routes (human: "no rank ama
+ilerisi için olabilir").** Results stay in dataset order; "start with this
+one" would be advice with no published basis. Roadmap candidate for v1.1:
+published facts on each card (duration, family, permanence) so the reader
+compares — data, not a verdict.

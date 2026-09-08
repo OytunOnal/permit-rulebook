@@ -103,12 +103,9 @@ judgement on a live source.
       filed two issues since the repositories went public (ZAV edition, buzer
       § 6), both read and closed the same day. Watch issues carry
       `source-change`; `bug` is applied at triage if a value proves wrong.
-- [ ] **One product judgment left (the critique's):** should the results rank
-      open routes ("start with this one")? My recommendation: **no rank** at
-      v1 — ranking is advice with no published basis; a v1.1 candidate can
-      add published facts (duration, family, permanence) to each card so the
-      reader compares. Say "rank" or "no rank". (Translation: decided —
-      policy, never translate; the sentence goes on /data.)
+- [x] **Ranking** (human, 2026-09-08: "no rank"): results stay in dataset order
+      at v1; a v1.1 candidate adds published facts to each card so the reader
+      compares. Translation: policy, never translate.
 - [ ] **The announcement — read it, and pick the hour:** the draft is
       `docs/spine/announcement.md` (Show HN title, the first comment, the five
       answers in your voice). *Pass:* you would say every sentence yourself;
