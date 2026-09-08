@@ -2048,3 +2048,10 @@ made that nobody had recorded:
 `file:../visa-rules` still names the data repository's old folder — a fresh
 clone must use that folder name until the folders are renamed (the human's),
 and the README says so.
+
+**Addendum, 2026-09-08 — the four blockers verified cleared on the live
+site** after deploy 34218847195 (B1 on a walked German profile: the
+Chancenkarte card names the monthly-funds rule; B2 country links, sitemap of
+29, robots; B3 the data README's first screen; B4 our own 404). The review
+of the round runs after the push, in parallel, because the fixes were
+live-blocking — a deliberate order, recorded.
