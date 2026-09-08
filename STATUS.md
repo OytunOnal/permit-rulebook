@@ -46,8 +46,12 @@ shared header on every page, country pages to the approved mock, `/data` with
 eleven orientation tests. The phone's Back bug went with it: every render had
 been pushing a history entry; now one entry per question and the on-screen
 Back is the browser's own. Deployed (run 34228597071; the header is on every
-live page probed). The two-axis review runs in parallel;
-its findings get one more round if needed. Then v1 waits only on the
+live page probed). The two-axis review found one blocker — after
+a mid-interview reload the two Backs disagreed again (the screens list is
+empty after a reload) — plus sixteen smaller items (gists cut mid-sentence,
+"stated" said of our own reading, a loosened "scored" guard, header CSS
+leaking from the interview page, duplicated head meta). One more builder
+round is running on all of it; it ships when green. Then v1 waits only on the
 checklist below.
 
 Numbers: 397 tests in the data repository, 214 in the site; 122 quotes
