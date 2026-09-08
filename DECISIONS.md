@@ -2300,3 +2300,17 @@ Read against `references/launch-minimum.md`. Filled or declined:
   audit 0/0; the statement matches the wire (the beacon test).
 - Address, identity, discoverability, the way back in, phone/accessibility:
   done or on the checklist, as STATUS says.
+
+**Addendum, 2026-09-08 — the rollback trial failed, and taught the pipeline
+something.** Re-running the last green deploy (`f8737da`) did not deploy: the
+workflow checks the data repository out at its current HEAD, so the old site
+commit was tested against newer data (a README quoting the old disclaimer, a
+route-page fingerprint over newer scope words). A rollback that cannot rebuild
+the past is not one; and a data push can break the site's deploy with no site
+change. Decision (cheap default, surfaced): the site records the data commit
+it builds against in `data.lock`; pushes and reruns build against it; the daily
+schedule and the watch's dispatch build against the data commit they carry
+and, when green, write it back to the lock — so the lock always names a
+combination that deployed. Until it lands, the live site stays the last
+successful deploy (Pages keeps the artifact), which is the real rollback and
+the reason the site is still serving.
