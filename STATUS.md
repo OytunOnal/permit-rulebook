@@ -95,6 +95,19 @@ judgement on a live source.
 - [x] **GitHub Sponsors** (human, 2026-09-08): profile live at
       https://github.com/sponsors/OytunOnal; the small link sits beside the
       licence in both READMEs; the Sponsor button shows on both repositories.
+- [ ] **Search Console (your Google account):** https://search.google.com/search-console
+      → Add property → Domain `permitrulebook.com` → add the TXT record it gives
+      you to Cloudflare DNS (paste it here and I add it) → once verified, submit
+      https://permitrulebook.com/sitemap.xml under Sitemaps; then Bing Webmaster
+      Tools (import from Search Console). *Pass:* the sitemap shows as
+      "Success" with 29 discovered URLs. Indexing takes days; do this before
+      "go" so the announcement day is not the crawl's first sight of us.
+- [ ] **Traffic counter — your pick** (the one-pager promised a non-data-collecting
+      counter; the 48-hour lines said none at v1, which would leave A2 untested):
+      "Cloudflare" (free, cookieless, your account; a public site token, not a
+      secret) · "GoatCounter" · "none". On your word the snippet goes in, the
+      never-leaves-the-device test learns the one allowed beacon and asserts it
+      carries no answer, and DECISIONS says what is and is not collected.
 - [ ] **`DISPATCH_TOKEN` (a credential, so yours):** GitHub → Settings → Developer
       settings → Fine-grained tokens → new token, repository access:
       `permit-rulebook` only, permission Contents: read and write; then on
