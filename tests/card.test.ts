@@ -303,3 +303,48 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
     expect(precondHtml(routeOf("de-chancenkarte"))).toBe("");
   });
 });
+
+/**
+ * The results card stripped the language scaffolding the route pages carry
+ * (isolated v1-gate critique, 2026-09-08, F2). Twenty sentences of German
+ * statute sat on the screen inside a page marked `lang="en"`, with no "German,
+ * from arbeitsagentur.de." beside them — so a screen reader read the proof of
+ * the product's whole claim aloud in an English voice, and a reader with A2
+ * German got a wall of untranslated law with nothing telling her what it was.
+ */
+describe("a quote on the results card is framed the way it is on a route page", () => {
+  const german: Profile = {
+    destination: "de", citizenship: "third_country", situation: "offer",
+    qualification: "degree", recognition_de: "recognized", occupation_shortage: "yes",
+    experience: "y2in5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
+  };
+
+  it("carries the quote's own language, never the page's", () => {
+    const html = provenanceHtml(ds, resultOf(german, "de-blue-card-general"));
+    expect(html, "no German quote reached the card").toContain("Mindestbruttojahresgehalt");
+    expect(html).toMatch(/lang="de"/);
+    // Every quote on the card is tagged, not just the first.
+    const quotes = html.match(/<i[^>]*>/g) ?? [];
+    expect(quotes.length).toBeGreaterThan(1);
+    for (const q of quotes) expect(q, q).toContain("lang=");
+  });
+
+  it("says which language it is and whose page it came from", () => {
+    const html = provenanceHtml(ds, resultOf(german, "de-blue-card-general"));
+    expect(html).toContain("German, from arbeitsagentur.de.");
+  });
+
+  it("and says so where the source spells a number its own way", () => {
+    const html = provenanceHtml(ds, resultOf(german, "de-blue-card-general"));
+    expect(html).toContain("The source writes 50.700 where this page writes 50,700");
+  });
+
+  it("an English source is not labelled as anything else", () => {
+    const dutch: Profile = {
+      destination: "nl", citizenship: "third_country", situation: "offer",
+      salary_eur_month: "band_6", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
+    };
+    const html = provenanceHtml(ds, resultOf(dutch, "nl-hsm-30plus"));
+    expect(html).not.toContain("German, from");
+  });
+});

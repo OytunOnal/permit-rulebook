@@ -1,3 +1,6 @@
+Pre-Genesis design notes, 2026-08-26, Turkish, under the working name.
+Kept as history, not maintained.
+
 # Visa Navigator — fikir notları
 
 > Durum: KONUŞULDU, başlanmadı. JobRadar bittikten sonra değerlendirilecek.

@@ -1,10 +1,13 @@
 import {
-  decidingCriteria, deriveBands, forEachCriterion, formatEUR, formatEURPer, resultProvenance,
+  decidingCriteria, deriveBands, forEachCriterion, formatEUR, formatEURPer, gapCriterionOf,
+  resultProvenance,
   routeReadings, routeStatements,
   type Band, type Criterion, type Dataset, type Profile, type Route, type RouteResult,
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc } from "./reason.js";
+// One frame for every quote the product shows (2026-09-08).
+import { quoteFrame } from "./quote.js";
 
 /**
  * The blocks of a card that state what the dataset itself says: what else is
@@ -43,38 +46,19 @@ function decidesOnANumber(route: Route): boolean {
 const bandOf = (ds: Dataset, field: string, answers: Profile) =>
   deriveBands(ds, field).find((b) => b.id === answers[field]);
 
-/** How far the declared band sits below one threshold, worst case. */
-function gapAgainst(ds: Dataset, c: Gte, answers: Profile): number | undefined {
-  const band = bandOf(ds, c.field, answers);
-  if (!band || band.max === undefined || band.max > c.threshold.amount) return undefined;
-  return c.threshold.amount - (band.min ?? 0);
-}
-
 /**
  * The gte CRITERION this result was measured against — the glossary fixes both
  * words and this returns the criterion, not the threshold it carries (review
- * 2026-09-07). The path that was met, or — where none was — the nearest
- * reachable one, which is the path the engine measured the gap to. A route
- * whose salary criterion is a choice of paths used to render whichever the
- * dataset wrote first, which is how a graduate met through €3,122 was shown a
- * rail labelled €4,357 with his own band under the line (human catch
- * 2026-09-07). Where nothing has decided the choice, it names a threshold the
- * person can at least locate their band against; it draws a rail, it never
- * marks a quote.
+ * 2026-09-07).
+ *
+ * It is the engine's answer, not a second one computed here: the rail, the
+ * "short by" banner and the card's one-line explanation are three statements
+ * about one rule, and while the sentence was written in the engine and the rail
+ * here, they disagreed — a reader with a good salary and too little in the bank
+ * was told her salary was short (isolated v1-gate critique, 2026-09-08).
  */
-export function measuredCriterionOf(ds: Dataset, r: RouteResult, answers: Profile): Gte | undefined {
-  const decided = decidingCriteria(r.criteria)
-    .flatMap((cr) => (cr.criterion.op === "gte" ? [cr.criterion] : []))
-    .filter((c) => answers[c.field] !== undefined);
-  // Where a bounded gap exists, the rail is drawn on the criterion it was
-  // measured on, so the label and the distance can never name different rules.
-  const gapped = r.gap_max === undefined
-    ? undefined
-    : decided.find((c) => Math.abs((gapAgainst(ds, c, answers) ?? NaN) - r.gap_max!) < 0.005);
-  // Nothing decided the disjunction yet (an open "I don't know"): fall back to
-  // a threshold the person can at least locate their band against.
-  return gapped ?? decided[0] ?? gteCriteriaOf(r.route).find((c) => answers[c.field] !== undefined);
-}
+export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profile): Gte | undefined =>
+  gapCriterionOf(ds, r, answers) as Gte | undefined;
 
 /**
  * Preconditions the authority applies that the interview never asked — stated
@@ -313,7 +297,9 @@ export function provenanceHtml(ds: Dataset, r: RouteResult): string {
     return p ? ` · per ${p}` : "";
   };
   const rendered = entries.map(({ label, value, amount, applied }) => {
-    const host = new URL(value.source_url).hostname.replace(/^www\./, "");
+    // The same frame the route pages put round a quote: its language, its host,
+    // and the note where the source spells the number its own way.
+    const { lang, host, note } = quoteFrame(value, amount);
     // Per entry, not per card: one settled disjunction on a route must not put
     // a ruled-out mark under a second one nobody has decided.
     const mark = !contested || amount === undefined || applied === undefined
@@ -321,9 +307,11 @@ export function provenanceHtml(ds: Dataset, r: RouteResult): string {
       : applied
         ? ` · <b class="applies">applies to you</b>`
         : ` · <span class="applies-not">does not apply to you</span>`;
-    return `<div class="src${contested && amount !== undefined && applied === false ? " unapplied" : ""}"><i>“${esc(value.quote)}”</i> · ${esc(host)}${
+    return `<div class="src${contested && amount !== undefined && applied === false ? " unapplied" : ""}"><i${
+      lang ? ` lang="${lang}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
-      value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b></div>`;
+      value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b>${
+      note ? `<span class="note">${esc(note)}</span>` : ""}</div>`;
   });
   // One sentence, one line.
   //

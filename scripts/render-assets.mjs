@@ -58,7 +58,9 @@ function shoot(html, width, height, out) {
 /** The mark, at whatever size is asked for, drawn from the committed SVG so the
  * tab icon and the .ico can never be two different drawings. */
 const markPage = (size) => `<!doctype html><meta charset="utf-8"><style>
-  html, body { margin: 0; padding: 0; width: ${size}px; height: ${size}px; overflow: hidden; }
+  /* Nothing behind the mark: the icon's canvas is transparent by design
+     (option C, human 2026-09-08), and a page with a ground would bake one in. */
+  html, body { margin: 0; padding: 0; width: ${size}px; height: ${size}px; overflow: hidden; background: transparent; }
   img { display: block; width: ${size}px; height: ${size}px; }
 </style><img src="favicon.svg" alt="">`;
 
@@ -135,6 +137,9 @@ async function main() {
     writeFileSync(join(dir, "page.html"), markPage(size), "utf8");
     execFileSync(chromePath(), [
       "--headless", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
+      // Chrome paints white behind a page unless told otherwise, and a white
+      // square is exactly what the icon stopped having (human 2026-09-08).
+      "--default-background-color=00000000",
       `--window-size=${size},${size}`, `--screenshot=${out}`,
       pathToFileURL(join(dir, "page.html")).href,
     ], { stdio: "ignore" });

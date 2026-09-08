@@ -1,0 +1,14 @@
+---
+import rawDataset from "permit-rulebook-data/data/dataset.json";
+import { assertValidDataset } from "permit-rulebook-data/validate";
+import { notFoundPage } from "../lib/not-found.js";
+
+/**
+ * `dist/404.html` — the file GitHub Pages serves for any address the site does
+ * not have. Without it a mistyped URL landed on GitHub's own error page, under
+ * another company's branding, with no way back (product critique B4).
+ */
+const dataset = assertValidDataset(rawDataset);
+const { html } = notFoundPage(dataset);
+---
+<Fragment set:html={html} />

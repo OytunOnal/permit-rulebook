@@ -1,18 +1,48 @@
 # Permit Rulebook
 
-**Every route, quoted and dated.**
+[![The results screen: three German routes open, each rule answered against what
+the reader declared, every value carrying the authority's quote and the day it
+was read](docs/media/results-2026-09-08.png)](https://permitrulebook.com)
 
-An open, dated, source-quoted work-permit ruleset for four countries — 23
-routes, every value with its official sentence and the day it was read, checked
-daily.
+**Every route, quoted and dated.** A person answers a few questions and
+[permitrulebook.com](https://permitrulebook.com) shows which work-permit routes
+across Germany, France, Spain and the Netherlands fit them, which are close by
+how much, and what one step would open more — every number carrying the
+authority's own sentence and the day it was read.
 
-**Licence:** MIT ([LICENSE](LICENSE)). The dataset it reads is
+**Who it is for.** Someone weighing a move to one of those four countries who
+wants the rules rather than an opinion — and anyone who needs the ruleset
+itself, which is open data in
+[permit-rulebook-data](https://github.com/OytunOnal/permit-rulebook-data).
+
+**What it does now** — the latest line of the versions ledger
+([KANBAN.md](KANBAN.md), `## versions`):
+
+> **v0.10** — Launch-readiness sweep: Spain measured against three years on
+> two routes (es-highly-qualified, es-ict); the experience ladder made ordinal
+> (y3in7 implies y2in5) after the review caught a regression the guard could
+> not see; pdf-text watch strategy — human tier 0, quotes verified 78 → 120;
+> 37 bare preconditions given a kind (34 sourced, 2 ours, 1 deleted as
+> repealed law); every document on disk English. Real-green walked by the
+> session at the human's delegation. 323 + 70 tests. (2026-09-07)
+
+**How to run it.** Both repositories side by side — the site reads the dataset
+package from the sibling directory its manifest names. Tried from a fresh clone
+on 2026-09-08:
+
+```
+git clone https://github.com/OytunOnal/permit-rulebook-data.git visa-rules && git clone https://github.com/OytunOnal/permit-rulebook.git && cd visa-rules && npm ci && npm run build && cd ../permit-rulebook && npm ci && npm run build
+```
+
+Then `npm run dev` for the site, `npm test` for the suite.
+
+**Feedback.** A wrong value, a route that is missing, a screen that misleads:
+the [issue tracker](https://github.com/OytunOnal/permit-rulebook-data/issues/new/choose),
+under `bug`, `design-flaw` or `new-need`.
+
+**Licence.** Code MIT ([LICENSE](LICENSE)); the dataset it reads is
 [CC BY 4.0](https://github.com/OytunOnal/permit-rulebook-data/blob/master/data/LICENSE) —
 use it, cite it, link back.
-
-Permit Rulebook makes no immigration decision and authorities won't consider
-these results — it compares published values with what you declare, nothing
-more.
 
 ## What it is
 
@@ -26,48 +56,36 @@ Beside the interview there is a page for every route in the dataset, at
 `/{country}/{route}` — `/germany/eu-blue-card-general` and twenty-two others.
 A route page describes the rules and never rules on the reader: every number on
 it is the authority's own sentence, with the page it came from, the day it was
-read, and the language it is written in. Each page also says, in plain words,
-what the interview asks of that route and what it does not.
+read, and the language it is written in.
 
-## The data
+Permit Rulebook makes no immigration decision and authorities won't consider
+these results — it compares published values with what you declare, nothing
+more.
 
-The rules live in their own repository,
-[permit-rulebook-data](https://github.com/OytunOnal/permit-rulebook-data), and
-are usable on their own under CC BY 4.0. Every threshold, condition and
-statement carries a source URL, a verbatim quote, a retrieval date and its
-change history; a value without provenance fails validation and cannot build.
-A daily workflow re-reads every source and files an issue when one moves.
+## How it is put together
 
-Each route page carries the door: **this route as JSON**, the dataset, and the
-tracker. Something wrong on a page goes to the
-[issue tracker](https://github.com/OytunOnal/permit-rulebook-data/issues/new/choose)
-under `bug`, `design-flaw` or `new-need`; how to change a value or add a route
-is in that repository's
-[CONTRIBUTING.md](https://github.com/OytunOnal/permit-rulebook-data/blob/master/CONTRIBUTING.md).
-
-## Running it
-
-```
-npm install       # links ../visa-rules as permit-rulebook-data
-npm run dev       # astro dev
-npm run build     # astro check && astro build  -> dist/
-npm test          # vitest
-npm run assets    # re-render the favicon and the social card (needs Chrome)
-npm run measure:taps   # measure every control at 390 px on the built site
-```
-
-`SITE_URL` sets where the build believes it lives; every absolute URL a link
-preview reads follows it. Unset, it uses `https://permitrulebook.com`.
-
-## Layout
+The shape of the two repositories, the boundary between them and what crosses
+it: [docs/spine/ARCHITECTURE.md](docs/spine/ARCHITECTURE.md).
 
 - `src/pages/index.astro` — the interview and the results, client-side
 - `src/pages/[country]/[route].astro` — one page per route, generated
-- `src/pages/[country]/[route].json.ts` — the same route, as data
 - `src/lib/route-page.ts` — the whole route page, built as a string so a test
   can read exactly what ships
 - `src/lib/copy.ts` — the name, the tagline and the disclaimer, in one place
 - `tokens.css` — the design tokens every screen is built inside
+
+`SITE_URL` sets where the build believes it lives; every absolute URL a link
+preview reads follows it. Unset, it uses `https://permitrulebook.com`.
+
+## The data
+
+The rules live in their own repository and are usable on their own under
+CC BY 4.0. Every threshold, condition and statement carries a source URL, a
+verbatim quote, a retrieval date and its change history; a value without
+provenance fails validation and cannot build. A daily workflow re-reads every
+source and files an issue when one moves. How to change a value or add a route
+is in that repository's
+[CONTRIBUTING.md](https://github.com/OytunOnal/permit-rulebook-data/blob/master/CONTRIBUTING.md).
 
 ## Support
 

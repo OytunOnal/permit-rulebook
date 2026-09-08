@@ -13,9 +13,31 @@ name: deploy
 # fallback below is the Pages URL, so a run with nothing set still deploys a
 # correct site.
 
+# What triggers a rebuild, and why there are four of them.
+#
+# The pages bake "RULES READ <date>" and the social card says "checked daily".
+# Both of those are claims about the DATA repository, and the daily source watch
+# commits there, not here — so a push trigger alone let the published card go
+# stale while the promise printed on it stayed put (2026-09-08).
+#
+# `schedule` is the floor: it rebuilds even when nothing signals us. 06:40 UTC
+# is picked to sit comfortably after the data repository's source watch, which
+# starts at 05:17 UTC and then spends several minutes on an install, a build,
+# the network fetch of every watched source, and a commit — and GitHub delays
+# scheduled runs under load, on both sides. An hour and twenty minutes of slack
+# means the site builds against the state the watch has just committed, not the
+# one before it.
+#
+# `repository_dispatch` is the fast path: the watch fires a `dataset-updated`
+# event the moment it actually commits new state, so a real change reaches the
+# published page in minutes instead of waiting for tomorrow's cron.
 on:
   push:
     branches: [master]
+  schedule:
+    - cron: "40 6 * * *" # daily, 06:40 UTC — after the data watch at 05:17 UTC
+  repository_dispatch:
+    types: [dataset-updated]
   workflow_dispatch:
 
 permissions:

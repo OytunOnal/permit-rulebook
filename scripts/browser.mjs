@@ -216,6 +216,15 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
       const { result } = await send("Runtime.evaluate", { expression, returnByValue: true }, sessionId);
       return result.value;
     },
+    /** The screen as a PNG, for a record a reader can look at. */
+    async screenshot({ fullPage = false } = {}) {
+      const { data } = await send(
+        "Page.captureScreenshot",
+        { format: "png", captureBeyondViewport: fullPage },
+        sessionId,
+      );
+      return Buffer.from(data, "base64");
+    },
     problems: () => [...problems],
   };
 

@@ -15,6 +15,13 @@ import TOKENS from "../../tokens.css?raw";
 // links the same stylesheet, so the mark and the stamp cannot drift apart
 // into two identities (human, 2026-09-08).
 import IDENTITY from "../../identity.css?raw";
+// One module explains an abbreviation, so the route page and the results card
+// say the same words for the same token (2026-09-08).
+import { type Glossary, glossSection, glossed } from "./gloss.js";
+// One frame for every quote the product shows, so the results card and these
+// pages cannot describe the same sentence differently (2026-09-08).
+import { hostOf, quoteFrame, separatorNote } from "./quote.js";
+export { separatorNote };
 import { esc, escAttr } from "./reason.js";
 import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH, TRACKER_URL,
@@ -23,7 +30,7 @@ import {
 import {
   DISCLAIMER, FRESHNESS_NOTE, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, SEAL_LETTERS, TAGLINE, datasetDay,
 } from "./copy.js";
-import { routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
+import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
 /**
  * One page per route, generated from the dataset and never typed.
@@ -67,43 +74,6 @@ const tapInline = (extra = ""): string => `class="${extra ? `${extra} ` : ""}tap
 // Small helpers over the dataset
 // ---------------------------------------------------------------------------
 
-const hostOf = (url: string): string => new URL(url).hostname.replace(/^www\./, "");
-
-/**
- * Abbreviations a stranger cannot be expected to know, expanded the first time
- * each page uses one (scenario step 1: no abbreviation goes unexplained on
- * first use). `AufenthG` appears twice in the German source lines and
- * `BeschV` in the experienced-worker route's; to a searcher outside
- * German-speaking legal culture they are opaque tokens dressed as authority
- * (route-page critique F8).
- *
- * The gloss is appended, never substituted into the citation: "§ 18g AufenthG"
- * stays the citation a reader can search for, and gains the words after it.
- * It runs over OUR text only — a citation and the licence name — never over a
- * quote, which is verbatim by contract.
- */
-const ABBREVIATIONS: ReadonlyArray<readonly [token: RegExp, gloss: string]> = [
-  [/\bAufenthG\b/, "AufenthG (the Residence Act)"],
-  [/\bBeschV\b/, "BeschV (the Employment Ordinance)"],
-  [/\bTFEU\b/, "TFEU (the Treaty on the Functioning of the European Union)"],
-  [/\bUGE\b/, "UGE (Spain's large-companies unit)"],
-  [/\bIND\b/, "IND (the Dutch immigration service)"],
-  [/\bCNO-2011\b/, "CNO-2011 (Spain's occupation classification)"],
-];
-
-/** One page's memory of which abbreviations it has already explained. */
-type Glossary = Set<string>;
-
-function glossed(text: string, seen: Glossary): string {
-  let out = text;
-  for (const [token, gloss] of ABBREVIATIONS) {
-    const key = token.source;
-    if (seen.has(key) || !token.test(out)) continue;
-    seen.add(key);
-    out = out.replace(token, gloss);
-  }
-  return out;
-}
 
 const capitalise = (s: string): string => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
@@ -157,7 +127,7 @@ function gteUnder(c: Criterion): Gte[] {
  * country that needs it (Standards review, 2026-09-07).
  */
 const TAKES_THE = new Set(["NL"]);
-const withArticle = (country: Country): string =>
+export const withArticle = (country: Country): string =>
   TAKES_THE.has(country.code) ? `the ${country.name}` : country.name;
 
 /**
@@ -205,31 +175,6 @@ export function audienceNotice(dataset: Dataset): Notice | undefined {
 // The quote block
 // ---------------------------------------------------------------------------
 
-/**
- * Where the source writes a number differently from the way this page writes
- * it, say so once, beside the quote.
- *
- * The proof for €50,700 spells it `50.700`, directly under a line reading
- * €50,700, and a careful reader comparing the two sees the evidence disagreeing
- * with the claim (critique F1). Nothing here is typed: both spellings are
- * derived from the amount, and the note only appears when the source's
- * spelling is actually in the quote and actually differs.
- */
-
-export function separatorNote(amount: number, quote: string): string {
-  const ours = formatEUR(amount).replace("€", "").trim();
-  if (!/[.,]/.test(ours)) return "";
-  // The two separators swap places through a placeholder no number contains,
-  // so 50,700 becomes 50.700 and 45,934.20 becomes 45.934,20.
-  const swap = "\u0001";
-  const theirs = ours
-    .replace(/,/g, swap)
-    .replace(/\./g, ",")
-    .replace(new RegExp(swap, "g"), ".");
-  if (theirs === ours || !quote.includes(theirs) || quote.includes(ours)) return "";
-  return `The source writes ${theirs} where this page writes ${ours} — the same number.`;
-}
-
 interface QuoteOptions {
   /** The amount this quote is the proof of, where it is the proof of one. */
   amount?: number;
@@ -239,13 +184,7 @@ interface QuoteOptions {
 }
 
 function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen: Glossary = new Set()): string {
-  const lang = quoteLanguage(value.source_url);
-  const host = hostOf(value.source_url);
-  const languageName = lang ? LANGUAGE_NAMES[lang] : undefined;
-  const note = [
-    languageName ? `${languageName}, from ${host}.` : "",
-    o.amount !== undefined ? separatorNote(o.amount, value.quote) : "",
-  ].filter(Boolean).join(" ");
+  const { lang, host, note } = quoteFrame(value, o.amount);
   return `<div class="src">
         <span><q${lang ? ` lang="${lang}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
     o.label ? ` · ${esc(o.label)}` : ""}${
@@ -484,13 +423,50 @@ function statedBlocks(route: Route, seen: Glossary): string {
  * first sentence, and no more than a line of it: the aside is a way across, not
  * a second card, and four routes' full summaries turned it into a wall.
  */
-function gist(route: Route): string {
+export function gist(route: Route): string {
   const first = (route.summary ?? "").split(/(?<=\.)\s/)[0] ?? "";
   if (!first) return scopeWords(route.scope.value);
   if (first.length <= 110) return first;
   const cut = first.slice(0, 107);
   const lastSpace = cut.lastIndexOf(" ");
   return `${(lastSpace > 60 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
+
+/**
+ * What a search visitor came for, before anything explains itself: the number
+ * this route asks for, the day we read it, and the way in.
+ *
+ * It was 1.5 screens down on a desktop and 2.4 on a phone, behind a box about
+ * what the interview does and does not ask — a disclaimer about a screen the
+ * visitor has never seen (isolated v1-gate critique, 2026-09-08, F1). The box
+ * still says what it says; it says it after the answer.
+ *
+ * A route that asks for no money says so in the same place: the absence is an
+ * answer to "what is the threshold", and leaving it blank reads as a page that
+ * forgot its own number.
+ */
+function answerBlock(dataset: Dataset, country: Country, route: Route, read: string): string {
+  const thresholds = ruleCriteria(dataset, route).flatMap(gteUnder);
+  const seen = new Set<number>();
+  const amounts = thresholds
+    .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
+    .sort((a, b) => a.threshold.amount - b.threshold.amount);
+  const points = route.criteria.flatMap((c) => (c.op === "points" ? [c] : []));
+
+  const asks = amounts.length
+    ? amounts.map((c) => `<b>${esc(formatEURPer(c.threshold.amount, periodOf(dataset, c.field)))}</b>${
+      c.threshold_label ? ` <span class="answer-label">— ${esc(c.threshold_label)}</span>` : ""}`).join("<br>")
+    : points.length
+      ? `<b>${points[0]!.required.value} points</b> <span class="answer-label">— from the official table</span>`
+      : `<b>No salary or points threshold</b> <span class="answer-label">— what this route asks for is in the conditions below</span>`;
+
+  return `
+  <section class="answer" aria-labelledby="answer-h">
+    <h2 class="label" id="answer-h">What this route asks for</h2>
+    <p class="answer-figure">${asks}</p>
+    <p class="answer-read">Read from the authority's own page on <b><time datetime="${
+    escAttr(read)}">${esc(read)}</time></b>, with the sentence it came from below.</p>
+  </section>`;
 }
 
 function neighbours(country: Country, route: Route): string {
@@ -547,8 +523,14 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
   const path = address.path;
   const jsonPath = routeJsonPath(country, route);
   const rules = ruleCriteria(dataset, route);
-  // One page, one memory of which abbreviations it has already expanded.
+  // One page, one memory of which abbreviations it has already expanded. The
+  // heading claims the section symbol before any citation can: it is where the
+  // page states its own name, and a German route's name carries "§" whether
+  // the reader has met the symbol before or not (human, 2026-09-08). The trail
+  // above it repeats the name for navigation and is not a use; a neighbouring
+  // route's name is a cross-reference and keeps the short form.
   const seen: Glossary = new Set();
+  const heading = glossSection(route.name, seen);
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -578,9 +560,10 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
     <div>
       <nav class="crumbs label" aria-label="Where you are">
         <a ${tapMin()} href="${escAttr(url("/"))}"><span class="seal" title="${escAttr(PRODUCT_NAME)}" aria-hidden="true">${
-    SEAL_LETTERS}</span>${esc(PRODUCT_NAME)}</a><span>${esc(country.name)}</span><span>${esc(route.name)}</span>
+    SEAL_LETTERS}</span>${esc(PRODUCT_NAME)}</a><a ${tapMin()} href="${
+    escAttr(url(countryPath(country)))}">${esc(country.name)}</a><span>${esc(route.name)}</span>
       </nav>
-      <h1>${esc(route.name)}. <em>The rules, quoted and dated.</em></h1>
+      <h1>${esc(heading)}. <em>The rules, quoted and dated.</em></h1>
       <p class="lede">${route.summary ? `${esc(route.summary)} ` : ""}Every number on this page is the authority's own sentence, with the page it came from and the day we read it. ${esc(audienceSentence(country))} ${esc(ROUTE_PAGE_ADDENDUM)}</p>
     </div>
     <div class="stamps"><span class="mark" role="img" title="${escAttr(PRODUCT_NAME)}" aria-label="${
@@ -590,6 +573,14 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
 
   <div class="page">
   <main>
+${answerBlock(dataset, country, route, read)}
+  <section class="cta" aria-labelledby="cta-h">
+    <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
+    <p><strong>Where do you stand on this route?</strong> The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>
+    <a ${tapMin("btn")} href="${escAttr(`${url("/")}?route=${route.id}`)}">Check yours — ${esc(country.name)}, ${
+    esc(route.name)}</a>
+  </section>
+
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">What the checker asks, and what it does not</b>
     <p>Every number below is quoted from an official page, and a daily check re-reads every source. On this route — <strong>${
@@ -602,12 +593,6 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
     statedBlocks(route, seen)}
   </section>
 
-  <section class="cta" aria-labelledby="cta-h">
-    <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
-    <p><strong>Where do you stand on this route?</strong> The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>
-    <a ${tapMin("btn")} href="${escAttr(`${url("/")}?route=${route.id}`)}">Check yours — ${esc(country.name)}, ${
-    esc(route.name)}</a>
-  </section>
 
   </main>
   <aside aria-label="Beside the rules">
@@ -765,6 +750,19 @@ ${IDENTITY}
 .data nav { display: grid; gap: var(--space-2); }
 .data nav a { display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-3); border: var(--rule-soft); text-decoration: none; font: var(--text-value); }
 
+/* ---- the answer ---- */
+/* The number a search visitor came for, in the first screen: quiet furniture,
+   loud number (isolated v1-gate critique 2026-09-08, F1). */
+.answer { margin: 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-bottom: var(--rule-soft); }
+.answer .label { margin: 0 0 var(--space-1); }
+/* Not .asks: that class is the "what the checker asks" block three sections
+   down, and this page has been bitten by a class collision twice already
+   (.country vs .country-sec, .tick vs .rail-tick). */
+.answer-figure { margin: 0; font: 600 1.5rem var(--font-mono); line-height: 1.35; color: var(--color-ink); }
+.answer-figure b { font-weight: 600; }
+.answer-label { font: var(--text-source); color: var(--color-muted); }
+.answer-read { margin: var(--space-2) 0 0; font: var(--text-source); color: var(--color-muted); }
+
 /* ---- neighbours ---- */
 .neighbours { margin: 0; padding: var(--space-3) var(--space-4) var(--space-2); background: var(--color-card); border-top: var(--rule-card-top); border-bottom: var(--rule-soft); }
 .neighbours h2 { margin: 0; }
@@ -779,7 +777,10 @@ footer .health a { display: inline-flex; align-items: center; min-height: var(--
 @media (max-width: 760px) {
   .src { flex-direction: column; }
   .src a { padding-left: 0; }
+  /* On a phone the button leads its own section: the sentence about privacy
+     is worth reading, and worth reading second (2026-09-08). */
   .cta { flex-direction: column; align-items: stretch; }
+  .cta a.btn { order: -1; }
   .cta a.btn { text-align: center; }
   .rule .top { flex-direction: column; gap: var(--space-1); }
 }

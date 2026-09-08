@@ -1,0 +1,26 @@
+---
+import rawDataset from "permit-rulebook-data/data/dataset.json";
+import { assertValidDataset } from "permit-rulebook-data/validate";
+import { countryAddresses, countryPage } from "../../lib/country-page.js";
+
+/**
+ * One page per country — the address `/germany/` answered 404 at until now
+ * (product critique B2, 2026-09-08), and the only entry point the twenty-three
+ * route pages have.
+ *
+ * The page is built in `lib/country-page.ts` and handed over as a string, for
+ * the reason `[route].astro` does the same: what ships has to be readable by a
+ * test, and nothing here composes markup that could drift from what the
+ * invariants check.
+ */
+export async function getStaticPaths() {
+  const dataset = assertValidDataset(rawDataset);
+  return countryAddresses(dataset).map((address) => ({
+    params: { country: address.slug },
+    props: { html: countryPage(dataset, address).html },
+  }));
+}
+
+const { html } = Astro.props;
+---
+<Fragment set:html={html} />

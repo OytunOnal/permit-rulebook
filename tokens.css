@@ -19,7 +19,12 @@
   --color-met-soft: #e4efe7;
   --color-near: #8a5a19;        /* status: within reach + the gap emphasis */
   --color-near-soft: #f4ecd8;
-  --color-hold: #7b7869;        /* status: needs offer / closed */
+  /* Raised from #7b7869 on 2026-09-08: at 4.21 on a card and 3.82 on the page
+     it failed AA on eight elements of the results screen, the "Also required
+     — not checked here" disclosure among them — the one line that stops a
+     reader over-reading a met verdict. --color-muted was raised once for the
+     same reason; this is that pass, on the token that missed it. */
+  --color-hold: #6a6759;        /* status: needs offer / closed */
   --color-hold-soft: #edeadf;
   --color-band: #31519a;        /* the "your band" blue — the user's own declaration */
   --color-band-soft: #e2e8f6;

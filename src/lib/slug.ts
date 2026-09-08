@@ -49,6 +49,17 @@ export const routeSlug = (route: Route): string => slugify(route.name);
 export const routePath = (country: Country, route: Route): string =>
   `/${countrySlug(country)}/${routeSlug(route)}`;
 
+/**
+ * The country's own page — the directory the route pages already live in.
+ *
+ * `/germany/` answered 404 on the live host while `/germany/eu-blue-card-general`
+ * answered 200: the address a person shortens a URL to, and the one a crawler
+ * climbs to, was the one address nothing was served at (product critique B2,
+ * 2026-09-08). No trailing slash, so it is written the way every other internal
+ * path here is written and reaches `url()` the same shape.
+ */
+export const countryPath = (country: Country): string => `/${countrySlug(country)}`;
+
 /** The data door: this one route, as the dataset holds it. */
 export const routeJsonPath = (country: Country, route: Route): string =>
   `${routePath(country, route)}.json`;

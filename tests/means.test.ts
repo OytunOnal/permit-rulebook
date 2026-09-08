@@ -83,6 +83,15 @@ const seed = (answers: Record<string, string>) =>
     version: 1, answers, history: Object.keys(answers),
   }))})`;
 
+/** Still deciding where to go: every step forks per country, so each row has a
+ * place of its own that the reader has not declared. */
+const EXPLORER = {
+  destination: "all", citizenship: "third_country", situation: "none",
+  qualification: "degree", recognition_de: "recognized", occupation_shortage: "yes",
+  experience: "y2in5", german: "b1", funds_eur_month: "band_1",
+  nl_recent_grad: "no", top200_grad: "no",
+};
+
 describe.skipIf(skipped !== null)("the page shows it where the reader was standing", () => {
   it("under the answer in the interview, and beside the step in the results", async () => {
     const server = await serve(dist);
@@ -130,6 +139,41 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
       expect(step!.means).toContain("an employer in the Netherlands itself");
       // A step with nothing to distinguish stays one line.
       expect(seen.rows.find((r) => r.head.includes("hosting agreement"))?.means).toBeNull();
+    } finally {
+      server.close();
+    }
+  }, 180000);
+
+  /**
+   * The phone walk of 2026-09-08: a reader still deciding where to go was told
+   * "With a job offer in your offer, transfer or agreement in Germany", and
+   * under it a sentence about "an employer there itself" — the place wrong
+   * once and stated twice, then missing from the sentence entirely.
+   */
+  it("a forked step names its country once, and its sentence says the same one", async () => {
+    const server = await serve(dist);
+    try {
+      const rows = await withBrowser(async (page: BrowserPage) => {
+        await page.goto(server.url("/"), 300);
+        await page.evaluate(seed(EXPLORER));
+        await page.goto(server.url("/"), 1400);
+        return JSON.parse(await page.evaluate(
+          'JSON.stringify([...document.querySelectorAll(".unlock")].map((u) => ({'
+          + ' head: u.querySelector("h4").textContent.trim(),'
+          + ' means: u.querySelector(".unlock-means") ? u.querySelector(".unlock-means").textContent.trim() : null })))',
+        ));
+      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
+        { head: string; means: string | null }[];
+
+      const german = rows.find((r) => r.head.includes("job offer") && r.head.includes("Germany"));
+      expect(german, "the German fork of the job-offer step is gone").toBeDefined();
+      expect(german!.head).toBe("With a job offer in Germany");
+      expect(german!.means).toContain("an employer in Germany itself");
+      for (const r of rows) {
+        expect(r.head, "a heading is carrying a field's subject text").not.toContain(
+          "your offer, transfer or agreement");
+        if (r.means) expect(r.means, r.head).not.toContain(" there ");
+      }
     } finally {
       server.close();
     }

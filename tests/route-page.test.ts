@@ -394,14 +394,47 @@ describe("s6 — one page per route, generated from the dataset", () => {
   });
 
   /**
+   * A reader on a phone asked what "§" means (human walk, 2026-09-08). It is
+   * in the name of every German route, so it greets a stranger before any
+   * prose does — and the name is where the page must answer.
+   */
+  it("says the section symbol in words the first time a page uses it", () => {
+    const german = pages.filter((x) => x.path.startsWith("/germany/"));
+    expect(german.length).toBeGreaterThan(0);
+    for (const page of german) {
+      const text = textOf(page.html);
+      expect((text.match(/§/g) ?? []).length, page.path).toBeGreaterThan(0);
+      // Exactly one gloss on the page, however many citations it carries.
+      const glosses = text.match(/section [0-9]+[a-z]?/g) ?? [];
+      expect(glosses.length, page.path).toBe(1);
+      // Never inside a quote: what a source said is verbatim by contract.
+      for (const q of page.html.matchAll(/<blockquote[^>]*>([^]*?)<[/]blockquote>/g))
+        expect(q[1], page.path).not.toContain("section ");
+    }
+    // A route whose own name carries the citation is glossed in the name, and
+    // the name's own brackets are not doubled to do it.
+    const academic = pages.find((x) => x.path === "/germany/skilled-worker-academic")!;
+    expect(textOf(academic.html)).toContain("Skilled worker — academic (§ 18b, section 18b)");
+    expect(textOf(academic.html)).not.toContain("(§ 18b (section");
+    // Afterwards the short form stands — including in the list of neighbours.
+    expect(textOf(academic.html)).toContain("Skilled worker — vocational (§ 18a)");
+    // Nothing outside Germany grows a section gloss it has no citation for.
+    for (const page of pages.filter((x) => !x.path.startsWith("/germany/")))
+      expect(textOf(page.html), page.path).not.toMatch(/section [0-9]/);
+  });
+
+  /**
    * R8 — no abbreviation goes unexplained on first use (scenario step 1).
    */
   it("expands an abbreviation the first time a page uses it, and not after", () => {
     const de = pages.find((x) => x.path === "/germany/eu-blue-card-general")!;
     const text = textOf(de.html);
-    expect(text).toContain("AufenthG (the Residence Act)");
-    // Once, not on every citation on the page.
-    expect(text.split("AufenthG (the Residence Act)").length - 1).toBe(1);
+    // Where the page's first section citation names its act, both are said in
+    // one breath rather than two abutting brackets.
+    expect(text).toContain("§ 18g AufenthG (section 18g of the Residence Act)");
+    // Once, not on every citation on the page: the short form stands afterwards.
+    expect(text.split("section 18g of the Residence Act").length - 1).toBe(1);
+    expect(text.split("AufenthG").length - 1).toBeGreaterThan(1);
     const beschv = pages.find((x) => x.path === "/germany/experienced-worker")!;
     expect(textOf(beschv.html)).toContain("BeschV (the Employment Ordinance)");
     // One page of each country carries the licence spelled out before its short form.
