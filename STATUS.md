@@ -41,9 +41,12 @@ and its fine gaps kept), a pre-scoped arrival that re-scopes a saved record
 and marks the route, one upward unlock step per numeric field, the
 separator before the language note, headings and a status line on the
 results, every results control at the tap floor, the translation policy on
-/data. Deploy 34263141644 is green; two reviewers run on it; I am re-reading the
-three blockers on the live site now; then v1 waits only on the checklist
-below.
+/data. Deploy 34263141644 is green; read on the live site: the band labels are
+half-open (B1 cleared), the unknown-heavy walk shows two steps and no ladder
+rungs (B3 cleared), and a French arrival over a German record re-scopes and
+re-asks (B2) — but its sentence is broken ("we ask again about it work", a
+failed substitution); one small fix with the builder, then the two reviews'
+findings, then v1 waits only on the checklist below.
 
 Numbers: 427 tests in the data repository, 270 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px

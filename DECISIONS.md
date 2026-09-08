@@ -2508,3 +2508,11 @@ the tap floor on the results screen now measured; the translation policy on
 /data. The stored record stays version 1 (nothing an answer means moved);
 `RECORD_VERSION` exists so every writer seeds from one constant. 427 + 270
 tests. Two-axis review runs after the push, in parallel with the deploy.
+
+**Addendum, 2026-09-08 — the three critique-2 blockers read on the live site.**
+B1 and B3 cleared by reading; B2 re-scopes and re-asks as ruled, but the line
+that explains it printed "we ask again about it work" — a substitution that
+failed silently, on the one sentence that tells a returning reader what just
+happened. Fixed with a test that renders the line for every re-askable field
+and accepts only declared labels. Lesson kept: a sentence assembled from
+fields is a surface a test must read as prose, not as a template.
