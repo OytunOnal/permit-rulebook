@@ -114,7 +114,7 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
         await page.goto(server.url("/"), 1400);
         const rows = JSON.parse(await page.evaluate(
           'JSON.stringify([...document.querySelectorAll(".unlock")].map((u) => ({'
-          + ' head: u.querySelector("h4").textContent.trim(),'
+          + ' head: u.querySelector("h3").textContent.trim(),'
           + ' means: u.querySelector(".unlock-means") ? u.querySelector(".unlock-means").textContent.trim() : null })))',
         ));
         return { question, options, rows };
@@ -160,7 +160,7 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
         await page.goto(server.url("/"), 1400);
         return JSON.parse(await page.evaluate(
           'JSON.stringify([...document.querySelectorAll(".unlock")].map((u) => ({'
-          + ' head: u.querySelector("h4").textContent.trim(),'
+          + ' head: u.querySelector("h3").textContent.trim(),'
           + ' means: u.querySelector(".unlock-means") ? u.querySelector(".unlock-means").textContent.trim() : null })))',
         ));
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as

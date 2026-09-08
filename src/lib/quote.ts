@@ -1,4 +1,5 @@
 import { LANGUAGE_NAMES, formatEUR, quoteLanguage } from "permit-rulebook-data";
+import { esc } from "./reason.js";
 
 /**
  * How a quote is framed, wherever one is shown.
@@ -79,6 +80,6 @@ export function quoteFrame(
  */
 export const NOTE_SEPARATOR = " · ";
 
-export function noteHtml(note: string, esc: (s: string) => string): string {
+export function noteHtml(note: string): string {
   return note ? `<span class="note">${NOTE_SEPARATOR}${esc(note)}</span>` : "";
 }

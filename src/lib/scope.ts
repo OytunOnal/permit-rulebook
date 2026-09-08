@@ -1,4 +1,4 @@
-import { rescopeProfile } from "permit-rulebook-data";
+import { joinAnd, remainingQuestions, shortLabelOf, subjectOf } from "permit-rulebook-data";
 import type { Country, Dataset, Profile, Route } from "permit-rulebook-data";
 
 /**
@@ -45,9 +45,8 @@ export function arrivalFrom(dataset: Dataset, search: string): ScopedArrival | n
  * not louder than the question the reader is asking now; it is re-scoped, and
  * the screen says so.
  */
-export function destinationFor(arrival: ScopedArrival | null, _answers: Record<string, string> = {}): string | null {
-  if (!arrival) return null;
-  return arrival.country.code.toLowerCase();
+export function destinationFor(arrival: ScopedArrival | null): string | null {
+  return arrival ? arrival.country.code.toLowerCase() : null;
 }
 
 /**
@@ -82,26 +81,121 @@ export function countryArrivalFrom(dataset: Dataset, search: string): Country | 
  * as a route arrival: the country the reader pressed is the country they are
  * asking about.
  */
-export function destinationForCountry(
-  country: Country | null, _answers: Record<string, string> = {},
-): string | null {
-  if (!country) return null;
-  return country.code.toLowerCase();
+export function destinationForCountry(country: Country | null): string | null {
+  return country ? country.code.toLowerCase() : null;
 }
 
 /**
- * The record this arrival lands on.
+ * How a question is named inside a sentence about it.
  *
- * Everything the reader told us is theirs and is kept, amounts included — the
- * money ladder is one pooled list for all four countries, so a band means the
- * same euros wherever they are headed. Only the destination changes, and
- * `changed` is what the screen says out loud. What the new country's rules no
- * longer ask is dropped by the interview's own replay, where every other
- * change of answer is.
+ * The dataset writes two names for every field: a `subject`, a noun phrase
+ * built to sit inside a sentence ("your German level", "whether your work is
+ * in information technology"), and a `short_label` for the answer ledger ("IT
+ * work"). The line that named a returning question lower-cased the ledger
+ * label, which turned the acronym in "IT work" into a fragment — the live site
+ * read "we ask again about it work" (human re-read, 2026-09-08).
+ *
+ * So: the subject, which is already a phrase in the case the dataset wrote it;
+ * the short label verbatim if a field has no subject; and, if the dataset has
+ * neither, a phrase that is still a sentence rather than a field id.
  */
-export function rescopedFor(
-  dataset: Dataset, destination: string, answers: Profile,
-): { answers: Profile; changed: boolean } {
+export function questionPhrase(dataset: Dataset, field: string): string {
+  const subject = subjectOf(dataset, field);
+  if (subject !== field) return subject;
+  const short = shortLabelOf(dataset, field);
+  if (short !== field) return short;
+  return "one more question";
+}
+
+/**
+ * The record, replayed against the rules as they stand.
+ *
+ * Every answer is kept only while the interview would still ask its question:
+ * a fact the flow has retired — the Dutch designated-institution question
+ * after the salary answer settles it, every German-only question once the
+ * reader is asking about France — leaves the ledger rather than sitting in it
+ * unexplained. One implementation, because the interview replays on an edit
+ * and on an arrival, and two copies of this rule would disagree about what a
+ * reader still has on the record.
+ */
+export function replayRecord(
+  dataset: Dataset, answers: Profile, order: readonly string[],
+): { answers: Profile; order: string[] } {
+  const kept: Profile = {};
+  const keptOrder: string[] = [];
+  for (const field of order) {
+    if (answers[field] === undefined) continue;
+    if (!remainingQuestions(dataset, kept).some((q) => q.field === field)) continue;
+    kept[field] = answers[field];
+    keptOrder.push(field);
+  }
+  return { answers: kept, order: keptOrder };
+}
+
+/**
+ * What an arrival does to the record, and what the screen can honestly say
+ * about it.
+ *
+ * `kept` and `asks` are the two facts the reader needs: which of their answers
+ * survived the move, and how many questions this country still has for them.
+ * Both are read off the record as it stands AFTER the move — the line used to
+ * be built from the answers that were dropped, and told a reader arriving in
+ * France that five German questions were coming back when what actually
+ * followed were two French ones (Spec review, 2026-09-08).
+ */
+export function arrivalPlan(
+  dataset: Dataset, answers: Profile, order: readonly string[], destination: string,
+): { answers: Profile; order: string[]; kept: string[]; asks: number; changed: boolean } {
   const changed = answers["destination"] !== destination;
-  return { answers: rescopeProfile(dataset, answers, destination).profile, changed };
+  // An arrival that changes nothing changes nothing: a reader already here
+  // keeps the record exactly as they left it, replay included (Spec review,
+  // 2026-09-08 — and a plan that tidied a record nobody asked to tidy would
+  // be a silent edit).
+  if (!changed)
+    return {
+      answers, order: [...order], changed,
+      kept: order.filter((f) => f !== "destination" && answers[f] !== undefined),
+      asks: remainingQuestions(dataset, answers).length,
+    };
+  // The money ladder is one pooled list for all four countries, so every
+  // amount means what it meant: only the destination changes here, and the
+  // replay below decides what the new country still asks about.
+  const moved: Profile = { ...answers, destination };
+  const inOrder = order.includes("destination") ? [...order] : ["destination", ...order];
+  const replayed = replayRecord(dataset, moved, inOrder);
+  return {
+    ...replayed,
+    // The destination is the thing that just changed; the sentence names it in
+    // its own clause rather than listing it as an answer that survived.
+    kept: replayed.order.filter((f) => f !== "destination"),
+    asks: remainingQuestions(dataset, replayed.answers).length,
+    changed,
+  };
+}
+
+/**
+ * The one line an arrival prints, on whichever screen the reader lands on.
+ *
+ * `rescoped` is the difference between a reader who told us nothing yet and a
+ * reader whose record said another country a moment ago: the second one is
+ * being moved, and the sentence says so rather than describing a record they
+ * did not write. Everything after the opening is read forwards — the answers
+ * that survived, and the questions that are actually coming.
+ */
+export function arrivalSentence(dataset: Dataset, o: {
+  from: string; place: string; rescoped: boolean;
+  kept: readonly string[]; asks: number;
+}): string {
+  const opening = o.rescoped
+    ? `Starting from ${o.from} — ${o.place} is on the record.`
+    : `Coming from ${o.from} — ${o.place} is on the record.`;
+  // A reader who has answered nothing has no answers to account for, and the
+  // question counter under this line already says how many are coming.
+  if (!o.rescoped) return opening;
+  const clauses: string[] = [];
+  if (o.kept.length)
+    clauses.push(`Your answers about ${joinAnd(o.kept.map((f) => questionPhrase(dataset, f)))} are kept`);
+  if (o.asks > 0)
+    clauses.push(`${o.place} asks ${o.asks} more question${o.asks === 1 ? "" : "s"}`);
+  return clauses.length ? `${opening} ${clauses.join("; ")}.` : opening;
 }

@@ -311,7 +311,7 @@ export function provenanceHtml(ds: Dataset, r: RouteResult): string {
       lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
       value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b>${
-      noteHtml(note, esc)}</div>`;
+      noteHtml(note)}</div>`;
   });
   // One sentence, one line.
   //

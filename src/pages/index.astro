@@ -73,6 +73,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           intro and a growing ledger (product-critique v0.7, F8); on a wide
           screen the grid puts the ledger back on the left. */}
       <main id="main"></main>
+    <!--
+      One live region for the whole screen, created empty and filled after the
+      render that has something to say. A region inserted with its text already
+      in it is not reliably announced, and a second one created inside a card
+      dies with that card (Standards and Spec reviews, 2026-09-08).
+    -->
+    <p class="visually-hidden" id="cstatus" role="status" aria-live="polite"></p>
       <details class="decl" id="decl" open>
         <summary><span class="decl-title">You declared</span><span class="decl-count" id="decl-count"></span></summary>
         <dl id="decl-list"></dl>
@@ -95,13 +102,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // s5d: every word a verdict says comes from here, beside the rules — the
       // page holds no field-id-to-label table of its own to fall through
       // (product-critique v0.7, B3).
-      shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinAnd, joinOr,
+      shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
       // s6: what the interview asks of a route, in the words the route page
       // shows — the same declared fact, said the same way in both places.
       scopeLine as scopeWordsFor,
       // What an answer means here, where the label alone leaves two answers
       // hard to tell apart (human walk, 2026-09-08).
-      optionMeans, unlockMeansOf,
+      optionMeans, unlockMeansOf, countryPhrase,
       type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
     } from "permit-rulebook-data";
     import { routePath } from "../lib/slug.js";
@@ -111,7 +118,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // Arriving from a route page's call to action: what goes on the record and
     // what sorts first, beside the page rather than inside it (step 10).
     import {
-      arrivalFrom, countryArrivalFrom, destinationFor, destinationForCountry, rescopedFor, scopedFirst,
+      arrivalFrom, arrivalPlan, arrivalSentence, countryArrivalFrom, destinationFor,
+      destinationForCountry, replayRecord, scopedFirst,
       type ScopedArrival,
     } from "../lib/scope.js";
     // A symbol a stranger cannot read is explained the first time a screen uses
@@ -205,8 +213,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     let cameFromCountry: string | null = null;
     /** Whether this arrival is what put the destination on the record. */
     let scopeRecorded = false;
-    /** Answers this arrival could not carry to the country it named. */
-    let rescopeDropped: string[] = [];
+    /** What survived the arrival, and how many questions this country still
+     * has — the two facts the arrival line is allowed to state. */
+    let arrivalKept: string[] = [];
+    let arrivalAsks = 0;
+    /** The country the record named before this arrival moved it, if any. */
+    let rescopedFrom: string | null = null;
 
     /**
      * Land the reader where the link says they are.
@@ -222,20 +234,24 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       cameFrom = arrivalFrom(ds, location.search);
       const country = cameFrom ? cameFrom.country : countryArrivalFrom(ds, location.search);
       const destination = cameFrom
-        ? destinationFor(cameFrom, answers)
-        : destinationForCountry(country, answers);
+        ? destinationFor(cameFrom)
+        : destinationForCountry(country);
       if (cameFrom) scopedRouteId = cameFrom.route.id;
       if (destination === null || !country) return;
-      cameFromCountry = country.name;
-      const moved = rescopedFor(ds, destination, answers);
-      answers = moved.answers;
-      if (!asked.includes("destination")) asked.push("destination");
-      // A question the new country's rules do not ask leaves the ledger with
-      // the same replay every other change of answer goes through — and what
-      // it took away is what the line below tells the reader is coming back.
-      const held = asked.filter((f) => answers[f] !== undefined);
-      replayAnswers();
-      rescopeDropped = held.filter((f) => answers[f] === undefined);
+      // The country's own prose form: a sentence says "the Netherlands", the
+      // button in the nav says "Netherlands" (the same rule `declaredPlace`
+      // follows for every other sentence naming a place).
+      cameFromCountry = countryPhrase(country.code.toUpperCase()) ?? country.name;
+      const before = answers["destination"];
+      rescopedFrom = before !== undefined && before !== destination ? before : null;
+      const plan = arrivalPlan(ds, answers, asked, destination);
+      // Nothing moved: the reader is already here, and a line saying so is a
+      // line about nothing (Spec review, 2026-09-08).
+      if (!plan.changed) return;
+      answers = plan.answers;
+      asked = plan.order;
+      arrivalKept = plan.kept;
+      arrivalAsks = plan.asks;
       scopeRecorded = true;
       saveRecord();
     }
@@ -253,13 +269,30 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     function arrivalLine(): string {
       if (!scopeRecorded || (!cameFrom && !cameFromCountry)) return "";
       const what = cameFrom ? routeName(cameFrom) : cameFromCountry!;
-      const place = cameFrom ? cameFrom.country.name : cameFromCountry!;
-      const again = rescopeDropped.length
-        ? ` Your other answers are kept; we ask again about ${
-          joinAnd(rescopeDropped.map((f) => shortLabelOf(ds, f).toLowerCase()))}.`
-        : "";
-      return `<p class="recorded" role="status">Coming from <b>${esc(what)}</b> — ${
-        esc(place)} is on the record.${esc(again)}</p>`;
+      const place = cameFrom
+        ? (countryPhrase(cameFrom.country.code.toUpperCase()) ?? cameFrom.country.name)
+        : cameFromCountry!;
+      // The words are built where they can be read by a test, over every
+      // question that can come back: the label lower-cased here turned "IT
+      // work" into "it work" on the live site (human re-read, 2026-09-08).
+      return `<p class="recorded" role="status">${
+        esc(arrivalSentence(ds, {
+          from: what, place, rescoped: rescopedFrom !== null,
+          kept: arrivalKept, asks: arrivalAsks,
+        }))
+      }</p>`;
+    }
+
+    /**
+     * Say something once, in the screen's own live region.
+     *
+     * Written after the render, never inside it: a region that arrives with its
+     * text already in place is not announced by every screen reader, and the
+     * interview's own status line proved the pattern works.
+     */
+    function announce(text: string): void {
+      const region = document.getElementById("cstatus");
+      if (region) region.textContent = text;
     }
 
     /** One masthead, one writer. Every gesture names itself, and only the two
@@ -353,16 +386,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * stale row (human catch: editing question 2 re-asked everything after it).
      */
     function replayAnswers() {
-      const kept: Profile = {};
-      const keptOrder: string[] = [];
-      for (const f of asked) {
-        if (answers[f] === undefined) continue;
-        if (!remainingQuestions(ds, kept).some((q) => q.field === f)) continue;
-        kept[f] = answers[f];
-        keptOrder.push(f);
-      }
-      answers = kept;
-      asked = keptOrder;
+      const replayed = replayRecord(ds, answers, asked);
+      answers = replayed.answers;
+      asked = replayed.order;
     }
 
     /** Draw the question screen the gesture lands on. Rendering and advancing
@@ -378,6 +404,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         ? (remaining.find((x) => x.field === editing) ?? questions.find((x) => x.field === editing)!)
         : remaining[0];
       advance(action);
+      announce("");
       renderDeclaration(q.field);
       const total = asked.length + remaining.length;
       const answer = (value: string) => {
@@ -428,7 +455,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
                 value="${escAttr(declared?.label ?? "")}">
             </div>
             <div class="clist" id="clist" role="listbox" aria-label="${escAttr(q.label)}"></div>
-            <p class="visually-hidden" id="cstatus" role="status" aria-live="polite"></p>
             <p class="recorded" id="crecorded"${declared ? "" : " hidden"}>Your answer on file: <b>${esc(declared?.label ?? "")}</b></p>
             ${classed ? `<p class="hint">Every non-EU passport is checked against the same rules. A few countries
               have agreements that add rights on top — those are stated with their source when they apply to you.</p>` : ""}`
@@ -682,7 +708,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * — it is the same card the reader was reading a moment ago.
      */
     const cameFromMark = (r: RouteResult): string =>
-      r.route.id === scopedRouteId ? `" data-came-from="1` : "";
+      r.route.id === scopedRouteId ? ` data-came-from="${escAttr(r.route.id)}"` : "";
 
     /** The line inside the marked card, in the reader's own trail of thought. */
     const cameFromNote = (r: RouteResult): string =>
@@ -692,7 +718,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     function fullCard(r: RouteResult, showCountry = true): string {
       return `
-        <article class="route${cameFromMark(r)}">
+        <article class="route"${cameFromMark(r)}>
           <div class="top">
             <div>${showCountry ? `<span class="country">${esc(ds.countries.find((c) => c.code === r.country)?.name ?? r.country)}</span>` : ""}
               <h3>${esc(routeName(r))}</h3></div>
@@ -728,7 +754,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // Auto-open only where the unknown still binds — a row opened on a dead
       // route promises an answer that cannot change it (critique #4).
       return `
-        <details class="route-hold${cameFromMark(r)}"${hasLiveUnknown(r) || r.route.id === scopedRouteId ? " open" : ""}>
+        <details class="route-hold"${cameFromMark(r)}${hasLiveUnknown(r) || r.route.id === scopedRouteId ? " open" : ""}>
           <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(routeName(r))}</span><span class="hold-why">${short}</span></summary>
           <div class="hold-body">
             ${cameFromNote(r)}
@@ -861,7 +887,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     function unlockCard(u: ReturnType<typeof unlocks>[number], routes: RouteResult[]): string {
       return `
         <article class="unlock">
-          <h4>With <b>${esc(unlockTitleOf(ds, u, answers))}</b></h4>
+          <h3>With <b>${esc(unlockTitleOf(ds, u, answers))}</b></h3>
           ${(() => { const means = unlockMeansOf(ds, u, answers);
             return means ? `<p class="unlock-means">${esc(means)}</p>` : ""; })()}
           <ul>${routes.map((r) =>
@@ -947,14 +973,23 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // produce it — the count and the tense come from the same place (B4).
       // What the masthead just said, in plain words, so the screen can announce
       // it: the verdict arrives with no live region at all, and a reader using
-      // one is told nothing happened (critique F16).
+      // one is told nothing happened (critique F16). The sentence is written
+      // once, in words; the emphasis is markup laid over it, so the announced
+      // line is the sentence itself rather than a strip of its own HTML
+      // (Standards review, 2026-09-08).
       let verdictText = "";
-      const said = (headlineHtml: string, rest: { nearest?: string; explore?: Explore } = {}) => {
-        verdictText = headlineHtml.split("<").join(" <").replace(/<[^>]*>/g, "").split(/\s+/).join(" ").trim();
-        advance({ kind: "compare", routes: results.length, headline: headlineHtml, ...rest });
+      const said = (
+        sentence: string, emphasis = "", rest: { nearest?: string; explore?: Explore } = {},
+      ) => {
+        verdictText = emphasis ? `${sentence} ${emphasis}` : sentence;
+        advance({
+          kind: "compare", routes: results.length,
+          headline: emphasis ? `${sentence} <b>${emphasis}</b>` : sentence,
+          ...rest,
+        });
       };
-      const verdictSaid = () =>
-        verdictText ? `<p class="said" role="status">${esc(verdictText)}</p>` : "";
+      /** The verdict, announced after the screen it belongs to is drawn. */
+      const sayVerdict = () => { announce(verdictText); };
 
       if (zeroOpen && ups.length) {
         // The step worth naming: one that would fully meet a route beats one
@@ -965,26 +1000,26 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         const bestUp = ups.reduce((best, u) => (rank(u) > rank(best) ? u : best));
         // Zero open is a starting point, not a dead end — the steps are the news.
         said(`Nothing open yet — ${ups.length} step${ups.length === 1 ? "" : "s"} would change that.`,
-          { nearest: unlockTitleOf(ds, bestUp, answers) });
+          "", { nearest: unlockTitleOf(ds, bestUp, answers) });
       } else if (zeroOpen) {
         // Nothing open and no single step would open one: no false hope. The
         // single-country result has no country sections to send anyone to, so
         // it does not pretend otherwise (F7).
         // What to do next is part of the one line, not a second sentence
         // appended to the element afterwards (review J2).
-        said("Nothing open on these answers.", {
+        said("Nothing open on these answers.", "", {
           explore: visible.length === 1 ? "one-country" : "several-countries",
         });
       } else {
         const nearNote = near.length
           ? near[0].gap_max
-            ? ` <b>One is short by ${gapAmount(near[0])}.</b>`
+            ? `One is short by ${gapAmount(near[0])}.`
             : near[0].gap_points
-              ? ` <b>One is ${near[0].gap_points} point${near[0].gap_points === 1 ? "" : "s"} away.</b>`
+              ? `One is ${near[0].gap_points} point${near[0].gap_points === 1 ? "" : "s"} away.`
               : ""
           : "";
         const across = metCountries.size > 1 ? ` across ${metCountries.size} countries` : "";
-        said(`${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open${across}.` + nearNote);
+        said(`${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open${across}.`, nearNote);
       }
 
       // Counted the way the rows read: an unknown on a hard-failed route is
@@ -1019,12 +1054,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             ups.map((u) => unlockCard(u, u.routes)).join("") +
             seekHint(results, true)
           : "";
-        main.innerHTML = verdictSaid() + arrivalLine() + noticeCards + strip +
+        main.innerHTML = arrivalLine() + noticeCards + strip +
           section("Open — criteria met", "", byStatus.met.map((r) => fullCard(r)).join(""), byStatus.met.length) +
           section("Within reach", "near", byStatus.near.map((r) => fullCard(r)).join(""), byStatus.near.length) +
           unlockSection() +
           section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length);
         showArrival();
+        sayVerdict();
         return;
       }
 
@@ -1033,7 +1069,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // With nothing open anywhere, the first country that has steps opens
       // instead — the hope is the point, and it was hidden in 10px tally text.
       const withUps = new Set(ups.flatMap((u) => u.routes.map((r) => r.country)));
-      main.innerHTML = verdictSaid() + arrivalLine() + noticeCards + strip + visible.map((c) => {
+      main.innerHTML = arrivalLine() + noticeCards + strip + visible.map((c) => {
         const rs = results.filter((r) => r.country === c.code);
         const g = {
           met: rs.filter((r) => r.status === "met"),
@@ -1070,6 +1106,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           </details>`;
       }).join("");
       showArrival();
+      sayVerdict();
       recordScreen(null, true);
     }
 
@@ -1363,10 +1400,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /* A heading element, sized as the section label it always looked like. */
     h2.ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
       border-bottom:var(--rule-soft);padding-bottom:.35rem;margin:1.4rem 0 .8rem}
-    /* The verdict, for a reader who is listening rather than looking: the
-       masthead already prints it, so this line is announced, not drawn. */
-    .said{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
-      clip-path:inset(50%);white-space:nowrap;border:0}
     /* The card the reader came from, marked where they left off. */
     .route[data-came-from],details.route-hold[data-came-from]{border-left:3px solid var(--color-band)}
     .from-here{font:600 .74rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;
@@ -1399,9 +1432,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .faildetail b{color:var(--color-ink)}
     .ghead.unlockh b{color:var(--color-band)}
     .unlock{background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-band);padding:.85rem 1.05rem;margin-bottom:.7rem}
-    .unlock h4{font:600 .95rem var(--font-serif);margin-bottom:.35rem}
+    .unlock h3{font:600 .95rem var(--font-serif);margin-bottom:.35rem}
     .unlock-means{font-size:.82rem;color:var(--color-muted);margin:-.15rem 0 .4rem;max-width:34rem}
-    .unlock h4 b{color:var(--color-band)}
+    .unlock h3 b{color:var(--color-band)}
     .unlock ul{list-style:none;display:grid;gap:.3rem;font-size:.86rem;color:#54513f}
     .unlock li::before{content:"→ ";color:var(--color-met);font-weight:700}
     .unlock li b{color:var(--color-met)}

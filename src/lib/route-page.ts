@@ -192,7 +192,7 @@ function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen:
         <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
     o.label ? ` · ${esc(o.label)}` : ""}${
     value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b><time datetime="${escAttr(value.retrieved_at)}">read ${esc(value.retrieved_at)}</time></b>${
-    noteHtml(note, esc)}</span>
+    noteHtml(note)}</span>
         <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
     esc(o.linkText ?? "Official page")} &#8599;</a>
       </div>`;

@@ -377,8 +377,6 @@ describe.skipIf(skipped !== null)("nothing the site does is refused by its own p
   }, 180000);
 });
 
-
-
 /**
  * Why the proof is not in English, said on the page that answers for the data.
  *

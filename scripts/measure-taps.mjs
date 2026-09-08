@@ -30,6 +30,10 @@ import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serve, withBrowser } from "./browser.mjs";
+// The record module itself, not a copy of its constants: a seed written by
+// hand goes stale the day the format moves, and this script would then
+// measure a screen the reader never sees (Standards review, 2026-09-08).
+import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.ts";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 
@@ -96,8 +100,8 @@ const DRAWN = [
 ];
 
 const seedFor = (answers) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${
-    JSON.stringify(JSON.stringify({ version: 1, answers, history: Object.keys(answers) }))})`;
+  `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
+    JSON.stringify(JSON.stringify({ version: RECORD_VERSION, answers, history: Object.keys(answers) }))})`;
 const server = await serve(dist);
 let failures = 0;
 let overflows = 0;
