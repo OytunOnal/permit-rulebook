@@ -98,6 +98,11 @@ judgement on a live source.
       filed two issues since the repositories went public (ZAV edition, buzer
       § 6), both read and closed the same day. Watch issues carry
       `source-change`; `bug` is applied at triage if a value proves wrong.
+- [ ] **The announcement — read it, and pick the hour:** the draft is
+      `docs/spine/announcement.md` (Show HN title, the first comment, the five
+      answers in your voice). *Pass:* you would say every sentence yourself;
+      change any you would not. Then name a day and hour you can stay in the
+      thread for three hours — the post goes out then, not before.
 - [ ] **"go":** after the items above pass and the blockers are verified
       cleared on the live site, say it; v1 is stamped and the README's first
       screen is the announcement, told once.

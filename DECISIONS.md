@@ -2268,3 +2268,35 @@ a condition of approval; findings will be recorded against the scenario.
 **The human's part:** two-factor authentication on GitHub and Cloudflare (the
 registrar), confirmed before "go". Cost of the whole entry: one page and one
 more review axis; none of it changes what the reader sees.
+
+## 2026-09-08 — The launch's ten dimensions (steward-41), answered where they were blank
+
+Read against `references/launch-minimum.md`. Filled or declined:
+
+- **Legal:** both repositories' whole git history scanned for secrets
+  (token, key, private-key and `.env` patterns): 0 hits, no `.env` ever
+  committed. GDPR for EU readers: named, not adjudicated — the site sets no
+  cookie and stores nothing about a person; the counter is cookieless; the
+  privacy statement on the data page is what the wire test measures.
+- **Operations:** *rollback* = re-run the last known-good deploy
+  (`gh run rerun <run id>`), tried once today; *dependency down* — a source
+  page gone: the watch flags it, the site keeps the last read value with its
+  date (nothing on the page depends on a live fetch); the counter gone:
+  nothing visible; GitHub Pages gone: the site is gone, accepted (decision 6
+  names the move); *backup* declined — everything regenerates from git and
+  the sources; *launch-day load* declined — static files on a CDN; *a second
+  pair of hands* — single admin on the domain, the host and the repositories,
+  accepted for v1, recorded as a cost: if the maintainer cannot act, nothing
+  moves until they can.
+- **Measurement:** ≤48 h write-in → the watch's flags and DECISIONS entries;
+  100% quote+date → the quote-fidelity gate; organic usage → Cloudflare Web
+  Analytics from day one; A2/A7/A8 get their `slice-verified` / `refuted`
+  lines thirty days after the announcement (s6 de-mock births).
+- **Announcement:** drafted as the README told once
+  (`docs/spine/announcement.md`: title, first comment, the five answers in
+  the maker's voice); posted only at an hour the human can stay in the
+  thread for its first hours — the human's item.
+- **Security:** the threat model; 2FA (human); pipeline pinning (builder);
+  audit 0/0; the statement matches the wire (the beacon test).
+- Address, identity, discoverability, the way back in, phone/accessibility:
+  done or on the checklist, as STATUS says.
