@@ -2416,3 +2416,24 @@ never advances `data.lock`; the build job is read-only again with the lock
 written by its own `pin` job; the failure notice is the watch's last step;
 "in our own reading" is the reading form of the scope line; the footer packs
 the mock's columns on every page. 413 + 255 tests, both repositories green.
+
+**Addendum, 2026-09-08 — the last 390 px overflow, and the first re-read
+through the loop.** The footer's data line was a column-flex child sized by
+its min-content width, and its segments had no whitespace between the tags
+inside a blanket `nowrap`, so the whole line was one unbreakable run —
+436 px in a 348 px column; the runner's monospace pushed it past the
+viewport, Consolas did not. Rule, applied: separators are real break points
+(a non-breaking space before the middot, an ordinary space after, so the dot
+ends its line), and only a token that must not break — a date, the
+copyright, "code MIT" — is held whole in its own element. The overflow tests
+now widen the glyphs (+.055em, +.11em) on five pages and name the offender.
+
+**The "value changed" half of the loop ran for real** (data `9e3eed2`): the
+German Blue Card general threshold's page re-read today, the sentence found
+verbatim, `retrieved_at` 2026-09-04 → 2026-09-08 with the superseded reading
+kept in `history` under a note ("re-read 2026-09-08, unchanged"); the schema
+gained an optional `note` on history entries, CONTRIBUTING a step for a
+re-read that did not move. Quote fidelity counts the history quote too (122
+→ verified with the history entry). Next: the live page shows the new date
+after the deploy — that closes the path the devils-advocate said had never
+run; the dispatch half still waits on the human's token.
