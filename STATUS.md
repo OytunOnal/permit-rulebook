@@ -8,8 +8,8 @@ mock-green and live at https://permitrulebook.com** (HTTPS enforced,
 verified cleared on the live site. v1 is stamped when the blockers are cleared on the live
 site and the human's real-green items below are done. Roadmap: v1.1 holds the
 14 excluded active routes as "quoted, not asked" pages; 9 further candidates
-(5 unversioned). Spine skills at steward-38 (RUBRIC 1.3 adds an Orientation lens; the
-site map is now a required record).
+(5 unversioned). Spine skills at steward-40 (a threat model, a Security review axis, ten
+launch dimensions, devils-advocate over the launch scenario).
 
 ```mermaid
 flowchart LR
@@ -75,6 +75,11 @@ judgement on a live source.
 - [x] **Traffic counter** (human, 2026-09-08: Cloudflare Web Analytics, manual
       snippet): going in with the current builder round; the data page says what
       is counted; the never-leaves-the-device test names the one allowed beacon.
+- [ ] **Two-factor authentication (security dimension, before "go"):** GitHub →
+      Settings → Password and authentication → enable 2FA (an authenticator
+      app); Cloudflare → My Profile → Authentication → Two-Factor. *Pass:* both
+      show 2FA enabled. Say "2fa açık" — the site is whatever those two
+      accounts say it is.
 - [ ] **`DISPATCH_TOKEN` (a credential, so yours):** GitHub → Settings → Developer
       settings → Fine-grained tokens → new token, repository access:
       `permit-rulebook` only, permission Contents: read and write; then on

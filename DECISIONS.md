@@ -2247,3 +2247,24 @@ notes kept: the footer prints the dataset version as an ISO date (decision
 12's one spelling) rather than the raw dotted string; the header's action is
 "Check yours" everywhere now. The Cloudflare beacon follows in a small
 separate round, then one two-axis review covers both.
+
+## 2026-09-08 — Security entered the plan (steward-40): a threat model, a third review axis, the launch's security dimension
+
+**Cheap defaults, surfaced.** `docs/spine/threats.md` written as decisions:
+what we protect (the reader's privacy, the sources' trust, the accounts the
+site *is*, the pipeline), who can hurt it, and for each threat a permanent
+check or an "accepted, because". Rows from the default shapes: actions to be
+pinned by SHA with a read-only token (the builder's round now); HSTS comes
+from Pages, a CSP cannot be set there — accepted with the exposure named (the
+only scripts are ours and the declared beacon; decision 6 names the move if
+headers ever matter); prompt injection through the watch accepted because the
+watch never acts on page text — a person reads every flag; abuse limits not
+applicable (nothing spends money). `npm audit --omit=dev`: 0 vulnerabilities
+in both repositories on 2026-09-08. The beacon round touches an outbound
+call, so its review runs the Security axis beside Standards and Spec. The
+launch scenario gets its devils-advocate pass now, late — steward-40 makes it
+a condition of approval; findings will be recorded against the scenario.
+
+**The human's part:** two-factor authentication on GitHub and Cloudflare (the
+registrar), confirmed before "go". Cost of the whole entry: one page and one
+more review axis; none of it changes what the reader sees.
