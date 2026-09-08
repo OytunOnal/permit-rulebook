@@ -34,15 +34,16 @@ h2.mock small { font-weight: 400; color: #bbb; }
 
 /* ---- the footer ---- */
 .site-foot { border-top: var(--rule-heavy); padding-top: var(--space-4); color: var(--color-muted); }
-.site-foot .disclaimer { margin: 0 0 var(--space-4); max-width: 44rem; }
+.site-foot .disclaimer { margin: 0 0 var(--space-4); }
 .site-foot .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); border-top: var(--rule-soft); padding-top: var(--space-4); }
 .site-foot .col h3 { margin: 0 0 .2rem; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); }
 .site-foot .col ul { list-style: none; margin: 0; padding: 0; }
-.site-foot .col a { color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap-min); border-bottom: 1px solid var(--color-line); }
-.site-foot .col a:hover { border-bottom-color: var(--color-stamp); color: var(--color-stamp); }
-.site-foot .col a[aria-current] { color: var(--color-stamp); border-bottom-color: var(--color-stamp); }
-.site-foot .col .act { margin-top: .5rem; padding-top: .5rem; border-top: var(--rule-soft); }
-.site-foot .col .act a { color: var(--color-stamp); }
+.site-foot .col a { color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap-min); }
+.site-foot .col a:hover { color: var(--color-stamp); text-decoration: underline; text-underline-offset: .2em; }
+.site-foot .col a[aria-current] { color: var(--color-stamp); }
+.site-foot .col .act { margin-top: var(--space-2); }
+.site-foot .col .act a { border: 1.5px solid var(--color-ink); padding: 0 .8rem; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); }
+.site-foot .col .act a:hover { border-color: var(--color-stamp); color: var(--color-stamp); text-decoration: none; }
 .site-foot .col .out::after { content: " ↗"; color: var(--color-muted); }
 .site-foot .line { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; border-top: var(--rule-soft); margin-top: var(--space-4); padding-top: var(--space-3); font: var(--text-source); }
 .site-foot .line b { color: var(--color-met); font-weight: 600; }
