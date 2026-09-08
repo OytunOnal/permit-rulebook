@@ -6,19 +6,15 @@ when it passes on mocks, **real-green** when it passes for real. The moment a
 mock is born, its de-mock task is appended to backlog.
 
 ```mermaid
-flowchart LR
-    A["Walking skeleton ✅ real-green (v0.1)"] --> B["Full Germany route set ✅ real-green (v0.2)"]
-    B --> C["Gap analysis on results ✅ real-green (v0.3)"]
-    C --> C2["Leverage analysis: what each step unlocks ✅ real-green (v0.4–v0.5)"]
-    C2 --> D["Source watch + change flag ✅ real-green (v0.6)"]
-    D --> E["Four countries · honest verdicts · exceptions ✅ real-green (v0.7)"]
-    E --> E2["Answers recorded as given ✅ real-green (v0.8)"]
-    E2 --> E3["Every sentence carries its source ✅ real-green (v0.9)"]
-    E3 --> E4["Launch-readiness sweep ✅ real-green (v0.10)"]
-    E4 --> E5["Public launch ◀ here (s6, mock-green)"]
-    E4 --> F["Public launch 🏁 v1 (s6)"]
-    F -.-> G["Wave 2: CA + AU"]
-    G -.-> H["Wave 3: rest of Europe + community"]
+flowchart TB
+    A["v0.1 · Walking skeleton ✅"] --> B["v0.2 · Full Germany ✅"]
+    B --> C["v0.3 · Gap analysis ✅"] --> C2["v0.4–0.5 · Leverage ✅"]
+    C2 --> D["v0.6 · Source watch ✅"] --> E["v0.7 · Four countries ✅"]
+    E --> E2["v0.8 · Answers as given ✅"] --> E3["v0.9 · Every sentence sourced ✅"]
+    E3 --> E4["v0.10 · Launch-readiness sweep ✅"]
+    E4 --> F["s6 · Public launch ◀ here<br/>mock-green · live · real-green needs the human"]
+    F --> V1["🏁 v1"]
+    V1 -.-> G["Wave 2: CA + AU"] -.-> H["Wave 3: rest of Europe + community"]
 ```
 
 ## roadmap
