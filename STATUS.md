@@ -44,9 +44,10 @@ by an injected request, green on the clean build). 397 + 196 tests.
 has no shared navigation — the four country links live only in the home
 footer, a country page leads nowhere but its routes. The site map is written
 (`docs/spine/design/site-map.md`, the first one; Spine now requires it from
-the second screen on) and names the gaps; next: the header navigation and
-the country page mocked in the token set, critiqued in isolation, brought to
-the human, then built. v1 waits for it.
+the second screen on) and names the gaps; the header navigation, the country page and the data page
+were mocked, critiqued in isolation (3 blockers applied) and **approved by the
+human**; the builder is on them now. Then the two-axis review, deploy, and
+v1 waits only on the checklist.
 
 Numbers: 397 tests in the data repository, 196 in the site; 122 quotes
 verified, `human_tier: 0`; 30 pages + 24 endpoints, 0 tap targets under 44 px
@@ -57,17 +58,8 @@ at 390 px; critique 32/45 on RUBRIC 1.2 (v0.7: 27/45).
 Each of these is yours because it is a real device, a preview renderer, or a
 judgement on a live source.
 
-- [ ] **Navigation + country page — your approval** (gate): the mock is at
-      http://localhost:4400/s6-nav-country.html (revision 2, after the isolated
-      critique: 3 blockers fixed). Two decisions inside it are yours: (a) the
-      index's scope line now reads as what the reader gets — "quoted and dated ·
-      scored against your answers" / "… scored, two conditions stated but not
-      asked" — instead of the internal "some conditions stated, not asked";
-      (b) "The data" in the header goes to the on-site data page (today's
-      /status, retitled: version, newest read date, downloads, the repository)
-      rather than straight to GitHub, so the page that proves the liveness is
-      one step from anywhere. Say "onaylıyorum" or name a change; the build
-      follows.
+- [x] **Navigation + country page approved** (human, 2026-09-08): shared header,
+      no crumbs, new scope words, The data as an on-site page. Building.
 - [ ] **Phone walk on the live site, real handset:** https://permitrulebook.com
       — the interview end to end, then one route page from a results card's
       "The rules of this route". *Pass:* nothing overflows sideways, every tap

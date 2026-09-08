@@ -2080,3 +2080,36 @@ from the dataset the page names.
 **Compound citations stay whole:** "(§ 19c / § 6 BeschV)" is glossed after
 the parenthetical, never split, because the citation is the searchable
 string — the reason the gloss was appended in the first place.
+
+## 2026-09-08 — Navigation designed, late: the shared header, the country page, the data page 🛑
+
+**Gate (human: "tamamdır onaylıyorum").** The human found on the live site
+that the four country links lived only in the home footer and a country page
+led nowhere — "özensiz bir planlama". Fair: the site reached 29 pages with
+screens approved one at a time and nobody owning the space between them. The
+same day Spine added the rule (a site map from the second screen, mocks show
+their exits, an Orientation lens in the rubric). Done here in order: the site
+map written (`docs/spine/design/site-map.md`), the header navigation and the
+country page mocked in the token set, the mock critiqued in isolation (3
+blockers, 7 friction, 6 polish — applied), then approved.
+
+**Decided with it.** (1) One header on every page: the wordmark, the four
+countries with the current one marked, "Checker", "The data"; folds behind a
+Menu below 960 px (the 761–939 band had no state); no crumb rows anywhere —
+the header and the h1 say where you are. (2) The index's scope line reads as
+what the reader gets — "quoted and dated · scored against your answers" /
+"… scored, two conditions stated but not asked" / "… not scored" — instead of
+the internal "some conditions stated, not asked", which a stranger read as
+"they have not checked this"; decision 3's reader words are amended, on the
+results card too. (3) "The data" is an on-site page (the status page,
+retitled: version, newest read date, downloads, repository, tracker,
+licence), so the page that proves the liveness is one step from anywhere
+and the status page is no longer an orphan. (4) Per-route read dates on the
+index, the number beside each route labelled ("salary threshold", "funds to
+show"), the whole card a link.
+
+**Cost, stated.** One more build-and-review round before v1. The header's
+one-row layout has ~23 px of slack at the 56 rem cap; wave 3's extra
+countries will need a countries menu — recorded on the roadmap, not solved
+now. Crumbs removed means no "up" link on a route page other than the
+country in the header; accepted.
