@@ -2171,3 +2171,21 @@ taglines on purpose: the product's "Every route, quoted and dated." on home,
 country, data and 404, and the route page's own "The rules, quoted and dated."
 (its approved mock), both named constants. Card gists are whole sentences,
 never cut; a scope line never says "stated" of our own reading.
+
+## 2026-09-08 — The footer, one on every page 🛑
+
+**Gate (human: "footer tamam").** The footer differed page by page (the
+interview's, the route page's, the country page's, each its own). One footer
+from the header's source, mocked and revised with the human in the loop
+(`s6-footer.html`, five revisions): the disclaimer sentence centred; three
+columns — Routes (the four countries, current marked, then "Check yours" as
+the outlined action), The data (what it holds and its gates · this route as
+JSON on route pages · the repository · the licence), Feedback (report a wrong
+value · suggest a route or a country · sponsor); the centred data line with
+the small seal, the licences, the copyright, the dataset and schema versions,
+the newest read date and "checked daily". The human removed a "Do" column
+(print, start over belong to the results screen) and asked for the centred
+lines. Approved while its isolated critique was still running — the
+critique's findings are applied where they do not contradict these choices;
+a blocker would reopen the gate. Cost: the countries appear in the header and
+the footer both, on purpose (a long page's header is a screen away).

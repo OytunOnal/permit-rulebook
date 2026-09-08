@@ -54,8 +54,9 @@ leaking from the interview page, duplicated head meta). One more builder
 round is running on all of it; it ships when green. **And the footer** (the
 human: "düzgünce düzenleyelim") — today it differs page by page; one footer
 from the header's source is mocked (`docs/spine/design/s6-footer.html`:
-disclaimer · Routes / Do / The data / Feedback · the data line) and is in its
-isolated critique; it comes to the human next, then the builder. Then v1
+disclaimer · Routes / Do / The data / Feedback · the data line) and was **approved by the human** (five revisions with them; the isolated
+critique still returns and its findings are folded in); the builder takes it
+after the current round. Then v1
 waits only on the checklist below.
 
 Numbers: 397 tests in the data repository, 214 in the site; 122 quotes
