@@ -70,8 +70,8 @@ import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddres
  */
 export const TAP_CLASSES = ["tap", "tap-min"] as const;
 
-const tapMin = (extra = ""): string => `class="${extra ? `${extra} ` : ""}tap-min"`;
-const tapInline = (extra = ""): string => `class="${extra ? `${extra} ` : ""}tap"`;
+const tapMin = (extra = ""): string => `class="${escAttr(extra ? `${extra} ` : "")}tap-min"`;
+const tapInline = (extra = ""): string => `class="${escAttr(extra ? `${extra} ` : "")}tap"`;
 
 // ---------------------------------------------------------------------------
 // Small helpers over the dataset
@@ -189,7 +189,7 @@ interface QuoteOptions {
 function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen: Glossary = new Set()): string {
   const { lang, host, note } = quoteFrame(value, o.amount);
   return `<div class="src">
-        <span><q${lang ? ` lang="${lang}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
+        <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
     o.label ? ` · ${esc(o.label)}` : ""}${
     value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b><time datetime="${escAttr(value.retrieved_at)}">read ${esc(value.retrieved_at)}</time></b>${
     note ? `<span class="note">${esc(note)}</span>` : ""}</span>
@@ -402,7 +402,7 @@ function statedBlocks(route: Route, seen: Glossary): string {
   const block = (cls: string, heading: string, items: string[]): string =>
     items.length
       ? `
-      <div class="${cls}"><b>${esc(heading)}</b><ul>${
+      <div class="${escAttr(cls)}"><b>${esc(heading)}</b><ul>${
         items.map((t) => `<li>${t}</li>`).join("")}</ul></div>`
       : "";
   return [

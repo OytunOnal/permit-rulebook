@@ -59,10 +59,16 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Reads two repositories and writes nothing: the one line that records which
+    # data commit deployed is written by the `pin` job, which is the only job
+    # holding a write token (Standards review, 2026-09-08).
     permissions:
-      # Read both repositories, and write back the one line that records which
-      # data commit deployed — on the schedule and the dispatch only.
-      contents: write
+      contents: read
+    outputs:
+      built: ${{ steps.built.outputs.sha }}
+      version: ${{ steps.built.outputs.version }}
+      locked: ${{ steps.data.outputs.locked }}
+      first_attempt: ${{ steps.data.outputs.first_attempt }}
     steps:
       # The site reads the dataset as a `file:` dependency, so the two have to
       # sit beside each other on disk. The site therefore lands in a
@@ -79,6 +85,11 @@ jobs:
       - name: Where the manifest expects the data, and which commit of it
         id: data
         working-directory: site
+        env:
+          # Through the environment, never interpolated into the script body.
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          PAYLOAD_SHA: ${{ github.event.client_payload.sha }}
         run: |
           path=$(node -p "require('./package.json').dependencies['permit-rulebook-data'].replace(/^file:/, '')")
           echo "dir=$(basename "$path")" >> "$GITHUB_OUTPUT"
@@ -94,17 +105,30 @@ jobs:
           # write the SHA they used back into the lock when the run goes green,
           # so the lock always names a combination that actually deployed.
           locked=$(sed -n 's/^sha=//p' data.lock)
-          case "${{ github.event_name }}" in
-            schedule)            ref="" ;;
-            repository_dispatch) ref="${{ github.event.client_payload.sha }}" ;;
-            *)                   ref="$locked" ;;
+          # A RERUN of a scheduled or dispatched run keeps its event name, so it
+          # would build against today's data and then pin it — the float this
+          # lock exists to end, on the trigger that fires daily. Only a first
+          # attempt may advance the lock (Spec review, 2026-09-08).
+          first_attempt=$([ "$RUN_ATTEMPT" = "1" ] && echo yes || echo no)
+          case "$EVENT_NAME:$first_attempt" in
+            schedule:yes)            ref="" ;;
+            repository_dispatch:yes) ref="$PAYLOAD_SHA" ;;
+            *)                       ref="$locked" ;;
           esac
-          if [ -z "$ref" ] && [ "${{ github.event_name }}" != "schedule" ]; then
+          # The dispatch's payload is a stranger's string until it is checked.
+          if [ "$EVENT_NAME:$first_attempt" = "repository_dispatch:yes" ]; then
+            case "$ref" in
+              [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
+              *) echo "::error::the dispatch carried no 40-hex commit — refusing to check anything out."; exit 1 ;;
+            esac
+          fi
+          if [ -z "$ref" ] && [ "$EVENT_NAME:$first_attempt" != "schedule:yes" ]; then
             echo "::error::data.lock names no sha — run npm run data:pin and commit it."
             exit 1
           fi
           echo "locked=$locked" >> "$GITHUB_OUTPUT"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "first_attempt=$first_attempt" >> "$GITHUB_OUTPUT"
 
       - name: Check out the data
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -117,8 +141,10 @@ jobs:
       - name: Which data commit this run is building
         id: built
         run: |
-          sha=$(git -C "${{ steps.data.outputs.dir }}" rev-parse HEAD)
+          dir="${{ steps.data.outputs.dir }}"
+          sha=$(git -C "$dir" rev-parse HEAD)
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "version=$(node -p "require('./$dir/data/dataset.json').dataset_version")" >> "$GITHUB_OUTPUT"
           echo "Building against data $sha (lock says ${{ steps.data.outputs.locked }})"
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -172,34 +198,44 @@ jobs:
         working-directory: site
         run: npm run measure:taps
 
-      # Everything above is green, so this combination is one that deploys.
-      # Only the two runs that build against the newest data may move the lock;
-      # a push builds against what the lock already says.
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: site/dist
+
+  # The lock records a combination that actually built and deployed. Only the
+  # two triggers that build against the newest data may move it, and only on a
+  # first attempt: a rerun keeps its event name, and would otherwise pin
+  # whatever the data repository happens to be at today (Spec review,
+  # 2026-09-08).
+  pin:
+    needs: [build, deploy]
+    if: |
+      github.run_attempt == 1
+      && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
+      && needs.build.outputs.built != needs.build.outputs.locked
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Record the data commit that just proved itself
-        if: github.event_name == 'schedule' || github.event_name == 'repository_dispatch'
-        working-directory: site
         env:
-          BUILT: ${{ steps.built.outputs.sha }}
-          LOCKED: ${{ steps.data.outputs.locked }}
+          BUILT: ${{ needs.build.outputs.built }}
+          VERSION: ${{ needs.build.outputs.version }}
         run: |
-          if [ "$BUILT" = "$LOCKED" ]; then
-            echo "data.lock already names $BUILT"
-            exit 0
-          fi
-          version=$(node -p "require('../${{ steps.data.outputs.dir }}/data/dataset.json').dataset_version")
+          case "$BUILT" in
+            [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
+            *) echo "::error::the build reported no 40-hex data commit."; exit 1 ;;
+          esac
           sed -i "s/^sha=.*/sha=$BUILT/" data.lock
-          sed -i "s/^dataset_version=.*/dataset_version=$version/" data.lock
+          sed -i "s/^dataset_version=.*/dataset_version=$VERSION/" data.lock
           # The canonical bot, so an automated commit is attributed to the
           # automation and not to whichever account owns a noreply login.
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data.lock
-          git commit -m "data.lock: built and deployed against $BUILT ($version)"
+          git commit -m "data.lock: built and deployed against $BUILT ($VERSION)"
           git push
-
-      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
-        with:
-          path: site/dist
 
   deploy:
     needs: build

@@ -123,6 +123,16 @@ export async function serve(dir, { base = siteBase() } = {}) {
  *   evaluate(expr)   run an expression in the page, return its value
  *   problems()       everything the page has thrown or logged as an error
  */
+/**
+ * The two messages a local run always logs about the traffic counter, and
+ * nothing else. Both name the beacon endpoint AND the reason, so a different
+ * failure about the same host is not swallowed with them.
+ */
+const LOCAL_BEACON_NOISE = [
+  /blocked by CORS policy[\s\S]*cloudflareinsights\.com|cloudflareinsights\.com[\s\S]*blocked by CORS policy/,
+  /Failed to load resource: net::ERR_FAILED \(https:\/\/cloudflareinsights\.com\//,
+];
+
 export async function withBrowser(run, { viewport = { width: 390, height: 844 }, mobile = true, network = false } = {}) {
   // A profile of its own, per launch. Three test files drive a browser, vitest
   // runs them in parallel, and Chrome exits 21 when a second instance opens the
@@ -257,17 +267,21 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
     },
     /**
      * Everything the page threw or logged as an error — except the traffic
-     * counter's own CORS complaint.
+     * counter's two local-only failures.
      *
      * Cloudflare's beacon endpoint answers `Access-Control-Allow-Origin:
      * http://127.0.0.1`, without the port a local static server has to use, so
-     * every local run logs a preflight failure for a request that is fine in
-     * production (2026-09-08). It is filtered here, once, rather than in each
-     * caller — and the beacon is not silenced: `tests/record.test.ts` asserts
-     * the script and the report are still SENT, so a page that stopped
+     * every local run logs a preflight refusal and the load failure that
+     * follows it — for a request that is fine in production (2026-09-08).
+     * Exactly those two messages are dropped, not every line that mentions the
+     * host: a script error thrown BY the beacon, or any other complaint naming
+     * it, still fails the run (Spec review, 2026-09-08).
+     *
+     * The counter is not silenced either. `tests/record.test.ts` asserts the
+     * script was fetched and a report was actually sent, so a page that stopped
      * counting fails there.
      */
-    problems: () => problems.filter((p) => !p.includes("cloudflareinsights.com")),
+    problems: () => problems.filter((p) => !LOCAL_BEACON_NOISE.some((rule) => rule.test(p))),
     /** The unfiltered list, for a caller that wants the counter's noise too. */
     allProblems: () => [...problems],
     requests: () => requests.map((r) => ({ ...r })),

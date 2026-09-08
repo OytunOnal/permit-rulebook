@@ -36,6 +36,11 @@ describe("the identity pair has one definition", () => {
     expect(identity).toContain("@media (min-width: 761px)");
     expect(identity).toContain("transform: rotate(calc(-1 * var(--stamp-rotate)))");
     expect(identity).toContain("transform: translateX(-50%) rotate(var(--stamp-rotate))");
+    // The stamp's centre is under the mark's corner, and its own box is what
+    // stops it growing past the pair: twice the space between that centre and
+    // the pair's right edge, at each size (CI, ubuntu, 2026-09-08).
+    expect(identity).toContain("width: max-content; max-width: 10.4rem");
+    expect(identity).toContain("width: max-content; max-width: 12.4rem");
     // Written entirely in tokens: no bare hex, no hard-coded rotation.
     expect(identity).not.toMatch(/#[0-9a-f]{3,8}\b/i);
     expect(identity).not.toMatch(/rotate\(-?\d/);
@@ -606,3 +611,100 @@ describe.skipIf(notMeasured !== null)("the header holds on a machine with none o
   }, 180000);
 });
 
+/**
+ * And nothing anywhere pushes a phone sideways.
+ *
+ * The pair's stamp was centred under the mark with no bound on its width, so
+ * its right edge was a function of how wide the font draws "RECORD GENERATED".
+ * With ubuntu's fallback the results screen scrolled 17 px at 390 px (CI,
+ * 2026-09-08) — the same family of defect as the header's wrapped nav, and the
+ * same fix: measure with the fonts this machine does not have.
+ */
+describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whatever the fonts", () => {
+  const FALLBACK_STACK = '(() => { const s = document.createElement("style");'
+    + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
+    + ' document.head.appendChild(s); return "forced"; })()';
+
+  /** What sticks out, if anything, with the element that does it. */
+  const OVERFLOW = 'JSON.stringify((() => {'
+    + ' const w = document.documentElement.clientWidth;'
+    + ' const worst = [];'
+    + ' for (const el of document.querySelectorAll("body *")) {'
+    + '   const r = el.getBoundingClientRect();'
+    + '   if (r.width === 0 || r.right <= w + 0.5) continue;'
+    + '   worst.push(`${el.tagName.toLowerCase()}.${(el.className || "").toString().slice(0, 24)}`'
+    + '     + ` at ${Math.round(r.right)} of ${w}`);'
+    + ' }'
+    + ' return { overflow: document.documentElement.scrollWidth - w, worst: worst.slice(0, 4) };'
+    + '})())';
+
+  it("the interview, the results, a route page, a country page and the data page", async () => {
+    const server = await serveDir(dist);
+    try {
+      const seen = await withChrome(async (page: Page) => {
+        const at: Record<string, unknown> = {};
+        for (const [name, path] of [
+          ["interview", "/"], ["results", "/"], ["route", "/germany/eu-blue-card-general/"],
+          ["country", "/germany/"], ["data", "/data/"],
+        ] as const) {
+          await page.goto(server.url(path), 600);
+          if (name === "results") {
+            // The screen the stamp is widest on: "Record generated" is longer
+            // than "Rules read".
+            await page.evaluate(SEED_FINISHED_RECORD);
+            await page.goto(server.url(path), 1400);
+          }
+          await page.evaluate(FALLBACK_STACK);
+          await new Promise((r) => setTimeout(r, 250));
+          at[name] = JSON.parse(await page.evaluate(OVERFLOW));
+        }
+        return at;
+      }, { viewport: { width: 390, height: 1000 }, mobile: true }) as Record<string, {
+        overflow: number; worst: string[];
+      }>;
+
+      for (const [name, page] of Object.entries(seen))
+        expect(page.overflow, `${name} scrolls sideways by ${page.overflow} px — ${
+          page.worst.join("; ") || "no element found past the edge"}`).toBeLessThanOrEqual(0);
+    } finally {
+      server.close();
+    }
+  }, 180000);
+
+  it("and the pair's stamp stays inside the page however wide its glyphs are", async () => {
+    const server = await serveDir(dist);
+    try {
+      const seen = await withChrome(async (page: Page) => {
+        await page.goto(server.url("/"), 600);
+        await page.evaluate(SEED_FINISHED_RECORD);
+        await page.goto(server.url("/"), 1400);
+        const at: Record<string, unknown> = {};
+        // Letter-spacing stands in for a font drawn wider than any we have.
+        for (const spacing of [".1", ".2", ".35"]) {
+          await page.evaluate(
+            '(() => { const s = document.createElement("style");'
+            + ` s.textContent = ".stamps .stamp{letter-spacing:${spacing}em}";`
+            + ' document.head.appendChild(s); return 1; })()',
+          );
+          await new Promise((r) => setTimeout(r, 200));
+          at[spacing] = JSON.parse(await page.evaluate(
+            'JSON.stringify({ overflow: document.documentElement.scrollWidth'
+            + ' - document.documentElement.clientWidth,'
+            + ' lines: Math.round(document.querySelector(".stamps .stamp").getBoundingClientRect().height) })',
+          ));
+        }
+        return at;
+      }, { viewport: { width: 390, height: 1000 }, mobile: true }) as Record<string, {
+        overflow: number; lines: number;
+      }>;
+
+      for (const [spacing, box] of Object.entries(seen))
+        expect(box.overflow, `at ${spacing}em the page scrolls ${box.overflow} px`).toBeLessThanOrEqual(0);
+      // It grew taller rather than wider: the label wrapped inside its bound.
+      expect(seen[".2"]!.lines, "the stamp did not wrap when its text outgrew the box")
+        .toBeGreaterThan(seen[".1"]!.lines);
+    } finally {
+      server.close();
+    }
+  }, 180000);
+});

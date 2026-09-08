@@ -121,6 +121,13 @@ export const ANALYTICS_BEACON = "https://cloudflareinsights.com/cdn-cgi/rum";
  * The counter, exactly as Cloudflare issued it. One source, every page: a page
  * that quietly stopped counting would be a number nobody could trust.
  *
+ * `spa: false` turns off Cloudflare's single-page tracking. It follows every
+ * `pushState`, and this interview pushes one per answered question: a
+ * seven-answer walk sent thirteen reports, which counts a reader's progress
+ * through their own answers even though it never carries what they answered
+ * (Security review, 2026-09-08). One report per page load is the number this
+ * site wants.
+ *
  * It goes at the END of the body, not in the head. In the head it is a module
  * script fetched before the page's own, and when it cannot reach Cloudflare —
  * a sandbox, a blocked network, a slow DNS — the interview rendered a second
@@ -128,8 +135,8 @@ export const ANALYTICS_BEACON = "https://cloudflareinsights.com/cdn-cgi/rum";
  * traffic counter may never be in front of the product.
  */
 export const analyticsBeacon = (): string =>
-  `<script type="module" src="${escAttr(ANALYTICS_SCRIPT)}" data-cf-beacon='{"token": "${
-    ANALYTICS_TOKEN}"}'></script>`;
+  `<script type="module" src="${escAttr(ANALYTICS_SCRIPT)}" data-cf-beacon='${
+    escAttr(JSON.stringify({ token: ANALYTICS_TOKEN, spa: false }))}'></script>`;
 
 /** Whose copyright the footer states. The LICENSE file's own holder. */
 export const OWNER = "Oytun Onal";
@@ -161,8 +168,15 @@ export function headMeta(o: {
   path: string;
   /** `article` for a route page, `website` for an index. */
   kind?: "article" | "website";
+  /**
+   * What a link preview says, where it is not the tagline and the description.
+   * The interview's is its own promise, written for the person who has not
+   * clicked yet (Standards review, 2026-09-08 — it used to hand-write thirteen
+   * tags to say so).
+   */
+  preview?: string;
 }): string {
-  const preview = `${TAGLINE} ${o.description}`;
+  const preview = o.preview ?? `${TAGLINE} ${o.description}`;
   return [
     `<meta name="description" content="${escAttr(o.description)}">`,
     `<link rel="canonical" href="${escAttr(absolute(o.path))}">`,

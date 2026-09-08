@@ -40,6 +40,6 @@ export function whyHtml(dataset: Dataset, r: RouteResult, profile: Profile): str
  * always opens into something concrete. The row's class is the engine's own
  * `kind` — the page names no verdict of its own. */
 export function failDetailHtml(dataset: Dataset, r: RouteResult, profile: Profile): string {
-  const rows = reasonFor(dataset, r, profile).rows.map((row) => `<li class="${row.kind}">${esc(row.text)}</li>`);
+  const rows = reasonFor(dataset, r, profile).rows.map((row) => `<li class="${escAttr(row.kind)}">${esc(row.text)}</li>`);
   return rows.length ? `<ul class="faildetail">${rows.join("")}</ul>` : "";
 }

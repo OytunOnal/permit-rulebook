@@ -169,22 +169,34 @@ const LAYOUT = 'JSON.stringify((() => {'
   + ' return { rows: new Set(cols).size, cols, links, lines }; })())';
 
 describe.skipIf(skipped !== null)("the footer lays out where it says it does", () => {
-  for (const [width, columns] of [[1100, 3], [760, 3], [600, 2], [390, 1]] as const)
+  // The mock's own steps: three columns, two below 760, one below 480. Measured
+  // per page, because a count that depends on how wide the page happens to be
+  // is not a design (Spec review, 2026-09-08).
+  for (const [width, columns] of [[1100, 3], [761, 3], [760, 2], [600, 2], [481, 2], [390, 1]] as const)
     it(`${columns} column${columns === 1 ? "" : "s"} at ${width} px`, async () => {
       const server = await serve(dist);
       try {
-        const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/germany/eu-blue-card-general/"), 500);
-          return page.evaluate(LAYOUT);
-        }, { viewport: { width, height: 900 }, mobile: width < 500 }) as string) as {
+        const seen = await withBrowser(async (page: BrowserPage) => {
+          const at: Record<string, unknown> = {};
+          // The same block on every page, so the count is measured on each.
+          for (const [name, path] of [
+            ["route", "/germany/eu-blue-card-general/"], ["interview", "/"],
+            ["country", "/germany/"], ["data", "/data/"],
+          ] as const) {
+            await page.goto(server.url(path), 500);
+            at[name] = JSON.parse(await page.evaluate(LAYOUT));
+          }
+          return at;
+        }, { viewport: { width, height: 900 }, mobile: width < 500 }) as Record<string, {
           rows: number; cols: number[];
           links: { text: string; height: number; underline: string }[];
           lines: number[];
-        };
+        }>;
 
-        expect(seen.rows, `columns at ${width}: ${seen.cols.join(", ")}`).toBe(columns);
+        for (const [name, page] of Object.entries(seen))
+          expect(page.rows, `${name} at ${width}: columns at ${page.cols.join(", ")}`).toBe(columns);
         // Every link is a tap target, and looks like a link before it is touched.
-        for (const link of seen.links) {
+        for (const link of seen.route!.links) {
           expect(link.height, `"${link.text}" is ${link.height} px at ${width}`).toBeGreaterThanOrEqual(44);
           // Every column link looks like a link at rest. The one exception is
           // the action, which is a bordered button and says so that way.

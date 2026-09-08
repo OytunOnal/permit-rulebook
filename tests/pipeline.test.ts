@@ -81,10 +81,20 @@ describe("every action is pinned to a commit, and every job asks for the least i
 });
 
 /** Which data commit the site is built against, and whether it is real. */
+/** A newline, spelled so no editor can eat it. */
+const LF = String.fromCharCode(10);
+
 describe("the data commit is pinned, and the pin is a commit that exists", () => {
   const lock = readLock();
   const data = dataDir();
-  const git = (...args: string[]) => execFileSync("git", ["-C", data, ...args], { encoding: "utf8" }).trim();
+  /** git, with its own failure turned into something a reader can act on. */
+  const git = (...args: string[]): { ok: boolean; out: string } => {
+    try {
+      return { ok: true, out: execFileSync("git", ["-C", data, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim() };
+    } catch (e) {
+      return { ok: false, out: (e as { stderr?: Buffer }).stderr?.toString().trim() ?? String(e) };
+    }
+  };
 
   it("data.lock names a 40-hex sha and the dataset version it carried", () => {
     expect(lock.sha, "data.lock has no sha").toMatch(/^[0-9a-f]{40}$/);
@@ -93,18 +103,24 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
 
   it("the commit exists in the data repository beside this one", () => {
     const type = git("cat-file", "-t", lock.sha);
-    expect(type, `${lock.sha} is not a commit in ${data}`).toBe("commit");
+    expect(
+      type.ok && type.out === "commit",
+      `data.lock names ${lock.sha}, which is not a commit in ${data} — pull the data repository, or run npm run data:pin`,
+    ).toBe(true);
   });
 
   it("the sibling on this machine is not behind the lock", () => {
     const head = git("rev-parse", "HEAD");
-    if (head === lock.sha) return;
+    expect(head.ok, `cannot read the data repository's HEAD in ${data}: ${head.out}`).toBe(true);
+    if (head.out === lock.sha) return;
     // Ahead is fine — a developer moves the data first and pins it after. Behind
     // is not: this build would be testing code against data it has never seen.
-    const merged = git("merge-base", "--is-ancestor", lock.sha, head, "--") === "" ;
+    // `--is-ancestor` answers with its exit code, so a false answer must read as
+    // the sentence below and never as a raw throw (Standards review).
+    const merged = git("merge-base", "--is-ancestor", lock.sha, head.out).ok;
     expect(
       merged,
-      `data.lock names ${lock.sha}, which the sibling's HEAD ${head} does not contain — pull the data repository, or run npm run data:pin`,
+      `data.lock names ${lock.sha}, which the sibling's HEAD ${head.out} does not contain — pull the data repository, or run npm run data:pin`,
     ).toBe(true);
   });
 
@@ -112,9 +128,39 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
     const pages = read(join(workflows, "pages.yml"));
     expect(pages).toContain("locked=$(sed -n 's/^sha=//p' data.lock)");
     expect(pages).toContain("ref: ${{ steps.data.outputs.ref }}");
-    expect(pages).toContain("repository_dispatch) ref=\"${{ github.event.client_payload.sha }}\"");
-    // And a run that proved a newer combination writes it back.
-    expect(pages).toContain("Record the data commit that just proved itself");
-    expect(pages).toMatch(/if: github\.event_name == 'schedule' \|\| github\.event_name == 'repository_dispatch'/);
+    // The payload is a stranger's string: it arrives through the environment,
+    // never interpolated into the script body, and is checked for 40 hex
+    // characters before anything is checked out (Security review, 2026-09-08).
+    expect(pages).toContain("PAYLOAD_SHA: ${{ github.event.client_payload.sha }}");
+    expect(pages).toContain('repository_dispatch:yes) ref="$PAYLOAD_SHA"');
+    expect(pages).not.toContain('ref="${{ github.event.client_payload.sha }}"');
+    expect(pages).toContain("refusing to check anything out");
+  });
+
+  /**
+   * A rerun keeps the event name of the run it repeats. A re-run schedule would
+   * therefore build against today's data and pin it — the float this lock
+   * exists to end, on the trigger that fires every day (Spec review,
+   * 2026-09-08).
+   */
+  it("only a first attempt of the two newest-data triggers may advance the lock", () => {
+    const pages = read(join(workflows, "pages.yml"));
+    // The build's choice of ref reads the attempt.
+    expect(pages).toContain("RUN_ATTEMPT: ${{ github.run_attempt }}");
+    expect(pages).toContain('first_attempt=$([ "$RUN_ATTEMPT" = "1" ] && echo yes || echo no)');
+    expect(pages).toContain('case "$EVENT_NAME:$first_attempt" in');
+    expect(pages).toContain("schedule:yes)");
+    // And so does the job that writes it back.
+    const job = (name: string) => pages.slice(pages.indexOf(`${LF}  ${name}:`));
+    const pin = job("pin").slice(0, job("pin").indexOf(`${LF}  deploy:`));
+    expect(pin, "no job writes the lock back").not.toBe("");
+    expect(pin).toContain("github.run_attempt == 1");
+    expect(pin).toContain("github.event_name == 'schedule' || github.event_name == 'repository_dispatch'");
+    expect(pin).toContain("needs.build.outputs.built != needs.build.outputs.locked");
+    // It is the only job with a write token, and the build has none.
+    expect(pin).toContain("permissions:");
+    expect(pin).toContain("contents: write");
+    const build = job("build").slice(0, job("build").indexOf(`${LF}  pin:`));
+    expect(build, "the build job can write to the repository").not.toMatch(/contents: write/);
   });
 });

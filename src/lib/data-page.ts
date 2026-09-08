@@ -101,7 +101,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
         <li><b>Prose provenance</b> — anything in quotation marks carries the source it is quoting, and what is ours is declared ours: ${
     prose.with_provenance} sourced, ${prose.ours} ours, ${prose.declared_unsourced} standing on a dated reason.</li>
       </ul>
-      <p class="lede">A cookieless counter (Cloudflare Web Analytics) records page views, the page's address, where you came from and your country; nothing you answer, nothing that identifies you.</p>
+      <p class="lede">A cookieless counter (Cloudflare Web Analytics) records each page load: the page's address, where you came from, your country, and your browser and operating system versions; nothing you answer, nothing that identifies you, and nothing while you answer.</p>
       <p class="lede">Every source is re-read daily${
     lastWatchRun() ? ` — last run <b><time datetime="${escAttr(lastWatchRun())}">${esc(lastWatchRun())}</time></b>` : ""
   }. A source that has moved files an issue in the tracker and a person reads it: the values on this site, and the dates beside them, change when a person changes them, never on their own.</p>

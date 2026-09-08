@@ -40,6 +40,11 @@
   --text-value: 600 .8rem var(--font-mono);
   --text-source: 400 .76rem var(--font-mono);       /* quote in italic, date in --color-met */
   --tracking-label: .18em;
+  /* The site header's row is tighter than a label elsewhere: at .18em the six
+     nav items needed 94% of the narrowest page on a machine without our fonts,
+     and the row wrapped (CI, ubuntu, 2026-09-08). A rung of its own rather than
+     a number in the stylesheet. */
+  --tracking-nav: .12em;
 
   /* ---- The line language ---- */
   --rule-heavy: 3px double var(--color-ink);        /* section boundaries (masthead, footer) */
@@ -49,6 +54,9 @@
 
   /* ---- Space ---- */
   --space-1: .25rem; --space-2: .5rem; --space-3: .85rem;
+  /* Between 1 and 2: the gap the header's nav row needs to hold six items on a
+     narrow page with fonts we do not have (2026-09-08). */
+  --space-nav: .3rem;
   --space-4: 1.3rem; --space-5: 1.6rem; --space-6: 2.8rem;
   --gap-cards: .85rem;
   --pad-card: 1rem 1.3rem 1.05rem;

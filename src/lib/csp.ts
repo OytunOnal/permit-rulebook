@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { escAttr } from "./reason.js";
 import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "./site.js";
 
 /**
@@ -26,6 +27,12 @@ export const sha256 = (source: string): string =>
   `'sha256-${createHash("sha256").update(source, "utf8").digest("base64")}'`;
 
 export function contentSecurityPolicy(inlineScripts: string[] = []): string {
+  // `astro dev` injects inline scripts of its own (hot reload, the toolbar),
+  // which this policy blocks — and hashing a dev server's changing script would
+  // be hashing nothing. The policy ships with the BUILD, and the built site is
+  // where it is proven: `npm run smoke` and the CSP cases both walk `dist`
+  // (2026-09-08).
+  if (import.meta.env?.DEV) return "";
   const scripts = ["'self'", ANALYTICS_SCRIPT, ...inlineScripts.map(sha256)];
   const policy = [
     "default-src 'self'",
@@ -39,5 +46,5 @@ export function contentSecurityPolicy(inlineScripts: string[] = []): string {
     // Nothing on this site submits anything anywhere.
     "form-action 'none'",
   ].join("; ");
-  return `<meta http-equiv="Content-Security-Policy" content="${policy}">`;
+  return `<meta http-equiv="Content-Security-Policy" content="${escAttr(policy)}">`;
 }

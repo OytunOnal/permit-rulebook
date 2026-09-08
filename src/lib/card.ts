@@ -5,7 +5,7 @@ import {
   type Band, type Criterion, type Dataset, type Profile, type Route, type RouteResult,
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
-import { esc } from "./reason.js";
+import { esc, escAttr } from "./reason.js";
 // One frame for every quote the product shows (2026-09-08).
 import { quoteFrame } from "./quote.js";
 
@@ -90,7 +90,7 @@ export function precondHtml(route: Route): string {
  */
 function proseBlock(cls: string, heading: string, items: string[], join = " "): string {
   if (!items.length) return "";
-  return `<div class="${cls}"><b>${heading}</b> ${items.join(join)}</div>`;
+  return `<div class="${escAttr(cls)}"><b>${heading}</b> ${items.join(join)}</div>`;
 }
 
 /**
@@ -308,7 +308,7 @@ export function provenanceHtml(ds: Dataset, r: RouteResult): string {
         ? ` · <b class="applies">applies to you</b>`
         : ` · <span class="applies-not">does not apply to you</span>`;
     return `<div class="src${contested && amount !== undefined && applied === false ? " unapplied" : ""}"><i${
-      lang ? ` lang="${lang}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
+      lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
       value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b>${
       note ? `<span class="note">${esc(note)}</span>` : ""}</div>`;

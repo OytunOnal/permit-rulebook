@@ -36,15 +36,38 @@ function builtPages(): { path: string; html: string }[] {
 describe("every page states what may run on it", () => {
   const pages = builtPages();
 
+  /**
+   * The policy as SHIPPED. It is read off a built page rather than recomputed
+   * here: the builder returns nothing under `astro dev`, whose own injected
+   * scripts it would block, and a test process is a dev environment
+   * (2026-09-08).
+   */
+  const shipped = (): string => {
+    const home = pages.find((p) => p.path === "/index.html");
+    expect(home, "nothing is built — run npm run build").toBeDefined();
+    const found = /<meta http-equiv="Content-Security-Policy" content="([^"]*)">/.exec(home!.html);
+    expect(found, "the built home page carries no policy").toBeTruthy();
+    // What the BROWSER sees: the attribute is escaped on the way out, and
+    // entities are decoded on the way in.
+    return found![1]!
+      .split("&#39;").join("'")
+      .split("&quot;").join(String.fromCharCode(34))
+      .split("&amp;").join("&");
+  };
+
   it("carries the policy, and the same one everywhere", () => {
     expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
-    const expected = contentSecurityPolicy([MENU_SCRIPT]);
+    // Compared as SHIPPED — the escaped attribute, byte for byte — so a page
+    // that ships a different policy fails whatever the entities look like.
+    const home = pages.find((p) => p.path === "/index.html")!;
+    const asShipped = /<meta http-equiv="Content-Security-Policy" content="[^"]*">/.exec(home.html)![0];
     for (const page of pages)
-      expect(page.html, `${page.path} has no policy`).toContain(expected);
+      expect(page.html, `${page.path} has no policy`).toContain(asShipped);
   });
 
   it("names the counter's two hosts and nothing else off this site", () => {
-    const policy = contentSecurityPolicy([MENU_SCRIPT]);
+    expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
+    const policy = shipped();
     expect(policy).toContain(`script-src 'self' ${ANALYTICS_SCRIPT}`);
     expect(policy).toContain(`connect-src 'self' ${new URL(ANALYTICS_BEACON).origin}`);
     expect(policy).toContain("default-src 'self'");
@@ -57,7 +80,8 @@ describe("every page states what may run on it", () => {
   });
 
   it("hashes every inline script a page actually ships", () => {
-    const policy = contentSecurityPolicy([MENU_SCRIPT]);
+    expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
+    const policy = shipped();
     for (const page of pages) {
       const inline = [...page.html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)]
         .map((m) => m[1]!);
@@ -67,6 +91,7 @@ describe("every page states what may run on it", () => {
   });
 
   it("and every script it loads from elsewhere is the counter", () => {
+    expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
     for (const page of pages)
       for (const src of [...page.html.matchAll(/<script[^>]*\ssrc="([^"]*)"/g)].map((m) => m[1]!))
         if (src.startsWith("http"))

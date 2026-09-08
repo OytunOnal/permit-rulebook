@@ -22,12 +22,16 @@ import { footerFacts, navCountries } from "../lib/country-page.js";
 // The product's own words, in one place: the name, the tagline and the
 // disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
 import { PRODUCT_NAME, PROMISE, TAGLINE } from "../lib/copy.js";
-import { SOCIAL_CARD_PATH, absolute, analyticsBeacon } from "../lib/site.js";
+import { analyticsBeacon, headMeta } from "../lib/site.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
 const dataset = assertValidDataset(rawDataset);
 const meta = datasetMeta(dataset);
 const intro = mastheadFor({ kind: "question", started: false });
+/** What a search result says about the interview. */
+const INTRO_DESCRIPTION =
+  "Which European work-permit routes fit? A check against dated, source-quoted "
+  + "official rules. Your answers never leave this device.";
 console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundary", ...meta }));
 ---
 <!doctype html>
@@ -36,22 +40,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <Fragment set:html={contentSecurityPolicy([MENU_SCRIPT])} />
-  <meta name="description" content="Which European work-permit routes fit? A check against dated, source-quoted official rules. Your answers never leave this device." />
   <title>{PRODUCT_NAME} — which work-permit routes fit?</title>
-  <link rel="canonical" href={absolute("/")} />
   <Fragment set:html={iconLinks()} />
-  <meta property="og:site_name" content={PRODUCT_NAME} />
-  <meta property="og:title" content={`${PRODUCT_NAME} — ${TAGLINE.toLowerCase().replace(/\.$/, "")}`} />
-  <meta property="og:description" content={PROMISE} />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content={absolute("/")} />
-  <meta property="og:image" content={absolute(SOCIAL_CARD_PATH)} />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={`${PRODUCT_NAME} — ${TAGLINE.toLowerCase().replace(/\.$/, "")}`} />
-  <meta name="twitter:description" content={PROMISE} />
-  <meta name="twitter:image" content={absolute(SOCIAL_CARD_PATH)} />
+  <Fragment set:html={headMeta({
+    title: `${PRODUCT_NAME} — ${TAGLINE.toLowerCase().replace(/\.$/, "")}`,
+    description: INTRO_DESCRIPTION,
+    path: "/",
+    kind: "website",
+    preview: PROMISE,
+  })} />
 </head>
 <body>
   <div class="wrap">
@@ -460,8 +457,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
               (active ? `. ${active.label} highlighted — press Enter to record it` : "");
           list.innerHTML = shown.map((o, i) => {
             const chosen = answers[q.field] === o.value;
-            return `<button class="copt${i === box.active ? " on" : ""}${chosen ? " sel" : ""}" role="option" id="${rowId(i)}"
-              aria-selected="${i === box.active}" data-value="${escAttr(o.value)}"><span>${esc(o.label)}${
+            return `<button class="copt${i === box.active ? " on" : ""}${chosen ? " sel" : ""}" role="option" id="${escAttr(rowId(i))}"
+              aria-selected="${escAttr(String(i === box.active))}" data-value="${escAttr(o.value)}"><span>${esc(o.label)}${
               chosen ? ` <span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
               classed ? `<span class="cls">${esc(classHint(q.field, o))}</span>` : ""}</button>`;
           }).join("") +

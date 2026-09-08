@@ -208,8 +208,11 @@ export function countryPages(dataset: Dataset): CountryPage[] {
  * itself must not: `identity.ts` knows markup, not data.
  */
 export function footerFacts(dataset: Dataset): FooterFacts {
+  // Once: it walks every route's provenance, and the year comes from the same
+  // answer rather than a second walk (Standards review, 2026-09-08).
+  const read = readRange(dataset);
   return {
-    read: readRange(dataset),
+    read,
     // The version is a date, and this product spells a date one way
     // (decision 12): "2026.09.07" beside a read date is a second date format on
     // the same line, which is the thing that rule exists to prevent.
@@ -227,6 +230,6 @@ export function footerFacts(dataset: Dataset): FooterFacts {
     // clock: a page built today about values read today says the same year
     // twice, and a page rebuilt in January must not claim a year the data has
     // not reached.
-    year: readRange(dataset).newest.slice(0, 4),
+    year: read.newest.slice(0, 4),
   };
 }

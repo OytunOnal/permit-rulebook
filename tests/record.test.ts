@@ -152,6 +152,23 @@ interface Sent { url: string; method: string; postData: string; hasPostData: boo
 /** The two addresses outside this site that a page may talk to, and no others. */
 const BEACON_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
 const BEACON_ENDPOINT = "https://cloudflareinsights.com/cdn-cgi/rum";
+
+/**
+ * Every field the counter's report is allowed to carry, measured off the wire
+ * on 2026-09-08. It is an allow-list on purpose: a field Cloudflare adds later
+ * fails here, and a person decides whether it may be sent (Security review).
+ *
+ * What each is: when the page loaded and an id for that load (`startTime`,
+ * `pageloadId`, `st`, `eventType`, `nt`), the address (`location`), the
+ * beacon's own version (`versions`), the browser engine and its version plus
+ * the OS version (`bi`), the site's public id (`siteToken`), paint and
+ * navigation timings (`firstPaint`, `firstContentfulPaint`, `timingsV2`) and
+ * the tab's JS heap figures (`memory`). None of it is an answer.
+ */
+const BEACON_FIELDS = [
+  "startTime", "pageloadId", "eventType", "nt", "location", "versions", "bi",
+  "siteToken", "st", "memory", "firstPaint", "firstContentfulPaint", "timingsV2",
+];
 interface BrowserPage {
   goto(url: string, settleMs?: number): Promise<void>;
   evaluate(expression: string): Promise<string>;
@@ -235,14 +252,24 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
             // the address.
             expect(["POST", "OPTIONS"], `${where}: ${request.method} to the beacon`).toContain(request.method);
             expect(request.url, `${where}: a query string on the beacon`).toBe(BEACON_ENDPOINT);
-            // What it actually sends, read off the wire. The page's own address
-            // is the one place a route id may legitimately appear.
-            const body = String(request.postData ?? "").replace(/"location":"[^"]*"/g, '"location":""');
+            if (request.method === "OPTIONS") continue;
+            // What it actually sends, read off the wire.
+            const raw = String(request.postData ?? "");
+            expect(raw, `${where}: a report with no body`).not.toBe("");
+            // Only the page's own origin and path are masked. The query string
+            // is NOT: a route id there is the page's own address and allowed,
+            // an answer there would be a leak (Security review, 2026-09-08).
+            const body = raw.replace(/"location":"([^"?]*)([^"]*)"/g, (_m, _p, query) => `"location":"${query}"`);
             for (const answer of seen.declared)
               expect(token(answer).test(body.toLowerCase()), `${where}: ${answer} reached the beacon`).toBe(false);
             for (const route of seen.routes)
               expect(body.toLowerCase().includes(route.toLowerCase()), `${where}: ${route} reached the beacon`)
                 .toBe(false);
+            // And every field it carries is one a person has looked at.
+            const fields = Object.keys(JSON.parse(raw) as Record<string, unknown>);
+            for (const field of fields)
+              expect(BEACON_FIELDS, `${where}: the counter sent a field nobody has reviewed: ${field}`)
+                .toContain(field);
             continue;
           }
           // Same origin: no third-party host, ever.
@@ -262,6 +289,20 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
             expect(token.test(request.url.toLowerCase()), `${where}: ${answer} reached ${request.url}`).toBe(false);
           }
         }
+
+      // The counter was actually running: a blocked beacon would make every
+      // assertion above pass by having nothing to check (Security review).
+      const fetched = seen.walk.filter((r) => r.url.startsWith(BEACON_SCRIPT));
+      const reports = [...seen.walk, ...seen.afterEdit]
+        .filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");
+      expect(fetched.length, "the counter's script was never fetched").toBeGreaterThan(0);
+      expect(reports.length, "the counter sent no report at all").toBeGreaterThan(0);
+      // One report per page LOAD, not per answered question. Cloudflare's
+      // single-page tracking follows every pushState, and this interview pushes
+      // one per answer: seven answers sent thirteen reports until `spa: false`
+      // (Security review, 2026-09-08).
+      expect(reports.length, `${seen.declared.length} answers produced ${reports.length} reports`)
+        .toBeLessThanOrEqual(2);
 
       // The edit repainted the screen without asking THIS SITE anything: the
       // counter reports a view when the history entry changes, which is the
@@ -307,3 +348,66 @@ describe("the rename does not cost anybody their answers", () => {
     expect(loadRecord(store, known)).toEqual({ answers: {}, history: [] });
   });
 });
+
+/**
+ * The other way in: a route page's call to action lands here with the route in
+ * the query string. That id is the page's own address and the counter may carry
+ * it — an ANSWER in that query string would be a different matter (Security
+ * review, 2026-09-08).
+ */
+describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arriving cold", () => {
+  it("a walk that starts at /?route=… still sends only the counter's own report", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage) => {
+        await page.goto(server.url("/"), 600);
+        await page.evaluate('localStorage.removeItem("permit-rulebook.record.v1")');
+        await page.goto(`${server.url("/")}?route=de-blue-card-general`, 1400);
+        for (let step = 0; step < 4; step++) {
+          await page.evaluate(ANSWER_ONE);
+          await new Promise((r) => setTimeout(r, 300));
+        }
+        await new Promise((r) => setTimeout(r, 1500));
+        const declared = await page.evaluate(
+          'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
+        );
+        return { sent: page.requests(), declared: JSON.parse(declared) as string[] };
+      }, { viewport: { width: 390, height: 844 }, mobile: true, network: true }) as {
+        sent: Sent[]; declared: string[];
+      };
+
+      const origin = server.origin as string;
+      const reports = seen.sent.filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");
+      expect(seen.declared.length, "the pre-scoped walk answered nothing").toBeGreaterThan(3);
+      expect(reports.length, `${reports.length} reports for one page load`).toBeLessThanOrEqual(2);
+
+      for (const request of seen.sent) {
+        if (request.url.startsWith(BEACON_SCRIPT)) continue;
+        if (request.url.startsWith(BEACON_ENDPOINT)) {
+          if (request.method === "OPTIONS") continue;
+          const raw = String(request.postData ?? "");
+          // Origin and path masked; the query string left in to be checked.
+          const body = raw.replace(/"location":"([^"?]*)([^"]*)"/g, (_m, _p, query) => `"location":"${query}"`);
+          // Measured, not assumed: the counter reports the path only — the
+          // query string the reader arrived with never reaches it, so the route
+          // id does not either, though it would have been allowed as the page's
+          // own address (Security review, 2026-09-08).
+          expect(raw).not.toContain("route=de-blue-card-general");
+          expect(raw, "the report carries no address at all").toContain('"location"');
+          // No answer, anywhere in it — query string included.
+          for (const answer of seen.declared) {
+            const token = new RegExp(`(^|[^a-z0-9])${
+              answer.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
+            expect(token.test(body.toLowerCase()), `${answer} reached the beacon`).toBe(false);
+          }
+          continue;
+        }
+        expect(request.url.startsWith(origin), `a request left this origin — ${request.url}`).toBe(true);
+        expect(request.method, `${request.method} ${request.url}`).toBe("GET");
+      }
+    } finally {
+      server.close();
+    }
+  }, 180000);
+});
+

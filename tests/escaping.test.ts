@@ -37,6 +37,13 @@ function emitters(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+/** `="${…}` or `='${…}` — the interpolation, and the helper it opens with. */
+const ATTRIBUTE_INTERPOLATION = new RegExp(
+  "=([" + String.fromCharCode(34) + String.fromCharCode(39) + "])\\u0024\\{[\\s]*([A-Za-z_\\u0024][\\w\\u0024]*)?", "gs");
+
+/** The two that escape for an attribute. Anything else is a finding. */
+const SAFE_HELPERS = ["escAttr", "escXml"];
+
 describe("nothing reaches an attribute unescaped", () => {
   it("every interpolated attribute value goes through escAttr, in every file that emits markup", () => {
     const offenders: string[] = [];
@@ -44,8 +51,14 @@ describe("nothing reaches an attribute unescaped", () => {
       const text = read(file);
       // An interpolation that opens immediately after `="` is an attribute
       // value; `esc` there is the defect this case exists for.
-      for (const line of text.split("\n"))
-        if (/="\$\{\s*esc\(/.test(line)) offenders.push(`${file.slice(src.length)}: ${line.trim().slice(0, 100)}`);
+      // The whole file, not line by line: a template wraps, and the helper
+      // often sits on the line after the `${` that opens the attribute.
+      for (const opened of text.matchAll(ATTRIBUTE_INTERPOLATION)) {
+        if (SAFE_HELPERS.includes(opened[2] ?? "")) continue;
+        const at = text.slice(0, opened.index).split(String.fromCharCode(10)).length;
+        offenders.push(`${file.slice(src.length)}:${at}: ${
+          text.slice(opened.index, opened.index + 60).split(String.fromCharCode(10)).join(" ")}`);
+      }
     }
     expect(offenders).toEqual([]);
   });
