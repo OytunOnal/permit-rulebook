@@ -2516,3 +2516,18 @@ failed silently, on the one sentence that tells a returning reader what just
 happened. Fixed with a test that renders the line for every re-askable field
 and accepts only declared labels. Lesson kept: a sentence assembled from
 fields is a surface a test must read as prose, not as a template.
+
+**Addendum, 2026-09-08 — the critique-2 round's review applied and shipped**
+(site `4a60ce9`, data `c6d5be3`). The arrival line reads forward — the
+answers kept and the number of questions the new country still asks —
+derived from the same plan the screen is drawn from, and prints nothing when
+nothing changed; the "it work" fragment was a lower-cased ledger label. A
+history entry now carries a declared reason (`re-read-unchanged` ·
+`value-changed` · `source-moved` · `quote-corrected`) and a `checked_at`
+date, the schema rejects prose in its place, entries older than the rule are
+exempt by date. The data repository's tests are typechecked in `npm run
+check` — the gate found nine stale signatures on its first run, two of them
+the very family the revert left behind. One live region, filled after each
+render. The README screenshot shows an Indian passport rather than a
+Turkish one because the Türkiye notice took the top third of the frame —
+the builder's call, kept. 426 + 274 tests.

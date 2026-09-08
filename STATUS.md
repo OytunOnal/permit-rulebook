@@ -35,24 +35,17 @@ site now carries everything since the navigation round:** the shared footer,
 the amended disclaimer, the counter (one view per page load), the meta CSP,
 the watch's last run, and the re-read date 2026-09-08 on the German Blue
 Card page — **the whole loop, source → history line → commit → rebuild →
-live page, has now run once for real.** **The critique-2 round is pushed and deploying** (site `c97181a`, data
-`de9094e`): half-open band labels (no amount in two bands, the union ladder
-and its fine gaps kept), a pre-scoped arrival that re-scopes a saved record
-and marks the route, one upward unlock step per numeric field, the
-separator before the language note, headings and a status line on the
-results, every results control at the tap floor, the translation policy on
-/data. Deploy 34263141644 is green; read on the live site: the band labels are
-half-open (B1 cleared), the unknown-heavy walk shows two steps and no ladder
-rungs (B3 cleared), and a French arrival over a German record re-scopes and
-re-asks (B2) — but its sentence is broken ("we ask again about it work", a
-failed substitution); the two reviews returned (Standards: the history note was a
-content gate — now a declared reason; per-country remnants; Spec: the
-arrival line named the dropped answers instead of the questions that follow;
-the data README's screenshot not retaken; the status region not announced)
-— one more builder round is running on all of it; then push, deploy, live
-re-read, and v1 waits only on the checklist below.
+live page, has now run once for real.** **The critique-2 round and its review are shipped** (site `4a60ce9`, data
+`c6d5be3`): half-open band labels on the union ladder, a pre-scoped arrival
+that re-scopes a saved record and says what is kept and what the new country
+still asks, one upward unlock step per numeric field, the separator before
+the language note, headings and one live region on the results, every
+results control at the tap floor, the translation policy on /data, history
+entries with a declared reason, the data repository's tests typechecked.
+Deploying; then I read the arrival sentence on the live site; then v1 waits
+only on the checklist below.
 
-Numbers: 427 tests in the data repository, 270 in the site; 122 quotes
+Numbers: 426 tests in the data repository, 274 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
 at 390 px; critique 32/45 on RUBRIC 1.2 (v0.7: 27/45).
 
