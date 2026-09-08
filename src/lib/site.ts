@@ -1,3 +1,6 @@
+import { routeProvenance, type Dataset } from "permit-rulebook-data";
+import { escAttr } from "./reason.js";
+import { PRODUCT_NAME, TAGLINE } from "./copy.js";
 /**
  * Where this build believes it lives, and where the data behind it lives.
  *
@@ -69,6 +72,49 @@ export const TRACKER_URL = `${REPO_DATA}/issues/new/choose`;
  */
 export const EXCLUSIONS_URL = `${REPO_DATA}/blob/master/data/exclusions.md`;
 
+/**
+ * The issue form for a route or a country we do not hold yet — the tracker's
+ * own `new-need` template, so the reader lands on the questions rather than on
+ * a blank box.
+ */
+export const NEW_NEED_URL = `${REPO_DATA}/issues/new?template=new-need.yml`;
+
+/**
+ * Sponsorship. The page GitHub serves at this address until Sponsors is
+ * switched on for the account is GitHub's own "not accepting sponsorships"
+ * page, which is the truth of it; the human turns it on (2026-09-08).
+ */
+export const SPONSOR_URL = "https://github.com/sponsors/OytunOnal";
+
+/**
+ * The traffic counter's site id.
+ *
+ * Cloudflare Web Analytics is cookieless and stores nothing about a visitor: it
+ * records the page view, the address, the referrer and the country, and nothing
+ * a reader answered here — the interview never sends an answer anywhere, and
+ * this does not change that (human decision, 2026-09-08). The token is a public
+ * site id that identifies the site to Cloudflare, not a secret: it ships inside
+ * the page, as Cloudflare's own snippet does.
+ */
+export const ANALYTICS_TOKEN = "50d203a6cbed4e3a84ba3629843d6ac9";
+
+/** Where the beacon comes from, named once so a test can allow exactly it. */
+export const ANALYTICS_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
+
+/** Where the beacon reports to — the one other address this site talks to. */
+export const ANALYTICS_BEACON = "https://cloudflareinsights.com/cdn-cgi/rum";
+
+/**
+ * The counter, exactly as Cloudflare issued it. One source, every page: a page
+ * that quietly stopped counting would be a number nobody could trust.
+ */
+export const analyticsBeacon = (): string =>
+  `<script type="module" src="${escAttr(ANALYTICS_SCRIPT)}" data-cf-beacon='{"token": "${
+    ANALYTICS_TOKEN}"}'></script>`;
+
+/** Whose copyright the footer states. The LICENSE file's own holder. */
+export const OWNER = "Oytun Onal";
+
 /** The dataset licence, linked rather than stated as unlinked text (the mock's
  * P4: a door with no handle). */
 export const DATA_LICENCE_URL = `${REPO_DATA}/blob/master/data/LICENSE`;
@@ -80,3 +126,56 @@ export const DATA_LICENCE_FULL = "Creative Commons Attribution 4.0 (CC BY 4.0)";
 
 /** The social card, rendered at 1200×630 and committed under `public/`. */
 export const SOCIAL_CARD_PATH = "/social-card.png";
+
+/**
+ * The head a page shares with every other page: the description a search
+ * result reads, the canonical address, and the card a link preview draws.
+ *
+ * It was written out three times — the route page, the country page, the data
+ * page — with the same eleven tags and three chances to drift (Standards
+ * review, 2026-09-08). The title and the description are the page's own; the
+ * rest is the product's, and the product says it once.
+ */
+export function headMeta(o: {
+  title: string;
+  description: string;
+  path: string;
+  /** `article` for a route page, `website` for an index. */
+  kind?: "article" | "website";
+}): string {
+  const preview = `${TAGLINE} ${o.description}`;
+  return [
+    `<meta name="description" content="${escAttr(o.description)}">`,
+    `<link rel="canonical" href="${escAttr(absolute(o.path))}">`,
+    `<meta property="og:site_name" content="${escAttr(PRODUCT_NAME)}">`,
+    `<meta property="og:title" content="${escAttr(o.title)}">`,
+    `<meta property="og:description" content="${escAttr(preview)}">`,
+    `<meta property="og:type" content="${escAttr(o.kind ?? "website")}">`,
+    `<meta property="og:url" content="${escAttr(absolute(o.path))}">`,
+    `<meta property="og:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">`,
+    `<meta property="og:image:width" content="1200">`,
+    `<meta property="og:image:height" content="630">`,
+    `<meta name="twitter:card" content="summary_large_image">`,
+    `<meta name="twitter:title" content="${escAttr(o.title)}">`,
+    `<meta name="twitter:description" content="${escAttr(preview)}">`,
+    `<meta name="twitter:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">`,
+    analyticsBeacon(),
+  ].join(String.fromCharCode(10));
+}
+
+/**
+ * The span of days the values on this site were read on.
+ *
+ * The footer says the range rather than the newest date alone: "read
+ * 2026-09-08" is the flattering end of a set that starts earlier, and a reader
+ * deciding whether to trust a number deserves both ends of it (footer critique,
+ * 2026-09-08).
+ */
+export function readRange(dataset: Dataset): { oldest: string; newest: string } {
+  const days: string[] = [];
+  for (const country of dataset.countries)
+    for (const route of country.routes)
+      for (const entry of routeProvenance(route)) days.push(entry.value.retrieved_at);
+  days.sort();
+  return { oldest: days[0] ?? "", newest: days[days.length - 1] ?? "" };
+}

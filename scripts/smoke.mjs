@@ -90,7 +90,7 @@ export const CHECKS = [
       const problems = [];
       // The header is the site's own orientation: four countries, the checker
       // and the data page, on every page (site map, 2026-09-08).
-      for (const label of ["Germany", "France", "Spain", "Netherlands", "Checker", "The data"])
+      for (const label of ["Germany", "France", "Spain", "Netherlands", "Check yours", "The data"])
         if (!v.nav.includes(label)) problems.push(`the header does not offer ${label}`);
       if (v.here !== "Germany") problems.push(`the header marks "${v.here}", not the country you are on`);
       if (v.cards < 8) problems.push(`only ${v.cards} route cards rendered`);

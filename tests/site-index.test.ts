@@ -159,8 +159,11 @@ describe("B2 — the site can be crawled and browsed", () => {
       expect(footer, `the footer does not link ${link.path}`).toContain(`href="${url(link.path)}"`);
     // And every country link in it is one the build actually emitted.
     const built_countries = new Set(countryLinks(ds).map((l) => url(l.path)));
+    // The footer also carries the data page and the checker; a one-segment
+    // path that is neither of those has to be a country page the build made.
+    const elsewhere = new Set([url("/"), url("/data")]);
     for (const href of [...footer.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!))
-      if (/^[/][a-z-]+[/]?$/.test(href.replace(/[/]$/, "/")) && href !== url("/"))
+      if (/^[/][a-z-]+[/]?$/.test(href) && !elsewhere.has(href) && !href.includes("?"))
         expect(built_countries.has(href), `the footer links ${href}, which is no country page`).toBe(true);
   });
 
@@ -195,7 +198,7 @@ describe("B2 — the site can be crawled and browsed", () => {
     }
   });
 
-  it("a country page is the crumbs, the heading, its routes with their gists, and the way on", () => {
+  it("a country page is the heading, its routes with their gists and figures, and the way on", () => {
     expect(countries.length).toBe(ds.countries.length);
     for (const address of countryAddresses(ds)) {
       const country = address.country;

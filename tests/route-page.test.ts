@@ -128,12 +128,13 @@ describe("s6 — one page per route, generated from the dataset", () => {
     const near = [...PAGE_CSS.matchAll(/([^;{}\n]*var\(--color-near\)[^;{}\n]*)/g)].map((m) => m[1].trim());
     // One declaration each, in the token block's own definitions plus the one
     // place the page uses it.
-    // Three uses now, and all three are a read date: the quote's own date on a
-    // route page, the date on a country-index card, and the date beside a
-    // route's JSON on the data page (2026-09-08). The colour still says
-    // "when this was read" and never "how you did".
+    // Four uses now, and every one of them is a read date: the quote's own
+    // date on a route page, the date on a country-index card, the date beside a
+    // route's JSON on the data page, and the span in the shared footer
+    // (2026-09-08). The colour still says "when this was read" and never "how
+    // you did".
     expect(met.filter((d) => !d.startsWith("--color-met")))
-      .toEqual(["color: var(--color-met)", "color: var(--color-met)", "color: var(--color-met)"]);
+      .toEqual(Array(4).fill("color: var(--color-met)"));
     expect(near.filter((d) => !d.startsWith("--color-near"))).toEqual(["color: var(--color-near)"]);
     // And they belong to the read-date emphasis and the hero accent.
     expect(PAGE_CSS).toContain(".src b { color: var(--color-met);");
@@ -226,7 +227,12 @@ describe("s6 — one page per route, generated from the dataset", () => {
     for (const address of routeAddresses(ds)) {
       const page = routePage(ds, address);
       expect(page.readDate, page.path).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      const onPage = [...page.html.matchAll(/datetime="(\d{4}-\d{2}-\d{2})"/g)].map((m) => m[1]);
+      // The page's own content. The shared footer states a fact about the
+      // whole dataset — the span every value was read over — which is later
+      // than this route's own reading and is not a claim about this route
+      // (footer, 2026-09-08).
+      const body = page.html.slice(0, page.html.indexOf('<footer class="site-foot">'));
+      const onPage = [...body.matchAll(/datetime="(\d{4}-\d{2}-\d{2})"/g)].map((m) => m[1]);
       expect(onPage, page.path).toContain(page.readDate);
       // Nothing on the page was read later than the stamp claims.
       for (const d of onPage) expect(d <= page.readDate, `${page.path}: ${d}`).toBe(true);
@@ -279,7 +285,7 @@ describe("s6 — one page per route, generated from the dataset", () => {
     for (const page of pages) {
       const text = textOf(page.html);
       expect(text, page.path).toContain(
-        "Permit Rulebook makes no immigration decision and authorities won't consider these results",
+        "Permit Rulebook makes no immigration decision and no authority is bound by these results",
       );
       expect(text, page.path).toContain("This page describes the rules; it does not decide on you.");
     }
@@ -490,10 +496,13 @@ describe("s6 — one page per route, generated from the dataset", () => {
   it("prints the dataset version as a date and the schema version as a version", () => {
     expect(datasetDay("2026.09.07")).toBe("2026-09-07");
     expect(datasetDay("0.5.0")).toBe("0.5.0");
+    // Every page states the dataset's version in the shared footer, in the
+    // version's own form; the schema version moved to the data page, where a
+    // reader who wants it is standing (human, 2026-09-08).
     for (const page of pages) {
       const text = textOf(page.html);
       expect(text, page.path).toContain(`dataset ${datasetDay(ds.dataset_version)}`);
-      expect(text, page.path).toContain(`schema ${ds.schema_version}`);
+      expect(text, page.path).not.toContain(`schema ${ds.schema_version}`);
     }
   });
 

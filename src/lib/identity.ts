@@ -17,41 +17,18 @@ import { url } from "./site.js";
  * still takes its geometry and its letters from here.
  */
 
-/** A step in the trail: a link, or the page you are already on. */
-export interface Crumb {
-  label: string;
-  /** Absent on the last crumb — you do not link to where you stand. */
-  path?: string;
-}
-
 /** The icon links, identical in every document's head. */
 export function iconLinks(): string {
   return [
     `<link rel="icon" href="${escAttr(url("/favicon.ico"))}" sizes="16x16 32x32 64x64">`,
     `<link rel="icon" href="${escAttr(url("/favicon.svg"))}" type="image/svg+xml">`,
     `<link rel="apple-touch-icon" href="${escAttr(url("/favicon-64.png"))}">`,
-  ].join("\n");
+  ].join(String.fromCharCode(10));
 }
 
 /** The seal, before the wordmark or on its own. */
 export function seal(): string {
   return `<span class="seal" title="${escAttr(PRODUCT_NAME)}" aria-hidden="true">${SEAL_LETTERS}</span>`;
-}
-
-/**
- * The trail, with the product's own name first. Every page that carries crumbs
- * starts at the interview, so that step is added here rather than repeated at
- * four call sites.
- */
-export function crumbs(trail: Crumb[] = [], tapClass = "tap-min"): string {
-  const steps = [{ label: PRODUCT_NAME, path: "/", lead: true }, ...trail.map((c) => ({ ...c, lead: false }))];
-  const html = steps.map((step) => {
-    const inner = `${step.lead ? seal() : ""}${esc(step.label)}`;
-    return step.path
-      ? `<a class="${escAttr(tapClass)}" href="${escAttr(url(step.path))}">${inner}</a>`
-      : `<span>${inner}</span>`;
-  }).join("");
-  return `<nav class="crumbs label" aria-label="Where you are">\n        ${html}\n      </nav>`;
 }
 
 /**
@@ -113,7 +90,7 @@ export interface NavLink {
 export function siteHeader(countries: NavLink[], place: HeaderPlace = {}): string {
   const item = (link: NavLink): string => {
     const marked = place.countryPath && link.path === place.countryPath && place.current
-      ? ` aria-current="${place.current}"`
+      ? ` aria-current="${escAttr(place.current)}"`
       : "";
     return `<a class="tap-min${link.action ? " check" : ""}" href="${escAttr(url(link.path))}"${
       marked}>${esc(link.label)}</a>`;
@@ -121,7 +98,10 @@ export function siteHeader(countries: NavLink[], place: HeaderPlace = {}): strin
   const links = [
     ...countries.map(item),
     '<span class="sep" aria-hidden="true"></span>',
-    item({ path: "/", label: "Checker", action: true }),
+    // One name for it, the human's own: the header says "Check yours" and so
+    // does the footer; the page's own button says which country (footer
+    // critique, 2026-09-08).
+    item({ path: "/", label: "Check yours", action: true }),
     item({ path: DATA_PATH, label: "The data" }),
   ].join("");
   return `<header class="site-head">
@@ -150,8 +130,113 @@ export const MENU_SCRIPT = `
       nav.classList.toggle("open", open);
       if (open) { const first = nav.querySelector("a"); if (first) first.focus(); }
     };
-    button.addEventListener("click", () => set(button.getAttribute("aria-expanded") !== "true"));
-    nav.addEventListener("keydown", (e) => { if (e.key === "Escape") { set(false); button.focus(); } });
-    nav.addEventListener("click", (e) => { if (e.target.closest("a")) set(false); });
+    const isOpen = () => button.getAttribute("aria-expanded") === "true";
+    button.addEventListener("click", () => set(!isOpen()));
+    // Escape works from anywhere while the menu is open, not only from inside
+    // it: a reader who has tabbed out, or never tabbed in, still has the way
+    // out every menu has (Standards review, 2026-09-08).
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || !isOpen()) return;
+      set(false);
+      button.focus();
+    });
+    // And a tap anywhere outside closes it, which is what a reader expects of
+    // something that opened over the page.
+    document.addEventListener("click", (e) => {
+      if (!isOpen()) return;
+      if (nav.contains(e.target)) { if (e.target.closest("a")) set(false); return; }
+      if (button.contains(e.target)) return;
+      set(false);
+    });
   })();
 `;
+
+/**
+ * The site footer: the same block under every page.
+ *
+ * Each page had grown its own — the interview three links, a route page a
+ * disclaimer and a health line, the country page three ends — so the way out
+ * of the product depended on which page you were standing on (site map,
+ * 2026-09-08). One footer, from the same source as the header.
+ *
+ * Its links look like links at rest: a resting underline, not the header's
+ * borderless row. The isolated critique of the mock called an underline-on-
+ * hover column "a list of words a mouse discovers", and a phone has no hover
+ * at all.
+ */
+export interface FooterPlace extends HeaderPlace {
+  /** The route's own JSON, on a route page only. */
+  jsonPath?: string;
+  /** Where "Check yours" starts, pre-scoped where a country is known. */
+  checkPath?: string;
+}
+
+export interface FooterFacts {
+  /** The span the values were read over, both ends. */
+  read: { oldest: string; newest: string };
+  datasetVersion: string;
+  disclaimer: string;
+  licenceUrl: string;
+  licenceName: string;
+  repository: string;
+  tracker: string;
+  newNeed: string;
+  sponsor: string;
+  owner: string;
+  year: string;
+}
+
+const out = (href: string, label: string): string =>
+  `<a class="out tap-min" href="${escAttr(href)}" target="_blank" rel="noopener">${esc(label)}</a>`;
+
+export function siteFooter(
+  countries: NavLink[], facts: FooterFacts, place: FooterPlace = {},
+): string {
+  const here = (link: NavLink): string => {
+    const marked = place.countryPath && link.path === place.countryPath && place.current
+      ? ` aria-current="${escAttr(place.current)}"`
+      : "";
+    return `<li><a class="tap-min" href="${escAttr(url(link.path))}"${marked}>${esc(link.label)}</a></li>`;
+  };
+  const data = [
+    `<li><a class="tap-min" href="${escAttr(url(DATA_PATH))}">The data \u2014 status, versions, downloads</a></li>`,
+    // Only where there is a route to serve: the other pages render the column
+    // without it rather than linking a file that is not theirs.
+    place.jsonPath ? `<li><a class="tap-min" href="${escAttr(url(place.jsonPath))}">This route as JSON</a></li>` : "",
+    `<li>${out(facts.repository, "The repository")}</li>`,
+    `<li>${out(facts.licenceUrl, `Licence \u00b7 ${facts.licenceName}`)}</li>`,
+  ].filter(Boolean).join("");
+
+  return `<footer class="site-foot">
+    <p class="disclaimer">${esc(facts.disclaimer)}</p>
+    <div class="cols">
+      <div class="col">
+        <h3>Countries</h3>
+        <ul>${countries.map(here).join("")}
+          <li class="act"><a class="tap-min" href="${
+    escAttr(url(place.checkPath ?? "/"))}">Check yours</a></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>The data</h3>
+        <ul>${data}</ul>
+      </div>
+      <div class="col">
+        <h3>Feedback</h3>
+        <ul>
+          <li>${out(facts.tracker, "Report a wrong value")}</li>
+          <li>${out(facts.newNeed, "Suggest a route or a country")}</li>
+          <li>${out(facts.sponsor, "Sponsor this work")}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="line">
+      <span><a class="mark tap-min" href="${escAttr(url("/"))}">${seal()}${esc(PRODUCT_NAME)}</a><span> · </span><span>code MIT</span><span> · </span><span>data ${
+    esc(facts.licenceName)}</span><span> · </span><span>© ${esc(facts.year)} ${esc(facts.owner)}</span></span>
+      <span>values read between <b><time datetime="${
+    escAttr(facts.read.oldest)}">${esc(facts.read.oldest)}</time></b> and <b><time datetime="${
+    escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b><span> · </span><span>re-read daily</span><span> · </span><span>dataset ${
+    esc(facts.datasetVersion)}</span></span>
+    </div>
+  </footer>`;
+}

@@ -61,7 +61,7 @@ flowchart LR
 
 - The four countries as a row; the current country marked on country and route
   pages.
-- "Checker" → the interview from the start; the page's own "Check yours —
+- "Check yours" → the interview from the start; the page's own "Check yours —
   <country>" button is the pre-scoped one.
 - "The data" → the on-site data page (today's /status, retitled): version,
   newest read date, downloads, the repository and the tracker — so the page

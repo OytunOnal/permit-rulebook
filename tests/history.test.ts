@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { emptyHistory, recordScreen, screenAt } from "../src/lib/screen.js";
+import { clampStep, emptyHistory, historyFor, recordScreen, screenAt } from "../src/lib/screen.js";
 
 /**
  * The phone's back gesture, on the human's walk of 2026-09-08.
@@ -18,6 +18,31 @@ import { emptyHistory, recordScreen, screenAt } from "../src/lib/screen.js";
  * counting. One entry per question screen now, and "← Back" is `history.back()`
  * itself, so the two gestures cannot land on different screens.
  */
+
+describe("a reloaded page rebuilds the entries the browser kept", () => {
+  it("one entry per answered question, then the one on screen", () => {
+    const h = historyFor(["destination", "situation", "qualification"], "citizenship");
+    expect(h.entries.map((e) => e.field))
+      .toEqual(["destination", "situation", "qualification", "citizenship"]);
+    // Standing on the last one, which is what the browser is showing.
+    expect(h.current).toBe(3);
+  });
+
+  it("a fresh interview rebuilds to the one screen it is showing", () => {
+    const h = historyFor([], "destination");
+    expect(h.entries).toEqual([{ field: "destination" }]);
+    expect(h.current).toBe(0);
+  });
+
+  it("a step the rebuilt list is shorter than lands on the nearest question", () => {
+    const h = historyFor(["destination", "situation"], "qualification");
+    // The browser kept an entry for a question the record no longer holds.
+    expect(clampStep(h, 7)).toBe(2);
+    expect(clampStep(h, -1)).toBe(0);
+    expect(clampStep(h, 1)).toBe(1);
+    expect(clampStep(emptyHistory(), 3)).toBe(0);
+  });
+});
 
 describe("one history entry per question", () => {
   it("advancing pushes, everything else replaces where it stands", () => {
@@ -192,6 +217,73 @@ describe.skipIf(skipped !== null)("back and forward walk the questions", () => {
       expect(seen.screenBack.after.step).toBe(seen.browserBack.after.step);
       // And it is a step, not a jump.
       expect(seen.screenBack.after.step).toBe(seen.screenBack.before.step - 1);
+    } finally {
+      server.close();
+    }
+  }, 180000);
+
+  /**
+   * The blocker the Spec review found: a mid-interview reload emptied the
+   * page's own list while the browser kept every entry it had pushed. `step`
+   * restarted at 0 with `history.length` still at 5, so browser Back found no
+   * screen to restore and did nothing, and the page's own Back fell through to
+   * the edit path — two gestures, two different nothings.
+   */
+  it("after a reload both Backs still land on the same previous question, and forward returns", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage) => {
+        const at = async () => JSON.parse(await page.evaluate(WHERE)) as
+          { question: string; length: number; step: number };
+        const walk = async (goBack: string) => {
+          await page.goto(server.url("/"), 900);
+          await page.evaluate('localStorage.removeItem("permit-rulebook.record.v1")');
+          await page.goto(server.url("/"), 900);
+          const questions: string[] = [(await at()).question];
+          for (let i = 0; i < 4; i++) {
+            await page.evaluate(ANSWER);
+            await new Promise((r) => setTimeout(r, 300));
+            questions.push((await at()).question);
+          }
+          const before = await at();
+          await page.evaluate("location.reload()");
+          await new Promise((r) => setTimeout(r, 1200));
+          const reloaded = await at();
+          await page.evaluate(goBack);
+          await new Promise((r) => setTimeout(r, 700));
+          const back = await at();
+          await page.evaluate("history.forward()");
+          await new Promise((r) => setTimeout(r, 700));
+          return { questions, before, reloaded, back, forward: await at() };
+        };
+        return {
+          browser: await walk("history.back()"),
+          screen: await walk('document.getElementById("back").click()'),
+        };
+      }, { viewport: { width: 390, height: 844 }, mobile: true }) as Record<"browser" | "screen", {
+        questions: string[];
+        before: { question: string; length: number; step: number };
+        reloaded: { question: string; length: number; step: number };
+        back: { question: string; step: number };
+        forward: { question: string; step: number };
+      }>;
+
+      for (const [how, walk] of Object.entries(seen)) {
+        // The reload changes nothing a reader can see, the entry included.
+        expect(walk.reloaded.question, `${how}: the reload lost the question`).toBe(walk.before.question);
+        expect(walk.reloaded.step, `${how}: the step restarted at ${walk.reloaded.step}`).toBe(walk.before.step);
+        expect(walk.reloaded.length, `${how}: the browser's own entries changed`).toBe(walk.before.length);
+        // And Back is a step to the previous question, not a dead gesture.
+        expect(walk.back.question, `${how}: Back did nothing after a reload`)
+          .toBe(walk.questions[walk.questions.length - 2]);
+        expect(walk.back.step).toBe(walk.before.step - 1);
+        // Forward returns to where the reader was standing.
+        expect(walk.forward.question, `${how}: forward did not return`).toBe(walk.before.question);
+        expect(walk.forward.step).toBe(walk.before.step);
+      }
+      // The two gestures agree, which is the whole point of the fix.
+      expect(seen.screen.back.question).toBe(seen.browser.back.question);
+      expect(seen.screen.back.step).toBe(seen.browser.back.step);
     } finally {
       server.close();
     }

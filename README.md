@@ -62,7 +62,7 @@ read, and the language it is written in. Each one carries its own door to the
 data: **this route as JSON**, at `/{country}/{route}.json`, beside the dataset
 and the tracker.
 
-Permit Rulebook makes no immigration decision and authorities won't consider
+Permit Rulebook makes no immigration decision and no authority is bound by
 these results — it compares published values with what you declare, nothing
 more.
 

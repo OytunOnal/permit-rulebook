@@ -1,20 +1,27 @@
-import { joinAnd, scopeLine, type Country, type Dataset, type Route } from "permit-rulebook-data";
+// A count reads as a word in a sentence — "Germany: eight routes." — and the
+// dataset package spells it, so the site and the data cannot disagree about
+// what eight is called (Standards review, 2026-09-08).
+import {
+  countedWords, joinAnd, scopeLine, type Country, type Dataset, type Route,
+} from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import {
   PAGE_CSS, audienceNotice, audienceSentence, gist, routeFigure, stampDate, withArticle,
 } from "./route-page.js";
 import {
-  DISCLAIMER, FRESHNESS_NOTE, PRODUCT_NAME, TAGLINE,
+  DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay,
 } from "./copy.js";
 import {
-  DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, SOCIAL_CARD_PATH, TRACKER_URL, absolute, url,
+  DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, NEW_NEED_URL, OWNER, REPO_DATA,
+  SPONSOR_URL, TRACKER_URL, headMeta, readRange, url,
 } from "./site.js";
 import { countryPath, countrySlug, routePath } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
 // already explained: a country page is a crawl landing page like any other
 // (Standards and Spec review, 2026-09-08).
 import {
-  DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteHeader, type NavLink,
+  MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader,
+  type FooterFacts, type NavLink,
 } from "./identity.js";
 import { type Glossary, glossSection } from "./gloss.js";
 
@@ -77,13 +84,6 @@ export function navCountries(dataset: Dataset): NavLink[] {
   return countryLinks(dataset).map(({ path, name }) => ({ path, label: name }));
 }
 
-/**
- * A count in a heading is read, not scanned: "Germany: eight routes." A number
- * large enough to be scanned stays a numeral.
- */
-const NUMBER_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
-const countWords = (n: number): string => (n < NUMBER_WORDS.length ? NUMBER_WORDS[n]! : String(n));
-
 export interface CountryPage {
   path: string;
   title: string;
@@ -143,21 +143,8 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-<meta name="description" content="${escAttr(desc)}">
-<link rel="canonical" href="${escAttr(absolute(path))}">
 ${iconLinks()}
-<meta property="og:site_name" content="${escAttr(PRODUCT_NAME)}">
-<meta property="og:title" content="${escAttr(title)}">
-<meta property="og:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
-<meta property="og:type" content="website">
-<meta property="og:url" content="${escAttr(absolute(path))}">
-<meta property="og:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${escAttr(title)}">
-<meta name="twitter:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
-<meta name="twitter:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">
+${headMeta({ title, description: desc, path, kind: "website" })}
 <style>${PAGE_CSS}</style>`;
 
   const body = `<div class="wrap">
@@ -166,7 +153,7 @@ ${iconLinks()}
 
   <div class="masthead-with-stamps">
     <div>
-      <h1>${esc(withArticle(country))}: ${esc(countWords(count))} routes. <em>${esc(TAGLINE)}</em></h1>
+      <h1>${esc(withArticle(country))}: ${esc(countedWords(count, "route"))}. <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">Every employment route ${esc(withArticle(country))} publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. ${
     esc(audienceSentence(country))} Routes that turn on an official's discretion are <a class="tap" href="${
     escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">listed with their reasons</a>, not here.</p>
@@ -194,15 +181,9 @@ ${iconLinks()}
     </div>
   </main>
 
-  <footer>
-    <p class="disclaimer">${esc(DISCLAIMER)} ${esc(FRESHNESS_NOTE)}</p>
-    <nav class="ends" aria-label="Beside this page">
-      <a class="tap" href="${escAttr(url(DATA_PATH))}">The data — versions, downloads, the daily check</a>
-      <a class="tap" href="${escAttr(TRACKER_URL)}" target="_blank" rel="noopener">Report a wrong value</a>
-      <a class="tap" href="${escAttr(DATA_LICENCE_URL)}" target="_blank" rel="noopener">Open data · ${
-    esc(DATA_LICENCE_NAME)}</a>
-    </nav>
-  </footer>
+  ${siteFooter(navCountries(dataset), footerFacts(dataset), {
+    countryPath: path, current: "page", checkPath: `/?country=${country.code.toLowerCase()}`,
+  })}
 
 </div>
 <script>${MENU_SCRIPT}</script>`;
@@ -216,4 +197,32 @@ ${iconLinks()}
 /** Every country page this dataset produces. */
 export function countryPages(dataset: Dataset): CountryPage[] {
   return countryAddresses(dataset).map((address) => countryPage(dataset, address));
+}
+
+/**
+ * What the shared footer states, from the dataset and from `site.ts` — never
+ * typed into a page. It lives here because it needs the dataset and the footer
+ * itself must not: `identity.ts` knows markup, not data.
+ */
+export function footerFacts(dataset: Dataset): FooterFacts {
+  return {
+    read: readRange(dataset),
+    // The version is a date, and this product spells a date one way
+    // (decision 12): "2026.09.07" beside a read date is a second date format on
+    // the same line, which is the thing that rule exists to prevent.
+    datasetVersion: datasetDay(dataset.dataset_version),
+    disclaimer: DISCLAIMER,
+    licenceUrl: DATA_LICENCE_URL,
+    licenceName: DATA_LICENCE_NAME,
+    repository: REPO_DATA,
+    tracker: TRACKER_URL,
+    newNeed: NEW_NEED_URL,
+    sponsor: SPONSOR_URL,
+    owner: OWNER,
+    // The year the notice carries, from the newest reading rather than from the
+    // clock: a page built today about values read today says the same year
+    // twice, and a page rebuilt in January must not claim a year the data has
+    // not reached.
+    year: readRange(dataset).newest.slice(0, 4),
+  };
 }

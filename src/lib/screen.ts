@@ -211,3 +211,32 @@ export function recordScreen(history: ScreenHistory, field: string | null, advan
 export function screenAt(history: ScreenHistory, step: number): HistoryEntry | undefined {
   return history.entries[step];
 }
+
+/**
+ * The entries a reloaded page has to rebuild.
+ *
+ * A reload empties the page's own list while the browser keeps every entry it
+ * pushed: `step` restarted at 0, `history.length` stayed at 5, and both Backs
+ * stopped meaning anything — the browser's found no screen to restore and the
+ * page's fell through to the edit path (Spec review, 2026-09-08). The record
+ * knows the order the questions were answered in, so the list can be rebuilt
+ * from it: one entry per answered question, then the one on screen.
+ */
+export function historyFor(answered: string[], showing: string | null): ScreenHistory {
+  const entries: HistoryEntry[] = answered.map((field) => ({ field }));
+  entries.push({ field: showing });
+  return { entries, current: entries.length - 1 };
+}
+
+/**
+ * The nearest entry this page knows about.
+ *
+ * A browser entry may name a step the rebuilt list is shorter than — the
+ * reader answered more before the reload than the record kept, or a route the
+ * dataset no longer asks dropped an answer. Clamping lands them on the nearest
+ * question instead of leaving the gesture dead.
+ */
+export function clampStep(history: ScreenHistory, step: number): number {
+  if (!history.entries.length) return 0;
+  return Math.max(0, Math.min(step, history.entries.length - 1));
+}

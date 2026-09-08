@@ -251,4 +251,89 @@ describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
       server.close();
     }
   }, 180000);
+
+  it("Escape closes it from anywhere on the page, and so does a tap outside", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage) => {
+        const state = async () => JSON.parse(await page.evaluate(STATE)) as
+          { expanded: string; navShown: boolean };
+        await page.goto(server.url("/germany/"), 500);
+        // Escape pressed on the document, with the focus nowhere near the menu.
+        await page.evaluate('document.querySelector(".menu").click()');
+        const opened = await state();
+        await page.evaluate('document.querySelector("h1").focus ? document.querySelector("h1").focus() : 0');
+        await page.evaluate(
+          'document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))',
+        );
+        const afterEscape = JSON.parse(await page.evaluate(
+          STATE.replace(/ [}][)]$/, ", onButton: document.activeElement === document.querySelector('.menu') })"),
+        )) as { expanded: string; navShown: boolean; onButton: boolean };
+        // And a tap on the page outside it.
+        await page.evaluate('document.querySelector(".menu").click()');
+        const reopened = await state();
+        await page.evaluate('document.querySelector("main").click()');
+        const afterOutside = await state();
+        return { opened, afterEscape, reopened, afterOutside };
+      }, { viewport: { width: 390, height: 844 }, mobile: true }) as {
+        opened: { expanded: string; navShown: boolean };
+        afterEscape: { expanded: string; navShown: boolean; onButton: boolean };
+        reopened: { expanded: string; navShown: boolean };
+        afterOutside: { expanded: string; navShown: boolean };
+      };
+
+      expect(seen.opened.expanded).toBe("true");
+      expect(seen.afterEscape.expanded, "Escape from outside the menu did nothing").toBe("false");
+      expect(seen.afterEscape.navShown).toBe(false);
+      expect(seen.afterEscape.onButton, "Escape left the focus adrift").toBe(true);
+      expect(seen.reopened.expanded).toBe("true");
+      expect(seen.afterOutside.expanded, "a tap outside left the menu open").toBe("false");
+      expect(seen.afterOutside.navShown).toBe(false);
+    } finally {
+      server.close();
+    }
+  }, 180000);
 });
+
+/**
+ * On the live site the country headings over the per-route JSON lists were
+ * clipped: the list started over the lower half of the letters, so only their
+ * tops showed (human, 2026-09-08). The links carry the inline tap class, whose
+ * negative vertical margin is right for a link inside a sentence and, inside a
+ * grid, pulled each list up over its own heading.
+ */
+describe.skipIf(skipped !== null)("the data page's headings sit clear of their lists", () => {
+  for (const [width, height] of [[1100, 900], [390, 844]] as const)
+    it(`no country heading is overlapped at ${width} px`, async () => {
+      const server = await serve(dist);
+      try {
+        const heads = JSON.parse(await withBrowser(async (page: BrowserPage) => {
+          await page.goto(server.url("/data/"), 700);
+          return page.evaluate(
+            'JSON.stringify([...document.querySelectorAll(".jsonlinks")].map((nav) => {'
+            + ' const label = nav.querySelector(".label");'
+            + ' const link = nav.querySelector("a");'
+            + ' const l = label.getBoundingClientRect();'
+            + ' const a = link.getBoundingClientRect();'
+            + ' return { text: label.textContent.trim(), height: Math.round(l.height),'
+            + '   bottom: Math.round(l.bottom), linkTop: Math.round(a.top),'
+            + '   linkHeight: Math.round(a.height) }; }))',
+          );
+        }, { viewport: { width, height }, mobile: width < 500 }) as string) as
+          { text: string; height: number; bottom: number; linkTop: number; linkHeight: number }[];
+
+        expect(heads.length, "no per-route JSON lists on the page").toBe(4);
+        for (const head of heads) {
+          // The heading has a box of its own, and the list starts below it.
+          expect(head.height, `${head.text}: the heading has no height`).toBeGreaterThan(8);
+          expect(head.linkTop, `${head.text}: the list starts ${head.bottom - head.linkTop} px over the heading`)
+            .toBeGreaterThanOrEqual(head.bottom);
+          // And the rows are still a tap target.
+          expect(head.linkHeight, `${head.text}: a JSON row is ${head.linkHeight} px`).toBeGreaterThanOrEqual(44);
+        }
+      } finally {
+        server.close();
+      }
+    }, 180000);
+});
+

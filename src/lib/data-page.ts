@@ -1,16 +1,15 @@
 import {
-  countryVocabulary, datasetMeta, proseProvenance, routeProvenance,
+  countryVocabulary, proseProvenance, routeProvenance,
   type Dataset,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { PAGE_CSS, audienceNotice, stampDate, withArticle } from "./route-page.js";
-import { navCountries, siteReadDate } from "./country-page.js";
-import { DISCLAIMER, FRESHNESS_NOTE, PRODUCT_NAME, TAGLINE, datasetDay } from "./copy.js";
+import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
+import { PRODUCT_NAME, TAGLINE, datasetDay } from "./copy.js";
 import {
-  DATA_LICENCE_FULL, DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH,
-  TRACKER_URL, absolute, url,
+  DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, headMeta, url,
 } from "./site.js";
-import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteHeader } from "./identity.js";
+import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
 
 /**
@@ -59,21 +58,8 @@ export function dataPage(dataset: Dataset): DataPage {
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-<meta name="description" content="${escAttr(desc)}">
-<link rel="canonical" href="${escAttr(absolute(DATA_PATH))}">
 ${iconLinks()}
-<meta property="og:site_name" content="${escAttr(PRODUCT_NAME)}">
-<meta property="og:title" content="${escAttr(title)}">
-<meta property="og:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
-<meta property="og:type" content="website">
-<meta property="og:url" content="${escAttr(absolute(DATA_PATH))}">
-<meta property="og:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${escAttr(title)}">
-<meta name="twitter:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
-<meta name="twitter:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">
+${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
 <style>${PAGE_CSS}</style>`;
 
   const body = `<div class="wrap">
@@ -128,21 +114,13 @@ ${iconLinks()}
       ${dataset.countries.map((country) => `
       <nav class="jsonlinks" aria-label="${escAttr(`${withArticle(country)} as JSON`)}">
         <b class="label">${esc(withArticle(country))}</b>${country.routes.map((route) => `
-        <a class="tap" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>read ${
+        <a class="tap-min" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>read ${
     esc(stampDate(route, notice))}</small></a>`).join("")}
       </nav>`).join("")}
     </section>
   </main>
 
-  <footer>
-    <p class="disclaimer">${esc(DISCLAIMER)} ${esc(FRESHNESS_NOTE)}</p>
-    <nav class="ends" aria-label="Beside this page">
-      <a class="tap" href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">The dataset on GitHub</a>
-      <a class="tap" href="${escAttr(TRACKER_URL)}" target="_blank" rel="noopener">Report a wrong value</a>
-      <a class="tap" href="${escAttr(DATA_LICENCE_URL)}" target="_blank" rel="noopener">Open data · ${
-    esc(DATA_LICENCE_NAME)}</a>
-    </nav>
-  </footer>
+  ${siteFooter(navCountries(dataset), footerFacts(dataset))}
 
 </div>
 <script>${MENU_SCRIPT}</script>`;
@@ -176,6 +154,7 @@ export function statusAlias(dataset: Dataset): DataPage {
     </div>
     ${rulesRead(siteReadDate(dataset))}
   </header>
+  ${siteFooter(navCountries(dataset), footerFacts(dataset))}
 </div>
 <script>${MENU_SCRIPT}</script>`;
   return {

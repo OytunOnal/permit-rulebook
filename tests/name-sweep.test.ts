@@ -178,7 +178,7 @@ describe("s6 — the working name is gone from everything a reader can see (ledg
     const site = REPOS["permit-rulebook"];
     const data = REPOS["permit-rulebook-data"];
     const disclaimer =
-      "Permit Rulebook makes no immigration decision and authorities won't consider these results";
+      "Permit Rulebook makes no immigration decision and no authority is bound by these results";
     // The one source, read as the product reads it — the sentence is composed
     // from the name, so the file does not contain the literal and should not.
     expect(DISCLAIMER).toContain(disclaimer);

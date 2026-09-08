@@ -475,3 +475,73 @@ describe("the identity has one set of elements too", () => {
     }
   });
 });
+
+/**
+ * The interview painted the shared header a second way: three page-local rules
+ * (`header`, `.wordmark`, `.wordmark .seal`) with their own sizes, so the same
+ * header was a different object on the two halves of the product (Standards
+ * review, 2026-09-08). identity.css owns it; this measures that it does.
+ */
+const { chromePath: chromeAt } = await import("../scripts/chrome.mjs");
+const { serve: serveDir, withBrowser: withChrome } = await import("../scripts/browser.mjs");
+
+function whyNotMeasured(): string | null {
+  try { chromeAt(); } catch (e) { return (e as Error).message; }
+  if (!existsSync(dist)) return "no dist/ — run npm run build first";
+  return null;
+}
+const notMeasured = whyNotMeasured();
+
+interface Page { goto(url: string, settleMs?: number): Promise<void>; evaluate(expression: string): Promise<string> }
+
+const HEADER_BOX = 'JSON.stringify((() => {'
+  + ' const head = document.querySelector(".site-head");'
+  + ' const mark = document.querySelector(".site-head .wordmark");'
+  + ' const seal = document.querySelector(".site-head .seal");'
+  + ' const box = (el) => { const r = el.getBoundingClientRect();'
+  + '   return { height: Math.round(r.height), width: Math.round(r.width) }; };'
+  + ' const font = getComputedStyle(mark);'
+  + ' return { head: box(head), mark: box(mark), seal: box(seal),'
+  + '   family: font.fontFamily, size: font.fontSize, weight: font.fontWeight,'
+  + '   rule: getComputedStyle(head).borderBottomWidth };'
+  + '})())';
+
+describe.skipIf(notMeasured !== null)("the header is one object, measured", () => {
+  it("the same box, wordmark and seal on the interview and on a route page", async () => {
+    const server = await serveDir(dist);
+    try {
+      const seen = await withChrome(async (page: Page) => {
+        const at: Record<string, unknown> = {};
+        for (const [name, path] of [
+          ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
+          ["country", "/germany/"], ["data", "/data/"],
+        ] as const) {
+          await page.goto(server.url(path), 500);
+          at[name] = JSON.parse(await page.evaluate(HEADER_BOX));
+        }
+        return at;
+      }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, unknown>;
+
+      // Everything identity.css owns. The header's own WIDTH is the page
+      // container's business — the interview keeps a wider gutter than the
+      // generated pages — so it is measured out of this comparison and the
+      // height, the wordmark, the seal, the type and the rule are not.
+      const owned = (box: unknown) => {
+        const b = box as { head: { height: number }; mark: unknown; seal: unknown;
+          family: string; size: string; weight: string; rule: string };
+        return JSON.stringify({ height: b.head.height, mark: b.mark, seal: b.seal,
+          family: b.family, size: b.size, weight: b.weight, rule: b.rule });
+      };
+      const reference = owned(seen.route);
+      for (const [name, box] of Object.entries(seen))
+        expect(owned(box), `${name}'s header is not the route page's header`).toBe(reference);
+      // And it is a real header, not four identically-missing ones.
+      const route = seen.route as { head: { height: number }; seal: { height: number } };
+      expect(route.head.height).toBeGreaterThan(40);
+      expect(route.seal.height).toBeGreaterThan(14);
+    } finally {
+      server.close();
+    }
+  }, 180000);
+});
+

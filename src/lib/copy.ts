@@ -14,6 +14,17 @@ export const PRODUCT_NAME = "Permit Rulebook";
 /** Decision 1. It is set from the token serif wherever it appears. */
 export const TAGLINE = "Every route, quoted and dated.";
 
+/**
+ * The route page says something narrower under its own name.
+ *
+ * The product's tagline is a claim about the whole rulebook; a route page is
+ * one route, and its second line has said so since the approved route-page mock
+ * ("The rules, quoted and dated."). Both live here rather than one of them
+ * living in a template, so a change of voice is one edit and a test can read
+ * which page says which (Spec review, 2026-09-08).
+ */
+export const ROUTE_TAGLINE = "The rules, quoted and dated.";
+
 /** The one-line promise the README leads with and the social card carries. */
 export const PROMISE =
   "An open, dated, source-quoted work-permit ruleset for four countries — 23 routes, " +
@@ -26,7 +37,7 @@ export const PROMISE =
  * document nobody reads.
  */
 export const DISCLAIMER =
-  `${PRODUCT_NAME} makes no immigration decision and authorities won't consider these results — ` +
+  `${PRODUCT_NAME} makes no immigration decision and no authority is bound by these results — ` +
   "it compares published values with what you declare, nothing more.";
 
 /**

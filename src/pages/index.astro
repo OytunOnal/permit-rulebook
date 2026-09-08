@@ -13,14 +13,14 @@ import { datasetMeta } from "permit-rulebook-data";
 import { mastheadFor } from "../lib/screen.js";
 // The seal, the icon links and the pair: one set of elements, four screens
 // (Standards review, 2026-09-08).
-import { MENU_SCRIPT, iconLinks, siteHeader, stamps } from "../lib/identity.js";
+import { MENU_SCRIPT, iconLinks, siteFooter, siteHeader, stamps } from "../lib/identity.js";
 // The four country pages, generated beside the route pages they list, and the
 // four links the shared header carries (product critique B2; site map, 2026-09-08).
-import { countryLinks, navCountries } from "../lib/country-page.js";
+import { footerFacts, navCountries } from "../lib/country-page.js";
 // The product's own words, in one place: the name, the tagline and the
 // disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
-import { DISCLAIMER, PRODUCT_NAME, PROMISE, TAGLINE } from "../lib/copy.js";
-import { DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH, TRACKER_URL, absolute, url } from "../lib/site.js";
+import { PRODUCT_NAME, PROMISE, TAGLINE } from "../lib/copy.js";
+import { SOCIAL_CARD_PATH, absolute } from "../lib/site.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
 const dataset = assertValidDataset(rawDataset);
@@ -80,29 +80,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       </details>
     </div>
 
-    <footer>
-      <p>{DISCLAIMER}</p>
-      {/* The way into the rules. Every route page was reachable from no page at
-          all — not from here, not from a sitemap, only from another route page
-          or a URL you already held (product critique B2, 2026-09-08). These
-          four links are the first of the two clicks that reach all 23. */}
-      <nav class="foot-links" aria-label="The routes, by country">
-        {countryLinks(dataset).map((link) => <a href={url(link.path)}>{link.name}</a>)}
-      </nav>
-      {/* The way back in: the first stranger's feedback needs somewhere to land
-          on the day the link goes out (decision 4). */}
-      <nav class="foot-links" aria-label="The data behind this">
-        <a href={REPO_DATA} target="_blank" rel="noopener">The dataset on GitHub</a>
-        <a href={TRACKER_URL} target="_blank" rel="noopener">Report a wrong value</a>
-        <a href={DATA_LICENCE_URL} target="_blank" rel="noopener">Open data · {DATA_LICENCE_NAME}</a>
-      </nav>
-      <div class="health">
-        <span>dataset {meta.dataset_version.replace(/\./g, "-")}</span>
-        <span>schema {meta.schema_version}</span>
-        <span>newest value read {meta.newest_retrieved_at}</span>
-      </div>
-    </footer>
+    <Fragment set:html={siteFooter(navCountries(dataset), footerFacts(dataset))} />
   </div>
+
+  <!-- The header's menu, from the same source the generated pages inline. -->
+  <script is:inline set:html={MENU_SCRIPT}></script>
 
   <script>
     import dataset from "permit-rulebook-data/data/dataset.json";
@@ -116,7 +98,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
       // s6: what the interview asks of a route, in the words the route page
       // shows — the same declared fact, said the same way in both places.
-      scopeLine as routeScopeWords,
+      scopeLine as scopeWordsFor,
       // What an answer means here, where the label alone leaves two answers
       // hard to tell apart (human walk, 2026-09-08).
       optionMeans, unlockMeansOf,
@@ -137,8 +119,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { type Glossary, glossSection } from "../lib/gloss.js";
     import { activeOption, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
     import {
-      emptyHistory, mastheadFor, recordScreen as recordEntry, screenAfter, screenAt,
-      type Explore, type FlowAction,
+      clampStep, emptyHistory, historyFor, mastheadFor, recordScreen as recordEntry, screenAfter,
+      screenAt, type Explore, type FlowAction,
     } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     // The reason column's markup, beside the page rather than in it, so what
@@ -634,12 +616,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * itself two sentences later (route-page critique B3), and a value said one
      * way here and another way there is two facts.
      */
-    function scopeLine(r: RouteResult): string {
+    function scopeFor(r: RouteResult): string {
       const country = ds.countries.find((c) => c.code === r.country);
       if (!country) return "";
       // The reader's words, the same ones the country index and the route page
       // print (decision 3 amended by the human, 2026-09-08).
-      return `<div class="scoped">${esc(routeScopeWords(r.route))} · <a href="${
+      return `<div class="scoped">${esc(scopeWordsFor(r.route))} · <a href="${
         escAttr(url(routePath(country, r.route)))}">The rules of this route</a></div>`;
     }
 
@@ -652,7 +634,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             <span class="st ${r.status}">${STATUS_LABEL[r.status]}</span>
           </div>
           <p class="why">${whyFor(r)}</p>
-          ${scopeLine(r)}
+          ${scopeFor(r)}
           ${precondFor(r)}
           ${caveatFor(r)}
           ${readingFor(r)}
@@ -684,7 +666,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(routeName(r))}</span><span class="hold-why">${short}</span></summary>
           <div class="hold-body">
             ${r.route.summary ? `<p class="why">${esc(r.route.summary)}</p>` : ""}
-            ${scopeLine(r)}
+            ${scopeFor(r)}
             ${precondFor(r)}
             ${caveatFor(r)}
           ${readingFor(r)}
@@ -1093,9 +1075,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // An entry we did not write, or one "Start over" has since invalidated:
       // leave the screen alone rather than restoring a stranger's answers.
       if (typeof step !== "number") return;
-      const screen = screenAt(screens, step);
+      // A step this page has no entry for — a reload rebuilt a shorter list,
+      // or the dataset stopped asking something — lands on the nearest question
+      // it does have. Doing nothing is what left the gesture dead.
+      const at = clampStep(screens, step);
+      const screen = screenAt(screens, at);
       if (!screen) return;
-      screens.current = step;
+      screens.current = at;
       restoring = true;
       if (screen.field === null) {
         editing = null;
@@ -1160,6 +1146,23 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // interview when there is none.
     renderQuestion({ kind: "restore" });
 
+    /**
+     * After a reload the browser still holds every entry this page pushed
+     * before it, and the page holds none of them: `step` restarted at 0 while
+     * `history.length` stayed where it was, so browser Back found no screen and
+     * the page's own Back fell through to the edit path (Spec review,
+     * 2026-09-08). The record knows what was answered and in what order — that
+     * is the list, rebuilt, with the entry we are standing on rewritten to
+     * match it.
+     */
+    (() => {
+      const showing = screenAt(screens, screens.current)?.field ?? null;
+      const rebuilt = historyFor(asked, showing);
+      screens.entries = rebuilt.entries;
+      screens.current = rebuilt.current;
+      window.history.replaceState({ step: screens.current }, "");
+    })();
+
     // Dev-only layout probe: ?dev-probe=1 writes the widest offenders into the
     // title so headless --dump-dom can report horizontal overflow (golden G1).
     if (import.meta.env.DEV && new URLSearchParams(location.search).has("dev-probe")) {
@@ -1179,16 +1182,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .wrap{max-width:var(--max-content);margin:0 auto}
     a{color:var(--color-stamp)}
 
-    header{border-bottom:var(--rule-heavy);padding-bottom:1.3rem;margin-bottom:var(--space-5)}
+    /* The masthead below the site header. The header itself — its rule, its
+       wordmark and its seal — belongs to identity.css: three rules here were
+       painting the shared header a second way, which is how one product grows
+       two identities (Standards review, 2026-09-08). */
+    .masthead-with-stamps{border-bottom:var(--rule-heavy);padding-bottom:1.3rem;margin-bottom:var(--space-5)}
     .brand{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted);margin-top:.35rem}
-    /* The identity: the seal before the wordmark, set from the token serif
-       (decision 5, chosen by the human 2026-09-07). The seal is bigger than the
-       cap height, so it reads as the stamp beside the name, not as a bullet. */
-    .wordmark{font:700 1.25rem/1 var(--font-serif);letter-spacing:.01em;color:var(--color-ink);text-decoration:none;
-      display:inline-flex;align-items:center;gap:.65rem;min-height:var(--tap-min)}
-    .wordmark .seal{display:inline-flex;align-items:center;justify-content:center;width:1.9em;height:1.9em;
-      border:2.5px solid var(--color-stamp);color:var(--color-stamp);font:700 .95em/1 var(--font-mono);
-      letter-spacing:-.04em;transform:rotate(var(--stamp-rotate));margin-right:.15em}
     /* What the interview asks of a route, said on the card in the same words
        the route page uses — ink on card, no new colour and no verdict colour. */
     .scoped{font:var(--text-source);color:var(--color-muted);margin:.35rem 0 .1rem}

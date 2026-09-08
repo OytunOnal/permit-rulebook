@@ -1,6 +1,6 @@
 import {
-  scopeLine, criterionPhrase, deriveQuestions, formatEUR, formatEURPer, forEachCriterion,
-  isLocalization, joinAnd, joinOr, LANGUAGE_NAMES, provenancedValuesOf, quoteLanguage,
+  scopeLine, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
+  isLocalization, joinAnd, joinOr, provenancedValuesOf,
   referencedFields, routeReadings, routeStatements, shortLabelOf, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
 } from "permit-rulebook-data";
@@ -19,18 +19,18 @@ import IDENTITY from "../../identity.css?raw";
 // say the same words for the same token (2026-09-08).
 import { type Glossary, glossSection, glossed } from "./gloss.js";
 // One set of elements for the identity the shared CSS places (2026-09-08).
-import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteHeader } from "./identity.js";
-import { navCountries } from "./country-page.js";
+import { MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
+import { footerFacts, navCountries } from "./country-page.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
 import { quoteFrame } from "./quote.js";
 import { esc, escAttr } from "./reason.js";
 import {
-  DATA_LICENCE_FULL, DATA_LICENCE_NAME, DATA_LICENCE_URL, REPO_DATA, SOCIAL_CARD_PATH, TRACKER_URL,
-  absolute, url,
+  DATA_LICENCE_FULL, DATA_LICENCE_NAME, REPO_DATA, TRACKER_URL,
+  absolute, headMeta, url,
 } from "./site.js";
 import {
-  DISCLAIMER, FRESHNESS_NOTE, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, SEAL_LETTERS, TAGLINE, datasetDay,
+  PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_TAGLINE,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -462,12 +462,12 @@ export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
 }
 
 export function gist(route: Route): string {
+  // A whole sentence or nothing: ten of the twenty-three cards ended in an
+  // ellipsis mid-clause, which is a sentence the reader has to open the page to
+  // finish (Spec review, 2026-09-08). The summary's first sentence is written
+  // to stand alone, so it stands.
   const first = (route.summary ?? "").split(/(?<=\.)\s/)[0] ?? "";
-  if (!first) return scopeLine(route);
-  if (first.length <= 110) return first;
-  const cut = first.slice(0, 107);
-  const lastSpace = cut.lastIndexOf(" ");
-  return `${(lastSpace > 60 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+  return first || scopeLine(route);
 }
 
 /**
@@ -483,7 +483,7 @@ export function gist(route: Route): string {
  * answer to "what is the threshold", and leaving it blank reads as a page that
  * forgot its own number.
  */
-function answerBlock(dataset: Dataset, country: Country, route: Route, read: string): string {
+function answerBlock(dataset: Dataset, route: Route, read: string): string {
   const thresholds = ruleCriteria(dataset, route).flatMap(gteUnder);
   const seen = new Set<number>();
   const amounts = thresholds
@@ -573,21 +573,8 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-<meta name="description" content="${escAttr(desc)}">
-<link rel="canonical" href="${escAttr(absolute(path))}">
 ${iconLinks()}
-<meta property="og:site_name" content="${escAttr(PRODUCT_NAME)}">
-<meta property="og:title" content="${escAttr(title)}">
-<meta property="og:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
-<meta property="og:type" content="article">
-<meta property="og:url" content="${escAttr(absolute(path))}">
-<meta property="og:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${escAttr(title)}">
-<meta name="twitter:description" content="${escAttr(`${TAGLINE} ${desc}`)}">
-<meta name="twitter:image" content="${escAttr(absolute(SOCIAL_CARD_PATH))}">
+${headMeta({ title, description: desc, path, kind: "article" })}
 <style>${PAGE_CSS}</style>`;
 
   const body = `<div class="wrap">
@@ -596,7 +583,7 @@ ${iconLinks()}
 
   <header class="masthead masthead-with-stamps">
     <div>
-      <h1>${esc(heading)}. <em>The rules, quoted and dated.</em></h1>
+      <h1>${esc(heading)}. <em>${esc(ROUTE_TAGLINE)}</em></h1>
       <p class="lede">${route.summary ? `${esc(route.summary)} ` : ""}Every number on this page is the authority's own sentence, with the page it came from and the day we read it. ${esc(audienceSentence(country))} ${esc(ROUTE_PAGE_ADDENDUM)}</p>
     </div>
     ${rulesRead(read)}
@@ -604,7 +591,7 @@ ${iconLinks()}
 
   <div class="page">
   <main>
-${answerBlock(dataset, country, route, read)}
+${answerBlock(dataset, route, read)}
   <section class="cta" aria-labelledby="cta-h">
     <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
     <p><strong>Where do you stand on this route?</strong> The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>
@@ -641,13 +628,10 @@ ${neighbours(country, route)}
   </aside>
   </div>
 
-  <footer>
-    <p class="disclaimer">${esc(DISCLAIMER)} ${esc(FRESHNESS_NOTE)}</p>
-    <div class="health"><span>dataset <time datetime="${
-    escAttr(datasetDay(dataset.dataset_version))}">${esc(datasetDay(dataset.dataset_version))}</time></span><span>schema ${
-    esc(dataset.schema_version)}</span><span>open data · <a ${tapInline()} href="${
-    escAttr(DATA_LICENCE_URL)}" target="_blank" rel="noopener">${esc(DATA_LICENCE_NAME)}</a></span></div>
-  </footer>
+  ${siteFooter(navCountries(dataset), footerFacts(dataset), {
+    countryPath: countryPath(country), current: "true", jsonPath,
+    checkPath: `/?country=${country.code.toLowerCase()}`,
+  })}
 
 </div>
 <script>${MENU_SCRIPT}</script>`;
@@ -794,10 +778,17 @@ ${IDENTITY}
 .checks { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: var(--space-2); }
 .checks li { border-top: var(--rule-dotted); padding-top: var(--space-2); }
 .checks b { color: var(--color-ink); }
-.jsonlinks { display: grid; gap: 0; margin-top: var(--space-3); }
-.jsonlinks .label { display: block; margin-top: var(--space-2); color: var(--color-muted); }
-.jsonlinks a { display: flex; justify-content: space-between; gap: var(--space-3); align-items: baseline; min-height: var(--tap-min); padding: var(--space-2) 0; border-top: var(--rule-dotted); text-decoration: none; color: var(--color-stamp); }
-.jsonlinks a small { font: var(--text-source); color: var(--color-met); white-space: nowrap; }
+/* The per-route JSON lists. Written as nav.jsonlinks because these navs sit
+   inside section.data, whose own ".data nav a" rule is the route page's boxed
+   data door and outranks a bare ".jsonlinks a". The links are rows here, so
+   they take the tap-target floor as a row height: the inline tap class carries
+   a negative vertical margin, which is right for a link inside a sentence and
+   inside a grid pulled each list up over its own country heading (human, live
+   site, 2026-09-08). */
+nav.jsonlinks { display: grid; gap: 0; margin-top: var(--space-4); }
+nav.jsonlinks .label { display: block; margin: 0 0 var(--space-1); padding: 0; color: var(--color-muted); }
+nav.jsonlinks a { display: flex; justify-content: space-between; gap: var(--space-3); align-items: center; min-height: var(--tap-min); margin: 0; padding: var(--space-2) 0; border: none; border-top: var(--rule-dotted); text-decoration: none; color: var(--color-stamp); font: var(--text-body); }
+nav.jsonlinks a small { font: var(--text-source); color: var(--color-met); white-space: nowrap; }
 
 /* ---- the country index: the whole card is the link ---- */
 /* One target, not three: the name, the gist and the meta line sit inside a
