@@ -2156,3 +2156,18 @@ two gestures cannot diverge. Both cases proven red on the old behaviour.
 human's own wording uses it ("scored against your answers"), so it is allowed
 only in that full phrase, never bare — the test says so with the date. Cost:
 one word crossed from engineering to reader register on purpose.
+
+**Addendum, 2026-09-08 — the navigation round reviewed.** Spec found the
+invariant the round was built for broken on one path: after a mid-interview
+reload the browser's Back did nothing and the page's Back went elsewhere
+(the screens list is empty after a reload while the history is not); fixed
+by rebuilding the list from the record on load. Standards found the "scored"
+guard had been loosened over the 23 scope reasons while CONTRIBUTING still
+banned the word; restored as "only inside the full reader phrase". Two rulings
+worth keeping: the country page's lede keeps the audience sentence ("This
+page is for people who need a permit to work in Germany") that the mock
+lacked — it is s6 step 10's requirement, not an invention; and there are two
+taglines on purpose: the product's "Every route, quoted and dated." on home,
+country, data and 404, and the route page's own "The rules, quoted and dated."
+(its approved mock), both named constants. Card gists are whole sentences,
+never cut; a scope line never says "stated" of our own reading.
