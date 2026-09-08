@@ -34,7 +34,8 @@ screenshot and links the live site; the favicon is option C; "§ 20a, section
 20a" is glossed. The two-axis review of the round found one blocker (the watch's
 new rebuild-dispatch step sat between the state commit and the flag-issue
 step) and nine should-fix items; all applied, committed (site `a8d50db`, data
-`e03649d`), pushed, deploying. The round also gave the site one masthead
+`e03649d`), pushed, deployed (run 34222781612; the country pages carry the pair and the
+gloss on the live site). The round also gave the site one masthead
 source (`identity.ts`), an attribute-escaping gate, and the one-pager's
 "answers never leave the device" promise checked in a real browser (proved red
 by an injected request, green on the clean build). 397 + 196 tests.
