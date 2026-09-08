@@ -31,11 +31,15 @@ living costs", consistent with its rail and banner; the home page links the
 four country pages, the sitemap lists 29 URLs, robots.txt exists, a wrong URL
 lands on our own 404 with the identity pair; the data README opens with the
 screenshot and links the live site; the favicon is option C; "§ 20a, section
-20a" is glossed. The two-axis review of the round returned one blocker
-(the watch's new rebuild-dispatch step sat between the state commit and the
-flag-issue step, so a missing token would have silenced the first real flag)
-plus nine should-fix items — one more builder round is running on them; it
-ships as soon as it is green. **And one more slice-sized item before v1, from the human's walk:** the site
+20a" is glossed. The two-axis review of the round found one blocker (the watch's
+new rebuild-dispatch step sat between the state commit and the flag-issue
+step) and nine should-fix items; all applied, committed (site `a8d50db`, data
+`e03649d`), pushed, deploying. The round also gave the site one masthead
+source (`identity.ts`), an attribute-escaping gate, and the one-pager's
+"answers never leave the device" promise checked in a real browser (proved red
+by an injected request, green on the clean build). 397 + 196 tests.
+
+**And one more slice-sized item before v1, from the human's walk:** the site
 has no shared navigation — the four country links live only in the home
 footer, a country page leads nowhere but its routes. The site map is written
 (`docs/spine/design/site-map.md`, the first one; Spine now requires it from
@@ -43,7 +47,7 @@ the second screen on) and names the gaps; next: the header navigation and
 the country page mocked in the token set, critiqued in isolation, brought to
 the human, then built. v1 waits for it.
 
-Numbers: 384 tests in the data repository, 187 in the site; 122 quotes
+Numbers: 397 tests in the data repository, 196 in the site; 122 quotes
 verified, `human_tier: 0`; 30 pages + 24 endpoints, 0 tap targets under 44 px
 at 390 px; critique 32/45 on RUBRIC 1.2 (v0.7: 27/45).
 
