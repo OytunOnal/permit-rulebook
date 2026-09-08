@@ -1933,3 +1933,11 @@ two jobs.
 **What is not done, deliberately:** the announcement. Decision 13's isolated
 critique runs on the live site first; the phone walk (step 7) is the human's,
 on the live site now that it exists; the 48-hour lines are already in STATUS.
+
+**Addendum, 2026-09-08 — NOTES.md (human):** the pre-Genesis Turkish design
+notes, titled with the working name, are kept as pre-history and moved to
+`docs/spine/notes-pre-genesis.md` with a two-line English header; the name
+gate excludes that path as it excludes the ledgers. Not maintained, not
+deleted: the record of where the idea started. Copyright lines in the three
+LICENSE files now read "Oytun Onal" (human), and the dataset licence's
+attribution example points at the real repository instead of a placeholder.
