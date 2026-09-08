@@ -30,8 +30,12 @@ unclipped, the amended disclaimer everywhere, "Check yours" in the header.
 three-axis review applied — the 390 px overflow was the results stamp,
 bounded now on any font; the counter reports one view per page load and
 `/data` says what the wire carries; reruns build against `data.lock` and
-never move it; the footer packs the mock's columns on every page. When the
-deploy is green: the footer and the amended disclaimer are live, the phone
+never move it; the footer packs the mock's columns on every page. **CI is red once more on the runner's
+fonts:** the bound that stopped the overflow lets the longer results stamp
+wrap, so the pair is no longer one drawing across screens there; the stamp is
+being sized for the longest label under the widest fallback font, and the
+whole identity suite will run with that font forced. When the deploy is
+green: the footer and the amended disclaimer are live, the phone
 walk can happen, one real value re-read goes through the whole loop, the
 isolated critique re-runs on RUBRIC 1.3, and v1 waits only on the checklist
 below.
