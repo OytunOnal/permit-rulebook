@@ -87,6 +87,15 @@ judgement on a live source.
       then Spain, and answer through to results. *Pass:* the question counter
       does not swing wildly, salary bands read sensibly, no wording assumes a
       job offer when you declared a transfer.
+- [ ] **`DISPATCH_TOKEN` (a credential, so yours):** GitHub → Settings → Developer
+      settings → Fine-grained tokens → new token, repository access:
+      `permit-rulebook` only, permission Contents: read and write; then on
+      `permit-rulebook-data` → Settings → Secrets and variables → Actions → new
+      repository secret named `DISPATCH_TOKEN` with that value. *Pass:* the
+      next watch run's "dispatch a site rebuild" step is green and a deploy
+      run starts in the site repository within a minute. Until then the
+      daily 06:40 UTC schedule rebuilds the site anyway; only the same-hour
+      rebuild after a data change waits on the token.
 - [ ] **"watch live":** say it once the fix round has deployed; I switch the
       daily workflow from dry-run to filing issues. *Pass:* the next real flag
       appears as an issue on `permit-rulebook-data` with the `bug` label.

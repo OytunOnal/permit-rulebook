@@ -1997,3 +1997,54 @@ paper inside the tilted frame. The human chose the third: the stamp alone on
 the tab, still legible at 16 px on a dark strip where the fully transparent
 variant's dark red sank into the grey. Cost: a small light tilted square on
 dark tabs — the stamp on its paper, accepted.
+
+## 2026-09-08 — The critique-and-walk round shipped; decisions it made on the way
+
+**Blockers B1–B4 and adjustment 3 built, committed (`2c30584`; data
+`bc2ba49`), pushed; reviewed on both axes after the push, in parallel with the
+deploy, because the fixes were already live-blocking.** Decisions the round
+made that nobody had recorded:
+
+- **Country index pages exist** (`/germany/` …): a new screen, in the token
+  set — crumbs, one heading, the country's routes with their gists, one call
+  to action; no verdict words. Built without an isolated mock critique, the
+  rule for new screens, because the critique that demanded them is the same
+  critique that would judge them; the v1 stamp's re-read covers it. Cost:
+  one screen entered without its own critique — stated, not hidden.
+- **`sitemap.xml`, `robots.txt`, `404.html`** generated from the dataset and
+  the tokens; the 404 carries the identity pair and links home.
+- **The "within reach" sentence is derived, never typed:** `gapCriterionOf`
+  is the single source for the rail, the banner and the sentence.
+- **Contradictions are data:** the dataset declares which declaration pairs
+  cannot both be true; the results screen says so in one line; the engine
+  never returns "criteria met" silently across a declared contradiction.
+- **Money questions have a third door,** "Doesn't apply to me, or I don't
+  know", read as undecided — never a fail, never a pass; wording is neutral
+  across situations rather than per-situation variants (a schema feature
+  deferred). The dataset's learn link now sits on the question itself.
+- **`--color-hold` raised** (#7b7869 → #6a6759) so "Also required — not
+  checked here" clears AA on card, page and hold-soft; a test computes the
+  ratios from `tokens.css`.
+- **"§" is glossed once per page, appended after the citation** ("§ 18b,
+  section 18b") so the citation stays the searchable string; only the page's
+  own citations, never a neighbour's name, never inside a quote.
+- **A leverage row's place is the counterfactual profile's place:** the
+  heading and the means line read one resolved place; a field's subject text
+  can never enter a heading (the "in your offer, transfer or agreement in
+  Germany" bug, seen twice on the live site).
+- **The site rebuilds daily** (`schedule` 83 minutes after the watch) and on a
+  `repository_dispatch` the watch sends after its state commit; the dispatch
+  needs a fine-grained token in the data repository's secrets
+  (`DISPATCH_TOKEN`) — the human's, since it is a credential; until it exists
+  the dispatch step fails loudly after the commit has landed, and the daily
+  schedule still rebuilds.
+- **The watch bot commits as `github-actions[bot]`**; the earlier noreply
+  address mapped on GitHub to a stranger's account ("watch" → monomyc).
+- **Favicon C shipped**; READMEs image-first with the live link; `NOTES.md`
+  moved as pre-history; the buzer entries sliced to the statute body and
+  re-baselined, the § 6 BeschV flag resolved as furniture.
+
+**Cost, stated.** 384 + 187 tests, 30 pages. The dependency path
+`file:../visa-rules` still names the data repository's old folder — a fresh
+clone must use that folder name until the folders are renamed (the human's),
+and the README says so.
