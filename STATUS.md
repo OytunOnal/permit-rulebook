@@ -35,8 +35,12 @@ site now carries everything since the navigation round:** the shared footer,
 the amended disclaimer, the counter (one view per page load), the meta CSP,
 the watch's last run, and the re-read date 2026-09-08 on the German Blue
 Card page — **the whole loop, source → history line → commit → rebuild →
-live page, has now run once for real.** The isolated critique re-runs on
-RUBRIC 1.3 against this site; then v1 waits only on the checklist below.
+live page, has now run once for real.** The isolated critique's second run (RUBRIC 1.3) scored 36/50 and found three
+blockers — money bands whose labels share their edges (opposite verdicts at
+the threshold), the pre-scoped "Check yours" ignoring a saved record, the
+unlock rail enumerating the salary ladder — all with the builder now, plus
+the rubric's adjustment 3; then a review, a deploy, a re-read of the three
+blockers on the live site, and v1 waits only on the checklist below.
 
 Numbers: 415 tests in the data repository, 261 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
@@ -99,6 +103,14 @@ judgement on a live source.
       filed two issues since the repositories went public (ZAV edition, buzer
       § 6), both read and closed the same day. Watch issues carry
       `source-change`; `bug` is applied at triage if a value proves wrong.
+- [ ] **Two product judgments from the critique — your call:** (1) should the
+      results rank open routes ("start with this one") and on what published
+      basis — or stay in dataset order with no ranking (my recommendation:
+      no ranking at v1; a route page is the reader's next step, ranking
+      would be advice); (2) foreign quotes: an English rendering beside the
+      authority's sentence, or a stated policy on /data that we never
+      translate (my recommendation: the policy — a translation is not the
+      authority's words). Say "rank" / "no rank" and "translate" / "policy".
 - [ ] **The announcement — read it, and pick the hour:** the draft is
       `docs/spine/announcement.md` (Show HN title, the first comment, the five
       answers in your voice). *Pass:* you would say every sentence yourself;

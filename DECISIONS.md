@@ -2445,3 +2445,32 @@ the watch's last run on the live site, and the German Blue Card page shows
 run — source re-read, history line, commit, rebuild, live page — has run once
 for real. What still waits on the human's token is only the same-hour
 rebuild after a watch commit; the daily schedule covers the rest.
+
+## 2026-09-08 — v1-gate critique, second run (RUBRIC 1.3): 36/50, three blockers
+
+**Result.** 36/50 on RUBRIC 1.3 (not diffed against 32/45 on 1.2 — different
+instruments); four of the first run's blockers verified cleared by operation,
+fifteen earlier findings carried over unfixed and named again. Three new
+blockers, all routed to the builder before the tag:
+- **B1, the band edges:** every money band's label shares its edge with the
+  threshold it decides, so a reader at exactly the threshold is told opposite
+  things depending on which true label they pick — on a product whose claim
+  is a deterministic comparison. Rule: bands are half-open and say so
+  ("€4,754 – under €5,942"), no amount in two labels; each ladder derived
+  from the declared destination's thresholds, not the union of four
+  countries. (Friction in two earlier runs; a blocker now that the wrong
+  verdict was pinned.)
+- **B2, the pre-scoped arrival with a saved record:** "Check yours — France"
+  showed the saved German results unchanged. Rule: an arrival that names a
+  country or route re-scopes the record and says so; a named route's card is
+  scrolled to and marked.
+- **B3, the unlock rail:** with three unknowns, thirteen "steps", ten of them
+  rungs of the salary ladder, one of them earning less. Rule: one step per
+  numeric field, upward only, phrased as the gap; the headline recounted.
+Adjustment 3 applied except the coverage-wording item (the human's words
+stand). Two product judgments go to the human: whether open routes should be
+ranked ("start with this one", on what published basis), and whether foreign
+quotes get an English rendering or a stated no-translation policy.
+
+**Cost, stated.** One more build-and-review round before the tag; the
+critique's scores are recorded, not gated on — the blockers are the gate.
