@@ -2344,3 +2344,7 @@ with a history line goes through the whole loop before "go" (below).
 **Cost, stated.** A day of a pass the scenario should have had at approval;
 the rule that requires it arrived the same day (steward-40). The report is in
 this entry's routing, not in a file the human must open.
+
+**Addendum, 2026-09-08 — 2FA confirmed by the human** ("2fa tamam") on GitHub
+and Cloudflare. The threat model's accounts row is met on their word; the API
+cannot verify it with this session's token scopes.

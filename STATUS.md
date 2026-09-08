@@ -88,11 +88,8 @@ judgement on a live source.
 - [x] **Traffic counter** (human, 2026-09-08: Cloudflare Web Analytics, manual
       snippet): going in with the current builder round; the data page says what
       is counted; the never-leaves-the-device test names the one allowed beacon.
-- [ ] **Two-factor authentication (security dimension, before "go"):** GitHub →
-      Settings → Password and authentication → enable 2FA (an authenticator
-      app); Cloudflare → My Profile → Authentication → Two-Factor. *Pass:* both
-      show 2FA enabled. Say "2fa açık" — the site is whatever those two
-      accounts say it is.
+- [x] **Two-factor authentication** (human, 2026-09-08: "2fa tamam") — GitHub
+      and Cloudflare; the human's word is the record, the API cannot see it.
 - [ ] **`DISPATCH_TOKEN` (a credential, so yours):** GitHub → Settings → Developer
       settings → Fine-grained tokens → new token, repository access:
       `permit-rulebook` only, permission Contents: read and write; then on
