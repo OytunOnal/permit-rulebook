@@ -12,7 +12,7 @@ flowchart TB
     C2 --> D["v0.6 · Source watch ✅"] --> E["v0.7 · Four countries ✅"]
     E --> E2["v0.8 · Answers as given ✅"] --> E3["v0.9 · Every sentence sourced ✅"]
     E3 --> E4["v0.10 · Launch-readiness sweep ✅"]
-    E4 --> F["s6 · Public launch ◀ here<br/>mock-green · live · real-green needs the human"]
+    E4 --> F["s6 · Public launch ◀ here"]
     F --> V1["🏁 v1"]
     V1 -.-> G["Wave 2: CA + AU"] -.-> H["Wave 3: rest of Europe + community"]
 ```
