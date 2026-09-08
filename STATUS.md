@@ -59,18 +59,15 @@ action, a real device, or a judgement on a live source.
       whether any German threshold moved. *Pass:* one line — "no value moved"
       or which one — and it goes into DECISIONS. (The FR flag of 09-05 was a
       false alarm from an opening-hours widget; being bounded.)
-- [ ] **3 · Labels on `permit-rulebook-data`:** create `bug`, `design-flaw`,
-      `new-need`. *Pass:* "New issue" shows the three templates; one test issue
-      filed from a route page's "Report a wrong value" lands labelled.
-- [ ] **4 · The domain — before "go", not optional** (decision 6 says it is
-      bound at the tag; my earlier "optional" contradicted it): buy
-      `permitrulebook.com` (unregistered as of 2026-09-08; .org and .eu too)
-      at any registrar — the purchase is yours; then add the DNS records I
-      give you (four A records for the apex to GitHub Pages, a CNAME for
-      `www` to `oytunonal.github.io`). I bind it under Pages, HTTPS comes on
-      its own, and `SITE_URL` moves to the domain. *Pass:* the domain serves
-      the site over HTTPS; view-source shows `canonical` and `og:url` on it.
-      Until then the preview lives at the Pages URL.
+- [x] **3 · Labels** (session, at the human's word, 2026-09-08): `bug`,
+      `design-flaw`, `new-need` on `permit-rulebook-data`, in the token colours;
+      the three templates carry them. Still yours to see once: one test issue
+      from a route page's "Report a wrong value" lands labelled.
+- [~] **4 · The domain — bought and pointed** (human, 2026-09-08):
+      `permitrulebook.com` at Cloudflare Registrar, four A records + `www`
+      CNAME live on every public resolver; bound under Pages; `SITE_URL` set to
+      it. Waiting only on the first successful deploy, after which GitHub
+      issues the certificate and I enforce HTTPS.
 - [ ] **5 · Phone walk on the preview, real handset:** the interview end to
       end and one route page. *Pass:* nothing overflows, every tap target is
       comfortable, the rail's labels read as a list, the scope statement reads
