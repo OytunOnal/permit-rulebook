@@ -2126,3 +2126,8 @@ not `bug`: a flag is a change to read, and it becomes a `bug` only when a
 value on a live page turns out to be wrong — the triage happens on the issue.
 The human's test issue from a route page landed with `bug` applied (step 9
 passed) and was closed.
+
+**Addendum, 2026-09-08 — Sponsors live (decision 10 done).** The human
+completed the profile and the payout onboarding; the small link sits beside
+the licence in both READMEs and `.github/FUNDING.yml` shows the button. Cost as
+decided: none to the reader; the site runs on nothing that needs it.

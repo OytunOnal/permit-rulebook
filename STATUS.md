@@ -82,15 +82,9 @@ judgement on a live source.
 - [x] **French and Spanish question paths** (human, 2026-09-08): pass — counter
       steady, bands sensible, no offer wording on a transfer. One bug found on
       the way: Back goes two questions back — being fixed.
-- [ ] **GitHub Sponsors (decision 10; the account has no Sponsors profile yet —
-      `hasSponsorsListing: false`):** go to https://github.com/sponsors/accounts,
-      choose your personal account, complete the profile and the payout
-      onboarding (Stripe: identity and bank details — yours, never mine), and
-      publish the profile. *Pass:* https://github.com/sponsors/OytunOnal opens;
-      both repositories show a "Sponsor" button (`.github/FUNDING.yml` is
-      already in place). Then say "sponsors açık" and I put the small link
-      beside the licence in both READMEs. Optional for v1; the announcement can
-      go out without it.
+- [x] **GitHub Sponsors** (human, 2026-09-08): profile live at
+      https://github.com/sponsors/OytunOnal; the small link sits beside the
+      licence in both READMEs; the Sponsor button shows on both repositories.
 - [ ] **`DISPATCH_TOKEN` (a credential, so yours):** GitHub → Settings → Developer
       settings → Fine-grained tokens → new token, repository access:
       `permit-rulebook` only, permission Contents: read and write; then on
