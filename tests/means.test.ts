@@ -89,9 +89,9 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         // 1. The situation question, with the destination already declared.
-        await page.goto(`${server.origin}/`, 300);
+        await page.goto(server.url("/"), 300);
         await page.evaluate(seed({ destination: "nl" }));
-        await page.goto(`${server.origin}/`, 900);
+        await page.goto(server.url("/"), 900);
         const question = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
         const options = JSON.parse(await page.evaluate(
           'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
@@ -101,7 +101,7 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
 
         // 2. The results the walk reached, and the step it offered.
         await page.evaluate(seed(WALK));
-        await page.goto(`${server.origin}/`, 1400);
+        await page.goto(server.url("/"), 1400);
         const rows = JSON.parse(await page.evaluate(
           'JSON.stringify([...document.querySelectorAll(".unlock")].map((u) => ({'
           + ' head: u.querySelector("h4").textContent.trim(),'

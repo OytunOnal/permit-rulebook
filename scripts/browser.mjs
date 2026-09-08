@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { extname, join } from "node:path";
 import { chromePath } from "./chrome.mjs";
+import { at, siteBase } from "./site-base.mjs";
 
 /**
  * A real browser over the built site, shared by everything that needs one.
@@ -86,10 +87,20 @@ const TYPES = {
   ".ico": "image/x-icon", ".map": "application/json", ".txt": "text/plain",
 };
 
-/** A static server over a directory, on a port the OS picks. */
-export async function serve(dir) {
+/**
+ * A static server over a directory, on a port the OS picks, mounted where the
+ * build believes it lives.
+ *
+ * A site built for a subpath asks for its own assets under that subpath. Served
+ * at the root it gets 404 for every stylesheet and script, and every measured
+ * page comes out unstyled — which is how CI reported the identity pair as
+ * missing and the interview as empty (2026-09-08).
+ */
+export async function serve(dir, { base = siteBase() } = {}) {
   const server = createServer((req, res) => {
-    let file = join(dir, decodeURIComponent(new URL(req.url, "http://x").pathname));
+    let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    if (base && (path === base || path.startsWith(`${base}/`))) path = path.slice(base.length) || "/";
+    let file = join(dir, path);
     if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
     if (!existsSync(file)) { res.writeHead(404); res.end("not found"); return; }
     res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream" });
@@ -101,7 +112,8 @@ export async function serve(dir) {
     server.listen(0, "127.0.0.1", () => resolve(server.address().port));
   });
   const close = owned(() => { server.closeAllConnections?.(); server.close(); });
-  return { port, origin: `http://127.0.0.1:${port}`, close };
+  const origin = `http://127.0.0.1:${port}`;
+  return { port, origin, base, url: (path) => at(origin, base, path), close };
 }
 
 /**

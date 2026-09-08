@@ -23,6 +23,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serve, withBrowser } from "./browser.mjs";
 import { startDev } from "./dev-server.mjs";
+import { siteBase } from "./site-base.mjs";
 
 const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 
@@ -56,17 +57,21 @@ export const CHECKS = [
       const problems = [];
       if (!/^\d{4}-\d{2}-\d{2}$/.test(v.stamp)) problems.push(`the rules-read stamp is "${v.stamp}"`);
       if (v.rules < 3) problems.push(`only ${v.rules} rule cards rendered`);
-      if (!v.cta.startsWith("/?route=")) problems.push("the call to action does not lead into the interview");
+      // Under a base the interview is at `${base}/`, not `/` — the link is
+      // right and an assertion written at the root is what is wrong.
+      const interview = `${siteBase()}/?route=`;
+      if (!v.cta.startsWith(interview))
+        problems.push(`the call to action is "${v.cta}", not a link into the interview at ${interview}`);
       return problems;
     },
   },
 ];
 
-async function walk(origin, surface) {
+async function walk(target, surface) {
   return withBrowser(async (page) => {
     const results = [];
     for (const check of CHECKS) {
-      await page.goto(origin + check.path, 900);
+      await page.goto(target.url(check.path), 900);
       let value = {};
       let unreadable = [];
       try {
@@ -93,23 +98,27 @@ async function walk(origin, surface) {
  * is exercised; `dist` is what a visitor gets. Neither substitutes for the
  * other, and the bug this exists for showed only on the first.
  */
-export async function smoke({ dir = dist, surfaces = ["dev", "dist"] } = {}) {
+/** In CI the deployable artifact is dist/, so that is what is walked; the dev
+ * surface is a local developer check (human ruling, 2026-09-08). */
+export const DEFAULT_SURFACES = process.env.CI ? ["dist"] : ["dev", "dist"];
+
+export async function smoke({ dir = dist, surfaces = DEFAULT_SURFACES } = {}) {
   const results = [];
   if (surfaces.includes("dev")) {
     const dev = await startDev();
-    try { results.push(...await walk(dev.origin, "dev")); } finally { dev.close(); }
+    try { results.push(...await walk(dev, "dev")); } finally { dev.close(); }
   }
   if (surfaces.includes("dist")) {
     if (!existsSync(dir)) throw new Error(`no ${dir} — run npm run build first`);
     const server = await serve(dir);
-    try { results.push(...await walk(server.origin, "dist")); } finally { server.close(); }
+    try { results.push(...await walk(server, "dist")); } finally { server.close(); }
   }
   return results;
 }
 if (process.argv[1]?.endsWith("smoke.mjs")) {
   const only = process.argv.includes("--dev") ? ["dev"]
     : process.argv.includes("--dist") ? ["dist"]
-    : ["dev", "dist"];
+    : DEFAULT_SURFACES;
   const results = await smoke({ surfaces: only });
   let failed = 0;
   for (const r of results) {

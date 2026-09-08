@@ -24,7 +24,7 @@ import { fileURLToPath } from "node:url";
  */
 
 const { chromePath } = await import("../scripts/chrome.mjs");
-const { smoke } = await import("../scripts/smoke.mjs");
+const { smoke, CHECKS, DEFAULT_SURFACES } = await import("../scripts/smoke.mjs");
 const { notOurDevServer } = await import("../scripts/dev-server.mjs");
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -50,6 +50,14 @@ const skipped = why();
  * miss, because a silent one reports that the site is fine when nothing looked
  * at it.
  */
+if (!skipped && !DEFAULT_SURFACES.includes("dev"))
+  process.stderr.write([
+    "",
+    "  note: the dev server surface is a local check and was not walked here.",
+    "        CI walks dist/, which is the artifact that deploys.",
+    "",
+  ].join(String.fromCharCode(10)));
+
 if (skipped)
   process.stderr.write([
     "",
@@ -71,11 +79,14 @@ describe("the site, in a real browser", () => {
     "renders the interview and a route page on both surfaces, throwing nothing",
     async () => {
       const results = await smoke();
-      // Two pages on each of the two surfaces. A run that walked fewer than
-      // that proved less than it claims.
-      expect(results.length).toBe(4);
+      // Every check on every surface this run is meant to walk. In CI that is
+      // `dist/`, the artifact that actually deploys; locally it is that and
+      // the dev server too (human ruling, 2026-09-08). A run that walked fewer
+      // than it claims proves less than it claims.
+      expect(results.length).toBe(CHECKS.length * DEFAULT_SURFACES.length);
       expect(new Set(results.map((r: { surface: string }) => r.surface)))
-        .toEqual(new Set(["dev", "dist"]));
+        .toEqual(new Set(DEFAULT_SURFACES));
+      expect(DEFAULT_SURFACES).toContain("dist");
 
       const broken = results.filter((r: { failures: string[] }) => r.failures.length);
       expect(broken.map((r: { surface: string; path: string; failures: string[] }) =>
@@ -129,7 +140,9 @@ describe("the harness refuses to walk a process it did not start", () => {
     try {
       // The first half of the check passes here: it is our product, with its
       // own /status page. Only the second half catches it.
-      expect(await notOurDevServer(server.origin)).toContain("@vite/client");
+      // The served root, not the bare origin: under a base the origin is not
+      // the site, and the check would reject it for the wrong reason.
+      expect(await notOurDevServer(server.url("/"))).toContain("@vite/client");
     } finally {
       server.close();
     }

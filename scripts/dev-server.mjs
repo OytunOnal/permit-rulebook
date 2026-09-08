@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PRODUCT_NAME } from "../src/lib/copy.ts";
 import { childEnv } from "./child-env.mjs";
+import { at, siteBase } from "./site-base.mjs";
 
 /**
  * `astro dev`, owned by this process and proved before it is used.
@@ -59,16 +60,18 @@ async function freePort() {
  * Returns the reason it is not usable, or null when it is.
  */
 export async function notOurDevServer(origin) {
+  // Everything is asked for under the served root, base included.
+  const root = origin.endsWith("/") ? origin : origin + "/";
   try {
-    const status = await fetch(`${origin}/status`, { signal: AbortSignal.timeout(5000) });
-    if (!status.ok) return `${origin}/status answered ${status.status} — it serves no routes of this project`;
+    const status = await fetch(`${root}status`, { signal: AbortSignal.timeout(5000) });
+    if (!status.ok) return `${root}status answered ${status.status} — it serves no routes of this project`;
     const html = await status.text();
-    if (!html.includes(PRODUCT_NAME)) return `${origin}/status does not mention ${PRODUCT_NAME}`;
-    const client = await fetch(`${origin}/@vite/client`, { signal: AbortSignal.timeout(5000) });
-    if (!client.ok) return `${origin}/@vite/client answered ${client.status} — not a dev server`;
+    if (!html.includes(PRODUCT_NAME)) return `${root}status does not mention ${PRODUCT_NAME}`;
+    const client = await fetch(`${root}@vite/client`, { signal: AbortSignal.timeout(5000) });
+    if (!client.ok) return `${root}@vite/client answered ${client.status} — not a dev server`;
     return null;
   } catch (e) {
-    return `${origin} could not be reached — ${e.message}`;
+    return `${root} could not be reached — ${e.message}`;
   }
 }
 
@@ -80,6 +83,11 @@ export async function startDev({ timeoutMs = 90000 } = {}) {
   if (!existsSync(ASTRO_BIN)) throw new Error(`astro is not installed at ${ASTRO_BIN}`);
   const port = await freePort();
   const origin = `http://127.0.0.1:${port}`;
+  // The dev server serves ONLY under its base. Probing the bare origin gets a
+  // 404 for ever, which is exactly how CI waited ninety seconds for a dev
+  // server that had been up the whole time (2026-09-08).
+  const base = siteBase();
+  const home = at(origin, base, "/");
   const output = [];
 
   const child = spawn(process.execPath,
@@ -116,23 +124,23 @@ export async function startDev({ timeoutMs = 90000 } = {}) {
       if (exited !== null)
         throw new Error(`astro dev exited (${exited}) before serving:\n${output.join("")}`);
       if (Date.now() > deadline)
-        throw new Error(`astro dev did not serve ${origin} in ${timeoutMs}ms:\n${output.join("")}`);
+        throw new Error(`astro dev did not serve ${home} in ${timeoutMs}ms:\n${output.join("")}`);
       try {
-        const res = await fetch(origin, { signal: AbortSignal.timeout(2000) });
+        const res = await fetch(home, { signal: AbortSignal.timeout(2000) });
         if (res.ok) break;
       } catch { /* not up yet */ }
       await new Promise((r) => setTimeout(r, 300));
     }
 
     // Answering is not the same as serving this project.
-    const wrong = await notOurDevServer(origin);
+    const wrong = await notOurDevServer(home);
     if (wrong)
       throw new Error(
         `the dev server this harness started is not serving the site: ${wrong}\n` +
         `  cwd was ${SITE_ROOT}\n${output.join("")}`,
       );
 
-    return { origin, close };
+    return { origin, base, url: (path) => at(origin, base, path), close };
   } catch (e) {
     close();
     throw e;

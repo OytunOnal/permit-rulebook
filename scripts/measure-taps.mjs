@@ -73,7 +73,9 @@ try {
   await withBrowser(async (page) => {
     for (const file of pages) {
       const path = relative(dist, file).split("\\").join("/");
-      await page.goto(`${server.origin}/${path.replace(/index\.html$/, "")}`, 350);
+      // Through the server's own url(): a site built for a subpath asks for
+      // its assets there, and served at the root it measures as unstyled.
+      await page.goto(server.url(`/${path.replace(/index\.html$/, "")}`), 350);
       const m = JSON.parse(await page.evaluate(PROBE));
       const overflow = m.scrollWidth > m.innerWidth + 1;
       if (overflow) overflows++;

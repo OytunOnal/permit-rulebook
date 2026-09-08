@@ -215,7 +215,7 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
         const seen = await withBrowser(async (page: BrowserPage) => {
           const out: Record<string, Measure> = {};
           for (const path of [RESULTS, ROUTE]) {
-            await page.goto(server.origin + path, 700);
+            await page.goto(server.url(path), 700);
             out[path] = JSON.parse(await page.evaluate(PROBE)) as Measure;
           }
           return out;
@@ -253,10 +253,10 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
         const seen = await withBrowser(async (page: BrowserPage) => {
           const out: Record<string, Measure> = {};
           for (const path of [RESULTS, ROUTE]) {
-            await page.goto(server.origin + path, 400);
+            await page.goto(server.url(path), 400);
             if (path === RESULTS) {
               await page.evaluate(SEED_FINISHED_RECORD);
-              await page.goto(server.origin + path, 1400);
+              await page.goto(server.url(path), 1400);
             }
             out[path] = JSON.parse(await page.evaluate(PLACEMENT)) as Measure;
           }
