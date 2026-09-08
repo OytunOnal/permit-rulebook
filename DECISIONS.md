@@ -1816,3 +1816,19 @@ stay on the route page, where the label list explains them. 347 + 135 tests.
 **Kept for the record:** the human found all three in one sitting on a
 product the session had walked and called mock-green. The walk was real; the
 reader's chair still sees what the builder's does not.
+
+**Addendum, 2026-09-08 — the IND sentence landed as a caveat, and the slice
+moved.** The builder overrode my word "precondition", with the glossary as
+the argument: a Precondition is a condition the interview never asks, and the
+interview does ask the situation; the sentence qualifies the "job offer"
+answer, which is what a Caveat is. Agreed — and had it gone in as a
+precondition it would have landed in `scope.not_asked`, asserting the page
+names a limb it does not ask. The watch slice for the IND highly-skilled page
+now starts at the lede (one paragraph wider; the rotating menu and the "Last
+update" line still outside), re-baselined with `--only`, the flag kept in
+`watch/flags/` with both hashes and a dated `history` line on the entry so a
+reader in six months does not take it for the authority rewriting the page.
+The builder also caught itself overwriting an existing sourced quote — quote
+fidelity failing to rise was the tell — and restored it byte for byte. Cost,
+stated: the wall-of-quotes cap moved 9 → 10 for one Dutch card; eleven is the
+news now. Quotes verified 122; 351 + 135 tests.

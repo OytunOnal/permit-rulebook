@@ -29,7 +29,7 @@ question, a persisted record, results with the scope line, a route page at
 desktop and 390 px, the call to action pre-scoping the interview, the social
 card, the footer links. Console errors: 0. Everything on disk is
 built and committed in both
-repositories (`b5a71a3`, `744dbfb`): 23 route pages generated from the
+repositories (see git log, 2026-09-08): 23 route pages generated from the
 dataset, the name sweep, the identity, the social card, the Pages workflow,
 the contributor files, six invariants as tests. The review round found what
 the build's green could not — a name gate that inspected none of the new
@@ -38,7 +38,7 @@ of an invariant — and the scope value stopped being one constant (22 / 1 / 0).
 Nothing is on GitHub yet: the repositories still carry the old names, Pages
 is off, no domain is bound. The daily watch still dry-runs.
 
-Numbers: 342 tests in the data repository, 116 in the site; 120 quotes
+Numbers: 351 tests in the data repository, 135 in the site; 122 quotes
 verified, `human_tier: 0`; 25 pages, 0 tap targets under 44 px at 390 px.
 
 ## What is expected from you
