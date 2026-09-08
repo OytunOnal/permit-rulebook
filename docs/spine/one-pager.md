@@ -45,9 +45,13 @@ not selling but citing sources; cross-referral with JobRadar in a later period.
 
 ## Scope
 
-- **v1:** DE/FR/ES/NL, employment-based routes, 8-10 per country (~35-40 total; counting
-  FR "talent" as a single family + a sub-type discriminator), a written exclusion list
-  per country (seasonal/trainee/seafarer/artist/investor). A one-person side project:
+- **v1:** DE/FR/ES/NL, employment-based routes — **23 scored routes** (the draft
+  estimated 8-10 per country, ~35-40; the inventory and the exclusion list settled
+  it at 23 deterministic routes, amended 2026-09-08 at the human's decision), with a
+  written exclusion list per country stating why each other route is out
+  (discretion, labour-market test, quota, derivative, abolished). **v1.1:** the ~14
+  excluded routes a person can actually hold ship as route pages with the scope
+  value "rules quoted, nothing asked" — quoted and dated, never scored. A one-person side project:
   the first fill ≈ over a hundred sourced data points (route × criterion ×
   URL+quote+date) — the plan stage spreads this over slices (country-by-country launch).
 - **Pipeline v1:** watch + hash/diff + flag (opens an issue, a human updates it with
@@ -85,7 +89,7 @@ not selling but citing sources; cross-referral with JobRadar in a later period.
 - **Success metric (primary):** **Dataset liveness** — the target for the time it
   takes an official change to be written into the dataset is **≤48 hours** (measured
   from the watch slice s4 onwards; before that, manual spot checks) + coverage: in
-  v1 4 countries, ~35-40 routes, 100% with quote+date. Secondary: organic usage
+  v1 4 countries, 23 scored routes (v1.1 adds ~14 quoted-not-scored pages), 100% with quote+date. Secondary: organic usage
   (once a non-data-collecting counter is set up). *Single-curator risk (A13):* on
   holidays/under load ≤48h falls back to "best effort"; a violation is not hidden —
   the read date of every value is already public, the delay is visible on the page.

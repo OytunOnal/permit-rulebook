@@ -1969,3 +1969,23 @@ both are being fixed rather than recorded as a deliberate cost.
 builder's walks nor mine could: what a stranger meets first — the address bar,
 the 404, the repository's About box, the home page's lack of a door into the
 route pages. Distribution is a surface, and nobody had walked it.
+
+## 2026-09-08 — Scope at v1: 23 scored routes; the 14 excluded active routes become v1.1 pages 🛑
+
+**Gate (human: "23 ile çıkıp 1.1 e ekleyelim").** The one-pager's v1 scope
+said 8–10 routes per country (~35–40); research and modelling produced 23
+deterministic routes and an exclusions file naming the rest with reasons —
+discretion, labour-market tests, quotas, derivatives, one abolished. Of those,
+about 14 are active routes a person can actually hold. They cannot enter the
+checker honestly: a verdict on a route decided by discretion would be the
+overclaim the product exists to avoid. They can enter the dataset and the
+site as route pages with the third scope value, "rules quoted, nothing
+asked" — the source's own sentences, dated and watched, and a plain statement
+that the checker does not score them. That is v1.1: first FR carte salarié,
+ES cuenta ajena, ES digital nomad, NL GVVA, DE § 21, then the rest.
+
+**Cost, stated.** v1 ships with 23 where its own one-pager promised 35–40;
+the one-pager is amended to say so rather than left disagreeing in public.
+v1.1 costs research per route (source page, quotes, dates, a watch entry),
+days not hours; the third scope value stays held by a synthetic pin until
+the first real page arrives.

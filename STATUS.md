@@ -80,10 +80,8 @@ action, a real device, or a judgement on a live source.
       tomorrow — pass: the card shows tomorrow's date; (3) paste
       https://permitrulebook.com/germany/eu-blue-card-general into Slack,
       WhatsApp and X — pass: the per-route title and the €50,700 description
-      beside the card; (4) **scope:** the one-pager promised 35–40 routes at
-      v1, the product ships 23 with the exclusions list carrying the
-      difference — say "23 is v1" and I amend the one-pager, or name the
-      routes to add first; (5) walk the French and Spanish question paths once
+      beside the card; (4) ~~scope~~ decided: v1 ships 23, the 14 excluded active
+      routes become v1.1 "quoted, not asked" pages (DECISIONS); (5) walk the French and Spanish question paths once
       on the phone (the critique walked their route pages, not their
       questions).
 - [ ] **5 · Phone walk on the live site, real handset** (https://permitrulebook.com): the interview end to

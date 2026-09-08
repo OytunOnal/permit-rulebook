@@ -34,6 +34,15 @@ Promoted (or dropped, with evidence) at a boundary session.
   shape (research-01, Workbeyond), micro-page SEO (research-01, Visaora).
 
 ### v1.x
+
+- **Quoted, not asked — pages for the 14 excluded active routes** (v1.1,
+  human 2026-09-08) · why: the one-pager promised ~35–40 routes and the
+  product ships 23; the excluded routes are real and searched for, and the
+  third scope value ("rules quoted, nothing asked") exists for exactly them ·
+  bet: a route page that quotes and dates the rules without scoring earns the
+  same trust and traffic as a scored one (A2/A7) · first five: FR carte
+  salarié, ES cuenta ajena, ES digital nomad, NL GVVA, DE § 21 · source:
+  `data/exclusions.md`, the v1-gate critique's scope note.
 - ~~Print or save the record~~ · **dropped 2026-09-07 — done in s5d** (print
   stylesheet, localStorage record).
 - **Affiliate layer** · the money model from the viability gate · bet:
