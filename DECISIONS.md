@@ -1856,3 +1856,25 @@ values; the slice is being bounded so it cannot recur. `zav-newsletter-index`
 (09-07) — a new "Ausgabe 05/2026" appeared on the ZAV index, exactly what the
 sentinel exists to say; **this one is the human's to read** (decision 7): does
 the new edition move any German threshold?
+
+## 2026-09-08 — Public 🛑 (human: "tamam public yapalım o zaman")
+
+**Gate (human chose).** Both repositories are public as of this entry, at the
+new names, with full history. The argument put to the human: the slice's
+whole claim is open data (CC BY, contributors, tracker, the three assumptions
+A2/A7/A8), so private forever would be a back-edge to the one-pager with no
+evidence behind it; and public is not the announcement — the scenario puts
+the preview, the phone walk and the isolated critique before the post, and a
+link nobody has posted is a link nobody visits. The alternative (a month of a
+paid plan for a private rehearsal) was offered and not taken.
+
+**Pages is enabled**, GitHub Actions source, at
+`https://oytunonal.github.io/permit-rulebook/` — a project subpath, which the
+build did not anticipate (every internal path is root-absolute). Two ways
+out: a custom domain (root path, the human's step 4) or a base-path-aware
+build; the second is being done regardless, because a site that only works
+at one path is a site with a hidden assumption. `SITE_URL` is set as a
+repository variable to the Pages URL until a domain exists.
+
+**The first deploy run failed at "Check out the data"** while the sibling
+was still private; re-run after the visibility change.

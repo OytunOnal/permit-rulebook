@@ -48,14 +48,11 @@ action, a real device, or a judgement on a live source.
 
 - [x] **1 · Renamed** (session, 2026-09-08): `permit-rulebook`, `permit-rulebook-data`;
       remotes repointed; both pushed.
-- [ ] **2 · Visibility — your decision:** both repositories are private on a
-      free plan, so Pages cannot be enabled and the deploy workflow cannot
-      check out the data repository. Say **"public"** and I make both public,
-      enable Pages (GitHub Actions source) and re-run the deploy — that is the
-      launch's first public moment, so it is yours; or say "private" and we
-      go paid plan + a token for the sibling checkout. *Pass:* the deploy run
-      reaches its last step and prints the preview URL; `measure:taps` and
-      `smoke` print 0 problems.
+- [x] **2 · Public** (human, 2026-09-08): both repositories public; Pages enabled
+      (GitHub Actions source) at https://oytunonal.github.io/permit-rulebook/;
+      `SITE_URL` set to it. Deploy re-run in progress; the site must still learn
+      to live under the `/permit-rulebook/` subpath (builder) unless a domain
+      is bound first.
 - [ ] **2b · The first sentinel flag, yours to read** (decision 7):
       `watch/flags/zav-newsletter-index-2026-09-07.md` — a new "Ausgabe
       05/2026" appeared on the ZAV newsletter index. Open the source and say
