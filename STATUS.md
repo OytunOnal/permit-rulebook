@@ -40,17 +40,17 @@ source (`identity.ts`), an attribute-escaping gate, and the one-pager's
 "answers never leave the device" promise checked in a real browser (proved red
 by an injected request, green on the clean build). 397 + 196 tests.
 
-**And one more slice-sized item before v1, from the human's walk:** the site
-has no shared navigation — the four country links live only in the home
-footer, a country page leads nowhere but its routes. The site map is written
-(`docs/spine/design/site-map.md`, the first one; Spine now requires it from
-the second screen on) and names the gaps; the header navigation, the country page and the data page
-were mocked, critiqued in isolation (3 blockers applied) and **approved by the
-human**; the builder is on them now. Then the two-axis review, deploy, and
-v1 waits only on the checklist.
+**The navigation is built and pushed** (site `f8737da`, data `d3cbbd7`): the
+shared header on every page, country pages to the approved mock, `/data` with
+`/status` kept as an alias, no crumbs, the reader's scope words everywhere,
+eleven orientation tests. The phone's Back bug went with it: every render had
+been pushing a history entry; now one entry per question and the on-screen
+Back is the browser's own. Deploying; the two-axis review runs in parallel;
+its findings get one more round if needed. Then v1 waits only on the
+checklist below.
 
-Numbers: 397 tests in the data repository, 196 in the site; 122 quotes
-verified, `human_tier: 0`; 30 pages + 24 endpoints, 0 tap targets under 44 px
+Numbers: 397 tests in the data repository, 214 in the site; 122 quotes
+verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
 at 390 px; critique 32/45 on RUBRIC 1.2 (v0.7: 27/45).
 
 ## What is expected from you
@@ -81,7 +81,7 @@ judgement on a live source.
       "Rules read". *Fail:* yesterday's — the rebuild did not run; tell me.
 - [x] **French and Spanish question paths** (human, 2026-09-08): pass — counter
       steady, bands sensible, no offer wording on a transfer. One bug found on
-      the way: Back goes two questions back — being fixed.
+      the way (Back jumping questions) — fixed in the navigation round.
 - [x] **GitHub Sponsors** (human, 2026-09-08): profile live at
       https://github.com/sponsors/OytunOnal; the small link sits beside the
       licence in both READMEs; the Sponsor button shows on both repositories.

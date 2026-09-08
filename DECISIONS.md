@@ -2131,3 +2131,28 @@ passed) and was closed.
 completed the profile and the payout onboarding; the small link sits beside
 the licence in both READMEs and `.github/FUNDING.yml` shows the button. Cost as
 decided: none to the reader; the site runs on nothing that needs it.
+
+## 2026-09-08 — Navigation built; the phone's Back bug had a root cause worth keeping
+
+**Built as approved** (site `f8737da`, data `d3cbbd7`): the shared header on
+every page from `identity.ts`, folding at 959 px; country pages to the mock;
+`/data` as the on-site data page with `/status` kept as an alias (a static
+host has no redirect, so the alias is a meta refresh with its destination in
+words and `noindex`); no crumbs; the reader's scope words on all three
+screens from one source; orientation tests (identical header on 31 pages,
+one-click reach, two-click reach from `/`, no footer-only page, the fold
+measured, the menu walked at 390).
+
+**The Back bug.** Every render pushed a history entry — answering, editing,
+even the on-screen "← Back" — so the entries stopped naming questions; a
+phone throttling a burst of `pushState` dropped some while the page kept
+counting, which is exactly what the human saw (one entry for three answers,
+back jumping three, the next back going forward). Now a history entry names
+the question it showed, never a copy of the answers; advancing pushes, every
+other render replaces; the on-screen Back is `history.back()` itself, so the
+two gestures cannot diverge. Both cases proven red on the old behaviour.
+
+**Amended on the way.** "scored" was on the pipeline-vocabulary ban list; the
+human's own wording uses it ("scored against your answers"), so it is allowed
+only in that full phrase, never bare — the test says so with the date. Cost:
+one word crossed from engineering to reader register on purpose.
