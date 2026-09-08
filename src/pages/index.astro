@@ -55,9 +55,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         <h1 id="headline" set:html={intro.headline}></h1>
         <p class="sub" id="subline">{intro.subline}</p>
       </div>
-      <div class="stamps" aria-hidden="true" id="stamp" hidden>
+      {/* One pair, two states. On the question screens it states the same
+          fact the route page states — when the rules were last read — and on
+          the results it becomes the record's own date (human, 2026-09-08).
+          The box never moves: only the words and the date inside it change. */}
+      <div class="stamps" aria-hidden="true" id="stamp">
         <span class="mark" title={PRODUCT_NAME}>{SEAL_LETTERS}</span>
-        <div class="stamp"><time id="stamp-time">Record generated<br /><span id="stamp-date"></span></time></div>
+        <div class="stamp"><time id="stamp-time" datetime={meta.newest_retrieved_at}><span id="stamp-label">Rules read</span><br /><span id="stamp-date">{meta.newest_retrieved_at}</span></time></div>
       </div>
     </header>
 
@@ -96,7 +100,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import {
       deriveQuestions, remainingQuestions, evaluate, formatEURPer,
       deriveBands, unlocks, notices, fieldOptions, matchOptions, referencedFields,
-      countryClasses,
+      countryClasses, datasetMeta,
       // s5d: every word a verdict says comes from here, beside the rules — the
       // page holds no field-id-to-label table of its own to fall through
       // (product-critique v0.7, B3).
@@ -140,17 +144,33 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const subline = document.getElementById("subline")!;
     const app = document.getElementById("app")!;
 
-    // The stamp belongs to the finished record — it appears with the results
-    // (a "record generated" mark on question 1 stamps nothing).
-    const stamp = document.getElementById("stamp")!;
+    /**
+     * The stamp says which fact the screen is standing on.
+     *
+     * On the questions it is the dataset's own newest read date — the same
+     * sentence a route page carries, and a true thing to say before anyone has
+     * answered anything. On the results it is the day this record was made. It
+     * stayed hidden until the results until 2026-09-08, which left the masthead
+     * lopsided on the one screen every reader sees first.
+     */
+    const stampLabel = document.getElementById("stamp-label")!;
+    const stampDate = document.getElementById("stamp-date")!;
+    const stampTime = document.getElementById("stamp-time")!;
+    const rulesRead = datasetMeta(ds).newest_retrieved_at ?? "";
+
+    function setStamp(kind: "rules-read" | "record") {
+      const record = kind === "record";
+      stampLabel.textContent = record ? "Record generated" : "Rules read";
+      const day = record ? isoDay(new Date()) : rulesRead;
+      stampDate.textContent = day;
+      stampTime.setAttribute("datetime", day);
+    }
     // ISO, like every other date the product prints (s6 decision 12). It read
     // `07 · 09 · 2026` until this slice — a second format on a screen whose
     // whole differentiator is when a thing was read, and ambiguous to exactly
     // the reader most likely to be reading it (route-page critique F3). Local
     // time, not UTC: the stamp is the day the person in front of it is having.
-    const stampedToday = isoDay(new Date());
-    document.getElementById("stamp-date")!.textContent = stampedToday;
-    document.getElementById("stamp-time")!.setAttribute("datetime", stampedToday);
+    setStamp("rules-read");
 
     const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
     const declCount = document.getElementById("decl-count")!;
@@ -258,7 +278,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           const f = row.dataset.field!;
           if (asked.indexOf(f) < 0) return;
           editing = f;
-          stamp.hidden = true;
+          setStamp("rules-read");
           app.dataset.state = "questions";
           renderQuestion({ kind: "edit" });
         };
@@ -473,7 +493,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         const prev = asked[at - 1];
         if (prev === undefined) return;
         editing = prev;
-        stamp.hidden = true;
+        setStamp("rules-read");
         app.dataset.state = "questions";
         renderQuestion({ kind: "edit" });
       });
@@ -769,7 +789,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
       renderDeclaration(null);
       app.dataset.state = "results";
-      stamp.hidden = false;
+      setStamp("record");
 
       const applicable = notices(ds, answers);
       const zeroOpen = met + near.length === 0;
@@ -950,7 +970,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // entries that referenced them now restore nothing.
       snapshots.length = 0;
       app.dataset.state = "questions";
-      stamp.hidden = true;
+      setStamp("rules-read");
       renderQuestion({ kind: "reset" });
     });
 
@@ -984,7 +1004,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       asked = [...snap.asked];
       editing = snap.editing;
       saveRecord();
-      stamp.hidden = true;
+      setStamp("rules-read");
       app.dataset.state = "questions";
       renderQuestion({ kind: "restore" });
       restoring = false;

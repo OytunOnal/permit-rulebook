@@ -58,3 +58,17 @@
   .masthead-with-stamps > :first-child { flex: 0 1 auto; }
   .masthead-with-stamps .stamps { align-self: flex-end; margin: 0 0 0 auto; }
 }
+
+/* ---- the masthead heading, on every screen that carries the pair ----
+ *
+ * Two lines by design (human, 2026-09-07 for the route page, 2026-09-08 for
+ * the interview): the question, then the tagline under it, one step smaller
+ * and in the accent. `display: block` is what makes it a line of its own —
+ * the tagline can never wrap up into the question at any width, which is the
+ * whole point of stating it here rather than trusting a line break.
+ *
+ * `<em>` is the standing tagline. `<b>` stays inline emphasis for the number
+ * a result turns on ("One is short by EUR 4,766"), which must NOT become its
+ * own line — two jobs, two elements, one rule each.
+ */
+.masthead-with-stamps h1 em { font-style: normal; color: var(--color-near); display: block; font-size: .82em; margin-top: .15em; }

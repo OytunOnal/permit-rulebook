@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { PAGE_CSS } from "../src/lib/route-page.js";
+import dataset from "permit-rulebook-data/data/dataset.json";
+import { datasetMeta, type Dataset } from "permit-rulebook-data";
 
 /**
  * The identity pair is one drawing, used twice.
@@ -152,6 +154,31 @@ const SEED_FINISHED_RECORD =
     history: ["destination", "citizenship", "situation", "salary_eur_month", "nl_recent_grad", "top200_grad", "age_band"],
   })) + ")";
 
+/** What the stamp says, and where its box is. */
+const STAMP_STATE = `(() => {
+  const box = document.querySelector(".stamps");
+  const b = box.getBoundingClientRect();
+  return JSON.stringify({
+    text: box.querySelector(".stamp").innerHTML.replace(/<[^>]*>/g, " ").split(/[^!-~]+/).filter(Boolean).join(" "),
+    datetime: box.querySelector("time").getAttribute("datetime"),
+    left: Math.round(b.left), top: Math.round(b.top),
+    width: Math.round(b.width), height: Math.round(b.height),
+  });
+})()`;
+
+/** The tagline under the question: its own line, one step smaller. */
+const HEADING = `(() => {
+  const h1 = document.querySelector("h1");
+  const em = h1.querySelector("em");
+  if (!em) return JSON.stringify({ display: "no em", rects: 0, smaller: false });
+  const size = (el) => Number.parseFloat(getComputedStyle(el).fontSize);
+  return JSON.stringify({
+    display: getComputedStyle(em).display,
+    rects: em.getClientRects().length,
+    smaller: size(em) < size(h1),
+  });
+})()`;
+
 const PLACEMENT = `(() => {
   const head = document.querySelector('.masthead-with-stamps');
   if (!head) return JSON.stringify({ missing: true });
@@ -215,7 +242,14 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
         const seen = await withBrowser(async (page: BrowserPage) => {
           const out: Record<string, Measure> = {};
           for (const path of [RESULTS, ROUTE]) {
-            await page.goto(server.url(path), 700);
+            await page.goto(server.url(path), 400);
+            if (path === RESULTS) {
+              // The results screen, which is where this page carries the
+              // "Record generated" stamp; unseeded, `/` is question one and
+              // states the rules-read date instead (human, 2026-09-08).
+              await page.evaluate(SEED_FINISHED_RECORD);
+              await page.goto(server.url(path), 1400);
+            }
             out[path] = JSON.parse(await page.evaluate(PROBE)) as Measure;
           }
           return out;
@@ -303,4 +337,79 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
       }
     }, 120000);
   }
+
+  /**
+   * The first screen carries the pair too (human, 2026-09-08).
+   *
+   * It was hidden until a record existed, so the one screen every reader sees
+   * first had an empty right-hand side. On the questions it states the fact a
+   * route page states — when the rules were last read — and on the results it
+   * becomes the record's own date. One pair, two states, and the box does not
+   * move between them.
+   */
+  it("states the rules-read date on the questions and the record's date on the results", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage) => {
+        const read = () => page.evaluate(STAMP_STATE);
+        await page.goto(server.url("/"), 900);
+        const first = JSON.parse(await read()) as Measure;
+        await page.evaluate('document.querySelector(".qcard .opt").click()');
+        await new Promise((r) => setTimeout(r, 500));
+        const answered = JSON.parse(await read()) as Measure;
+        await page.evaluate(SEED_FINISHED_RECORD);
+        await page.goto(server.url("/"), 1400);
+        const results = JSON.parse(await read()) as Measure;
+        // The words alone, with the masthead's own copy untouched.
+        await page.evaluate('document.getElementById("stamp-label").textContent = "Rules read"');
+        const swapped = JSON.parse(await read()) as Measure;
+        return { first, answered, results, swapped };
+      }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as Record<string, Measure>;
+
+      const newest = datasetMeta(dataset as unknown as Dataset).newest_retrieved_at;
+      // The questions stand on the dataset's own newest read date.
+      expect(seen.first.text).toBe(`Rules read ${newest}`);
+      expect(seen.first.datetime).toBe(newest);
+      expect(seen.answered.text).toBe(`Rules read ${newest}`);
+      // The results stand on the day the record was made.
+      expect(seen.results.text).toMatch(/^Record generated [0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+
+      // The box is the same box on every screen, and swapping the words alone
+      // moves nothing at all.
+      for (const state of ["answered", "results"])
+        for (const key of ["left", "width", "height"])
+          expect(seen[state][key], `${key} moved on ${state}`).toBe(seen.first[key]);
+      for (const key of ["left", "top", "width", "height"])
+        expect(seen.swapped[key], `${key} moved when only the label changed`).toBe(seen.results[key]);
+    } finally {
+      server.close();
+    }
+  }, 120000);
+
+  /**
+   * The masthead heading is two lines by design, from one rule.
+   */
+  it("keeps the tagline on a line of its own, at every width", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage) => {
+        const out: Record<string, Measure> = {};
+        for (const [label, path] of [["interview", "/"], ["route", ROUTE]] as const) {
+          await page.goto(server.url(path), 900);
+          out[label] = JSON.parse(await page.evaluate(HEADING)) as Measure;
+        }
+        return out;
+      }, { viewport: { width: 320, height: 900 }, mobile: true }) as Record<string, Measure>;
+
+      for (const [where, m] of Object.entries(seen)) {
+        // `display: block` is what keeps it off the question's line; one client
+        // rect is what proves it did not wrap up into it.
+        expect(m.display, `${where}: the tagline is not its own line`).toBe("block");
+        expect(m.rects, `${where}: the tagline wrapped`).toBe(1);
+        expect(m.smaller, `${where}: the tagline is not a step smaller`).toBe(true);
+      }
+    } finally {
+      server.close();
+    }
+  }, 120000);
 });

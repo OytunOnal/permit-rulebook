@@ -51,7 +51,12 @@ export const INTRO_SUBLINE =
 export const SHORT_SUBLINE =
   "Every value at the end shows its official quote and the date we read it. Your answers stay on this device.";
 
-export const INTRO_HEADLINE = "Which work-permit routes could fit? <b>A few quick questions.</b>";
+/**
+ * `<em>`, not `<b>`: this is the standing tagline, and it is a line of its own
+ * under the question (human, 2026-09-08). `<b>` stays for the inline emphasis
+ * a result headline puts on a number, which must not break the line.
+ */
+export const INTRO_HEADLINE = "Which work-permit routes could fit? <em>A few quick questions.</em>";
 
 /** The only two ways the nothing-open screen can offer a way forward. Written
  * here, with the rest of the masthead copy: appending a sentence to the

@@ -36,12 +36,23 @@ export const CHECKS = [
       question: document.querySelector(".qlabel")?.textContent?.trim() ?? "",
       options: document.querySelectorAll(".qcard .opt, .qcard .copt, .qcard #cfilter").length,
       ledger: document.getElementById("decl-list") !== null,
+      stamp: (() => {
+        const box = document.querySelector(".stamps");
+        if (!box || box.hasAttribute("hidden")) return "";
+        return box.querySelector(".stamp").innerHTML
+          .replace(/<[^>]*>/g, " ").split(/[^!-~]+/).filter(Boolean).join(" ");
+      })(),
     })`,
     expect(v) {
       const problems = [];
       if (!v.question) problems.push("no question is on the screen");
       if (v.options < 1) problems.push("the question has no answers to pick from");
       if (!v.ledger) problems.push("the declaration panel is missing");
+      // The pair is on the first screen too, and on the questions it states the
+      // date the rules were last read (human, 2026-09-08). It was hidden until a
+      // record existed, which left this masthead lopsided.
+      if (!/^Rules read [0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v.stamp))
+        problems.push(`the stamp reads "${v.stamp}", not the rules-read date`);
       return problems;
     },
   },

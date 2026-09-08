@@ -699,7 +699,6 @@ a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0; ma
    As a ::before it cannot be separated from the word it introduces. */
 .crumbs > * + *::before { content: "·"; color: var(--color-line); margin-right: var(--space-2); }
 h1 { font: var(--text-hero); margin: var(--space-2) 0 var(--space-2); }
-h1 em { font-style: normal; color: var(--color-near); display: block; font-size: .82em; margin-top: .15em; }
 .lede { margin: 0; color: var(--color-muted); }
 ${IDENTITY}
 .crumbs .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border: 2px solid var(--color-stamp); color: var(--color-stamp); font: 700 .72rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); margin-right: .35rem; }
