@@ -48,11 +48,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <a class="wordmark" href="/"><span class="seal" aria-hidden="true">{SEAL_LETTERS}</span>{PRODUCT_NAME}</a>
-      <div class="brand">{TAGLINE}</div>
-      <h1 id="headline" set:html={intro.headline}></h1>
-      <p class="sub" id="subline">{intro.subline}</p>
+    <header class="masthead-with-stamps">
+      <div>
+        <a class="wordmark" href="/"><span class="seal" aria-hidden="true">{SEAL_LETTERS}</span>{PRODUCT_NAME}</a>
+        <div class="brand">{TAGLINE}</div>
+        <h1 id="headline" set:html={intro.headline}></h1>
+        <p class="sub" id="subline">{intro.subline}</p>
+      </div>
       <div class="stamps" aria-hidden="true" id="stamp" hidden>
         <span class="mark" title={PRODUCT_NAME}>{SEAL_LETTERS}</span>
         <div class="stamp"><time id="stamp-time">Record generated<br /><span id="stamp-date"></span></time></div>
@@ -1054,7 +1056,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     :focus-visible{outline:2px solid var(--color-stamp);outline-offset:2px}
     a{color:var(--color-stamp)}
 
-    header{border-bottom:var(--rule-heavy);padding-bottom:1.3rem;margin-bottom:var(--space-5);position:relative}
+    header{border-bottom:var(--rule-heavy);padding-bottom:1.3rem;margin-bottom:var(--space-5)}
     .brand{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted);margin-top:.35rem}
     /* The identity: the seal before the wordmark, set from the token serif
        (decision 5, chosen by the human 2026-09-07). The seal is bigger than the
@@ -1073,10 +1075,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}
     h1 b{color:var(--color-near)}
     .sub{color:var(--color-muted);max-width:38rem;font-size:.92rem}
-    /* Where the pair sits on THIS screen — right of the masthead, as it has
-       always been. Everything the pair is made of comes from identity.css;
-       nothing about it is restated here, or the two screens drift. */
-    header .stamps{position:absolute;right:0;top:.2rem}
 
     /* The question is first in the DOM so a phone opens on it; on a wide
        screen `order` puts the ledger back in the left column (F8). */
@@ -1301,7 +1299,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
       .tally{text-align:left}
       h1{font-size:1.6rem}
-      header .stamps{position:static;margin:.9rem 0 0 auto}
       .stamps[hidden]{display:none}
     }
     /* Wide: the ledger is a fixed panel, so its disclosure control is not a

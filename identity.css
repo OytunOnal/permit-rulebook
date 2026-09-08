@@ -18,13 +18,43 @@
  * and each page states its own.
  */
 
-.stamps { flex: none; position: relative; width: 7.8rem; height: 6.3rem; }
+/* The box reserves room for the LONGEST label the pair carries, not for the
+   shortest. The mark sits at a fixed offset and the stamp is centred on a
+   fixed point, so a longer word grows past the box’s right edge: "Record
+   generated" is 160px against "Rules read" at 111px, and on a 390px screen
+   that spilled 5px off the page and scrolled it sideways (2026-09-08). The
+   width changes nothing about the drawing — both children are placed from
+   the box's left edge — it only stops the page from scrolling. */
+.stamps { flex: none; position: relative; width: 9.2rem; height: 6.3rem; }
 .stamps .mark { position: absolute; left: .6rem; top: 0; width: 3.4rem; height: 3.4rem; display: flex; align-items: center; justify-content: center; border: 3px solid var(--color-stamp); color: var(--color-stamp); font: 700 1.75rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(calc(-1 * var(--stamp-rotate))); mix-blend-mode: multiply; }
 .stamps .stamp { position: absolute; left: 4rem; top: 3.55rem; white-space: nowrap; font: var(--text-value); color: var(--color-stamp); border: var(--stamp-border); padding: .35rem .6rem; transform: translateX(-50%) rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: .1em; line-height: 1.25; text-align: center; mix-blend-mode: multiply; }
 
 /* Desktop: the pair one size up (human, 2026-09-07); the corner geometry is kept. */
 @media (min-width: 761px) {
-  .stamps { width: 9.8rem; height: 8.7rem; }
+  .stamps { width: 11.2rem; height: 8.7rem; }
   .stamps .mark { left: .7rem; width: 4.3rem; height: 4.3rem; font-size: 2.2rem; border-width: 3.5px; }
   .stamps .stamp { left: 5rem; top: 4.5rem; font-size: .95rem; padding: .45rem .75rem; border-width: 3px; }
+}
+
+/* ---- where the pair sits, on every screen that carries one ----
+ *
+ * Placement lived on each page until 2026-09-08: the route page centred the
+ * pair in the space beside its heading, the results page pinned it flush right
+ * with `position:absolute`, and the two drifted apart on the one thing a reader
+ * compares them by — where it sits. One rule now, so a masthead that carries
+ * the pair carries it the same way.
+ *
+ * The text column stops at 37rem and the pair takes the space that is left,
+ * centred in it (`margin: 0 auto`) rather than pushed against the edge, and
+ * level with the middle of the text block. Below 760 px the column goes back to
+ * its natural width and the pair sits right-aligned under it.
+ */
+.masthead-with-stamps { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); }
+.masthead-with-stamps > :first-child { flex: 0 1 37rem; min-width: 0; }
+.masthead-with-stamps .stamps { margin: 0 auto; }
+
+@media (max-width: 760px) {
+  .masthead-with-stamps { flex-direction: column; align-items: stretch; }
+  .masthead-with-stamps > :first-child { flex: 0 1 auto; }
+  .masthead-with-stamps .stamps { align-self: flex-end; margin: 0 0 0 auto; }
 }

@@ -574,7 +574,7 @@ export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
 
   const body = `<div class="wrap">
 
-  <header class="masthead">
+  <header class="masthead masthead-with-stamps">
     <div>
       <nav class="crumbs label" aria-label="Where you are">
         <a ${tapMin()} href="/"><span class="seal" title="${escAttr(PRODUCT_NAME)}" aria-hidden="true">${
@@ -690,9 +690,7 @@ a { color: var(--color-stamp); }
 a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0; margin: calc((1.6em - var(--tap-min)) / 2) 0; }
 
 /* ---- masthead ---- */
-.masthead { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); border-bottom: var(--rule-heavy); padding-bottom: var(--space-4); }
-.masthead > div:first-child { flex: 0 1 37rem; }
-.masthead .stamps { margin: 0 auto; }
+.masthead { border-bottom: var(--rule-heavy); padding-bottom: var(--space-4); }
 .crumbs { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
 .crumbs a { text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap-min); }
 /* The separator belongs to the item that follows it. As its own element it was
@@ -780,9 +778,6 @@ footer .health { display: flex; justify-content: space-between; gap: var(--space
 footer .health a { display: inline-flex; align-items: center; min-height: var(--tap-min); }
 
 @media (max-width: 760px) {
-  .masthead { flex-direction: column; align-items: stretch; }
-  .masthead > div:first-child { flex: 0 1 auto; }
-  .stamps { align-self: flex-end; margin: 0 0 0 auto; }
   .src { flex-direction: column; }
   .src a { padding-left: 0; }
   .cta { flex-direction: column; align-items: stretch; }
