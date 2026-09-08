@@ -5,117 +5,144 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Navigation and the country page · Permit Rulebook</title>
 <style>
-/* The shared header navigation (from the identity mock's register) on the
-   country page — the screen that had no exits — and, below it, the same header
-   on a route page's masthead so the two can be seen as one product. Tokens
-   pasted so the mock opens standalone; the build reads tokens.css + identity.css. */
+/* Revision 2, after the isolated light critique (2026-09-08): per-route read
+   dates on the index (B1); the scope line rewritten as what the reader gets,
+   with the number labelled (B2, F3); "The data" in the header goes to the
+   on-site data page, so the page that proves the liveness is one step away
+   (B3); the nav folds behind Menu below 960 px, closing the 761–939 band (F1);
+   whole card clickable, titles in link colour (F2); the header's action is
+   "Checker", the page's is "Check yours — Germany" (F4); the menu works (F5);
+   the 390 view is a true viewport in an iframe (F6); identity.css measures,
+   token names, aria-current="true" on an ancestor, a focus style (P1–P4);
+   prose cleaned and one string per slot (P5, P6).
+   Open ?view=page to render the page alone (the iframe uses it). */
 :root {
   --color-bg: #f1eee4; --color-card: #fbf9f2; --color-ink: #2b2a22; --color-muted: #5a5747; --color-line: #d9d3c0;
   --color-stamp: #8c2b2b; --color-met: #2e5b3f; --color-near: #8a5a19; --color-hold: #6a6759; --color-hold-soft: #edeadf; --color-band: #31519a;
   --font-serif: Cambria, Georgia, serif; --font-sans: "Segoe UI", system-ui, sans-serif; --font-mono: Consolas, monospace;
-  --text-hero: 400 2.2rem/1.2 var(--font-serif); --text-body: 15px/1.6 var(--font-sans);
+  --text-hero: 400 2.2rem/1.2 var(--font-serif); --text-body: 15px/1.6 var(--font-sans); --text-route: 700 1.08rem/1.3 var(--font-serif);
   --text-label: 700 .7rem var(--font-sans); --text-value: 600 .8rem var(--font-mono); --text-source: 400 .76rem var(--font-mono); --tracking-label: .18em;
   --rule-heavy: 3px double var(--color-ink); --rule-soft: 1px solid var(--color-line); --rule-dotted: 1px dotted var(--color-line);
   --space-2: .5rem; --space-3: .85rem; --space-4: 1.3rem; --space-5: 1.6rem; --space-6: 2.8rem; --max-content: 56rem; --tap-min: 44px;
+  --pad-card: 1rem 1.3rem 1.05rem; --gap-cards: .85rem;
   --stamp-border: 2.5px solid var(--color-stamp); --stamp-rotate: -6deg;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: #555; color: #eee; font: 13px/1.5 system-ui; padding: 24px; }
+body.page-only { background: var(--color-bg); padding: 0; }
 h2.mock { font: 600 14px system-ui; margin: 28px 0 8px; color: #eee; }
 h2.mock small { font-weight: 400; color: #bbb; }
+.page-only h2.mock, .page-only .frames { display: none; }
 .panel { background: var(--color-bg); color: var(--color-ink); font: var(--text-body); }
 .wrap { max-width: var(--max-content); margin: 0 auto; padding: var(--space-4) var(--space-4) var(--space-6); }
+:focus-visible { outline: 2px solid var(--color-stamp); outline-offset: 2px; }
 
 /* ---- the site header: identity + navigation, one source on every page ---- */
-.site-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding-bottom: var(--space-3); border-bottom: var(--rule-soft); }
+.site-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding-bottom: var(--space-3); border-bottom: var(--rule-soft); flex-wrap: wrap; }
 .wordmark { font: 700 1.1rem/1 var(--font-serif); color: var(--color-ink); text-decoration: none; display: inline-flex; align-items: center; gap: .55rem; min-height: var(--tap-min); white-space: nowrap; }
 .wordmark .seal { display: inline-flex; align-items: center; justify-content: center; width: 1.7em; height: 1.7em; border: 2.5px solid var(--color-stamp); color: var(--color-stamp); font: 700 .85em/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(var(--stamp-rotate)); }
-.nav { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
-.nav a { color: var(--color-ink); text-decoration: none; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 .6rem; border-bottom: 2px solid transparent; }
-.nav a[aria-current="page"] { border-bottom-color: var(--color-stamp); color: var(--color-stamp); }
+.nav { display: flex; gap: var(--space-2); align-items: center; }
+.nav a { color: var(--color-ink); text-decoration: none; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 .6rem; border-bottom: 2px solid transparent; white-space: nowrap; }
+.nav a[aria-current] { border-bottom-color: var(--color-stamp); color: var(--color-stamp); }
 .nav .sep { width: 1px; height: 1.1rem; background: var(--color-line); margin: 0 .3rem; }
 .nav a.check { border: 1.5px solid var(--color-ink); padding: 0 .8rem; }
 .menu { display: none; }
 
-/* ---- masthead below the header (unchanged from the route page) ---- */
-.masthead { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); border-bottom: var(--rule-heavy); padding: var(--space-4) 0; }
-.masthead > div:first-child { flex: 0 1 37rem; min-width: 0; }
+/* ---- masthead below the header: identity.css measures ---- */
+.masthead-with-stamps { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); border-bottom: var(--rule-heavy); padding: var(--space-4) 0; }
+.masthead-with-stamps > div:first-child { flex: 0 1 37rem; min-width: 0; }
+.masthead-with-stamps .stamps { margin: 0 auto; }
 .crumbs { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; }
 .crumbs a { color: var(--color-stamp); text-decoration: none; display: inline-flex; align-items: center; min-height: var(--tap-min); }
 .crumbs > * + *::before { content: "·"; color: var(--color-line); margin-right: var(--space-2); }
 h1 { font: var(--text-hero); margin: var(--space-2) 0; }
-h1 em { font-style: normal; color: var(--color-near); display: block; font-size: .82em; margin-top: .15em; }
+.masthead-with-stamps h1 em { font-style: normal; color: var(--color-near); display: block; font-size: .82em; margin-top: .15em; }
 .lede { margin: 0; color: var(--color-muted); }
-.stamps { position: relative; width: 9.8rem; height: 8.7rem; margin: 0 auto; flex: none; }
+.lede a { color: var(--color-stamp); }
+.stamps { position: relative; width: 11.2rem; height: 8.7rem; flex: none; }
 .stamps .mark { position: absolute; left: .7rem; top: 0; width: 4.3rem; height: 4.3rem; display: flex; align-items: center; justify-content: center; border: 3.5px solid var(--color-stamp); color: var(--color-stamp); font: 700 2.2rem/1 var(--font-mono); letter-spacing: -.04em; transform: rotate(calc(-1 * var(--stamp-rotate))); mix-blend-mode: multiply; }
 .stamps .stamp { position: absolute; left: 5rem; top: 4.5rem; white-space: nowrap; font: 600 .95rem/1.25 var(--font-mono); color: var(--color-stamp); border: 3px solid var(--color-stamp); padding: .45rem .75rem; transform: translateX(-50%) rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: .1em; text-align: center; mix-blend-mode: multiply; }
 
-/* ---- the country page body: the route list is the index ---- */
-.routes { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: grid; gap: var(--space-3); }
-.routes li { background: var(--color-card); border: var(--rule-soft); padding: var(--space-3) var(--space-4); }
-.routes a { color: var(--color-ink); text-decoration: none; font: 600 1.05rem/1.3 var(--font-serif); display: inline-flex; align-items: center; min-height: var(--tap-min); }
-.routes .gist { margin: .1rem 0 0; color: var(--color-muted); }
-.routes .scope { font: var(--text-source); color: var(--color-muted); margin-top: .35rem; }
+/* ---- the index: whole card is the link; the title carries the link colour ---- */
+.routes { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: grid; gap: var(--gap-cards); }
+.routes li { background: var(--color-card); border: var(--rule-soft); position: relative; }
+.routes li:hover, .routes li:focus-within { border-color: var(--color-stamp); }
+.routes a.card { display: block; padding: var(--pad-card); color: inherit; text-decoration: none; }
+.routes .name { font: var(--text-route); color: var(--color-stamp); text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: .2em; }
+.routes .gist { margin: .25rem 0 0; color: var(--color-ink); }
+.routes .meta { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: .45rem; font: 500 .85rem/1.4 var(--font-sans); color: var(--color-muted); }
+.routes .meta b { font-weight: 600; color: var(--color-ink); }
+.routes .meta .read { font: var(--text-source); color: var(--color-met); align-self: center; }
 .cta { margin-top: var(--space-5); display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
 .cta a.btn { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap-min); padding: 0 1.1rem; background: var(--color-ink); color: var(--color-bg); text-decoration: none; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; }
 .cta .note { color: var(--color-muted); }
 footer { margin-top: var(--space-6); border-top: var(--rule-heavy); padding-top: var(--space-4); color: var(--color-muted); font: var(--text-source); display: flex; gap: var(--space-4); flex-wrap: wrap; }
 footer a { color: var(--color-muted); display: inline-flex; align-items: center; min-height: var(--tap-min); }
 
-/* ---- 390 px: the nav folds behind one control ---- */
-@media (max-width: 760px) {
+/* ---- below 960 px the nav folds behind one control (the 761–939 band had no state) ---- */
+@media (max-width: 959px) {
   .nav { display: none; }
-  .menu { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap-min); min-width: var(--tap-min); padding: 0 .6rem; border: 1.5px solid var(--color-ink); background: none; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); }
-  .nav.open { display: grid; gap: 0; grid-template-columns: 1fr; border-top: var(--rule-soft); padding-top: var(--space-2); }
+  .menu { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap-min); min-width: var(--tap-min); padding: 0 .6rem; border: 1.5px solid var(--color-ink); background: none; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); cursor: pointer; }
+  .nav.open { display: grid; grid-template-columns: 1fr; width: 100%; border-top: var(--rule-soft); padding-top: var(--space-2); }
   .nav.open .sep { display: none; }
-  .masthead { flex-direction: column; align-items: stretch; }
-  .masthead > div:first-child { flex: 0 1 auto; }
-  .stamps { align-self: flex-end; margin: 0 0 0 auto; width: 7.8rem; height: 6.3rem; }
+  .nav.open a { min-height: var(--tap-min); }
+}
+@media (max-width: 760px) {
+  .masthead-with-stamps { flex-direction: column; align-items: stretch; }
+  .masthead-with-stamps > div:first-child { flex: 0 1 auto; }
+  .masthead-with-stamps .stamps { align-self: flex-end; margin: 0 0 0 auto; }
+  .stamps { width: 9.2rem; height: 6.3rem; }
   .stamps .mark { left: .6rem; width: 3.4rem; height: 3.4rem; font-size: 1.75rem; border-width: 3px; }
   .stamps .stamp { left: 4rem; top: 3.55rem; font-size: .8rem; padding: .35rem .6rem; border-width: 2.5px; }
+  .cta { flex-direction: column; align-items: stretch; }
+  .cta a.btn { text-align: center; }
 }
+.frames { display: flex; gap: 24px; align-items: flex-start; }
+.frames iframe { width: 390px; height: 844px; border: 0; background: #fff; }
+.frames figure { margin: 0; } .frames figcaption { margin-bottom: 8px; }
 </style>
 </head>
 <body>
 
-<h2 class="mock">1 · The country page with the shared header <small>— desktop</small></h2>
+<h2 class="mock">1 · The country page with the shared header <small>— desktop (1100); narrow the window below 960 px for the folded state</small></h2>
 <div class="panel"><div class="wrap">
   <header class="site-head">
     <a class="wordmark" href="#"><span class="seal" aria-hidden="true">PR</span>Permit Rulebook</a>
-    <nav class="nav" aria-label="Site">
+    <button class="menu" aria-expanded="false" aria-controls="nav1">Menu</button>
+    <nav class="nav" id="nav1" aria-label="Site">
       <a href="#" aria-current="page">Germany</a><a href="#">France</a><a href="#">Spain</a><a href="#">Netherlands</a>
       <span class="sep"></span>
-      <a href="#" class="check">Check yours</a>
+      <a href="#" class="check">Checker</a>
       <a href="#">The data</a>
     </nav>
-    <button class="menu" aria-expanded="false" aria-controls="nav">Menu</button>
   </header>
-  <div class="masthead">
+  <div class="masthead-with-stamps">
     <div>
       <nav class="crumbs" aria-label="Where you are"><a href="#">Permit Rulebook</a><span>Germany</span></nav>
-      <h1>Germany: eight work-permit routes. <em>The rules, quoted and dated.</em></h1>
-      <p class="lede">Every route Germany publishes for employment-based residence that a person can be measured against, each on its own page with the authority's sentences and the day we read them. Routes that turn on discretion are listed in the dataset's exclusions, not here.</p>
+      <h1>Germany: eight routes. <em>The rules, quoted and dated.</em></h1>
+      <p class="lede">Every employment route Germany publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. Routes that turn on an official's discretion are <a href="#">listed with their reasons</a>, not here.</p>
     </div>
     <div class="stamps"><span class="mark" aria-hidden="true">PR</span><div class="stamp"><time datetime="2026-09-08">Rules read<br>2026-09-08</time></div></div>
   </div>
   <ul class="routes">
-    <li><a href="#">EU Blue Card — general (§ 18g AufenthG)</a><p class="gist">A recognised university degree and a salary above the general threshold, in any qualified job.</p><p class="scope">some conditions stated, not asked · €50,700/year</p></li>
-    <li><a href="#">EU Blue Card — shortage occupation (§ 18g AufenthG)</a><p class="gist">The lower Blue Card threshold for shortage occupations and recent graduates.</p><p class="scope">some conditions stated, not asked · €45,630/year</p></li>
-    <li><a href="#">Skilled worker — academic (§ 18b AufenthG)</a><p class="gist">A recognised degree and a job it qualifies you for; no salary threshold of its own under 45.</p><p class="scope">some conditions stated, not asked</p></li>
-    <li><a href="#">Opportunity Card (Chancenkarte, § 20a AufenthG)</a><p class="gist">A points-based permit to come and look for work, with living costs to show.</p><p class="scope">every deciding rule asked · €1,091/month</p></li>
+    <li><a class="card" href="#"><span class="name">EU Blue Card — general (§ 18g, section 18g of the Residence Act)</span><p class="gist">A recognised university degree and a salary above the general threshold, in any qualified job.</p><p class="meta"><span>salary threshold <b>€50,700/year</b></span><span>quoted and dated · scored against your answers</span><span class="read">read 2026-09-06</span></p></a></li>
+    <li><a class="card" href="#"><span class="name">EU Blue Card — shortage occupation (§ 18g)</span><p class="gist">The lower Blue Card threshold for shortage occupations and recent graduates.</p><p class="meta"><span>salary threshold <b>€45,630/year</b></span><span>quoted and dated · scored, two conditions stated but not asked</span><span class="read">read 2026-09-06</span></p></a></li>
+    <li><a class="card" href="#"><span class="name">Skilled worker — academic (§ 18b)</span><p class="gist">A recognised degree and a job it qualifies you for; no salary threshold of its own if you are under 45 years old.</p><p class="meta"><span>no salary threshold</span><span>quoted and dated · scored, one condition stated but not asked</span><span class="read">read 2026-09-07</span></p></a></li>
+    <li><a class="card" href="#"><span class="name">Opportunity Card (Chancenkarte, § 20a)</span><p class="gist">A points-based permit to come and look for work, with living costs to show.</p><p class="meta"><span>funds to show <b>€1,091/month</b></span><span>quoted and dated · scored against your answers</span><span class="read">read 2026-09-08</span></p></a></li>
   </ul>
+  <p class="lede" style="margin-top:var(--space-3);font:var(--text-source)">Four of eight shown in this mock. Order: the dataset's own, general routes first, then the specialised ones.</p>
   <div class="cta"><a class="btn" href="#">Check yours — Germany</a><span class="note">Seven questions, on this device only. The result names which of these routes fit.</span></div>
-  <footer><a href="#">Status of the data</a><a href="#">Report a wrong value</a><a href="#">Open data · CC BY 4.0</a></footer>
+  <footer><a href="#">The data — status, versions, downloads</a><a href="#">Report a wrong value</a><a href="#">Open data · CC BY 4.0</a></footer>
 </div></div>
 
-<h2 class="mock">2 · The same header on a route page's masthead <small>— desktop, current country marked</small></h2>
+<h2 class="mock">2 · The same header on a route page's masthead <small>— desktop; Germany marked as the ancestor, not the page</small></h2>
 <div class="panel"><div class="wrap">
   <header class="site-head">
     <a class="wordmark" href="#"><span class="seal" aria-hidden="true">PR</span>Permit Rulebook</a>
-    <nav class="nav" aria-label="Site"><a href="#" aria-current="page">Germany</a><a href="#">France</a><a href="#">Spain</a><a href="#">Netherlands</a><span class="sep"></span><a href="#" class="check">Check yours</a><a href="#">The data</a></nav>
-    <button class="menu">Menu</button>
+    <button class="menu" aria-expanded="false" aria-controls="nav2">Menu</button>
+    <nav class="nav" id="nav2" aria-label="Site"><a href="#" aria-current="true">Germany</a><a href="#">France</a><a href="#">Spain</a><a href="#">Netherlands</a><span class="sep"></span><a href="#" class="check">Checker</a><a href="#">The data</a></nav>
   </header>
-  <div class="masthead">
+  <div class="masthead-with-stamps">
     <div>
       <nav class="crumbs" aria-label="Where you are"><a href="#">Permit Rulebook</a><a href="#">Germany</a><span>EU Blue Card — general</span></nav>
       <h1>EU Blue Card — general. <em>The rules, quoted and dated.</em></h1>
@@ -125,28 +152,28 @@ footer a { color: var(--color-muted); display: inline-flex; align-items: center;
   </div>
 </div></div>
 
-<h2 class="mock">3 · 390 px <small>— the country page; the nav folds behind "Menu" (shown open)</small></h2>
-<div class="panel" style="width:390px">
-  <div class="wrap" style="padding: var(--space-3) var(--space-4)">
-    <header class="site-head">
-      <a class="wordmark" href="#"><span class="seal" aria-hidden="true">PR</span>Permit Rulebook</a>
-      <button class="menu" aria-expanded="true">Menu</button>
-    </header>
-    <nav class="nav open" aria-label="Site"><a href="#" aria-current="page">Germany</a><a href="#">France</a><a href="#">Spain</a><a href="#">Netherlands</a><a href="#" class="check">Check yours</a><a href="#">The data</a></nav>
-    <div class="masthead">
-      <div>
-        <nav class="crumbs" aria-label="Where you are"><a href="#">Permit Rulebook</a><span>Germany</span></nav>
-        <h1>Germany: eight routes. <em>The rules, quoted and dated.</em></h1>
-      </div>
-      <div class="stamps"><span class="mark" aria-hidden="true">PR</span><div class="stamp"><time datetime="2026-09-08">Rules read<br>2026-09-08</time></div></div>
-    </div>
-    <ul class="routes">
-      <li><a href="#">EU Blue Card — general (§ 18g AufenthG)</a><p class="scope">some conditions stated, not asked · €50,700/year</p></li>
-      <li><a href="#">Opportunity Card (Chancenkarte, § 20a)</a><p class="scope">every deciding rule asked · €1,091/month</p></li>
-    </ul>
-    <div class="cta"><a class="btn" href="#">Check yours — Germany</a></div>
-  </div>
+<h2 class="mock">3 · 390 px, a true viewport <small>— left: menu closed; right: after tapping Menu</small></h2>
+<div class="frames">
+  <figure><figcaption>390 × 844 — closed</figcaption><iframe title="country page at 390, menu closed" src="?view=page"></iframe></figure>
+  <figure><figcaption>390 × 844 — Menu open</figcaption><iframe title="country page at 390, menu open" src="?view=page&menu=open"></iframe></figure>
 </div>
 
+<script>
+  // The menu: toggles the nav, moves focus to its first item, closes on Escape
+  // and on a selection. The same behaviour the build ships.
+  for (const btn of document.querySelectorAll('.menu')) {
+    const nav = document.getElementById(btn.getAttribute('aria-controls'));
+    const set = (open) => { btn.setAttribute('aria-expanded', String(open)); nav.classList.toggle('open', open); if (open) nav.querySelector('a').focus(); };
+    btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+    nav.addEventListener('keydown', (e) => { if (e.key === 'Escape') { set(false); btn.focus(); } });
+    nav.addEventListener('click', (e) => { if (e.target.tagName === 'A') set(false); });
+  }
+  const q = new URLSearchParams(location.search);
+  if (q.get('view') === 'page') {
+    document.body.classList.add('page-only');
+    document.querySelectorAll('.panel')[1].remove();
+    if (q.get('menu') === 'open') { const b = document.querySelector('.menu'); b.setAttribute('aria-expanded', 'true'); document.getElementById('nav1').classList.add('open'); }
+  }
+</script>
 </body>
 </html>
