@@ -42,7 +42,9 @@ under `bug`, `design-flaw` or `new-need`.
 
 **Licence.** Code MIT ([LICENSE](LICENSE)); the dataset it reads is
 [CC BY 4.0](https://github.com/OytunOnal/permit-rulebook-data/blob/master/data/LICENSE) —
-use it, cite it, link back.
+use it, cite it, link back. [Sponsor this
+work](https://github.com/sponsors/OytunOnal) — small, optional, and not what
+the site runs on.
 
 ## What it is
 
@@ -102,6 +104,6 @@ is in that repository's
 
 ## Support
 
-If this is useful and you want it to keep being maintained, sponsorship is
-welcome once GitHub Sponsors is enabled on this account. Nothing here is behind
+If this is useful and you want it to keep being maintained, [sponsorship is
+welcome](https://github.com/sponsors/OytunOnal). Nothing here is behind
 it: the site is free, the data is open, and it stays that way.
