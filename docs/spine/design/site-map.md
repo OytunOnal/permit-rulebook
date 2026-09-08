@@ -61,13 +61,14 @@ flowchart LR
 
 - The four countries as a row; the current country marked on country and route
   pages.
-- "Check yours" → the interview, pre-scoped to the current country or route
-  where there is one.
-- "The data" → the data repository (later: a data page).
+- "Checker" → the interview from the start; the page's own "Check yours —
+  <country>" button is the pre-scoped one.
+- "The data" → the on-site data page (today's /status, retitled): version,
+  newest read date, downloads, the repository and the tracker — so the page
+  that proves the liveness is one step from anywhere (critique B3, 2026-09-08).
 - At 390 px the row folds behind one "Menu" control (the identity mock's
   phone header).
-- Footer keeps the tracker, the licence and the status page link (the status
-  page's first door).
+- Footer keeps the data page, the tracker and the licence.
 
 No crumbs: the header (wordmark + marked country) and the h1 say where you
 are (human, 2026-09-08). The nav is the same markup from one source
