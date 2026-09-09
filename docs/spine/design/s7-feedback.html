@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The feedback prompt · Permit Rulebook</title>
+<style>
+/* Two shapes for the same idea (human, 2026-09-10: "bir noktada bi feedback
+   popup ı açmayalım mı"). The footer's two links stay exactly as they are —
+   this is about a moment, not a replacement.
+
+   Rules both shapes obey, so the product stays the product:
+   · It never appears before the reader has an answer. The trigger is the
+     RESULTS screen, and only after it has been on screen for a while (or the
+     reader has reached the end of it) — never on the interview, never on a
+     route page, never on arrival.
+   · Once. Ever. The dismissal is remembered on the device, beside the record.
+   · It asks for the two things the product can act on. No stars, no "how are
+     we doing", no e-mail field, nothing that leaves the device.
+   · It says out loud that the tracker needs a GitHub account, because a link
+     that ends at a login screen is a trap, not a door.
+   Tokens pasted so the mock opens standalone. */
+:root {
+  --color-bg: #f1eee4; --color-card: #fbf9f2; --color-ink: #2b2a22; --color-muted: #5a5747; --color-line: #d9d3c0;
+  --color-stamp: #8c2b2b; --color-met: #2e5b3f; --color-hold-soft: #edeadf;
+  --font-serif: Cambria, Georgia, serif; --font-sans: "Segoe UI", system-ui, sans-serif; --font-mono: Consolas, monospace;
+  --text-body: 15px/1.6 var(--font-sans); --text-label: 700 .7rem var(--font-sans); --tracking-label: .12em;
+  --rule-heavy: 3px double var(--color-ink); --rule-soft: 1px solid var(--color-line);
+  --space-2: .5rem; --space-3: .85rem; --space-4: 1.3rem; --space-5: 1.6rem; --space-6: 2.8rem;
+  --max-content: 56rem; --tap-min: 44px; --stamp-rotate: -6deg;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #555; color: #eee; font: 13px/1.5 system-ui; padding: 24px; }
+h2.mock { font: 600 14px system-ui; margin: 30px 0 6px; color: #eee; }
+h2.mock small { font-weight: 400; color: #bbb; display: block; margin-top: 4px; max-width: 62rem; }
+.frames { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+.phone { width: 390px; }
+.desk { width: 760px; max-width: 100%; }
+.label-w { font: 600 11px system-ui; color: #bbb; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 6px; }
+
+/* ---- the page behind the prompt (enough of it to judge the prompt) ---- */
+.panel { position: relative; overflow: hidden; background: var(--color-bg); color: var(--color-ink); font: var(--text-body);
+  border: 1px solid #333; height: 520px; }
+.panel .inner { padding: var(--space-4); height: 100%; overflow: hidden; }
+.res-h { font: 700 1.15rem/1.25 var(--font-serif); margin: 0 0 var(--space-2); }
+.res-sub { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: .9rem; }
+.card { background: var(--color-card); border: var(--rule-soft); border-left: 3px solid var(--color-met);
+  padding: var(--space-3); margin-bottom: var(--space-3); }
+.card h4 { margin: 0 0 .2rem; font: 700 .95rem var(--font-sans); }
+.card p { margin: 0; color: var(--color-muted); font-size: .85rem; }
+.foot-hint { border-top: var(--rule-heavy); margin-top: var(--space-5); padding-top: var(--space-3);
+  color: var(--color-muted); font-size: .8rem; }
+
+/* ---- shared prompt skin ---- */
+.prompt { background: var(--color-card); border: 1px solid var(--color-ink); box-shadow: 0 6px 18px rgba(43,42,34,.18); }
+.prompt .head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) 0; }
+.prompt h3 { margin: 0; font: 700 1rem var(--font-serif); }
+.prompt .body { padding: var(--space-2) var(--space-3) var(--space-3); }
+.prompt p { margin: 0 0 var(--space-3); font-size: .86rem; color: var(--color-muted); }
+.prompt .acts { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.prompt a.act { display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-3);
+  border: 1px solid var(--color-ink); background: var(--color-bg); color: var(--color-ink); text-decoration: none;
+  font: 600 .85rem var(--font-sans); }
+.prompt a.act:hover { background: var(--color-hold-soft); }
+.prompt button.close { min-height: var(--tap-min); min-width: var(--tap-min); border: 0; background: none; cursor: pointer;
+  color: var(--color-muted); font: 600 .8rem var(--font-sans); text-decoration: underline; }
+.prompt .needs { display: block; margin-top: var(--space-2); font: .72rem var(--font-mono); color: var(--color-muted); }
+
+/* ---- A: the docked slip ---- */
+.slipwrap { position: absolute; left: 0; right: 0; bottom: 0; padding: var(--space-3); }
+.desk .slipwrap { left: auto; width: 26rem; }
+
+/* ---- B: the stamped modal ---- */
+.veil { position: absolute; inset: 0; background: rgba(43,42,34,.45); display: flex; align-items: center; justify-content: center;
+  padding: var(--space-4); }
+.veil .prompt { max-width: 26rem; width: 100%; position: relative; }
+.veil .prompt::before { content: "PR"; position: absolute; top: -14px; right: -10px; transform: rotate(var(--stamp-rotate));
+  font: 700 .7rem var(--font-sans); letter-spacing: .06em; color: var(--color-stamp);
+  border: 2px solid var(--color-stamp); padding: 2px 6px; background: var(--color-card); }
+</style>
+</head>
+<body>
+
+<h2 class="mock">A · The docked slip
+  <small>Slides up from the bottom edge once, after the results have been read. The page is never
+  dimmed and never blocked: the reader can keep reading, scroll past it, or close it. On desktop it
+  docks bottom-right and is 26rem wide.</small></h2>
+<div class="frames">
+  <div class="phone">
+    <p class="label-w">390 px</p>
+    <div class="panel">
+      <div class="inner">
+        <p class="res-h">Three routes could fit.</p>
+        <p class="res-sub">Every rule below is quoted from the authority's page, with the day it was read.</p>
+        <div class="card"><h4>EU Blue Card — general</h4><p>Every rule met · read 2026-09-09</p></div>
+        <div class="card"><h4>Skilled worker — academic</h4><p>Every rule met · read 2026-09-09</p></div>
+        <div class="card" style="border-left-color:#8a5a19"><h4>Chancenkarte</h4><p>6 of 6 points · read 2026-09-07</p></div>
+      </div>
+      <div class="slipwrap">
+        <div class="prompt">
+          <div class="head">
+            <h3>Anything wrong, or missing?</h3>
+            <button class="close" type="button">Not now</button>
+          </div>
+          <div class="body">
+            <p>If a value here is wrong, or this screen should do something it doesn't, the tracker is
+              where it lands. Every report is read.</p>
+            <div class="acts">
+              <a class="act" href="#">Report a wrong value</a>
+              <a class="act" href="#">Suggest a change</a>
+            </div>
+            <span class="needs">Both open GitHub — filing needs an account there.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="desk">
+    <p class="label-w">Desktop</p>
+    <div class="panel">
+      <div class="inner">
+        <p class="res-h">Three routes could fit.</p>
+        <p class="res-sub">Every rule below is quoted from the authority's page, with the day it was read.</p>
+        <div class="card"><h4>EU Blue Card — general</h4><p>Every rule met · read 2026-09-09</p></div>
+        <div class="card"><h4>Skilled worker — academic</h4><p>Every rule met · read 2026-09-09</p></div>
+        <div class="card" style="border-left-color:#8a5a19"><h4>Chancenkarte</h4><p>6 of 6 points · read 2026-09-07</p></div>
+        <p class="foot-hint">Permit Rulebook makes no immigration decision, and no authority is bound by these results.</p>
+      </div>
+      <div class="slipwrap">
+        <div class="prompt">
+          <div class="head">
+            <h3>Anything wrong, or missing?</h3>
+            <button class="close" type="button">Not now</button>
+          </div>
+          <div class="body">
+            <p>If a value here is wrong, or this screen should do something it doesn't, the tracker is
+              where it lands. Every report is read.</p>
+            <div class="acts">
+              <a class="act" href="#">Report a wrong value</a>
+              <a class="act" href="#">Suggest a change</a>
+            </div>
+            <span class="needs">Both open GitHub — filing needs an account there.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2 class="mock">B · The stamped modal
+  <small>The same words, centred, over a dimmed page, with the product's own stamp on the corner.
+  It stops the reading until it is answered or closed — more attention, and the one thing the
+  product has never done to anybody.</small></h2>
+<div class="frames">
+  <div class="phone">
+    <p class="label-w">390 px</p>
+    <div class="panel">
+      <div class="inner">
+        <p class="res-h">Three routes could fit.</p>
+        <p class="res-sub">Every rule below is quoted from the authority's page, with the day it was read.</p>
+        <div class="card"><h4>EU Blue Card — general</h4><p>Every rule met · read 2026-09-09</p></div>
+        <div class="card"><h4>Skilled worker — academic</h4><p>Every rule met · read 2026-09-09</p></div>
+        <div class="card" style="border-left-color:#8a5a19"><h4>Chancenkarte</h4><p>6 of 6 points · read 2026-09-07</p></div>
+      </div>
+      <div class="veil">
+        <div class="prompt">
+          <div class="head">
+            <h3>Anything wrong, or missing?</h3>
+            <button class="close" type="button">Not now</button>
+          </div>
+          <div class="body">
+            <p>If a value here is wrong, or this screen should do something it doesn't, the tracker is
+              where it lands. Every report is read.</p>
+            <div class="acts">
+              <a class="act" href="#">Report a wrong value</a>
+              <a class="act" href="#">Suggest a change</a>
+            </div>
+            <span class="needs">Both open GitHub — filing needs an account there.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="desk">
+    <p class="label-w">Desktop</p>
+    <div class="panel">
+      <div class="inner">
+        <p class="res-h">Three routes could fit.</p>
+        <p class="res-sub">Every rule below is quoted from the authority's page, with the day it was read.</p>
+        <div class="card"><h4>EU Blue Card — general</h4><p>Every rule met · read 2026-09-09</p></div>
+        <div class="card"><h4>Skilled worker — academic</h4><p>Every rule met · read 2026-09-09</p></div>
+        <div class="card" style="border-left-color:#8a5a19"><h4>Chancenkarte</h4><p>6 of 6 points · read 2026-09-07</p></div>
+        <p class="foot-hint">Permit Rulebook makes no immigration decision, and no authority is bound by these results.</p>
+      </div>
+      <div class="veil">
+        <div class="prompt">
+          <div class="head">
+            <h3>Anything wrong, or missing?</h3>
+            <button class="close" type="button">Not now</button>
+          </div>
+          <div class="body">
+            <p>If a value here is wrong, or this screen should do something it doesn't, the tracker is
+              where it lands. Every report is read.</p>
+            <div class="acts">
+              <a class="act" href="#">Report a wrong value</a>
+              <a class="act" href="#">Suggest a change</a>
+            </div>
+            <span class="needs">Both open GitHub — filing needs an account there.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

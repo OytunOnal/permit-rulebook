@@ -27,8 +27,19 @@ data, and the "new need" form required a checkbox about a route. The wording is
 fixed in both repositories — the labels are unchanged — and the footer now says
 "Suggest a route or a change".
 
-**Two reports are on their way in:** a bug and a suggestion the human has seen
-but not yet described. Nothing is being built until they are.
+**A second report came in, and it is at its gate:** a reader suggested asking
+for feedback at some point — a popup, or a permanent icon. The footer's two
+links stay as they are; what is being decided is a moment, not a replacement.
+Two shapes are drawn in `docs/spine/design/s7-feedback.html` (served at
+http://localhost:4400/s7-feedback.html): **A**, a slip docked to the bottom
+edge that never dims the page, and **B**, a centred modal that stops the
+reading. Both fire once ever, only after the results have been read, ask for
+the two things the product can act on, send nothing off the device, and say out
+loud that the tracker needs a GitHub account. Recommended: A. **Waiting on the
+human's pick.**
+
+**The bug the human mentioned is still undescribed** — nothing is built for it
+until it is.
 
 What runs without anyone asking:
 
@@ -52,9 +63,13 @@ What runs without anyone asking:
 Nothing is blocked on you. These are the things only you can see, when you want
 to look:
 
-- [ ] **The bug and the suggestion you mentioned** (2026-09-10): the screen,
-      what you did, what you expected, what happened — and the suggestion in
-      your own words. They go through the steward protocol from here.
+- [ ] **The feedback prompt — pick A or B** (or change the words):
+      http://localhost:4400/s7-feedback.html. *Pass:* you would let it appear
+      on your own screen after your own results. Nothing is built until you
+      pick.
+- [ ] **The bug you mentioned** (2026-09-10): the screen, what you did, what
+      you expected, what happened. It goes through the steward protocol from
+      here.
 - [ ] **The post's replies.** Anything a reader says that is a bug, a missing
       need or a design flaw is worth pasting here — the steward protocol turns
       it into a fix or a recorded decision, rather than a note that gets lost.
