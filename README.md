@@ -35,7 +35,7 @@ package from the sibling directory its manifest names. Tried from a fresh clone
 on 2026-09-08:
 
 ```
-git clone https://github.com/OytunOnal/permit-rulebook-data.git visa-rules && git clone https://github.com/OytunOnal/permit-rulebook.git && cd visa-rules && npm ci && npm run build && cd ../permit-rulebook && npm ci && npm run build
+git clone https://github.com/OytunOnal/permit-rulebook-data.git && git clone https://github.com/OytunOnal/permit-rulebook.git && cd permit-rulebook-data && npm ci && npm run build && cd ../permit-rulebook && npm ci && npm run build
 ```
 
 Then `npm run dev` for the site, `npm test` for the suite.

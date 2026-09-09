@@ -2601,3 +2601,14 @@ address, so both repositories now commit as
 `7439893+OytunOnal@users.noreply.github.com` (the human's choice between that
 and turning the protection off). The history keeps the address it already
 carries; nothing is rewritten.
+
+**2026-09-09 — the working folder names are gone from disk.** The human
+renamed `visa-navigator` → `permit-rulebook` and `visa-rules` →
+`permit-rulebook-data`, so the site's manifest now depends on
+`file:../permit-rulebook-data`, the lockfile was regenerated, and the README's
+clone command clones each repository under its own name. The name sweep's
+exclusion is keyed to the path the manifest actually declares, so the moment
+that path changed the two stale comments inside the sweep itself became
+offenders and were rewritten — the gate found the last two lines carrying the
+old name, which is exactly what it is for. 274 + 428 tests green after the
+move.

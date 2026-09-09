@@ -37,7 +37,7 @@ const here = (url: string): string =>
  * The two working copies. The data repository is found the way the site itself
  * finds it — through the `file:` dependency that `npm install` linked — rather
  * than by guessing at a sibling directory: in CI the two are checked out where
- * the workflow puts them, and a test that assumes `../../visa-rules` fails
+ * the workflow puts them, and a test that assumes a sibling directory by name fails
  * there for a reason that has nothing to do with the name.
  */
 const REPOS = {
@@ -50,7 +50,7 @@ const REPOS = {
 /**
  * The paths the sweep does not reach, said once so the exclusion cannot drift.
  * A directory name on disk is not a user-facing string: decision 1 renames the
- * product, and the human renames the repositories on GitHub — so `file:../visa-rules`
+ * product, and the human renames the repositories on GitHub — so the `file:` path
  * in a package manifest is a path, not a name, and is excluded by that rule
  * rather than by an oversight.
  */

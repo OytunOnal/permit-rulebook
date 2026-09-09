@@ -122,12 +122,11 @@ judgement on a live source.
       answers in your voice). *Pass:* you would say every sentence yourself;
       change any you would not. Then name a day and hour you can stay in the
       thread for three hours — the post goes out then, not before.
-- [ ] **Folder rename on disk (yours, per DECISIONS):** `visa-rules` →
-      `permit-rulebook-data` and `visa-navigator` → `permit-rulebook` under
-      Projects; then the site's `package.json` dependency path and the README's
-      clone line follow (I do those). *Pass:* the name sweep over both
-      repositories returns only ledgers and `docs/spine/`. Not before this
-      session ends — a rename under a running session breaks its paths.
+- [x] **Folder rename on disk** (human, 2026-09-09): `permit-rulebook` and
+      `permit-rulebook-data` under Projects. The manifest's `file:` path, the
+      README's clone line and the lockfile followed; the name sweep is green in
+      both repositories, and the sweep's own stale comments were the last two
+      lines carrying the old folder name.
 - [ ] **"go":** after the items above pass and the blockers are verified
       cleared on the live site, say it; v1 is stamped and the README's first
       screen is the announcement, told once.
