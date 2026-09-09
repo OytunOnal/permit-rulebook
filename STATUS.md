@@ -21,8 +21,14 @@ flowchart LR
 
 ## What is happening now
 
-**Nothing is being built.** The last thing the build did was stamp itself: the
-version line in KANBAN, the README's first screen, the architecture as of v1.
+**Steward has run once** (2026-09-10). The human found that the way back in had
+no door for a suggestion: all three templates asked about a defect or about
+data, and the "new need" form required a checkbox about a route. The wording is
+fixed in both repositories — the labels are unchanged — and the footer now says
+"Suggest a route or a change".
+
+**Two reports are on their way in:** a bug and a suggestion the human has seen
+but not yet described. Nothing is being built until they are.
 
 What runs without anyone asking:
 
@@ -46,6 +52,9 @@ What runs without anyone asking:
 Nothing is blocked on you. These are the things only you can see, when you want
 to look:
 
+- [ ] **The bug and the suggestion you mentioned** (2026-09-10): the screen,
+      what you did, what you expected, what happened — and the suggestion in
+      your own words. They go through the steward protocol from here.
 - [ ] **The post's replies.** Anything a reader says that is a bug, a missing
       need or a design flaw is worth pasting here — the steward protocol turns
       it into a fix or a recorded decision, rather than a note that gets lost.
