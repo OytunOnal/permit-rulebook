@@ -2705,3 +2705,22 @@ flag, a number, a stranger's message — enters through the steward protocol,
 which names what it is and which promise let it happen before anything is
 changed. The first dates that will ask something of us are 2026-10-09 (the
 pre-registered numbers for A2, A7 and A8) and 2027-09-09 (the token).
+
+**2026-09-10 — a suggestion had nowhere to land** (steward, `design-flaw`,
+reported by the human). The way back in offered three doors and every one of
+them was about a defect or about data: "Report a wrong value", "Design flaw —
+it works as built and as built it is wrong", and "New need — a route, a country
+or a fact that is not here yet", whose form even *required* a checkbox saying
+the reporter had checked `data/exclusions.md` for their route. Someone with a
+plain idea about the product — do this, do it differently — could not file
+without misdescribing it or ticking something untrue. Launch dimension 5 says
+the first stranger's feedback must have somewhere to land; this was a door with
+the wrong name on it.
+
+Fixed in the wording, not the vocabulary: the three triage labels stay as they
+are (`bug`, `design-flaw`, `new-need` are what the ledgers speak), but
+`new-need` now says what it actually holds — "something is not here yet, or the
+product should do something it does not" — its intro names both kinds, the
+source field is marked "if this is about data", and the exclusions checkbox is
+no longer required and reads "if this is about a route". The footer's link says
+"Suggest a route or a change" instead of "Suggest a route or a country".

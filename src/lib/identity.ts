@@ -239,7 +239,7 @@ export function siteFooter(
         <h3>Feedback</h3>
         <ul>
           <li>${out(facts.tracker, "Report a wrong value")}</li>
-          <li>${out(facts.newNeed, "Suggest a route or a country")}</li>
+          <li>${out(facts.newNeed, "Suggest a route or a change")}</li>
           <li>${out(facts.sponsor, "Sponsor this work")}</li>
         </ul>
       </div>
