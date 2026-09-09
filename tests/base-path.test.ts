@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { routePages } from "../src/lib/route-page.js";
-import { absolute, lastWatchRun, url } from "../src/lib/site.js";
+import { absolute, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
 
 /**
@@ -23,6 +23,9 @@ import type { Dataset } from "permit-rulebook-data";
  * against a build the runner had quietly changed.
  */
 
+/** The watch run the fingerprint is taken at: a day no dataset here carries. */
+const FROZEN_RUN = "1970-01-01";
+
 describe("the root build is what it was", () => {
   /**
    * The TEMPLATE's own output at the root, over a frozen two-route dataset —
@@ -36,10 +39,11 @@ describe("the root build is what it was", () => {
    * order, and every URL it writes at the root.
    *
    * The footer carries one value that is not the dataset's and moves by
-   * itself: the watch's last run. It is normalised out before hashing, or this
-   * case fails on every day the watch commits — which is exactly what it did
-   * the first time a data change reached the site through the dispatch
-   * (CI 2026-09-09), on a build whose template had not changed at all.
+   * itself: the watch's last run. The render takes it as an argument, and this
+   * case passes a day no dataset here carries — otherwise the fingerprint
+   * fails on every day the watch commits, which is what it did the first time
+   * a data change reached the site through the dispatch (CI 2026-09-09), on a
+   * build whose template had not changed at all.
    *
    * What it does NOT cover: anything that depends on the live dataset. A value
    * that changes, a route added, a source re-read on a new day — none of those
@@ -50,14 +54,12 @@ describe("the root build is what it was", () => {
     const fixture = JSON.parse(readFileSync(new URL("fixtures/root-build.json", import.meta.url), "utf8")) as
       { base: string; pages: Record<string, string> };
     const frozen = JSON.parse(readFileSync(new URL("fixtures/frozen-dataset.json", import.meta.url), "utf8")) as Dataset;
-    const pages = routePages(frozen);
+    const pages = routePages(frozen, FROZEN_RUN);
     expect(pages.length, "the frozen dataset stopped producing its two routes").toBe(2);
     expect(Object.keys(fixture.pages).length).toBe(pages.length);
     const moved: string[] = [];
-    const run = lastWatchRun();
     for (const page of pages) {
-      const html = run ? page.html.split(run).join("{watch-last-run}") : page.html;
-      const now = createHash("sha256").update(html).digest("hex");
+      const now = createHash("sha256").update(page.html).digest("hex");
       if (fixture.pages[page.path] !== now) moved.push(page.path);
     }
     expect(moved, "the root build changed — regenerate the fixture only on purpose").toEqual([]);

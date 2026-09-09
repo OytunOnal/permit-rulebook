@@ -553,7 +553,17 @@ function description(dataset: Dataset, country: Country, route: Route): string {
     "official page with the date it was read.";
 }
 
-export function routePage(dataset: Dataset, address: RouteAddress): RoutePage {
+/**
+ * One route page.
+ *
+ * `lastRun` is the day the watch last re-read every source — the single value
+ * on this page that moves without anyone editing anything. It is an argument
+ * rather than a read inside the footer so that a render over a frozen dataset
+ * is genuinely frozen: the fingerprint case hashed a page that changed by
+ * itself, and failed the first build a data change ever reached through the
+ * dispatch (CI 2026-09-09).
+ */
+export function routePage(dataset: Dataset, address: RouteAddress, lastRun?: string): RoutePage {
   const { country, route } = address;
   const notice = audienceNotice(dataset);
   const read = stampDate(route, notice);
@@ -630,7 +640,7 @@ ${neighbours(country, route)}
   </aside>
   </div>
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset), {
+  ${siteFooter(navCountries(dataset), footerFacts(dataset, lastRun), {
     countryPath: countryPath(country), current: "true", jsonPath,
     checkPath: `/?country=${country.code.toLowerCase()}`,
   })}
@@ -656,8 +666,8 @@ ${analyticsBeacon()}`;
 }
 
 /** Every route page this dataset produces. 23 at launch. */
-export function routePages(dataset: Dataset): RoutePage[] {
-  return routeAddresses(dataset).map((a) => routePage(dataset, a));
+export function routePages(dataset: Dataset, lastRun?: string): RoutePage[] {
+  return routeAddresses(dataset).map((a) => routePage(dataset, a, lastRun));
 }
 
 // ---------------------------------------------------------------------------

@@ -207,7 +207,7 @@ export function countryPages(dataset: Dataset): CountryPage[] {
  * typed into a page. It lives here because it needs the dataset and the footer
  * itself must not: `identity.ts` knows markup, not data.
  */
-export function footerFacts(dataset: Dataset): FooterFacts {
+export function footerFacts(dataset: Dataset, lastRun: string = lastWatchRun()): FooterFacts {
   // Once: it walks every route's provenance, and the year comes from the same
   // answer rather than a second walk (Standards review, 2026-09-08).
   const read = readRange(dataset);
@@ -217,7 +217,7 @@ export function footerFacts(dataset: Dataset): FooterFacts {
     // (decision 12): "2026.09.07" beside a read date is a second date format on
     // the same line, which is the thing that rule exists to prevent.
     datasetVersion: datasetDay(dataset.dataset_version),
-    lastRun: lastWatchRun(),
+    lastRun,
     disclaimer: DISCLAIMER,
     licenceUrl: DATA_LICENCE_URL,
     licenceName: DATA_LICENCE_NAME,
