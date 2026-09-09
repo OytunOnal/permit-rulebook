@@ -90,15 +90,16 @@ judgement on a live source.
       is counted; the never-leaves-the-device test names the one allowed beacon.
 - [x] **Two-factor authentication** (human, 2026-09-08: "2fa tamam") — GitHub
       and Cloudflare; the human's word is the record, the API cannot see it.
-- [ ] **`DISPATCH_TOKEN` (a credential, so yours):** GitHub → Settings → Developer
-      settings → Fine-grained tokens → new token, repository access:
-      `permit-rulebook` only, permission Contents: read and write; then on
-      `permit-rulebook-data` → Settings → Secrets and variables → Actions → new
-      repository secret named `DISPATCH_TOKEN` with that value. *Pass:* the
-      next watch run's "dispatch a site rebuild" step is green and a deploy
-      run starts in the site repository within a minute. Until then the
-      daily 06:40 UTC schedule rebuilds the site anyway; only the same-hour
-      rebuild after a data change waits on the token.
+- [x] **`DISPATCH_TOKEN`** (human, 2026-09-09): a fine-grained token scoped to
+      the site repository alone (Contents: read and write), stored as an
+      Actions secret in `permit-rulebook-data`. Tested the same minute: the
+      watch committed `3cf7cbd` (state update 2026-09-09), its "Tell the site
+      to rebuild" step is green, and the site repository started a
+      `repository_dispatch` build 30 seconds later. The last piece of the
+      daily promise — a value read today reaches the page today, not tomorrow.
+      **Expires 2027-09-09** (one year, chosen over no-expiry: a leaked
+      token stops being a key, and an expired one fails loudly — the watch
+      run goes red and files an issue). GitHub e-mails before the date.
 - [x] **The watch is live** — it always was: no dry-run switch exists; it has
       filed two issues since the repositories went public (ZAV edition, buzer
       § 6), both read and closed the same day. Watch issues carry

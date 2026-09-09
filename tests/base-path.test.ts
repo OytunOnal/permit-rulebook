@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { routePages } from "../src/lib/route-page.js";
-import { absolute, url } from "../src/lib/site.js";
+import { absolute, lastWatchRun, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
 
 /**
@@ -35,6 +35,12 @@ describe("the root build is what it was", () => {
    * what this measures is what `route-page.ts` does with it — the markup, the
    * order, and every URL it writes at the root.
    *
+   * The footer carries one value that is not the dataset's and moves by
+   * itself: the watch's last run. It is normalised out before hashing, or this
+   * case fails on every day the watch commits — which is exactly what it did
+   * the first time a data change reached the site through the dispatch
+   * (CI 2026-09-09), on a build whose template had not changed at all.
+   *
    * What it does NOT cover: anything that depends on the live dataset. A value
    * that changes, a route added, a source re-read on a new day — none of those
    * reach this case, and none of them should. `check:base` reads the real built
@@ -48,8 +54,10 @@ describe("the root build is what it was", () => {
     expect(pages.length, "the frozen dataset stopped producing its two routes").toBe(2);
     expect(Object.keys(fixture.pages).length).toBe(pages.length);
     const moved: string[] = [];
+    const run = lastWatchRun();
     for (const page of pages) {
-      const now = createHash("sha256").update(page.html).digest("hex");
+      const html = run ? page.html.split(run).join("{watch-last-run}") : page.html;
+      const now = createHash("sha256").update(html).digest("hex");
       if (fixture.pages[page.path] !== now) moved.push(page.path);
     }
     expect(moved, "the root build changed — regenerate the fixture only on purpose").toEqual([]);

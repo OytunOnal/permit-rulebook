@@ -137,6 +137,12 @@ jobs:
           path: ${{ steps.data.outputs.dir }}
           # Empty on the daily schedule, which means the default branch.
           ref: ${{ steps.data.outputs.ref }}
+          # The whole history, because the suite proves the built data contains
+          # the pinned commit — an ancestry question, unanswerable in a shallow
+          # clone. A push builds the lock itself and never noticed; the first
+          # dispatch built a newer commit and the guard failed on the missing
+          # object rather than on a real gap (CI 2026-09-09).
+          fetch-depth: 0
 
       - name: Which data commit this run is building
         id: built

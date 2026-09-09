@@ -2544,3 +2544,15 @@ arrival. A route-page arrival still names both, because there they differ
 ("Coming from EU Blue Card — general — Germany is on the record."). Found by
 reading the live site, not by a test: the test asserted the shape the ruling
 wrote, and the ruling had not read the country case aloud.
+
+**2026-09-09 — `DISPATCH_TOKEN` created, and its expiry is one year.** A
+fine-grained token whose resource owner is the human, scoped to the site
+repository alone with Contents: read and write (the dispatch endpoint is
+filed under Contents; read-only answers 403), stored as an Actions secret in
+the data repository — the sender. Expiry 2027-09-09 rather than "no
+expiration": a token that never expires is a key that survives its own leak,
+and the failure mode here is loud, not silent — the watch step fails, the run
+goes red, and the run-failed issue says so, so an expired token cannot make
+"checked daily" quietly untrue. Tested at creation: the watch committed
+`3cf7cbd`, its dispatch step was green, and the site started a
+`repository_dispatch` build 30 seconds later.
