@@ -56,13 +56,10 @@ judgement on a live source.
 
 - [x] **Navigation + country page approved** (human, 2026-09-08): shared header,
       no crumbs, new scope words, The data as an on-site page. Building.
-- [ ] **Phone walk on the live site, real handset:** https://permitrulebook.com
-      — the interview end to end, then one route page from a results card's
-      "The rules of this route". *Pass:* nothing overflows sideways, every tap
-      target is comfortable, the rail's labels read as a list, the scope
-      statement reads without zooming, the address bar shows the lock. *If it
-      fails:* paste the screen's heading here. (Two rows you already found —
-      the place phrase and "§" — are in the fix round.)
+- [x] **Phone walk on the live site, real handset** (human, 2026-09-09:
+      "telefon yürüyüşü tamam"): the interview end to end and a route page on a
+      real handset — nothing overflows, the taps are comfortable, the lock is
+      in the address bar.
 - [x] **Test issue from the product** (human, 2026-09-08): landed on
       `permit-rulebook-data` with the `bug` label — pass; closed.
 - [ ] **Favicon on a Mac and on an Android phone** (after the next deploy,
