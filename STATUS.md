@@ -92,11 +92,9 @@ judgement on a live source.
       in the address bar.
 - [x] **Test issue from the product** (human, 2026-09-08): landed on
       `permit-rulebook-data` with the `bug` label — pass; closed.
-- [ ] **Favicon on a Mac and on an Android phone** (the deploy of 2026-09-09
-      ships option C plus a 96px and a 180px size): open https://permitrulebook.com and look at the
-      tab icon. *Pass:* "PR" centred in the tilted square with margin both
-      sides. *Fail:* letters touching or overflowing the frame — say so and
-      the letterforms get outlined to paths.
+- [x] **Favicon** (human, 2026-09-09: "fav icon tamam"): the stamp reads on
+      the tab and on a phone. The deploy of the same day added a 96px square
+      (what a search engine asks for) and a 180px touch icon.
 - [x] **Link preview** (human, 2026-09-08): the route title and the €50,700
       description appear beside the card image — pass.
 - [ ] **Tomorrow's rebuild:** the card's date is the newest read date in the
@@ -137,11 +135,12 @@ judgement on a live source.
 - [x] **Ranking** (human, 2026-09-08: "no rank"): results stay in dataset order
       at v1; a v1.1 candidate adds published facts to each card so the reader
       compares. Translation: policy, never translate.
-- [ ] **The announcement — read it, and pick the hour:** the draft is
-      `docs/spine/announcement.md` (Show HN title, the first comment, the five
-      answers in your voice). *Pass:* you would say every sentence yourself;
-      change any you would not. Then name a day and hour you can stay in the
-      thread for three hours — the post goes out then, not before.
+- [ ] **The announcement — LinkedIn only, for now** (human, 2026-09-09; Show HN
+      later): the draft is `docs/spine/announcement.md`, first section — the
+      post itself, the image (the README's screenshot), three hashtags, and the
+      five answers ready for replies. *Pass:* you would say every sentence
+      yourself; change any you would not. Then name a day and an hour you can
+      answer comments for the three hours after it.
 - [x] **Folder rename on disk** (human, 2026-09-09): `permit-rulebook` and
       `permit-rulebook-data` under Projects. The manifest's `file:` path, the
       README's clone line and the lockfile followed; the name sweep is green in

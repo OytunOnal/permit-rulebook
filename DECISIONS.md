@@ -2649,3 +2649,13 @@ ask on the page would be markup for a crawler rather than a description of the
 page. Keyword pages, per-country copies of the same text and "best visa
 consultant" doorways: refused outright — they contradict the one thing this
 product sells.
+
+**2026-09-09 — LinkedIn is the first channel; Show HN waits.** The human's
+call. It changes three things and nothing else. The claims stay the same, in
+the same words — dimension 9's rule does not bend for a channel. The shape
+changes: the first two lines carry the promise, because that is all LinkedIn
+shows before "…see more", the link stays in the post rather than in a comment,
+and the image is the README's screenshot. And the 48-hour plan gains an option
+Show HN never had: a LinkedIn post can be edited, so a confirmed wrong value is
+corrected in the post itself, not only underneath it. The Show HN draft stays
+in the file, untouched, for its own day.
