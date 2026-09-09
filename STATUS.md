@@ -65,6 +65,14 @@ the sentence "a daily schedule rebuilds even if every signal fails" is only as
 true as GitHub's scheduler. If tomorrow's is missing too, that is a decision
 to take rather than a line to keep.
 
+The search side, asked about and answered: nothing to do about "keywords"
+(the meta tag has been dead for years, and the pages already carry titles,
+descriptions with the numbers in them, a sitemap and canonicals). The one
+thing missing was structured data — /data now carries schema.org/Dataset, the
+vocabulary a dataset index reads, with the licence, coverage, version, read
+date and the two JSON downloads. Ranking beyond our own name needs inbound
+links and time; that is what the announcement is for.
+
 **Nothing else is waiting on me.** v1 waits on your list below.
 
 Numbers: 426 tests in the data repository, 274 in the site; 122 quotes
