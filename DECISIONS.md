@@ -2659,3 +2659,13 @@ and the image is the README's screenshot. And the 48-hour plan gains an option
 Show HN never had: a LinkedIn post can be edited, so a confirmed wrong value is
 corrected in the post itself, not only underneath it. The Show HN draft stays
 in the file, untouched, for its own day.
+
+**2026-09-09 — the announcement went out on LinkedIn, in the human's own
+words.** Not the draft: the human wrote it themselves and posted it. Recorded
+because dimension 9's rule is about the claims, not the sentences — what the
+draft exists to prevent is a promise the product does not keep or a number the
+dataset does not hold, and the maker writing their own words on their own
+channel is the point of "the maker is present". The draft stays in the file for
+the channels that follow. Health at the hour: home and a route page 200 in
+under half a second, the counter on the page, the last deploy green, both
+trackers empty.

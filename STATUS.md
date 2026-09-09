@@ -135,12 +135,11 @@ judgement on a live source.
 - [x] **Ranking** (human, 2026-09-08: "no rank"): results stay in dataset order
       at v1; a v1.1 candidate adds published facts to each card so the reader
       compares. Translation: policy, never translate.
-- [ ] **The announcement — LinkedIn only, for now** (human, 2026-09-09; Show HN
-      later): the draft is `docs/spine/announcement.md`, first section — the
-      post itself, the image (the README's screenshot), three hashtags, and the
-      five answers ready for replies. *Pass:* you would say every sentence
-      yourself; change any you would not. Then name a day and an hour you can
-      answer comments for the three hours after it.
+- [x] **The announcement is out** (human, 2026-09-09): posted on LinkedIn, in
+      the human's own words rather than the draft's. The draft stays in
+      `docs/spine/announcement.md` for the channels that follow. The site was
+      healthy at the hour it went out: home and a route page 200, the counter
+      on the page, the last deploy green, both trackers empty.
 - [x] **Folder rename on disk** (human, 2026-09-09): `permit-rulebook` and
       `permit-rulebook-data` under Projects. The manifest's `file:` path, the
       README's clone line and the lockfile followed; the name sweep is green in
