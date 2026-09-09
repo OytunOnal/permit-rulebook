@@ -52,8 +52,20 @@ The day's three watch flags were read: they were our own slice change, not the
 law — proved by the new text being a substring of the old — and the gap that
 caused them is a test as well. Six flag files resolved, three issues closed.
 
-**Nothing is waiting on me** except today's scheduled rebuild, which I am
-watching. v1 waits on your list below.
+Since then: the folders were renamed on disk and the manifest, the clone line
+and the name sweep followed; a dispatch fired by hand carried the day's data
+to the site, so `data.lock` names `bba6dde` and the live page reads **last
+run 2026-09-09** — the fast path works end to end. The head gained a 96px icon
+(the square a search engine asks for) and a 180px touch icon, after the site
+turned up in Chrome's results with no mark beside it.
+
+**Today's scheduled rebuild never fired** (cron 06:40 UTC; nothing by 07:25).
+It is the redundant path, not the fast one, and the fast one is proven — but
+the sentence "a daily schedule rebuilds even if every signal fails" is only as
+true as GitHub's scheduler. If tomorrow's is missing too, that is a decision
+to take rather than a line to keep.
+
+**Nothing else is waiting on me.** v1 waits on your list below.
 
 Numbers: 426 tests in the data repository, 274 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
@@ -72,8 +84,8 @@ judgement on a live source.
       in the address bar.
 - [x] **Test issue from the product** (human, 2026-09-08): landed on
       `permit-rulebook-data` with the `bug` label — pass; closed.
-- [ ] **Favicon on a Mac and on an Android phone** (after the next deploy,
-      which ships option C): open https://permitrulebook.com and look at the
+- [ ] **Favicon on a Mac and on an Android phone** (the deploy of 2026-09-09
+      ships option C plus a 96px and a 180px size): open https://permitrulebook.com and look at the
       tab icon. *Pass:* "PR" centred in the tilted square with margin both
       sides. *Fail:* letters touching or overflowing the frame — say so and
       the letterforms get outlined to paths.
