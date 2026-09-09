@@ -22,13 +22,19 @@ itself.
 **What it does now** — the latest line of the versions ledger
 ([KANBAN.md](KANBAN.md), `## versions`):
 
-> **v0.10** — Launch-readiness sweep: Spain measured against three years on
-> two routes (es-highly-qualified, es-ict); the experience ladder made ordinal
-> (y3in7 implies y2in5) after the review caught a regression the guard could
-> not see; pdf-text watch strategy — human tier 0, quotes verified 78 → 120;
-> 37 bare preconditions given a kind (34 sourced, 2 ours, 1 deleted as
-> repealed law); every document on disk English. Real-green walked by the
-> session at the human's delegation. 323 + 70 tests. (2026-09-07)
+> **v1** — Public: https://permitrulebook.com, announced 2026-09-09. 23
+> employment routes across Germany, France, Spain and the Netherlands, each
+> with a page of its own; an interview of about seven questions that says which
+> routes fit, which are close and by how much, and the one step that would open
+> the most; 122 quotes re-read daily against their sources, each carrying the
+> authority's sentence, its page and the day it was read. The whole loop ran
+> for real before the stamp: a source re-read, a history line, a commit, a
+> dispatch, a rebuild, the new date on a live page. Answers never leave the
+> device, and a real-browser test asserts it. Open data (CC BY 4.0) with JSON
+> per route, the site MIT; `/data` describes itself as a dataset for the
+> indexes that read one. Two isolated critiques (32/45 on RUBRIC 1.2, 36/50 on
+> 1.3) with every blocker cleared on the live site. 280 + 428 tests, 0
+> vulnerabilities in either repository. (2026-09-09)
 
 **How to run it.** Both repositories side by side — the site reads the dataset
 package from the sibling directory its manifest names. Tried from a fresh clone

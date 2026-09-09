@@ -1,4 +1,4 @@
-# ARCHITECTURE — Permit Rulebook (as of v0.10 real-green; s6 "public launch" mock-green, live at https://permitrulebook.com, 2026-09-08)
+# ARCHITECTURE — Permit Rulebook (as of v1, public and announced 2026-09-09)
 
 Updated at every slice exit. Three diagrams, one question each: where the facts
 come from, how they become a site, where the reader's answers stay. Labels are
@@ -18,10 +18,12 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    Lock -->|which data commit| Build
     Dataset --> Build
     Engine --> Build
     Tokens --> Build
     Build --> Dist --> CI --> Pages
+    Watch -->|dataset-updated| CI
 ```
 
 ## 3 · Trust boundary — where the answers stay

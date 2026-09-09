@@ -188,7 +188,15 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## mock-green
 
-- **Public launch** (s6) · mock-green 2026-09-07 — withdrawn once the same hour
+_(empty — s6 was the last, and it is done)_
+
+## real-green
+
+_(empty — everything real-green so far is stamped into done)_
+
+## done
+
+- **Public launch** (s6) · **real-green 2026-09-09** · mock-green 2026-09-07 — withdrawn once the same hour
   (the interview rendered nothing in a browser: a `node:fs` read reached the
   client bundle) and re-stamped after the fix, a real-browser smoke test on
   both surfaces gated in CI, and the session's own walk of every screen.
@@ -202,12 +210,12 @@ Promoted (or dropped, with evidence) at a boundary session.
   human**: GitHub renames, Pages + domain, labels, the watch live, the phone
   walk on the preview, the first flag read against its source, the go; and
   the isolated v1-gate critique on the deployed preview.
-
-## real-green
-
-_(empty — everything real-green so far is stamped into done)_
-
-## done
+  **Real-green, 2026-09-09:** the repositories renamed and public, the domain
+  bound with HTTPS, the labels and the tracker link live, the watch filing
+  issues, the phone walk done on a real handset, the first flags read against
+  their sources (all three ours, not the law), the isolated critique run twice
+  on the deployed site with every blocker cleared, the dispatch token made and
+  proven end to end, and the announcement out on LinkedIn. 280 + 428 tests.
 
 - **Every sentence carries its source, not only every number** (s5e) ·
   **real-green 2026-09-07** — the five PDF-tier quotes read from the PDFs' own text layers by the session (verbatim string match), at the human's request (docs/spine/scenarios/s5e.md). 45 criterion notes
@@ -295,6 +303,19 @@ _(empty — everything real-green so far is stamped into done)_
   tiers, ndjson, commit-gated state, flag files with quoted context), DE via
   ZAV edition-index sentinel, daily CI workflow hardened against alert loss.
   (2026-09-02)
+- **v1** — Public: https://permitrulebook.com, announced 2026-09-09. 23
+  employment routes across Germany, France, Spain and the Netherlands, each
+  with a page of its own; an interview of about seven questions that says which
+  routes fit, which are close and by how much, and the one step that would open
+  the most; 122 quotes re-read daily against their sources, each carrying the
+  authority's sentence, its page and the day it was read. The whole loop ran
+  for real before the stamp: a source re-read, a history line, a commit, a
+  dispatch, a rebuild, the new date on a live page. Answers never leave the
+  device, and a real-browser test asserts it. Open data (CC BY 4.0) with JSON
+  per route, the site MIT; `/data` describes itself as a dataset for the
+  indexes that read one. Two isolated critiques (32/45 on RUBRIC 1.2, 36/50 on
+  1.3) with every blocker cleared on the live site. 280 + 428 tests, 0
+  vulnerabilities in either repository. (2026-09-09)
 - **v0.10** — Launch-readiness sweep: Spain measured against three years on
   two routes (es-highly-qualified, es-ict); the experience ladder made ordinal
   (y3in7 implies y2in5) after the review caught a regression the guard could

@@ -2669,3 +2669,39 @@ channel is the point of "the maker is present". The draft stays in the file for
 the channels that follow. Health at the hour: home and a route page 200 in
 under half a second, the counter on the page, the last deploy green, both
 trackers empty.
+
+## 2026-09-09 — v1 is stamped: Genesis is done, Steward begins
+
+The human said "go" after the last item on their list — the announcement —
+went out on LinkedIn. What that stamps, and what it rests on:
+
+**The scenario is real-green.** Every item s6 said needed a person is done and
+dated on the board: the renames and the public flip, the domain with HTTPS,
+the labels and a test issue walked, Search Console and Bing with the sitemap,
+the counter, Sponsors, two-factor authentication, the link preview, the phone
+walk on a real handset, the dispatch token made and proven end to end, the
+first watch flags read against their sources, the favicon on a phone, and the
+announcement. Nothing was ticked on the strength of a plan.
+
+**The security dimension, answered at the stamp** as it required: `npm audit
+--omit=dev` re-run on the launch commit in both repositories — **0
+vulnerabilities in each**. Actions pinned by SHA, the workflow token read-only
+by default, no plaintext secret, the one credential fine-grained and expiring,
+a meta CSP naming its two script sources, and the statement about the counter
+measured against the wire by a test rather than re-read as copy.
+
+**The numbers:** 23 routes, 4 countries, 122 quotes verified daily,
+`human_tier: 0`; 31 pages and 26 JSON endpoints; 280 + 428 tests; two isolated
+critiques (32/45 on RUBRIC 1.2, 36/50 on 1.3) with every blocker cleared and
+re-read on the live site.
+
+**What v1 is not:** it is not the 14 discretionary routes (v1.1 holds them as
+quoted-not-asked pages), not a second language (never translated — decision on
+2026-09-08), and not a ranking (results stay in dataset order). Each is a
+decision on this page, not an omission.
+
+**Steward from here.** The ledgers stay the way in: a report — an issue, a
+flag, a number, a stranger's message — enters through the steward protocol,
+which names what it is and which promise let it happen before anything is
+changed. The first dates that will ask something of us are 2026-10-09 (the
+pre-registered numbers for A2, A7 and A8) and 2027-09-09 (the token).
