@@ -79,14 +79,32 @@ describe("every page states what may run on it", () => {
     expect(policy).not.toContain("'unsafe-eval'");
   });
 
-  it("hashes every inline script a page actually ships", () => {
+  /**
+   * Every inline script that RUNS is hashed. A `type` the browser does not
+   * execute — the data page's `application/ld+json` block, which describes the
+   * dataset for a crawler — is not a script at all: the HTML parser calls it a
+   * data block, never prepares it, and `script-src` never sees it. Measured
+   * rather than assumed: the built data page loads in a real browser with zero
+   * console errors and no refusal in the log (`npm run smoke`, 2026-09-09),
+   * and hashing it would have put a dataset-dependent hash in every page's
+   * policy for a string only one page carries.
+   */
+  it("hashes every inline script a page actually runs", () => {
     expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
     const policy = shipped();
     for (const page of pages) {
-      const inline = [...page.html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)]
-        .map((m) => m[1]!);
-      for (const source of inline)
-        expect(policy, `${page.path}: an inline script the policy does not hash`).toContain(sha256(source));
+      const inline = [...page.html.matchAll(/<script(?![^>]*\ssrc=)([^>]*)>([\s\S]*?)<\/script>/g)];
+      for (const [, attributes, source] of inline) {
+        const type = /type="([^"]*)"/.exec(attributes ?? "")?.[1];
+        if (type && type !== "module" && type !== "text/javascript") {
+          // A data block earns its exemption by being one: parseable data, with
+          // nothing in it that could run if a browser changed its mind.
+          expect(type, `${page.path}: an inline script of an unexpected type`).toBe("application/ld+json");
+          expect(() => JSON.parse(source!), `${page.path}: a data block that is not data`).not.toThrow();
+          continue;
+        }
+        expect(policy, `${page.path}: an inline script the policy does not hash`).toContain(sha256(source!));
+      }
     }
   });
 

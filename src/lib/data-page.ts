@@ -12,6 +12,7 @@ import {
 } from "./site.js";
 import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
+import { datasetLd } from "./dataset-ld.js";
 
 /**
  * The data page — the header's "The data", and the footer's.
@@ -56,10 +57,15 @@ export function dataPage(dataset: Dataset): DataPage {
   const desc = `What ${PRODUCT_NAME} holds today: ${routes.length} routes across ${
     dataset.countries.length} countries, every value carrying its source and the day it was read — with the downloads, the checks and the tracker.`;
 
+  // The one page that IS the dataset says so in the vocabulary a dataset
+  // index reads. It is a data block, not a program — but the policy names it
+  // anyway, so nothing in this site's head is unaccounted for.
+  const ld = datasetLd(dataset, DATA_PATH);
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 ${contentSecurityPolicy([MENU_SCRIPT])}
+<script type="application/ld+json">${ld}</script>
 ${iconLinks()}
 ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
 <style>${PAGE_CSS}</style>`;

@@ -2625,3 +2625,27 @@ the new ones. The mark itself is unchanged — the same tilted stamp, rendered
 larger. Google fetches favicons on its own schedule after it indexes a page, so
 the result may take days either way: this removes the one reason it could
 refuse.
+
+**2026-09-09 — the data page describes itself as a dataset.** Structured data
+(`schema.org/Dataset`, JSON-LD) on `/data` and nowhere else: name, the
+description a stranger would need, the licence as Creative Commons' own URL
+(not our copy of the text — the identifier is what a machine matches on), the
+dataset version, the day its newest value was read, the four countries as
+`Country` coverage, and two `DataDownload` entries pointing at the JSON the
+build already emits. It is the one search surface this product's shape earns —
+a dataset index reads a vocabulary, not prose — and every field is a fact the
+same page states in words, so a crawler is told nothing a reader cannot check.
+Kept out of the CSP: an `application/ld+json` block is a data block, never
+prepared as a script, and `script-src` never sees it — measured in a real
+browser (`npm run smoke`: the data page loads with zero console errors and no
+refusal in the log) rather than assumed, so the site keeps one policy on every
+page instead of forking it for one hash. The suite refuses a download URL the
+build does not emit, a date that is not the page's own, and an inline script of
+an unexpected type. 280 tests.
+
+*Not done, and why:* `FAQPage` and `HowTo` markup — Google restricted their
+rich results to a handful of site types, and marking up questions we do not
+ask on the page would be markup for a crawler rather than a description of the
+page. Keyword pages, per-country copies of the same text and "best visa
+consultant" doorways: refused outright — they contradict the one thing this
+product sells.
