@@ -2556,3 +2556,48 @@ goes red, and the run-failed issue says so, so an expired token cannot make
 "checked daily" quietly untrue. Tested at creation: the watch committed
 `3cf7cbd`, its dispatch step was green, and the site started a
 `repository_dispatch` build 30 seconds later.
+
+## 2026-09-09 — The dispatch's first run found two pipeline defects and three false flags; all four things are now tests
+
+**The token worked; the build did not.** The human created `DISPATCH_TOKEN`
+(fine-grained, site repository only, Contents read/write, expiring
+2027-09-09) and the watch's dispatch reached the site 30 seconds later — the
+first time a data change has travelled that path. The build it started failed,
+and both reasons had been invisible until a build ran against data newer than
+the lock:
+
+1. **The fingerprint was not frozen.** `tests/base-path.test.ts` hashes the
+   template's output over a frozen dataset, but the page's footer carries one
+   value that is nobody's dataset and moves by itself — the watch's last run.
+   Every day the watch commits would have failed the build. The render now
+   takes that day as an argument (`routePages(dataset, lastRun?)`), the case
+   passes 1970-01-01, and the fixture was regenerated. A first attempt
+   normalised the value out of the HTML by string replacement and passed
+   locally while failing in CI: the replaced value also appeared inside the
+   frozen dataset's own read dates. Recorded because the lesson is the
+   general one — freeze an input by passing it, not by editing the output.
+2. **The data was checked out shallow.** Two cases prove the built data
+   contains the pinned commit, which is a question about ancestry; a
+   depth-1 clone cannot answer it. A push builds the lock itself, so the gap
+   never showed. `fetch-depth: 0` on the data checkout.
+
+**The three flags were ours.** The first real watch flags of the project —
+§ 20a AufenthG, § 6 BeschV and Anlage AufenthG on buzer.de — were raised
+because those entries' slices were bound to their statute bodies on
+2026-09-08 and their baselines were never re-read: the next run hashed a
+different region and reported our own edit as a source change. Verified before
+resolving: today's sliced text is a substring of yesterday's, character for
+character, and the suite (428 tests, quote fidelity included) still finds
+every shipped sentence on its page. No value moved. A snapshot now records
+the slice it was read through (`slice_read`); the suite refuses a state whose
+fingerprint is not the slice the watchlist names today; CONTRIBUTING carries
+the rule. Six flag files were given their resolution sections and the three
+issues were closed with the evidence. **This was the launch dimension's first
+flag walked by a human** — the human read the issue titles and delegated the
+read ("bunları sen okuyabilirsin"), and the walk is in the files.
+
+**Commit identity.** GitHub began refusing pushes that expose the private
+address, so both repositories now commit as
+`7439893+OytunOnal@users.noreply.github.com` (the human's choice between that
+and turning the protection off). The history keeps the address it already
+carries; nothing is rewritten.

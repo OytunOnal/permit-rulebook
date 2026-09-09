@@ -8,12 +8,16 @@ was read](docs/media/results-2026-09-08.png)](https://permitrulebook.com)
 [permitrulebook.com](https://permitrulebook.com) shows which work-permit routes
 across Germany, France, Spain and the Netherlands fit them, which are close by
 how much, and what one step would open more — every number carrying the
-authority's own sentence and the day it was read.
+authority's own sentence and the day it was read. The rules themselves live in
+a repository of their own —
+**[permit-rulebook-data](https://github.com/OytunOnal/permit-rulebook-data)**,
+open data under CC BY 4.0: every route as JSON, every value with its quote,
+its source page and its read date, and the daily watch that re-reads all of
+them. This repository is the site; that one is the ruleset.
 
 **Who it is for.** Someone weighing a move to one of those four countries who
 wants the rules rather than an opinion — and anyone who needs the ruleset
-itself, which is open data in
-[permit-rulebook-data](https://github.com/OytunOnal/permit-rulebook-data).
+itself.
 
 **What it does now** — the latest line of the versions ledger
 ([KANBAN.md](KANBAN.md), `## versions`):

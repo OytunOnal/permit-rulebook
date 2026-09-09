@@ -43,7 +43,17 @@ short line, the same country prints nothing, a route arrival still names both
 the record.").
 Site `0c2d18a`, data `c6d5be3`.
 
-**Nothing is waiting on me.** v1 waits on your list below.
+**2026-09-09: the dispatch ran for real, and it found things.** The token the
+human made carried a data change to the site in 30 seconds — and the build
+failed, twice, on defects only a build against newer data could show: a
+"frozen" fingerprint that hashed the watch's last run, and a shallow data
+checkout that cannot answer an ancestry question. Both fixed, both now tests.
+The day's three watch flags were read: they were our own slice change, not the
+law — proved by the new text being a substring of the old — and the gap that
+caused them is a test as well. Six flag files resolved, three issues closed.
+
+**Nothing is waiting on me** except today's scheduled rebuild, which I am
+watching. v1 waits on your list below.
 
 Numbers: 426 tests in the data repository, 274 in the site; 122 quotes
 verified, `human_tier: 0`; 31 pages + 26 endpoints, 0 tap targets under 44 px
