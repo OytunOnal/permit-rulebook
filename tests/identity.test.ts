@@ -500,14 +500,25 @@ describe("the identity has one set of elements too", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("every built page carries the same three icon links", () => {
+  /**
+   * Four links, and each is a size somebody actually asks for: the .ico for the
+   * tab, the SVG for a display that can scale it, a 96px PNG because a search
+   * engine wants a square that is a multiple of 48 (Google's own rule — the
+   * site was in the results with no mark beside it, 2026-09-09), and a 180px
+   * PNG for a home screen.
+   */
+  it("every built page carries the same four icon links, and the files exist", () => {
     const pages = ["dist/index.html", "dist/404.html", "dist/germany/index.html",
       "dist/germany/eu-blue-card-general/index.html"];
     for (const page of pages) {
       const html = read(page);
       expect(html, page).toContain('rel="apple-touch-icon"');
-      expect((html.match(/rel="icon"/g) ?? []).length, page).toBe(2);
+      expect(html, page).toContain('href="/favicon-180.png"');
+      expect(html, page).toContain('sizes="96x96"');
+      expect((html.match(/rel="icon"/g) ?? []).length, page).toBe(3);
     }
+    for (const file of ["favicon.ico", "favicon.svg", "favicon-96.png", "favicon-180.png"])
+      expect(existsSync(root(`dist/${file}`)), `${file} is linked but not built`).toBe(true);
   });
 });
 

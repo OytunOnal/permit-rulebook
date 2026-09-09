@@ -2612,3 +2612,16 @@ that path changed the two stale comments inside the sweep itself became
 offenders and were rewritten — the gate found the last two lines carrying the
 old name, which is exactly what it is for. 274 + 428 tests green after the
 move.
+
+**2026-09-09 — two icon sizes added, because a search result showed the site
+without its mark.** Searching the name in Chrome found the site and no logo
+beside it. Nothing was broken: `/favicon.ico` (16/32/64), `/favicon.svg` and
+the head links are all served, `robots.txt` allows them. But Google states the
+favicon it shows must be a square that is a **multiple of 48px**, and the
+largest raster we shipped was 64. The head now also links a 96px PNG for that
+rule and a 180px PNG as the touch icon (the old one was 64, small for a home
+screen); the `.ico` still carries only the three tab sizes, so no page pays for
+the new ones. The mark itself is unchanged — the same tilted stamp, rendered
+larger. Google fetches favicons on its own schedule after it indexes a page, so
+the result may take days either way: this removes the one reason it could
+refuse.

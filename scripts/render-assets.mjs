@@ -35,7 +35,12 @@ const publicDir = join(root, "public");
 const check = process.argv.includes("--check");
 
 const CARD = { width: 1200, height: 630 };
-const ICON_SIZES = [16, 32, 64];
+// 16/32/64 are the tab; 96 is what a search engine asks for (Google states a
+// square that is a multiple of 48px, and 64 is not one); 180 is what iOS puts
+// on a home screen. The .ico carries only the tab sizes — an .ico holding four
+// images is a bigger file on every page load for nothing.
+const ICON_SIZES = [16, 32, 64, 96, 180];
+const ICO_SIZES = [16, 32, 64];
 const SIDECAR = "social-card.json";
 
 function shoot(html, width, height, out) {
@@ -144,7 +149,7 @@ async function main() {
       pathToFileURL(join(dir, "page.html")).href,
     ], { stdio: "ignore" });
     rmSync(dir, { recursive: true, force: true });
-    images.push({ size, png: readFileSync(out) });
+    if (ICO_SIZES.includes(size)) images.push({ size, png: readFileSync(out) });
   }
   writeFileSync(join(publicDir, "favicon.ico"), ico(images));
 
