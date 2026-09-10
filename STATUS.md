@@ -249,6 +249,28 @@ closure; an Algerian passport with **Germany alone** — no notice at all. Tests
 now hold both layouts to each other, the badge, the strip and the headline,
 because this fix has been half-applied twice.
 
+**The passport side is counted, not guessed** (2026-09-10). "Which other
+country is left to test" is answerable from the data: hold one reader's answers
+fixed and move only the passport, and **199 passports produce six distinct
+screens** — 157 ordinary third-country ones; 30 free-movement ones; the nine
+whose passport needs no MVV (Australia, Canada, Japan, Monaco, New Zealand,
+South Korea, the United Kingdom, the United States, Vatican City); **Algeria**;
+**Switzerland**, which is both free-movement and MVV-exempt, a class of one;
+and **Türkiye**. All six are now walked — the last two had never been.
+
+**And the walk found one** (data #15, filed). On the free-movement screen the
+notice says citizens of the EU, of Iceland, Liechtenstein and Norway, **and of
+Switzerland** may live and work here — and the single sentence printed under it
+is *"As an EU national you generally don't need a work permit to work anywhere
+in the EU."* For four of those thirty-one passports the quote does not cover
+the reader: the EEA three hold that right under the EEA Agreement and
+Switzerland under the 1999 free-movement agreement, not under TFEU art. 45. The
+claim is right; the evidence beneath it is not evidence for it, and that is the
+one promise this product makes. Not a live blocker — no verdict is wrong and no
+value is stale — so it queues rather than touching master. The class's own
+source in the vocabulary is worse: a list of member states with "EU Member State
+since 1995, Euro area member since 1999…", which is page furniture.
+
 **Mid-build correction, recorded rather than tidied away:** the site
 repository's working tree was on `master` when the s9 builder started writing,
 because this session checked master out for a ledger edit and did not put the
