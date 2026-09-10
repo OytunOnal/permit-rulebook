@@ -125,23 +125,36 @@ are handled differently on purpose:
   national in the Blue Card's scope, and CESEDA L421-11 names no exclusion. No
   page found says either way in one sentence.
 
-**s8 is mid-build — the working tree in both repositories is the builder's**, and
-when it returns it goes to a branch rather than to master, under the mode that
-started today. `fr-ict` is the one part that may still take the blocker path:
-the live product offers a route the authority's own page closes to that
-passport. (`docs/spine/scenarios/s8-algeria.md'): `fr-ict` closes
-to Algerian passports with the page's own words — the dataset gains `not-in`,
-the operator it has needed since a route first had to say "not you" — and the
-four talent routes stay **scored, not hidden**, with a notice that carries both
-sides in their own words and says plainly that nothing found settles it. Hiding
-four routes on a decision about a shopkeeper's permit would be deciding an open
-question by disappearing it.
+**s8 is built, gated and on a branch** — `algeria-closure` in both
+repositories (data `4f0585c`, site `ce5b13a`; 495 + 307 tests, quote fidelity
+139). It is the first slice to land under the new mode: it waits for your walk
+and your word, and the merge is the deploy. Two reviewers are reading it now.
 
-**All four country reads are done.** What is left of the class (data #8) is the
-mechanism, and s7 and s8 are it: a statement can name the passports it does not
-bind, and now a route can too. Each is a research day before a
-build day: the Dutch read is what turned "four routes are wrong" into "three
-are, and here is a second thing nobody had asked about".
+What it does. `fr-ict` closes itself to an Algerian passport in the fiche's own
+words, and the dataset gained the operator that made that sayable — `not-in`, a
+closure, which ships only with its own plain sentence beside the quote, because
+a closed route is the one verdict whose reason cannot be assembled from the
+answers it names. On the results screen such a route leaves met, within reach
+and not yet, and stands in a section of its own: **Not open to your passport**.
+
+The four talent routes stay scored, and an Algerian reader sees a notice of a
+kind this product did not have — an **open question**. It carries three
+authorities in their own words: the Conseil d'État (2 March 2026, n° 500835 —
+a case about a trader's certificate, and the notice says so rather than reading
+it for more than it decided), service-public's own page for Algerian nationals
+(seventeen first-application situations, no talent card among them), and the EU
+directive whose scope covers every third-country national. Then it says we
+searched four official sites for a page that settles it and found none, and
+that the routes are scored as they are for anyone else — "that is us declining
+to guess, not an answer".
+
+**The build corrected the spec twice, with fetches**: a routing sentence I had
+written into the brief does not exist on the page (the real one is a callout
+linking to a different fiche), and sixteen situations are seventeen. Both fixed
+in the scenario, marked as corrections. It also found two defects on the way:
+`htmlToText` spliced service-public's unfilled tooltip placeholder into the
+very sentence we quote, and the watch counted an empty HTTP 202 as a good read
+— a snapshot that would have said "unchanged" forever.
 
 What runs without anyone asking:
 
@@ -193,6 +206,16 @@ to look:
 
 - [x] **The card's quote cap, 10 → 11** (human, 2026-09-10): ratified for
       `nl-hsm-under30`. Twelve would have to be argued again.
+- [ ] **The human-tier number changes, and it is a public one** (yours to
+      accept or refuse): two of s8's sources cannot be fetched from here —
+      Legifrance answers a bot 403, EUR-Lex an empty 202 — so they ship as
+      **human tier**: a person read them, their sentences are written into
+      `data/verify-s5e.md`, and they are re-read every 90 days. `human_tier`
+      goes **0 → 2**, and 0 is a number the README and the v1 line state.
+      *The alternative:* drop the court's sentence and the directive's, and
+      state the conflict with no evidence behind either side. My
+      recommendation is to accept the two and change the claim, because the
+      notice's whole worth is that it quotes both authorities. Say which.
 - [ ] **Switch on the preview address** (once, ~5 minutes):
       `docs/spine/preview.md` has the six steps — connect Cloudflare Pages to
       `OytunOnal/permit-rulebook`, project name `permit-rulebook`, production
