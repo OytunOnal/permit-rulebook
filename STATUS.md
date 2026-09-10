@@ -278,14 +278,23 @@ to look:
       https://feedback-line.permit-rulebook.pages.dev shows the site with the
       new line at the end of a results screen. *If the build fails:* paste the
       last twenty lines here.
-- [ ] **The feedback line, when the window closes** (site #6, branch
-      `feedback-line`): read it once — "Wrong about you? A value that does not
-      match its source, or something this screen should do — report a wrong
-      value or suggest a change. Both open GitHub, where filing needs an
-      account." *Pass:* you would let it sit under your own results. Then I
-      merge it. *If not:* say what it should say instead.
-- [ ] **Nothing right now** on the audit: the Netherlands is being built (s7),
-      Germany (#10) is read next, then France (#11) and Spain (#12).
+- [ ] **Walk `algeria-closure`, then say merge** (s8; it is a blocker fix, so
+      it does not wait for the window). On the preview, with an Algerian
+      passport and France: the transfer card sits under **"Not open to your
+      passport"** with the fiche's own sentence, the four talent routes are
+      scored as usual, and above them stands the open-question notice. Then the
+      same record with a Turkish passport — nothing changes anywhere. Then an
+      Algerian passport with **Germany only** — the notice must not appear
+      (that was the review's blocker).
+- [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
+      window to close at 09:00 tomorrow). One line under your results: "Wrong
+      about you? A value that does not match its source, or something this
+      screen should do — report a wrong value or suggest a change. Both open
+      GitHub, where filing needs an account." *Pass:* you would let it sit under
+      your own results. *If not:* say what it should say instead.
+- [x] **The four country reads are done** (2026-09-10): the Netherlands and
+      France produced fixes (s7 is live, s8 waits on your walk), Germany and
+      Spain produced findings with dates on them and nothing to change.
 - [ ] **The post's replies.** Anything a reader says that is a bug, a missing
       need or a design flaw is worth pasting here — the steward protocol turns
       it into a fix or a recorded decision, rather than a note that gets lost.
