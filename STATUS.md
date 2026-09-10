@@ -27,371 +27,77 @@ front of it and each is a research day before a build day.
 
 ## What is happening now
 
-**How this product ships changed today** (steward-51). From here the live site
-changes only by a branch you walked and merged: **merge is the deploy, and the
-deploy is your word.** The blocker exception stands — a wrong value on a live
-page is fixed on master directly, because a reader is being told something
-untrue while a branch waits. Everything else queues. The preview address is
-yours to switch on once (`docs/spine/preview.md`, six steps); after that every
-branch renders at `https://<branch>.permit-rulebook.pages.dev` and the live
-site stays where it is.
+**s8 is live** (2026-09-10, on your word: *"merge"*). The first deploy under
+Steward mode's rule — **merge is the deploy, and the deploy is your word**. Site
+`f6af596`, data `6bbc831`, 504 + 320 tests, deploy green in 2m20s, walked on
+the live host after it landed:
 
-**Steward has run once** (2026-09-10). The human found that the way back in had
-no door for a suggestion: all three templates asked about a defect or about
-data, and the "new need" form required a checkbox about a route. The wording is
-fixed in both repositories — the labels are unchanged — and the footer now says
-"Suggest a route or a change".
+- With an Algerian passport asking about France: the intra-corporate transfer
+  card sits under **Not open to your passport** with the fiche's own sentence,
+  and the four talent routes stand under **Open on the rules — unsettled for
+  your passport** with the notice above them. The headline says *"1 route meets
+  the rules — whether your passport can use it is unsettled."*
+- The four renamed routes answer at the addresses they always had.
+  `/france/sent-by-your-employer-abroad/` is a 404 and always was: the address
+  never moved, so nothing linked to it.
 
-**A second report came in, and it is at its gate:** a reader suggested asking
-for feedback at some point — a popup, or a permanent icon. The footer's two
-links stay as they are; what is being decided is a moment, not a replacement.
-Two shapes are drawn in `docs/spine/design/s7-feedback.html` (served at
-http://localhost:4400/s7-feedback.html): **A**, a slip docked to the bottom
-edge that never dims the page, and **B**, a centred modal that stops the
-reading. Both fire once ever, only after the results have been read, ask for
-the two things the product can act on, send nothing off the device, and say out
-loud that the tracker needs a GitHub account. Recommended: A. **Waiting on the
-human's pick.**
+**s9 is next, and it is on the preview** — http://localhost:4500 now serves
+`s9-build` (site `78a9250`) against `quoted-not-asked` (data `29fde08`),
+**513 + 335 tests**. Master went into it by hand: six conflicts, all where s8
+and s9 had changed the same lines for different reasons — the country card's
+stamp, the route page's main block, two imports, one test both sides had
+already fixed, and the root-build fingerprint, which moved because two
+templates became one.
 
-**The counter was read** (2026-09-10): 57 visits and 75 page views since it went
-live, 41 visits in the announcement's first 24 hours; United States 26,
-Türkiye 24, seven other countries once each; LinkedIn and its app the only
-referrers besides one Bing and one Google; **every visit entered at `/`** — no
-route page has been landed on yet, which is what an unindexed week looks like.
-The reading also found a defect: Core Web Vitals put CLS **poor for 23%** of
-samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) — the
-interview paints and then fills itself. Site #8. The A2/A7/A8 numbers stay
-where they were pre-registered: 2026-10-09.
+What s9 puts on the site: five routes the interview does not ask about — the
+French employee card, Spain's general employed regime and its international
+teleworker, German self-employment and the Dutch single permit — with their
+rules in the authority's words, dated and watched, under **quoted and dated ·
+not scored**. Nothing is scored, no profile can be told it qualifies, and
+validation refuses both directions.
 
-**s7 is live** (`docs/spine/scenarios/s7-nationality.md`, real-green
-2026-09-10). A statement can name the passports it does not bind: a Turkish
-passport no longer meets the recognised-sponsor condition on the two Dutch
-highly skilled migrant permits or the researcher permit, because the IND says
-it does not bind them; all six Dutch routes now state the provisional residence
-permit, which ten passports do not need. Walked live with both passports.
-Reviewed on both axes — one blocker, and it was in the spec I wrote, not the
-build: the MVV shipped as a caveat and is a precondition.
-
-**The rule that keeps it from happening again:** every question the interview
-asks must change something the reader sees, as a generated check. Against this
-morning's dataset, 168 third-country passports produced one screen — it would
-have found data #8 by itself.
-
-**The feedback line is built and waiting** (site #6): one line at the end of
-the results screen — "Wrong about you? … report a wrong value or suggest a
-change. Both open GitHub, where filing needs an account." Nothing opens,
-nothing is dismissed, nothing is remembered. It sits on the branch
-`feedback-line` (`20681e6`, 300 tests), **not on master**, because the window
-is open and it is an improvement rather than a blocker. It merges when the
-window closes.
-
-**Germany is read and closed** (data #10). The answer came back different from
-the Dutch one, and the difference is the finding: **nothing in the eight German
-routes is wrong.** Every nationality rule found sits beside the routes rather
-than inside them — § 26 Abs. 1 BeschV (eleven states, any employment, no
-qualification) and § 26 Abs. 2 (the Western Balkans regulation, with its quota
-and its mission-of-application rule) are ways in this dataset does not model;
-Decision 1/80's rights attach after employment has begun, which is exactly what
-the dataset's Türkiye notice already says — an official German source confirmed
-a statement instead of correcting one; § 41 AufenthV decides where paperwork is
-filed, and this product states conditions, not procedure. Three rows in
-`exclusions.md` with the text they were read from. One defect fell out of it:
-the Opportunity Card's "Official page" link points at handbookgermany.de, which
-is not an authority (data #13 — the replacement is a real choice: the federal
-portal serves a bot check, so it is a page a reader can use against a page the
-watch can keep its eye on).
-
-**Spain is read and closed** (data #12): the four routes ask the same of every
-third-country nationality, and that sentence now has a date on it — three route
-pages section by section, Ley 14/2013 arts. 61–76 from the BOE's consolidated
-text, and the salary PDF. No country is named in any of those articles. The one
-country-group carve-out is the free-movement gate this dataset already applies,
-and its class does hold Norway, Iceland, Liechtenstein and Switzerland — checked
-rather than assumed. Two real nationality rules in Spanish law reach none of
-these four.
-
-**France is read, and it is the heavy one** (data #11). Two findings, and they
-are handled differently on purpose:
-
-- **Settled:** the intra-corporate transfer permit is not open to Algerian
-  nationals — service-public states the eligibility as *"Vous êtes étranger
-  (sauf Européen ou Algérien)"* and routes an Algerian reader to a different
-  fiche. The product offers that route to Algerian passports today.
-- **Not settled, and not decided by us:** for the four passeport-talent routes
-  the sources conflict. The Conseil d'État says CESEDA's residence titles do
-  not apply to Algerians — in a case about a shopkeeper's certificate — and
-  the administration's own page for Algerians lists sixteen situations with no
-  talent card among them; but Directive (EU) 2021/1883 puts every third-country
-  national in the Blue Card's scope, and CESEDA L421-11 names no exclusion. No
-  page found says either way in one sentence.
-
-**v1.1 is open** (boundary, 2026-09-10; the human chose its scope from three).
-Two slices, both bound to something already written down. **s9** publishes the
-first five routes this product will not score — FR carte salarié, ES cuenta
-ajena, ES digital nomad, NL GVVA, DE § 21 — with their rules in the authority's
-own words and the reason each is unscoreable quoted beside them; it uses the
-third scope value, "quoted and dated · not scored", which the dataset has
-carried since s6 and never used. It is bound to **A5**, refuted: 23 routes
-against a promise of 35–40. **s10** is the CLS defect the counter found — poor
-for 23% of samples while LCP and INP are good for 100%.
-
-**All five reads are in** (`docs/spine/research-04-quoted-not-asked.md`), and
-each route turned out to carry its own kind of unscoreable sentence. France: the
-labour market « est opposable au demandeur », behind it a three-week search the
-applicant never sees. Spain's cuenta ajena: a catalogue republished quarterly
-per region, or an immigration office persuaded case by case. Germany: the
-statute itself lists five judgements — the viability of the business idea, the
-applicant's experience, the capital, the effect on employment and training, the
-contribution to innovation — weighed with the local chambers. The Netherlands:
-the statute writes the refusal, and two of its three grounds turn on the
-employer's effort and UWV's opinion of it. Spain's teleworker route: a floor
-stated as 200% of a wage index reset every year, and « un análisis
-individualizado » beside it.
-
-**One read corrected us.** We had recorded that no official euro figure exists
-for the teleworker floor. One does — a consulate publishes 2.160 € — dated 2022
-and computed from that year's SMI. `exclusions.md` now says what is true: no
-*current, binding* figure exists. That is the whole reason to send a reader to
-look rather than to repeat what we wrote last week.
-
-**The preview is local, for now.** Cloudflare has folded Pages into Workers and
-the create flow this account gets demands a deploy command, which a static site
-has none of; rather than spend the walk's time on a platform, the branch is
-built and served from this machine — **http://localhost:4500**, the
-`algeria-closure` build, from git worktrees so the running builder is not
-disturbed. Walked it before handing it over: the closed section is there with
-the transfer card in it, the four talent routes are scored, the notice stands
-above them. Cloudflare stays a candidate, not a blocker.
-
-**The walk found something on its first screen** (human, 2026-09-10): with an
-Algerian passport, the four talent routes sit under **"Open — criteria met"**
-with the open-question notice above them. The notice was meant to carry the
-doubt; the card is what a reader acts on, and "criteria met" is a stronger
-sentence than we can defend for a route whose availability is the very thing
-no page settles. **Decided the same hour** (human: "C — katılıyorum"): the four keep every rule
-and quote and move to a section of their own, headed *"Open on the rules —
-unsettled for your passport"*, with a line saying the rules are met and the
-question is the one in the note. Nothing is hidden and nothing is decided; the
-heading simply stops claiming more than we know.
-
-The notice's own words go with it. The title reads *"Algeria: France applies a
-different agreement to you"* — one fact, the uncontested one — and the body,
-which the human called tangled, drops everything the quotes below it already
-carry: the court's chamber and number, the "read to the end" note, the list of
-sites searched. Five sentences remain, one job each, and one parenthesis stays
-because it is the only thing stopping the court's words being read for more
-than they decided.
-
-**A second finding from the same walk:** the human read "FR ICT — seconded
-employee" and had to ask what it meant. They are exactly the reader this
-product is for, so the label had not earned its meaning. It becomes **"sent by
-your employer abroad"**, and a prose pass over every route name, question and
-statement — read as a stranger — found the same fault in three more places:
-Germany's and the Netherlands' transfer cards ("intra-corporate transfer",
-"transferee"), the Dutch "Orientation year" (which says nothing about looking
-for work after studying), and "hosting agreement", an EU term of art that no
-sentence opens. The authorities' own English names stay — a reader will meet
-"Chancenkarte" and "kennismigrant" on the official page too.
-
-**Applied, and the branch is walkable again.** The notice's new title and its
-five sentences, the four labels and the opened term went into the branch's own
-worktree — the one serving the local preview — so the builder's files were
-never touched. Then the three things the round exposed were closed:
-
-- **A route keeps its address when its name changes.** A page's URL was derived
-  from its name, so the four corrected labels moved four live pages, one of
-  them to something unreadable, days after the sitemap went to Google and Bing.
-  A route may now pin a `slug`; the four are pinned to the addresses they
-  already have. `tests/address.test.ts` holds those four URLs, so a future
-  wording round cannot move them by accident.
-- **One line ending, on every platform.** The twin parser was the second gate
-  green in CI and red on this machine; the third was the fingerprint that
-  proves the template did not drift, because the stylesheets inlined into every
-  page arrived with CRLF here and LF in the pipeline. Both parsers stay
-  defensive, and `.gitattributes` now stops the checkout creating the problem
-  in either repository.
-- **Pushed and rebuilt:** data `6bbc831`, site `a5dc119`, the lock naming the
-  data commit this branch was walked against. **504 + 315 tests green — on this
-  machine, for the first time.** The preview at http://localhost:4500 is the
-  new build, and the four addresses answer 200 with their new names on them.
-
-**Your walk caught it twice, and both times the fix was half-applied**
-(2026-09-10, human: *"criteria met yazıyoruz hala cezayir Talent — employee on
-assignment"*, then *"kontrol ettin mi sen"*). It had not been walked — the
-source and the built bundle had been read, which is not the same thing. Walked
-in a browser, three things were still wrong:
-
-- **The results screen has two layouts** — one destination, and several
-  grouped by country — and the partition had gone into the first only. A
-  reader looking at more than one country still read "Open — criteria met"
-  over the four French talent routes.
-- **The card wore the met badge** under a heading that had stopped claiming
-  it. The heading is not the sentence a reader acts on; the green pill on the
-  card is. It reads **"Rules met"** now, in ink on the quiet ground — no
-  verdict colour on a section that states no verdict.
-- **Nothing counted them.** The summary strip counted neither the unsettled
-  routes nor the closed ones, so two sections sat under a tally that did not
-  mention them, and the headline read *"Nothing open on these answers."*
-  directly above a section holding one. The strip counts both now, and the
-  headline says how many routes meet the rules and that the passport is what
-  is unsettled.
-
-A typed sentence went with them: the section said *"Whether France opens this
-permit to an Algerian passport"* — true of the only notice that exists today,
-wrong the first time a second one marks a route somewhere else. It asks about
-*"your passport"*.
-
-**Walked, not inferred** (`1213f0d`, 320 tests): an Algerian passport with
-France — the transfer card under "Not open to your passport", the four talent
-routes under "Open on the rules — unsettled for your passport"; the same
-record with a Turkish passport — three routes open, no notice, no section, no
-closure; an Algerian passport with **Germany alone** — no notice at all. Tests
-now hold both layouts to each other, the badge, the strip and the headline,
-because this fix has been half-applied twice.
-
-**The passport side is counted, not guessed** (2026-09-10). "Which other
-country is left to test" is answerable from the data: hold one reader's answers
-fixed and move only the passport, and **199 passports produce six distinct
+**The passport side is counted, not guessed** (2026-09-10). Hold one reader's
+answers fixed and move only the passport: **199 passports produce six distinct
 screens** — 157 ordinary third-country ones; 30 free-movement ones; the nine
-whose passport needs no MVV (Australia, Canada, Japan, Monaco, New Zealand,
-South Korea, the United Kingdom, the United States, Vatican City); **Algeria**;
-**Switzerland**, which is both free-movement and MVV-exempt, a class of one;
-and **Türkiye**. All six are now walked — the last two had never been.
+whose passport needs no MVV; **Algeria**; **Switzerland**, which is both
+free-movement and MVV-exempt, a class of one; and **Türkiye**. All six are
+walked; the last two never had been.
 
-**And the walk found one** (data #15, filed). On the free-movement screen the
-notice says citizens of the EU, of Iceland, Liechtenstein and Norway, **and of
-Switzerland** may live and work here — and the single sentence printed under it
-is *"As an EU national you generally don't need a work permit to work anywhere
-in the EU."* For four of those thirty-one passports the quote does not cover
-the reader: the EEA three hold that right under the EEA Agreement and
-Switzerland under the 1999 free-movement agreement, not under TFEU art. 45. The
-claim is right; the evidence beneath it is not evidence for it, and that is the
-one promise this product makes. Not a live blocker — no verdict is wrong and no
-value is stale — so it queues rather than touching master. The class's own
-source in the vocabulary is worse: a list of member states with "EU Member State
-since 1995, Euro area member since 1999…", which is page furniture.
+**The walk found one** (data #15, filed). On the free-movement screen the notice
+says citizens of the EU, of Iceland, Liechtenstein and Norway, **and of
+Switzerland** may live and work here — and the single sentence under it is *"As
+an EU national you generally don't need a work permit to work anywhere in the
+EU."* For four of those thirty-one passports the quote does not cover the
+reader: the EEA three hold that right under the EEA Agreement and Switzerland
+under the 1999 agreement, not under TFEU art. 45. The claim is right; the
+evidence beneath it is not evidence for it. Not a live blocker — no verdict is
+wrong, no value is stale — so it queues.
 
-**Mid-build correction, recorded rather than tidied away:** the site
-repository's working tree was on `master` when the s9 builder started writing,
-because this session checked master out for a ledger edit and did not put the
-branch back. Nothing was lost, and nothing was quietly re-pointed: s9's site
-work is committed as `3d4e9c7` on its own branch `s9-build`, off master, which
-also makes it a clean s9-only diff for the reviewers. s8 and s9 touch the same
-three files, so they are merged once, deliberately, after s9 clears its
-reviews — **s8 first, then s9**, as the queue says.
+**The site's daily schedule does fire, late.** This file said since 2026-09-08
+that it never had. It ran on schedule at 11:49 UTC on 2026-09-09 and 11:48 UTC
+on 2026-09-10, both green — about five hours after the cron says, the same
+lateness the data watch shows. The redundant path is real; it is just slow.
 
-**s9 is built** (data `c649667` on `quoted-not-asked`, site `3d4e9c7` on
-`s9-build`; **513 + 306 tests**, 182 quotes verified). Five routes the
-interview does not ask about — the French employee card, Spain's general
-employed regime and its international teleworker, German self-employment and
-the Dutch single permit — carry their rules in the authority's words, dated and
-watched, under the third scope value: **quoted and dated · not scored**.
-Validation refuses both directions: a route in that scope may not carry a
-criterion the interview answers, and a scored route may not hide behind it.
-
-**The build corrected the research three times, by fetching.** Legifrance
-answers this fetcher 403 where a browser reads it fine (the same wall the human
-tier already records); the BOE's PDFs do not survive our text extraction, so
-the consolidated HTML is the source of record; and the IND's single-permit
-page, which the research recorded as gated, answered 200 today. All three are
-rows in `data/exclusions.md` rather than notes in a report.
-
-**Both reviews ran, and both put the same finding first** — from opposite
-directions. The country heading said *"Germany: nine routes"* over a page whose
-ninth route has no verdict in it, and the social card, the first surface a
-stranger sees, said *"28 routes"* under *"Which work-permit routes could fit?"*,
-where five of them can never fit. The data page had already written the rule
-down; those two were the places still breaking it. Both count the kinds apart
-now. Thirteen more findings applied, of which three are worth naming:
-
-- **A rule that was read and never stated.** Article 76.2 of the Spanish
-  regulation was inside the watched slice and nowhere on the page: an individual
-  employer must show means for their own household — 50% of the minimum wage
-  alone, 100% for two, 25% more for each further member. It is stated now, from
-  our own dated read.
-- **Three French exemptions are recorded rather than silent** — the 2008
-  Tunisian protocol's Annex I occupations, master's graduates on a qualifying
-  contract, and the narrow cases at R5221-21. Each lives only on Legifrance,
-  which this fetcher cannot read. The first is the one to watch: the ministry's
-  own plain-language page does not carry it either, so a Tunisian reader
-  following the overview would never meet it.
-- **A reader arriving from an unscored route's page landed on an interview
-  about nowhere.** The arrival that refuses an unscored route — rightly, there
-  is no verdict to scope to — was throwing the route's country away with it.
-
-s9 is **mock-green**: data `69b64df` on `quoted-not-asked`, site `fd19198` on
-`s9-build`, 513 + 309 tests, the lock naming the data commit it is built
-against. It waits behind s8 in the queue, and on your walk.
-
-**The live site moved on its own today, correctly:** the watch's dispatch built
-and pinned the data at `17cd1fe` — the Germany and Spain reads' exclusions rows
-— without anyone touching master. The fast path, on schedule, for the second
-day.
-
-**s8 is built, reviewed, fixed and waiting on you** — `algeria-closure` in both
-repositories (data `43938be`, site `a51e20b`; **504 + 307 tests**, quote
-fidelity 139, `human_tier: 2` by your word). The first slice under the new mode: it waits for your walk and
-your word, and the merge is the deploy.
-
-Both reviews ran and eleven findings are applied. The two that mattered: the
-notice stood over a screen showing **Germany alone**, telling a reader about
-four French permits they had not asked for — a notice that names routes is now
-stated only where the reader asked about a country one of them is in; and the
-body pointed at the wrong page — the transfer card's callout links to F2215,
-not F35600, and F2215 carries the same sentence and the same absence (checked
-by hand). From the other axis: the long-quote trim had been left behind when
-the notice moved out of the page, so the Türkiye notice's 640-character quote
-was printing whole on a results card; the empty-body guard moved from one
-fetcher into the core where every fetcher passes; and a test that proved
-"closed routes are filed apart" by grepping three identifiers now asserts what
-the page does.
-
-What it does. `fr-ict` closes itself to an Algerian passport in the fiche's own
-words, and the dataset gained the operator that made that sayable — `not-in`, a
-closure, which ships only with its own plain sentence beside the quote, because
-a closed route is the one verdict whose reason cannot be assembled from the
-answers it names. On the results screen such a route leaves met, within reach
-and not yet, and stands in a section of its own: **Not open to your passport**.
-
-The four talent routes stay scored, and an Algerian reader sees a notice of a
-kind this product did not have — an **open question**. It carries three
-authorities in their own words: the Conseil d'État (2 March 2026, n° 500835 —
-a case about a trader's certificate, and the notice says so rather than reading
-it for more than it decided), service-public's own page for Algerian nationals
-(seventeen first-application situations, no talent card among them), and the EU
-directive whose scope covers every third-country national. Then it says we
-searched four official sites for a page that settles it and found none, and
-that the routes are scored as they are for anyone else — "that is us declining
-to guess, not an answer".
-
-**The build corrected the spec twice, with fetches**: a routing sentence I had
-written into the brief does not exist on the page (the real one is a callout
-linking to a different fiche), and sixteen situations are seventeen. Both fixed
-in the scenario, marked as corrections. It also found two defects on the way:
-`htmlToText` spliced service-public's unfilled tooltip placeholder into the
-very sentence we quote, and the watch counted an empty HTTP 202 as a good read
-— a snapshot that would have said "unchanged" forever.
+**The lesson from today, written down:** reading the source and the built
+bundle is not walking the product. The partition that stops "criteria met" was
+half-applied twice, and both halves were found by opening the page — once by
+you, once by walking it properly. Tests now hold the two layouts, the card
+badge, the summary strip and the headline to each other.
 
 What runs without anyone asking:
 
 - **The daily watch** (05:17 UTC, data repository) re-reads every source, files
-  an issue for each change and tells the site to rebuild. Its first three real
-  flags were read on 2026-09-09 — all three were our own slice change, not the
-  law, and the gap that let that happen is now a test.
-- **The site's daily rebuild** (06:40 UTC) is the redundant path. **It did not
-  fire on 2026-09-09.** The fast path (the watch's dispatch) is proven end to
-  end and carried the day's data instead, by hand once. If the schedule keeps
-  missing, the sentence "a daily schedule rebuilds even if every signal fails"
-  has to change or the trigger has to.
+  an issue for each change and tells the site to rebuild.
+- **The site's daily rebuild** (06:40 UTC nominal, ~11:48 in practice) is the
+  redundant path, and it is working.
 - **The counter** (Cloudflare Web Analytics) records one view per page load and
   nothing about the reader.
 - **The pre-registered numbers** in `docs/spine/assumptions.md` decide A2, A7
-  and A8 thirty days after the announcement — 2026-10-09, read from the counter
-  and the tracker.
+  and A8 thirty days after the announcement — 2026-10-09.
 
 ## What is expected from you
 
-**The 48-hour window is open until 2026-09-11 09:00 (GMT+3)** — the announcement
+**The 48-hour window closes 2026-09-11 09:00 (GMT+3)** — the announcement
 went out 2026-09-09 around 09:00. Until then the live site is frozen: it is
 touched only for a blocker (a wrong verdict confirmed against its source, a
 value gone stale on a live page, a legal objection to a quote) — s7 is one, the
@@ -408,17 +114,10 @@ CLS fix is not. The three lines, left here until the window closes:
 Nothing is blocked on you. These are the things only you can see, when you want
 to look:
 
-- [ ] **If a day passes with no rebuild — run one.** The site's own 06:40 UTC
-      schedule has not fired once since it was written (2026-09-08); GitHub's
-      scheduler is best-effort, and the data watch's own schedule runs three to
-      four hours late every day. The daily rebuild that actually happens is the
-      watch's: it commits its heartbeat and dispatches the site. *Check:* the
-      footer of https://permitrulebook.com/data/ says "last run <today or
-      yesterday>". *If it says an older day:* in a terminal,
-      `gh workflow run pages.yml -R OytunOnal/permit-rulebook` — that builds
-      against the pinned data and deploys; a green run appears within ten
-      minutes at https://github.com/OytunOnal/permit-rulebook/actions. Nothing
-      else is needed; it cannot break anything that the daily run would not.
+- [x] **The daily rebuild needs nothing from you.** This list asked you to run
+      one by hand if a day passed without one. It was written on a false
+      premise: the site's schedule has fired every day, about five hours late
+      (11:49 UTC on 2026-09-09, 11:48 on 2026-09-10, both green).
 
 - [x] **The card's quote cap, 10 → 11** (human, 2026-09-10): ratified for
       `nl-hsm-under30`. Twelve would have to be argued again.
@@ -439,19 +138,17 @@ to look:
       https://feedback-line.permit-rulebook.pages.dev shows the site with the
       new line at the end of a results screen. *If the build fails:* paste the
       last twenty lines here.
-- [ ] **Walk `algeria-closure`, then say merge** (s8; it is a blocker fix, so
-      it does not wait for the window). The preview at **http://localhost:4500**
-      is rebuilt with everything you approved this morning. With an Algerian
-      passport and France: the transfer card sits under **"Not open to your
-      passport"** with the fiche's own sentence; the four talent routes keep
-      every rule and quote but now stand under **"Open on the rules —
-      unsettled for your passport"**, with the reworded notice above them. Then
-      the same record with a Turkish passport — nothing changes anywhere. Then
-      an Algerian passport with **Germany only** — the notice must not appear
-      (that was the review's blocker). One extra thing worth a click, since it
-      is a promise to strangers: any route page opens at the address it always
-      had, e.g. http://localhost:4500/france/ict-seconded-employee/ shows
-      "Sent by your employer abroad".
+- [x] **s8 walked and merged** (2026-09-10, your word). Live, and walked again
+      on the live host afterwards.
+- [ ] **Walk s9, then say merge** — http://localhost:4500 serves it now. Five
+      routes that are quoted and **not** scored. *What to look for:* open
+      http://localhost:4500/france/employee-card/ — it states the labour-market
+      test in service-public's words, dated, with no score and no "criteria
+      met" anywhere on it; then run the interview for France and confirm that
+      route never appears among your results, in any section. The country page
+      http://localhost:4500/france/ says "five routes scored, one quoted" and
+      lists the quoted one under a heading of its own. *Pass:* nothing on any
+      of those screens reads like a verdict about you.
 - [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
       window to close at 09:00 tomorrow). One line under your results: "Wrong
       about you? A value that does not match its source, or something this
