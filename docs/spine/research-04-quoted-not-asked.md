@@ -114,3 +114,94 @@ the bilateral-agreements page are readable by a person and not by this watch.
 `travail-emploi.gouv.fr` sits behind a bot check; the same fact was taken from
 Legifrance and the ministry's DGEF page instead. The quotes s9 would ship all
 come from the pages that fetch cleanly.
+
+
+---
+
+## 2. Spain — autorización inicial de residencia temporal y trabajo por cuenta ajena
+
+Read 2026-09-10, from the BOE's consolidated PDF of RD 1155/2024 (the rendered
+HTML truncates before these articles) and the ministry's own pages.
+
+**What it is.** The general regime's way in: an employer in Spain applies for a
+non-EU worker of 16 or over to reside and work as an employee. **The employer
+applies, not the worker.** The authorisation runs as long as the job, capped at
+a year, and is tied to one occupation and — bar the exceptions the law names —
+one autonomous community:
+
+> « La autorización inicial de residencia temporal y trabajo por cuenta ajena
+> tendrá una duración igual a la de la actividad a desarrollar, con el máximo de
+> un año, y se limitará… a un ámbito geográfico autonómico y a una ocupación
+> determinada. » (art. 73.4)
+
+**The conditions the authority states** (all from the consolidated PDF,
+https://www.boe.es/buscar/pdf/2024/BOE-A-2024-24099-consolidado.pdf):
+
+- A contract signed by both, guaranteeing continuous work, whose start date is
+  conditioned on the authorisation taking effect (art. 74.1.b).
+- The employer current on tax and social security, with means enough for the
+  business and for the obligations the contract puts on them (art. 74.1.d–e) —
+  and, for an individual employer, a floor stated as a proportion of the SMI:
+  50% for a single person, 100% for a two-person household, 25% more per
+  additional member (art. 76.2).
+- The worker holding the training and, where the profession requires it, the
+  legally required qualification (art. 74.1.f).
+- Pay: for part-time work, total pay at or above the **full-time** minimum wage
+  computed annually (art. 74.1.c). No euro figure anywhere — the SMI is set by
+  a separate annual decree.
+
+**Why it cannot be scored** — two sentences, and they are different in kind:
+
+> « a) Que la situación nacional de empleo permita la contratación de la
+> persona trabajadora extranjera en los términos previstos en el artículo 75… »
+> (art. 74.1.a)
+
+The first path through art. 75 is a list: SEPE publishes, **every quarter and
+per autonomous community**, a catalogue of hard-to-fill occupations, and being
+on it opens the door. Checkable, but it is a different list every three months
+in every region — a moving target rather than a rule.
+
+The second path is a judgement:
+
+> « …se considerará que la situación nacional de empleo permite la contratación
+> en las ocupaciones no calificadas como de difícil cobertura cuando el
+> empleador acredite ante la Oficina de Extranjería la dificultad de cubrir los
+> puestos de trabajo vacantes con trabajadores ya incorporados en el mercado
+> laboral interno… » (art. 75.2)
+
+*Our rendering:* for an occupation not on the catalogue, the employer must
+satisfy the immigration office that the vacancy could not be filled from the
+local labour market — after a public matching period, with the employment
+service issuing a certificate of insufficient candidates. Neither the quarterly
+regional list nor the office's assessment is something the person applying can
+check about themselves.
+
+**The exceptions, quoted.** The regulation sets the test aside for the cases in
+art. 40 of LO 4/2000 and under any international agreement (art. 74.2) — and
+art. 40 is a long list: reunified family members of working age, renewals,
+former refugees and stateless people, people with Spanish ascendants or
+descendants in their care, those born and resident in Spain, grandchildren of
+Spaniards by origin, and, in its second paragraph, positions of trust and
+management, highly qualified professionals, intra-company transfers, and
+artists of recognised standing
+(https://www.boe.es/buscar/pdf/2000/BOE-A-2000-544-consolidado.pdf).
+
+The regulation does not name a country; the ministry's own Hoja 12 does:
+> « La autorización va dirigida a nacionales de Estados con los que España haya
+> suscrito acuerdos internacionales (Chile y Perú). »
+
+**The reader's own page.**
+https://www.inclusion.gob.es/web/migraciones/cuenta-ajena — *"Trabajar en
+España · Cuenta ajena"*, which links to Hoja 12, the sheet for this exact
+authorisation.
+
+**Watchability, and one thing worth fixing elsewhere.** The BOE consolidated
+PDFs read cleanly (via a direct fetch and a text extraction, not the HTML), as
+do the ministry's page and Hoja 12's PDF. SEPE's catalogue page redirects
+through a client-side script: the resolved URL fetches cleanly, the advertised
+one returns only the redirect stub. Two findings for a curator rather than for
+s9: SEPE's page still cites the **repealed** RD 557/2011 art. 65.1 for the
+catalogue rather than RD 1155/2024 art. 75, and the
+`extranjeros.inclusion.gob.es` URL this project has used elsewhere for
+procedure sheets now redirects to a 404 — the content moved to
+`inclusion.gob.es/web/migraciones/`.
