@@ -135,9 +135,13 @@ carried since s6 and never used. It is bound to **A5**, refuted: 23 routes
 against a promise of 35–40. **s10** is the CLS defect the counter found — poor
 for 23% of samples while LCP and INP are good for 100%.
 
-The first research pass is running (the French carte « salarié »): one per
-route, under the rules that produced the four country reads, and no build
-begins until they are in.
+The French read is in and written up (`docs/spine/research-04-quoted-not-asked.md`):
+the carte « salarié » turns on a sentence a person cannot check — *« la
+situation du marché de l'emploi est opposable au demandeur »* — and behind it a
+three-week recruitment search they never see, plus a compliance check on the
+employer rather than on them. That is exactly the sentence the page will carry
+under "we do not score this". The other four reads are running in parallel; no
+build begins until they are in.
 
 **The live site moved on its own today, correctly:** the watch's dispatch built
 and pinned the data at `17cd1fe` — the Germany and Spain reads' exclusions rows
