@@ -134,7 +134,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // One date format, everywhere a date prints (decision 12).
     import { isoDay } from "../lib/copy.js";
     import {
-      carveOutHtml, caveatHtml, precondHtml, provenanceHtml, railHtml, readingHtml, scopedHtml,
+      carveOutHtml, feedbackLineHtml, caveatHtml, precondHtml, provenanceHtml, railHtml, readingHtml, scopedHtml,
       measuredCriterionOf,
     } from "../lib/card.js";
 
@@ -1066,7 +1066,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           section("Open — criteria met", "", byStatus.met.map((r) => fullCard(r)).join(""), byStatus.met.length) +
           section("Within reach", "near", byStatus.near.map((r) => fullCard(r)).join(""), byStatus.near.length) +
           unlockSection() +
-          section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length);
+          section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length) +
+          feedbackLineHtml();
         showArrival();
         sayVerdict();
         return;
@@ -1112,7 +1113,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             <summary>${esc(c.name)} <span class="tally">${tallyParts}</span></summary>
             <div class="cbody">${inner}</div>
           </details>`;
-      }).join("");
+      }).join("") + feedbackLineHtml();
       showArrival();
       sayVerdict();
       recordScreen(null, true);
@@ -1396,6 +1397,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /* B1: after Enter, the card itself says which country went on the record —
        a monospace line in the side panel is not where a person is looking. */
     .recorded{margin-top:.6rem;font-size:.88rem;color:var(--color-ink)}
+    /* The line at the end of an answer: quieter than a card, louder than the
+       footer, and never between the reader and what they came for (site #6). */
+    .feedback{margin:var(--space-5) 0 0;padding-top:var(--space-3);border-top:var(--rule-soft);font-size:.88rem;color:var(--color-muted)}
+    .feedback a{color:var(--color-ink)}
     .recorded b{color:var(--color-band)}
     .recorded[hidden]{display:none}
 

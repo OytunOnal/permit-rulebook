@@ -7,6 +7,7 @@ import {
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
+import { NEW_NEED_URL, TRACKER_URL } from "./site.js";
 // One frame for every quote the product shows (2026-09-08).
 import { noteHtml, quoteFrame } from "./quote.js";
 
@@ -128,6 +129,33 @@ export function carveOutHtml(route: Route, answers: Profile): string {
  * shows (s7). `href` comes from the page, which is where a route's address is
  * built.
  */
+/**
+ * Where a disagreement goes, at the moment a reader has something to disagree
+ * with.
+ *
+ * The footer has carried these two links since the launch, and the results
+ * screen — where a person decides the product is wrong about them — carried
+ * neither in its body (a reader's suggestion, relayed by the human, site #6).
+ *
+ * It is a line, not a prompt: nothing opens, nothing is dismissed, nothing is
+ * remembered on the device. Two shapes that did open were drawn and rejected
+ * (`docs/spine/design/s7-feedback.html`), and the objection they failed on is
+ * the one this line cannot fail: the product has never interrupted anybody.
+ *
+ * It says out loud that filing needs a GitHub account, because a link that
+ * ends at a login screen is a trap rather than a door (site #7, still open —
+ * this line does not close it, it stops it surprising anyone).
+ */
+export function feedbackLineHtml(): string {
+  const link = (href: string, text: string): string =>
+    `<a href="${escAttr(href)}" target="_blank" rel="noopener">${esc(text)}</a>`;
+  return `<p class="feedback">${esc("Wrong about you?")} ${
+    esc("A value that does not match its source, or something this screen should do —")} ${
+    link(TRACKER_URL, "report a wrong value")} ${esc("or")} ${
+    link(NEW_NEED_URL, "suggest a change")}${esc(".")} <span class="keep">${
+    esc("Both open GitHub, where filing needs an account.")}</span></p>`;
+}
+
 export function scopedHtml(route: Route, answers: Profile, href: string): string {
   return `<div class="scoped">${esc(scopeLine(route, answers))} · <a href="${
     escAttr(href)}">The rules of this route</a></div>`;
