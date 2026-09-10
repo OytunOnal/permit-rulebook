@@ -154,9 +154,13 @@ and computed from that year's SMI. `exclusions.md` now says what is true: no
 *current, binding* figure exists. That is the whole reason to send a reader to
 look rather than to repeat what we wrote last week.
 
-**Next:** the s9 build — five pages, the scope value that has never been used,
-and a validation rule that stops a route claiming it while carrying deciding
-criteria.
+**s9 is being built** on the branch `quoted-not-asked`, in both repositories —
+opened on top of `algeria-closure` rather than master, so the queue stays
+honest: **s8 merges first, then s9.** The builder is working from the research
+file rather than re-reading the pages, and is under one added rule: a source
+the research found unfetchable (the IND's route pages, Spain's joint
+instruction, make-it-in-germany) may not be quoted at all — prefer the ones
+that fetch cleanly, or say the route cannot be built without them.
 
 **The live site moved on its own today, correctly:** the watch's dispatch built
 and pinned the data at `17cd1fe` — the Germany and Spain reads' exclusions rows
