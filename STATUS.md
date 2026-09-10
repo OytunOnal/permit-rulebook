@@ -163,6 +163,16 @@ disturbed. Walked it before handing it over: the closed section is there with
 the transfer card in it, the four talent routes are scored, the notice stands
 above them. Cloudflare stays a candidate, not a blocker.
 
+**The walk found something on its first screen** (human, 2026-09-10): with an
+Algerian passport, the four talent routes sit under **"Open — criteria met"**
+with the open-question notice above them. The notice was meant to carry the
+doubt; the card is what a reader acts on, and "criteria met" is a stronger
+sentence than we can defend for a route whose availability is the very thing
+no page settles. Three ways out are on the table — leave it, close the four, or
+give them a section of their own that keeps every rule and quote but stops the
+heading claiming more than we know. My recommendation is the third; **waiting
+on the word.**
+
 **Mid-build correction, recorded rather than tidied away:** the site repository's
 working tree was on `master` when the s9 builder started writing, because this
 session checked master out for a ledger edit and did not put the branch back.
