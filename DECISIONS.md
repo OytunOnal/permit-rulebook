@@ -2915,3 +2915,37 @@ Node's `fetch` is not. Headed Chrome passing today does not prove that.
 
 The README's v1 line stays true: the 122 quotes it names are the machine-read
 ones, and the tier is counted beside them, not inside them.
+
+## 2026-09-10 — v1.1 is open: five routes quoted and not scored, and the shift that a metric found
+
+The human opened v1.1 and chose its scope from three (the other two: the
+compare-don't-rank facts, and a defects-only round).
+
+**What decided it was the assumption list, not the appetite.** A5 — "six to
+eight employment routes per country is realistic" — is refuted and recorded as
+such: the one-pager promised something like 35–40 routes and the product ships
+23. Every missing route was researched and left out for a reason that still
+holds; what was never true is that the gap could stay unsaid. The dataset has
+carried the vocabulary for this since s6 and never used it: `scope` takes
+`rules-quoted-nothing-asked`, which prints "quoted and dated · not scored".
+
+**s9** publishes the first five that way — FR carte salarié, ES cuenta ajena,
+ES digital nomad, NL GVVA, DE § 21 — each with its rules in the authority's own
+words, each saying plainly why this product will not score it (a labour-market
+test, a discretionary assessment, a floor nobody publishes as a figure). One
+research pass per route before any build, under the rules that produced the
+four country reads. Nine more remain on the roadmap for v1.2.
+
+**s10** is the CLS defect: poor for 23% of samples on the interview and the
+footer, against a 0.25 threshold, while LCP and INP are good for 100%. It is in
+this version because it is the first defect this project learned from a metric
+rather than from a person, and leaving it would say the counter is decoration.
+
+**The bets this version is bound to** are already written and dated: A2, A7 and
+A8, read on 2026-10-09 from the counter and the tracker. s9 is the slice that
+gives them something to measure — 23 scored routes plus five quoted ones,
+against the same numbers pre-registered before the announcement.
+
+**Also at this boundary:** the board was telling a returning reader that s5d
+was still in flight. It shipped in v0.8, every finding applied and walked. Moved
+to done with the date and a line saying why it sat there.

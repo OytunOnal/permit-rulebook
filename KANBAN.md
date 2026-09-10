@@ -55,6 +55,8 @@ Promoted (or dropped, with evidence) at a boundary session.
   reader rank for themselves without the product ruling · source: the
   second v1-gate critique (2026-09-08), "only you can decide" item 4.
 - **Quoted, not asked — pages for the 14 excluded active routes** (v1.1,
+  **first five promoted to s9 at the v1.1 boundary, 2026-09-10**; nine remain
+  here for v1.2)
   human 2026-09-08) · why: the one-pager promised ~35–40 routes and the
   product ships 23; the excluded routes are real and searched for, and the
   third scope value ("rules quoted, nothing asked") exists for exactly them ·
@@ -188,15 +190,18 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **Answers recorded as given, verdicts in plain words** (s5d) ·
-  `docs/spine/scenarios/s5d.md`. Built, code-reviewed on both axes (10 findings,
-  all applied), and extended twice by findings from the human's own walk: the
-  orientation-year false requirement, and a four-part package now in flight —
-  a card must name the threshold it was measured against · preconditions must
-  read as requirements, not as claims about the reader · five caveats must leave
-  the "Also required" heading · the Chancenkarte's twin of the false
-  requirement, settled against § 20a. Awaiting the human's scenario walk on the
-  finished build.
+- **Five routes quoted and dated, and not scored** (s9) · opened at the v1.1
+  boundary, 2026-09-10 (human: "v1.1 i açalım", scope chosen from three) ·
+  `docs/spine/scenarios/s9-quoted-not-asked.md` · FR carte salarié, ES cuenta
+  ajena, ES digital nomad, NL GVVA, DE § 21 — the third scope value
+  (`rules-quoted-nothing-asked`, "quoted and dated · not scored") used for the
+  first time. Bound to **A5** (refuted: 23 routes against a promise of 35–40)
+  and feeding **A2 / A7 / A8**, whose numbers are read on 2026-10-09. One
+  research pass per route before any build.
+- **The first paint stops shifting** (s10) · site #8 · CLS is poor for 23% of
+  samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) while LCP
+  and INP are good for 100%: the interview paints, then fills itself. Measured,
+  not guessed — the first defect this project learned from a metric.
 
 ## mock-green
 
@@ -207,6 +212,19 @@ _(empty — s6 was the last, and it is done)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **Answers recorded as given, verdicts in plain words** (s5d) · **real-green 2026-09-05, shipped in v0.8** —
+  `docs/spine/scenarios/s5d.md`. Built, code-reviewed on both axes (10 findings,
+  all applied), and extended twice by findings from the human's own walk: the
+  orientation-year false requirement, and a four-part package now in flight —
+  a card must name the threshold it was measured against · preconditions must
+  read as requirements, not as claims about the reader · five caveats must leave
+  the "Also required" heading · the Chancenkarte's twin of the false
+  requirement, settled against § 20a. Awaiting the human's scenario walk on the
+  finished build.
+
+  *(Moved out of "active" on 2026-09-10, at the v1.1 boundary: every finding named above was applied and
+  walked, and the board had gone on describing a finished slice as work in flight.)*
 
 - **A statement can name the passports it does not bind** (s7) ·
   **real-green 2026-09-10** — the interview asked which passport a reader would

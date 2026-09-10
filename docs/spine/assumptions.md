@@ -22,7 +22,10 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   glyph-encoded PDF → a permanent human-reader tier.
 - **A4 — Source language is not an obstacle.** — `research-confirmed (ES partial)` — the DE source
   is in 6 languages including TR; FR/NL fully EN; ES functional documents are Spanish PDFs.
-- **A5 — 6-8 employment routes per country is realistic.** — `research-refuted
+- **A5 — 6-8 employment routes per country is realistic.** — bound to **s9**
+  (2026-09-10): the five most searched of the excluded routes become pages that
+  quote and date their rules without scoring them, which is the honest form of
+  the gap this assumption's refutation left. — `research-refuted
   (revised: 8-12/country, ~40 total)` — the FR talent family pushes it to ~12,
   the NL official list to 20. What is needed: a written exclusion list per
   country; FR talent = a single route family + a sub-type discriminator.
