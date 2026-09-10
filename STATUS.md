@@ -92,7 +92,16 @@ is not an authority (data #13 — the replacement is a real choice: the federal
 portal serves a bot check, so it is a page a reader can use against a page the
 watch can keep its eye on).
 
-**Next, in order:** France (#11 — the Franco-Algerian Agreement of 1968 is the
+**France and Spain are being read now** (#11, #12), in parallel — the two briefs
+ask opposite questions. France carries a heavy lead: if the Franco-Algerian
+Agreement of 1968 governs Algerians instead of the general code, we are showing
+them routes they cannot use, which is worse than stating one condition too
+many. Spain's brief claims nothing at all on purpose: its job is to establish
+from Spain's own pages whether any nationality is treated differently, and
+"no, and here is the page that shows it" is a real answer as long as the
+sections were actually read.
+
+**Then:** France (#11 — the Franco-Algerian Agreement of 1968 is the
 lead, and if it governs Algerians instead of the general code it is a heavier
 finding than either country so far: not a condition lifted, but the wrong route
 shown), then Spain (#12, nothing claimed — the read has to establish it either
