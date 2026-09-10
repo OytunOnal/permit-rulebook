@@ -16,6 +16,16 @@ import TOKENS from "../../tokens.css?raw";
 // links the same stylesheet, so the mark and the stamp cannot drift apart
 // into two identities (human, 2026-09-08).
 import IDENTITY from "../../identity.css?raw";
+/**
+ * A stylesheet arrives with whatever line endings the checkout gave it.
+ *
+ * Both files are read from disk and printed into every page, so on a Windows
+ * working copy the build emitted CRLF where CI emitted LF: the same commit,
+ * two different pages, and the fingerprint that proves the template did not
+ * drift went red on the machine the human walks from (2026-09-10). The line
+ * ending is the checkout's business; the page is ours.
+ */
+const lf = (css: string): string => css.split("\r\n").join("\n");
 // One module explains an abbreviation, so the route page and the results card
 // say the same words for the same token (2026-09-08).
 import { type Glossary, glossSection, glossed } from "./gloss.js";
@@ -774,7 +784,7 @@ export function routePages(dataset: Dataset, lastRun?: string): RoutePage[] {
  * kilobytes of custom properties buys nothing.
  */
 export const PAGE_CSS = `
-${TOKENS}
+${lf(TOKENS)}
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: var(--text-body); }
 a { color: var(--color-stamp); }
@@ -795,7 +805,7 @@ a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0; ma
 .masthead { border-bottom: var(--rule-heavy); padding-bottom: var(--space-4); }
 h1 { font: var(--text-hero); margin: var(--space-2) 0 var(--space-2); }
 .lede { margin: 0; color: var(--color-muted); }
-${IDENTITY}
+${lf(IDENTITY)}
 
 /* ---- what this page checks: plain words, ink on card, no verdict colour ---- */
 .scope { margin: 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-left: 4px solid var(--color-ink); }

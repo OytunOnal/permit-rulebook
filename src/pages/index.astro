@@ -912,10 +912,29 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const closedRoutes = scored.filter(isClosed);
       const results = scored.filter((r) => !isClosed(r));
 
+      const applicable = notices(ds, answers);
+
+      /**
+       * A route an open question hangs over is not "criteria met".
+       *
+       * s8 decided not to decide: where the sources conflict about whether a
+       * permit is open to a passport at all, the routes stay scored and a
+       * notice carries the doubt. The human walked it and found the hole —
+       * the notice was above the cards and the card said "criteria met",
+       * and only one of those survives being skimmed (2026-09-10). The rules,
+       * the quotes and the dates stay exactly as they are; what changes is the
+       * heading over them, which stops claiming more than anyone knows.
+       */
+      const unsettledIds = new Set(
+        applicable.filter((n) => n.kind === "open-question").flatMap((n) => n.routes ?? []),
+      );
+      const unsettled = results.filter((r) => r.status === "met" && unsettledIds.has(r.route.id));
+      const settled = results.filter((r) => !unsettled.includes(r));
+
       const byStatus = {
-        met: results.filter((r) => r.status === "met"),
-        near: results.filter((r) => r.status === "near"),
-        hold: results.filter((r) => r.status === "hold"),
+        met: settled.filter((r) => r.status === "met"),
+        near: settled.filter((r) => r.status === "near"),
+        hold: settled.filter((r) => r.status === "hold"),
       };
       const met = byStatus.met.length;
       const near = byStatus.near;
@@ -925,7 +944,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       app.dataset.state = "results";
       setStamp("record");
 
-      const applicable = notices(ds, answers);
       const zeroOpen = met + near.length === 0;
 
       // The screen no route can produce: this passport needs no permit at all.
@@ -1045,6 +1063,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         rows.map(closedRowHtml).join(""), rows.length,
       );
 
+      /** The rules are met; whether the route is theirs at all is the question
+       * in the notice above, and the heading says so rather than the card. */
+      const unsettledSection = (rows: RouteResult[]) => rows.length
+        ? section(
+          "Open on the rules — unsettled for your passport", "unsettled",
+          `<p class="why">` + esc("The rules below are met by what you declared. Whether France opens "
+            + "this permit to an Algerian passport is the question in the note above.")
+          + `</p>` + rows.map((r) => fullCard(r)).join(""),
+          rows.length,
+        )
+        : "";
+
       const seekHint = (rs: RouteResult[], hasUnlocks: boolean) =>
         hasUnlocks && rs.some((r) => r.route.kind === "seek" && r.status !== "hold")
           ? `<p class="unlock-hint">Your job-search permit above is exactly for this — lawful time in the country to land that offer.</p>`
@@ -1062,6 +1092,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           : "";
         main.innerHTML = arrivalLine() + noticeCards + strip +
           section("Open — criteria met", "", byStatus.met.map((r) => fullCard(r)).join(""), byStatus.met.length) +
+          unsettledSection(unsettled) +
           section("Within reach", "near", byStatus.near.map((r) => fullCard(r)).join(""), byStatus.near.length) +
           unlockSection() +
           section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length) +

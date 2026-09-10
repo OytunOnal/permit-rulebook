@@ -44,7 +44,16 @@ const slugify = (s: string): string =>
 
 export const countrySlug = (country: Country): string => slugify(country.name);
 
-export const routeSlug = (route: Route): string => slugify(route.name);
+/**
+ * A route's address: its own `slug` where it has pinned one, and its name
+ * otherwise.
+ *
+ * The name is for the reader and changes when it reads badly — the human's
+ * walk on 2026-09-10 corrected four of them. The address is a promise to
+ * everyone who linked to it, and it moved with the name until this line
+ * (four live pages, days after the sitemap went to the search engines).
+ */
+export const routeSlug = (route: Route): string => route.slug ?? slugify(route.name);
 
 export const routePath = (country: Country, route: Route): string =>
   `/${countrySlug(country)}/${routeSlug(route)}`;
