@@ -135,21 +135,28 @@ carried since s6 and never used. It is bound to **A5**, refuted: 23 routes
 against a promise of 35–40. **s10** is the CLS defect the counter found — poor
 for 23% of samples while LCP and INP are good for 100%.
 
-The French read is in and written up (`docs/spine/research-04-quoted-not-asked.md`):
-the carte « salarié » turns on a sentence a person cannot check — *« la
-situation du marché de l'emploi est opposable au demandeur »* — and behind it a
-three-week recruitment search they never see, plus a compliance check on the
-employer rather than on them. That is exactly the sentence the page will carry
-under "we do not score this". Spain's cuenta ajena is in too, and its
-unscoreable sentence is two of different kinds: a catalogue republished every
-quarter for every autonomous community, and — off that catalogue — an
-immigration office's own judgement that the vacancy could not be filled
-locally. Germany's § 21 is in as well, and there the
-statute says the quiet part itself: the decision turns on the viability of the
-business idea, the applicant's experience, the capital, the effect on
-employment and training and the contribution to innovation — weighed with the
-local chambers and the trade authorities. Five judgements and a committee.
-Two reads left (NL GVVA, ES digital nomad); no build begins until they are in.
+**All five reads are in** (`docs/spine/research-04-quoted-not-asked.md`), and
+each route turned out to carry its own kind of unscoreable sentence. France: the
+labour market « est opposable au demandeur », behind it a three-week search the
+applicant never sees. Spain's cuenta ajena: a catalogue republished quarterly
+per region, or an immigration office persuaded case by case. Germany: the
+statute itself lists five judgements — the viability of the business idea, the
+applicant's experience, the capital, the effect on employment and training, the
+contribution to innovation — weighed with the local chambers. The Netherlands:
+the statute writes the refusal, and two of its three grounds turn on the
+employer's effort and UWV's opinion of it. Spain's teleworker route: a floor
+stated as 200% of a wage index reset every year, and « un análisis
+individualizado » beside it.
+
+**One read corrected us.** We had recorded that no official euro figure exists
+for the teleworker floor. One does — a consulate publishes 2.160 € — dated 2022
+and computed from that year's SMI. `exclusions.md` now says what is true: no
+*current, binding* figure exists. That is the whole reason to send a reader to
+look rather than to repeat what we wrote last week.
+
+**Next:** the s9 build — five pages, the scope value that has never been used,
+and a validation rule that stops a route claiming it while carrying deciding
+criteria.
 
 **The live site moved on its own today, correctly:** the watch's dispatch built
 and pinned the data at `17cd1fe` — the Germany and Spain reads' exclusions rows
