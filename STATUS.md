@@ -193,8 +193,17 @@ for work after studying), and "hosting agreement", an EU term of art that no
 sentence opens. The authorities' own English names stay — a reader will meet
 "Chancenkarte" and "kennismigrant" on the official page too.
 
-**All of it is queued behind the builder**, not applied: s9 is mid-flight in
-the same files, and two hands in one file is how a slice gets lost.
+**Applied, in the branch's own worktree** — the one serving the local preview —
+so the builder's files were never touched: the notice's new title and its five
+sentences, the four labels, the opened term. Two things fell out of it. A gate
+that is green in CI and red on this machine: the twin parser matched a literal
+newline after its fence, so a Windows checkout reported that `exclusions.md`
+had no twin at all — line endings belong to the checkout, not the reader
+(fixed). And the one worth your eye: **renaming a route renamed its address.**
+Four URLs moved, one of them to something unreadable, days after the sitemap
+went to Google and Bing. The fix under way separates the two — a route may pin
+its address, and the four are pinned to the ones they already have, so the
+names change and no link breaks.
 
 **Mid-build correction, recorded rather than tidied away:** the site repository's
 working tree was on `master` when the s9 builder started writing, because this
