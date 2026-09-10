@@ -214,6 +214,27 @@ _(empty — everything real-green so far is stamped into done)_
 
 ## done
 
+- **A route the authority closes, and a question nobody answers** (s8) ·
+  **real-green 2026-09-10, live** — `docs/spine/scenarios/s8-algeria.md`. The
+  first slice to ship under Steward mode's rule that **merge is the deploy and
+  the deploy is the human's word**: built on `algeria-closure` in both
+  repositories, reviewed on both axes (eleven findings applied), walked by the
+  human, merged on their word (site `f6af596`, data `6bbc831`; **504 + 320
+  tests**).
+
+  France's intra-corporate transfer card closes itself to an Algerian passport
+  in the fiche's own words — the dataset gained `not-in`, a closure that ships
+  only with its own plain sentence — and the four talent routes stay scored
+  under a heading that claims nothing: *Open on the rules — unsettled for your
+  passport*, with an open-question notice above them.
+
+  Three things the human's walk added after the build was green: a route keeps
+  its address when its name changes (four live URLs had moved), four labels
+  that had not earned their meaning, and the same partition applied to the
+  second layout, the card badge, the summary strip and the headline — that one
+  was found by walking, twice, after the code had been read and believed.
+
+
 - **Answers recorded as given, verdicts in plain words** (s5d) · **real-green 2026-09-05, shipped in v0.8** —
   `docs/spine/scenarios/s5d.md`. Built, code-reviewed on both axes (10 findings,
   all applied), and extended twice by findings from the human's own walk: the

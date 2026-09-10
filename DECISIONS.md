@@ -3033,3 +3033,41 @@ held LF.
 **Why both:** the attribute fixes this machine, the normalisers fix any machine.
 A contributor's checkout is not ours to configure, and this project takes
 contributions.
+
+## 2026-09-10 — s8 merged: the first deploy that is a human's word
+
+**Gate** (human: "merge", after walking the branch). Steward mode's rule ran
+for the first time end to end: the live site changed because a person walked a
+branch and said so, not because a build went green.
+
+**What went live.** France's intra-corporate transfer card is closed to an
+Algerian passport in the fiche's own words, under *Not open to your passport*.
+The four talent routes stay scored, keep every rule and quote, and stand under
+*Open on the rules — unsettled for your passport* with an open-question notice
+above them carrying three authorities and the sentence that we searched and
+found no page that settles it. Nothing is decided that no page decides.
+
+**The walk earned three changes the build had not.** A route now keeps its
+address when its name changes — four live URLs had moved days after the sitemap
+went to Google and Bing. Four labels were rewritten because the human, who is
+exactly the reader this is for, had to ask what one of them meant. And the
+partition that stops "criteria met" was applied to the second layout, the card
+badge, the summary strip and the headline: it had been half-applied twice,
+because the code had been read and believed rather than walked.
+
+**The lesson, stated plainly:** reading the source and the built bundle is not
+walking the product. Both times the missing half was found by opening the page.
+Tests now hold the two layouts, the badge, the strip and the headline to each
+other, but the habit is the fix.
+
+## 2026-09-10 — the site's daily schedule does fire, late
+
+**Correction to the record.** STATUS has said since 2026-09-08 that the site's
+own 06:40 UTC schedule "has not fired once". It has: `pages.yml` ran on
+schedule at 11:49 UTC on 2026-09-09 and 11:48 UTC on 2026-09-10, both green.
+GitHub runs it about five hours after the cron says, which is the same lateness
+the data watch shows.
+
+**What changes:** the standing item asking the human to run a rebuild by hand
+when a day passes without one comes off their list. The redundant path is real;
+it is just slow. The fast path (the watch's dispatch) still carries the day.
