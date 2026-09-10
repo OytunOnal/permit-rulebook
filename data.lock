@@ -13,5 +13,5 @@
 # that actually deployed.
 #
 # `npm run data:pin` writes the sibling's HEAD into it for a developer.
-sha=bc0514e0a6adc70ded16f17f32ec004c4cb9f6a7
-dataset_version=2026.09.07
+sha=4f0585c758dc6a81a90145eb8faaba1b800696bd
+dataset_version=2026.09.10

@@ -98,6 +98,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import {
       deriveQuestions, remainingQuestions, evaluate, formatEURPer,
       deriveBands, unlocks, notices, fieldOptions, matchOptions, referencedFields,
+      // A route the authority closes to this reader's passport is not a
+      // verdict the rules computed — one predicate, read by both repositories,
+      // so a screen can never file it under a heading that promises it later.
+      isClosed,
       countryClasses, datasetMeta, contradictionsIn,
       // s5d: every word a verdict says comes from here, beside the rules — the
       // page holds no field-id-to-label table of its own to fall through
@@ -106,7 +110,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // What an answer means here, where the label alone leaves two answers
       // hard to tell apart (human walk, 2026-09-08).
       optionMeans, unlockMeansOf, countryPhrase,
-      type Dataset, type FieldOption, type Notice, type Profile, type RouteResult,
+      type Dataset, type FieldOption, type Profile, type RouteResult,
     } from "permit-rulebook-data";
     import { routePath } from "../lib/slug.js";
     // Every internal URL the client writes goes through the same helper the
@@ -134,7 +138,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // One date format, everywhere a date prints (decision 12).
     import { isoDay } from "../lib/copy.js";
     import {
-      carveOutHtml, caveatHtml, precondHtml, provenanceHtml, railHtml, readingHtml, scopedHtml,
+      carveOutHtml, caveatHtml, closedRowHtml, noticeHtml, precondHtml, provenanceHtml, railHtml,
+      readingHtml, scopedHtml,
       measuredCriterionOf,
     } from "../lib/card.js";
 
@@ -876,22 +881,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       return { shown: quote.slice(0, end + 1) + " …", trimmed: true };
     }
 
-    function noticeCard(n: Notice): string {
-      const host = new URL(n.source.source_url).hostname.replace(/^www\./, "");
-      return `
-        <article class="notice ${esc(n.kind)}">
-          <h3>${esc(n.title)}</h3>
-          <p class="why">${esc(n.body)}</p>
-          <div class="foot">
-            <div class="srcs"><div class="src"${
-              quoteForCard(n.source.quote).trimmed ? ` title="${escAttr(n.source.quote)}"` : ""
-            }><i>“${esc(quoteForCard(n.source.quote).shown)}”</i> · ${esc(host)}${
-              n.source.legal_basis ? ` · ${esc(n.source.legal_basis)}` : ""} · <b>read ${esc(n.source.retrieved_at)}</b></div></div>
-            <a class="next" href="${escAttr(n.source.source_url)}" target="_blank" rel="noopener">Official page</a>
-          </div>
-        </article>`;
-    }
-
     function unlockCard(u: ReturnType<typeof unlocks>[number], routes: RouteResult[]): string {
       return `
         <article class="unlock">
@@ -920,10 +909,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // A reader who came from a route page is here about that route: it goes
       // first in whatever group it lands in, and everything else keeps the
       // order the engine gave it (scenario step 10).
-      const results = scopedFirst(
+      const scored = scopedFirst(
         evaluate(ds, answers).filter((r) => visibleCodes.has(r.country)),
         scopedRouteId,
       );
+      // A route this reader's own passport is shut out of is not a result. It
+      // is not open, it is not within reach, and above all it is not "not yet"
+      // — that heading invites them back with a better salary on a permit that
+      // will never be theirs. It leaves the three verdicts, the counts and the
+      // headline, and stands in its own section with the authority's sentence
+      // under it (s8).
+      const closedRoutes = scored.filter(isClosed);
+      const results = scored.filter((r) => !isClosed(r));
 
       const byStatus = {
         met: results.filter((r) => r.status === "met"),
@@ -956,7 +953,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         // Any other applicable notice still belongs on the screen — dropping
         // it silenced, say, the Türkiye note (review).
         main.innerHTML = [...replacing, ...applicable.filter((n) => !replacing.includes(n))]
-          .map(noticeCard).join("");
+          .map((n) => noticeHtml(n)).join("");
         // The notice screen IS the result for this reader: one entry, like any
         // other screen they can go back from.
         recordScreen(null, true);
@@ -975,7 +972,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // dataset's; the screen only stops being quiet about them.
       const clash = contradictionsIn(ds, answers)
         .map((c) => `<p class="clash" role="status">${esc(c.say)}</p>`).join("");
-      const noticeCards = clash + applicable.map(noticeCard).join("");
+      const noticeCards = clash + applicable.map((n) => noticeHtml(n)).join("");
 
       // The subtitle states what was compared, and only a comparison can
       // produce it — the count and the tense come from the same place (B4).
@@ -1047,6 +1044,17 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const section = (title: string, cls: string, inner: string, count: number) =>
         count ? `<h2 class="ghead ${cls}"><b>${title}</b> (${count})</h2><div class="stack">${inner}</div>` : "";
 
+      /**
+       * The routes this reader's passport is shut out of, said once and said
+       * plainly. It goes last, under a heading that closes rather than defers:
+       * these are not steps away, and the section that means "come back with
+       * more" is the one place they must never be filed.
+       */
+      const closedSection = (rows: RouteResult[]) => section(
+        "Not open to your passport", "closed",
+        rows.map(closedRowHtml).join(""), rows.length,
+      );
+
       const seekHint = (rs: RouteResult[], hasUnlocks: boolean) =>
         hasUnlocks && rs.some((r) => r.route.kind === "seek" && r.status !== "hold")
           ? `<p class="unlock-hint">Your job-search permit above is exactly for this — lawful time in the country to land that offer.</p>`
@@ -1066,7 +1074,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           section("Open — criteria met", "", byStatus.met.map((r) => fullCard(r)).join(""), byStatus.met.length) +
           section("Within reach", "near", byStatus.near.map((r) => fullCard(r)).join(""), byStatus.near.length) +
           unlockSection() +
-          section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length);
+          section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length) +
+          closedSection(closedRoutes);
         showArrival();
         sayVerdict();
         return;
@@ -1089,10 +1098,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           .map((u) => ({ u, routes: u.routes.filter((r) => r.country === c.code) }))
           .filter((x) => x.routes.length);
         const unknowns = openUnknownCount(rs);
+        // A country's own closed routes are counted in its tally: the section
+        // that holds them is collapsed when nothing is open, and a count no
+        // summary names is a route the reader never learns exists (s8).
+        const cClosed = closedRoutes.filter((r) => r.country === c.code);
         const tallyParts = [
           g.met.length ? `${g.met.length} open` : "",
           g.near.length ? `${g.near.length} within reach` : "",
           g.hold.length ? `${g.hold.length} not yet${unknowns ? ` — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown` : ""}` : "",
+          cClosed.length ? `${cClosed.length} not open to your passport` : "",
           cUps.length ? `<i>${cUps.length} unlocking step${cUps.length === 1 ? "" : "s"}</i>` : "",
         ].filter(Boolean).join(" · ");
         // With nothing open, the steps ARE the news: every section holding one
@@ -1107,7 +1121,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
               cUps.map((x) => unlockCard(x.u, x.routes)).join("") +
               seekHint(rs, true)
             : "") +
-          section("Not yet", "hold", holdList(g.hold, cUps.length > 0), g.hold.length);
+          section("Not yet", "hold", holdList(g.hold, cUps.length > 0), g.hold.length) +
+          closedSection(cClosed);
         return `<details class="country-sec"${open ? " open" : ""}>
             <summary>${esc(c.name)} <span class="tally">${tallyParts}</span></summary>
             <div class="cbody">${inner}</div>
@@ -1479,8 +1494,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .notice h3{font:var(--text-route);color:var(--color-met);margin-bottom:.35rem}
     /* s5c: an extra-rights notice sits BESIDE a computed verdict — the met
        green would read as a route the rules opened, which it is not. */
-    .notice.extra-rights{border-left-color:var(--color-band)}
-    .notice.extra-rights h3{color:var(--color-ink)}
+    .notice.extra-rights,.notice.open-question{border-left-color:var(--color-band)}
+    .notice.extra-rights h3,.notice.open-question h3{color:var(--color-ink)}
+    /* s8: a route the authority closes to this reader's passport. It wears the
+       hold grey and not the met green, and it is deliberately not the hold
+       card: nothing about it is "not yet". */
+    .closed{background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-hold);padding:var(--pad-card)}
+    .closed h3{font:var(--text-route);margin-bottom:.35rem}
+    .closed .why{margin-bottom:.5rem}
     .faildetail li.moot::before,.faildetail li.where::before{content:"— ";color:var(--color-muted)}
     .faildetail li.moot{color:var(--color-met)}
     .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}

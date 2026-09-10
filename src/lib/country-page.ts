@@ -7,7 +7,7 @@ import {
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
-  PAGE_CSS, audienceNotice, audienceSentence, gist, routeFigure, stampDate, withArticle,
+  PAGE_CSS, audienceSentence, gist, pageStamp, routeFigure, withArticle,
 } from "./route-page.js";
 import {
   DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay,
@@ -100,8 +100,7 @@ export interface CountryPage {
  * question screens make (human amendment to decision 12, 2026-09-08).
  */
 export function countryReadDate(dataset: Dataset, country: Country): string {
-  const notice = audienceNotice(dataset);
-  return country.routes.map((r) => stampDate(r, notice)).sort().at(-1) ?? "";
+  return country.routes.map((r) => pageStamp(dataset, r)).sort().at(-1) ?? "";
 }
 
 /**
@@ -139,7 +138,6 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
   const seen: Glossary = new Set();
-  const notice = audienceNotice(dataset);
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -172,7 +170,7 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
         esc(glossSection(route.name, seen))}</span><p class="gist">${esc(gist(route))}</p><p class="meta"><span>${
         esc(figure.label)}${figure.value ? ` <b>${esc(figure.value)}</b>` : ""}</span><span>${
         esc(scopeLine(route))}</span><span class="read"><time datetime="${
-        escAttr(stampDate(route, notice))}">read ${esc(stampDate(route, notice))}</time></span></p></a></li>`;
+        escAttr(pageStamp(dataset, route))}">read ${esc(pageStamp(dataset, route))}</time></span></p></a></li>`;
     }).join("")}
     </ul>
 

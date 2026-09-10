@@ -1,6 +1,6 @@
 import {
   scopeLine, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
-  isLocalization, joinAnd, joinOr, provenancedValuesOf,
+  isLocalization, joinAnd, joinOr, noticeSources, provenancedValuesOf,
   referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
   type StatementException,
@@ -163,10 +163,62 @@ function routeValues(route: Route): ProvenanceEntry[] {
  * settles it — the stamp equals the latest read date on the page, so a reader
  * can derive the number from the lines below it.
  */
-export function stampDate(route: Route, notice?: Notice): string {
+export function stampDate(route: Route, notice?: Notice, alsoOn: Notice[] = []): string {
   const dates = routeValues(route).map((e) => e.value.retrieved_at);
-  if (notice) dates.push(notice.source.retrieved_at);
+  for (const n of [...(notice ? [notice] : []), ...alsoOn])
+    for (const value of noticeSources(n)) dates.push(value.retrieved_at);
   return dates.sort().at(-1) ?? "";
+}
+
+/**
+ * The notices this route's page carries — the ones the dataset says are about
+ * this permit.
+ *
+ * A route page has no reader, so nothing on it can match a notice's `when`.
+ * Without this the unsettled question about an Algerian passport and the four
+ * French talent cards would have stood on the results card and been silent on
+ * the four pages that raise it: a page would have been quieter than a card
+ * (s8).
+ */
+export function noticesOn(dataset: Dataset, route: Route): Notice[] {
+  return (dataset.notices ?? []).filter((n) => (n.routes ?? []).includes(route.id));
+}
+
+/**
+ * A notice, on a page with no reader.
+ *
+ * Same words as the results card, because they are the same dataset sentences,
+ * and every side it stands on gets its quote — this is the block that has to
+ * carry an authority disagreeing with another one without the page picking a
+ * winner. The link at the foot is the page the notice sends the reader to,
+ * never whichever source it leads with: a reader with an Algerian passport
+ * needs their own fiche, not the Conseil d'État (s8).
+ */
+function noticeSection(n: Notice, seen: Glossary): string {
+  const next = n.learn ?? { url: n.source.source_url, label: "Official page" };
+  return `
+  <section class="notice-block ${escAttr(n.kind)}" aria-labelledby="notice-${escAttr(n.id)}">
+    <h2 id="notice-${escAttr(n.id)}">${esc(n.title)}</h2>
+    <p class="plain">${esc(n.body)}</p>${
+    noticeSources(n).map((value) => `
+      ${quoteBlock(value, {}, seen)}`).join("")}
+    <p class="notice-next"><a ${tapInline()} href="${escAttr(next.url)}" target="_blank" rel="noopener">${
+    esc(next.label)} &#8599;</a></p>
+  </section>`;
+}
+
+/**
+ * The stamp one route page carries: the newest read date among everything
+ * printed on it — its own quotes, the audience notice, and any notice the
+ * dataset says is about this route.
+ *
+ * One function, because four surfaces print this date (the page, the country
+ * index, the data door and the sitemap) and three of them passed `stampDate`
+ * two arguments where it now takes three. A country index reading 2026-09-07
+ * beside a page reading 2026-09-10 is two claims about one page (s8).
+ */
+export function pageStamp(dataset: Dataset, route: Route): string {
+  return stampDate(route, audienceNotice(dataset), noticesOn(dataset, route));
 }
 
 /**
@@ -275,17 +327,29 @@ function ruleHeading(dataset: Dataset, c: Criterion): string {
   // phrase produced a heading two lines long carrying both figures.
   const thresholds = gteUnder(c);
   if (thresholds.length) return capitalise(shortLabelOf(dataset, thresholds[0].field));
+  // Named by who it shuts out, said as the answer they gave: "Algeria" is a
+  // country and "an Algerian passport" is the thing this rule reads.
+  if (c.op === "not-in") return `Not open to ${criterionPhrase(dataset, c)}`;
   return capitalise(criterionPhrase(dataset, c));
 }
 
 function ruleKind(c: Criterion): string {
   if (gteUnder(c).length) return "Threshold";
   if (c.op === "points") return "Points";
+  // A closure is the opposite claim from the criterion beside it, and the two
+  // sit on the same page: one says who the permit is for, the other who the
+  // authority does not open it to. Reading them under one label would make the
+  // page say the second is a condition the reader could meet (s8).
+  if (c.op === "not-in") return "Who this is not for";
   if ("field" in c && c.field === "citizenship") return "Who this is for";
   return "Condition";
 }
 
 function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
+  // The dataset's own sentence, and only it. A closure is the one criterion
+  // whose plain line cannot be composed from the answers it names — composing
+  // it produces "This route asks for Algeria" (s8).
+  if (c.op === "not-in") return esc(c.text);
   if (c.op === "gte") {
     // The fact the number measures comes from the field, not from a guess at
     // its id: "The offer must pay at least ..." is true of a salary and false
@@ -336,7 +400,9 @@ function ruleCard(
   dataset: Dataset, country: Country, route: Route, c: Criterion, seen: Glossary, notice?: Notice,
 ): string {
   const values = valuesUnder(c);
-  const isAudience = "field" in c && c.field === "citizenship";
+  // A closure names the same field and makes the opposite claim, so it is not
+  // the audience card and never borrows the free-movement notice's words.
+  const isAudience = "field" in c && c.field === "citizenship" && c.op !== "not-in";
   if (isAudience && notice && !values.length) values.push({ value: notice.source });
   const thresholds = gteUnder(c);
   const year = thresholds.length ? thresholds[0].threshold.retrieved_at.slice(0, 4) : "";
@@ -588,7 +654,8 @@ function description(dataset: Dataset, country: Country, route: Route): string {
 export function routePage(dataset: Dataset, address: RouteAddress, lastRun?: string): RoutePage {
   const { country, route } = address;
   const notice = audienceNotice(dataset);
-  const read = stampDate(route, notice);
+  const about = noticesOn(dataset, route);
+  const read = stampDate(route, notice, about);
   const title = `${route.name} · ${country.name} · ${PRODUCT_NAME}`;
   const desc = description(dataset, country, route);
   const path = address.path;
@@ -625,7 +692,7 @@ ${headMeta({ title, description: desc, path, kind: "article" })}
 
   <div class="page">
   <main>
-${answerBlock(dataset, route, read)}
+${answerBlock(dataset, route, read)}${about.map((n) => noticeSection(n, seen)).join("")}
   <section class="cta" aria-labelledby="cta-h">
     <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
     <p><strong>Where do you stand on this route?</strong> The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>
@@ -734,6 +801,15 @@ ${IDENTITY}
 .scope { margin: 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-left: 4px solid var(--color-ink); }
 .scope b { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); display: block; margin-bottom: var(--space-1); }
 .scope p { margin: 0; }
+
+/* ---- a notice this page carries: a question the sources leave open, in the
+   band colour rather than a verdict colour. It is not a rule, it is not met
+   and it is not refused, so nothing here may wear the green or the red. ---- */
+.notice-block { margin: var(--space-4) 0 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-left: 4px solid var(--color-band); }
+.notice-block h2 { font: var(--text-route); margin: 0 0 var(--space-2); }
+.notice-block p.plain { margin: 0; }
+.notice-block .src { border-top: none; padding-top: var(--space-2); }
+.notice-next { margin: var(--space-2) 0 0; }
 
 /* ---- the rules ---- */
 .rules { margin-top: var(--space-5); display: grid; gap: var(--gap-cards); }
