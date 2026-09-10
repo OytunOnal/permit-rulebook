@@ -140,8 +140,12 @@ the carte « salarié » turns on a sentence a person cannot check — *« la
 situation du marché de l'emploi est opposable au demandeur »* — and behind it a
 three-week recruitment search they never see, plus a compliance check on the
 employer rather than on them. That is exactly the sentence the page will carry
-under "we do not score this". The other four reads are running in parallel; no
-build begins until they are in.
+under "we do not score this". Spain's cuenta ajena is in too, and its
+unscoreable sentence is two of different kinds: a catalogue republished every
+quarter for every autonomous community, and — off that catalogue — an
+immigration office's own judgement that the vacancy could not be filled
+locally. The remaining three reads (NL GVVA, ES digital nomad, DE § 21) are
+running; no build begins until they are in.
 
 **The live site moved on its own today, correctly:** the watch's dispatch built
 and pinned the data at `17cd1fe` — the Germany and Spain reads' exclusions rows
