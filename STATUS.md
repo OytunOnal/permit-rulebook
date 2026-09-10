@@ -125,7 +125,11 @@ are handled differently on purpose:
   national in the Blue Card's scope, and CESEDA L421-11 names no exclusion. No
   page found says either way in one sentence.
 
-**s8 is being built** (`docs/spine/scenarios/s8-algeria.md`): `fr-ict` closes
+**s8 is mid-build — the working tree in both repositories is the builder's**, and
+when it returns it goes to a branch rather than to master, under the mode that
+started today. `fr-ict` is the one part that may still take the blocker path:
+the live product offers a route the authority's own page closes to that
+passport. (`docs/spine/scenarios/s8-algeria.md'): `fr-ict` closes
 to Algerian passports with the page's own words — the dataset gains `not-in`,
 the operator it has needed since a route first had to say "not you" — and the
 four talent routes stay **scored, not hidden**, with a notice that carries both
