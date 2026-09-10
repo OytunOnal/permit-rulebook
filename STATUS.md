@@ -144,8 +144,12 @@ under "we do not score this". Spain's cuenta ajena is in too, and its
 unscoreable sentence is two of different kinds: a catalogue republished every
 quarter for every autonomous community, and — off that catalogue — an
 immigration office's own judgement that the vacancy could not be filled
-locally. The remaining three reads (NL GVVA, ES digital nomad, DE § 21) are
-running; no build begins until they are in.
+locally. Germany's § 21 is in as well, and there the
+statute says the quiet part itself: the decision turns on the viability of the
+business idea, the applicant's experience, the capital, the effect on
+employment and training and the contribution to innovation — weighed with the
+local chambers and the trade authorities. Five judgements and a committee.
+Two reads left (NL GVVA, ES digital nomad); no build begins until they are in.
 
 **The live site moved on its own today, correctly:** the watch's dispatch built
 and pinned the data at `17cd1fe` — the Germany and Spain reads' exclusions rows
