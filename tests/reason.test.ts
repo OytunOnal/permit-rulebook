@@ -94,21 +94,24 @@ describe("the reason column reads as prose, as rendered (blocker B3)", () => {
     expect(leaks).toEqual([]);
   });
 
-  it("every unfolded row is one of the four reasons a route gives", () => {
-    // The row class is the engine's `kind`; a fifth one would be the page
+  it("every unfolded row is one of the five reasons a route gives", () => {
+    // The row class is the engine's `kind`; a sixth one would be the page
     // inventing a verdict of its own.
     const kinds = new Set<string>();
     for (const [, html] of rendered)
       for (const tag of html.match(/<li class="[^"]*"/g) ?? [])
         kinds.add(tag.slice('<li class="'.length, -1));
-    for (const kind of kinds) expect(["moot", "needs", "unknown", "where"]).toContain(kind);
+    for (const kind of kinds) expect(["closed", "moot", "needs", "unknown", "where"]).toContain(kind);
     // "moot" — "not needed, you already have a job offer" — is unreachable in
     // the shipped dataset since 2026-09-07: no route asks any more for the
     // ABSENCE of a step, the Opportunity Card having been the last one that
     // did (§ 20a conditions nothing on being offerless). The kind stays: it is
     // the engine's answer whenever a route does, and the page must not invent
     // its own then either.
-    expect([...kinds].sort()).toEqual(["needs", "unknown", "where"]);
+    // "closed" — a route the authority does not open to a passport the reader
+    // declared — reaches these profiles since s8: the French intra-corporate
+    // transfer card, on an Algerian passport.
+    expect([...kinds].sort()).toEqual(["closed", "needs", "unknown", "where"]);
   });
 
   it("dataset prose reaches the screen as text, never as markup", () => {

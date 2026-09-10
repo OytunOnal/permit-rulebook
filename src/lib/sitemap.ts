@@ -1,5 +1,5 @@
 import type { Dataset } from "permit-rulebook-data";
-import { audienceNotice, stampDate } from "./route-page.js";
+import { pageStamp } from "./route-page.js";
 import { countryAddresses, countryReadDate, siteReadDate } from "./country-page.js";
 import { absolute } from "./site.js";
 import { DATA_PATH } from "./identity.js";
@@ -45,7 +45,6 @@ export interface SitemapEntry {
 }
 
 export function sitemapEntries(dataset: Dataset): SitemapEntry[] {
-  const notice = audienceNotice(dataset);
   const newest = siteReadDate(dataset);
   return [
     { path: "/", lastmod: newest },
@@ -59,7 +58,7 @@ export function sitemapEntries(dataset: Dataset): SitemapEntry[] {
     })),
     ...routeAddresses(dataset).map(({ route, path }) => ({
       path,
-      lastmod: stampDate(route, notice),
+      lastmod: pageStamp(dataset, route),
     })),
   ];
 }

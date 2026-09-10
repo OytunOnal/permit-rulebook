@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  scopeLine, forEachCriterion, formatEUR, formatEURPer, provenancedValuesOf, quoteLanguage,
-  routeStatements, statementSources, type Dataset, type Route,
+  scopeLine, forEachCriterion, formatEUR, formatEURPer, noticeSources, provenancedValuesOf,
+  quoteLanguage, routeStatements, statementSources, type Dataset, type Route,
 } from "permit-rulebook-data";
 import {
-  PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, routePage, routePages,
+  PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routePage, routePages,
   stampDate,
 } from "../src/lib/route-page.js";
 import { datasetDay } from "../src/lib/copy.js";
@@ -387,6 +387,15 @@ describe("s6 — one page per route, generated from the dataset", () => {
         for (const value of statementSources(st)) held.add(esc(value.quote));
       const notice = audienceNotice(ds);
       if (notice) held.add(esc(notice.source.quote));
+      // And every side of a notice the dataset says is about THIS route: the
+      // Algerian talent question stands on two authorities disagreeing and on
+      // the page that says what the reader gets instead, and all three are
+      // printed on the four pages that raise it — a page is never quieter
+      // than a card (s8). The scoping is the dataset's, not the page's: a
+      // notice held for another route is still a sentence this page may not
+      // print.
+      for (const n of noticesOn(ds, address.route))
+        for (const value of noticeSources(n)) held.add(esc(value.quote));
       expect(quoted.length, page.path).toBeGreaterThan(0);
       for (const q of quoted)
         expect(held, `${page.path} quotes a sentence the dataset does not hold for it`).toContain(q);
