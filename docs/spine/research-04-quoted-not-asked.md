@@ -290,3 +290,155 @@ summary says « ein **besonderes** wirtschaftliches Interesse » where the statu
 says « ein wirtschaftliches Interesse » — the ministry's paraphrase is stricter
 than the law it paraphrases, which is exactly why this product quotes statutes
 and not summaries.
+
+
+---
+
+## 4. Spain — teletrabajo de carácter internacional (the "digital nomad" route)
+
+Read 2026-09-10 from the BOE's consolidated PDF and the joint instruction that
+implements it. **This read corrected our own record**, which is what it was
+sent to do.
+
+**What it is.** A third-country national living in Spain while working remotely
+for employers or clients based outside it, by computer and telecommunications
+means only. Two doors: a **visa from abroad** (art. 74 quater, up to a year) and
+a **residence authorisation from inside Spain** (art. 74 quinquies, up to three
+years, renewable in two-year blocks). It covers both an employee of a foreign
+employer and a self-employed person serving foreign clients — the latter may
+take up to 20% of their work from a company in Spain.
+
+**The conditions the authority states** (Ley 14/2013,
+https://www.boe.es/buscar/pdf/2013/BOE-A-2013-10074-consolidado.pdf):
+
+- The activity is remote and for companies outside Spain, *« mediante el uso
+  exclusivo de medios y sistemas informáticos, telemáticos y de
+  telecomunicación »* (art. 74 bis.1), with the 20% cap for professionals.
+- Qualified people only: a degree or postgraduate qualification from a
+  university, vocational school or business school of recognised standing, **or**
+  three years' professional experience (art. 74 bis.2).
+- The company must have been really and continuously trading for at least a
+  year (art. 74 ter a), the relationship must be shown to be doable remotely
+  (art. 74 ter b), and it must have existed for at least three months before
+  the application (art. 74 ter c–d).
+- Social security: the ordinary obligations, with *« sin que exista ninguna
+  especialidad »* — no special regime (joint instruction, Sexta.1).
+
+**Why it cannot be scored — and the correction.** Our `exclusions.md` said the
+euro floor is arithmetic and that *no verbatim official euro figure exists to
+quote*. Tested rather than repeated, and it is nearly right but not exactly:
+
+- The binding instruction states a **formula, not a figure**:
+  > « a) Titulares de los visados y autorizaciones de residencia: cantidad que
+  > represente mensualmente el 200% del salario mínimo interprofesional (SMI). »
+  (Instrucción conjunta, Tercera.1.a) — and the SMI is reset by a separate
+  decree every year, so the number the reader needs is not in the rule.
+- But a euro figure **does** exist on an official page: the Spanish consulate in
+  Buenos Aires publishes *« el 200% mensual del salario mínimo interprofesional
+  (SMI), es decir, 2.160 € »* — dated 2022, computed from that year's SMI, and
+  therefore stale against the current one.
+
+So the accurate reason is not "no official euro figure exists" but **"no
+current, binding one does"**: the governing instruction carries only the
+formula, and the one place a number appears is a single consulate's own
+computation, out of date. `exclusions.md` is corrected accordingly.
+
+And beside the arithmetic sits a judgement, which is the stronger reason:
+> « Para la acreditación de las cantidades señaladas se podrá emplear cualquier
+> medio de prueba y se efectuará un análisis individualizado. »
+(Instrucción conjunta, Tercera.2) — any means of proof, assessed case by case.
+
+**The exceptions.** Free-movement citizens are outside the whole section
+(art. 61.2), and anyone whose situation belongs to the intra-company transfer
+authorisation is refused this one and sent to arts. 73–74 (instruction,
+Séptima.4). No nationality- or agreement-based variant appears in the articles
+read.
+
+**The reader's own page.**
+https://www.inclusion.gob.es/web/unidadgrandesempresas/teletrabajadores — the
+unit that decides the from-inside-Spain authorisation. A visa from abroad is
+each consulate's own page; there is no single national one.
+
+**Watchability, and a real limit.** The BOE consolidated PDF and the joint
+instruction both need a client that downloads and extracts PDF text — a
+fetch-and-summarise call cannot read them. Worse for us: the joint instruction,
+the source of the 200% clause, answers a plain fetch with **403** and needs a
+browser-shaped request; the UGE page does the same and then hides its documents
+behind portlet tabs that the static HTML does not carry. So the quotable,
+watchable sources here are the BOE text (with PDF extraction) and the Sydney
+consulate's page, which fetches cleanly; the instruction itself would be a
+human-tier entry.
+
+
+---
+
+## 5. The Netherlands — GVVA, the single permit for paid employment
+
+Read 2026-09-10 from UWV's pages and the statute; the IND's own pages are
+JS-gated and were read through a rendering fetch (see watchability).
+
+**What it is.** One permit combining residence and work, for a non-EU national
+coming to do ordinary paid work for more than 90 days. The employer normally
+applies. Two boundaries matter: under 90 days the instrument is a TWV, a work
+permit with no residence half; and the **highly skilled migrant permit this
+product already scores escapes the whole thing** — UWV says it plainly:
+
+> « Voor een kennismigrant van buiten de EU/EER of Zwitserland die langer dan 90
+> dagen in Nederland komt werken, **hoeft de werkgever geen werkvergunning aan
+> te vragen**. »
+https://www.uwv.nl/nl/werkvergunning/wanneer-geen-werkvergunning
+
+**The conditions the authority states.** The employer must have searched the
+Netherlands and the EU/EEA first and registered the vacancy with UWV; must pay
+the salary the applicable collective agreement sets (no euro figure on the
+page); must be in the Chamber of Commerce register; must arrange proper
+housing; and carries the sponsor's duties of information and record-keeping
+(ind.nl's GVVA page). On the work-permit side UWV states four general
+conditions — a valid residence permit, compliance with the terms of
+employment, no breach of labour law, and a safe and clean place to live — plus
+a salary paid monthly into the worker's own bank account and no labour-law fine
+in the five years before the application
+(https://www.uwv.nl/nl/werkvergunning/twv-voorwaarden). The permit runs three
+years, or five after five years of permitted work.
+
+**Why it cannot be scored** — here the statute writes the refusal itself:
+
+> « Onze Minister weigert een tewerkstellingsvergunning of Onze Minister van
+> Veiligheid en Justitie weigert een gecombineerde vergunning: a. indien voor de
+> desbetreffende arbeidsplaats **prioriteitgenietend aanbod op de arbeidsmarkt
+> aanwezig** is; b. indien het een arbeidsplaats betreft waarvan de
+> beschikbaarheid niet ten minste vijf weken voor het indienen van de aanvraag
+> aan het Uitvoeringsinstituut werknemersverzekeringen is gemeld; c. indien de
+> werkgever niet kan aantonen **voldoende inspanningen** te hebben gepleegd de
+> arbeidsplaats door prioriteitgenietend aanbod op de arbeidsmarkt te
+> vervullen »
+Wet arbeid vreemdelingen art. 8 lid 1 —
+https://wetten.overheid.nl/BWBR0007149/2024-01-01
+
+*Our rendering:* the permit is refused if there is priority supply on the labour
+market for the job, if the vacancy was not reported to UWV at least five weeks
+before, or if the employer cannot show **sufficient effort** to fill it from
+that supply. And UWV names itself as the judge of it: « Wij controleren of het
+werk gedaan kan worden door een werknemer uit de EU/EER of Zwitserland », after
+the employer has spent « minimaal 3 maanden » looking
+(https://www.uwv.nl/nl/werkvergunning/reguliere-arbeidsplaats). Two of the three
+refusal grounds turn on someone else's effort and someone else's assessment of
+it; neither is a fact about the applicant.
+
+**The exceptions.** UWV lists ten categories that need no work permit at all —
+among them the highly skilled migrant, ICT-permit holders working 90 days or
+less in any 180, Blue Card holders from another member state on short business,
+cross-border service providers, the self-employed, volunteers, and anyone whose
+permit already carries « arbeid is vrij toegestaan ». The statute's own
+exemption for people covered by an international agreement (art. 3 lid 1 onder
+a) names no country; the IND's Turkish-citizens page carries the concrete case
+— no TWV needed after three years with the same employer, and after one year
+the employer needs none for that route.
+
+**Watchability, and a limit worth knowing.** UWV's pages and the statute fetch
+cleanly and read start to finish. **The IND's own route pages do not**: a plain
+fetch returns a Drupal shell with an antibot gate and no article body, so every
+IND sentence above came through a rendering fetch. For s9 that means the Dutch
+page's quotes should come from UWV and `wetten.overheid.nl` where they can —
+and any IND sentence we ship carries the same human-tier honesty the s8 sources
+now carry.
