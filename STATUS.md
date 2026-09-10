@@ -122,11 +122,8 @@ to look:
       minutes at https://github.com/OytunOnal/permit-rulebook/actions. Nothing
       else is needed; it cannot break anything that the daily run would not.
 
-- [ ] **The card's quote cap, 10 → 11** (one route, `nl-hsm-under30`): the
-      MVV sentence was missing from the dataset entirely and is one line; a
-      carve-out replaces a quote rather than adding one. The cap is a limit you
-      set, so raising it is yours to ratify — say yes, or say the MVV belongs
-      only on the route page and it goes back to 10.
+- [x] **The card's quote cap, 10 → 11** (human, 2026-09-10): ratified for
+      `nl-hsm-under30`. Twelve would have to be argued again.
 - [ ] **The feedback prompt — neither drawn shape survived** (site #6): the
       issue carries what a replacement must keep, and the quieter option (a
       line in the results screen's own body, no timing, no dismissal state) is

@@ -237,6 +237,9 @@ describe("s5e — the card's source list grew without burying the verdict", () =
     // exemption instead of the requirement and the list follows the card; the
     // only cards that grew are the Dutch ones, by exactly the sentence that was
     // missing from them. Twelve is news, and has to be argued again.
+    //
+    // Ratified by the human on 2026-09-10: the cap is a limit they set, so a
+    // build may not raise it on its own argument, however good the argument.
     for (const { r, html } of generatedCards(4826, 30))
       expect(sourceLines(html).length, r.route.id).toBeLessThanOrEqual(11);
   });

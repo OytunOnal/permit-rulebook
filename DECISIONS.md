@@ -2789,3 +2789,16 @@ since it was written on 2026-09-08. What runs daily is the data watch's own
 schedule — three to four hours late, but every day — and the dispatch it fires.
 The site's schedule is a second try, not a guarantee, and the fallback is a
 person with one command. That command is in STATUS, whole, as the human's.
+
+**2026-09-10 — the card's quote cap is eleven** (gate; the human ratified what
+the s7 build had already shipped). It applies to one route, `nl-hsm-under30`.
+The argument the build wrote and the human accepted: the IND states on every
+Dutch route page that the application needs a provisional residence permit, the
+dataset held nothing about it, and a reader was told a route was met with no
+word about a document they cannot enter without. It is one line, and one and
+not two — a carve-out replaces a quote rather than adding one, so for a reader
+the IND exempts the card shows the exemption in place of the requirement. Only
+the Dutch cards grew, by exactly the sentence that was missing. Recorded as a
+gate rather than a default because the cap is a limit the human set: a build
+may not widen its own guard, however good its argument. Twelve is news and has
+to be argued again.
