@@ -125,10 +125,23 @@ are handled differently on purpose:
   national in the Blue Card's scope, and CESEDA L421-11 names no exclusion. No
   page found says either way in one sentence.
 
-**s8 is built, gated and on a branch** — `algeria-closure` in both
-repositories (data `4f0585c`, site `ce5b13a`; 495 + 307 tests, quote fidelity
-139). It is the first slice to land under the new mode: it waits for your walk
-and your word, and the merge is the deploy. Two reviewers are reading it now.
+**s8 is built, reviewed, fixed and waiting on you** — `algeria-closure` in both
+repositories (data `27bb13f`, site `ae3870f`; **504 + 307 tests**, quote
+fidelity 139). The first slice under the new mode: it waits for your walk and
+your word, and the merge is the deploy.
+
+Both reviews ran and eleven findings are applied. The two that mattered: the
+notice stood over a screen showing **Germany alone**, telling a reader about
+four French permits they had not asked for — a notice that names routes is now
+stated only where the reader asked about a country one of them is in; and the
+body pointed at the wrong page — the transfer card's callout links to F2215,
+not F35600, and F2215 carries the same sentence and the same absence (checked
+by hand). From the other axis: the long-quote trim had been left behind when
+the notice moved out of the page, so the Türkiye notice's 640-character quote
+was printing whole on a results card; the empty-body guard moved from one
+fetcher into the core where every fetcher passes; and a test that proved
+"closed routes are filed apart" by grepping three identifiers now asserts what
+the page does.
 
 What it does. `fr-ict` closes itself to an Algerian passport in the fiche's own
 words, and the dataset gained the operator that made that sayable — `not-in`, a
