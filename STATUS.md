@@ -48,9 +48,13 @@ samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) — the
 interview paints and then fills itself. Site #8. The A2/A7/A8 numbers stay
 where they were pre-registered: 2026-10-09.
 
-**A slice is mid-build — the working tree is the builder's** (s7,
-`docs/spine/scenarios/s7-nationality.md`; uncommitted changes under `src/` in
-both repositories are its, and nothing is committed until the gates run): a
+**s7 is built and under review** (`docs/spine/scenarios/s7-nationality.md`):
+the builder returned green in both repositories (442 + 289 tests, 137 quotes
+verified), two reviewers are reading the diff on the Standards and Spec axes,
+and the working tree stays uncommitted until their findings are applied. The
+glossary gained **Carve-out**; the watch command in CONTRIBUTING was wrong and
+is corrected. Then: commit, pin, deploy, and a Turkish passport walked on the
+live site. a
 statement can name the passports it does not bind, carrying the authority's own
 sentence for the carve-out. The Netherlands was read first (issue #9, by the
 deep-researcher, every claim quoted and dated). It corrected the report as well

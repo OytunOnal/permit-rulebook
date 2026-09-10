@@ -55,6 +55,18 @@ never scored — it fails nobody. Several say the reader may qualify for *less*,
 which is why a caveat never appears under "Also required — not checked here".
 _Avoid_: precondition, requirement, warning, disclaimer, fine print
 
+**Carve-out**:
+The passports a Route statement does not bind, in the authority's own words —
+the IND releases Turkish employees from the recognised-sponsor rule, and ten
+nationalities from the provisional residence permit. It keys only on the
+passport the interview asks for, and it carries its own quote and date: a
+carve-out we cannot quote is one we do not ship, so it has no Unsourced form.
+A reader whose passport it names is not told the condition it releases them
+from; the carve-out's sentence stands in its place ("Not required for your
+passport"). A page with no reader shows both, under "Who this does not bind".
+_Avoid_: exception, exemption, waiver, override — and "except" outside the
+field name that carries it.
+
 **Unsourced**:
 The one declared exception to Provenance: a Route statement carrying no
 verbatim quote, because the source does not publish one we can read. Recorded
