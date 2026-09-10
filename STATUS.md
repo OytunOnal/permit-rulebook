@@ -215,6 +215,21 @@ never touched. Then the three things the round exposed were closed:
   machine, for the first time.** The preview at http://localhost:4500 is the
   new build, and the four addresses answer 200 with their new names on them.
 
+**Your walk caught it again, and it was the same fix left half-applied**
+(2026-09-10, human: *"criteria met yazıyoruz hala cezayir Talent — employee on
+assignment"*). The results screen has two layouts — one destination, and
+several grouped by country — and the unsettled partition had gone into the
+first only. A reader looking at more than one country still read **"Open —
+criteria met"** over the four French talent routes: exactly the screen the
+partition exists to stop. Both layouts partition now, and a test holds them to
+each other, because a fix applied to one layout is a fix for half the readers.
+
+The same commit took a typed sentence out of the section: it said *"Whether
+France opens this permit to an Algerian passport"* — true of the only notice
+that exists today, and wrong the first time a second one marks a route
+somewhere else. It asks about *"your passport"* now, and the preview at
+http://localhost:4500 carries both (`f501a1d`).
+
 **Mid-build correction, recorded rather than tidied away:** the site
 repository's working tree was on `master` when the s9 builder started writing,
 because this session checked master out for a ledger edit and did not put the
