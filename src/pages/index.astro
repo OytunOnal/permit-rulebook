@@ -871,16 +871,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         </details>` + elsewhereGroup;
     }
 
-    /** A quote long enough to bury the card is shown to its first sentence,
-     * with the whole passage on the element and its source a click away — the
-     * evidence stays complete, the card stays readable (tracker #5). */
-    function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
-      if (quote.length <= 200) return { shown: quote, trimmed: false };
-      const end = quote.indexOf(". ");
-      if (end < 0 || end > 200) return { shown: quote.slice(0, 200).trimEnd() + "…", trimmed: true };
-      return { shown: quote.slice(0, end + 1) + " …", trimmed: true };
-    }
-
     function unlockCard(u: ReturnType<typeof unlocks>[number], routes: RouteResult[]): string {
       return `
         <article class="unlock">

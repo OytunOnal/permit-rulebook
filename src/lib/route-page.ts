@@ -655,7 +655,7 @@ export function routePage(dataset: Dataset, address: RouteAddress, lastRun?: str
   const { country, route } = address;
   const notice = audienceNotice(dataset);
   const about = noticesOn(dataset, route);
-  const read = stampDate(route, notice, about);
+  const read = pageStamp(dataset, route);
   const title = `${route.name} · ${country.name} · ${PRODUCT_NAME}`;
   const desc = description(dataset, country, route);
   const path = address.path;

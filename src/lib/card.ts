@@ -400,6 +400,22 @@ export function provenanceHtml(ds: Dataset, r: RouteResult, answers: Profile): s
 }
 
 /**
+ * A quote long enough to bury the card is shown to its first sentence, with
+ * the whole passage on the element and its source a click away — the evidence
+ * stays complete, the card stays readable (tracker #5).
+ *
+ * It lived in the interview's own script until s8 moved the notice out of it,
+ * and for one commit the rule applied to nothing: the Türkiye notice's
+ * 640-character quote printed whole (Standards review, 2026-09-10).
+ */
+export function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
+  if (quote.length <= 200) return { shown: quote, trimmed: false };
+  const end = quote.indexOf(". ");
+  if (end < 0 || end > 200) return { shown: quote.slice(0, 200).trimEnd() + "…", trimmed: true };
+  return { shown: quote.slice(0, end + 1) + " …", trimmed: true };
+}
+
+/**
  * One quote, framed the way every quote on a results screen is framed: its
  * language, its host, whatever citation it carries, and the day it was read.
  *
@@ -409,7 +425,9 @@ export function provenanceHtml(ds: Dataset, r: RouteResult, answers: Profile): s
  */
 function srcLine(value: { quote: string; source_url: string; retrieved_at: string; legal_basis?: string }): string {
   const { lang, host, note } = quoteFrame(value);
-  return `<div class="src"><i${lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
+  const { shown, trimmed } = quoteForCard(value.quote);
+  return `<div class="src"${trimmed ? ` title="${escAttr(value.quote)}"` : ""}><i${
+    lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(shown)}”</i> · ${esc(host)}${
     value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b>${
     noteHtml(note)}</div>`;
 }
@@ -456,7 +474,7 @@ export function closedRowHtml(r: RouteResult): string {
 export function noticeHtml(n: Notice): string {
   const next = n.learn ?? { url: n.source.source_url, label: "Official page" };
   return `
-        <article class="notice ${esc(n.kind)}">
+        <article class="notice ${escAttr(n.kind)}">
           <h3>${esc(n.title)}</h3>
           <p class="why">${esc(n.body)}</p>
           <div class="foot">

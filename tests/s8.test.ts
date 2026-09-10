@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { esc, escAttr } from "../src/lib/reason.js";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   closedBy, deriveBands, evaluate, isClosed, noticeSources, notices,
   type Dataset, type Notice, type Profile, type RouteResult,
 } from "permit-rulebook-data";
-import { closedRowHtml, noticeHtml } from "../src/lib/card.js";
+import { closedRowHtml, noticeHtml, quoteForCard } from "../src/lib/card.js";
 import { routePages } from "../src/lib/route-page.js";
 
 const ds = dataset as unknown as Dataset;
@@ -93,9 +94,21 @@ describe("s8 — a route the authority closes is not a result", () => {
 
   it("the results page files them apart from the three verdicts, on both card layouts", () => {
     // A block the page forgets to call is a block that does not exist.
-    expect(page).toContain("isClosed");
-    expect(page).toContain("closedRowHtml");
+    // Both layouts call it — a block the page forgets to call is a block that
+    // does not exist (s5e) — and, the part identifiers cannot show: the route
+    // is filed once, under the heading that tells the truth about it, and
+    // never also under one that invites the reader back (Standards review,
+    // 2026-09-10).
     expect(page.match(/closedSection\(/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    const results = evaluate(ds, transferring("DZ"));
+    const closed = results.filter(isClosed).map((x) => x.route.id);
+    expect(closed, "the transfer card is not filed as closed").toContain("fr-ict");
+    // The page draws its three verdict groups from what is left after the
+    // closed ones are taken out, so the two partitions must be complementary:
+    // a route in both would be told "never yours" and "not yet" on one screen.
+    const open = results.filter((x) => !isClosed(x)).map((x) => x.route.id);
+    expect(open, "a closed route is still among the ones the page groups").not.toContain("fr-ict");
+    expect(open.length + closed.length, "the two partitions do not add up").toBe(results.length);
   });
 });
 
@@ -117,7 +130,14 @@ describe("s8 — the notice carries the open question without answering it", () 
 
   it("shows every side, each quote framed with its language, host and read date", () => {
     for (const source of noticeSources(OPEN_QUESTION)) {
-      expect(html(), source.source_url).toContain(source.quote);
+      // A long quote is shown to its first sentence and carried whole on the
+      // element (tracker #5, restored by the Standards review 2026-09-10): the
+      // evidence stays complete either way, so the card is read for one or the
+      // other and never for neither.
+      const { shown, trimmed } = quoteForCard(source.quote);
+      expect(html(), source.source_url).toContain(esc(shown));
+      if (trimmed) expect(html(), `${source.source_url}: the whole passage is not on the element`)
+        .toContain(escAttr(source.quote));
       expect(html(), source.source_url).toContain(source.legal_basis!);
     }
     // French from a French court, English from EUR-Lex — one voice per quote.
