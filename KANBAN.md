@@ -190,6 +190,13 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
+- **The first paint stops shifting** (s10) · site #8 · CLS is poor for 23% of
+  samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) while LCP
+  and INP are good for 100%: the interview paints, then fills itself. Measured,
+  not guessed — the first defect this project learned from a metric.
+
+## mock-green
+
 - **Five routes quoted and dated, and not scored** (s9) · opened at the v1.1
   boundary, 2026-09-10 (human: "v1.1 i açalım", scope chosen from three) ·
   `docs/spine/scenarios/s9-quoted-not-asked.md` · FR carte salarié, ES cuenta
@@ -198,14 +205,8 @@ Promoted (or dropped, with evidence) at a boundary session.
   first time. Bound to **A5** (refuted: 23 routes against a promise of 35–40)
   and feeding **A2 / A7 / A8**, whose numbers are read on 2026-10-09. One
   research pass per route before any build.
-- **The first paint stops shifting** (s10) · site #8 · CLS is poor for 23% of
-  samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) while LCP
-  and INP are good for 100%: the interview paints, then fills itself. Measured,
-  not guessed — the first defect this project learned from a metric.
+  **Built and reviewed on both axes, 2026-09-10** (data `69b64df` on `quoted-not-asked`, site `fd19198` on `s9-build`; 513 + 309 tests, 182 quotes verified). Two blockers and thirteen findings applied — the two both reviewers put first were the same one from opposite sides: a single route total on the country heading and on the social card, blurring the five that cannot be scored into the twenty-three that can. Waits on the human's walk, and on s8 merging first.
 
-## mock-green
-
-_(empty — s6 was the last, and it is done)_
 
 ## real-green
 
