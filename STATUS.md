@@ -38,6 +38,16 @@ the two things the product can act on, send nothing off the device, and say out
 loud that the tracker needs a GitHub account. Recommended: A. **Waiting on the
 human's pick.**
 
+**The counter was read** (2026-09-10): 57 visits and 75 page views since it went
+live, 41 visits in the announcement's first 24 hours; United States 26,
+Türkiye 24, seven other countries once each; LinkedIn and its app the only
+referrers besides one Bing and one Google; **every visit entered at `/`** — no
+route page has been landed on yet, which is what an unindexed week looks like.
+The reading also found a defect: Core Web Vitals put CLS **poor for 23%** of
+samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) — the
+interview paints and then fills itself. Site #8. The A2/A7/A8 numbers stay
+where they were pre-registered: 2026-10-09.
+
 **A slice is being built** (s7, `docs/spine/scenarios/s7-nationality.md`): a
 statement can name the passports it does not bind, carrying the authority's own
 sentence for the carve-out. The Netherlands was read first (issue #9, by the

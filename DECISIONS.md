@@ -2724,3 +2724,25 @@ product should do something it does not" — its intro names both kinds, the
 source field is marked "if this is about data", and the exclusions checkbox is
 no longer required and reads "if this is about a route". The footer's link says
 "Suggest a route or a change" instead of "Suggest a route or a country".
+
+**2026-09-10 — the counter's first reading** (Cloudflare Web Analytics, bots
+excluded, the counter's whole life so far — 7 days, of which the site has been
+announced for one). **57 visits, 75 page views**, page load 459 ms. Countries:
+United States 26, Türkiye 24, then one each from Egypt, Singapore, South Korea,
+France, Canada, India, the United Kingdom. Referrers: **direct 51**, LinkedIn 3
+(plus 1 from the LinkedIn Android app), Bing 1, Google 1 — the direct number is
+mostly LinkedIn too, since the app hands over no referrer. **Every visit
+entered at `/`:** not one landed on a route page or the data page, which is
+what an unindexed week looks like. Desktop 45, mobile 12.
+
+This reading is recorded, not read as a verdict: the numbers that decide A2, A7
+and A8 were pre-registered for 2026-10-09, and moving them forward to a day
+that happens to look good is the thing pre-registration exists to prevent.
+
+**What the reading did decide** is a defect nobody had reported: Core Web
+Vitals show CLS **poor for 23%** of samples, on `#app` (0.402) and the shared
+footer (0.414) — against a 0.25 "poor" threshold. LCP and INP are good for
+100%. The interview paints, then fills `#app`, and everything below it moves.
+Filed as site #8 with the measurement, the cause and the test that will judge
+the fix. It is the first thing this project has learned from a metric rather
+than from a person.
