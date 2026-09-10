@@ -16,7 +16,7 @@ flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓] --> D[Design ✓] --> E[Plan ✓]
     E --> F["Slice loop<br/>v0.1–v0.10 ✓"]
     F --> G["s6 public launch ✓<br/>real-green 2026-09-09"]
-    G --> H["Steward ◀ here<br/>live, watched, answered"]
+    G --> H["Steward<br/>live, watched, answered"] --> I["v1.1 ◀ here<br/>s9 · s10"]
 ```
 
 Pace, from the ledger: s5e real-green 2026-09-07, s5f 2026-09-07, s6
@@ -124,6 +124,20 @@ are handled differently on purpose:
   talent card among them; but Directive (EU) 2021/1883 puts every third-country
   national in the Blue Card's scope, and CESEDA L421-11 names no exclusion. No
   page found says either way in one sentence.
+
+**v1.1 is open** (boundary, 2026-09-10; the human chose its scope from three).
+Two slices, both bound to something already written down. **s9** publishes the
+first five routes this product will not score — FR carte salarié, ES cuenta
+ajena, ES digital nomad, NL GVVA, DE § 21 — with their rules in the authority's
+own words and the reason each is unscoreable quoted beside them; it uses the
+third scope value, "quoted and dated · not scored", which the dataset has
+carried since s6 and never used. It is bound to **A5**, refuted: 23 routes
+against a promise of 35–40. **s10** is the CLS defect the counter found — poor
+for 23% of samples while LCP and INP are good for 100%.
+
+The first research pass is running (the French carte « salarié »): one per
+route, under the rules that produced the four country reads, and no build
+begins until they are in.
 
 **The live site moved on its own today, correctly:** the watch's dispatch built
 and pinned the data at `17cd1fe` — the Germany and Spain reads' exclusions rows
