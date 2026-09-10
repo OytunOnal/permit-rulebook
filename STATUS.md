@@ -76,13 +76,27 @@ nothing is dismissed, nothing is remembered. It sits on the branch
 is open and it is an improvement rather than a blocker. It merges when the
 window closes.
 
-**Germany is being read** (data #10): § 26 BeschV and the Western Balkans rule,
-the Turkish standstill, and each route page's own pointers — by the
-deep-researcher, under the same grounding rules the Dutch read used.
+**Germany is read and closed** (data #10). The answer came back different from
+the Dutch one, and the difference is the finding: **nothing in the eight German
+routes is wrong.** Every nationality rule found sits beside the routes rather
+than inside them — § 26 Abs. 1 BeschV (eleven states, any employment, no
+qualification) and § 26 Abs. 2 (the Western Balkans regulation, with its quota
+and its mission-of-application rule) are ways in this dataset does not model;
+Decision 1/80's rights attach after employment has begun, which is exactly what
+the dataset's Türkiye notice already says — an official German source confirmed
+a statement instead of correcting one; § 41 AufenthV decides where paperwork is
+filed, and this product states conditions, not procedure. Three rows in
+`exclusions.md` with the text they were read from. One defect fell out of it:
+the Opportunity Card's "Official page" link points at handbookgermany.de, which
+is not an authority (data #13 — the replacement is a real choice: the federal
+portal serves a bot check, so it is a page a reader can use against a page the
+watch can keep its eye on).
 
-**Next, in order:** Germany (data #10 — § 26 BeschV and the Western Balkans
-rule are leads, nothing read yet), then France (#11, the Franco-Algerian
-Agreement), then Spain (#12, nothing claimed). Each is a research day before a
+**Next, in order:** France (#11 — the Franco-Algerian Agreement of 1968 is the
+lead, and if it governs Algerians instead of the general code it is a heavier
+finding than either country so far: not a condition lifted, but the wrong route
+shown), then Spain (#12, nothing claimed — the read has to establish it either
+way). Each is a research day before a
 build day: the Dutch read is what turned "four routes are wrong" into "three
 are, and here is a second thing nobody had asked about".
 

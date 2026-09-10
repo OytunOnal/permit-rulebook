@@ -2822,3 +2822,28 @@ rule is that the live site is touched only for a blocker. s7 was one — the
 product stated a condition to Turkish readers that the IND sets aside for them.
 A new line at the end of a screen is not. It sits on the branch
 `feedback-line`, gated and green, and merges when the window closes.
+
+**2026-09-10 — Germany read: the audit that found nothing wrong, and why that
+is worth the day** (data #10, closed). Three nationality regimes, all of them
+beside the eight routes rather than inside them: § 26 Abs. 1 BeschV opens any
+employment to nationals of eleven states with no qualification at all, § 26
+Abs. 2 does the same for six Western Balkans states under a quota and a
+file-it-at-the-mission rule, and § 41 AufenthV lets eight nationalities apply
+from inside Germany — procedure, not a condition, and excluded on that ground
+with the reason written down. Decision 1/80's rights attach after employment
+begins, and the labour agency's own guidance says its domestic rules are
+already at least as favourable for getting in: the dataset's Türkiye notice was
+confirmed by an official German source rather than corrected.
+
+Recorded because a read that changes no value is not a wasted read: before it,
+"§ 26 BeschV probably lifts a condition somewhere" was a live suspicion in an
+open issue, and the honest way to close a suspicion is to go and look. The cost
+was one research pass; the return is three rows a future curator will not have
+to re-derive, and a notice that now has a German source behind a claim about
+German law.
+
+One defect fell out of it: the Opportunity Card's "Official page" link points
+at handbookgermany.de, which is not an authority (data #13). Left as an issue
+rather than a commit because the replacement is a genuine choice — the federal
+portal serves a bot check to anything automated, so it is a page a reader can
+use against a page the watch can keep its eye on.
