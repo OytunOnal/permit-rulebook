@@ -2949,3 +2949,39 @@ against the same numbers pre-registered before the announcement.
 **Also at this boundary:** the board was telling a returning reader that s5d
 was still in flight. It shipped in v0.8, every finding applied and walked. Moved
 to done with the date and a line saying why it sat there.
+
+## 2026-09-10 — "Criteria met" is a stronger sentence than we can defend, and the walk found it
+
+The human walked s8 on the local preview and asked the question the build had
+not: with an Algerian passport, the four passeport-talent routes sit under
+**"Open — criteria met"** with the open-question notice above them. Is that
+right?
+
+It is not. s8's whole argument was that the sources conflict and the product
+would not decide — and then the card, which is what a reader acts on, decided
+in the reader's favour. The notice was carrying the doubt and the card was
+carrying the verdict; only one of them survives being skimmed.
+
+**Decided (gate, human: "C"):** the routes a matching open-question notice
+names keep every rule, every quote and every date, and move out of "Open —
+criteria met" into a section of their own — *"Open on the rules — unsettled for
+your passport"* — with a line that says the rules are met by what was declared
+and that whether France opens the permit to this passport is the question in
+the note. Nothing hidden, nothing decided, and no heading claiming more than we
+know. Rejected on the way: leaving it (the card overstates) and closing the
+four (a decision about a shopkeeper's certificate would be answering a question
+about talent cards by disappearing them).
+
+**The notice's words, also the human's call.** The title becomes *"Algeria:
+France applies a different agreement to you"* — the one fact nobody disputes,
+in the pattern the other notices already use. The body was called tangled and
+was: it repeated what the quote blocks beneath it already carry — the court's
+chamber and number, the "read to the end" note, the four sites searched. Five
+sentences now, one job each. One parenthesis stays: the court decided a case
+about a shopkeeper's permit, and without that clause its words read as settling
+the talent cards.
+
+**Cost, stated:** a second build round on a branch that was ready, and a second
+review. The alternative was shipping a screen that says "criteria met" about a
+route whose existence for that reader is the open question — which is the
+failure this product is built to avoid.

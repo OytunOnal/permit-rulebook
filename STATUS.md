@@ -168,10 +168,22 @@ Algerian passport, the four talent routes sit under **"Open — criteria met"**
 with the open-question notice above them. The notice was meant to carry the
 doubt; the card is what a reader acts on, and "criteria met" is a stronger
 sentence than we can defend for a route whose availability is the very thing
-no page settles. Three ways out are on the table — leave it, close the four, or
-give them a section of their own that keeps every rule and quote but stops the
-heading claiming more than we know. My recommendation is the third; **waiting
-on the word.**
+no page settles. **Decided the same hour** (human: "C — katılıyorum"): the four keep every rule
+and quote and move to a section of their own, headed *"Open on the rules —
+unsettled for your passport"*, with a line saying the rules are met and the
+question is the one in the note. Nothing is hidden and nothing is decided; the
+heading simply stops claiming more than we know.
+
+The notice's own words go with it. The title reads *"Algeria: France applies a
+different agreement to you"* — one fact, the uncontested one — and the body,
+which the human called tangled, drops everything the quotes below it already
+carry: the court's chamber and number, the "read to the end" note, the list of
+sites searched. Five sentences remain, one job each, and one parenthesis stays
+because it is the only thing stopping the court's words being read for more
+than they decided.
+
+**Queued behind the builder**, not applied yet: s9 is mid-flight in the same
+four files, and two hands in one file is how a slice gets lost.
 
 **Mid-build correction, recorded rather than tidied away:** the site repository's
 working tree was on `master` when the s9 builder started writing, because this
