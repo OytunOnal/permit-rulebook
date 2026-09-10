@@ -38,8 +38,19 @@ the two things the product can act on, send nothing off the device, and say out
 loud that the tracker needs a GitHub account. Recommended: A. **Waiting on the
 human's pick.**
 
-**The bug the human mentioned is still undescribed** — nothing is built for it
-until it is.
+**The bug is real, and it is a class.** The human's report (data #7) said the
+Dutch routes state conditions that do not apply to a Turkish citizen. The IND's
+own page says it plainly — *"For employees with Turkish nationality, a
+recognised sponsor is not required"* — and four Dutch routes state that
+condition without qualification. Checking the rest: `citizenship` is used in
+exactly one way in all 23 routes, `eq third_country`, so **no route can
+currently say "for nationals of X this does not apply"** even where an
+authority says so. That is data #8, with the candidate regimes to read
+(NL/Turkish confirmed; DE § 26 BeschV and the Western Balkans rule, FR's
+Franco-Algerian agreement, NL/Japanese — all leads, none read yet).
+
+**The feedback prompt is at its gate** (site #6, #7): both drawn shapes were
+rejected; what replaces them is undecided.
 
 What runs without anyone asking:
 
@@ -67,9 +78,10 @@ to look:
       http://localhost:4400/s7-feedback.html. *Pass:* you would let it appear
       on your own screen after your own results. Nothing is built until you
       pick.
-- [ ] **The bug you mentioned** (2026-09-10): the screen, what you did, what
-      you expected, what happened. It goes through the steward protocol from
-      here.
+- [ ] **How wide should the nationality audit go?** (data #8) The instance
+      (NL, Turkish citizens) is a day's work with the source in hand. The class
+      — reading every bilateral and association regime for four countries — is
+      a slice of its own. Say where to stop and I start.
 - [ ] **The post's replies.** Anything a reader says that is a bug, a missing
       need or a design flaw is worth pasting here — the steward protocol turns
       it into a fix or a recorded decision, rather than a note that gets lost.
