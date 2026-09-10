@@ -154,6 +154,23 @@ and computed from that year's SMI. `exclusions.md` now says what is true: no
 *current, binding* figure exists. That is the whole reason to send a reader to
 look rather than to repeat what we wrote last week.
 
+**The preview is local, for now.** Cloudflare has folded Pages into Workers and
+the create flow this account gets demands a deploy command, which a static site
+has none of; rather than spend the walk's time on a platform, the branch is
+built and served from this machine — **http://localhost:4500**, the
+`algeria-closure` build, from git worktrees so the running builder is not
+disturbed. Walked it before handing it over: the closed section is there with
+the transfer card in it, the four talent routes are scored, the notice stands
+above them. Cloudflare stays a candidate, not a blocker.
+
+**Mid-build correction, recorded rather than tidied away:** the site repository's
+working tree was on `master` when the s9 builder started writing, because this
+session checked master out for a ledger edit and did not put the branch back.
+The builder's work is therefore a diff against master, not against
+`algeria-closure`. Nothing is lost — s8's changes and s9's touch the same three
+files, so the two will be merged once, deliberately, instead of stacking. The
+data repository was on the branch throughout.
+
 **s9 is being built** on the branch `quoted-not-asked`, in both repositories —
 opened on top of `algeria-closure` rather than master, so the queue stays
 honest: **s8 merges first, then s9.** The builder is working from the research
