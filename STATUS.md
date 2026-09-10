@@ -219,16 +219,13 @@ to look:
 
 - [x] **The card's quote cap, 10 → 11** (human, 2026-09-10): ratified for
       `nl-hsm-under30`. Twelve would have to be argued again.
-- [ ] **The human-tier number changes, and it is a public one** (yours to
-      accept or refuse): two of s8's sources cannot be fetched from here —
-      Legifrance answers a bot 403, EUR-Lex an empty 202 — so they ship as
-      **human tier**: a person read them, their sentences are written into
-      `data/verify-s5e.md`, and they are re-read every 90 days. `human_tier`
-      goes **0 → 2**, and 0 is a number the README and the v1 line state.
-      *The alternative:* drop the court's sentence and the directive's, and
-      state the conflict with no evidence behind either side. My
-      recommendation is to accept the two and change the claim, because the
-      notice's whole worth is that it quotes both authorities. Say which.
+- [x] **The human-tier number is 2** (human, 2026-09-10: "tamamdır", after the
+      alternatives were laid out). Two of s8's sources ship human-tier with
+      their sentences in `verify-s5e.md` and a 90-day re-read. Checked in a
+      real browser the same day: both pages open and both sentences are there
+      — the limit is this fetcher, not the page. A browser-driven read for
+      bot-walled sources is on the roadmap, gated on a headless-Chrome
+      measurement from the runner.
 - [ ] **Switch on the preview address** (once, ~5 minutes):
       `docs/spine/preview.md` has the six steps — connect Cloudflare Pages to
       `OytunOnal/permit-rulebook`, project name `permit-rulebook`, production

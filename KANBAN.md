@@ -35,6 +35,18 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ### v1.x
 
+- **A browser-driven read for bot-walled sources** (v1.1 candidate, session
+  2026-09-10) · why: two of s8's sources — the Conseil d'État on Legifrance and
+  Directive 2021/1883 on EUR-Lex — answer this watch's fetcher with 403 and an
+  empty 202, and open in a real browser with the sentence in place, so they
+  ship on the human tier (`human_tier: 2`) with a 90-day re-read · bet: a
+  `browser` watch strategy (headless Chrome from the runner, `innerText`,
+  hash) reads what `fetch` is refused, and the tier goes back to 0 · **gated
+  on one measurement before it is opened:** headless Chrome from the CI runner
+  against both pages — the pass that let headed Chrome through may not let a
+  headless one · source: the human's question on 2026-09-10, "did you check
+  with the Chrome extension".
+
 - **Compare, don't rank: published facts on each open route card** (v1.1,
   human 2026-09-08) · why: a reader with five open routes gets no help
   choosing, and "start with this one" would be advice with no published
