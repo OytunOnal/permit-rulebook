@@ -205,3 +205,88 @@ catalogue rather than RD 1155/2024 art. 75, and the
 `extranjeros.inclusion.gob.es` URL this project has used elsewhere for
 procedure sheets now redirects to a 404 — the content moved to
 `inclusion.gob.es/web/migraciones/`.
+
+
+---
+
+## 3. Germany — § 21 AufenthG, the residence permit for self-employment
+
+Read 2026-09-10 from buzer.de, the consolidated mirror this dataset already
+watches: gesetze-im-internet.de refused three connection attempts, and
+make-it-in-germany.com answers an automated fetch with a bot-check loader page
+whose own title is "Radware Page". Nothing below rests on either.
+
+**What it is.** One section holding two routes. **Self-employment** (Abs. 1–4)
+is a business or trade; **freelance work** (Abs. 5) is the liberal professions
+— doctor, interpreter, artist, writer, architect — and is granted *abweichend
+von Absatz 1*, without the economic-interest and financing test, but only where
+any licence the profession needs has been granted or promised. The same section
+also carries reciprocity (Abs. 2), an eased path for graduates of German
+universities and for researchers (Abs. 2a), a stipend-funded founder's permit
+(Abs. 2b), and self-employment alongside another residence purpose (Abs. 6).
+
+**The conditions the statute states**
+(https://www.buzer.de/21_AufenthG.htm, consolidated to 22 July 2026):
+
+> « Einem Ausländer kann eine Aufenthaltserlaubnis zur Ausübung einer
+> selbständigen Tätigkeit erteilt werden, wenn 1. ein wirtschaftliches Interesse
+> oder ein regionales Bedürfnis besteht, 2. die Tätigkeit positive Auswirkungen
+> auf die Wirtschaft erwarten lässt und 3. die Finanzierung der Umsetzung durch
+> Eigenkapital oder durch eine Kreditzusage gesichert ist. » (Abs. 1 Satz 1)
+
+*Our rendering:* a permit may be granted where there is an economic interest or
+a regional need, where the activity is expected to have positive effects on the
+economy, and where the financing is secured by equity or a credit commitment.
+
+Beside those: an applicant over 45 should be granted the permit **only** with
+adequate old-age provision (Abs. 3); the permit runs at most three years
+(Abs. 4); and for the freelance variant a required professional licence must
+already be granted or promised (Abs. 5).
+
+**Why it cannot be scored** — the statute says the quiet part itself:
+
+> « Die Beurteilung der Voraussetzungen nach Satz 1 richtet sich insbesondere
+> nach der Tragfähigkeit der zu Grunde liegenden Geschäftsidee, den
+> unternehmerischen Erfahrungen des Ausländers, der Höhe des Kapitaleinsatzes,
+> den Auswirkungen auf die Beschäftigungs- und Ausbildungssituation und dem
+> Beitrag für Innovation und Forschung. » (Abs. 1 Satz 2)
+
+> « Bei der Prüfung sind die für den Ort der geplanten Tätigkeit fachkundigen
+> Körperschaften, die zuständigen Gewerbebehörden, die öffentlich-rechtlichen
+> Berufsvertretungen und die für die Berufszulassung zuständigen Behörden zu
+> beteiligen. » (Abs. 1 Satz 3)
+
+*Our rendering:* the assessment turns on the viability of the business idea,
+the applicant's entrepreneurial experience, the capital committed, the effect
+on employment and training, and the contribution to innovation and research —
+weighed with the local chambers, the trade authorities and the professional
+bodies. Five judgements and a committee: nothing a person can check about
+themselves before they apply.
+
+**The easier paths the statute names, quoted.**
+
+- Reciprocity: a permit may also be granted « wenn völkerrechtliche
+  Vergünstigungen auf der Grundlage der Gegenseitigkeit bestehen » (Abs. 2).
+- Graduates of German universities, and researchers or scientists holding a
+  permit under §§ 18b, 18d, 19c(1) or an EU Blue Card, **shall** be granted the
+  permit *abweichend von Absatz 1* — where the intended activity shows a
+  connection to what they studied or researched (Abs. 2a). This is the closest
+  thing in the section to a checkable rule, and it still turns on "erkennen
+  lassen": a connection the authority must see.
+- A skilled worker with a subsistence stipend from a German business
+  organisation or public body, for up to 18 months, to prepare a founding
+  (Abs. 2b).
+- Freelancers escape both the Abs. 1 test and the three-year cap (Abs. 5).
+
+**The reader's own page.** BAMF's own article for this route, in both
+languages, which cites § 21 as its legal basis:
+https://www.bamf.de/EN/Themen/MigrationAufenthalt/ZuwandererDrittstaaten/Arbeit/SelbstaendigeTaetigkeit/selbstaendigetaetigkeit-node.html
+
+**Watchability.** buzer.de and both BAMF pages fetch cleanly; the buzer entry
+must be sliced from the "§ 21 Selbständige Tätigkeit" heading to just before
+"Text in der Fassung des", as the other buzer entries already are. One
+discrepancy worth recording rather than reconciling: the Auswärtiges Amt's own
+summary says « ein **besonderes** wirtschaftliches Interesse » where the statute
+says « ein wirtschaftliches Interesse » — the ministry's paraphrase is stricter
+than the law it paraphrases, which is exactly why this product quotes statutes
+and not summaries.
