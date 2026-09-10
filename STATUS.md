@@ -193,33 +193,54 @@ for work after studying), and "hosting agreement", an EU term of art that no
 sentence opens. The authorities' own English names stay — a reader will meet
 "Chancenkarte" and "kennismigrant" on the official page too.
 
-**Applied, in the branch's own worktree** — the one serving the local preview —
-so the builder's files were never touched: the notice's new title and its five
-sentences, the four labels, the opened term. Two things fell out of it. A gate
-that is green in CI and red on this machine: the twin parser matched a literal
-newline after its fence, so a Windows checkout reported that `exclusions.md`
-had no twin at all — line endings belong to the checkout, not the reader
-(fixed). And the one worth your eye: **renaming a route renamed its address.**
-Four URLs moved, one of them to something unreadable, days after the sitemap
-went to Google and Bing. The fix under way separates the two — a route may pin
-its address, and the four are pinned to the ones they already have, so the
-names change and no link breaks.
+**Applied, and the branch is walkable again.** The notice's new title and its
+five sentences, the four labels and the opened term went into the branch's own
+worktree — the one serving the local preview — so the builder's files were
+never touched. Then the three things the round exposed were closed:
 
-**Mid-build correction, recorded rather than tidied away:** the site repository's
-working tree was on `master` when the s9 builder started writing, because this
-session checked master out for a ledger edit and did not put the branch back.
-The builder's work is therefore a diff against master, not against
-`algeria-closure`. Nothing is lost — s8's changes and s9's touch the same three
-files, so the two will be merged once, deliberately, instead of stacking. The
-data repository was on the branch throughout.
+- **A route keeps its address when its name changes.** A page's URL was derived
+  from its name, so the four corrected labels moved four live pages, one of
+  them to something unreadable, days after the sitemap went to Google and Bing.
+  A route may now pin a `slug`; the four are pinned to the addresses they
+  already have. `tests/address.test.ts` holds those four URLs, so a future
+  wording round cannot move them by accident.
+- **One line ending, on every platform.** The twin parser was the second gate
+  green in CI and red on this machine; the third was the fingerprint that
+  proves the template did not drift, because the stylesheets inlined into every
+  page arrived with CRLF here and LF in the pipeline. Both parsers stay
+  defensive, and `.gitattributes` now stops the checkout creating the problem
+  in either repository.
+- **Pushed and rebuilt:** data `6bbc831`, site `a5dc119`, the lock naming the
+  data commit this branch was walked against. **504 + 315 tests green — on this
+  machine, for the first time.** The preview at http://localhost:4500 is the
+  new build, and the four addresses answer 200 with their new names on them.
 
-**s9 is being built** on the branch `quoted-not-asked`, in both repositories —
-opened on top of `algeria-closure` rather than master, so the queue stays
-honest: **s8 merges first, then s9.** The builder is working from the research
-file rather than re-reading the pages, and is under one added rule: a source
-the research found unfetchable (the IND's route pages, Spain's joint
-instruction, make-it-in-germany) may not be quoted at all — prefer the ones
-that fetch cleanly, or say the route cannot be built without them.
+**Mid-build correction, recorded rather than tidied away:** the site
+repository's working tree was on `master` when the s9 builder started writing,
+because this session checked master out for a ledger edit and did not put the
+branch back. Nothing was lost, and nothing was quietly re-pointed: s9's site
+work is committed as `3d4e9c7` on its own branch `s9-build`, off master, which
+also makes it a clean s9-only diff for the reviewers. s8 and s9 touch the same
+three files, so they are merged once, deliberately, after s9 clears its
+reviews — **s8 first, then s9**, as the queue says.
+
+**s9 is built** (data `c649667` on `quoted-not-asked`, site `3d4e9c7` on
+`s9-build`; **513 + 306 tests**, 182 quotes verified). Five routes the
+interview does not ask about — the French employee card, Spain's general
+employed regime and its international teleworker, German self-employment and
+the Dutch single permit — carry their rules in the authority's words, dated and
+watched, under the third scope value: **quoted and dated · not scored**.
+Validation refuses both directions: a route in that scope may not carry a
+criterion the interview answers, and a scored route may not hide behind it.
+
+**The build corrected the research three times, by fetching.** Legifrance
+answers this fetcher 403 where a browser reads it fine (the same wall the human
+tier already records); the BOE's PDFs do not survive our text extraction, so
+the consolidated HTML is the source of record; and the IND's single-permit page,
+which the research recorded as gated, answered 200 today. All three are rows in
+`data/exclusions.md` rather than notes in a report. **Both reviews are
+running** — Standards and Spec — and s9 waits on them before it merges into the
+queue behind s8.
 
 **The live site moved on its own today, correctly:** the watch's dispatch built
 and pinned the data at `17cd1fe` — the Germany and Spain reads' exclusions rows
@@ -338,13 +359,18 @@ to look:
       new line at the end of a results screen. *If the build fails:* paste the
       last twenty lines here.
 - [ ] **Walk `algeria-closure`, then say merge** (s8; it is a blocker fix, so
-      it does not wait for the window). On the preview, with an Algerian
+      it does not wait for the window). The preview at **http://localhost:4500**
+      is rebuilt with everything you approved this morning. With an Algerian
       passport and France: the transfer card sits under **"Not open to your
-      passport"** with the fiche's own sentence, the four talent routes are
-      scored as usual, and above them stands the open-question notice. Then the
-      same record with a Turkish passport — nothing changes anywhere. Then an
-      Algerian passport with **Germany only** — the notice must not appear
-      (that was the review's blocker).
+      passport"** with the fiche's own sentence; the four talent routes keep
+      every rule and quote but now stand under **"Open on the rules —
+      unsettled for your passport"**, with the reworded notice above them. Then
+      the same record with a Turkish passport — nothing changes anywhere. Then
+      an Algerian passport with **Germany only** — the notice must not appear
+      (that was the review's blocker). One extra thing worth a click, since it
+      is a promise to strangers: any route page opens at the address it always
+      had, e.g. http://localhost:4500/france/ict-seconded-employee/ shows
+      "Sent by your employer abroad".
 - [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
       window to close at 09:00 tomorrow). One line under your results: "Wrong
       about you? A value that does not match its source, or something this
