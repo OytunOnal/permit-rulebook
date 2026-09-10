@@ -192,3 +192,40 @@ describe("s8 — a page is never quieter than a card", () => {
     }
   });
 });
+
+/**
+ * The results screen has two layouts, and a fix applied to one of them is a
+ * fix for half the readers.
+ *
+ * The unsettled partition went into the single-destination layout and not
+ * into the grouped one, so a reader looking at more than one country still
+ * read "Open — criteria met" over the four French talent routes — the exact
+ * screen the partition exists to stop (human's walk, 2026-09-10).
+ */
+describe("both layouts of the results screen partition the same way", () => {
+  const times = (needle: string) => page.split(needle).length - 1;
+
+  it("every met section is followed by the unsettled one", () => {
+    const met = times('section("Open — criteria met"');
+    expect(met).toBeGreaterThan(1); // the single layout and the grouped one
+    expect(times("unsettledSection(")).toBe(met); // one call per layout
+  });
+
+  it("neither layout counts an unsettled route as open", () => {
+    // Each layout builds its "met" group its own way — one filters a list the
+    // unsettled were already taken out of, the other filters the ids directly.
+    // Either is fine; a group that mentions neither is the bug.
+    const groups = page.split(String.fromCharCode(10))
+      .filter((l) => l.includes("met:") && l.includes('r.status === "met"'));
+    expect(groups.length).toBeGreaterThan(1);
+    for (const line of groups)
+      expect(line.includes("unsettledIds") || line.includes("settled."), line.trim()).toBe(true);
+  });
+
+  it("the section's own line names no country and no passport", () => {
+    const at = page.indexOf("const unsettledSection");
+    const body = page.slice(at, page.indexOf("const seekHint", at));
+    for (const word of ["France", "Algeria", "Algerian", "French"])
+      expect(body, word).not.toContain(word);
+  });
+});

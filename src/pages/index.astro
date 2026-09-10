@@ -1064,13 +1064,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       );
 
       /** The rules are met; whether the route is theirs at all is the question
-       * in the notice above, and the heading says so rather than the card. */
-      const unsettledSection = (rows: RouteResult[]) => rows.length
+       * in the notice above, and the heading says so rather than the card.
+       *
+       * The line names no country and no passport. It said "Whether France
+       * opens this permit to an Algerian passport" — true of the only notice
+       * that exists today, and wrong the first time a second one marks a route
+       * anywhere else (2026-09-10). */
+      const unsettledSection = (rows: RouteResult[], withCountry = true) => rows.length
         ? section(
           "Open on the rules — unsettled for your passport", "unsettled",
-          `<p class="why">` + esc("The rules below are met by what you declared. Whether France opens "
-            + "this permit to an Algerian passport is the question in the note above.")
-          + `</p>` + rows.map((r) => fullCard(r)).join(""),
+          `<p class="why">` + esc("The rules below are met by what you declared. Whether this permit "
+            + "is open to your passport at all is the question in the note above.")
+          + `</p>` + rows.map((r) => fullCard(r, withCountry)).join(""),
           rows.length,
         )
         : "";
@@ -1109,8 +1114,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const withUps = new Set(ups.flatMap((u) => u.routes.map((r) => r.country)));
       main.innerHTML = arrivalLine() + noticeCards + strip + visible.map((c) => {
         const rs = results.filter((r) => r.country === c.code);
+        const cUnsettled = rs.filter((r) => r.status === "met" && unsettledIds.has(r.route.id));
         const g = {
-          met: rs.filter((r) => r.status === "met"),
+          met: rs.filter((r) => r.status === "met" && !unsettledIds.has(r.route.id)),
           near: rs.filter((r) => r.status === "near"),
           hold: rs.filter((r) => r.status === "hold"),
         };
@@ -1125,6 +1131,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         const cClosed = closedRoutes.filter((r) => r.country === c.code);
         const tallyParts = [
           g.met.length ? `${g.met.length} open` : "",
+          cUnsettled.length ? `${cUnsettled.length} unsettled for your passport` : "",
           g.near.length ? `${g.near.length} within reach` : "",
           g.hold.length ? `${g.hold.length} not yet${unknowns ? ` — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown` : ""}` : "",
           cClosed.length ? `${cClosed.length} not open to your passport` : "",
@@ -1133,9 +1140,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         // With nothing open, the steps ARE the news: every section holding one
         // opens. Announcing "6 steps" and hiding two inside collapsed sections
         // is the withholding the headline exists to end (critique #4).
-        const open = g.met.length + g.near.length > 0 || (zeroOpen && withUps.has(c.code));
+        const open = g.met.length + cUnsettled.length + g.near.length > 0 || (zeroOpen && withUps.has(c.code));
         const inner =
           section("Open — criteria met", "", g.met.map((r) => fullCard(r, false)).join(""), g.met.length) +
+          unsettledSection(cUnsettled, false) +
           section("Within reach", "near", g.near.map((r) => fullCard(r, false)).join(""), g.near.length) +
           (cUps.length
             ? `<h2 class="ghead unlockh"><b>Steps that would unlock more here</b></h2>` +
