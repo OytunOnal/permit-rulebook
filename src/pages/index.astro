@@ -103,9 +103,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // page holds no field-id-to-label table of its own to fall through
       // (product-critique v0.7, B3).
       shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
-      // s6: what the interview asks of a route, in the words the route page
-      // shows — the same declared fact, said the same way in both places.
-      scopeLine as scopeWordsFor,
       // What an answer means here, where the label alone leaves two answers
       // hard to tell apart (human walk, 2026-09-08).
       optionMeans, unlockMeansOf, countryPhrase,
@@ -136,7 +133,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { esc, escAttr, failDetailHtml, whyHtml } from "../lib/reason.js";
     // One date format, everywhere a date prints (decision 12).
     import { isoDay } from "../lib/copy.js";
-    import { caveatHtml, precondHtml, provenanceHtml, railHtml, readingHtml, measuredCriterionOf } from "../lib/card.js";
+    import {
+      carveOutHtml, caveatHtml, precondHtml, provenanceHtml, railHtml, readingHtml, scopedHtml,
+      measuredCriterionOf,
+    } from "../lib/card.js";
 
     const ds = dataset as unknown as Dataset;
     // One field-lookup idiom for the whole page: the dataset never changes
@@ -614,11 +614,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /** Conditions the authority applies that the interview never asked —
      * stated on every card so "criteria met" cannot overpromise. Both blocks
      * are rendered beside the page (lib/card.ts) so a test can read them. */
-    const precondFor = (r: RouteResult): string => precondHtml(r.route);
+    const precondFor = (r: RouteResult): string => precondHtml(r.route, answers);
+    /** What the authority itself says is off this reader, in place of the
+     * condition it releases them from. A carve-out carries its own quote and
+     * is never printed under a heading that means "you must also do this"
+     * (s7). */
+    const carveOutFor = (r: RouteResult): string => carveOutHtml(r.route, answers);
     /** What the source says its own answer does not settle. Never a failure —
      * and never under the "Also required" heading, which would turn "you may
      * qualify for less" into one more bar to clear (human catch 2026-09-07). */
-    const caveatFor = (r: RouteResult): string => caveatHtml(r.route);
+    const caveatFor = (r: RouteResult): string => caveatHtml(r.route, answers);
     /** Our own reading — what we modelled, what we did not, and where a number
      * was read by a person. Never presented as an authority's words, and never
      * in the quote list (s5e). */
@@ -628,7 +633,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const railFor = (r: RouteResult): string => railHtml(ds, r, answers);
     /** Every value the route rests on, quoted, dated, and — where the route
      * states more than one threshold — marked with which one applied. */
-    const provenanceFor = (r: RouteResult): string => provenanceHtml(ds, r);
+    const provenanceFor = (r: RouteResult): string => provenanceHtml(ds, r, answers);
 
 
     // s3: "I don't know" answers get an official find-out link — driven by the
@@ -676,9 +681,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const country = ds.countries.find((c) => c.code === r.country);
       if (!country) return "";
       // The reader's words, the same ones the country index and the route page
-      // print (decision 3 amended by the human, 2026-09-08).
-      return `<div class="scoped">${esc(scopeWordsFor(r.route))} · <a href="${
-        escAttr(url(routePath(country, r.route)))}">The rules of this route</a></div>`;
+      // print (decision 3 amended by the human, 2026-09-08) — counted over the
+      // conditions that bind THIS reader, beside the page so a test can read
+      // the line (s7).
+      return scopedHtml(r.route, answers, url(routePath(country, r.route)));
     }
 
     /**
@@ -728,6 +734,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <p class="why">${whyFor(r)}</p>
           ${scopeFor(r)}
           ${precondFor(r)}
+          ${carveOutFor(r)}
           ${caveatFor(r)}
           ${readingFor(r)}
           ${r.points ? `<div class="ptsline"><b>${r.points.scored} point${r.points.scored === 1 ? "" : "s"} — ${r.points.required} needed</b>${
@@ -761,6 +768,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             ${r.route.summary ? `<p class="why">${esc(r.route.summary)}</p>` : ""}
             ${scopeFor(r)}
             ${precondFor(r)}
+            ${carveOutFor(r)}
             ${caveatFor(r)}
           ${readingFor(r)}
             ${failDetail(r)}
@@ -1452,6 +1460,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        and says why (human catch 2026-09-07). */
     .caveat.nosrc i{font-style:italic;opacity:.85}
     .caveat.ours{border-left-style:dashed}
+    /* s7: a condition the authority itself does not apply to this passport.
+       It is news in the reader's favour, so it wears the met colour rather
+       than the muted rule a caveat wears. */
+    .caveat.carveout{border-left-color:var(--color-met);color:var(--color-ink)}
+    .caveat.carveout b{color:var(--color-met)}
     /* s5b: the situation-gated rows, said once (critique #5b). */
     details.hold-group{margin-top:.1rem}
     details.hold-group > summary{cursor:pointer;list-style:none;font:600 .82rem var(--font-sans);color:var(--color-muted);

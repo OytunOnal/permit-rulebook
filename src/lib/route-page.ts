@@ -1,8 +1,9 @@
 import {
   scopeLine, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
   isLocalization, joinAnd, joinOr, provenancedValuesOf,
-  referencedFields, routeReadings, routeStatements, shortLabelOf, subjectOf,
+  referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
+  type StatementException,
 } from "permit-rulebook-data";
 // The token set itself, not a copy of it. It was pasted in — forty values
 // retyped from `tokens.css` — which is the one thing the token file exists to
@@ -146,7 +147,11 @@ export const audienceSentence = (country: Country): string =>
 function routeValues(route: Route): ProvenanceEntry[] {
   const out: ProvenanceEntry[] = [];
   forEachCriterion(route.criteria, (c) => out.push(...provenancedValuesOf(c)));
-  for (const s of routeStatements(route)) if (s.source) out.push({ value: s.source });
+  // Both halves of a statement: the stamp is the latest read date on the page
+  // (decision 12), and a carve-out's quote is on the page (Standards review,
+  // 2026-09-10 — this was the one call site the accessor was written for that
+  // still read one half).
+  for (const s of routeStatements(route)) for (const source of statementSources(s)) out.push({ value: source });
   return out;
 }
 
@@ -392,9 +397,25 @@ function unsourcedSaid(s: { unsourced?: { reason: string; checked_at: string; no
   return `${REASON_SAID[why.reason] ?? ""}${why.note ? ` ${why.note}` : ""} Last checked ${why.checked_at}.`;
 }
 
+/**
+ * Who a condition does not bind, under the condition itself.
+ *
+ * A route page has no reader and rules on nobody, so it never drops a
+ * condition the way a card does: it shows both halves, each with its own quote
+ * and its own read date, and the page stays a full statement of the rules
+ * (s7). Nested inside the condition's own list item, because a carve-out that
+ * floated free of the sentence it qualifies would be a sentence about nothing.
+ */
+function carveOutBlock(statement: { except?: StatementException }, seen: Glossary): string {
+  const except = statement.except;
+  if (!except) return "";
+  return `<div class="except"><b>Who this does not bind</b> ${
+    esc(except.text)}${quoteBlock(except.source, {}, seen)}</div>`;
+}
+
 function statedBlocks(route: Route, seen: Glossary): string {
   const preconditions = [
-    ...(route.preconditions ?? []).map((t) => ({ text: t, source: undefined })),
+    ...(route.preconditions ?? []).map((t) => ({ text: t, source: undefined, except: undefined })),
     ...routeStatements(route).filter((s) => s.kind === "precondition"),
   ];
   const caveats = routeStatements(route).filter((s) => s.kind === "caveat");
@@ -407,16 +428,17 @@ function statedBlocks(route: Route, seen: Glossary): string {
       : "";
   return [
     block("precond", "Also required — not checked here", preconditions.map((s) =>
-      esc(s.text) + (s.source ? quoteBlock(s.source, {}, seen) : ""))),
+      esc(s.text) + (s.source ? quoteBlock(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
     block("precond", "The official page also says", caveats.filter((s) => s.source).map((s) =>
-      esc(s.text) + quoteBlock(s.source!, {}, seen))),
+      esc(s.text) + quoteBlock(s.source!, {}, seen) + carveOutBlock(s, seen))),
     // A caveat we could not find the wording for is still a fact in the
     // reader's favour, so it stays — under a heading that says plainly that no
     // quote covers it, with the declared reason and the day we last looked.
     // Dropping it here while `statedNotAsked` still counted it was a page that
     // named fewer limbs than it claimed (Standards review, 2026-09-07).
     block("precond", "Worth knowing — we have not found the official wording",
-      caveats.filter((s) => !s.source).map((s) => `${esc(s.text)} <i>${esc(unsourcedSaid(s))}</i>`)),
+      caveats.filter((s) => !s.source).map((s) =>
+        `${esc(s.text)} <i>${esc(unsourcedSaid(s))}</i>` + carveOutBlock(s, seen))),
     block("reading", "Our reading, not the authority's words", readings.map((r) => esc(r.text))),
   ].join("");
 }
@@ -759,6 +781,11 @@ ${IDENTITY}
 .precond ul, .reading ul { margin: 0; padding-left: 1.1rem; }
 .precond li, .reading li { margin-bottom: var(--space-2); }
 .precond .src, .reading .src { border-top: none; padding-top: var(--space-1); margin-top: var(--space-1); }
+/* s7: who a condition does not bind, under the condition itself — indented so
+   the eye reads it as a qualification of the line above, never as a rule of
+   its own. No verdict colour here either: the page rules on nobody. */
+.except { margin: var(--space-2) 0 0 var(--space-3); padding-left: var(--space-3); border-left: 2px dashed var(--color-line); }
+.except > b { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
 
 /* ---- check yours ---- */
 .cta { margin: var(--space-5) 0 0; padding: var(--space-4); background: var(--color-card); border: var(--rule-soft); display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }

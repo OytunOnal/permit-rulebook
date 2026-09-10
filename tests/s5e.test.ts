@@ -6,7 +6,7 @@ import {
   routeReadings, routeStatements,
   type Dataset, type FieldDef, type Profile, type Route, type RouteResult,
 } from "permit-rulebook-data";
-import { caveatHtml, precondHtml, provenanceHtml, readingHtml } from "../src/lib/card.js";
+import { carveOutHtml, caveatHtml, precondHtml, provenanceHtml, readingHtml } from "../src/lib/card.js";
 import { whyHtml } from "../src/lib/reason.js";
 
 const ds = dataset as unknown as Dataset;
@@ -21,8 +21,12 @@ const routeOf = (id: string): Route => routes().find((r) => r.id === id)!;
  * dataset's own note field satisfied for 39 quotes nobody could check (s5e).
  */
 const cardProse = (r: RouteResult, answers: Profile): string =>
-  whyHtml(ds, r, answers) + precondHtml(r.route) + caveatHtml(r.route) +
-  readingHtml(r.route) + provenanceHtml(ds, r);
+  // Every block reads the reader's answers since s7: a condition the authority
+  // sets aside for their passport leaves the card, the carve-out takes its
+  // place, and the quote list follows the card. Composing it any other way here
+  // would check a card the page does not render.
+  whyHtml(ds, r, answers) + precondHtml(r.route, answers) + carveOutHtml(r.route, answers) +
+  caveatHtml(r.route, answers) + readingHtml(r.route) + provenanceHtml(ds, r, answers);
 
 /** The provenance list — the one place an authority's words may appear. */
 const sourceLines = (html: string): string[] =>
@@ -73,8 +77,8 @@ describe("s5e — nothing reaches the screen in quotation marks without provenan
     // the card has already told the reader is ours. Nothing else may appear in
     // quotation marks anywhere on a card, in any state.
     const offenders: string[] = [];
-    for (const { r, html } of generatedCards(2468, 40)) {
-      const said = resultProvenance(r).map((p) => p.value.quote.replace(/\s+/g, " "));
+    for (const { r, answers, html } of generatedCards(2468, 40)) {
+      const said = resultProvenance(r, answers).map((p) => p.value.quote.replace(/\s+/g, " "));
       const ours = routeReadings(r.route).map((s) => s.text.replace(/\s+/g, " "));
       for (const span of quotedSpans(visible(html)))
         if (!said.some((q) => q.includes(span)) && !ours.some((t) => t.includes(span)) && !MINE.has(span))
@@ -124,8 +128,8 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
         // Not under "Also required", not under "The official page also says",
         // and never inside the quote list where every other line is somebody
         // else's sentence.
-        expect(precondHtml(r.route), `${r.route.id}:${s.id}`).not.toContain(s.text);
-        expect(caveatHtml(r.route), `${r.route.id}:${s.id}`).not.toContain(s.text);
+        expect(precondHtml(r.route, {}), `${r.route.id}:${s.id}`).not.toContain(s.text);
+        expect(caveatHtml(r.route, {}), `${r.route.id}:${s.id}`).not.toContain(s.text);
         for (const line of sourceLines(html))
           expect(line, `${r.route.id}:${s.id}`).not.toContain(s.text);
         expect(readingHtml(r.route), `${r.route.id}:${s.id}`).toContain(s.text);
@@ -172,7 +176,7 @@ describe("s5e — the card's source list grew without burying the verdict", () =
   it("no card shows an empty source block", () => {
     for (const destination of ["de", "fr", "es", "nl", "all"])
       for (const r of evaluate(ds, weak(destination))) {
-        const html = provenanceHtml(ds, r);
+        const html = provenanceHtml(ds, r, {});
         expect(html, r.route.id).toContain('class="srcs"');
         expect(html.replace(/<div class="srcs">|<\/div>/g, "").trim().length, r.route.id).toBeGreaterThan(0);
       }
@@ -191,11 +195,11 @@ describe("s5e — the card's source list grew without burying the verdict", () =
     // no-op the test would pass either way.
     const blueCard = evaluate(ds, { destination: "nl", citizenship: "TR", situation: "offer" })
       .find((x) => x.route.id === "nl-blue-card")!;
-    expect(resultProvenance(blueCard).map((e) => e.value.quote))
+    expect(resultProvenance(blueCard, {}).map((e) => e.value.quote))
       .toContain("Your employment contract is valid for at least 6 months.");
-    expect(resultProvenance(blueCard).filter((e) => e.value.quote === "Your employment contract is valid for at least 6 months.").length)
+    expect(resultProvenance(blueCard, {}).filter((e) => e.value.quote === "Your employment contract is valid for at least 6 months.").length)
       .toBe(2);
-    expect(sourceLines(provenanceHtml(ds, blueCard))
+    expect(sourceLines(provenanceHtml(ds, blueCard, {}))
       .filter((l) => l.includes("valid for at least 6 months")).length).toBe(1);
   });
 
@@ -221,8 +225,20 @@ describe("s5e — the card's source list grew without burying the verdict", () =
     // line on one card is a smaller cost than a reader believing a verdict that
     // was never about them, and it is the only line added to any card since
     // s5f. The cap still bites: eleven is news, and has to be argued again.
+    //
+    // Eleven since s7, on `nl-hsm-under30` alone, and here is that argument.
+    //
+    // The IND states on every one of its six Dutch route pages that the
+    // application needs a provisional residence permit, and the dataset held
+    // nothing about it at all: a reader was told a route was met without a word
+    // about a document they cannot enter to take it up without. That is one
+    // line, and it is one line and not two — a carve-out does not ADD a quote,
+    // it REPLACES one. For a reader the IND exempts, the card shows the
+    // exemption instead of the requirement and the list follows the card; the
+    // only cards that grew are the Dutch ones, by exactly the sentence that was
+    // missing from them. Twelve is news, and has to be argued again.
     for (const { r, html } of generatedCards(4826, 30))
-      expect(sourceLines(html).length, r.route.id).toBeLessThanOrEqual(10);
+      expect(sourceLines(html).length, r.route.id).toBeLessThanOrEqual(11);
   });
 
   it("the \"no numeric value\" honesty line still appears where it did", () => {
@@ -236,7 +252,7 @@ describe("s5e — the card's source list grew without burying the verdict", () =
     ];
     for (const destination of ["de", "fr", "es", "nl", "all"])
       for (const r of evaluate(ds, weak(destination))) {
-        const html = provenanceHtml(ds, r);
+        const html = provenanceHtml(ds, r, {});
         if (NO_THRESHOLD.includes(r.route.id)) expect(html, r.route.id).toMatch(/no dated value to quote|no salary or points threshold/i);
         else expect(html, r.route.id).not.toMatch(/no dated value to quote|no salary or points threshold/i);
       }

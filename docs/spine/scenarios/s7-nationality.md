@@ -40,7 +40,9 @@ every claim below carries the authority's own sentence):
 2. The results screen shows the highly skilled migrant route as it does today —
    and the line "Your employer must be a sponsor the Dutch immigration service
    (IND) recognises" **is not among the conditions stated for this reader**.
-   In its place: "Not required for a Turkish passport", carrying the IND's own
+   In its place, under the heading "Not required for your passport" (the
+   build's wording — one heading serves the Turkish carve-out and the ten MVV
+   exemptions alike; the draft said "for a Turkish passport"), the IND's own
    sentence and the day it was read, glossed like every other quote.
 3. The same reader sees, on the same card, that a provisional residence permit
    (MVV) is needed — because Turkey is not on the exemption list.
@@ -93,7 +95,8 @@ every claim below carries the authority's own sentence):
 
 5. The watch: two new entries, `ind-turkish-citizens` and `ind-mvv-exemptions`,
    each sliced to the section its quote comes from, **re-baselined in the same
-   commit** (`npm run watch -- --only <id>`) — the rule written on 2026-09-09
+   commit** (`npm run watch:sources -- --only=<id>` — the draft named a script
+   that does not exist) — the rule written on 2026-09-09
    after our own slice change filed three false flags.
 
 6. `data/exclusions.md` gains, each with the page read and the date: the

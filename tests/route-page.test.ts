@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   scopeLine, forEachCriterion, formatEUR, formatEURPer, provenancedValuesOf, quoteLanguage,
-  routeStatements, type Dataset, type Route,
+  routeStatements, statementSources, type Dataset, type Route,
 } from "permit-rulebook-data";
 import {
   PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, routePage, routePages,
@@ -380,7 +380,11 @@ describe("s6 — one page per route, generated from the dataset", () => {
       forEachCriterion(address.route.criteria, (c) => {
         for (const e of provenancedValuesOf(c)) held.add(esc(e.value.quote));
       });
-      for (const st of routeStatements(address.route)) if (st.source) held.add(esc(st.source.quote));
+      // Both halves of a statement: its own words, and — where the authority
+      // names the passports it does not bind — the carve-out's (s7). A page
+      // with no reader shows both, so it holds both.
+      for (const st of routeStatements(address.route))
+        for (const value of statementSources(st)) held.add(esc(value.quote));
       const notice = audienceNotice(ds);
       if (notice) held.add(esc(notice.source.quote));
       expect(quoted.length, page.path).toBeGreaterThan(0);

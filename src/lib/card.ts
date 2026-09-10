@@ -1,7 +1,8 @@
 import {
-  decidingCriteria, deriveBands, forEachCriterion, formatEUR, formatEURPer, gapCriterionOf,
+  bindsReader, carveOutFor, decidingCriteria, deriveBands, forEachCriterion, formatEUR, formatEURPer,
+  gapCriterionOf,
   resultProvenance,
-  routeReadings, routeStatements,
+  routeReadings, routeStatements, scopeLine,
   type Band, type Criterion, type Dataset, type Profile, type Route, type RouteResult,
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
@@ -69,15 +70,67 @@ export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profil
  * read back — a coined synonym for Criterion's own Avoid list (review
  * 2026-09-07).
  */
-export function precondHtml(route: Route): string {
+export function precondHtml(route: Route, answers: Profile): string {
   return proseBlock(
     "precond", "Also required — not checked here:",
     [
       ...(route.preconditions ?? []),
-      ...routeStatements(route).filter((s) => s.kind === "precondition").map((s) => s.text),
+      ...binding(route, answers).filter((s) => s.kind === "precondition").map((s) => s.text),
     ].map(esc),
     " · ",
   );
+}
+
+/**
+ * The statements this reader is actually told about.
+ *
+ * A condition the authority itself sets aside for the passport they named is
+ * not one of the conditions stated to them — the product asked which passport
+ * a reader would apply with and then listed the recognised-sponsor rule to a
+ * Turkish reader the IND exempts from it (human walk on the live site, s7).
+ * Every block below reads this rather than the raw array, so a carve-out
+ * cannot be honoured on one heading and forgotten on the next.
+ */
+// No default for `answers`: a call site that forgets the reader would render
+// every condition to everyone, which is the defect s7 exists to end
+// (Standards review, 2026-09-10). A page with no reader passes {} and says so.
+const binding = (route: Route, answers: Profile): RouteStatement[] =>
+  routeStatements(route).filter((s) => bindsReader(s, answers));
+
+/**
+ * What the authority itself says is off this reader, in place of the condition
+ * it releases them from.
+ *
+ * It is a rule like any other and it carries its own quote, which goes where
+ * every quote on a card goes — the source list below. Never under "Also
+ * required": the whole point of the sentence is that it is not required, and
+ * the heading that means "you must also do this" would say the opposite of
+ * what the IND says (s7).
+ */
+export function carveOutHtml(route: Route, answers: Profile): string {
+  return proseBlock(
+    "caveat carveout", "Not required for your passport:",
+    routeStatements(route).flatMap((s) => {
+      const except = carveOutFor(s, answers);
+      return except ? [esc(except.text)] : [];
+    }),
+    " · ",
+  );
+}
+
+/**
+ * How much of this route the interview decided, in the words the route page
+ * prints, and the door to that page.
+ *
+ * It lives here rather than in the template for the reason the blocks above
+ * do: the count is the reader's, and a line that still counted a condition
+ * this reader is exempt from would be counting a sentence the card no longer
+ * shows (s7). `href` comes from the page, which is where a route's address is
+ * built.
+ */
+export function scopedHtml(route: Route, answers: Profile, href: string): string {
+  return `<div class="scoped">${esc(scopeLine(route, answers))} · <a href="${
+    escAttr(href)}">The rules of this route</a></div>`;
 }
 
 /**
@@ -102,10 +155,10 @@ function proseBlock(cls: string, heading: string, items: string[], join = " "): 
  * are here and not there (human catch 2026-09-07). The quote behind each one
  * is in the card's source list, like every other value.
  */
-export function sourcedCaveatHtml(route: Route): string {
+export function sourcedCaveatHtml(route: Route, answers: Profile): string {
   return proseBlock(
     "caveat", "The official page also says:",
-    routeStatements(route).filter((s) => s.kind === "caveat" && s.source).map((s) => esc(s.text)),
+    binding(route, answers).filter((s) => s.kind === "caveat" && s.source).map((s) => esc(s.text)),
   );
 }
 
@@ -134,10 +187,10 @@ function unsourcedSaid(s: RouteStatement): string {
  * quote, and why. Nothing here is ever given a neighbouring quote that does
  * not cover it.
  */
-export function unsourcedCaveatHtml(route: Route): string {
+export function unsourcedCaveatHtml(route: Route, answers: Profile): string {
   return proseBlock(
     "caveat nosrc", "Worth knowing — we have not found the official wording:",
-    routeStatements(route)
+    binding(route, answers)
       .filter((s) => s.kind === "caveat" && !s.source)
       .map((s) => `${esc(s.text)} <i>${esc(unsourcedSaid(s))}</i>`),
   );
@@ -149,8 +202,8 @@ export function unsourcedCaveatHtml(route: Route): string {
  * was making it — gluing the two together at the call site, which is exactly
  * what the seam above exists to stop (review 2026-09-07).
  */
-export function caveatHtml(route: Route): string {
-  return sourcedCaveatHtml(route) + unsourcedCaveatHtml(route);
+export function caveatHtml(route: Route, answers: Profile): string {
+  return sourcedCaveatHtml(route, answers) + unsourcedCaveatHtml(route, answers);
 }
 
 /**
@@ -280,8 +333,8 @@ export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string 
  * both unmarked left a reader free to take the lower one for theirs when they
  * do not qualify for it (human catch 2026-09-07).
  */
-export function provenanceHtml(ds: Dataset, r: RouteResult): string {
-  const entries = resultProvenance(r);
+export function provenanceHtml(ds: Dataset, r: RouteResult, answers: Profile): string {
+  const entries = resultProvenance(r, answers);
   // A lone threshold needs no telling apart from anything, and a losing path
   // that quotes no amount leaves nothing for the reader to mistake for theirs.
   // Only where a choice of NUMBERS was actually settled ONE WAY OR THE OTHER.
