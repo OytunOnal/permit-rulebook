@@ -79,9 +79,22 @@ export function scopedFirst<T extends { route: { id: string } }>(rows: T[], rout
  * is: a stranger with an old link gets the ordinary interview, not an error.
  */
 export function countryArrivalFrom(dataset: Dataset, search: string): Country | null {
-  const code = new URLSearchParams(search).get("country");
-  if (!code) return null;
-  return dataset.countries.find((c) => c.code.toLowerCase() === code.toLowerCase()) ?? null;
+  const params = new URLSearchParams(search);
+  const code = params.get("country");
+  if (code)
+    return dataset.countries.find((c) => c.code.toLowerCase() === code.toLowerCase()) ?? null;
+  // A route this product does not score still stands in a country, and the
+  // reader pressed the button on its page. `arrivalFrom` refuses it — rightly,
+  // because there is no verdict to scope to — and until this branch that
+  // refusal threw the country away with it, landing a reader who came from a
+  // French permit's page on an interview about nowhere (Spec review,
+  // 2026-09-10).
+  const id = params.get("route");
+  if (!id) return null;
+  for (const country of dataset.countries)
+    for (const route of country.routes)
+      if (route.id === id && !isScored(route)) return country;
+  return null;
 }
 
 /**

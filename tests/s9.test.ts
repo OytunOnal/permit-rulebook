@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { isScored, scopeLine, routeStatements, type Dataset } from "permit-rulebook-data";
 import { routePage, routePages } from "../src/lib/route-page.js";
-import { countryPage, countryAddresses } from "../src/lib/country-page.js";
+import { QUOTED_ONLY_HEADING, countryPage, countryAddresses } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { indexedPaths } from "../src/lib/sitemap.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
-import { arrivalFrom, countryArrivalFrom } from "../src/lib/scope.js";
+import { arrivalFrom, countryArrivalFrom, destinationForCountry } from "../src/lib/scope.js";
 
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds, "2026-09-10");
@@ -164,7 +164,7 @@ describe("s9 — a country page lists them, below the ones it scores", () => {
     for (const { country } of countryAddresses(ds)) {
       const unscored = country.routes.filter((r) => !isScored(r));
       const { page } = pageFor(country.code);
-      const heading = page.html.indexOf("Quoted here, not scored");
+      const heading = page.html.indexOf(QUOTED_ONLY_HEADING);
       expect(heading, country.code).toBeGreaterThan(-1);
       // Below every route the page does score.
       for (const route of country.routes.filter(isScored))
@@ -182,7 +182,7 @@ describe("s9 — a country page lists them, below the ones it scores", () => {
 
   it("an unscored card offers no figure it has no rule for", () => {
     const { page } = pageFor("DE");
-    const after = page.html.slice(page.html.indexOf("Quoted here, not scored"));
+    const after = page.html.slice(page.html.indexOf(QUOTED_ONLY_HEADING));
     expect(after).not.toContain("no salary threshold");
     expect(after).not.toContain("salary threshold");
   });
@@ -193,10 +193,13 @@ describe("s9 — the data page states both counts", () => {
   const page = dataPage(ds);
   const text = textOf(page.html);
 
-  it("says 23 scored and five quoted but not scored", () => {
-    expect(text).toContain("23 routes scored against your answers");
-    expect(text).toContain("5 more quoted and dated but not scored");
-    expect(text).toContain("23 scored, 5 quoted and dated but not scored");
+  it("says both counts, in the words the reader gets", () => {
+    const all = ds.countries.flatMap((c) => c.routes);
+    const scored = all.filter(isScored).length;
+    const quoted = all.length - scored;
+    expect(text).toContain(`${scored} routes scored against your answers`);
+    expect(text).toContain(`${quoted} more quoted and dated but not scored`);
+    expect(text).toContain(`${scored} scored, ${quoted} quoted and dated but not scored`);
   });
 
   it("the counts come from the dataset, not from a number somebody typed", () => {
@@ -207,5 +210,32 @@ describe("s9 — the data page states both counts", () => {
     expect(text).toContain(`${quotedOnly} more quoted and dated but not scored`);
     expect(page.description).toContain(`${scored} routes scored`);
     expect(page.description).toContain(`${quotedOnly} quoted and dated but not scored`);
+  });
+});
+
+/**
+ * The reader who came from a page with no verdict on it.
+ *
+ * `arrivalFrom` refuses an unscored route — there is no verdict to scope to —
+ * and that refusal used to throw the route's country away with it: a reader
+ * who pressed the button on the French employee card's page landed on an
+ * interview about nowhere. The scenario says they land on the interview
+ * scoped to that country (Spec review, 2026-09-10).
+ */
+describe("arriving from a route that is not scored", () => {
+  it("lands the reader in the route's country, with no route on the record", () => {
+    expect(arrivalFrom(ds, "?route=fr-salarie")).toBe(null);
+    const country = countryArrivalFrom(ds, "?route=fr-salarie");
+    expect(country?.code.toLowerCase()).toBe("fr");
+    expect(destinationForCountry(country)).toBe("fr");
+  });
+
+  it("still refuses a route that does not exist", () => {
+    expect(countryArrivalFrom(ds, "?route=nowhere-at-all")).toBe(null);
+  });
+
+  it("leaves a scored route to the arrival that knows about verdicts", () => {
+    expect(countryArrivalFrom(ds, "?route=fr-ict")).toBe(null);
+    expect(arrivalFrom(ds, "?route=fr-ict")?.country.code.toLowerCase()).toBe("fr");
   });
 });

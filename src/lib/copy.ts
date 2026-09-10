@@ -25,11 +25,17 @@ export const TAGLINE = "Every route, quoted and dated.";
  */
 export const ROUTE_TAGLINE = "The rules, quoted and dated.";
 
-/** The one-line promise the README leads with and the social card carries. */
-export const PROMISE =
-  "An open, dated, source-quoted work-permit ruleset for four countries — 23 routes scored " +
-  "against your answers and five more quoted and dated without being scored, every value with " +
-  "its official sentence and the day it was read, checked daily.";
+/**
+ * The one-line promise the README leads with and the social card carries.
+ *
+ * The two counts are read from the dataset rather than typed here: they were
+ * typed, and s9 moved one of them the same day it was written (Standards
+ * review, 2026-09-10).
+ */
+export const promise = (counts: { scored: number; quotedOnly: number }): string =>
+  `An open, dated, source-quoted work-permit ruleset for four countries — ${counts.scored} routes ` +
+  `scored against your answers and ${counts.quotedOnly} more quoted and dated without being scored, ` +
+  "every value with its official sentence and the day it was read, checked daily.";
 
 /**
  * The launch's legal wording, one sentence, everywhere. It is the IRCC-style

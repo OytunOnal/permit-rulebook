@@ -171,6 +171,15 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   const desc = description(country);
   const read = countryReadDate(dataset, country);
   const count = country.routes.length;
+  /**
+   * The heading counts the two kinds apart.
+   *
+   * "Germany: nine routes" over a page whose ninth route has no verdict in it
+   * promises nine answers and delivers eight — the same blur the data page
+   * refuses ("a single total would let the second kind pass as the first").
+   * Where a country has none of the second kind the heading is what it always
+   * was (Standards review, 2026-09-10).
+   */
   // The two lists this page carries. The routes the product scores come first,
   // in the dataset's own order; the ones it states and does not score come
   // below them under a heading that offers nothing (s9).
@@ -178,6 +187,9 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   const quotedOnly = country.routes.filter((r) => !isScored(r));
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
+  const headingCount = quotedOnly.length
+    ? `${countedWords(scored.length, "route")} scored, ${quotedOnly.length} quoted`
+    : countedWords(count, "route");
   const seen: Glossary = new Set();
   const notice = audienceNotice(dataset);
 
@@ -195,7 +207,7 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
 
   <div class="masthead-with-stamps">
     <div>
-      <h1>${esc(withArticle(country))}: ${esc(countedWords(count, "route"))}. <em>${esc(TAGLINE)}</em></h1>
+      <h1>${esc(withArticle(country))}: ${esc(headingCount)}. <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">Every employment route ${esc(withArticle(country))} publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. ${
     esc(audienceSentence(country))} ${quotedOnly.length
     ? `Below them, ${esc(countedWords(quotedOnly.length, "route"))} we state and do not score; what is left out altogether is <a class="tap" href="${

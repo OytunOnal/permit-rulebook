@@ -21,7 +21,8 @@ import { contentSecurityPolicy } from "../lib/csp.js";
 import { footerFacts, navCountries } from "../lib/country-page.js";
 // The product's own words, in one place: the name, the tagline and the
 // disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
-import { PRODUCT_NAME, PROMISE, TAGLINE } from "../lib/copy.js";
+import { PRODUCT_NAME, promise, TAGLINE } from "../lib/copy.js";
+import { routeCounts } from "../lib/data-page.js";
 import { analyticsBeacon, headMeta } from "../lib/site.js";
 
 // Boundary validation: an invalid dataset must kill the build, loudly.
@@ -47,7 +48,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     description: INTRO_DESCRIPTION,
     path: "/",
     kind: "website",
-    preview: PROMISE,
+    preview: promise(routeCounts(dataset)),
   })} />
 </head>
 <body>
