@@ -38,6 +38,18 @@ the two things the product can act on, send nothing off the device, and say out
 loud that the tracker needs a GitHub account. Recommended: A. **Waiting on the
 human's pick.**
 
+**A slice is being built** (s7, `docs/spine/scenarios/s7-nationality.md`): a
+statement can name the passports it does not bind, carrying the authority's own
+sentence for the carve-out. The Netherlands was read first (issue #9, by the
+deep-researcher, every claim quoted and dated). It corrected the report as well
+as confirming it — **three** routes state the sponsor condition where the IND
+sets it aside, not four: the Blue Card was already right and the ICT permit
+states no sponsor condition. It also found something nobody had asked about:
+**MVV is absent from the dataset entirely**, though every Dutch route's page
+requires one and eleven nationalities are exempt. Both go in; the Japanese
+work-permit claim goes to `exclusions.md` as investigated and not found on any
+official page.
+
 **The bug is real, and it is a class.** The human's report (data #7) said the
 Dutch routes state conditions that do not apply to a Turkish citizen. The IND's
 own page says it plainly — *"For employees with Turkish nationality, a
@@ -82,10 +94,8 @@ to look:
       http://localhost:4400/s7-feedback.html. *Pass:* you would let it appear
       on your own screen after your own results. Nothing is built until you
       pick.
-- [ ] **Where does the nationality audit start?** (data #8, split into #9–#12)
-      The Dutch instance is a day's work with the source already in hand; the
-      four reads together are a slice of their own. My recommendation: fix the
-      Dutch one and ship it, then read Germany. Say go and I start.
+- [ ] **Nothing right now** on the audit: the Netherlands is being built (s7),
+      Germany (#10) is read next, then France (#11) and Spain (#12).
 - [ ] **The post's replies.** Anything a reader says that is a bug, a missing
       need or a design flaw is worth pasting here — the steward protocol turns
       it into a fix or a recorded decision, rather than a note that gets lost.
