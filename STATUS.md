@@ -236,11 +236,36 @@ criterion the interview answers, and a scored route may not hide behind it.
 **The build corrected the research three times, by fetching.** Legifrance
 answers this fetcher 403 where a browser reads it fine (the same wall the human
 tier already records); the BOE's PDFs do not survive our text extraction, so
-the consolidated HTML is the source of record; and the IND's single-permit page,
-which the research recorded as gated, answered 200 today. All three are rows in
-`data/exclusions.md` rather than notes in a report. **Both reviews are
-running** — Standards and Spec — and s9 waits on them before it merges into the
-queue behind s8.
+the consolidated HTML is the source of record; and the IND's single-permit
+page, which the research recorded as gated, answered 200 today. All three are
+rows in `data/exclusions.md` rather than notes in a report.
+
+**Both reviews ran, and both put the same finding first** — from opposite
+directions. The country heading said *"Germany: nine routes"* over a page whose
+ninth route has no verdict in it, and the social card, the first surface a
+stranger sees, said *"28 routes"* under *"Which work-permit routes could fit?"*,
+where five of them can never fit. The data page had already written the rule
+down; those two were the places still breaking it. Both count the kinds apart
+now. Thirteen more findings applied, of which three are worth naming:
+
+- **A rule that was read and never stated.** Article 76.2 of the Spanish
+  regulation was inside the watched slice and nowhere on the page: an individual
+  employer must show means for their own household — 50% of the minimum wage
+  alone, 100% for two, 25% more for each further member. It is stated now, from
+  our own dated read.
+- **Three French exemptions are recorded rather than silent** — the 2008
+  Tunisian protocol's Annex I occupations, master's graduates on a qualifying
+  contract, and the narrow cases at R5221-21. Each lives only on Legifrance,
+  which this fetcher cannot read. The first is the one to watch: the ministry's
+  own plain-language page does not carry it either, so a Tunisian reader
+  following the overview would never meet it.
+- **A reader arriving from an unscored route's page landed on an interview
+  about nowhere.** The arrival that refuses an unscored route — rightly, there
+  is no verdict to scope to — was throwing the route's country away with it.
+
+s9 is **mock-green**: data `69b64df` on `quoted-not-asked`, site `fd19198` on
+`s9-build`, 513 + 309 tests, the lock naming the data commit it is built
+against. It waits behind s8 in the queue, and on your walk.
 
 **The live site moved on its own today, correctly:** the watch's dispatch built
 and pinned the data at `17cd1fe` — the Germany and Spain reads' exclusions rows
@@ -380,6 +405,15 @@ to look:
 - [x] **The four country reads are done** (2026-09-10): the Netherlands and
       France produced fixes (s7 is live, s8 waits on your walk), Germany and
       Spain produced findings with dates on them and nothing to change.
+- [ ] **A third human-tier source, or not** (your call, and only yours). The
+      French employee card's page states the labour-market test in
+      service-public's words. The statute's own word for it — CESEDA L414-13,
+      « la situation du marché de l'emploi est **opposable** au demandeur » —
+      is on Legifrance, which answers this fetcher 403. You ratified the
+      human-tier count at **two** this morning; carrying that sentence would
+      make it three, with a person re-reading it every 90 days. *Say yes and it
+      goes on the page; say no and it stays where it is now — recorded in
+      `exclusions.md` with the reason.*
 - [ ] **The post's replies.** Anything a reader says that is a bug, a missing
       need or a design flaw is worth pasting here — the steward protocol turns
       it into a fix or a recorded decision, rather than a note that gets lost.
