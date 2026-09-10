@@ -182,8 +182,19 @@ sites searched. Five sentences remain, one job each, and one parenthesis stays
 because it is the only thing stopping the court's words being read for more
 than they decided.
 
-**Queued behind the builder**, not applied yet: s9 is mid-flight in the same
-four files, and two hands in one file is how a slice gets lost.
+**A second finding from the same walk:** the human read "FR ICT — seconded
+employee" and had to ask what it meant. They are exactly the reader this
+product is for, so the label had not earned its meaning. It becomes **"sent by
+your employer abroad"**, and a prose pass over every route name, question and
+statement — read as a stranger — found the same fault in three more places:
+Germany's and the Netherlands' transfer cards ("intra-corporate transfer",
+"transferee"), the Dutch "Orientation year" (which says nothing about looking
+for work after studying), and "hosting agreement", an EU term of art that no
+sentence opens. The authorities' own English names stay — a reader will meet
+"Chancenkarte" and "kennismigrant" on the official page too.
+
+**All of it is queued behind the builder**, not applied: s9 is mid-flight in
+the same files, and two hands in one file is how a slice gets lost.
 
 **Mid-build correction, recorded rather than tidied away:** the site repository's
 working tree was on `master` when the s9 builder started writing, because this
