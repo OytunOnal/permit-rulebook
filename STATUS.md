@@ -92,20 +92,41 @@ is not an authority (data #13 — the replacement is a real choice: the federal
 portal serves a bot check, so it is a page a reader can use against a page the
 watch can keep its eye on).
 
-**France and Spain are being read now** (#11, #12), in parallel — the two briefs
-ask opposite questions. France carries a heavy lead: if the Franco-Algerian
-Agreement of 1968 governs Algerians instead of the general code, we are showing
-them routes they cannot use, which is worse than stating one condition too
-many. Spain's brief claims nothing at all on purpose: its job is to establish
-from Spain's own pages whether any nationality is treated differently, and
-"no, and here is the page that shows it" is a real answer as long as the
-sections were actually read.
+**Spain is read and closed** (data #12): the four routes ask the same of every
+third-country nationality, and that sentence now has a date on it — three route
+pages section by section, Ley 14/2013 arts. 61–76 from the BOE's consolidated
+text, and the salary PDF. No country is named in any of those articles. The one
+country-group carve-out is the free-movement gate this dataset already applies,
+and its class does hold Norway, Iceland, Liechtenstein and Switzerland — checked
+rather than assumed. Two real nationality rules in Spanish law reach none of
+these four.
 
-**Then:** France (#11 — the Franco-Algerian Agreement of 1968 is the
-lead, and if it governs Algerians instead of the general code it is a heavier
-finding than either country so far: not a condition lifted, but the wrong route
-shown), then Spain (#12, nothing claimed — the read has to establish it either
-way). Each is a research day before a
+**France is read, and it is the heavy one** (data #11). Two findings, and they
+are handled differently on purpose:
+
+- **Settled:** the intra-corporate transfer permit is not open to Algerian
+  nationals — service-public states the eligibility as *"Vous êtes étranger
+  (sauf Européen ou Algérien)"* and routes an Algerian reader to a different
+  fiche. The product offers that route to Algerian passports today.
+- **Not settled, and not decided by us:** for the four passeport-talent routes
+  the sources conflict. The Conseil d'État says CESEDA's residence titles do
+  not apply to Algerians — in a case about a shopkeeper's certificate — and
+  the administration's own page for Algerians lists sixteen situations with no
+  talent card among them; but Directive (EU) 2021/1883 puts every third-country
+  national in the Blue Card's scope, and CESEDA L421-11 names no exclusion. No
+  page found says either way in one sentence.
+
+**s8 is being built** (`docs/spine/scenarios/s8-algeria.md`): `fr-ict` closes
+to Algerian passports with the page's own words — the dataset gains `not-in`,
+the operator it has needed since a route first had to say "not you" — and the
+four talent routes stay **scored, not hidden**, with a notice that carries both
+sides in their own words and says plainly that nothing found settles it. Hiding
+four routes on a decision about a shopkeeper's permit would be deciding an open
+question by disappearing it.
+
+**All four country reads are done.** What is left of the class (data #8) is the
+mechanism, and s7 and s8 are it: a statement can name the passports it does not
+bind, and now a route can too. Each is a research day before a
 build day: the Dutch read is what turned "four routes are wrong" into "three
 are, and here is a second thing nobody had asked about".
 
