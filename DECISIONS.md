@@ -2802,3 +2802,23 @@ the Dutch cards grew, by exactly the sentence that was missing. Recorded as a
 gate rather than a default because the cap is a limit the human set: a build
 may not widen its own guard, however good its argument. Twelve is news and has
 to be argued again.
+
+**2026-09-10 — the feedback line, and why it is a line** (site #6). A reader
+asked for a prompt: something that opens at some point, or an icon always on
+screen. Two shapes that open were drawn — a slip docked to the bottom edge and
+a centred modal — and the human rejected both. What ships instead is a line at
+the end of the results screen, under a hairline rule: nothing opens, nothing is
+dismissed, nothing is remembered on the device, and the product still has not
+interrupted anybody. It names the two doors and says the GitHub account
+requirement *before* the click rather than leaving it to be discovered at a
+login screen (site #7 stays open; this only stops it surprising anyone).
+
+What it gives up, recorded rather than glossed: it does not arrive, so a reader
+who never reaches the end of the results never sees it. That is the trade the
+drawn shapes were rejected over.
+
+**Held off master.** The 48-hour window is open until 2026-09-11 09:00 and the
+rule is that the live site is touched only for a blocker. s7 was one — the
+product stated a condition to Turkish readers that the IND sets aside for them.
+A new line at the end of a screen is not. It sits on the branch
+`feedback-line`, gated and green, and merges when the window closes.

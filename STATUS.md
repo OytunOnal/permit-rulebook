@@ -68,6 +68,18 @@ asks must change something the reader sees, as a generated check. Against this
 morning's dataset, 168 third-country passports produced one screen — it would
 have found data #8 by itself.
 
+**The feedback line is built and waiting** (site #6): one line at the end of
+the results screen — "Wrong about you? … report a wrong value or suggest a
+change. Both open GitHub, where filing needs an account." Nothing opens,
+nothing is dismissed, nothing is remembered. It sits on the branch
+`feedback-line` (`20681e6`, 300 tests), **not on master**, because the window
+is open and it is an improvement rather than a blocker. It merges when the
+window closes.
+
+**Germany is being read** (data #10): § 26 BeschV and the Western Balkans rule,
+the Turkish standstill, and each route page's own pointers — by the
+deep-researcher, under the same grounding rules the Dutch read used.
+
 **Next, in order:** Germany (data #10 — § 26 BeschV and the Western Balkans
 rule are leads, nothing read yet), then France (#11, the Franco-Algerian
 Agreement), then Spain (#12, nothing claimed). Each is a research day before a
@@ -124,10 +136,12 @@ to look:
 
 - [x] **The card's quote cap, 10 → 11** (human, 2026-09-10): ratified for
       `nl-hsm-under30`. Twelve would have to be argued again.
-- [ ] **The feedback prompt — neither drawn shape survived** (site #6): the
-      issue carries what a replacement must keep, and the quieter option (a
-      line in the results screen's own body, no timing, no dismissal state) is
-      on the table. Nothing is built until you say which.
+- [ ] **The feedback line, when the window closes** (site #6, branch
+      `feedback-line`): read it once — "Wrong about you? A value that does not
+      match its source, or something this screen should do — report a wrong
+      value or suggest a change. Both open GitHub, where filing needs an
+      account." *Pass:* you would let it sit under your own results. Then I
+      merge it. *If not:* say what it should say instead.
 - [ ] **Nothing right now** on the audit: the Netherlands is being built (s7),
       Germany (#10) is read next, then France (#11) and Spain (#12).
 - [ ] **The post's replies.** Anything a reader says that is a bug, a missing
