@@ -4,7 +4,7 @@ import {
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
-import { PAGE_CSS, audienceNotice, stampDate, withArticle } from "./route-page.js";
+import { PAGE_CSS, pageStamp, withArticle } from "./route-page.js";
 import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
 import { PRODUCT_NAME, TAGLINE, TRANSLATION_POLICY, datasetDay } from "./copy.js";
 import {
@@ -71,7 +71,6 @@ export function routeCounts(dataset: Dataset): RouteCounts {
 
 export function dataPage(dataset: Dataset): DataPage {
   const read = siteReadDate(dataset);
-  const notice = audienceNotice(dataset);
   const prose = proseProvenance(dataset);
   const counts = routeCounts(dataset);
   const title = `The data · ${PRODUCT_NAME}`;
@@ -151,7 +150,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
       <nav class="jsonlinks" aria-label="${escAttr(`${withArticle(country)} as JSON`)}">
         <b class="label">${esc(withArticle(country))}</b>${country.routes.map((route) => `
         <a class="tap-min" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>read ${
-    esc(stampDate(route, notice))}</small></a>`).join("")}
+    esc(pageStamp(dataset, route))}</small></a>`).join("")}
       </nav>`).join("")}
     </section>
   </main>

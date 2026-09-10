@@ -190,6 +190,13 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
+- **The first paint stops shifting** (s10) · site #8 · CLS is poor for 23% of
+  samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) while LCP
+  and INP are good for 100%: the interview paints, then fills itself. Measured,
+  not guessed — the first defect this project learned from a metric.
+
+## mock-green
+
 - **Five routes quoted and dated, and not scored** (s9) · opened at the v1.1
   boundary, 2026-09-10 (human: "v1.1 i açalım", scope chosen from three) ·
   `docs/spine/scenarios/s9-quoted-not-asked.md` · FR carte salarié, ES cuenta
@@ -198,20 +205,35 @@ Promoted (or dropped, with evidence) at a boundary session.
   first time. Bound to **A5** (refuted: 23 routes against a promise of 35–40)
   and feeding **A2 / A7 / A8**, whose numbers are read on 2026-10-09. One
   research pass per route before any build.
-- **The first paint stops shifting** (s10) · site #8 · CLS is poor for 23% of
-  samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) while LCP
-  and INP are good for 100%: the interview paints, then fills itself. Measured,
-  not guessed — the first defect this project learned from a metric.
+  **Built and reviewed on both axes, 2026-09-10** (data `69b64df` on `quoted-not-asked`, site `fd19198` on `s9-build`; 513 + 309 tests, 182 quotes verified). Two blockers and thirteen findings applied — the two both reviewers put first were the same one from opposite sides: a single route total on the country heading and on the social card, blurring the five that cannot be scored into the twenty-three that can. Waits on the human's walk, and on s8 merging first.
 
-## mock-green
-
-_(empty — s6 was the last, and it is done)_
 
 ## real-green
 
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **A route the authority closes, and a question nobody answers** (s8) ·
+  **real-green 2026-09-10, live** — `docs/spine/scenarios/s8-algeria.md`. The
+  first slice to ship under Steward mode's rule that **merge is the deploy and
+  the deploy is the human's word**: built on `algeria-closure` in both
+  repositories, reviewed on both axes (eleven findings applied), walked by the
+  human, merged on their word (site `f6af596`, data `6bbc831`; **504 + 320
+  tests**).
+
+  France's intra-corporate transfer card closes itself to an Algerian passport
+  in the fiche's own words — the dataset gained `not-in`, a closure that ships
+  only with its own plain sentence — and the four talent routes stay scored
+  under a heading that claims nothing: *Open on the rules — unsettled for your
+  passport*, with an open-question notice above them.
+
+  Three things the human's walk added after the build was green: a route keeps
+  its address when its name changes (four live URLs had moved), four labels
+  that had not earned their meaning, and the same partition applied to the
+  second layout, the card badge, the summary strip and the headline — that one
+  was found by walking, twice, after the code had been read and believed.
+
 
 - **Answers recorded as given, verdicts in plain words** (s5d) · **real-green 2026-09-05, shipped in v0.8** —
   `docs/spine/scenarios/s5d.md`. Built, code-reviewed on both axes (10 findings,

@@ -8,7 +8,7 @@ import {
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
-  PAGE_CSS, audienceNotice, audienceSentence, gist, routeFigure, stampDate, withArticle,
+  PAGE_CSS, audienceSentence, gist, pageStamp, routeFigure, withArticle,
 } from "./route-page.js";
 import {
   DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay,
@@ -101,8 +101,7 @@ export interface CountryPage {
  * question screens make (human amendment to decision 12, 2026-09-08).
  */
 export function countryReadDate(dataset: Dataset, country: Country): string {
-  const notice = audienceNotice(dataset);
-  return country.routes.map((r) => stampDate(r, notice)).sort().at(-1) ?? "";
+  return country.routes.map((r) => pageStamp(dataset, r)).sort().at(-1) ?? "";
 }
 
 /**
@@ -155,14 +154,14 @@ const sentenceCase = (s: string): string => s.charAt(0).toUpperCase() + s.slice(
  * figure's own "no salary threshold" on an unscored card would state as a fact
  * about the route something that is a fact about our dataset (s9).
  */
-function routeCard(dataset: Dataset, country: Country, route: Route, seen: Glossary, notice?: Notice): string {
+function routeCard(dataset: Dataset, country: Country, route: Route, seen: Glossary): string {
   const figure = isScored(route) ? routeFigure(dataset, route) : undefined;
   return `
       <li><a class="card tap-min" href="${escAttr(url(routePath(country, route)))}"><span class="name">${
     esc(glossSection(route.name, seen))}</span><p class="gist">${esc(gist(route))}</p><p class="meta">${
     figure ? `<span>${esc(figure.label)}${figure.value ? ` <b>${esc(figure.value)}</b>` : ""}</span>` : ""}<span>${
     esc(scopeLine(route))}</span><span class="read"><time datetime="${
-    escAttr(stampDate(route, notice))}">read ${esc(stampDate(route, notice))}</time></span></p></a></li>`;
+    escAttr(pageStamp(dataset, route))}">read ${esc(pageStamp(dataset, route))}</time></span></p></a></li>`;
 }
 
 export function countryPage(dataset: Dataset, address: CountryAddress): CountryPage {
@@ -191,7 +190,6 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
     ? `${countedWords(scored.length, "route")} scored, ${quotedOnly.length} quoted`
     : countedWords(count, "route");
   const seen: Glossary = new Set();
-  const notice = audienceNotice(dataset);
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -220,7 +218,7 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
 
   <main>
     <ul class="routes" aria-label="The routes in ${escAttr(withArticle(country))} the checker scores">${
-    scored.map((route) => routeCard(dataset, country, route, seen, notice)).join("")}
+    scored.map((route) => routeCard(dataset, country, route, seen)).join("")}
     </ul>${quotedOnly.length ? `
 
     <section class="quoted-only" aria-labelledby="quoted-only-h">
@@ -228,7 +226,7 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
       <p class="lede">${esc(sentenceCase(countedWords(quotedOnly.length, "route")))} we hold the rules for and will not score. Each page states them as the authority does, with the day we read them, and asks you nothing; the checker never offers ${
     quotedOnly.length === 1 ? "it" : "them"}.</p>
       <ul class="routes" aria-label="Routes in ${escAttr(withArticle(country))} the checker does not score">${
-    quotedOnly.map((route) => routeCard(dataset, country, route, seen, notice)).join("")}
+    quotedOnly.map((route) => routeCard(dataset, country, route, seen)).join("")}
       </ul>
     </section>` : ""}
 

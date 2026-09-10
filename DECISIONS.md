@@ -2985,3 +2985,89 @@ the talent cards.
 review. The alternative was shipping a screen that says "criteria met" about a
 route whose existence for that reader is the open question — which is the
 failure this product is built to avoid.
+
+## 2026-09-10 — a name is for the reader, an address is a promise
+
+**Cheap default, surfaced here** (Spine chose; it fixes a defect the wording
+round created within the hour).
+
+Renaming four routes renamed four URLs. `routeSlug` derived the address from
+the display name, so *"FR ICT — seconded employee"* becoming *"Sent by your
+employer abroad"* moved `/france/ict-seconded-employee/` to
+`/france/sent-by-your-employer-abroad/`, and the Dutch orientation year became
+a sentence: `/netherlands/orientation-year-a-year-to-look-for-work-after-studying/`.
+Those four addresses had been in the sitemap sent to Google and Bing since v1,
+five days ago, and the product's own promise is that a route page is a thing a
+stranger can link to.
+
+**Decided:** a route may pin a `slug`; the address is read from the route, and
+falls back to the name only where nothing was promised. The four that shipped
+are pinned to the addresses they already have, so this round moves no URL. A
+test holds those four addresses by name, which is what makes the next wording
+round safe rather than careful.
+
+Rejected: redirects (a static host, and a redirect is a second address to
+maintain for a name nobody typed), and freezing the names (the labels were
+wrong for a reader, which is the thing that actually matters).
+
+**The consequence to watch:** every new route now decides its address once, at
+birth. `routeAddresses` already refuses two routes wanting the same page, so
+the failure mode is loud.
+
+## 2026-09-10 — one line ending, on every platform
+
+**Cheap default** (Spine chose). Three gates were green in CI and red on the
+machine the human walks from, all for the same reason: git handed this checkout
+CRLF while CI read LF, and code that reads a file read the difference. The twin
+parser in `exclusions.ts` matched a literal `\n` after its fence and reported
+that `data/exclusions.md` had no twin at all; the stylesheets inlined into every
+route page carried CRLF into the built HTML, so the fingerprint that proves the
+template did not drift compared two different pages.
+
+**Decided:** both parsers stay defensive — they normalise what they read,
+because a parser that trusts its input is the bug — *and* `.gitattributes`
+(`* text=auto eol=lf`) stops the checkout creating the problem in both
+repositories. Renormalising touched no stored content; the repositories already
+held LF.
+
+**Why both:** the attribute fixes this machine, the normalisers fix any machine.
+A contributor's checkout is not ours to configure, and this project takes
+contributions.
+
+## 2026-09-10 — s8 merged: the first deploy that is a human's word
+
+**Gate** (human: "merge", after walking the branch). Steward mode's rule ran
+for the first time end to end: the live site changed because a person walked a
+branch and said so, not because a build went green.
+
+**What went live.** France's intra-corporate transfer card is closed to an
+Algerian passport in the fiche's own words, under *Not open to your passport*.
+The four talent routes stay scored, keep every rule and quote, and stand under
+*Open on the rules — unsettled for your passport* with an open-question notice
+above them carrying three authorities and the sentence that we searched and
+found no page that settles it. Nothing is decided that no page decides.
+
+**The walk earned three changes the build had not.** A route now keeps its
+address when its name changes — four live URLs had moved days after the sitemap
+went to Google and Bing. Four labels were rewritten because the human, who is
+exactly the reader this is for, had to ask what one of them meant. And the
+partition that stops "criteria met" was applied to the second layout, the card
+badge, the summary strip and the headline: it had been half-applied twice,
+because the code had been read and believed rather than walked.
+
+**The lesson, stated plainly:** reading the source and the built bundle is not
+walking the product. Both times the missing half was found by opening the page.
+Tests now hold the two layouts, the badge, the strip and the headline to each
+other, but the habit is the fix.
+
+## 2026-09-10 — the site's daily schedule does fire, late
+
+**Correction to the record.** STATUS has said since 2026-09-08 that the site's
+own 06:40 UTC schedule "has not fired once". It has: `pages.yml` ran on
+schedule at 11:49 UTC on 2026-09-09 and 11:48 UTC on 2026-09-10, both green.
+GitHub runs it about five hours after the cron says, which is the same lateness
+the data watch shows.
+
+**What changes:** the standing item asking the human to run a rebuild by hand
+when a day passes without one comes off their list. The redundant path is real;
+it is just slow. The fast path (the watch's dispatch) still carries the day.

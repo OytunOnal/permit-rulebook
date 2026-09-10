@@ -106,7 +106,7 @@ describe("the reason column reads as prose, as rendered (blocker B3)", () => {
     for (const [, html] of rendered)
       for (const tag of html.match(/<li class="[^"]*"/g) ?? [])
         kinds.add(tag.slice('<li class="'.length, -1));
-    for (const kind of kinds) expect(["moot", "needs", "unknown", "where", "closed"]).toContain(kind);
+    for (const kind of kinds) expect(["closed", "moot", "needs", "unknown", "where"]).toContain(kind);
     // "moot" — "not needed, you already have a job offer" — is unreachable in
     // the shipped dataset since 2026-09-07: no route asks any more for the
     // ABSENCE of a step, the Opportunity Card having been the last one that

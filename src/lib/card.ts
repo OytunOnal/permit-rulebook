@@ -1,9 +1,9 @@
 import {
-  bindsReader, carveOutFor, decidingCriteria, deriveBands, forEachCriterion, formatEUR, formatEURPer,
-  gapCriterionOf,
+  bindsReader, carveOutFor, closedBy, decidingCriteria, deriveBands, forEachCriterion, formatEUR, formatEURPer,
+  gapCriterionOf, noticeSources,
   resultProvenance,
   routeReadings, routeStatements, scopeLine,
-  type Band, type Criterion, type Dataset, type Profile, type Route, type RouteResult,
+  type Band, type Criterion, type Dataset, type Notice, type Profile, type Route, type RouteResult,
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
@@ -397,4 +397,89 @@ export function provenanceHtml(ds: Dataset, r: RouteResult, answers: Profile): s
   if (!decidesOnANumber(r.route))
     lines.push(`<div class="src nosrc">No salary or points threshold on this route — nothing here to fall short of. What it asks for is in the conditions above, each with the official wording behind it.</div>`);
   return `<div class="srcs">${lines.join("")}</div>`;
+}
+
+/**
+ * A quote long enough to bury the card is shown to its first sentence, with
+ * the whole passage on the element and its source a click away — the evidence
+ * stays complete, the card stays readable (tracker #5).
+ *
+ * It lived in the interview's own script until s8 moved the notice out of it,
+ * and for one commit the rule applied to nothing: the Türkiye notice's
+ * 640-character quote printed whole (Standards review, 2026-09-10).
+ */
+export function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
+  if (quote.length <= 200) return { shown: quote, trimmed: false };
+  const end = quote.indexOf(". ");
+  if (end < 0 || end > 200) return { shown: quote.slice(0, 200).trimEnd() + "…", trimmed: true };
+  return { shown: quote.slice(0, end + 1) + " …", trimmed: true };
+}
+
+/**
+ * One quote, framed the way every quote on a results screen is framed: its
+ * language, its host, whatever citation it carries, and the day it was read.
+ *
+ * Pulled out of `provenanceHtml` when the closed-route row and the notice both
+ * needed it. The frame is the claim of this product, and three copies of it
+ * would be three claims that can drift (s8).
+ */
+function srcLine(value: { quote: string; source_url: string; retrieved_at: string; legal_basis?: string }): string {
+  const { lang, host, note } = quoteFrame(value);
+  const { shown, trimmed } = quoteForCard(value.quote);
+  return `<div class="src"${trimmed ? ` title="${escAttr(value.quote)}"` : ""}><i${
+    lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(shown)}”</i> · ${esc(host)}${
+    value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b>${
+    noteHtml(note)}</div>`;
+}
+
+/**
+ * A route the authority closes to this reader's passport.
+ *
+ * It is not a verdict the rules computed and it is not a shortfall, so it gets
+ * neither a card nor a "not yet" row: "not yet" invites a reader back with a
+ * better salary, and this permit will never be theirs however the rest of the
+ * interview goes. What the row owes them is the two things the product exists
+ * for — what the authority decided, and the sentence it decided it in.
+ *
+ * The words are the dataset's. A closure is the one criterion whose reason
+ * cannot be composed from the answers it names, so it carries its own sentence
+ * and this prints it (s8).
+ */
+export function closedRowHtml(r: RouteResult): string {
+  const closures = closedBy(r);
+  if (!closures.length) return "";
+  return `
+        <article class="closed">
+          <h3><span class="country">${esc(r.country)}</span> ${esc(r.route.name)}</h3>
+          ${closures.map((cr) => {
+    const c = cr.criterion;
+    if (c.op !== "not-in") return "";
+    return `<p class="why">${esc(c.text)}</p>${srcLine(c.source)}`;
+  }).join("")}
+          <div class="foot"><a class="next" href="${escAttr(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
+        </article>`;
+}
+
+/**
+ * A notice, on the results screen.
+ *
+ * It moved here from inside the page for the reason every other block did: the
+ * page's own markup cannot be read by a test, and this one now has more to get
+ * wrong than a title and a body. A notice may stand on several authorities —
+ * the Algerian talent question reports two of them disagreeing and a third
+ * page saying what the reader gets instead — so every side is printed, each
+ * quote framed with its own language, and the link at the foot is the page the
+ * notice sends the reader to rather than whichever source it leads with (s8).
+ */
+export function noticeHtml(n: Notice): string {
+  const next = n.learn ?? { url: n.source.source_url, label: "Official page" };
+  return `
+        <article class="notice ${escAttr(n.kind)}">
+          <h3>${esc(n.title)}</h3>
+          <p class="why">${esc(n.body)}</p>
+          <div class="foot">
+            <div class="srcs">${noticeSources(n).map(srcLine).join("")}</div>
+            <a class="next" href="${escAttr(next.url)}" target="_blank" rel="noopener">${esc(next.label)}</a>
+          </div>
+        </article>`;
 }

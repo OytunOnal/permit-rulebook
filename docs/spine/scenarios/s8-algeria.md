@@ -11,10 +11,18 @@ second, narrower pass; every claim carries the authority's own sentence):
 - **The intra-corporate transfer permit is closed to Algerian nationals, in the
   authority's own words.** `service-public.gouv.fr/particuliers/vosdroits/F33952`
   states the eligibility as *"Vous êtes étranger (sauf Européen ou Algérien)"*,
-  and the page's own routing offers three doors — *"Vous êtes Européen / Vous
-  êtes Algérien / Vous êtes d'une autre nationalité"* — sending an Algerian
-  reader to a different fiche entirely. This is not an inference. The product
-  currently offers `fr-ict` to Algerian passports.
+  and the page carries a callout of its own — *"D'autres règles s'appliquent si
+  vous êtes Algérien."* — linking to the fiche for Algerian nationals. This is
+  not an inference. The product currently offers `fr-ict` to Algerian
+  passports.
+
+  *(Corrected 2026-09-10 by the build, which fetched the page before quoting
+  it: this brief had described a three-door routing widget and a sentence,
+  "Selon votre nationalité, la démarche … sera différente", that do not appear
+  anywhere in the page's 138,974 bytes. The callout above is what the page
+  actually says, and it links to F2215 rather than F35600. A spec is evidence
+  like anything else here, and evidence that fails a fetch gets corrected in
+  place.)*
 - **For the four passeport-talent routes, the sources conflict, and the second
   read was told to report the conflict rather than resolve it.** On one side:
   the Conseil d'État holds that *"les dispositions du code de l'entrée et du
@@ -22,8 +30,9 @@ second, narrower pass; every claim carries the authority's own sentence):
   titres de séjour … ne sont pas applicables aux ressortissants algériens"*
   (CETATEXT000053612496) — though the case itself concerned a *commerçant*
   certificate, not a talent card; and service-public's own page for Algerian
-  nationals (F35600) enumerates sixteen situations, read to the end, none of
-  them a talent card or an EU Blue Card. On the other side: Directive (EU)
+  nationals (F35600) enumerates seventeen situations for a first application,
+  read to the end, none of them a talent card or an EU Blue Card. (Sixteen in
+  the first draft of this brief; the build counted them.) On the other side: Directive (EU)
   2021/1883 Article 3 puts every third-country national in the Blue Card's
   personal scope, its eight exclusions name no bilateral-agreement class, and
   Article 4 lets a bilateral agreement be *more* favourable, never narrower —
@@ -113,5 +122,9 @@ second, narrower pass; every claim carries the authority's own sentence):
 
 ## Runs
 
-- mock-green: —
-- real-green: —
+- mock-green: 2026-09-10 — 495 tests in the data repository, 307 in the site;
+  quote fidelity 139; three new watched sources, two of them declared
+  human-tier because Legifrance answers a fetcher with 403 and EUR-Lex with an
+  empty 202.
+- real-green: — (waits on the preview address and the human's walk; under
+  steward-51 the merge is the deploy and the deploy is their word.)
