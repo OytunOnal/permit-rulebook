@@ -222,6 +222,26 @@ describe("both layouts of the results screen partition the same way", () => {
       expect(line.includes("unsettledIds") || line.includes("settled."), line.trim()).toBe(true);
   });
 
+  it("the card in that section does not wear the met badge", () => {
+    // The heading stopped saying "criteria met" and the card went on saying
+    // it in a green pill — which is the sentence a reader acts on. Walked and
+    // found by the human, an hour after the heading was fixed.
+    const at = page.indexOf("function fullCard(");
+    const badge = page.slice(at, page.indexOf("</article>", at));
+    expect(badge).toContain('unsettled ? "Rules met"');
+    expect(page).toContain('class="st ${unsettled ? "unsettled" : r.status}"');
+  });
+
+  it("neither the summary nor the headline says nothing is open when one is unsettled", () => {
+    // Taking the unsettled routes out of "met" made the screen say "Nothing
+    // open on these answers." directly above a section holding one, and left
+    // them out of every tally on the page.
+    const strip = page.slice(page.indexOf('<div class="strip"'), page.indexOf('</div>`;', page.indexOf('<div class="strip"')));
+    expect(strip).toContain("unsettled.length");
+    expect(strip).toContain("closedRoutes.length");
+    expect(page.indexOf("zeroOpen && unsettled.length"))
+      .toBeLessThan(page.indexOf("zeroOpen && ups.length"));
+  });
   it("the section's own line names no country and no passport", () => {
     const at = page.indexOf("const unsettledSection");
     const body = page.slice(at, page.indexOf("const seekHint", at));

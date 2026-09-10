@@ -727,13 +727,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         ? `<p class="from-here">The route you came from.</p>`
         : "";
 
-    function fullCard(r: RouteResult, showCountry = true): string {
+    function fullCard(r: RouteResult, showCountry = true, unsettled = false): string {
       return `
         <article class="route"${cameFromMark(r)}>
           <div class="top">
             <div>${showCountry ? `<span class="country">${esc(ds.countries.find((c) => c.code === r.country)?.name ?? r.country)}</span>` : ""}
               <h3>${esc(routeName(r))}</h3></div>
-            <span class="st ${r.status}">${STATUS_LABEL[r.status]}</span>
+            <span class="st ${unsettled ? "unsettled" : r.status}">${unsettled ? "Rules met" : STATUS_LABEL[r.status]}</span>
           </div>
           ${cameFromNote(r)}
           <p class="why">${whyFor(r)}</p>
@@ -1004,7 +1004,18 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       /** The verdict, announced after the screen it belongs to is drawn. */
       const sayVerdict = () => { announce(verdictText); };
 
-      if (zeroOpen && ups.length) {
+      if (zeroOpen && unsettled.length) {
+        // Not "nothing open": their rules are met and the doubt is about the
+        // passport, which is the notice's business and not the rules'. Saying
+        // nothing is open here would contradict the section right below it
+        // (human's walk, 2026-09-10).
+        const n = unsettled.length;
+        said(
+          `${n} route${n === 1 ? "" : "s"} meet${n === 1 ? "s" : ""} the rules — whether your passport `
+          + `can use ${n === 1 ? "it" : "them"} is unsettled.`,
+          "",
+        );
+      } else if (zeroOpen && ups.length) {
         // The step worth naming: one that would fully meet a route beats one
         // that only brings routes within reach, then breadth, then dataset
         // order (strict >, so ties keep the engine's order).
@@ -1043,6 +1054,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const strip = `<div class="strip" aria-label="Summary">
           <span class="s-met">${byStatus.met.length} open</span>
           <span class="s-near">${byStatus.near.length} within reach</span>
+          ${unsettled.length ? `<span class="s-unsettled">${unsettled.length} unsettled for your passport</span>` : ""}
+          ${closedRoutes.length ? `<span class="s-closed">${closedRoutes.length} not open to your passport</span>` : ""}
           <span class="s-hold">${byStatus.hold.length} not yet${openUnknowns ? ` — ${openUnknowns} ${openUnknowns === 1 ? "has" : "have"} an open unknown` : ""}</span>
         </div>`;
 
@@ -1075,7 +1088,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           "Open on the rules — unsettled for your passport", "unsettled",
           `<p class="why">` + esc("The rules below are met by what you declared. Whether this permit "
             + "is open to your passport at all is the question in the note above.")
-          + `</p>` + rows.map((r) => fullCard(r, withCountry)).join(""),
+          + `</p>` + rows.map((r) => fullCard(r, withCountry, true)).join(""),
           rows.length,
         )
         : "";
@@ -1449,6 +1462,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .strip .s-met{border-left:3px solid var(--color-met);color:var(--color-met)}
     .strip .s-near{border-left:3px solid var(--color-near);color:var(--color-near)}
     .strip .s-hold{border-left:3px solid var(--color-hold);color:var(--color-hold)}
+    .strip .s-unsettled{border-left:3px solid var(--color-ink);color:var(--color-ink)}
+    .strip .s-closed{border-left:3px solid var(--color-hold);color:var(--color-hold)}
     /* A heading element, sized as the section label it always looked like. */
     h2.ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
       border-bottom:var(--rule-soft);padding-bottom:.35rem;margin:1.4rem 0 .8rem}
@@ -1471,6 +1486,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .cbody{padding-bottom:.4rem}
     .cbody .ghead{margin:1rem 0 .6rem}
     .ghead b{color:var(--color-met)} .ghead.near b{color:var(--color-near)} .ghead.hold b{color:var(--color-hold)}
+    .ghead.unsettled b{color:var(--color-ink)}
+    .ghead.closed b{color:var(--color-hold)}
     details.route-hold{background:var(--color-card);border:var(--rule-soft);padding:.55rem .9rem}
     details.route-hold summary{cursor:pointer;display:flex;gap:.8rem;align-items:baseline;list-style:none;font-size:.88rem;
       min-height:var(--tap-min);padding:.35rem 0}
@@ -1548,6 +1565,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .st.met{background:var(--color-met-soft);color:var(--color-met)}
     .st.near{background:var(--color-near-soft);color:var(--color-near)}
     .st.hold{background:var(--color-hold-soft);color:var(--color-hold)}
+    .st.unsettled{background:var(--color-hold-soft);color:var(--color-ink)}
     .why{color:#54513f;font-size:.88rem;max-width:var(--max-prose)}
 
     .rail{margin:.95rem 0 .2rem;max-width:34rem}
