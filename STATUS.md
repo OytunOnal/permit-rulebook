@@ -27,6 +27,15 @@ front of it and each is a research day before a build day.
 
 ## What is happening now
 
+**How this product ships changed today** (steward-51). From here the live site
+changes only by a branch you walked and merged: **merge is the deploy, and the
+deploy is your word.** The blocker exception stands — a wrong value on a live
+page is fixed on master directly, because a reader is being told something
+untrue while a branch waits. Everything else queues. The preview address is
+yours to switch on once (`docs/spine/preview.md`, six steps); after that every
+branch renders at `https://<branch>.permit-rulebook.pages.dev` and the live
+site stays where it is.
+
 **Steward has run once** (2026-09-10). The human found that the way back in had
 no door for a suggestion: all three templates asked about a defect or about
 data, and the "new need" form required a checkbox about a route. The wording is
@@ -180,6 +189,16 @@ to look:
 
 - [x] **The card's quote cap, 10 → 11** (human, 2026-09-10): ratified for
       `nl-hsm-under30`. Twelve would have to be argued again.
+- [ ] **Switch on the preview address** (once, ~5 minutes):
+      `docs/spine/preview.md` has the six steps — connect Cloudflare Pages to
+      `OytunOnal/permit-rulebook`, project name `permit-rulebook`, production
+      branch `preview-only` (a branch that does not exist, so this project can
+      never publish the live site), build command
+      `bash scripts/preview-build.sh`, output `dist`, and two preview
+      variables. *Pass:* `feedback-line` builds and
+      https://feedback-line.permit-rulebook.pages.dev shows the site with the
+      new line at the end of a results screen. *If the build fails:* paste the
+      last twenty lines here.
 - [ ] **The feedback line, when the window closes** (site #6, branch
       `feedback-line`): read it once — "Wrong about you? A value that does not
       match its source, or something this screen should do — report a wrong

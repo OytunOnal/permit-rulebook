@@ -2847,3 +2847,29 @@ at handbookgermany.de, which is not an authority (data #13). Left as an issue
 rather than a commit because the replacement is a genuine choice — the federal
 portal serves a bot check to anything automated, so it is a page a reader can
 use against a page the watch can keep its eye on.
+
+**2026-09-10 — the live site changes only by a branch, and the preview is on
+Cloudflare Pages** (gate; the human chose between Cloudflare, a second GitHub
+repository, and no preview at all). Steward mode's rule: after the
+announcement, the product changes by a branch a person walked and merged —
+merge is the deploy, the deploy is the human's word.
+
+Cloudflare Pages gives a URL per branch natively and the human already lives
+there (the domain, the counter). The live site stays on GitHub Pages: two
+systems publishing one domain is how a rollback becomes a race, so the Pages
+project's "production branch" is set to a branch that does not exist and every
+real branch builds as a preview.
+
+The one thing that needed building: this site is made from two repositories
+side by side and a Pages build starts with one. `scripts/preview-build.sh`
+fetches the sibling at the commit `data.lock` names — the same commit CI builds
+against — and gates it exactly as CI does, so a preview and the deploy that
+follows it are the same site rather than two guesses. Nothing needs a token; the
+data repository is public.
+
+`SITE_URL` on a preview names the bare project address, not the branch's own
+subdomain, because a build cannot know its subdomain before it runs. Every
+internal link is root-absolute and therefore correct under any host; what the
+variable fixes is the canonical URL and the social card, which must not claim to
+be permitrulebook.com. Preview deployments carry `X-Robots-Tag: noindex` from
+the host, so a branch cannot compete with the live site in a search index.
