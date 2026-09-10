@@ -2873,3 +2873,45 @@ internal link is root-absolute and therefore correct under any host; what the
 variable fixes is the canonical URL and the social card, which must not claim to
 be permitrulebook.com. Preview deployments carry `X-Robots-Tag: noindex` from
 the host, so a branch cannot compete with the live site in a search index.
+
+**2026-09-10 — s8's review round, and who edited the scenario.** Two reviewers,
+eleven findings applied. The Spec axis found the notice unscoped — an Algerian
+passport looking only at Germany was shown an open question about four French
+permits — and found the body naming a page the build's own correction had
+already contradicted; both fixed, and the second by moving to the page the
+authority's callout actually links to. The Standards axis found the long-quote
+trim orphaned when the notice moved out of the interview's script (the Türkiye
+notice's 640-character quote was printing whole), an empty-body guard sitting
+in one fetcher rather than under all of them, a predicate re-implemented beside
+its accessor, and a test that proved its claim by grepping identifiers.
+
+One finding was aimed at the wrong hand and is answered here: the Standards
+review called the scenario edit "the builder's", and it was the session's. The
+builder reported that two of the spec's claims failed a fetch — a routing
+sentence that is not on the page, and sixteen situations that are seventeen —
+and the session corrected the file. The scenario is held out from the builder,
+not from the session that writes it; the corrections are dated, marked as
+corrections, and say what the draft had claimed. A spec is evidence like
+anything else here, and evidence that fails a fetch is corrected rather than
+left standing.
+
+**2026-09-10 — the human tier holds two, and the number says what it measures**
+(gate; the human chose between accepting the two, dropping the quotes, and a
+browser strategy first). s8 quotes a Conseil d'État decision and Article 3(1)
+of the Blue Card directive. Legifrance answers this watch's fetcher with 403,
+EUR-Lex with an empty 202 — and, asked whether anyone had looked with a
+browser, the session did: both pages open in Chrome and both sentences are in
+place. So the refusal is the fetcher's, not the page's, and the glossary's
+definition — a source no machine *here* can read — is true in exactly that
+sense.
+
+The human accepted `human_tier: 2`: the two sentences ship with a person's read,
+their text in `data/verify-s5e.md`, and a 90-day reminder. Dropping them was
+not seriously an option — a notice that says "the sources conflict" and shows
+neither is the thing this product exists not to do. A browser-driven read that
+would empty the tier again is a roadmap candidate, opened only after one
+measurement: whether headless Chrome from the CI runner is let through where
+Node's `fetch` is not. Headed Chrome passing today does not prove that.
+
+The README's v1 line stays true: the 122 quotes it names are the machine-read
+ones, and the tier is counted beside them, not inside them.

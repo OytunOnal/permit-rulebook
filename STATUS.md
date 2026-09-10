@@ -125,10 +125,23 @@ are handled differently on purpose:
   national in the Blue Card's scope, and CESEDA L421-11 names no exclusion. No
   page found says either way in one sentence.
 
-**s8 is built, gated and on a branch** — `algeria-closure` in both
-repositories (data `4f0585c`, site `ce5b13a`; 495 + 307 tests, quote fidelity
-139). It is the first slice to land under the new mode: it waits for your walk
-and your word, and the merge is the deploy. Two reviewers are reading it now.
+**s8 is built, reviewed, fixed and waiting on you** — `algeria-closure` in both
+repositories (data `27bb13f`, site `ae3870f`; **504 + 307 tests**, quote
+fidelity 139). The first slice under the new mode: it waits for your walk and
+your word, and the merge is the deploy.
+
+Both reviews ran and eleven findings are applied. The two that mattered: the
+notice stood over a screen showing **Germany alone**, telling a reader about
+four French permits they had not asked for — a notice that names routes is now
+stated only where the reader asked about a country one of them is in; and the
+body pointed at the wrong page — the transfer card's callout links to F2215,
+not F35600, and F2215 carries the same sentence and the same absence (checked
+by hand). From the other axis: the long-quote trim had been left behind when
+the notice moved out of the page, so the Türkiye notice's 640-character quote
+was printing whole on a results card; the empty-body guard moved from one
+fetcher into the core where every fetcher passes; and a test that proved
+"closed routes are filed apart" by grepping three identifiers now asserts what
+the page does.
 
 What it does. `fr-ict` closes itself to an Algerian passport in the fiche's own
 words, and the dataset gained the operator that made that sayable — `not-in`, a
@@ -206,16 +219,13 @@ to look:
 
 - [x] **The card's quote cap, 10 → 11** (human, 2026-09-10): ratified for
       `nl-hsm-under30`. Twelve would have to be argued again.
-- [ ] **The human-tier number changes, and it is a public one** (yours to
-      accept or refuse): two of s8's sources cannot be fetched from here —
-      Legifrance answers a bot 403, EUR-Lex an empty 202 — so they ship as
-      **human tier**: a person read them, their sentences are written into
-      `data/verify-s5e.md`, and they are re-read every 90 days. `human_tier`
-      goes **0 → 2**, and 0 is a number the README and the v1 line state.
-      *The alternative:* drop the court's sentence and the directive's, and
-      state the conflict with no evidence behind either side. My
-      recommendation is to accept the two and change the claim, because the
-      notice's whole worth is that it quotes both authorities. Say which.
+- [x] **The human-tier number is 2** (human, 2026-09-10: "tamamdır", after the
+      alternatives were laid out). Two of s8's sources ship human-tier with
+      their sentences in `verify-s5e.md` and a 90-day re-read. Checked in a
+      real browser the same day: both pages open and both sentences are there
+      — the limit is this fetcher, not the page. A browser-driven read for
+      bot-walled sources is on the roadmap, gated on a headless-Chrome
+      measurement from the runner.
 - [ ] **Switch on the preview address** (once, ~5 minutes):
       `docs/spine/preview.md` has the six steps — connect Cloudflare Pages to
       `OytunOnal/permit-rulebook`, project name `permit-rulebook`, production

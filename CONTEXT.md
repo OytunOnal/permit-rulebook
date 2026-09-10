@@ -293,8 +293,12 @@ operative text never reaches a fetch (a bot wall, a form-gated render that
 stays a shell), not a PDF: embedded-font PDFs are read by Pdf-text, and a
 scanned one is declared Scanned-image rather than left for a person. A
 human-tier entry carries a verification age and raises reminders instead of
-being fetched. As of 2026-09-07 the tier is empty (`human_tier: 0`); the term
-stays because the condition can return.
+being fetched. Empty from 2026-09-07 to 2026-09-10 (`human_tier: 0`); since
+then it holds two — a Conseil d'État decision on Legifrance and the Blue Card
+directive on EUR-Lex, both of which a real browser reads and this fetcher does
+not. The tier measures the watch's reach, not the source's standing: the
+number is read that way, and a browser-driven read for bot-walled pages is the
+candidate that would empty it again.
 _Avoid_: manual source, glyph-encoded PDF (a reason it once had)
 
 **Flag**:

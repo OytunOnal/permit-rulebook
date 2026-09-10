@@ -57,7 +57,7 @@ click on the tracker link. Answers never leave the device.
 - **Watch** — the daily re-read (`src/watch`, GitHub Actions): strategies
   html, pdf-text (embedded-font text layer, bytes hash beside words hash) and
   link liveness; slices bind each page to its operative text; glyph
-  corrections are declared data; `human_tier: 0`; runs daily in GitHub
+  corrections are declared data; `human_tier: 2` since 2026-09-10 (two sources a browser reads and this fetcher cannot — see the glossary); runs daily in GitHub
   Actions and files an issue (`source-change`) per flag.
 - **Flags** — one file per change with the quoted diff; read by a person, who
   edits the dataset or records a false alarm.
