@@ -125,9 +125,14 @@ are handled differently on purpose:
   national in the Blue Card's scope, and CESEDA L421-11 names no exclusion. No
   page found says either way in one sentence.
 
+**The live site moved on its own today, correctly:** the watch's dispatch built
+and pinned the data at `17cd1fe` — the Germany and Spain reads' exclusions rows
+— without anyone touching master. The fast path, on schedule, for the second
+day.
+
 **s8 is built, reviewed, fixed and waiting on you** — `algeria-closure` in both
-repositories (data `27bb13f`, site `ae3870f`; **504 + 307 tests**, quote
-fidelity 139). The first slice under the new mode: it waits for your walk and
+repositories (data `43938be`, site `a51e20b`; **504 + 307 tests**, quote
+fidelity 139, `human_tier: 2` by your word). The first slice under the new mode: it waits for your walk and
 your word, and the merge is the deploy.
 
 Both reviews ran and eleven findings are applied. The two that mattered: the
