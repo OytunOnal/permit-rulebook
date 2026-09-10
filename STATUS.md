@@ -215,20 +215,39 @@ never touched. Then the three things the round exposed were closed:
   machine, for the first time.** The preview at http://localhost:4500 is the
   new build, and the four addresses answer 200 with their new names on them.
 
-**Your walk caught it again, and it was the same fix left half-applied**
+**Your walk caught it twice, and both times the fix was half-applied**
 (2026-09-10, human: *"criteria met yazıyoruz hala cezayir Talent — employee on
-assignment"*). The results screen has two layouts — one destination, and
-several grouped by country — and the unsettled partition had gone into the
-first only. A reader looking at more than one country still read **"Open —
-criteria met"** over the four French talent routes: exactly the screen the
-partition exists to stop. Both layouts partition now, and a test holds them to
-each other, because a fix applied to one layout is a fix for half the readers.
+assignment"*, then *"kontrol ettin mi sen"*). It had not been walked — the
+source and the built bundle had been read, which is not the same thing. Walked
+in a browser, three things were still wrong:
 
-The same commit took a typed sentence out of the section: it said *"Whether
-France opens this permit to an Algerian passport"* — true of the only notice
-that exists today, and wrong the first time a second one marks a route
-somewhere else. It asks about *"your passport"* now, and the preview at
-http://localhost:4500 carries both (`f501a1d`).
+- **The results screen has two layouts** — one destination, and several
+  grouped by country — and the partition had gone into the first only. A
+  reader looking at more than one country still read "Open — criteria met"
+  over the four French talent routes.
+- **The card wore the met badge** under a heading that had stopped claiming
+  it. The heading is not the sentence a reader acts on; the green pill on the
+  card is. It reads **"Rules met"** now, in ink on the quiet ground — no
+  verdict colour on a section that states no verdict.
+- **Nothing counted them.** The summary strip counted neither the unsettled
+  routes nor the closed ones, so two sections sat under a tally that did not
+  mention them, and the headline read *"Nothing open on these answers."*
+  directly above a section holding one. The strip counts both now, and the
+  headline says how many routes meet the rules and that the passport is what
+  is unsettled.
+
+A typed sentence went with them: the section said *"Whether France opens this
+permit to an Algerian passport"* — true of the only notice that exists today,
+wrong the first time a second one marks a route somewhere else. It asks about
+*"your passport"*.
+
+**Walked, not inferred** (`1213f0d`, 320 tests): an Algerian passport with
+France — the transfer card under "Not open to your passport", the four talent
+routes under "Open on the rules — unsettled for your passport"; the same
+record with a Turkish passport — three routes open, no notice, no section, no
+closure; an Algerian passport with **Germany alone** — no notice at all. Tests
+now hold both layouts to each other, the badge, the strip and the headline,
+because this fix has been half-applied twice.
 
 **Mid-build correction, recorded rather than tidied away:** the site
 repository's working tree was on `master` when the s9 builder started writing,
