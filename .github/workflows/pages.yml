@@ -34,6 +34,16 @@ name: deploy
 on:
   push:
     branches: [master]
+    # The ledgers and the design record are not the product: a STATUS line pushed
+    # while a deploy is running cancelled that deploy (2026-09-09, c5c6ef9), and
+    # every ledger push rebuilt a site nothing in it had changed. Product paths
+    # only (steward-48).
+    paths-ignore:
+      - "STATUS.md"
+      - "KANBAN.md"
+      - "DECISIONS.md"
+      - "CONTEXT.md"
+      - "docs/**"
   schedule:
     - cron: "40 6 * * *" # daily, 06:40 UTC — after the data watch at 05:17 UTC
   repository_dispatch:
