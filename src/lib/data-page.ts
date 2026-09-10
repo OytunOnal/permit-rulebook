@@ -1,5 +1,5 @@
 import {
-  countryVocabulary, proseProvenance, routeProvenance,
+  countryVocabulary, isScored, proseProvenance, routeProvenance,
   type Dataset,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
@@ -48,13 +48,35 @@ export function quotedValues(dataset: Dataset): number {
   return count;
 }
 
+/**
+ * The two numbers the dataset holds, counted rather than typed.
+ *
+ * They are two facts and not one: a route the product scores is compared with
+ * a reader's answers, and a route it quotes and does not score is a page of the
+ * authority's sentences with nothing asked. A single total would let the second
+ * kind pass as the first, which is the claim s9 exists not to make — so every
+ * sentence on this page that states one states the other beside it.
+ */
+export interface RouteCounts {
+  scored: number;
+  quotedOnly: number;
+  total: number;
+}
+
+export function routeCounts(dataset: Dataset): RouteCounts {
+  const routes = dataset.countries.flatMap((c) => c.routes);
+  const scored = routes.filter(isScored).length;
+  return { scored, quotedOnly: routes.length - scored, total: routes.length };
+}
+
 export function dataPage(dataset: Dataset): DataPage {
   const read = siteReadDate(dataset);
   const notice = audienceNotice(dataset);
   const prose = proseProvenance(dataset);
-  const routes = dataset.countries.flatMap((c) => c.routes);
+  const counts = routeCounts(dataset);
   const title = `The data · ${PRODUCT_NAME}`;
-  const desc = `What ${PRODUCT_NAME} holds today: ${routes.length} routes across ${
+  const desc = `What ${PRODUCT_NAME} holds today: ${counts.scored} routes scored against your answers and ${
+    counts.quotedOnly} quoted and dated but not scored, across ${
     dataset.countries.length} countries, every value carrying its source and the day it was read — with the downloads, the checks and the tracker.`;
 
   // The one page that IS the dataset says so in the vocabulary a dataset
@@ -77,7 +99,8 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
   <div class="masthead-with-stamps">
     <div>
       <h1>The data. <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">Everything this site shows is one open dataset: ${routes.length} routes across ${
+      <p class="lede">Everything this site shows is one open dataset: ${counts.scored} routes scored against your answers and ${
+    counts.quotedOnly} more quoted and dated but not scored, across ${
     dataset.countries.length} countries, every threshold and condition carrying the authority's own sentence, the page it came from and the day we read it. Take it, check it, or tell us it is wrong.</p>
     </div>
     ${rulesRead(read)}
@@ -91,7 +114,8 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
     esc(dataset.dataset_version)}</time></dd></div>
         <div><dt>Schema version</dt><dd>${esc(dataset.schema_version)}</dd></div>
         <div><dt>Newest value read</dt><dd><time datetime="${escAttr(read)}">${esc(read)}</time></dd></div>
-        <div><dt>Routes</dt><dd>${routes.length} in ${dataset.countries.length} countries</dd></div>
+        <div><dt>Routes</dt><dd>${counts.scored} scored, ${counts.quotedOnly} quoted and dated but not scored, in ${
+    dataset.countries.length} countries</dd></div>
         <div><dt>Quoted values</dt><dd>${quotedValues(dataset)} with a source and a date</dd></div>
         <div><dt>Sentences of ours</dt><dd>${prose.ours}, declared and shown as ours</dd></div>
       </dl>

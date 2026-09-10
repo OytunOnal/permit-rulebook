@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  scopeLine, forEachCriterion, formatEUR, formatEURPer, provenancedValuesOf, quoteLanguage,
+  scopeLine, forEachCriterion, formatEUR, formatEURPer, isScored, provenancedValuesOf, quoteLanguage,
   routeStatements, statementSources, type Dataset, type Route,
 } from "permit-rulebook-data";
 import {
@@ -19,6 +19,15 @@ import { separatorNote } from "../src/lib/quote.js";
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds);
 
+/**
+ * The pages for routes the product states and does not score. They are route
+ * pages in every other respect, and a handful of cases below are about the
+ * results-shaped furniture they deliberately lack (s9).
+ */
+const unscoredPaths = new Set(
+  routeAddresses(ds).filter((a) => !isScored(a.route)).map((a) => a.path),
+);
+
 /** The rendered text, with the markup taken away — what a reader actually reads. */
 const textOf = (html: string): string =>
   html.replace(/<style>[\s\S]*?<\/style>/g, " ")
@@ -33,14 +42,16 @@ const controlsOf = (html: string): string[][] =>
 
 describe("s6 — one page per route, generated from the dataset", () => {
   it("renders a page for every route, at an address a person can read", () => {
-    expect(pages.length).toBe(23);
-    expect(routeAddresses(ds).length).toBe(23);
+    // 28 since s9: the 23 the product scores, plus the five it quotes, dates
+    // and does not score. Every one of them is a page like any other.
+    expect(pages.length).toBe(28);
+    expect(routeAddresses(ds).length).toBe(28);
     const germany = ds.countries.find((c) => c.code === "DE")!;
     const blueCard = germany.routes.find((r) => r.id === "de-blue-card-general")!;
     // The address the scenario walks: the country as a person names it, the
     // route as the authority names it — never the dataset's own keys.
     expect(routePath(germany, blueCard)).toBe("/germany/eu-blue-card-general");
-    expect(new Set(pages.map((p) => p.path)).size).toBe(23);
+    expect(new Set(pages.map((p) => p.path)).size).toBe(28);
     for (const p of pages) expect(p.path, p.path).toMatch(/^\/[a-z-]+\/[a-z0-9-]+$/);
   });
 
@@ -253,11 +264,14 @@ describe("s6 — one page per route, generated from the dataset", () => {
     }
   });
 
-  it("one call to action, pre-scoped to this route", () => {
+  it("one call to action, pre-scoped to this route — and none at all where there is nothing to check", () => {
     for (const address of routeAddresses(ds)) {
       const page = routePage(ds, address);
       const ctas = [...page.html.matchAll(/href="\/\?route=([a-z0-9-]+)"/g)].map((m) => m[1]);
-      expect(ctas, page.path).toEqual([address.route.id]);
+      // A route the interview never offers is a route no page may offer to
+      // check: the way on from one of these is the country's own interview,
+      // which the shared header and footer carry (s9).
+      expect(ctas, page.path).toEqual(isScored(address.route) ? [address.route.id] : []);
     }
   });
 
@@ -267,8 +281,10 @@ describe("s6 — one page per route, generated from the dataset", () => {
       const text = textOf(page.html);
       const audience = audienceSentence(address.country);
       expect(text, page.path).toContain(audience);
-      // Before the first rule card, not after the last.
-      expect(page.html.indexOf(audience.slice(0, 40))).toBeLessThan(page.html.indexOf('<article class="rule">'));
+      // Before the rules, not after the last of them. Anchored on the section
+      // rather than on the first rule card, because a route the product does
+      // not score has statements and no cards (s9).
+      expect(page.html.indexOf(audience.slice(0, 40))).toBeLessThan(page.html.indexOf('<section class="rules"'));
     }
   });
 
@@ -289,7 +305,14 @@ describe("s6 — one page per route, generated from the dataset", () => {
       expect(text, page.path).toContain(
         "Permit Rulebook makes no immigration decision and no authority is bound by these results",
       );
-      expect(text, page.path).toContain("This page describes the rules; it does not decide on you.");
+      // Each page carries the addendum written for what it is: the scored
+      // pages say they describe rather than decide, and the five that are not
+      // scored say the checker never rules on them at all (s9).
+      expect(text, page.path).toContain(
+        unscoredPaths.has(page.path)
+          ? "This route is one the checker does not score"
+          : "This page describes the rules; it does not decide on you.",
+      );
     }
   });
 
@@ -484,7 +507,10 @@ describe("s6 — one page per route, generated from the dataset", () => {
   it("no rule card is one sentence that only restates its heading", () => {
     for (const page of pages) {
       const cards = [...page.html.matchAll(/<article class="rule">([\s\S]*?)<\/article>/g)].map((m) => m[1]);
-      expect(cards.length, page.path).toBeGreaterThan(0);
+      // A rule card is what a criterion renders as, so a route with no
+      // criteria has none — and must have none (s9).
+      if (unscoredPaths.has(page.path)) expect(cards.length, page.path).toBe(0);
+      else expect(cards.length, page.path).toBeGreaterThan(0);
       for (const card of cards) {
         const heading = /<h2>([^<]*)<\/h2>/.exec(card)?.[1] ?? "";
         const hasEvidence = card.includes("<q") || card.includes("rail-list") || card.includes('class="asks"');

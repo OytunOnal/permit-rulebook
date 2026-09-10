@@ -1,6 +1,6 @@
 import {
   scopeLine, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
-  isLocalization, joinAnd, joinOr, provenancedValuesOf,
+  isLocalization, isScored, joinAnd, joinOr, provenancedValuesOf,
   referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
   type StatementException,
@@ -32,7 +32,7 @@ import {
   absolute, headMeta, url,
 } from "./site.js";
 import {
-  PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_TAGLINE,
+  PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -427,8 +427,13 @@ function statedBlocks(route: Route, seen: Glossary): string {
         items.map((t) => `<li>${t}</li>`).join("")}</ul></div>`
       : "";
   return [
-    block("precond", "Also required — not checked here", preconditions.map((s) =>
-      esc(s.text) + (s.source ? quoteBlock(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
+    // "Also required" is a claim about the rules BESIDE the ones the interview
+    // asks. A route the product does not score has no others, so on those five
+    // pages the heading is what the section actually is: the authority's
+    // requirements, all of them, none of them checked here (s9).
+    block("precond", isScored(route) ? "Also required — not checked here" : "What the authority requires",
+      preconditions.map((s) =>
+        esc(s.text) + (s.source ? quoteBlock(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
     block("precond", "The official page also says", caveats.filter((s) => s.source).map((s) =>
       esc(s.text) + quoteBlock(s.source!, {}, seen) + carveOutBlock(s, seen))),
     // A caveat we could not find the wording for is still a fact in the
@@ -560,6 +565,13 @@ export interface RoutePage {
 }
 
 function description(dataset: Dataset, country: Country, route: Route): string {
+  // A route the product does not score has no criteria to describe, and the
+  // scored version of this sentence would come out as the country's name, the
+  // route's name and an empty list. What a search result should promise is
+  // what the page actually is (s9).
+  if (!isScored(route))
+    return `${country.name}'s ${route.name}: the conditions as the authority states them, each with `
+      + "the sentence it came from and the day that page was read. Quoted and dated here; not scored.";
   const bits: string[] = [];
   forEachCriterion(route.criteria, (c) => {
     if (c.op === "gte")
@@ -611,6 +623,7 @@ ${iconLinks()}
 ${headMeta({ title, description: desc, path, kind: "article" })}
 <style>${PAGE_CSS}</style>`;
 
+  const scored = isScored(route);
   const body = `<div class="wrap">
 
   ${siteHeader(navCountries(dataset), { countryPath: countryPath(country), current: "true" })}
@@ -618,13 +631,15 @@ ${headMeta({ title, description: desc, path, kind: "article" })}
   <header class="masthead masthead-with-stamps">
     <div>
       <h1>${esc(heading)}. <em>${esc(ROUTE_TAGLINE)}</em></h1>
-      <p class="lede">${route.summary ? `${esc(route.summary)} ` : ""}Every number on this page is the authority's own sentence, with the page it came from and the day we read it. ${esc(audienceSentence(country))} ${esc(ROUTE_PAGE_ADDENDUM)}</p>
+      <p class="lede">${route.summary ? `${esc(route.summary)} ` : ""}Every ${
+    scored ? "number" : "condition"} on this page is the authority's own sentence, with the page it came from and the day we read it. ${
+    esc(audienceSentence(country))} ${esc(scored ? ROUTE_PAGE_ADDENDUM : ROUTE_PAGE_UNSCORED_ADDENDUM)}</p>
     </div>
     ${rulesRead(read)}
   </header>
 
   <div class="page">
-  <main>
+  <main>${scored ? `
 ${answerBlock(dataset, route, read)}
   <section class="cta" aria-labelledby="cta-h">
     <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
@@ -637,7 +652,11 @@ ${answerBlock(dataset, route, read)}
     <b id="scope-h">What the checker asks, and what it does not</b>
     <p>Every number below is quoted from an official page, and a daily check re-reads every source. On this route — <strong>${
     esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)}</p>
-  </section>
+  </section>` : `
+  <section class="scope" aria-labelledby="scope-h">
+    <b id="scope-h">Why this route is not scored here</b>
+    <p><strong>${esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)} Every condition below is quoted from an official page, and a daily check re-reads every source.</p>
+  </section>`}
 
   <section class="rules" aria-labelledby="rules-h">
     <h2 class="visually-hidden" id="rules-h">The rules of this route</h2>${
@@ -846,6 +865,14 @@ nav.jsonlinks a small { font: var(--text-source); color: var(--color-met); white
 .routes .meta { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: .45rem 0 0; font: 500 .85rem/1.4 var(--font-sans); color: var(--color-muted); }
 .routes .meta b { font-weight: 600; color: var(--color-ink); }
 .routes .meta .read { font: var(--text-source); color: var(--color-met); align-self: center; }
+
+/* The routes a country page lists and the checker does not score. Set off by a
+   rule and a heading, not by a colour: this section is quieter than the one
+   above it, and a tint would read as a state (met / near / hold) on a page whose
+   whole point is that it reaches no state (s9). */
+.quoted-only { margin: var(--space-5) 0 0; padding-top: var(--space-4); border-top: var(--rule-heavy); }
+.quoted-only h2 { margin: 0; }
+.quoted-only .lede { margin: var(--space-2) 0 0; }
 .cta .note { color: var(--color-muted); }
 footer .ends { display: flex; gap: var(--space-4); flex-wrap: wrap; }
 footer .ends a { color: var(--color-muted); display: inline-flex; align-items: center; min-height: var(--tap-min); }

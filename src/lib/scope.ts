@@ -1,4 +1,4 @@
-import { joinAnd, remainingQuestions, shortLabelOf, subjectOf } from "permit-rulebook-data";
+import { isScored, joinAnd, remainingQuestions, shortLabelOf, subjectOf } from "permit-rulebook-data";
 import type { Country, Dataset, Profile, Route } from "permit-rulebook-data";
 
 /**
@@ -21,16 +21,24 @@ export interface ScopedArrival {
 }
 
 /**
- * Which route a link claims to come from, if the dataset has one by that name.
- * An id nothing answers to is ignored rather than reported: a stranger pasting
- * a stale URL gets the ordinary interview, not an error about a route id.
+ * Which route a link claims to come from, if the dataset has one by that name
+ * AND the product scores it. An id nothing answers to is ignored rather than
+ * reported: a stranger pasting a stale URL gets the ordinary interview, not an
+ * error about a route id.
+ *
+ * A route the product does not score is ignored the same way, and for a
+ * sharper reason. No page emits a link to one — those pages carry the
+ * country's own link instead — but a hand-typed or stale `?route=` would put
+ * the route's name in the interview's opening sentence and sort it first in
+ * results it can never appear in: the screen would promise a verdict on the one
+ * route the whole page said it would never reach (s9).
  */
 export function arrivalFrom(dataset: Dataset, search: string): ScopedArrival | null {
   const id = new URLSearchParams(search).get("route");
   if (!id) return null;
   for (const country of dataset.countries)
     for (const route of country.routes)
-      if (route.id === id) return { route, country };
+      if (route.id === id) return isScored(route) ? { route, country } : null;
   return null;
 }
 

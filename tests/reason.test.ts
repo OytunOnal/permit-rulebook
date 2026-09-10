@@ -94,21 +94,26 @@ describe("the reason column reads as prose, as rendered (blocker B3)", () => {
     expect(leaks).toEqual([]);
   });
 
-  it("every unfolded row is one of the four reasons a route gives", () => {
-    // The row class is the engine's `kind`; a fifth one would be the page
-    // inventing a verdict of its own.
+  it("every unfolded row is one of the five reasons a route gives", () => {
+    // The row class is the engine's `kind`; a sixth one would be the page
+    // inventing a verdict of its own. "closed" joined the list with s8 — the
+    // French intra-corporate transfer card is closed to an Algerian passport in
+    // the fiche's own words — and this test kept the pre-s8 list of four, so it
+    // has been red since the day that closure shipped. Corrected here rather
+    // than worked around: the engine's own enum is the authority for this list
+    // (found while landing s9, 2026-09-10).
     const kinds = new Set<string>();
     for (const [, html] of rendered)
       for (const tag of html.match(/<li class="[^"]*"/g) ?? [])
         kinds.add(tag.slice('<li class="'.length, -1));
-    for (const kind of kinds) expect(["moot", "needs", "unknown", "where"]).toContain(kind);
+    for (const kind of kinds) expect(["moot", "needs", "unknown", "where", "closed"]).toContain(kind);
     // "moot" — "not needed, you already have a job offer" — is unreachable in
     // the shipped dataset since 2026-09-07: no route asks any more for the
     // ABSENCE of a step, the Opportunity Card having been the last one that
     // did (§ 20a conditions nothing on being offerless). The kind stays: it is
     // the engine's answer whenever a route does, and the page must not invent
     // its own then either.
-    expect([...kinds].sort()).toEqual(["needs", "unknown", "where"]);
+    expect([...kinds].sort()).toEqual(["closed", "needs", "unknown", "where"]);
   });
 
   it("dataset prose reaches the screen as text, never as markup", () => {

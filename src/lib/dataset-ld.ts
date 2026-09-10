@@ -1,5 +1,6 @@
 import type { Dataset } from "permit-rulebook-data";
 import { siteReadDate } from "./country-page.js";
+import { routeCounts } from "./data-page.js";
 import { DATA_LICENCE_NAME, OWNER, REPO_DATA, absolute } from "./site.js";
 import { PRODUCT_NAME } from "./copy.js";
 
@@ -28,14 +29,19 @@ const CC_BY_4 = "https://creativecommons.org/licenses/by/4.0/";
 export function datasetLd(dataset: Dataset, path: string): string {
   const read = siteReadDate(dataset);
   const countries = dataset.countries.map((c) => c.name);
-  const routes = dataset.countries.reduce((n, c) => n + c.routes.length, 0);
+  // Both numbers, for the same reason the page above prints both: a route the
+  // product scores and a route it quotes without scoring are two different
+  // things to anyone consuming this, and one total would let the second pass
+  // as the first (s9).
+  const counts = routeCounts(dataset);
   const ld = {
     "@context": "https://schema.org",
     "@type": "Dataset",
     name: `${PRODUCT_NAME} — work-permit routes for ${countries.join(", ")}`,
     description:
-      `${routes} employment-based work-permit routes across ${countries.length} European countries. `
-      + "Every value — salary threshold, qualification, experience, language level — carries the "
+      `${counts.total} employment-based work-permit routes across ${countries.length} European countries: `
+      + `${counts.scored} scored against a reader's declared answers and ${counts.quotedOnly} quoted and dated `
+      + "without being scored. Every value — salary threshold, qualification, experience, language level — carries the "
       + "sentence it came from on the authority's own page and the day that page was read. "
       + "Re-read daily; a change to a source raises a flag a person walks.",
     url: absolute(path),
