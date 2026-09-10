@@ -196,6 +196,20 @@ _(empty — everything real-green so far is stamped into done)_
 
 ## done
 
+- **A statement can name the passports it does not bind** (s7) ·
+  **real-green 2026-09-10** — the interview asked which passport a reader would
+  apply with and then scored them against conditions the authority itself sets
+  aside for it. Found by the human on the live site (data #7), diagnosed as a
+  class (data #8): `citizenship` was an `eq third_country` gate in all 23
+  routes, and 168 third-country passports produced one screen. Now: a
+  `RouteStatement` carries an optional carve-out, keyed on the passport,
+  refused without its own quote; the IND's Turkish exemption on the two highly
+  skilled migrant permits and the researcher permit; the provisional residence
+  permit stated on all six Dutch routes with the ten passports it does not
+  bind; two new watched sources, sliced and re-baselined in the same commit.
+  Schema 0.6.0. Reviewed on both axes — the blocker was ours: the MVV shipped
+  as a caveat and is a precondition. 466 + 294 tests.
+
 - **Public launch** (s6) · **real-green 2026-09-09** · mock-green 2026-09-07 — withdrawn once the same hour
   (the interview rendered nothing in a browser: a `node:fs` read reached the
   client bundle) and re-stamped after the fix, a real-browser smoke test on

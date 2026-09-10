@@ -2746,3 +2746,46 @@ footer (0.414) — against a 0.25 "poor" threshold. LCP and INP are good for
 Filed as site #8 with the measurement, the cause and the test that will judge
 the fix. It is the first thing this project has learned from a metric rather
 than from a person.
+
+## 2026-09-10 — s7: the passport does work, and the rule that keeps it that way
+
+**The slice.** A statement can now name the passports it does not bind, in the
+authority's own words. Three Dutch routes drop the recognised-sponsor condition
+for a Turkish passport because the IND says so; all six state the provisional
+residence permit, which ten passports do not need. Walked on the live site with
+both passports before this line was written.
+
+**The blocker was in the spec, not the build.** The spec said the MVV should be
+a `caveat`; the glossary defines a caveat as a qualification that fails
+nobody, and an MVV is a bar to clear. It shipped under "The official page also
+says" — the heading reserved for sentences that ask nothing of the reader. All
+six are preconditions now, and they read under "Also required — not checked
+here", which is where a bar belongs.
+
+**What the reviews caught beyond it:** the route page's stamp could not see a
+carve-out's date (the one call site the new accessor was written for that still
+read one half); the third statement block honoured a carve-out on two headings
+and forgot it on the third; and every card helper took a default reader — a
+call site that forgot one would have rendered every condition to everyone,
+which is the defect the slice exists to end. All fixed; the defaults are gone.
+
+**The rule that generalises it** (steward-48, and the reason this class existed
+at all): every question the interview asks must change something the reader
+sees. It is a generated check now — hold every other answer fixed, walk a
+field's answers, and two of them must produce two different screens. Run
+against the dataset as it stood this morning, 168 third-country passports
+produced one screen: the check would have found #8 by itself. Two questions
+failed it on the first run and the product was innocent both times — three
+random baselines never landed a point short of the Chancenkarte's six, so the
+test blamed the question; sixty do.
+
+**Deploys now trigger on product paths only.** A STATUS line pushed while a
+deploy ran cancelled that deploy on 2026-09-09; every ledger push rebuilt a
+site nothing in it had changed. `paths-ignore` on the ledgers and `docs/`.
+
+**The daily rebuild, told truthfully at last.** CONTRIBUTING claimed the site's
+06:40 UTC schedule "rebuilds even if every signal fails". It has not fired once
+since it was written on 2026-09-08. What runs daily is the data watch's own
+schedule — three to four hours late, but every day — and the dispatch it fires.
+The site's schedule is a second try, not a guarantee, and the fallback is a
+person with one command. That command is in STATUS, whole, as the human's.

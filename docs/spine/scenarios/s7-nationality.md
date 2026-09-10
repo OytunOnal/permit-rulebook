@@ -131,5 +131,15 @@ every claim below carries the authority's own sentence):
 
 ## Runs
 
-- mock-green: —
-- real-green: —
+- mock-green: 2026-09-10 — 466 tests in the data repository, 294 in the site,
+  quote fidelity 137, both new sources on the watchlist and re-baselined.
+- real-green: 2026-09-10 — walked on the live site with a seeded record. A
+  Turkish passport on `nl-hsm-30plus`: "Also required" lists the market-rate
+  salary, the BIG register and the provisional residence permit, and **not**
+  the recognised sponsor; under "Not required for your passport", the IND's own
+  sentence about Turkish employees. The same record with a Japanese passport:
+  the sponsor condition is back under "Also required", the MVV requirement is
+  gone from it, and the carve-out says the IND names that passport among the
+  nationalities that need none. The scope line moves with the reader — six
+  conditions stated with no passport, five for either of these two.
+  The route page, which has no reader, shows both halves.

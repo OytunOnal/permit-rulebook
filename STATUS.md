@@ -19,6 +19,12 @@ flowchart LR
     G --> H["Steward ◀ here<br/>live, watched, answered"]
 ```
 
+Pace, from the ledger: s5e real-green 2026-09-07, s5f 2026-09-07, s6
+2026-09-09, s7 building 2026-09-10 — about one slice a day while the human is
+in the loop daily. v1.1 holds two ruled candidates beyond s7; at that pace it
+is days, not weeks, but the nationality reads for three more countries sit in
+front of it and each is a research day before a build day.
+
 ## What is happening now
 
 **Steward has run once** (2026-09-10). The human found that the way back in had
@@ -48,41 +54,25 @@ samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) — the
 interview paints and then fills itself. Site #8. The A2/A7/A8 numbers stay
 where they were pre-registered: 2026-10-09.
 
-**s7 is built and under review** (`docs/spine/scenarios/s7-nationality.md`):
-the builder returned green in both repositories (442 + 289 tests, 137 quotes
-verified), two reviewers are reading the diff on the Standards and Spec axes,
-and the working tree stays uncommitted until their findings are applied. The
-glossary gained **Carve-out**; the watch command in CONTRIBUTING was wrong and
-is corrected. Then: commit, pin, deploy, and a Turkish passport walked on the
-live site. a
-statement can name the passports it does not bind, carrying the authority's own
-sentence for the carve-out. The Netherlands was read first (issue #9, by the
-deep-researcher, every claim quoted and dated). It corrected the report as well
-as confirming it — **three** routes state the sponsor condition where the IND
-sets it aside, not four: the Blue Card was already right and the ICT permit
-states no sponsor condition. It also found something nobody had asked about:
-**MVV is absent from the dataset entirely**, though every Dutch route's page
-requires one and eleven nationalities are exempt. Both go in; the Japanese
-work-permit claim goes to `exclusions.md` as investigated and not found on any
-official page.
+**s7 is live** (`docs/spine/scenarios/s7-nationality.md`, real-green
+2026-09-10). A statement can name the passports it does not bind: a Turkish
+passport no longer meets the recognised-sponsor condition on the two Dutch
+highly skilled migrant permits or the researcher permit, because the IND says
+it does not bind them; all six Dutch routes now state the provisional residence
+permit, which ten passports do not need. Walked live with both passports.
+Reviewed on both axes — one blocker, and it was in the spec I wrote, not the
+build: the MVV shipped as a caveat and is a precondition.
 
-**The bug is real, and it is a class.** The human's report (data #7) said the
-Dutch routes state conditions that do not apply to a Turkish citizen. The IND's
-own page says it plainly — *"For employees with Turkish nationality, a
-recognised sponsor is not required"* — and four Dutch routes state that
-condition without qualification. Checking the rest: `citizenship` is used in
-exactly one way in all 23 routes, `eq third_country`, so **no route can
-currently say "for nationals of X this does not apply"** even where an
-authority says so. That is data #8, and it is split into one read per country so no
-lead travels as a summary: **#9 the Netherlands** (Turkish confirmed, Japanese
-a lead), **#10 Germany** (§ 26 BeschV, the Western Balkans rule, Decision
-1/80), **#11 France** (the Franco-Algerian Agreement of 1968, Tunisia,
-Morocco), **#12 Spain** (nothing claimed — the reading has to establish it
-either way). Each closes only when every regime is modelled with a quote and a
-date or written into `data/exclusions.md` with the page and the reason.
+**The rule that keeps it from happening again:** every question the interview
+asks must change something the reader sees, as a generated check. Against this
+morning's dataset, 168 third-country passports produced one screen — it would
+have found data #8 by itself.
 
-**The feedback prompt is at its gate** (site #6, #7): both drawn shapes were
-rejected; what replaces them is undecided.
+**Next, in order:** Germany (data #10 — § 26 BeschV and the Western Balkans
+rule are leads, nothing read yet), then France (#11, the Franco-Algerian
+Agreement), then Spain (#12, nothing claimed). Each is a research day before a
+build day: the Dutch read is what turned "four routes are wrong" into "three
+are, and here is a second thing nobody had asked about".
 
 What runs without anyone asking:
 
@@ -103,13 +93,44 @@ What runs without anyone asking:
 
 ## What is expected from you
 
+**The 48-hour window is open until 2026-09-11 09:00 (GMT+3)** — the announcement
+went out 2026-09-09 around 09:00. Until then the live site is frozen: it is
+touched only for a blocker (a wrong verdict confirmed against its source, a
+value gone stale on a live page, a legal objection to a quote) — s7 is one, the
+CLS fix is not. The three lines, left here until the window closes:
+
+- *Watch:* the counter (visits, entry pages), both trackers, the watch's
+  issues, the post's comments.
+- *Where:* Cloudflare Web Analytics → permitrulebook.com; `gh issue list` on
+  both repositories; the LinkedIn post.
+- *Pull if:* a confirmed wrong verdict, a stale live value, or a legal
+  objection — fix the value with its history line, let the rebuild land, edit
+  the post to say what was wrong and what it says now.
+
 Nothing is blocked on you. These are the things only you can see, when you want
 to look:
 
-- [ ] **The feedback prompt — pick A or B** (or change the words):
-      http://localhost:4400/s7-feedback.html. *Pass:* you would let it appear
-      on your own screen after your own results. Nothing is built until you
-      pick.
+- [ ] **If a day passes with no rebuild — run one.** The site's own 06:40 UTC
+      schedule has not fired once since it was written (2026-09-08); GitHub's
+      scheduler is best-effort, and the data watch's own schedule runs three to
+      four hours late every day. The daily rebuild that actually happens is the
+      watch's: it commits its heartbeat and dispatches the site. *Check:* the
+      footer of https://permitrulebook.com/data/ says "last run <today or
+      yesterday>". *If it says an older day:* in a terminal,
+      `gh workflow run pages.yml -R OytunOnal/permit-rulebook` — that builds
+      against the pinned data and deploys; a green run appears within ten
+      minutes at https://github.com/OytunOnal/permit-rulebook/actions. Nothing
+      else is needed; it cannot break anything that the daily run would not.
+
+- [ ] **The card's quote cap, 10 → 11** (one route, `nl-hsm-under30`): the
+      MVV sentence was missing from the dataset entirely and is one line; a
+      carve-out replaces a quote rather than adding one. The cap is a limit you
+      set, so raising it is yours to ratify — say yes, or say the MVV belongs
+      only on the route page and it goes back to 10.
+- [ ] **The feedback prompt — neither drawn shape survived** (site #6): the
+      issue carries what a replacement must keep, and the quieter option (a
+      line in the results screen's own body, no timing, no dismissal state) is
+      on the table. Nothing is built until you say which.
 - [ ] **Nothing right now** on the audit: the Netherlands is being built (s7),
       Germany (#10) is read next, then France (#11) and Spain (#12).
 - [ ] **The post's replies.** Anything a reader says that is a bug, a missing
