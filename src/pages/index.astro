@@ -1369,7 +1369,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        wordmark and its seal — belongs to identity.css: three rules here were
        painting the shared header a second way, which is how one product grows
        two identities (Standards review, 2026-09-08). */
-    .masthead-with-stamps{border-bottom:var(--rule-heavy);padding-bottom:1.3rem;margin-bottom:var(--space-5)}
+    /* The stamps hang from the top of this block, and on this screen — the only
+       one whose header carries a nav and a button, so the tallest — the PR
+       mark's tilted corner was landing on the header's own rule, 1px below it
+       (human, 2026-09-11). A country page has 24px of air there; this gives
+       the same, and the headline keeps its place beside the stamps. */
+    .masthead-with-stamps{border-bottom:var(--rule-heavy);padding-top:var(--space-4);padding-bottom:1.3rem;margin-bottom:var(--space-5)}
     .brand{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted);margin-top:.35rem}
     /* What the interview asks of a route, said on the card in the same words
        the route page uses — ink on card, no new colour and no verdict colour. */
