@@ -53,33 +53,39 @@ the deploy rather than after — "criteria met" over a contested route, four URL
 that had moved, a heading mixing numerals with words, and a stamp touching the
 header rule.
 
-**Your question about Spain is answered, and it opened something** (data #16,
-`docs/spine/research-05-job-search-routes.md`). Spain **does** have a
-job-search visa reachable from abroad — RD 1155/2024 arts. 43–45, twelve months,
-turning into a work authorisation when a contract is signed — but it is not an
-open Chancenkarte: art. 43.2 limits it to descendants of Spaniards by origin and
-to specific occupations or territories, both switched on only by an annual
-ministerial order. **That order is the one thing nobody has read**, and it
-decides whether this is a fifth slice or a line in `exclusions.md`. France's
-equivalent (the RECE card) exists but no branch of it is reachable from abroad
-without a prior French connection — that one is `exclusions.md` material, with
-its quote, beside Spain's second route (Ley 14/2013 DA 7ª).
+**Your question about Spain is answered, all three parts of it** (data #16,
+`docs/spine/research-05-job-search-routes.md`, rows in `data/exclusions.md`).
 
-**Two of the three are now recorded** (data `6092ad8`). France's card and
-Spain's student route are in `data/exclusions.md` with the authority's own
-sentence and the day it was read — the silence about them was the defect, not
-their absence from the dataset. Spain's twelve-month visa is deliberately
-**not** recorded either way: a row saying "excluded" would be as much a guess
-as shipping it, and the order that decides it is being read now.
+- **Spain does have the thing** — RD 1155/2024 arts. 43–45, twelve months in
+  Spain to look for work, from abroad, becoming a work authorisation when a
+  contract is signed. **And this year it is open to nobody.** It is switched on
+  only by the annual collective-recruitment order, and the one in force for
+  2026 (Orden ISM/1547/2025) names nothing: every mention of *búsqueda de
+  empleo* in it is the same unexercised *« podrá establecer un número de
+  visados »*, no annex carries a list or a figure, and the previous order reads
+  the same. Zero for descendants of Spaniards, zero for occupations. Read
+  twice, by two readers, against the BOE's own text.
+- **France's card exists and no reader arriving from abroad can use it** — the
+  only branch reachable from outside the country wants the French diploma
+  already in hand.
+- **Spain's student route is the same shape** — twenty-four months after a
+  degree finished in Spain, applied for from inside Spain.
+
+All three are rows now, each with the authority's sentence and the day it was
+read. The Spanish one carries something the others do not: **a date on which
+its answer can change.** The next annual order is published at the end of
+December, and that row says to re-read it then — it is the only line in that
+file whose "no" has an expiry.
+
+**A candidate that falls out of this, not taken:** the product could say to a
+Spanish jobseeker what it now knows — that a job-search visa exists in Spanish
+law and no order opens it this year. Today they see silence. That is a slice,
+not a fix, and it waits for a boundary.
 
 One thing measured on the way: the French fiche was put on the watchlist and
 taken back off. The watch covers sources the **dataset** uses, and the coverage
 gate calls anything else an orphan — a source quoted only in `exclusions.md`
 carries its read date in the prose instead. Tried, measured, reverted.
-
-Meanwhile a graduate with no offer, exploring, still sees **one open route in
-Germany and nothing in Spain or France**, and the screen cannot say whether
-that is because no such route exists or because we never read for one.
 
 **Also open, from the passport sweep** (data #15): the free-movement notice
 claims Iceland, Liechtenstein, Norway and Switzerland, and the only sentence
@@ -144,14 +150,10 @@ to look:
       on the live host afterwards.
 - [x] **s9 walked and merged** (2026-09-11, your word). Live, and checked on
       the live host afterwards.
-- [ ] **Spain's annual ministerial order — read it, or leave it?** It decides
-      whether the Spanish job-search visa is a fifth slice or a line in
-      `exclusions.md`: the route is in force in law (RD 1155/2024 arts. 43–45),
-      but only the order says whether it is open this year, to which
-      occupations, with what quota. *Say the word and it gets read; say leave it
-      and `exclusions.md` records what we know today, dated, with the order
-      named as the thing nobody has checked.* Either is honest; shipping
-      without it is not.
+- [x] **Spain's annual ministerial order is read** (2026-09-11, your word:
+      *"ispanyayı oku ve okut"*). It opens nothing this year, by two independent
+      reads of the BOE text. Recorded, with the date to re-read it: the next
+      order, end of December.
 - [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
       window to close at 09:00 tomorrow). One line under your results: "Wrong
       about you? A value that does not match its source, or something this
