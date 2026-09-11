@@ -66,6 +66,39 @@ rules in the authority's words, dated and watched, under **quoted and dated ·
 not scored**. Nothing is scored, no profile can be told it qualifies, and
 validation refuses both directions.
 
+**Your question found a hole** (2026-09-11: *"doesn't Spain have a job-search
+visa like Germany's Chancenkarte?"*). Read against the official sources the same
+day — `docs/spine/research-05-job-search-routes.md`, data #16.
+
+**Spain has one, and it is reachable from abroad.** RD 1155/2024 arts. 43–45,
+*visados para la búsqueda de empleo*: twelve months in Spain to look for work,
+turning into a work authorisation when a contract is signed. It is not an open
+Chancenkarte — art. 43.2 limits it to descendants of Spaniards by origin and to
+specific occupations or territories, and both are switched on only by an annual
+ministerial order. **That order is the one thing not yet read**, and nothing
+should ship either way before it is: we know the route is in force in law, not
+whether it is open to anybody this year.
+
+**France's is not reachable from abroad.** The RECE card exists, and every branch
+of it needs a prior French connection — a student or researcher permit held
+there, or the French diploma already obtained. It belongs in `exclusions.md`
+with its quote, beside Spain's second route (Ley 14/2013 DA 7ª), which is the
+same shape: a degree already finished in the country.
+
+**What a reader sees meanwhile:** a graduate with no offer, exploring, is shown
+**one open route in Germany and nothing at all in Spain or France** — and the
+screen cannot say whether that is because no such route exists or because we
+never read for one. That is the defect, whatever the answer turns out to be.
+
+**One note for whoever reads next:** the summarizing fetcher missed the Spanish
+route entirely and reported "no such provision". It was found by grepping the
+raw HTML. A summary is not a read.
+
+**The stamps stopped touching the header's rule** on the results screen (your
+eye, 2026-09-11) — it was the only screen whose header carries a nav and a
+button, so the tallest, and the PR mark's tilted corner landed 1px under the
+line. It has a country page's 24px of air now (`f1f49e1`).
+
 **The passport side is counted, not guessed** (2026-09-10). Hold one reader's
 answers fixed and move only the passport: **199 passports produce six distinct
 screens** — 157 ordinary third-country ones; 30 free-movement ones; the nine
