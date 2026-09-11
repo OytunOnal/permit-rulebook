@@ -65,6 +65,18 @@ equivalent (the RECE card) exists but no branch of it is reachable from abroad
 without a prior French connection — that one is `exclusions.md` material, with
 its quote, beside Spain's second route (Ley 14/2013 DA 7ª).
 
+**Two of the three are now recorded** (data `6092ad8`). France's card and
+Spain's student route are in `data/exclusions.md` with the authority's own
+sentence and the day it was read — the silence about them was the defect, not
+their absence from the dataset. Spain's twelve-month visa is deliberately
+**not** recorded either way: a row saying "excluded" would be as much a guess
+as shipping it, and the order that decides it is being read now.
+
+One thing measured on the way: the French fiche was put on the watchlist and
+taken back off. The watch covers sources the **dataset** uses, and the coverage
+gate calls anything else an orphan — a source quoted only in `exclusions.md`
+carries its read date in the prose instead. Tried, measured, reverted.
+
 Meanwhile a graduate with no offer, exploring, still sees **one open route in
 Germany and nothing in Spain or France**, and the screen cannot say whether
 that is because no such route exists or because we never read for one.
