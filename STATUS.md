@@ -41,6 +41,14 @@ market « opposable au demandeur »; a catalogue republished quarterly per
 region; five judgements the German statute hands to the local chambers; a
 refusal UWV writes on the employer's effort; an income floor reset every year.
 
+**The branches are tidied.** s8 and s9 are merged and their branches are gone
+from both repositories, along with a stub that had held nothing but an old
+`data.lock` line. The preview worktrees sit on master, so
+http://localhost:4500 serves what is live until the next slice takes them.
+**One branch is still standing and it is not mine to merge:** `feedback-line`
+(site #6, `20681e6`) — one line under the results screen, built and waiting on
+your walk since the launch window, which closed this morning.
+
 **The board is empty between slices.** v1.1 opened with two: s9 is done, **s10
 is not started** — the CLS defect the counter found (poor for 23% of samples;
 `#app` 0.402, the footer 0.414, against a 0.25 threshold, while LCP and INP
