@@ -960,6 +960,7 @@ nav.jsonlinks a small { font: var(--text-source); color: var(--color-met); white
 .quoted-only h2 { margin: 0; }
 .quoted-only .lede { margin: var(--space-2) 0 0; }
 .cta .note { color: var(--color-muted); }
+.cta.cta-country { flex-direction: column; align-items: center; text-align: center; }
 footer .ends { display: flex; gap: var(--space-4); flex-wrap: wrap; }
 footer .ends a { color: var(--color-muted); display: inline-flex; align-items: center; min-height: var(--tap-min); }
 
@@ -980,6 +981,9 @@ footer .health a { display: inline-flex; align-items: center; min-height: var(--
   /* On a phone the button leads its own section: the sentence about privacy
      is worth reading, and worth reading second (2026-09-08). */
   .cta { flex-direction: column; align-items: stretch; }
+  /* The button goes full width on a phone, as every other button here
+     does; only the text stays centred. */
+  .cta.cta-country { align-items: stretch; }
   .cta a.btn { order: -1; text-align: center; }
   .rule .top { flex-direction: column; gap: var(--space-1); }
 }

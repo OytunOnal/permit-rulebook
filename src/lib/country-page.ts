@@ -240,7 +240,7 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
       </ul>
     </section>` : ""}
 
-    <div class="cta">
+    <div class="cta cta-country">
       <a class="btn tap-min" href="${escAttr(`${url("/")}?country=${country.code.toLowerCase()}`)}">Check yours — ${
     esc(country.name)}</a>
       <span class="note">Answered on this device only. ${quotedOnly.length
