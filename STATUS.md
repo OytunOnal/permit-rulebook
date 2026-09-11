@@ -27,112 +27,59 @@ front of it and each is a research day before a build day.
 
 ## What is happening now
 
-**s8 is live** (2026-09-10, on your word: *"merge"*). The first deploy under
-Steward mode's rule — **merge is the deploy, and the deploy is your word**. Site
-`f6af596`, data `6bbc831`, 504 + 320 tests, deploy green in 2m20s, walked on
-the live host after it landed:
+**s9 is live** (2026-09-11, on your word: *"s9 merge"*). Site `28abe56`, data
+`29fde08`, 513 + 336 tests, deploy green in 2m44s, checked on the live host
+after it landed: all five new pages answer, `/data/` says *"23 routes scored
+against your answers and 5 quoted and dated but not scored"*, the France page
+heads *"France: 5 routes scored, 1 quoted"* with its call to action centred.
 
-- With an Algerian passport asking about France: the intra-corporate transfer
-  card sits under **Not open to your passport** with the fiche's own sentence,
-  and the four talent routes stand under **Open on the rules — unsettled for
-  your passport** with the notice above them. The headline says *"1 route meets
-  the rules — whether your passport can use it is unsettled."*
-- The four renamed routes answer at the addresses they always had.
-  `/france/sent-by-your-employer-abroad/` is a 404 and always was: the address
-  never moved, so nothing linked to it.
+Five permits the interview does not ask about now carry their rules in the
+authority's words, dated and watched, under the third scope value — **quoted
+and dated · not scored**, which the dataset had held since s6 and never used.
+Each says why it cannot be scored, in a sentence written for it: a labour
+market « opposable au demandeur »; a catalogue republished quarterly per
+region; five judgements the German statute hands to the local chambers; a
+refusal UWV writes on the employer's effort; an income floor reset every year.
 
-**Two fixes from your s9 walk** (2026-09-11). The country heading read
-*"five routes scored, 1 quoted"* — one count spelled and the other not, in the
-same breath; it counts in figures now, both halves, and a test holds it that
-way (the ledes beneath it stay in words, because they are sentences). And the
-call to action at the foot of a country page had borrowed the route page's
-two-column row, so the button and its sentence sat at opposite ends; on all
-four country pages they are a centred column now, with the button still going
-full width on a phone. You walked France end to end and it passed: the route page, and the interview that never offers it.
-(`a66214d`, 336 tests.)
+**The board is empty between slices.** v1.1 opened with two: s9 is done, **s10
+is not started** — the CLS defect the counter found (poor for 23% of samples;
+`#app` 0.402, the footer 0.414, against a 0.25 threshold, while LCP and INP
+are good for 100%). It is the last thing v1.1 needs before it can be stamped.
 
-**s9 is next, and it is on the preview** — http://localhost:4500 now serves
-`s9-build` (site `78a9250`) against `quoted-not-asked` (data `29fde08`),
-**513 + 335 tests**. Master went into it by hand: six conflicts, all where s8
-and s9 had changed the same lines for different reasons — the country card's
-stamp, the route page's main block, two imports, one test both sides had
-already fixed, and the root-build fingerprint, which moved because two
-templates became one.
+**Two slices shipped in two days, both on your word.** Built on a branch,
+reviewed on two axes, walked by you on a local preview, merged. Neither went
+live because a build went green. What that bought: four findings caught before
+the deploy rather than after — "criteria met" over a contested route, four URLs
+that had moved, a heading mixing numerals with words, and a stamp touching the
+header rule.
 
-What s9 puts on the site: five routes the interview does not ask about — the
-French employee card, Spain's general employed regime and its international
-teleworker, German self-employment and the Dutch single permit — with their
-rules in the authority's words, dated and watched, under **quoted and dated ·
-not scored**. Nothing is scored, no profile can be told it qualifies, and
-validation refuses both directions.
+**Your question about Spain is answered, and it opened something** (data #16,
+`docs/spine/research-05-job-search-routes.md`). Spain **does** have a
+job-search visa reachable from abroad — RD 1155/2024 arts. 43–45, twelve months,
+turning into a work authorisation when a contract is signed — but it is not an
+open Chancenkarte: art. 43.2 limits it to descendants of Spaniards by origin and
+to specific occupations or territories, both switched on only by an annual
+ministerial order. **That order is the one thing nobody has read**, and it
+decides whether this is a fifth slice or a line in `exclusions.md`. France's
+equivalent (the RECE card) exists but no branch of it is reachable from abroad
+without a prior French connection — that one is `exclusions.md` material, with
+its quote, beside Spain's second route (Ley 14/2013 DA 7ª).
 
-**Your question found a hole** (2026-09-11: *"doesn't Spain have a job-search
-visa like Germany's Chancenkarte?"*). Read against the official sources the same
-day — `docs/spine/research-05-job-search-routes.md`, data #16.
+Meanwhile a graduate with no offer, exploring, still sees **one open route in
+Germany and nothing in Spain or France**, and the screen cannot say whether
+that is because no such route exists or because we never read for one.
 
-**Spain has one, and it is reachable from abroad.** RD 1155/2024 arts. 43–45,
-*visados para la búsqueda de empleo*: twelve months in Spain to look for work,
-turning into a work authorisation when a contract is signed. It is not an open
-Chancenkarte — art. 43.2 limits it to descendants of Spaniards by origin and to
-specific occupations or territories, and both are switched on only by an annual
-ministerial order. **That order is the one thing not yet read**, and nothing
-should ship either way before it is: we know the route is in force in law, not
-whether it is open to anybody this year.
-
-**France's is not reachable from abroad.** The RECE card exists, and every branch
-of it needs a prior French connection — a student or researcher permit held
-there, or the French diploma already obtained. It belongs in `exclusions.md`
-with its quote, beside Spain's second route (Ley 14/2013 DA 7ª), which is the
-same shape: a degree already finished in the country.
-
-**What a reader sees meanwhile:** a graduate with no offer, exploring, is shown
-**one open route in Germany and nothing at all in Spain or France** — and the
-screen cannot say whether that is because no such route exists or because we
-never read for one. That is the defect, whatever the answer turns out to be.
-
-**One note for whoever reads next:** the summarizing fetcher missed the Spanish
-route entirely and reported "no such provision". It was found by grepping the
-raw HTML. A summary is not a read.
-
-**The stamps stopped touching the header's rule** on the results screen (your
-eye, 2026-09-11) — it was the only screen whose header carries a nav and a
-button, so the tallest, and the PR mark's tilted corner landed 1px under the
-line. It has a country page's 24px of air now (`f1f49e1`).
-
-**The passport side is counted, not guessed** (2026-09-10). Hold one reader's
-answers fixed and move only the passport: **199 passports produce six distinct
-screens** — 157 ordinary third-country ones; 30 free-movement ones; the nine
-whose passport needs no MVV; **Algeria**; **Switzerland**, which is both
-free-movement and MVV-exempt, a class of one; and **Türkiye**. All six are
-walked; the last two never had been.
-
-**The walk found one** (data #15, filed). On the free-movement screen the notice
-says citizens of the EU, of Iceland, Liechtenstein and Norway, **and of
-Switzerland** may live and work here — and the single sentence under it is *"As
-an EU national you generally don't need a work permit to work anywhere in the
-EU."* For four of those thirty-one passports the quote does not cover the
-reader: the EEA three hold that right under the EEA Agreement and Switzerland
-under the 1999 agreement, not under TFEU art. 45. The claim is right; the
-evidence beneath it is not evidence for it. Not a live blocker — no verdict is
-wrong, no value is stale — so it queues.
-
-**The site's daily schedule does fire, late.** This file said since 2026-09-08
-that it never had. It ran on schedule at 11:49 UTC on 2026-09-09 and 11:48 UTC
-on 2026-09-10, both green — about five hours after the cron says, the same
-lateness the data watch shows. The redundant path is real; it is just slow.
-
-**The lesson from today, written down:** reading the source and the built
-bundle is not walking the product. The partition that stops "criteria met" was
-half-applied twice, and both halves were found by opening the page — once by
-you, once by walking it properly. Tests now hold the two layouts, the card
-badge, the summary strip and the headline to each other.
+**Also open, from the passport sweep** (data #15): the free-movement notice
+claims Iceland, Liechtenstein, Norway and Switzerland, and the only sentence
+under it is about EU nationals. The claim is right; the evidence is not
+evidence for it. Not a live blocker — no verdict is wrong, no value is stale.
 
 What runs without anyone asking:
 
 - **The daily watch** (05:17 UTC, data repository) re-reads every source, files
   an issue for each change and tells the site to rebuild.
 - **The site's daily rebuild** (06:40 UTC nominal, ~11:48 in practice) is the
-  redundant path, and it is working.
+  redundant path, and it is working — it has fired every day since 2026-09-09.
 - **The counter** (Cloudflare Web Analytics) records one view per page load and
   nothing about the reader.
 - **The pre-registered numbers** in `docs/spine/assumptions.md` decide A2, A7
@@ -183,11 +130,8 @@ to look:
       last twenty lines here.
 - [x] **s8 walked and merged** (2026-09-10, your word). Live, and walked again
       on the live host afterwards.
-- [ ] **Say merge, and s9 goes live.** You walked France on 2026-09-11 — the
-      employee card's page states the labour-market test in service-public's
-      words with no score on it, and the interview never offers the route. The
-      branch is `s9-build` (site `a66214d`) against `quoted-not-asked` (data
-      `29fde08`), 513 + 336 tests. Nothing else is waiting on you for it.
+- [x] **s9 walked and merged** (2026-09-11, your word). Live, and checked on
+      the live host afterwards.
 - [ ] **Spain's annual ministerial order — read it, or leave it?** It decides
       whether the Spanish job-search visa is a fifth slice or a line in
       `exclusions.md`: the route is in force in law (RD 1155/2024 arts. 43–45),
