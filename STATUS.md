@@ -41,11 +41,15 @@ the live host after it landed:
   `/france/sent-by-your-employer-abroad/` is a 404 and always was: the address
   never moved, so nothing linked to it.
 
-**One wording fix from your walk** (2026-09-11): the country heading read
+**Two fixes from your s9 walk** (2026-09-11). The country heading read
 *"five routes scored, 1 quoted"* — one count spelled and the other not, in the
-same breath. It counts in figures now, both halves, and a test holds it that
-way; the ledes beneath it stay in words, because they are sentences
-(`6229f7e`, 336 tests).
+same breath; it counts in figures now, both halves, and a test holds it that
+way (the ledes beneath it stay in words, because they are sentences). And the
+call to action at the foot of a country page had borrowed the route page's
+two-column row, so the button and its sentence sat at opposite ends; on all
+four country pages they are a centred column now, with the button still going
+full width on a phone. `/france/employee-card/` passed your read.
+(`a66214d`, 336 tests.)
 
 **s9 is next, and it is on the preview** — http://localhost:4500 now serves
 `s9-build` (site `78a9250`) against `quoted-not-asked` (data `29fde08`),
