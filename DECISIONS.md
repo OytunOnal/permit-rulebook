@@ -3071,3 +3071,53 @@ the data watch shows.
 **What changes:** the standing item asking the human to run a rebuild by hand
 when a day passes without one comes off their list. The redundant path is real;
 it is just slow. The fast path (the watch's dispatch) still carries the day.
+
+## 2026-09-11 — s9 merged: the product says what it will not answer
+
+**Gate** (human: "s9 merge", after walking France). Five routes now sit on the
+site with their rules quoted, dated and watched, and no verdict attached to
+any of them: the French employee card, Spain's general employed regime and its
+international teleworker, German self-employment, the Dutch single permit.
+
+**Why this is the interesting half of the product.** Every one of the five is
+unscoreable for a reason we can quote: a labour market « opposable au
+demandeur » with a three-week search the applicant never sees; a catalogue
+republished quarterly per region, or an office persuaded case by case; five
+judgements the German statute hands to the local chambers; a refusal UWV
+writes on the employer's effort; an income floor reset every year against a
+wage index. A checker that scored these would be inventing an answer. Saying
+so, in the authority's own sentences, is the thing this project exists to do —
+and it is the first time the dataset's third scope value has carried anything.
+
+**Validation refuses both directions**, which is what keeps the state honest: a
+route in this scope may carry no criterion the interview answers, and a scored
+route may not hide behind it.
+
+**What the reviews and the walk added.** Both reviewers independently put the
+same finding first — one route total on the country heading and on the social
+card, blurring the five that cannot be scored into the twenty-three that can.
+A rule had been read and never stated (article 76.2 of the Spanish regulation,
+inside the watched slice, nowhere on the page). Three French exemptions were
+recorded rather than left silent. And the human's own walk took the heading's
+mixed numerals, the country page's call to action, and the stamps touching the
+header rule.
+
+**A5 is now answerable.** The assumption was 35–40 routes; v1 shipped 23 and
+refuted it. The dataset states 28 today, of which 23 are scored — and the five
+that are not are the honest shape of the gap, not padding.
+
+## 2026-09-11 — the deploy is the human's word, twice in two days
+
+**Observed, not decided.** s8 and s9 both reached the live site the same way:
+built on a branch, reviewed on two axes, walked by the human on a local
+preview, merged on their word. Neither was deployed because a build went green.
+
+Two things this cost, both worth it: a second build round on s8 after the walk
+found "criteria met" over a contested route, and a hand-merge of two slices
+whose templates had diverged. Two things it bought: nothing wrong reached a
+reader, and every finding the walks produced — four of them — was found before
+the deploy rather than after.
+
+**The rule that came out of it:** reading the source and the built bundle is
+not walking the product. It was written down on 2026-09-10 after a fix shipped
+half-applied twice; it held for s9.

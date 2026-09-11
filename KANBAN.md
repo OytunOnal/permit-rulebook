@@ -197,22 +197,38 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## mock-green
 
-- **Five routes quoted and dated, and not scored** (s9) · opened at the v1.1
-  boundary, 2026-09-10 (human: "v1.1 i açalım", scope chosen from three) ·
-  `docs/spine/scenarios/s9-quoted-not-asked.md` · FR carte salarié, ES cuenta
-  ajena, ES digital nomad, NL GVVA, DE § 21 — the third scope value
-  (`rules-quoted-nothing-asked`, "quoted and dated · not scored") used for the
-  first time. Bound to **A5** (refuted: 23 routes against a promise of 35–40)
-  and feeding **A2 / A7 / A8**, whose numbers are read on 2026-10-09. One
-  research pass per route before any build.
-  **Built and reviewed on both axes, 2026-09-10** (data `69b64df` on `quoted-not-asked`, site `fd19198` on `s9-build`; 513 + 309 tests, 182 quotes verified). Two blockers and thirteen findings applied — the two both reviewers put first were the same one from opposite sides: a single route total on the country heading and on the social card, blurring the five that cannot be scored into the twenty-three that can. Waits on the human's walk, and on s8 merging first.
-
+_(empty)_
 
 ## real-green
 
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **Five routes quoted and dated, and not scored** (s9) · **real-green
+  2026-09-11, live** — `docs/spine/scenarios/s9-quoted-not-asked.md`. The
+  French employee card, Spain's general employed regime and its international
+  teleworker, German self-employment and the Dutch single permit: rules in the
+  authority's words, dated and watched, under the third scope value —
+  **quoted and dated · not scored** — which the dataset had carried since s6
+  and never used. Nothing is scored, no profile can be told it qualifies, and
+  validation refuses both directions.
+
+  Reviewed on both axes (fifteen findings applied). The two the reviewers put
+  first were the same one from opposite sides: a single route total on the
+  country heading and on the social card, blurring the five that cannot be
+  scored into the twenty-three that can. One finding was a rule read and never
+  stated — article 76.2 of the Spanish regulation, inside the watched slice and
+  nowhere on the page.
+
+  Walked by the human (site `f1f49e1`, data `29fde08`; **513 + 336 tests**),
+  who took three more things off it on the way: the country heading counts in
+  figures, the call to action is a centred column, and the stamps stopped
+  touching the header's rule.
+
+  Bound to **A5** (refuted: 23 routes against a promise of 35–40) — the dataset
+  now states 28, of which 23 are scored.
+
 
 - **A route the authority closes, and a question nobody answers** (s8) ·
   **real-green 2026-09-10, live** — `docs/spine/scenarios/s8-algeria.md`. The
