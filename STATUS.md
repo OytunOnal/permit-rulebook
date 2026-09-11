@@ -49,6 +49,15 @@ http://localhost:4500 serves what is live until the next slice takes them.
 (site #6, `20681e6`) — one line under the results screen, built and waiting on
 your walk since the launch window, which closed this morning.
 
+**Three candidates went on the roadmap** (your idea, 2026-09-11: *"permanent
+residency ve vatandaşlık yollarını da eklesek mi ileride"*) — **what a permit
+leads to** (v1.x, the cheap one: one quoted, dated sentence per route about the
+years that count toward permanent residence, stated and not scored), **permanent
+residence** (v2, gated on one country measured end to end), and **citizenship**
+(v3, behind PR on purpose). Their four bets are **A16–A19** in
+`docs/spine/assumptions.md`; the bets are mine, so correct any that is not
+what you meant. Nothing is built and nothing else moved.
+
 **The board is empty between slices.** v1.1 opened with two: s9 is done, **s10
 is not started** — the CLS defect the counter found (poor for 23% of samples;
 `#app` 0.402, the footer 0.414, against a 0.25 threshold, while LCP and INP

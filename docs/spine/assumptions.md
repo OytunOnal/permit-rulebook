@@ -63,6 +63,41 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   generated text from falling out of sync with the rule set through commit-review discipline. — `untested`
 
 
+## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
+
+Three roadmap candidates rest on these. None is tested, and the first is the
+cheap one that would tell us whether the other two are worth paying for.
+
+- **A16 — "and then what" is most of the value, and the timeline is not.** A
+  single quoted, dated sentence per route — the years of holding it that count
+  toward permanent residence, and whether they count in full — answers most of
+  what a reader wants from a residency feature, without modelling time at all.
+  `slice-verified` if the route pages carrying it are read more, or asked
+  about more, than those without; refuted if readers ask for a date instead.
+  — `untested`
+- **A17 — PR rules fit this engine once it has a history.** Permanent-residence
+  rules are thresholds this engine already handles (years, language level,
+  income, no benefits) — the missing input is *which status those years were
+  held under*, since study years often count half or not at all and a Blue Card
+  shortens the track. The bet is that a history question set is an addition to
+  the interview, not a rewrite of the engine. `slice-verified` by building one
+  country's PR route end to end and measuring what it cost. — `untested`
+- **A18 — a projection can be stated without becoming advice.** Work permits
+  say "you meet this today"; PR says "you will, on this path, in N years",
+  which is a stronger claim than this product has ever made and a more harmful
+  one to get wrong. The bet is that a projection can be stated the way a rule
+  is — the authority's sentence, the count it implies, the date it was read —
+  and stay inside A1's no-advice line. Refuted the first time a reader takes a
+  date as a promise. — `untested`
+- **A19 — citizenship is mostly unscoreable, and that is why it waits.** A
+  large part of a naturalisation surface would land in "quoted and dated · not
+  scored": dual-nationality rules that turn on the reader's *other* passport,
+  renunciation requirements and their exceptions, discretionary integration
+  judgements. The bet is that this is worth shipping anyway — that a reader
+  searching for citizenship rules is better served by quoted rules with no
+  verdict than by nothing. Refuted if the quoted-not-scored pages built in s9
+  go unread. — `untested`
+
 ## Pre-registered before the announcement (2026-09-08, devils-advocate pass)
 
 - **A7 — the gap in open work-permit data is real.** Counter-evidence found
