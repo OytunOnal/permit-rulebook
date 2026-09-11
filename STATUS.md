@@ -48,7 +48,7 @@ way (the ledes beneath it stay in words, because they are sentences). And the
 call to action at the foot of a country page had borrowed the route page's
 two-column row, so the button and its sentence sat at opposite ends; on all
 four country pages they are a centred column now, with the button still going
-full width on a phone. `/france/employee-card/` passed your read.
+full width on a phone. You walked France end to end and it passed: the route page, and the interview that never offers it.
 (`a66214d`, 336 tests.)
 
 **s9 is next, and it is on the preview** — http://localhost:4500 now serves
@@ -150,15 +150,11 @@ to look:
       last twenty lines here.
 - [x] **s8 walked and merged** (2026-09-10, your word). Live, and walked again
       on the live host afterwards.
-- [ ] **Walk s9, then say merge** — http://localhost:4500 serves it now. Five
-      routes that are quoted and **not** scored. *What to look for:* open
-      http://localhost:4500/france/employee-card/ — it states the labour-market
-      test in service-public's words, dated, with no score and no "criteria
-      met" anywhere on it; then run the interview for France and confirm that
-      route never appears among your results, in any section. The country page
-      http://localhost:4500/france/ says "five routes scored, one quoted" and
-      lists the quoted one under a heading of its own. *Pass:* nothing on any
-      of those screens reads like a verdict about you.
+- [ ] **Say merge, and s9 goes live.** You walked France on 2026-09-11 — the
+      employee card's page states the labour-market test in service-public's
+      words with no score on it, and the interview never offers the route. The
+      branch is `s9-build` (site `a66214d`) against `quoted-not-asked` (data
+      `29fde08`), 513 + 336 tests. Nothing else is waiting on you for it.
 - [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
       window to close at 09:00 tomorrow). One line under your results: "Wrong
       about you? A value that does not match its source, or something this
