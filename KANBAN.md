@@ -75,6 +75,42 @@ Promoted (or dropped, with evidence) at a boundary session.
   catalogue is watchable once located. Source: s5 verification 4.2.
 
 ### v2 — wave 2
+- **What a permit leads to** (v1.x candidate, human 2026-09-11) · why: the
+  product answers "can I go and work there" and stops, and the reader's next
+  question is "and then what" · what it is: **one quoted, dated statement per
+  route** — the years of holding it that count toward permanent residence, and
+  whether they count in full — using the s9 machinery exactly: stated, sourced,
+  **not scored** · bet: most of the value of a residency answer is reachable
+  without modelling time at all, and this measures the appetite before v2 pays
+  for the engine · cost: four countries' residence-law pages, one statement per
+  route, no new question and no new verdict.
+- **Permanent residence** (v2 candidate, human's idea 2026-09-11: *"permanent
+  residency ve vatandaşlık yollarını da eklesek mi"*) · why: same reader, same
+  journey, later step; and the rules are the shape this engine already handles
+  — years, language level, income, no benefits · **what it needs first, and it
+  is not small: a history.** Every PR rule keys on years of lawful residence
+  *under a particular status*, and which status changes the count — study years
+  often count half or not at all, a Blue Card shortens the track, Türkiye's
+  Decision 1/80 runs on its own clock. Today the interview asks only where the
+  reader stands now; PR turns a snapshot into a timeline, which is a new
+  question set and a new engine concept · **and it changes what a verdict is:**
+  work permits say "you meet this today", PR says "you will, on this path, in
+  N years" — a projection, which is a much stronger claim than this product has
+  ever made and a more harmful one to get wrong · bet: the timeline is worth
+  building because the dated-and-quoted promise is worth more across a journey
+  than across one step · gate: **one country, one PR route, measured end to
+  end** before a second is opened.
+- **Citizenship** (v3 candidate, same source) · why: it is where the search
+  volume is · why it is *behind* PR and not beside it: naturalisation is where
+  nationality law bites hardest — dual-nationality rules that turn on the
+  reader's *other* passport, renunciation requirements and their exceptions,
+  discretionary integration judgements — and that class (data #8) already cost
+  this project two slices and four country reads for one dimension. A large
+  part of the surface would land in "quoted and dated · not scored", which is
+  honest but is not the answer a person searching for it wants · bet: worth
+  doing only after PR proves the timeline model, and only where a rule can be
+  quoted rather than judged.
+
 - **CA + AU** · points systems; the one-pager's own second wave · bet A6: the
   model fits points-based systems without a new engine. Versioned at the s6
   boundary 2026-09-07 after three versions in *later*.
