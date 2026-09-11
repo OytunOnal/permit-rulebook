@@ -3,7 +3,8 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { routePages } from "../src/lib/route-page.js";
-import type { Dataset } from "permit-rulebook-data";
+import { routeAddresses } from "../src/lib/slug.js";
+import { isScored, type Dataset } from "permit-rulebook-data";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -23,9 +24,18 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 describe("the answer is above the fold", () => {
   const pages = routePages(ds);
+  /** The pages that have an answer to put above the fold (s9). */
+  const scoredPages = () => {
+    const unscored = new Set(routeAddresses(ds).filter((a) => !isScored(a.route)).map((a) => a.path));
+    return pages.filter((p) => !unscored.has(p.path));
+  };
 
-  it("every route page states its own number before it explains itself", () => {
-    for (const page of pages) {
+  it("every scored route page states its own number before it explains itself", () => {
+    // A route the product does not score has no number and no way in: its page
+    // states the rules and invites no verdict, so the block that carries both
+    // is deliberately absent from it (s9). What that page must put first is
+    // covered by its own case — the sentence saying why it is not scored.
+    for (const page of scoredPages()) {
       const at = (mark: string) => page.html.indexOf(mark);
       const answer = at('class="answer"');
       expect(answer, `${page.path}: no answer block`).toBeGreaterThan(0);

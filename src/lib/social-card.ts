@@ -1,4 +1,4 @@
-import type { Dataset } from "permit-rulebook-data";
+import { isScored, type Dataset } from "permit-rulebook-data";
 
 /**
  * The social card, as facts and as a page.
@@ -20,8 +20,18 @@ import type { Dataset } from "permit-rulebook-data";
 export interface SocialCardFacts {
   /** The countries the dataset covers, in its own order. */
   countries: string[];
-  /** How many routes it holds. */
-  routes: number;
+  /**
+   * How many routes it holds, of each kind.
+   *
+   * One total let the second kind pass as the first — the card is the first
+   * surface a stranger sees, and "28 routes" under "Which work-permit routes
+   * could fit?" promises twenty-eight answers where five of them are quotes
+   * with no answer in them. `data-page.ts` had already written the rule down;
+   * the card was the one place still breaking it (Standards review,
+   * 2026-09-10).
+   */
+  scored: number;
+  quotedOnly: number;
   /** The newest read date across every value — the stamp's own date. */
   read: string;
   headline: string;
@@ -44,7 +54,8 @@ export function socialCardFacts(
 ): SocialCardFacts {
   return {
     countries: dataset.countries.map((c) => c.name),
-    routes: dataset.countries.reduce((n, c) => n + c.routes.length, 0),
+    scored: dataset.countries.flatMap((c) => c.routes).filter(isScored).length,
+    quotedOnly: dataset.countries.flatMap((c) => c.routes).filter((r) => !isScored(r)).length,
     read: newestReadDate,
     headline: CARD_HEADLINE,
     tagline: words.tagline,
@@ -94,7 +105,7 @@ html, body { margin: 0; padding: 0; }
     <span class="stamps"><span class="mark">PR</span><span class="stamp">Rules read<br>${facts.read}</span></span>
   </div>
   <div class="foot">
-    <span>${facts.countries.join(" · ")} · ${facts.routes} routes</span>
+    <span>${facts.countries.join(" · ")} · ${facts.scored} routes scored${facts.quotedOnly ? ` · ${facts.quotedOnly} quoted` : ""}</span>
     <span>every value with its official sentence · <b>checked daily</b></span>
   </div>
 </div>`;

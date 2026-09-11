@@ -96,7 +96,12 @@ describe("the reason column reads as prose, as rendered (blocker B3)", () => {
 
   it("every unfolded row is one of the five reasons a route gives", () => {
     // The row class is the engine's `kind`; a sixth one would be the page
-    // inventing a verdict of its own.
+    // inventing a verdict of its own. "closed" joined the list with s8 — the
+    // French intra-corporate transfer card is closed to an Algerian passport in
+    // the fiche's own words — and this test kept the pre-s8 list of four, so it
+    // has been red since the day that closure shipped. Corrected here rather
+    // than worked around: the engine's own enum is the authority for this list
+    // (found while landing s9, 2026-09-10).
     const kinds = new Set<string>();
     for (const [, html] of rendered)
       for (const tag of html.match(/<li class="[^"]*"/g) ?? [])
@@ -108,9 +113,6 @@ describe("the reason column reads as prose, as rendered (blocker B3)", () => {
     // did (§ 20a conditions nothing on being offerless). The kind stays: it is
     // the engine's answer whenever a route does, and the page must not invent
     // its own then either.
-    // "closed" — a route the authority does not open to a passport the reader
-    // declared — reaches these profiles since s8: the French intra-corporate
-    // transfer card, on an Algerian passport.
     expect([...kinds].sort()).toEqual(["closed", "needs", "unknown", "where"]);
   });
 
