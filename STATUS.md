@@ -188,6 +188,14 @@ to look:
       words with no score on it, and the interview never offers the route. The
       branch is `s9-build` (site `a66214d`) against `quoted-not-asked` (data
       `29fde08`), 513 + 336 tests. Nothing else is waiting on you for it.
+- [ ] **Spain's annual ministerial order — read it, or leave it?** It decides
+      whether the Spanish job-search visa is a fifth slice or a line in
+      `exclusions.md`: the route is in force in law (RD 1155/2024 arts. 43–45),
+      but only the order says whether it is open this year, to which
+      occupations, with what quota. *Say the word and it gets read; say leave it
+      and `exclusions.md` records what we know today, dated, with the order
+      named as the thing nobody has checked.* Either is honest; shipping
+      without it is not.
 - [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
       window to close at 09:00 tomorrow). One line under your results: "Wrong
       about you? A value that does not match its source, or something this
