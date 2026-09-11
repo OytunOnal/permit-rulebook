@@ -186,9 +186,19 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   const quotedOnly = country.routes.filter((r) => !isScored(r));
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
+  /**
+   * A heading counts in figures, a sentence counts in words.
+   *
+   * The two-number heading read "five routes scored, 1 quoted" — one count
+   * spelled and the other not, in the same breath (human, 2026-09-11). The
+   * ledes below it stay in words, because they are sentences; this is a label,
+   * and every other label on the product counts in figures ("1 open",
+   * "3 not yet", the "(1)" after a section heading).
+   */
+  const counted = (n: number): string => `${n} ${n === 1 ? "route" : "routes"}`;
   const headingCount = quotedOnly.length
-    ? `${countedWords(scored.length, "route")} scored, ${quotedOnly.length} quoted`
-    : countedWords(count, "route");
+    ? `${counted(scored.length)} scored, ${quotedOnly.length} quoted`
+    : counted(count);
   const seen: Glossary = new Set();
 
   const head = `<meta charset="utf-8">

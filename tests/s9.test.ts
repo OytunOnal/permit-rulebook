@@ -160,6 +160,20 @@ describe("s9 — a country page lists them, below the ones it scores", () => {
     expect(quotedOnly).toBe(5);
   });
 
+  it("the country heading counts in figures, both halves of it", () => {
+    // It read "five routes scored, 1 quoted" — one count spelled and the
+    // other not, in the same breath (human, 2026-09-11). The ledes beneath it
+    // stay in words; a heading is a label, and labels here count in figures.
+    for (const { country } of countryAddresses(ds)) {
+      const { page } = pageFor(country.code);
+      const h1 = page.html.match(/<h1>([^<]*)/)![1]!;
+      const scored = country.routes.filter(isScored).length;
+      const quotedOnly = country.routes.length - scored;
+      expect(h1, country.code).toContain(`${scored} route${scored === 1 ? "" : "s"} scored, ${quotedOnly} quoted`);
+      for (const word of ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"])
+        expect(h1.toLowerCase(), `${country.code} spells ${word}`).not.toMatch(new RegExp(`\b${word}\b`));
+    }
+  });
   it("the heading over them promises nothing, and sits below the scored ones", () => {
     for (const { country } of countryAddresses(ds)) {
       const unscored = country.routes.filter((r) => !isScored(r));
