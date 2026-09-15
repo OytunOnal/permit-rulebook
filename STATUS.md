@@ -143,11 +143,22 @@ blocker.
 a route page naming **its own** unread sources instead of the dataset's. Better,
 narrower, more useful — and not what s11 owed.
 
-**A working rule I broke three times today and am writing down:** while an
-agent is building, the main working trees belong to it and the ledgers are
-edited from the `_preview` worktrees, which sit on master. Every slip today —
-a mixed diff, a red master, a stale STATUS — came from treating a tree an agent
-was writing in as mine.
+**A working rule I broke three times today** — a mixed diff, a red master, a
+stale STATUS, all three from treating a tree an agent was writing in as mine.
+I wrote the fix into this file as "the main trees belong to the agent, the
+ledgers move to the `_preview` worktrees".
+
+**Spine has since ruled the other way round, and its version is better**
+(steward-53, 2026-09-15, with today's three slips as its evidence): **one
+writer per working tree** — the builder creates its own worktree on the slice's
+branch and works only there, and the **primary tree stays on master and belongs
+to the main session**, because that is where the ledgers, the scenario walk and
+the status guard live. Mine moved the ledgers away from the guard that checks
+them; this keeps them together and moves the builder instead. The preview
+worktrees go back to doing only what they were for — serving a branch to walk.
+
+In force from the next slice; the round in flight finishes where it is, since
+moving a tree under a working agent risks the work for nothing.
 
 **A mess of mine, repaired.** `git add -A` ran in a tree the builder was
 writing in and swept s11's site half into a ledger commit, which reached master
