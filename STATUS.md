@@ -68,7 +68,20 @@ row. Follow-up in: the row reads `readRange` in fact, the stamp and the footer k
 the broader date on purpose, and the fixture did not move a second time — the
 two derivations agree on the frozen dataset too. Committed as `two-labels`
 `d35c724` (gates run by me: build clean, **421 tests**, fingerprint unmoved),
-on the preview at http://localhost:4500/data/. **Both reviews are running.**
+on the preview at http://localhost:4500/data/.
+
+**Both reviews came back — nine findings, two blockers — and the sharpest is the
+one this project keeps meeting from a new side:** the decision the slice
+exists to make was invisible to all nine of its checks. Revert the row from
+the values' newest date back to the page's and every case stays green, because
+the two dates coincide today — on the live dataset and on the frozen one. A
+check that passes on content coinciding is not a check on a decision. The fix
+is a fabricated dataset in which a notice's read date is newer than any value's,
+asserting the row prints the values' date while the stamp on the same page
+prints the later one — red on the revert, by construction. The other blocker
+was a case that grepped the source and passed on an empty file. Sent back in
+one round; the fixture also stops calling itself "pre-s11" and names a revision
+instead of a branch.
 
 **Queued, in order:** **site #9** (the "Newest value read" label, two rows);
 `feedback-line` (site #6, built, never walked); **data #15** (the free-movement
