@@ -45,15 +45,15 @@ describe("what /data/ says on a day something went unread", () => {
     const html = dataPage(ds, "2026-09-15", [spain]).html;
     expect(readerSees(html)).toContain(
       "Every source is re-read daily — last run 2026-09-15. "
-      + "A Spanish source has not answered since 2026-09-07; the values it backs still show that date.");
+      + "A Spanish source did not answer on the last run; the values it backs were read on 2026-09-07.");
   });
 
   it("names the countries, never our own ids, and never the run's own date as the stale one", () => {
     const html = dataPage(ds, "2026-09-15", [spain, netherlands]).html;
     const seen = readerSees(html);
-    expect(seen).toContain("A Spanish and a Dutch source have not answered since 2026-09-07");
+    expect(seen).toContain("A Spanish and a Dutch source did not answer on the last run; the values they back were read on 2026-09-07");
     expect(seen).not.toContain("es-uge-umbral-pdf");
-    expect(seen).not.toContain("not answered since 2026-09-15");
+    expect(seen).not.toContain("were read on 2026-09-15");
   });
 
   /**
@@ -77,14 +77,14 @@ describe("what /data/ says on a day something went unread", () => {
     });
     expect(unread.map((u) => u.id)).toEqual(["es-uge-umbral-pdf"]);
     expect(readerSees(dataPage(ds, "2026-09-15", unread).html)).toContain(
-      "A Spanish source has not answered since 2026-09-07; the values it backs still show that date.");
+      "A Spanish source did not answer on the last run; the values it backs were read on 2026-09-07.");
   });
 
   it("and on a clean day says exactly what it says today, with nothing added", () => {
     const clean = dataPage(ds, lastWatchRun(), []).html;
     expect(clean).toBe(dataPage(ds).html);
     expect(readerSees(clean)).toContain(`Every source is re-read daily — last run ${lastWatchRun()}.`);
-    expect(clean).not.toContain("not answered since");
+    expect(clean).not.toContain("did not answer on the last run");
   });
 });
 
@@ -133,14 +133,14 @@ describe("the state this site is built against", () => {
     const since = watchState.entries["es-uge-umbral-pdf"]!.retrieved_at;
     expect(since, "the shipped state has lost the reading the sentence dates from").toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(readerSees(dataPage(ds, watchState.last_run!, unread).html)).toContain(
-      `A Spanish source has not answered since ${since}; the values it backs still show that date.`);
+      `A Spanish source did not answer on the last run; the values it backs were read on ${since}.`);
   });
 
   it("and the date it names is marked up like every other date on the site", () => {
     const unread = unreadSources(ds, AS_RECORDED);
     const since = watchState.entries["es-uge-umbral-pdf"]!.retrieved_at;
     expect(dataPage(ds, watchState.last_run!, unread).html)
-      .toContain(`<b><time datetime="${since}">${since}</time></b>; the values it backs`);
+      .toContain(`were read on <b><time datetime="${since}">${since}</time></b>.`);
   });
 
   /**
