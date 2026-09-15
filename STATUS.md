@@ -64,7 +64,11 @@ permit them to diverge, so the source becomes `readRange` in fact (the stamp
 and the freshness paragraph keep the broader date, on purpose). Also: the row
 reads the same `lastRun` the sentence reads, not a second call; the gate needs
 a build before the tests in a fresh worktree; a state with no run prints no
-row. 421 tests before the follow-up.
+row. Follow-up in: the row reads `readRange` in fact, the stamp and the footer keep
+the broader date on purpose, and the fixture did not move a second time — the
+two derivations agree on the frozen dataset too. Committed as `two-labels`
+`d35c724` (gates run by me: build clean, **421 tests**, fingerprint unmoved),
+on the preview at http://localhost:4500/data/. **Both reviews are running.**
 
 **Queued, in order:** **site #9** (the "Newest value read" label, two rows);
 `feedback-line` (site #6, built, never walked); **data #15** (the free-movement
