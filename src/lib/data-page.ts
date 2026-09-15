@@ -85,6 +85,19 @@ export function dataPage(
   lastRun: string = lastWatchRun(),
   unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
 ): DataPage {
+  // The page carries two read dates, and they are not the same date.
+  //
+  // `read` is the newest `pageStamp` on the site — the newest quote date
+  // ANYWHERE this site publishes, the audience notice and a route's own
+  // notices included. A notice re-read today is a page read today, so the
+  // RULES READ stamp and the footer's range are right to take it, and they
+  // keep it.
+  //
+  // `changed` is the newest `retrieved_at` among VALUES and nothing else,
+  // which is the only date the word "changed" allows: re-reading a notice is
+  // not a value moving. It is the narrower of the two and can only ever be
+  // older. They coincide on today's dataset, and coinciding today is not a
+  // reason to print either one for the other (Spec review, 2026-09-15).
   const read = siteReadDate(dataset);
   const changed = readRange(dataset).newest;
   const clause = unreadClause(unread);
@@ -139,18 +152,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
         <div><dt>Dataset version</dt><dd><time datetime="${escAttr(datasetDay(dataset.dataset_version))}">${
     esc(dataset.dataset_version)}</time></dd></div>
         <div><dt>Schema version</dt><dd>${esc(dataset.schema_version)}</dd></div>
-        <div>${
-    // The day a value last changed is the newest `retrieved_at` among values,
-    // and nothing else. It is NOT `read` — the date the stamp and the footer
-    // carry — because that one is the newest `pageStamp`, which folds in the
-    // audience notice and a route's notices as well as its quotes. A notice
-    // read today is a page read today, so the stamp and the freshness
-    // paragraph are right to take the broader date and are left alone. The
-    // word "changed" allows only the narrower one: the day a notice was
-    // re-read is not a day a value moved (s12). The two agree on this
-    // dataset; the label is precise enough that agreeing today is not the
-    // reason to print it.
-    ""}<dt>${esc(NEWEST_VALUE_CHANGED)}</dt><dd><time datetime="${escAttr(changed)}">${
+        <div><dt>${esc(NEWEST_VALUE_CHANGED)}</dt><dd><time datetime="${escAttr(changed)}">${
     esc(changed)}</time></dd></div>${
     // The run, stated as its own fact beside the one it is not — and taken
     // from the same `lastRun` the sentence below prints, so no render can show
