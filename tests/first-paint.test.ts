@@ -4,8 +4,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset } from "permit-rulebook-data";
-import { NO_SCRIPT_LINE } from "../src/lib/copy.js";
-import { questionCardHtml } from "../src/lib/question.js";
+import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy.js";
+import { firstPaintPlaceholdersHtml, questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 
 /**
@@ -51,6 +51,16 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.js";
  * box (the masthead's promise, 0.082 of the record arrival's 0.156) and what
  * folded the ledger away after the fact (0.008 of the cold page) are both
  * decided in <head> now, before anything is painted, and read as zero.
+ *
+ * And what the reader MEETS in that box, read at the same moment, at 390x844:
+ * the box is 355 px on all five, because the stand-in covers question one
+ * rather than replacing it.
+ *
+ *   / cold, no record        question one — "Where are you looking to go?"
+ *   /?country=fr             "Setting up your questions."
+ *   / saved record           "Your answers are on this device — bringing them back."
+ *   /?route=de-blue-card-…   "Setting up your questions."
+ *   / finished record        "Your answers are on this device — bringing them back."
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
@@ -125,16 +135,41 @@ const INSTALL = `(() => {
 })()`;
 
 /**
- * Hold on to the node the BUILD drew, while the module is still in the post.
- * A reference, never an attribute: marking the node would change what the box
- * serialises to, and the skip this exists to prove is a comparison of exactly
- * that (s10).
+ * What is on the screen while the module is still in the post — which is to
+ * say, the page as the BUILD wrote it.
+ *
+ * It holds the card's node by reference, never by marking it: an attribute
+ * would change what the box serialises to, and the skip this exists to prove
+ * is a comparison of exactly that. And it reads what a reader actually sees in
+ * the box, because from s10's second round the built page carries question one
+ * AND the two lines that stand in for it, and which of the three shows is the
+ * stylesheet's answer to a flag — not something the built HTML can be read for
+ * (human's walk, 2026-09-15).
  */
-const HOLD_BUILT_CARD = `(() => {
+const AT_FIRST_PAINT = `(() => {
   window.__built = document.querySelector("#main > *");
   window.__foot = document.querySelector("footer.site-foot").getBoundingClientRect().top;
-  return window.__built ? "held" : "the built page painted nothing into #main";
+  const shown = (el) => el && getComputedStyle(el).visibility === "visible"
+    && getComputedStyle(el).display !== "none" && !!el.offsetParent;
+  return JSON.stringify({
+    held: !!window.__built,
+    box: Math.round(document.getElementById("main").getBoundingClientRect().height),
+    question: shown(document.querySelector(".qlabel")) ? document.querySelector(".qlabel").textContent : "",
+    standIn: [...document.querySelectorAll(".stand-in")].filter(shown).map((el) => el.textContent),
+  });
 })()`;
+
+interface AtFirstPaint {
+  held: boolean;
+  /** The box the reader meets, in pixels. It is the same box whichever line is
+   * in it: the stand-in sits OVER the question card rather than in place of
+   * it, so the card holds the height open (s10). */
+  box: number;
+  /** Question one's label, if a reader can read it; empty if it is covered. */
+  question: string;
+  /** The line standing in for it, if any. Never more than one. */
+  standIn: string[];
+}
 
 const READ = `JSON.stringify({
   cls: window.__cls.reduce((s, e) => s + e.value, 0),
@@ -171,11 +206,12 @@ interface Measured {
  * All five are measured at all three viewports.
  */
 const ARRIVALS = [
-  { name: "/ cold, with no record", path: "/", record: null },
-  { name: "/?country=fr — from a country page", path: "/?country=fr", record: null },
+  { name: "/ cold, with no record", path: "/", record: null, shape: "fresh" },
+  { name: "/?country=fr — from a country page", path: "/?country=fr", record: null, shape: "link" },
   {
     name: "/ with a saved record",
     path: "/",
+    shape: "record",
     // A reader part-way through: France, a Turkish passport, an offer there.
     record: {
       answers: { destination: "fr", citizenship: "TR", situation: "offer", situation_country: "fr" },
@@ -186,6 +222,7 @@ const ARRIVALS = [
     name: "/?route=de-blue-card-general — from a route page",
     path: "/?route=de-blue-card-general",
     record: null,
+    shape: "link",
   },
   {
     // The arrival the scenario's table does not name: a record with nothing
@@ -193,6 +230,7 @@ const ARRIVALS = [
     // the box one question was painted in.
     name: "/ with a finished record",
     path: "/",
+    shape: "record",
     record: {
       answers: {
         destination: "de", citizenship: "TR", situation: "offer", situation_country: "de",
@@ -219,6 +257,7 @@ const ARRIVALS = [
 const ABOVE_THE_BOX = ["#headline", "#subline", "#stamp", "DIV.stamp", "HEADER.masthead-with-stamps"];
 
 const measured = new Map<string, Measured>();
+const atFirstPaint = new Map<string, AtFirstPaint>();
 const key = (viewport: string, arrival: string) => `${viewport} · ${arrival}`;
 
 /** What was read, for a failure that names what moved and why. */
@@ -229,6 +268,9 @@ const detail = (m: Measured) =>
 
 describe.skipIf(skipped !== null)("the page as it first paints is already the page (s10)", () => {
   const read = (viewport: string, arrival: string) => measured.get(key(viewport, arrival))!;
+  const built = (viewport: string, arrival: string) => atFirstPaint.get(key(viewport, arrival))!;
+  /** The line this reader should meet in the box, and nothing else. */
+  const STAND_IN = { fresh: [], record: [RETURNING_LINE], link: [LINK_ARRIVAL_LINE] } as const;
   const cold = (viewport: string) => read(viewport, ARRIVALS[0].name);
 
   beforeAll(async () => {
@@ -247,8 +289,10 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
             // Read back while the module is still 450 ms out: what is on the
             // screen at this point is what the build put there.
             await page.goto(server.url(arrival.path), 250);
-            const held = await page.evaluate(HOLD_BUILT_CARD);
-            expect(held, `${key(screen.name, arrival.name)}: ${held}`).toBe("held");
+            const built = JSON.parse(await page.evaluate(AT_FIRST_PAINT)) as AtFirstPaint;
+            expect(built.held, `${key(screen.name, arrival.name)}: the built page painted nothing into #main`)
+              .toBe(true);
+            atFirstPaint.set(key(screen.name, arrival.name), built);
             await new Promise((r) => setTimeout(r, DELAY_JS_MS + 1250));
             await page.evaluate(INSTALL);
             await new Promise((r) => setTimeout(r, 400));
@@ -267,6 +311,22 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBeLessThan(GOOD);
         });
 
+        it(`${arrival.name}: the box says something true before the module lands`, () => {
+          // A returning reader was shown question one — a question they had
+          // already answered — until the module swapped it, every time they
+          // came back. Nothing untrue is ever on this screen (human's walk,
+          // 2026-09-15), so the box carries the reader's own line instead, and
+          // question one is covered for exactly those readers.
+          const b = built(screen.name, arrival.name);
+          expect(b.standIn, `the box read ${JSON.stringify(b.standIn)}`)
+            .toEqual([...STAND_IN[arrival.shape]]);
+          if (arrival.shape === "fresh")
+            expect(b.question, "a fresh visit is not shown question one").not.toBe("");
+          else
+            expect(b.question, `question ${JSON.stringify(b.question)} was shown to a reader who has answered it`)
+              .toBe("");
+        });
+
         it(`${arrival.name}: nothing above the box moves`, () => {
           // The aggregate would forgive a masthead that resized a little, and
           // a masthead that resizes takes the whole interview with it. Nothing
@@ -283,6 +343,18 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
         // same screen, and that is the defect, smaller.
         const m = cold(screen.name);
         expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBe(0);
+      });
+
+      it("every reader meets the same box, to the pixel", () => {
+        // The stand-in sits over question one rather than in place of it, so
+        // the card holds the box open and the page below starts where it
+        // starts for everybody. Said in pixels, because a box held open by a
+        // number instead would drift the first time the card changed.
+        const boxes = ARRIVALS.map((a) => [a.name, built(screen.name, a.name).box] as const);
+        const fresh = built(screen.name, ARRIVALS[0].name).box;
+        expect(fresh, "the box has no height at all").toBeGreaterThan(100);
+        expect(boxes.map(([, box]) => box), boxes.map(([n, b]) => `${n}: ${b}px`).join(" · "))
+          .toEqual(ARRIVALS.map(() => fresh));
       });
 
       it("the cold / does not move the footer by a pixel", () => {
@@ -331,7 +403,7 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
     expect(inMain).toBe(questionCardHtml({
       dataset, question: questions[0], answers: {}, asked: [], editing: null,
       total: questions.length, glossary: new Set(),
-    }));
+    }) + firstPaintPlaceholdersHtml());
   });
 
   it("tells a reader with no script, in a sentence, why they cannot answer it", () => {
@@ -347,5 +419,25 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
     expect(words, "not a sentence").toMatch(/\.$/);
     // And it is the product's one wording for it, said in copy.ts.
     expect(words).toBe(NO_SCRIPT_LINE);
+  });
+
+  it("carries a sentence for each reader whose screen is not the one it painted", () => {
+    // Asserted as sentences off the built page and not as the constants read
+    // back to themselves: emptying either one has to turn this red, the way
+    // emptying the noscript line does (DECISIONS.md — checks require
+    // decisions, not content). The decision is that a reader who is about to
+    // have their screen replaced is told so, in words, rather than being shown
+    // a question they have already answered.
+    for (const [where, expected] of [
+      ["stand-in-record", RETURNING_LINE],
+      ["stand-in-link", LINK_ARRIVAL_LINE],
+    ] as const) {
+      const said = new RegExp(`<p class="stand-in ${where}">([^<]*)</p>`).exec(inMain)?.[1] ?? "";
+      expect(said, `${where} shipped empty`).not.toBe("");
+      expect(said.length, `${where} is too short to be a sentence: ${JSON.stringify(said)}`)
+        .toBeGreaterThan(20);
+      expect(said, `${where} is not a sentence`).toMatch(/[.!]$/);
+      expect(said).toBe(expected);
+    }
   });
 });

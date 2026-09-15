@@ -2,7 +2,7 @@ import {
   deriveBands, fieldOptions, optionMeans, shortLabelOf,
   type Dataset, type FieldOption, type Profile, type Question,
 } from "permit-rulebook-data";
-import { NO_SCRIPT_LINE } from "./copy.js";
+import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import { type Glossary, glossSection } from "./gloss.js";
 
@@ -143,3 +143,22 @@ export const declarationCount = (answered: number): string =>
   answered
     ? `${answered} answer${answered === 1 ? "" : "s"} — tap to review or change`
     : "nothing yet";
+
+/**
+ * The two lines that stand in the box for a reader whose first screen is not
+ * the one the build painted.
+ *
+ * Both are painted; the stylesheet shows at most one, on the strength of the
+ * flag the pre-paint script wrote before anything appeared (s10). They sit
+ * inside the box and over the question rather than in place of it: the card
+ * keeps its own height because its contents are still there, hidden, so the
+ * box a returning reader meets is the box every reader meets and the page
+ * below it does not move. The module takes them out the moment it has a real
+ * screen to draw.
+ *
+ * A reader with no script never sees either — no flag is ever set — and gets
+ * question one and the line that says why they cannot answer it.
+ */
+export const firstPaintPlaceholdersHtml = (): string =>
+  `<p class="stand-in stand-in-record">${esc(RETURNING_LINE)}</p>`
+  + `<p class="stand-in stand-in-link">${esc(LINK_ARRIVAL_LINE)}</p>`;

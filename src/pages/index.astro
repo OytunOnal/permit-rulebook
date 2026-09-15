@@ -10,7 +10,7 @@ import { datasetMeta, remainingQuestions } from "permit-rulebook-data";
 // The first question is the same for everyone until an answer is given, so the
 // build draws it — through the very code the module draws every later screen
 // with, never a second copy of the markup (s10, 2026-09-15).
-import { declarationCount, declarationHtml, questionCardHtml } from "../lib/question.js";
+import { declarationCount, declarationHtml, firstPaintPlaceholdersHtml, questionCardHtml } from "../lib/question.js";
 // The three things the page must know about the reader before it paints, read
 // in <head> so the stylesheet can paint the shape the module would have chosen
 // (s10, 2026-09-15).
@@ -57,6 +57,14 @@ const firstScreen = questionCardHtml({
   total: firstQuestions.length, glossary: new Set(),
 });
 const firstDeclaration = declarationHtml(dataset, {}, [], firstQuestions[0].field);
+/**
+ * And, over it, the line for a reader whose own screen is not this one. The
+ * card stays in the box under it, so the box is the same box — a returning
+ * reader was shown a question they had already answered until the module
+ * landed, which is the one thing this product does not do (human's walk,
+ * 2026-09-15).
+ */
+const firstStandIns = firstPaintPlaceholdersHtml();
 /** What a search result says about the interview. */
 const INTRO_DESCRIPTION =
   "Which European work-permit routes fit? A check against dated, source-quoted "
@@ -102,7 +110,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           column then opens on the question instead of on the masthead, the
           intro and a growing ledger (product-critique v0.7, F8); on a wide
           screen the grid puts the ledger back on the left. */}
-      <main id="main" set:html={firstScreen}></main>
+      <main id="main" set:html={firstScreen + firstStandIns}></main>
     <!--
       One live region for the whole screen, created empty and filled after the
       render that has something to say. A region inserted with its text already
@@ -195,6 +203,20 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const app = document.getElementById("app")!;
     /** Where the pre-paint script left what it read about this reader. */
     const page = document.documentElement;
+
+    /**
+     * The stand-in line has done its job the moment this module exists: it was
+     * there to keep a reader from being shown a question they had already
+     * answered while the script was in the post, and the screen they should
+     * have is about to be drawn (s10).
+     *
+     * It goes now, before anything is compared, so what `paint` finds in the
+     * box is exactly what the renderer would draw and a fresh visit is still a
+     * page this module leaves alone. Nothing is painted between here and the
+     * first render — the flag that hides the question comes down with it, in
+     * `advance` — so the box never blinks.
+     */
+    for (const standIn of main.querySelectorAll(".stand-in")) standIn.remove();
 
     /**
      * Write markup into a box, unless it is already there.
@@ -1443,12 +1465,26 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        module used to swap the text when it landed 700 ms later, and the whole
        interview slid up under the reader (s10, 2026-09-15). */
     .sub-started{display:none}
-    [data-first="started"] .sub-fresh{display:none}
-    [data-first="started"] .sub-started{display:inline}
+    [data-first] .sub-fresh{display:none}
+    [data-first] .sub-started{display:inline}
+    [data-first="fresh"] .sub-fresh{display:inline}
+    [data-first="fresh"] .sub-started{display:none}
     /* The same, for the ledger, which is a closed disclosure on a narrow
        screen. It ships open — that is what a reader with no script should
        get — and is folded away here until the module closes it properly, in
        the same task it takes this flag down. */
+    /* The line that stands in the box until the module has a screen to draw,
+       for a reader whose own screen is not the one the build painted. It sits
+       OVER question one rather than in place of it: the card keeps its height
+       because its contents are still there, only hidden, so the box a
+       returning reader meets is the box every reader meets and nothing below
+       it moves. Which line — or neither — was decided in <head> (s10). */
+    .stand-in{display:none}
+    [data-first="record"] #main,[data-first="link"] #main{position:relative}
+    [data-first="record"] .qcard > *,[data-first="link"] .qcard > *{visibility:hidden}
+    [data-first="record"] .stand-in-record,[data-first="link"] .stand-in-link{
+      display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
+      margin:0;padding:1.6rem 1.8rem;text-align:center;color:var(--color-muted);font-size:.92rem}
     [data-narrow] #decl[open] > :not(summary){display:none}
     [data-narrow] #decl[open] > summary{margin-bottom:0}
 

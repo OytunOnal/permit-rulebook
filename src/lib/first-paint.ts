@@ -30,10 +30,23 @@ import { STORAGE_KEY } from "./record.js";
 export const WIDE_QUERY = "(min-width: 761px)";
 
 /**
- * `data-first="started"` — this reader has answered something, so the short
- * promise is theirs. `data-narrow` — the ledger is a disclosure here, and a
- * closed one. Neither says anything a module could not work out; they say it
- * early enough to matter.
+ * `data-first` says which of three readers this is. `"record"` — answers are
+ * on this device, so the short promise is theirs and the box says the answers
+ * are coming back. `"link"` — they pressed "Check yours" on a country or route
+ * page, which has answered question one for them but may be everything they
+ * have answered, so the box says only that it is setting up. Absent — a fresh
+ * visit, and the page the build painted is already right. `data-narrow` — the
+ * ledger is a disclosure here, and a closed one.
+ *
+ * The two started readers are told apart because the sentence for one is false
+ * for the other: a reader with no answers cannot have answers brought back
+ * (human's walk, 2026-09-15). A record wins over a link, because a reader who
+ * has both does have answers on the device.
+ *
+ * Nothing here says anything a module could not work out; it says it early
+ * enough to matter, and it names nothing from the dataset — no country, no
+ * route — because this string is inlined into the page, where nothing checks
+ * a name against the dataset.
  *
  * The record is looked for under the current key only. The module still reads
  * the pre-rename one and carries it across, but its name is the working name
@@ -45,14 +58,11 @@ export const WIDE_QUERY = "(min-width: 761px)";
 export const FIRST_PAINT_SCRIPT = `
   (() => {
     const page = document.documentElement;
-    // A link from a country or a route page puts a destination on the record
-    // before the first question is asked, so its reader has answered
-    // something too.
-    let started = /[?&](country|route)=/.test(location.search);
+    let first = /[?&](country|route)=/.test(location.search) ? "link" : "";
     try {
-      started = started || !!localStorage.getItem(${JSON.stringify(STORAGE_KEY)});
+      if (localStorage.getItem(${JSON.stringify(STORAGE_KEY)})) first = "record";
     } catch { /* a browser that refuses site data is a reader with no record */ }
-    if (started) page.dataset.first = "started";
+    if (first) page.dataset.first = first;
     if (!matchMedia(${JSON.stringify(WIDE_QUERY)}).matches) page.dataset.narrow = "";
   })();
 `;
