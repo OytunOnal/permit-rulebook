@@ -27,250 +27,47 @@ front of it and each is a research day before a build day.
 
 ## What is happening now
 
-**The watch has failed every day for five days, and the site says otherwise.**
-Found on 2026-09-15 by reading the tracker rather than the ledger. Runs on
-2026-09-11, 12, 13, 14 and 15 all ended red (data #18, one issue with four
-comments on it), and every one of them failed for the same two sources:
+**s11 is live** (2026-09-15, on your word: *"s11 merge"*). Site `777b3ff`, data
+`165f39a`, 539 + 349 tests, deploy green in 2m31s, read on the live host after
+it landed: `/data/` says *"Every source is re-read daily — last run
+2026-09-15."* with no exception clause, and the footer *"re-read daily (last
+run 2026-09-15)"* — the clean sentence, because the shipped state carries no
+unread list yet. **The first watch run after this merge writes it**, and from
+then on a partial run says so on every surface without anyone's help.
 
-- `es-uge-umbral-pdf` — Spain's salary-threshold PDF, **last read 2026-09-07**
-- `es-uge-index` — the UGE requirements page, **last read 2026-09-02**
+**What tonight's run should do.** The User-Agent repair means Spain reads
+again; CI read every IND page fine this morning. So the 05:17 UTC run is
+expected **green** — the first since 2026-09-10 — and `/data/` to stay clean.
+If it is not, the page will say which country, and that is the point.
 
-**And the cause is ours, not theirs** (measured the same day, data #18).
-`inclusion.gob.es` returns **403 to the User-Agent the watch identifies itself
-with** and **200 to a request that sends none** — reproducibly, from a laptop
-and from the CI runner alike, 299,065 and 701,825 bytes in about a second. It
-was never a wall and never the runner.
+**Three slices shipped this week on your word** — s8, s9, s11 — each built on
+a branch, reviewed on both axes, walked on the local preview, merged. Today's
+one cost the most and taught the most: the spec was wrong twice and the build
+measured it; the approved sentence claimed a duration nothing in the system
+knows and the walk caught it; and the working trees were treated as mine while
+an agent wrote in them, three times, which is now Spine's rule steward-53.
 
-*Correction, and worth keeping:* the first reading of this — written here this
-morning — said the pages answer a laptop and refuse the runner. That was wrong,
-and avoidably: the laptop check used a bare `fetch` instead of the client that
-actually fails. Checking a thing with a different client than the one that
-breaks is how a header problem wears a geography costume for five days.
+**The five-day failure is closed** (data #18 stays open for the record). It was
+our own header: the watch put a URL inside its User-Agent and
+`inclusion.gob.es` refuses that, wherever it comes from. The name stays, the
+address moved beside it, both Spanish sources read on the first try, and the
+salary threshold was **unchanged** — eight days blind, nothing moved.
 
-**The fix is a fork, not a patch, and it is yours:** the header is not an
-accident — it names the project and links the repository, which is what a daily
-reader of public pages should do. Four ways out are written on data #18; the
-recommended one keeps the honest identity everywhere it is accepted and records
-a per-host exception with this measurement and its date beside it, so the
-exception stays visible instead of becoming a silent global change.
-
-**The part that matters is not the failure, it is what the site says while it
-fails.** `/data/` reads *"re-read daily — last run 2026-09-15"*, and that
-sentence is printed from a state the run commits **before** the unreachable
-check fails it. The ordering is deliberate and was right when it was written
-("a state that WAS committed still has to reach the site when some other source
-was unreachable") — what nobody foresaw is that the footer would turn a partial
-run into an unqualified claim. It is true of 42 sources and false of two, and
-the two are values on live pages.
-
-**The watch reads Spain again, and the fork was never a fork** (data
-`02cee69`, 2026-09-15). You asked what the User-Agent choice traded. It traded
-nothing in the end, because the measurement moved: `inclusion.gob.es` objects
-to **a URL inside the name**, not to a reader that names itself.
-
-    permit-rulebook-watch/0.1 (+https://github.com/…) change-detection  403
-    permit-rulebook-watch/0.1 (+https://github.com/…)                   403
-    Mozilla/5.0 (compatible; …; +https://github.com/…)                  403
-    permit-rulebook-watch/0.1                                           200, 299,066 bytes
-    permit-rulebook-watch                                               200
-
-So the name stays — unique enough to find this repository by — and the address
-moves to a header of its own, which the same host serves happily. The other
-watched hosts answer the shortened name with 200 too. A test holds the rule
-rather than the string: no URL in the name, and the contact still sent.
-
-**Eight days blind, and nothing had moved.** Both Spanish sources read on the
-first try afterwards and the salary threshold is **unchanged** since
-2026-09-07. The product was wrong to say it had checked; it was not wrong
-about the value.
-
-**And the Spanish failure was hiding a second one.** With Spain reading, the
-same run reports **four IND pages unreachable** — `slice marker missing: from`
-— which is the shell this morning's triage found (data #17): the page no
-longer carries the region the slice is cut from. So the watch is still red
-tonight, for a different and now-visible reason, and the browser strategy the
-gate cleared this afternoon is what answers it.
-
-**s11 is built, and it corrected the spec twice** (branches `s11-site`
-`d362184` and `s11-data` `0b3f19f`; **530 + 345 tests**, the root-build
-fingerprint unmoved and pinned by a case rather than by luck).
-
-- **The fact was not on disk.** The spec — mine — said a snapshot whose
-  `retrieved_at` predates `last_run` went unread, and forbade writing a new
-  field. That is false: `retrieved_at` is the day a *reading* was first taken,
-  and the unchanged arm keeps it too, so on today's shipped state **39 of 39
-  entries look stale and none of them is**. The five-day failure left a
-  one-line diff in `state.json`. The run now writes `unread` — a list of
-  `{id, url}` computed in one place from the reports the pass already makes,
-  empty on a clean day. I asserted the opposite from reading one arm of the
-  code; the build measured both.
-- **"Two Spanish sources" is one.** The second is a sentinel no dataset value
-  cites, and the spec's own rule — a reader is told about values, not about our
-  plumbing — drops it. The approved sentence agreed with that and disagreed
-  with itself: the date in it, 2026-09-07, is the PDF's; a second source would
-  have made it 2026-09-02. So the page says: *"Every source is re-read daily —
-  last run 2026-09-15. A Spanish source has not answered since 2026-09-07; the
-  values it backs still show that date."* **The count changed after the human
-  approved the words, so the sentence goes back to them.**
-
-**The fix round landed, all fourteen, and then the walk I was preparing found
-a fifteenth — in the sentence you approved** (2026-09-15; site `29b7805`, data
-`f372c9e`, both with master merged in; **539 + 349 tests**).
-
-Built the page against a real run and read it:
-
-> Every source is re-read daily — last run 2026-09-15. **Four Dutch sources
-> have not answered since 2026-09-07**; the values they back still show that
-> date.
-
-The second half is true. **The first half is not, and we can prove it:** in
-this morning's CI run all four of those IND entries reported `unchanged` —
-they answered, today. Their snapshots read 2026-09-07 because that is the day
-the *reading* was taken, and an unchanged page keeps its date. That is the
-exact conflation the build caught in the derivation — `retrieved_at` is not
-"last read" — and it survived in the copy, because the sentence was written
-while we still believed otherwise. My spec's point 7 says "the oldest last-read
-among the unread", and there is no last-read date anywhere in this system.
-
-**What the state actually knows** is two things: which sources the last run did
-not reach, and the day the values they back were read. So the sentence can say
-both and claim no duration:
-
-> Four Dutch sources did not answer on the last run; the values they back were
-> read on 2026-09-07.
-
-**Approved** (2026-09-15, *"tamamdır"*) and applied on `s11-data` (`165f39a`,
-539 tests): the sentence now says which sources the last run did not reach and
-the day the values they back were read, and nothing about how long. The tests
-that pinned the old shape pin this one.
-
-**A second thing the same walk exposed:** those four IND failures are *this
-machine's*, not the product's. CI read them fine this morning; my local run
-gets the navigation-only shell. So the run I generated to walk against was my
-laptop's view, not the site's — I discarded it rather than let a walk happen
-over a state no runner produced. The walk waits for the wording.
-
-**Both reviews are in: 14 findings, three of them blockers, all sent back in
-one round** (2026-09-15).
-
-- **The sharpest was missed by me and by the Spec axis both.** s11 taught the
-  qualification to `/data/` and the footer and left **28 route pages** typing
-  *"and a daily check re-reads every source"* into the template
-  (`route-page.ts:730` and `:735`, verified by hand). Two surfaces of three.
-  `copy.ts` exists to stop exactly that drift.
-- **Both axes found the same second one independently:** `--only` keeps a
-  source in the unread list after re-reading it, so the documented step for a
-  slice change — `npm run watch:sources -- --only=<id>` — would make the page
-  say *"has not answered since <the day it was just read>"*. A routine step
-  turned into a lie on a live page.
-- **The case named for the real state asserts nothing** — both sides of its
-  expectation are false today, so it passes on a page that still lies. Its
-  replacement may not be written the way its sibling is, by grepping the CLI's
-  own source; this project ruled against that on 2026-09-08.
-
-**One finding I answered rather than forwarded.** Spec calls it a blocker that
-the shipped `state.json` carries no `unread`, and suggests back-filling the
-run of 2026-09-15 by hand. **No:** state is written by a run, never typed —
-and since the User-Agent repair a real run reads Spain and reports the four IND
-pages instead. The slice closes when the first run after merge writes the list.
-What the build owes is that the machinery is provably right, which is the third
-blocker.
-
-**Held out of the slice on purpose, and on the roadmap rather than forgotten:**
-a route page naming **its own** unread sources instead of the dataset's. Better,
-narrower, more useful — and not what s11 owed.
-
-**A working rule I broke three times today** — a mixed diff, a red master, a
-stale STATUS, all three from treating a tree an agent was writing in as mine.
-I wrote the fix into this file as "the main trees belong to the agent, the
-ledgers move to the `_preview` worktrees".
-
-**Spine has since ruled the other way round, and its version is better**
-(steward-53, 2026-09-15, with today's three slips as its evidence): **one
-writer per working tree** — the builder creates its own worktree on the slice's
-branch and works only there, and the **primary tree stays on master and belongs
-to the main session**, because that is where the ledgers, the scenario walk and
-the status guard live. Mine moved the ledgers away from the guard that checks
-them; this keeps them together and moves the builder instead. The preview
-worktrees go back to doing only what they were for — serving a branch to walk.
-
-In force from the next slice; the round in flight finishes where it is, since
-moving a tree under a working agent risks the work for nothing.
-
-**A mess of mine, repaired.** `git add -A` ran in a tree the builder was
-writing in and swept s11's site half into a ledger commit, which reached master
-and broke it: the site imported what the published ruleset does not export yet.
-The deploy failed at `astro check`, so **the live site was never touched** — a
-failed build publishes nothing — and master is green again (`34fe87c`, deployed
-14:35). The work is intact on its own branches. It is the second time today a
-working tree was treated as mine while an agent wrote in it; the first cost a
-mixed diff, this one a red master.
-
-**The wording chosen, for the record:** (2026-09-15). On a day
-when something went unread `/data/` will say: *"Every source is re-read daily —
-last run 2026-09-15. Two Spanish sources have not answered since 2026-09-07;
-the values they back still show that date."* On a clean day the clause
-disappears and the page is byte-identical to today. The scenario is
-`docs/spine/scenarios/s11-partial-run.md`, on the branch `partial-run` in both
-repositories; the staleness is **derived, not declared** — a snapshot whose
-`retrieved_at` predates `last_run` was not read in that run, which is already
-on disk because the watch carries an unreachable source's previous reading
-forward untouched.
-
-The original shape of the problem, for the record: the state should
-record what a run achieved (read, unreachable, and the oldest read date among
-them) and the sentence should say it, the way every other claim on this site
-carries what it rests on.
-
-**The browser candidate's gate is answered: 2 of 5** (2026-09-15, run on the
-runner, `/usr/bin/google-chrome`). Headless Chrome reads **EUR-Lex**
-(130,574 characters, the sentence found) and the **IND** (9,816, found); it does
-**not** read **Legifrance**, which answers it with a Cloudflare challenge — 270
-characters titled "Just a moment…". The runner and a laptop returned the same
-five rows, so these walls sort by client, not by address. So the strategy is
-worth building, for two sources, and the human tier goes from 2 to 1 rather
-than to 0. The measurement lives on the branch `bot-wall` in both repositories
-and is meant to be deleted with the decision it informs.
-
-**The Dutch flag is triaged** (data #17, four days late) — and it was not a rule
-change. Today's read of the IND page is **7,256 characters of navigation**
-against a stored 14,451 with the rules in it: the words that left are
-"recognised sponsor", "employment contract", "public register of sponsors", and
-the words that arrived are "Skip to main content" and "Open menu". The page did
-not change what it requires; it stopped handing this fetcher its body. Nothing
-is broken today — the good snapshot stands and quote fidelity passes — and the
-issue stays open carrying the argument it makes: the watch refuses an empty 202
-since 2026-09-10, and a 200 carrying only chrome is the same failure in a
-different status code. **Third bot-wall measured on this project** (Legifrance
-403, EUR-Lex empty 202, IND shell), which is what the browser-driven read on
-the roadmap is for.
-
-**The original second finding:** The IND highly-skilled-migrant
-page — which backs the recognised-sponsor condition, the market-rate
-precondition and the ICT statement on both Dutch routes — returned only
-navigation to this fetcher today: 7,256 characters of menus, with
-"recognised sponsor", "salary" and "€" all absent, where the stored read holds
-14,451 characters with the rules in them. Its 2026-09-11 change flag (data #17)
-was never triaged. The good snapshot is still in `watch/state.json` and quote
-fidelity passes (183 verified, 513 tests green), so nothing is broken today —
-but if that shell ever overwrites the snapshot, the Dutch quotes lose the
-evidence under them.
-
-**Tracker hygiene:** data #9 and #11 — the Netherlands and France nationality
-reads — were still open although s7 and s8 shipped them. Closed, each with what
-actually went live.
-
-**Everything else is where it was left.** v1.1 has one slice to go — **s10**,
-the CLS defect (site #8). `feedback-line` is still the only branch standing
-and still waits on a walk. The roadmap gained three candidates on 2026-09-11
-(what a permit leads to · permanent residence · citizenship, bets A16–A19).
+**Queued, in order:** **s10** (CLS, site #8 — v1.1's last slice, unbuilt);
+**site #9** (the label "Newest value read" that you read as "last checked" —
+two rows, "Newest value changed" and "Last checked"); `feedback-line` (site
+#6, built, never walked); data #15 (the free-movement notice's evidence for
+four passports); data #13 (the Opportunity Card's link); data #17 (the IND
+shell — the browser strategy's gate read 2 of 5, worth building for two
+sources); the Spanish job-search visa's annual order to re-read at the end of
+December.
 
 What runs without anyone asking:
 
-- **The daily watch** (05:17 UTC) — running, and red for five days.
-- **The site's daily rebuild** — working: it has pinned and deployed a fresh
-  data commit every day since 2026-09-11 (`c026900` today).
-- **The counter** and **the pre-registered numbers** (A2, A7, A8 on 2026-10-09).
+- **The daily watch** (05:17 UTC) — repaired today; expected green tonight.
+- **The site's daily rebuild** (06:40 UTC nominal, ~11:48 in practice) — has
+  pinned and deployed a fresh data commit every day since 2026-09-11.
+- **The counter**, and **the pre-registered numbers** (A2, A7, A8 on 2026-10-09).
 
 ## What is expected from you
 
@@ -331,22 +128,8 @@ to look:
       checks section's *"…never on their own."* sat 0px above the Take-it
       box's rule. Both 26px now, from two rules on this page only, so no other
       page's bytes moved; the pre-s11 fixture was regenerated on purpose.
-- [ ] **Walk s11, then say merge** — http://localhost:4500 serves it
-      (`s11-site` `32893d1` against `s11-data` `165f39a`; 539 + 349 tests).
-      The preview is built against **this morning's real CI run** — the two
-      Spanish sources it reported unreachable, reconstructed from that run's
-      own log and the shipped state's own dates; nothing invented, and it is
-      discarded before merge. *What to look for, three places:*
-      **http://localhost:4500/data/** — the paragraph ends *"Every source is
-      re-read daily — last run 2026-09-15. A Spanish source did not answer on
-      the last run; the values it backs were read on 2026-09-07."* — one
-      source, not two, because the second is a sentinel no value rests on.
-      **Any page's footer** — *"re-read daily (last run 2026-09-15 · 1 source
-      unread)"*. **Any route page**, e.g.
-      http://localhost:4500/spain/eu-blue-card/ — *"…and a daily check
-      re-reads every source; the last run did not reach one of them."*
-      *Pass:* every one of those reads as a fact about today and not as a
-      promise; and nothing else on any page moved.
+- [x] **s11 walked and merged** (2026-09-15, your word). Live, and read on the
+      live host afterwards.
 - [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
       window to close at 09:00 tomorrow). One line under your results: "Wrong
       about you? A value that does not match its source, or something this
