@@ -68,7 +68,7 @@ first question **in the same place and without the footer moving**.
    module delayed and asserts CLS on all three arrivals. The bound is
    **below 0.1** — Google's "good" — on every one, and **0** on the cold,
    record-less `/`, because that page should paint once. The harness used to
-   reproduce this is at the session's scratchpad `cls.mjs` and can be lifted:
+   reproduce this is beside this file, `s10-cls-harness.mjs`, and can be lifted:
    a server that delays `.js` responses, a `PerformanceObserver` on
    `layout-shift` with `buffered: true` installed after load and read after a
    beat (the driver's `evaluate` does not await a promise).
