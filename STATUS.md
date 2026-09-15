@@ -27,98 +27,54 @@ front of it and each is a research day before a build day.
 
 ## What is happening now
 
-**s9 is live** (2026-09-11, on your word: *"s9 merge"*). Site `28abe56`, data
-`29fde08`, 513 + 336 tests, deploy green in 2m44s, checked on the live host
-after it landed: all five new pages answer, `/data/` says *"23 routes scored
-against your answers and 5 quoted and dated but not scored"*, the France page
-heads *"France: 5 routes scored, 1 quoted"* with its call to action centred.
+**The watch has failed every day for five days, and the site says otherwise.**
+Found on 2026-09-15 by reading the tracker rather than the ledger. Runs on
+2026-09-11, 12, 13, 14 and 15 all ended red (data #18, one issue with four
+comments on it), and every one of them failed for the same two sources:
 
-Five permits the interview does not ask about now carry their rules in the
-authority's words, dated and watched, under the third scope value — **quoted
-and dated · not scored**, which the dataset had held since s6 and never used.
-Each says why it cannot be scored, in a sentence written for it: a labour
-market « opposable au demandeur »; a catalogue republished quarterly per
-region; five judgements the German statute hands to the local chambers; a
-refusal UWV writes on the employer's effort; an income floor reset every year.
+- `es-uge-umbral-pdf` — Spain's salary-threshold PDF, **last read 2026-09-07**
+- `es-uge-index` — the UGE requirements page, **last read 2026-09-02**
 
-**The branches are tidied.** s8 and s9 are merged and their branches are gone
-from both repositories, along with a stub that had held nothing but an old
-`data.lock` line. The preview worktrees sit on master, so
-http://localhost:4500 serves what is live until the next slice takes them.
-**One branch is still standing and it is not mine to merge:** `feedback-line`
-(site #6, `20681e6`) — one line under the results screen, built and waiting on
-your walk since the launch window, which closed this morning.
+Both answer this machine fine today (HTTP 200, 702 KB of PDF and 299 KB of
+HTML), so the pages are up and it is the CI runner they refuse — the same
+shape as Legifrance's 403, from the other side.
 
-**Three candidates went on the roadmap** (your idea, 2026-09-11: *"permanent
-residency ve vatandaşlık yollarını da eklesek mi ileride"*) — **what a permit
-leads to** (v1.x, the cheap one: one quoted, dated sentence per route about the
-years that count toward permanent residence, stated and not scored), **permanent
-residence** (v2, gated on one country measured end to end), and **citizenship**
-(v3, behind PR on purpose). Their four bets are **A16–A19** in
-`docs/spine/assumptions.md`; the bets are mine, so correct any that is not
-what you meant. Nothing is built and nothing else moved.
+**The part that matters is not the failure, it is what the site says while it
+fails.** `/data/` reads *"re-read daily — last run 2026-09-15"*, and that
+sentence is printed from a state the run commits **before** the unreachable
+check fails it. The ordering is deliberate and was right when it was written
+("a state that WAS committed still has to reach the site when some other source
+was unreachable") — what nobody foresaw is that the footer would turn a partial
+run into an unqualified claim. It is true of 42 sources and false of two, and
+the two are values on live pages.
 
-**The board is empty between slices.** v1.1 opened with two: s9 is done, **s10
-is not started** — the CLS defect the counter found (poor for 23% of samples;
-`#app` 0.402, the footer 0.414, against a 0.25 threshold, while LCP and INP
-are good for 100%). It is the last thing v1.1 needs before it can be stamped.
+**Diagnosed, not fixed** — the fix is a decision, not a patch: the state should
+record what a run achieved (read, unreachable, and the oldest read date among
+them) and the sentence should say it, the way every other claim on this site
+carries what it rests on.
 
-**Two slices shipped in two days, both on your word.** Built on a branch,
-reviewed on two axes, walked by you on a local preview, merged. Neither went
-live because a build went green. What that bought: four findings caught before
-the deploy rather than after — "criteria met" over a contested route, four URLs
-that had moved, a heading mixing numerals with words, and a stamp touching the
-header rule.
+**A second thing, found while checking the first.** The IND highly-skilled-migrant
+page — which backs the recognised-sponsor condition, the market-rate
+precondition and the ICT statement on both Dutch routes — returned only
+navigation to this fetcher today: 7,256 characters of menus, with
+"recognised sponsor", "salary" and "€" all absent, where the stored read holds
+14,451 characters with the rules in them. Its 2026-09-11 change flag (data #17)
+was never triaged. The good snapshot is still in `watch/state.json` and quote
+fidelity passes (183 verified, 513 tests green), so nothing is broken today —
+but if that shell ever overwrites the snapshot, the Dutch quotes lose the
+evidence under them.
 
-**Your question about Spain is answered, all three parts of it** (data #16,
-`docs/spine/research-05-job-search-routes.md`, rows in `data/exclusions.md`).
-
-- **Spain does have the thing** — RD 1155/2024 arts. 43–45, twelve months in
-  Spain to look for work, from abroad, becoming a work authorisation when a
-  contract is signed. **And this year it is open to nobody.** It is switched on
-  only by the annual collective-recruitment order, and the one in force for
-  2026 (Orden ISM/1547/2025) names nothing: every mention of *búsqueda de
-  empleo* in it is the same unexercised *« podrá establecer un número de
-  visados »*, no annex carries a list or a figure, and the previous order reads
-  the same. Zero for descendants of Spaniards, zero for occupations. Read
-  twice, by two readers, against the BOE's own text.
-- **France's card exists and no reader arriving from abroad can use it** — the
-  only branch reachable from outside the country wants the French diploma
-  already in hand.
-- **Spain's student route is the same shape** — twenty-four months after a
-  degree finished in Spain, applied for from inside Spain.
-
-All three are rows now, each with the authority's sentence and the day it was
-read. The Spanish one carries something the others do not: **a date on which
-its answer can change.** The next annual order is published at the end of
-December, and that row says to re-read it then — it is the only line in that
-file whose "no" has an expiry.
-
-**A candidate that falls out of this, not taken:** the product could say to a
-Spanish jobseeker what it now knows — that a job-search visa exists in Spanish
-law and no order opens it this year. Today they see silence. That is a slice,
-not a fix, and it waits for a boundary.
-
-One thing measured on the way: the French fiche was put on the watchlist and
-taken back off. The watch covers sources the **dataset** uses, and the coverage
-gate calls anything else an orphan — a source quoted only in `exclusions.md`
-carries its read date in the prose instead. Tried, measured, reverted.
-
-**Also open, from the passport sweep** (data #15): the free-movement notice
-claims Iceland, Liechtenstein, Norway and Switzerland, and the only sentence
-under it is about EU nationals. The claim is right; the evidence is not
-evidence for it. Not a live blocker — no verdict is wrong, no value is stale.
+**Everything else is where it was left.** v1.1 has one slice to go — **s10**,
+the CLS defect (site #8). `feedback-line` is still the only branch standing
+and still waits on a walk. The roadmap gained three candidates on 2026-09-11
+(what a permit leads to · permanent residence · citizenship, bets A16–A19).
 
 What runs without anyone asking:
 
-- **The daily watch** (05:17 UTC, data repository) re-reads every source, files
-  an issue for each change and tells the site to rebuild.
-- **The site's daily rebuild** (06:40 UTC nominal, ~11:48 in practice) is the
-  redundant path, and it is working — it has fired every day since 2026-09-09.
-- **The counter** (Cloudflare Web Analytics) records one view per page load and
-  nothing about the reader.
-- **The pre-registered numbers** in `docs/spine/assumptions.md` decide A2, A7
-  and A8 thirty days after the announcement — 2026-10-09.
+- **The daily watch** (05:17 UTC) — running, and red for five days.
+- **The site's daily rebuild** — working: it has pinned and deployed a fresh
+  data commit every day since 2026-09-11 (`c026900` today).
+- **The counter** and **the pre-registered numbers** (A2, A7, A8 on 2026-10-09).
 
 ## What is expected from you
 
