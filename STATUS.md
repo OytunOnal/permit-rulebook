@@ -323,6 +323,22 @@ to look:
       *"ispanyayı oku ve okut"*). It opens nothing this year, by two independent
       reads of the BOE text. Recorded, with the date to re-read it: the next
       order, end of December.
+- [ ] **Walk s11, then say merge** — http://localhost:4500 serves it
+      (`s11-site` `32893d1` against `s11-data` `165f39a`; 539 + 349 tests).
+      The preview is built against **this morning's real CI run** — the two
+      Spanish sources it reported unreachable, reconstructed from that run's
+      own log and the shipped state's own dates; nothing invented, and it is
+      discarded before merge. *What to look for, three places:*
+      **http://localhost:4500/data/** — the paragraph ends *"Every source is
+      re-read daily — last run 2026-09-15. A Spanish source did not answer on
+      the last run; the values it backs were read on 2026-09-07."* — one
+      source, not two, because the second is a sentinel no value rests on.
+      **Any page's footer** — *"re-read daily (last run 2026-09-15 · 1 source
+      unread)"*. **Any route page**, e.g.
+      http://localhost:4500/spain/eu-blue-card/ — *"…and a daily check
+      re-reads every source; the last run did not reach one of them."*
+      *Pass:* every one of those reads as a fact about today and not as a
+      promise; and nothing else on any page moved.
 - [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
       window to close at 09:00 tomorrow). One line under your results: "Wrong
       about you? A value that does not match its source, or something this
