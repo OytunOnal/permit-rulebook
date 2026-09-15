@@ -50,6 +50,20 @@ export const DISCLAIMER =
   "it compares published values with what you declare, nothing more.";
 
 /**
+ * What a reader without JavaScript is owed.
+ *
+ * Until s10 the interview's box shipped empty and a reader with script turned
+ * off saw nothing at all — a blank page that said nothing about why. The
+ * question is in the HTML now, which is better and still not enough: they can
+ * read it and cannot answer it. So the page says so, in one line, under the
+ * question. The route pages need no such line: they are rules, and they are
+ * whole without a script (s10, 2026-09-15).
+ */
+export const NO_SCRIPT_LINE =
+  "This question needs JavaScript to answer: the comparison runs in your browser, "
+  + "which is how your answers stay on your device.";
+
+/**
  * What a route page adds to it. A page a stranger lands on cold from a search
  * has to say, before it says anything else, that it is describing rules rather
  * than judging the reader.
