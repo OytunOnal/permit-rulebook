@@ -83,6 +83,11 @@ was a case that grepped the source and passed on an empty file. Sent back in
 one round; the fixture also stops calling itself "pre-s11" and names a revision
 instead of a branch.
 
+**The round is in and gated** (`two-labels` `ad19a0f`; build clean, **423
+tests**, fingerprint unmoved). The decision case bends the dataset — a notice
+re-read three weeks after the newest value — and goes red on the revert; the
+builder did the revert once to prove it. On the preview.
+
 **Queued, in order:** **site #9** (the "Newest value read" label, two rows);
 `feedback-line` (site #6, built, never walked); **data #15** (the free-movement
 notice's evidence for four passports); **data #13** (the Opportunity Card's
@@ -173,6 +178,13 @@ to look:
 - [x] **s10 walked twice and merged** (2026-09-15, your word). Live, and read
       on the live host afterwards.
 - [x] **s12 scenario approved** (2026-09-15, your word: *"approve"*). Being built.
+- [ ] **Walk s12, then say merge** — http://localhost:4500/data/ (`ad19a0f`).
+      Under "What it holds today": *Newest value changed 2026-09-10* and, on
+      the row below it, *Last checked 2026-09-15*. Nothing else on the page
+      moved; the stamp still says RULES READ 2026-09-10 and the footer still
+      says "values read between 2026-09-02 and 2026-09-10", on purpose.
+      *Pass:* the two rows answer the question you asked this afternoon
+      without anyone explaining the word "read".
 - [ ] **v1.1 — stamp it, or say what it still needs.** Its scope was s9 and
       s10; both are real-green and live. A stamp brings the full critique walk
       (every persona, all nine lenses, delta against v1's 36/50 on RUBRIC 1.3)
