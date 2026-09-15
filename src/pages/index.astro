@@ -6,7 +6,15 @@ import "../../tokens.css";
 import "../../identity.css";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { assertValidDataset } from "permit-rulebook-data/validate";
-import { datasetMeta } from "permit-rulebook-data";
+import { datasetMeta, remainingQuestions } from "permit-rulebook-data";
+// The first question is the same for everyone until an answer is given, so the
+// build draws it — through the very code the module draws every later screen
+// with, never a second copy of the markup (s10, 2026-09-15).
+import { declarationCount, declarationHtml, firstPaintPlaceholdersHtml, questionCardHtml } from "../lib/question.js";
+// The three things the page must know about the reader before it paints, read
+// in <head> so the stylesheet can paint the shape the module would have chosen
+// (s10, 2026-09-15).
+import { FIRST_PAINT_SCRIPT } from "../lib/first-paint.js";
 // The masthead is one function of which screen is showing, server and client
 // alike — a second copy of the intro copy here is how "Start over" left a
 // stale claim on question 1 (product-critique v0.7, B4).
@@ -29,6 +37,34 @@ import { analyticsBeacon, headMeta } from "../lib/site.js";
 const dataset = assertValidDataset(rawDataset);
 const meta = datasetMeta(dataset);
 const intro = mastheadFor({ kind: "question", started: false });
+/**
+ * The masthead's other standing form: the promise shortens once it has been
+ * read, and a reader with a record read it last time. Both are painted, and
+ * the pre-paint script's flag says which one this reader gets — the module
+ * used to swap the text 700 ms in, which pulled the whole interview up under
+ * them (s10).
+ */
+const started = mastheadFor({ kind: "question", started: true });
+/**
+ * The screen the page paints with, before any script runs: question one, with
+ * nothing on the record. Every reader meets it, and the ones whose own screen
+ * differs — a saved record, an arrival from a country or route page — have
+ * theirs put in its place by the module, in the same box.
+ */
+const firstQuestions = remainingQuestions(dataset, {});
+const firstScreen = questionCardHtml({
+  dataset, question: firstQuestions[0], answers: {}, asked: [], editing: null,
+  total: firstQuestions.length, glossary: new Set(),
+});
+const firstDeclaration = declarationHtml(dataset, {}, [], firstQuestions[0].field);
+/**
+ * And, over it, the line for a reader whose own screen is not this one. The
+ * card stays in the box under it, so the box is the same box — a returning
+ * reader was shown a question they had already answered until the module
+ * landed, which is the one thing this product does not do (human's walk,
+ * 2026-09-15).
+ */
+const firstStandIns = firstPaintPlaceholdersHtml();
 /** What a search result says about the interview. */
 const INTRO_DESCRIPTION =
   "Which European work-permit routes fit? A check against dated, source-quoted "
@@ -40,7 +76,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <Fragment set:html={contentSecurityPolicy([MENU_SCRIPT])} />
+  <Fragment set:html={contentSecurityPolicy()} />
+  <script is:inline set:html={FIRST_PAINT_SCRIPT}></script>
   <title>{PRODUCT_NAME} — which work-permit routes fit?</title>
   <Fragment set:html={iconLinks()} />
   <Fragment set:html={headMeta({
@@ -59,7 +96,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       <div>
         <div class="brand">{TAGLINE}</div>
         <h1 id="headline" set:html={intro.headline}></h1>
-        <p class="sub" id="subline">{intro.subline}</p>
+        <p class="sub" id="subline"><span class="sub-fresh">{intro.subline}</span><span class="sub-started">{started.subline}</span></p>
       </div>
       {/* One pair, two states. On the question screens it states the same
           fact the route page states — when the rules were last read — and on
@@ -73,7 +110,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           column then opens on the question instead of on the masthead, the
           intro and a growing ledger (product-critique v0.7, F8); on a wide
           screen the grid puts the ledger back on the left. */}
-      <main id="main"></main>
+      <main id="main" set:html={firstScreen + firstStandIns}></main>
     <!--
       One live region for the whole screen, created empty and filled after the
       render that has something to say. A region inserted with its text already
@@ -82,8 +119,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     -->
     <p class="visually-hidden" id="cstatus" role="status" aria-live="polite"></p>
       <details class="decl" id="decl" open>
-        <summary><span class="decl-title">You declared</span><span class="decl-count" id="decl-count"></span></summary>
-        <dl id="decl-list"></dl>
+        <summary><span class="decl-title">You declared</span><span class="decl-count" id="decl-count">{declarationCount(0)}</span></summary>
+        <dl id="decl-list" set:html={firstDeclaration}></dl>
         <a class="edit" href="#" id="restart" hidden>Start over</a>
       </details>
     </div>
@@ -98,7 +135,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import dataset from "permit-rulebook-data/data/dataset.json";
     import {
       deriveQuestions, remainingQuestions, evaluate, formatEURPer,
-      deriveBands, unlocks, notices, fieldOptions, matchOptions, referencedFields,
+      unlocks, notices, fieldOptions, matchOptions, referencedFields,
       // A route the authority closes to this reader's passport is not a
       // verdict the rules computed — one predicate, read by both repositories,
       // so a screen can never file it under a heading that promises it later.
@@ -110,7 +147,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
       // What an answer means here, where the label alone leaves two answers
       // hard to tell apart (human walk, 2026-09-08).
-      optionMeans, unlockMeansOf, countryPhrase,
+      unlockMeansOf, countryPhrase,
       type Dataset, type FieldOption, type Profile, type RouteResult,
     } from "permit-rulebook-data";
     import { routePath } from "../lib/slug.js";
@@ -136,6 +173,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The reason column's markup, beside the page rather than in it, so what
     // it renders can be read by a test (review S4).
     import { esc, escAttr, failDetailHtml, whyHtml } from "../lib/reason.js";
+    // The question screen and the declaration panel: the same renderer the
+    // build drew the first paint with, so the module's first render finds the
+    // screen it would have drawn already on the page (s10).
+    import { declarationCount, declarationHtml, hasClasses, isLongList, questionCardHtml } from "../lib/question.js";
+    // The width the ledger stops being a disclosure at, said once, and read
+    // here and by the script that runs before the first paint (s10).
+    import { WIDE_QUERY } from "../lib/first-paint.js";
     // One date format, everywhere a date prints (decision 12).
     import { isoDay } from "../lib/copy.js";
     import {
@@ -157,6 +201,77 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const headline = document.getElementById("headline")!;
     const subline = document.getElementById("subline")!;
     const app = document.getElementById("app")!;
+    /** Where the pre-paint script left what it read about this reader. */
+    const page = document.documentElement;
+
+    /**
+     * The stand-in line has done its job the moment this module exists: it was
+     * there to keep a reader from being shown a question they had already
+     * answered while the script was in the post, and the screen they should
+     * have is about to be drawn (s10).
+     *
+     * It goes now, before anything is compared, so what `paint` finds in the
+     * box is exactly what the renderer would draw and a fresh visit is still a
+     * page this module leaves alone. Nothing is painted between here and the
+     * first render — the flag that hides the question comes down with it, in
+     * `advance` — so the box never blinks.
+     */
+    for (const standIn of main.querySelectorAll(".stand-in")) standIn.remove();
+
+    /**
+     * Write markup into a box, unless it is already there.
+     *
+     * The build paints the first question through the same renderer this
+     * module uses, so on a fresh visit every string this page is about to
+     * write is the string already there. Writing it anyway would replace live
+     * nodes with identical ones — cheap, but it is the same gesture that
+     * produced the defect, and the measurement is what decides (s10).
+     *
+     * The candidate is parsed into an empty copy of the box itself, never a
+     * spare `<div>`: what a fragment serialises to depends on what it was
+     * parsed inside, and the ledger's rows are parsed inside a `<dl>`. Both
+     * sides then read as the browser writes them, which is the comparison
+     * that means something — our escaping and Chrome's do not spell `'` the
+     * same way, and comparing the raw strings would report a difference that
+     * is not one.
+     *
+     * Says whether it wrote.
+     */
+    const spares = new Map<Element, Element>();
+    function draw(el: Element, html: string): boolean {
+      let spare = spares.get(el);
+      if (!spare) spares.set(el, spare = el.cloneNode(false) as Element);
+      spare.innerHTML = html;
+      if (el.innerHTML === spare.innerHTML) return false;
+      el.innerHTML = html;
+      return true;
+    }
+
+    /**
+     * Draw, and hang this screen's listeners on what is now in the box.
+     *
+     * `wired` remembers which boxes hold nodes this module has already hung
+     * them on: the ones the BUILD drew need wiring without a repaint, and a
+     * repeated render that draws the same screen must not hang a second copy
+     * on the same nodes.
+     *
+     * THE RULE, for anything that writes a painted box some other way: take
+     * the box out of `wired` first, or the next render that happens to draw
+     * the same screen will trust listeners that went out with the old nodes
+     * and hang a second set on the new ones. `renderResults` is the one place
+     * that does, and it says so there too (s10).
+     */
+    const wired = new Set<Element>();
+    function paint(el: Element, html: string, wire: () => void): void {
+      if (draw(el, html)) wired.delete(el);
+      if (wired.has(el)) return;
+      wired.add(el);
+      wire();
+    }
+    /** The same, for a line of text with nothing to wire. */
+    function say(el: Node, text: string): void {
+      if (el.textContent !== text) el.textContent = text;
+    }
 
     /**
      * The stamp says which fact the screen is standing on.
@@ -308,9 +423,21 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * transitions themselves live in `screen.ts`, where a property test walks
      * them in every order (review H1). */
     function advance(action: FlowAction) {
-      const m = mastheadFor(screenAfter(action, { answered: asked.length }));
-      headline.innerHTML = m.headline;
-      subline.textContent = m.subline;
+      const screen = screenAfter(action, { answered: asked.length });
+      const m = mastheadFor(screen);
+      draw(headline, m.headline);
+      // The build painted both of the masthead's standing promises and an
+      // inline script in <head> chose between them before the first paint, so
+      // choosing again here is setting the same attribute rather than writing
+      // the text a second time. A verdict's subline is not standing — it
+      // counts what was compared — so that one is written, and once it is the
+      // two spans are gone for good.
+      const standing = screen.kind === "question" ? (screen.started ? "started" : "fresh") : null;
+      if (standing !== null && subline.firstElementChild) {
+        if (page.dataset.first !== standing) page.dataset.first = standing;
+        return;
+      }
+      say(subline, m.subline);
     }
 
     /** A field's answer set. Some fields declare their options by reference
@@ -318,10 +445,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * the single place the page reads them — the derived question would hand
      * back band pseudo-options for money fields (review). */
     const optionsOf = (field: string): FieldOption[] => fieldOptions(ds, field);
-
-    // s5c: above a dozen options the question becomes a filter over a list
-    // instead of a wall of buttons; at or below a dozen, nothing changes.
-    const LONG_LIST_ABOVE = 12;
 
     /** What an option's class reads as beside it. Derived from the dataset —
      * the class the option implies, or the fact that a notice would fire on
@@ -349,37 +472,21 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const routeName = (r: { route: { name: string } }): string => glossSection(r.route.name, glossary);
 
     function renderDeclaration(currentField: string | null) {
-      // Rows in the order they were asked; the pending row appends last.
-      // Answered rows are edit points: clicking one resumes the interview at
-      // that question, keeping everything before it (a full reset destroyed
-      // every answer — human catch, golden G3).
-      const fields = currentField && !asked.includes(currentField)
-        ? [...asked, currentField]
-        : asked;
-      declList.innerHTML = fields.map((f) => {
-        const opt = optionsOf(f).find((o) => o.value === answers[f]) ??
-          deriveBands(ds, f).find((b) => b.id === answers[f]);
-        return opt
-          ? `<div class="done" data-field="${escAttr(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(ds, f))}</dt><dd>${esc(opt.label)} <span class="pen" aria-hidden="true">✎</span></dd></div>`
-          : `<div><dt>${esc(shortLabelOf(ds, f))}</dt><dd class="pending">—</dd></div>`;
-      }).join("");
-      declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
-        const jump = () => {
-          const f = row.dataset.field!;
-          if (asked.indexOf(f) < 0) return;
-          editing = f;
-          setStamp("rules-read");
-          app.dataset.state = "questions";
-          renderQuestion({ kind: "edit" });
-        };
-        row.addEventListener("click", jump);
-        row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); } });
+      paint(declList, declarationHtml(ds, answers, asked, currentField), () => {
+        declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
+          const jump = () => {
+            const f = row.dataset.field!;
+            if (asked.indexOf(f) < 0) return;
+            editing = f;
+            setStamp("rules-read");
+            app.dataset.state = "questions";
+            renderQuestion({ kind: "edit" });
+          };
+          row.addEventListener("click", jump);
+          row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); } });
+        });
       });
-      // On a phone the ledger collapses to this one line; on a wide screen the
-      // summary is hidden and the panel is always open.
-      declCount.textContent = asked.length
-        ? `${asked.length} answer${asked.length === 1 ? "" : "s"} — tap to review or change`
-        : "nothing yet";
+      say(declCount, declarationCount(asked.length));
       restart.hidden = currentField !== null;
     }
 
@@ -429,173 +536,129 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // A list this long is a search, not a choice between buttons — but it is
       // still a choice from the dataset's own options: no free text, no
       // guessing at spellings.
-      const longList = q.options.length > LONG_LIST_ABOVE;
-      const classed = q.options.some((o) => o.implies !== undefined);
-      const declared = q.options.find((o) => o.value === answers[q.field]);
-      main.innerHTML = `
-        <section class="qcard">
-          ${arrivalLine()}
-          ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(ds, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
-          <div class="qmeta" role="status" aria-live="polite">${
-            editing ? "Your answer — pick another to change it, the rest are kept" : `Question ${asked.length + 1} of up to ${total}`
-          }</div>
-          <h2 class="qlabel">${esc(q.label)}</h2>
-          ${(() => {
-            // Where the answer is a thing a person can look up, the way to look
-            // it up belongs at the question, not three screens later on a
-            // result card that already assumed an answer (isolated v1-gate
-            // critique, 2026-09-08, F13). It is the dataset's own link — the
-            // same one the card and the route page show.
-            const learn = fieldOf(q.field)?.learn;
-            return learn
-              ? `<p class="qlearn">Not sure? <a href="${escAttr(learn.url)}" target="_blank" rel="noopener">${
-                esc(glossSection(learn.label, glossary))}</a></p>`
-              : "";
-          })()}
-          ${longList ? `
-            <div class="csearch">
-              <span class="mag" aria-hidden="true">⌕</span>
-              <input type="text" id="cfilter" autocomplete="off" spellcheck="false"
-                role="combobox" aria-expanded="false" aria-autocomplete="list"
-                aria-label="Search the list" aria-controls="clist" placeholder="Start typing…"
-                value="${escAttr(declared?.label ?? "")}">
-            </div>
-            <div class="clist" id="clist" role="listbox" aria-label="${escAttr(q.label)}"></div>
-            <p class="recorded" id="crecorded"${declared ? "" : " hidden"}>Your answer on file: <b>${esc(declared?.label ?? "")}</b></p>
-            ${classed ? `<p class="hint">Every non-EU passport is checked against the same rules. A few countries
-              have agreements that add rights on top — those are stated with their source when they apply to you.</p>` : ""}`
-          : `<div class="opts">
-            ${q.options.map((o) => {
+      const longList = isLongList(q);
+      const classed = hasClasses(q);
+      paint(main, questionCardHtml({
+        dataset: ds, question: q, answers, asked, editing, total,
+        arrival: arrivalLine(), justRecorded, glossary,
+      }), () => {
+        if (longList) {
+          const filter = document.getElementById("cfilter") as HTMLInputElement;
+          const list = document.getElementById("clist")!;
+          const recorded = document.getElementById("crecorded")!;
+          // The control's selection semantics live in one pure model, and the DOM
+          // is only its picture: what Enter commits is decided there, where a
+          // property test can hold it (product-critique v0.7, B1).
+          let box: ListboxState = stateFor(filter.value);
+          const drawList = () => {
+            filter.setAttribute("aria-expanded", String(box.open && box.query.trim() !== ""));
+            const status = document.getElementById("cstatus");
+            if (!box.query.trim() || !box.open) {
+              // Before aliases existed the cold list was the only escape hatch
+              // for someone who could not spell the official name; now typing
+              // finds them, so opening on sixty rows is just noise (tracker #4).
+              list.innerHTML = `<p class="cnone">${q.options.length} countries — the name you grew up with works too.</p>`;
+              filter.removeAttribute("aria-activedescendant");
+              if (status) status.textContent = "";
+              return;
+            }
+            const matches = matchOptions(q.options, box.query);
+            if (!matches.length) {
+              // An empty box says nothing; this says what to do about it.
+              list.innerHTML = `<p class="cnone">No country matches. Try fewer letters, or the country's own name.</p>`;
+              filter.removeAttribute("aria-activedescendant");
+              if (status) status.textContent = "No country matches";
+              return;
+            }
+            const shown = shownOptions(q.options, box);
+            const active = activeOption(q.options, box);
+            if (status)
+              status.textContent = `${matches.length} match${matches.length === 1 ? "" : "es"}` +
+                (active ? `. ${active.label} highlighted — press Enter to record it` : "");
+            list.innerHTML = shown.map((o, i) => {
               const chosen = answers[q.field] === o.value;
-              // A reader whose employer was moving them to a branch abroad read
-              // "a job offer there" as their situation and took a route as open
-              // that is not (human walk, 2026-09-08). Where an answer says what
-              // it means, it says it here — under the answer, not in a hint at
-              // the foot of the question nobody reads before choosing.
-              const means = optionMeans(o, ds, answers);
-              return `<button class="opt${chosen ? " sel" : ""}" data-value="${escAttr(o.value)}"${
-                chosen ? ` aria-pressed="true"` : ""}><span class="opt-label">${esc(o.label)}${
-                chosen ? `<span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
-                means ? `<small class="opt-means">${esc(means)}</small>` : ""}</button>`;
-            }).join("")}
-          </div>`}
-          ${(editing ? asked.indexOf(editing) > 0 : asked.length > 0)
-            ? `<button class="back" id="back">← Back</button>` : ""}
-          ${editing ? `<button class="back" id="done">Keep this answer</button>` : ""}
-        </section>`;
+              return `<button class="copt${i === box.active ? " on" : ""}${chosen ? " sel" : ""}" role="option" id="${escAttr(rowId(i))}"
+                aria-selected="${escAttr(String(i === box.active))}" data-value="${escAttr(o.value)}"><span>${esc(o.label)}${
+                chosen ? ` <span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
+                classed ? `<span class="cls">${esc(classHint(q.field, o))}</span>` : ""}</button>`;
+            }).join("") +
+              (matches.length > shown.length
+                ? `<p class="cmore">${matches.length - shown.length} more — keep typing to narrow the list</p>`
+                : "");
+            if (box.active >= 0) filter.setAttribute("aria-activedescendant", rowId(box.active));
+            else filter.removeAttribute("aria-activedescendant");
+            list.querySelector<HTMLElement>(".copt.on")?.scrollIntoView({ block: "nearest" });
+            list.querySelectorAll<HTMLButtonElement>(".copt").forEach((b) =>
+              b.addEventListener("click", () => {
+                const chosen = q.options.find((o) => o.value === b.dataset.value);
+                if (chosen) justRecorded = { field: q.field, label: chosen.label };
+                answer(b.dataset.value!);
+              }));
+          };
+          filter.addEventListener("input", () => { box = stateFor(filter.value); drawList(); });
+          filter.addEventListener("keydown", (e) => {
+            // isComposing: an IME's committing Enter belongs to the IME.
+            if (e.isComposing) return;
+            const keys = ["ArrowDown", "ArrowUp", "Home", "End", "Enter", "Escape"];
+            if (!keys.includes(e.key)) return;
+            // Home/End inside a text box move the caret; claim them only once a
+            // row is highlighted, so typing still behaves like typing.
+            if ((e.key === "Home" || e.key === "End") && box.active < 0) return;
+            e.preventDefault();
+            const result = onKey(q.options, box, e.key as ListboxKey);
+            box = result.state;
+            if (result.commit) {
+              // Say what was recorded, in the question card — the side ledger is
+              // not where a person looks after pressing Enter.
+              recorded.innerHTML = `Recorded: <b>${esc(result.commit.label)}</b>`;
+              recorded.hidden = false;
+              justRecorded = { field: q.field, label: result.commit.label };
+              answer(result.commit.value);
+              return;
+            }
+            drawList();
+          });
+          drawList();
+        } else {
+          main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
+            btn.addEventListener("click", () => answer(btn.dataset.value!)));
+        }
 
-      if (longList) {
-        const filter = document.getElementById("cfilter") as HTMLInputElement;
-        const list = document.getElementById("clist")!;
-        const recorded = document.getElementById("crecorded")!;
-        // The control's selection semantics live in one pure model, and the DOM
-        // is only its picture: what Enter commits is decided there, where a
-        // property test can hold it (product-critique v0.7, B1).
-        let box: ListboxState = stateFor(filter.value);
-        const draw = () => {
-          filter.setAttribute("aria-expanded", String(box.open && box.query.trim() !== ""));
-          const status = document.getElementById("cstatus");
-          if (!box.query.trim() || !box.open) {
-            // Before aliases existed the cold list was the only escape hatch
-            // for someone who could not spell the official name; now typing
-            // finds them, so opening on sixty rows is just noise (tracker #4).
-            list.innerHTML = `<p class="cnone">${q.options.length} countries — the name you grew up with works too.</p>`;
-            filter.removeAttribute("aria-activedescendant");
-            if (status) status.textContent = "";
-            return;
-          }
-          const matches = matchOptions(q.options, box.query);
-          if (!matches.length) {
-            // An empty box says nothing; this says what to do about it.
-            list.innerHTML = `<p class="cnone">No country matches. Try fewer letters, or the country's own name.</p>`;
-            filter.removeAttribute("aria-activedescendant");
-            if (status) status.textContent = "No country matches";
-            return;
-          }
-          const shown = shownOptions(q.options, box);
-          const active = activeOption(q.options, box);
-          if (status)
-            status.textContent = `${matches.length} match${matches.length === 1 ? "" : "es"}` +
-              (active ? `. ${active.label} highlighted — press Enter to record it` : "");
-          list.innerHTML = shown.map((o, i) => {
-            const chosen = answers[q.field] === o.value;
-            return `<button class="copt${i === box.active ? " on" : ""}${chosen ? " sel" : ""}" role="option" id="${escAttr(rowId(i))}"
-              aria-selected="${escAttr(String(i === box.active))}" data-value="${escAttr(o.value)}"><span>${esc(o.label)}${
-              chosen ? ` <span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
-              classed ? `<span class="cls">${esc(classHint(q.field, o))}</span>` : ""}</button>`;
-          }).join("") +
-            (matches.length > shown.length
-              ? `<p class="cmore">${matches.length - shown.length} more — keep typing to narrow the list</p>`
-              : "");
-          if (box.active >= 0) filter.setAttribute("aria-activedescendant", rowId(box.active));
-          else filter.removeAttribute("aria-activedescendant");
-          list.querySelector<HTMLElement>(".copt.on")?.scrollIntoView({ block: "nearest" });
-          list.querySelectorAll<HTMLButtonElement>(".copt").forEach((b) =>
-            b.addEventListener("click", () => {
-              const chosen = q.options.find((o) => o.value === b.dataset.value);
-              if (chosen) justRecorded = { field: q.field, label: chosen.label };
-              answer(b.dataset.value!);
-            }));
-        };
-        filter.addEventListener("input", () => { box = stateFor(filter.value); draw(); });
-        filter.addEventListener("keydown", (e) => {
-          // isComposing: an IME's committing Enter belongs to the IME.
-          if (e.isComposing) return;
-          const keys = ["ArrowDown", "ArrowUp", "Home", "End", "Enter", "Escape"];
-          if (!keys.includes(e.key)) return;
-          // Home/End inside a text box move the caret; claim them only once a
-          // row is highlighted, so typing still behaves like typing.
-          if ((e.key === "Home" || e.key === "End") && box.active < 0) return;
-          e.preventDefault();
-          const result = onKey(q.options, box, e.key as ListboxKey);
-          box = result.state;
-          if (result.commit) {
-            // Say what was recorded, in the question card — the side ledger is
-            // not where a person looks after pressing Enter.
-            recorded.innerHTML = `Recorded: <b>${esc(result.commit.label)}</b>`;
-            recorded.hidden = false;
-            justRecorded = { field: q.field, label: result.commit.label };
-            answer(result.commit.value);
-            return;
-          }
-          draw();
+        main.querySelector<HTMLElement>("#done")?.addEventListener("click", () => {
+          editing = null;
+          renderQuestion({ kind: "answer" });
         });
-        draw();
-        filter.focus();
-        // A correction starts by replacing, not by prepending: the caret sat at
-        // position 0 and the first keystroke produced "nigeriaNiger"
-        // (product-critique v0.7, F3).
-        filter.select();
-      } else {
-        main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
-          btn.addEventListener("click", () => answer(btn.dataset.value!)));
+        main.querySelector<HTMLElement>("#back")?.addEventListener("click", () => {
+          // The screen's Back and the phone's Back are one gesture, so they can
+          // never land on different screens (human, 2026-09-08): this asks the
+          // browser to go back, and the popstate handler shows the question that
+          // entry was showing. Nothing is erased on the way.
+          if (screens.current > 0) { window.history.back(); return; }
+          // Standing on our first entry: there is nothing of ours behind, so the
+          // step is the one editing a declared row makes.
+          const at = editing ? asked.indexOf(editing) : asked.length;
+          const prev = asked[at - 1];
+          if (prev === undefined) return;
+          editing = prev;
+          setStamp("rules-read");
+          app.dataset.state = "questions";
+          renderQuestion({ kind: "edit" });
+        });
+      });
+      if (longList) {
+        // Every render of a search question puts the caret in it, whether or
+        // not the box had to be rewritten to get here. A correction starts by
+        // replacing, not by prepending: the caret sat at position 0 and the
+        // first keystroke produced "nigeriaNiger" (product-critique v0.7, F3).
+        const search = main.querySelector<HTMLInputElement>("#cfilter")!;
+        search.focus();
+        search.select();
       }
       // Shown once, on the screen straight after the commit.
       justRecorded = null;
       // The same rule for the line that says where the reader came from.
       cameFrom = null;
       scopeRecorded = false;
-
-      document.getElementById("done")?.addEventListener("click", () => {
-        editing = null;
-        renderQuestion({ kind: "answer" });
-      });
-      document.getElementById("back")?.addEventListener("click", () => {
-        // The screen's Back and the phone's Back are one gesture, so they can
-        // never land on different screens (human, 2026-09-08): this asks the
-        // browser to go back, and the popstate handler shows the question that
-        // entry was showing. Nothing is erased on the way.
-        if (screens.current > 0) { window.history.back(); return; }
-        // Standing on our first entry: there is nothing of ours behind, so the
-        // step is the one editing a declared row makes.
-        const at = editing ? asked.indexOf(editing) : asked.length;
-        const prev = asked[at - 1];
-        if (prev === undefined) return;
-        editing = prev;
-        setStamp("rules-read");
-        app.dataset.state = "questions";
-        renderQuestion({ kind: "edit" });
-      });
 
       // One entry per question screen: answering moves forward, everything
       // else — editing, restoring, starting over — stands where it is.
@@ -888,6 +951,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     function renderResults() {
       glossary = new Set();
+      // The verdict writes the box itself and hangs its own listeners, so what
+      // `paint` remembers about the box stops being true here. This is the one
+      // place that writes a painted box some other way, and the rule about
+      // doing so is written at `paint` (s10).
+      wired.delete(main);
       // The commit banner belongs to the screen after the commit, and the
       // verdict is not it.
       justRecorded = null;
@@ -1287,9 +1355,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * open — its summary is not a control there. Narrow starts collapsed, and
      * once the person opens or closes it themselves, that decision stands.
      */
-    const wide = window.matchMedia("(min-width: 761px)");
+    const wide = window.matchMedia(WIDE_QUERY);
     let ledgerChosen = false;
-    const syncLedger = () => { if (!ledgerChosen || wide.matches) decl.open = wide.matches; };
+    const syncLedger = () => {
+      if (!ledgerChosen || wide.matches) decl.open = wide.matches;
+      // The stylesheet folded the panel away before the first paint on the
+      // strength of the flag the pre-paint script wrote; the flag comes down
+      // in the same task the real decision is made, so nothing is painted
+      // between the two and the reader's own taps are not fought (s10).
+      delete page.dataset.narrow;
+    };
     decl.addEventListener("toggle", () => { if (!wide.matches) ledgerChosen = true; });
     wide.addEventListener("change", syncLedger);
     syncLedger();
@@ -1385,6 +1460,33 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}
     h1 b{color:var(--color-near)}
     .sub{color:var(--color-muted);max-width:38rem;font-size:.92rem}
+    /* The masthead's two standing promises, both painted, one shown. Which one
+       is decided in <head> before the first paint (lib/first-paint.ts): the
+       module used to swap the text when it landed 700 ms later, and the whole
+       interview slid up under the reader (s10, 2026-09-15). */
+    .sub-started{display:none}
+    [data-first] .sub-fresh{display:none}
+    [data-first] .sub-started{display:inline}
+    [data-first="fresh"] .sub-fresh{display:inline}
+    [data-first="fresh"] .sub-started{display:none}
+    /* The same, for the ledger, which is a closed disclosure on a narrow
+       screen. It ships open — that is what a reader with no script should
+       get — and is folded away here until the module closes it properly, in
+       the same task it takes this flag down. */
+    /* The line that stands in the box until the module has a screen to draw,
+       for a reader whose own screen is not the one the build painted. It sits
+       OVER question one rather than in place of it: the card keeps its height
+       because its contents are still there, only hidden, so the box a
+       returning reader meets is the box every reader meets and nothing below
+       it moves. Which line — or neither — was decided in <head> (s10). */
+    .stand-in{display:none}
+    [data-first="record"] #main,[data-first="link"] #main{position:relative}
+    [data-first="record"] .qcard > *,[data-first="link"] .qcard > *{visibility:hidden}
+    [data-first="record"] .stand-in-record,[data-first="link"] .stand-in-link{
+      display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
+      margin:0;padding:1.6rem 1.8rem;text-align:center;color:var(--color-muted);font-size:.92rem}
+    [data-narrow] #decl[open] > :not(summary){display:none}
+    [data-narrow] #decl[open] > summary{margin-bottom:0}
 
     /* The question is first in the DOM so a phone opens on it; on a wide
        screen `order` puts the ledger back in the left column (F8). */
@@ -1450,6 +1552,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
     .cnone,.cmore{font:500 .8rem var(--font-mono);color:var(--color-muted);padding:.7rem .8rem}
     .qcard .hint{font-size:.8rem;color:var(--color-muted);margin-top:.6rem;max-width:32rem}
+    /* The question is in the HTML now, so a reader with script turned off can
+       read it and cannot answer it. One line, under the question, saying so
+       (s10). Nothing renders it when script is running. */
+    .nojs{font-size:.85rem;color:var(--color-muted);margin-top:1rem;border-top:var(--rule-dotted);padding-top:.7rem}
     /* The way to look an answer up, at the question that asks for it. */
     .qlearn{font-size:.85rem;color:var(--color-muted);margin:.15rem 0 .6rem}
     .qlearn a{color:var(--color-band);font-weight:600;text-decoration:none}

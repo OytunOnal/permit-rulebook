@@ -50,6 +50,46 @@ export const DISCLAIMER =
   "it compares published values with what you declare, nothing more.";
 
 /**
+ * What a reader without JavaScript is owed.
+ *
+ * Until s10 the interview's box shipped empty and a reader with script turned
+ * off saw nothing at all — a blank page that said nothing about why. The
+ * question is in the HTML now, which is better and still not enough: they can
+ * read it and cannot answer it. So the page says so, in one line, under the
+ * question. One clause and no more: where the answers go is the masthead's
+ * sentence, and saying it twice is not saying it better (Spec review, s10).
+ */
+export const NO_SCRIPT_LINE = "This question needs JavaScript to answer.";
+
+/**
+ * What stands in the box until the module has a screen to draw, for a reader
+ * whose screen is not the one the build painted.
+ *
+ * s10 put question one in the HTML and the page stopped moving. On a return
+ * visit it was also WRONG for a moment: the reader was shown a question they
+ * had already answered, every time they came back, until the module swapped it
+ * for their own screen. The human saw it on the walk and named it — "the
+ * question box fills a tick late" — and the line this product is built on is
+ * that nothing untrue is ever on the screen. A placeholder that asks an
+ * answered question is untrue (human, 2026-09-15).
+ *
+ * So the box says what is actually happening instead. The sentence is the
+ * human's own, and it is true only where there are answers to bring back.
+ */
+export const RETURNING_LINE = "Your answers are on this device — bringing them back.";
+
+/**
+ * And for the other reader the pre-paint script marks as started: someone who
+ * pressed "Check yours" on a country or route page and may have no answers at
+ * all. The sentence above would be false for them and question one is wrong
+ * for them too — their link has already answered it. This one is neutral and
+ * true either way. It names no country: what the link scoped the interview to
+ * is the dataset's word, and the script that chooses this line is inlined
+ * where nothing checks a country name against the dataset (s10).
+ */
+export const LINK_ARRIVAL_LINE = "Setting up your questions.";
+
+/**
  * What a route page adds to it. A page a stranger lands on cold from a search
  * has to say, before it says anything else, that it is describing rules rather
  * than judging the reader.

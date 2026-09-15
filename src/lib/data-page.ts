@@ -98,7 +98,7 @@ export function dataPage(
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-${contentSecurityPolicy([MENU_SCRIPT])}
+${contentSecurityPolicy()}
 <script type="application/ld+json">${ld}</script>
 ${iconLinks()}
 ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
@@ -238,7 +238,7 @@ ${analyticsBeacon()}`;
 <meta http-equiv="refresh" content="0; url=${escAttr(target)}">
 <link rel="canonical" href="${escAttr(absolute(DATA_PATH))}">
 <meta name="robots" content="noindex, follow">
-${contentSecurityPolicy([MENU_SCRIPT])}
+${contentSecurityPolicy()}
 ${iconLinks()}
 <style>${PAGE_CSS}</style>
 </head>
