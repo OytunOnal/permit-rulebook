@@ -192,13 +192,26 @@ to look:
 - [x] **s10 scenario approved** (2026-09-15, your word: *"approve"*). The
       builder is on it, in a worktree of its own on the branch `first-paint`
       — the first slice built under steward-53.
-- [x] **s10 walked once, and the walk changed it** (2026-09-15, *"bir tek
-      sorunun olduğu bölüm bi tık geç doluyor"* → *"2 olsun"*): a returning
-      reader saw question one for a moment before their own screen replaced it.
-      They now get a quiet box with *"Your answers are on this device —
-      bringing them back."* until the module lands; a link arrival gets a
-      neutral line; a fresh visit is unchanged. Being built; the walk resumes
-      on the rebuilt preview.
+- [x] **s10 walked once, and the walk changed it** (2026-09-15): a returning
+      reader saw question one for a moment before their own screen replaced
+      it. Built and gated (`first-paint` `fc7ea94`, **412 tests**, fingerprint
+      unmoved): with a record on the device the box shows *"Your answers are
+      on this device — bringing them back."* at question one's exact height
+      until the module lands; a link arrival shows *"Setting up your
+      questions."*; a fresh visit is unchanged; a screen reader gets the
+      sentence and not the covered question.
+- [ ] **Walk s10 again, then say merge** — **http://localhost:4500** is the
+      rebuilt fix (`fc7ea94`), **http://localhost:4501** is master, both holding
+      the module back 700 ms. *Three arrivals on :4500:* (1) as you are now,
+      with your record — the quiet box with your sentence, then your screen,
+      and nothing above the box moves; (2) press **Start over**, reload — the
+      first question is there from the first paint and never changes; (3) from
+      http://localhost:4500/france/ press "Check yours — France" — the neutral
+      line, then the France-scoped question. *Two words that are mine, not
+      yours, and yours to change:* the link line, and that a record beats a
+      link when both apply. *Pass:* nothing you can see moves after it has
+      painted, and nothing shown is untrue for a moment.
+
 - [ ] **Walk s10, then say merge** — two previews, both holding the module
       back 700 ms the way a phone network does: **http://localhost:4500** is
       the fix (`f6b9a37`), **http://localhost:4501** is master. *What to look
