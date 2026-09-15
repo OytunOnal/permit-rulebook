@@ -35,6 +35,19 @@ run 2026-09-15)"* — the clean sentence, because the shipped state carries no
 unread list yet. **The first watch run after this merge writes it**, and from
 then on a partial run says so on every surface without anyone's help.
 
+**s10 is open at its boundary** (2026-09-15, human: *"s10'a geçelim"*). The
+CLS defect the counter found is **reproduced**: the page ships an empty
+`<main>`, a 220 KB module fills it, and everything below moves. On a local
+server the script arrives with the HTML and CLS reads 0 — which is why no gate
+has ever seen it; with the module delayed 700 ms, the site's own headless
+driver measures **0.11 / 0.28 / 0.16** on the three arrivals (cold, `?country=`,
+saved record) and names the field's nodes: `#app`, the footer, `#decl`. The
+scenario is drafted — `docs/spine/scenarios/s10-first-paint.md` — with the
+issue's own fix direction: the first question rendered into the HTML at build
+time, a different first screen replacing it in the same box, and a
+browser-driven gate that fails at today's numbers. **Nothing is built until
+you approve it.**
+
 **What tonight's run should do.** The User-Agent repair means Spain reads
 again; CI read every IND page fine this morning. So the 05:17 UTC run is
 expected **green** — the first since 2026-09-10 — and `/data/` to stay clean.
@@ -130,6 +143,12 @@ to look:
       page's bytes moved; the pre-s11 fixture was regenerated on purpose.
 - [x] **s11 walked and merged** (2026-09-15, your word). Live, and read on the
       live host afterwards.
+- [ ] **Approve the s10 scenario** — `docs/spine/scenarios/s10-first-paint.md`.
+      Read "What must be true" (six points) and "How it is proved". The one
+      judgment in it that is yours: point 4 — with the first question in the
+      HTML, a reader without JavaScript sees a question they cannot answer, and
+      the scenario puts a one-line `<noscript>` in scope and nothing more.
+      *Say "approve", or say what to change.*
 - [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
       window to close at 09:00 tomorrow). One line under your results: "Wrong
       about you? A value that does not match its source, or something this
