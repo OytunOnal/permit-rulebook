@@ -102,7 +102,17 @@ ${contentSecurityPolicy([MENU_SCRIPT])}
 <script type="application/ld+json">${ld}</script>
 ${iconLinks()}
 ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
-<style>${PAGE_CSS}</style>`;
+<style>${PAGE_CSS}
+/* This page reads as prose more than any other, and two of its sentences end a
+   thought that the next block then sat directly on top of: the masthead's
+   "Take it, check it, or tell us it is wrong." touched <main>, and the checks
+   section's "…never on their own." touched the rule of the Take-it box — 0px
+   measured, both (human's walk, 2026-09-15). The route page's own spacing does
+   not reach these two joins, so this page adds the breath itself, here rather
+   than in the shared sheet, so no other page's bytes move for it. */
+.masthead-with-stamps { margin-bottom: var(--space-5); }
+.rules { margin-bottom: var(--space-5); }
+</style>`;
 
   const body = `<div class="wrap">
 
