@@ -1,6 +1,6 @@
 import {
-  countryVocabulary, isScored, proseProvenance, routeProvenance, unreadSentence,
-  type Dataset, type UnreadSource,
+  countryVocabulary, isScored, proseProvenance, routeProvenance,
+  type Dataset,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
@@ -8,8 +8,7 @@ import { PAGE_CSS, pageStamp, withArticle } from "./route-page.js";
 import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
 import { PRODUCT_NAME, TAGLINE, TRANSLATION_POLICY, datasetDay } from "./copy.js";
 import {
-  DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, analyticsBeacon, headMeta, lastWatchRun,
-  unreadSourcesAt, url,
+  DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, analyticsBeacon, headMeta, lastWatchRun, url,
 } from "./site.js";
 import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
@@ -70,18 +69,7 @@ export function routeCounts(dataset: Dataset): RouteCounts {
   return { scored, quotedOnly: routes.length - scored, total: routes.length };
 }
 
-/**
- * `lastRun` and `unread` are the two facts on this page that move without a
- * person: the day the watch last ran, and the sources it could not read that
- * day. They are arguments for the reason the route page's `lastRun` is one —
- * a render has to be askable about a run other than today's — and they default
- * to the live state, which is what the build passes.
- */
-export function dataPage(
-  dataset: Dataset,
-  lastRun: string = lastWatchRun(),
-  unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
-): DataPage {
+export function dataPage(dataset: Dataset): DataPage {
   const read = siteReadDate(dataset);
   const prose = proseProvenance(dataset);
   const counts = routeCounts(dataset);
@@ -145,13 +133,8 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
       <p class="lede">A cookieless counter (Cloudflare Web Analytics) records each page load: the page's address, where you came from, your country, and your browser and operating system versions; nothing you answer, nothing that identifies you, and nothing while you answer.</p>
       <p class="lede">${esc(TRANSLATION_POLICY)}</p>
       <p class="lede">Every source is re-read daily${
-    lastRun ? ` — last run <b><time datetime="${escAttr(lastRun)}">${esc(lastRun)}</time></b>` : ""
-  }.${
-    // The exception, on the day there is one and on no other. "Every source is
-    // re-read daily" was true of 42 sources and false of two for five days in
-    // September, and the two backed values on live pages (s11).
-    unread.length ? ` ${esc(unreadSentence(unread))}` : ""
-  } A source that has moved files an issue in the tracker and a person reads it: the values on this site, and the dates beside them, change when a person changes them, never on their own.</p>
+    lastWatchRun() ? ` — last run <b><time datetime="${escAttr(lastWatchRun())}">${esc(lastWatchRun())}</time></b>` : ""
+  }. A source that has moved files an issue in the tracker and a person reads it: the values on this site, and the dates beside them, change when a person changes them, never on their own.</p>
     </section>
 
     <section class="data" aria-labelledby="take-h">
@@ -172,7 +155,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
     </section>
   </main>
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset, lastRun, unread))}
+  ${siteFooter(navCountries(dataset), footerFacts(dataset))}
 
 </div>
 <script>${MENU_SCRIPT}</script>
