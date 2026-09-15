@@ -47,6 +47,20 @@ Promoted (or dropped, with evidence) at a boundary session.
   headless one · source: the human's question on 2026-09-10, "did you check
   with the Chrome extension".
 
+  **Measurement, 2026-09-15 — the case is now three walls, not two, and one of
+  them is costing the daily promise.** The watch failed five days running
+  (2026-09-11 to 15, data #18) because the CI runner cannot reach two Spanish
+  sources — `es-uge-umbral-pdf` and `es-uge-index` — which answer a developer
+  machine with HTTP 200 the same day. And the IND highly-skilled-migrant page
+  now hands this fetcher 7,256 characters of navigation where it used to hand
+  14,451 with the rules in them (data #17): a 200 carrying only chrome, which
+  is the empty-202 failure wearing a different status code. So the walls are
+  Legifrance (403), EUR-Lex (empty 202), IND (shell) and inclusion.gob.es
+  (runner-only refusal) — and the last of these is not a quote-fidelity
+  inconvenience, it is why "re-read daily" stopped being true for two values.
+  **The gating measurement is unchanged and still unrun**; what changed is what
+  it would buy.
+
 - **Compare, don't rank: published facts on each open route card** (v1.1,
   human 2026-09-08) · why: a reader with five open routes gets no help
   choosing, and "start with this one" would be advice with no published
