@@ -113,6 +113,42 @@ fingerprint unmoved and pinned by a case rather than by luck).
   values it backs still show that date."* **The count changed after the human
   approved the words, so the sentence goes back to them.**
 
+**Both reviews are in: 14 findings, three of them blockers, all sent back in
+one round** (2026-09-15).
+
+- **The sharpest was missed by me and by the Spec axis both.** s11 taught the
+  qualification to `/data/` and the footer and left **28 route pages** typing
+  *"and a daily check re-reads every source"* into the template
+  (`route-page.ts:730` and `:735`, verified by hand). Two surfaces of three.
+  `copy.ts` exists to stop exactly that drift.
+- **Both axes found the same second one independently:** `--only` keeps a
+  source in the unread list after re-reading it, so the documented step for a
+  slice change — `npm run watch:sources -- --only=<id>` — would make the page
+  say *"has not answered since <the day it was just read>"*. A routine step
+  turned into a lie on a live page.
+- **The case named for the real state asserts nothing** — both sides of its
+  expectation are false today, so it passes on a page that still lies. Its
+  replacement may not be written the way its sibling is, by grepping the CLI's
+  own source; this project ruled against that on 2026-09-08.
+
+**One finding I answered rather than forwarded.** Spec calls it a blocker that
+the shipped `state.json` carries no `unread`, and suggests back-filling the
+run of 2026-09-15 by hand. **No:** state is written by a run, never typed —
+and since the User-Agent repair a real run reads Spain and reports the four IND
+pages instead. The slice closes when the first run after merge writes the list.
+What the build owes is that the machinery is provably right, which is the third
+blocker.
+
+**Held out of the slice on purpose, and on the roadmap rather than forgotten:**
+a route page naming **its own** unread sources instead of the dataset's. Better,
+narrower, more useful — and not what s11 owed.
+
+**A working rule I broke three times today and am writing down:** while an
+agent is building, the main working trees belong to it and the ledgers are
+edited from the `_preview` worktrees, which sit on master. Every slip today —
+a mixed diff, a red master, a stale STATUS — came from treating a tree an agent
+was writing in as mine.
+
 **A mess of mine, repaired.** `git add -A` ran in a tree the builder was
 writing in and swept s11's site half into a ledger commit, which reached master
 and broke it: the site imported what the published ruleset does not export yet.
