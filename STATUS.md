@@ -57,7 +57,14 @@ true thing without help from anyone.
 on site #9). The scenario is drafted — `docs/spine/scenarios/s12-two-labels.md`
 — five points, all small: the row on `/data/` becomes *"Newest value changed"*,
 a *"Last checked"* row joins it from the watch's own last run, the words live
-in `copy.ts`, nothing else moves. **Approved; being built** on `two-labels`, in the builder's own worktree.
+in `copy.ts`, nothing else moves. **Built once, corrected the spec four times, one follow-up in flight.** The
+row on `/data/` was reading the newest *page* stamp — notice dates included —
+not the newest *value* read; the two agree today and the new label does not
+permit them to diverge, so the source becomes `readRange` in fact (the stamp
+and the freshness paragraph keep the broader date, on purpose). Also: the row
+reads the same `lastRun` the sentence reads, not a second call; the gate needs
+a build before the tests in a fresh worktree; a state with no run prints no
+row. 421 tests before the follow-up.
 
 **Queued, in order:** **site #9** (the "Newest value read" label, two rows);
 `feedback-line` (site #6, built, never walked); **data #15** (the free-movement

@@ -43,6 +43,25 @@ reader who wants either fact finds it under a word that means it.
 5. **The rows stay dates, marked up as dates** — `<time datetime>` — like the
    rows around them.
 
+**Corrected 2026-09-15, by the build** (the writing session's correction,
+dated and marked): four things above were wrong or unsaid.
+
+1. The row did **not** read `readRange(dataset).newest`; it read
+   `siteReadDate(dataset)`, the newest page stamp across every route, which
+   folds in the audience notice's and any route notice's dates. The two agree
+   today (2026-09-10) and can diverge; under the word "changed" the row may
+   only print a date on which a *value* changed, so its source becomes
+   `readRange` in fact. The RULES READ stamp and the freshness paragraph keep
+   the broader date on purpose: a notice's read date is also a page's.
+2. "Read from the same place (`lastWatchRun()`)" is one level off: calling it
+   in the row would make the list and the sentence disagree on any render asked
+   about another run (the fingerprint renders 1970-01-01). The row reads the
+   `lastRun` parameter the sentence reads, which defaults to `lastWatchRun()`.
+3. "The existing 412 tests green" needs `npm run build` first: twelve of them
+   read `dist/`, and a fresh worktree has none.
+4. When the state carries no `last_run`, the row omits itself, as the
+   freshness sentence already does — rather than an empty `<time>`.
+
 ## How it is proved
 
 - A case renders `/data/` over the real dataset and asserts the list carries
