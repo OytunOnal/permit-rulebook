@@ -57,7 +57,7 @@ true thing without help from anyone.
 on site #9). The scenario is drafted — `docs/spine/scenarios/s12-two-labels.md`
 — five points, all small: the row on `/data/` becomes *"Newest value changed"*,
 a *"Last checked"* row joins it from the watch's own last run, the words live
-in `copy.ts`, nothing else moves. **Nothing is built until you approve it.**
+in `copy.ts`, nothing else moves. **Approved; being built** on `two-labels`, in the builder's own worktree.
 
 **Queued, in order:** **site #9** (the "Newest value read" label, two rows);
 `feedback-line` (site #6, built, never walked); **data #15** (the free-movement
@@ -148,8 +148,7 @@ to look:
       sentence and not the covered question.
 - [x] **s10 walked twice and merged** (2026-09-15, your word). Live, and read
       on the live host afterwards.
-- [ ] **Approve the s12 scenario** — `docs/spine/scenarios/s12-two-labels.md`,
-      five points. *Say "approve", or say what to change.*
+- [x] **s12 scenario approved** (2026-09-15, your word: *"approve"*). Being built.
 - [ ] **v1.1 — stamp it, or say what it still needs.** Its scope was s9 and
       s10; both are real-green and live. A stamp brings the full critique walk
       (every persona, all nine lenses, delta against v1's 36/50 on RUBRIC 1.3)

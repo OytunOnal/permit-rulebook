@@ -1,6 +1,6 @@
 # s12 — two labels that mean what they say
 
-**Status:** draft for the human's approval, 2026-09-15. Site #9.
+**Status:** approved 2026-09-15 (human: "approve"). Site #9.
 
 ## What happened
 

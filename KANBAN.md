@@ -280,7 +280,7 @@ Promoted (or dropped, with evidence) at a boundary session.
   the page never says so beside a date five days old. Two rows on the facts
   list: the newest change, and the last run. The "read <date>" beside every
   quote, the stamp and the footer stay as they are, where "read" means what it
-  says. **s12 — scenario drafted 2026-09-15, awaiting the human's approval** — `docs/spine/scenarios/s12-two-labels.md`.
+  says. **s12 — scenario approved 2026-09-15, building on `two-labels`** — `docs/spine/scenarios/s12-two-labels.md`.
 
 ## mock-green
 
