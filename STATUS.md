@@ -65,46 +65,34 @@ shortened subline for a returning reader. It built and measured both. Its
 judgment — the hole is worse than the shift on a page this tight — is offered
 for you to overrule.
 
-**Both reviews came back and one of them dissolved the fork** (12 findings, one
-blocker, all sent back in one round). The Spec axis measured at 390×1400 as
-well: the footer moves on every arrival there — it was merely out of frame at
-844 — and the cold page reads 0.008, because the HTML ships the ledger open and
-the module closes it on narrow screens. Every residual shift, the 94 px subline
-included, is the same thing: **the module changing after the fact what the
-HTML painted.** So neither "leave 0.082" nor "lock the masthead and take a
-hole" is the answer; the answer is to decide the first paint's shape before
-the first paint — a few bytes of inline script, the pattern this site already
-hashes into its CSP, setting flags that CSS paints from — so the module arrives
-to the page it would have chosen. The builder is measuring that now, at both
-viewports, with the gate asserting the shift sources and not only the sum. The
-blocker was the `<noscript>` test reading its own constant back — silenceable
-by writing nothing — against the rule at DECISIONS:970. The scenario carries a
-dated correction for the two conditions it had stated more strongly than the
-system can know.
+**The review round is built, and it reached what the fork could not**
+(`first-paint` `f6b9a37`; gates run by me: build clean, **393 tests**, the
+route-page fingerprint unmoved). Thirteen lines of inline script in the head —
+hashed into the policy like the menu's — read what the module would read
+anyway and set two flags before paint; CSS paints the short subline and the
+folded ledger from them; the module arrives to the page it would have chosen.
+Measured with the module held back 700 ms, at three viewports:
 
-**The counter, read on 2026-09-15** (your ask; Cloudflare Web Analytics, last
-7 days, bots excluded). **110 visits, 132 page views** since the reading of
-2026-09-10 put them at 57 / 75 — so roughly 50 visits in the five days after
-the announcement's first day and a half, about ten a day, flat. **Where from:
-direct 102, LinkedIn 3, Bing 1, Google 1**, one AI crawler that is not a bot to
-the filter. Two visits from search in six days. **Who:** United States 43,
-Türkiye 42, Poland 5, Canada 4, Netherlands 3 — seventeen countries in all,
-twelve of them once. Desktop 96, mobile 14. **The first landings that are not
-the front door:** a Dutch route page (2), `/data/` (2), a French route page,
-the France country page — on 2026-09-10 every visit had entered at `/`.
+| arrival | master | 390×844 | 390×1400 | 1280×900 |
+|---|---|---|---|---|
+| `/` cold | 0.110 | **0** · footer 0 px | **0** | **0** |
+| `/?country=fr` | 0.280 | 0.005 | 0.052 | 0.009 |
+| `/` saved record | 0.156 | **0** | 0.001 | 0.005 |
+| `/?route=…` | 0.305 | 0.006 | 0.062 | 0.009 |
 
-**The vitals over the week:** LCP good 91% (P50 408 ms, P75 772, P90 2,324,
-**P99 7,923** — one very slow load), INP good 100%, **CLS good 92%, poor 6%** —
-the same four bad samples as before over a base of 44 instead of 13; the
-defect did not grow, the denominator did. The "before" is on site #8 now, so
-the week-after reading has something to stand against.
+Nothing above the box moves, on any arrival, anywhere — asserted as zero.
+**One thing is not by construction and I chose not to force it:** a link
+arrival lands on a genuinely taller screen (the citizenship search, where the
+build painted a five-button card), and the footer travels ~200 px below the
+fold for 0.005 of score. Holding it would cost a hole on every other screen
+or a blank box for exactly the readers the slice is for. Recorded as a default
+in DECISIONS, reversible by the counter a week after it is live.
 
-**What it says, and what it does not.** It is day 6 of the 30 that A2, A7 and
-A8 were pre-registered on, and the decision is not read early — but the shape
-is visible: the site is being reached by the people the announcement reached
-and by almost nobody else yet. That is what an unindexed week looks like, and
-the pages the crawlers land on first are the country and route pages, which
-is the right shape for the second week.
+The blocker is proven closed by falsification — empty the `<noscript>`
+sentence and the gate goes red — and so is the paint-skip: force a write and
+three cases fail at CLS 0. The policy became one list structurally on the way,
+because a second inline script on one page turned the one-policy-everywhere
+test red, correctly.
 
 **What tonight's run should do.** The User-Agent repair means Spain reads
 again; CI read every IND page fine this morning. So the 05:17 UTC run is
@@ -204,6 +192,21 @@ to look:
 - [x] **s10 scenario approved** (2026-09-15, your word: *"approve"*). The
       builder is on it, in a worktree of its own on the branch `first-paint`
       — the first slice built under steward-53.
+- [ ] **Walk s10, then say merge** — two previews, both holding the module
+      back 700 ms the way a phone network does: **http://localhost:4500** is
+      the fix (`f6b9a37`), **http://localhost:4501** is master. *What to look
+      for:* hard-reload each on a phone-width window. On :4501 the page paints
+      with an empty box and then, a beat later, the first question drops in and
+      everything below jumps. On :4500 the first question is there from the
+      first paint and nothing moves; you should not be able to tell when the
+      script arrived. Then the two harder cases on :4500 only: press "Check
+      yours — France" from http://localhost:4500/france/ (a link arrival), and
+      reload :4500 with a record you have already started. On both, the
+      masthead — headline, promise, stamp — must not move at all; the box
+      changes contents, and on the link arrival the footer moves below the
+      fold, which is the default recorded in DECISIONS for you to overrule.
+      *Pass:* nothing you can see moves after it has painted, on any of the
+      three.
 - [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
       window to close at 09:00 tomorrow). One line under your results: "Wrong
       about you? A value that does not match its source, or something this
