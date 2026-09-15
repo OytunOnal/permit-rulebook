@@ -282,14 +282,6 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **The first paint stops shifting** (s10) · site #8 · **scenario approved
-  2026-09-15, building on `first-paint`** — `docs/spine/scenarios/s10-first-paint.md`;
-  reproduced locally at CLS 0.11 / 0.28 / 0.16 with the module delayed 700 ms
-  (0 with no delay, which is why no gate had seen it) · CLS is poor for 23% of
-  samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) while LCP
-  and INP are good for 100%: the interview paints, then fills itself. Measured,
-  not guessed — the first defect this project learned from a metric.
-
 ## mock-green
 
 _(empty)_
@@ -299,6 +291,31 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **The first paint stops shifting** (s10) · site #8 · **real-green
+  2026-09-15, live** — `docs/spine/scenarios/s10-first-paint.md`. The page
+  ships with the first question in it, drawn at build time by the one renderer
+  the module also uses; thirteen lines of inline script decide the first
+  paint's shape before the first paint — a record, a link, a narrow screen —
+  and CSS paints from the decision, so the 220 KB module arrives to the page it
+  would have chosen. Measured with the module held back 700 ms: `/` cold 0.110
+  → **0** with the footer at 0 px, `?country=` 0.280 → 0.005, a saved record
+  0.156 → 0, `?route=` 0.305 → 0.006; nothing above the box moves at any of
+  three viewports.
+
+  The scenario was corrected three times, each time by measurement: `?route=`
+  was the worst arrival and not in the table; "the footer does not move" held
+  only at the one viewport where it was out of frame; "the page paints once"
+  was false because the module closed the ledger after the HTML shipped it
+  open. Reviewed on both axes (12 findings applied; the blocker a `<noscript>`
+  check satisfiable by nothing). The human's first walk changed it: a returning
+  reader had seen question one for a moment before their own screen — now a
+  quiet box at the question's height, *"Your answers are on this device —
+  bringing them back."* The first slice built under steward-53, in the
+  builder's own worktree. Site `8e67ffd`; **412 tests**.
+
+  **Judged a week from now** by the counter, the issue's own criterion: CLS
+  poor back to 0%, LCP and INP unchanged.
 
 - **A partial run says so** (s11) · **real-green 2026-09-15, live** —
   `docs/spine/scenarios/s11-partial-run.md`. The site said "Every source is

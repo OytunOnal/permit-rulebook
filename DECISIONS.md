@@ -3252,3 +3252,34 @@ readers (the pre-fix box, with its shift).
 **What it cost and bought:** one more build round and one more copy line.
 Bought: the product's own line — nothing untrue is shown — now holds on the
 first paint too, for every kind of arrival.
+
+## 2026-09-15 — s10 merged: the first paint is the page
+
+**Gate** (human: "merge", after two walks — the first of which changed the
+slice). The interview's box shipped empty and a 220 KB module filled it; on a
+phone the reader watched the page rearrange itself, and no gate could see it
+because a local server hands the script over with the HTML.
+
+**Decided, in three steps, each forced by a measurement.** The first question
+is rendered into the HTML through the module's own renderer, so a fresh visit
+paints once. Then, because the reviews measured past one viewport: the first
+paint's shape — record, link, narrow screen — is decided in the head by the
+smallest script that can read it, and CSS paints from the decision; the
+module arrives to the page it would have chosen. Then, because the human's
+walk saw question one flash before a returning reader's own screen: a started
+reader meets a quiet line at the question's height, not a question they have
+answered.
+
+**The rule this leaves behind:** a page whose first screen depends on state
+the HTML cannot know decides that state before the first paint, in the head,
+and paints from the decision — never after a module lands. And the gate for
+it is a browser with the script held back, at more than one viewport,
+asserting the shift's sources and not only its sum.
+
+**What was left as a default, reversible by the counter:** a link arrival
+lands on a taller screen and the footer travels below the fold for 0.005 of
+score; holding it would cost a hole or a blank box.
+
+**v1.1's two slices are now real-green** (s9 on the 11th, s10 today). Whether
+to stamp v1.1 — which brings the full product-critique walk the cadence
+requires for a version — is the next boundary's question.
