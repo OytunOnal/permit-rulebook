@@ -63,7 +63,113 @@ was unreachable") — what nobody foresaw is that the footer would turn a partia
 run into an unqualified claim. It is true of 42 sources and false of two, and
 the two are values on live pages.
 
-**You chose the words, and s11 is being built to them** (2026-09-15). On a day
+**The watch reads Spain again, and the fork was never a fork** (data
+`02cee69`, 2026-09-15). You asked what the User-Agent choice traded. It traded
+nothing in the end, because the measurement moved: `inclusion.gob.es` objects
+to **a URL inside the name**, not to a reader that names itself.
+
+    permit-rulebook-watch/0.1 (+https://github.com/…) change-detection  403
+    permit-rulebook-watch/0.1 (+https://github.com/…)                   403
+    Mozilla/5.0 (compatible; …; +https://github.com/…)                  403
+    permit-rulebook-watch/0.1                                           200, 299,066 bytes
+    permit-rulebook-watch                                               200
+
+So the name stays — unique enough to find this repository by — and the address
+moves to a header of its own, which the same host serves happily. The other
+watched hosts answer the shortened name with 200 too. A test holds the rule
+rather than the string: no URL in the name, and the contact still sent.
+
+**Eight days blind, and nothing had moved.** Both Spanish sources read on the
+first try afterwards and the salary threshold is **unchanged** since
+2026-09-07. The product was wrong to say it had checked; it was not wrong
+about the value.
+
+**And the Spanish failure was hiding a second one.** With Spain reading, the
+same run reports **four IND pages unreachable** — `slice marker missing: from`
+— which is the shell this morning's triage found (data #17): the page no
+longer carries the region the slice is cut from. So the watch is still red
+tonight, for a different and now-visible reason, and the browser strategy the
+gate cleared this afternoon is what answers it.
+
+**s11 is built, and it corrected the spec twice** (branches `s11-site`
+`d362184` and `s11-data` `0b3f19f`; **530 + 345 tests**, the root-build
+fingerprint unmoved and pinned by a case rather than by luck).
+
+- **The fact was not on disk.** The spec — mine — said a snapshot whose
+  `retrieved_at` predates `last_run` went unread, and forbade writing a new
+  field. That is false: `retrieved_at` is the day a *reading* was first taken,
+  and the unchanged arm keeps it too, so on today's shipped state **39 of 39
+  entries look stale and none of them is**. The five-day failure left a
+  one-line diff in `state.json`. The run now writes `unread` — a list of
+  `{id, url}` computed in one place from the reports the pass already makes,
+  empty on a clean day. I asserted the opposite from reading one arm of the
+  code; the build measured both.
+- **"Two Spanish sources" is one.** The second is a sentinel no dataset value
+  cites, and the spec's own rule — a reader is told about values, not about our
+  plumbing — drops it. The approved sentence agreed with that and disagreed
+  with itself: the date in it, 2026-09-07, is the PDF's; a second source would
+  have made it 2026-09-02. So the page says: *"Every source is re-read daily —
+  last run 2026-09-15. A Spanish source has not answered since 2026-09-07; the
+  values it backs still show that date."* **The count changed after the human
+  approved the words, so the sentence goes back to them.**
+
+**Both reviews are in: 14 findings, three of them blockers, all sent back in
+one round** (2026-09-15).
+
+- **The sharpest was missed by me and by the Spec axis both.** s11 taught the
+  qualification to `/data/` and the footer and left **28 route pages** typing
+  *"and a daily check re-reads every source"* into the template
+  (`route-page.ts:730` and `:735`, verified by hand). Two surfaces of three.
+  `copy.ts` exists to stop exactly that drift.
+- **Both axes found the same second one independently:** `--only` keeps a
+  source in the unread list after re-reading it, so the documented step for a
+  slice change — `npm run watch:sources -- --only=<id>` — would make the page
+  say *"has not answered since <the day it was just read>"*. A routine step
+  turned into a lie on a live page.
+- **The case named for the real state asserts nothing** — both sides of its
+  expectation are false today, so it passes on a page that still lies. Its
+  replacement may not be written the way its sibling is, by grepping the CLI's
+  own source; this project ruled against that on 2026-09-08.
+
+**One finding I answered rather than forwarded.** Spec calls it a blocker that
+the shipped `state.json` carries no `unread`, and suggests back-filling the
+run of 2026-09-15 by hand. **No:** state is written by a run, never typed —
+and since the User-Agent repair a real run reads Spain and reports the four IND
+pages instead. The slice closes when the first run after merge writes the list.
+What the build owes is that the machinery is provably right, which is the third
+blocker.
+
+**Held out of the slice on purpose, and on the roadmap rather than forgotten:**
+a route page naming **its own** unread sources instead of the dataset's. Better,
+narrower, more useful — and not what s11 owed.
+
+**A working rule I broke three times today** — a mixed diff, a red master, a
+stale STATUS, all three from treating a tree an agent was writing in as mine.
+I wrote the fix into this file as "the main trees belong to the agent, the
+ledgers move to the `_preview` worktrees".
+
+**Spine has since ruled the other way round, and its version is better**
+(steward-53, 2026-09-15, with today's three slips as its evidence): **one
+writer per working tree** — the builder creates its own worktree on the slice's
+branch and works only there, and the **primary tree stays on master and belongs
+to the main session**, because that is where the ledgers, the scenario walk and
+the status guard live. Mine moved the ledgers away from the guard that checks
+them; this keeps them together and moves the builder instead. The preview
+worktrees go back to doing only what they were for — serving a branch to walk.
+
+In force from the next slice; the round in flight finishes where it is, since
+moving a tree under a working agent risks the work for nothing.
+
+**A mess of mine, repaired.** `git add -A` ran in a tree the builder was
+writing in and swept s11's site half into a ledger commit, which reached master
+and broke it: the site imported what the published ruleset does not export yet.
+The deploy failed at `astro check`, so **the live site was never touched** — a
+failed build publishes nothing — and master is green again (`34fe87c`, deployed
+14:35). The work is intact on its own branches. It is the second time today a
+working tree was treated as mine while an agent wrote in it; the first cost a
+mixed diff, this one a red master.
+
+**The wording chosen, for the record:** (2026-09-15). On a day
 when something went unread `/data/` will say: *"Every source is re-read daily —
 last run 2026-09-15. Two Spanish sources have not answered since 2026-09-07;
 the values they back still show that date."* On a clean day the clause
