@@ -63,6 +63,34 @@ was unreachable") — what nobody foresaw is that the footer would turn a partia
 run into an unqualified claim. It is true of 42 sources and false of two, and
 the two are values on live pages.
 
+**The watch reads Spain again, and the fork was never a fork** (data
+`02cee69`, 2026-09-15). You asked what the User-Agent choice traded. It traded
+nothing in the end, because the measurement moved: `inclusion.gob.es` objects
+to **a URL inside the name**, not to a reader that names itself.
+
+    permit-rulebook-watch/0.1 (+https://github.com/…) change-detection  403
+    permit-rulebook-watch/0.1 (+https://github.com/…)                   403
+    Mozilla/5.0 (compatible; …; +https://github.com/…)                  403
+    permit-rulebook-watch/0.1                                           200, 299,066 bytes
+    permit-rulebook-watch                                               200
+
+So the name stays — unique enough to find this repository by — and the address
+moves to a header of its own, which the same host serves happily. The other
+watched hosts answer the shortened name with 200 too. A test holds the rule
+rather than the string: no URL in the name, and the contact still sent.
+
+**Eight days blind, and nothing had moved.** Both Spanish sources read on the
+first try afterwards and the salary threshold is **unchanged** since
+2026-09-07. The product was wrong to say it had checked; it was not wrong
+about the value.
+
+**And the Spanish failure was hiding a second one.** With Spain reading, the
+same run reports **four IND pages unreachable** — `slice marker missing: from`
+— which is the shell this morning's triage found (data #17): the page no
+longer carries the region the slice is cut from. So the watch is still red
+tonight, for a different and now-visible reason, and the browser strategy the
+gate cleared this afternoon is what answers it.
+
 **s11 is built, and it corrected the spec twice** (branches `s11-site`
 `d362184` and `s11-data` `0b3f19f`; **530 + 345 tests**, the root-build
 fingerprint unmoved and pinned by a case rather than by luck).
