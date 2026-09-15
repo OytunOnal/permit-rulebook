@@ -35,9 +35,24 @@ comments on it), and every one of them failed for the same two sources:
 - `es-uge-umbral-pdf` — Spain's salary-threshold PDF, **last read 2026-09-07**
 - `es-uge-index` — the UGE requirements page, **last read 2026-09-02**
 
-Both answer this machine fine today (HTTP 200, 702 KB of PDF and 299 KB of
-HTML), so the pages are up and it is the CI runner they refuse — the same
-shape as Legifrance's 403, from the other side.
+**And the cause is ours, not theirs** (measured the same day, data #18).
+`inclusion.gob.es` returns **403 to the User-Agent the watch identifies itself
+with** and **200 to a request that sends none** — reproducibly, from a laptop
+and from the CI runner alike, 299,065 and 701,825 bytes in about a second. It
+was never a wall and never the runner.
+
+*Correction, and worth keeping:* the first reading of this — written here this
+morning — said the pages answer a laptop and refuse the runner. That was wrong,
+and avoidably: the laptop check used a bare `fetch` instead of the client that
+actually fails. Checking a thing with a different client than the one that
+breaks is how a header problem wears a geography costume for five days.
+
+**The fix is a fork, not a patch, and it is yours:** the header is not an
+accident — it names the project and links the repository, which is what a daily
+reader of public pages should do. Four ways out are written on data #18; the
+recommended one keeps the honest identity everywhere it is accepted and records
+a per-host exception with this measurement and its date beside it, so the
+exception stays visible instead of becoming a silent global change.
 
 **The part that matters is not the failure, it is what the site says while it
 fails.** `/data/` reads *"re-read daily — last run 2026-09-15"*, and that
@@ -63,6 +78,16 @@ The original shape of the problem, for the record: the state should
 record what a run achieved (read, unreachable, and the oldest read date among
 them) and the sentence should say it, the way every other claim on this site
 carries what it rests on.
+
+**The browser candidate's gate is answered: 2 of 5** (2026-09-15, run on the
+runner, `/usr/bin/google-chrome`). Headless Chrome reads **EUR-Lex**
+(130,574 characters, the sentence found) and the **IND** (9,816, found); it does
+**not** read **Legifrance**, which answers it with a Cloudflare challenge — 270
+characters titled "Just a moment…". The runner and a laptop returned the same
+five rows, so these walls sort by client, not by address. So the strategy is
+worth building, for two sources, and the human tier goes from 2 to 1 rather
+than to 0. The measurement lives on the branch `bot-wall` in both repositories
+and is meant to be deleted with the decision it informs.
 
 **The Dutch flag is triaged** (data #17, four days late) — and it was not a rule
 change. Today's read of the IND page is **7,256 characters of navigation**
