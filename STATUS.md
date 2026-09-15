@@ -63,7 +63,24 @@ that 0.082 (82% of the "good" budget) rather than lock the masthead's height,
 which measures **0 on every arrival** at the cost of a ~94 px hole under the
 shortened subline for a returning reader. It built and measured both. Its
 judgment — the hole is worse than the shift on a page this tight — is offered
-for you to overrule. **Both reviews are running.**
+for you to overrule.
+
+**Both reviews came back and one of them dissolved the fork** (12 findings, one
+blocker, all sent back in one round). The Spec axis measured at 390×1400 as
+well: the footer moves on every arrival there — it was merely out of frame at
+844 — and the cold page reads 0.008, because the HTML ships the ledger open and
+the module closes it on narrow screens. Every residual shift, the 94 px subline
+included, is the same thing: **the module changing after the fact what the
+HTML painted.** So neither "leave 0.082" nor "lock the masthead and take a
+hole" is the answer; the answer is to decide the first paint's shape before
+the first paint — a few bytes of inline script, the pattern this site already
+hashes into its CSP, setting flags that CSS paints from — so the module arrives
+to the page it would have chosen. The builder is measuring that now, at both
+viewports, with the gate asserting the shift sources and not only the sum. The
+blocker was the `<noscript>` test reading its own constant back — silenceable
+by writing nothing — against the rule at DECISIONS:970. The scenario carries a
+dated correction for the two conditions it had stated more strongly than the
+system can know.
 
 **What tonight's run should do.** The User-Agent repair means Spain reads
 again; CI read every IND page fine this morning. So the 05:17 UTC run is

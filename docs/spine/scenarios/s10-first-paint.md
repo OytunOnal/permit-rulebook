@@ -74,6 +74,23 @@ first question **in the same place and without the footer moving**.
    beat (the driver's `evaluate` does not await a promise).
 6. **The claim on the site does not change.** Nothing here touches copy.
 
+**Corrected 2026-09-15, after the build's reviews** (the writing session's
+correction, dated and marked, as the held-out-scenario rule allows): two things
+above were stated more strongly than the system can know. Point 2's "the
+footer does not move" was met at 390×844 only because a full box pushes the
+footer out of frame; at 390×1400 it moves on every arrival. Point 5's "that page
+should paint once" was false even cold: the HTML shipped the ledger `open` and
+the module closed it on narrow screens, 0.008 at the taller viewport. Both
+turned out to be one thing — **the module changing, after the fact, what the
+HTML painted**: the ledger's state, the masthead's subline, the screen in the
+box. So the requirement is restated as what it always meant: the first paint's
+shape is decided **before** the first paint (a few bytes of inline script,
+already the pattern this site hashes into its CSP, setting flags CSS paints
+from), the module arrives to the page it would have chosen, and the gate runs
+at **two phone viewports and one desktop** and asserts the shift *sources*, not
+only the sum — nothing below the box may appear in them on any arrival. The
+bounds stay: under 0.1 everywhere, 0 on the cold record-less `/`.
+
 ## How it is proved
 
 - The browser case in point 5, red on master today at the numbers in the
