@@ -27,106 +27,46 @@ front of it and each is a research day before a build day.
 
 ## What is happening now
 
-**s11 is live** (2026-09-15, on your word: *"s11 merge"*). Site `777b3ff`, data
-`165f39a`, 539 + 349 tests, deploy green in 2m31s, read on the live host after
-it landed: `/data/` says *"Every source is re-read daily — last run
-2026-09-15."* with no exception clause, and the footer *"re-read daily (last
-run 2026-09-15)"* — the clean sentence, because the shipped state carries no
-unread list yet. **The first watch run after this merge writes it**, and from
-then on a partial run says so on every surface without anyone's help.
+**s10 is live** (2026-09-15, on your word: *"merge"*, after two walks). Site
+`8e67ffd`, 412 tests, deploy green in 2m21s, read on the live host after it
+landed: the pre-paint script is in the head, the policy carries its hash, the
+box holds a question card from the first byte, the `<noscript>` line is under
+it. The page paints once now, and the counter judges it a week from today —
+CLS poor back to 0%, LCP and INP unchanged — against the "before" written on
+site #8 this afternoon (poor 6% of 44).
 
-**s10 is built, and the gate reads what the scenario asked** (2026-09-15;
-`first-paint` `607d45b`, built in the builder's own worktree — the first slice
-under steward-53 — gates run by me: build clean, **358 tests**, route-page
-fingerprint unmoved). The page paints the first question at build time through
-the one renderer the module also uses (`src/lib/question.ts`, moved out of the
-module verbatim); on a fresh visit the module parses what it would draw, finds
-it already there, and writes nothing. A browser case holds the module back
-700 ms at 390×844:
+**v1.1's two slices are real-green: s9 on the 11th, s10 today.** That is the
+whole scope you chose when you opened it. What a stamp brings is the cadence's
+full product-critique walk — every persona, all lenses, delta against v1 —
+and it is a gate, not a default: **say stamp, or say what v1.1 still needs.**
 
-| arrival | master | now |
-|---|---|---|
-| `/` cold | 0.110 | **0** |
-| `/?country=fr` | 0.280 | 0.057 |
-| `/` saved record | 0.156 | 0.082 |
-| `/?route=…` | **0.305** | 0.057 |
+**Four slices shipped in six days, each on your word:** s8, s9, s11, s10.
+Three things this last one taught, written into DECISIONS: a first screen
+that depends on what the HTML cannot know is decided before the first paint,
+not after a module lands; the gate for a paint defect is a browser with the
+script held back at more than one viewport; and the builder's own worktree
+(steward-53) held — no tree was touched by two writers today after it was
+adopted.
 
-**The build corrected the spec twice.** The `?route=` arrival was the worst of
-all and my reproduction table had not measured it — it is in the gate now. And
-what remains is **not the box**: with the box full, the footer leaves the first
-viewport on every arrival and stops moving at all; the 0.057–0.082 left is the
-masthead's subline shortening by ~94 px for a reader who has answered
-something. The empty box was most of the defect, not all of it.
+**The watch:** tonight's 05:17 UTC run is the first expected green since the
+10th — the User-Agent repair reads Spain, CI read every IND page this morning
+— and the first run after s11 writes the unread list, so `/data/` says the
+true thing without help from anyone.
 
-**One design call is yours, and it is the walk's question:** the build left
-that 0.082 (82% of the "good" budget) rather than lock the masthead's height,
-which measures **0 on every arrival** at the cost of a ~94 px hole under the
-shortened subline for a returning reader. It built and measured both. Its
-judgment — the hole is worse than the shift on a page this tight — is offered
-for you to overrule.
-
-**The review round is built, and it reached what the fork could not**
-(`first-paint` `f6b9a37`; gates run by me: build clean, **393 tests**, the
-route-page fingerprint unmoved). Thirteen lines of inline script in the head —
-hashed into the policy like the menu's — read what the module would read
-anyway and set two flags before paint; CSS paints the short subline and the
-folded ledger from them; the module arrives to the page it would have chosen.
-Measured with the module held back 700 ms, at three viewports:
-
-| arrival | master | 390×844 | 390×1400 | 1280×900 |
-|---|---|---|---|---|
-| `/` cold | 0.110 | **0** · footer 0 px | **0** | **0** |
-| `/?country=fr` | 0.280 | 0.005 | 0.052 | 0.009 |
-| `/` saved record | 0.156 | **0** | 0.001 | 0.005 |
-| `/?route=…` | 0.305 | 0.006 | 0.062 | 0.009 |
-
-Nothing above the box moves, on any arrival, anywhere — asserted as zero.
-**One thing is not by construction and I chose not to force it:** a link
-arrival lands on a genuinely taller screen (the citizenship search, where the
-build painted a five-button card), and the footer travels ~200 px below the
-fold for 0.005 of score. Holding it would cost a hole on every other screen
-or a blank box for exactly the readers the slice is for. Recorded as a default
-in DECISIONS, reversible by the counter a week after it is live.
-
-The blocker is proven closed by falsification — empty the `<noscript>`
-sentence and the gate goes red — and so is the paint-skip: force a write and
-three cases fail at CLS 0. The policy became one list structurally on the way,
-because a second inline script on one page turned the one-policy-everywhere
-test red, correctly.
-
-**What tonight's run should do.** The User-Agent repair means Spain reads
-again; CI read every IND page fine this morning. So the 05:17 UTC run is
-expected **green** — the first since 2026-09-10 — and `/data/` to stay clean.
-If it is not, the page will say which country, and that is the point.
-
-**Three slices shipped this week on your word** — s8, s9, s11 — each built on
-a branch, reviewed on both axes, walked on the local preview, merged. Today's
-one cost the most and taught the most: the spec was wrong twice and the build
-measured it; the approved sentence claimed a duration nothing in the system
-knows and the walk caught it; and the working trees were treated as mine while
-an agent wrote in them, three times, which is now Spine's rule steward-53.
-
-**The five-day failure is closed** (data #18 stays open for the record). It was
-our own header: the watch put a URL inside its User-Agent and
-`inclusion.gob.es` refuses that, wherever it comes from. The name stays, the
-address moved beside it, both Spanish sources read on the first try, and the
-salary threshold was **unchanged** — eight days blind, nothing moved.
-
-**Queued, in order:** **s10** (CLS, site #8 — v1.1's last slice, unbuilt);
-**site #9** (the label "Newest value read" that you read as "last checked" —
-two rows, "Newest value changed" and "Last checked"); `feedback-line` (site
-#6, built, never walked); data #15 (the free-movement notice's evidence for
-four passports); data #13 (the Opportunity Card's link); data #17 (the IND
-shell — the browser strategy's gate read 2 of 5, worth building for two
-sources); the Spanish job-search visa's annual order to re-read at the end of
-December.
+**Queued, in order:** **site #9** (the "Newest value read" label, two rows);
+`feedback-line` (site #6, built, never walked); **data #15** (the free-movement
+notice's evidence for four passports); **data #13** (the Opportunity Card's
+link); **data #17** (the IND shell — the browser strategy's gate read 2 of 5);
+the Spanish job-search order to re-read at the end of December; the
+pre-registered numbers on **2026-10-09**.
 
 What runs without anyone asking:
 
-- **The daily watch** (05:17 UTC) — repaired today; expected green tonight.
-- **The site's daily rebuild** (06:40 UTC nominal, ~11:48 in practice) — has
-  pinned and deployed a fresh data commit every day since 2026-09-11.
-- **The counter**, and **the pre-registered numbers** (A2, A7, A8 on 2026-10-09).
+- **The daily watch** (05:17 UTC) — repaired today.
+- **The site's daily rebuild** — pinned and deployed fresh data every day since
+  the 11th.
+- **The counter** and **the pre-registered numbers** (A2, A7, A8 on 2026-10-09;
+  interim reading at day 6 in `docs/spine/assumptions.md`).
 
 ## What is expected from you
 
@@ -200,18 +140,13 @@ to look:
       until the module lands; a link arrival shows *"Setting up your
       questions."*; a fresh visit is unchanged; a screen reader gets the
       sentence and not the covered question.
-- [ ] **Walk s10 again, then say merge** — **http://localhost:4500** is the
-      rebuilt fix (`fc7ea94`), **http://localhost:4501** is master, both holding
-      the module back 700 ms. *Three arrivals on :4500:* (1) as you are now,
-      with your record — the quiet box with your sentence, then your screen,
-      and nothing above the box moves; (2) press **Start over**, reload — the
-      first question is there from the first paint and never changes; (3) from
-      http://localhost:4500/france/ press "Check yours — France" — the neutral
-      line, then the France-scoped question. *Two words that are mine, not
-      yours, and yours to change:* the link line, and that a record beats a
-      link when both apply. *Pass:* nothing you can see moves after it has
-      painted, and nothing shown is untrue for a moment.
-
+- [x] **s10 walked twice and merged** (2026-09-15, your word). Live, and read
+      on the live host afterwards.
+- [ ] **v1.1 — stamp it, or say what it still needs.** Its scope was s9 and
+      s10; both are real-green and live. A stamp brings the full critique walk
+      (every persona, all nine lenses, delta against v1's 36/50 on RUBRIC 1.3)
+      and a versions-ledger line the README quotes. *Say "stamp" and the walk
+      runs in isolation; say what is missing and it goes on the board first.*
 - [ ] **Walk s10, then say merge** — two previews, both holding the module
       back 700 ms the way a phone network does: **http://localhost:4500** is
       the fix (`f6b9a37`), **http://localhost:4501** is master. *What to look
