@@ -182,6 +182,16 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## backlog
 
+- **"Newest value changed", and "Last checked" beside it** · site #9 ·
+  `design-flaw`, found by the human walking `/data/` on 2026-09-15: "Newest
+  value read 2026-09-10" was read as "last checked" — the values are right and
+  the label is not, because "read" here means the day a reading was taken and
+  the page never says so beside a date five days old. Two rows on the facts
+  list: the newest change, and the last run. The "read <date>" beside every
+  quote, the stamp and the footer stay as they are, where "read" means what it
+  says. Queued behind s10 (CLS).
+
+
 - ~~es-ict's `situation` criterion carries the precondition's quote~~ → **fixed the same hour** (visa-rules `1399abc`, 2026-09-07): the criterion now cites art. 73.1, the sentence that defines the transfer; the live card quotes each sentence once; 120 quotes verified, 323 tests. Original entry kept:
   **es-ict's `situation` criterion carries the precondition's quote** (found on
   the s5f real-green walk, 2026-09-07, `bug`): `dataset.json` gives the
