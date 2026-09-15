@@ -44,7 +44,7 @@ export function notFoundPage(dataset: Dataset): NotFoundPage {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="robots" content="noindex">
-${contentSecurityPolicy([MENU_SCRIPT])}
+${contentSecurityPolicy()}
 ${iconLinks()}
 <style>${PAGE_CSS}</style>`;
 

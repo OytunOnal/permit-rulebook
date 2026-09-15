@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { FIRST_PAINT_SCRIPT } from "./first-paint.js";
+import { MENU_SCRIPT } from "./identity.js";
 import { escAttr } from "./reason.js";
 import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "./site.js";
 
@@ -23,10 +25,22 @@ import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "./site.js";
  * Server-side only \u2014 it hashes with `node:crypto`, and nothing in the browser
  * bundle may import it.
  */
+/**
+ * Every inline script this site ships, from wherever it ships it.
+ *
+ * One policy for the whole site: a test reads the home page's and asserts
+ * every other page carries the same bytes, because a page with a policy of its
+ * own is a page nobody compares. Assembling the list at each call site is how
+ * the interview's pre-paint script gave the home page a policy three other
+ * pages did not have (s10, 2026-09-15). A page that does not run one of these
+ * is not harmed by its hash being named.
+ */
+export const INLINE_SCRIPTS = [MENU_SCRIPT, FIRST_PAINT_SCRIPT];
+
 export const sha256 = (source: string): string =>
   `'sha256-${createHash("sha256").update(source, "utf8").digest("base64")}'`;
 
-export function contentSecurityPolicy(inlineScripts: string[] = []): string {
+export function contentSecurityPolicy(inlineScripts: string[] = INLINE_SCRIPTS): string {
   // `astro dev` injects inline scripts of its own (hot reload, the toolbar),
   // which this policy blocks — and hashing a dev server's changing script would
   // be hashing nothing. The policy ships with the BUILD, and the built site is

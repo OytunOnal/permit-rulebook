@@ -702,7 +702,7 @@ export function routePage(
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-${contentSecurityPolicy([MENU_SCRIPT])}
+${contentSecurityPolicy()}
 ${iconLinks()}
 ${headMeta({ title, description: desc, path, kind: "article" })}
 <style>${PAGE_CSS}</style>`;

@@ -11,6 +11,10 @@ import { datasetMeta, remainingQuestions } from "permit-rulebook-data";
 // build draws it — through the very code the module draws every later screen
 // with, never a second copy of the markup (s10, 2026-09-15).
 import { declarationCount, declarationHtml, questionCardHtml } from "../lib/question.js";
+// The three things the page must know about the reader before it paints, read
+// in <head> so the stylesheet can paint the shape the module would have chosen
+// (s10, 2026-09-15).
+import { FIRST_PAINT_SCRIPT } from "../lib/first-paint.js";
 // The masthead is one function of which screen is showing, server and client
 // alike — a second copy of the intro copy here is how "Start over" left a
 // stale claim on question 1 (product-critique v0.7, B4).
@@ -34,6 +38,14 @@ const dataset = assertValidDataset(rawDataset);
 const meta = datasetMeta(dataset);
 const intro = mastheadFor({ kind: "question", started: false });
 /**
+ * The masthead's other standing form: the promise shortens once it has been
+ * read, and a reader with a record read it last time. Both are painted, and
+ * the pre-paint script's flag says which one this reader gets — the module
+ * used to swap the text 700 ms in, which pulled the whole interview up under
+ * them (s10).
+ */
+const started = mastheadFor({ kind: "question", started: true });
+/**
  * The screen the page paints with, before any script runs: question one, with
  * nothing on the record. Every reader meets it, and the ones whose own screen
  * differs — a saved record, an arrival from a country or route page — have
@@ -56,7 +68,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <Fragment set:html={contentSecurityPolicy([MENU_SCRIPT])} />
+  <Fragment set:html={contentSecurityPolicy()} />
+  <script is:inline set:html={FIRST_PAINT_SCRIPT}></script>
   <title>{PRODUCT_NAME} — which work-permit routes fit?</title>
   <Fragment set:html={iconLinks()} />
   <Fragment set:html={headMeta({
@@ -75,7 +88,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       <div>
         <div class="brand">{TAGLINE}</div>
         <h1 id="headline" set:html={intro.headline}></h1>
-        <p class="sub" id="subline">{intro.subline}</p>
+        <p class="sub" id="subline"><span class="sub-fresh">{intro.subline}</span><span class="sub-started">{started.subline}</span></p>
       </div>
       {/* One pair, two states. On the question screens it states the same
           fact the route page states — when the rules were last read — and on
@@ -156,6 +169,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // build drew the first paint with, so the module's first render finds the
     // screen it would have drawn already on the page (s10).
     import { declarationCount, declarationHtml, hasClasses, isLongList, questionCardHtml } from "../lib/question.js";
+    // The width the ledger stops being a disclosure at, said once, and read
+    // here and by the script that runs before the first paint (s10).
+    import { WIDE_QUERY } from "../lib/first-paint.js";
     // One date format, everywhere a date prints (decision 12).
     import { isoDay } from "../lib/copy.js";
     import {
@@ -177,9 +193,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const headline = document.getElementById("headline")!;
     const subline = document.getElementById("subline")!;
     const app = document.getElementById("app")!;
+    /** Where the pre-paint script left what it read about this reader. */
+    const page = document.documentElement;
 
     /**
-     * Draw and wire, unless what would be drawn is already on the screen.
+     * Write markup into a box, unless it is already there.
      *
      * The build paints the first question through the same renderer this
      * module uses, so on a fresh visit every string this page is about to
@@ -187,25 +205,43 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * nodes with identical ones — cheap, but it is the same gesture that
      * produced the defect, and the measurement is what decides (s10).
      *
-     * The candidate is parsed into a spare element first so both sides are
-     * compared as the browser serialises them: our escaping and Chrome's do
-     * not spell `'` the same way, and comparing the raw strings would report a
-     * difference that is not one.
+     * The candidate is parsed into an empty copy of the box itself, never a
+     * spare `<div>`: what a fragment serialises to depends on what it was
+     * parsed inside, and the ledger's rows are parsed inside a `<dl>`. Both
+     * sides then read as the browser writes them, which is the comparison
+     * that means something — our escaping and Chrome's do not spell `'` the
+     * same way, and comparing the raw strings would report a difference that
+     * is not one.
      *
-     * `wire` hangs the listeners on whatever is now in the box, and `wired`
-     * remembers which boxes hold nodes this module has already hung them on —
-     * the ones the BUILD drew need wiring without a repaint, and a repeated
-     * render that draws the same screen must not hang a second copy on the
-     * same nodes.
+     * Says whether it wrote.
      */
-    const spare = document.createElement("div");
+    const spares = new Map<Element, Element>();
+    function draw(el: Element, html: string): boolean {
+      let spare = spares.get(el);
+      if (!spare) spares.set(el, spare = el.cloneNode(false) as Element);
+      spare.innerHTML = html;
+      if (el.innerHTML === spare.innerHTML) return false;
+      el.innerHTML = html;
+      return true;
+    }
+
+    /**
+     * Draw, and hang this screen's listeners on what is now in the box.
+     *
+     * `wired` remembers which boxes hold nodes this module has already hung
+     * them on: the ones the BUILD drew need wiring without a repaint, and a
+     * repeated render that draws the same screen must not hang a second copy
+     * on the same nodes.
+     *
+     * THE RULE, for anything that writes a painted box some other way: take
+     * the box out of `wired` first, or the next render that happens to draw
+     * the same screen will trust listeners that went out with the old nodes
+     * and hang a second set on the new ones. `renderResults` is the one place
+     * that does, and it says so there too (s10).
+     */
     const wired = new Set<Element>();
     function paint(el: Element, html: string, wire: () => void): void {
-      spare.innerHTML = html;
-      if (el.innerHTML !== spare.innerHTML) {
-        el.innerHTML = html;
-        wired.delete(el);
-      }
+      if (draw(el, html)) wired.delete(el);
       if (wired.has(el)) return;
       wired.add(el);
       wire();
@@ -365,8 +401,20 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * transitions themselves live in `screen.ts`, where a property test walks
      * them in every order (review H1). */
     function advance(action: FlowAction) {
-      const m = mastheadFor(screenAfter(action, { answered: asked.length }));
-      paint(headline, m.headline, () => {});
+      const screen = screenAfter(action, { answered: asked.length });
+      const m = mastheadFor(screen);
+      draw(headline, m.headline);
+      // The build painted both of the masthead's standing promises and an
+      // inline script in <head> chose between them before the first paint, so
+      // choosing again here is setting the same attribute rather than writing
+      // the text a second time. A verdict's subline is not standing — it
+      // counts what was compared — so that one is written, and once it is the
+      // two spans are gone for good.
+      const standing = screen.kind === "question" ? (screen.started ? "started" : "fresh") : null;
+      if (standing !== null && subline.firstElementChild) {
+        if (page.dataset.first !== standing) page.dataset.first = standing;
+        return;
+      }
       say(subline, m.subline);
     }
 
@@ -480,7 +528,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           // is only its picture: what Enter commits is decided there, where a
           // property test can hold it (product-critique v0.7, B1).
           let box: ListboxState = stateFor(filter.value);
-          const draw = () => {
+          const drawList = () => {
             filter.setAttribute("aria-expanded", String(box.open && box.query.trim() !== ""));
             const status = document.getElementById("cstatus");
             if (!box.query.trim() || !box.open) {
@@ -525,7 +573,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
                 answer(b.dataset.value!);
               }));
           };
-          filter.addEventListener("input", () => { box = stateFor(filter.value); draw(); });
+          filter.addEventListener("input", () => { box = stateFor(filter.value); drawList(); });
           filter.addEventListener("keydown", (e) => {
             // isComposing: an IME's committing Enter belongs to the IME.
             if (e.isComposing) return;
@@ -546,14 +594,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
               answer(result.commit.value);
               return;
             }
-            draw();
+            drawList();
           });
-          draw();
-          filter.focus();
-          // A correction starts by replacing, not by prepending: the caret sat at
-          // position 0 and the first keystroke produced "nigeriaNiger"
-          // (product-critique v0.7, F3).
-          filter.select();
+          drawList();
         } else {
           main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
             btn.addEventListener("click", () => answer(btn.dataset.value!)));
@@ -580,6 +623,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           renderQuestion({ kind: "edit" });
         });
       });
+      if (longList) {
+        // Every render of a search question puts the caret in it, whether or
+        // not the box had to be rewritten to get here. A correction starts by
+        // replacing, not by prepending: the caret sat at position 0 and the
+        // first keystroke produced "nigeriaNiger" (product-critique v0.7, F3).
+        const search = main.querySelector<HTMLInputElement>("#cfilter")!;
+        search.focus();
+        search.select();
+      }
       // Shown once, on the screen straight after the commit.
       justRecorded = null;
       // The same rule for the line that says where the reader came from.
@@ -878,7 +930,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     function renderResults() {
       glossary = new Set();
       // The verdict writes the box itself and hangs its own listeners, so what
-      // `paint` remembers about the box stops being true here (s10).
+      // `paint` remembers about the box stops being true here. This is the one
+      // place that writes a painted box some other way, and the rule about
+      // doing so is written at `paint` (s10).
       wired.delete(main);
       // The commit banner belongs to the screen after the commit, and the
       // verdict is not it.
@@ -1279,9 +1333,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * open — its summary is not a control there. Narrow starts collapsed, and
      * once the person opens or closes it themselves, that decision stands.
      */
-    const wide = window.matchMedia("(min-width: 761px)");
+    const wide = window.matchMedia(WIDE_QUERY);
     let ledgerChosen = false;
-    const syncLedger = () => { if (!ledgerChosen || wide.matches) decl.open = wide.matches; };
+    const syncLedger = () => {
+      if (!ledgerChosen || wide.matches) decl.open = wide.matches;
+      // The stylesheet folded the panel away before the first paint on the
+      // strength of the flag the pre-paint script wrote; the flag comes down
+      // in the same task the real decision is made, so nothing is painted
+      // between the two and the reader's own taps are not fought (s10).
+      delete page.dataset.narrow;
+    };
     decl.addEventListener("toggle", () => { if (!wide.matches) ledgerChosen = true; });
     wide.addEventListener("change", syncLedger);
     syncLedger();
@@ -1377,6 +1438,19 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}
     h1 b{color:var(--color-near)}
     .sub{color:var(--color-muted);max-width:38rem;font-size:.92rem}
+    /* The masthead's two standing promises, both painted, one shown. Which one
+       is decided in <head> before the first paint (lib/first-paint.ts): the
+       module used to swap the text when it landed 700 ms later, and the whole
+       interview slid up under the reader (s10, 2026-09-15). */
+    .sub-started{display:none}
+    [data-first="started"] .sub-fresh{display:none}
+    [data-first="started"] .sub-started{display:inline}
+    /* The same, for the ledger, which is a closed disclosure on a narrow
+       screen. It ships open — that is what a reader with no script should
+       get — and is folded away here until the module closes it properly, in
+       the same task it takes this flag down. */
+    [data-narrow] #decl[open] > :not(summary){display:none}
+    [data-narrow] #decl[open] > summary{margin-bottom:0}
 
     /* The question is first in the DOM so a phone opens on it; on a wide
        screen `order` puts the ledger back in the left column (F8). */
