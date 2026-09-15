@@ -35,19 +35,35 @@ run 2026-09-15)"* — the clean sentence, because the shipped state carries no
 unread list yet. **The first watch run after this merge writes it**, and from
 then on a partial run says so on every surface without anyone's help.
 
-**s10 is open at its boundary** (2026-09-15, human: *"s10'a geçelim"*). The
-CLS defect the counter found is **reproduced**: the page ships an empty
-`<main>`, a 220 KB module fills it, and everything below moves. On a local
-server the script arrives with the HTML and CLS reads 0 — which is why no gate
-has ever seen it; with the module delayed 700 ms, the site's own headless
-driver measures **0.11 / 0.28 / 0.16** on the three arrivals (cold, `?country=`,
-saved record) and names the field's nodes: `#app`, the footer, `#decl`. The
-scenario is drafted — `docs/spine/scenarios/s10-first-paint.md` — with the
-issue's own fix direction: the first question rendered into the HTML at build
-time, a different first screen replacing it in the same box, and a
-browser-driven gate that fails at today's numbers. **Approved; being built.** The reproduction harness lives beside the scenario as
-`s10-cls-harness.mjs` — a record, not a scratch file — and the scenario points
-at it there.
+**s10 is built, and the gate reads what the scenario asked** (2026-09-15;
+`first-paint` `607d45b`, built in the builder's own worktree — the first slice
+under steward-53 — gates run by me: build clean, **358 tests**, route-page
+fingerprint unmoved). The page paints the first question at build time through
+the one renderer the module also uses (`src/lib/question.ts`, moved out of the
+module verbatim); on a fresh visit the module parses what it would draw, finds
+it already there, and writes nothing. A browser case holds the module back
+700 ms at 390×844:
+
+| arrival | master | now |
+|---|---|---|
+| `/` cold | 0.110 | **0** |
+| `/?country=fr` | 0.280 | 0.057 |
+| `/` saved record | 0.156 | 0.082 |
+| `/?route=…` | **0.305** | 0.057 |
+
+**The build corrected the spec twice.** The `?route=` arrival was the worst of
+all and my reproduction table had not measured it — it is in the gate now. And
+what remains is **not the box**: with the box full, the footer leaves the first
+viewport on every arrival and stops moving at all; the 0.057–0.082 left is the
+masthead's subline shortening by ~94 px for a reader who has answered
+something. The empty box was most of the defect, not all of it.
+
+**One design call is yours, and it is the walk's question:** the build left
+that 0.082 (82% of the "good" budget) rather than lock the masthead's height,
+which measures **0 on every arrival** at the cost of a ~94 px hole under the
+shortened subline for a returning reader. It built and measured both. Its
+judgment — the hole is worse than the shift on a page this tight — is offered
+for you to overrule. **Both reviews are running.**
 
 **What tonight's run should do.** The User-Agent repair means Spain reads
 again; CI read every IND page fine this morning. So the 05:17 UTC run is
