@@ -53,6 +53,12 @@ adopted.
 — and the first run after s11 writes the unread list, so `/data/` says the
 true thing without help from anyone.
 
+**s12 is open at its boundary** (2026-09-15, human: *"tamamdır yapabiliriz"*
+on site #9). The scenario is drafted — `docs/spine/scenarios/s12-two-labels.md`
+— five points, all small: the row on `/data/` becomes *"Newest value changed"*,
+a *"Last checked"* row joins it from the watch's own last run, the words live
+in `copy.ts`, nothing else moves. **Nothing is built until you approve it.**
+
 **Queued, in order:** **site #9** (the "Newest value read" label, two rows);
 `feedback-line` (site #6, built, never walked); **data #15** (the free-movement
 notice's evidence for four passports); **data #13** (the Opportunity Card's
@@ -142,6 +148,8 @@ to look:
       sentence and not the covered question.
 - [x] **s10 walked twice and merged** (2026-09-15, your word). Live, and read
       on the live host afterwards.
+- [ ] **Approve the s12 scenario** — `docs/spine/scenarios/s12-two-labels.md`,
+      five points. *Say "approve", or say what to change.*
 - [ ] **v1.1 — stamp it, or say what it still needs.** Its scope was s9 and
       s10; both are real-green and live. A stamp brings the full critique walk
       (every persona, all nine lenses, delta against v1's 36/50 on RUBRIC 1.3)
