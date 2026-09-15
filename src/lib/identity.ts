@@ -181,6 +181,17 @@ export interface FooterFacts {
   datasetVersion: string;
   /** The day the watch last ran — empty where it never has. */
   lastRun: string;
+  /**
+   * How many of the sources behind these values that run did not read — 0 on
+   * every day the watch got all of them, which is every day but the ones this
+   * line exists for.
+   *
+   * "Re-read daily" is a claim, and on five days in September it was true of
+   * 42 sources and false of two. The footer has room for the count and no
+   * more; the sentence that says which countries and since when is on `/data/`
+   * (s11).
+   */
+  unread: number;
   disclaimer: string;
   licenceUrl: string;
   licenceName: string;
@@ -250,7 +261,8 @@ export function siteFooter(
       <span>values read between <b><time datetime="${
     escAttr(facts.read.oldest)}">${esc(facts.read.oldest)}</time></b> and <b><time datetime="${
     escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b>${SEP}re-read daily${facts.lastRun ? ` <span class="keep">(last run <time datetime="${
-    escAttr(facts.lastRun)}">${esc(facts.lastRun)}</time>)</span>` : ""}${SEP}<span class="keep">dataset ${
+    escAttr(facts.lastRun)}">${esc(facts.lastRun)}</time>${
+    facts.unread ? `${SEP}${facts.unread} source${facts.unread === 1 ? "" : "s"} unread` : ""})</span>` : ""}${SEP}<span class="keep">dataset ${
     esc(facts.datasetVersion)}</span></span>
     </div>
   </footer>`;

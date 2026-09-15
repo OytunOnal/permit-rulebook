@@ -3,7 +3,7 @@
 // what eight is called (Standards review, 2026-09-08).
 import {
   countedWords, isScored, joinAnd, scopeLine,
-  type Country, type Dataset, type Notice, type Route,
+  type Country, type Dataset, type Notice, type Route, type UnreadSource,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
@@ -15,7 +15,7 @@ import {
 } from "./copy.js";
 import {
   DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, NEW_NEED_URL, OWNER, REPO_DATA, analyticsBeacon,
-  SPONSOR_URL, TRACKER_URL, headMeta, lastWatchRun, readRange, url,
+  SPONSOR_URL, TRACKER_URL, headMeta, lastWatchRun, readRange, unreadSourcesAt, url,
 } from "./site.js";
 import { countryPath, countrySlug, routePath } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
@@ -273,7 +273,11 @@ export function countryPages(dataset: Dataset): CountryPage[] {
  * typed into a page. It lives here because it needs the dataset and the footer
  * itself must not: `identity.ts` knows markup, not data.
  */
-export function footerFacts(dataset: Dataset, lastRun: string = lastWatchRun()): FooterFacts {
+export function footerFacts(
+  dataset: Dataset,
+  lastRun: string = lastWatchRun(),
+  unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
+): FooterFacts {
   // Once: it walks every route's provenance, and the year comes from the same
   // answer rather than a second walk (Standards review, 2026-09-08).
   const read = readRange(dataset);
@@ -284,6 +288,7 @@ export function footerFacts(dataset: Dataset, lastRun: string = lastWatchRun()):
     // the same line, which is the thing that rule exists to prevent.
     datasetVersion: datasetDay(dataset.dataset_version),
     lastRun,
+    unread: unread.length,
     disclaimer: DISCLAIMER,
     licenceUrl: DATA_LICENCE_URL,
     licenceName: DATA_LICENCE_NAME,
