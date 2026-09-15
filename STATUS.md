@@ -113,6 +113,40 @@ fingerprint unmoved and pinned by a case rather than by luck).
   values it backs still show that date."* **The count changed after the human
   approved the words, so the sentence goes back to them.**
 
+**The fix round landed, all fourteen, and then the walk I was preparing found
+a fifteenth — in the sentence you approved** (2026-09-15; site `29b7805`, data
+`f372c9e`, both with master merged in; **539 + 349 tests**).
+
+Built the page against a real run and read it:
+
+> Every source is re-read daily — last run 2026-09-15. **Four Dutch sources
+> have not answered since 2026-09-07**; the values they back still show that
+> date.
+
+The second half is true. **The first half is not, and we can prove it:** in
+this morning's CI run all four of those IND entries reported `unchanged` —
+they answered, today. Their snapshots read 2026-09-07 because that is the day
+the *reading* was taken, and an unchanged page keeps its date. That is the
+exact conflation the build caught in the derivation — `retrieved_at` is not
+"last read" — and it survived in the copy, because the sentence was written
+while we still believed otherwise. My spec's point 7 says "the oldest last-read
+among the unread", and there is no last-read date anywhere in this system.
+
+**What the state actually knows** is two things: which sources the last run did
+not reach, and the day the values they back were read. So the sentence can say
+both and claim no duration:
+
+> Four Dutch sources did not answer on the last run; the values they back were
+> read on 2026-09-07.
+
+**Your words, so your call** — and the count and the country are unaffected.
+
+**A second thing the same walk exposed:** those four IND failures are *this
+machine's*, not the product's. CI read them fine this morning; my local run
+gets the navigation-only shell. So the run I generated to walk against was my
+laptop's view, not the site's — I discarded it rather than let a walk happen
+over a state no runner produced. The walk waits for the wording.
+
 **Both reviews are in: 14 findings, three of them blockers, all sent back in
 one round** (2026-09-15).
 
