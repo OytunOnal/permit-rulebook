@@ -45,7 +45,9 @@ saved record) and names the field's nodes: `#app`, the footer, `#decl`. The
 scenario is drafted — `docs/spine/scenarios/s10-first-paint.md` — with the
 issue's own fix direction: the first question rendered into the HTML at build
 time, a different first screen replacing it in the same box, and a
-browser-driven gate that fails at today's numbers. **Approved; being built.**
+browser-driven gate that fails at today's numbers. **Approved; being built.** The reproduction harness lives beside the scenario as
+`s10-cls-harness.mjs` — a record, not a scratch file — and the scenario points
+at it there.
 
 **What tonight's run should do.** The User-Agent repair means Spain reads
 again; CI read every IND page fine this morning. So the 05:17 UTC run is
