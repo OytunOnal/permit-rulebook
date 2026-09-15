@@ -63,7 +63,38 @@ was unreachable") — what nobody foresaw is that the footer would turn a partia
 run into an unqualified claim. It is true of 42 sources and false of two, and
 the two are values on live pages.
 
-**You chose the words, and s11 is being built to them** (2026-09-15). On a day
+**s11 is built, and it corrected the spec twice** (branches `s11-site`
+`d362184` and `s11-data` `0b3f19f`; **530 + 345 tests**, the root-build
+fingerprint unmoved and pinned by a case rather than by luck).
+
+- **The fact was not on disk.** The spec — mine — said a snapshot whose
+  `retrieved_at` predates `last_run` went unread, and forbade writing a new
+  field. That is false: `retrieved_at` is the day a *reading* was first taken,
+  and the unchanged arm keeps it too, so on today's shipped state **39 of 39
+  entries look stale and none of them is**. The five-day failure left a
+  one-line diff in `state.json`. The run now writes `unread` — a list of
+  `{id, url}` computed in one place from the reports the pass already makes,
+  empty on a clean day. I asserted the opposite from reading one arm of the
+  code; the build measured both.
+- **"Two Spanish sources" is one.** The second is a sentinel no dataset value
+  cites, and the spec's own rule — a reader is told about values, not about our
+  plumbing — drops it. The approved sentence agreed with that and disagreed
+  with itself: the date in it, 2026-09-07, is the PDF's; a second source would
+  have made it 2026-09-02. So the page says: *"Every source is re-read daily —
+  last run 2026-09-15. A Spanish source has not answered since 2026-09-07; the
+  values it backs still show that date."* **The count changed after the human
+  approved the words, so the sentence goes back to them.**
+
+**A mess of mine, repaired.** `git add -A` ran in a tree the builder was
+writing in and swept s11's site half into a ledger commit, which reached master
+and broke it: the site imported what the published ruleset does not export yet.
+The deploy failed at `astro check`, so **the live site was never touched** — a
+failed build publishes nothing — and master is green again (`34fe87c`, deployed
+14:35). The work is intact on its own branches. It is the second time today a
+working tree was treated as mine while an agent wrote in it; the first cost a
+mixed diff, this one a red master.
+
+**The wording chosen, for the record:** (2026-09-15). On a day
 when something went unread `/data/` will say: *"Every source is re-read daily —
 last run 2026-09-15. Two Spanish sources have not answered since 2026-09-07;
 the values they back still show that date."* On a clean day the clause
