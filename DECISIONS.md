@@ -3121,3 +3121,71 @@ the deploy rather than after.
 **The rule that came out of it:** reading the source and the built bundle is
 not walking the product. It was written down on 2026-09-10 after a fix shipped
 half-applied twice; it held for s9.
+
+## 2026-09-15 — s11 merged: the product's own promise carries what it rests on
+
+**Gate** (human: "s11 merge", after walking three surfaces on the preview).
+
+**What was wrong.** From 2026-09-11 to 15 the daily watch failed every day,
+and `/data/` said "Every source is re-read daily — last run <today>" every one
+of those days. The sentence was printed from a state the workflow commits
+before the unreachable check fails the run — deliberate, and right for one
+unreachable source among 44 — and nobody had foreseen that the footer would
+turn a partial run into an unqualified claim. True of 42 sources, false of two,
+and the two backed values on live pages.
+
+**What was decided.** The claim stays and carries its exception. When a run
+leaves a source unread, the page says which — in the reader's terms, by
+country — and the day the values it backs were read, and claims no duration,
+because nothing in the system knows one. On a clean day every surface says
+exactly what it always said. The run records what it could not read, in one
+place, from its own reports; no state is ever written by hand, and the run
+that caused the defect was not back-filled — the first run after the merge
+writes the list.
+
+**Three things the spec got wrong, in order of how they were found.** By the
+build: the fact was not on disk — `retrieved_at` is the day a reading was
+taken, and an unchanged page keeps its date, so the derivation the spec relied
+on would have called all 39 sources stale. By the build: "two Spanish sources"
+was one, because the second is a sentinel no dataset value cites. By the walk:
+the approved sentence said "have not answered since <date>", and the same
+morning's CI log showed the four sources it named had answered — the
+conflation had been driven out of the code and survived in the copy. Each was
+corrected where it stood, dated.
+
+**What the walk cost and bought.** Two build rounds and two review rounds; a
+red master for twenty minutes, from a `git add -A` run in a tree a builder was
+writing in (repaired, and the rule that stops it recurring is now Spine's
+steward-53). Bought: nothing wrong reached a reader, and the sentence that
+ships is one the system can stand behind word for word.
+
+## 2026-09-15 — the five-day failure was our own header
+
+**Cheap default, recorded because it corrected a claim made earlier the same
+day.** The watch identified itself as
+`permit-rulebook-watch/0.1 (+https://github.com/…) change-detection`, and
+`inclusion.gob.es` answered 403 to that string and 200 to a request sending
+none. Measured the same minute on the same host: every variant with a URL
+inside the User-Agent was refused, including one wearing a browser token;
+`permit-rulebook-watch/0.1` alone was served. The filter objects to an address
+inside the name, not to a reader that names itself.
+
+**Decided:** the name stays, the address moves to a header of its own. A test
+holds the rule rather than the string. Both Spanish sources read on the first
+try afterwards, and the salary threshold was unchanged: eight days blind, and
+nothing had moved.
+
+**The correction:** the morning's reading — that the pages answer a laptop and
+refuse the runner — was wrong because the laptop check used a bare `fetch`
+rather than the client that fails. Checking a thing with a different client
+than the one that breaks is how a header problem wore a geography costume for
+five days.
+
+## 2026-09-15 — the browser strategy's gate is answered: 2 of 5
+
+**Measurement, not a decision.** Headless Chrome from the CI runner reads
+EUR-Lex and the IND (the sentence found in both) and does not read Legifrance
+(a Cloudflare challenge). The runner and a laptop returned the same five rows,
+so these walls sort by client, not by address. The Spanish pair was never a
+wall. The candidate is worth building for two sources, taking the human tier
+from 2 to 1 rather than to 0; it waits for a boundary.

@@ -297,6 +297,30 @@ _(empty — everything real-green so far is stamped into done)_
 
 ## done
 
+- **A partial run says so** (s11) · **real-green 2026-09-15, live** —
+  `docs/spine/scenarios/s11-partial-run.md`. The site said "Every source is
+  re-read daily — last run <today>" through five days in which two sources went
+  unread. Now the claim carries what it rests on: when a run leaves a source
+  unread, `/data/` names the country and the day the values it backs were
+  read, the footer counts it, and every route page says the last run did not
+  reach one of them; on a clean day every surface is byte-identical to before,
+  and a fixture proves it against the pre-s11 template.
+
+  The spec was wrong twice and the build measured it: the fact was not
+  derivable from `retrieved_at` (an unchanged page keeps its date, so 39 of 39
+  looked stale), and "two Spanish sources" was one (a sentinel no value cites).
+  Then the walk found a third — the approved sentence claimed a duration
+  nothing in the system knows, and the same morning's CI log proved the four
+  named sources had answered. Reviewed on both axes, fourteen findings applied,
+  the sharpest being 28 route pages still typing the unqualified claim.
+
+  Not a hand-written state anywhere: the first run after the merge writes the
+  list itself. Beside it, from the same days: the watch's User-Agent repaired
+  (a URL inside the name was the five-day failure, not a wall), the browser
+  strategy's gate answered 2 of 5, and two joins on `/data/` given their
+  breath. Site `777b3ff`, data `165f39a`; **539 + 349 tests**.
+
+
 - **Five routes quoted and dated, and not scored** (s9) · **real-green
   2026-09-11, live** — `docs/spine/scenarios/s9-quoted-not-asked.md`. The
   French employee card, Spain's general employed regime and its international
