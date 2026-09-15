@@ -139,7 +139,10 @@ both and claim no duration:
 > Four Dutch sources did not answer on the last run; the values they back were
 > read on 2026-09-07.
 
-**Your words, so your call** — and the count and the country are unaffected.
+**Approved** (2026-09-15, *"tamamdır"*) and applied on `s11-data` (`165f39a`,
+539 tests): the sentence now says which sources the last run did not reach and
+the day the values they back were read, and nothing about how long. The tests
+that pinned the old shape pin this one.
 
 **A second thing the same walk exposed:** those four IND failures are *this
 machine's*, not the product's. CI read them fine this morning; my local run
