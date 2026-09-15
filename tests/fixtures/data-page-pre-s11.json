@@ -1,0 +1,6 @@
+{
+  "source": "src/lib/data-page.ts on s11-site, over tests/fixtures/frozen-dataset.json — regenerated 2026-09-15 for two page-only rules that give the masthead and the checks section their bottom margin (human's walk: both joins measured 0px)",
+  "run": "1970-01-01",
+  "occurrences": 4,
+  "sha256": "1a3c115475fe3b9f633ad28e94f134e71fb3aea1b1044fc97123ad1cbd678300"
+}

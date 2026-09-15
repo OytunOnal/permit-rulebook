@@ -1,4 +1,4 @@
-import { PRODUCT_NAME, SEAL_LETTERS } from "./copy.js";
+import { PRODUCT_NAME, SEAL_LETTERS, unreadLabel } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import { url } from "./site.js";
 
@@ -181,6 +181,13 @@ export interface FooterFacts {
   datasetVersion: string;
   /** The day the watch last ran — empty where it never has. */
   lastRun: string;
+  /**
+   * How many of the sources behind these values that run did not read — 0 on
+   * every day the watch got all of them, which is every day but the ones this
+   * line exists for. The words are `unreadLabel`'s, beside the other two
+   * surfaces that say it; this file knows markup, not copy.
+   */
+  unread: number;
   disclaimer: string;
   licenceUrl: string;
   licenceName: string;
@@ -250,7 +257,8 @@ export function siteFooter(
       <span>values read between <b><time datetime="${
     escAttr(facts.read.oldest)}">${esc(facts.read.oldest)}</time></b> and <b><time datetime="${
     escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b>${SEP}re-read daily${facts.lastRun ? ` <span class="keep">(last run <time datetime="${
-    escAttr(facts.lastRun)}">${esc(facts.lastRun)}</time>)</span>` : ""}${SEP}<span class="keep">dataset ${
+    escAttr(facts.lastRun)}">${esc(facts.lastRun)}</time>${
+    facts.unread ? `${SEP}${esc(unreadLabel(facts.unread))}` : ""})</span>` : ""}${SEP}<span class="keep">dataset ${
     esc(facts.datasetVersion)}</span></span>
     </div>
   </footer>`;

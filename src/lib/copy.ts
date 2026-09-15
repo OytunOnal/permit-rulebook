@@ -8,6 +8,8 @@
  * (product-critique v0.7, B4). Decision 9 makes the disclaimer one sentence
  * from one source everywhere; this is that source.
  */
+// A count reads as a word in a sentence, and the dataset package spells it.
+import { countedWords } from "permit-rulebook-data";
 
 export const PRODUCT_NAME = "Permit Rulebook";
 
@@ -66,9 +68,42 @@ export const ROUTE_PAGE_ADDENDUM = "This page describes the rules; it does not d
 export const ROUTE_PAGE_UNSCORED_ADDENDUM =
   "This route is one the checker does not score — the rules are stated here and nothing is asked of you.";
 
+/**
+ * What the site says about the daily check — the claim, and the qualification a
+ * partial run puts on it.
+ *
+ * Three surfaces say it, and they said it in four wordings typed into four
+ * files. When s11 taught the qualification to two of them, the route page went
+ * on asserting on twenty-eight pages that a daily check re-reads every source,
+ * on days it had not — and a fourth copy sat in this file, rendered by nothing,
+ * waiting to be picked up (Standards review, 2026-09-15). One fact, one source,
+ * three surfaces: the shape the "within reach" sentence has followed since
+ * 2026-09-08.
+ *
+ * `unread` is how many sources behind the values a reader is looking at the
+ * last run could not read — `unreadSources` in the data package is the one
+ * place that works it out. Zero is the ordinary day, and says what the product
+ * has always said, to the byte.
+ */
+const DAILY_CHECK = "a daily check re-reads every source";
+
+/** The route page, inside its own sentence about what is quoted. */
+export const dailyCheck = (unread: number): string =>
+  // The noun counted here is a pronoun: "them" is the sources the first half
+  // of the sentence has just claimed are all re-read.
+  unread === 0 ? DAILY_CHECK : `${DAILY_CHECK}; the last run did not reach ${
+    countedWords(unread, "of them", "of them")}`;
+
+/** `/data/`, which carries the whole exception sentence after it. */
+export const DAILY_CHECK_CLAIM = "Every source is re-read daily";
+
+/** The footer, which has room for the count and no more — a label, so figures. */
+export const unreadLabel = (unread: number): string =>
+  unread === 0 ? "" : `${unread} source${unread === 1 ? "" : "s"} unread`;
+
 /** The rest of the route-page footer: what the date beside each quote means. */
-export const FRESHNESS_NOTE =
-  "Rules change; the date beside each quote is the day we last read it, and a daily check re-reads every source.";
+export const freshnessNote = (unread: number): string =>
+  `Rules change; the date beside each quote is the day we last read it, and ${dailyCheck(unread)}.`;
 
 /** The two words the identity is set in, wherever the seal is drawn. */
 export const SEAL_LETTERS = "PR";

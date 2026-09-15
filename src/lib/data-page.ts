@@ -1,14 +1,15 @@
 import {
-  countryVocabulary, isScored, proseProvenance, routeProvenance,
-  type Dataset,
+  countryVocabulary, isScored, proseProvenance, routeProvenance, unreadClause,
+  type Dataset, type UnreadSource,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import { PAGE_CSS, pageStamp, withArticle } from "./route-page.js";
 import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
-import { PRODUCT_NAME, TAGLINE, TRANSLATION_POLICY, datasetDay } from "./copy.js";
+import { DAILY_CHECK_CLAIM, PRODUCT_NAME, TAGLINE, TRANSLATION_POLICY, datasetDay } from "./copy.js";
 import {
-  DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, analyticsBeacon, headMeta, lastWatchRun, url,
+  DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, analyticsBeacon, headMeta, lastWatchRun,
+  unreadSourcesAt, url,
 } from "./site.js";
 import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
@@ -69,8 +70,20 @@ export function routeCounts(dataset: Dataset): RouteCounts {
   return { scored, quotedOnly: routes.length - scored, total: routes.length };
 }
 
-export function dataPage(dataset: Dataset): DataPage {
+/**
+ * `lastRun` and `unread` are the two facts on this page that move without a
+ * person: the day the watch last ran, and the sources it could not read that
+ * day. They are arguments for the reason the route page's `lastRun` is one —
+ * a render has to be askable about a run other than today's — and they default
+ * to the live state, which is what the build passes.
+ */
+export function dataPage(
+  dataset: Dataset,
+  lastRun: string = lastWatchRun(),
+  unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
+): DataPage {
   const read = siteReadDate(dataset);
+  const clause = unreadClause(unread);
   const prose = proseProvenance(dataset);
   const counts = routeCounts(dataset);
   const title = `The data · ${PRODUCT_NAME}`;
@@ -89,7 +102,17 @@ ${contentSecurityPolicy([MENU_SCRIPT])}
 <script type="application/ld+json">${ld}</script>
 ${iconLinks()}
 ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
-<style>${PAGE_CSS}</style>`;
+<style>${PAGE_CSS}
+/* This page reads as prose more than any other, and two of its sentences end a
+   thought that the next block then sat directly on top of: the masthead's
+   "Take it, check it, or tell us it is wrong." touched <main>, and the checks
+   section's "…never on their own." touched the rule of the Take-it box — 0px
+   measured, both (human's walk, 2026-09-15). The route page's own spacing does
+   not reach these two joins, so this page adds the breath itself, here rather
+   than in the shared sheet, so no other page's bytes move for it. */
+.masthead-with-stamps { margin-bottom: var(--space-5); }
+.rules { margin-bottom: var(--space-5); }
+</style>`;
 
   const body = `<div class="wrap">
 
@@ -132,9 +155,17 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
       </ul>
       <p class="lede">A cookieless counter (Cloudflare Web Analytics) records each page load: the page's address, where you came from, your country, and your browser and operating system versions; nothing you answer, nothing that identifies you, and nothing while you answer.</p>
       <p class="lede">${esc(TRANSLATION_POLICY)}</p>
-      <p class="lede">Every source is re-read daily${
-    lastWatchRun() ? ` — last run <b><time datetime="${escAttr(lastWatchRun())}">${esc(lastWatchRun())}</time></b>` : ""
-  }. A source that has moved files an issue in the tracker and a person reads it: the values on this site, and the dates beside them, change when a person changes them, never on their own.</p>
+      <p class="lede">${esc(DAILY_CHECK_CLAIM)}${
+    lastRun ? ` — last run <b><time datetime="${escAttr(lastRun)}">${esc(lastRun)}</time></b>` : ""
+  }.${
+    // The exception, on the day there is one and on no other. The claim was
+    // true of 42 sources and false of two for five days in September, and the
+    // two backed values on live pages (s11). The date it names is the
+    // sources', so it is marked up like every other date on the site — which
+    // is why the clause hands it over apart from its words.
+    clause ? ` ${esc(clause.before)}<b><time datetime="${escAttr(clause.since)}">${
+      esc(clause.since)}</time></b>${esc(clause.after)}` : ""
+  } A source that has moved files an issue in the tracker and a person reads it: the values on this site, and the dates beside them, change when a person changes them, never on their own.</p>
     </section>
 
     <section class="data" aria-labelledby="take-h">
@@ -155,7 +186,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
     </section>
   </main>
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset))}
+  ${siteFooter(navCountries(dataset), footerFacts(dataset, lastRun, unread))}
 
 </div>
 <script>${MENU_SCRIPT}</script>

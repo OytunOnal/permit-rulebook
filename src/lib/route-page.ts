@@ -3,6 +3,7 @@ import {
   isLocalization, isScored, joinAnd, joinOr, noticeSources, provenancedValuesOf,
   referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
+  type UnreadSource,
   type StatementException,
 } from "permit-rulebook-data";
 // The token set itself, not a copy of it. It was pasted in — forty values
@@ -39,10 +40,10 @@ import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, REPO_DATA, TRACKER_URL, analyticsBeacon,
-  absolute, headMeta, url,
+  absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
 } from "./site.js";
 import {
-  PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE,
+  PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, dailyCheck,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -671,9 +672,15 @@ function description(dataset: Dataset, country: Country, route: Route): string {
  * rather than a read inside the footer so that a render over a frozen dataset
  * is genuinely frozen: the fingerprint case hashed a page that changed by
  * itself, and failed the first build a data change ever reached through the
- * dispatch (CI 2026-09-09).
+ * dispatch (CI 2026-09-09). What that run could not read moves with it, and is
+ * read the same way, for the same reason.
  */
-export function routePage(dataset: Dataset, address: RouteAddress, lastRun?: string): RoutePage {
+export function routePage(
+  dataset: Dataset,
+  address: RouteAddress,
+  lastRun: string = lastWatchRun(),
+  unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
+): RoutePage {
   const { country, route } = address;
   const notice = audienceNotice(dataset);
   const about = noticesOn(dataset, route);
@@ -727,12 +734,12 @@ ${answerBlock(dataset, route, read)}${about.map((n) => noticeSection(n, seen)).j
 
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">What the checker asks, and what it does not</b>
-    <p>Every number below is quoted from an official page, and a daily check re-reads every source. On this route — <strong>${
+    <p>Every number below is quoted from an official page, and ${esc(dailyCheck(unread.length))}. On this route — <strong>${
     esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)}</p>
   </section>` : `
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">Why this route is not scored here</b>
-    <p><strong>${esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)} Every condition below is quoted from an official page, and a daily check re-reads every source.</p>
+    <p><strong>${esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)} Every condition below is quoted from an official page, and ${esc(dailyCheck(unread.length))}.</p>
   </section>`}
 
   <section class="rules" aria-labelledby="rules-h">
@@ -758,7 +765,7 @@ ${neighbours(country, route)}
   </aside>
   </div>
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset, lastRun), {
+  ${siteFooter(navCountries(dataset), footerFacts(dataset, lastRun, unread), {
     countryPath: countryPath(country), current: "true", jsonPath,
     checkPath: `/?country=${country.code.toLowerCase()}`,
   })}
@@ -784,9 +791,10 @@ ${analyticsBeacon()}`;
 }
 
 /** Every route page this dataset produces. 23 at launch. */
-export function routePages(dataset: Dataset, lastRun?: string): RoutePage[] {
-  return routeAddresses(dataset).map((a) => routePage(dataset, a, lastRun));
+export function routePages(dataset: Dataset, lastRun?: string, unread?: UnreadSource[]): RoutePage[] {
+  return routeAddresses(dataset).map((a) => routePage(dataset, a, lastRun, unread));
 }
+
 
 // ---------------------------------------------------------------------------
 // The stylesheet
