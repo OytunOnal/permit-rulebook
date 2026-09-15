@@ -107,6 +107,19 @@ Promoted (or dropped, with evidence) at a boundary session.
   remains — NL and ES reduced thresholds shipped in s5c/s5d · bet: the SEPE
   catalogue is watchable once located. Source: s5 verification 4.2.
 
+- **A route page names its own unread sources** (v1.x candidate, held out of
+  s11 on 2026-09-15) · why: s11 qualifies the freshness claim on `/data/` and
+  in the footer from the dataset's unread list, and a route page's own claim —
+  "a daily check re-reads every source", on 28 pages — is qualified by the same
+  dataset-wide fact. But a route page is about *one* route: the honest sentence
+  there is whether the sources **this permit's values rest on** went unread,
+  which is a narrower and more useful thing to say · bet: the mapping already
+  exists (`datasetSourceCountries` walks source urls to countries; the same walk
+  gives source urls to routes), so this is a rendering change rather than a new
+  fact · held out on purpose: s11 owed that no surface asserts unqualified what
+  the product knows to be false, and widening it mid-slice would have been
+  gold-plating.
+
 ### v2 — wave 2
 - **What a permit leads to** (v1.x candidate, human 2026-09-11) · why: the
   product answers "can I go and work there" and stops, and the reader's next
