@@ -3220,3 +3220,35 @@ reserved box is the fallback and it is one rule.
 **The rule that came out of it:** a page whose first screen depends on state
 the HTML cannot know decides that state in the head, in the smallest script
 that can read it, and paints from the decision — never after a module lands.
+
+## 2026-09-15 — s10: a returning reader waits in a quiet box, not in front of a wrong question
+
+**Gate** (human: "2 olsun, cümleyi öyle kullan"), found on the human's own
+walk of the s10 preview. With a record on the device, the first paint showed
+question one as a placeholder and the module then swapped in the record's
+screen — a question the reader had already answered, shown for a moment on
+every return. Photographed with the module held back a full minute: a fresh
+visit is complete at first paint and stays; a returning one had the right
+masthead, the right ledger, and the wrong box.
+
+**Decided:** for a reader marked started because a record exists, the box
+shows one sentence at its own height until the module lands —
+
+> Your answers are on this device — bringing them back.
+
+— and question one is not painted for them. Nothing changes for a fresh visit.
+
+**Cheap default beside it, surfaced here:** a link arrival (`?country=`,
+`?route=`) is started too but may have no answers, so it gets its own neutral
+line ("Setting up your questions.") rather than a sentence about answers it
+does not have; the pre-paint script tells the two apart. No country names go
+into the inline script — that would be a second copy of the dataset's names in
+a place nothing checks.
+
+**Rejected:** keeping question one as the placeholder (a wrong screen, briefly,
+for exactly the readers who come back), and painting nothing for started
+readers (the pre-fix box, with its shift).
+
+**What it cost and bought:** one more build round and one more copy line.
+Bought: the product's own line — nothing untrue is shown — now holds on the
+first paint too, for every kind of arrival.

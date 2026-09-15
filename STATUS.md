@@ -192,6 +192,13 @@ to look:
 - [x] **s10 scenario approved** (2026-09-15, your word: *"approve"*). The
       builder is on it, in a worktree of its own on the branch `first-paint`
       — the first slice built under steward-53.
+- [x] **s10 walked once, and the walk changed it** (2026-09-15, *"bir tek
+      sorunun olduğu bölüm bi tık geç doluyor"* → *"2 olsun"*): a returning
+      reader saw question one for a moment before their own screen replaced it.
+      They now get a quiet box with *"Your answers are on this device —
+      bringing them back."* until the module lands; a link arrival gets a
+      neutral line; a fresh visit is unchanged. Being built; the walk resumes
+      on the rebuilt preview.
 - [ ] **Walk s10, then say merge** — two previews, both holding the module
       back 700 ms the way a phone network does: **http://localhost:4500** is
       the fix (`f6b9a37`), **http://localhost:4501** is master. *What to look
