@@ -48,12 +48,36 @@ was unreachable") — what nobody foresaw is that the footer would turn a partia
 run into an unqualified claim. It is true of 42 sources and false of two, and
 the two are values on live pages.
 
-**Diagnosed, not fixed** — the fix is a decision, not a patch: the state should
+**You chose the words, and s11 is being built to them** (2026-09-15). On a day
+when something went unread `/data/` will say: *"Every source is re-read daily —
+last run 2026-09-15. Two Spanish sources have not answered since 2026-09-07;
+the values they back still show that date."* On a clean day the clause
+disappears and the page is byte-identical to today. The scenario is
+`docs/spine/scenarios/s11-partial-run.md`, on the branch `partial-run` in both
+repositories; the staleness is **derived, not declared** — a snapshot whose
+`retrieved_at` predates `last_run` was not read in that run, which is already
+on disk because the watch carries an unreachable source's previous reading
+forward untouched.
+
+The original shape of the problem, for the record: the state should
 record what a run achieved (read, unreachable, and the oldest read date among
 them) and the sentence should say it, the way every other claim on this site
 carries what it rests on.
 
-**A second thing, found while checking the first.** The IND highly-skilled-migrant
+**The Dutch flag is triaged** (data #17, four days late) — and it was not a rule
+change. Today's read of the IND page is **7,256 characters of navigation**
+against a stored 14,451 with the rules in it: the words that left are
+"recognised sponsor", "employment contract", "public register of sponsors", and
+the words that arrived are "Skip to main content" and "Open menu". The page did
+not change what it requires; it stopped handing this fetcher its body. Nothing
+is broken today — the good snapshot stands and quote fidelity passes — and the
+issue stays open carrying the argument it makes: the watch refuses an empty 202
+since 2026-09-10, and a 200 carrying only chrome is the same failure in a
+different status code. **Third bot-wall measured on this project** (Legifrance
+403, EUR-Lex empty 202, IND shell), which is what the browser-driven read on
+the roadmap is for.
+
+**The original second finding:** The IND highly-skilled-migrant
 page — which backs the recognised-sponsor condition, the market-rate
 precondition and the ICT statement on both Dutch routes — returned only
 navigation to this fetcher today: 7,256 characters of menus, with
@@ -63,6 +87,10 @@ was never triaged. The good snapshot is still in `watch/state.json` and quote
 fidelity passes (183 verified, 513 tests green), so nothing is broken today —
 but if that shell ever overwrites the snapshot, the Dutch quotes lose the
 evidence under them.
+
+**Tracker hygiene:** data #9 and #11 — the Netherlands and France nationality
+reads — were still open although s7 and s8 shipped them. Closed, each with what
+actually went live.
 
 **Everything else is where it was left.** v1.1 has one slice to go — **s10**,
 the CLS defect (site #8). `feedback-line` is still the only branch standing
