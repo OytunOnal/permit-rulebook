@@ -323,6 +323,21 @@ to look:
       *"ispanyayı oku ve okut"*). It opens nothing this year, by two independent
       reads of the BOE text. Recorded, with the date to re-read it: the next
       order, end of December.
+- [ ] **"Code compared" — say what it should say.** You wrote *"hala Code
+      compared yazıyor"* on 2026-09-15 while walking `/data/`. The sentence is
+      the results screen's subline — *"Code compared your 5 answers against
+      4 published rule sets."* (`src/lib/screen.ts:84`). **I have no record of
+      a decision to change it** — not in DECISIONS, KANBAN, the scenarios or
+      the tracker — so the earlier ask, if there was one, was lost with the
+      context. *If you tell me the wording you want, it is one line.* My own
+      reading, for what it is worth: "Code" as the actor is our vocabulary
+      leaking to a reader; *"Your 5 answers were compared against 4 published
+      rule sets."* keeps the fact and drops the actor.
+- [x] **Two joins on `/data/` got their breath** (your walk, 2026-09-15): the
+      masthead's *"…tell us it is wrong."* sat 0px above `<main>`, and the
+      checks section's *"…never on their own."* sat 0px above the Take-it
+      box's rule. Both 26px now, from two rules on this page only, so no other
+      page's bytes moved; the pre-s11 fixture was regenerated on purpose.
 - [ ] **Walk s11, then say merge** — http://localhost:4500 serves it
       (`s11-site` `32893d1` against `s11-data` `165f39a`; 539 + 349 tests).
       The preview is built against **this morning's real CI run** — the two
