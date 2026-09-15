@@ -323,16 +323,9 @@ to look:
       *"ispanyayı oku ve okut"*). It opens nothing this year, by two independent
       reads of the BOE text. Recorded, with the date to re-read it: the next
       order, end of December.
-- [ ] **"Code compared" — say what it should say.** You wrote *"hala Code
-      compared yazıyor"* on 2026-09-15 while walking `/data/`. The sentence is
-      the results screen's subline — *"Code compared your 5 answers against
-      4 published rule sets."* (`src/lib/screen.ts:84`). **I have no record of
-      a decision to change it** — not in DECISIONS, KANBAN, the scenarios or
-      the tracker — so the earlier ask, if there was one, was lost with the
-      context. *If you tell me the wording you want, it is one line.* My own
-      reading, for what it is worth: "Code" as the actor is our vocabulary
-      leaking to a reader; *"Your 5 answers were compared against 4 published
-      rule sets."* keeps the fact and drops the actor.
+- [x] **"Code compared"** — raised on 2026-09-15 while walking, withdrawn the
+      same hour (*"yok düzelmiş tamam"*): the page was already right, and no
+      record of an earlier ask exists. Nothing changed.
 - [x] **Two joins on `/data/` got their breath** (your walk, 2026-09-15): the
       masthead's *"…tell us it is wrong."* sat 0px above `<main>`, and the
       checks section's *"…never on their own."* sat 0px above the Take-it
