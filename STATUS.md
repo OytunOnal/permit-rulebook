@@ -82,6 +82,30 @@ by writing nothing — against the rule at DECISIONS:970. The scenario carries a
 dated correction for the two conditions it had stated more strongly than the
 system can know.
 
+**The counter, read on 2026-09-15** (your ask; Cloudflare Web Analytics, last
+7 days, bots excluded). **110 visits, 132 page views** since the reading of
+2026-09-10 put them at 57 / 75 — so roughly 50 visits in the five days after
+the announcement's first day and a half, about ten a day, flat. **Where from:
+direct 102, LinkedIn 3, Bing 1, Google 1**, one AI crawler that is not a bot to
+the filter. Two visits from search in six days. **Who:** United States 43,
+Türkiye 42, Poland 5, Canada 4, Netherlands 3 — seventeen countries in all,
+twelve of them once. Desktop 96, mobile 14. **The first landings that are not
+the front door:** a Dutch route page (2), `/data/` (2), a French route page,
+the France country page — on 2026-09-10 every visit had entered at `/`.
+
+**The vitals over the week:** LCP good 91% (P50 408 ms, P75 772, P90 2,324,
+**P99 7,923** — one very slow load), INP good 100%, **CLS good 92%, poor 6%** —
+the same four bad samples as before over a base of 44 instead of 13; the
+defect did not grow, the denominator did. The "before" is on site #8 now, so
+the week-after reading has something to stand against.
+
+**What it says, and what it does not.** It is day 6 of the 30 that A2, A7 and
+A8 were pre-registered on, and the decision is not read early — but the shape
+is visible: the site is being reached by the people the announcement reached
+and by almost nobody else yet. That is what an unindexed week looks like, and
+the pages the crawlers land on first are the country and route pages, which
+is the right shape for the second week.
+
 **What tonight's run should do.** The User-Agent repair means Spain reads
 again; CI read every IND page fine this morning. So the 05:17 UTC run is
 expected **green** — the first since 2026-09-10 — and `/data/` to stay clean.

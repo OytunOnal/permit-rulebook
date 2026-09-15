@@ -108,6 +108,19 @@ cheap one that would tell us whether the other two are worth paying for.
   work-permit data") is refuted; the strong claim (per value: the authority's
   sentence, the read date, re-read daily) stands. The announcement says the
   strong claim only.
+- **Interim reading, 2026-09-15 (day 6 of 30; not the decision — the decision
+  is read on 2026-10-09 and these numbers do not move it).** Cloudflare Web
+  Analytics, last 7 days, bots excluded: **110 visits, 132 page views** (57 / 75
+  on 2026-09-10, the announcement's first day and a half). Referrers: **direct
+  102**, linkedin.com 3, bing.com 1, google.com 1, aicrawler.store 1 — so
+  **two visits from search in six days**, against A2's bar of ≥ 300 from
+  search or referrals in days 8–30. Countries: United States 43, Türkiye 42,
+  Poland 5, Canada 4, Netherlands 3, then ones. Entry paths: `/` 102,
+  `/netherlands/highly-skilled-migrant-30-or-older/` 2, `/data/` 2,
+  `/france/ict-seconded-employee/` 1, `/france/` 1 — the first landings on a
+  route page, on `/data/`, and on a country page; on 2026-09-10 every visit
+  entered at `/`. Desktop 96, mobile 14; Chrome 79, Edge 9. Read from the
+  dashboard by hand, from the Visits view at 7 days.
 - **Numbers that decide, written first (thirty days after the announcement):**
   A2 (organic traffic comes to open data) — `slice-verified` if Cloudflare
   Web Analytics shows ≥ 300 visits from search or referrals other than the
