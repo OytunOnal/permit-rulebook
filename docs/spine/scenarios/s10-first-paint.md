@@ -91,6 +91,20 @@ at **two phone viewports and one desktop** and asserts the shift *sources*, not
 only the sum — nothing below the box may appear in them on any arrival. The
 bounds stay: under 0.1 everywhere, 0 on the cold record-less `/`.
 
+**Corrected again, 2026-09-15, after the review round was built and measured:**
+"nothing below the box may appear in the shift sources on any arrival" does
+not hold by construction and cannot be made to. A link arrival lands on a
+genuinely taller screen — the citizenship search with its hint paragraph,
+where the build painted a five-button destination card — and the footer
+travels +205 / +246 px on a phone, below the fold, for 0.005 of score. The two
+ways to hold it (reserve a box tall enough for the tallest question, or paint
+nothing for readers with a record or a link) each trade a visible defect for a
+number. So the gate asserts what is by construction — **nothing above the box
+moves, ever, at any of three viewports**, and **the cold page moves the footer
+by zero pixels** — and the aggregate under 0.1 on every cell (worst 0.062). The
+footer's travel on link arrivals is a recorded default, reversible if the
+counter says otherwise a week after it is live.
+
 ## How it is proved
 
 - The browser case in point 5, red on master today at the numbers in the

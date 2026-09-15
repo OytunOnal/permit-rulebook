@@ -3189,3 +3189,34 @@ EUR-Lex and the IND (the sentence found in both) and does not read Legifrance
 so these walls sort by client, not by address. The Spanish pair was never a
 wall. The candidate is worth building for two sources, taking the human tier
 from 2 to 1 rather than to 0; it waits for a boundary.
+
+## 2026-09-15 — s10: decide the first paint before the first paint
+
+**Cheap default, surfaced here** (Spine chose; the human walks it before it
+merges). The scenario asked that no node below the interview's box appear in
+the layout-shift sources on any arrival. The build and its reviews measured
+that this holds by construction for the cold page and for a returning record
+— thirteen lines of inline script set two flags before paint, CSS paints the
+short subline and the folded ledger from them, and the 220 KB module arrives
+to the page it would have chosen — and does **not** hold for a link arrival,
+where the screen that replaces the built-in question is genuinely taller.
+
+**Decided:** accept the footer's travel on link arrivals (+205 / +246 px on a
+phone, below the fold, 0.005 of score; 0.062 at the worst viewport) rather
+than reserve a box tall enough for the tallest question (a hole on every
+other screen) or paint nothing for readers with a record or a link (a blank
+box for exactly the readers the slice was written for). The gate asserts what
+is by construction — nothing above the box moves, the cold page's footer
+moves zero pixels — and the aggregate under 0.1 everywhere.
+
+**Rejected on the way:** locking the masthead's height until the first
+gesture (0 everywhere, a 94 px hole for returning readers), which the
+pre-paint flags made unnecessary.
+
+**Reversible:** the judgment is the counter's a week after it is live — CLS
+poor back to 0%, LCP and INP unchanged. If link arrivals show up as poor, the
+reserved box is the fallback and it is one rule.
+
+**The rule that came out of it:** a page whose first screen depends on state
+the HTML cannot know decides that state in the head, in the smallest script
+that can read it, and paints from the decision — never after a module lands.
