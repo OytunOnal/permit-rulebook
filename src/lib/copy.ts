@@ -196,3 +196,22 @@ export const TRANSLATION_POLICY =
   "Quotes are shown in the authority's own language and are never translated: a translation " +
   "would be our words beside theirs, and the original is the record. Each quote names its " +
   "language and its source.";
+
+/**
+ * The two dates the `/data/` list prints, each under a word that means it.
+ *
+ * They are two facts and they sat side by side under one word: the day a value
+ * last changed, and the day every source was last checked. The row said "Newest
+ * value read", and on 2026-09-15 the product's own author read it as "last
+ * checked" and asked why the numbers were old. They were not — nothing had
+ * changed since, which is what the daily watch keeps confirming and what, by
+ * design, never moves a value's date. A label its author misreads has not
+ * earned its meaning (s12).
+ *
+ * "Changed" is the accurate word for the first: that date moves only when a
+ * person updates a value after a flag. The second is the run the freshness
+ * sentence below already prints, and the page reads it from the one place that
+ * has it rather than asking the state again.
+ */
+export const NEWEST_VALUE_CHANGED = "Newest value changed";
+export const LAST_CHECKED = "Last checked";

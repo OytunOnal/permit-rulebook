@@ -6,10 +6,13 @@ import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import { PAGE_CSS, pageStamp, withArticle } from "./route-page.js";
 import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
-import { DAILY_CHECK_CLAIM, PRODUCT_NAME, TAGLINE, TRANSLATION_POLICY, datasetDay } from "./copy.js";
+import {
+  DAILY_CHECK_CLAIM, LAST_CHECKED, NEWEST_VALUE_CHANGED, PRODUCT_NAME, TAGLINE, TRANSLATION_POLICY,
+  datasetDay,
+} from "./copy.js";
 import {
   DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, analyticsBeacon, headMeta, lastWatchRun,
-  unreadSourcesAt, url,
+  readRange, unreadSourcesAt, url,
 } from "./site.js";
 import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
@@ -83,6 +86,7 @@ export function dataPage(
   unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
 ): DataPage {
   const read = siteReadDate(dataset);
+  const changed = readRange(dataset).newest;
   const clause = unreadClause(unread);
   const prose = proseProvenance(dataset);
   const counts = routeCounts(dataset);
@@ -135,7 +139,27 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
         <div><dt>Dataset version</dt><dd><time datetime="${escAttr(datasetDay(dataset.dataset_version))}">${
     esc(dataset.dataset_version)}</time></dd></div>
         <div><dt>Schema version</dt><dd>${esc(dataset.schema_version)}</dd></div>
-        <div><dt>Newest value read</dt><dd><time datetime="${escAttr(read)}">${esc(read)}</time></dd></div>
+        <div>${
+    // The day a value last changed is the newest `retrieved_at` among values,
+    // and nothing else. It is NOT `read` — the date the stamp and the footer
+    // carry — because that one is the newest `pageStamp`, which folds in the
+    // audience notice and a route's notices as well as its quotes. A notice
+    // read today is a page read today, so the stamp and the freshness
+    // paragraph are right to take the broader date and are left alone. The
+    // word "changed" allows only the narrower one: the day a notice was
+    // re-read is not a day a value moved (s12). The two agree on this
+    // dataset; the label is precise enough that agreeing today is not the
+    // reason to print it.
+    ""}<dt>${esc(NEWEST_VALUE_CHANGED)}</dt><dd><time datetime="${escAttr(changed)}">${
+    esc(changed)}</time></dd></div>${
+    // The run, stated as its own fact beside the one it is not — and taken
+    // from the same `lastRun` the sentence below prints, so no render can show
+    // a page whose list and whose prose disagree about the last check. A run
+    // the state does not have prints nothing at all, as that sentence does.
+    lastRun ? `
+        <div><dt>${esc(LAST_CHECKED)}</dt><dd><time datetime="${escAttr(lastRun)}">${
+      esc(lastRun)}</time></dd></div>` : ""
+  }
         <div><dt>Routes</dt><dd>${counts.scored} scored, ${counts.quotedOnly} quoted and dated but not scored, in ${
     dataset.countries.length} countries</dd></div>
         <div><dt>Quoted values</dt><dd>${quotedValues(dataset)} with a source and a date</dd></div>

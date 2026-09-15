@@ -192,10 +192,11 @@ describe("the state this site is built against", () => {
    * `/data/`'s clean day, pinned against the template that produced it before
    * s11 — not against this build's own output, which is what the first version
    * of this case compared and could never have caught a drift (Spec review,
-   * 2026-09-15). The fixture's hash was taken from `src/lib/data-page.ts` at
-   * 34fe87c, over the same frozen dataset the route-page fingerprint uses, with
-   * the live run date normalised so that a page which is correct on every day
-   * does not fail on all but one of them.
+   * 2026-09-15). The fixture's own `source` line is the record of which
+   * revision of `src/lib/data-page.ts` its hash was taken from and what last
+   * moved it; the hash is over the same frozen dataset the route-page
+   * fingerprint uses, with the live run date normalised so that a page which is
+   * correct on every day does not fail on all but one of them.
    */
   it("a clean day is byte-identical to what the page produced before s11", () => {
     const fixture = JSON.parse(readFileSync(new URL("fixtures/data-page-pre-s11.json", import.meta.url), "utf8")) as
