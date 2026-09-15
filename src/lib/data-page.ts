@@ -1,12 +1,12 @@
 import {
-  countryVocabulary, isScored, proseProvenance, routeProvenance, unreadSentence,
+  countryVocabulary, isScored, proseProvenance, routeProvenance, unreadClause,
   type Dataset, type UnreadSource,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import { PAGE_CSS, pageStamp, withArticle } from "./route-page.js";
 import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
-import { PRODUCT_NAME, TAGLINE, TRANSLATION_POLICY, datasetDay } from "./copy.js";
+import { DAILY_CHECK_CLAIM, PRODUCT_NAME, TAGLINE, TRANSLATION_POLICY, datasetDay } from "./copy.js";
 import {
   DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, analyticsBeacon, headMeta, lastWatchRun,
   unreadSourcesAt, url,
@@ -83,6 +83,7 @@ export function dataPage(
   unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
 ): DataPage {
   const read = siteReadDate(dataset);
+  const clause = unreadClause(unread);
   const prose = proseProvenance(dataset);
   const counts = routeCounts(dataset);
   const title = `The data · ${PRODUCT_NAME}`;
@@ -144,13 +145,16 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
       </ul>
       <p class="lede">A cookieless counter (Cloudflare Web Analytics) records each page load: the page's address, where you came from, your country, and your browser and operating system versions; nothing you answer, nothing that identifies you, and nothing while you answer.</p>
       <p class="lede">${esc(TRANSLATION_POLICY)}</p>
-      <p class="lede">Every source is re-read daily${
+      <p class="lede">${esc(DAILY_CHECK_CLAIM)}${
     lastRun ? ` — last run <b><time datetime="${escAttr(lastRun)}">${esc(lastRun)}</time></b>` : ""
   }.${
-    // The exception, on the day there is one and on no other. "Every source is
-    // re-read daily" was true of 42 sources and false of two for five days in
-    // September, and the two backed values on live pages (s11).
-    unread.length ? ` ${esc(unreadSentence(unread))}` : ""
+    // The exception, on the day there is one and on no other. The claim was
+    // true of 42 sources and false of two for five days in September, and the
+    // two backed values on live pages (s11). The date it names is the
+    // sources', so it is marked up like every other date on the site — which
+    // is why the clause hands it over apart from its words.
+    clause ? ` ${esc(clause.before)}<b><time datetime="${escAttr(clause.since)}">${
+      esc(clause.since)}</time></b>${esc(clause.after)}` : ""
   } A source that has moved files an issue in the tracker and a person reads it: the values on this site, and the dates beside them, change when a person changes them, never on their own.</p>
     </section>
 

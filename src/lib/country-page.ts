@@ -272,6 +272,11 @@ export function countryPages(dataset: Dataset): CountryPage[] {
  * What the shared footer states, from the dataset and from `site.ts` — never
  * typed into a page. It lives here because it needs the dataset and the footer
  * itself must not: `identity.ts` knows markup, not data.
+ *
+ * `unread` defaults to the live answer rather than being walked per page: the
+ * walk behind it is cached on the dataset in the data package, and the route
+ * page — the one caller that renders it twice, in its own sentence and in the
+ * footer — passes the answer it already has (Standards review, 2026-09-15).
  */
 export function footerFacts(
   dataset: Dataset,

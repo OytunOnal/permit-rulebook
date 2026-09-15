@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { unreadSources, type Dataset, type UnreadSource } from "permit-rulebook-data";
+import { unreadSources, type Dataset, type UnreadSource, type WatchState } from "permit-rulebook-data";
 import { dataPage } from "../src/lib/data-page.js";
 import { footerFacts, navCountries } from "../src/lib/country-page.js";
 import { siteFooter } from "../src/lib/identity.js";
@@ -106,11 +108,73 @@ describe("the footer's short form", () => {
 });
 
 describe("the state this site is built against", () => {
-  it("the page says what the state says, and the state is what the run wrote", () => {
-    const derived = unreadSources(ds, watchState);
-    const seen = readerSees(dataPage(ds).html);
-    expect(seen.includes("has not answered since") || seen.includes("have not answered since"))
-      .toBe(derived.length > 0);
+  /**
+   * The case named for the real state, and it has to bite on the real state.
+   *
+   * Its first version asked whether the page said "has not answered" when the
+   * derivation was non-empty — and with a shipped state that records no unread
+   * list, both sides were false and it passed over a page that still made the
+   * unqualified claim (Spec review, 2026-09-15). This one takes the shipped
+   * state as it is, with its real snapshots and their real dates, and puts back
+   * the one thing the run of 2026-09-15 failed to write down: that it could not
+   * read Spain's two UGE sources. Nothing here is typed except the two ids and
+   * urls that failed; every date comes off the file.
+   */
+  const AS_RECORDED: WatchState = {
+    ...watchState,
+    unread: [{ id: "es-uge-umbral-pdf", url: UMBRAL }, { id: "es-uge-index", url: UGE_INDEX }],
+  };
+
+  it("names Spain, on the shipped state's own dates", () => {
+    const unread = unreadSources(ds, AS_RECORDED);
+    // The sentinel backs no dataset value, so one source is named, not two —
+    // and the date is the PDF's, which is the date the approved sentence gives.
+    expect(unread.map((u) => u.id)).toEqual(["es-uge-umbral-pdf"]);
+    const since = watchState.entries["es-uge-umbral-pdf"]!.retrieved_at;
+    expect(since, "the shipped state has lost the reading the sentence dates from").toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(readerSees(dataPage(ds, watchState.last_run!, unread).html)).toContain(
+      `A Spanish source has not answered since ${since}; the values it backs still show that date.`);
+  });
+
+  it("and the date it names is marked up like every other date on the site", () => {
+    const unread = unreadSources(ds, AS_RECORDED);
+    const since = watchState.entries["es-uge-umbral-pdf"]!.retrieved_at;
+    expect(dataPage(ds, watchState.last_run!, unread).html)
+      .toContain(`<b><time datetime="${since}">${since}</time></b>; the values it backs`);
+  });
+
+  /**
+   * One fact, three surfaces. The route page typed its own copy of the claim
+   * and went on making it unqualified on 28 pages while `/data/` and the footer
+   * had learned better (Standards review, 2026-09-15). Every surface is asked
+   * here, over the state as the failing run would have recorded it.
+   */
+  it("no surface asserts the unqualified claim while a source is unread", () => {
+    const unread = unreadSources(ds, AS_RECORDED);
+    const run = watchState.last_run!;
+    const pages = [
+      ...routePages(ds, run, unread).map((p) => ({ path: p.path, html: p.html })),
+      { path: "/data/", html: dataPage(ds, run, unread).html },
+    ];
+    expect(pages.length).toBeGreaterThan(20);
+    for (const page of pages) {
+      const seen = readerSees(page.html);
+      expect(seen, page.path).not.toContain("a daily check re-reads every source.");
+      expect(seen, page.path).toContain("re-read daily (last run " + run + " · 1 source unread)");
+    }
+    for (const page of routePages(ds, run, unread))
+      expect(readerSees(page.html), page.path)
+        .toContain("a daily check re-reads every source; the last run did not reach one of them");
+  });
+
+  it("and every surface says the plain thing again the moment nothing is unread", () => {
+    const run = lastWatchRun();
+    for (const page of routePages(ds, run)) {
+      const seen = readerSees(page.html);
+      expect(seen, page.path).toContain("a daily check re-reads every source.");
+      expect(seen, page.path).not.toContain("unread");
+    }
+    expect(readerSees(dataPage(ds).html)).toContain(`Every source is re-read daily — last run ${run}.`);
   });
 
   /**
@@ -122,5 +186,24 @@ describe("the state this site is built against", () => {
    */
   it("a render asked about another run carries no count, so the frozen build cannot move", () => {
     for (const page of routePages(ds, "1970-01-01")) expect(page.html).not.toContain("unread");
+  });
+
+  /**
+   * `/data/`'s clean day, pinned against the template that produced it before
+   * s11 — not against this build's own output, which is what the first version
+   * of this case compared and could never have caught a drift (Spec review,
+   * 2026-09-15). The fixture's hash was taken from `src/lib/data-page.ts` at
+   * 34fe87c, over the same frozen dataset the route-page fingerprint uses, with
+   * the live run date normalised so that a page which is correct on every day
+   * does not fail on all but one of them.
+   */
+  it("a clean day is byte-identical to what the page produced before s11", () => {
+    const fixture = JSON.parse(readFileSync(new URL("fixtures/data-page-pre-s11.json", import.meta.url), "utf8")) as
+      { run: string; occurrences: number; sha256: string };
+    const frozen = JSON.parse(readFileSync(new URL("fixtures/frozen-dataset.json", import.meta.url), "utf8")) as Dataset;
+    const html = dataPage(frozen, fixture.run, []).html;
+    expect(html.split(fixture.run).length - 1, "the page stopped printing the run where it did").toBe(fixture.occurrences);
+    expect(createHash("sha256").update(html).digest("hex"),
+      "/data/ changed on a clean day — regenerate the fixture only on purpose").toBe(fixture.sha256);
   });
 });
