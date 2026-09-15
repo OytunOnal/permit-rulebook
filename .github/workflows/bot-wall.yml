@@ -1,0 +1,43 @@
+# One measurement, run by hand, deleted with the decision it informs.
+#
+# Four of this project's sources refuse its fetcher, each differently, and the
+# roadmap carries a candidate — a `browser` watch strategy — gated since
+# 2026-09-10 on one unmeasured thing: whether headless Chrome FROM THIS RUNNER
+# is let through where `fetch` is refused. A wall that opens for a browser on a
+# home connection may still refuse a datacentre address, and if it does, the
+# strategy buys nothing.
+#
+# It reads pages and writes nothing: no commit, no deploy, no dispatch.
+name: bot-wall measurement
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the site (for the browser driver)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          path: site
+
+      - name: Check out the ruleset (for the watchlist the URLs come from)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: OytunOnal/permit-rulebook-data
+          path: data
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with: { node-version: 22 }
+
+      - name: Say which Chrome answered
+        working-directory: site
+        run: node -e "import('./scripts/chrome.mjs').then(m => console.log(m.chromePath()))"
+
+      - name: Read the walls with a headless browser
+        working-directory: site
+        run: node scripts/bot-wall.mjs --data ../data
