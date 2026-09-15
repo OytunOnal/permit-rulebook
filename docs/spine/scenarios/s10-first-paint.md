@@ -1,6 +1,6 @@
 # s10 — the first paint stops shifting
 
-**Status:** draft for the human's approval, 2026-09-15. Site #8.
+**Status:** approved 2026-09-15 (human: "approve"). Site #8.
 
 ## What happened
 

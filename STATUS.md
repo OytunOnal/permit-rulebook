@@ -45,8 +45,7 @@ saved record) and names the field's nodes: `#app`, the footer, `#decl`. The
 scenario is drafted — `docs/spine/scenarios/s10-first-paint.md` — with the
 issue's own fix direction: the first question rendered into the HTML at build
 time, a different first screen replacing it in the same box, and a
-browser-driven gate that fails at today's numbers. **Nothing is built until
-you approve it.**
+browser-driven gate that fails at today's numbers. **Approved; being built.**
 
 **What tonight's run should do.** The User-Agent repair means Spain reads
 again; CI read every IND page fine this morning. So the 05:17 UTC run is
@@ -143,12 +142,9 @@ to look:
       page's bytes moved; the pre-s11 fixture was regenerated on purpose.
 - [x] **s11 walked and merged** (2026-09-15, your word). Live, and read on the
       live host afterwards.
-- [ ] **Approve the s10 scenario** — `docs/spine/scenarios/s10-first-paint.md`.
-      Read "What must be true" (six points) and "How it is proved". The one
-      judgment in it that is yours: point 4 — with the first question in the
-      HTML, a reader without JavaScript sees a question they cannot answer, and
-      the scenario puts a one-line `<noscript>` in scope and nothing more.
-      *Say "approve", or say what to change.*
+- [x] **s10 scenario approved** (2026-09-15, your word: *"approve"*). The
+      builder is on it, in a worktree of its own on the branch `first-paint`
+      — the first slice built under steward-53.
 - [ ] **Walk `feedback-line`, then say merge** (site #6; this one waits for the
       window to close at 09:00 tomorrow). One line under your results: "Wrong
       about you? A value that does not match its source, or something this

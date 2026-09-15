@@ -282,8 +282,8 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **The first paint stops shifting** (s10) · site #8 · **scenario drafted
-  2026-09-15, awaiting the human's approval** — `docs/spine/scenarios/s10-first-paint.md`;
+- **The first paint stops shifting** (s10) · site #8 · **scenario approved
+  2026-09-15, building on `first-paint`** — `docs/spine/scenarios/s10-first-paint.md`;
   reproduced locally at CLS 0.11 / 0.28 / 0.16 with the module delayed 700 ms
   (0 with no delay, which is why no gate had seen it) · CLS is poor for 23% of
   samples (`#app` 0.402, the footer 0.414, against a 0.25 threshold) while LCP
