@@ -1,8 +1,10 @@
-import { routeProvenance, type Dataset } from "permit-rulebook-data";
+import {
+  routeProvenance, unreadSources, type Dataset, type UnreadSource, type WatchState,
+} from "permit-rulebook-data";
 // The watch's own record of when it last ran. It is a fact about the data
 // repository, not about the dataset, and it is the only date on this site that
 // moves without a person (devils-advocate, 2026-09-08).
-import watchState from "permit-rulebook-data/watch/state.json";
+import watchStateJson from "permit-rulebook-data/watch/state.json";
 import { escAttr } from "./reason.js";
 import { PRODUCT_NAME, TAGLINE } from "./copy.js";
 /**
@@ -222,4 +224,20 @@ export function readRange(dataset: Dataset): { oldest: string; newest: string } 
  * beside "re-read daily".
  */
 export const lastWatchRun = (): string =>
-  (watchState as { last_run?: string }).last_run ?? "";
+  watchState.last_run ?? "";
+
+/** The watch's record itself, for the derivations the data package owns. */
+export const watchState: WatchState = watchStateJson as WatchState;
+
+/**
+ * The sources that run could not read — of the ones a reader is looking at.
+ *
+ * It takes the run it is being asked about, and answers only for the run the
+ * state belongs to. A caller naming another day gets silence, because an
+ * unread list belongs to the pass that wrote it: that is what keeps the root
+ * build's fingerprint frozen, which renders the footer at a day no watch ever
+ * ran, and what stopped `lastRun` being read off the live state there in the
+ * first place (2026-09-09).
+ */
+export const unreadSourcesAt = (dataset: Dataset, run: string): UnreadSource[] =>
+  run === lastWatchRun() ? unreadSources(dataset, watchState) : [];

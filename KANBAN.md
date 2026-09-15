@@ -58,8 +58,27 @@ Promoted (or dropped, with evidence) at a boundary session.
   Legifrance (403), EUR-Lex (empty 202), IND (shell) and inclusion.gob.es
   (runner-only refusal) — and the last of these is not a quote-fidelity
   inconvenience, it is why "re-read daily" stopped being true for two values.
-  **The gating measurement is unchanged and still unrun**; what changed is what
-  it would buy.
+  **The gating measurement was run on 2026-09-15, from the runner, and it
+  answers the candidate: 2 of 5.** Headless Chrome (`/usr/bin/google-chrome`,
+  ubuntu-latest) against the five, with the sentence this project quotes from
+  each as the needle:
+
+  | source | what the browser got | sentence |
+  |---|---|---|
+  | eur-lex-blue-card-directive | 130,574 chars | **found** |
+  | nl-ind-highly-skilled-migrant | 9,816 chars | **found** |
+  | legifrance-ce-algerian-titles | 270 chars, title "Just a moment…" | no |
+  | es-uge-index | 219 chars, "Acceso no permitido" | no |
+  | es-uge-umbral-pdf | 219 chars, "Acceso no permitido" | — (a PDF) |
+
+  The runner and a laptop returned the same five rows, so the walls sort by
+  client rather than by address. **What this decides:** a `browser` strategy is
+  worth building for EUR-Lex and the IND — it takes human tier from 2 to 1 and
+  removes the risk of the IND's navigation-only shell ever landing as a
+  snapshot — and it does **not** rescue Legifrance, which answers headless
+  Chrome with a Cloudflare challenge. The Spanish pair was never a wall at all:
+  they 403 the watch's own User-Agent and serve 200 without it (data #18), so
+  they leave this candidate entirely.
 
 - **Compare, don't rank: published facts on each open route card** (v1.1,
   human 2026-09-08) · why: a reader with five open routes gets no help

@@ -10,8 +10,17 @@ and every failure was the same two sources refusing the CI runner:
 - `es-uge-umbral-pdf`, Spain's salary-threshold PDF, last read **2026-09-07**
 - `es-uge-index`, the UGE requirements page, last read **2026-09-02**
 
-Both answer a developer machine with HTTP 200 the same day (702 KB of PDF,
-299 KB of HTML), so the pages are up; it is the runner they refuse.
+**Corrected 2026-09-15, later the same day:** this paragraph first said the
+pages answer a laptop and refuse the runner. They refuse *the watch*, wherever
+it runs — `inclusion.gob.es` returns 403 to the User-Agent the watch identifies
+itself with and 200 to a request that sends none, reproducibly, from a laptop
+and from the runner alike (data #18). The first check used a bare `fetch`
+instead of the client that fails, which is the whole reason it looked like a
+geography problem.
+
+None of that changes this slice. Why a run was partial is data #18's business;
+that a partial run must say so is this one's, and it would be as true of a
+source that had genuinely gone down.
 
 The failure is not the defect. The defect is what the site said while it
 failed: `/data/` read **"Every source is re-read daily — last run 2026-09-15."**
