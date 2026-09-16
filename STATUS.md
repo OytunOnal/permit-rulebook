@@ -80,9 +80,13 @@ with the subject and headings written; under it one small line, *or with
 your own mail app*, is the `mailto:`; the plain address stays. Both links
 are functions of the copy and the constant — nothing declared reaches
 either. The scenario carries the dated correction, the mock the third
-amendment; the builder has the change. Then the preview again, your walk
-again (this time the button must open Gmail with the subject in it), your
-word. The day's path: the second round's four shapes → your finding
+amendment; **the change is built** (461 tests green, two added; `csp.ts`
+untouched, the policy not widened; the site map names the Gmail exit) and
+**on the preview**. Read on the built page: three buttons, each a link to
+`mail.google.com/mail/` with the address, the subject (*Wrong value* /
+*Missing* / *Note*) and the headings in the query, new tab; under each, *or
+with your own mail app* as the `mailto:` at the tap floor; the address; the
+new note. Then your walk, your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
@@ -182,8 +186,8 @@ CLS fix is not. The three lines, left here until the window closes:
 
 - [x] **First walk of s13** (2026-09-16): the doors opened nothing on your
       desktop — decided: Gmail first, the mail app second. Building.
-- [ ] **Walk s13 again on the preview** — http://localhost:4500, once the
-      Gmail change is in (STATUS will say). *Header:* on `/` the word is
+- [ ] **Walk s13 again on the preview** — http://localhost:4500; the Gmail
+      change is in. *Header:* on `/` the word is
       **Countries ▾**; on `/france/` it is **France ▾** with France marked in
       the list; open it, press Escape, open it, click elsewhere. *Phone:* the
       Menu with the four countries under a *Countries* heading. *Results:*
