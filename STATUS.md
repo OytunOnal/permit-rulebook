@@ -49,10 +49,22 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **The isolated full walk is running** — the critique agent, blind, on the
-live site, every persona, all ten lenses of RUBRIC 1.3, delta against v1's
-36/50. Its findings come to you as the v1.1 gate; then the versions line
-and the README.
+live site: s9 through s18.** **The isolated full walk is in, and v1.1 does not stamp yet: two blockers.**
+(`docs/spine/critiques/2026-09-16-v1.1-gate-critique.md`, RUBRIC 1.3, blind,
+on the live site.) **35/50 against v1's 36/50**: Orientation +1 (v1's
+wrong-country entry is cleared and narrated), Edge states −1 and Responsive
+−1, each backed by a blocker. All three v1 blockers verified cleared by
+operation. **B1:** a researcher with a French hosting agreement — a
+persona the one-pager names — is offered that answer at question 2 and
+then shown *"Nothing open on these answers"* with no word that France's
+researcher permit is not scored (`exclusions.md`: *Talent — chercheur*,
+"candidate for a later modeling pass"); the same two answers for Spain give
+CRITERIA MET. **B2:** on a phone, tapping a *You declared ✎* row leaves the
+question off-screen (card top −1,366 px, footer in view, focus on body); the
+control looks dead on the device half the readers use; desktop is fine.
+Eight friction items and four polish behind them, in the report. **A
+version ships when its blockers are cleared, not when a number is reached**
+— the pick below is yours.
 
 **s16 and s17 are live too** (2026-09-16, deploy `7d5ef51` green, read on
 the live host): `/data/` in the reader's words — *46, written by us and
@@ -138,7 +150,29 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.**
+**One thing is blocked on you: the v1.1 gate — pick the adjustments.**
+
+- [ ] **Pick from the critic's three** (apply all / 1 and 2 / a subset):
+      **1.** Close the dead end before it is picked and name the missing
+      route when it is — question 2 marks a situation no scored route in
+      that country asks, and a zero-open result after one eliminating answer
+      names the absent route with its exclusion reason on the site, not on
+      GitHub; and never list as "not checked here" a condition question 2
+      asked (B1, F8). **2.** The phone correction lands on the question and
+      returns to the verdict — on ✎ scroll the card into view and focus its
+      first option; on re-answer scroll to the headline and announce it
+      (B2, F6, F5). **3.** One copy pass — the statute stutter, the
+      job-search sentence only when no offer is declared, the liveness line
+      on route pages naming the source or living only on `/data/`, the
+      points tally on the not-yet Opportunity Card, the curator note off the
+      card (F1, F3, F4, polish). *Recommended: 1 and 2 now — they are the
+      blockers — 3 as its own slice after.*
+- [ ] **B1's scope ruling is yours:** whether France's *Talent — chercheur*
+      is scored, quoted-not-scored, or stays excluded. Whichever, question 2
+      must not offer the situation for France and then show nothing open.
+- [ ] **B2 on a real phone**, when you can: answer to a result, open *You
+      declared* at the bottom, tap *Yearly salary ✎*. Pass = the salary
+      question's heading is on screen right after the tap.
 
 - [x] **The IND path is decided** (2026-09-16, *"url sabit"*): the form's
       result has no address, so the five IND route pages go human-tier.
