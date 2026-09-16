@@ -178,13 +178,15 @@ to look:
 - [x] **s10 walked twice and merged** (2026-09-15, your word). Live, and read
       on the live host afterwards.
 - [x] **s12 scenario approved** (2026-09-15, your word: *"approve"*). Being built.
-- [ ] **Walk s12, then say merge** — http://localhost:4500/data/ (`ad19a0f`).
-      Under "What it holds today": *Newest value changed 2026-09-10* and, on
-      the row below it, *Last checked 2026-09-15*. Nothing else on the page
-      moved; the stamp still says RULES READ 2026-09-10 and the footer still
-      says "values read between 2026-09-02 and 2026-09-10", on purpose.
-      *Pass:* the two rows answer the question you asked this afternoon
-      without anyone explaining the word "read".
+- [x] **s12 walked once, and the walk changed it** (2026-09-16): "What it
+      holds today" read untidily — seven cells as 3 + 3 + 1, an orphaned
+      "Sentences of ours", a "Routes" sentence three lines tall beside
+      one-line neighbours, dates and counts interleaved, one date dotted among
+      dashed ones. You chose the layout on a live prototype: **four dates
+      across, two counts across, Routes alone full-width, every cell
+      centred**, and the dataset version shown as a day. Being built on
+      `two-labels`; the walk resumes on the rebuilt preview.
+
 - [ ] **v1.1 — stamp it, or say what it still needs.** Its scope was s9 and
       s10; both are real-green and live. A stamp brings the full critique walk
       (every persona, all nine lenses, delta against v1's 36/50 on RUBRIC 1.3)
