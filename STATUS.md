@@ -97,7 +97,10 @@ column is two rows, the address lives on the page. And a fourth: **the
 results line moves to the end of the results and shortens** to *Something
 to say about this result? Feedback.* — under the strip it asked before a
 value was read (*"garip duruyor"*; you chose end-and-shorten of three).
-Both being built. Then your word. The day's path: the second round's four shapes → your finding
+**Both are built and on the preview** (462 green): the footer column is two
+rows and no footer carries a `mailto:` or an `@`; the line is the last
+thing in the results, above the footer's rule, *Something to say about this
+result? Feedback.* — read back on the built page at 390. Then your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
