@@ -103,12 +103,16 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the alias — it gates the merge, not the build.**
+**One thing is blocked on you: the test mail to the alias — it gates the merge, not the build.**
 
 - [x] **The amended F drawing** — ratified 2026-09-16 (*"tamamdır"*), after
       two corrections to the open list from your walk.
 - [x] **s13's scenario approved** (2026-09-16, *"onaylıyorum"*); building.
-- [ ] **The alias.** Email Routing is no longer under the zone's *Email*
+- [x] **The alias exists** — `feedback@permitrulebook.com` (2026-09-16, your
+      word: *"tamam"*); the SPF record Cloudflare adds is visible from here.
+      *Still owed before merge:* a mail sent to it from another address
+      arriving in your inbox — say so in a word when it lands.
+- [x] **The alias, the steps.** Email Routing is no longer under the zone's *Email*
       tab (your finding, 2026-09-16); since mid-2026 it lives at account
       level: **Compute → Email Service → Email Routing** (docs updated
       2026-06-09). The domain qualifies — its nameservers are Cloudflare's and
