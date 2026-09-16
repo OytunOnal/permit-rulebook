@@ -133,7 +133,7 @@ a { color: var(--color-ink); }
 .door a.act { display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-3); border: 1px solid var(--color-ink); background: var(--color-bg); text-decoration: none; font: 600 .85rem var(--font-sans); }
 .door .tmpl { display: block; margin-top: .5rem; font: .72rem var(--font-mono); color: var(--color-muted); }
 .fb .addr { font: 600 1rem var(--font-mono); margin: 0 0 .2rem; }
-.fb .addr a { text-decoration: none; }
+.fb .addr .copy { margin-left: var(--space-3); font: 700 .7rem var(--font-sans); letter-spacing: .12em; text-transform: uppercase; border: var(--rule-soft); background: var(--color-card); color: var(--color-ink); min-height: var(--tap-min); padding: 0 var(--space-3); cursor: pointer; vertical-align: middle; }
 .fb .note { font-size: .86rem; color: var(--color-muted); margin: 0 0 var(--space-4); max-width: 36rem; }
 .fb h2 { font: 700 .72rem var(--font-sans); letter-spacing: .16em; text-transform: uppercase; color: var(--color-muted); margin: var(--space-4) 0 var(--space-2); }
 .fb .gh { border-top: var(--rule-soft); padding-top: var(--space-3); }
@@ -228,8 +228,8 @@ a { color: var(--color-ink); }
             <span class="alt">or <a href="#">with your own mail app</a></span>
             <span class="tmpl">Subject: Feedback</span></div>
         </div>
-        <p class="addr"><a href="mailto:feedback@permitrulebook.com">feedback@permitrulebook.com</a></p>
-        <p class="note">The button opens Gmail. If Gmail is not yours, the second link opens your mail app; if that opens nothing, copy the address. A person reads every mail. Something wrong, confirmed
+        <p class="addr">feedback@permitrulebook.com <button class="copy" type="button">Copy</button></p>
+        <p class="note">The button opens Gmail. If Gmail is not yours, the second link opens your mail app; if that opens nothing, the Copy button puts the address on your clipboard. A person reads every mail. Something wrong, confirmed
           against its source, is changed and the change gets a history line with the date. No reply is promised;
           a fix is the reply.</p>
         <div class="gh">
@@ -266,8 +266,8 @@ a { color: var(--color-ink); }
             <span class="alt">or <a href="#">with your own mail app</a></span>
             <span class="tmpl">Subject: Feedback</span></div>
         </div>
-        <p class="addr"><a href="#">feedback@permitrulebook.com</a></p>
-        <p class="note">The button opens Gmail. If Gmail is not yours, the second link opens your mail app; if that opens nothing, copy the address. A person reads every mail. Something wrong, confirmed
+        <p class="addr">feedback@permitrulebook.com <button class="copy" type="button">Copy</button></p>
+        <p class="note">The button opens Gmail. If Gmail is not yours, the second link opens your mail app; if that opens nothing, the Copy button puts the address on your clipboard. A person reads every mail. Something wrong, confirmed
           against its source, is changed and the change gets a history line with the date. No reply is promised;
           a fix is the reply.</p>
         <div class="gh">

@@ -161,6 +161,16 @@ four body headings stay; the note's *A wrong value, confirmed…* becomes
 stays — it is the tracker's own template. The three headings now share one
 shape: *Something is wrong / Something is missing / Anything else*.
 
+**Corrected 2026-09-16, second walk, six:** on `/feedback/` the address
+line is plain selectable text and a **Copy** button beside it (human: *"linke
+tıklanınca kopyalansa olmaz mı"* → the drawn shape, *"tamamdır"*): the
+button puts the address on the clipboard and reads *Copied* for two seconds;
+with no clipboard API it selects the text. A third inline script, generic —
+no address, no string, no storage, no request — hashed into `/feedback/`'s
+policy. The note's *copy the address* becomes *the Copy button puts the
+address on your clipboard*. The address is no longer a `mailto:`; the
+doors' own-app links carry that.
+
 ## How it is proved
 
 - A case renders `/feedback/` and asserts the three `mailto:` links, in order,

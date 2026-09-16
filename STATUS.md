@@ -102,8 +102,10 @@ rows and no footer carries a `mailto:` or an `@`; the line is the last
 thing in the results, above the footer's rule, *Something to say about this
 result? Feedback.* — read back on the built page at 390. A fifth: the first
 door is **Something is wrong / Report what is wrong / Wrong information** —
-no more *value* in the reader's face (you chose it of three). Being built.
-Then your word. The day's path: the second round's four shapes → your finding
+no more *value* in the reader's face (you chose it of three). A sixth: the
+address on the page becomes text with a **Copy** button (*Copied* for two
+seconds; a small third inline script, generic, hashed) — your idea, the
+shape ratified (*"tamamdır"*). Both being built. Then your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
