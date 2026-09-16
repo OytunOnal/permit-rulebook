@@ -75,10 +75,13 @@ it. Every new word lives in `copy.ts`; no string is typed into a template.
     honest one for a number that moves — or the counter drops the
     denominator until it is stable (after question 2). The scenario prefers
     *about*.
-11. **P7 — the Türkiye notice names no route the reader cannot see.** *"…the
-    Dutch orientation year is one."* renders only when a Dutch route is on
-    the screen; otherwise the sentence ends at *"…that route's card says
-    so."*
+11. **P7 — the Türkiye notice names no route.** The clause *"— the Dutch
+    orientation year is one."* goes (human, 2026-09-17: *"kaldır"*): the
+    notice's body in the dataset ends at *"…that route's card says so."*
+    A reader who reaches such a card sees it there; a Germany-only reader
+    is no longer sent to a card that is not on their screen. A data change
+    (the notice's `body`), with its history line; no conditional
+    mechanism.
 12. **Nothing else.** Verdicts, counts, the record, the arrivals. The route
     fingerprint moves (P1, P2, P3, P4, F3 touch route pages) and regenerates
     with the reasons; `/data/` likewise for P4's zero.
