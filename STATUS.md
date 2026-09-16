@@ -59,11 +59,18 @@ outside `copy.ts`); the shipped code breaches no standard. The Spec review is
 in: **11 of 11 points met**, the two corrected premises (960 px, the
 all-countries record) judged sound with their reasons in the test, one
 should-fix — the four-country walk proves the line, not that the
-multi-country layout rendered; one assertion adds it. The builder has the
-combined fix list (the content-floor assertions out, exact-copy assertions
-in; the source-grep count out; the meta description into `copy.ts`; the
-layout assertion). Then: the preview on http://localhost:4500 rebuilt, a
-light-mode critique, your walk, your word. The day's path: the second round's four shapes → your finding
+multi-country layout rendered; one assertion adds it. The fix round is in: the
+content-floor assertions are gone, the rendered text now has to equal the
+copy, the source-grep count is gone, the meta description lives in
+`copy.ts`, the four-country walk asserts four country sections; 459 green.
+**The light critique is done** (`docs/spine/critique-s13-light.md`): no
+blocker, one friction — the results line's link is the same grey as its
+sentence and the eye slides past it; fix is one rule, the link in ink, sent
+to the builder — three polish items for the tracker (the disclosure's 8-px
+arrow, *Where (link)* as a label, the line's second half repeating the
+page). Scores, scope-only: Copy 4, Trust 5, Orientation 5, Responsive 5,
+Design fidelity 4. One false alarm recorded (a probe that matched nothing).
+Then: your walk on http://localhost:4500, your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
@@ -159,7 +166,21 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.** The alias is live and tested; s13 waits on its build, its reviews, and your walk.
+**One thing is blocked on you: the walk.**
+
+- [ ] **Walk s13 on the preview** — http://localhost:4500 (the branch build;
+      the link-colour rule lands in a minute). *Header:* on `/` the word is
+      **Countries ▾**; on `/france/` it is **France ▾** with France marked in
+      the list; open it, press Escape, open it, click elsewhere. *Phone:* the
+      Menu with the four countries under a *Countries* heading. *Results:*
+      answer to a result (or use a saved one) and read the line under the
+      strip — *Something to say about this result? Feedback …* *The page:*
+      `/feedback/` — tap each of the three buttons; **your mail client must
+      open with the subject written** (*Wrong value* / *Missing* / *Note*)
+      and the headings in the body for the first two. This is the one step
+      no headless run can do. *Footer:* the address, the row to the page,
+      Sponsor; the GitHub links are on the page, not in the footer. Then
+      "merge", or what is off.
 
 - [x] **The amended F drawing** — ratified 2026-09-16 (*"tamamdır"*), after
       two corrections to the open list from your walk.
