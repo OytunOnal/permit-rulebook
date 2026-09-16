@@ -122,6 +122,11 @@ costs, accepted with the word: the page names a vendor, and a reader who
 taps the button without a Google account meets Google's sign-in — the
 second link and the address are there for them.
 
+**Corrected 2026-09-16, second walk:** the third door's subject is
+**Feedback**, not *Note* (human: *"bu note değil feedback"*). Heading, line,
+button (*Write a note*) and the empty body stay; the template line under the
+button follows the subject.
+
 ## How it is proved
 
 - A case renders `/feedback/` and asserts the three `mailto:` links, in order,
