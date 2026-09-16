@@ -122,27 +122,30 @@ describe("/data/ in the reader's words", () => {
   });
 
   /**
-   * The masthead's lede ends "Take it, check it, or tell us it is wrong." —
-   * and said so as plain text with no door, which the human's walk of the
-   * preview found (2026-09-16). The sentence does not change; its last three
-   * words are the door. Composed in copy.ts the way the results line is: the
+   * The masthead's lede ended "Take it, check it, or tell us it is wrong." —
+   * as plain text with no door, which the human's walk of the preview found
+   * (2026-09-16); and once the door was there, the human's read found the
+   * sentence presupposed a wrong ("1" of three, the same day). So it ends
+   * "Take it, check it, and if something is wrong, tell us." with the door on
+   * the last two words. Composed in copy.ts the way the results line is: the
    * words arrive already wrapped, and the copy closes the sentence.
    */
-  it("the lede's last sentence is unchanged, and its last words are the door", () => {
+  it("the lede's last sentence does not presuppose a wrong, and its last words are the door", () => {
     const lede = /<p class="lede">([\s\S]*?)<\/p>/.exec(html)![1]!;
-    expect(readerSees(lede)).toMatch(/\. Take it, check it, or tell us it is wrong\.$/);
+    expect(readerSees(lede)).toMatch(/\. Take it, check it, and if something is wrong, tell us\.$/);
+    expect(readerSees(lede)).not.toContain("tell us it is wrong");
     expect(readerSees(lede).startsWith(DATA_LEDE_OPEN)).toBe(true);
     const link = /<a ([^>]*)>([^<]*)<\/a>/.exec(lede);
     expect(link, "the lede has no link").toBeTruthy();
-    expect(link![2]).toBe("tell us it is wrong");
+    expect(link![2]).toBe("tell us");
     expect(link![1]).toContain(`href="${feedbackDoor.href}"`);
     expect(link![1]).not.toContain("target=");
     expect(link![1]).not.toContain("rel=");
     // Prose, so the inline tap class and not the button's.
     expect(link![1]).toMatch(/class="tap"/);
     expect(lede.endsWith(dataLedeClose(link![0]))).toBe(true);
-    expect(dataLedeClose("X")).toBe("Take it, check it, or X.");
-    expect(DATA_LEDE_CLOSE_TAIL).toBe("tell us it is wrong");
+    expect(dataLedeClose("X")).toBe("Take it, check it, and if something is wrong, X.");
+    expect(DATA_LEDE_CLOSE_TAIL).toBe("tell us");
   });
 
   it("the two dates stay: Dataset version and Newest value changed are two facts that coincide today", () => {

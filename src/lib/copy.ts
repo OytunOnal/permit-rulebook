@@ -227,11 +227,13 @@ export const PROSE_OURS_TAIL = "written by us and marked as ours";
 
 /**
  * `/data/`'s masthead lede. The opening is one sentence whose numbers are the
- * page's own, so it is a function of them; the closing sentence, "Take it,
- * check it, or tell us it is wrong.", ended as plain text with no door for
- * four days, which the human's walk of the s16 preview found (2026-09-16).
- * The words do not change; the last three are the door. Composed here the
- * way `resultFeedbackLine` is, so the full stop is the copy's and not the
+ * page's own, so it is a function of them; the closing sentence ended as
+ * plain text with no door for four days, which the human's walk of the s16
+ * preview found (2026-09-16) — and once the door was there, "or tell us it
+ * is wrong" presupposed a wrong, which the human's read of the same preview
+ * found the same day ("1" of three). So the sentence is a condition and an
+ * offer, with the door on the last two words. Composed here the way
+ * `resultFeedbackLine` is, so the full stop is the copy's and not the
  * template's: the words arrive already wrapped as a link, and the line
  * closes the sentence around them.
  */
@@ -240,8 +242,8 @@ export const dataLedeOpen = (scored: number, quotedOnly: number, countries: numb
   `${DATA_LEDE_OPEN} ${scored} routes scored against your answers and ${
     quotedOnly} more quoted and dated but not scored, across ${countries} countries, every threshold and condition `
   + "carrying the authority's own sentence, the page it came from and the day we read it.";
-export const DATA_LEDE_CLOSE_TAIL = "tell us it is wrong";
-export const dataLedeClose = (door: string): string => `Take it, check it, or ${door}.`;
+export const DATA_LEDE_CLOSE_TAIL = "tell us";
+export const dataLedeClose = (door: string): string => `Take it, check it, and if something is wrong, ${door}.`;
 
 /**
  * The freshness sentence's second half on `/data/`: what happens when a source
