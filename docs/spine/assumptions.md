@@ -121,6 +121,30 @@ cheap one that would tell us whether the other two are worth paying for.
   route page, on `/data/`, and on a country page; on 2026-09-10 every visit
   entered at `/`. Desktop 96, mobile 14; Chrome 79, Edge 9. Read from the
   dashboard by hand, from the Visits view at 7 days.
+- **Interim reading, 2026-09-16 — Google Search Console (day 7; not the
+  decision).** Exports the human downloaded (`permitrulebook.com-Performance-on-
+  Search-2026-09-16`, `…-Datasets-2026-09-16`), web search, last 3 months:
+  **1 click, 99 impressions, position 46.9** — first impression 2026-09-09,
+  then 10 / 22 / 59 on 09-11 / 12 / 13, the export ends 09-13. The one click:
+  the home page, query unknown, from Türkiye (position 2.7 — a branded or
+  direct-name search, not discovery). **Fifteen pages have impressions**;
+  the top ones are route pages, not the home page: `/netherlands/
+  orientation-year/` 26 at position 67, `/netherlands/single-permit…` 12,
+  `/germany/self-employment…` 11, `/france/eu-blue-card/` 10 at position 22,
+  `/netherlands/highly-skilled-migrant-under-30/` 9 at 27, `/netherlands/
+  researcher/` 5 at **8.6**, `/germany/ict-card…` 3 at **3**. **Queries are
+  Dutch and German long tail, in the source language:** *gvva* 11, *zoekjaar*
+  (seven spellings) 28 together, *kennismigrant* 9, *germany self employment
+  visa paragraph 21* 7, *§ 21 aufenthg* 1 — the words on the authority's page,
+  which the site quotes. Impressions by country: Netherlands 45, US 14,
+  India 10, Germany 4. Desktop 91, mobile 8. **Datasets:** `/data/` seen as a
+  valid Dataset every day since 2026-09-11 (1 valid, 0 invalid); one
+  non-critical warning, `spatialCoverage` typed `Country` where Google's
+  parser takes only Text or `Place` (site #11). **What it says for A8:**
+  the long tail is already showing the pages — in week one, at positions 50–90
+  — and the queries are exactly the ones a quoted-source site should own; no
+  click has come from them yet. A2's bar (≥ 300 from search/referrals in days
+  8–30) is unchanged and unmoved by this.
 - **Numbers that decide, written first (thirty days after the announcement):**
   A2 (organic traffic comes to open data) — `slice-verified` if Cloudflare
   Web Analytics shows ≥ 300 visits from search or referrals other than the

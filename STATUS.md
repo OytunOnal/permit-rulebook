@@ -63,6 +63,23 @@ own name on its page), the footer's new column, the verdict line on both
 layouts, the map and the sitemap, the 761-px row measured, every page's
 fingerprint regenerated on purpose. Nothing is built until you approve it.
 
+**Search Console's first reading is in** (2026-09-16, from the two exports
+you downloaded; the numbers are in `docs/spine/assumptions.md` beside the
+Cloudflare interim). Seven days after the announcement: 99 impressions, one
+click (the home page, from Türkiye, position 2.7 — someone who knew the name).
+Fifteen pages have been shown; the ones shown most are route pages, and the
+queries that show them are Dutch and German source-language long tail —
+*zoekjaar*, *gvva*, *kennismigrant*, *§ 21 AufenthG* — at positions 50–90,
+with two pages already in the top ten (*researcher* at 8.6, *ICT card* at 3).
+The dataset markup on `/data/` has been read as valid every day since the
+11th; one non-critical warning (`spatialCoverage` typed `Country`, which
+Google's Dataset parser does not accept) is site #11, a one-line fix for a
+later slice. **"Page is indexed" against "Processing data" in the Pages tab
+is not a contradiction:** the URL inspection tool reads the index live, the
+Pages report is a batch that lags it by days on a new property — the Datasets
+report's own chart shows the lag: zero until 09-11, then valid every day. It
+resolves on its own; nothing to do.
+
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.
 
