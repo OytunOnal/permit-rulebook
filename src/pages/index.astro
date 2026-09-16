@@ -421,6 +421,48 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (region) region.textContent = text;
     }
 
+    /**
+     * Bring the reader to the screen a gesture drew, once it is drawn.
+     *
+     * On a phone the ledger sits under a long result. Tapping a row's ✎ drew
+     * the question 1,366 px above the viewport and left the focus on <body>,
+     * so the control looked dead; answering drew the new verdict 8,000 px
+     * above where the reader stood (v1.1 gate critique, B2). Every answer
+     * dropped the focus to <body> as well, and a keyboard reader tabbed
+     * through the whole header before each question (F6).
+     *
+     * So, after a gesture: the top of what was drawn comes into view when it
+     * is not — `block: "start"`, and smooth unless the reader has asked for
+     * no motion — and the first thing they can act on takes the focus without
+     * moving the page a second time. Where the top is already on the screen
+     * nothing scrolls: a desktop reader whose card sits beside the ledger is
+     * not jolted for a correction they can already see. The first paint is
+     * not a gesture: nothing on it takes the focus from a reader who has
+     * touched nothing, and a browser history move keeps the scroll the
+     * browser restores.
+     */
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    function reveal(el: Element): void {
+      const { top } = el.getBoundingClientRect();
+      if (top >= 0 && top < window.innerHeight) return;
+      el.scrollIntoView({ block: "start", behavior: reducedMotion.matches ? "auto" : "smooth" });
+    }
+    /** The first control on a question card — a button for a choice, the box
+     * for a search — and the card's own heading where there is neither. The
+     * search box keeps v0.7's rule (the caret in it, its text selected), which
+     * `renderQuestion` applies on every render of one. */
+    function focusFirst(card: Element): void {
+      const first = card.querySelector<HTMLElement>(".opt, #cfilter");
+      if (first) { first.focus({ preventScroll: true }); return; }
+      const heading = card.querySelector<HTMLElement>(".qlabel");
+      if (!heading) return;
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    }
+    /** Whether the render under way is the one that puts the reader's own
+     * screen in the box at load — the one render that is not a gesture. */
+    let arriving = true;
+
     /** One masthead, one writer. Every gesture names itself, and only the two
      * that compare something can produce a screen that says so — no path back
      * into the interview ("Start over", an edit, browser Back) can leave a
@@ -445,6 +487,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         if (page.dataset.first !== standing) page.dataset.first = standing;
         return;
       }
+      // The pre-paint flags also hide the card's contents under the stand-in,
+      // and they must not outlive the first screen this module draws. A
+      // finished record restored straight to its verdict left "record"
+      // standing — the verdict has no standing promise to choose between —
+      // and the reader's next correction drew a question card with every
+      // child invisible (found by s20's walk, 2026-09-16). The reader has
+      // answered something, whatever the screen: that is the flag's word.
+      if (page.dataset.first === "record" || page.dataset.first === "link") page.dataset.first = "started";
       // The one subline that carries a link — the s19 written state's door to
       // the quoted route — is drawn as the markup the masthead composed; every
       // other subline is written as text, as it always was.
@@ -484,6 +534,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const routeName = (r: { route: { name: string } }): string => glossSection(r.route.name, glossary);
 
     function renderDeclaration(currentField: string | null) {
+      // "Start over" is the ledger's control. The resumed line borrows it for
+      // one screen (s20), and every render begins by taking it back — before
+      // the box is compared or written, so the box never holds a node the
+      // renderer did not draw and the next write cannot destroy it.
+      if (restart.parentElement !== decl) decl.append(restart);
       paint(declList, declarationHtml(ds, answers, asked, currentField), () => {
         declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
           const jump = () => {
@@ -550,9 +605,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // guessing at spellings.
       const longList = isLongList(q);
       const classed = hasClasses(q);
+      // A returning reader is told they returned, on the screen the first
+      // paint brings them to and on no other: a second visit read as a broken
+      // first question (v1.1 gate critique, F5). Not where an arrival line
+      // already narrates what came back — one sentence about it, not two.
+      const arrival = arrivalLine();
+      const resumed = arriving && !arrival && asked.length > 0 ? asked.length : undefined;
       paint(main, questionCardHtml({
         dataset: ds, question: q, answers, asked, editing, total,
-        arrival: arrivalLine(), justRecorded, glossary,
+        arrival, justRecorded, resumed, glossary,
       }), () => {
         if (longList) {
           const filter = document.getElementById("cfilter") as HTMLInputElement;
@@ -657,14 +718,25 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           renderQuestion({ kind: "edit" });
         });
       });
+      // The resumed line ends in the ledger's own "Start over", moved in after
+      // it — the same node, so there is one control and one listener. The
+      // ledger takes it back at the start of the next render.
+      if (resumed) {
+        const line = main.querySelector<HTMLElement>(".resumed");
+        if (line) { line.append(" ", restart); restart.hidden = false; }
+      }
+      const card = main.querySelector<HTMLElement>(".qcard");
+      if (card && !arriving && !restoring) reveal(card);
       if (longList) {
         // Every render of a search question puts the caret in it, whether or
         // not the box had to be rewritten to get here. A correction starts by
         // replacing, not by prepending: the caret sat at position 0 and the
         // first keystroke produced "nigeriaNiger" (product-critique v0.7, F3).
         const search = main.querySelector<HTMLInputElement>("#cfilter")!;
-        search.focus();
+        search.focus({ preventScroll: true });
         search.select();
+      } else if (card && !arriving) {
+        focusFirst(card);
       }
       // Shown once, on the screen straight after the commit.
       justRecorded = null;
@@ -775,14 +847,34 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * call to action did for a returning reader (B2): the card was there, three
      * screens down, inside a collapsed group.
      */
-    function showArrival(): void {
+    function showArrival(): boolean {
       const card = main.querySelector<HTMLElement>("[data-came-from]");
-      if (!card) return;
+      if (!card) return false;
       for (let node: HTMLElement | null = card; node; node = node.parentElement)
         if (node instanceof HTMLDetailsElement) node.open = true;
       // Instant, not smooth: a reader who arrives mid-scroll on a phone should
       // not watch the page travel.
       card.scrollIntoView({ block: "start" });
+      return true;
+    }
+
+    /**
+     * Where a verdict leaves the reader, once it is drawn.
+     *
+     * The card they came from, when they came from one. Otherwise the
+     * masthead — the block whose second line is the headline the verdict
+     * just wrote into the h1, and the first thing on the screen a reader
+     * reads. A reader who corrected an answer from the foot of a phone's
+     * result was left at the foot of the new one, with the new headline
+     * 8,000 px up (v1.1 gate critique, B2). Not when the reader was already
+     * on a result, not on the first paint, and not on a browser history
+     * move; the live region has said the headline by the time this runs.
+     */
+    const masthead = document.querySelector<HTMLElement>(".masthead-with-stamps")!;
+    function landOnVerdict(wasResult: boolean): void {
+      if (showArrival()) return;
+      if (wasResult || arriving || restoring) return;
+      reveal(masthead);
     }
 
     /**
@@ -963,6 +1055,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     function renderResults() {
       glossary = new Set();
+      // Whether the reader was already on a result: a verdict that replaces a
+      // question is brought to its headline; one drawn over a result the
+      // reader is still reading is not moved under them (s20).
+      const wasResult = app.dataset.state === "results";
       // The verdict writes the box itself and hangs its own listeners, so what
       // `paint` remembers about the box stops being true here. This is the one
       // place that writes a painted box some other way, and the rule about
@@ -1046,6 +1142,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         // The notice screen IS the result for this reader: one entry, like any
         // other screen they can go back from.
         recordScreen(null, true);
+        // Its headline is the notice's title, and it is announced and brought
+        // to the screen like any verdict's (s20).
+        announce(headline.textContent ?? "");
+        landOnVerdict(wasResult);
         return;
       }
 
@@ -1235,8 +1335,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length) +
           closedSection(closedRoutes) +
           sayLine;
-        showArrival();
         sayVerdict();
+        landOnVerdict(wasResult);
         return;
       }
 
@@ -1290,8 +1390,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             <div class="cbody">${inner}</div>
           </details>`;
       }).join("") + sayLine;
-      showArrival();
       sayVerdict();
+      landOnVerdict(wasResult);
       recordScreen(null, true);
     }
 
@@ -1454,6 +1554,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The first screen is whatever the stored record left behind — a fresh
     // interview when there is none.
     renderQuestion({ kind: "restore" });
+    // Everything from here on is a gesture, and a gesture lands where it drew.
+    arriving = false;
 
     /**
      * After a reload the browser still holds every entry this page pushed
@@ -1567,6 +1669,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /* Question mode */
     .qcard{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:1.6rem 1.8rem}
     .qmeta{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted)}
+    /* The line a returning reader meets over the question they resume on, and
+       the ledger's own "Start over" moved in after it (s20). It is the one
+       thing on a resumed screen the first paint could not hold room for — the
+       stand-in covers the card, it does not size it — so it is as short as a
+       line gets: the control keeps the tap floor through padding its margins
+       give back, and the line box stays the text's own. Measured, 390x1400:
+       the footer moves +87 px with a 44 px control in flow, +44 px this way. */
+    .resumed{font-size:.8rem;line-height:1.4;color:var(--color-muted);margin-bottom:.6rem}
+    .resumed .edit{display:inline-block;padding:.85rem .2rem;margin:-.85rem 0;font-weight:600}
     .qlabel{font:var(--text-route);font-size:1.25rem;margin:.5rem 0 1rem}
     .opts{display:grid;gap:.5rem}
     .opt{font:600 .92rem var(--font-sans);text-align:left;background:var(--color-bg);border:var(--rule-soft);

@@ -90,6 +90,20 @@ export const RETURNING_LINE = "Your answers are on this device — bringing them
 export const LINK_ARRIVAL_LINE = "Setting up your questions.";
 
 /**
+ * What the box says to a reader who came back to a half-done interview, once
+ * the module has their screen.
+ *
+ * The stand-in above says the answers are coming back; this is the line that
+ * says they came. Without it a returning visitor landed on "question 3 of up
+ * to 8" and read a second visit as a broken first question — the only clue
+ * was the folded ledger under the card (v1.1 gate critique, F5). It counts
+ * what was kept, in the ledger's own number, and the control that follows it
+ * is the ledger's own "Start over", moved into the line rather than copied.
+ */
+export const resumedLine = (kept: number): string =>
+  `Continuing where you left off — ${kept} answer${kept === 1 ? "" : "s"} kept.`;
+
+/**
  * What a route page adds to it. A page a stranger lands on cold from a search
  * has to say, before it says anything else, that it is describing rules rather
  * than judging the reader.
