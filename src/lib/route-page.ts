@@ -31,7 +31,7 @@ const lf = (css: string): string => css.split("\r\n").join("\n");
 // say the same words for the same token (2026-09-08).
 import { type Glossary, glossSection, glossed } from "./gloss.js";
 // One set of elements for the identity the shared CSS places (2026-09-08).
-import { MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
+import { FEEDBACK_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
 import { footerFacts, navCountries } from "./country-page.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
@@ -39,11 +39,11 @@ import { noteHtml, quoteFrame } from "./quote.js";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
-  DATA_LICENCE_FULL, DATA_LICENCE_NAME, REPO_DATA, TRACKER_URL, analyticsBeacon,
+  DATA_LICENCE_FULL, DATA_LICENCE_NAME, REPO_DATA, analyticsBeacon,
   absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
 } from "./site.js";
 import {
-  PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, dailyCheck,
+  PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -758,7 +758,7 @@ ${answerBlock(dataset, route, read)}${about.map((n) => noticeSection(n, seen)).j
     <nav aria-label="The data behind this page">
       <a ${tapMin()} href="${escAttr(url(jsonPath))}">This route as JSON</a>
       <a ${tapMin()} href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">The dataset on GitHub</a>
-      <a ${tapMin()} href="${escAttr(TRACKER_URL)}" target="_blank" rel="noopener">Report a wrong value</a>
+      <a ${tapMin()} href="${escAttr(url(FEEDBACK_PATH))}">${esc(WRONG_DOOR_LABEL)}</a>
     </nav>
   </section>
 ${neighbours(country, route)}

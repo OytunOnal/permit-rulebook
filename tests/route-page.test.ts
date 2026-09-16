@@ -10,7 +10,9 @@ import {
   PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routePage, routePages,
   stampDate,
 } from "../src/lib/route-page.js";
-import { datasetDay } from "../src/lib/copy.js";
+import { WRONG_DOOR_LABEL, datasetDay } from "../src/lib/copy.js";
+import { url } from "../src/lib/site.js";
+import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { esc } from "../src/lib/reason.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 // The frame round a quote lives with the quote, not with the page that shows
@@ -260,7 +262,11 @@ describe("s6 — one page per route, generated from the dataset", () => {
     for (const page of pages) {
       expect(page.html, page.path).toContain(`href="${page.jsonPath}"`);
       expect(page.html, page.path).toContain("permit-rulebook-data");
-      expect(page.html, page.path).toContain("issues/new/choose");
+      // The way back in was the tracker's new-issue chooser until s16: s13 had
+      // made e-mail the reader's door and left this one pointing the old way.
+      // It is /feedback/ now, in the words of that page's first door.
+      expect(page.html, page.path).toContain(`href="${url(FEEDBACK_PATH)}">${WRONG_DOOR_LABEL}</a>`);
+      expect(page.html, page.path).not.toContain("issues/new");
       expect(page.json.route, page.path).toBeDefined();
     }
   });

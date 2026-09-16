@@ -1,8 +1,8 @@
 {
-  "source": "src/lib/route-page.ts at 5e64490 plus the change docs/spine/scenarios/s13-feedback-door.md asks for, over tests/fixtures/frozen-dataset.json — the header and the footer are on every page, and s13 moved both: the four countries sit under one word in the header's row with Feedback beside The data, and the footer's Feedback column became the address, the row to /feedback/ and the sponsorship (the tracker's two links left it for the page); and again on the human's s13 walk (2026-09-16), when the header's countries disclosure was given a right margin so its open list clears the separator; and once more the same day, when the human took the address row out of the footer's Feedback column (\"kaldir\") — the column is the row to /feedback/ and the sponsorship, and the address lives on the page only",
+  "source": "src/lib/route-page.ts at 63a6237 plus the change docs/spine/scenarios/s16-data-page-copy.md asks for, over tests/fixtures/frozen-dataset.json — the header and the footer are on every page and s13 moved both (2026-09-16: the four countries under one word with Feedback beside The data; the footer's Feedback column became the row to /feedback/ and the sponsorship, the address taken out again on the human's walk, \"kaldir\"); and in s16 (2026-09-16) the data door moved, the one line of the route page this slice touches: s13 had made /feedback/ the reader's door and left this link pointing at the tracker — \"Report a wrong value\" to the new-issue chooser in a new tab — and it became the first door's own words, \"Report what is wrong\", linking /feedback/ inside the site. \"The dataset on GitHub\" stays",
   "base": "/",
   "pages": {
-    "/germany/eu-blue-card-general": "42c534a6a20df9054554e93115b32042fba2a4edb70774bb1867881d7c9ca7be",
-    "/germany/skilled-worker-academic": "8191670da3c19401a0adeb70b83f7df4b318f14a49328cebc2be0fd122083199"
+    "/germany/eu-blue-card-general": "8323648a947f437462164a8c7df57fb5ea3ae1ddf323f0f47caec8af1da50c16",
+    "/germany/skilled-worker-academic": "1d2f29e55117ae2c397c12de3b6417757be84019282a3c94a43ae6b718ce8fb4"
   }
 }
