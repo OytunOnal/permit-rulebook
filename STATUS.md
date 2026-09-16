@@ -108,13 +108,19 @@ CLS fix is not. The three lines, left here until the window closes:
 - [x] **The amended F drawing** — ratified 2026-09-16 (*"tamamdır"*), after
       two corrections to the open list from your walk.
 - [x] **s13's scenario approved** (2026-09-16, *"onaylıyorum"*); building.
-- [ ] **The alias.** In Cloudflare → permitrulebook.com → Email → Email
-      Routing: enable routing (it adds the MX and TXT records itself), create
-      `feedback@permitrulebook.com` (or the name you prefer — tell me, it
-      goes into the copy) and route it to your inbox; verify the destination
-      from the mail Cloudflare sends. *Pass:* a mail you send to the alias
-      from another address arrives in your inbox. Until it does, nothing on
-      the site names the address and s13 does not merge.
+- [ ] **The alias.** Email Routing is no longer under the zone's *Email*
+      tab (your finding, 2026-09-16); since mid-2026 it lives at account
+      level: **Compute → Email Service → Email Routing** (docs updated
+      2026-06-09). The domain qualifies — its nameservers are Cloudflare's and
+      it has no MX record today. Steps: (1) *Onboard Domain* → pick
+      permitrulebook.com → review the MX/SPF/DKIM records it adds → *Done*;
+      (2) *Destination Addresses* → enter your inbox → open Cloudflare's
+      mail → *Verify email address*; (3) the domain → *Routing Rules* →
+      *Create routing rule* → local part `feedback` (or the name you prefer —
+      tell me, it goes into the copy), action *Send to an email*, your inbox
+      → *Save*. *Pass:* a mail you send to the alias from another address
+      arrives in your inbox. Until it does, nothing on the site names the
+      address and s13 does not merge.
 
 These are the things only you can see, when you want to look:
 
