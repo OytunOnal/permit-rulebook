@@ -110,11 +110,50 @@
 .site-head .nav a.check { border: 1.5px solid var(--color-ink); padding: 0 .6rem; }
 .site-head .menu { display: none; }
 
+/* The four countries under one word (human's amendment, 2026-09-16). A
+   `<details>`, so it opens with no script and the keyboard reaches it; the
+   menu script closes it on Escape and on a tap outside, as it already closes
+   the phone menu. The word is the country's own name on a page that belongs to
+   one, which is what the header says instead of a crumb. */
+/* Room on the right for the list: it opens centred under the word, and the
+   word is short — "Spain" is 67 px, the list 176 — so without this the list
+   ran 45 px under "Check yours" (the human's walk, 2026-09-16: "countries'i
+   biraz daha sola alalim"). Measured: the list's right edge must clear the
+   separator by 12 px on the shortest word, which needs 57 px; --space-6 alone
+   is 44.8 and there is no larger rung, so it is the sum of two. */
+.site-head .nav details { position: relative; margin-right: calc(var(--space-6) + var(--space-3)); }
+.site-head .nav details > summary { list-style: none; cursor: pointer; color: var(--color-ink); font: var(--text-label); letter-spacing: var(--tracking-nav); text-transform: uppercase; display: inline-flex; align-items: center; gap: .3rem; min-height: var(--tap-min); padding: 0 .4rem; border-bottom: 2px solid transparent; white-space: nowrap; }
+.site-head .nav details > summary::-webkit-details-marker { display: none; }
+.site-head .nav details > summary::after { content: "\25be"; font-size: .9em; }
+.site-head .nav details[open] > summary::after { content: "\25b4"; }
+/* It opens UNDER the word and centred on it, on the card ground with the
+   card's top band — the one thing on this site drawn over the page, so it
+   carries the one shadow token. */
+.site-head .nav details > .list { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); z-index: 2; min-width: 11rem; display: grid; background: var(--color-card); border: var(--rule-soft); border-top: var(--rule-card-top); padding: 0 .9rem; box-shadow: var(--shadow-pop); }
+.site-head .nav details > .list a { border-bottom: var(--rule-dotted); }
+.site-head .nav details > .list a:last-child { border-bottom: 0; }
+/* The heading over the rows belongs to the phone's menu, where the four are
+   listed rather than disclosed. On the row it would be the word said twice. */
+.site-head .nav details > .list .group { display: none; }
+
 @media (max-width: 959px) {
   .site-head .nav { display: none; }
   .site-head .menu { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap-min); min-width: var(--tap-min); padding: 0 .6rem; border: 1.5px solid var(--color-ink); background: none; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); cursor: pointer; }
   .site-head .nav.open { display: grid; grid-template-columns: 1fr; width: 100%; border-top: var(--rule-soft); padding-top: var(--space-2); }
   .site-head .nav.open .sep { display: none; }
+  /* In the menu the disclosure is not a disclosure: the four countries are
+     rows under a small heading, and the word that discloses them on a wide
+     screen would be that heading said twice — and, on a country's page, said
+     wrong (the phone's heading is always the word, scenario point 4). The
+     menu script opens the group with the menu that holds it. */
+  .site-head .nav.open details { display: block; margin-right: 0; }
+  .site-head .nav.open details > summary { display: none; }
+  /* Rows, one under the other, like the three items after them — with the
+     row's own transparent rule rather than the list's dotted one, so the four
+     read as the menu's rows and the current one keeps its red underline. */
+  .site-head .nav.open details > .list { display: grid; position: static; transform: none; min-width: 0; border: 0; padding: 0; box-shadow: none; background: none; }
+  .site-head .nav.open details > .list a { border-bottom: 2px solid transparent; padding-left: 1.2rem; }
+  .site-head .nav.open details > .list .group { display: block; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); padding: var(--space-2) .4rem var(--space-1); }
 }
 
 /* ---------------------------------------------------------------------------

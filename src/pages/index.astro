@@ -180,8 +180,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The width the ledger stops being a disclosure at, said once, and read
     // here and by the script that runs before the first paint (s10).
     import { WIDE_QUERY } from "../lib/first-paint.js";
-    // One date format, everywhere a date prints (decision 12).
-    import { isoDay } from "../lib/copy.js";
+    // One date format, everywhere a date prints (decision 12); and the line
+    // under the verdict, in the words copy.ts holds (s13).
+    import { FEEDBACK, isoDay, resultFeedbackLine } from "../lib/copy.js";
+    import { FEEDBACK_PATH } from "../lib/identity.js";
     import {
       carveOutHtml, caveatHtml, closedRowHtml, noticeHtml, precondHtml, provenanceHtml, railHtml,
       readingHtml, scopedHtml,
@@ -1128,6 +1130,27 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <span class="s-hold">${byStatus.hold.length} not yet${openUnknowns ? ` — ${openUnknowns} ${openUnknowns === 1 ? "has" : "have"} an open unknown` : ""}</span>
         </div>`;
 
+      /**
+       * The offer, at the end of the body: a reader with something to say has
+       * one word to say it by, after the last section and before the footer —
+       * quieter than a card, louder than the footer, and never between the
+       * reader and what they came for (the human's walk, 2026-09-16; it sat
+       * under the strip for a day).
+       *
+       * It is a link to `/feedback/` and it carries nothing at all — not the
+       * record, not the query string, not the screen. The mail's own subject
+       * and headings are written on that page, from constants; this line is the
+       * door to them and is built here only because a results screen is drawn
+       * by the module rather than by the build. The sentence and its full stop
+       * are the copy's; the template supplies the link and nothing else.
+       *
+       * It exists in this block and nowhere else, which is what keeps it off
+       * every question screen: the sections and this line are drawn together,
+       * and the sections are the results screen's own.
+       */
+      const sayLine = `<p class="say">${resultFeedbackLine(
+        `<a href="${escAttr(url(FEEDBACK_PATH))}">${esc(FEEDBACK)}</a>`)}</p>`;
+
       // A heading, not a styled div: the results page had no heading above H3,
       // so "OPEN — CRITERIA MET (5)" was not a heading at all and no reader
       // using headings to move could find a section (critique F16).
@@ -1183,7 +1206,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           section("Within reach", "near", byStatus.near.map((r) => fullCard(r)).join(""), byStatus.near.length) +
           unlockSection() +
           section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length) +
-          closedSection(closedRoutes);
+          closedSection(closedRoutes) +
+          sayLine;
         showArrival();
         sayVerdict();
         return;
@@ -1238,7 +1262,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             <summary>${esc(c.name)} <span class="tally">${tallyParts}</span></summary>
             <div class="cbody">${inner}</div>
           </details>`;
-      }).join("");
+      }).join("") + sayLine;
       showArrival();
       sayVerdict();
       recordScreen(null, true);
@@ -1576,6 +1600,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .strip .s-hold{border-left:3px solid var(--color-hold);color:var(--color-hold)}
     .strip .s-unsettled{border-left:3px solid var(--color-ink);color:var(--color-ink)}
     .strip .s-closed{border-left:3px solid var(--color-hold);color:var(--color-hold)}
+    /* The line at the end of the results body: a closing line under a rule,
+       quieter than a card and louder than the footer, in the voice of the
+       sub-line rather than a verdict colour. Its one word is a link and a tap
+       target in its own right (s13; moved here from under the strip on the
+       human's walk, 2026-09-16). */
+    .say{margin:var(--space-5) 0 0;padding-top:var(--space-3);border-top:var(--rule-soft);font-size:.88rem;color:var(--color-muted);line-height:1.6}
+    /* The word reaches the tap floor the way the route page's inline links do
+       (PAGE_CSS a.tap): padding out, margin back, so the line box the sentence
+       wraps in does not grow with it. */
+    .say a{color:var(--color-ink);display:inline-block;padding:calc((var(--tap-min) - 1.6em) / 2) 0;margin:calc((1.6em - var(--tap-min)) / 2) 0}
     /* A heading element, sized as the section label it always looked like. */
     h2.ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
       border-bottom:var(--rule-soft);padding-bottom:.35rem;margin:1.4rem 0 .8rem}
@@ -1765,7 +1799,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        (product-critique v0.7, F10). */
     @media print{
       body{background:#fff;color:#000;padding:0;font-size:11pt}
-      .decl > summary,.back,.edit,.next,#restart,.strip,.cnone,.cmore,.csearch,.clist{display:none!important}
+      .decl > summary,.back,.edit,.next,#restart,.strip,.say,.cnone,.cmore,.csearch,.clist{display:none!important}
       .wrap{max-width:none}
       header .stamps{position:static;margin:.6rem 0 0 auto;height:auto}
       .stamps .mark{display:none}

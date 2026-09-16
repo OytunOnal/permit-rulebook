@@ -7,7 +7,7 @@ import { countryLinks, countryPages, navCountries } from "../src/lib/country-pag
 import { dataPage, statusAlias } from "../src/lib/data-page.js";
 import { TRANSLATION_POLICY } from "../src/lib/copy.js";
 import { hasUnbalancedQuotationMark, quotedSpans, routeProvenance } from "permit-rulebook-data";
-import { DATA_PATH, siteHeader } from "../src/lib/identity.js";
+import { DATA_PATH, FEEDBACK_PATH, siteHeader } from "../src/lib/identity.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { routePages } from "../src/lib/route-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
@@ -51,9 +51,17 @@ const headerOf = (html: string): string => {
   return html.slice(start, end + "</header>".length);
 };
 
-/** The same header with the current-page marks taken off, so pages compare. */
+/**
+ * The same header with the two things that legitimately differ taken off, so
+ * pages compare: the current-page marks, and — since s13 put the four countries
+ * under one word — the disclosure's word itself, which is the country's own
+ * name on a page that belongs to one (scenario point 4). Everything else in the
+ * header must be the same bytes on every page.
+ */
 const unmarked = (header: string): string =>
-  header.replace(/ aria-current="(page|true)"/g, "").replace(/\s+/g, " ").trim();
+  header.replace(/ aria-current="(page|true)"/g, "")
+    .replace(/<summary class="tap-min">[^<]*<\/summary>/, '<summary class="tap-min">WORD</summary>')
+    .replace(/\s+/g, " ").trim();
 
 describe("one header, every page", () => {
   const pages = builtPages();
@@ -128,10 +136,11 @@ describe("everything is reachable, and not only from a footer", () => {
   });
 
   it("no page is reachable only from a footer", () => {
-    // Every country page and the data page are in the header, which is above
-    // the fold on every screen: the footer is a second way, never the only one.
+    // Every country page, the data page and the feedback page are in the
+    // header, which is above the fold on every screen: the footer is a second
+    // way, never the only one.
     const header = siteHeader(navCountries(ds));
-    for (const link of [...countryLinks(ds).map((l) => l.path), "/", DATA_PATH])
+    for (const link of [...countryLinks(ds).map((l) => l.path), "/", DATA_PATH, FEEDBACK_PATH])
       expect(header, `${link} is only reachable from a footer`).toContain(`href="${url(link)}"`);
   });
 

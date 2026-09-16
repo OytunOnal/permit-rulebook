@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { contentSecurityPolicy, sha256 } from "../src/lib/csp.js";
 import { MENU_SCRIPT } from "../src/lib/identity.js";
+import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
+import { COPY_SCRIPT } from "../src/lib/clipboard.js";
 import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "../src/lib/site.js";
 
 /**
@@ -105,6 +107,29 @@ describe("every page states what may run on it", () => {
         }
         expect(policy, `${page.path}: an inline script the policy does not hash`).toContain(sha256(source!));
       }
+    }
+  });
+
+  /**
+   * The one policy names every inline script the site has, and each page runs
+   * the ones it needs: three hashes everywhere, because a page with a policy
+   * of its own is a page nobody compares (s10); the interview runs the
+   * pre-paint script and the menu, /feedback/ the menu and the copy button
+   * (s13), every other page the menu alone. Stated as counts so a fourth
+   * script, or a page quietly running one it should not, turns this red.
+   */
+  it("names exactly three hashes, and each page runs exactly the scripts it needs", () => {
+    expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
+    const policy = shipped();
+    const hashes = [...policy.matchAll(/'sha256-[^']*'/g)].map((m) => m[0]);
+    expect(hashes.length).toBe(3);
+    expect(new Set(hashes)).toEqual(new Set([MENU_SCRIPT, FIRST_PAINT_SCRIPT, COPY_SCRIPT].map(sha256)));
+    for (const page of pages) {
+      const running = [...page.html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => sha256(m[1]!));
+      const wanted = page.path === "/index.html" ? [FIRST_PAINT_SCRIPT, MENU_SCRIPT]
+        : page.path === "/feedback/index.html" ? [MENU_SCRIPT, COPY_SCRIPT]
+          : [MENU_SCRIPT];
+      expect(running, `${page.path} runs ${running.length} inline scripts`).toEqual(wanted.map(sha256));
     }
   });
 

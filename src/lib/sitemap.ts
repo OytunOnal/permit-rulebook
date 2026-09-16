@@ -2,7 +2,7 @@ import type { Dataset } from "permit-rulebook-data";
 import { pageStamp } from "./route-page.js";
 import { countryAddresses, countryReadDate, siteReadDate } from "./country-page.js";
 import { absolute } from "./site.js";
-import { DATA_PATH } from "./identity.js";
+import { DATA_PATH, FEEDBACK_PATH } from "./identity.js";
 import { routeAddresses } from "./slug.js";
 
 /**
@@ -52,6 +52,9 @@ export function sitemapEntries(dataset: Dataset): SitemapEntry[] {
     // reports IS that date. `/status` is its old address and is deliberately
     // absent: a crawler is invited to the page, not to the sign pointing at it.
     { path: DATA_PATH, lastmod: newest },
+    // A page reachable from the header is not an orphan, and a crawler is told
+    // about it the way it is told about the others (s13, scenario point 8).
+    { path: FEEDBACK_PATH, lastmod: newest },
     ...countryAddresses(dataset).map(({ country, path }) => ({
       path,
       lastmod: countryReadDate(dataset, country),

@@ -17,6 +17,9 @@ flowchart TB
     Route["Route page (/germany/eu-blue-card-general …)"]
     Status["Status (/status)"]
     NotFound["404"]
+    Feedback["Feedback (/feedback)"]
+    Gmail["Gmail compose (new tab)"]
+    Mail["The reader's mail app (mailto:)"]
     Data["JSON per route (data door)"]
     Repo["Repositories · tracker (GitHub)"]
 
@@ -32,8 +35,27 @@ flowchart TB
     NotFound --> Country
     Route -->|"data door"| Data
     Route -->|"data door · Report a wrong value"| Repo
-    Results -->|"footer"| Repo
+    Home -->|"header"| Feedback
+    Results -->|"the line under the verdict"| Feedback
+    Home -->|"footer"| Feedback
+    Feedback -->|"each door's button"| Gmail
+    Feedback -->|"or with your own mail app · the address (on the page only)"| Mail
+    Feedback -->|"If you have a GitHub account"| Repo
 ```
+
+## /feedback/ (placed 2026-09-16, built in s13)
+
+The door for a reader who wants to say something without anything being wrong.
+Reached from the header's word on every page, from the footer's Feedback
+column, and from the line under the verdict on a results screen — three ways
+in, so it is not an orphan and is never reachable from a footer only. Its own
+exits: each door's button → Gmail's compose screen in a new tab (the human's
+walk, 2026-09-16: on their desktop every `mailto:` opened nothing), under it
+*or with your own mail app* → the same mail as a `mailto:` (a value is wrong ·
+something is missing · anything else), the address in plain text beside them,
+and, beneath a rule, the GitHub tracker's two links for a reader with an
+account who wants the public record. Nothing else leaves it — it is not a
+form and not a backend.
 
 ## The gaps this map shows (2026-09-08)
 
@@ -57,7 +79,13 @@ flowchart LR
     Nav --> DE["Germany"] & FR["France"] & ES["Spain"] & NL["Netherlands"]
     Nav --> Check["Check yours"]
     Nav --> TheData["The data"]
+    Nav --> TheFeedback["Feedback"]
 ```
+
+Amended 2026-09-16 (s13): the four countries sit under one word, *Countries*,
+as a disclosure in the row — the word is the country's own name on a page that
+belongs to one — and *Feedback* joins the row after *The data*. The row holds
+four items, not seven.
 
 - The four countries as a row; the current country marked on country and route
   pages.
@@ -81,7 +109,10 @@ One footer on every page, from the same source as the header: the disclaimer
 sentence; three columns — Routes (the four countries, current marked, then
 "Check yours"), The data (what it holds and
 its gates · this route as JSON on route pages · the repository · the licence),
-Feedback (report a wrong value · suggest a route or a country · sponsor); then
+Feedback ("How to write, and what happens" → /feedback/ · sponsor — the
+tracker's two links left this column for /feedback/ in s13, and the address
+never settled here: it was a row for a day and the human took it out on the
+walk, so the footer's only way to a mail is the page); then
 the data line (dataset version · schema · newest value read · checked daily)
 beside the small seal and the licences. It repeats the header's four countries
 on purpose: at the bottom of a long page the header is a screen away.

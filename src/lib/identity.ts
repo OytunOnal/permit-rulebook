@@ -1,4 +1,6 @@
-import { PRODUCT_NAME, SEAL_LETTERS, unreadLabel } from "./copy.js";
+import {
+  COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW, PRODUCT_NAME, SEAL_LETTERS, unreadLabel,
+} from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import { url } from "./site.js";
 
@@ -81,6 +83,13 @@ export interface HeaderPlace {
   countryPath?: string;
   /** `page` on the country page itself, `true` on a route page under it. */
   current?: "page" | "true";
+  /**
+   * The page's own address, where the row itself holds it — `/feedback/` marks
+   * its own word the way a country page marks its country. A country's path
+   * never goes here: that one lives inside the disclosure and is marked by
+   * `countryPath` (s13).
+   */
+  here?: string;
 }
 
 /** The four countries, plus the two places every page can reach. */
@@ -95,18 +104,39 @@ export function siteHeader(countries: NavLink[], place: HeaderPlace = {}): strin
   const item = (link: NavLink): string => {
     const marked = place.countryPath && link.path === place.countryPath && place.current
       ? ` aria-current="${escAttr(place.current)}"`
-      : "";
+      : place.here && link.path === place.here
+        ? ' aria-current="page"'
+        : "";
     return `<a class="tap-min${link.action ? " check" : ""}" href="${escAttr(url(link.path))}"${
       marked}>${esc(link.label)}</a>`;
   };
+  /**
+   * The four countries under one word (the human's second amendment,
+   * 2026-09-16). The row held seven items and now holds four, and on a page
+   * that belongs to a country the word is that country's own name — so the
+   * header still says where you are, which is what the crumbs were removed in
+   * favour of.
+   *
+   * A `<details>`, so it opens with no script and the keyboard reaches it. The
+   * phone menu shows the same four rows under the heading inside it, which is
+   * why the heading is markup rather than a second nav: one set of links, and
+   * no country name written anywhere twice.
+   */
+  const here = countries.find((c) => c.path === place.countryPath);
+  const disclosure = `<details class="countries"><summary class="tap-min">${
+    esc(here ? here.label : COUNTRIES)}</summary><div class="list"><span class="group">${
+    esc(COUNTRIES)}</span>${countries.map(item).join("")}</div></details>`;
   const links = [
-    ...countries.map(item),
+    disclosure,
     '<span class="sep" aria-hidden="true"></span>',
     // One name for it, the human's own: the header says "Check yours" and so
     // does the footer; the page's own button says which country (footer
     // critique, 2026-09-08).
     item({ path: "/", label: "Check yours", action: true }),
     item({ path: DATA_PATH, label: "The data" }),
+    // The word a reader meets the moment any page opens on a desktop, and one
+    // tap behind Menu on a phone (s13).
+    item({ path: FEEDBACK_PATH, label: FEEDBACK }),
   ].join("");
   return `<header class="site-head">
       <a class="wordmark tap-min" href="${escAttr(url("/"))}">${seal()}${esc(PRODUCT_NAME)}</a>
@@ -118,18 +148,37 @@ export function siteHeader(countries: NavLink[], place: HeaderPlace = {}): strin
 /** The on-site data page — the header's destination and the footer's. */
 export const DATA_PATH = "/data";
 
+/** The page that holds the feedback door: the header's word, the footer's row
+ * and the results line all lead here (s13). */
+export const FEEDBACK_PATH = "/feedback";
+
 /**
  * The menu, in the one behaviour the mock walks: toggle, focus the first item
  * on opening, Escape closes it and gives the focus back, and choosing
  * something closes it. Shipped as a string because four of the five pages are
  * built as strings; the interview inlines the same one.
+ *
+ * s13 gave it a second thing to close: the header's `<details>`. It opens
+ * without script and the keyboard reaches it, but a disclosure that opens over
+ * the page and closes only by a second tap on its own word is not what a reader
+ * expects — so Escape and a tap outside close it here, beside the menu they
+ * already close. Everything it does it does by element and by attribute: no
+ * country name is written into this script, and nothing it touches is
+ * remembered anywhere.
+ *
+ * On a phone the disclosure is not a disclosure: the menu shows the four
+ * countries as rows under their heading, so opening the menu opens the groups
+ * inside it and closing the menu closes them again.
  */
 export const MENU_SCRIPT = `
   (() => {
     const button = document.querySelector(".menu");
     const nav = button && document.getElementById(button.getAttribute("aria-controls"));
     if (!button || !nav) return;
+    const groups = [...nav.querySelectorAll("details")];
     const set = (open) => {
+      // The groups first: the item the focus moves to is inside one of them.
+      for (const group of groups) group.open = open;
       button.setAttribute("aria-expanded", String(open));
       nav.classList.toggle("open", open);
       if (open) { const first = nav.querySelector("a"); if (first) first.focus(); }
@@ -138,16 +187,29 @@ export const MENU_SCRIPT = `
     button.addEventListener("click", () => set(!isOpen()));
     // Escape works from anywhere while the menu is open, not only from inside
     // it: a reader who has tabbed out, or never tabbed in, still has the way
-    // out every menu has (Standards review, 2026-09-08).
+    // out every menu has (Standards review, 2026-09-08). With the menu closed
+    // it is the open group it closes, and the focus goes back to the word that
+    // opened it.
     document.addEventListener("keydown", (e) => {
-      if (e.key !== "Escape" || !isOpen()) return;
-      set(false);
-      button.focus();
+      if (e.key !== "Escape") return;
+      if (isOpen()) { set(false); button.focus(); return; }
+      for (const group of groups) {
+        if (!group.open) continue;
+        group.open = false;
+        const word = group.querySelector("summary");
+        if (word) word.focus();
+      }
     });
     // And a tap anywhere outside closes it, which is what a reader expects of
     // something that opened over the page.
     document.addEventListener("click", (e) => {
-      if (!isOpen()) return;
+      if (!isOpen()) {
+        // The menu is not the thing that is open: a group may be, and a tap
+        // anywhere but inside it closes it.
+        for (const group of groups)
+          if (group.open && !group.contains(e.target)) group.open = false;
+        return;
+      }
       if (nav.contains(e.target)) { if (e.target.closest("a")) set(false); return; }
       if (button.contains(e.target)) return;
       set(false);
@@ -192,8 +254,14 @@ export interface FooterFacts {
   licenceUrl: string;
   licenceName: string;
   repository: string;
-  tracker: string;
-  newNeed: string;
+  /**
+   * The tracker's two links are no longer facts the footer needs: they left it
+   * for `/feedback/`, where they are named as the option for a reader who has
+   * an account and wants the public record (s13). The address is not here
+   * either: the column carried it for a day and the human took it out on the
+   * walk ("kaldir", 2026-09-16) — it lives on `/feedback/` only, in plain
+   * text beside the doors, and the footer's row is the way there.
+   */
   sponsor: string;
   owner: string;
   year: string;
@@ -243,10 +311,9 @@ export function siteFooter(
         <ul>${data}</ul>
       </div>
       <div class="col">
-        <h3>Feedback</h3>
+        <h3>${esc(FEEDBACK)}</h3>
         <ul>
-          <li>${out(facts.tracker, "Report a wrong value")}</li>
-          <li>${out(facts.newNeed, "Suggest a route or a change")}</li>
+          <li><a class="tap-min" href="${escAttr(url(FEEDBACK_PATH))}">${esc(FEEDBACK_FOOTER_ROW)}</a></li>
           <li>${out(facts.sponsor, "Sponsor this work")}</li>
         </ul>
       </div>

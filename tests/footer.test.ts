@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { DISCLAIMER } from "../src/lib/copy.js";
 import { countryLinks, footerFacts, navCountries } from "../src/lib/country-page.js";
-import { DATA_PATH, siteFooter } from "../src/lib/identity.js";
+import { DATA_PATH, FEEDBACK_PATH, siteFooter } from "../src/lib/identity.js";
 import { routePages } from "../src/lib/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, url } from "../src/lib/site.js";
@@ -103,20 +103,31 @@ describe("one footer, every page", () => {
     }
   });
 
-  it("every link resolves inside the site, or names an allowed host", () => {
+  it("every link resolves inside the site or names an allowed host — and none is a mail address", () => {
     const inside = new Set([
       ...countryLinks(ds).map((l) => url(l.path)),
-      url("/"), url(DATA_PATH), ...routePages(ds).map((r) => url(`${r.path}.json`)),
+      url("/"), url(DATA_PATH), url(FEEDBACK_PATH), ...routePages(ds).map((r) => url(`${r.path}.json`)),
     ]);
-    const ALLOWED = [REPO_DATA, TRACKER_URL, NEW_NEED_URL, SPONSOR_URL,
+    // The tracker's two links left the footer for /feedback/ in s13, where they
+    // are named as the option for a reader with an account; the footer's own
+    // outbound links are the repository, the licence and the sponsorship.
+    const ALLOWED = [REPO_DATA, SPONSOR_URL,
       "https://github.com/OytunOnal/permit-rulebook-data/blob/master/data/LICENSE"];
     for (const page of builtPages()) {
       const footer = footerOf(page.html);
+      // Nor is the address written out: not one "@" in the footer's text.
+      expect(readerSees(footer).includes("@"), `${page.path}: the footer prints a mail address`).toBe(false);
       for (const href of [...footer.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!)) {
         if (href.startsWith("http")) {
           expect(ALLOWED.some((a) => href.startsWith(a)), `${page.path}: ${href}`).toBe(true);
+          expect(href.startsWith(TRACKER_URL) || href.startsWith(NEW_NEED_URL),
+            `${page.path}: the tracker is back in the footer`).toBe(false);
           continue;
         }
+        // No mail address in the footer, linked or written: it carried the
+        // bare mailto: for a day and the human took it out on the s13 walk.
+        // The address lives on /feedback/ only.
+        expect(href.startsWith("mailto:"), `${page.path}: the footer links a mail address`).toBe(false);
         // Internal: either a page we build, or the pre-scoped checker.
         const bare = href.split("?")[0]!;
         expect(inside.has(href) || inside.has(bare), `${page.path}: ${href} goes nowhere`).toBe(true);
@@ -207,7 +218,10 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
         for (const link of seen.route!.links) {
           expect(link.height, `"${link.text}" is ${link.height} px at ${width}`).toBeGreaterThanOrEqual(44);
           // Every column link looks like a link at rest. The one exception is
-          // the action, which is a bordered button and says so that way.
+          // the action, which is a bordered button and says so that way. (The
+          // address was a second exception for a day; it left the footer on
+          // the s13 walk, and no link here may be one.)
+          expect(link.text.includes("@"), `"${link.text}" is a mail address in the footer`).toBe(false);
           if (link.text === "Check yours" || link.text.endsWith("Permit Rulebook")) continue;
           expect(link.underline, `"${link.text}" has no resting underline`).toContain("underline");
         }

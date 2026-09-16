@@ -80,6 +80,38 @@ export const REPO_DATA = "https://github.com/OytunOnal/permit-rulebook-data";
 export const TRACKER_URL = `${REPO_DATA}/issues/new/choose`;
 
 /**
+ * The address a reader writes to — the one door that needs no account.
+ *
+ * It is an alias on the site's own domain, routed to the human's inbox by
+ * Cloudflare Email Routing. **The routing is the human's to set up, and this
+ * name is the proposed one until they say it works**: the gate before the
+ * merge is a mail sent to the alias from another address arriving in their
+ * inbox, and only then does this constant become the live name (s13, scenario
+ * point 3; the decision of 2026-09-16). Until then the branch builds with the
+ * name below and does not merge — merge is the deploy, and the deploy names
+ * the address.
+ *
+ * One constant, because it is printed in plain text and linked in two places
+ * and written into three `mailto:` templates: an address that is right in four
+ * of five of them is an address that loses mail.
+ */
+export const FEEDBACK_ADDRESS = "feedback@permitrulebook.com";
+
+/**
+ * Where each door's button goes: Gmail's compose screen, with the address,
+ * the subject and the headings in the query.
+ *
+ * On the s13 preview walk every door opened nothing on the human's desktop —
+ * no mail application, Gmail in the browser, `mailto:` inert — which is the
+ * cost the e-mail decision had named, met as a reader meets it. So the button
+ * opens Gmail and the `mailto:` becomes the second link ("the feedback door
+ * opens Gmail; the mail app is the second link", 2026-09-16). It is a plain
+ * link and a navigation, not a request: the page's policy is not widened for
+ * it. Named once, so a test can pin the origin to exactly this.
+ */
+export const GMAIL_COMPOSE_URL = "https://mail.google.com/mail/";
+
+/**
  * Every route researched and deliberately left out, with the reason. A country
  * index says what it does not hold as well as what it does; until that file has
  * a page of its own, the link goes to the file in the data repository (human,

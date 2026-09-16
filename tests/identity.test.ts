@@ -607,6 +607,12 @@ describe.skipIf(notMeasured !== null)("the header holds on a machine with none o
     + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
     + ' document.head.appendChild(s); return "forced"; })()';
 
+  /**
+   * The row's own items. Since s13 the four countries sit INSIDE a closed
+   * disclosure and are not on the row at all — a hidden link's box is at 0,0,
+   * which read as a second row the first time this probe met one — so what is
+   * counted is the disclosure's word and the links beside it.
+   */
   const ROW = 'JSON.stringify((() => {'
     + ' const head = document.querySelector(".site-head");'
     + ' const mark = document.querySelector(".site-head .wordmark");'
@@ -614,7 +620,7 @@ describe.skipIf(notMeasured !== null)("the header holds on a machine with none o
     + ' return { height: Math.round(head.getBoundingClientRect().height),'
     + '   have: Math.round(head.getBoundingClientRect().width),'
     + '   need: Math.round(mark.getBoundingClientRect().width + nav.getBoundingClientRect().width),'
-    + '   rows: new Set([...nav.querySelectorAll("a")]'
+    + '   rows: new Set([...nav.querySelectorAll(":scope > a, :scope > details > summary")]'
     + '     .map((a) => Math.round(a.getBoundingClientRect().top))).size }; })())';
 
   it("one row at 1100 px, with room to spare, on every page", async () => {
@@ -624,7 +630,7 @@ describe.skipIf(notMeasured !== null)("the header holds on a machine with none o
         const at: Record<string, unknown> = {};
         for (const [name, path] of [
           ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
-          ["country", "/germany/"], ["data", "/data/"], ["error", "/404.html"],
+          ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"], ["error", "/404.html"],
         ] as const) {
           await page.goto(server.url(path), 500);
           await page.evaluate(FALLBACK);

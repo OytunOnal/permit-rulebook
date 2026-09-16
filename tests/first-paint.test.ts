@@ -7,6 +7,8 @@ import { remainingQuestions, type Dataset } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy.js";
 import { firstPaintPlaceholdersHtml, questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import { FEEDBACK_PATH } from "../src/lib/identity.js";
+import { url } from "../src/lib/site.js";
 
 /**
  * The first paint, measured the way the field measures it.
@@ -419,6 +421,16 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
     expect(words, "not a sentence").toMatch(/\.$/);
     // And it is the product's one wording for it, said in copy.ts.
     expect(words).toBe(NO_SCRIPT_LINE);
+  });
+
+  it("offers no feedback line: the cold / is a question, and the line is the verdict's (s13)", () => {
+    // The line under the verdict — "Something to say about this result?" —
+    // appears on a results screen only, never on a question, never before an
+    // answer (s13, scenario point 6). The built first paint is question one
+    // with nothing on the record, so the box the build paints must not link
+    // the page the line leads to.
+    expect(inMain, "the cold first paint links /feedback/").not.toContain(url(FEEDBACK_PATH));
+    expect(inMain).not.toContain('class="say"');
   });
 
   it("carries a sentence for each reader whose screen is not the one it painted", () => {
