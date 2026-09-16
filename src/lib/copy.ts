@@ -217,6 +217,60 @@ export const NEWEST_VALUE_CHANGED = "Newest value changed";
 export const LAST_CHECKED = "Last checked";
 
 /**
+ * The `/data/` counts row for our own sentences, after the number: what the
+ * provenance gate calls "declared" is, to a reader, that we wrote them and
+ * said so. The gate's own line further down the page keeps its own words —
+ * the label was in the gate's vocabulary, and the reader has not met the gate
+ * (light critique of s12, 2026-09-16; s16).
+ */
+export const PROSE_OURS_TAIL = "written by us and marked as ours";
+
+/**
+ * `/data/`'s masthead lede. The opening is one sentence whose numbers are the
+ * page's own, so it is a function of them; the closing sentence ended as
+ * plain text with no door for four days, which the human's walk of the s16
+ * preview found (2026-09-16) — and once the door was there, "or tell us it
+ * is wrong" presupposed a wrong, which the human's read of the same preview
+ * found the same day ("1" of three). So the sentence is a condition and an
+ * offer, with the door on the last two words. Composed here the way
+ * `resultFeedbackLine` is, so the full stop is the copy's and not the
+ * template's: the words arrive already wrapped as a link, and the line
+ * closes the sentence around them.
+ */
+export const DATA_LEDE_OPEN = "Everything this site shows is one open dataset:";
+export const dataLedeOpen = (scored: number, quotedOnly: number, countries: number): string =>
+  `${DATA_LEDE_OPEN} ${scored} routes scored against your answers and ${
+    quotedOnly} more quoted and dated but not scored, across ${countries} countries, every threshold and condition `
+  + "carrying the authority's own sentence, the page it came from and the day we read it.";
+export const DATA_LEDE_CLOSE_TAIL = "tell us";
+export const dataLedeClose = (door: string): string => `Take it, check it, and if something is wrong, ${door}.`;
+
+/**
+ * The freshness sentence's second half on `/data/`: what happens when a source
+ * moves, and the one thing that never happens on its own. It used to say a
+ * moved source "files an issue in the tracker" — a tracker the reader had not
+ * met, and since s13 not where a reader goes. The exception clause before it
+ * is s11's and prints on its own terms; this is the part that follows it on
+ * every day (s16).
+ */
+export const FRESHNESS_HUMAN_HAND =
+  "A source that has moved raises a flag and a person reads it: the values on this site, and the dates beside "
+  + "them, change when a person changes them, never on their own.";
+
+/**
+ * What a search result and a link preview say about `/data/`. The counts are
+ * the page's own, so it is a function of them and not a string. It used to end
+ * "the downloads, the checks and the tracker" — a door the page stopped
+ * offering in s16, found by that build's own check and taken as a back-edge
+ * the same day. A description is a summary of the page, and the door is one
+ * link, so the tail is plainer rather than renamed.
+ */
+export const dataMetaDescription = (scored: number, quotedOnly: number, countries: number): string =>
+  `What ${PRODUCT_NAME} holds today: ${scored} routes scored against your answers and ${
+    quotedOnly} quoted and dated but not scored, across ${countries} countries, every value carrying its source `
+  + "and the day it was read — with the downloads and the checks.";
+
+/**
  * The feedback door, in the one word that opens it.
  *
  * It is said in four places — the header's row, the footer column's heading,
@@ -290,6 +344,16 @@ export const FEEDBACK_DOORS: readonly FeedbackDoor[] = [
     body: [],
   },
 ];
+
+/**
+ * The site's door for a wrong value, wherever a page offers one — `/data/`'s
+ * Take it and every route page's data door. Those two linked the tracker under
+ * the footer's old verb for a day after s13 had moved the tracker to
+ * `/feedback/`; now they say the first door's own button and lead to the page
+ * it is on (s16). Derived from the door, not typed beside it: one action keeps
+ * one name across the site.
+ */
+export const WRONG_DOOR_LABEL = FEEDBACK_DOORS[0]!.button;
 
 /**
  * What the reader is told the mail will carry, before they click it.

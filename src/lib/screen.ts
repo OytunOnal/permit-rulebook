@@ -3,7 +3,7 @@
  * showing.
  *
  * It was not one before: "Start over" reset the answers but not the subtitle,
- * so question 1 of a brand-new interview read "Code compared your 13 answers
+ * so question 1 of a brand-new interview read "…compared your 13 answers
  * against 23 published rule sets… every value below shows its official quote"
  * — past tense, a count of answers nobody had given, and "below" pointing at an
  * empty page (product-critique v0.7, blocker B4). A claim about a comparison
@@ -41,9 +41,17 @@ export interface Masthead {
   subline: string;
 }
 
-/** The promise, before anything has been compared. Present tense throughout. */
+/**
+ * The promise, before anything has been compared. Present tense throughout.
+ *
+ * In the passive, on the human's choice (2026-09-16): the sentence used to
+ * have "Code" as its subject, and a sentence whose subject is "Code" read
+ * oddly to them on two walks. The subject leaves the sentence; the claim — a
+ * comparison by code, not a judgement by a person — stays. The results
+ * sentence below went the same way.
+ */
 export const INTRO_SUBLINE =
-  "Code compares your answers against published rules — every value shows its official quote and the " +
+  "Your answers are compared against published rules — every value shows its official quote and the " +
   "date we read it from the source. Your answers stay on this device. At the end: which routes look open, " +
   "how close the near-misses are, and which single step would unlock more.";
 
@@ -81,7 +89,10 @@ export function mastheadFor(screen: Screen): Masthead {
       // The user-facing wording stays "published rule set" — what the code
       // calls them is Routes, which is the term the glossary fixes (review S2).
       const sets = `${screen.routes} published rule set${screen.routes === 1 ? "" : "s"}`;
-      let subline = `Code compared your ${answers} against ${sets}. Every value below shows its official ` +
+      // The passive, as the intro (human, 2026-09-16). The count is the
+      // subject now, so the verb has to agree with it: one answer WAS compared.
+      const were = screen.answered === 1 ? "was" : "were";
+      let subline = `Your ${answers} ${were} compared against ${sets}. Every value below shows its official ` +
         "quote and the date we read it from the source.";
       if (screen.nearest) subline += ` Nearest: ${screen.nearest}.`;
       if (screen.explore) subline += EXPLORE_SENTENCE[screen.explore];
@@ -146,9 +157,16 @@ export function screenAfter(action: FlowAction, interview: Interview): Screen {
  * statement takes: the verb, its denial, a pointer at results that may not be
  * there, and a count of what was compared. (A bare digit is not one of them —
  * that made the name a description of something else, review S6.)
+ *
+ * The verb is the past one. Since the intro went passive (s17) the word
+ * "compared" also stands in a sentence that claims nothing has happened —
+ * "your answers ARE compared" is the promise, in the present — so the shape
+ * this looks for is the comparison that has been done: "were compared", "was
+ * compared", or the old active "compared your". Preceded by "is" or "are" it
+ * is the promise and does not count.
  */
 export function claimsAComparison(text: string): boolean {
-  return /\bcompared\b/i.test(text) ||
+  return /(?<!\b(?:is|are)\s)\bcompared\b/i.test(text) ||
     /nothing to compare/i.test(text) ||
     /\bbelow\b/i.test(text) ||
     /\b\d+\s+(?:answers?|routes?|published|rule)/i.test(text);

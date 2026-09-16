@@ -7,14 +7,15 @@ import { contentSecurityPolicy } from "./csp.js";
 import { PAGE_CSS, pageStamp, withArticle } from "./route-page.js";
 import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
 import {
-  DAILY_CHECK_CLAIM, LAST_CHECKED, NEWEST_VALUE_CHANGED, PRODUCT_NAME, TAGLINE, TRANSLATION_POLICY,
+  DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PRODUCT_NAME,
+  PROSE_OURS_TAIL, TAGLINE, TRANSLATION_POLICY, WRONG_DOOR_LABEL, dataLedeClose, dataLedeOpen, dataMetaDescription,
   datasetDay,
 } from "./copy.js";
 import {
-  DATA_LICENCE_FULL, REPO_DATA, TRACKER_URL, absolute, analyticsBeacon, headMeta, lastWatchRun,
-  readRange, unreadSourcesAt, url,
+  DATA_LICENCE_FULL, REPO_DATA, absolute, analyticsBeacon, headMeta, lastWatchRun, readRange, unreadSourcesAt,
+  url,
 } from "./site.js";
-import { DATA_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
+import { DATA_PATH, FEEDBACK_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
 import { datasetLd } from "./dataset-ld.js";
 
@@ -111,9 +112,7 @@ export function dataPage(
   const prose = proseProvenance(dataset);
   const counts = routeCounts(dataset);
   const title = `The data · ${PRODUCT_NAME}`;
-  const desc = `What ${PRODUCT_NAME} holds today: ${counts.scored} routes scored against your answers and ${
-    counts.quotedOnly} quoted and dated but not scored, across ${
-    dataset.countries.length} countries, every value carrying its source and the day it was read — with the downloads, the checks and the tracker.`;
+  const desc = dataMetaDescription(counts.scored, counts.quotedOnly, dataset.countries.length);
 
   // The one page that IS the dataset says so in the vocabulary a dataset
   // index reads. It is a data block, not a program — but the policy names it
@@ -168,9 +167,11 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
   <div class="masthead-with-stamps">
     <div>
       <h1>The data. <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">Everything this site shows is one open dataset: ${counts.scored} routes scored against your answers and ${
-    counts.quotedOnly} more quoted and dated but not scored, across ${
-    dataset.countries.length} countries, every threshold and condition carrying the authority's own sentence, the page it came from and the day we read it. Take it, check it, or tell us it is wrong.</p>
+      <p class="lede">${esc(dataLedeOpen(counts.scored, counts.quotedOnly, dataset.countries.length))} ${
+    // The last words are the door, in the page's inline link style: the lede
+    // is prose, so `tap` and not the button's `tap-min` (human's walk of the
+    // s16 preview, 2026-09-16).
+    dataLedeClose(`<a class="tap" href="${escAttr(url(FEEDBACK_PATH))}">${esc(DATA_LEDE_CLOSE_TAIL)}</a>`)}</p>
     </div>
     ${rulesRead(read)}
   </div>
@@ -195,7 +196,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
       </dl>
       <dl class="facts facts-counts">
         <div><dt>Quoted values</dt><dd>${quotedValues(dataset)} with a source and a date</dd></div>
-        <div><dt>Sentences of ours</dt><dd>${prose.ours}, declared and shown as ours</dd></div>
+        <div><dt>Sentences of ours</dt><dd>${prose.ours}, ${esc(PROSE_OURS_TAIL)}</dd></div>
       </dl>
       <dl class="facts facts-wide">
         <div><dt>Routes</dt><dd>${counts.scored} scored, ${counts.quotedOnly} quoted and dated but not scored, in ${
@@ -225,7 +226,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
     // is why the clause hands it over apart from its words.
     clause ? ` ${esc(clause.before)}<b><time datetime="${escAttr(clause.since)}">${
       esc(clause.since)}</time></b>${esc(clause.after)}` : ""
-  } A source that has moved files an issue in the tracker and a person reads it: the values on this site, and the dates beside them, change when a person changes them, never on their own.</p>
+  } ${esc(FRESHNESS_HUMAN_HAND)}</p>
     </section>
 
     <section class="data" aria-labelledby="take-h">
@@ -234,7 +235,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
         <a class="tap-min" href="${escAttr(url(DATASET_JSON_PATH))}">The whole dataset as JSON</a>
         <a class="tap-min" href="${escAttr(url(COUNTRIES_JSON_PATH))}">countries.json — the passport vocabulary</a>
         <a class="tap-min" href="${escAttr(REPO_DATA)}" target="_blank" rel="noopener">The dataset on GitHub</a>
-        <a class="tap-min" href="${escAttr(TRACKER_URL)}" target="_blank" rel="noopener">Report a wrong value</a>
+        <a class="tap-min" href="${escAttr(url(FEEDBACK_PATH))}">${esc(WRONG_DOOR_LABEL)}</a>
       </nav>
       <p class="lede">Reuse it under ${esc(DATA_LICENCE_FULL)} — credit and link back. Every route is also served on its own, with the day it was read:</p>
       ${dataset.countries.map((country) => `
