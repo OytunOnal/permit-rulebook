@@ -22,19 +22,25 @@ itself.
 **What it does now** — the latest line of the versions ledger
 ([KANBAN.md](KANBAN.md), `## versions`):
 
-> **v1** — Public: https://permitrulebook.com, announced 2026-09-09. 23
-> employment routes across Germany, France, Spain and the Netherlands, each
-> with a page of its own; an interview of about seven questions that says which
-> routes fit, which are close and by how much, and the one step that would open
-> the most; 122 quotes re-read daily against their sources, each carrying the
-> authority's sentence, its page and the day it was read. The whole loop ran
-> for real before the stamp: a source re-read, a history line, a commit, a
-> dispatch, a rebuild, the new date on a live page. Answers never leave the
-> device, and a real-browser test asserts it. Open data (CC BY 4.0) with JSON
-> per route, the site MIT; `/data` describes itself as a dataset for the
-> indexes that read one. Two isolated critiques (32/45 on RUBRIC 1.2, 36/50 on
-> 1.3) with every blocker cleared on the live site. 280 + 428 tests, 0
-> vulnerabilities in either repository. (2026-09-09)
+> **v1.1** — The site that answers back. Public at https://permitrulebook.com,
+> stamped 2026-09-16 at s18's merge and confirmed at s22's: 29 routes across
+> Germany, France, Spain and the Netherlands — 23 scored against a reader's
+> answers, 6 quoted and dated but not scored, each with a page of its own —
+> and 192 quotes re-read daily, each carrying the authority's sentence, its
+> page and the day it was read; five of the Dutch pages are read by a person
+> on a 90-day clock since the IND put its requirements behind a form. What
+> changed since v1: a question that no scored route in the chosen country can
+> use says so before it is picked, and a result reached that way is a written
+> state naming the route that would; a partial watch run says which sources
+> it missed, on every page; the first paint no longer shifts on any of five
+> arrivals, a returning reader's included; the feedback door is one word,
+> Feedback, on every page, opening a mail with the subject written; the
+> header folds the countries under one word; every correction lands on the
+> question and returns to the verdict; `/data/` says what it holds in the
+> reader's words. Two isolated critiques on RUBRIC 1.3 the same day — 35/50
+> with two blockers, 39/50 with none after four slices — every blocker
+> cleared by operation on the live site. 568 + 573 tests, 0 vulnerabilities
+> in either repository. (2026-09-16)
 
 **How to run it.** Both repositories side by side — the site reads the dataset
 package from the sibling directory its manifest names. Tried from a fresh clone

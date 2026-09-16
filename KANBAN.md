@@ -607,6 +607,25 @@ _(empty — everything real-green so far is stamped into done)_
   tiers, ndjson, commit-gated state, flag files with quoted context), DE via
   ZAV edition-index sentinel, daily CI workflow hardened against alert loss.
   (2026-09-02)
+- **v1.1** — The site that answers back. Public at https://permitrulebook.com,
+  stamped 2026-09-16 at s18's merge and confirmed at s22's: 29 routes across
+  Germany, France, Spain and the Netherlands — 23 scored against a reader's
+  answers, 6 quoted and dated but not scored, each with a page of its own —
+  and 192 quotes re-read daily, each carrying the authority's sentence, its
+  page and the day it was read; five of the Dutch pages are read by a person
+  on a 90-day clock since the IND put its requirements behind a form. What
+  changed since v1: a question that no scored route in the chosen country can
+  use says so before it is picked, and a result reached that way is a written
+  state naming the route that would; a partial watch run says which sources
+  it missed, on every page; the first paint no longer shifts on any of five
+  arrivals, a returning reader's included; the feedback door is one word,
+  Feedback, on every page, opening a mail with the subject written; the
+  header folds the countries under one word; every correction lands on the
+  question and returns to the verdict; `/data/` says what it holds in the
+  reader's words. Two isolated critiques on RUBRIC 1.3 the same day — 35/50
+  with two blockers, 39/50 with none after four slices — every blocker
+  cleared by operation on the live site. 568 + 573 tests, 0 vulnerabilities
+  in either repository. (2026-09-16)
 - **v1** — Public: https://permitrulebook.com, announced 2026-09-09. 23
   employment routes across Germany, France, Spain and the Netherlands, each
   with a page of its own; an interview of about seven questions that says which

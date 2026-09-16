@@ -16,7 +16,7 @@ flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓] --> D[Design ✓] --> E[Plan ✓]
     E --> F["Slice loop<br/>v0.1–v0.10 ✓"]
     F --> G["s6 public launch ✓<br/>real-green 2026-09-09"]
-    G --> H["Steward<br/>live, watched, answered"] --> I["v1.1 ◀ here<br/>s9 … s18"]
+    G --> H["Steward<br/>live, watched, answered"] --> I["v1.1 ✓<br/>stamped 2026-09-16"] --> J["next boundary ◀ here"]
 ```
 
 Pace, from the ledger: s5e real-green 2026-09-07, s5f 2026-09-07, s6
@@ -49,7 +49,25 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **s21 and s22 are live** (2026-09-16, deploy `fc783ca` green; read on the
+live site: s9 through s18.** **v1.1 is stamped** (2026-09-16, the versions ledger in `KANBAN.md`, quoted
+by the README). The critic confirmed N1 and N2 cleared by operation on the
+live site: no blocker open, so v1.1 ships on blocker-clearance; 39/50 on
+RUBRIC 1.3 against v1's 36, four lenses up, none down. The stamp names
+today's numbers — 29 routes (23 scored, 6 quoted), 192 quotes, 4 countries,
+568 + 573 tests, 0 vulnerabilities. Ten slices reached the live site today
+on your word: s13, s14, s15, s16, s17, s18, s19, s20, s21, s22.
+
+**What waits on the board, in the order the critic put it:** the copy pass
+(adjustment 3: the statute stutter, the job-search sentence only without an
+offer, the route pages' liveness line, the points tally, the curator note —
+*"3 sonra"*); the experience ladder (F2, an engine judgment); the
+four-country headline's hierarchy (the France sentence sits third under
+"Nothing open"); the hold-state blank on a finished-record arrival; focus
+after a re-answer; `scrollbar-gutter`; a `field` on precondition
+statements; data #15, #13, #17; the Spanish order at the end of December;
+2026-10-09's readings with their isolated walk.
+
+**s21 and s22 are live** (2026-09-16, deploy `fc783ca` green; read on the
 live host: the four-country path marks France at question 3, the pre-paint
 script carries the verdict bit). The v1.1 re-score's blocker N1 and its
 friction N2 are cleared; the last step before the stamp is the critic's
@@ -190,7 +208,7 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.** The critic confirms N1 and N2 on the live site; then the stamp.
+**Nothing is blocked on you.** v1.1 is stamped; the next slice is chosen at the next boundary.
 
 - [x] **s21 and s22 walked and merged** (2026-09-16, your word; the session
       walked both on the preview). Live.

@@ -3536,3 +3536,30 @@ is recorded:** one full walk was owed between v1 and this state and did not
 happen; the light critiques on s12 and s13 covered their own scopes only.
 **Gate:** yes, the human's word on the scope; the stamp itself follows the
 walk.
+
+## 2026-09-16 — v1.1 stamped 🛑
+
+**The scope** was the human's (*"v1.1 bugün yaptıklarımızı kapsasın"*): the
+live site at s18's merge, s9 through s18, against v1 at s6. **The stamp
+brought the isolated full walk** the cadence requires for a version that
+reaches real users: RUBRIC 1.3, blind, on the live site — 35/50 with two
+blockers (a French researcher shown a rejection for a route that was merely
+absent; a phone correction that left the question off-screen). The human
+picked the two adjustments that were the blockers (*"1 ve 2 yapalım, 3
+sonra"*); s19 and s20 cleared them; the same critic re-scored at 39/50 and
+found one more blocker on the four-country path and a gate that had never
+measured the arrival it named; s21 and s22 cleared those; the critic
+confirmed every one by operation on the live site: **no blocker open, v1.1
+ships on blocker-clearance.** The score is judgment, not a gate: 36 → 39 on
+the same rubric; four lenses rose, none fell.
+
+**What the day cost, recorded:** one full walk was owed between v1 and this
+state and was taken late — seven slices reached the live site without it.
+Three of today's scenarios had premises the builds disproved by measurement
+(the reserved space that did not exist; a masthead shape that could not be
+reserved; a gate seeded with fields the product no longer writes); each is a
+dated correction in its scenario. The copy pass (adjustment 3) and the
+experience ladder (F2) wait on the board with the human's word "sonra".
+
+**Gate:** yes — the scope and every merge were the human's word; the stamp
+follows the critic's confirmation, not this session's judgment.
