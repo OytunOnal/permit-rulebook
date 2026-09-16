@@ -1,6 +1,6 @@
 # s13 — the feedback door
 
-**Status:** draft 2026-09-16, awaiting the human's approval. Site #6; closes
+**Status:** approved 2026-09-16 (human: "onaylıyorum"). Site #6; closes
 site #7 by construction. Design: F in `docs/spine/design/s7-feedback-3.html`,
 chosen 2026-09-16 with two amendments, drawing ratified ("tamamdır").
 Decisions: "the feedback door is e-mail; GitHub stays beside it, named" and
