@@ -44,6 +44,17 @@ Live stays on s12; s13 and s14 wait on master.
 4. **Nothing else changes.** No copy, no s11 derivation, no fixture unless a
    footer byte moved (then regenerate with the reason).
 
+**Corrected 2026-09-16, by the build:** point 3 said "a break before `·`".
+That is backwards against the footer's own rule, written into `identity.ts`
+and DECISIONS on 2026-09-08 — *the space before the dot is non-breaking, so
+the dot ends the line it belongs to and the break falls after it*; a line
+beginning with `·` is what that rule exists to prevent. The break falls
+after the dot: `(last run 2026-09-16 ·` / `1 source unread)`. The build
+raised it instead of following the text; the session corrected the text.
+Also for the record: the sixth failure needs CI's fonts (DejaVu Sans Mono)
+and cannot be reproduced byte-for-byte on this machine; the test's +0.11em
+tracking is the proxy and the build widened it further to see the break.
+
 ## How it is proved
 
 - The suite green **against today's state** (1 unread) and against a
