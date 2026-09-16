@@ -162,6 +162,11 @@ CLS fix is not. The three lines, left here until the window closes:
 - [x] **s13 walked and merged** (2026-09-16, your word), **s14 merged**
       (your word, after the five IND pages were read in Chrome at your
       request), **s15 merged** (your word). All three live in `6fe4eb5`.
+- [x] **s18 approved** (2026-09-16, *"tamamdır yapalım"*): site #11, the
+      one-line JSON-LD fix (`Country` → `Place`); building in its own
+      worktree. Nothing to walk — a data block in the page head; the proof
+      is the Rich Results test after the deploy and, days later, the
+      warning leaving Search Console.
 - [x] **s16 and s17 walked and merged** (2026-09-16, your word; three
       corrections from your reads are in s16). Live in `7d5ef51`.
 - [ ] **Look at the live site once, when you like:** https://permitrulebook.com/feedback/

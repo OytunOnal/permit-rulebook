@@ -273,7 +273,10 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s18 — `spatialCoverage` in the shape Google's parser reads** (site #11) ·
+  `{"@type":"Country"}` → `{"@type":"Place"}` in `/data/`'s Dataset JSON-LD;
+  Google drops `Country`. Scenario approved 2026-09-16 ("tamamdır yapalım");
+  building.
 
 ## mock-green
 
