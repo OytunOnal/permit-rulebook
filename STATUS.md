@@ -60,9 +60,16 @@ verdict and in the footer, all leading to a page of its own; **G** the footer
 column *is* the door, header and verdict line anchor to it; **H** the page,
 from header and footer only, results untouched. The critique
 (`docs/spine/critiques/2026-09-16-feedback-door-placement-critique.md`)
-recommends **F**: one more hop and one more page, for a door that explains
-itself before the click and a footer that stays a footer. Nothing is built
-until you pick; the alias's routing is yours to set up when you do.
+recommended **F**, and **you chose F** the same day, with two amendments now
+drawn into the mock: the third door reads *What helped, what confused you,
+what you would want next — a note of any length · Write a note*, the other
+two buttons take the footer's verbs (*Report a wrong value · Say what is
+missing*), and the header's four countries sit under one word, *Countries*
+(on a country page, that country's name), so the row is four items, not
+seven. Recorded as a gate in DECISIONS. Next: your look at the amended
+drawing, then the slice's scenario — written before any build, approved by
+you — then the build on its own branch, a light critique on the preview,
+your walk, your word. The alias's routing is yours (steps below).
 
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.
@@ -104,11 +111,14 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: where the feedback door sits.**
+**Two things are blocked on you: a look at the amended drawing, and the alias.**
 
-- [ ] **Pick F, G or H** — open `docs/spine/design/s7-feedback-3.html` in a
-      browser (frames at 390 and 1000 px) and say which, or say what none of
-      them has. *Recommended:* F. The build waits on the word.
+- [x] **F picked** (2026-09-16, your word, with two amendments).
+- [ ] **Look at the amended F** — `docs/spine/design/s7-feedback-3.html`,
+      the first section: the header with *Countries ▾* closed on the
+      interview page and *France ▾* open on France's page, the phone menu with
+      the countries grouped, and the third door's new words. Say "tamamdır"
+      or say what is off; the scenario is written after that.
 - [ ] **When you pick: the alias.** In Cloudflare → permitrulebook.com →
       Email → Email Routing: enable routing (it adds the MX and TXT records
       itself), create the address `feedback@permitrulebook.com` (or the name

@@ -3396,3 +3396,42 @@ issue is to be updated when the placement is chosen.
 **Gate:** yes — the human chose, between drawn alternatives and in their own
 words. The alias, its name and its routing are theirs; the placement round
 is next.
+
+## 2026-09-16 — the feedback door sits as F, with two amendments 🛑
+
+**Chosen by the human** from the third round (`docs/spine/design/s7-feedback-3.html`,
+critique `docs/spine/critiques/2026-09-16-feedback-door-placement-critique.md`):
+**F** — one word, *Feedback*, in the header, under the verdict and in the
+footer, all leading to a page of the site's own, `/feedback/`, which holds
+the door (three `mailto:` templates, the alias in plain text, what happens
+to a mail, the GitHub tracker beneath as the named option). Human's words:
+*"F ama …"*, then the two amendments:
+
+1. **The third door said properly.** The draft's *"Confusing, useful, broken,
+   kind — anything. / Write anything"* goes. It becomes: **Anything else** —
+   *What helped, what confused you, what you would want next — a note of any
+   length.* — button **Write a note**, subject *Note*. The other two buttons
+   take the footer's own verbs so one action keeps one name across the site:
+   **Report a wrong value**, **Say what is missing**.
+2. **The header's four countries under one word.** *Countries* becomes a
+   disclosure in the header's row (a `<details>`, so it opens without
+   script and the keyboard reaches it; the phone menu's script may close it
+   on an outside tap). The row holds four items — Countries · Check yours ·
+   The data · Feedback — instead of seven, which also retires the 761-px
+   crowding the 2026-09-08 measurement warned of. **On a country page the
+   word is the country** (*France ▾*), with the four listed beneath and the
+   current one marked, so the header still says where you are (orientation
+   lens; the 2026-09-08 navigation decision's rule). The phone menu keeps
+   the four countries as rows under a small *Countries* heading. *Check yours*
+   stays *Check yours* on every page, as decided 2026-09-08 — a draft frame
+   that said *Check yours — France* was corrected the same hour.
+
+**Bounds carried:** nothing opens by itself, nothing dims, nothing is
+remembered on the device, nothing the reader declared enters a mail.
+**Costs, accepted with the choice:** one more hop to the mail, one more page
+on the site map (`/feedback/`, reachable from header and footer — not an
+orphan), one more disclosure in the header to test in a browser.
+
+**Gate:** yes — the human chose between drawn alternatives and named the
+amendments. What waits on them still: the alias's routing (their dashboard),
+and the amended drawing's look-over before the scenario is written.

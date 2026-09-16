@@ -84,6 +84,22 @@ a { color: var(--color-ink); }
 .rule { font: .76rem var(--font-mono); color: var(--color-muted); margin: .35rem 0 0; }
 .rule i { color: var(--color-ink); } .rule b { color: var(--color-met); font-weight: 400; }
 
+/* F, amended: the countries under one word. A <details> disclosure — no
+   script needed to open it, keyboard reaches it; the phone menu's script can
+   close it on an outside tap. On a country page the word is the country. */
+.nav details { position: relative; }
+.nav details > summary { list-style: none; cursor: pointer; font: 700 .72rem var(--font-sans); letter-spacing: var(--tracking-nav); text-transform: uppercase; min-height: var(--tap-min); display: inline-flex; align-items: center; gap: .35rem; }
+.nav details > summary::-webkit-details-marker { display: none; }
+.nav details > summary::after { content: "▾"; font-size: .9em; }
+.nav details[open] > summary::after { content: "▴"; }
+.nav details > div { position: absolute; top: 100%; left: -.9rem; min-width: 11rem; background: var(--color-card); border: var(--rule-soft); border-top: var(--rule-card-top); padding: .3rem .9rem; box-shadow: 0 6px 18px rgba(43,42,34,.12); display: grid; }
+.nav details > div a { border-bottom: var(--rule-dotted); }
+.nav details > div a:last-child { border-bottom: 0; }
+.nav details > div a[aria-current] { color: var(--color-stamp); }
+.head-frame { height: 15rem; overflow: hidden; }
+.menu-group { font: 700 .62rem var(--font-sans); letter-spacing: .18em; text-transform: uppercase; color: var(--color-muted); padding: .5rem 0 .1rem; }
+.menu-sub { padding-left: 1rem; }
+
 /* the verdict line (F, G) */
 .say { margin: .2rem 0 var(--space-3); font-size: .88rem; color: var(--color-muted); }
 .say a { color: var(--color-ink); min-height: var(--tap-min); display: inline-flex; align-items: center; }
@@ -133,19 +149,41 @@ a { color: var(--color-ink); }
 
 <!-- ================================================================ F -->
 <h2 class="mock">F · One word, one page
-  <small>"Feedback" appears three times — in the header's row (seventh item, before Check yours), as one
+  <small><b>Chosen by the human, 2026-09-16, with two amendments drawn below:</b> the third door said properly, and the header's four countries under one word, "Countries", so the row holds four items rather than seven. "Feedback" appears three times — in the header's row, as one
   line under the verdict, and as the footer column's heading — and all three lead to <b>/feedback/</b>,
   a page of the site's own that holds the door: three template links, the address in plain text, what
   happens to a mail, and the GitHub option beneath, named. The word is visible the moment any page
-  opens on desktop; on a phone it is behind Menu, one tap. The header's seventh item must be measured
-  at 761 px before it ships (six items filled 94% of that row on CI's fonts, 2026-09-08).</small></h2>
+  opens on desktop; on a phone it is behind Menu, one tap. With the countries grouped the row is four items and the 761-px measurement of 2026-09-08 no longer binds; the build measures it anyway.</small></h2>
 <div class="frames">
   <div class="desk">
-    <p class="label-w">1000 px · the header with the seventh word</p>
+    <p class="label-w">1000 px · the header, four countries under one word — the interview page</p>
     <div class="panel">
       <div class="site-head">
         <a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a>
-        <nav class="nav"><a href="#">Germany</a><a href="#">France</a><a href="#">Spain</a><a href="#">Netherlands</a><span class="sep"></span><a class="check" href="#">Check yours</a><a href="#">The data</a><a href="#">Feedback</a></nav>
+        <nav class="nav"><details><summary>Countries</summary><div><a href="#">Germany</a><a href="#">France</a><a href="#">Spain</a><a href="#">Netherlands</a></div></details><span class="sep"></span><a class="check" href="#">Check yours</a><a href="#">The data</a><a href="#">Feedback</a></nav>
+      </div>
+    </div>
+  </div>
+  <div class="desk">
+    <p class="label-w">1000 px · the same header on France's page, the word opened — the country you are on is the word</p>
+    <div class="panel head-frame">
+      <div class="site-head">
+        <a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a>
+        <nav class="nav"><details open><summary>France</summary><div><a href="#">Germany</a><a href="#" aria-current="page">France</a><a href="#">Spain</a><a href="#">Netherlands</a></div></details><span class="sep"></span><a class="check" href="#">Check yours</a><a href="#">The data</a><a href="#">Feedback</a></nav>
+      </div>
+      <div class="inner"><p class="eyebrow">France · 6 routes</p><p class="res-h">Work permits for France, quoted and dated.</p></div>
+    </div>
+  </div>
+  <div class="phone">
+    <p class="label-w">390 px · the menu, opened — the same grouping</p>
+    <div class="panel">
+      <div class="site-head"><a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a><button class="menu" style="background:var(--color-ink);color:var(--color-bg)">Menu</button></div>
+      <div class="inner" style="padding-top:.4rem">
+        <nav class="nav" style="display:grid;gap:0">
+          <span class="menu-group">Countries</span>
+          <a class="menu-sub" href="#" style="border-bottom:var(--rule-dotted)">Germany</a><a class="menu-sub" href="#" style="border-bottom:var(--rule-dotted)">France</a><a class="menu-sub" href="#" style="border-bottom:var(--rule-dotted)">Spain</a><a class="menu-sub" href="#">Netherlands</a>
+          <a class="check" href="#" style="margin:.6rem 0;justify-content:center">Check yours</a><a href="#" style="border-bottom:var(--rule-dotted)">The data</a><a href="#">Feedback</a>
+        </nav>
       </div>
     </div>
   </div>
@@ -176,14 +214,14 @@ a { color: var(--color-ink); }
           Nothing you declared in the interview is sent.</p>
         <div class="doors">
           <div class="door"><h3>A value is wrong</h3><p>The page says one thing; the source says another.</p>
-            <a class="act" href="mailto:feedback@permitrulebook.com?subject=Wrong%20value">Write about a wrong value</a>
+            <a class="act" href="mailto:feedback@permitrulebook.com?subject=Wrong%20value">Report a wrong value</a>
             <span class="tmpl">Subject: Wrong value · Page · What it says · What the source says · Where</span></div>
           <div class="door"><h3>Something is missing</h3><p>A route, a question, a country, a case.</p>
-            <a class="act" href="mailto:feedback@permitrulebook.com?subject=Missing">Write about something missing</a>
+            <a class="act" href="mailto:feedback@permitrulebook.com?subject=Missing">Say what is missing</a>
             <span class="tmpl">Subject: Missing · What · Where you looked for it</span></div>
-          <div class="door"><h3>Anything else</h3><p>Confusing, useful, broken, kind — anything.</p>
-            <a class="act" href="mailto:feedback@permitrulebook.com?subject=Feedback">Write anything</a>
-            <span class="tmpl">Subject: Feedback</span></div>
+          <div class="door"><h3>Anything else</h3><p>What helped, what confused you, what you would want next — a note of any length.</p>
+            <a class="act" href="mailto:feedback@permitrulebook.com?subject=Note">Write a note</a>
+            <span class="tmpl">Subject: Note</span></div>
         </div>
         <p class="addr"><a href="mailto:feedback@permitrulebook.com">feedback@permitrulebook.com</a></p>
         <p class="note">If a link opens nothing, copy the address. A person reads every mail. A wrong value, confirmed
@@ -202,7 +240,7 @@ a { color: var(--color-ink); }
     <div class="panel">
       <div class="site-head">
         <a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a>
-        <nav class="nav"><a href="#">Germany</a><a href="#">France</a><a href="#">Spain</a><a href="#">Netherlands</a><span class="sep"></span><a class="check" href="#">Check yours</a><a href="#">The data</a><a href="#" aria-current="page" style="text-decoration:underline">Feedback</a></nav>
+        <nav class="nav"><details><summary>Countries</summary><div><a href="#">Germany</a><a href="#">France</a><a href="#">Spain</a><a href="#">Netherlands</a></div></details><span class="sep"></span><a class="check" href="#">Check yours</a><a href="#">The data</a><a href="#" aria-current="page" style="text-decoration:underline">Feedback</a></nav>
       </div>
       <div class="inner fb" style="max-width:56rem">
         <p class="eyebrow">Read by a person.</p>
@@ -211,14 +249,14 @@ a { color: var(--color-ink); }
           Nothing you declared in the interview is sent.</p>
         <div class="doors" style="grid-template-columns:1fr 1fr 1fr">
           <div class="door"><h3>A value is wrong</h3><p>The page says one thing; the source says another.</p>
-            <a class="act" href="#">Write about a wrong value</a>
+            <a class="act" href="#">Report a wrong value</a>
             <span class="tmpl">Subject: Wrong value · Page · What it says · What the source says · Where</span></div>
           <div class="door"><h3>Something is missing</h3><p>A route, a question, a country, a case.</p>
-            <a class="act" href="#">Write about something missing</a>
+            <a class="act" href="#">Say what is missing</a>
             <span class="tmpl">Subject: Missing · What · Where you looked for it</span></div>
-          <div class="door"><h3>Anything else</h3><p>Confusing, useful, broken, kind — anything.</p>
-            <a class="act" href="#">Write anything</a>
-            <span class="tmpl">Subject: Feedback</span></div>
+          <div class="door"><h3>Anything else</h3><p>What helped, what confused you, what you would want next — a note of any length.</p>
+            <a class="act" href="#">Write a note</a>
+            <span class="tmpl">Subject: Note</span></div>
         </div>
         <p class="addr"><a href="#">feedback@permitrulebook.com</a></p>
         <p class="note">If a link opens nothing, copy the address. A person reads every mail. A wrong value, confirmed
