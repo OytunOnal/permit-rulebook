@@ -56,8 +56,14 @@ so the four-country layout is walked with a complete all-countries record at
 content silences (a content floor on the site map and two length floors) —
 and two should-fixes (a source-grep count; the social-card sentence typed
 outside `copy.ts`); the shipped code breaches no standard. The Spec review is
-running. Then: the fixes, the preview on http://localhost:4500 (the s13 build
-is already there), a light-mode critique, your walk, your word. The day's path: the second round's four shapes → your finding
+in: **11 of 11 points met**, the two corrected premises (960 px, the
+all-countries record) judged sound with their reasons in the test, one
+should-fix — the four-country walk proves the line, not that the
+multi-country layout rendered; one assertion adds it. The builder has the
+combined fix list (the content-floor assertions out, exact-copy assertions
+in; the source-grep count out; the meta description into `copy.ts`; the
+layout assertion). Then: the preview on http://localhost:4500 rebuilt, a
+light-mode critique, your walk, your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
