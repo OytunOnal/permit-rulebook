@@ -88,6 +88,22 @@ tests**, fingerprint unmoved). The decision case bends the dataset — a notice
 re-read three weeks after the newest value — and goes red on the revert; the
 builder did the revert once to prove it. On the preview.
 
+**The skills changed under this session again — four clocks for the product
+critique, in Steward mode too** (steward-54, read 2026-09-16). Every
+user-facing slice or fix now exits through the product-critique skill in light
+mode **on the branch's preview, before the merge**; every version stamped gets
+a full walk, isolated when it reaches real users; and **every scheduled metric
+reading brings an isolated full walk the same day** — so the 2026-10-09
+reading of A2, A7 and A8 brings one. Until this rule, Steward knew the
+critique only as an input; s8, s9, s11 and s10 all shipped without their light
+walk. **s12 is the first that gets it, and it passed:**
+`docs/spine/critique-s12-light.md` — no blocker, no friction, three polish
+items older than the slice filed as site #10 (a label that speaks the gate's
+language, "the tracker" named to a stranger, two identical dates side by
+side). Copy 4/5, trust 5/5, responsive 5/5, fidelity 5/5 — light scores,
+scoped to the facts list, not product-wide. One false alarm kept in the
+report so the next critic does not repeat it.
+
 **Queued, in order:** **site #9** (the "Newest value read" label, two rows);
 `feedback-line` (site #6, built, never walked); **data #15** (the free-movement
 notice's evidence for four passports); **data #13** (the Opportunity Card's
