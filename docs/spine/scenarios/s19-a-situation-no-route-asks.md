@@ -92,6 +92,22 @@ agreement — that no scored route in that country takes. Routes carry no
 `history` field; the move from excluded to quoted is the dated exclusions
 row, as the s9 five did it.
 
+**Corrected 2026-09-16, by the site build:** (5) "the researcher permit"
+is not derivable — routes carry a name and nothing shorter — so the mark
+and the subline use the route's name and the situation option's own
+`short` (*France's route for a research hosting agreement — Talent —
+researcher (chercheur) —*). (6) Precondition statements carry no `field`;
+the only derivable link between "asked" and a statement is the shared
+sentence — a statement whose quote a criterion of the same route also
+quotes. That rule moves eight statements on seven routes into an *Asked in
+the interview — you declared "…"* block, the rule text printed beside the
+declared answer verbatim. (7) The same rule exposes a contradiction in the
+data: `scope.not_asked` is a hand-kept list and still names those
+statements, so the scope line says "stated but not asked" above a card
+block that says "asked". The data half derives `not_asked` by the rule
+before the merge; a `field` on precondition statements is the cleaner
+derivation and goes on the board.
+
 ## How it is proved
 
 - A data test: the situations each country's scored routes accept, from

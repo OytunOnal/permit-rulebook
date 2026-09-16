@@ -159,8 +159,11 @@ CLS fix is not. The three lines, left here until the window closes:
       tests, fidelity 154 verified): *Talent — chercheur* is a tab of F16922,
       not a fiche of its own; the fiche states a €2,200 gross pay floor the
       exclusions row had denied — corrected with the date; nine quotes,
-      dated. Site half building in `../permit-rulebook-s19` against that
-      data.
+      dated. **Site half built** (503 tests): the mark under *research* for France
+      with the link, the written state, F8's *Asked in the interview* block.
+      One contradiction it exposed goes back to the data before the merge:
+      `scope.not_asked` is hand-kept and still names sentences a criterion
+      asks; being derived.
 - [x] **s20 approved** (2026-09-16, *"approve"*) and **built** (511 tests):
       ✎ lands on the question with its first option focused, the answer
       returns to the masthead and announces the headline, every answer
