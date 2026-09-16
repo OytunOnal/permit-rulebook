@@ -44,14 +44,15 @@ unread list; the site's daily rebuild then pins it and the page says
 *Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
 that is a finding, not a delay.
 
-**The feedback line is reopened** (2026-09-16, human: *"feedback line'a
-geçelim"*). Built green on 2026-09-10 and held off master by the launch
-window, it then stood while five slices moved the results screen under it —
-131 commits behind, one conflict in `index.astro`. It is being re-landed on
-today's master in the builder's own worktree (`feedback-line-2`): the same
-line, once, at the very end of the results screen in **both** layouts, opening
-nothing. Then what it never had: the two reviews, the light critique before
-the merge, and your walk.
+**The feedback moment goes back to its design gate** (2026-09-16, human:
+*"daha tasarımına karar vermedik ki feedbackin"*). The ledger had said the line
+was "what ships instead" after you rejected the two drawn shapes; you never
+chose it. Rejecting two shapes is not choosing a third — the correction is in
+DECISIONS, the re-land was stopped, and the round is now the one every screen
+of this product had: **drawn variants, a critique, your pick.** What you did
+decide on 09-10 still bounds it: nothing that opens by itself, nothing that
+dims the page, nothing remembered, the account requirement said before the
+click.
 
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.

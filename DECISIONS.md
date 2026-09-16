@@ -3310,3 +3310,29 @@ decision; the case that bends the dataset until they diverge is.
 the human chose on a live prototype, centred — and the first light-mode
 critique this project ran before a merge (steward-54, read the same morning)
 found no blocker and three polish items older than the slice.
+
+## 2026-09-16 — correction: the feedback line was never chosen
+
+**The record above (2026-09-10, "the feedback line, and why it is a line")
+overstated.** The human rejected the two shapes that were drawn — a docked
+slip and a centred modal ("hiçbiri olmamış") — and did not choose a third.
+The line at the end of the results screen was this session's default after
+that rejection, built the same day and described in the ledger as "what
+ships instead". It was never presented as a variant, never critiqued beside
+alternatives, and never picked. Rejecting two shapes is not choosing a third;
+the human said so on 2026-09-16 when the line was about to be re-landed on
+master: *"daha tasarımına karar vermedik ki feedbackin."*
+
+**Corrected:** the feedback moment goes back to its design gate. The re-land
+in progress was stopped. What the human decided on 09-10 still stands and
+bounds the round — nothing that opens by itself, nothing that dims the page,
+nothing remembered on the device, the account requirement said before the
+click — and the choice of shape within those bounds is theirs, made between
+drawn variants through the design-critique skill, as every screen of this
+product was.
+
+**Why it was wrong:** a cheap default is for a decision nobody would fight
+over. Where a screen appears, and whether it appears at all, is a design
+gate, and this one had already produced a rejection. Recording a default in
+the ledger as a decision made it look decided to every session after,
+including this one an hour ago.
