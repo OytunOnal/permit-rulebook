@@ -491,14 +491,17 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         if (page.dataset.first !== standing) page.dataset.first = standing;
         return;
       }
-      // The pre-paint flags also hide the card's contents under the stand-in,
-      // and they must not outlive the first screen this module draws. A
-      // finished record restored straight to its verdict left "record"
-      // standing — the verdict has no standing promise to choose between —
-      // and the reader's next correction drew a question card with every
-      // child invisible (found by s20's walk, 2026-09-16). The reader has
-      // answered something, whatever the screen: that is the flag's word.
-      if (page.dataset.first === "record" || page.dataset.first === "link") page.dataset.first = "started";
+      // The pre-paint flags also hide the card's contents under the stand-in
+      // — and, for a reader owed a verdict, everything else the build painted
+      // that is not theirs (s22) — and they must not outlive the first screen
+      // this module draws. A finished record restored straight to its verdict
+      // left "record" standing — the verdict has no standing promise to
+      // choose between — and the reader's next correction drew a question
+      // card with every child invisible (found by s20's walk, 2026-09-16).
+      // The reader has answered something, whatever the screen: that is the
+      // flag's word. The covers come off in the same task the screen is
+      // drawn, so nothing is painted in between.
+      if (["record", "link", "verdict"].includes(page.dataset.first ?? "")) page.dataset.first = "started";
       // The one subline that carries a link — the s19 written state's door to
       // the quoted route — is drawn as the markup the masthead composed; every
       // other subline is written as text, as it always was.
@@ -1437,7 +1440,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         return window.localStorage;
       } catch { return null; }
     })();
-    const saveRecord = () => writeRecord(store, answers, asked);
+    // With the one bit the verdict implies: whether the interview had nothing
+    // left to ask when this was written, so the next visit can paint for a
+    // verdict before the engine has run (s22).
+    const saveRecord = () => writeRecord(store, answers, asked, remainingQuestions(ds, answers).length === 0);
     function loadRecord() {
       const kept = readRecord(store, ds.fields.map((f) => f.id));
       answers = kept.answers;
@@ -1660,11 +1666,28 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        returning reader meets is the box every reader meets and nothing below
        it moves. Which line — or neither — was decided in <head> (s10). */
     .stand-in{display:none}
-    [data-first="record"] #main,[data-first="link"] #main{position:relative}
+    [data-first="record"] #main,[data-first="link"] #main,[data-first="verdict"] #main{position:relative}
     [data-first="record"] .qcard > *,[data-first="link"] .qcard > *{visibility:hidden}
-    [data-first="record"] .stand-in-record,[data-first="link"] .stand-in-link{
+    [data-first="record"] .stand-in-record,[data-first="link"] .stand-in-link,[data-first="verdict"] .stand-in-record{
       display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
       margin:0;padding:1.6rem 1.8rem;text-align:center;color:var(--color-muted);font-size:.92rem}
+    /* A reader owed a verdict. Nothing the build painted is their page but the
+       frame: the masthead's question is not their headline and the verdict's
+       has no one shape a stylesheet could reserve — one to three lines, and
+       a subline of two to five, by what the rules said (measured 2026-09-16,
+       s22) — the card is not their screen, and the ledger and the footer are
+       about to be carried thousands of pixels down by the routes. So they
+       are covered, not moved: the line in the box is the only thing on the
+       screen that is theirs, and it is the only thing that was painted. The
+       covers come off in the task that draws the verdict; nothing that was
+       visible changes place, and what appears appears where it stays. The
+       rule under the masthead goes with them: the masthead's height is the
+       verdict's, and a line that moved with it would be the one thing left
+       to watch. */
+    [data-first="verdict"] #headline,[data-first="verdict"] #subline,[data-first="verdict"] #stamp,
+    [data-first="verdict"] #app,[data-first="verdict"] footer.site-foot{visibility:hidden}
+    [data-first="verdict"] .masthead-with-stamps{border-bottom-color:transparent}
+    [data-first="verdict"] .stand-in-record{visibility:visible}
     [data-narrow] #decl[open] > :not(summary){display:none}
     [data-narrow] #decl[open] > summary{margin-bottom:0}
 

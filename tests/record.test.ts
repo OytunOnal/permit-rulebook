@@ -52,6 +52,50 @@ describe("the record survives leaving the page (F2, F10)", () => {
   });
 });
 
+/**
+ * The one bit the verdict already implies (s22).
+ *
+ * A reader who comes back with a finished record restores straight to the
+ * verdict, and the page has to know that BEFORE it paints — the pre-paint
+ * script reads a few bytes, never the engine. So the record says whether the
+ * interview was complete when it was written. It is a fact about the answers
+ * under the rules they were written against, not a new thing remembered: the
+ * same answers replayed give the same screen.
+ */
+describe("the record says whether it was finished (s22)", () => {
+  const answers = { destination: "nl", citizenship: "TR", situation: "offer" };
+  const history = ["destination", "citizenship", "situation"];
+
+  it("a finished record says so, and an unfinished one says so too", () => {
+    expect(JSON.parse(serialize(answers, history, true)).done).toBe(true);
+    expect(JSON.parse(serialize(answers, history, false)).done).toBe(false);
+    // Left unsaid, an interview is not finished.
+    expect(JSON.parse(serialize(answers, history)).done).toBe(false);
+  });
+
+  it("the bit changes nothing about what comes back: the screen is computed from the answers", () => {
+    expect(restore(serialize(answers, history, true), known)).toEqual({ answers, history });
+    // A record from before the bit existed is read the same way.
+    expect(restore(JSON.stringify({ version: RECORD_VERSION, answers, history }), known)).toEqual({ answers, history });
+  });
+
+  it("the record holds exactly these four things, and nothing else", () => {
+    // Named as a list so that a fifth field is a decision someone makes here,
+    // not a key that arrives with a feature (the answers never leave the
+    // device, and what the device keeps is part of that promise).
+    expect(Object.keys(JSON.parse(serialize(answers, history, true))).sort())
+      .toEqual(["answers", "done", "history", "version"]);
+  });
+
+  it("is written by the save, and is what the pre-paint script will find", () => {
+    const store = fakeStore();
+    saveRecord(store, answers, history, true);
+    expect(JSON.parse(store.getItem(STORAGE_KEY)!).done).toBe(true);
+    saveRecord(store, answers, history);
+    expect(JSON.parse(store.getItem(STORAGE_KEY)!).done).toBe(false);
+  });
+});
+
 /** A browser's storage, in a bottle. */
 function fakeStore(): RecordStore & { readonly size: number } {
   const kept = new Map<string, string>();
