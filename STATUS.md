@@ -117,8 +117,10 @@ CLS fix is not. The three lines, left here until the window closes:
 - [ ] **Look at the amended F** — `docs/spine/design/s7-feedback-3.html`,
       the first section: the header with *Countries ▾* closed on the
       interview page and *France ▾* open on France's page, the phone menu with
-      the countries grouped, and the third door's new words. Say "tamamdır"
-      or say what is off; the scenario is written after that.
+      the countries grouped, and the third door's new words. Your first look
+      found the open list running under *Check yours*; it now opens leftward,
+      clear of it (`b57688a`). Say "tamamdır" or say what else is off; the
+      scenario is written after that.
 - [ ] **When you pick: the alias.** In Cloudflare → permitrulebook.com →
       Email → Email Routing: enable routing (it adds the MX and TXT records
       itself), create the address `feedback@permitrulebook.com` (or the name
