@@ -44,33 +44,38 @@ unread list; the site's daily rebuild then pins it and the page says
 *Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
 that is a finding, not a delay.
 
-**s13 is merged — and not live: the deploy stopped at the dataset's
-quote-fidelity gate, which did its job.** (2026-09-16, your word: *"merge"*,
-after two walks on the preview and seven corrections from them, each a
-dated line in the scenario and a gate in DECISIONS.) Site `f06badd`, 464
-tests, build and `astro check` green on master before the push. The deploy
-run then failed in *Build and check the dataset package*: **12 quotes
-missing**, all on the two Dutch highly-skilled-migrant routes, all from the
-IND's HSM page. **Not s13's doing.** Today's watch run (09:59 UTC — the
-first since the User-Agent repair, and Spain read *unchanged* at last) saw
-the IND page **changed** and four sibling IND pages **unreachable** (our
-slice marker gone). The page says *Last update: 11 September 2026*: IND
-rebuilt it around a "Your situation" form — the requirements are rendered
-after a nationality is chosen and are **not in the served HTML** at all.
-The gate s5e wrote for exactly this stopped the deploy, so **the live site
-stays on s12**, correct and dated, and s13 waits on master for the gate to
-be green. Data #20 has the full reading and the three-way decision below. What is live once it lands: one word,
-**Feedback**, in the header (with the four countries folded under
-*Countries*), at the end of every result, and in the footer, all leading to
-`/feedback/` — three doors that open Gmail with the subject and headings
-written, the same template as a mail-app link under each, the address with
-a copy glyph, what happens to a mail, and the tracker beneath for a reader
-with an account. Nothing declared reaches any link. Site #6 and #7 close
-with the merge.
+**s13, s14 and s15 are live** (2026-09-16, deploy `6fe4eb5` green, read on
+the live host afterwards). Three merges on your word in one afternoon, each
+forced by the one before:
 
-**What runs without anyone asking** is the same list as before, with one
-change: the watch will fail daily until the IND entries are resolved, and
-each failure is now the honest one (a source moved), not a fetch problem.
+- **s13 — the feedback door** (`f06badd`). Live: one word, *Feedback*, in
+  the header, at the end of a result and in the footer, leading to
+  `/feedback/` — *Something is wrong · Something is missing · Anything
+  else*, each a button that opens Gmail with the subject written, the
+  mail-app link under each, the address with a copy glyph, the tracker
+  beneath for a reader with an account; the header's four countries under
+  *Countries* (the country's name on its pages); the footer's Feedback
+  column two rows. Seven corrections from your two walks are in it. Site
+  #6 and #7 closed; #9 closed too (s12 was live).
+- **s14 — the IND's requirements moved behind a form** (data `b2488b9`).
+  s13's first deploy stopped at the quote gate: the IND had rebuilt its
+  five route pages around a *Your situation* form with no addressable
+  result. The five entries are on the human tier (90-day re-read); all 38
+  quotes read in Chrome the same day, 26/26 sentences present. Data #20
+  closed; the road back is data #17.
+- **s15 — the first unread day** (`5f7d1fb`). s13's second deploy stopped
+  on s11's own tests: the first state with a real unread source (BAMF,
+  *fetch failed*) reached the site, the site said the right thing, six
+  tests that had only seen clean days went red. Clean-day cases now measure
+  a clean day; real-state cases expect what the state says; the footer's
+  parenthesis may break at 390, after the dot.
+
+Live today: the footer says *(last run 2026-09-16 · 1 source unread)*, and
+`/data/` says *A German source did not answer on the last run; the values
+it backs were read on 2026-09-07.* — s11 doing its work on its first real
+day. Tomorrow's watch re-tries BAMF; if it answers, the clause disappears
+on its own.
+
 
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.
@@ -143,10 +148,12 @@ CLS fix is not. The three lines, left here until the window closes:
 
 - [x] **First walk of s13** (2026-09-16): the doors opened nothing on your
       desktop — decided: Gmail first, the mail app second. Building.
-- [x] **s13 walked and merged** (2026-09-16, your word). Seven corrections
-      from your two walks are in it: Gmail first, the third door's subject,
-      *Countries* moved left, the footer's address row out, the results line
-      at the end in one sentence, the first door's words, the copy glyph.
+- [x] **s13 walked and merged** (2026-09-16, your word), **s14 merged**
+      (your word, after the five IND pages were read in Chrome at your
+      request), **s15 merged** (your word). All three live in `6fe4eb5`.
+- [ ] **Look at the live site once, when you like:** https://permitrulebook.com/feedback/
+      — tap *Report what is wrong*; Gmail should open with the subject.
+      Nothing is blocked on it.
 
 These are the things only you can see, when you want to look:
 

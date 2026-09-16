@@ -273,11 +273,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **s15 — the first unread day** · the first watch state with a real unread
-  source reached the site on 2026-09-16 and six tests that assumed a clean
-  day went red (the site itself was right); plus the footer's parenthesis
-  2 px over a 390 column. Scenario approved (human: "1"); building. Gates
-  s13 and s14's deploy.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -289,6 +285,12 @@ _(empty — everything real-green so far is stamped into done)_
 
 ## done
 
+- **s15 — the first unread day** · real-green 2026-09-16 (human: "merge";
+  `5f7d1fb`, live in `6fe4eb5` with s13 and s14). The clean-day tests
+  measured today; now they measure a clean day, and both branches are
+  proved with fabricated states. One production change: the footer's
+  last-run parenthesis may break at 390, after the dot.
+
 - **s14 — the IND's requirements moved behind a form** · real-green
   2026-09-16 (human: "merge"; data `b2488b9`, site pin `c4c3b04`). Data #20
   closed. Five IND route pages to the human tier, read in Chrome the same day
@@ -296,7 +298,7 @@ _(empty — everything real-green so far is stamped into done)_
   The road back to machine-checking is data #17 (headless browser).
 
 - **s13 — the feedback door** · real-green 2026-09-16 (human: "merge";
-  site `f06badd`). Site #6 and #7 closed by the merge. Scenario
+  site `f06badd`). Site #6, #7 (and #9, from s12) closed. Live 2026-09-16 in `6fe4eb5`. Scenario
   `docs/spine/scenarios/s13-feedback-door.md` with seven dated corrections
   from the human's two preview walks; critique `docs/spine/critique-s13-light.md`.
   Polish left for the tracker: the disclosure arrow's size, *Where (link)* as

@@ -3494,3 +3494,25 @@ chosen over H. **Cost, accepted:** the line's neighbour is the closed
 section when a passport has one — the objection to the 09-10 default — but
 that default said *wrong about you?*, and this line does not. **Gate:** yes,
 the human's word, on the preview.
+
+## 2026-09-16 — three merges in one afternoon, each forced by the last
+
+s13 (the feedback door) was merged on the human's word and did not reach
+the live site twice. The first deploy stopped at the dataset's
+quote-fidelity gate: the IND had rebuilt its five route pages around a
+form with no addressable result, and the day's watch run — the first to
+fetch cleanly since the User-Agent repair — read the new shell as a change.
+That became s14 (the five pages to the human tier; the sentences read in
+Chrome by the session at the human's request, 26/26 present). The second
+deploy stopped on s11's own tests: the first state with a real unread
+source reached the site, the site said the right thing, and six tests that
+had only ever seen clean days went red. That became s15. Both were the
+gates doing exactly what they were written to do; neither was s13's doing.
+
+**Recorded so it is not re-learned:** (1) a test that reads the real watch
+state asserts today, not a property — every "clean day" case renders with
+an explicit empty list from now on; (2) a human-tier read may be done by
+the session in a real browser at the human's request, and the record says
+who read it and how; (3) the footer's separator rule (the dot ends its
+line) binds new separators too — the s15 scenario had it backwards and the
+build caught it. Cheap defaults, surfaced here; none reopens a gate.
