@@ -7,6 +7,7 @@ import { remainingQuestions, type Dataset } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy.js";
 import { firstPaintPlaceholdersHtml, questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import { replayRecord } from "../src/lib/scope.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { url } from "../src/lib/site.js";
 
@@ -65,6 +66,7 @@ import { url } from "../src/lib/site.js";
  *   / finished record        "Your answers are on this device — bringing them back."
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
+const DATASET = rawDataset as unknown as Dataset;
 
 const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
@@ -180,6 +182,7 @@ const READ = `JSON.stringify({
   footMoved: Math.round(document.querySelector("footer.site-foot").getBoundingClientRect().top - window.__foot),
   subline: Math.round(document.getElementById("subline").getBoundingClientRect().height),
   ledgerOpen: document.getElementById("decl").open,
+  resumed: !!document.querySelector("#main .qcard .resumed"),
 })`;
 
 interface Measured {
@@ -201,6 +204,10 @@ interface Measured {
    */
   subline: number;
   ledgerOpen: boolean;
+  /** Whether the module drew the resumed line over the question — the one
+   * thing a returning reader's screen carries that the first paint could not
+   * hold room for, so the record arrival is measured with it there (s20). */
+  resumed: boolean;
 }
 
 /**
@@ -329,6 +336,21 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
               .toBe("");
         });
 
+        it(`${arrival.name}: the resumed line is there exactly when the reader resumed (s20)`, () => {
+          // The measurement above is of the page WITH the line a returning
+          // reader is owed: a record with answers the interview keeps and
+          // questions still open lands on a question that says so. Nowhere
+          // else — not on a cold page, not on an arrival that narrates itself,
+          // not on a verdict.
+          const m = read(screen.name, arrival.name);
+          const kept = arrival.record
+            ? replayRecord(DATASET, arrival.record.answers, [...arrival.record.history])
+            : { answers: {}, order: [] };
+          const resumes = arrival.shape === "record"
+            && kept.order.length > 0 && remainingQuestions(DATASET, kept.answers).length > 0;
+          expect(m.resumed, `the resumed line is ${m.resumed ? "there" : "missing"}`).toBe(resumes);
+        });
+
         it(`${arrival.name}: nothing above the box moves`, () => {
           // The aggregate would forgive a masthead that resized a little, and
           // a masthead that resizes takes the whole interview with it. Nothing
@@ -393,7 +415,7 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
  * output — not a second copy of the markup kept in step by hand.
  */
 describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)", () => {
-  const dataset = rawDataset as unknown as Dataset;
+  const dataset = DATASET;
   const built = readFileSync(join(dist, "index.html"), "utf8");
   const inMain = /<main id="main">([\s\S]*?)<\/main>/.exec(built)?.[1] ?? "";
 

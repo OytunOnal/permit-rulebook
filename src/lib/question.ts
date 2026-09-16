@@ -2,7 +2,7 @@ import {
   deriveBands, fieldOptions, optionMeans, shortLabelOf,
   type Dataset, type FieldOption, type Profile, type Question,
 } from "permit-rulebook-data";
-import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "./copy.js";
+import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, resumedLine } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import { type Glossary, glossSection } from "./gloss.js";
 
@@ -50,6 +50,11 @@ export interface QuestionScreen {
   arrival?: string;
   /** What the country picker just committed, said in words on the next screen. */
   justRecorded?: { field: string; label: string } | null;
+  /** How many answers a returning reader's first paint brought back, when the
+   * screen is the one they resume on; absent on every other screen (s20). The
+   * line it draws is the sentence alone — the page moves its own "Start over"
+   * in after it, so the control is the ledger's and there is never a second. */
+  resumed?: number;
   /** The abbreviations this screen has already expanded; mutated as it draws. */
   glossary: Glossary;
 }
@@ -62,6 +67,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
   const justRecorded = screen.justRecorded ?? null;
   return `
         <section class="qcard">
+          ${screen.resumed ? `<p class="resumed">${esc(resumedLine(screen.resumed))}</p>` : ""}
           ${screen.arrival ?? ""}
           ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(dataset, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${
