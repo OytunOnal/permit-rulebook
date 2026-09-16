@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   INTRO_SUBLINE, SHORT_SUBLINE, claimsAComparison, mastheadFor, screenAfter,
-  type FlowAction,
+  type FlowAction, type Screen,
 } from "../src/lib/screen.js";
 
 function lcg(seed: number) {
@@ -75,11 +75,14 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
   });
 
   it("the promise on a question screen is present tense, and counts nothing", () => {
-    expect(INTRO_SUBLINE).not.toMatch(/\bcompared\b/i);
+    // Present, and passive since s17: "are compared" is the promise, and the
+    // word "compared" alone no longer tells the two apart — the detector does.
+    expect(claimsAComparison(INTRO_SUBLINE)).toBe(false);
+    expect(INTRO_SUBLINE).not.toMatch(/\b(?:was|were)\s+compared\b/i);
     expect(INTRO_SUBLINE).not.toMatch(/\d/);
     expect(INTRO_SUBLINE).not.toMatch(/\bbelow\b/i);
     // What it must still say: the mechanism, and where the answers stay.
-    expect(INTRO_SUBLINE).toMatch(/compares/);
+    expect(INTRO_SUBLINE).toMatch(/are compared against published rules/);
     expect(INTRO_SUBLINE).toMatch(/this device/);
     // The shortened form, once the interview is under way, promises the same
     // things and claims no more.
@@ -96,9 +99,11 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
     expect(claimsAComparison(subline)).toBe(true);
   });
 
-  it("one answer and one route are singular", () => {
+  it("one answer and one route are singular, and the verb agrees with the one answer", () => {
+    // The count is the sentence's subject since s17, so the verb follows it:
+    // "Your 1 answer was compared", never "were".
     const { subline } = mastheadFor({ kind: "results", answered: 1, routes: 1, headline: "x" });
-    expect(subline).toContain("1 answer against 1 published rule set.");
+    expect(subline).toContain("Your 1 answer was compared against 1 published rule set.");
   });
 
   it("the no-permit-needed screen says a comparison did not happen, and is a result", () => {
@@ -130,10 +135,50 @@ describe("the masthead has exactly one author", () => {
   });
 });
 
+describe("the comparison has no subject called \"Code\" (s17)", () => {
+  // "Code compares your answers…" on the home masthead and "Code compared your
+  // 3 answers…" on the results screen read oddly to the human as sentences
+  // whose subject is "Code" (raised 2026-09-15 and withdrawn; raised again on
+  // the s16 walk, 2026-09-16: "bu code hala duruyor"). Of three forms offered
+  // — "We compared…", the passive, "The rules compared…" — they chose the
+  // passive: the subject leaves the sentence, the claim (a comparison by code,
+  // not a judgement by a person) stays.
+  it("the results screen says what was compared, in the passive, with the counts", () => {
+    const { subline } = mastheadFor({ kind: "results", answered: 3, routes: 4, headline: "x" });
+    expect(subline).toBe(
+      "Your 3 answers were compared against 4 published rule sets. Every value below shows its official " +
+        "quote and the date we read it from the source.",
+    );
+  });
+
+  it("the home masthead promises the comparison, in the passive, before anything is compared", () => {
+    expect(INTRO_SUBLINE).toBe(
+      "Your answers are compared against published rules — every value shows its official quote and the " +
+        "date we read it from the source. Your answers stay on this device. At the end: which routes look " +
+        "open, how close the near-misses are, and which single step would unlock more.",
+    );
+  });
+
+  it("no masthead line, on any screen, has \"Code\" as the subject of the comparison", () => {
+    const screens: Screen[] = [
+      { kind: "question", started: false },
+      { kind: "question", started: true },
+      { kind: "results", answered: 3, routes: 4, headline: "x", nearest: "n", explore: "one-country" },
+      { kind: "results", answered: 1, routes: 1, headline: "x", explore: "several-countries" },
+      { kind: "notice", title: "No work permit needed" },
+    ];
+    for (const screen of screens) {
+      const { headline, subline } = mastheadFor(screen);
+      expect(subline, JSON.stringify(screen)).not.toMatch(/\bCode compar/);
+      expect(headline, JSON.stringify(screen)).not.toMatch(/\bCode compar/);
+    }
+  });
+});
+
 describe("claimsAComparison tests what it is named for", () => {
   it("catches the four shapes a claim about a past comparison takes", () => {
     for (const claim of [
-      "Code compared your 13 answers against 23 published rule sets.",
+      "Your 13 answers were compared against 23 published rule sets.",
       "Nothing to compare: the published rule below answers your situation directly.",
       "Every value below shows its official quote.",
       "3 answers against 23 published rule sets.",
@@ -150,5 +195,26 @@ describe("claimsAComparison tests what it is named for", () => {
       "Your answers stay on this device.",
     ])
       expect(claimsAComparison(honest), honest).toBe(false);
+  });
+
+  it("tells a promise in the present passive from a claim in the past (s17)", () => {
+    // The intro went passive on 2026-09-16 — "Your answers are compared
+    // against published rules" — and the bare word "compared" now stands in a
+    // sentence that claims nothing has happened yet. What the detector is
+    // named for is a comparison that HAS happened: "were compared", "was
+    // compared", or the old active "compared your". "Are compared" is the
+    // promise, in the present, and must not fire — or the B4 invariant would
+    // forbid the very sentence the human chose.
+    for (const promise of [
+      "Your answers are compared against published rules — every value shows its official quote.",
+      "Each answer is compared with what the authority publishes.",
+    ])
+      expect(claimsAComparison(promise), promise).toBe(false);
+    for (const claim of [
+      "Your 3 answers were compared against 4 published rule sets.",
+      "Your 1 answer was compared against 1 published rule set.",
+      "Code compared your answers against the rules.",
+    ])
+      expect(claimsAComparison(claim), claim).toBe(true);
   });
 });
