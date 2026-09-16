@@ -273,17 +273,17 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **The feedback line** (site #6) · `new-need` from a reader on 2026-09-10 —
-  a line at the end of the results screen naming the two GitHub doors and
-  saying before the click that filing needs an account; the human rejected the
-  two shapes that open (a docked slip, a centred modal) and chose a line that
-  opens nothing (`DECISIONS.md`, 2026-09-10). Built and green that day on
-  `feedback-line` (`20681e6`), held off master by the launch window, then
-  left standing while five slices moved the results screen under it — 131
-  commits behind, one conflict. **Reopened 2026-09-16** (human: *"feedback
-  line'a geçelim"*): being re-landed on master as `feedback-line-2` in the
-  builder's own worktree; then the two reviews it never had, the light critique
-  steward-54 requires, the walk, the word.
+- **s13 — the feedback door** (site #6; closes #7 by construction) ·
+  `new-need` from a reader on 2026-09-10. Two shapes that open were rejected
+  (2026-09-10), a line shipped as a default and was withdrawn (2026-09-16,
+  "daha tasarımına karar vermedik ki feedbackin"). The human then decided the
+  door itself — **e-mail**: an alias in plain text, three `mailto:`
+  templates, the GitHub tracker beside it, named — and chose **F** from the
+  third drawn round: one word, *Feedback*, in the header, under the verdict
+  and in the footer, leading to `/feedback/`; with the header's four
+  countries under one word, *Countries*. Scenario
+  `docs/spine/scenarios/s13-feedback-door.md` drafted 2026-09-16, **awaiting
+  approval**. Merge waits on the alias's routing (the human's).
 
 ## mock-green
 

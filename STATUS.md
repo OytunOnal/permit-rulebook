@@ -44,32 +44,21 @@ unread list; the site's daily rebuild then pins it and the page says
 *Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
 that is a finding, not a delay.
 
-**The feedback door is decided; where it sits is drawn and waits on your
-pick** (2026-09-16). The second round's four shapes (C, C′, D, E) were on the
-table when the conversation found the question under them: a reader may want
-to say something *without anything being wrong*, and the footer's feedback
-does not draw the eye. You decided — recorded as a gate in DECISIONS — that
-**the reader's door is e-mail**: an alias on the site's domain (proposed
-`feedback@permitrulebook.com`), shown in plain text beside every link, with
-three `mailto:` templates (a value is wrong · something is missing · anything
-else) and **the GitHub tracker's links kept beside it, named as the option**
-for a reader with an account. Nothing you declared is ever written into a
-mail. The third round, `docs/spine/design/s7-feedback-3.html`, draws the same
-door in three places: **F** one word "Feedback" in the header, under the
-verdict and in the footer, all leading to a page of its own; **G** the footer
-column *is* the door, header and verdict line anchor to it; **H** the page,
-from header and footer only, results untouched. The critique
-(`docs/spine/critiques/2026-09-16-feedback-door-placement-critique.md`)
-recommended **F**, and **you chose F** the same day, with two amendments now
-drawn into the mock: the third door reads *What helped, what confused you,
-what you would want next — a note of any length · Write a note*, the other
-two buttons take the footer's verbs (*Report a wrong value · Say what is
-missing*), and the header's four countries sit under one word, *Countries*
-(on a country page, that country's name), so the row is four items, not
-seven. Recorded as a gate in DECISIONS. Next: your look at the amended
-drawing, then the slice's scenario — written before any build, approved by
-you — then the build on its own branch, a light critique on the preview,
-your walk, your word. The alias's routing is yours (steps below).
+**s13, the feedback door, has its scenario and waits on your approval**
+(2026-09-16). The day's path: the second round's four shapes → your finding
+that a reader may want to say something without anything being wrong → the
+decision that **the door is e-mail** (an alias in plain text, three
+`mailto:` templates, the GitHub tracker beside it, named) → the third round
+in three placements → your pick, **F**, with two amendments (the third door's
+words; the header's four countries under one word) → two walk corrections on
+the open list → *"tamamdır"*. All of it is in DECISIONS as gates. The
+scenario, `docs/spine/scenarios/s13-feedback-door.md`, says what must be
+true: the `/feedback/` page with its three doors and their exact subjects,
+a mail that never carries anything declared, one address constant set only
+after you say routing works, the header's *Countries* disclosure (the country's
+own name on its page), the footer's new column, the verdict line on both
+layouts, the map and the sitemap, the 761-px row measured, every page's
+fingerprint regenerated on purpose. Nothing is built until you approve it.
 
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.
@@ -111,24 +100,20 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Two things are blocked on you: a look at the amended drawing, and the alias.**
+**Two things are blocked on you: the scenario, and the alias.**
 
-- [x] **F picked** (2026-09-16, your word, with two amendments).
-- [ ] **Look at the amended F** — `docs/spine/design/s7-feedback-3.html`,
-      the first section: the header with *Countries ▾* closed on the
-      interview page and *France ▾* open on France's page, the phone menu with
-      the countries grouped, and the third door's new words. Your first look
-      found the open list running under *Check yours*; your second look asked
-      for it centred under the word with the word moved left — done, the list
-      now ends before *Check yours*. Say "tamamdır" or say what else is off; the
-      scenario is written after that.
-- [ ] **When you pick: the alias.** In Cloudflare → permitrulebook.com →
-      Email → Email Routing: enable routing (it adds the MX and TXT records
-      itself), create the address `feedback@permitrulebook.com` (or the name
-      you prefer — tell me, it goes into the copy) and route it to your inbox;
-      verify the destination from the mail Cloudflare sends. *Pass:* a mail
-      you send to the alias from another address arrives in your inbox. Until
-      it does, nothing on the site names the address.
+- [x] **The amended F drawing** — ratified 2026-09-16 (*"tamamdır"*), after
+      two corrections to the open list from your walk.
+- [ ] **Approve s13's scenario** — `docs/spine/scenarios/s13-feedback-door.md`.
+      Say "approve", or say which line is wrong. The build starts on its own
+      branch after that; the alias below gates the merge, not the build.
+- [ ] **The alias.** In Cloudflare → permitrulebook.com → Email → Email
+      Routing: enable routing (it adds the MX and TXT records itself), create
+      `feedback@permitrulebook.com` (or the name you prefer — tell me, it
+      goes into the copy) and route it to your inbox; verify the destination
+      from the mail Cloudflare sends. *Pass:* a mail you send to the alias
+      from another address arrives in your inbox. Until it does, nothing on
+      the site names the address and s13 does not merge.
 
 These are the things only you can see, when you want to look:
 
