@@ -182,6 +182,15 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## backlog
 
+- **The v1.1 copy pass** (gate critique adjustment 3, deferred by the
+  human 2026-09-16: *"3 sonra"*): the statute stutter rendered once; the
+  job-search sentence only when no offer is declared; the route pages'
+  liveness line names the source or lives only on `/data/`; the points
+  tally on the not-yet Opportunity Card; the curator note off the card;
+  modelling tiers as a reader's sentence (F1, F3, F4, P1–P4). Also F2, the
+  experience ladder's `y3in7` satisfying a two-in-five rule — an engine
+  judgment, its own scenario.
+
 
 - ~~es-ict's `situation` criterion carries the precondition's quote~~ → **fixed the same hour** (visa-rules `1399abc`, 2026-09-07): the criterion now cites art. 73.1, the sentence that defines the transfer; the live card quotes each sentence once; 120 quotes verified, 323 tests. Original entry kept:
   **es-ict's `situation` criterion carries the precondition's quote** (found on
@@ -273,7 +282,14 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s19 — a situation no scored route asks** (v1.1 gate B1, F8) · France
+  offers "research" at question 2 and no scored French route takes it; the
+  reader sees "Nothing open". Derive the asked situations per country, mark
+  the option, write the zero-open state, bring *Talent — chercheur* in as
+  quoted-not-scored. Scenario drafted 2026-09-16, **awaiting approval**.
+- **s20 — the correction lands on the question and returns to the verdict**
+  (v1.1 gate B2, F6, F5) · on a phone ✎ leaves the question off-screen.
+  Scenario drafted 2026-09-16, **awaiting approval**.
 
 ## mock-green
 

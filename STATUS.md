@@ -152,24 +152,23 @@ CLS fix is not. The three lines, left here until the window closes:
 
 **One thing is blocked on you: the v1.1 gate — pick the adjustments.**
 
-- [ ] **Pick from the critic's three** (apply all / 1 and 2 / a subset):
-      **1.** Close the dead end before it is picked and name the missing
-      route when it is — question 2 marks a situation no scored route in
-      that country asks, and a zero-open result after one eliminating answer
-      names the absent route with its exclusion reason on the site, not on
-      GitHub; and never list as "not checked here" a condition question 2
-      asked (B1, F8). **2.** The phone correction lands on the question and
-      returns to the verdict — on ✎ scroll the card into view and focus its
-      first option; on re-answer scroll to the headline and announce it
-      (B2, F6, F5). **3.** One copy pass — the statute stutter, the
-      job-search sentence only when no offer is declared, the liveness line
-      on route pages naming the source or living only on `/data/`, the
-      points tally on the not-yet Opportunity Card, the curator note off the
-      card (F1, F3, F4, polish). *Recommended: 1 and 2 now — they are the
-      blockers — 3 as its own slice after.*
-- [ ] **B1's scope ruling is yours:** whether France's *Talent — chercheur*
-      is scored, quoted-not-scored, or stays excluded. Whichever, question 2
-      must not offer the situation for France and then show nothing open.
+- [x] **Picked** (2026-09-16, *"1 ve 2 yapalım, 3 sonra"*): the two
+      blockers now, the copy pass as its own slice after (on the board as a
+      roadmap card).
+- [ ] **Approve s19** — `docs/spine/scenarios/s19-a-situation-no-route-asks.md`
+      (B1, F8): the interview derives which situations a country's scored
+      routes ask; question 2 marks an option none asks, with a link to the
+      quoted route; a zero-open result reached that way is a written state
+      naming the absent route; *Talent — chercheur* enters the dataset as
+      quoted-not-scored (a research read of the fiche, schema 0.8.0 with an
+      optional `situations` field); a condition the interview asked is never
+      "not checked here". This is my scope ruling for B1 — quoted, not
+      scored, the exclusion's reason kept — say if you want it scored instead.
+- [ ] **Approve s20** — `docs/spine/scenarios/s20-the-correction-lands.md`
+      (B2, F6, F5): ✎ scrolls the question into view and focuses its first
+      option; the answer that returns to a result scrolls to the headline
+      and announces it; every answer moves the focus; a resumed interview
+      says so in one line inside the card's reserved space.
 - [ ] **B2 on a real phone**, when you can: answer to a result, open *You
       declared* at the bottom, tap *Yearly salary ✎*. Pass = the salary
       question's heading is on screen right after the tap.
