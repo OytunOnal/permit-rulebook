@@ -87,7 +87,9 @@ untouched, the policy not widened; the site map names the Gmail exit) and
 *Missing* / *Note*) and the headings in the query, new tab; under each, *or
 with your own mail app* as the `mailto:` at the tap floor; the address; the
 new note. Your second walk found one word: the third door's subject is
-**Feedback**, not *Note* — one constant, being changed. Then your word. The day's path: the second round's four shapes → your finding
+**Feedback**, not *Note* — one constant; and the open *Countries* list ran
+28 px under *Check yours* (measured) — the word moves left by a token and
+the test gains the separator. Both with the builder. Then your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round

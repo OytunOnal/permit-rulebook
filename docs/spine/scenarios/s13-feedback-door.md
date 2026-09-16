@@ -127,6 +127,12 @@ second link and the address are there for them.
 button (*Write a note*) and the empty body stay; the template line under the
 button follows the subject.
 
+**Corrected 2026-09-16, second walk, two:** the open list, 176 px wide and
+centred under a 78-px word, ran 28 px under *Check yours* on the preview
+(human: *"countries'i biraz daha sola alalım"*). The word moves left by a
+spacing token so the list ends before the separator; the browser case
+asserts the open list intersects neither the separator nor any nav item.
+
 ## How it is proved
 
 - A case renders `/feedback/` and asserts the three `mailto:` links, in order,
