@@ -150,25 +150,16 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the v1.1 gate — pick the adjustments.**
+**Nothing is blocked on you** until the two builds are on the preview.
 
 - [x] **Picked** (2026-09-16, *"1 ve 2 yapalım, 3 sonra"*): the two
       blockers now, the copy pass as its own slice after (on the board as a
       roadmap card).
-- [ ] **Approve s19** — `docs/spine/scenarios/s19-a-situation-no-route-asks.md`
-      (B1, F8): the interview derives which situations a country's scored
-      routes ask; question 2 marks an option none asks, with a link to the
-      quoted route; a zero-open result reached that way is a written state
-      naming the absent route; *Talent — chercheur* enters the dataset as
-      quoted-not-scored (a research read of the fiche, schema 0.8.0 with an
-      optional `situations` field); a condition the interview asked is never
-      "not checked here". This is my scope ruling for B1 — quoted, not
-      scored, the exclusion's reason kept — say if you want it scored instead.
-- [ ] **Approve s20** — `docs/spine/scenarios/s20-the-correction-lands.md`
-      (B2, F6, F5): ✎ scrolls the question into view and focuses its first
-      option; the answer that returns to a result scrolls to the headline
-      and announces it; every answer moves the focus; a resumed interview
-      says so in one line inside the card's reserved space.
+- [x] **s19 approved** (2026-09-16, *"approve"*; the quoted-not-scored ruling
+      stands); building — data half in `../permit-rulebook-data-s19`, site
+      half in `../permit-rulebook-s19`.
+- [x] **s20 approved** (2026-09-16, *"approve"*); building in
+      `../permit-rulebook-s20`.
 - [ ] **B2 on a real phone**, when you can: answer to a result, open *You
       declared* at the bottom, tap *Yearly salary ✎*. Pass = the salary
       question's heading is on screen right after the tap.

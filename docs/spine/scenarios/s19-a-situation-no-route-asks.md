@@ -1,6 +1,6 @@
 # s19 — a situation no scored route asks
 
-**Status:** draft 2026-09-16, awaiting the human's approval. v1.1 gate
+**Status:** approved 2026-09-16 (human: "approve"). v1.1 gate
 critique B1 and F8 (adjustment 1, the human's pick: *"1 ve 2 yapalım"*).
 
 ## What happened

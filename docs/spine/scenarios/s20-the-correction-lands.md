@@ -1,6 +1,6 @@
 # s20 — the correction lands on the question and returns to the verdict
 
-**Status:** draft 2026-09-16, awaiting the human's approval. v1.1 gate
+**Status:** approved 2026-09-16 (human: "approve"). v1.1 gate
 critique B2, F6, F5 (adjustment 2, the human's pick).
 
 ## What happened

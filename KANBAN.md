@@ -286,10 +286,10 @@ Promoted (or dropped, with evidence) at a boundary session.
   offers "research" at question 2 and no scored French route takes it; the
   reader sees "Nothing open". Derive the asked situations per country, mark
   the option, write the zero-open state, bring *Talent — chercheur* in as
-  quoted-not-scored. Scenario drafted 2026-09-16, **awaiting approval**.
+  quoted-not-scored. Scenario approved 2026-09-16 ("approve"), **building**.
 - **s20 — the correction lands on the question and returns to the verdict**
   (v1.1 gate B2, F6, F5) · on a phone ✎ leaves the question off-screen.
-  Scenario drafted 2026-09-16, **awaiting approval**.
+  Scenario approved 2026-09-16 ("approve"), **building**.
 
 ## mock-green
 
