@@ -208,20 +208,11 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: s23's scenario.**
+**Nothing is blocked on you** until s23 is on the preview.
 
-- [ ] **Approve s23** — `docs/spine/scenarios/s23-the-copy-pass.md`, the copy
-      pass you chose to start with (2026-09-17, *"1 ile başlayalım"*): twelve
-      points, each a screen, the string as it is, and the rule that replaces
-      it — the job-search sentence only without an offer; unlock steps
-      ordered by what the reader can do; the route page's liveness line
-      naming its own unread source or staying plain; the not-yet Opportunity
-      Card's tally and one language step; the statute explainer once; a
-      two-limb rule as one sentence; the curator's note off the card; the
-      scope line in the reader's words; the stray full stop; *"of about N"*
-      on the counter; the Türkiye notice's example clause gone (your
-      *"kaldır"*, 2026-09-17 — a data change with its history line). Say
-      "approve" or which line is wrong.
+- [x] **s23 approved** (2026-09-17, *"onaylıyorum"*); building — the data
+      half (the notice's clause, the curator note kept in the data) in
+      `../permit-rulebook-data-s23`, the site half in `../permit-rulebook-s23`.
 
 - [x] **s21 and s22 walked and merged** (2026-09-16, your word; the session
       walked both on the preview). Live.

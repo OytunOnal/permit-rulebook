@@ -1,6 +1,6 @@
 # s23 — the copy pass
 
-**Status:** draft 2026-09-17, awaiting the human's approval. v1.1 gate
+**Status:** approved 2026-09-17 (human: "onaylıyorum"). v1.1 gate
 critique adjustment 3 (F1, F3, F4, P1, P2, P3, P4, P5, P6, P7), deferred on
 2026-09-16 (*"3 sonra"*), taken 2026-09-17 (*"1 ile başlayalım"*).
 

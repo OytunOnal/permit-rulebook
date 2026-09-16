@@ -286,8 +286,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 - **s23 — the copy pass** (v1.1 gate adjustment 3: F1, F3, F4, P1–P7) · the
   user-facing strings the isolated walk read as contradicting, unexplained,
-  repeated or modelling-voiced. Scenario drafted 2026-09-17, **awaiting
-  approval**.
+  repeated or modelling-voiced. Scenario approved 2026-09-17 ("onaylıyorum"), **building**.
 
 ## mock-green
 
