@@ -152,6 +152,15 @@ both layouts, above the footer's rule, and becomes one sentence —
 longer says "wrong about you", so its neighbour being the closed section
 is not the invitation the 09-10 default's was.
 
+**Corrected 2026-09-16, second walk, five:** the first door drops the
+word *value* (human: *"A value is wrong yerine an info diyebiliriz"* → of
+three correct forms, *"1"*): heading **Something is wrong**, button
+**Report what is wrong**, subject `Wrong information`; the line and the
+four body headings stay; the note's *A wrong value, confirmed…* becomes
+*Something wrong, confirmed…*. The GitHub block's *Report a wrong value*
+stays — it is the tracker's own template. The three headings now share one
+shape: *Something is wrong / Something is missing / Anything else*.
+
 ## How it is proved
 
 - A case renders `/feedback/` and asserts the three `mailto:` links, in order,
