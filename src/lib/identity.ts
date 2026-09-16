@@ -278,6 +278,20 @@ const out = (href: string, label: string): string =>
  */
 const SEP = String.fromCharCode(160, 183) + " ";
 
+/**
+ * The one break the last-run parenthesis may take, and where: at its
+ * separator, after the dot, as every other break on the line — `SEP`'s
+ * non-breaking space before the dot, its ordinary space after, with the held
+ * token closed and reopened around that space.
+ *
+ * The parenthesis is a held token, and on the first day it carried a count —
+ * "(last run 2026-09-16 · 1 source unread)", 2026-09-16, run 35098352421 — it
+ * measured 350 px in a 348 px column at 390. So each half is held in its own
+ * token, whole, and the line may break between them; the words are the same
+ * to the byte, and on a clean day so is the markup (s15).
+ */
+const SEP_BREAK = `${SEP.trimEnd()}</span> <span class="keep">`;
+
 export function siteFooter(
   countries: NavLink[], facts: FooterFacts, place: FooterPlace = {},
 ): string {
@@ -325,7 +339,7 @@ export function siteFooter(
     escAttr(facts.read.oldest)}">${esc(facts.read.oldest)}</time></b> and <b><time datetime="${
     escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b>${SEP}re-read daily${facts.lastRun ? ` <span class="keep">(last run <time datetime="${
     escAttr(facts.lastRun)}">${esc(facts.lastRun)}</time>${
-    facts.unread ? `${SEP}${esc(unreadLabel(facts.unread))}` : ""})</span>` : ""}${SEP}<span class="keep">dataset ${
+    facts.unread ? `${SEP_BREAK}${esc(unreadLabel(facts.unread))}` : ""})</span>` : ""}${SEP}<span class="keep">dataset ${
     esc(facts.datasetVersion)}</span></span>
     </div>
   </footer>`;
