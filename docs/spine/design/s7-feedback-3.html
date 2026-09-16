@@ -122,6 +122,8 @@ a { color: var(--color-ink); }
 .foot .line { border-top: var(--rule-soft); margin-top: var(--space-2); padding-top: var(--space-3); text-align: center; font: .78rem var(--font-mono); color: var(--color-muted); }
 
 /* the /feedback/ page (F, H) */
+.door .alt { display: block; margin-top: .45rem; font-size: .82rem; color: var(--color-muted); }
+.door .alt a { min-height: var(--tap-min); display: inline-flex; align-items: center; }
 .fb h1 { font: 400 1.9rem/1.15 var(--font-serif); margin: 0 0 var(--space-2); }
 .fb .lede { color: var(--color-muted); margin: 0 0 var(--space-4); max-width: 36rem; }
 .fb .doors { display: grid; gap: var(--gap-cards); margin-bottom: var(--space-4); }
@@ -149,7 +151,7 @@ a { color: var(--color-ink); }
 
 <!-- ================================================================ F -->
 <h2 class="mock">F · One word, one page
-  <small><b>Chosen by the human, 2026-09-16, with two amendments drawn below:</b> the third door said properly, and the header's four countries under one word, "Countries", so the row holds four items rather than seven. "Feedback" appears three times — in the header's row, as one
+  <small><b>Chosen by the human, 2026-09-16, with two amendments drawn below, and a third from their preview walk — the button opens Gmail, the mail app is the line under it:</b> the third door said properly, and the header's four countries under one word, "Countries", so the row holds four items rather than seven. "Feedback" appears three times — in the header's row, as one
   line under the verdict, and as the footer column's heading — and all three lead to <b>/feedback/</b>,
   a page of the site's own that holds the door: three template links, the address in plain text, what
   happens to a mail, and the GitHub option beneath, named. The word is visible the moment any page
@@ -215,16 +217,19 @@ a { color: var(--color-ink); }
         <div class="doors">
           <div class="door"><h3>A value is wrong</h3><p>The page says one thing; the source says another.</p>
             <a class="act" href="mailto:feedback@permitrulebook.com?subject=Wrong%20value">Report a wrong value</a>
+            <span class="alt">or <a href="#">with your own mail app</a></span>
             <span class="tmpl">Subject: Wrong value · Page · What it says · What the source says · Where</span></div>
           <div class="door"><h3>Something is missing</h3><p>A route, a question, a country, a case.</p>
             <a class="act" href="mailto:feedback@permitrulebook.com?subject=Missing">Say what is missing</a>
+            <span class="alt">or <a href="#">with your own mail app</a></span>
             <span class="tmpl">Subject: Missing · What · Where you looked for it</span></div>
           <div class="door"><h3>Anything else</h3><p>What helped, what confused you, what you would want next — a note of any length.</p>
             <a class="act" href="mailto:feedback@permitrulebook.com?subject=Note">Write a note</a>
+            <span class="alt">or <a href="#">with your own mail app</a></span>
             <span class="tmpl">Subject: Note</span></div>
         </div>
         <p class="addr"><a href="mailto:feedback@permitrulebook.com">feedback@permitrulebook.com</a></p>
-        <p class="note">If a link opens nothing, copy the address. A person reads every mail. A wrong value, confirmed
+        <p class="note">The button opens Gmail. If Gmail is not yours, the second link opens your mail app; if that opens nothing, copy the address. A person reads every mail. A wrong value, confirmed
           against its source, is changed and the change gets a history line with the date. No reply is promised;
           a fix is the reply.</p>
         <div class="gh">
@@ -250,16 +255,19 @@ a { color: var(--color-ink); }
         <div class="doors" style="grid-template-columns:1fr 1fr 1fr">
           <div class="door"><h3>A value is wrong</h3><p>The page says one thing; the source says another.</p>
             <a class="act" href="#">Report a wrong value</a>
+            <span class="alt">or <a href="#">with your own mail app</a></span>
             <span class="tmpl">Subject: Wrong value · Page · What it says · What the source says · Where</span></div>
           <div class="door"><h3>Something is missing</h3><p>A route, a question, a country, a case.</p>
             <a class="act" href="#">Say what is missing</a>
+            <span class="alt">or <a href="#">with your own mail app</a></span>
             <span class="tmpl">Subject: Missing · What · Where you looked for it</span></div>
           <div class="door"><h3>Anything else</h3><p>What helped, what confused you, what you would want next — a note of any length.</p>
             <a class="act" href="#">Write a note</a>
+            <span class="alt">or <a href="#">with your own mail app</a></span>
             <span class="tmpl">Subject: Note</span></div>
         </div>
         <p class="addr"><a href="#">feedback@permitrulebook.com</a></p>
-        <p class="note">If a link opens nothing, copy the address. A person reads every mail. A wrong value, confirmed
+        <p class="note">The button opens Gmail. If Gmail is not yours, the second link opens your mail app; if that opens nothing, copy the address. A person reads every mail. A wrong value, confirmed
           against its source, is changed and the change gets a history line with the date. No reply is promised;
           a fix is the reply.</p>
         <div class="gh">

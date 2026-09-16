@@ -3435,3 +3435,30 @@ orphan), one more disclosure in the header to test in a browser.
 **Gate:** yes — the human chose between drawn alternatives and named the
 amendments. What waits on them still: the alias's routing (their dashboard),
 and the amended drawing's look-over before the scenario is written.
+
+## 2026-09-16 — the feedback door opens Gmail; the mail app is the second link 🛑
+
+**Decided by the human on the s13 preview walk.** Every door on `/feedback/`
+opened nothing on their desktop: no mail application, Gmail in the browser,
+`mailto:` inert — the cost the e-mail decision had named ("a mailto: link
+is inert on some desktops, hence the plain-text address") met as a reader
+meets it, which is "nothing works". Their word: *"insanların çoğu gmail
+kullanıyor, mailto'dan ziyade gmail'e yönlendirmek daha sağlıklı."*
+
+**Decided:** the button of each door opens **Gmail's compose screen** (a
+plain link to `mail.google.com` with the address, the subject and the
+headings in the query, new tab, `noopener`); under it, one small line, *or
+with your own mail app*, is the same template as a `mailto:`; the plain
+address stays beside them. Both links are functions of the copy and the
+address constant only — nothing the reader declared reaches either.
+
+**Why:** the persona is a knowledge worker on a desktop (91 of 99 search
+impressions so far), and a browser-mail user is the common case there; a
+door that opens nothing for the common case is not a door. **What it costs,
+accepted:** the site names a vendor on one page; a reader without a Google
+account who taps the button meets Google's sign-in — the second link and
+the address are the way past it, and the note says so. Outlook's compose
+link is not added until a reader asks for it.
+
+**Gate:** yes — the human chose, on the preview, in their words. The
+scenario carries the dated correction; the build follows it.

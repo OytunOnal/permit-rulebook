@@ -100,6 +100,28 @@ opens by itself, nothing dims, nothing is remembered.
 11. **Nothing else changes.** The interview, the record, the route pages'
     bodies, the country pages' bodies, the watch, the data package.
 
+**Corrected 2026-09-16, by the human's walk** (dated and marked, as the
+held-out-scenario rule allows): on the preview every door opened nothing —
+the human's desktop has no mail application, Gmail lives in the browser,
+and a `mailto:` there is inert. Their word: *"insanların çoğu gmail
+kullanıyor, mailto'dan ziyade gmail'e yönlendirmek daha sağlıklı."* So point
+1 changes: **each door's button opens Gmail's compose screen** in a new tab
+(`https://mail.google.com/mail/?view=cm&fs=1&to=<address>&su=<subject>&body=<headings>`),
+with the same subject and headings as before; **under the button, one small
+line — *or with your own mail app* — is the `mailto:` with the same
+subject and body**, for a reader whose mail is not Gmail or who is on a
+phone; the plain-text address stays. The note becomes: *If Gmail is not
+yours, the second link opens your mail app; if that opens nothing, copy the
+address. A person reads every mail. …* (the rest unchanged). Point 2 holds
+for both links: the Gmail URL and the `mailto:` are each a function of the
+copy and the address constant only — nothing declared, nothing from the
+query string, nothing from the screen reaches either; the tests that assert
+the `mailto:` equals its constant now assert the same of the Gmail href.
+The footer row keeps the bare `mailto:` beside the plain address. What this
+costs, accepted with the word: the page names a vendor, and a reader who
+taps the button without a Google account meets Google's sign-in — the
+second link and the address are there for them.
+
 ## How it is proved
 
 - A case renders `/feedback/` and asserts the three `mailto:` links, in order,
