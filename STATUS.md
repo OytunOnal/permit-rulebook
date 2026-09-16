@@ -161,8 +161,15 @@ CLS fix is not. The three lines, left here until the window closes:
       exclusions row had denied — corrected with the date; nine quotes,
       dated. Site half building in `../permit-rulebook-s19` against that
       data.
-- [x] **s20 approved** (2026-09-16, *"approve"*); building in
-      `../permit-rulebook-s20`.
+- [x] **s20 approved** (2026-09-16, *"approve"*) and **built** (511 tests):
+      ✎ lands on the question with its first option focused, the answer
+      returns to the masthead and announces the headline, every answer
+      moves the focus, a resumed interview says *Continuing where you left
+      off — N answers kept.* with *Start over* in the line. Two things to
+      know: the line costs 44 px of footer travel on a record arrival at
+      390 (CLS 0.037, under the 0.1 bound; a recorded trade), and the build
+      found and fixed an s10-era defect — a reader returning with a finished
+      record had a blank card on ✎ since s10.
 - [ ] **B2 on a real phone**, when you can: answer to a result, open *You
       declared* at the bottom, tap *Yearly salary ✎*. Pass = the salary
       question's heading is on screen right after the tap.

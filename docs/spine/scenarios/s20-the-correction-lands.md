@@ -51,6 +51,25 @@ interview, one sentence says so.
 5. **Nothing remembered beyond the record**, no timer, no new script hash
    (the interview module is the place).
 
+**Corrected 2026-09-16, by the build:** three things. (1) Point 4's "the
+space the s10 stand-in reserves" does not exist — the stand-in is
+positioned *over* the card, and the card's height is question one's; the
+s10 gate forbids a different box per reader. So the resumed line costs its
+own height: **+44 px of footer travel on a record arrival at 390** (CLS
+0.037 at 390×1400, 0.001 at 390×844; the gate's bound is 0.1; cold `/`
+unchanged at 0). A trade, recorded; reversible by moving the line into the
+masthead's started subline, which the pre-paint swap already sizes. (2)
+Point 1's "a no-op in effect on desktop" is true only with a guard — scroll
+only when the card's top edge is off-screen; unconditional `block:"start"`
+would scroll a visible card to the top and hide the masthead. Built with
+the guard. (3) **A defect older than this slice, fixed here because the
+walk could not pass without it:** since s10 a reader returning with a
+*finished* record — restored straight to the verdict — kept
+`data-first="record"` on `<html>`, so the next ✎ drew a question card
+whose every child was hidden: a blank box. One line in `advance` settles
+the flag on non-question screens. The v1.1 walk did not see it because its
+persona answered in-session.
+
 ## How it is proved
 
 - A browser case at 390×1400 (the tall phone): answer to a result, tap
