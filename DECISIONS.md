@@ -3516,3 +3516,23 @@ the session in a real browser at the human's request, and the record says
 who read it and how; (3) the footer's separator rule (the dot ends its
 line) binds new separators too — the s15 scenario had it backwards and the
 build caught it. Cheap defaults, surfaced here; none reopens a gate.
+
+## 2026-09-16 — v1.1's scope is everything live today 🛑
+
+**Decided by the human** (*"v1.1 bugün yaptıklarımızı kapsasın"*). v1.1 had
+been recorded on 2026-09-15 as s9 + s10, with the stamp left to the human;
+the stamp was not taken and seven more slices reached the live site
+without one — s11, s12, s13, s14, s15, s16, s17 — plus s18 in flight. A
+version is a shippable state, and the honest line is the one that names
+the state a reader meets: **v1.1 is the live site at s18's merge** — s9
+through s18, against v1 at s6 (2026-09-09).
+
+**What the stamp brings, unchanged:** the isolated full product-critique
+walk (every persona, all nine lenses of RUBRIC 1.3, delta against v1's
+36/50), run by the critique agent, not this session; and a versions-ledger
+line the README quotes, with today's numbers (28 routes, 176 quoted values,
+4 countries) replacing v1's "23 routes / 122 quotes". **What it costs, and
+is recorded:** one full walk was owed between v1 and this state and did not
+happen; the light critiques on s12 and s13 covered their own scopes only.
+**Gate:** yes, the human's word on the scope; the stamp itself follows the
+walk.

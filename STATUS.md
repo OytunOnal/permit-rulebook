@@ -16,7 +16,7 @@ flowchart LR
     A[Scale Gate ✓] --> B[Brainstorm ✓] --> C[One-pager ✓] --> D[Design ✓] --> E[Plan ✓]
     E --> F["Slice loop<br/>v0.1–v0.10 ✓"]
     F --> G["s6 public launch ✓<br/>real-green 2026-09-09"]
-    G --> H["Steward<br/>live, watched, answered"] --> I["v1.1 ◀ here<br/>s9 · s10"]
+    G --> H["Steward<br/>live, watched, answered"] --> I["v1.1 ◀ here<br/>s9 … s18"]
 ```
 
 Pace, from the ledger: s5e real-green 2026-09-07, s5f 2026-09-07, s6
@@ -91,9 +91,9 @@ on its own.
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.
 
-**v1.1's scope is complete** — s9 and s10, both real-green and live — and the
-stamp is yours: it brings the isolated full walk the cadence requires for a
-version that reaches real users, and a versions-ledger line the README quotes.
+**v1.1 is everything live today** (your word, 2026-09-16): s9 through s18,
+against v1 at s6. The stamp comes after s18's merge — the isolated full
+walk, then the versions line and the README.
 
 **Queued, in order:** the feedback moment's build, once you pick a shape (site #6); **site
 #10** (three copy polish items on `/data/`, from the light critique); **data
@@ -240,11 +240,11 @@ These are the things only you can see, when you want to look:
       across broke each value over three lines, the thing being fixed.
 - [x] **s12 walked twice, critiqued, merged** (2026-09-16, your word). Live,
       and read on the live host afterwards.
-- [ ] **v1.1 — stamp it, or say what it still needs.** Its scope was s9 and
-      s10; both are real-green and live. A stamp brings the full critique walk
-      (every persona, all nine lenses, delta against v1's 36/50 on RUBRIC 1.3)
-      and a versions-ledger line the README quotes. *Say "stamp" and the walk
-      runs in isolation; say what is missing and it goes on the board first.*
+- [x] **v1.1's scope decided** (2026-09-16, *"v1.1 bugün yaptıklarımızı
+      kapsasın"*): everything live today, s9 through s18, against v1 at s6.
+      The stamp follows s18's merge: the isolated full walk runs, its
+      findings come to you, the versions line is written with today's
+      numbers, and the README quotes it.
 - [ ] **Walk s10, then say merge** — two previews, both holding the module
       back 700 ms the way a phone network does: **http://localhost:4500** is
       the fix (`f6b9a37`), **http://localhost:4501** is master. *What to look
