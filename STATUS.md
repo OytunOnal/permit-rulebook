@@ -27,95 +27,44 @@ front of it and each is a research day before a build day.
 
 ## What is happening now
 
-**s10 is live** (2026-09-15, on your word: *"merge"*, after two walks). Site
-`8e67ffd`, 412 tests, deploy green in 2m21s, read on the live host after it
-landed: the pre-paint script is in the head, the policy carries its hash, the
-box holds a question card from the first byte, the `<noscript>` line is under
-it. The page paints once now, and the counter judges it a week from today —
-CLS poor back to 0%, LCP and INP unchanged — against the "before" written on
-site #8 this afternoon (poor 6% of 44).
+**s12 is live** (2026-09-16, on your word: *"merge"*, after two walks and the
+first light-mode critique this project ran on a branch before a merge). Site
+`f5df33c`, 426 tests, deploy green in 2m26s, read on the live host after it
+landed: `/data/`'s list is three rows — four dates, two counts, Routes alone —
+every cell centred, *Newest value changed 2026-09-10* and *Last checked
+2026-09-15* where *Newest value read* was, and the old label is nowhere on the
+page.
 
-**v1.1's two slices are real-green: s9 on the 11th, s10 today.** That is the
-whole scope you chose when you opened it. What a stamp brings is the cadence's
-full product-critique walk — every persona, all lenses, delta against v1 —
-and it is a gate, not a default: **say stamp, or say what v1.1 still needs.**
+**"Last checked 2026-09-15" is true, and it is the thing to watch today.** The
+watch's 05:17 UTC run has **not fired yet** on 2026-09-16 — the newest run is
+yesterday's failed one; GitHub has been running this schedule four to five
+hours late, so it is due, not missed. When it runs it is the first since the
+10th expected green (the User-Agent repair), and the first that writes s11's
+unread list; the site's daily rebuild then pins it and the page says
+*Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
+that is a finding, not a delay.
 
-**Four slices shipped in six days, each on your word:** s8, s9, s11, s10.
-Three things this last one taught, written into DECISIONS: a first screen
-that depends on what the HTML cannot know is decided before the first paint,
-not after a module lands; the gate for a paint defect is a browser with the
-script held back at more than one viewport; and the builder's own worktree
-(steward-53) held — no tree was touched by two writers today after it was
-adopted.
+**Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
+board is empty between slices.
 
-**The watch:** tonight's 05:17 UTC run is the first expected green since the
-10th — the User-Agent repair reads Spain, CI read every IND page this morning
-— and the first run after s11 writes the unread list, so `/data/` says the
-true thing without help from anyone.
+**v1.1's scope is complete** — s9 and s10, both real-green and live — and the
+stamp is yours: it brings the isolated full walk the cadence requires for a
+version that reaches real users, and a versions-ledger line the README quotes.
 
-**s12 is open at its boundary** (2026-09-15, human: *"tamamdır yapabiliriz"*
-on site #9). The scenario is drafted — `docs/spine/scenarios/s12-two-labels.md`
-— five points, all small: the row on `/data/` becomes *"Newest value changed"*,
-a *"Last checked"* row joins it from the watch's own last run, the words live
-in `copy.ts`, nothing else moves. **Built once, corrected the spec four times, one follow-up in flight.** The
-row on `/data/` was reading the newest *page* stamp — notice dates included —
-not the newest *value* read; the two agree today and the new label does not
-permit them to diverge, so the source becomes `readRange` in fact (the stamp
-and the freshness paragraph keep the broader date, on purpose). Also: the row
-reads the same `lastRun` the sentence reads, not a second call; the gate needs
-a build before the tests in a fresh worktree; a state with no run prints no
-row. Follow-up in: the row reads `readRange` in fact, the stamp and the footer keep
-the broader date on purpose, and the fixture did not move a second time — the
-two derivations agree on the frozen dataset too. Committed as `two-labels`
-`d35c724` (gates run by me: build clean, **421 tests**, fingerprint unmoved),
-on the preview at http://localhost:4500/data/.
-
-**Both reviews came back — nine findings, two blockers — and the sharpest is the
-one this project keeps meeting from a new side:** the decision the slice
-exists to make was invisible to all nine of its checks. Revert the row from
-the values' newest date back to the page's and every case stays green, because
-the two dates coincide today — on the live dataset and on the frozen one. A
-check that passes on content coinciding is not a check on a decision. The fix
-is a fabricated dataset in which a notice's read date is newer than any value's,
-asserting the row prints the values' date while the stamp on the same page
-prints the later one — red on the revert, by construction. The other blocker
-was a case that grepped the source and passed on an empty file. Sent back in
-one round; the fixture also stops calling itself "pre-s11" and names a revision
-instead of a branch.
-
-**The round is in and gated** (`two-labels` `ad19a0f`; build clean, **423
-tests**, fingerprint unmoved). The decision case bends the dataset — a notice
-re-read three weeks after the newest value — and goes red on the revert; the
-builder did the revert once to prove it. On the preview.
-
-**The skills changed under this session again — four clocks for the product
-critique, in Steward mode too** (steward-54, read 2026-09-16). Every
-user-facing slice or fix now exits through the product-critique skill in light
-mode **on the branch's preview, before the merge**; every version stamped gets
-a full walk, isolated when it reaches real users; and **every scheduled metric
-reading brings an isolated full walk the same day** — so the 2026-10-09
-reading of A2, A7 and A8 brings one. Until this rule, Steward knew the
-critique only as an input; s8, s9, s11 and s10 all shipped without their light
-walk. **s12 is the first that gets it, and it passed:**
-`docs/spine/critique-s12-light.md` — no blocker, no friction, three polish
-items older than the slice filed as site #10 (a label that speaks the gate's
-language, "the tracker" named to a stranger, two identical dates side by
-side). Copy 4/5, trust 5/5, responsive 5/5, fidelity 5/5 — light scores,
-scoped to the facts list, not product-wide. One false alarm kept in the
-report so the next critic does not repeat it.
-
-**Queued, in order:** **site #9** (the "Newest value read" label, two rows);
-`feedback-line` (site #6, built, never walked); **data #15** (the free-movement
-notice's evidence for four passports); **data #13** (the Opportunity Card's
-link); **data #17** (the IND shell — the browser strategy's gate read 2 of 5);
-the Spanish job-search order to re-read at the end of December; the
-pre-registered numbers on **2026-10-09**.
+**Queued, in order:** `feedback-line` (site #6, built, never walked); **site
+#10** (three copy polish items on `/data/`, from the light critique); **data
+#15** (the free-movement notice's evidence for four passports); **data #13**
+(the Opportunity Card's link); **data #17** (the IND shell — the browser
+strategy's gate read 2 of 5); the Spanish job-search order to re-read at the
+end of December; the pre-registered numbers on **2026-10-09**, which now bring
+an isolated full walk the same day (steward-54).
 
 What runs without anyone asking:
 
-- **The daily watch** (05:17 UTC) — repaired today.
+- **The daily watch** (05:17 UTC nominal, ~10:00–12:00 in practice) — repaired
+  yesterday; today's run not yet fired at the time of writing.
 - **The site's daily rebuild** — pinned and deployed fresh data every day since
-  the 11th.
+  the 11th; today's waits on the watch.
 - **The counter** and **the pre-registered numbers** (A2, A7, A8 on 2026-10-09;
   interim reading at day 6 in `docs/spine/assumptions.md`).
 
@@ -201,14 +150,8 @@ to look:
       and gated (`two-labels` `8f859bc`, **426 tests**, fingerprint unmoved).
       At a phone's width the counts stack rather than sit two across — two
       across broke each value over three lines, the thing being fixed.
-- [ ] **Walk s12 again, then say merge** — http://localhost:4500/data/ (`8f859bc`).
-      "What it holds today": four dates across, two counts across, Routes
-      alone on a full-width row with its sentence on one line, every cell
-      centred, *Dataset version 2026-09-10*. Narrow the window to a phone's
-      width if you like: dates 2×2, counts stacked, Routes two lines, nothing
-      overflowing. *Pass:* it looks like one list of seven facts, not a grid
-      with a hole in it.
-
+- [x] **s12 walked twice, critiqued, merged** (2026-09-16, your word). Live,
+      and read on the live host afterwards.
 - [ ] **v1.1 — stamp it, or say what it still needs.** Its scope was s9 and
       s10; both are real-green and live. A stamp brings the full critique walk
       (every persona, all nine lenses, delta against v1's 36/50 on RUBRIC 1.3)
