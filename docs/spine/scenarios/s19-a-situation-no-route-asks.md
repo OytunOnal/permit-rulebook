@@ -75,6 +75,23 @@ never listed on a card as "not checked here".
    fixtures that move (route fingerprint — France's quoted route is a new
    page; `/data/` counts) regenerate with reasons.
 
+**Corrected 2026-09-16, by the data build:** four things. (1) *Talent —
+chercheur* has no fiche of its own: it is the *Chercheur* tab of F16922, the
+fiche the four scored Talent routes already cite; the watch entry's slice
+widened rather than a second entry on the same URL (the fidelity map keys
+by URL). (2) `exclusions.md` said "no salary rule"; the tab states one —
+*un seuil de rémunération minimal de 2 200 € brut* — quoted as a
+precondition, the row corrected with the date. (3) The derivation keys by
+the destination answer (`de|fr|es|nl|all`), not the country code, because
+*all* is an answer and not a country. (4) **`none` is derived too, and
+France and Spain lack it** (no seek route). Point 2 does **not** mark
+*"None of these yet"*: that answer is every country's "not yet" path — the
+not-yet list and the unlock steps are its written state already (s3b). The
+mark is for a situation a reader *has* — an offer, a transfer, a hosting
+agreement — that no scored route in that country takes. Routes carry no
+`history` field; the move from excluded to quoted is the dated exclusions
+row, as the s9 five did it.
+
 ## How it is proved
 
 - A data test: the situations each country's scored routes accept, from
