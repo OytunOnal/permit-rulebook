@@ -219,7 +219,8 @@ CLS fix is not. The three lines, left here until the window closes:
       Card's tally and one language step; the statute explainer once; a
       two-limb rule as one sentence; the curator's note off the card; the
       scope line in the reader's words; the stray full stop; *"of about N"*
-      on the counter; the Türkiye notice naming no unseen route. Say
+      on the counter; the Türkiye notice's example clause gone (your
+      *"kaldır"*, 2026-09-17 — a data change with its history line). Say
       "approve" or which line is wrong.
 
 - [x] **s21 and s22 walked and merged** (2026-09-16, your word; the session
