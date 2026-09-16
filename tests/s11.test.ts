@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { unreadSources, type Dataset, type UnreadSource, type WatchState } from "permit-rulebook-data";
+import { unreadSentence, unreadSources, type Dataset, type UnreadSource, type WatchState } from "permit-rulebook-data";
+import { DAILY_CHECK_CLAIM, dailyCheck, unreadLabel } from "../src/lib/copy.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { footerFacts, navCountries } from "../src/lib/country-page.js";
 import { siteFooter } from "../src/lib/identity.js";
-import { routePages } from "../src/lib/route-page.js";
-import { lastWatchRun, watchState } from "../src/lib/site.js";
+import { routePages, type RoutePage } from "../src/lib/route-page.js";
+import { lastWatchRun, unreadSourcesAt, watchState } from "../src/lib/site.js";
 
 /**
  * s11 — a partial run says so.
@@ -21,6 +22,13 @@ import { lastWatchRun, watchState } from "../src/lib/site.js";
  * The qualification appears only on a day something went unread, and disappears
  * on every other — which is why the clean day is checked here as hard as the
  * partial one.
+ *
+ * A clean day is rendered with an explicit empty list, never through the
+ * default that reads the real state. The first unread day — 2026-09-16, when
+ * BAMF's graduate page did not answer — turned five cases red that had passed
+ * for five days only because the state had been clean for five days (s15, run
+ * 35098352421). What today's state says is the business of the cases named
+ * for it, below.
  */
 
 const ds = dataset as unknown as Dataset;
@@ -32,6 +40,8 @@ const UMBRAL = "https://www.inclusion.gob.es/documents/d/unidadgrandesempresas/u
 /** The UGE requirements page: a sentinel, cited by no dataset value. */
 const UGE_INDEX = "https://www.inclusion.gob.es/web/unidadgrandesempresas/autorizaciones-y-requisitos";
 const ORIENTATION = "https://ind.nl/en/residence-permits/work/residence-permit-for-orientation-year";
+/** BAMF's graduate page: the first source a real run left unread (2026-09-16). */
+const BAMF = "https://www.bamf.de/EN/Themen/MigrationAufenthalt/ZuwandererDrittstaaten/Arbeit/Hochschulabsolvent/hochschulabsolvent-node.html";
 
 const spain: UnreadSource = {
   id: "es-uge-umbral-pdf", url: UMBRAL, last_read: "2026-09-07", countries: ["ES"],
@@ -81,10 +91,13 @@ describe("what /data/ says on a day something went unread", () => {
   });
 
   it("and on a clean day says exactly what it says today, with nothing added", () => {
+    // "Today" was the clean day this case was written on; the list is empty
+    // by name, not by the state's luck (the first unread day, 2026-09-16, run
+    // 35098352421).
     const clean = dataPage(ds, lastWatchRun(), []).html;
-    expect(clean).toBe(dataPage(ds).html);
     expect(readerSees(clean)).toContain(`Every source is re-read daily — last run ${lastWatchRun()}.`);
     expect(clean).not.toContain("did not answer on the last run");
+    expect(clean).not.toContain("unread");
   });
 });
 
@@ -100,10 +113,11 @@ describe("the footer's short form", () => {
   });
 
   it("says nothing at all when every source answered", () => {
+    // The empty list is passed, not read: the default is the real state, and
+    // the real state stopped being clean on 2026-09-16 (s15, run 35098352421).
     const footer = siteFooter(navCountries(ds), footerFacts(ds, lastWatchRun(), []));
     expect(readerSees(footer)).toContain(`re-read daily (last run ${lastWatchRun()})`);
     expect(footer).not.toContain("unread");
-    expect(footer).toBe(siteFooter(navCountries(ds), footerFacts(ds)));
   });
 });
 
@@ -168,13 +182,80 @@ describe("the state this site is built against", () => {
   });
 
   it("and every surface says the plain thing again the moment nothing is unread", () => {
+    // Rendered over an empty list on purpose: the render with no list reads
+    // the real state, and the first unread day (2026-09-16, run 35098352421)
+    // showed this case had been measuring the state's luck, not a clean day.
     const run = lastWatchRun();
-    for (const page of routePages(ds, run)) {
+    for (const page of routePages(ds, run, [])) {
       const seen = readerSees(page.html);
       expect(seen, page.path).toContain("a daily check re-reads every source.");
       expect(seen, page.path).not.toContain("unread");
     }
-    expect(readerSees(dataPage(ds).html)).toContain(`Every source is re-read daily — last run ${run}.`);
+    expect(readerSees(dataPage(ds, run, []).html)).toContain(`Every source is re-read daily — last run ${run}.`);
+  });
+
+  /**
+   * What every surface must say for a run and the list it left unread — the
+   * plain thing on a clean day, the qualified thing on any other. One
+   * function, both branches, so the real state and the two fabricated runs
+   * below are held to the same words, and the branch taken is in every
+   * message: a reader of a red run knows which day it was (s15).
+   *
+   * The words come from the helpers the pages render with — `dailyCheck`,
+   * `unreadLabel`, `unreadSentence` — never retyped; the cases above pin the
+   * words themselves, on lists they chose.
+   */
+  function everySurfaceSays(run: string, unread: UnreadSource[], routes: RoutePage[], data: string): void {
+    const day = unread.length
+      ? `an unread day, ${run}: ${unread.map((u) => u.id).join(", ")}`
+      : `a clean day, ${run}`;
+    const parenthesis = `re-read daily (last run ${run}${unread.length ? ` · ${unreadLabel(unread.length)}` : ""})`;
+    expect(routes.length, day).toBeGreaterThan(20);
+    for (const page of routes) {
+      const seen = readerSees(page.html);
+      expect(seen, `${page.path} on ${day}`).toContain(`${dailyCheck(unread.length)}.`);
+      expect(seen, `${page.path} on ${day}`).toContain(parenthesis);
+      if (!unread.length) expect(seen, `${page.path} on ${day}`).not.toContain("unread");
+    }
+    const seen = readerSees(data);
+    expect(seen, `/data/ on ${day}`).toContain(
+      `${DAILY_CHECK_CLAIM} — last run ${run}.${unread.length ? ` ${unreadSentence(unread)}` : ""} A source that has moved`);
+    expect(seen, `/data/ on ${day}`).toContain(parenthesis);
+    if (!unread.length) expect(seen, `/data/ on ${day}`).not.toContain("unread");
+  }
+
+  /**
+   * The state this site is built against, whatever it says today. The render
+   * with no arguments is the one the build ships, so it is the one asked.
+   */
+  it("every surface says what the state says today — clean or not", () => {
+    const run = lastWatchRun();
+    everySurfaceSays(run, unreadSourcesAt(ds, run), routePages(ds), dataPage(ds).html);
+  });
+
+  it("a fabricated clean run: the plain thing on every surface", () => {
+    const run = watchState.last_run!;
+    const unread = unreadSources(ds, { ...watchState, unread: [] });
+    expect(unread).toEqual([]);
+    everySurfaceSays(run, unread, routePages(ds, run, unread), dataPage(ds, run, unread).html);
+  });
+
+  /**
+   * The first unread day as it was recorded: BAMF's graduate page, fetch
+   * failed on 2026-09-16, last read 2026-09-07. The date comes off the shipped
+   * snapshot, and the words are pinned here so the helpers above are checked
+   * against a sentence a person approved, not only against themselves.
+   */
+  it("a fabricated run that missed one German source: the short form and the clause", () => {
+    const run = watchState.last_run!;
+    const unread = unreadSources(ds, { ...watchState, unread: [{ id: "bamf-hochschulabsolvent", url: BAMF }] });
+    expect(unread.map((u) => [u.id, u.countries])).toEqual([["bamf-hochschulabsolvent", ["DE"]]]);
+    const since = watchState.entries["bamf-hochschulabsolvent"]!.retrieved_at;
+    everySurfaceSays(run, unread, routePages(ds, run, unread), dataPage(ds, run, unread).html);
+    expect(readerSees(dataPage(ds, run, unread).html)).toContain(
+      `A German source did not answer on the last run; the values it backs were read on ${since}.`);
+    expect(readerSees(siteFooter(navCountries(ds), footerFacts(ds, run, unread))))
+      .toContain(`re-read daily (last run ${run} · 1 source unread)`);
   });
 
   /**

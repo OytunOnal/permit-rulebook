@@ -3,12 +3,12 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { DISCLAIMER } from "../src/lib/copy.js";
+import { DISCLAIMER, unreadLabel } from "../src/lib/copy.js";
 import { countryLinks, footerFacts, navCountries } from "../src/lib/country-page.js";
 import { DATA_PATH, FEEDBACK_PATH, siteFooter } from "../src/lib/identity.js";
 import { routePages } from "../src/lib/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
-import { NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, url } from "../src/lib/site.js";
+import { NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, unreadSourcesAt, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
 
 /**
@@ -52,6 +52,26 @@ const footerOf = (html: string): string => {
  */
 const readerSees = (html: string): string =>
   html.replace(/<[^>]*>/g, "").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
+
+/**
+ * What the footer's parenthesis says on the day the site is built against —
+ * derived from the state, never assumed. Five cases assumed a clean day and
+ * were red the first morning a source went unread (s15, 2026-09-16, run
+ * 35098352421). `day` is for the assertion message, so a red run says which
+ * kind of day it was.
+ */
+function today(): { run: string; unread: number; parenthesis: string; day: string } {
+  const run = lastWatchRun();
+  const unread = unreadSourcesAt(ds, run);
+  return {
+    run,
+    unread: unread.length,
+    parenthesis: `(last run ${run}${unread.length ? ` \u00b7 ${unreadLabel(unread.length)}` : ""})`,
+    day: unread.length
+      ? `an unread day, ${run}: ${unread.map((u) => u.id).join(", ")}`
+      : `a clean day, ${run}`,
+  };
+}
 
 /** The footer with the two things that legitimately differ taken out. */
 const shared = (footer: string): string =>
@@ -149,10 +169,13 @@ describe("one footer, every page", () => {
     const footer = siteFooter(navCountries(ds), facts);
     expect(footer).toContain(`values read between <b><time datetime="${facts.read.oldest}">`);
     // "Re-read daily" is a claim, so the day it last happened is printed with
-    // it, from the watch's own state (devils-advocate, 2026-09-08).
-    expect(readerSees(footer)).toContain(`re-read daily (last run ${facts.lastRun})`);
+    // it, from the watch's own state (devils-advocate, 2026-09-08) — and, on
+    // a day that run left a source unread, how many (s11).
+    const state = today();
+    expect(readerSees(footer), state.day).toContain(`re-read daily ${state.parenthesis}`);
+    expect(facts.unread, state.day).toBe(state.unread);
     expect(facts.lastRun, "the watch has never recorded a run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-    expect(facts.lastRun).toBe(lastWatchRun());
+    expect(facts.lastRun).toBe(state.run);
     expect(footer).toContain(`dataset ${facts.datasetVersion}`);
     // The oldest is really the oldest, and the two ends are different days.
     expect(facts.read.oldest < facts.read.newest, `${facts.read.oldest}..${facts.read.newest}`).toBe(true);
@@ -281,9 +304,22 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
         expect(token.lines, `"${token.text}" wrapped inside itself`).toBeLessThanOrEqual(1);
       }
       // The tokens a reader must never see split.
-      const texts = seen.held.map((t) => t.text);
+      const texts = seen.held.map((t) => t.text.split(String.fromCharCode(160)).join(" "));
       expect(texts.some((t) => t.includes("Oytun Onal")), texts.join(" | ")).toBe(true);
-      expect(texts.some((t) => t.startsWith("(last run ")), texts.join(" | ")).toBe(true);
+      // The last-run parenthesis is among them on a clean day. With a count in
+      // it, it is not: it grew to 350 px in this 348 px column on the first
+      // unread day (s15, 2026-09-16, run 35098352421), so it may break at its
+      // separator — after the dot, as the line's other breaks fall — and each
+      // half is held whole and measured above.
+      const state = today();
+      if (state.unread) {
+        expect(texts.some((t) => /^\(last run [0-9]{4}-[0-9]{2}-[0-9]{2} \u00b7$/.test(t)), `${state.day}: ${texts.join(" | ")}`)
+          .toBe(true);
+        expect(texts, `${state.day}: ${texts.join(" | ")}`).toContain(`${unreadLabel(state.unread)})`);
+      } else {
+        expect(texts.some((t) => /^\(last run [0-9]{4}-[0-9]{2}-[0-9]{2}\)$/.test(t)), `${state.day}: ${texts.join(" | ")}`)
+          .toBe(true);
+      }
       expect(texts.filter((t) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(t)).length,
         `read dates held whole: ${texts.join(" | ")}`).toBeGreaterThanOrEqual(2);
     } finally {
@@ -312,9 +348,9 @@ describe("what the site says about the daily check is what the watch recorded", 
   });
 
   it("the same day, in the footer, on every page", () => {
-    const run = lastWatchRun();
+    const state = today();
     for (const page of builtPages())
-      expect(readerSees(footerOf(page.html)), `${page.path}`)
-        .toContain(`re-read daily (last run ${run})`);
+      expect(readerSees(footerOf(page.html)), `${page.path} on ${state.day}`)
+        .toContain(`re-read daily ${state.parenthesis}`);
   });
 });
