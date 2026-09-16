@@ -44,10 +44,21 @@ export interface StoredRecord {
   answers: Profile;
   /** The fields in the order they were asked, which is the order shown. */
   history: string[];
+  /**
+   * Whether the interview had nothing left to ask when this was written — the
+   * one bit the verdict already implies, said out loud so the page can read
+   * it before it paints. A finished record restores straight to the verdict,
+   * and the pre-paint script cannot know that from the answers without the
+   * engine: it reads this key and nothing else (s22). The screen itself is
+   * still computed from the answers when the module lands; a record written
+   * before this key existed reads as unfinished, which costs that reader one
+   * more masthead swap and nothing else.
+   */
+  done: boolean;
 }
 
-export function serialize(answers: Profile, history: string[]): string {
-  return JSON.stringify({ version: RECORD_VERSION, answers, history } satisfies StoredRecord);
+export function serialize(answers: Profile, history: string[], done = false): string {
+  return JSON.stringify({ version: RECORD_VERSION, answers, history, done } satisfies StoredRecord);
 }
 
 /**
@@ -96,12 +107,13 @@ export interface RecordStore {
   removeItem(key: string): void;
 }
 
-/** Keep what has been answered. Nothing answered is nothing to keep: an empty
- * record left behind still says someone was here. */
-export function saveRecord(store: RecordStore | null, answers: Profile, history: string[]): void {
+/** Keep what has been answered, and whether that was everything. Nothing
+ * answered is nothing to keep: an empty record left behind still says someone
+ * was here. */
+export function saveRecord(store: RecordStore | null, answers: Profile, history: string[], done = false): void {
   try {
     if (history.length === 0) store?.removeItem(STORAGE_KEY);
-    else store?.setItem(STORAGE_KEY, serialize(answers, history));
+    else store?.setItem(STORAGE_KEY, serialize(answers, history, done));
     // The migration, actually performed. The comment above said the old key
     // went with the first save and nothing did it, so a record written before
     // the rename sat there for ever — and "Start over", which removed only the

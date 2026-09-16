@@ -2,9 +2,11 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runInNewContext } from "node:vm";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy.js";
+import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
 import { firstPaintPlaceholdersHtml, questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
@@ -45,7 +47,7 @@ import { url } from "../src/lib/site.js";
  *   /?country=fr              0.280   0.005  +205px  0.052  +205px  0.009  +105px
  *   / saved record            0.156   0      -2px    0.001  -2px    0.005  -45px
  *   /?route=de-blue-card-…    0.305   0.006  +246px  0.062  +246px  0.009  +105px
- *   / finished record             —   0      -2px    0.001  -2px    0.005  -45px
+ *   / finished record         0.579   0    +4786px  0    +4786px  0    +3454px
  *
  * Every residual is one thing and it is the only one this slice could not
  * remove: the screen a returning or arriving reader gets is a different screen
@@ -54,6 +56,20 @@ import { url } from "../src/lib/site.js";
  * box (the masthead's promise, 0.082 of the record arrival's 0.156) and what
  * folded the ledger away after the fact (0.008 of the cold page) are both
  * decided in <head> now, before anything is painted, and read as zero.
+ *
+ * The finished-record row is s22's, measured 2026-09-16 with a record the
+ * product writes today (the seed until then replayed as a half record, and
+ * this file measured a question screen under a verdict's name — v1.1 gate
+ * critique, N2: 0.65 / 0.76 / 0.56 in the field's own measurement, 0.579 /
+ * 0.719 / 0.464 here). It is the one arrival where the box does not hold: the
+ * routes carry the footer thousands of pixels in the frame the verdict is
+ * drawn, so the frame's distance fraction is 1 and ANY element visible above
+ * the routes that moves at all is charged its whole area — a 5 px change in
+ * the masthead's height measured 0.446 on its own. And the verdict's masthead
+ * has no shape a stylesheet could reserve: one to three headline lines and
+ * two to five of subline, by what the rules said. So for that reader nothing
+ * the build painted is shown but the frame — the header, the tagline and the
+ * line in the box — and the page appears where it stays.
  *
  * And what the reader MEETS in that box, read at the same moment, at 390x844:
  * the box is 355 px on all five, because the stand-in covers question one
@@ -157,6 +173,7 @@ const AT_FIRST_PAINT = `(() => {
     && getComputedStyle(el).display !== "none" && !!el.offsetParent;
   return JSON.stringify({
     held: !!window.__built,
+    first: document.documentElement.dataset.first ?? "",
     box: Math.round(document.getElementById("main").getBoundingClientRect().height),
     question: shown(document.querySelector(".qlabel")) ? document.querySelector(".qlabel").textContent : "",
     standIn: [...document.querySelectorAll(".stand-in")].filter(shown).map((el) => el.textContent),
@@ -165,6 +182,8 @@ const AT_FIRST_PAINT = `(() => {
 
 interface AtFirstPaint {
   held: boolean;
+  /** What the pre-paint script wrote on `<html>` — which reader this is. */
+  first: string;
   /** The box the reader meets, in pixels. It is the same box whichever line is
    * in it: the stand-in sits OVER the question card rather than in place of
    * it, so the card holds the height open (s10). */
@@ -183,6 +202,7 @@ const READ = `JSON.stringify({
   subline: Math.round(document.getElementById("subline").getBoundingClientRect().height),
   ledgerOpen: document.getElementById("decl").open,
   resumed: !!document.querySelector("#main .qcard .resumed"),
+  state: document.getElementById("app").dataset.state,
 })`;
 
 interface Measured {
@@ -208,11 +228,16 @@ interface Measured {
    * thing a returning reader's screen carries that the first paint could not
    * hold room for, so the record arrival is measured with it there (s20). */
   resumed: boolean;
+  /** The screen the module drew — `questions` or `results` — so a row that
+   * names a verdict is proven to be measuring one (s22). */
+  state: string;
 }
 
 /**
  * Every way a reader's first screen can differ from the one the build drew.
- * All five are measured at all three viewports.
+ * All five are measured at all three viewports. `shape` is the reader the
+ * pre-paint script names — `fresh`, `link`, `record` or, since s22, `verdict`
+ * — and the stand-in and the flag are asserted from it.
  */
 const ARRIVALS = [
   { name: "/ cold, with no record", path: "/", record: null, shape: "fresh" },
@@ -237,21 +262,45 @@ const ARRIVALS = [
     // The arrival the scenario's table does not name: a record with nothing
     // left to ask restores straight to the verdict, and 23 route cards go into
     // the box one question was painted in.
+    //
+    // The profile is s20's finished persona — an offer in Germany, a Turkish
+    // passport, every question the interview asks today answered — and the
+    // row asserts below that it LANDS on a verdict. The seed this row carried
+    // until s22 used `education`, `age` and `salary_eur_year: "60000"`, field
+    // names the product no longer writes, so the record replayed as a half
+    // record and the gate measured a question screen while believing it
+    // measured a verdict: the re-score found CLS 0.65 here where this file
+    // said 0 (v1.1 gate critique, N2).
     name: "/ with a finished record",
     path: "/",
-    shape: "record",
+    shape: "verdict",
     record: {
       answers: {
-        destination: "de", citizenship: "TR", situation: "offer", situation_country: "de",
-        education: "bachelor", age: "30-44", salary_eur_year: "60000",
+        destination: "de", situation: "offer", qualification: "degree", citizenship: "TR",
+        occupation_shortage: "yes", recognition_de: "recognized", experience: "lt2",
+        salary_eur_year: "band_4", german: "none", english: "none", funds_eur_month: "band_0",
       },
       history: [
-        "destination", "citizenship", "situation", "situation_country",
-        "education", "age", "salary_eur_year",
+        "destination", "situation", "qualification", "citizenship", "occupation_shortage",
+        "recognition_de", "experience", "salary_eur_year", "german", "english", "funds_eur_month",
       ],
     },
   },
 ] as const;
+
+/**
+ * Which screen each arrival lands on once the module has drawn it. Said per
+ * row rather than derived, so a seed the interview has stopped accepting turns
+ * the row red instead of quietly measuring a question screen under a verdict's
+ * name (s22).
+ */
+const LANDS_ON: Record<(typeof ARRIVALS)[number]["name"], "questions" | "results"> = {
+  "/ cold, with no record": "questions",
+  "/?country=fr — from a country page": "questions",
+  "/ with a saved record": "questions",
+  "/?route=de-blue-card-general — from a route page": "questions",
+  "/ with a finished record": "results",
+};
 
 /**
  * Everything ABOVE the box, which may never move on any arrival.
@@ -279,7 +328,12 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
   const read = (viewport: string, arrival: string) => measured.get(key(viewport, arrival))!;
   const built = (viewport: string, arrival: string) => atFirstPaint.get(key(viewport, arrival))!;
   /** The line this reader should meet in the box, and nothing else. */
-  const STAND_IN = { fresh: [], record: [RETURNING_LINE], link: [LINK_ARRIVAL_LINE] } as const;
+  const STAND_IN = {
+    fresh: [], record: [RETURNING_LINE], link: [LINK_ARRIVAL_LINE], verdict: [RETURNING_LINE],
+  } as const;
+  /** The word the pre-paint script writes for each reader — none for a fresh
+   * visit, and `verdict` for a record that says it was finished (s22). */
+  const FLAG = { fresh: "", record: "record", link: "link", verdict: "verdict" } as const;
   const cold = (viewport: string) => read(viewport, ARRIVALS[0].name);
 
   beforeAll(async () => {
@@ -291,9 +345,13 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
             // Storage belongs to the origin, so it is written from a page of
             // this site — 404 is the cheapest one that runs no interview.
             await page.goto(server.url("/404.html"), 300);
+            // Seeded the way the product writes it: a record that reached a
+            // verdict carries the bit that says so (s22).
             await page.evaluate(arrival.record
               ? `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
-                JSON.stringify(serialize(arrival.record.answers, [...arrival.record.history]))})`
+                JSON.stringify(serialize(
+                  arrival.record.answers, [...arrival.record.history], arrival.shape === "verdict",
+                ))})`
               : "localStorage.clear()");
             // Read back while the module is still 450 ms out: what is on the
             // screen at this point is what the build put there.
@@ -327,6 +385,8 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           // 2026-09-15), so the box carries the reader's own line instead, and
           // question one is covered for exactly those readers.
           const b = built(screen.name, arrival.name);
+          expect(b.first, `the pre-paint script wrote data-first=${JSON.stringify(b.first)}`)
+            .toBe(FLAG[arrival.shape]);
           expect(b.standIn, `the box read ${JSON.stringify(b.standIn)}`)
             .toEqual([...STAND_IN[arrival.shape]]);
           if (arrival.shape === "fresh")
@@ -349,6 +409,14 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           const resumes = arrival.shape === "record"
             && kept.order.length > 0 && remainingQuestions(DATASET, kept.answers).length > 0;
           expect(m.resumed, `the resumed line is ${m.resumed ? "there" : "missing"}`).toBe(resumes);
+        });
+
+        it(`${arrival.name}: lands on the screen the row names (s22)`, () => {
+          // A seed the interview no longer accepts replays as a shorter record
+          // and lands on a question; a row that says "finished" must be shown
+          // a verdict, or the number above is about a different screen.
+          const m = read(screen.name, arrival.name);
+          expect(m.state, `the module drew a ${m.state} screen`).toBe(LANDS_ON[arrival.name]);
         });
 
         it(`${arrival.name}: nothing above the box moves`, () => {
@@ -407,6 +475,77 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           .toBe(screen.viewport.width >= 761);
       });
     });
+});
+
+/**
+ * The pre-paint script, run against a page in a bottle.
+ *
+ * It is a string that runs in <head>, so the browser gate above is what proves
+ * it; this is the same script read for its one decision at a time, with the
+ * three things it looks at held still — the link, the store and the width —
+ * because the gate can only seed what the product writes and the script has
+ * to be right about what the product never writes too (s22).
+ */
+describe("the pre-paint script decides who the reader is from a few bytes (s10, s22)", () => {
+  const flags = (o: { search?: string; stored?: string | null; throws?: boolean }): Record<string, string> => {
+    const dataset: Record<string, string> = {};
+    runInNewContext(FIRST_PAINT_SCRIPT, {
+      document: { documentElement: { dataset } },
+      location: { search: o.search ?? "" },
+      localStorage: {
+        getItem: () => { if (o.throws) throw new Error("blocked"); return o.stored ?? null; },
+      },
+      matchMedia: () => ({ matches: true }),
+    });
+    return dataset;
+  };
+  const halfDone = serialize({ destination: "fr" }, ["destination"]);
+  const finished = serialize({ destination: "fr" }, ["destination"], true);
+
+  it("a fresh visit is nobody in particular", () => {
+    expect(flags({ stored: null }).first).toBeUndefined();
+  });
+
+  it("a record is a returning reader; a finished one is a reader owed a verdict", () => {
+    expect(flags({ stored: halfDone }).first).toBe("record");
+    expect(flags({ stored: finished }).first).toBe("verdict");
+  });
+
+  it("a record from before the bit existed is a returning reader, not a verdict", () => {
+    expect(flags({ stored: JSON.stringify({ version: 1, answers: { destination: "fr" }, history: ["destination"] }) }).first)
+      .toBe("record");
+  });
+
+  it("reads one key, and nothing else in the record can stand in for it", () => {
+    // The bit is the product's own word, in the product's own place: a truthy
+    // value under the same name, or the word under another name, is not it.
+    expect(flags({ stored: JSON.stringify({ version: 1, answers: {}, history: [], done: "yes" }) }).first).toBe("record");
+    expect(flags({ stored: JSON.stringify({ version: 1, answers: {}, history: [], finished: true }) }).first).toBe("record");
+  });
+
+  it("a record that is not JSON is still a record, never a crashed head", () => {
+    expect(flags({ stored: "{" }).first).toBe("record");
+  });
+
+  it("a record wins over a link, and a finished one still does", () => {
+    expect(flags({ search: "?country=fr", stored: null }).first).toBe("link");
+    expect(flags({ search: "?country=fr", stored: halfDone }).first).toBe("record");
+    expect(flags({ search: "?route=fr-talent-blue-card", stored: finished }).first).toBe("verdict");
+  });
+
+  it("a browser that refuses site data is a reader with no record", () => {
+    expect(flags({ throws: true }).first).toBeUndefined();
+    expect(flags({ search: "?country=fr", throws: true }).first).toBe("link");
+  });
+
+  it("names nothing from the dataset", () => {
+    // It is inlined into the page, where nothing checks a name against the
+    // dataset: the only words it knows are the four readers and the key.
+    for (const c of DATASET.countries)
+      expect(FIRST_PAINT_SCRIPT, c.code).not.toMatch(new RegExp(`\\b${c.code}\\b`, "i"));
+    for (const c of DATASET.countries)
+      for (const r of c.routes) expect(FIRST_PAINT_SCRIPT, r.id).not.toContain(r.id);
+  });
 });
 
 /**

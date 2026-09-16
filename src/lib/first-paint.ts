@@ -30,18 +30,28 @@ import { STORAGE_KEY } from "./record.js";
 export const WIDE_QUERY = "(min-width: 761px)";
 
 /**
- * `data-first` says which of three readers this is. `"record"` — answers are
+ * `data-first` says which of four readers this is. `"record"` — answers are
  * on this device, so the short promise is theirs and the box says the answers
- * are coming back. `"link"` — they pressed "Check yours" on a country or route
- * page, which has answered question one for them but may be everything they
- * have answered, so the box says only that it is setting up. Absent — a fresh
- * visit, and the page the build painted is already right. `data-narrow` — the
- * ledger is a disclosure here, and a closed one.
+ * are coming back. `"verdict"` — the record says the interview was finished,
+ * so their screen is a verdict and nothing the build painted is theirs but
+ * the frame: the masthead's question, the card, the ledger and the footer are
+ * all covered until the module draws the page they came back to (s22).
+ * `"link"` — they pressed "Check yours" on a country or route page, which has
+ * answered question one for them but may be everything they have answered, so
+ * the box says only that it is setting up. Absent — a fresh visit, and the
+ * page the build painted is already right. `data-narrow` — the ledger is a
+ * disclosure here, and a closed one.
  *
  * The two started readers are told apart because the sentence for one is false
  * for the other: a reader with no answers cannot have answers brought back
  * (human's walk, 2026-09-15). A record wins over a link, because a reader who
  * has both does have answers on the device.
+ *
+ * The finished reader is told apart by one key of the record, read as the
+ * product wrote it: `done`, true when the interview had nothing left to ask.
+ * Reading it costs a `JSON.parse` of a few hundred bytes, and nothing else in
+ * the record is looked at — the answers stay the module's business. A record
+ * that does not parse is still a record: the module decides what it is.
  *
  * Nothing here says anything a module could not work out; it says it early
  * enough to matter, and it names nothing from the dataset — no country, no
@@ -60,7 +70,11 @@ export const FIRST_PAINT_SCRIPT = `
     const page = document.documentElement;
     let first = /[?&](country|route)=/.test(location.search) ? "link" : "";
     try {
-      if (localStorage.getItem(${JSON.stringify(STORAGE_KEY)})) first = "record";
+      const raw = localStorage.getItem(${JSON.stringify(STORAGE_KEY)});
+      if (raw) {
+        first = "record";
+        try { if (JSON.parse(raw).done === true) first = "verdict"; } catch { /* the module decides */ }
+      }
     } catch { /* a browser that refuses site data is a reader with no record */ }
     if (first) page.dataset.first = first;
     if (!matchMedia(${JSON.stringify(WIDE_QUERY)}).matches) page.dataset.narrow = "";
