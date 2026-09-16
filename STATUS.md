@@ -155,9 +155,12 @@ CLS fix is not. The three lines, left here until the window closes:
 - [x] **Picked** (2026-09-16, *"1 ve 2 yapalım, 3 sonra"*): the two
       blockers now, the copy pass as its own slice after (on the board as a
       roadmap card).
-- [x] **s19 approved** (2026-09-16, *"approve"*; the quoted-not-scored ruling
-      stands); building — data half in `../permit-rulebook-data-s19`, site
-      half in `../permit-rulebook-s19`.
+- [x] **s19 approved** (2026-09-16, *"approve"*). **Data half built** (569
+      tests, fidelity 154 verified): *Talent — chercheur* is a tab of F16922,
+      not a fiche of its own; the fiche states a €2,200 gross pay floor the
+      exclusions row had denied — corrected with the date; nine quotes,
+      dated. Site half building in `../permit-rulebook-s19` against that
+      data.
 - [x] **s20 approved** (2026-09-16, *"approve"*); building in
       `../permit-rulebook-s20`.
 - [ ] **B2 on a real phone**, when you can: answer to a result, open *You
