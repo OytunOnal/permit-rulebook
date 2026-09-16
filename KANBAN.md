@@ -192,14 +192,6 @@ Promoted (or dropped, with evidence) at a boundary session.
   match; three routes (de-researcher, de-ict-card, fr-ict) share by
   containment and are not caught. A typed field is the cleaner derivation.
 
-- **The v1.1 copy pass** (gate critique adjustment 3, deferred by the
-  human 2026-09-16: *"3 sonra"*): the statute stutter rendered once; the
-  job-search sentence only when no offer is declared; the route pages'
-  liveness line names the source or lives only on `/data/`; the points
-  tally on the not-yet Opportunity Card; the curator note off the card;
-  modelling tiers as a reader's sentence (F1, F3, F4, P1–P4). Also F2, the
-  experience ladder's `y3in7` satisfying a two-in-five rule — an engine
-  judgment, its own scenario.
 
 
 - ~~es-ict's `situation` criterion carries the precondition's quote~~ → **fixed the same hour** (visa-rules `1399abc`, 2026-09-07): the criterion now cites art. 73.1, the sentence that defines the transfer; the live card quotes each sentence once; 120 quotes verified, 323 tests. Original entry kept:
@@ -292,7 +284,10 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s23 — the copy pass** (v1.1 gate adjustment 3: F1, F3, F4, P1–P7) · the
+  user-facing strings the isolated walk read as contradicting, unexplained,
+  repeated or modelling-voiced. Scenario drafted 2026-09-17, **awaiting
+  approval**.
 
 ## mock-green
 

@@ -208,7 +208,19 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.** v1.1 is stamped; the next slice is chosen at the next boundary.
+**One thing is blocked on you: s23's scenario.**
+
+- [ ] **Approve s23** — `docs/spine/scenarios/s23-the-copy-pass.md`, the copy
+      pass you chose to start with (2026-09-17, *"1 ile başlayalım"*): twelve
+      points, each a screen, the string as it is, and the rule that replaces
+      it — the job-search sentence only without an offer; unlock steps
+      ordered by what the reader can do; the route page's liveness line
+      naming its own unread source or staying plain; the not-yet Opportunity
+      Card's tally and one language step; the statute explainer once; a
+      two-limb rule as one sentence; the curator's note off the card; the
+      scope line in the reader's words; the stray full stop; *"of about N"*
+      on the counter; the Türkiye notice naming no unseen route. Say
+      "approve" or which line is wrong.
 
 - [x] **s21 and s22 walked and merged** (2026-09-16, your word; the session
       walked both on the preview). Live.
