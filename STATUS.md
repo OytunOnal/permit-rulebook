@@ -150,7 +150,26 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you** until the two builds are on the preview.
+**One thing is blocked on you: the walk of s19 and s20, together on one
+preview.**
+
+- [ ] **Walk http://localhost:4500** (the s19 + s20 build against data
+      0.8.0; 528 tests green). *s19:* Check yours → France → the third
+      answer carries *Not scored for France yet — Talent — researcher
+      (chercheur) is quoted, not scored: read it here.* Choose it anyway →
+      the headline *No scored route in France takes a research hosting
+      agreement.*, the subline naming the route with *read its rules*
+      linking its page, no "Nothing open"; then Spain → the same answer →
+      CRITERIA MET as before, and the Spanish researcher card now says *Asked
+      in the interview — you declared …* instead of *not checked here*;
+      then https://localhost:4500/france/talent-researcher/ — nine French
+      sentences, dated today, the €2,200 floor among them. *s20, on a real
+      phone if you can:* answer to a result, open *You declared* at the
+      bottom, tap *Yearly salary ✎* — the salary question must be on screen
+      with its first option highlighted; pick a band — the new headline must
+      be on screen. Reload `/` mid-interview — *Continuing where you left
+      off — N answers kept. Start over.* inside the card. Then "merge" — one
+      word covers both, or say which.
 
 - [x] **Picked** (2026-09-16, *"1 ve 2 yapalım, 3 sonra"*): the two
       blockers now, the copy pass as its own slice after (on the board as a
@@ -162,8 +181,9 @@ CLS fix is not. The three lines, left here until the window closes:
       dated. **Site half built** (503 tests): the mark under *research* for France
       with the link, the written state, F8's *Asked in the interview* block.
       One contradiction it exposed goes back to the data before the merge:
-      `scope.not_asked` is hand-kept and still names sentences a criterion
-      asks; being derived.
+      `scope.not_asked` was hand-kept and named sentences a criterion asks —
+      now validated (a sentence a criterion quotes is asked), seven routes'
+      lists corrected, scope lines honest; 573 data tests.
 - [x] **s20 approved** (2026-09-16, *"approve"*) and **built** (511 tests):
       ✎ lands on the question with its first option focused, the answer
       returns to the masthead and announces the headline, every answer
