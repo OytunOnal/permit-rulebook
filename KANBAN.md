@@ -287,7 +287,14 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s21 — the mark on the country, and on the four-country result** (v1.1
+  re-score N1, blocker) · the s19 sentence on question 3's France option and
+  on the four-country result's France line; the mark announced; the internal
+  link's glyph. Approved 2026-09-16 ("ikisi de şimdi"), **building**.
+- **s22 — the finished-record arrival is measured, and painted once** (v1.1
+  re-score N2) · the s10 gate's "finished record" seed was stale and never
+  measured a verdict (CLS 0.65 unseen); re-seed, then paint the fifth
+  arrival once. Approved 2026-09-16, **building**.
 
 ## mock-green
 

@@ -184,23 +184,13 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the pick for N1 and N2.**
+**Nothing is blocked on you** until the two builds are on the preview.
 
-- [ ] **N1 (blocker, small):** the s19 sentence in two more places — on
-      question 3's *France* option when the declared situation is research,
-      and as France's summary line on the four-country result (*No scored
-      route in France takes a research hosting agreement — Talent —
-      researcher (chercheur) is quoted, not scored*). Same copy, same
-      derivation. *Recommended now.*
-- [ ] **N2 (friction, a hollow gate):** re-seed the s10 gate's "finished
-      record" with a record the product actually writes, so the arrival is
-      measured; then decide the finished-record masthead before paint like
-      the other arrivals (the pre-paint script already knows *record*; it
-      does not know *finished*). The first half is a test fix; the second
-      is a small design call. *Recommended now, both halves — a gate that
-      measures the wrong thing is worse than none.*
-- [ ] Say "N1", "N1 ve N2", or what else — then the scenarios, the builds,
-      your word, the re-score once more, the stamp.
+- [x] **N1 and N2 picked** (2026-09-16, *"ikisi de şimdi"*): s21 (the mark on
+      question 3's country and on the four-country result's France line,
+      plus two polish items) and s22 (the s10 gate re-seeded with a real
+      finished record, then the finished-record arrival painted once). Both
+      scenarios written and building in their own worktrees.
 
 - [x] **s19 and s20 walked and merged** (2026-09-16, your word; the session
       walked both on the preview at your ask, three viewports for ✎). Live.
