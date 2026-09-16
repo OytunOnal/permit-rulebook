@@ -49,7 +49,13 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **The v1.1 re-score is in: 39/50 — and one new blocker keeps the stamp
+live site: s9 through s18.** **s21 and s22 are live** (2026-09-16, deploy `fc783ca` green; read on the
+live host: the four-country path marks France at question 3, the pre-paint
+script carries the verdict bit). The v1.1 re-score's blocker N1 and its
+friction N2 are cleared; the last step before the stamp is the critic's
+confirmation of both, running now, and the versions line.
+
+**The v1.1 re-score is in: 39/50 — and one new blocker keeps the stamp
 waiting.** The same critic re-walked the two blockers' screens on the live
 site: **B1 cleared** (the mark, the written state, the chercheur page, the
 Spanish card's *Asked in the interview*), **B2 cleared** (✎ lands on the
@@ -184,19 +190,10 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the word for s21 and s22.**
+**Nothing is blocked on you.** The critic confirms N1 and N2 on the live site; then the stamp.
 
-- [ ] **Both are built and on one preview** (http://localhost:4500, 568 tests
-      green, assets true), and **the session walked both**: *Any of these
-      four* → research → question 3 marks France only, announced; the result's
-      France line is the sentence with the route's name the link, Germany
-      *8 not yet*. A verdict reached in-session writes `done`; reloading with
-      the module held 700 ms shows the frame and *bringing them back*, then
-      the verdict in place — **CLS 0 at 390×844, 390×1400 and 1280×900**,
-      down from 0.58 / 0.72 / 0.46. The trade to know: a returning reader
-      with a finished record sees a near-empty page for the time the module
-      takes, as the record reader already did for the box. Say "merge", or
-      what is off.
+- [x] **s21 and s22 walked and merged** (2026-09-16, your word; the session
+      walked both on the preview). Live.
 
 - [x] **N1 and N2 picked** (2026-09-16, *"ikisi de şimdi"*): s21 (the mark on
       question 3's country and on the four-country result's France line,

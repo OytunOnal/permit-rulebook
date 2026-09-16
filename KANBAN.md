@@ -182,6 +182,11 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## backlog
 
+- **`scrollbar-gutter: stable`** (from s22): on a desktop Chrome with classic
+  scrollbars the verdict's arrival can make a scrollbar appear and shift the
+  page 17 px — invisible to the headless harness. One CSS line on `html`;
+  measure with scrollbars shown.
+
 - **A `field` on precondition statements** (from s19): today "asked" is
   derived by a shared sentence between a criterion and a statement, exact
   match; three routes (de-researcher, de-ict-card, fr-ict) share by
@@ -287,14 +292,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **s21 — the mark on the country, and on the four-country result** (v1.1
-  re-score N1, blocker) · the s19 sentence on question 3's France option and
-  on the four-country result's France line; the mark announced; the internal
-  link's glyph. Approved 2026-09-16 ("ikisi de şimdi"), **building**.
-- **s22 — the finished-record arrival is measured, and painted once** (v1.1
-  re-score N2) · the s10 gate's "finished record" seed was stale and never
-  measured a verdict (CLS 0.65 unseen); re-seed, then paint the fifth
-  arrival once. Approved 2026-09-16, **building**.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -305,6 +303,16 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s21 — the mark on the country, and on the four-country result** ·
+  real-green 2026-09-16 (human: "merge"; live in `fc783ca`). v1.1 re-score
+  N1 cleared; the all-closed branch pinned as unreachable.
+- **s22 — the finished-record arrival is measured, and painted once** ·
+  real-green 2026-09-16 (human: "merge"; live in `fc783ca`). v1.1 re-score
+  N2 cleared: the s10 gate re-seeded (it had never measured a verdict; 0.58
+  / 0.72 / 0.46), then CLS 0 by extending the stand-in to the frame; the
+  record carries one bit, `done`. Backlog: `scrollbar-gutter: stable` for
+  classic-scrollbar desktops.
 
 - **s19 — a situation no scored route asks** · real-green 2026-09-16 (human:
   "merge"; data `7156a56`, site in `1ca9e2c`). v1.1 gate B1 and F8 cleared:
