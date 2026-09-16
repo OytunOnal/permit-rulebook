@@ -133,7 +133,8 @@ a { color: var(--color-ink); }
 .door a.act { display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-3); border: 1px solid var(--color-ink); background: var(--color-bg); text-decoration: none; font: 600 .85rem var(--font-sans); }
 .door .tmpl { display: block; margin-top: .5rem; font: .72rem var(--font-mono); color: var(--color-muted); }
 .fb .addr { font: 600 1rem var(--font-mono); margin: 0 0 .2rem; }
-.fb .addr .copy { margin-left: var(--space-3); font: 700 .7rem var(--font-sans); letter-spacing: .12em; text-transform: uppercase; border: var(--rule-soft); background: var(--color-card); color: var(--color-ink); min-height: var(--tap-min); padding: 0 var(--space-3); cursor: pointer; vertical-align: middle; }
+.fb .addr .copy { margin-left: var(--space-2); font: .76rem var(--font-mono); color: var(--color-muted); text-decoration: underline dotted var(--color-line); text-underline-offset: .2em; border: 0; background: none; padding: 0; cursor: pointer; min-height: var(--tap-min); display: inline-flex; align-items: center; margin-top: calc((1.6em - var(--tap-min)) / 2); margin-bottom: calc((1.6em - var(--tap-min)) / 2); }
+.fb .addr .copy.done { color: var(--color-met); text-decoration: none; }
 .fb .note { font-size: .86rem; color: var(--color-muted); margin: 0 0 var(--space-4); max-width: 36rem; }
 .fb h2 { font: 700 .72rem var(--font-sans); letter-spacing: .16em; text-transform: uppercase; color: var(--color-muted); margin: var(--space-4) 0 var(--space-2); }
 .fb .gh { border-top: var(--rule-soft); padding-top: var(--space-3); }
