@@ -83,6 +83,23 @@ sources those are, through the mechanism s11 built.
    routes' sources is *not* added — no value changed. The watchlist's notes
    are the record.
 
+**Corrected 2026-09-16, by the build** (the writing session's correction,
+dated and marked): three numbers above were wrong. (1) Point 2's
+"`human_tier: 37` (7+7+9+8+7+6)" — the sum is 44, the dataset holds **38**
+IND quotes (12 + 8 + 7 + 6 + 5, 30 distinct sentences), and `human_tier`
+counts the two 09-10 notice quotes too, so the gate prints **40**. (2)
+"`verified` = 171" was today's number *with* 26 IND quotes still verified
+against stale snapshots; with those snapshots gone it is **145**, pinned
+with the reason. (3) Point 4's "which nationality, which situation" — the
+form asks no situation: nationality, then whether you hold a valid Dutch
+permit, then whether one expired under two years ago; the checklist says
+what it asks. Two things the build found and left for the session: the
+`never_read` measurement cannot tell a human-tier entry from a never-fetched
+one when a stale `unread` list names it (the four IND ids were removed from
+the list; the next run rewrites it; `state.ts` untouched), and the Blue
+Card and ICT pages' "Last update: 15 June" does not date the form (both
+served full lists on 09-07).
+
 ## How it is proved
 
 - `npm run check` in the data package green: `quote fidelity ok: true`,

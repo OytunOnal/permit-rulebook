@@ -118,12 +118,17 @@ CLS fix is not. The three lines, left here until the window closes:
       result has no address, so the five IND route pages go human-tier.
 - [x] **s14's scenario approved** (2026-09-16, *"approve"*); the builder is
       working in `../permit-rulebook-data-s14` (branch `ind-behind-the-form`).
-- [ ] **Then, the read that gates the merge** (yours, ~20 minutes): open
-      each of the five IND pages, answer *Your situation*, and confirm the
-      sentences listed in `data/verify-s5e.md` section 3 are still on the
-      result — the builder writes that section; STATUS will say when it is
-      ready. A sentence that is gone is a value change, said with its
-      history line, not this slice.
+- [ ] **The read that gates s14's merge — and s13's deploy** (yours, ~20
+      minutes). The checklist is written:
+      `../permit-rulebook-data-s14/data/verify-s5e.md`, section 3, five
+      pages, 38 quotes (30 distinct sentences). For each page: open the URL,
+      under *Your situation* choose a non-EU nationality (Türkiye), *No* to
+      "already have a valid Dutch residence permit", *No* to "expired less
+      than 2 years ago", then *View information*; find each listed sentence
+      word for word in the rendered list. *Pass:* all present — say
+      "okudum, hepsi yerinde". *Fail:* say which sentence is gone or
+      reworded — that is a value change with a history line, handled
+      before the merge, not by editing the checklist.
 
 - [x] **First walk of s13** (2026-09-16): the doors opened nothing on your
       desktop — decided: Gmail first, the mail app second. Building.
