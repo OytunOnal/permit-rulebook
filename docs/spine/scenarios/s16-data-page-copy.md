@@ -47,6 +47,15 @@ same door: `/feedback/`.
    `/data/` clean-day fixture likewise.
 6. **Nothing else changes** on `/data/`, the route pages, or `/feedback/`.
 
+**Corrected 2026-09-16, by the build:** two things. (1) `TRACKER_WRONG_VALUE`
+stays — `/feedback/`'s GitHub block uses it; point 3's "if nothing else uses
+it" was answered. (2) The page's meta description also said "…and the
+tracker" (typed in the template, not `copy.ts`); "no tracker in the page"
+in the proof was read as reader-visible body only, and the build raised the
+description rather than widening on its own. The session takes it: the
+description ends "…with the downloads and the checks.", lives in `copy.ts`,
+and the assertion covers the whole document outside style and script.
+
 ## How it is proved
 
 - A case renders `/data/` and asserts the counts row's exact text, the
