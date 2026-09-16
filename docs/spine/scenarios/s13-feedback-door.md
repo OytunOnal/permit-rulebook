@@ -133,6 +133,14 @@ centred under a 78-px word, ran 28 px under *Check yours* on the preview
 spacing token so the list ends before the separator; the browser case
 asserts the open list intersects neither the separator nor any nav item.
 
+**Corrected 2026-09-16, second walk, three:** point 5 changes — the footer's
+Feedback column loses the address row (human: *"footer'daki
+feedback@permitrulebook.com linkini kaldırsak mı, feedback sayfası yeterli…"*
+→ *"kaldır"*). A `mailto:` in a footer opens nothing for a browser-mail
+reader, and a plain address on every page is thirty-seven copies for a
+harvester. The column is two rows: *How to write, and what happens* →
+`/feedback/`, *Sponsor this work*. The address lives on the page only.
+
 ## How it is proved
 
 - A case renders `/feedback/` and asserts the three `mailto:` links, in order,

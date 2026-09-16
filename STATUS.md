@@ -88,8 +88,13 @@ untouched, the policy not widened; the site map names the Gmail exit) and
 with your own mail app* as the `mailto:` at the tap floor; the address; the
 new note. Your second walk found one word: the third door's subject is
 **Feedback**, not *Note* — one constant; and the open *Countries* list ran
-28 px under *Check yours* (measured) — the word moves left by a token and
-the test gains the separator. Both with the builder. Then your word. The day's path: the second round's four shapes → your finding
+28 px under *Check yours* (measured) — moved left, the list now clears the
+separator by 13 px on the worst word at both widths, 462 green. And a third,
+your own proposal ratified (*"kaldır"*): **the footer loses the address
+row** — a `mailto:` there opens nothing for a browser-mail reader and a
+plain address on every page is thirty-seven copies for a harvester; the
+column is two rows, the address lives on the page. Being built. Then your
+word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round

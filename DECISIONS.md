@@ -3462,3 +3462,17 @@ link is not added until a reader asks for it.
 
 **Gate:** yes — the human chose, on the preview, in their words. The
 scenario carries the dated correction; the build follows it.
+
+## 2026-09-16 — the footer carries no address; the page is the door 🛑
+
+**Decided by the human on the second s13 walk** (*"kaldır"*, after proposing
+it: the feedback page is enough, and `mailto:` has the Gmail problem
+anyway). The footer's Feedback column had carried the alias as a `mailto:`
+row beside the row to `/feedback/`. It goes. **Why:** a `mailto:` in the
+footer opens nothing for the browser-mail reader the Gmail decision was made
+for, and a plain address in every footer is one copy per page for whoever
+harvests addresses; one door — the page — is easier to keep honest than two.
+**Cost, accepted:** a reader who wants only the address is one click further
+from it. The e-mail decision's "shown in plain text beside every link to it"
+now means: on `/feedback/`, beside the doors — the only place the links are.
+**Gate:** yes, the human's word, on the preview.
