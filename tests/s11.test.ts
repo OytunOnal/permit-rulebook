@@ -189,16 +189,20 @@ describe("the state this site is built against", () => {
   });
 
   /**
-   * `/data/`'s clean day, pinned against the template that produced it before
-   * s11 — not against this build's own output, which is what the first version
-   * of this case compared and could never have caught a drift (Spec review,
-   * 2026-09-15). The fixture's hash was taken from `src/lib/data-page.ts` at
-   * 34fe87c, over the same frozen dataset the route-page fingerprint uses, with
-   * the live run date normalised so that a page which is correct on every day
-   * does not fail on all but one of them.
+   * `/data/`'s clean day, pinned against a fingerprint and not against this
+   * build's own output — which is what the first version of this case compared,
+   * and it could never have caught a drift (Spec review, 2026-09-15).
+   *
+   * The fingerprint was born here, in s11, and has moved once since: s12 gave
+   * the list its two labels. Its own `source` line is the record of which
+   * revision it was taken at and what last moved it, so a builder who finds
+   * this case red reads that line before deciding anything. The hash is over
+   * the same frozen dataset the route-page fingerprint uses, with the live run
+   * date normalised so that a page which is correct on every day does not fail
+   * on all but one of them.
    */
-  it("a clean day is byte-identical to what the page produced before s11", () => {
-    const fixture = JSON.parse(readFileSync(new URL("fixtures/data-page-pre-s11.json", import.meta.url), "utf8")) as
+  it("a clean day is byte-identical to the fingerprint", () => {
+    const fixture = JSON.parse(readFileSync(new URL("fixtures/data-page-clean.json", import.meta.url), "utf8")) as
       { run: string; occurrences: number; sha256: string };
     const frozen = JSON.parse(readFileSync(new URL("fixtures/frozen-dataset.json", import.meta.url), "utf8")) as Dataset;
     const html = dataPage(frozen, fixture.run, []).html;
