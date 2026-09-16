@@ -158,7 +158,13 @@ CLS fix is not. The three lines, left here until the window closes:
       (scenario corrected) — done, 476 green. **On the preview:**
       http://localhost:4500/data/ — the counts row, the freshness sentence's
       last half, the *Take it* door; and any route page's data door. Read
-      `/data/` cold once, then your word.
+      `/data/` cold once, then your word. **Your read found two things:** the
+      lede's *tell us it is wrong* had no door — I had checked it was not a
+      link and dropped it from the scenario without saying so; it becomes a
+      link to `/feedback/` in the same round. And the results screen's
+      *"Code compared…"*: you chose the passive (*"2"*) — **s17**, its own
+      small slice, `docs/spine/scenarios/s17-no-code-as-subject.md`,
+      building.
 - [ ] **Look at the live site once, when you like:** https://permitrulebook.com/feedback/
       — tap *Report what is wrong*; Gmail should open with the subject.
       Nothing is blocked on it.
