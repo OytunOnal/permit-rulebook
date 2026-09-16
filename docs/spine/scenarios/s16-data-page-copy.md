@@ -63,6 +63,11 @@ dropped it from the scenario without saying so — the human caught it
 (*"sen kontrol etmedin mi"*). The words *tell us it is wrong* become a link
 to `/feedback/`; the sentence stays; it moves into `copy.ts`.
 
+**Corrected 2026-09-16, second read:** *"or tell us it is wrong"* presupposes
+a wrong — it asks the reader to find one (human: *"sanki yanlış varmış da
+bulmalarını istiyormuşuz gibi"*). Of three forms they chose *"Take it, check
+it, and if something is wrong, tell us."*, the link on *tell us*.
+
 ## How it is proved
 
 - A case renders `/data/` and asserts the counts row's exact text, the
