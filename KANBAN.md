@@ -273,7 +273,11 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s15 — the first unread day** · the first watch state with a real unread
+  source reached the site on 2026-09-16 and six tests that assumed a clean
+  day went red (the site itself was right); plus the footer's parenthesis
+  2 px over a 390 column. Scenario approved (human: "1"); building. Gates
+  s13 and s14's deploy.
 
 ## mock-green
 

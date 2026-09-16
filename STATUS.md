@@ -126,7 +126,14 @@ CLS fix is not. The three lines, left here until the window closes:
 - [x] **s14 merged** (2026-09-16, your word): data `b2488b9`, the site
       pinned to it in `c4c3b04` (the lock's stray conflict markers cleaned
       with it — the workflow reads only the sha line, so they never bit).
-      The deploy of s13 + s14 is running; the live read follows.
+      **The deploy stopped again — this time on s11's own tests.** The first
+      state with a real unread source (BAMF, *fetch failed* on the 16th)
+      reached the site; the site said the right thing (*1 source unread*),
+      and six tests that assumed a clean day went red, plus one real
+      finding (the footer's parenthesis is 2 px too wide for a 390 column
+      with a count in it). You chose to fix the tests now (*"1"*): **s15**,
+      scenario `docs/spine/scenarios/s15-the-first-unread-day.md`, building
+      in its own worktree. Live stays on s12 until it lands.
 
 - [x] **First walk of s13** (2026-09-16): the doors opened nothing on your
       desktop — decided: Gmail first, the mail app second. Building.
