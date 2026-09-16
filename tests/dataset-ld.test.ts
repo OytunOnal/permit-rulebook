@@ -54,11 +54,25 @@ describe("the data page's Dataset block", () => {
     }
   });
 
-  it("states the same day, the same version and the same countries as the page", () => {
+  it("states the same day and the same version as the page", () => {
     expect(ld.dateModified).toBe(siteReadDate(ds));
     expect(ld.version).toBe(ds.dataset_version);
-    const places = (ld.spatialCoverage as { name: string }[]).map((p) => p.name);
-    expect(places).toEqual(ds.countries.map((c) => c.name));
+  });
+
+  /**
+   * The coverage is the dataset's countries, each typed `Place` and not
+   * `Country`. `Country` is the more precise schema.org type and a `Place` by
+   * inheritance — and Google's Dataset parser drops it: `spatialCoverage` is
+   * read as Text or as `{"@type": "Place"}` and nothing else, and every day
+   * since 2026-09-11 Search Console reported the field as an invalid object
+   * type (export of 2026-09-16, site #11). A type the only reader discards
+   * carries the only geographic fact this block has, so the block says `Place`
+   * and keeps the name as a name (s18).
+   */
+  it("covers the same countries as the page, each a Place — the type Google's parser reads", () => {
+    const places = ld.spatialCoverage as { "@type": string; name: string }[];
+    expect(places).toEqual(ds.countries.map((c) => ({ "@type": "Place", name: c.name })));
+    for (const p of places) expect(p["@type"], `${p.name} is typed ${p["@type"]}`).not.toBe("Country");
   });
 
   /**

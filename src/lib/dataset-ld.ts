@@ -55,7 +55,13 @@ export function datasetLd(dataset: Dataset, path: string): string {
       "work permit", "residence permit", "immigration", "eligibility", "open data",
       ...countries,
     ],
-    spatialCoverage: countries.map((name) => ({ "@type": "Country", name })),
+    // `Place`, not `Country`. `Country` is the exact schema.org type and a
+    // `Place` by inheritance, but Google's Dataset parser reads `spatialCoverage`
+    // as Text or as `{"@type": "Place"}` and drops anything else — Search Console
+    // flagged the field as an invalid object type every day since 2026-09-11
+    // (export of 2026-09-16, site #11). A type the reader discards takes the
+    // only geographic fact here with it; `Place` keeps the name a name (s18).
+    spatialCoverage: countries.map((name) => ({ "@type": "Place", name })),
     distribution: [
       {
         "@type": "DataDownload",
