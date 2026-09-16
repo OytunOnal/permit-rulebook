@@ -118,8 +118,9 @@ CLS fix is not. The three lines, left here until the window closes:
       the first section: the header with *Countries ▾* closed on the
       interview page and *France ▾* open on France's page, the phone menu with
       the countries grouped, and the third door's new words. Your first look
-      found the open list running under *Check yours*; it now opens leftward,
-      clear of it (`b57688a`). Say "tamamdır" or say what else is off; the
+      found the open list running under *Check yours*; your second look asked
+      for it centred under the word with the word moved left — done, the list
+      now ends before *Check yours*. Say "tamamdır" or say what else is off; the
       scenario is written after that.
 - [ ] **When you pick: the alias.** In Cloudflare → permitrulebook.com →
       Email → Email Routing: enable routing (it adds the MX and TXT records
