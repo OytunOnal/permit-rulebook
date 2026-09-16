@@ -273,7 +273,11 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s16 — `/data/` in the reader's words, and the last two tracker doors**
+  (site #10) · the s12 critique's three polish items, plus the two
+  *Report a wrong value* links s13 left pointing at GitHub (`/data/` Take
+  it, the route pages' data door), which become *Report what is wrong* →
+  `/feedback/`. Scenario drafted 2026-09-16, **awaiting approval**.
 
 ## mock-green
 
