@@ -116,7 +116,10 @@ the Copy button was a 44-px boxed label — far too loud beside an address
 (*"kocaman"*). Redrawn as a small mono word; then you chose the shape that
 stays: **a copy icon beside the address**, address and icon one button, a
 tap on either copies, *Copied* in green for two seconds, no word at rest.
-Being built; the mock carries it. Then your word. The day's path: the second round's four shapes → your finding
+**Built and on the preview** (464 green): the address in mono, the glyph in
+muted grey at the text's size, a click on either copies (the clipboard was
+stubbed; it received the address twice), *Copied* in the met green to the
+right for two seconds, nothing shifts. Then your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
