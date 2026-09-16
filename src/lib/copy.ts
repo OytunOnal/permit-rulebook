@@ -457,8 +457,11 @@ export const resultFeedbackLine = (word: string): string => `${RESULT_FEEDBACK_A
  */
 export const notScoredLine = (country: string): string => `Not scored for ${country} yet.`;
 export const READ_IT_HERE = "read it here";
+/** What is said of the quoted route, after its name — here and on the
+ * four-country result's line (s21): one clause, so the two cannot drift. */
+export const IS_QUOTED_NOT_SCORED = "is quoted, not scored";
 export const notScoredQuotedLine = (country: string, routeName: string): string =>
-  `Not scored for ${country} yet — ${routeName} is quoted, not scored: ${READ_IT_HERE}.`;
+  `Not scored for ${country} yet — ${routeName} ${IS_QUOTED_NOT_SCORED}: ${READ_IT_HERE}.`;
 
 /**
  * The written state a zero-open result through a marked answer reads, in
@@ -473,14 +476,31 @@ export const notScoredQuotedLine = (country: string, routeName: string): string 
  * joins them. Without a quoted route the subline is the second sentence
  * alone.
  */
-export const unscoredHeadline = (country: string, situation: string): string =>
-  `No scored route in ${country} takes ${situation}.`;
+const unscoredClaim = (country: string, situation: string): string =>
+  `No scored route in ${country} takes ${situation}`;
+export const unscoredHeadline = (country: string, situation: string): string => `${unscoredClaim(country, situation)}.`;
 export const READ_ITS_RULES = "read its rules";
 /** The possessive, for the one country whose name ends in an s. */
 const possessive = (name: string): string => (name.endsWith("s") ? `${name}'` : `${name}'s`);
 export const unscoredRouteLine = (country: string, situation: string, routeName: string): string =>
   `${possessive(country)} route for ${situation} — ${routeName} — is quoted here but not scored: ${READ_ITS_RULES}.`;
 export const unscoredRestLine = (steps: string): string => `The routes below need ${steps}.`;
+
+/**
+ * The same state on the four-country result, in the country's own summary
+ * line (s21).
+ *
+ * The four-country result has no headline to give one country — three of the
+ * four take the situation and the headline is theirs — so the line that used
+ * to count France's routes as "5 not yet" says instead what the s19 headline
+ * says, and then names the quoted route in the words the question-3 mark
+ * uses of it. The route's name is the link on the screen; the line without a
+ * route is the headline alone (v1.1 gate critique, N1).
+ */
+export const unscoredTallyLine = (country: string, situation: string, routeName?: string): string =>
+  routeName
+    ? `${unscoredClaim(country, situation)} — ${routeName} ${IS_QUOTED_NOT_SCORED}.`
+    : unscoredHeadline(country, situation);
 
 /**
  * The two headings a card's preconditions sit under (s19, F8).

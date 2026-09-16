@@ -33,10 +33,12 @@ const situationScreen = (destination: string): string =>
     editing: null, total: 12, glossary: new Set(),
   });
 
-/** The marks on a drawn situation screen, keyed by the option they sit under. */
+/** The marks on a drawn situation screen, keyed by the option they sit under.
+ * The mark carries an id since s21 (its button is described by it); what is
+ * read here is the mark, whatever else it carries. */
 function marksOn(html: string): Record<string, string> {
   const out: Record<string, string> = {};
-  const re = /<small class="opt-mark" data-for="([^"]+)">([\s\S]*?)<\/small>/g;
+  const re = /<small class="opt-mark"[^>]*data-for="([^"]+)"[^>]*>([\s\S]*?)<\/small>/g;
   for (let m = re.exec(html); m; m = re.exec(html)) out[m[1]!] = m[2]!;
   return out;
 }
@@ -90,7 +92,7 @@ describe("s19 — the interview knows which situations a destination's scored ro
     expect(marks.research!.replace(/<[^>]+>/g, "")).toBe(notScoredQuotedLine(country.name, route.name));
     expect(marks.research).toContain(`<a href="${url("/france/talent-researcher")}">${READ_IT_HERE}</a>`);
     // The mark sits after its button, never inside it: a link inside a button is not a link.
-    expect(html).toMatch(/<button class="opt" data-value="research">[\s\S]*?<\/button><small class="opt-mark" data-for="research">/);
+    expect(html).toMatch(/<button class="opt" data-value="research"[^>]*>[\s\S]*?<\/button><small class="opt-mark"[^>]*data-for="research">/);
     expect(html).not.toMatch(/<button[^>]*>[^<]*(?:<(?!\/button)[^<]*)*<small class="opt-mark"/);
     // Selectable: the same button every other option is.
     expect(html.match(/<button class="opt"/g)!.length).toBe(4);
