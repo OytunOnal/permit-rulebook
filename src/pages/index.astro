@@ -184,6 +184,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // under the verdict, in the words copy.ts holds (s13).
     import { FEEDBACK, isoDay, resultFeedbackLine } from "../lib/copy.js";
     import { FEEDBACK_PATH } from "../lib/identity.js";
+    // The written state for a situation no scored route in the declared
+    // country takes — derived from the dataset, in place of "Nothing open" (s19).
+    import { unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
     import {
       carveOutHtml, caveatHtml, closedRowHtml, noticeHtml, precondHtml, provenanceHtml, railHtml,
       readingHtml, scopedHtml,
@@ -433,13 +436,20 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // choosing again here is setting the same attribute rather than writing
       // the text a second time. A verdict's subline is not standing — it
       // counts what was compared — so that one is written, and once it is the
-      // two spans are gone for good.
+      // two spans are gone for good. The spans are looked for by name: a
+      // verdict's subline may carry a link of its own (s19), and a child that
+      // is not one of the two promises is no reason to leave it standing on a
+      // question screen.
       const standing = screen.kind === "question" ? (screen.started ? "started" : "fresh") : null;
-      if (standing !== null && subline.firstElementChild) {
+      if (standing !== null && subline.querySelector(".sub-fresh")) {
         if (page.dataset.first !== standing) page.dataset.first = standing;
         return;
       }
-      say(subline, m.subline);
+      // The one subline that carries a link — the s19 written state's door to
+      // the quoted route — is drawn as the markup the masthead composed; every
+      // other subline is written as text, as it always was.
+      if (m.sublineHtml !== undefined) draw(subline, m.sublineHtml);
+      else say(subline, m.subline);
     }
 
     /** A field's answer set. Some fields declare their options by reference
@@ -685,7 +695,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /** Conditions the authority applies that the interview never asked —
      * stated on every card so "criteria met" cannot overpromise. Both blocks
      * are rendered beside the page (lib/card.ts) so a test can read them. */
-    const precondFor = (r: RouteResult): string => precondHtml(r.route, answers);
+    const precondFor = (r: RouteResult): string => precondHtml(ds, r.route, answers);
     /** What the authority itself says is off this reader, in place of the
      * condition it releases them from. A carve-out carries its own quote and
      * is never printed under a heading that means "you must also do this"
@@ -1063,7 +1073,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // (Standards review, 2026-09-08).
       let verdictText = "";
       const said = (
-        sentence: string, emphasis = "", rest: { nearest?: string; explore?: Explore } = {},
+        sentence: string, emphasis = "", rest: { nearest?: string; explore?: Explore; unscored?: UnscoredVerdict } = {},
       ) => {
         verdictText = emphasis ? `${sentence} ${emphasis}` : sentence;
         advance({
@@ -1075,7 +1085,24 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       /** The verdict, announced after the screen it belongs to is drawn. */
       const sayVerdict = () => { announce(verdictText); };
 
-      if (zeroOpen && unsettled.length) {
+      /**
+       * A situation no scored route in the declared country takes (s19).
+       *
+       * A researcher with a French hosting agreement chose France, then the
+       * research answer, and read "Nothing open on these answers" — 0 open, 5
+       * not yet — for a route that was merely absent, with the reason on
+       * GitHub and nowhere on the screen (v1.1 gate critique B1). The result
+       * is not "nothing open"; it is that no scored route here takes what
+       * they have, that the route which would is quoted and where it is read,
+       * and what the routes below do take. It takes precedence over the two
+       * zero-open headlines for exactly this case and no other: a step-
+       * unlocked or unsettled zero-open result on any other answer reads as
+       * it did.
+       */
+      const unscored = zeroOpen ? unscoredVerdict(ds, answers) : null;
+      if (unscored) {
+        said(unscored.headline, "", { unscored });
+      } else if (zeroOpen && unsettled.length) {
         // Not "nothing open": their rules are met and the doubt is about the
         // passport, which is the notice's business and not the rules'. Saying
         // nothing is open here would contradict the section right below it
@@ -1484,6 +1511,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}
     h1 b{color:var(--color-near)}
     .sub{color:var(--color-muted);max-width:38rem;font-size:.92rem}
+    /* The one door a verdict's subline can carry: the quoted route's page (s19). */
+    .sub a{color:var(--color-band);font-weight:600;text-decoration:none}
     /* The masthead's two standing promises, both painted, one shown. Which one
        is decided in <head> before the first paint (lib/first-paint.ts): the
        module used to swap the text when it landed 700 ms later, and the whole
@@ -1547,6 +1576,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .opt-means{display:block;margin-top:.3rem;font:400 .8rem var(--font-sans);color:var(--color-muted);
       white-space:normal;line-height:1.45}
     .opt.sel .opt-means{color:var(--color-ink)}
+    /* A situation no scored route in the declared country takes, said under
+       the answer before it is picked (s19). It follows its button and is drawn
+       up against it: the same muted voice as the meaning line, with the door to
+       the quoted route's page as its last words. */
+    .opt-mark{display:block;margin-top:-.2rem;padding:0 .9rem .15rem;font:400 .8rem var(--font-sans);
+      color:var(--color-muted);white-space:normal;line-height:1.45}
+    .opt-mark a{color:var(--color-band);font-weight:600;text-decoration:none}
+    .opt-mark a::after{content:" ↗"}
     .opt:hover{border-color:var(--color-ink);background:var(--color-band-soft)}
     .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.9rem;
       min-height:var(--tap-min);padding:.2rem .1rem}
@@ -1659,6 +1696,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        the card must not read as a green light on them (critique #2). */
     .precond{font-size:.83rem;color:#54513f;border-left:3px solid var(--color-hold);padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}
     .precond b{color:var(--color-hold)}
+    /* A condition the interview asked, answered: the band's colour, not the
+       hold's — it is not a bar left unchecked (s19, F8). */
+    .precond.asked{border-left-color:var(--color-band)}
+    .precond.asked b{color:var(--color-band)}
     /* A caveat is not a hurdle — it reads as an aside, not as one more bar. */
     .caveat{font-size:.83rem;color:var(--color-muted);border-left:3px solid var(--color-muted);
       padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}

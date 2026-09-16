@@ -1,10 +1,13 @@
 import {
-  deriveBands, fieldOptions, optionMeans, shortLabelOf,
+  DESTINATION_FIELD, SITUATION_FIELD, deriveBands, fieldOptions, optionMeans, shortLabelOf,
   type Dataset, type FieldOption, type Profile, type Question,
 } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import { type Glossary, glossSection } from "./gloss.js";
+// Which situation answers the declared destination's scored routes take, and
+// the quoted route that would have asked otherwise — derived, never typed (s19).
+import { notScoredFor, notScoredMarkHtml } from "./situations.js";
 
 /**
  * The interview's question screen, rendered — the one copy of that markup.
@@ -101,10 +104,20 @@ export function questionCardHtml(screen: QuestionScreen): string {
               // it means, it says it here — under the answer, not in a hint at
               // the foot of the question nobody reads before choosing.
               const means = optionMeans(o, dataset, answers);
+              // A situation no scored route in the declared country takes
+              // says so under the answer, before it is picked: the reader who
+              // took it read "Nothing open" for a route that was merely absent
+              // (v1.1 gate critique B1, s19). It follows the button rather
+              // than sitting inside it — the last words are a link to the
+              // quoted route's page, and a link inside a button is not one.
+              const mark = q.field === SITUATION_FIELD
+                ? notScoredFor(dataset, answers[DESTINATION_FIELD], o.value)
+                : null;
               return `<button class="opt${chosen ? " sel" : ""}" data-value="${escAttr(o.value)}"${
                 chosen ? ` aria-pressed="true"` : ""}><span class="opt-label">${esc(o.label)}${
                 chosen ? `<span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
-                means ? `<small class="opt-means">${esc(means)}</small>` : ""}</button>`;
+                means ? `<small class="opt-means">${esc(means)}</small>` : ""}</button>${
+                mark ? `<small class="opt-mark" data-for="${escAttr(o.value)}">${notScoredMarkHtml(mark)}</small>` : ""}`;
             }).join("")}
           </div>`}
           ${(editing ? asked.indexOf(editing) > 0 : asked.length > 0)

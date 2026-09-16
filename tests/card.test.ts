@@ -42,7 +42,7 @@ describe("the orientation year, on the card", () => {
   });
 
   it("states the condition the interview cannot ask, under the same heading as the rest", () => {
-    const html = precondHtml(routeOf("nl-orientation-year"), {});
+    const html = precondHtml(ds, routeOf("nl-orientation-year"), {});
     expect(html).toContain("Also required — not checked here");
     expect(html).toMatch(/must not have previously held an orientation year permit/i);
     // Beside the plain lines, not in a block of its own. The deadline reads
@@ -64,7 +64,7 @@ describe("the orientation year, on the card", () => {
 
   it("a route that makes no such statement renders nothing at all", () => {
     expect(caveatHtml(routeOf("de-blue-card-general"), {})).toBe("");
-    expect(precondHtml(routeOf("de-chancenkarte"), {})).toBe("");
+    expect(precondHtml(ds, routeOf("de-chancenkarte"), {})).toBe("");
   });
 
   it("dataset prose reaches the page as text, never as markup", () => {
@@ -76,7 +76,7 @@ describe("the orientation year, on the card", () => {
         source: { source_url: "https://example.org", quote: "quoted", retrieved_at: "2026-09-07" },
       }],
     };
-    expect(precondHtml(route, {})).toContain("&lt;script&gt;");
+    expect(precondHtml(ds, route, {})).toContain("&lt;script&gt;");
     expect(caveatHtml(route, {})).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
   });
 });
@@ -251,7 +251,7 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
   it("no caveat text ever appears under the \"Also required\" heading", () => {
     for (const country of ds.countries)
       for (const route of country.routes) {
-        const required = precondHtml(route, {});
+        const required = precondHtml(ds, route, {});
         for (const s of route.statements ?? [])
           if (s.kind === "caveat") expect(required, `${route.id}:${s.id}`).not.toContain(s.text);
       }
@@ -261,7 +261,7 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
     for (const id of CARRIERS) {
       const aside = caveatHtml(routeOf(id), {});
       expect(aside, id).toMatch(/orientation year|collective wage|shortage occupation/i);
-      expect(precondHtml(routeOf(id), {}), id).not.toMatch(/orientation year|collective wage|shortage occupation/i);
+      expect(precondHtml(ds, routeOf(id), {}), id).not.toMatch(/orientation year|collective wage|shortage occupation/i);
     }
   });
 
@@ -300,7 +300,7 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
 
   it("the Opportunity Card's 20-hour limit is an aside about the permit, not a bar", () => {
     expect(sourcedCaveatHtml(routeOf("de-chancenkarte"), {})).toMatch(/20 hours a week/);
-    expect(precondHtml(routeOf("de-chancenkarte"), {})).toBe("");
+    expect(precondHtml(ds, routeOf("de-chancenkarte"), {})).toBe("");
   });
 });
 
