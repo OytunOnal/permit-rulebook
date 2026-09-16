@@ -112,19 +112,22 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: what to do about the IND's rebuilt pages.**
+**Two things are blocked on you: s14's scenario, then the read of five IND pages.**
 
-- [ ] **Decide the IND path** (data #20). Open
-      https://ind.nl/en/residence-permits/work/highly-skilled-migrant in a
-      browser, answer the *Your situation* form once (any non-EU nationality,
-      "I have a job offer") and look at the address bar on the result.
-      *If the URL changed* (a query string or a fragment): paste it here — the
-      watch entry moves there and the twelve quotes are re-read; a data slice,
-      no site change, s13 deploys when it is green. *If the URL did not
-      change* (a form result with no address): say so — the HSM requirements
-      become human-tier (checklist + 90-day re-read), the watch entry is
-      retired with its reason, and the gate is green on the honest ground.
-      Either way the four sibling IND pages get the same treatment.
+- [x] **The IND path is decided** (2026-09-16, *"url sabit"*): the form's
+      result has no address, so the five IND route pages go human-tier.
+- [ ] **Approve s14's scenario** —
+      `docs/spine/scenarios/s14-ind-behind-the-form.md`: the five IND
+      entries become human-tier (90-day re-read), their stale snapshots go,
+      the checklist gains the 37 sentences, the quote gate turns green on
+      the honest ground, and s13 deploys on the next pin. Say "approve" or
+      which line is wrong.
+- [ ] **Then, the read that gates the merge** (yours, ~20 minutes): open
+      each of the five IND pages, answer *Your situation*, and confirm the
+      sentences listed in `data/verify-s5e.md` section 3 are still on the
+      result — the builder writes that section; STATUS will say when it is
+      ready. A sentence that is gone is a value change, said with its
+      history line, not this slice.
 
 - [x] **First walk of s13** (2026-09-16): the doors opened nothing on your
       desktop — decided: Gmail first, the mail app second. Building.

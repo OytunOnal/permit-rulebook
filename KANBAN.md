@@ -273,7 +273,15 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s14 — the IND's requirements moved behind a form** (data #20) · the
+  watch found the IND's HSM page changed on 2026-09-16 and four sibling
+  pages unreachable; all five are now a *Your situation* form with no
+  addressable result (human: *"url sabit"*). The five entries go human-tier
+  with a 90-day re-read; the quote gate turns green on the honest ground;
+  s13 deploys on the next pin. Scenario
+  `docs/spine/scenarios/s14-ind-behind-the-form.md` drafted 2026-09-16,
+  **awaiting approval**; the merge is gated on the human reading the five
+  pages.
 
 ## mock-green
 
