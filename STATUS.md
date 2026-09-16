@@ -71,7 +71,18 @@ red the screen's other links wear is a design call and yours — three polish it
 arrow, *Where (link)* as a label, the line's second half repeating the
 page). Scores, scope-only: Copy 4, Trust 5, Orientation 5, Responsive 5,
 Design fidelity 4. One false alarm recorded (a probe that matched nothing).
-Then: your walk on http://localhost:4500, your word. The day's path: the second round's four shapes → your finding
+**Your walk found the door shut** (2026-09-16): on your desktop every
+`mailto:` opened nothing — no mail application, Gmail in the browser — the
+cost the e-mail decision had named, met as a reader meets it. Your word:
+*"insanların çoğu gmail kullanıyor … gmail'e yönlendirmek daha sağlıklı."*
+Recorded as a gate: **each door's button now opens Gmail's compose screen**
+with the subject and headings written; under it one small line, *or with
+your own mail app*, is the `mailto:`; the plain address stays. Both links
+are functions of the copy and the constant — nothing declared reaches
+either. The scenario carries the dated correction, the mock the third
+amendment; the builder has the change. Then the preview again, your walk
+again (this time the button must open Gmail with the subject in it), your
+word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
@@ -169,17 +180,21 @@ CLS fix is not. The three lines, left here until the window closes:
 
 **One thing is blocked on you: the walk.**
 
-- [ ] **Walk s13 on the preview** — http://localhost:4500 (the branch build;
-      the link-colour rule lands in a minute). *Header:* on `/` the word is
+- [x] **First walk of s13** (2026-09-16): the doors opened nothing on your
+      desktop — decided: Gmail first, the mail app second. Building.
+- [ ] **Walk s13 again on the preview** — http://localhost:4500, once the
+      Gmail change is in (STATUS will say). *Header:* on `/` the word is
       **Countries ▾**; on `/france/` it is **France ▾** with France marked in
       the list; open it, press Escape, open it, click elsewhere. *Phone:* the
       Menu with the four countries under a *Countries* heading. *Results:*
       answer to a result (or use a saved one) and read the line under the
       strip — *Something to say about this result? Feedback …* *The page:*
-      `/feedback/` — tap each of the three buttons; **your mail client must
-      open with the subject written** (*Wrong value* / *Missing* / *Note*)
-      and the headings in the body for the first two. This is the one step
-      no headless run can do. *Footer:* the address, the row to the page,
+      `/feedback/` — tap each of the three buttons; **Gmail must open in a new
+      tab with the address, the subject** (*Wrong value* / *Missing* /
+      *Note*) **and, for the first two, the headings in the body**. The small
+      line under each button is the mail-app link; on your desktop it will
+      still open nothing, which is now the documented second path, not the
+      door. This is the one step no headless run can do. *Footer:* the address, the row to the page,
       Sponsor; the GitHub links are on the page, not in the footer. *One
       colour to rule on:* the results line's **Feedback** link is ink in a
       muted sentence, as drawn; if it does not catch your eye, say "red"
