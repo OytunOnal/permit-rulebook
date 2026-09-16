@@ -96,9 +96,13 @@ static host allows; the 10-minute cache lifetime on the hashed assets is
 GitHub Pages' fixed `max-age=600`, not ours to raise; the 11 KiB of legacy
 JavaScript and the three limited-availability features are all inside
 Cloudflare's beacon, not our code; the one 64 ms long task is the interview
-module drawing the first screen. Nothing here opens a slice. The mobile run
-was not read — the link was the desktop one — and the s10 bet is a phone
-number; worth one click on the *Mobile* tab when you are next in the report.
+module drawing the first screen. Nothing here opens a slice. **The mobile run, read the
+same hour** (emulated Moto G Power, slow 4G): the same four 100s and 2/2;
+FCP 0.8 s, LCP 0.8 s, TBT 70 ms, **CLS 0**, Speed Index 0.8 s. This is the
+run s10 was built for — a phone on a slow network, the module arriving late —
+and the layout does not move. One note the desktop run did not carry:
+render-blocking requests, 120 ms, the page's own 5.7 KiB stylesheet; at
+0.8 s to first paint it is not worth a slice.
 
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.
