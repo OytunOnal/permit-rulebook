@@ -44,6 +44,15 @@ unread list; the site's daily rebuild then pins it and the page says
 *Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
 that is a finding, not a delay.
 
+**s18 is live** (2026-09-16, deploy `de094a7` green on re-run — the first
+run's only failure was `first-paint.test.ts` reading an `undefined` from
+the browser after a 250 ms settle on a slow runner, a flake recorded on the
+board): `/data/`'s Dataset block names its four countries as `Place`, the
+type Google's parser reads. Site #11 closed. **v1.1's state is now on the
+live site: s9 through s18.** The isolated full walk is next — the critique
+agent, every persona, all nine lenses, delta against v1's 36/50 — then the
+versions line and the README.
+
 **s16 and s17 are live too** (2026-09-16, deploy `7d5ef51` green, read on
 the live host): `/data/` in the reader's words — *46, written by us and
 marked as ours*; *raises a flag and a person reads it*; the lede's *and if
@@ -162,11 +171,10 @@ CLS fix is not. The three lines, left here until the window closes:
 - [x] **s13 walked and merged** (2026-09-16, your word), **s14 merged**
       (your word, after the five IND pages were read in Chrome at your
       request), **s15 merged** (your word). All three live in `6fe4eb5`.
-- [x] **s18 approved** (2026-09-16, *"tamamdır yapalım"*): site #11, the
-      one-line JSON-LD fix (`Country` → `Place`); building in its own
-      worktree. Nothing to walk — a data block in the page head; the proof
-      is the Rich Results test after the deploy and, days later, the
-      warning leaving Search Console.
+- [x] **s18 merged and live** (2026-09-16, your word). *One click of
+      yours, when you like:* Search Console → Datasets → the spatialCoverage
+      warning → *Validate fix*. A pass is the warning leaving the report in
+      the days after; nothing is blocked on it.
 - [x] **s16 and s17 walked and merged** (2026-09-16, your word; three
       corrections from your reads are in s16). Live in `7d5ef51`.
 - [ ] **Look at the live site once, when you like:** https://permitrulebook.com/feedback/

@@ -273,10 +273,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **s18 — `spatialCoverage` in the shape Google's parser reads** (site #11) ·
-  `{"@type":"Country"}` → `{"@type":"Place"}` in `/data/`'s Dataset JSON-LD;
-  Google drops `Country`. Scenario approved 2026-09-16 ("tamamdır yapalım");
-  building.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -287,6 +284,12 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s18 — `spatialCoverage` as Place** · real-green 2026-09-16 (human:
+  "merge"; live in `de094a7`). Site #11 closed. The deploy needed one
+  re-run: `first-paint.test.ts` read an `undefined` evaluate after a 250 ms
+  settle on a slow runner — a timing flake, green on re-run; if it repeats,
+  the settle is too short for CI and becomes a finding.
 
 - **s16 — `/data/` in the reader's words, and the last two tracker doors** ·
   real-green 2026-09-16 (human: "merge"; live in `7d5ef51`). Site #10 closed.
