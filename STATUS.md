@@ -44,11 +44,20 @@ unread list; the site's daily rebuild then pins it and the page says
 *Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
 that is a finding, not a delay.
 
-**s13, the feedback door, is building** (2026-09-16, your word:
-*"onaylıyorum"*). The builder works in its own worktree
-(`../permit-rulebook-s13`, branch `feedback-door`); this tree stays on master.
-Next: the build report, a Standards/Spec review pair, the branch preview on
-localhost, a light-mode critique, your walk, the alias, your word. The day's path: the second round's four shapes → your finding
+**s13, the feedback door, is built and under review** (2026-09-16). The
+builder's report: 17 files, 426 → 459 tests green, `astro check` clean, the
+`/feedback/` page, the header's *Countries* disclosure (the country's own
+name on its pages), the footer column, the results line in both layouts, the
+sitemap and the map; two premises of the scenario corrected with evidence —
+the header folds behind *Menu* below 960 px, so the row is measured at 960,
+not 761; and a `?country=` arrival re-scopes a record and lands on a question,
+so the four-country layout is walked with a complete all-countries record at
+`/`. The Standards review is in: one blocker — three test assertions any
+content silences (a content floor on the site map and two length floors) —
+and two should-fixes (a source-grep count; the social-card sentence typed
+outside `copy.ts`); the shipped code breaches no standard. The Spec review is
+running. Then: the fixes, the preview on http://localhost:4500 (the s13 build
+is already there), a light-mode critique, your walk, your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
