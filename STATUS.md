@@ -155,8 +155,10 @@ CLS fix is not. The three lines, left here until the window closes:
       in `../permit-rulebook-s16`: 475 tests green, the three sentences and
       the two doors as the scenario says. The build found the page's meta
       description still naming the tracker; it goes in the same round
-      (scenario corrected). Then the preview, your cold read of `/data/`,
-      your word.
+      (scenario corrected) — done, 476 green. **On the preview:**
+      http://localhost:4500/data/ — the counts row, the freshness sentence's
+      last half, the *Take it* door; and any route page's data door. Read
+      `/data/` cold once, then your word.
 - [ ] **Look at the live site once, when you like:** https://permitrulebook.com/feedback/
       — tap *Report what is wrong*; Gmail should open with the subject.
       Nothing is blocked on it.
