@@ -49,7 +49,22 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **The isolated full walk is in, and v1.1 does not stamp yet: two blockers.**
+live site: s9 through s18.** **s19 and s20 are live — the v1.1 gate's two blockers are cleared**
+(2026-09-16, deploy `1ca9e2c` green, read on the live host: France →
+research now carries the mark and lands on *No scored route in France
+takes a research hosting agreement.* with the door to
+`/france/talent-researcher/`; `/data/` is schema 0.8.0, 23 scored / 6
+quoted). The first deploy of the merge failed on a gate I had not run
+locally — `assets:check`: the social card said 5 quoted, the dataset 6 —
+regenerated and recorded. **Both blockers were verified cleared by the
+session's own walk on the preview before the merge** (three viewports for
+✎; France, Spain and the chercheur page for the mark), and B1 again on the
+live host. What the stamp needs now is the delta: the v1.1 report scored
+35/50 with Edge states and Responsive at 3 for these two blockers; with
+them cleared those lenses stand at their v1 value, 4 — a re-score by the
+same critic, not by me, is the honest number. **Then the versions line.**
+
+**The isolated full walk is in, and v1.1 does not stamp yet: two blockers.**
 (`docs/spine/critiques/2026-09-16-v1.1-gate-critique.md`, RUBRIC 1.3, blind,
 on the live site.) **35/50 against v1's 36/50**: Orientation +1 (v1's
 wrong-country entry is cleared and narrated), Edge states −1 and Responsive
@@ -150,26 +165,10 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the walk of s19 and s20, together on one
-preview.**
+**Nothing is blocked on you.** The v1.1 re-score runs next; the stamp follows it.
 
-- [ ] **Walk http://localhost:4500** (the s19 + s20 build against data
-      0.8.0; 528 tests green). *s19:* Check yours → France → the third
-      answer carries *Not scored for France yet — Talent — researcher
-      (chercheur) is quoted, not scored: read it here.* Choose it anyway →
-      the headline *No scored route in France takes a research hosting
-      agreement.*, the subline naming the route with *read its rules*
-      linking its page, no "Nothing open"; then Spain → the same answer →
-      CRITERIA MET as before, and the Spanish researcher card now says *Asked
-      in the interview — you declared …* instead of *not checked here*;
-      then https://localhost:4500/france/talent-researcher/ — nine French
-      sentences, dated today, the €2,200 floor among them. *s20, on a real
-      phone if you can:* answer to a result, open *You declared* at the
-      bottom, tap *Yearly salary ✎* — the salary question must be on screen
-      with its first option highlighted; pick a band — the new headline must
-      be on screen. Reload `/` mid-interview — *Continuing where you left
-      off — N answers kept. Start over.* inside the card. Then "merge" — one
-      word covers both, or say which.
+- [x] **s19 and s20 walked and merged** (2026-09-16, your word; the session
+      walked both on the preview at your ask, three viewports for ✎). Live.
 
 - [x] **Picked** (2026-09-16, *"1 ve 2 yapalım, 3 sonra"*): the two
       blockers now, the copy pass as its own slice after (on the board as a
@@ -193,9 +192,6 @@ preview.**
       390 (CLS 0.037, under the 0.1 bound; a recorded trade), and the build
       found and fixed an s10-era defect — a reader returning with a finished
       record had a blank card on ✎ since s10.
-- [ ] **B2 on a real phone**, when you can: answer to a result, open *You
-      declared* at the bottom, tap *Yearly salary ✎*. Pass = the salary
-      question's heading is on screen right after the tap.
 
 - [x] **The IND path is decided** (2026-09-16, *"url sabit"*): the form's
       result has no address, so the five IND route pages go human-tier.

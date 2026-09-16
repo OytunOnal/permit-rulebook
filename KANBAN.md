@@ -182,6 +182,11 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## backlog
 
+- **A `field` on precondition statements** (from s19): today "asked" is
+  derived by a shared sentence between a criterion and a statement, exact
+  match; three routes (de-researcher, de-ict-card, fr-ict) share by
+  containment and are not caught. A typed field is the cleaner derivation.
+
 - **The v1.1 copy pass** (gate critique adjustment 3, deferred by the
   human 2026-09-16: *"3 sonra"*): the statute stutter rendered once; the
   job-search sentence only when no offer is declared; the route pages'
@@ -282,14 +287,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **s19 — a situation no scored route asks** (v1.1 gate B1, F8) · France
-  offers "research" at question 2 and no scored French route takes it; the
-  reader sees "Nothing open". Derive the asked situations per country, mark
-  the option, write the zero-open state, bring *Talent — chercheur* in as
-  quoted-not-scored. Scenario approved 2026-09-16 ("approve"), **building**.
-- **s20 — the correction lands on the question and returns to the verdict**
-  (v1.1 gate B2, F6, F5) · on a phone ✎ leaves the question off-screen.
-  Scenario approved 2026-09-16 ("approve"), **building**.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -300,6 +298,19 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s19 — a situation no scored route asks** · real-green 2026-09-16 (human:
+  "merge"; data `7156a56`, site in `1ca9e2c`). v1.1 gate B1 and F8 cleared:
+  question 2 marks a situation no scored route in the country takes; the
+  zero-open result is a written state; *Talent — chercheur* is quoted (a
+  €2,200 floor the exclusions row had denied); `not_asked` is validated.
+  Backlog from it: a `field` on precondition statements; containment (not
+  equality) on three more routes' shared sentences.
+- **s20 — the correction lands on the question and returns to the verdict** ·
+  real-green 2026-09-16 (human: "merge"; live in `1ca9e2c`). v1.1 gate B2,
+  F6, F5 cleared; an s10-era blank-card defect for returning readers fixed.
+  The resumed line costs 44 px of footer travel on a record arrival at 390
+  (CLS 0.037, under the bound) — recorded.
 
 - **s18 — `spatialCoverage` as Place** · real-green 2026-09-16 (human:
   "merge"; live in `de094a7`). Site #11 closed. The deploy needed one
