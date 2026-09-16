@@ -112,7 +112,7 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the word for s14.**
+**Nothing is blocked on you.**
 
 - [x] **The IND path is decided** (2026-09-16, *"url sabit"*): the form's
       result has no address, so the five IND route pages go human-tier.
@@ -123,9 +123,10 @@ CLS fix is not. The three lines, left here until the window closes:
       page; recorded in the checklist with the date. s14 is ready: 555 tests,
       `npm run check` green, the quote gate `ok' with 145 verified and 40
       human-tier.
-- [ ] **Say "merge"** for s14 (data). It lands on data master, the site's
-      next pin picks it up, and s13 deploys — the live site gets the feedback
-      door and the header in one deploy.
+- [x] **s14 merged** (2026-09-16, your word): data `b2488b9`, the site
+      pinned to it in `c4c3b04` (the lock's stray conflict markers cleaned
+      with it — the workflow reads only the sha line, so they never bit).
+      The deploy of s13 + s14 is running; the live read follows.
 
 - [x] **First walk of s13** (2026-09-16): the doors opened nothing on your
       desktop — decided: Gmail first, the mail app second. Building.

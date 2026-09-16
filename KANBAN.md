@@ -273,15 +273,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **s14 — the IND's requirements moved behind a form** (data #20) · the
-  watch found the IND's HSM page changed on 2026-09-16 and four sibling
-  pages unreachable; all five are now a *Your situation* form with no
-  addressable result (human: *"url sabit"*). The five entries go human-tier
-  with a 90-day re-read; the quote gate turns green on the honest ground;
-  s13 deploys on the next pin. Scenario
-  `docs/spine/scenarios/s14-ind-behind-the-form.md` approved 2026-09-16 ("approve"),
-  **building** in its own worktree; the merge is gated on the human reading the five
-  pages.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -292,6 +284,12 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s14 — the IND's requirements moved behind a form** · real-green
+  2026-09-16 (human: "merge"; data `b2488b9`, site pin `c4c3b04`). Data #20
+  closed. Five IND route pages to the human tier, read in Chrome the same day
+  (26/26 sentences); the quote gate green on 145 verified + 40 human-tier.
+  The road back to machine-checking is data #17 (headless browser).
 
 - **s13 — the feedback door** · real-green 2026-09-16 (human: "merge";
   site `f06badd`). Site #6 and #7 closed by the merge. Scenario
