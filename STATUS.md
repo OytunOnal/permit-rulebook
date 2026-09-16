@@ -172,7 +172,8 @@ CLS fix is not. The three lines, left here until the window closes:
       compared…*), a results screen (*Your N answers were compared…*), and
       `/data/` (the lede's door, the counts row, the freshness sentence, the
       Take-it door). Your read found the lede's *or tell us it is wrong* presupposing a
-      wrong; you chose *"…and if something is wrong, tell us."* — landing.
+      wrong; you chose *"…and if something is wrong, tell us."* — on the preview,
+      485 green.
       Then "merge" — for both, or say which.
 - [ ] **Look at the live site once, when you like:** https://permitrulebook.com/feedback/
       — tap *Report what is wrong*; Gmail should open with the subject.
