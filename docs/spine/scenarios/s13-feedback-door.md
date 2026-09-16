@@ -141,6 +141,17 @@ reader, and a plain address on every page is thirty-seven copies for a
 harvester. The column is two rows: *How to write, and what happens* →
 `/feedback/`, *Sponsor this work*. The address lives on the page only.
 
+**Corrected 2026-09-16, second walk, four:** point 6 changes — the results
+line under the strip *"looks odd at the very top of the results"* (human),
+which is the critique's two polish findings from the reader's side: it asks
+before a value has been read, and its second half lists the page it leads
+to. Chosen from three (end-and-shorten / keep-and-shorten / remove): **the
+line moves to the end of the results body**, after the last section in
+both layouts, above the footer's rule, and becomes one sentence —
+*Something to say about this result? Feedback.* — the word the link. It no
+longer says "wrong about you", so its neighbour being the closed section
+is not the invitation the 09-10 default's was.
+
 ## How it is proved
 
 - A case renders `/feedback/` and asserts the three `mailto:` links, in order,

@@ -3476,3 +3476,21 @@ harvests addresses; one door — the page — is easier to keep honest than two.
 from it. The e-mail decision's "shown in plain text beside every link to it"
 now means: on `/feedback/`, beside the doors — the only place the links are.
 **Gate:** yes, the human's word, on the preview.
+
+## 2026-09-16 — the results line closes the results, in one sentence 🛑
+
+**Decided by the human on the second s13 walk** (*"bu da bi garip duruyor
+sonuç sayfasında en başta"* → *"1"* of three options). The F drawing put one
+line under the verdict strip, before the first card: *Something to say about
+this result? Feedback — a wrong value, something missing, or anything
+else.* On the preview it read as odd — a question asked before a single
+value has been read, and a list of the page it leads to. **Decided:** the
+line moves to the end of the results body, after the last section in both
+layouts, above the footer's rule, as one sentence: *Something to say about
+this result? Feedback.* **Why this and not the other two:** keeping it under
+the strip and shortening it leaves the early question; removing it leaves
+the phone's results screen with no door but the menu, which is why F was
+chosen over H. **Cost, accepted:** the line's neighbour is the closed
+section when a passport has one — the objection to the 09-10 default — but
+that default said *wrong about you?*, and this line does not. **Gate:** yes,
+the human's word, on the preview.

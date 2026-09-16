@@ -93,8 +93,11 @@ separator by 13 px on the worst word at both widths, 462 green. And a third,
 your own proposal ratified (*"kaldır"*): **the footer loses the address
 row** — a `mailto:` there opens nothing for a browser-mail reader and a
 plain address on every page is thirty-seven copies for a harvester; the
-column is two rows, the address lives on the page. Being built. Then your
-word. The day's path: the second round's four shapes → your finding
+column is two rows, the address lives on the page. And a fourth: **the
+results line moves to the end of the results and shortens** to *Something
+to say about this result? Feedback.* — under the strip it asked before a
+value was read (*"garip duruyor"*; you chose end-and-shorten of three).
+Both being built. Then your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
