@@ -44,21 +44,25 @@ unread list; the site's daily rebuild then pins it and the page says
 *Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
 that is a finding, not a delay.
 
-**The feedback moment is at its design gate, drawn and critiqued** (2026-09-16,
-after your *"daha tasarımına karar vermedik ki feedbackin"*). The re-land was
-stopped and its worktree removed. Four shapes are in
-`docs/spine/design/s7-feedback-2.html`, all inside the bounds you set on
-09-10 (nothing opens by itself, nothing dims, nothing remembered, the GitHub
-account said before the click): **C** the closing line at the end of the body
-(what shipped as a default), **C′** the same line under the verdict, **D** a
-block with two buttons, **E** one link on every route card that opens the
-tracker with that route's name in the title. The critique
-(`docs/spine/critiques/2026-09-16-feedback-moment-design-critique.md`)
-judged the rendered frames and recommends **E**, naming the trade: every card
-grows by a row and "suggest a change" stays in the footer, in exchange for a
-report that arrives named after the route it disputes. C and D both sit three
-lines above the footer's identical links and directly under *Not open to your
-passport*. The pick is yours; nothing is built until it is made.
+**The feedback door is decided; where it sits is drawn and waits on your
+pick** (2026-09-16). The second round's four shapes (C, C′, D, E) were on the
+table when the conversation found the question under them: a reader may want
+to say something *without anything being wrong*, and the footer's feedback
+does not draw the eye. You decided — recorded as a gate in DECISIONS — that
+**the reader's door is e-mail**: an alias on the site's domain (proposed
+`feedback@permitrulebook.com`), shown in plain text beside every link, with
+three `mailto:` templates (a value is wrong · something is missing · anything
+else) and **the GitHub tracker's links kept beside it, named as the option**
+for a reader with an account. Nothing you declared is ever written into a
+mail. The third round, `docs/spine/design/s7-feedback-3.html`, draws the same
+door in three places: **F** one word "Feedback" in the header, under the
+verdict and in the footer, all leading to a page of its own; **G** the footer
+column *is* the door, header and verdict line anchor to it; **H** the page,
+from header and footer only, results untouched. The critique
+(`docs/spine/critiques/2026-09-16-feedback-door-placement-critique.md`)
+recommends **F**: one more hop and one more page, for a door that explains
+itself before the click and a footer that stays a footer. Nothing is built
+until you pick; the alias's routing is yours to set up when you do.
 
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.
@@ -100,12 +104,18 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the feedback moment's shape.**
+**One thing is blocked on you: where the feedback door sits.**
 
-- [ ] **Pick C, C′, D or E** — open `docs/spine/design/s7-feedback-2.html`
-      in a browser (the frames are 390 and 760 wide) and say which, or say what
-      none of them has. *Recommended:* E, for the reasons in the critique; C′
-      is the cheaper honest choice. The build waits on the word.
+- [ ] **Pick F, G or H** — open `docs/spine/design/s7-feedback-3.html` in a
+      browser (frames at 390 and 1000 px) and say which, or say what none of
+      them has. *Recommended:* F. The build waits on the word.
+- [ ] **When you pick: the alias.** In Cloudflare → permitrulebook.com →
+      Email → Email Routing: enable routing (it adds the MX and TXT records
+      itself), create the address `feedback@permitrulebook.com` (or the name
+      you prefer — tell me, it goes into the copy) and route it to your inbox;
+      verify the destination from the mail Cloudflare sends. *Pass:* a mail
+      you send to the alias from another address arrives in your inbox. Until
+      it does, nothing on the site names the address.
 
 These are the things only you can see, when you want to look:
 

@@ -3336,3 +3336,63 @@ over. Where a screen appears, and whether it appears at all, is a design
 gate, and this one had already produced a rejection. Recording a default in
 the ledger as a decision made it look decided to every session after,
 including this one an hour ago.
+
+## 2026-09-16 — the feedback door is e-mail; GitHub stays beside it, named 🛑
+
+**Decided by the human, in conversation, after the second design round was
+on the table** (`docs/spine/design/s7-feedback-2.html`; critique in
+`docs/spine/critiques/2026-09-16-feedback-moment-design-critique.md`). The
+round had asked which *shape* the door takes; the conversation found the
+question underneath it — *what the door is* — and settled that first. Shape
+and placement go to a further drawn round; nothing is built yet.
+
+**What the human said, in order.** A popup would be more visible ("popupta
+çeken görünürlük"); of the four shapes D is closest, but not to be built as
+is: it sits at the end of the interview and asks "wrong about you?". Then
+the wider need: a reader may want to give feedback *without anything being
+wrong*, and the footer's feedback "çok dikkat çekmiyor". Then: free the
+feedback from GitHub and turn it into e-mail, with templates. Then the three
+answers: **an alias address; shown in plain text as well as linked; the GitHub
+links stay as an option, presented as such.**
+
+**The decision, in full:**
+
+1. **The reader's door is e-mail.** One address — an alias on the site's
+   domain (proposed `feedback@permitrulebook.com`, routed to the human's
+   inbox by Cloudflare Email Routing; the routing is the human's to set up,
+   in their dashboard, not this project's). The address appears in plain text
+   beside every link to it, because a `mailto:` link on a machine with no
+   mail client does nothing and a reader must be able to copy the address.
+2. **Three templates, as the link's own subject and body.** A value is wrong
+   (page · what it says · what the source says · where); something is missing;
+   anything else. The route or page name may be written into the subject.
+   **Nothing the reader declared in the interview is ever written into a
+   mail** — the record stays on the device; this replaces the 09-10 bound
+   "the GitHub account requirement is said before the click", which no longer
+   has anything to apply to.
+3. **GitHub stays, beside, named as what it is.** The tracker's two links
+   remain wherever the e-mail door is, presented as the option for a reader
+   who has an account and wants the public record — not hidden, not first.
+   Issue templates and CONTRIBUTING stay for contributors.
+4. **Not decided here:** where the door sits (header, under the verdict,
+   footer, its own page) — a drawn round with a critique, then the human's
+   pick, as every screen of this product had.
+
+**Why e-mail.** Everyone has an address and nobody has to make an account to
+say something; the login trap the tracker set (site #7) closes by
+construction for readers; "anything else" — the kind of feedback the tracker
+has no template for and blank issues are switched off — gets a door. **What
+it costs, known and accepted:** a report and its fix stop being public by
+default (the public trail now depends on the human filing what arrives),
+the address will be harvested for spam (the alias can be rotated), and a
+`mailto:` link is inert on some desktops (hence the plain-text address).
+
+**What this changes about earlier records.** The 2026-09-10 rejection of A
+and B stands. The 2026-09-16 correction stands. Site #6's rule list ("only
+the two things the product can act on", "says out loud that filing needs a
+GitHub account") is superseded by this entry for the reader's door; the
+issue is to be updated when the placement is chosen.
+
+**Gate:** yes — the human chose, between drawn alternatives and in their own
+words. The alias, its name and its routing are theirs; the placement round
+is next.

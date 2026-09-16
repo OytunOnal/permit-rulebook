@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The feedback door, third round: e-mail, and where it sits · Permit Rulebook</title>
+<style>
+/* Third round for site #6, after the human's decision of 2026-09-16
+   (DECISIONS: "the feedback door is e-mail; GitHub stays beside it, named").
+   The door is settled; this round draws WHERE it sits. Same door in every
+   variant:
+   · one alias address, feedback@permitrulebook.com (proposed name), shown
+     in plain text beside every link to it;
+   · three templates — a value is wrong / something is missing / anything
+     else — each a mailto: link whose subject and body are the template;
+     nothing the reader declared is ever written into a mail;
+   · the GitHub tracker's two links beside it, named as the option for a
+     reader with an account who wants the public record.
+   Nothing opens by itself, nothing dims, nothing is remembered, no script.
+
+   Three placements:
+   F · one word — "Feedback" — in the header, under the verdict and in the
+       footer, all leading to one page, /feedback/, which holds the door.
+   G · no page: the footer's Feedback column IS the door; the header word
+       and the verdict line are same-page anchors that scroll to it.
+   H · the page, reached from the header and the footer only; the results
+       body is not touched.
+   Tokens pasted so the mock opens standalone. */
+:root {
+  --color-bg: #f1eee4; --color-card: #fbf9f2; --color-ink: #2b2a22; --color-muted: #5a5747; --color-line: #d9d3c0;
+  --color-stamp: #8c2b2b; --color-met: #2e5b3f; --color-met-soft: #e4efe7; --color-near: #8a5a19;
+  --color-hold: #6a6759; --color-hold-soft: #edeadf; --color-band: #31519a;
+  --font-serif: Cambria, Georgia, serif; --font-sans: "Segoe UI", system-ui, sans-serif; --font-mono: Consolas, monospace;
+  --text-route: 700 1.08rem var(--font-serif); --text-body: 15px/1.6 var(--font-sans);
+  --rule-heavy: 3px double var(--color-ink); --rule-card-top: 3px solid var(--color-ink);
+  --rule-soft: 1px solid var(--color-line); --rule-dotted: 1px dotted var(--color-line);
+  --space-1: .25rem; --space-2: .5rem; --space-3: .85rem; --space-4: 1.3rem; --space-5: 1.6rem; --space-6: 2.8rem;
+  --gap-cards: .85rem; --pad-card: 1rem 1.3rem 1.05rem; --max-content: 56rem; --tap-min: 44px; --tracking-nav: .12em;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #555; color: #eee; font: 13px/1.5 system-ui; padding: 24px; }
+h2.mock { font: 600 14px system-ui; margin: 34px 0 6px; color: #eee; }
+h2.mock small { font-weight: 400; color: #bbb; display: block; margin-top: 4px; max-width: 62rem; }
+.frames { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+.phone { width: 390px; }
+.desk { width: 1000px; max-width: 100%; }
+.label-w { font: 600 11px system-ui; color: #bbb; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 6px; }
+
+/* ---- the page behind ---- */
+.panel { background: var(--color-bg); color: var(--color-ink); font: var(--text-body); border: 1px solid #333; }
+.panel .inner { padding: var(--space-4); }
+a { color: var(--color-ink); }
+.keep { font: .72rem var(--font-mono); color: var(--color-muted); }
+
+/* header, as live */
+.site-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: var(--rule-soft); }
+.wordmark { display: inline-flex; align-items: center; gap: .5rem; font: 700 1.15rem var(--font-serif); text-decoration: none; }
+.seal { display: inline-block; font: 700 .7rem var(--font-sans); color: var(--color-stamp); border: 2px solid var(--color-stamp); padding: 1px 4px; transform: rotate(-6deg); }
+.menu { font: 700 .72rem var(--font-sans); letter-spacing: var(--tracking-nav); text-transform: uppercase; border: 1px solid var(--color-ink); background: none; padding: .7rem .9rem; }
+.nav { display: flex; gap: var(--space-4); align-items: center; }
+.nav a { font: 700 .72rem var(--font-sans); letter-spacing: var(--tracking-nav); text-transform: uppercase; text-decoration: none; min-height: var(--tap-min); display: inline-flex; align-items: center; }
+.nav a.check { border: 1px solid var(--color-ink); padding: 0 .9rem; }
+.nav .sep { width: 1px; height: 1.4rem; background: var(--color-line); }
+.nav a.new { color: var(--color-stamp); }
+.phone .nav { display: none; }
+.desk .menu { display: none; }
+
+/* masthead, results top */
+.eyebrow { font: 700 .7rem var(--font-sans); letter-spacing: .18em; text-transform: uppercase; color: var(--color-muted); margin: 0 0 .4rem; }
+.res-h { font: 400 1.6rem/1.2 var(--font-serif); margin: 0 0 var(--space-2); }
+.res-h b { font-weight: 400; color: var(--color-near); }
+.res-sub { margin: 0 0 var(--space-3); color: var(--color-muted); font-size: .9rem; }
+.strip { display: flex; gap: .6rem; margin: 0 0 .4rem; flex-wrap: wrap; }
+.strip span { font: 600 .78rem var(--font-sans); letter-spacing: .08em; text-transform: uppercase; padding: .45rem .8rem; border: var(--rule-soft); background: var(--color-card); }
+.strip .s-met { border-left: 3px solid var(--color-met); color: var(--color-met); }
+.strip .s-hold, .strip .s-closed { border-left: 3px solid var(--color-hold); color: var(--color-hold); }
+.ghead { font: 700 .72rem var(--font-sans); letter-spacing: .16em; text-transform: uppercase; color: var(--color-muted); margin: var(--space-4) 0 var(--space-2); }
+.ghead b { color: var(--color-met); }
+.route { background: var(--color-card); border: var(--rule-soft); border-top: var(--rule-card-top); padding: var(--pad-card); }
+.top { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+.country { font: 700 .68rem var(--font-sans); letter-spacing: .22em; text-transform: uppercase; color: var(--color-muted); }
+.route h3 { font: var(--text-route); margin: .15rem 0 .25rem; }
+.st { font: 700 .66rem var(--font-sans); letter-spacing: .14em; text-transform: uppercase; padding: .3rem .65rem; white-space: nowrap; background: var(--color-met-soft); color: var(--color-met); }
+.rule { font: .76rem var(--font-mono); color: var(--color-muted); margin: .35rem 0 0; }
+.rule i { color: var(--color-ink); } .rule b { color: var(--color-met); font-weight: 400; }
+
+/* the verdict line (F, G) */
+.say { margin: .2rem 0 var(--space-3); font-size: .88rem; color: var(--color-muted); }
+.say a { color: var(--color-ink); min-height: var(--tap-min); display: inline-flex; align-items: center; }
+
+/* footer, as live */
+.foot { border-top: var(--rule-heavy); margin-top: var(--space-6); padding-top: var(--space-4); }
+.foot .disc { text-align: center; color: var(--color-muted); font-size: .86rem; margin: 0 0 var(--space-4); padding-bottom: var(--space-4); border-bottom: var(--rule-soft); }
+.cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4); }
+.phone .cols { display: block; }
+.col h3 { font: 700 .72rem var(--font-sans); letter-spacing: .16em; text-transform: uppercase; margin: 0 0 var(--space-2); }
+.col ul { list-style: none; margin: 0 0 var(--space-4); padding: 0; }
+.col li { border-bottom: var(--rule-dotted); }
+.desk .col li { border-bottom: 0; }
+.col li a { display: inline-flex; align-items: center; min-height: var(--tap-min); text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: .2em; }
+.col li a.out::after { content: "↗"; font-size: .8em; margin-left: .15em; }
+.col li.addr { font: 600 .84rem var(--font-mono); }
+.col li.addr a { text-decoration: none; }
+.col li.sub { font-size: .82rem; color: var(--color-muted); border-bottom: 0; padding: .2rem 0 .1rem; }
+.col li.sub b { font-weight: 600; color: var(--color-ink); }
+.foot .line { border-top: var(--rule-soft); margin-top: var(--space-2); padding-top: var(--space-3); text-align: center; font: .78rem var(--font-mono); color: var(--color-muted); }
+
+/* the /feedback/ page (F, H) */
+.fb h1 { font: 400 1.9rem/1.15 var(--font-serif); margin: 0 0 var(--space-2); }
+.fb .lede { color: var(--color-muted); margin: 0 0 var(--space-4); max-width: 36rem; }
+.fb .doors { display: grid; gap: var(--gap-cards); margin-bottom: var(--space-4); }
+.door { background: var(--color-card); border: var(--rule-soft); border-left: 3px solid var(--color-ink); padding: var(--pad-card); }
+.door h3 { font: var(--text-route); margin: 0 0 .25rem; }
+.door p { margin: 0 0 .6rem; font-size: .88rem; color: var(--color-muted); }
+.door a.act { display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-3); border: 1px solid var(--color-ink); background: var(--color-bg); text-decoration: none; font: 600 .85rem var(--font-sans); }
+.door .tmpl { display: block; margin-top: .5rem; font: .72rem var(--font-mono); color: var(--color-muted); }
+.fb .addr { font: 600 1rem var(--font-mono); margin: 0 0 .2rem; }
+.fb .addr a { text-decoration: none; }
+.fb .note { font-size: .86rem; color: var(--color-muted); margin: 0 0 var(--space-4); max-width: 36rem; }
+.fb h2 { font: 700 .72rem var(--font-sans); letter-spacing: .16em; text-transform: uppercase; color: var(--color-muted); margin: var(--space-4) 0 var(--space-2); }
+.fb .gh { border-top: var(--rule-soft); padding-top: var(--space-3); }
+.fb .gh p { font-size: .88rem; color: var(--color-muted); margin: 0 0 .5rem; max-width: 36rem; }
+.fb .gh a { display: inline-flex; align-items: center; min-height: var(--tap-min); margin-right: var(--space-4); }
+.fb .gh a::after { content: "↗"; font-size: .8em; margin-left: .15em; }
+
+/* G: the footer as the door */
+.col.door-col li.tmpl-row { border-bottom: var(--rule-dotted); }
+.col.door-col li.tmpl-row a { text-decoration: underline; }
+.col.door-col li.tmpl-row .keep { display: block; margin: -.4rem 0 .4rem; }
+</style>
+</head>
+<body>
+
+<!-- ================================================================ F -->
+<h2 class="mock">F · One word, one page
+  <small>"Feedback" appears three times — in the header's row (seventh item, before Check yours), as one
+  line under the verdict, and as the footer column's heading — and all three lead to <b>/feedback/</b>,
+  a page of the site's own that holds the door: three template links, the address in plain text, what
+  happens to a mail, and the GitHub option beneath, named. The word is visible the moment any page
+  opens on desktop; on a phone it is behind Menu, one tap. The header's seventh item must be measured
+  at 761 px before it ships (six items filled 94% of that row on CI's fonts, 2026-09-08).</small></h2>
+<div class="frames">
+  <div class="desk">
+    <p class="label-w">1000 px · the header with the seventh word</p>
+    <div class="panel">
+      <div class="site-head">
+        <a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a>
+        <nav class="nav"><a href="#">Germany</a><a href="#">France</a><a href="#">Spain</a><a href="#">Netherlands</a><span class="sep"></span><a class="check" href="#">Check yours</a><a href="#">The data</a><a href="#">Feedback</a></nav>
+      </div>
+    </div>
+  </div>
+  <div class="phone">
+    <p class="label-w">390 px · top of the results body</p>
+    <div class="panel">
+      <div class="site-head"><a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a><button class="menu">Menu</button></div>
+      <div class="inner">
+      <p class="res-h"><b>Two</b> routes could fit.</p>
+      <p class="res-sub">Every rule below is quoted from the authority's page, with the day it was read.</p>
+      <div class="strip"><span class="s-met">2 open</span><span class="s-hold">3 not yet</span><span class="s-closed">1 not open to your passport</span></div>
+      <p class="say">Something to say about this result? <a href="#">Feedback</a> — a wrong value, something missing, or anything else.</p>
+      <p class="ghead" style="margin-top:0"><b>Open — criteria met</b> (2)</p>
+      <div class="route"><div class="top"><span class="country">France</span><span class="st">Rules met</span></div>
+        <h3>EU Blue Card (talent — carte bleue européenne)</h3>
+        <p class="rule">salary ≥ <i>€ 53 836,50 / year</i> · your band above · <b>read 2026-09-09</b></p></div>
+      </div>
+    </div>
+  </div>
+  <div class="phone">
+    <p class="label-w">390 px · /feedback/</p>
+    <div class="panel">
+      <div class="site-head"><a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a><button class="menu">Menu</button></div>
+      <div class="inner fb">
+        <p class="eyebrow">Read by a person.</p>
+        <h1>Feedback</h1>
+        <p class="lede">One address, three kinds of mail. The link fills in the subject and a few headings; the rest is yours.
+          Nothing you declared in the interview is sent.</p>
+        <div class="doors">
+          <div class="door"><h3>A value is wrong</h3><p>The page says one thing; the source says another.</p>
+            <a class="act" href="mailto:feedback@permitrulebook.com?subject=Wrong%20value">Write about a wrong value</a>
+            <span class="tmpl">Subject: Wrong value · Page · What it says · What the source says · Where</span></div>
+          <div class="door"><h3>Something is missing</h3><p>A route, a question, a country, a case.</p>
+            <a class="act" href="mailto:feedback@permitrulebook.com?subject=Missing">Write about something missing</a>
+            <span class="tmpl">Subject: Missing · What · Where you looked for it</span></div>
+          <div class="door"><h3>Anything else</h3><p>Confusing, useful, broken, kind — anything.</p>
+            <a class="act" href="mailto:feedback@permitrulebook.com?subject=Feedback">Write anything</a>
+            <span class="tmpl">Subject: Feedback</span></div>
+        </div>
+        <p class="addr"><a href="mailto:feedback@permitrulebook.com">feedback@permitrulebook.com</a></p>
+        <p class="note">If a link opens nothing, copy the address. A person reads every mail. A wrong value, confirmed
+          against its source, is changed and the change gets a history line with the date. No reply is promised;
+          a fix is the reply.</p>
+        <div class="gh">
+          <h2>If you have a GitHub account</h2>
+          <p>The tracker is where changes are recorded in public and where contributors work. The same things can go there instead:</p>
+          <a href="#">Report a wrong value</a><a href="#">Suggest a route or a change</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="desk">
+    <p class="label-w">1000 px · /feedback/</p>
+    <div class="panel">
+      <div class="site-head">
+        <a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a>
+        <nav class="nav"><a href="#">Germany</a><a href="#">France</a><a href="#">Spain</a><a href="#">Netherlands</a><span class="sep"></span><a class="check" href="#">Check yours</a><a href="#">The data</a><a href="#" aria-current="page" style="text-decoration:underline">Feedback</a></nav>
+      </div>
+      <div class="inner fb" style="max-width:56rem">
+        <p class="eyebrow">Read by a person.</p>
+        <h1>Feedback</h1>
+        <p class="lede">One address, three kinds of mail. The link fills in the subject and a few headings; the rest is yours.
+          Nothing you declared in the interview is sent.</p>
+        <div class="doors" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="door"><h3>A value is wrong</h3><p>The page says one thing; the source says another.</p>
+            <a class="act" href="#">Write about a wrong value</a>
+            <span class="tmpl">Subject: Wrong value · Page · What it says · What the source says · Where</span></div>
+          <div class="door"><h3>Something is missing</h3><p>A route, a question, a country, a case.</p>
+            <a class="act" href="#">Write about something missing</a>
+            <span class="tmpl">Subject: Missing · What · Where you looked for it</span></div>
+          <div class="door"><h3>Anything else</h3><p>Confusing, useful, broken, kind — anything.</p>
+            <a class="act" href="#">Write anything</a>
+            <span class="tmpl">Subject: Feedback</span></div>
+        </div>
+        <p class="addr"><a href="#">feedback@permitrulebook.com</a></p>
+        <p class="note">If a link opens nothing, copy the address. A person reads every mail. A wrong value, confirmed
+          against its source, is changed and the change gets a history line with the date. No reply is promised;
+          a fix is the reply.</p>
+        <div class="gh">
+          <h2>If you have a GitHub account</h2>
+          <p>The tracker is where changes are recorded in public and where contributors work. The same things can go there instead:</p>
+          <a href="#">Report a wrong value</a><a href="#">Suggest a route or a change</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="phone">
+    <p class="label-w">390 px · the footer's column</p>
+    <div class="panel"><div class="inner" style="padding-top:0">
+      <div class="foot" style="margin-top:0">
+        <div class="cols">
+          <div class="col"><h3>Feedback</h3><ul>
+            <li class="addr"><a href="#">feedback@permitrulebook.com</a></li>
+            <li><a href="#">Feedback — how to write, what happens</a></li>
+            <li><a class="out" href="#">Sponsor this work</a></li>
+          </ul></div>
+        </div>
+        <div class="line"><b>Permit Rulebook</b> · code MIT · data CC BY 4.0 · © 2026 Oytun Onal</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ================================================================ G -->
+<h2 class="mock">G · The footer is the door
+  <small>No page. The footer's Feedback column becomes the door itself — the address in plain text, the
+  three template links under it, the GitHub pair beneath, named — on every page. The header's
+  "Feedback" and the line under the verdict are same-page anchors: one tap scrolls to the column. One
+  hop fewer than F; the footer grows and carries the door's explanation in the space a footer has.</small></h2>
+<div class="frames">
+  <div class="phone">
+    <p class="label-w">390 px · top of the results body</p>
+    <div class="panel">
+      <div class="site-head"><a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a><button class="menu">Menu</button></div>
+      <div class="inner">
+      <p class="res-h"><b>Two</b> routes could fit.</p>
+      <p class="res-sub">Every rule below is quoted from the authority's page, with the day it was read.</p>
+      <div class="strip"><span class="s-met">2 open</span><span class="s-hold">3 not yet</span><span class="s-closed">1 not open to your passport</span></div>
+      <p class="say">Something to say about this result? <a href="#feedback">Feedback ↓</a></p>
+      <p class="ghead" style="margin-top:0"><b>Open — criteria met</b> (2)</p>
+      <div class="route"><div class="top"><span class="country">France</span><span class="st">Rules met</span></div>
+        <h3>EU Blue Card (talent — carte bleue européenne)</h3>
+        <p class="rule">salary ≥ <i>€ 53 836,50 / year</i> · your band above · <b>read 2026-09-09</b></p></div>
+      </div>
+    </div>
+  </div>
+  <div class="phone">
+    <p class="label-w">390 px · the footer, every page</p>
+    <div class="panel"><div class="inner" style="padding-top:0">
+      <div class="foot" style="margin-top:0">
+        <div class="cols">
+          <div class="col door-col" id="feedback"><h3>Feedback</h3><ul>
+            <li class="addr"><a href="#">feedback@permitrulebook.com</a></li>
+            <li class="sub">Read by a person. Nothing you declared is sent. If a link opens nothing, copy the address.</li>
+            <li class="tmpl-row"><a href="#">A value is wrong</a><span class="keep">Subject: Wrong value · page · what it says · what the source says · where</span></li>
+            <li class="tmpl-row"><a href="#">Something is missing</a><span class="keep">Subject: Missing · what · where you looked</span></li>
+            <li class="tmpl-row"><a href="#">Anything else</a><span class="keep">Subject: Feedback</span></li>
+            <li class="sub"><b>With a GitHub account</b> — the public record, where contributors work:</li>
+            <li><a class="out" href="#">Report a wrong value</a></li>
+            <li><a class="out" href="#">Suggest a route or a change</a></li>
+            <li><a class="out" href="#">Sponsor this work</a></li>
+          </ul></div>
+        </div>
+        <div class="line"><b>Permit Rulebook</b> · code MIT · data CC BY 4.0 · © 2026 Oytun Onal</div>
+      </div>
+    </div></div>
+  </div>
+  <div class="desk">
+    <p class="label-w">1000 px · the footer, every page</p>
+    <div class="panel"><div class="inner" style="padding-top:0">
+      <div class="foot" style="margin-top:0">
+        <p class="disc">Permit Rulebook makes no immigration decision and no authority is bound by these results — it compares published values with what you declare, nothing more.</p>
+        <div class="cols">
+          <div class="col"><h3>Countries</h3><ul><li><a href="#">Germany</a></li><li><a href="#">France</a></li><li><a href="#">Spain</a></li><li><a href="#">Netherlands</a></li></ul></div>
+          <div class="col"><h3>The data</h3><ul><li><a href="#">The data — status, versions, downloads</a></li><li><a class="out" href="#">The repository</a></li><li><a class="out" href="#">Licence · CC BY 4.0</a></li></ul></div>
+          <div class="col door-col" id="feedback2"><h3>Feedback</h3><ul>
+            <li class="addr"><a href="#">feedback@permitrulebook.com</a></li>
+            <li class="sub">Read by a person. Nothing you declared is sent. If a link opens nothing, copy the address.</li>
+            <li class="tmpl-row"><a href="#">A value is wrong</a><span class="keep">Subject: Wrong value · page · what it says · what the source says · where</span></li>
+            <li class="tmpl-row"><a href="#">Something is missing</a><span class="keep">Subject: Missing · what · where you looked</span></li>
+            <li class="tmpl-row"><a href="#">Anything else</a><span class="keep">Subject: Feedback</span></li>
+            <li class="sub"><b>With a GitHub account</b> — the public record, where contributors work:</li>
+            <li><a class="out" href="#">Report a wrong value</a></li>
+            <li><a class="out" href="#">Suggest a route or a change</a></li>
+            <li><a class="out" href="#">Sponsor this work</a></li>
+          </ul></div>
+        </div>
+        <div class="line"><b>Permit Rulebook</b> · code MIT · data CC BY 4.0 · © 2026 Oytun Onal · values read between 2026-09-02 and 2026-09-10 · re-read daily (last run 2026-09-16)</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ================================================================ H -->
+<h2 class="mock">H · The page, from the chrome only
+  <small>F's page and F's header word and footer column — and nothing in the results body. The site's
+  frame carries the door on every page alike; the result a reader waited thirteen questions for is
+  not the place the product speaks about itself. This variant exists to ask one question: is the line
+  under the verdict worth its three lines, or is a word in the header enough?</small></h2>
+<div class="frames">
+  <div class="phone">
+    <p class="label-w">390 px · top of the results body — unchanged</p>
+    <div class="panel">
+      <div class="site-head"><a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a><button class="menu">Menu</button></div>
+      <div class="inner">
+      <p class="res-h"><b>Two</b> routes could fit.</p>
+      <p class="res-sub">Every rule below is quoted from the authority's page, with the day it was read.</p>
+      <div class="strip"><span class="s-met">2 open</span><span class="s-hold">3 not yet</span><span class="s-closed">1 not open to your passport</span></div>
+      <p class="ghead"><b>Open — criteria met</b> (2)</p>
+      <div class="route"><div class="top"><span class="country">France</span><span class="st">Rules met</span></div>
+        <h3>EU Blue Card (talent — carte bleue européenne)</h3>
+        <p class="rule">salary ≥ <i>€ 53 836,50 / year</i> · your band above · <b>read 2026-09-09</b></p></div>
+      </div>
+    </div>
+  </div>
+  <div class="phone">
+    <p class="label-w">390 px · the menu, opened</p>
+    <div class="panel">
+      <div class="site-head"><a class="wordmark" href="#"><span class="seal">PR</span>Permit Rulebook</a><button class="menu" style="background:var(--color-ink);color:var(--color-bg)">Menu</button></div>
+      <div class="inner" style="padding-top:.4rem">
+        <nav class="nav" style="display:grid;gap:0">
+          <a href="#" style="border-bottom:var(--rule-dotted)">Germany</a><a href="#" style="border-bottom:var(--rule-dotted)">France</a><a href="#" style="border-bottom:var(--rule-dotted)">Spain</a><a href="#" style="border-bottom:var(--rule-dotted)">Netherlands</a>
+          <a class="check" href="#" style="margin:.6rem 0;justify-content:center">Check yours</a><a href="#" style="border-bottom:var(--rule-dotted)">The data</a><a href="#">Feedback</a>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
