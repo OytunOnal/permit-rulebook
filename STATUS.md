@@ -163,8 +163,15 @@ CLS fix is not. The three lines, left here until the window closes:
       link and dropped it from the scenario without saying so; it becomes a
       link to `/feedback/` in the same round — done, 477 green, on the preview. And the results screen's
       *"Code compared…"*: you chose the passive (*"2"*) — **s17**, its own
-      small slice, `docs/spine/scenarios/s17-no-code-as-subject.md`,
-      building.
+      small slice, `docs/spine/scenarios/s17-no-code-as-subject.md` —
+      **built**, and on the same preview as s16 (485 tests green together).
+      The passive collided with the v0.7 B4 detector (*are compared* is a
+      promise, *were compared* a claim); the detector learned the difference,
+      the tense rule stands. No fixture moved: nothing pins the masthead.
+      **Read on http://localhost:4500:** `/`'s first screen (*Your answers are
+      compared…*), a results screen (*Your N answers were compared…*), and
+      `/data/` (the lede's door, the counts row, the freshness sentence, the
+      Take-it door). Then "merge" — for both, or say which.
 - [ ] **Look at the live site once, when you like:** https://permitrulebook.com/feedback/
       — tap *Report what is wrong*; Gmail should open with the subject.
       Nothing is blocked on it.
