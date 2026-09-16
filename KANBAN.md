@@ -279,8 +279,8 @@ Promoted (or dropped, with evidence) at a boundary session.
   addressable result (human: *"url sabit"*). The five entries go human-tier
   with a 90-day re-read; the quote gate turns green on the honest ground;
   s13 deploys on the next pin. Scenario
-  `docs/spine/scenarios/s14-ind-behind-the-form.md` drafted 2026-09-16,
-  **awaiting approval**; the merge is gated on the human reading the five
+  `docs/spine/scenarios/s14-ind-behind-the-form.md` approved 2026-09-16 ("approve"),
+  **building** in its own worktree; the merge is gated on the human reading the five
   pages.
 
 ## mock-green

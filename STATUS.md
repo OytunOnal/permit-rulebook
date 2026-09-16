@@ -112,16 +112,12 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Two things are blocked on you: s14's scenario, then the read of five IND pages.**
+**One thing is blocked on you: the read of five IND pages, once the checklist is ready.**
 
 - [x] **The IND path is decided** (2026-09-16, *"url sabit"*): the form's
       result has no address, so the five IND route pages go human-tier.
-- [ ] **Approve s14's scenario** —
-      `docs/spine/scenarios/s14-ind-behind-the-form.md`: the five IND
-      entries become human-tier (90-day re-read), their stale snapshots go,
-      the checklist gains the 37 sentences, the quote gate turns green on
-      the honest ground, and s13 deploys on the next pin. Say "approve" or
-      which line is wrong.
+- [x] **s14's scenario approved** (2026-09-16, *"approve"*); building in the
+      data repository's own worktree.
 - [ ] **Then, the read that gates the merge** (yours, ~20 minutes): open
       each of the five IND pages, answer *Your situation*, and confirm the
       sentences listed in `data/verify-s5e.md` section 3 are still on the

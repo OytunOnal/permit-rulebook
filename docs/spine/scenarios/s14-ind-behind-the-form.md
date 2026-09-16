@@ -1,6 +1,6 @@
 # s14 — the IND's requirements moved behind a form
 
-**Status:** draft 2026-09-16, awaiting the human's approval. Data #20.
+**Status:** approved 2026-09-16 (human: "approve"). Data #20.
 The human's finding on the page: *"url sabit"* — the result of the *Your
 situation* form has no address of its own.
 
