@@ -33,15 +33,19 @@ No blockers. One friction, three polish.
 - **friction · The results line reads as one long grey sentence, and the
   door is the least visible word in it.** Screen: results, 390 and 1240.
   *Something to say about this result? Feedback — a wrong value, something
-  missing, or anything else.* The link *Feedback* is underlined but set in
-  the same muted grey as the rest, in the same weight; at 390 it is the
-  second-to-last word of the first line and the eye slides past it to the
-  country sections below. The persona who wants the door finds it on the
-  second read, not the first. The sentence is the scenario's, so this is not
-  a build defect; it is the line's colour. *Adjustment:* the link in ink, not
-  muted (`.say a { color: var(--color-ink) }` — the closing line in the
-  09-10 default had this), or the word before the dash in the header's
-  weight. One rule, no copy change.
+  missing, or anything else.* The link *Feedback* is underlined and set in
+  ink (`#2b2a22`) inside a sentence set in muted (`#5a5747') — measured
+  after the first draft of this finding said "the same grey", which was
+  wrong: the builder measured both colours in the built page at 1100 and
+  390 and the rule `.say a { color: var(--color-ink) }` is there and wins.
+  The finding stands with its cause corrected: **ink beside muted is one
+  small step**, and at 390 the link is the second-to-last word of the first
+  line, so the eye slides past it to the country sections below. The
+  persona finds the door on the second read, not the first. *Adjustment
+  (a design call, the human's):* the link in the stamp red every other link
+  on the results screen already wears (the page's own `a` default), or the
+  word in the header's weight; the mock drew it in ink, so either is a
+  departure from the drawing and needs the word. No copy change.
 - **polish · "Where (link):"** as the fourth body heading of the wrong-value
   mail. Screen: `/feedback/`, first door's template line and the mail body.
   The parenthesis is instruction dressed as a label; *Where (the page's
@@ -58,8 +62,11 @@ No blockers. One friction, three polish.
   phone that is a second line for a list the next screen shows better. If
   the line ever shortens, this is the half to drop.
 
-**A false alarm, kept so the next critic does not repeat it:** the first
-probe of the outside-click close used `main h1`, which matches nothing —
+**Two false alarms, kept so the next critic does not repeat them.** The
+friction finding first said the link was "the same muted grey as the rest";
+it is ink, and the builder's measurement of the built page corrected it —
+look at the computed colour, not the screenshot, before naming a colour.
+And the first probe of the outside-click close used `main h1`, which matches nothing —
 the page's `<h1>` is in the masthead, not in `<main>` — so `.click()` ran on
 nothing and the list stayed open. With `h1` the list closes on every page
 tried (`/`, `/germany/`, `/data/`, `/feedback/`). The build is right; the
@@ -140,9 +147,10 @@ not seeing the line at all: the link is the same grey as the sentence.
 
 ## Recommended adjustments
 
-1. **Before merge, one rule:** the results line's link in ink
-   (`--color-ink`), so the door is the darkest word in the sentence. No copy
-   change, no test change; the light critique's one friction.
+1. **Before merge, your call on one colour:** the results line's link is in
+   ink already; the finding is that ink beside muted is a small step. Say
+   "red" (the stamp red the results screen's other links wear) or "bold",
+   or leave it as drawn. No copy change, no test change either way.
 2. **Merge s13** after 1 and the human's walk — the doors, the header, the
    phone menu, and one real mail from a real mail client, which no headless
    run can do.

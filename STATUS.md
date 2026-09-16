@@ -64,9 +64,10 @@ content-floor assertions are gone, the rendered text now has to equal the
 copy, the source-grep count is gone, the meta description lives in
 `copy.ts`, the four-country walk asserts four country sections; 459 green.
 **The light critique is done** (`docs/spine/critique-s13-light.md`): no
-blocker, one friction — the results line's link is the same grey as its
-sentence and the eye slides past it; fix is one rule, the link in ink, sent
-to the builder — three polish items for the tracker (the disclosure's 8-px
+blocker, one friction — the results line's link does not stand out from
+its sentence; my first wording said "the same grey", the builder measured
+it and it is ink beside muted, one small step; whether it becomes the stamp
+red the screen's other links wear is a design call and yours — three polish items for the tracker (the disclosure's 8-px
 arrow, *Where (link)* as a label, the line's second half repeating the
 page). Scores, scope-only: Copy 4, Trust 5, Orientation 5, Responsive 5,
 Design fidelity 4. One false alarm recorded (a probe that matched nothing).
@@ -179,8 +180,11 @@ CLS fix is not. The three lines, left here until the window closes:
       open with the subject written** (*Wrong value* / *Missing* / *Note*)
       and the headings in the body for the first two. This is the one step
       no headless run can do. *Footer:* the address, the row to the page,
-      Sponsor; the GitHub links are on the page, not in the footer. Then
-      "merge", or what is off.
+      Sponsor; the GitHub links are on the page, not in the footer. *One
+      colour to rule on:* the results line's **Feedback** link is ink in a
+      muted sentence, as drawn; if it does not catch your eye, say "red"
+      (the stamp red the screen's other links wear) and it changes before
+      the merge. Then "merge", or what is off.
 
 - [x] **The amended F drawing** — ratified 2026-09-16 (*"tamamdır"*), after
       two corrections to the open list from your walk.
