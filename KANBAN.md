@@ -273,16 +273,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **s13 — the feedback door** (site #6; closes #7 by construction) ·
-  `new-need` from a reader on 2026-09-10. Two shapes that open were rejected
-  (2026-09-10), a line shipped as a default and was withdrawn (2026-09-16,
-  "daha tasarımına karar vermedik ki feedbackin"). The human then decided the
-  door itself — **e-mail**: an alias in plain text, three `mailto:`
-  templates, the GitHub tracker beside it, named — and chose **F** from the
-  third drawn round: one word, *Feedback*, in the header, under the verdict
-  and in the footer, leading to `/feedback/`; with the header's four
-  countries under one word, *Countries*. Scenario
-  `docs/spine/scenarios/s13-feedback-door.md` approved 2026-09-16 ("onaylıyorum"), **building** in its own worktree. Merge waits on the alias's routing (the human's).
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -293,6 +284,13 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s13 — the feedback door** · real-green 2026-09-16 (human: "merge";
+  site `f06badd`). Site #6 and #7 closed by the merge. Scenario
+  `docs/spine/scenarios/s13-feedback-door.md` with seven dated corrections
+  from the human's two preview walks; critique `docs/spine/critique-s13-light.md`.
+  Polish left for the tracker: the disclosure arrow's size, *Where (link)* as
+  a body heading.
 
 - **Two labels that mean what they say** (s12) · site #9 · **real-green
   2026-09-16, live** — `docs/spine/scenarios/s12-two-labels.md`. `/data/`'s

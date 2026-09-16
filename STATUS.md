@@ -44,136 +44,33 @@ unread list; the site's daily rebuild then pins it and the page says
 *Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
 that is a finding, not a delay.
 
-**s13, the feedback door, is built and under review** (2026-09-16). The
-builder's report: 17 files, 426 → 459 tests green, `astro check` clean, the
-`/feedback/` page, the header's *Countries* disclosure (the country's own
-name on its pages), the footer column, the results line in both layouts, the
-sitemap and the map; two premises of the scenario corrected with evidence —
-the header folds behind *Menu* below 960 px, so the row is measured at 960,
-not 761; and a `?country=` arrival re-scopes a record and lands on a question,
-so the four-country layout is walked with a complete all-countries record at
-`/`. The Standards review is in: one blocker — three test assertions any
-content silences (a content floor on the site map and two length floors) —
-and two should-fixes (a source-grep count; the social-card sentence typed
-outside `copy.ts`); the shipped code breaches no standard. The Spec review is
-in: **11 of 11 points met**, the two corrected premises (960 px, the
-all-countries record) judged sound with their reasons in the test, one
-should-fix — the four-country walk proves the line, not that the
-multi-country layout rendered; one assertion adds it. The fix round is in: the
-content-floor assertions are gone, the rendered text now has to equal the
-copy, the source-grep count is gone, the meta description lives in
-`copy.ts`, the four-country walk asserts four country sections; 459 green.
-**The light critique is done** (`docs/spine/critique-s13-light.md`): no
-blocker, one friction — the results line's link does not stand out from
-its sentence; my first wording said "the same grey", the builder measured
-it and it is ink beside muted, one small step; whether it becomes the stamp
-red the screen's other links wear is a design call and yours — three polish items for the tracker (the disclosure's 8-px
-arrow, *Where (link)* as a label, the line's second half repeating the
-page). Scores, scope-only: Copy 4, Trust 5, Orientation 5, Responsive 5,
-Design fidelity 4. One false alarm recorded (a probe that matched nothing).
-**Your walk found the door shut** (2026-09-16): on your desktop every
-`mailto:` opened nothing — no mail application, Gmail in the browser — the
-cost the e-mail decision had named, met as a reader meets it. Your word:
-*"insanların çoğu gmail kullanıyor … gmail'e yönlendirmek daha sağlıklı."*
-Recorded as a gate: **each door's button now opens Gmail's compose screen**
-with the subject and headings written; under it one small line, *or with
-your own mail app*, is the `mailto:`; the plain address stays. Both links
-are functions of the copy and the constant — nothing declared reaches
-either. The scenario carries the dated correction, the mock the third
-amendment; **the change is built** (461 tests green, two added; `csp.ts`
-untouched, the policy not widened; the site map names the Gmail exit) and
-**on the preview**. Read on the built page: three buttons, each a link to
-`mail.google.com/mail/` with the address, the subject (*Wrong value* /
-*Missing* / *Note*) and the headings in the query, new tab; under each, *or
-with your own mail app* as the `mailto:` at the tap floor; the address; the
-new note. Your second walk found one word: the third door's subject is
-**Feedback**, not *Note* — one constant; and the open *Countries* list ran
-28 px under *Check yours* (measured) — moved left, the list now clears the
-separator by 13 px on the worst word at both widths, 462 green. And a third,
-your own proposal ratified (*"kaldır"*): **the footer loses the address
-row** — a `mailto:` there opens nothing for a browser-mail reader and a
-plain address on every page is thirty-seven copies for a harvester; the
-column is two rows, the address lives on the page. And a fourth: **the
-results line moves to the end of the results and shortens** to *Something
-to say about this result? Feedback.* — under the strip it asked before a
-value was read (*"garip duruyor"*; you chose end-and-shorten of three).
-**Both are built and on the preview** (462 green): the footer column is two
-rows and no footer carries a `mailto:` or an `@`; the line is the last
-thing in the results, above the footer's rule, *Something to say about this
-result? Feedback.* — read back on the built page at 390. A fifth: the first
-door is **Something is wrong / Report what is wrong / Wrong information** —
-no more *value* in the reader's face (you chose it of three). A sixth: the
-address on the page becomes text with a **Copy** button (*Copied* for two
-seconds; a small third inline script, generic, hashed) — your idea, the
-shape ratified (*"tamamdır"*). **Both built and on the preview, 464 green.**
-One correction to my own brief, the builder's: the site has one policy
-everywhere (s10), so the copy script's hash joins the one list rather than
-a page-scoped one — right, and the test asserts each page runs exactly the
-scripts it declares. Read back on the built page: the first door's new
-words, *Subject: Wrong information*, the address as text with **Copy** →
-**Copied** (clipboard stubbed, the argument was the address). Your look:
-the Copy button was a 44-px boxed label — far too loud beside an address
-(*"kocaman"*). Redrawn as a small mono word; then you chose the shape that
-stays: **a copy icon beside the address**, address and icon one button, a
-tap on either copies, *Copied* in green for two seconds, no word at rest.
-**Built and on the preview** (464 green): the address in mono, the glyph in
-muted grey at the text's size, a click on either copies (the clipboard was
-stubbed; it received the address twice), *Copied* in the met green to the
-right for two seconds, nothing shifts. Then your word. The day's path: the second round's four shapes → your finding
-that a reader may want to say something without anything being wrong → the
-decision that **the door is e-mail** (an alias in plain text, three
-`mailto:` templates, the GitHub tracker beside it, named) → the third round
-in three placements → your pick, **F**, with two amendments (the third door's
-words; the header's four countries under one word) → two walk corrections on
-the open list → *"tamamdır"*. All of it is in DECISIONS as gates. The
-scenario, `docs/spine/scenarios/s13-feedback-door.md`, says what must be
-true: the `/feedback/` page with its three doors and their exact subjects,
-a mail that never carries anything declared, one address constant set only
-after you say routing works, the header's *Countries* disclosure (the country's
-own name on its page), the footer's new column, the verdict line on both
-layouts, the map and the sitemap, the 761-px row measured, every page's
-fingerprint regenerated on purpose. Nothing is built until you approve it.
+**s13 is merged — and not live: the deploy stopped at the dataset's
+quote-fidelity gate, which did its job.** (2026-09-16, your word: *"merge"*,
+after two walks on the preview and seven corrections from them, each a
+dated line in the scenario and a gate in DECISIONS.) Site `f06badd`, 464
+tests, build and `astro check` green on master before the push. The deploy
+run then failed in *Build and check the dataset package*: **12 quotes
+missing**, all on the two Dutch highly-skilled-migrant routes, all from the
+IND's HSM page. **Not s13's doing.** Today's watch run (09:59 UTC — the
+first since the User-Agent repair, and Spain read *unchanged* at last) saw
+the IND page **changed** and four sibling IND pages **unreachable** (our
+slice marker gone). The page says *Last update: 11 September 2026*: IND
+rebuilt it around a "Your situation" form — the requirements are rendered
+after a nationality is chosen and are **not in the served HTML** at all.
+The gate s5e wrote for exactly this stopped the deploy, so **the live site
+stays on s12**, correct and dated, and s13 waits on master for the gate to
+be green. Data #20 has the full reading and the three-way decision below. What is live once it lands: one word,
+**Feedback**, in the header (with the four countries folded under
+*Countries*), at the end of every result, and in the footer, all leading to
+`/feedback/` — three doors that open Gmail with the subject and headings
+written, the same template as a mail-app link under each, the address with
+a copy glyph, what happens to a mail, and the tracker beneath for a reader
+with an account. Nothing declared reaches any link. Site #6 and #7 close
+with the merge.
 
-**Search Console's first reading is in** (2026-09-16, from the two exports
-you downloaded; the numbers are in `docs/spine/assumptions.md` beside the
-Cloudflare interim). Seven days after the announcement: 99 impressions, one
-click (the home page, from Türkiye, position 2.7 — someone who knew the name).
-Fifteen pages have been shown; the ones shown most are route pages, and the
-queries that show them are Dutch and German source-language long tail —
-*zoekjaar*, *gvva*, *kennismigrant*, *§ 21 AufenthG* — at positions 50–90,
-with two pages already in the top ten (*researcher* at 8.6, *ICT card* at 3).
-The dataset markup on `/data/` has been read as valid every day since the
-11th; one non-critical warning (`spatialCoverage` typed `Country`, which
-Google's Dataset parser does not accept) is site #11, a one-line fix for a
-later slice. **"Page is indexed" against "Processing data" in the Pages tab
-is not a contradiction:** the URL inspection tool reads the index live, the
-Pages report is a batch that lags it by days on a new property — the Datasets
-report's own chart shows the lag: zero until 09-11, then valid every day. It
-resolves on its own; nothing to do.
-
-**PageSpeed, desktop, read 2026-09-16 12:20 GMT+3** (the link you sent from
-Search Console; Lighthouse 13.4.1, lab run, one page: `/`). Four scores of
-**100** — Performance, Accessibility, Best Practices, SEO — and the new
-Agentic Browsing 2/2. FCP 0.2 s, LCP 0.2 s, TBT 10 ms, **CLS 0**, Speed Index
-0.3 s: the lab confirms what s10's gate asserts, a first paint that does not
-move. The field panel says *No Data* — Chrome's users-experience corpus needs
-more visits than the site has had; the counter's own CLS reading (poor 6 %
-at day 6) is still the field number until 2026-10-09. Every unscored note the
-report lists lands on something already decided or already known: the five
-security headers it wants (HSTS, COOP, X-Frame-Options, a header CSP, Trusted
-Types) are ones GitHub Pages cannot set — accepted in `docs/spine/threats.md`
-and DECISIONS 2026-09-08, with the CSP carried in `<meta>` as the closest a
-static host allows; the 10-minute cache lifetime on the hashed assets is
-GitHub Pages' fixed `max-age=600`, not ours to raise; the 11 KiB of legacy
-JavaScript and the three limited-availability features are all inside
-Cloudflare's beacon, not our code; the one 64 ms long task is the interview
-module drawing the first screen. Nothing here opens a slice. **The mobile run, read the
-same hour** (emulated Moto G Power, slow 4G): the same four 100s and 2/2;
-FCP 0.8 s, LCP 0.8 s, TBT 70 ms, **CLS 0**, Speed Index 0.8 s. This is the
-run s10 was built for — a phone on a slow network, the module arriving late —
-and the layout does not move. One note the desktop run did not carry:
-render-blocking requests, 120 ms, the page's own 5.7 KiB stylesheet; at
-0.8 s to first paint it is not worth a slice.
+**What runs without anyone asking** is the same list as before, with one
+change: the watch will fail daily until the IND entries are resolved, and
+each failure is now the honest one (a source moved), not a fetch problem.
 
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.
@@ -215,50 +112,26 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the walk.**
+**One thing is blocked on you: what to do about the IND's rebuilt pages.**
+
+- [ ] **Decide the IND path** (data #20). Open
+      https://ind.nl/en/residence-permits/work/highly-skilled-migrant in a
+      browser, answer the *Your situation* form once (any non-EU nationality,
+      "I have a job offer") and look at the address bar on the result.
+      *If the URL changed* (a query string or a fragment): paste it here — the
+      watch entry moves there and the twelve quotes are re-read; a data slice,
+      no site change, s13 deploys when it is green. *If the URL did not
+      change* (a form result with no address): say so — the HSM requirements
+      become human-tier (checklist + 90-day re-read), the watch entry is
+      retired with its reason, and the gate is green on the honest ground.
+      Either way the four sibling IND pages get the same treatment.
 
 - [x] **First walk of s13** (2026-09-16): the doors opened nothing on your
       desktop — decided: Gmail first, the mail app second. Building.
-- [ ] **Walk s13 again on the preview** — http://localhost:4500; the Gmail
-      change is in. *Header:* on `/` the word is
-      **Countries ▾**; on `/france/` it is **France ▾** with France marked in
-      the list; open it, press Escape, open it, click elsewhere. *Phone:* the
-      Menu with the four countries under a *Countries* heading. *Results:*
-      answer to a result (or use a saved one) and read the line under the
-      strip — *Something to say about this result? Feedback …* *The page:*
-      `/feedback/` — tap each of the three buttons; **Gmail must open in a new
-      tab with the address, the subject** (*Wrong value* / *Missing* /
-      *Note*) **and, for the first two, the headings in the body**. The small
-      line under each button is the mail-app link; on your desktop it will
-      still open nothing, which is now the documented second path, not the
-      door. This is the one step no headless run can do. *Footer:* the address, the row to the page,
-      Sponsor; the GitHub links are on the page, not in the footer. *One
-      colour to rule on:* the results line's **Feedback** link is ink in a
-      muted sentence, as drawn; if it does not catch your eye, say "red"
-      (the stamp red the screen's other links wear) and it changes before
-      the merge. Then "merge", or what is off.
-
-- [x] **The amended F drawing** — ratified 2026-09-16 (*"tamamdır"*), after
-      two corrections to the open list from your walk.
-- [x] **s13's scenario approved** (2026-09-16, *"onaylıyorum"*); building.
-- [x] **The alias exists** — `feedback@permitrulebook.com` (2026-09-16, your
-      word: *"tamam"*); the SPF record Cloudflare adds is visible from here.
-      MX (`route1/2/3.mx.cloudflare.net`) and SPF live at both public
-      resolvers, and **a test mail arrived in your inbox** (2026-09-16, *"mail
-      geldi"*). The address goes into the code as it stands.
-- [x] **The alias, the steps.** Email Routing is no longer under the zone's *Email*
-      tab (your finding, 2026-09-16); since mid-2026 it lives at account
-      level: **Compute → Email Service → Email Routing** (docs updated
-      2026-06-09). The domain qualifies — its nameservers are Cloudflare's and
-      it has no MX record today. Steps: (1) *Onboard Domain* → pick
-      permitrulebook.com → review the MX/SPF/DKIM records it adds → *Done*;
-      (2) *Destination Addresses* → enter your inbox → open Cloudflare's
-      mail → *Verify email address*; (3) the domain → *Routing Rules* →
-      *Create routing rule* → local part `feedback` (or the name you prefer —
-      tell me, it goes into the copy), action *Send to an email*, your inbox
-      → *Save*. *Pass:* a mail you send to the alias from another address
-      arrives in your inbox. Until it does, nothing on the site names the
-      address and s13 does not merge.
+- [x] **s13 walked and merged** (2026-09-16, your word). Seven corrections
+      from your two walks are in it: Gmail first, the third door's subject,
+      *Countries* moved left, the footer's address row out, the results line
+      at the end in one sentence, the first door's words, the copy glyph.
 
 These are the things only you can see, when you want to look:
 
