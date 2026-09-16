@@ -148,6 +148,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // What an answer means here, where the label alone leaves two answers
       // hard to tell apart (human walk, 2026-09-08).
       unlockMeansOf, countryPhrase,
+      // The one answer the four-country result reads a country's line against (s21).
+      SITUATION_FIELD,
       type Dataset, type FieldOption, type Profile, type RouteResult,
     } from "permit-rulebook-data";
     import { routePath } from "../lib/slug.js";
@@ -185,8 +187,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { FEEDBACK, isoDay, resultFeedbackLine } from "../lib/copy.js";
     import { FEEDBACK_PATH } from "../lib/identity.js";
     // The written state for a situation no scored route in the declared
-    // country takes — derived from the dataset, in place of "Nothing open" (s19).
-    import { unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
+    // country takes — derived from the dataset, in place of "Nothing open"
+    // (s19); and the same state in one country's line of the four-country
+    // result, in place of its "N not yet" (s21).
+    import { unscoredTally, unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
     import {
       carveOutHtml, caveatHtml, closedRowHtml, noticeHtml, precondHtml, provenanceHtml, railHtml,
       readingHtml, scopedHtml,
@@ -1199,6 +1203,17 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        * unlocked or unsettled zero-open result on any other answer reads as
        * it did.
        */
+      //
+      // On the four-country path it is keyed by the "all" answer and stays
+      // null: the headline there is the existing one, and the country whose
+      // scored routes do not take the situation says so in its own line
+      // (s21, below). The other branch — every visible country closed to the
+      // situation — is not drawn, because on this dataset it cannot occur:
+      // the "all" set is the union of the four and every offered situation
+      // is taken by a scored route somewhere (tests/s21: "every situation the
+      // interview offers is taken by a scored route in some country"). The
+      // day that assertion goes red, that branch needs a written state of its
+      // own, and this is where it goes.
       const unscored = zeroOpen ? unscoredVerdict(ds, answers) : null;
       if (unscored) {
         said(unscored.headline, "", { unscored });
@@ -1362,11 +1377,21 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         // that holds them is collapsed when nothing is open, and a count no
         // summary names is a route the reader never learns exists (s8).
         const cClosed = closedRoutes.filter((r) => r.country === c.code);
+        // A country whose scored routes do not take the declared situation
+        // has every one of them on hold, and "5 not yet" was all its line
+        // said to the researcher the critique walked — for a route that was
+        // merely absent, sixteen answers in (v1.1 gate critique N1, s21). The
+        // s19 sentence stands where the not-yet count stood; the count's
+        // company on the line (a passport closure, an unlocking step) and the
+        // not-yet cards in the body are what they were.
+        const closedTo = unscoredTally(ds, c, answers[SITUATION_FIELD]);
         const tallyParts = [
           g.met.length ? `${g.met.length} open` : "",
           cUnsettled.length ? `${cUnsettled.length} unsettled for your passport` : "",
           g.near.length ? `${g.near.length} within reach` : "",
-          g.hold.length ? `${g.hold.length} not yet${unknowns ? ` — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown` : ""}` : "",
+          closedTo
+            ? closedTo.html
+            : g.hold.length ? `${g.hold.length} not yet${unknowns ? ` — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown` : ""}` : "",
           cClosed.length ? `${cClosed.length} not open to your passport` : "",
           cUps.length ? `<i>${cUps.length} unlocking step${cUps.length === 1 ? "" : "s"}</i>` : "",
         ].filter(Boolean).join(" · ");
@@ -1386,7 +1411,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           section("Not yet", "hold", holdList(g.hold, cUps.length > 0), g.hold.length) +
           closedSection(cClosed);
         return `<details class="country-sec"${open ? " open" : ""}>
-            <summary>${esc(c.name)} <span class="tally">${tallyParts}</span></summary>
+            <summary${closedTo ? ` class="said"` : ""}>${esc(c.name)} <span class="tally${closedTo ? " said" : ""}">${tallyParts}</span></summary>
             <div class="cbody">${inner}</div>
           </details>`;
       }).join("") + sayLine;
@@ -1694,7 +1719,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .opt-mark{display:block;margin-top:-.2rem;padding:0 .9rem .15rem;font:400 .8rem var(--font-sans);
       color:var(--color-muted);white-space:normal;line-height:1.45}
     .opt-mark a{color:var(--color-band);font-weight:600;text-decoration:none}
-    .opt-mark a::after{content:" ↗"}
+    /* No ↗ after it: the door opens a page of this site, and the glyph is the
+       footer's word for leaving it (v1.1 re-score polish, s21). */
     .opt:hover{border-color:var(--color-ink);background:var(--color-band-soft)}
     .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.9rem;
       min-height:var(--tap-min);padding:.2rem .1rem}
@@ -1777,6 +1803,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     details.country-sec[open] > summary::before{content:"▾ "}
     .tally{font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none;text-align:right}
     .tally i{font-style:normal;color:var(--color-band)}
+    /* A line that is the s19 sentence rather than a count (s21): a sentence
+       is read, not tallied, so it takes the mark's voice — the sans, the
+       muted ink — and its one door is the quoted route's page, internal, so
+       no ↗ (same as .sub a). */
+    .tally.said{font:400 .8rem var(--font-sans);letter-spacing:0;line-height:1.45;max-width:34rem}
+    .tally a{color:var(--color-band);font-weight:600;text-decoration:none}
     .cbody{padding-bottom:.4rem}
     .cbody .ghead{margin:1rem 0 .6rem}
     .ghead b{color:var(--color-met)} .ghead.near b{color:var(--color-near)} .ghead.hold b{color:var(--color-hold)}
@@ -1932,6 +1964,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       .copt .cls{text-align:left}
       .top{flex-wrap:wrap}
       details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
+      /* The sentence takes a row of its own under the name; the name stays
+         where every other country's is, at the marker (s21). */
+      details.country-sec > summary.said{justify-content:flex-start}
+      .tally.said{flex-basis:100%;max-width:none}
       .tally{text-align:left}
       h1{font-size:1.6rem}
       .stamps[hidden]{display:none}

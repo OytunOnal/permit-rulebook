@@ -1,10 +1,10 @@
 import {
   DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, isScored, joinOr, situationsAsked,
-  type Dataset, type Profile,
+  type Country, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
   READ_ITS_RULES, READ_IT_HERE, notScoredLine, notScoredQuotedLine, unscoredHeadline, unscoredRestLine,
-  unscoredRouteLine,
+  unscoredRouteLine, unscoredTallyLine,
 } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import { routePath } from "./slug.js";
@@ -28,6 +28,12 @@ import { url } from "./site.js";
  * is every country's not-yet path, and the not-yet list with its unlocking
  * steps is that answer's written state already (s3b). The mark is for a
  * situation a reader HAS that no scored route in that country takes.
+ *
+ * The reader who answered "all" is asked which country their offer, transfer
+ * or agreement is in, and that question's options are the four one-country
+ * destination answers. So the same set answers for it, keyed the other way
+ * round — the situation is on the record, the option is the country — and
+ * the same mark is drawn under France there (s21, v1.1 gate critique N1).
  */
 export interface NotScoredMark {
   /** The country's name, the dataset's. */
@@ -65,6 +71,31 @@ export function notScoredFor(ds: Dataset, destination: string | undefined, situa
   };
 }
 
+/**
+ * The third answer `situationsAsked` never walks: which country the offer,
+ * transfer or agreement is in. Asked on the four-country path only, after the
+ * situation, and answered with the same codes the destination is (s21).
+ */
+export const SITUATION_COUNTRY_FIELD = "situation_country";
+
+/**
+ * The mark under one option of one question, for the answers on the record —
+ * or nothing, for every question but the two that carry one.
+ *
+ * Question 2 (the situation): the option is the situation, the destination is
+ * declared. Question 3 (the country): the option is a destination answer, the
+ * situation is declared. One derivation either way; the renderer asks this
+ * and never chooses a key itself.
+ */
+export function markUnder(ds: Dataset, field: string, value: string, answers: Profile): NotScoredMark | null {
+  if (field === SITUATION_FIELD) return notScoredFor(ds, answers[DESTINATION_FIELD], value);
+  if (field === SITUATION_COUNTRY_FIELD) {
+    const situation = answers[SITUATION_FIELD];
+    return situation === undefined ? null : notScoredFor(ds, value, situation);
+  }
+  return null;
+}
+
 /** The mark as the question screen draws it: the copy's line, with the door
  * on the last three words where there is a page to open. */
 export function notScoredMarkHtml(mark: NotScoredMark): string {
@@ -72,6 +103,33 @@ export function notScoredMarkHtml(mark: NotScoredMark): string {
   const line = esc(notScoredQuotedLine(mark.country, mark.route.name));
   const door = `<a href="${escAttr(url(mark.route.path))}">${esc(READ_IT_HERE)}</a>`;
   return line.replace(esc(READ_IT_HERE), door);
+}
+
+/**
+ * One country's summary line on the four-country result, when the declared
+ * situation is one its scored routes do not take (s21).
+ *
+ * The four-country result keeps its headline — three of the four countries
+ * take the situation — and the country's own line, which used to count its
+ * routes as "5 not yet", carries the s19 sentence instead: the headline s19
+ * would have written for that country alone, then the quoted route, whose
+ * name is the link. The text form is what the line reads as; the HTML form
+ * is the same words with the door on the route's name.
+ */
+export interface UnscoredTally {
+  text: string;
+  html: string;
+}
+
+export function unscoredTally(ds: Dataset, country: Country, situation: string | undefined): UnscoredTally | null {
+  if (situation === undefined) return null;
+  const mark = notScoredFor(ds, country.code.toLowerCase(), situation);
+  if (!mark) return null;
+  const text = unscoredTallyLine(mark.country, situationPhrase(ds, situation), mark.route?.name);
+  const html = mark.route
+    ? esc(text).replace(esc(mark.route.name), `<a href="${escAttr(url(mark.route.path))}">${esc(mark.route.name)}</a>`)
+    : esc(text);
+  return { text, html };
 }
 
 /**

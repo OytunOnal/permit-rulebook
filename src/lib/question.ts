@@ -1,13 +1,15 @@
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, deriveBands, fieldOptions, optionMeans, shortLabelOf,
+  deriveBands, fieldOptions, optionMeans, shortLabelOf,
   type Dataset, type FieldOption, type Profile, type Question,
 } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, resumedLine } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import { type Glossary, glossSection } from "./gloss.js";
-// Which situation answers the declared destination's scored routes take, and
-// the quoted route that would have asked otherwise — derived, never typed (s19).
-import { notScoredFor, notScoredMarkHtml } from "./situations.js";
+// Which situation answers a country's scored routes take, and the quoted
+// route that would have asked otherwise — derived, never typed (s19); keyed
+// by the situation under a declared country, or by the country under a
+// declared situation (s21).
+import { markUnder, notScoredMarkHtml } from "./situations.js";
 
 /**
  * The interview's question screen, rendered — the one copy of that markup.
@@ -113,17 +115,19 @@ export function questionCardHtml(screen: QuestionScreen): string {
               // A situation no scored route in the declared country takes
               // says so under the answer, before it is picked: the reader who
               // took it read "Nothing open" for a route that was merely absent
-              // (v1.1 gate critique B1, s19). It follows the button rather
-              // than sitting inside it — the last words are a link to the
-              // quoted route's page, and a link inside a button is not one.
-              const mark = q.field === SITUATION_FIELD
-                ? notScoredFor(dataset, answers[DESTINATION_FIELD], o.value)
-                : null;
+              // (v1.1 gate critique B1, s19) — and, on the four-country path,
+              // under the country whose scored routes do not take the declared
+              // situation (N1, s21). It follows the button rather than sitting
+              // inside it — the last words are a link to the quoted route's
+              // page, and a link inside a button is not one. The button is
+              // described by it, so a reader who Tabs to the answer hears the
+              // mark too, not only the one who sees it (re-score polish).
+              const mark = markUnder(dataset, q.field, o.value, answers);
               return `<button class="opt${chosen ? " sel" : ""}" data-value="${escAttr(o.value)}"${
-                chosen ? ` aria-pressed="true"` : ""}><span class="opt-label">${esc(o.label)}${
+                chosen ? ` aria-pressed="true"` : ""}${mark ? ` aria-describedby="mark-${escAttr(o.value)}"` : ""}><span class="opt-label">${esc(o.label)}${
                 chosen ? `<span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
                 means ? `<small class="opt-means">${esc(means)}</small>` : ""}</button>${
-                mark ? `<small class="opt-mark" data-for="${escAttr(o.value)}">${notScoredMarkHtml(mark)}</small>` : ""}`;
+                mark ? `<small class="opt-mark" id="mark-${escAttr(o.value)}" data-for="${escAttr(o.value)}">${notScoredMarkHtml(mark)}</small>` : ""}`;
             }).join("")}
           </div>`}
           ${(editing ? asked.indexOf(editing) > 0 : asked.length > 0)
