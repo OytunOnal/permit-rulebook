@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The feedback moment, second round · Permit Rulebook</title>
+<style>
+/* Second round for site #6. The first round (s7-feedback.html) drew two shapes
+   that open — a docked slip and a centred modal — and the human rejected both
+   (2026-09-10, "hiçbiri olmamış"). The line that shipped that day in their
+   place was a default, not a choice (DECISIONS 2026-09-16), so this round
+   draws it beside two alternatives and lets the choice be made.
+
+   Bounds, the human's (2026-09-10) and the issue's:
+   · nothing that opens by itself, nothing that dims the page;
+   · nothing remembered on the device — no "seen" flag, no dismissal state;
+   · never before the reader has an answer: results screen only;
+   · only the two things the product can act on — a wrong value, a thing
+     that should be different — no rating, no e-mail, nothing leaves the device;
+   · it says out loud that filing needs a GitHub account, before the click;
+   · it takes no tap target from a 390 px screen the results already need.
+
+   Every variant below is static HTML. None has a script, a timer, or a state.
+
+   The page behind: the end of a results screen for a passport with one closed
+   route (the France/Algeria case s8 introduced), because the end of the body
+   is where two of the three shapes live and the closed section is what sits
+   there. Route names are the dataset's; the rule text is mock.
+   Tokens pasted so the mock opens standalone. */
+:root {
+  --color-bg: #f1eee4; --color-card: #fbf9f2; --color-ink: #2b2a22; --color-muted: #5a5747; --color-line: #d9d3c0;
+  --color-stamp: #8c2b2b; --color-met: #2e5b3f; --color-met-soft: #e4efe7; --color-near: #8a5a19;
+  --color-hold: #6a6759; --color-hold-soft: #edeadf; --color-band: #31519a;
+  --font-serif: Cambria, Georgia, serif; --font-sans: "Segoe UI", system-ui, sans-serif; --font-mono: Consolas, monospace;
+  --text-route: 700 1.08rem var(--font-serif); --text-body: 15px/1.6 var(--font-sans);
+  --rule-heavy: 3px double var(--color-ink); --rule-card-top: 3px solid var(--color-ink);
+  --rule-soft: 1px solid var(--color-line); --rule-dotted: 1px dotted var(--color-line);
+  --space-1: .25rem; --space-2: .5rem; --space-3: .85rem; --space-4: 1.3rem; --space-5: 1.6rem; --space-6: 2.8rem;
+  --gap-cards: .85rem; --pad-card: 1rem 1.3rem 1.05rem; --max-content: 56rem; --tap-min: 44px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #555; color: #eee; font: 13px/1.5 system-ui; padding: 24px; }
+h2.mock { font: 600 14px system-ui; margin: 34px 0 6px; color: #eee; }
+h2.mock small { font-weight: 400; color: #bbb; display: block; margin-top: 4px; max-width: 62rem; }
+.frames { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+.phone { width: 390px; }
+.desk { width: 760px; max-width: 100%; }
+.label-w { font: 600 11px system-ui; color: #bbb; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 6px; }
+
+/* ---- the page behind ---- */
+.panel { background: var(--color-bg); color: var(--color-ink); font: var(--text-body); border: 1px solid #333; }
+.panel .inner { padding: var(--space-4); }
+.res-h { font: 400 1.6rem/1.2 var(--font-serif); margin: 0 0 var(--space-2); }
+.res-h b { font-weight: 400; color: var(--color-near); }
+.res-sub { margin: 0 0 var(--space-3); color: var(--color-muted); font-size: .9rem; }
+.strip { display: flex; gap: .6rem; margin: 0 0 .4rem; flex-wrap: wrap; }
+.strip span { font: 600 .78rem var(--font-sans); letter-spacing: .08em; text-transform: uppercase; padding: .45rem .8rem; border: var(--rule-soft); background: var(--color-card); }
+.strip .s-met { border-left: 3px solid var(--color-met); color: var(--color-met); }
+.strip .s-hold, .strip .s-closed { border-left: 3px solid var(--color-hold); color: var(--color-hold); }
+.ghead { font: 700 .72rem var(--font-sans); letter-spacing: .16em; text-transform: uppercase; color: var(--color-muted); margin: var(--space-4) 0 var(--space-2); }
+.ghead b { color: var(--color-met); } .ghead.hold b, .ghead.closed b { color: var(--color-hold); }
+.stack { display: grid; gap: var(--gap-cards); }
+.route { background: var(--color-card); border: var(--rule-soft); border-top: var(--rule-card-top); padding: var(--pad-card); }
+.top { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+.country { font: 700 .68rem var(--font-sans); letter-spacing: .22em; text-transform: uppercase; color: var(--color-muted); }
+.route h3, .closed h3 { font: var(--text-route); margin: .15rem 0 .25rem; }
+.st { font: 700 .66rem var(--font-sans); letter-spacing: .14em; text-transform: uppercase; padding: .3rem .65rem; white-space: nowrap; background: var(--color-met-soft); color: var(--color-met); }
+.rule { font: .76rem var(--font-mono); color: var(--color-muted); margin: .35rem 0 0; }
+.rule i { color: var(--color-ink); } .rule b { color: var(--color-met); font-weight: 400; }
+.hold-sum { font: 600 .82rem var(--font-sans); color: var(--color-muted); background: var(--color-card); border: var(--rule-soft); border-left: 3px solid var(--color-hold); padding: .55rem .9rem; }
+.hold-sum::before { content: "▸ "; }
+.closed { background: var(--color-card); border: var(--rule-soft); border-left: 3px solid var(--color-hold); padding: var(--pad-card); }
+.why { color: #54513f; font-size: .88rem; margin: 0; }
+.foot { border-top: var(--rule-heavy); margin-top: var(--space-6); padding-top: var(--space-3); color: var(--color-muted); font-size: .8rem; }
+.foot b { font-weight: 600; color: var(--color-ink); }
+.keep { font: .72rem var(--font-mono); color: var(--color-muted); }
+
+/* ---- C: the closing line (what shipped 09-10 as a default) ---- */
+.feedback { margin: var(--space-5) 0 0; padding-top: var(--space-3); border-top: var(--rule-soft); font-size: .88rem; color: var(--color-muted); }
+.feedback a { color: var(--color-ink); }
+.feedback.under { margin: 0 0 var(--space-3); padding-top: 0; border-top: 0; }
+
+/* ---- D: the two doors ---- */
+.doors { margin-top: var(--space-5); background: var(--color-card); border: var(--rule-soft); border-top: var(--rule-card-top); padding: var(--pad-card); }
+.doors h3 { font: var(--text-route); margin: 0 0 .3rem; }
+.doors p { margin: 0 0 var(--space-3); font-size: .86rem; color: var(--color-muted); max-width: 36rem; }
+.doors .acts { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.doors a.act { display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-3);
+  border: 1px solid var(--color-ink); background: var(--color-bg); color: var(--color-ink); text-decoration: none; font: 600 .85rem var(--font-sans); }
+.doors a.act::after { content: " ↗"; }
+.doors a.act:hover { background: var(--color-hold-soft); }
+.doors .keep { display: block; margin-top: var(--space-2); }
+
+/* ---- E: the door on the card ---- */
+.doornote { font: .74rem var(--font-mono); color: var(--color-muted); margin: .2rem 0 .6rem; max-width: 36rem; }
+.cfoot { margin-top: .6rem; padding-top: .2rem; border-top: var(--rule-dotted); display: flex; justify-content: flex-end; }
+.cfoot a { font: .76rem var(--font-mono); color: var(--color-muted); min-height: var(--tap-min); display: inline-flex; align-items: center; }
+.cfoot a::after { content: " ↗"; }
+.closed .cfoot { justify-content: flex-start; }
+</style>
+</head>
+<body>
+
+<!-- ================================================================ C -->
+<h2 class="mock">C · The closing line
+  <small>One sentence in the page's own voice, at the end of the results body, above the footer's rule.
+  The two doors are inline links; the account requirement is the mono aside the site already uses for
+  things that stay as they are. No furniture, no timing, no state. This is what shipped on 09-10 as a
+  default; drawn here as a candidate. The end of the body is the closed section on a passport that has
+  one — the line's nearest neighbour is a route the reader was shut out of.</small></h2>
+<div class="frames">
+  <div class="phone">
+    <p class="label-w">390 px · end of the results body</p>
+    <div class="panel"><div class="inner">
+      <p class="ghead"><b>Open — criteria met</b> (2)</p>
+      <div class="stack">
+        <div class="route"><div class="top"><span class="country">France</span><span class="st">Rules met</span></div>
+          <h3>Talent — qualified employee (salarié qualifié)</h3>
+          <p class="rule">salary ≥ <i>€ 43 243 / year</i> · your band above · <b>read 2026-09-09</b></p></div>
+      </div>
+      <p class="ghead hold"><b>Not yet</b> (3)</p>
+      <div class="hold-sum">3 routes need an offer you do not have yet</div>
+      <p class="ghead closed"><b>Not open to your passport</b> (1)</p>
+      <div class="closed"><h3>Talent — employee on assignment (salarié en mission)</h3>
+        <p class="why">The authority's page closes this permit to this passport — read 2026-09-09.</p></div>
+
+      <p class="feedback">Wrong about you? A value that does not match its source, or something this screen
+        should do — <a href="#">report a wrong value</a> or <a href="#">suggest a change</a>.
+        <span class="keep">Both open GitHub, where filing needs an account.</span></p>
+
+      <div class="foot"><b>Permit Rulebook</b> · code MIT · data CC BY 4.0 · values read between 2026-09-02 and 2026-09-10</div>
+    </div></div>
+  </div>
+  <div class="desk">
+    <p class="label-w">760 px</p>
+    <div class="panel"><div class="inner">
+      <p class="ghead closed"><b>Not open to your passport</b> (1)</p>
+      <div class="closed"><h3>Talent — employee on assignment (salarié en mission)</h3>
+        <p class="why">The authority's page closes this permit to this passport — read 2026-09-09.</p></div>
+      <p class="feedback">Wrong about you? A value that does not match its source, or something this screen
+        should do — <a href="#">report a wrong value</a> or <a href="#">suggest a change</a>.
+        <span class="keep">Both open GitHub, where filing needs an account.</span></p>
+      <div class="foot"><b>Permit Rulebook</b> · code MIT · data CC BY 4.0 · values read between 2026-09-02 and 2026-09-10 · re-read daily (last run 2026-09-16)</div>
+    </div></div>
+  </div>
+</div>
+
+<h2 class="mock">C′ · The same line, under the verdict
+  <small>The one placement question the builder raised (2026-09-16): at the end of the body the line's
+  neighbour is the closed section, and "wrong about you?" beside a closure reads as an invitation to
+  dispute it. Here the same sentence sits where the judgement is stated — under the headline and the
+  strip, before the first card — and the closed section keeps its plain ending.</small></h2>
+<div class="frames">
+  <div class="phone">
+    <p class="label-w">390 px · top of the results body</p>
+    <div class="panel"><div class="inner">
+      <p class="res-h"><b>Two</b> routes could fit.</p>
+      <p class="res-sub">Every rule below is quoted from the authority's page, with the day it was read.</p>
+      <div class="strip"><span class="s-met">2 open</span><span class="s-hold">3 not yet</span><span class="s-closed">1 not open to your passport</span></div>
+      <p class="feedback under">Wrong about you? <a href="#">Report a wrong value</a> or <a href="#">suggest a change</a>.
+        <span class="keep">Both open GitHub, where filing needs an account.</span></p>
+      <p class="ghead" style="margin-top:0"><b>Open — criteria met</b> (2)</p>
+      <div class="stack">
+        <div class="route"><div class="top"><span class="country">France</span><span class="st">Rules met</span></div>
+          <h3>EU Blue Card (talent — carte bleue européenne)</h3>
+          <p class="rule">salary ≥ <i>€ 53 836,50 / year</i> · your band above · <b>read 2026-09-09</b></p></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ================================================================ D -->
+<h2 class="mock">D · The two doors
+  <small>A block in the site's card vocabulary — top band, card ground — at the end of the results body,
+  with the two doors as tap-height buttons and the account requirement beneath them. It is furniture,
+  and it is the same furniture on every result: static, always there, nothing to dismiss. Louder than C
+  by design; the bet is that a door a thumb can find is worth a card's height at the end of a long screen.</small></h2>
+<div class="frames">
+  <div class="phone">
+    <p class="label-w">390 px · end of the results body</p>
+    <div class="panel"><div class="inner">
+      <p class="ghead hold"><b>Not yet</b> (3)</p>
+      <div class="hold-sum">3 routes need an offer you do not have yet</div>
+      <p class="ghead closed"><b>Not open to your passport</b> (1)</p>
+      <div class="closed"><h3>Talent — employee on assignment (salarié en mission)</h3>
+        <p class="why">The authority's page closes this permit to this passport — read 2026-09-09.</p></div>
+
+      <div class="doors">
+        <h3>Wrong about you?</h3>
+        <p>This screen is only as right as the values behind it. A value that does not match its source,
+          or something this screen should do, goes to the tracker.</p>
+        <div class="acts"><a class="act" href="#">Report a wrong value</a><a class="act" href="#">Suggest a change</a></div>
+        <span class="keep">Both open GitHub, where filing needs an account.</span>
+      </div>
+
+      <div class="foot"><b>Permit Rulebook</b> · code MIT · data CC BY 4.0 · values read between 2026-09-02 and 2026-09-10</div>
+    </div></div>
+  </div>
+  <div class="desk">
+    <p class="label-w">760 px</p>
+    <div class="panel"><div class="inner">
+      <p class="ghead closed"><b>Not open to your passport</b> (1)</p>
+      <div class="closed"><h3>Talent — employee on assignment (salarié en mission)</h3>
+        <p class="why">The authority's page closes this permit to this passport — read 2026-09-09.</p></div>
+      <div class="doors">
+        <h3>Wrong about you?</h3>
+        <p>This screen is only as right as the values behind it. A value that does not match its source,
+          or something this screen should do, goes to the tracker.</p>
+        <div class="acts"><a class="act" href="#">Report a wrong value</a><a class="act" href="#">Suggest a change</a></div>
+        <span class="keep">Both open GitHub, where filing needs an account.</span>
+      </div>
+      <div class="foot"><b>Permit Rulebook</b> · code MIT · data CC BY 4.0 · values read between 2026-09-02 and 2026-09-10 · re-read daily (last run 2026-09-16)</div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ================================================================ E -->
+<h2 class="mock">E · The door on the card
+  <small>The judgement happens per route, so the door is on the route: every card — met, near, closed —
+  ends in one mono link that opens the tracker with that route's name already in the title. The account
+  requirement is said once, under the strip, before any card. Nothing is added to the end of the body.
+  What this shape has no place for is "suggest a change": a need that is not a card stays with the
+  footer's second link.</small></h2>
+<div class="frames">
+  <div class="phone">
+    <p class="label-w">390 px · top of the results body</p>
+    <div class="panel"><div class="inner">
+      <p class="res-h"><b>Two</b> routes could fit.</p>
+      <p class="res-sub">Every rule below is quoted from the authority's page, with the day it was read.</p>
+      <div class="strip"><span class="s-met">2 open</span><span class="s-hold">3 not yet</span><span class="s-closed">1 not open to your passport</span></div>
+      <p class="doornote">A wrong value can be reported from its card. Reports open GitHub, where filing needs an account.</p>
+      <p class="ghead" style="margin-top:0"><b>Open — criteria met</b> (2)</p>
+      <div class="stack">
+        <div class="route"><div class="top"><span class="country">France</span><span class="st">Rules met</span></div>
+          <h3>EU Blue Card (talent — carte bleue européenne)</h3>
+          <p class="rule">salary ≥ <i>€ 53 836,50 / year</i> · your band above · <b>read 2026-09-09</b></p>
+          <div class="cfoot"><a href="#">Wrong about this route?</a></div></div>
+        <div class="route"><div class="top"><span class="country">France</span><span class="st">Rules met</span></div>
+          <h3>Talent — qualified employee (salarié qualifié)</h3>
+          <p class="rule">salary ≥ <i>€ 43 243 / year</i> · your band above · <b>read 2026-09-09</b></p>
+          <div class="cfoot"><a href="#">Wrong about this route?</a></div></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="phone">
+    <p class="label-w">390 px · end of the results body</p>
+    <div class="panel"><div class="inner">
+      <p class="ghead hold"><b>Not yet</b> (3)</p>
+      <div class="hold-sum">3 routes need an offer you do not have yet</div>
+      <p class="ghead closed"><b>Not open to your passport</b> (1)</p>
+      <div class="closed"><h3>Talent — employee on assignment (salarié en mission)</h3>
+        <p class="why">The authority's page closes this permit to this passport — read 2026-09-09.</p>
+        <div class="cfoot"><a href="#">Wrong about this route?</a></div></div>
+      <div class="foot"><b>Permit Rulebook</b> · code MIT · data CC BY 4.0 · values read between 2026-09-02 and 2026-09-10</div>
+    </div></div>
+  </div>
+  <div class="desk">
+    <p class="label-w">760 px</p>
+    <div class="panel"><div class="inner">
+      <div class="strip"><span class="s-met">2 open</span><span class="s-hold">3 not yet</span><span class="s-closed">1 not open to your passport</span></div>
+      <p class="doornote">A wrong value can be reported from its card. Reports open GitHub, where filing needs an account.</p>
+      <p class="ghead" style="margin-top:0"><b>Open — criteria met</b> (2)</p>
+      <div class="stack">
+        <div class="route"><div class="top"><span class="country">France</span><span class="st">Rules met</span></div>
+          <h3>EU Blue Card (talent — carte bleue européenne)</h3>
+          <p class="rule">salary ≥ <i>€ 53 836,50 / year</i> · your band above · <b>read 2026-09-09</b></p>
+          <div class="cfoot"><a href="#">Wrong about this route?</a></div></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+</body>
+</html>

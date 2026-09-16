@@ -44,15 +44,21 @@ unread list; the site's daily rebuild then pins it and the page says
 *Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
 that is a finding, not a delay.
 
-**The feedback moment goes back to its design gate** (2026-09-16, human:
-*"daha tasarımına karar vermedik ki feedbackin"*). The ledger had said the line
-was "what ships instead" after you rejected the two drawn shapes; you never
-chose it. Rejecting two shapes is not choosing a third — the correction is in
-DECISIONS, the re-land was stopped, and the round is now the one every screen
-of this product had: **drawn variants, a critique, your pick.** What you did
-decide on 09-10 still bounds it: nothing that opens by itself, nothing that
-dims the page, nothing remembered, the account requirement said before the
-click.
+**The feedback moment is at its design gate, drawn and critiqued** (2026-09-16,
+after your *"daha tasarımına karar vermedik ki feedbackin"*). The re-land was
+stopped and its worktree removed. Four shapes are in
+`docs/spine/design/s7-feedback-2.html`, all inside the bounds you set on
+09-10 (nothing opens by itself, nothing dims, nothing remembered, the GitHub
+account said before the click): **C** the closing line at the end of the body
+(what shipped as a default), **C′** the same line under the verdict, **D** a
+block with two buttons, **E** one link on every route card that opens the
+tracker with that route's name in the title. The critique
+(`docs/spine/critiques/2026-09-16-feedback-moment-design-critique.md`)
+judged the rendered frames and recommends **E**, naming the trade: every card
+grows by a row and "suggest a change" stays in the footer, in exchange for a
+report that arrives named after the route it disputes. C and D both sit three
+lines above the footer's identical links and directly under *Not open to your
+passport*. The pick is yours; nothing is built until it is made.
 
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.
@@ -61,7 +67,7 @@ board is empty between slices.
 stamp is yours: it brings the isolated full walk the cadence requires for a
 version that reaches real users, and a versions-ledger line the README quotes.
 
-**Queued, in order:** `feedback-line` (site #6, built, never walked); **site
+**Queued, in order:** the feedback moment's build, once you pick a shape (site #6); **site
 #10** (three copy polish items on `/data/`, from the light critique); **data
 #15** (the free-movement notice's evidence for four passports); **data #13**
 (the Opportunity Card's link); **data #17** (the IND shell — the browser
@@ -94,8 +100,14 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-Nothing is blocked on you. These are the things only you can see, when you want
-to look:
+**One thing is blocked on you: the feedback moment's shape.**
+
+- [ ] **Pick C, C′, D or E** — open `docs/spine/design/s7-feedback-2.html`
+      in a browser (the frames are 390 and 760 wide) and say which, or say what
+      none of them has. *Recommended:* E, for the reasons in the critique; C′
+      is the cheaper honest choice. The build waits on the word.
+
+These are the things only you can see, when you want to look:
 
 - [x] **The daily rebuild needs nothing from you.** This list asked you to run
       one by hand if a day passed without one. It was written on a false
