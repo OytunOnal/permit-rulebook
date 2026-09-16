@@ -116,8 +116,8 @@ CLS fix is not. The three lines, left here until the window closes:
 
 - [x] **The IND path is decided** (2026-09-16, *"url sabit"*): the form's
       result has no address, so the five IND route pages go human-tier.
-- [x] **s14's scenario approved** (2026-09-16, *"approve"*); building in the
-      data repository's own worktree.
+- [x] **s14's scenario approved** (2026-09-16, *"approve"*); the builder is
+      working in `../permit-rulebook-data-s14` (branch `ind-behind-the-form`).
 - [ ] **Then, the read that gates the merge** (yours, ~20 minutes): open
       each of the five IND pages, answer *Your situation*, and confirm the
       sentences listed in `data/verify-s5e.md` section 3 are still on the
