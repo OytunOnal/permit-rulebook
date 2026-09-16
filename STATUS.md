@@ -133,7 +133,13 @@ CLS fix is not. The three lines, left here until the window closes:
       finding (the footer's parenthesis is 2 px too wide for a 390 column
       with a count in it). You chose to fix the tests now (*"1"*): **s15**,
       scenario `docs/spine/scenarios/s15-the-first-unread-day.md`, building
-      in its own worktree. Live stays on s12 until it lands.
+      in its own worktree — **built**: 467 tests green against today's
+      state, the clean day and the unread day both proved with fabricated
+      states, one production change (the footer's parenthesis may break at
+      390). The build caught my scenario putting the break before the dot,
+      against the footer's own 09-08 rule; corrected, the one-token flip is
+      landing. Then your word, and the deploy carries s13 + s14 + s15. Live
+      stays on s12 until it lands.
 
 - [x] **First walk of s13** (2026-09-16): the doors opened nothing on your
       desktop — decided: Gmail first, the mail app second. Building.
