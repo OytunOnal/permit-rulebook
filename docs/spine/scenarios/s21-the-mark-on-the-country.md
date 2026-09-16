@@ -40,6 +40,17 @@ answers in.
 5. **Nothing else changes**; s19's tests stay green; the fingerprint does
    not move (route pages untouched).
 
+**Corrected 2026-09-16, by the build:** point 3's first half ("if every
+country is closed, the written state") and its last sentence ("no new
+headline shape") cannot both hold — s19's state names one country and one
+route — and the case is unreachable on this dataset: the *all* set is the
+union of the four and every offered situation has a scored route
+somewhere. The reachable branch is built (the existing headline; France's
+line does the saying) and a unit case pins the invariant, so the day the
+union loses a situation the missing shape is red, not silent. The external
+glyph was a rule on the mark's link (`.opt-mark a::after`), not an `out`
+class; gone.
+
 ## How it is proved
 
 - A browser walk: *Any of these four* → research → question 3 shows the

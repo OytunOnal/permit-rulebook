@@ -189,8 +189,10 @@ CLS fix is not. The three lines, left here until the window closes:
 - [x] **N1 and N2 picked** (2026-09-16, *"ikisi de şimdi"*): s21 (the mark on
       question 3's country and on the four-country result's France line,
       plus two polish items) and s22 (the s10 gate re-seeded with a real
-      finished record, then the finished-record arrival painted once). Both
-      scenarios written and building in their own worktrees.
+      finished record, then the finished-record arrival painted once). **s21 is built** (541 tests): question 3 marks France under a declared
+      research situation, the four-country result's France line is the
+      sentence with the route's name the link, the mark is announced, the
+      glyph is gone. s22 building.
 
 - [x] **s19 and s20 walked and merged** (2026-09-16, your word; the session
       walked both on the preview at your ask, three viewports for ✎). Live.
