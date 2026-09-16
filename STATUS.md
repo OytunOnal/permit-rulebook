@@ -179,13 +179,19 @@ to look:
       on the live host afterwards.
 - [x] **s12 scenario approved** (2026-09-15, your word: *"approve"*). Being built.
 - [x] **s12 walked once, and the walk changed it** (2026-09-16): "What it
-      holds today" read untidily — seven cells as 3 + 3 + 1, an orphaned
-      "Sentences of ours", a "Routes" sentence three lines tall beside
-      one-line neighbours, dates and counts interleaved, one date dotted among
-      dashed ones. You chose the layout on a live prototype: **four dates
-      across, two counts across, Routes alone full-width, every cell
-      centred**, and the dataset version shown as a day. Being built on
-      `two-labels`; the walk resumes on the rebuilt preview.
+      holds today" read untidily — 3 + 3 + 1 with an orphan, a three-line
+      "Routes" beside one-liners, dates and counts interleaved, one dotted
+      date among dashed ones. You chose the layout on a live prototype; built
+      and gated (`two-labels` `8f859bc`, **426 tests**, fingerprint unmoved).
+      At a phone's width the counts stack rather than sit two across — two
+      across broke each value over three lines, the thing being fixed.
+- [ ] **Walk s12 again, then say merge** — http://localhost:4500/data/ (`8f859bc`).
+      "What it holds today": four dates across, two counts across, Routes
+      alone on a full-width row with its sentence on one line, every cell
+      centred, *Dataset version 2026-09-10*. Narrow the window to a phone's
+      width if you like: dates 2×2, counts stacked, Routes two lines, nothing
+      overflowing. *Pass:* it looks like one list of seven facts, not a grid
+      with a hole in it.
 
 - [ ] **v1.1 — stamp it, or say what it still needs.** Its scope was s9 and
       s10; both are real-green and live. A stamp brings the full critique walk
