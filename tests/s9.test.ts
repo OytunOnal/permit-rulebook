@@ -31,13 +31,17 @@ const unscoredAddresses = () => routeAddresses(ds).filter((a) => !isScored(a.rou
  * before they read it.
  */
 describe("s9 — a route page that quotes the rules and offers no verdict", () => {
-  it("there are five of them, each with a page at an address a person can read", () => {
+  // Five in s9; six since s19, when France's researcher card — the route a
+  // reader with a hosting agreement was shown "Nothing open" for — entered as
+  // the sixth, through the same mechanism.
+  it("there are six of them, each with a page at an address a person can read", () => {
     const unscored = unscoredAddresses();
-    expect(unscored.length).toBe(5);
-    expect(pages.length).toBe(28);
+    expect(unscored.length).toBe(6);
+    expect(pages.length).toBe(29);
     for (const a of unscored) expect(a.path, a.route.id).toMatch(/^\/[a-z-]+\/[a-z0-9-]+$/);
     expect(unscored.map((a) => a.path).sort()).toEqual([
       "/france/employee-card",
+      "/france/talent-researcher",
       "/germany/self-employment-and-freelance-work",
       "/netherlands/single-permit-for-paid-employment",
       "/spain/employee-general-regime",
@@ -145,7 +149,7 @@ describe("s9 — a country page lists them, below the ones it scores", () => {
     return { address, page: countryPage(ds, address) };
   };
 
-  it("lists 23 scored routes and five that are quoted and not scored", () => {
+  it("lists 23 scored routes and six that are quoted and not scored", () => {
     let scored = 0;
     let quotedOnly = 0;
     for (const { country } of countryAddresses(ds)) {
@@ -157,7 +161,7 @@ describe("s9 — a country page lists them, below the ones it scores", () => {
       }
     }
     expect(scored).toBe(23);
-    expect(quotedOnly).toBe(5);
+    expect(quotedOnly).toBe(6);
   });
 
   it("the country heading counts in figures, both halves of it", () => {

@@ -46,15 +46,16 @@ const controlsOf = (html: string): string[][] =>
 describe("s6 — one page per route, generated from the dataset", () => {
   it("renders a page for every route, at an address a person can read", () => {
     // 28 since s9: the 23 the product scores, plus the five it quotes, dates
-    // and does not score. Every one of them is a page like any other.
-    expect(pages.length).toBe(28);
-    expect(routeAddresses(ds).length).toBe(28);
+    // and does not score; 29 since s19, when France's researcher card joined
+    // the quoted ones. Every one of them is a page like any other.
+    expect(pages.length).toBe(29);
+    expect(routeAddresses(ds).length).toBe(29);
     const germany = ds.countries.find((c) => c.code === "DE")!;
     const blueCard = germany.routes.find((r) => r.id === "de-blue-card-general")!;
     // The address the scenario walks: the country as a person names it, the
     // route as the authority names it — never the dataset's own keys.
     expect(routePath(germany, blueCard)).toBe("/germany/eu-blue-card-general");
-    expect(new Set(pages.map((p) => p.path)).size).toBe(28);
+    expect(new Set(pages.map((p) => p.path)).size).toBe(29);
     for (const p of pages) expect(p.path, p.path).toMatch(/^\/[a-z-]+\/[a-z0-9-]+$/);
   });
 

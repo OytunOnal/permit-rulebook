@@ -1,5 +1,6 @@
 import {
-  bindsReader, carveOutFor, closedBy, decidingCriteria, deriveBands, forEachCriterion, formatEUR, formatEURPer,
+  answerLabel, bindsReader, carveOutFor, closedBy, decidingCriteria, deriveBands, fieldOptions, forEachCriterion,
+  formatEUR, formatEURPer,
   gapCriterionOf, noticeSources,
   resultProvenance,
   routeReadings, routeStatements, scopeLine,
@@ -7,6 +8,7 @@ import {
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
+import { NOT_CHECKED_HEADING, askedHeading } from "./copy.js";
 // One frame for every quote the product shows (2026-09-08).
 import { noteHtml, quoteFrame } from "./quote.js";
 
@@ -70,15 +72,66 @@ export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profil
  * read back — a coined synonym for Criterion's own Avoid list (review
  * 2026-09-07).
  */
-export function precondHtml(route: Route, answers: Profile): string {
+export function precondHtml(ds: Dataset, route: Route, answers: Profile): string {
+  const statements = binding(route, answers).filter((s) => s.kind === "precondition");
+  // The ones the interview asked, by the field it asked them on, in the order
+  // the route's criteria read those fields.
+  const asked = new Map<string, RouteStatement[]>();
+  const unasked: RouteStatement[] = [];
+  for (const s of statements) {
+    const field = askedFieldOf(ds, route, s, answers);
+    if (field === null) { unasked.push(s); continue; }
+    asked.set(field, [...(asked.get(field) ?? []), s]);
+  }
   return proseBlock(
-    "precond", "Also required — not checked here:",
-    [
-      ...(route.preconditions ?? []),
-      ...binding(route, answers).filter((s) => s.kind === "precondition").map((s) => s.text),
-    ].map(esc),
+    "precond", NOT_CHECKED_HEADING,
+    [...(route.preconditions ?? []), ...unasked.map((s) => s.text)].map(esc),
     " · ",
-  );
+  ) + [...asked].map(([field, ss]) => proseBlock(
+    "precond asked", esc(askedHeading(answerLabel(ds, field, answers[field]))),
+    ss.map((s) => esc(s.text)),
+    " · ",
+  )).join("");
+}
+
+/**
+ * The field the interview asked this precondition on, or null where it asked
+ * none (s19, F8).
+ *
+ * A precondition statement names no field of its own. What it does carry is
+ * the authority's sentence, and where that sentence is the one a criterion on
+ * this route stands on, the criterion and the condition are one rule read
+ * twice — the provenance list has deduplicated exactly that pair since s5f.
+ * So a precondition is "asked" when a criterion of this route reads a field
+ * the reader has declared and quotes the same sentence. The Spanish researcher
+ * card's hosting agreement is the case: its sentence is the situation
+ * criterion's, and the reader's research answer IS the declaration. Nothing
+ * here is a list of which conditions are which; it is the dataset's own
+ * sentences, matched.
+ *
+ * Declared means answered with a real answer: an "I don't know", or the door
+ * for a salary no band fits, leaves the condition unchecked, and the heading
+ * that says so stays.
+ */
+function askedFieldOf(ds: Dataset, route: Route, s: RouteStatement, answers: Profile): string | null {
+  if (!s.source) return null;
+  const quote = s.source.quote;
+  let found: string | null = null;
+  forEachCriterion(route.criteria, (c) => {
+    if (found !== null || !("field" in c) || !("source" in c) || !c.source) return;
+    if (c.source.quote === quote && isDeclared(ds, c.field, answers[c.field])) found = c.field;
+  });
+  return found;
+}
+
+/** A real answer on the record — not absent, not the "I don't know" option,
+ * not the money question's door for a figure no band fits. */
+function isDeclared(ds: Dataset, field: string, value: string | undefined): boolean {
+  if (value === undefined) return false;
+  if (ds.fields.find((f) => f.id === field)?.type === "money_band")
+    return deriveBands(ds, field).some((b) => b.id === value);
+  const option = fieldOptions(ds, field).find((o) => o.value === value);
+  return option !== undefined && option.is_unknown !== true;
 }
 
 /**

@@ -55,7 +55,7 @@ describe("s7 — a Turkish passport on the Dutch highly skilled migrant route", 
   });
 
   it("does not state the recognised-sponsor condition to this reader", () => {
-    const html = precondHtml(routeOf("nl-hsm-30plus"), turkish);
+    const html = precondHtml(ds, routeOf("nl-hsm-30plus"), turkish);
     expect(html).not.toContain(SPONSOR);
     // The conditions that DO bind are untouched: a carve-out releases one
     // sentence, never the block it sits in.
@@ -76,17 +76,17 @@ describe("s7 — a Turkish passport on the Dutch highly skilled migrant route", 
   it("still tells this reader the application needs a provisional residence permit", () => {
     // Turkey is not among the passports the IND exempts (ten named in the
     // carve-out; the eleventh entry on the IND's list is the EU/EEA class).
-    expect(precondHtml(routeOf("nl-hsm-30plus"), turkish))
+    expect(precondHtml(ds, routeOf("nl-hsm-30plus"), turkish))
       .toContain(statementText("nl-hsm-30plus", "mvv-needed"));
     expect(carveOutHtml(routeOf("nl-hsm-30plus"), turkish))
       .not.toContain(carveOutText("nl-hsm-30plus", "mvv-needed"));
   });
 
   it("states the sponsor condition to a Japanese passport, and drops the MVV line", () => {
-    expect(precondHtml(routeOf("nl-hsm-30plus"), japanese)).toContain(SPONSOR);
+    expect(precondHtml(ds, routeOf("nl-hsm-30plus"), japanese)).toContain(SPONSOR);
     expect(carveOutHtml(routeOf("nl-hsm-30plus"), japanese))
       .not.toContain(carveOutText("nl-hsm-30plus", "employer-must-be-a-recognised-sponsor"));
-    expect(precondHtml(routeOf("nl-hsm-30plus"), japanese))
+    expect(precondHtml(ds, routeOf("nl-hsm-30plus"), japanese))
       .not.toContain(statementText("nl-hsm-30plus", "mvv-needed"));
     expect(carveOutHtml(routeOf("nl-hsm-30plus"), japanese))
       .toContain(carveOutText("nl-hsm-30plus", "mvv-needed"));
@@ -127,7 +127,7 @@ describe("s7 — every card block reads the reader's passport", () => {
     // answered the passport question is bound by everything.
     expect(carveOutHtml(routeOf("de-blue-card-general"), turkish)).toBe("");
     expect(carveOutHtml(routeOf("nl-hsm-30plus"), {})).toBe("");
-    expect(precondHtml(routeOf("nl-hsm-30plus"), {}))
+    expect(precondHtml(ds, routeOf("nl-hsm-30plus"), {}))
       .toContain(statementText("nl-hsm-30plus", "employer-must-be-a-recognised-sponsor"));
   });
 });
@@ -149,9 +149,9 @@ describe("s7 — the other two permits the IND names, and the page that calls th
   for (const [route, statement] of SPONSORED)
     it(`${route}: a Turkish passport is released from the sponsor condition, a Japanese one is not`, () => {
       const condition = statementText(route, statement);
-      expect(precondHtml(routeOf(route), turkish)).not.toContain(condition);
+      expect(precondHtml(ds, routeOf(route), turkish)).not.toContain(condition);
       expect(carveOutHtml(routeOf(route), turkish)).toContain(carveOutText(route, statement));
-      expect(precondHtml(routeOf(route), japanese)).toContain(condition);
+      expect(precondHtml(ds, routeOf(route), japanese)).toContain(condition);
       expect(carveOutHtml(routeOf(route), japanese)).not.toContain(carveOutText(route, statement));
     });
 

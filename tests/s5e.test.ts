@@ -25,7 +25,7 @@ const cardProse = (r: RouteResult, answers: Profile): string =>
   // sets aside for their passport leaves the card, the carve-out takes its
   // place, and the quote list follows the card. Composing it any other way here
   // would check a card the page does not render.
-  whyHtml(ds, r, answers) + precondHtml(r.route, answers) + carveOutHtml(r.route, answers) +
+  whyHtml(ds, r, answers) + precondHtml(ds, r.route, answers) + carveOutHtml(r.route, answers) +
   caveatHtml(r.route, answers) + readingHtml(r.route) + provenanceHtml(ds, r, answers);
 
 /** The provenance list — the one place an authority's words may appear. */
@@ -128,7 +128,7 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
         // Not under "Also required", not under "The official page also says",
         // and never inside the quote list where every other line is somebody
         // else's sentence.
-        expect(precondHtml(r.route, {}), `${r.route.id}:${s.id}`).not.toContain(s.text);
+        expect(precondHtml(ds, r.route, {}), `${r.route.id}:${s.id}`).not.toContain(s.text);
         expect(caveatHtml(r.route, {}), `${r.route.id}:${s.id}`).not.toContain(s.text);
         for (const line of sourceLines(html))
           expect(line, `${r.route.id}:${s.id}`).not.toContain(s.text);

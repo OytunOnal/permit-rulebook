@@ -1,3 +1,6 @@
+import { esc, escAttr } from "./reason.js";
+import type { UnscoredVerdict } from "./situations.js";
+
 /**
  * The masthead — headline and subtitle — as a pure function of which screen is
  * showing.
@@ -27,6 +30,13 @@ export type Screen =
   | {
     kind: "results"; answered: number; routes: number; headline: string;
     nearest?: string; explore?: Explore;
+    /**
+     * The written state for a situation no scored route in the declared
+     * country takes: the whole subline, in place of the count of what was
+     * compared, with one door in it (s19). The verdict is not "nothing open";
+     * it is that the route is absent, and where its rules are read.
+     */
+    unscored?: UnscoredVerdict;
   }
   /** A published rule answers the person directly; no routes were compared. */
   | { kind: "notice"; title: string };
@@ -39,6 +49,13 @@ export interface Masthead {
   headline: string;
   /** textContent — never markup, so nothing can be smuggled into it. */
   subline: string;
+  /**
+   * The same words with the one link the s19 written state carries, composed
+   * here from escaped parts and present only on that screen: the page draws it
+   * where it exists and writes `subline` as text everywhere else. The text form
+   * stays the one that is announced and the one every test reads.
+   */
+  sublineHtml?: string;
 }
 
 /**
@@ -92,6 +109,15 @@ export function mastheadFor(screen: Screen): Masthead {
       // The passive, as the intro (human, 2026-09-16). The count is the
       // subject now, so the verb has to agree with it: one answer WAS compared.
       const were = screen.answered === 1 ? "was" : "were";
+      if (screen.unscored) {
+        const { subline, door } = screen.unscored;
+        // The door is a link only in the HTML form; the text form is the
+        // sentence itself, so what is announced is what is read.
+        const sublineHtml = door
+          ? esc(subline).replace(esc(door.text), `<a href="${escAttr(door.href)}">${esc(door.text)}</a>`)
+          : esc(subline);
+        return { headline: screen.headline, subline, sublineHtml };
+      }
       let subline = `Your ${answers} ${were} compared against ${sets}. Every value below shows its official ` +
         "quote and the date we read it from the source.";
       if (screen.nearest) subline += ` Nearest: ${screen.nearest}.`;
@@ -117,7 +143,7 @@ export type FlowAction =
   /** "Start over". */
   | { kind: "reset" }
   /** The interview ended and the routes were compared. */
-  | { kind: "compare"; routes: number; headline: string; nearest?: string; explore?: Explore }
+  | { kind: "compare"; routes: number; headline: string; nearest?: string; explore?: Explore; unscored?: UnscoredVerdict }
   /** A published notice answers the person outright, so nothing was compared. */
   | { kind: "answered-outright"; title: string };
 
@@ -143,7 +169,7 @@ export function screenAfter(action: FlowAction, interview: Interview): Screen {
     case "compare":
       return {
         kind: "results", answered: interview.answered, routes: action.routes,
-        headline: action.headline, nearest: action.nearest, explore: action.explore,
+        headline: action.headline, nearest: action.nearest, explore: action.explore, unscored: action.unscored,
       };
     case "answered-outright":
       return { kind: "notice", title: action.title };

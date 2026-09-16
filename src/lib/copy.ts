@@ -90,6 +90,20 @@ export const RETURNING_LINE = "Your answers are on this device — bringing them
 export const LINK_ARRIVAL_LINE = "Setting up your questions.";
 
 /**
+ * What the box says to a reader who came back to a half-done interview, once
+ * the module has their screen.
+ *
+ * The stand-in above says the answers are coming back; this is the line that
+ * says they came. Without it a returning visitor landed on "question 3 of up
+ * to 8" and read a second visit as a broken first question — the only clue
+ * was the folded ledger under the card (v1.1 gate critique, F5). It counts
+ * what was kept, in the ledger's own number, and the control that follows it
+ * is the ledger's own "Start over", moved into the line rather than copied.
+ */
+export const resumedLine = (kept: number): string =>
+  `Continuing where you left off — ${kept} answer${kept === 1 ? "" : "s"} kept.`;
+
+/**
  * What a route page adds to it. A page a stranger lands on cold from a search
  * has to say, before it says anything else, that it is describing rules rather
  * than judging the reader.
@@ -424,3 +438,61 @@ export const FEEDBACK_FOOTER_ROW = "How to write, and what happens";
  */
 export const RESULT_FEEDBACK_ASK = "Something to say about this result?";
 export const resultFeedbackLine = (word: string): string => `${RESULT_FEEDBACK_ASK} ${word}.`;
+
+/**
+ * The mark under a situation answer no scored route in the chosen country
+ * takes (s19).
+ *
+ * A researcher with a French hosting agreement was offered the answer, took
+ * it, and read "Nothing open on these answers" two taps later — for a route
+ * that was merely absent, said nowhere on the site (v1.1 gate critique, B1).
+ * The mark says so before the answer is picked. The option stays a button: a
+ * reader may still want to see what the rest need.
+ *
+ * Both names are the dataset's — the country's, and the quoted route's own
+ * name, because the site has no shorter word for a route than the one the
+ * dataset gives it and a typed "researcher permit" would be a second name to
+ * keep in step. The last three words are the link to that route's page; the
+ * line without a route is for a situation nothing quoted carries either.
+ */
+export const notScoredLine = (country: string): string => `Not scored for ${country} yet.`;
+export const READ_IT_HERE = "read it here";
+export const notScoredQuotedLine = (country: string, routeName: string): string =>
+  `Not scored for ${country} yet — ${routeName} is quoted, not scored: ${READ_IT_HERE}.`;
+
+/**
+ * The written state a zero-open result through a marked answer reads, in
+ * place of "Nothing open" (s19).
+ *
+ * The headline names the country and the situation in the option's own short
+ * words ("a research hosting agreement"); the subline names the quoted route
+ * — the situation phrase before it says what it is for, since the dataset
+ * carries no other description of a route than its name — with the door on
+ * the last three words, and then what the scored routes below do take,
+ * derived from the situations they ask and joined the way the hold list
+ * joins them. Without a quoted route the subline is the second sentence
+ * alone.
+ */
+export const unscoredHeadline = (country: string, situation: string): string =>
+  `No scored route in ${country} takes ${situation}.`;
+export const READ_ITS_RULES = "read its rules";
+/** The possessive, for the one country whose name ends in an s. */
+const possessive = (name: string): string => (name.endsWith("s") ? `${name}'` : `${name}'s`);
+export const unscoredRouteLine = (country: string, situation: string, routeName: string): string =>
+  `${possessive(country)} route for ${situation} — ${routeName} — is quoted here but not scored: ${READ_ITS_RULES}.`;
+export const unscoredRestLine = (steps: string): string => `The routes below need ${steps}.`;
+
+/**
+ * The two headings a card's preconditions sit under (s19, F8).
+ *
+ * The first is the card's honesty device: what the authority requires that
+ * the interview never asked. The Spanish researcher card spent it on "A
+ * hosting agreement" to a reader who had just declared one — the sentence
+ * that condition stands on is the sentence the situation criterion stands on,
+ * and the interview had asked it. Such a condition goes under the second
+ * heading instead, with the s5 words for an answered rule: what the reader
+ * declared, quoted back as the button said it.
+ */
+export const NOT_CHECKED_HEADING = "Also required — not checked here:";
+export const askedHeading = (declared: string): string =>
+  `Asked in the interview — you declared “${declared}”:`;
