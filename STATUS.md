@@ -44,6 +44,17 @@ unread list; the site's daily rebuild then pins it and the page says
 *Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
 that is a finding, not a delay.
 
+**s16 and s17 are live too** (2026-09-16, deploy `7d5ef51` green, read on
+the live host): `/data/` in the reader's words — *46, written by us and
+marked as ours*; *raises a flag and a person reads it*; the lede's *and if
+something is wrong, tell us* linking `/feedback/`; no "tracker" on the page
+— and the last two *Report a wrong value* doors (`/data/`'s Take it, every
+route page's data door) now *Report what is wrong* → `/feedback/`. And the
+home masthead and the results subline lose *Code* as their subject: *Your
+answers are compared against published rules…* / *Your 3 answers were
+compared against 4 published rule sets.* Site #10 closed. Five slices live
+today on your word: s13, s14, s15, s16, s17.
+
 **s13, s14 and s15 are live** (2026-09-16, deploy `6fe4eb5` green, read on
 the live host afterwards). Three merges on your word in one afternoon, each
 forced by the one before:
@@ -151,30 +162,8 @@ CLS fix is not. The three lines, left here until the window closes:
 - [x] **s13 walked and merged** (2026-09-16, your word), **s14 merged**
       (your word, after the five IND pages were read in Chrome at your
       request), **s15 merged** (your word). All three live in `6fe4eb5`.
-- [x] **s16's scenario approved** (2026-09-16, *"approve"*) and **built**
-      in `../permit-rulebook-s16`: 475 tests green, the three sentences and
-      the two doors as the scenario says. The build found the page's meta
-      description still naming the tracker; it goes in the same round
-      (scenario corrected) — done, 476 green. **On the preview:**
-      http://localhost:4500/data/ — the counts row, the freshness sentence's
-      last half, the *Take it* door; and any route page's data door. Read
-      `/data/` cold once, then your word. **Your read found two things:** the
-      lede's *tell us it is wrong* had no door — I had checked it was not a
-      link and dropped it from the scenario without saying so; it becomes a
-      link to `/feedback/` in the same round — done, 477 green, on the preview. And the results screen's
-      *"Code compared…"*: you chose the passive (*"2"*) — **s17**, its own
-      small slice, `docs/spine/scenarios/s17-no-code-as-subject.md` —
-      **built**, and on the same preview as s16 (485 tests green together).
-      The passive collided with the v0.7 B4 detector (*are compared* is a
-      promise, *were compared* a claim); the detector learned the difference,
-      the tense rule stands. No fixture moved: nothing pins the masthead.
-      **Read on http://localhost:4500:** `/`'s first screen (*Your answers are
-      compared…*), a results screen (*Your N answers were compared…*), and
-      `/data/` (the lede's door, the counts row, the freshness sentence, the
-      Take-it door). Your read found the lede's *or tell us it is wrong* presupposing a
-      wrong; you chose *"…and if something is wrong, tell us."* — on the preview,
-      485 green.
-      Then "merge" — for both, or say which.
+- [x] **s16 and s17 walked and merged** (2026-09-16, your word; three
+      corrections from your reads are in s16). Live in `7d5ef51`.
 - [ ] **Look at the live site once, when you like:** https://permitrulebook.com/feedback/
       — tap *Report what is wrong*; Gmail should open with the subject.
       Nothing is blocked on it.

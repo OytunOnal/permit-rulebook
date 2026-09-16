@@ -273,16 +273,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **s16 — `/data/` in the reader's words, and the last two tracker doors**
-  (site #10) · the s12 critique's three polish items, plus the two
-  *Report a wrong value* links s13 left pointing at GitHub (`/data/` Take
-  it, the route pages' data door), which become *Report what is wrong* →
-  `/feedback/`. Scenario approved 2026-09-16 ("approve"), **building**;
-  the human's preview walk added the lede's *tell us it is wrong* as a door.
-- **s17 — the comparison has no subject called "Code"** · the home
-  masthead and the results subline lose *Code* as their subject (human:
-  "2" — the passive). Scenario `docs/spine/scenarios/s17-no-code-as-subject.md`,
-  approved by the choice; building.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -293,6 +284,14 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s16 — `/data/` in the reader's words, and the last two tracker doors** ·
+  real-green 2026-09-16 (human: "merge"; live in `7d5ef51`). Site #10 closed.
+  Three corrections from the human's reads: the lede's door, the meta
+  description, the lede's presupposition.
+- **s17 — the comparison has no subject called "Code"** · real-green
+  2026-09-16 (human: "2", then "merge"; live in `7d5ef51`). The B4 detector
+  learned to tell the present promise from the past claim.
 
 - **s15 — the first unread day** · real-green 2026-09-16 (human: "merge";
   `5f7d1fb`, live in `6fe4eb5` with s13 and s14). The clean-day tests
