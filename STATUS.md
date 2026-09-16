@@ -80,6 +80,26 @@ Pages report is a batch that lags it by days on a new property — the Datasets
 report's own chart shows the lag: zero until 09-11, then valid every day. It
 resolves on its own; nothing to do.
 
+**PageSpeed, desktop, read 2026-09-16 12:20 GMT+3** (the link you sent from
+Search Console; Lighthouse 13.4.1, lab run, one page: `/`). Four scores of
+**100** — Performance, Accessibility, Best Practices, SEO — and the new
+Agentic Browsing 2/2. FCP 0.2 s, LCP 0.2 s, TBT 10 ms, **CLS 0**, Speed Index
+0.3 s: the lab confirms what s10's gate asserts, a first paint that does not
+move. The field panel says *No Data* — Chrome's users-experience corpus needs
+more visits than the site has had; the counter's own CLS reading (poor 6 %
+at day 6) is still the field number until 2026-10-09. Every unscored note the
+report lists lands on something already decided or already known: the five
+security headers it wants (HSTS, COOP, X-Frame-Options, a header CSP, Trusted
+Types) are ones GitHub Pages cannot set — accepted in `docs/spine/threats.md`
+and DECISIONS 2026-09-08, with the CSP carried in `<meta>` as the closest a
+static host allows; the 10-minute cache lifetime on the hashed assets is
+GitHub Pages' fixed `max-age=600`, not ours to raise; the 11 KiB of legacy
+JavaScript and the three limited-availability features are all inside
+Cloudflare's beacon, not our code; the one 64 ms long task is the interview
+module drawing the first screen. Nothing here opens a slice. The mobile run
+was not read — the link was the desktop one — and the s10 bet is a phone
+number; worth one click on the *Mobile* tab when you are next in the report.
+
 **Five slices in seven days, each on your word:** s8, s9, s11, s10, s12. The
 board is empty between slices.
 
