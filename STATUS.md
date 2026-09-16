@@ -210,9 +210,9 @@ CLS fix is not. The three lines, left here until the window closes:
 
 **Nothing is blocked on you** until s23 is on the preview.
 
-- [x] **s23 approved** (2026-09-17, *"onaylıyorum"*); building — the data
-      half (the notice's clause, the curator note kept in the data) in
-      `../permit-rulebook-data-s23`, the site half in `../permit-rulebook-s23`.
+- [x] **s23 approved** (2026-09-17, *"onaylıyorum"*); **data half built** (579 tests): the notice ends at *that route's
+      card says so*; the curator's remark was in a citation the card prints
+      and now lives in the watch entry's note. Site half building.
 
 - [x] **s21 and s22 walked and merged** (2026-09-16, your word; the session
       walked both on the preview). Live.

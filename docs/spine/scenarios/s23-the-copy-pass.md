@@ -86,6 +86,18 @@ it. Every new word lives in `copy.ts`; no string is typed into a template.
     fingerprint moves (P1, P2, P3, P4, F3 touch route pages) and regenerates
     with the reasons; `/data/` likewise for P4's zero.
 
+**Corrected 2026-09-17, by the data build:** (7) the curator's note was not
+in a source name — the dataset has none — but in the § 20a caveat's
+`legal_basis`, which the card prints as the citation; it now reads
+*"§ 20a Absatz 2 AufenthG (consolidated mirror, buzer.de)"*, the form the
+eight § 21 citations use (CONTRIBUTING requires the mirror disclosed), and
+the fetch remark lives in the watch entry's `note`. No schema field: the
+schema records that `note` was removed from sources on 2026-09-07 for
+being prose nothing renders or watches. (11) A notice has no history slot
+and the repo's precedent for a notice-body edit is the commit message;
+the record is the test's dated comment and the merge commit, not a
+fabricated reading in `source.history`.
+
 ## How it is proved
 
 - For each item, a unit case over the rendered string: the offer-holder's
