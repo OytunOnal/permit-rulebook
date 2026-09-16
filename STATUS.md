@@ -49,9 +49,10 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** The isolated full walk is next — the critique
-agent, every persona, all nine lenses, delta against v1's 36/50 — then the
-versions line and the README.
+live site: s9 through s18.** **The isolated full walk is running** — the critique agent, blind, on the
+live site, every persona, all ten lenses of RUBRIC 1.3, delta against v1's
+36/50. Its findings come to you as the v1.1 gate; then the versions line
+and the README.
 
 **s16 and s17 are live too** (2026-09-16, deploy `7d5ef51` green, read on
 the live host): `/data/` in the reader's words — *46, written by us and
