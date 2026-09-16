@@ -1,6 +1,6 @@
 {
-  "source": "src/lib/data-page.ts at 8bdd583 plus the change docs/spine/scenarios/s12-two-labels.md asks for, over tests/fixtures/frozen-dataset.json — the fingerprint was born in s11 and has moved once since: on 2026-09-15 the row \"Newest value read\" became \"Newest value changed\" and \"Last checked\" was added beneath it, so the run now prints twice more on this page",
+  "source": "src/lib/data-page.ts at 8bdd583 plus the change docs/spine/scenarios/s12-two-labels.md asks for, over tests/fixtures/frozen-dataset.json — the fingerprint was born in s11 and has moved twice since, both in s12: on 2026-09-15 the row \"Newest value read\" became \"Newest value changed\" and \"Last checked\" was added beneath it, and on 2026-09-16 the human's walk regrouped \"What it holds today\" into three lists (dates, counts, Routes), centred every cell and gave the dataset version its day form",
   "run": "1970-01-01",
   "occurrences": 6,
-  "sha256": "cd26c703aded491fd32f5ac40aecc0464aef7613c456ccac86de486b5c2d2125"
+  "sha256": "745533d40486e3d94a1216c612865e5f4e2e972b4a9ac394264ecbf0d6f33baf"
 }

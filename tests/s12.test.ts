@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset, UnreadSource } from "permit-rulebook-data";
-import { dataPage } from "../src/lib/data-page.js";
-import { LAST_CHECKED, NEWEST_VALUE_CHANGED } from "../src/lib/copy.js";
+import { dataPage, routeCounts } from "../src/lib/data-page.js";
+import { LAST_CHECKED, NEWEST_VALUE_CHANGED, datasetDay } from "../src/lib/copy.js";
 import { lastWatchRun, readRange } from "../src/lib/site.js";
 import { siteReadDate } from "../src/lib/country-page.js";
 
@@ -28,15 +28,21 @@ const readerSees = (html: string): string =>
   html.replace(/<[^>]*>/g, "").split(/\s+/).join(" ").split(String.fromCharCode(160)).join(" ").trim();
 
 /**
- * The "What it holds today" list, as its rows: the term and what stands under
- * it. The rows are the unit this slice moves, so they are the unit it asserts —
- * a substring of the whole page would pass on a label sitting anywhere.
+ * "What it holds today", as the reader meets it: three lists, each of one kind,
+ * and each of their rows a term with what stands under it. The rows are the
+ * unit this slice moves, so they are the unit it asserts — a substring of the
+ * whole page would pass on a label sitting anywhere.
  */
-function facts(html: string): [string, string][] {
-  const list = html.slice(html.indexOf(`<dl class="facts">`), html.indexOf("</dl>"));
-  return [...list.matchAll(/<dt>(.*?)<\/dt><dd>(.*?)<\/dd>/g)]
-    .map((row) => [readerSees(row[1]!), readerSees(row[2]!)] as [string, string]);
+function factLists(html: string): { kind: string; rows: [string, string][] }[] {
+  return [...html.matchAll(/<dl class="facts([^"]*)">([\s\S]*?)<\/dl>/g)].map((list) => ({
+    kind: list[1]!.trim(),
+    rows: [...list[2]!.matchAll(/<dt>(.*?)<\/dt><dd>(.*?)<\/dd>/g)]
+      .map((row) => [readerSees(row[1]!), readerSees(row[2]!)] as [string, string]),
+  }));
 }
+
+/** Every fact on the page, whichever list holds it. */
+const facts = (html: string): [string, string][] => factLists(html).flatMap((list) => list.rows);
 
 const termsOf = (html: string): string[] => facts(html).map(([term]) => term);
 const under = (html: string, term: string): string | undefined =>
@@ -171,6 +177,56 @@ describe("how the two rows are built", () => {
   });
 });
 
+describe("how the list is grouped, after the human read it on the live page", () => {
+  /**
+   * The grouping is the decision, so the grouping is what is asserted.
+   *
+   * Seven cells in one auto-fit grid came out 3 + 3 + 1 with a row of one
+   * orphaned at the end, a middle row of 84px against 46px neighbours, and
+   * dates interleaved with counts in no order a reader could name. The human
+   * chose three rows, by kind: the dates, the counts, the Routes sentence
+   * (2026-09-15, after seeing it live). Which fact is in which list is that
+   * choice, and a page that regrouped them would still pass every other case
+   * here.
+   */
+  it("holds the seven facts in three lists, each of one kind", () => {
+    expect(factLists(dataPage(ds).html).map((list) => [list.kind, list.rows.map(([term]) => term)]))
+      .toEqual([
+        ["facts-dates", ["Dataset version", "Schema version", NEWEST_VALUE_CHANGED, LAST_CHECKED]],
+        ["facts-counts", ["Quoted values", "Sentences of ours"]],
+        ["facts-wide", ["Routes"]],
+      ]);
+  });
+
+  /**
+   * Routes is alone in the last list because its sentence needs the width: it
+   * wrapped to three lines in a third of the page and now says itself in one.
+   * The wording it kept is the point of giving it the room, so the wording is
+   * read off the dataset and compared, not eyeballed.
+   */
+  it("leaves the Routes sentence its full wording, alone on its row", () => {
+    const counts = routeCounts(ds);
+    expect(under(dataPage(ds).html, "Routes")).toBe(
+      `${counts.scored} scored, ${counts.quotedOnly} quoted and dated but not scored, in ${
+        ds.countries.length} countries`);
+  });
+
+  /**
+   * Decision 12: one date format on a page. The version is stamped 2026.09.10
+   * in the dataset and was printed with its dots among four dates written with
+   * dashes — the third format the route-page mock was made to drop (critique
+   * F3). The visible text takes the day form the `datetime` attribute and the
+   * footer have always taken; the dataset's own string is not rewritten.
+   */
+  it("prints the dataset version as a day, like every other date beside it", () => {
+    const day = datasetDay(ds.dataset_version);
+    const html = dataPage(ds).html;
+    expect(under(html, "Dataset version")).toBe(day);
+    expect(under(html, "Dataset version"), "dots among dashes").not.toContain(".");
+    expect(ds.dataset_version, "the dataset's own version string was rewritten").toContain(".");
+    expect(html).toContain(`<dt>Dataset version</dt><dd><time datetime="${day}">${day}</time></dd>`);
+  });
+});
 describe("what this slice does not touch", () => {
   /**
    * "Read" still means what it says everywhere it was already right: that
@@ -185,11 +241,13 @@ describe("what this slice does not touch", () => {
     expect(stampedDate(html)).toBe(siteReadDate(ds));
   });
 
-  /** And the rest of the list is the list it was. */
-  it("adds one row to 'What it holds today' and renames one, changing no other", () => {
-    expect(termsOf(dataPage(ds).html)).toEqual([
+  /** And every fact that was in the list is still in it, once. */
+  it("carries the same seven facts, none lost and none said twice", () => {
+    const terms = termsOf(dataPage(ds).html);
+    expect(terms).toEqual([
       "Dataset version", "Schema version", NEWEST_VALUE_CHANGED, LAST_CHECKED,
-      "Routes", "Quoted values", "Sentences of ours",
+      "Quoted values", "Sentences of ours", "Routes",
     ]);
+    expect(terms, "a fact is on the page twice").toEqual([...new Set(terms)]);
   });
 });

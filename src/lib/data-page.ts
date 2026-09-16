@@ -98,6 +98,13 @@ export function dataPage(
   // not a value moving. It is the narrower of the two and can only ever be
   // older. They coincide on today's dataset, and coinciding today is not a
   // reason to print either one for the other (Spec review, 2026-09-15).
+  // Decision 12: one date format on a page. `dataset_version` is stamped
+  // 2026.09.10 and printed 2026.09.10, dots among dashes, two spellings of one
+  // day in one list — which is the third format the route-page mock was made to
+  // drop (critique F3). `datasetDay` is what the `datetime` attribute and the
+  // footer have always taken; the visible text takes it too now (human's walk,
+  // 2026-09-15). The version string in the dataset is untouched.
+  const version = datasetDay(dataset.dataset_version);
   const read = siteReadDate(dataset);
   const changed = readRange(dataset).newest;
   const clause = unreadClause(unread);
@@ -129,6 +136,29 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
    than in the shared sheet, so no other page's bytes move for it. */
 .masthead-with-stamps { margin-bottom: var(--space-5); }
 .rules { margin-bottom: var(--space-5); }
+/* "What it holds today", after the human read it on the live page (2026-09-15).
+   Seven cells in one auto-fit grid came out 3 + 3 + 1, "Sentences of ours"
+   orphaned on a row of its own; the Routes sentence wrapped to three lines, so
+   the middle row stood 84px against 46px neighbours; and dates sat interleaved
+   with counts in no order a reader could name. Three lists instead, each of one
+   kind: the four dates across, the two counts across, and the Routes sentence
+   alone with the width to say itself in one line. Every cell centres its text.
+   Only the dates need telling how many across: the shared sheet's own
+   minmax(13rem, 1fr) already gives two cells two columns and one cell the whole
+   width, and gives a phone the stack. That sheet is not edited here, so no
+   other page's bytes move for this. */
+.facts-dates { grid-template-columns: repeat(4, 1fr); }
+.facts dt, .facts dd { text-align: center; }
+/* And the values sit on one line across a row whichever labels wrapped: at a
+   phone's width NEWEST VALUE CHANGED takes two lines and LAST CHECKED beside
+   it takes one, which left their two dates on different lines of the same row
+   until the cell pushed its value to the foot of itself. */
+.facts > div { display: flex; flex-direction: column; justify-content: space-between; }
+/* A phone takes the four dates two at a time. The counts stack themselves at
+   that width and are better for it — two across at 390 broke each of them over
+   three lines (measured). 760px is the width the shared sheet already turns at,
+   and this page turns with it rather than inventing a second one. */
+@media (max-width: 760px) { .facts-dates { grid-template-columns: repeat(2, 1fr); } }
 </style>`;
 
   const body = `<div class="wrap">
@@ -148,9 +178,9 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
   <main>
     <section class="answer" aria-labelledby="holds-h">
       <h2 class="label" id="holds-h">What it holds today</h2>
-      <dl class="facts">
-        <div><dt>Dataset version</dt><dd><time datetime="${escAttr(datasetDay(dataset.dataset_version))}">${
-    esc(dataset.dataset_version)}</time></dd></div>
+      <dl class="facts facts-dates">
+        <div><dt>Dataset version</dt><dd><time datetime="${escAttr(version)}">${
+    esc(version)}</time></dd></div>
         <div><dt>Schema version</dt><dd>${esc(dataset.schema_version)}</dd></div>
         <div><dt>${esc(NEWEST_VALUE_CHANGED)}</dt><dd><time datetime="${escAttr(changed)}">${
     esc(changed)}</time></dd></div>${
@@ -162,10 +192,14 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
         <div><dt>${esc(LAST_CHECKED)}</dt><dd><time datetime="${escAttr(lastRun)}">${
       esc(lastRun)}</time></dd></div>` : ""
   }
-        <div><dt>Routes</dt><dd>${counts.scored} scored, ${counts.quotedOnly} quoted and dated but not scored, in ${
-    dataset.countries.length} countries</dd></div>
+      </dl>
+      <dl class="facts facts-counts">
         <div><dt>Quoted values</dt><dd>${quotedValues(dataset)} with a source and a date</dd></div>
         <div><dt>Sentences of ours</dt><dd>${prose.ours}, declared and shown as ours</dd></div>
+      </dl>
+      <dl class="facts facts-wide">
+        <div><dt>Routes</dt><dd>${counts.scored} scored, ${counts.quotedOnly} quoted and dated but not scored, in ${
+    dataset.countries.length} countries</dd></div>
       </dl>
     </section>
 
