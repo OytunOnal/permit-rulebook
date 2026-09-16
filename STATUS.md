@@ -184,7 +184,19 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you** until the two builds are on the preview.
+**One thing is blocked on you: the word for s21 and s22.**
+
+- [ ] **Both are built and on one preview** (http://localhost:4500, 568 tests
+      green, assets true), and **the session walked both**: *Any of these
+      four* → research → question 3 marks France only, announced; the result's
+      France line is the sentence with the route's name the link, Germany
+      *8 not yet*. A verdict reached in-session writes `done`; reloading with
+      the module held 700 ms shows the frame and *bringing them back*, then
+      the verdict in place — **CLS 0 at 390×844, 390×1400 and 1280×900**,
+      down from 0.58 / 0.72 / 0.46. The trade to know: a returning reader
+      with a finished record sees a near-empty page for the time the module
+      takes, as the record reader already did for the box. Say "merge", or
+      what is off.
 
 - [x] **N1 and N2 picked** (2026-09-16, *"ikisi de şimdi"*): s21 (the mark on
       question 3's country and on the four-country result's France line,
@@ -192,7 +204,9 @@ CLS fix is not. The three lines, left here until the window closes:
       finished record, then the finished-record arrival painted once). **s21 is built** (541 tests): question 3 marks France under a declared
       research situation, the four-country result's France line is the
       sentence with the route's name the link, the mark is announced, the
-      glyph is gone. s22 building.
+      glyph is gone. **s22 is built** (555 tests on its own): the gate re-seeded and red at
+      0.58 / 0.72 / 0.46, then the verdict arrival painted once — CLS 0 — by
+      extending s10's stand-in to the frame; the record carries one bit.
 
 - [x] **s19 and s20 walked and merged** (2026-09-16, your word; the session
       walked both on the preview at your ask, three viewports for ✎). Live.

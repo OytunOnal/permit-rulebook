@@ -45,6 +45,27 @@ measured what it hid.
 4. **Nothing else changes**; s10's three existing arrivals keep their
    numbers; the resumed line (s20) keeps its place.
 
+**Corrected 2026-09-16, by the build (measured, not argued):** the re-seeded
+gate reproduced 0.58 / 0.72 / 0.46. Point 2's premise — a verdict masthead
+shape to paint before the module — is false: over sixty random verdicts
+the masthead's text column spans 113–198 px (the headline, not the
+subline, is the larger mover), and no reservation holds every verdict
+without a masthead redesign. And no masthead-only fix reaches 0.1: once the
+footer travels thousands of pixels in the same frame the ledger and footer
+under the box score ≈ 0.4 by themselves. So the s10 stand-in device is
+applied to the frame: the record carries one bit, `done`, written when the
+verdict is reached; the pre-paint script reads it and sets
+`data-first="verdict"`; headline, subline, stamp, box and footer are
+hidden until the module draws them in place, and the verdict reader's
+first paint is the site header, the tagline and *Your answers are on this
+device — bringing them back.* — the same sentence the record reader already
+meets. **CLS 0 at all three viewports**, no shift source at all; the other
+four arrivals unchanged. The session re-measured it on the preview with a
+record the product itself wrote. One thing seen and not touched: in a
+desktop Chrome with classic scrollbars the verdict's arrival can make a
+scrollbar appear and shift the page 17 px; `scrollbar-gutter: stable` would
+settle it — on the board.
+
 ## How it is proved
 
 - The re-seeded gate red first (0.65) then green (< 0.1) on the finished
