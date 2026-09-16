@@ -171,6 +171,14 @@ policy. The note's *copy the address* becomes *the Copy button puts the
 address on your clipboard*. The address is no longer a `mailto:`; the
 doors' own-app links carry that.
 
+**Corrected 2026-09-16, second walk, seven:** the copy control's shape,
+twice: the first build's 44-px boxed *Copy* label was *"kocaman"*; redrawn
+as a small mono word; then the human chose the shape that stays: **a copy
+icon** (two overlapping pages) beside the address, the address and the icon
+one button, a tap on either copies, and *Copied* appears in the met green
+beside it for two seconds. No visible word at rest; the note says *tap the
+address to copy it*.
+
 ## How it is proved
 
 - A case renders `/feedback/` and asserts the three `mailto:` links, in order,

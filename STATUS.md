@@ -113,8 +113,10 @@ scripts it declares. Read back on the built page: the first door's new
 words, *Subject: Wrong information*, the address as text with **Copy** →
 **Copied** (clipboard stubbed, the argument was the address). Your look:
 the Copy button was a 44-px boxed label — far too loud beside an address
-(*"kocaman"*). Being redrawn as a small quiet mono word, the tap floor kept
-invisibly; the mock carries the new rule. Then your word. The day's path: the second round's four shapes → your finding
+(*"kocaman"*). Redrawn as a small mono word; then you chose the shape that
+stays: **a copy icon beside the address**, address and icon one button, a
+tap on either copies, *Copied* in green for two seconds, no word at rest.
+Being built; the mock carries it. Then your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
