@@ -273,6 +273,18 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
+- **The feedback line** (site #6) · `new-need` from a reader on 2026-09-10 —
+  a line at the end of the results screen naming the two GitHub doors and
+  saying before the click that filing needs an account; the human rejected the
+  two shapes that open (a docked slip, a centred modal) and chose a line that
+  opens nothing (`DECISIONS.md`, 2026-09-10). Built and green that day on
+  `feedback-line` (`20681e6`), held off master by the launch window, then
+  left standing while five slices moved the results screen under it — 131
+  commits behind, one conflict. **Reopened 2026-09-16** (human: *"feedback
+  line'a geçelim"*): being re-landed on master as `feedback-line-2` in the
+  builder's own worktree; then the two reviews it never had, the light critique
+  steward-54 requires, the walk, the word.
+
 ## mock-green
 
 _(empty)_
