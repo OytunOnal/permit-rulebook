@@ -1,6 +1,6 @@
 # s16 — `/data/` in the reader's words, and the last two tracker doors
 
-**Status:** draft 2026-09-16, awaiting the human's approval. Site #10, plus
+**Status:** approved 2026-09-16 (human: "approve"). Site #10, plus
 what s13 left behind.
 
 ## What happened

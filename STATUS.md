@@ -151,12 +151,8 @@ CLS fix is not. The three lines, left here until the window closes:
 - [x] **s13 walked and merged** (2026-09-16, your word), **s14 merged**
       (your word, after the five IND pages were read in Chrome at your
       request), **s15 merged** (your word). All three live in `6fe4eb5`.
-- [ ] **Approve s16's scenario** —
-      `docs/spine/scenarios/s16-data-page-copy.md`: site #10's three
-      polish items on `/data/` (one label, one sentence, one note), plus
-      the two tracker doors s13 left pointing the old way — `/data/`'s
-      *Take it* link and every route page's data door — which become
-      *Report what is wrong* → `/feedback/`. Say "approve" or which line.
+- [x] **s16's scenario approved** (2026-09-16, *"approve"*); building in its
+      own worktree.
 - [ ] **Look at the live site once, when you like:** https://permitrulebook.com/feedback/
       — tap *Report what is wrong*; Gmail should open with the subject.
       Nothing is blocked on it.

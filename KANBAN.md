@@ -277,7 +277,7 @@ Promoted (or dropped, with evidence) at a boundary session.
   (site #10) · the s12 critique's three polish items, plus the two
   *Report a wrong value* links s13 left pointing at GitHub (`/data/` Take
   it, the route pages' data door), which become *Report what is wrong* →
-  `/feedback/`. Scenario drafted 2026-09-16, **awaiting approval**.
+  `/feedback/`. Scenario approved 2026-09-16 ("approve"), **building**.
 
 ## mock-green
 
