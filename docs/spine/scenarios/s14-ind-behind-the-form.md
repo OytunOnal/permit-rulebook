@@ -100,6 +100,18 @@ the list; the next run rewrites it; `state.ts` untouched), and the Blue
 Card and ICT pages' "Last update: 15 June" does not date the form (both
 served full lists on 09-07).
 
+**Point 5, as it happened (2026-09-16):** the human asked the session to do
+the read in Chrome (*"bunları chrome'u kullanarak kontrol edemiyor musun"*).
+The session opened the five pages in a real Chrome, answered the form as the
+checklist says, opened every collapsed block, and searched each sentence
+word for word: **26 of 26 distinct sentences (38 quotes) present.** One
+false alarm on the HSM page — the MVV sentence sits in a collapsed *Check
+requirements* block and the first search read only the visible text — was
+resolved before any page was called a fail. The checklist carries the read
+with its date; `last_verified` is 2026-09-16 on all five. What "a person"
+means for this tier from here: a real browser and a reader who can open the
+blocks — the session qualifies, the fetcher does not.
+
 ## How it is proved
 
 - `npm run check` in the data package green: `quote fidelity ok: true`,

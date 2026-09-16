@@ -112,23 +112,20 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the read of five IND pages, once the checklist is ready.**
+**One thing is blocked on you: the word for s14.**
 
 - [x] **The IND path is decided** (2026-09-16, *"url sabit"*): the form's
       result has no address, so the five IND route pages go human-tier.
 - [x] **s14's scenario approved** (2026-09-16, *"approve"*); the builder is
       working in `../permit-rulebook-data-s14` (branch `ind-behind-the-form`).
-- [ ] **The read that gates s14's merge — and s13's deploy** (yours, ~20
-      minutes). The checklist is written:
-      `../permit-rulebook-data-s14/data/verify-s5e.md`, section 3, five
-      pages, 38 quotes (30 distinct sentences). For each page: open the URL,
-      under *Your situation* choose a non-EU nationality (Türkiye), *No* to
-      "already have a valid Dutch residence permit", *No* to "expired less
-      than 2 years ago", then *View information*; find each listed sentence
-      word for word in the rendered list. *Pass:* all present — say
-      "okudum, hepsi yerinde". *Fail:* say which sentence is gone or
-      reworded — that is a value change with a history line, handled
-      before the merge, not by editing the checklist.
+- [x] **The five IND pages are read** (2026-09-16, in Chrome, by the session
+      at your request): 26 of 26 sentences present, word for word, on every
+      page; recorded in the checklist with the date. s14 is ready: 555 tests,
+      `npm run check` green, the quote gate `ok' with 145 verified and 40
+      human-tier.
+- [ ] **Say "merge"** for s14 (data). It lands on data master, the site's
+      next pin picks it up, and s13 deploys — the live site gets the feedback
+      door and the header in one deploy.
 
 - [x] **First walk of s13** (2026-09-16): the doors opened nothing on your
       desktop — decided: Gmail first, the mail app second. Building.
