@@ -273,15 +273,6 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **"Newest value changed", and "Last checked" beside it** · site #9 ·
-  `design-flaw`, found by the human walking `/data/` on 2026-09-15: "Newest
-  value read 2026-09-10" was read as "last checked" — the values are right and
-  the label is not, because "read" here means the day a reading was taken and
-  the page never says so beside a date five days old. Two rows on the facts
-  list: the newest change, and the last run. The "read <date>" beside every
-  quote, the stamp and the footer stay as they are, where "read" means what it
-  says. **s12 — scenario approved 2026-09-15, building on `two-labels`** — `docs/spine/scenarios/s12-two-labels.md`.
-
 ## mock-green
 
 _(empty)_
@@ -291,6 +282,24 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **Two labels that mean what they say** (s12) · site #9 · **real-green
+  2026-09-16, live** — `docs/spine/scenarios/s12-two-labels.md`. `/data/`'s
+  facts list names both of its dates under words that mean them: *Newest value
+  changed*, read from the newest date among values (not the page stamp, which
+  folds in the notices' dates), and *Last checked*, from the run the freshness
+  sentence prints. The list is three rows the human chose on a live prototype
+  — four dates, two counts, Routes alone — every cell centred, the version
+  shown as a day; counts stack at a phone's width because two across broke
+  each value over three lines.
+
+  The spec was corrected four times by the build (the row's real source, the
+  `lastRun` parameter, a build before the tests, the no-run case); reviewed on
+  both axes (nine findings; the blocker: the decision was invisible to its own
+  nine checks, fixed with a dataset bent until a notice's date outruns every
+  value's). **The first slice to exit through a light-mode critique before its
+  merge** (steward-54): no blocker, three polish items filed as site #10. Site
+  `f5df33c`; **426 tests**.
 
 - **The first paint stops shifting** (s10) · site #8 · **real-green
   2026-09-15, live** — `docs/spine/scenarios/s10-first-paint.md`. The page

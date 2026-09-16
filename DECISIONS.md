@@ -3283,3 +3283,30 @@ score; holding it would cost a hole or a blank box.
 **v1.1's two slices are now real-green** (s9 on the 11th, s10 today). Whether
 to stamp v1.1 — which brings the full product-critique walk the cadence
 requires for a version — is the next boundary's question.
+
+## 2026-09-16 — s12 merged: a label the author misread now means what it says
+
+**Gate** (human: "merge", after two walks and the light critique). On
+2026-09-15 the product's own author read *"Newest value read 2026-09-10"* on
+`/data/` as "last checked" and asked why the values were old. They were not;
+the label was. Two facts sat side by side — when a value last changed, when
+everything was last confirmed — under one word that told them apart only to
+someone who already knew this product's meaning of "read".
+
+**Decided:** the row says *Newest value changed* and reads the newest read
+date among **values** — not the page stamp, which folds in the notices' dates
+and is the right date for the stamp and the footer but not for the word
+"changed". *Last checked* joins it, from the run the freshness sentence
+already prints. The "read <date>" beside every quote, the stamp and the
+footer keep their word, where it means what it says.
+
+**The build corrected the spec four times**, the sharpest being that the row
+had never read what the spec said it read; the two derivations coincide on
+this dataset, which is why nobody had noticed and why the first nine checks
+could not tell. A check that passes on content coinciding is not a check on a
+decision; the case that bends the dataset until they diverge is.
+
+**The walk changed the layout** — seven cells as 3 + 3 + 1 became three rows
+the human chose on a live prototype, centred — and the first light-mode
+critique this project ran before a merge (steward-54, read the same morning)
+found no blocker and three polish items older than the slice.
