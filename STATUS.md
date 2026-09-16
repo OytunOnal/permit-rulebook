@@ -151,8 +151,12 @@ CLS fix is not. The three lines, left here until the window closes:
 - [x] **s13 walked and merged** (2026-09-16, your word), **s14 merged**
       (your word, after the five IND pages were read in Chrome at your
       request), **s15 merged** (your word). All three live in `6fe4eb5`.
-- [x] **s16's scenario approved** (2026-09-16, *"approve"*); the builder is
-      in `../permit-rulebook-s16` (branch `data-page-copy`).
+- [x] **s16's scenario approved** (2026-09-16, *"approve"*) and **built**
+      in `../permit-rulebook-s16`: 475 tests green, the three sentences and
+      the two doors as the scenario says. The build found the page's meta
+      description still naming the tracker; it goes in the same round
+      (scenario corrected). Then the preview, your cold read of `/data/`,
+      your word.
 - [ ] **Look at the live site once, when you like:** https://permitrulebook.com/feedback/
       — tap *Report what is wrong*; Gmail should open with the subject.
       Nothing is blocked on it.
