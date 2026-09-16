@@ -49,7 +49,26 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **s19 and s20 are live — the v1.1 gate's two blockers are cleared**
+live site: s9 through s18.** **The v1.1 re-score is in: 39/50 — and one new blocker keeps the stamp
+waiting.** The same critic re-walked the two blockers' screens on the live
+site: **B1 cleared** (the mark, the written state, the chercheur page, the
+Spanish card's *Asked in the interview*), **B2 cleared** (✎ lands on the
+question with its first option focused at 390×844, 390×1400 and 1240; the
+answer returns to the headline and announces it; the resumed line and
+*Start over* work; focus follows every answer). Flow friction 3→4, Edge
+states 3→4, Accessibility 4→5, Responsive 3→4; nothing fell. **N1, blocker:**
+the same researcher on the *"Any of these four"* path — research, then
+*France* at question 3 — gets sixteen questions and *"Nothing open on these
+answers"* with no word of the researcher permit: the mark is not on
+question 3's France option, and the four-country result's France line says
+only *5 not yet*. **N2, friction:** a reader returning with a *finished*
+record sees the masthead move — CLS 0.65 at 390×844 — and the s10 gate never
+measured it, because its "finished record" seed uses field names the
+product no longer writes and replays as a half record. Polish: the mark is
+not announced to a screen reader; *read it here* wears the external glyph
+on an internal link.
+
+**s19 and s20 are live — the v1.1 gate's two blockers are cleared**
 (2026-09-16, deploy `1ca9e2c` green, read on the live host: France →
 research now carries the mark and lands on *No scored route in France
 takes a research hosting agreement.* with the door to
@@ -165,7 +184,23 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.** The v1.1 re-score runs next; the stamp follows it.
+**One thing is blocked on you: the pick for N1 and N2.**
+
+- [ ] **N1 (blocker, small):** the s19 sentence in two more places — on
+      question 3's *France* option when the declared situation is research,
+      and as France's summary line on the four-country result (*No scored
+      route in France takes a research hosting agreement — Talent —
+      researcher (chercheur) is quoted, not scored*). Same copy, same
+      derivation. *Recommended now.*
+- [ ] **N2 (friction, a hollow gate):** re-seed the s10 gate's "finished
+      record" with a record the product actually writes, so the arrival is
+      measured; then decide the finished-record masthead before paint like
+      the other arrivals (the pre-paint script already knows *record*; it
+      does not know *finished*). The first half is a test fix; the second
+      is a small design call. *Recommended now, both halves — a gate that
+      measures the wrong thing is worse than none.*
+- [ ] Say "N1", "N1 ve N2", or what else — then the scenarios, the builds,
+      your word, the re-score once more, the stamp.
 
 - [x] **s19 and s20 walked and merged** (2026-09-16, your word; the session
       walked both on the preview at your ask, three viewports for ✎). Live.
