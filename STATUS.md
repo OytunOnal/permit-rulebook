@@ -44,8 +44,11 @@ unread list; the site's daily rebuild then pins it and the page says
 *Last checked 2026-09-16* on its own. If by tomorrow it still says the 15th,
 that is a finding, not a delay.
 
-**s13, the feedback door, has its scenario and waits on your approval**
-(2026-09-16). The day's path: the second round's four shapes → your finding
+**s13, the feedback door, is building** (2026-09-16, your word:
+*"onaylıyorum"*). The builder works in its own worktree
+(`../permit-rulebook-s13`, branch `feedback-door`); this tree stays on master.
+Next: the build report, a Standards/Spec review pair, the branch preview on
+localhost, a light-mode critique, your walk, the alias, your word. The day's path: the second round's four shapes → your finding
 that a reader may want to say something without anything being wrong → the
 decision that **the door is e-mail** (an alias in plain text, three
 `mailto:` templates, the GitHub tracker beside it, named) → the third round
@@ -100,13 +103,11 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Two things are blocked on you: the scenario, and the alias.**
+**One thing is blocked on you: the alias — it gates the merge, not the build.**
 
 - [x] **The amended F drawing** — ratified 2026-09-16 (*"tamamdır"*), after
       two corrections to the open list from your walk.
-- [ ] **Approve s13's scenario** — `docs/spine/scenarios/s13-feedback-door.md`.
-      Say "approve", or say which line is wrong. The build starts on its own
-      branch after that; the alias below gates the merge, not the build.
+- [x] **s13's scenario approved** (2026-09-16, *"onaylıyorum"*); building.
 - [ ] **The alias.** In Cloudflare → permitrulebook.com → Email → Email
       Routing: enable routing (it adds the MX and TXT records itself), create
       `feedback@permitrulebook.com` (or the name you prefer — tell me, it

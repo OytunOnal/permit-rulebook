@@ -282,8 +282,7 @@ Promoted (or dropped, with evidence) at a boundary session.
   third drawn round: one word, *Feedback*, in the header, under the verdict
   and in the footer, leading to `/feedback/`; with the header's four
   countries under one word, *Countries*. Scenario
-  `docs/spine/scenarios/s13-feedback-door.md` drafted 2026-09-16, **awaiting
-  approval**. Merge waits on the alias's routing (the human's).
+  `docs/spine/scenarios/s13-feedback-door.md` approved 2026-09-16 ("onaylıyorum"), **building** in its own worktree. Merge waits on the alias's routing (the human's).
 
 ## mock-green
 
