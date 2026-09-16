@@ -193,8 +193,9 @@ describe("the state this site is built against", () => {
    * build's own output — which is what the first version of this case compared,
    * and it could never have caught a drift (Spec review, 2026-09-15).
    *
-   * The fingerprint was born here, in s11, and has moved once since: s12 gave
-   * the list its two labels. Its own `source` line is the record of which
+   * The fingerprint was born here, in s11, and has moved since: s12 gave the
+   * list its two labels, and s13 moved the header and the footer every page
+   * shares. Its own `source` line is the record of which
    * revision it was taken at and what last moved it, so a builder who finds
    * this case red reads that line before deciding anything. The hash is over
    * the same frozen dataset the route-page fingerprint uses, with the live run

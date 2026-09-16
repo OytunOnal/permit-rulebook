@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { FIRST_PAINT_SCRIPT } from "./first-paint.js";
 import { MENU_SCRIPT } from "./identity.js";
+import { COPY_SCRIPT } from "./clipboard.js";
 import { escAttr } from "./reason.js";
 import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "./site.js";
 
@@ -35,7 +36,7 @@ import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "./site.js";
  * pages did not have (s10, 2026-09-15). A page that does not run one of these
  * is not harmed by its hash being named.
  */
-export const INLINE_SCRIPTS = [MENU_SCRIPT, FIRST_PAINT_SCRIPT];
+export const INLINE_SCRIPTS = [MENU_SCRIPT, FIRST_PAINT_SCRIPT, COPY_SCRIPT];
 
 export const sha256 = (source: string): string =>
   `'sha256-${createHash("sha256").update(source, "utf8").digest("base64")}'`;

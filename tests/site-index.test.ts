@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { countryAddresses, countryLinks, countryPage, countryPages } from "../src/lib/country-page.js";
-import { DATA_PATH } from "../src/lib/identity.js";
+import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/identity.js";
 import { PAGE_CSS, routePages } from "../src/lib/route-page.js";
 import { builtPaths, indexedPaths, robotsTxt, sitemapXml } from "../src/lib/sitemap.js";
 import { SITE_URL, absolute, url } from "../src/lib/site.js";
@@ -69,14 +69,18 @@ describe("B2 — the site can be crawled and browsed", () => {
     const expected = [
       absolute("/"),
       absolute(DATA_PATH),
+      // The feedback door's page, reachable from the header on every page and
+      // offered to a crawler like the others (s13).
+      absolute(FEEDBACK_PATH),
       ...ds.countries.map((c) => absolute(countryPath(c))),
       ...routes.map((p) => absolute(p.path)),
     ];
     expect(locs.length).toBe(expected.length);
     expect(new Set(locs).size, "a page is listed twice").toBe(locs.length);
     expect(new Set(locs)).toEqual(new Set(expected));
-    // 25 pages before this slice, 29 after the four country pages.
-    expect(locs.length).toBe(2 + ds.countries.length + routes.length);
+    // 25 pages before this slice, 29 after the four country pages, one more
+    // with /feedback/ (s13).
+    expect(locs.length).toBe(3 + ds.countries.length + routes.length);
 
     // Absolute, every one of them, and under this build's own origin.
     for (const loc of locs) expect(loc.startsWith(`${SITE_URL}/`), loc).toBe(true);
@@ -159,9 +163,10 @@ describe("B2 — the site can be crawled and browsed", () => {
       expect(footer, `the footer does not link ${link.path}`).toContain(`href="${url(link.path)}"`);
     // And every country link in it is one the build actually emitted.
     const built_countries = new Set(countryLinks(ds).map((l) => url(l.path)));
-    // The footer also carries the data page and the checker; a one-segment
-    // path that is neither of those has to be a country page the build made.
-    const elsewhere = new Set([url("/"), url("/data")]);
+    // The footer also carries the data page, the feedback page and the
+    // checker; a one-segment path that is none of those has to be a country
+    // page the build made.
+    const elsewhere = new Set([url("/"), url(DATA_PATH), url(FEEDBACK_PATH)]);
     for (const href of [...footer.matchAll(/href="([^"]*)"/g)].map((m) => m[1]!))
       if (/^[/][a-z-]+[/]$/.test(href) && !elsewhere.has(href) && !href.includes("?"))
         expect(built_countries.has(href), `the footer links ${href}, which is no country page`).toBe(true);
@@ -251,7 +256,9 @@ describe("B2 — the site can be crawled and browsed", () => {
     // no leading slash, or a doubled one, written by hand into the template.
     for (const page of countries)
       for (const href of hrefsOf(page.html)) {
-        if (/^https?:/.test(href)) continue;
+        // Neither an outbound address nor a mail address is a path the helper
+        // writes: the footer's mailto: is the one constant in `site.ts` (s13).
+        if (/^(https?:|mailto:)/.test(href)) continue;
         expect(href, `${page.path}: ${href}`).toBe(url(href));
       }
   });

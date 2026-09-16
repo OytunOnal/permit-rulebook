@@ -14,8 +14,8 @@ import {
   DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay,
 } from "./copy.js";
 import {
-  DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, NEW_NEED_URL, OWNER, REPO_DATA, analyticsBeacon,
-  SPONSOR_URL, TRACKER_URL, headMeta, lastWatchRun, readRange, unreadSourcesAt, url,
+  DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, OWNER, REPO_DATA, analyticsBeacon,
+  SPONSOR_URL, headMeta, lastWatchRun, readRange, unreadSourcesAt, url,
 } from "./site.js";
 import { countryPath, countrySlug, routePath } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
@@ -298,8 +298,6 @@ export function footerFacts(
     licenceUrl: DATA_LICENCE_URL,
     licenceName: DATA_LICENCE_NAME,
     repository: REPO_DATA,
-    tracker: TRACKER_URL,
-    newNeed: NEW_NEED_URL,
     sponsor: SPONSOR_URL,
     owner: OWNER,
     // The year the notice carries, from the newest reading rather than from the

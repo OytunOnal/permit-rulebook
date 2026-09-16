@@ -88,6 +88,13 @@
   --stamp-text-390: 600 .7rem var(--font-mono);
   --stamp-text: 600 .8rem var(--font-mono);
   --stamp-tracking: .06em;
+  /* The one thing on this site that opens OVER the page: the header's
+     countries disclosure. The shadow is the ratified mock's own value
+     (docs/spine/design/s7-feedback-3.html, section F, 2026-09-16) — the ink at
+     a twelfth, so the list reads as lifted off the paper rather than printed
+     on it. A rung of its own, because a raw rgba() in a stylesheet is exactly
+     the greppable deviation this file exists to prevent. */
+  --shadow-pop: 0 6px 18px rgba(43, 42, 34, .12);
 }
 
 /**

@@ -1,0 +1,13 @@
+---
+import rawDataset from "permit-rulebook-data/data/dataset.json";
+import { assertValidDataset } from "permit-rulebook-data/validate";
+import { feedbackPage } from "../lib/feedback-page.js";
+
+/**
+ * `/feedback/` — one address, three kinds of mail, and the tracker beneath it
+ * named. The header's word, the footer's row and the line under the verdict all
+ * lead here (s13).
+ */
+const { html } = feedbackPage(assertValidDataset(rawDataset));
+---
+<Fragment set:html={html} />

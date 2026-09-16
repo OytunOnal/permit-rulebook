@@ -1,7 +1,8 @@
 {
+  "source": "src/lib/route-page.ts at 5e64490 plus the change docs/spine/scenarios/s13-feedback-door.md asks for, over tests/fixtures/frozen-dataset.json — the header and the footer are on every page, and s13 moved both: the four countries sit under one word in the header's row with Feedback beside The data, and the footer's Feedback column became the address, the row to /feedback/ and the sponsorship (the tracker's two links left it for the page); and again on the human's s13 walk (2026-09-16), when the header's countries disclosure was given a right margin so its open list clears the separator; and once more the same day, when the human took the address row out of the footer's Feedback column (\"kaldir\") — the column is the row to /feedback/ and the sponsorship, and the address lives on the page only",
   "base": "/",
   "pages": {
-    "/germany/eu-blue-card-general": "c90bcdfbfed1e5770a20821b99b7934c2b6f5c6416b8b4298a684a7c193b1bcb",
-    "/germany/skilled-worker-academic": "24c213174cceeff3da338f5617134daf65f061614db058fac1547fe8a4ded35e"
+    "/germany/eu-blue-card-general": "42c534a6a20df9054554e93115b32042fba2a4edb70774bb1867881d7c9ca7be",
+    "/germany/skilled-worker-academic": "8191670da3c19401a0adeb70b83f7df4b318f14a49328cebc2be0fd122083199"
   }
 }
