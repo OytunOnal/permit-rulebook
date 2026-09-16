@@ -277,7 +277,12 @@ Promoted (or dropped, with evidence) at a boundary session.
   (site #10) · the s12 critique's three polish items, plus the two
   *Report a wrong value* links s13 left pointing at GitHub (`/data/` Take
   it, the route pages' data door), which become *Report what is wrong* →
-  `/feedback/`. Scenario approved 2026-09-16 ("approve"), **building**.
+  `/feedback/`. Scenario approved 2026-09-16 ("approve"), **building**;
+  the human's preview walk added the lede's *tell us it is wrong* as a door.
+- **s17 — the comparison has no subject called "Code"** · the home
+  masthead and the results subline lose *Code* as their subject (human:
+  "2" — the passive). Scenario `docs/spine/scenarios/s17-no-code-as-subject.md`,
+  approved by the choice; building.
 
 ## mock-green
 
