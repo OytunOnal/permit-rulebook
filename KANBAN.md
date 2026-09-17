@@ -284,7 +284,9 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s24 — the deploy tells Bing what changed** (IndexNow) · a public key
+  file at the root and one POST of the sitemap's URLs after each green
+  deploy, `continue-on-error`. Approved 2026-09-17 ("tamamdır"), building.
 
 ## mock-green
 

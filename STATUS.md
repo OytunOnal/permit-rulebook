@@ -220,8 +220,11 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.**
+**Nothing is blocked on you** until s24 is built.
 
+- [x] **s24 approved** (2026-09-17, *"tamamdır"*): the deploy tells Bing what
+      changed — an IndexNow key file at the root and one POST after a green
+      deploy, never failing it. Building.
 - [x] **Search Console coverage read** (2026-09-17): 26 indexed, 11 not —
       7 queued, 1 crawled-not-indexed (drilldown not read), 3 redirects that
       are the home page's host variants, all 301 to the canonical host,
