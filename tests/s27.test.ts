@@ -1,16 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, type Dataset } from "permit-rulebook-data";
-import { MENU, MENU_CLOSE, NOT_FOUND_START, PRODUCT_NAME, ROUTE_TAGLINE } from "../src/lib/copy.js";
+import { MENU, MENU_CLOSE, NOT_FOUND_START, NOT_FOUND_START_NOTE, PRODUCT_NAME, ROUTE_TAGLINE } from "../src/lib/copy.js";
 import { MENU_SCRIPT, siteHeader } from "../src/lib/identity.js";
 import { navCountries } from "../src/lib/country-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { declarationHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { routePage, routePages } from "../src/lib/route-page.js";
+import { glossSection } from "../src/lib/gloss.js";
+import { esc } from "../src/lib/reason.js";
+import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 
 const ds = dataset as unknown as Dataset;
@@ -58,6 +60,11 @@ describe("1 — the menu button says what it does", () => {
   });
 });
 
+/** The 404's sentence as a key: case-folded, without its "Or" and its full
+ * stop, so a hidden heading that says the same thing in other clothes counts
+ * as the second carrier it is. */
+const SENTENCE = NOT_FOUND_START.toLowerCase().replace(/^or\s+/, "").replace(/[.]$/, "");
+
 describe("3 — the 404 says it once", () => {
   it("the sentence is the section's heading, the section is labelled by it, and nothing else on the page carries it", () => {
     const { html } = notFoundPage(ds);
@@ -69,11 +76,15 @@ describe("3 — the 404 says it once", () => {
     expect(heading![3]).toBe(NOT_FOUND_START);
     // Not hidden: it is the sentence the sighted reader sees.
     expect(`${heading![1]}${heading![2]}`).not.toContain("visually-hidden");
-    // Once on the whole page, and no second element with the same words.
+    // Once on the whole page, whatever the case or the punctuation: the
+    // hidden heading it replaces spelled the words without the "Or" and the
+    // full stop, and a check that read them back verbatim would pass its
+    // return.
     const text = textOf(html.replace(/<style>[\s\S]*?<\/style>/g, " "));
-    expect(text.split(NOT_FOUND_START).length - 1).toBe(1);
-    expect(text.split("start from your own situation").length - 1).toBe(1);
+    expect(text.toLowerCase().split(SENTENCE).length - 1).toBe(1);
     expect(inner).not.toContain("<strong>");
+    // And the privacy line after it is the copy's, not the template's.
+    expect(inner).toContain(`<p>${NOT_FOUND_START_NOTE}</p>`);
   });
 });
 
@@ -86,19 +97,27 @@ describe("4 — the pencil never stands alone", () => {
   });
 });
 
-describe("5 — a route's H1 is its name", () => {
-  const pages = routePages(ds);
+/** The H1 a route page gives itself: its name, glossed once, escaped as it ships. */
+const nameOf = (route: { name: string }): string => esc(glossSection(route.name, new Set()));
 
-  it("on every route page the H1 is the name alone, no full stop, and the tagline follows it as a line of its own", () => {
-    expect(pages.length).toBeGreaterThan(20);
-    for (const page of pages) {
-      const masthead = mastheadOf(page.html);
-      const h1 = /<h1>([^<]*)<\/h1>\s*<p class="tagline">([^<]*)<\/p>/.exec(masthead);
-      expect(h1, `${page.path}: the H1 is not a name followed by the tagline`).not.toBeNull();
-      expect(h1![1], page.path).toMatch(/[)\p{L}]$/u);
-      expect(h1![1], page.path).not.toContain(ROUTE_TAGLINE);
-      expect(h1![2]).toBe(ROUTE_TAGLINE);
-      expect(masthead, page.path).not.toContain("<em>");
+/** The masthead's H1 and the element after it, as the markup carries them. */
+const headerOf = (html: string): { h1: string; next: string } | null => {
+  const m = /<h1>([^<]*)<\/h1>\s*<p class="tagline">([^<]*)<\/p>/.exec(mastheadOf(html));
+  return m ? { h1: m[1]!, next: m[2]! } : null;
+};
+
+describe("5 — a route's H1 is its name", () => {
+  it("on every route page the H1 is the name the data gives it — no full stop after it — and the tagline follows as a line of its own", () => {
+    const addresses = routeAddresses(ds);
+    expect(addresses.length).toBeGreaterThan(20);
+    for (const address of addresses) {
+      const page = routePage(ds, address);
+      const header = headerOf(page.html);
+      expect(header, `${page.path}: the H1 is not a name followed by the tagline`).not.toBeNull();
+      expect(header!.h1, page.path).toBe(nameOf(address.route));
+      expect(header!.h1, page.path).not.toMatch(/\.$/);
+      expect(header!.next).toBe(ROUTE_TAGLINE);
+      expect(mastheadOf(page.html), page.path).not.toContain("<em>");
     }
   });
 
@@ -228,13 +247,13 @@ const PENS = `JSON.stringify([...document.querySelectorAll("#decl-list .done")].
   const box = pen.getBoundingClientRect();
   return {
     field: row.dataset.field, text: dd.textContent.trim(), lines: new Set(lines.map((l) => Math.round(l.top))).size,
-    penTop: box.top, penBottom: box.bottom, penLeft: box.left, lastTop: last.top, lastBottom: last.bottom, lastLeft: last.left,
+    penTop: box.top, penLeft: box.left, lastTop: last.top, lastLeft: last.left,
     width: row.getBoundingClientRect().width,
   };
 }))`;
 
 interface Pen {
-  field: string; text: string; lines: number; penTop: number; penBottom: number; penLeft: number;
+  field: string; text: string; lines: number; penTop: number; penLeft: number;
   lastTop: number; lastBottom: number; lastLeft: number; width: number;
 }
 
@@ -256,20 +275,6 @@ interface Header {
   h1: string; nextTag: string; nextClass: string; nextText: string;
   tagline: { font: string; color: string; display: string };
   em: { font: string; color: string; display: string } | null;
-}
-
-/** Every route page the build emitted. */
-function builtRoutePages(): string[] {
-  const out: string[] = [];
-  const walk = (dir: string, depth: number) => {
-    for (const name of readdirSync(dir)) {
-      const at = join(dir, name);
-      if (statSync(at).isDirectory()) { if (depth < 2) walk(at, depth + 1); }
-      else if (name === "index.html" && depth === 2) out.push(at.slice(dist.length).split("\\").join("/").replace(/\/index\.html$/, "/"));
-    }
-  };
-  walk(dist, 0);
-  return out.filter((p) => !p.startsWith("/data/") && !p.startsWith("/feedback/"));
 }
 
 describe.skipIf(skipped !== null)("s27 — in the browser", () => {
@@ -323,14 +328,14 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
             .toBeLessThanOrEqual(0.6 * s.fontSize);
           // The group sits at the line's start.
           expect(s.nameLeft, where).toBeLessThan(2);
-          if (viewport.width === 1280) {
-            // One line: the tally level with the name, at the right.
-            expect(s.tallyTop, where).toBeLessThan(s.nameBottom);
-            expect(s.tallyRight, where).toBeLessThan(2);
-          } else if (s.tallyTop >= s.nameBottom) {
-            // Wrapped beneath: left-aligned, as before.
-            expect(s.tallyLeft, where).toBeLessThan(2);
-          }
+          // The tally is level with the name, at the right — or, on the phone
+          // only, wrapped beneath it and left-aligned. One of the two, never a
+          // third place.
+          const onTheLine = s.tallyTop < s.nameBottom;
+          const place = onTheLine ? (s.tallyRight < 2 ? "right, on the name's line" : "adrift on the name's line")
+            : (s.tallyLeft < 2 ? "beneath, left-aligned" : "beneath, adrift");
+          if (viewport.width === 1280) expect(place, where).toBe("right, on the name's line");
+          else expect(["right, on the name's line", "beneath, left-aligned"], where).toContain(place);
         }
         // The s21 sentence keeps its own row on the phone.
         const said = seen.asDrawn.find((s) => s.said)!;
@@ -349,16 +354,18 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
             const label = document.getElementById(section.getAttribute("aria-labelledby"));
             const box = label.getBoundingClientRect();
             const carriers = [...document.querySelectorAll("body *")].filter((el) =>
-              [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.includes("start from your own situation")));
+              [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.toLowerCase().includes(${JSON.stringify(SENTENCE)})));
             return { tag: label.tagName, text: label.textContent.trim(), visible: box.width > 10 && box.height > 10
-              && getComputedStyle(label).position !== "absolute", carriers: carriers.map((el) => el.tagName),
-              problems: [] };
+              && getComputedStyle(label).position !== "absolute", carriers: carriers.length,
+              carrierIsLabel: carriers.length === 1 && carriers[0] === label };
           })())`);
-        }, { viewport, mobile }) as string) as { tag: string; text: string; visible: boolean; carriers: string[] };
+        }, { viewport, mobile }) as string) as { tag: string; text: string; visible: boolean; carriers: number; carrierIsLabel: boolean };
         expect(seen.tag).toBe("H2");
         expect(seen.text).toBe(NOT_FOUND_START);
         expect(seen.visible).toBe(true);
-        expect(seen.carriers).toEqual(["H2"]);
+        // One element on the page says it, and it is the one the section is labelled by.
+        expect(seen.carriers).toBe(1);
+        expect(seen.carrierIsLabel).toBe(true);
       } finally { server.close(); }
     }, 180_000);
 
@@ -407,23 +414,23 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
       expect(seen.pens.filter((p) => p.lines > 1).length).toBeGreaterThan(0);
       for (const p of seen.pens) {
         const where = `${p.field}: "${p.text}"`;
-        expect(p.penTop, `${where} — the pen is below its answer's last line`).toBeLessThan(p.lastBottom);
-        expect(p.penBottom, `${where} — the pen is above its answer's last line`).toBeGreaterThan(p.lastTop);
+        expect(Math.abs(p.penTop - p.lastTop), `${where} — the pen's top is ${(p.penTop - p.lastTop).toFixed(1)} px off its answer's last line`).toBeLessThanOrEqual(2);
         expect(p.penLeft, `${where} — the pen is the first glyph on its line`).toBeGreaterThan(p.lastLeft + 1);
       }
     } finally { server.close(); }
   }, 180_000);
 
-  it("every built route page: the H1 ends in a bracket or a letter, never a full stop, and the tagline element follows", () => {
-    const paths = builtRoutePages();
-    expect(paths.length).toBeGreaterThan(20);
-    for (const path of paths) {
-      const masthead = mastheadOf(read(join(dist, path, "index.html")));
-      const h1 = /<h1>([^<]*)<\/h1>\s*<p class="tagline">([^<]*)<\/p>/.exec(masthead);
-      expect(h1, `${path}: the H1 is not a name followed by the tagline`).not.toBeNull();
-      expect(h1![1], path).toMatch(/[)\p{L}]$/u);
-      expect(h1![1], path).not.toMatch(/\.$/);
-      expect(h1![2], path).toBe(ROUTE_TAGLINE);
+  it("every built route page: the H1 is the route's name with no full stop after it, and the tagline element follows", () => {
+    const addresses = routeAddresses(ds);
+    expect(addresses.length).toBeGreaterThan(20);
+    for (const address of addresses) {
+      const built = join(dist, address.path, "index.html");
+      expect(existsSync(built), `${address.path} was not built`).toBe(true);
+      const header = headerOf(read(built));
+      expect(header, `${address.path}: the H1 is not a name followed by the tagline`).not.toBeNull();
+      expect(header!.h1, address.path).toBe(nameOf(address.route));
+      expect(header!.h1, address.path).not.toMatch(/\.$/);
+      expect(header!.next, address.path).toBe(ROUTE_TAGLINE);
     }
   });
 });

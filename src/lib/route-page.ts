@@ -723,12 +723,6 @@ export function routePage(
   // route's name is a cross-reference and keeps the short form.
   const seen: Glossary = new Set();
   const heading = glossSection(route.name, seen);
-  // The H1 is the name and nothing after it. It carried the tagline as an
-  // `<em>` behind a full stop — "…(§ 6 BeschV; § = section). The rules,
-  // quoted and dated." — a name that ends in a bracket, then a sentence, in
-  // one heading (v1.1 gate critique, P8 — s27). The tagline is its own line
-  // under it now, in the type the `<em>` had; the <title> and the social
-  // card never carried it and do not move.
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -739,6 +733,12 @@ ${headMeta({ title, description: desc, path, kind: "article" })}
 <style>${PAGE_CSS}</style>`;
 
   const scored = isScored(route);
+  // The H1 is the name and nothing after it. It carried the tagline as an
+  // `<em>` behind a full stop — "…(§ 6 BeschV; § = section). The rules,
+  // quoted and dated." — a name that ends in a bracket, then a sentence, in
+  // one heading (v1.1 gate critique, P8 — s27). The tagline is its own line
+  // under it now, in the type the `<em>` had; the <title> and the social
+  // card never carried it and do not move.
   const body = `<div class="wrap">
 
   ${siteHeader(navCountries(dataset), { countryPath: countryPath(country), current: "true" })}

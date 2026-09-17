@@ -331,6 +331,8 @@ export const MENU_CLOSE = "Close";
  * element carries the words now, and it is the heading.
  */
 export const NOT_FOUND_START = "Or start from your own situation.";
+/** The line that runs on after it: where the answers stay. */
+export const NOT_FOUND_START_NOTE = "The questions are answered on this device only — nothing is sent anywhere.";
 
 /** The eyebrow, the lede and the h1 of `/feedback/`, as the mock draws them. */
 export const FEEDBACK_EYEBROW = "Read by a person.";

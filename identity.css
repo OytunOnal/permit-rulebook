@@ -93,7 +93,7 @@
 .masthead-with-stamps h1 em, .masthead-with-stamps .tagline { font-style: normal; color: var(--color-near); display: block; }
 .masthead-with-stamps h1 em { font-size: .82em; margin-top: .15em; }
 .masthead-with-stamps h1:has(+ .tagline) { margin-bottom: 0; }
-.masthead-with-stamps .tagline { font: 400 calc(var(--text-hero-size) * .82)/1.2 var(--font-serif); margin: .15em 0 var(--space-2); }
+.masthead-with-stamps .tagline { font: var(--text-hero); font-size: calc(var(--text-hero-size) * .82); line-height: 1.2; margin: .15em 0 var(--space-2); }
 
 /* ---------------------------------------------------------------------------
    The site header: identity and navigation, one rule set for one markup.

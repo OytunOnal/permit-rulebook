@@ -183,13 +183,13 @@ const STAMP_STATE = `(() => {
 const HEADING = `(() => {
   const h1 = document.querySelector("h1");
   const next = h1.nextElementSibling;
-  const em = h1.querySelector("em") || (next && next.classList.contains("tagline") ? next : null);
-  if (!em) return JSON.stringify({ display: "no tagline", rects: 0, smaller: false });
+  const tagline = h1.querySelector("em") || (next && next.classList.contains("tagline") ? next : null);
+  if (!tagline) return JSON.stringify({ display: "no tagline", rects: 0, smaller: false });
   const size = (el) => Number.parseFloat(getComputedStyle(el).fontSize);
   return JSON.stringify({
-    display: getComputedStyle(em).display,
-    rects: em.getClientRects().length,
-    smaller: size(em) < size(h1),
+    display: getComputedStyle(tagline).display,
+    rects: tagline.getClientRects().length,
+    smaller: size(tagline) < size(h1),
   });
 })()`;
 
