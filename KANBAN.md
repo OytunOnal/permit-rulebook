@@ -44,10 +44,8 @@ under the open version, not candidates. Candidates land here only through
 **Fixes**
 - **F2 — the experience ladder** — **landed in s25** (2026-09-17).
 - **The four-country headline's hierarchy** — **landed in s26** (2026-09-17).
-- **P8 — small slips** · *Menu* still reads *Menu* when open; the four-country
-  summaries put the triangle far left and the name far right; the 404 stacks
-  two "start from your own situation"; ✎ wraps to its own line in the desktop
-  sidebar.
+- **P8 — small slips** — **landed in s27** (2026-09-17), with the tagline's
+  colon and the card's door from the human's walk.
 - **Learn links read as actions, unglossed** (human's walk, 2026-09-17) ·
   three of the four `learn` labels are statements (*§ 18g AufenthG lists the
   shortage groups by ISCO-08 code (…)*) set as link text, and the site
@@ -314,9 +312,7 @@ returns as a fork at the fifth steward entry._
 
 ## active
 
-- **s27 — five small slips** · approved 2026-09-17 (human:
-  "onaylıyorum"); building in `../permit-rulebook-s27` (branch
-  `s27-five-slips`). v1.2 fix: P8.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -327,6 +323,17 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s27 — five small slips** · real-green 2026-09-17 (human: "merge"; site
+  `46663d9`). v1.2 fix P8, plus two from the human's walk: *Close* on the
+  open menu (words as attributes), the disclosure mark bound to the
+  country's name, the 404's sentence once as its heading, the pencil bound
+  to the answer's last word (276 ledger rows measured), the route H1 as the
+  name with the tagline its own line ending in a colon, and the result
+  card's door to the route page as a door — its own line, underlined, in
+  the internal-link colour (option A). Three-axis review on the build and
+  again on the walk's delta (`docs/spine/reviews/s27.md`); two fingerprints
+  regenerated with their reasons.
 
 - **s26 — one reader, one hierarchy** · real-green 2026-09-17 (human:
   "merge"; site `85c505c`). v1.2 fix: the four-country headline's hierarchy.

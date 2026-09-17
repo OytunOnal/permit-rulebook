@@ -3676,3 +3676,11 @@ the human's "onaylıyorum".
 **Decision:** the guard's second pass counts mock-green too; s5, s5b and s8
 are the same class as the seven above (reviewed when built, findings in
 KANBAN, no file). Waived on the human's second "waive". **Gate:** yes.
+
+## 2026-09-17 — s27 merged 🛑
+
+**Decision:** merge on the human's word "merge", with the three-axis review
+on record for the build and for the delta the human's walk added (the
+tagline's colon; the card's door as a door — option A of three, the
+human's "A"). Deploy `46663d9` green; the five screens read on the live
+host. **Gate:** yes.
