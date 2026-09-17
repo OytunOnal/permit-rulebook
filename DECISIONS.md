@@ -3596,3 +3596,16 @@ journey drawn from the ledgers at every boundary and stamp; to be drawn at
 this boundary. **steward-55:** code writes nothing to the repo root. And
 rules.md now says it: everything on disk is English, the notebook excepted.
 **Cost:** one review record and one road redraw per slice from here.
+
+## 2026-09-17 — the road page is generated, never written
+
+**Decision:** `docs/spine/road.html` (steward-57) is the output of
+`scripts/road.mjs` over `KANBAN.md`, `docs/spine/assumptions.md` and the
+data repository's watch state; where it disagrees with KANBAN, KANBAN wins.
+Delivery order is the real-green date, the column order breaks ties, and a
+stamp follows the last slice of its day. The lock mark derives from the
+ledger's own words (personal data, the record, the feedback door), the pace
+from the dated real-green lines of the last fortnight, the liveness number
+from the watch's unread list. Cheap default: a hand-drawn page would drift
+from the board within a week; a view cannot. Republished as one artifact link
+at each redraw. **Gate:** no — surfaced here.

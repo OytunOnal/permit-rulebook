@@ -49,7 +49,15 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **s25 is live** (2026-09-17, deploy `8e432a4` green, read on the live host:
+live site: s9 through s18.** **The road is drawn** (2026-09-17, `docs/spine/road.html` from
+`scripts/road.mjs` — a view of the ledgers, redrawn at every boundary and
+stamp; the same page as one link:
+https://claude.ai/code/artifact/be4fc928-cbf5-43d6-b6b7-4d674a2300a3). It
+reads today: v1.1 · 27 of 31 slices real-green · every source read by
+today's watch run (dataset 2026.09.17) · 12 slices a week over a fortnight
+that held the v1.1 day, a ceiling not a rate · v1.2 has 8 items to land.
+
+**s25 is live** (2026-09-17, deploy `8e432a4` green, read on the live host:
 the two questions at 7 and 8, and the critique's reader — three years in
 the last seven, none of the two in the last five — now reads *Nothing open
 yet — 6 steps would change that* where the site had said *Criteria met*;
