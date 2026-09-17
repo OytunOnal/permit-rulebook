@@ -284,9 +284,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **s24 — the deploy tells Bing what changed** (IndexNow) · a public key
-  file at the root and one POST of the sitemap's URLs after each green
-  deploy, `continue-on-error`. Approved 2026-09-17 ("tamamdır"), building.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -297,6 +295,12 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s24 — the deploy tells Bing what changed** (IndexNow) · real-green
+  2026-09-17 (human: "merge"; `318d059`). First run: *IndexNow answered
+  202 to 36 addresses*. The daily schedule announces every address whether
+  or not the data moved — tolerated; gate it on `built != locked` if Bing
+  ever objects.
 
 - **s23 — the copy pass** · real-green 2026-09-17 (human: "merge"; data
   `53db438`, site `e12ec3c`). v1.1 gate adjustment 3: F1, F3, F4, P1–P7
