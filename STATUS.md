@@ -49,7 +49,12 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **s26 is live** (2026-09-17, deploy `85c505c` green, read on the live host at
+live site: s9 through s18.** **s27 is proposed** (2026-09-17): P8, five small slips, measured on the
+live build before writing (the hidden 404 heading is 1×1 on screen and read
+twice by a screen reader; the pen wraps on *University degree* at 1280; the
+menu says *Menu* when open). Five decisions, one "nothing else".
+
+**s26 is live** (2026-09-17, deploy `85c505c` green, read on the live host at
 390: the four-country researcher who named France reads *No scored route in
 France takes a research hosting agreement.* with the door to the quoted
 route and France first and open; with a German route opening, *1 route
@@ -271,7 +276,12 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.**
+**One thing is blocked on you: the word for s27.** The scenario is
+`docs/spine/scenarios/s27-five-small-slips.md` — P8's five slips, each
+measured today and each with its decision: *Close* when the menu is open;
+the triangle bound to the country's name; the 404's sentence once; the
+pencil never alone on a line; the route H1 as the name, the tagline its
+own line (the fingerprint moves). "onaylıyorum", or what is off.
 
 - [x] **s26 reviewed, walked and merged** (2026-09-17, your word). Live.
 

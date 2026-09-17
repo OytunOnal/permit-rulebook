@@ -308,7 +308,9 @@ returns as a fork at the fifth steward entry._
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s27 — five small slips** · scenario proposed 2026-09-17
+  (`docs/spine/scenarios/s27-five-small-slips.md`), awaiting the human's
+  word. v1.2 fix: P8.
 
 ## mock-green
 
