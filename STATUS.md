@@ -49,7 +49,7 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **s27 is approved and building** (2026-09-17, human: "onaylıyorum"; worktree `../permit-rulebook-s27`, builder agent, zero gates inside): P8, five small slips, measured on the
+live site: s9 through s18.** **s27 is built, reviewed on three axes and walked** (2026-09-17; branch `s27-five-slips` at `66c0820`, 648 tests, astro check 0, assets true, two fingerprints regenerated with the reason). Waiting on the merge word: P8, five small slips, measured on the
 live build before writing (the hidden 404 heading is 1×1 on screen and read
 twice by a screen reader; the pen wraps on *University degree* at 1280; the
 menu says *Menu* when open). Five decisions, one "nothing else".
@@ -276,7 +276,13 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.** s27 is approved and building; the local build and the review come to you together.
+**One thing is blocked on you: the merge word for s27.** The review is on
+record (`docs/spine/reviews/s27.md`, three axes, head `66c0820`, no hard
+finding, four should-fixes landed); the light critique found nothing new;
+the local build is at http://localhost:4526/. Five places to look: the
+phone Menu button; the country rows of a four-country result; `/404.html`;
+the desktop "You declared" list; any route page's title. "merge" is the
+deploy.
 
 - [x] **s26 reviewed, walked and merged** (2026-09-17, your word). Live.
 - [x] **Ten pre-record reviews waived** (seven, then s5/s5b/s8 on the guard's second pass) (2026-09-17, your word "waive" twice; `docs/spine/reviews/waivers.md`).
