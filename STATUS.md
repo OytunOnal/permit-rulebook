@@ -232,7 +232,9 @@ CLS fix is not. The three lines, left here until the window closes:
 - [x] **s25 approved** (2026-09-17, *"approve"*); **data half built** (612 tests, schema 0.8.1): two questions, every
       rule on the rung it names, the Opportunity Card paying the best of two
       rows. The build caught my scenario's "contradiction" as not one —
-      dropped — and a wrong Spanish citation — corrected. Site half next.
+      dropped — and two wrong Spanish citations (the same paragraph cited as
+      art. 71 bis.2 where the sentences live in art. 71.2 a)) — corrected with
+      the snapshot offsets as evidence. Site half building against it.
 - [x] **v1.2 is open** (2026-09-17, your word): the v1.1 residue and the data
       items are its fixes, under `## roadmap › v1.2` in KANBAN; candidates
       arrive through `spine:idea`; the stamp is yours when the last item is
