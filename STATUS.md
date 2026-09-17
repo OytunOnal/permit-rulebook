@@ -208,7 +208,27 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you** until s23 is on the preview.
+**One thing is blocked on you: the word for s23.**
+
+- [ ] **s23 is on the preview** (http://localhost:4500, 592 site + 588 data
+      tests green, assets true) **and the session read it**: a probe over all
+      37 built pages finds none of the old strings — no *"section 20a"*
+      stutter, no *"…or 5+ years of related experience"* repeat, no *"times
+      out"*, no *"stated but not asked"*, no *"did not reach one of them"*
+      on 27 pages (one page, the one citing BAMF, says its own source was
+      not reached), no *"0 standing on a dated reason"*, no Dutch clause in
+      the Türkiye notice; and the new ones in place — *§ = section* once per
+      page, *2+ or 5+ years of related experience*, *Any of these:*,
+      *(consolidated mirror, buzer.de)*, *scored — 2 conditions this
+      interview did not ask*, *Question 1 of about 24*. On the result
+      screens, with the critique's own personas: Deniz (offer) sees no
+      job-search sentence; Priya (exploring) sees *Nearest: full German
+      recognition* and her not-yet Opportunity Card says *5 points — 6
+      needed*; her steps run recognition → partial → 5+ years → *German at
+      A2 (elementary) or above* (one step) → transfer → research; the
+      explorer with an open seek route sees the sentence. Read a result, a
+      route page (`/germany/opportunity-card/`) and `/data/` once; then
+      "merge", or what is off.
 
 - [x] **s23 approved** (2026-09-17, *"onaylıyorum"*); **data half built** (579 tests): the notice ends at *that route's
       card says so*; the curator's remark was in a citation the card prints
