@@ -3684,3 +3684,16 @@ on record for the build and for the delta the human's walk added (the
 tagline's colon; the card's door as a door — option A of three, the
 human's "A"). Deploy `46663d9` green; the five screens read on the live
 host. **Gate:** yes.
+
+## 2026-09-17 — roadmap fork (Steward, on the clock) 🛑
+
+The `later` heading had no clock (roadmap-guard, steward-61/v0.3 slice 5);
+the fork was due. Nine candidates ranked by risk (assumption status word;
+first open row A3) · evidence (no intake.md or metrics.md — none) · cost ·
+age, put to the human as a table; the word was "uygula".
+
+## Rows (Steward mode — one line per decision, the guards read these)
+
+| date | decision | reasoning | cost | kind | ref |
+|---|---|---|---|---|---|
+| 2026-09-17 | roadmap fork: keep SEPE limb, citizenship exceptions, recognition helper, affiliate layer, Turkish UI, ask-about-route; version compare-don't-rank and quoted-not-asked (nine) to v1.3; drop browser-driven read as a duplicate of v1.2 data #17 | ranked risk · evidence · cost · age; no evidence file yet, so risk and age decided | none now; v1.3 opened as a heading | gate | KANBAN.md roadmap |

@@ -279,6 +279,7 @@ CLS fix is not. The three lines, left here until the window closes:
 **Nothing is blocked on you.**
 
 - [x] **s27 reviewed, walked and merged** (2026-09-17, your word). Live.
+- [x] **Roadmap fork applied** (2026-09-17, your word "uygula": six kept, two to v1.3, one dropped).
 
 - [x] **s26 reviewed, walked and merged** (2026-09-17, your word). Live.
 - [x] **Ten pre-record reviews waived** (seven, then s5/s5b/s8 on the guard's second pass) (2026-09-17, your word "waive" twice; `docs/spine/reviews/waivers.md`).
@@ -521,7 +522,19 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s27 is live** (2026-09-17, deploy `46663d9` green, read on the live host:
+the threat model, the architecture, the critiques, the announcement).**Skills reloaded again** (2026-09-17; steward-62/63, v0.3 slices 4–5): the
+review guard now also holds code committed after the newest review head
+(silent on master); the roadmap guard wants a clock on `later` — the fork
+was due and is applied on your word: SEPE limb, citizenship exceptions,
+recognition helper, affiliate, Turkish UI and ask-about-route kept;
+compare-don't-rank and the nine quoted-not-asked routes versioned to a new
+`v1.3` heading; the browser-driven read dropped as v1.2's data #17. The
+clock: DECISIONS rows since 2026-09-17 (`DECISIONS.md` gained a rows table
+for Steward-mode decisions, which the guards read). `docs/spine/metrics.md`
+is born at the next intake read, as a fork, from the one-pager's viability
+lines.
+
+**s27 is live** (2026-09-17, deploy `46663d9` green, read on the live host:
 *Close* on the open menu and *Menu* after Escape; the 404's one heading;
 the mark on the name in every country row; the pencil on the last line of
 every ledger row at 1280; the route H1 as the name, *The rules, quoted and
