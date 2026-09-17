@@ -11,7 +11,6 @@ import { esc, escAttr } from "./reason.js";
 import { NOT_CHECKED_HEADING, ROUTE_DOOR, askedHeading } from "./copy.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
 // it, on the screen's own memory (2026-09-08).
-import { type Glossary, glossSection } from "./gloss.js";
 // One frame for every quote the product shows (2026-09-08).
 import { noteHtml, quoteFrame } from "./quote.js";
 
@@ -573,16 +572,18 @@ export function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  * it, and the link is a tap-height box a line cannot break inside, so on a
  * phone the stop wrapped onto a line of its own (v1.1 gate critique, P5).
  * The route page's own box has never carried one.
+ *
+ * The label is the text of the link and is printed as the data wrote it: a
+ * link says what the reader does there, and an explainer inside it was a
+ * sentence underlined end to end (the human's walk, 2026-09-17, s28). The
+ * dataset's contract keeps the label free of anything that would want one.
  */
-export function learnBoxHtml(ds: Dataset, r: RouteResult, answers: Profile, glossary: Glossary): string {
+export function learnBoxHtml(ds: Dataset, r: RouteResult, answers: Profile): string {
   const links = liveUnknowns(r, answers)
     .map((f) => ds.fields.find((d) => d.id === f)?.learn)
     .filter((l): l is { label: string; url: string } => !!l);
   if (!links.length) return "";
-  // The same first use, on the same screen's memory: this help carries
-  // "§ 18g AufenthG", and a screen explains a symbol once (Spec review,
-  // 2026-09-08).
   return `<div class="learn">You can find out yourself: ${links
-    .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${esc(glossSection(l.label, glossary))}</a>`)
+    .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`)
     .join(" · ")}</div>`;
 }

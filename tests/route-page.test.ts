@@ -473,7 +473,12 @@ describe("s6 — one page per route, generated from the dataset", () => {
       // sign and never restates the number (s23, P1).
       const glosses = text.match(new RegExp(SECTION_EXPLAINER, "g")) ?? [];
       expect(glosses.length, page.path).toBe(1);
-      expect(text, page.path).not.toMatch(/sections? [0-9]/);
+      // The stutter is the gloss restating the citation's number beside it.
+      // Prose may say "section 18g of the Residence Act" in its own words —
+      // the shortage page's door does, a link naming the law without the
+      // symbol (s28) — so the pattern is the stutter's own shape (s23, P1).
+      expect(text, page.path).not.toMatch(/§ ([0-9]+[a-z]?)[,;] sections? /);
+      expect(text, page.path).not.toMatch(/\(§ [0-9]+[a-z]?, section/);
       // Never inside a quote: what a source said is verbatim by contract.
       for (const q of page.html.matchAll(/<blockquote[^>]*>([^]*?)<[/]blockquote>/g))
         expect(q[1], page.path).not.toContain("section ");

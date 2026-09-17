@@ -54,7 +54,7 @@ const started = mastheadFor({ kind: "question", started: true });
 const firstQuestions = remainingQuestions(dataset, {});
 const firstScreen = questionCardHtml({
   dataset, question: firstQuestions[0], answers: {}, asked: [], editing: null,
-  total: firstQuestions.length, glossary: new Set(),
+  total: firstQuestions.length,
 });
 const firstDeclaration = declarationHtml(dataset, {}, [], firstQuestions[0].field);
 /**
@@ -625,7 +625,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const resumed = arriving && !arrival && asked.length > 0 ? asked.length : undefined;
       paint(main, questionCardHtml({
         dataset: ds, question: q, answers, asked, editing, total,
-        arrival, justRecorded, resumed, glossary,
+        arrival, justRecorded, resumed,
       }), () => {
         if (longList) {
           const filter = document.getElementById("cfilter") as HTMLInputElement;
@@ -804,7 +804,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /** s3: "I don't know" answers get an official find-out link — the
      * dataset's field `learn` source, rendered beside the page (lib/card.ts)
      * since the stray full stop after it (s23, P5). */
-    const learnBoxFor = (r: RouteResult): string => learnBoxHtml(ds, r, answers, glossary);
+    const learnBoxFor = (r: RouteResult): string => learnBoxHtml(ds, r, answers);
 
     const periodOf = (field: string) => fieldOf(field)?.period;
 
