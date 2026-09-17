@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.5.0",
+  "schema_version": "0.8.1",
   "dataset_version": "2026.01.01",
   "fields": [
     {
@@ -187,54 +187,47 @@
       ]
     },
     {
-      "id": "experience",
-      "label": "Skilled work experience related to your qualification, in years?",
-      "short_label": "Experience",
-      "subject": "your skilled work experience",
+      "id": "experience_5y",
+      "label": "Related skilled work experience in the last five years?",
+      "short_label": "Experience (last 5 years)",
+      "subject": "your related experience in the last five years",
       "type": "enum",
       "kind": "improvable",
       "options": [
         {
           "value": "lt2",
           "label": "Under 2 years",
-          "short": "under 2 years of related experience"
+          "short": "under 2 years of related experience in the last five"
         },
         {
-          "value": "y2in5",
-          "label": "2+ years within the last 5",
-          "short": "2+ years of related experience"
-        },
-        {
-          "value": "y3in7",
-          "label": "3+ years within the last 7",
-          "short": "3+ years of related experience",
-          "implies": [
-            "y2in5"
-          ]
-        },
-        {
-          "value": "y5in7",
-          "label": "5+ years within the last 7",
-          "short": "5+ years of related experience"
+          "value": "2plus",
+          "label": "2 years or more",
+          "short": "2+ years of related experience in the last five"
         }
       ]
     },
     {
       "id": "experience_7y",
-      "label": "Do you have at least 3 years of relevant experience within the last 7?",
-      "short_label": "Experience, last 7 years",
-      "subject": "your relevant experience in the last 7 years",
+      "label": "And in the last seven years?",
+      "short_label": "Experience (last 7 years)",
+      "subject": "your related experience in the last seven years",
       "type": "enum",
       "kind": "improvable",
       "options": [
         {
-          "value": "yes",
-          "label": "Yes",
-          "short": "3+ years of experience in the last 7"
+          "value": "lt3",
+          "label": "Under 3 years",
+          "short": "under 3 years of related experience in the last seven"
         },
         {
-          "value": "no",
-          "label": "No"
+          "value": "3to5",
+          "label": "3 to under 5 years",
+          "short": "3 to under 5 years of related experience in the last seven"
+        },
+        {
+          "value": "5plus",
+          "label": "5 years or more",
+          "short": "5+ years of related experience in the last seven"
         }
       ]
     },

@@ -30,7 +30,7 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * Turkish passport, a salary in the band just under the Blue Card line. */
 const finished: Profile = {
   destination: "de", situation: "offer", qualification: "degree", citizenship: "TR",
-  occupation_shortage: "yes", recognition_de: "recognized", experience: "lt2",
+  occupation_shortage: "yes", recognition_de: "recognized", experience_5y: "lt2", experience_7y: "lt3",
   salary_eur_year: "band_4", german: "none", english: "none", funds_eur_month: "band_0",
 };
 /** A reader four answers in — three of which France keeps (it never asks

@@ -1,4 +1,4 @@
-import type { Profile } from "permit-rulebook-data";
+import type { Profile, Question } from "permit-rulebook-data";
 
 /**
  * The interview record, kept where it can survive a reload and nowhere else.
@@ -62,12 +62,23 @@ export function serialize(answers: Profile, history: string[], done = false): st
 }
 
 /**
+ * What the interview can ask, and the answers it takes: the package's own
+ * `Question`, less the label the record never reads — derived from it, so the
+ * caller hands over the questions it derived and the shape moves with the
+ * package rather than away from it.
+ */
+export type AskedField = Pick<Question, "field" | "options">;
+
+/**
  * What comes back out. Anything the current dataset no longer asks is dropped:
  * a key written by an older dataset must not resurrect a field the rules have
  * since removed, and the answer to a question nobody will be asked again is not
- * part of the record.
+ * part of the record. An answer the field no longer OFFERS goes the same way
+ * — s25 replaced the seven-year yes/no with three rungs, and a record carrying
+ * "yes" would otherwise have sat on the ledger as an answer nobody could pick,
+ * scored by no rule and never asked again.
  */
-export function restore(raw: string | null, knownFields: readonly string[]): { answers: Profile; history: string[] } {
+export function restore(raw: string | null, asked: readonly AskedField[]): { answers: Profile; history: string[] } {
   const empty = { answers: {} as Profile, history: [] as string[] };
   if (!raw) return empty;
   let parsed: unknown;
@@ -82,10 +93,10 @@ export function restore(raw: string | null, knownFields: readonly string[]): { a
   if (typeof record.answers !== "object" || record.answers === null) return empty;
   if (!Array.isArray(record.history)) return empty;
 
-  const known = new Set(knownFields);
+  const known = new Map(asked.map((q) => [q.field, new Set(q.options.map((o) => o.value))]));
   const answers: Profile = {};
   for (const [field, value] of Object.entries(record.answers))
-    if (known.has(field) && typeof value === "string") answers[field] = value;
+    if (typeof value === "string" && known.get(field)?.has(value)) answers[field] = value;
   const history = record.history.filter(
     (field, i): field is string =>
       typeof field === "string" && answers[field] !== undefined && record.history!.indexOf(field) === i,
@@ -134,11 +145,11 @@ export function clearRecord(store: RecordStore | null): void {
 
 /** What the last visit left, filtered to what this dataset still asks. */
 export function loadRecord(
-  store: RecordStore | null, knownFields: readonly string[],
+  store: RecordStore | null, asked: readonly AskedField[],
 ): { answers: Profile; history: string[] } {
   let raw: string | null = null;
   try {
     raw = store?.getItem(STORAGE_KEY) ?? store?.getItem(LEGACY_STORAGE_KEY) ?? null;
   } catch { return { answers: {}, history: [] }; }
-  return restore(raw, knownFields);
+  return restore(raw, asked);
 }

@@ -85,11 +85,12 @@ const seed = (answers: Record<string, string>) =>
   }))})`;
 
 /** Still deciding where to go: every step forks per country, so each row has a
- * place of its own that the reader has not declared. */
+ * place of its own that the reader has not declared. A real passport, since
+ * the record keeps only answers a question offers (s25). */
 const EXPLORER = {
-  destination: "all", citizenship: "third_country", situation: "none",
+  destination: "all", citizenship: "IN", situation: "none",
   qualification: "degree", recognition_de: "recognized", occupation_shortage: "yes",
-  experience: "y2in5", german: "b1", funds_eur_month: "band_1",
+  experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1",
   nl_recent_grad: "no", top200_grad: "no",
 };
 

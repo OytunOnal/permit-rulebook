@@ -1,5 +1,5 @@
 import {
-  SITUATION_FIELD, fieldOptions, forEachCriterion, unlockTitleOf,
+  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, unlockTitleOf,
   type Dataset, type Profile, type RouteResult, type Unlock,
 } from "permit-rulebook-data";
 import { SEEK_HINT, orAbove } from "./copy.js";
@@ -35,9 +35,14 @@ export interface Step {
  * say it. Every `in` on the field names a tail of the option list (A1 and
  * up, B2 and up), every `eq` names the top, and every points table climbs
  * the list in order (A2 +1, B1 +2, B2 +3). Recognition fails the test — its
- * rules name the head of the list — and so do the experience bands, whose
- * rules skip a rung (F2 is that ladder's own scenario). The unknown answer is
- * not a rung.
+ * rules name the head of the list. The unknown answer is not a rung.
+ *
+ * A points item is read row by row, whichever form it was written in: the
+ * one-field form keys its rows on the item's `field`; the `rows` form names
+ * the field on each row, for an item the law spreads over two questions — the
+ * Opportunity Card's experience item, two points for two years in the last
+ * five and three for five in the last seven (schema 0.8.1, s25). Only the
+ * rows on THIS field say whether the table climbs it.
  */
 export function isLadder(ds: Dataset, field: string): boolean {
   let cached = ladderCache.get(ds);
@@ -58,11 +63,12 @@ export function isLadder(ds: Dataset, field: string): boolean {
     for (const route of country.routes)
       forEachCriterion(route.criteria, (c) => {
         if (c.op === "points") {
-          const item = c.table.items.find((i) => i.field === field);
-          if (!item) return;
+          const rows = c.table.items.flatMap(itemRows).filter((r) => r.field === field);
+          if (!rows.length) return;
           read = true;
-          const scored = rungs.filter((v) => item.points[v] !== undefined).map((v) => item.points[v]!);
-          if (Object.keys(item.points).some((v) => at(v) < 0)) ladder = false;
+          const paid = new Map(rows.map((r) => [r.value, r.points]));
+          const scored = rungs.filter((v) => paid.has(v)).map((v) => paid.get(v)!);
+          if (rows.some((r) => at(r.value) < 0)) ladder = false;
           for (let i = 1; i < scored.length; i++) if (scored[i]! <= scored[i - 1]!) ladder = false;
           return;
         }

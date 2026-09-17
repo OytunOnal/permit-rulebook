@@ -407,12 +407,12 @@ describe("the results line", () => {
  * and a screen scoped to one country is the flat layout by definition.
  */
 const frRecord: Profile = {
-  destination: "fr", situation: "offer", qualification: "none", experience: "lt2",
+  destination: "fr", situation: "offer", qualification: "none", experience_5y: "lt2", experience_7y: "lt3",
   fr_innovative_employer: "yes", citizenship: "AF", salary_eur_year: "band_0",
 };
 const allRecord: Profile = {
   destination: "all", situation: "offer", situation_country: "de", qualification: "none",
-  occupation_it: "yes", citizenship: "AF", experience: "lt2", salary_eur_year: "band_0",
+  occupation_it: "yes", citizenship: "AF", experience_5y: "lt2", experience_7y: "lt3", salary_eur_year: "band_0",
   nl_recent_grad: "yes",
 };
 const seed = (profile: Profile): string =>

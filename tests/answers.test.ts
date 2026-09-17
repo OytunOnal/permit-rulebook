@@ -52,9 +52,11 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
     try {
       const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
         await page.goto(server.url("/"), 300);
-        // Answered up to the German recognition question, and no further.
+        // Answered up to the German recognition question, and no further — with
+        // a real passport, since the record keeps only answers a question
+        // offers (s25) and the class the rules reason with was never one.
         await page.evaluate(seed({
-          destination: "de", citizenship: "third_country", situation: "offer",
+          destination: "de", citizenship: "IN", situation: "offer",
           qualification: "degree", occupation_shortage: "yes",
         }));
         await page.goto(server.url("/"), 1200);
@@ -87,16 +89,16 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
         // designated institution.
         await page.goto(server.url("/"), 300);
         await page.evaluate(seed({
-          destination: "nl", citizenship: "third_country", situation: "offer",
-          qualification: "none", experience: "lt2", experience_7y: "yes", occupation_it: "yes",
+          destination: "nl", citizenship: "IN", situation: "offer",
+          qualification: "none", experience_5y: "lt2", experience_7y: "3to5", occupation_it: "yes",
           salary_eur_month: "band_6", age_band: "a30to35", nl_recent_grad: "no", top200_grad: "yes",
         }));
         await page.goto(server.url("/"), 1400);
         const contradicted = await page.evaluate(read);
         // The same walk with the qualification answered consistently.
         await page.evaluate(seed({
-          destination: "nl", citizenship: "third_country", situation: "offer",
-          qualification: "degree", experience: "lt2", experience_7y: "yes", occupation_it: "yes",
+          destination: "nl", citizenship: "IN", situation: "offer",
+          qualification: "degree", experience_5y: "lt2", experience_7y: "3to5", occupation_it: "yes",
           salary_eur_month: "band_6", age_band: "a30to35", nl_recent_grad: "no", top200_grad: "yes",
         }));
         await page.goto(server.url("/"), 1400);
@@ -131,7 +133,7 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
       const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
         await page.goto(server.url("/"), 300);
         await page.evaluate(seed({
-          destination: "de", citizenship: "third_country", situation: "offer",
+          destination: "de", citizenship: "IN", situation: "offer",
           qualification: "degree", recognition_de: "recognized",
         }));
         await page.goto(server.url("/"), 1200);

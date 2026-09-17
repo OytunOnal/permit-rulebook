@@ -25,7 +25,7 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  */
 const germanRecord: Profile = {
   destination: "de", citizenship: "IN", situation: "offer", qualification: "degree",
-  recognition_de: "recognized", occupation_shortage: "yes", experience: "y3in7",
+  recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
   // band_5 on the pooled ladder = €45,934.20 – under €50,700.
   salary_eur_year: "band_5", german: "b1", english: "c1", funds_eur_month: "band_1",
 };

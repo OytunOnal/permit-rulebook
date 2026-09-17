@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
-import type { Dataset } from "permit-rulebook-data";
+import { deriveQuestions, type Dataset } from "permit-rulebook-data";
 import { RECORD_VERSION,
   clearRecord, loadRecord, restore, saveRecord, serialize, LEGACY_STORAGE_KEY, STORAGE_KEY,
   type RecordStore,
 } from "../src/lib/record.js";
 
 const dataset = rawDataset as unknown as Dataset;
-const known = dataset.fields.map((f) => f.id);
+const known = deriveQuestions(dataset);
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 describe("the record survives leaving the page (F2, F10)", () => {
@@ -34,6 +34,13 @@ describe("the record survives leaving the page (F2, F10)", () => {
       { destination: "nl", legacy_field: "yes" },
       ["destination", "legacy_field"],
     );
+    expect(restore(raw, known)).toEqual({ answers: { destination: "nl" }, history: ["destination"] });
+  });
+
+  it("an answer the field no longer offers is dropped the same way — a retired option is not an answer", () => {
+    // s25 replaced the seven-year yes/no with three rungs; a record carrying
+    // "yes" must not sit on the ledger as an answer nobody can pick.
+    const raw = serialize({ destination: "nl", experience_7y: "yes" }, ["destination", "experience_7y"]);
     expect(restore(raw, known)).toEqual({ answers: { destination: "nl" }, history: ["destination"] });
   });
 
