@@ -346,10 +346,13 @@ describe("s6 — one page per route, generated from the dataset", () => {
       for (const e of provenancedValuesOf(c)) dates.push(e.value.retrieved_at);
     });
     for (const s of routeStatements(route)) if (s.source) dates.push(s.source.retrieved_at);
-    // The notice's own read date is on the page too, so the stamp aggregates
-    // both — it is the newest of everything printed, not merely no older.
+    // The notice's own read dates are on the page too, so the stamp aggregates
+    // both — it is the newest of everything printed, not merely no older. Every
+    // side of the notice: since s29 the free-movement notice carries two more
+    // sentences in `sources[]` (the EEA and the Swiss reads, 2026-09-17), and
+    // each is printed with its date.
     const notice = audienceNotice(ds)!;
-    dates.push(notice.source.retrieved_at);
+    for (const value of noticeSources(notice)) dates.push(value.retrieved_at);
     expect(stampDate(route, notice)).toBe([...dates].sort().at(-1)!);
   });
 
