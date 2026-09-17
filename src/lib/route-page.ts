@@ -43,7 +43,7 @@ import {
   absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
 } from "./site.js";
 import {
-  PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck,
+  ANY_OF, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -165,6 +165,28 @@ function routeValues(route: Route): ProvenanceEntry[] {
   for (const s of routeStatements(route)) for (const source of statementSources(s)) out.push({ value: source });
   return out;
 }
+
+/**
+ * Every source this page quotes: its values', its statements', and those of
+ * the notices about it (s23, F3).
+ *
+ * The liveness line reads the s11 unread list through this set, so a route
+ * page qualifies the daily-check claim only when one of ITS sources went
+ * unread. The line used to count the whole list, and on the day one German
+ * page did not answer, twenty-seven route pages that cite nothing on it said
+ * "the last run did not reach one of them" (v1.1 gate critique, F3).
+ */
+export function routeSourceUrls(dataset: Dataset, route: Route): Set<string> {
+  const urls = new Set(routeValues(route).map((e) => e.value.source_url));
+  for (const n of noticesOn(dataset, route)) for (const value of noticeSources(n)) urls.add(value.source_url);
+  return urls;
+}
+
+/** Of the run's unread list, the sources this page quotes. */
+export const ownUnread = (dataset: Dataset, route: Route, unread: UnreadSource[]): UnreadSource[] => {
+  const own = routeSourceUrls(dataset, route);
+  return unread.filter((u) => own.has(u.url));
+};
 
 /**
  * The stamp's date: the newest read date among the page's own quotes.
@@ -373,7 +395,7 @@ function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
   if (c.op === "points")
     return `This route counts ${c.required.value} points from the official table. Every item below scores, and the table is quoted under it.`;
   if (c.op === "any")
-    return `Either of these answers this rule: ${esc(joinOr(
+    return `${esc(ANY_OF)} ${esc(joinOr(
       c.paths.map((p) => joinAnd(p.criteria.map((pc) => criterionPhrase(dataset, pc)))),
     ))}.`;
   if ("field" in c && c.field === "citizenship")
@@ -690,6 +712,9 @@ export function routePage(
   const path = address.path;
   const jsonPath = routeJsonPath(country, route);
   const rules = ruleCriteria(dataset, route);
+  // The footer counts every unread source a reader is looking at (s11); the
+  // sentence under the scope heading speaks for this page's own (s23, F3).
+  const missed = ownUnread(dataset, route, unread).length;
   // One page, one memory of which abbreviations it has already expanded. The
   // heading claims the section symbol before any citation can: it is where the
   // page states its own name, and a German route's name carries "§" whether
@@ -734,12 +759,12 @@ ${answerBlock(dataset, route, read)}${about.map((n) => noticeSection(n, seen)).j
 
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">What the checker asks, and what it does not</b>
-    <p>Every number below is quoted from an official page, and ${esc(dailyCheck(unread.length))}. On this route — <strong>${
+    <p>Every number below is quoted from an official page, and ${esc(dailyCheck(missed))}. On this route — <strong>${
     esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)}</p>
   </section>` : `
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">Why this route is not scored here</b>
-    <p><strong>${esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)} Every condition below is quoted from an official page, and ${esc(dailyCheck(unread.length))}.</p>
+    <p><strong>${esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)} Every condition below is quoted from an official page, and ${esc(dailyCheck(missed))}.</p>
   </section>`}
 
   <section class="rules" aria-labelledby="rules-h">

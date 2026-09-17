@@ -1,14 +1,17 @@
 import {
   answerLabel, bindsReader, carveOutFor, closedBy, decidingCriteria, deriveBands, fieldOptions, forEachCriterion,
   formatEUR, formatEURPer,
-  gapCriterionOf, noticeSources,
+  gapCriterionOf, liveUnknowns, noticeSources,
   resultProvenance,
-  routeReadings, routeStatements, scopeLine,
+  routeReadings, routeStatements, scopeLine, shortLabelOf,
   type Band, type Criterion, type Dataset, type Notice, type Profile, type Route, type RouteResult,
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { NOT_CHECKED_HEADING, askedHeading } from "./copy.js";
+// A symbol a stranger cannot read is explained the first time a screen uses
+// it, on the screen's own memory (2026-09-08).
+import { type Glossary, glossSection } from "./gloss.js";
 // One frame for every quote the product shows (2026-09-08).
 import { noteHtml, quoteFrame } from "./quote.js";
 
@@ -535,4 +538,49 @@ export function noticeHtml(n: Notice): string {
             <a class="next" href="${escAttr(next.url)}" target="_blank" rel="noopener">${esc(next.label)}</a>
           </div>
         </article>`;
+}
+
+/**
+ * The points tally, on every card that scores one (s23, F4).
+ *
+ * The open Opportunity Card printed "6 points — 6 needed · English +1 …" and
+ * the not-yet one printed nothing: the reader nearest to a verdict could not
+ * see how near (v1.1 gate critique, F4). The engine attaches the tally to a
+ * not-yet result as readily as to a met one — the points path stays open
+ * while its unknowns are — so the line is a function of the result, rendered
+ * here once, and the two cards cannot differ on it.
+ */
+export function pointsLineHtml(ds: Dataset, r: RouteResult): string {
+  const p = r.points;
+  if (!p) return "";
+  const items = p.items.length
+    ? " · " + p.items.map((i) => `${esc(shortLabelOf(ds, i.field))} +${i.points}`).join(" · ")
+    : "";
+  // The met colour only where the points are met: on a not-yet card the
+  // tally is a count, and the verdict colour would say otherwise.
+  return `<div class="ptsline ${p.scored >= p.required ? "met" : "short"}"><b>${p.scored} point${p.scored === 1 ? "" : "s"} — ${p.required} needed</b>${items}</div>`;
+}
+
+/**
+ * The way to look an unknown up, on the card it still binds — the dataset's
+ * own `learn` link, never hardcoded (s3).
+ *
+ * Only where the unknown still binds: on a hard-failed route finding out
+ * changes nothing, and the link sends the reader down a path that cannot open
+ * (critique #4). The box ends on the link. It used to end on a full stop after
+ * it, and the link is a tap-height box a line cannot break inside, so on a
+ * phone the stop wrapped onto a line of its own (v1.1 gate critique, P5).
+ * The route page's own box has never carried one.
+ */
+export function learnBoxHtml(ds: Dataset, r: RouteResult, answers: Profile, glossary: Glossary): string {
+  const links = liveUnknowns(r, answers)
+    .map((f) => ds.fields.find((d) => d.id === f)?.learn)
+    .filter((l): l is { label: string; url: string } => !!l);
+  if (!links.length) return "";
+  // The same first use, on the same screen's memory: this help carries
+  // "§ 18g AufenthG", and a screen explains a symbol once (Spec review,
+  // 2026-09-08).
+  return `<div class="learn">You can find out yourself: ${links
+    .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${esc(glossSection(l.label, glossary))}</a>`)
+    .join(" · ")}</div>`;
 }

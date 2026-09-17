@@ -19,6 +19,9 @@
  * way, and each page keeps its own memory of what it has already said.
  */
 
+// The words for the sign itself live with the product's other words (s23).
+import { SECTION_EXPLAINER } from "./copy.js";
+
 /** One page's memory of which abbreviations it has already explained. */
 export type Glossary = Set<string>;
 
@@ -65,12 +68,19 @@ function bracketRun(text: string, at: number): { open: number; close: number } |
   return { open, close: close < 0 ? text.length : close };
 }
 
-/** "section 19c" — or, for a run that cites several, "sections 19c and 6". */
-function sectionWords(numbers: string[], act?: string): string {
+/**
+ * What the sign means — and, where the citation names its act, what the act
+ * is, in the same form and the same breath.
+ *
+ * It used to restate the citation: "(§ 20a, section 20a)", "(§ 19c / § 6
+ * BeschV; sections 19c and 6)". On a heading that was a stutter, and a
+ * different heading stuttered on each render (v1.1 gate critique, P1). The
+ * words now explain the sign and nothing else, so they are the same words
+ * wherever they land; the number is already there, once, in the citation.
+ */
+function sectionWords(act?: string): string {
   const named = act ? ACTS[act.trim()] : undefined;
-  if (numbers.length === 1) return `section ${numbers[0]}${named ? ` of ${named}` : ""}`;
-  const last = numbers[numbers.length - 1]!;
-  return `sections ${numbers.slice(0, -1).join(", ")} and ${last}`;
+  return named ? `${SECTION_EXPLAINER}; ${act!.trim()} = ${named}` : SECTION_EXPLAINER;
 }
 
 /**
@@ -97,22 +107,17 @@ export function glossSection(text: string, seen: Glossary): string {
   const run = bracketRun(text, at);
   if (!run) {
     spendAct(act);
-    return `${text.slice(0, at)}${first[0]} (${sectionWords([first[1]!], act)})${text.slice(at + first[0].length)}`;
+    return `${text.slice(0, at)}${first[0]} (${sectionWords(act)})${text.slice(at + first[0].length)}`;
   }
 
-  // Every citation the bracket holds, in the order it holds them: the gloss
-  // follows the run rather than cutting into it.
+  // The gloss follows the whole run rather than cutting into it, and names
+  // the act only where the run cites one section; a run of several is
+  // glossed as the sign alone.
   const inside = text.slice(run.open, run.close);
-  const numbers: string[] = [];
-  let onlyAct: string | undefined;
-  for (const m of inside.matchAll(new RegExp(SECTION.source, "g"))) {
-    numbers.push(m[1]!);
-    if (m[2]) onlyAct = numbers.length === 1 ? m[2] : onlyAct;
-  }
-  if (numbers.length === 1) spendAct(onlyAct);
-  const words = sectionWords(numbers, numbers.length === 1 ? onlyAct : undefined);
-  const separator = numbers.length === 1 ? ", " : "; ";
-  return `${text.slice(0, run.close)}${separator}${words}${text.slice(run.close)}`;
+  const cited = [...inside.matchAll(new RegExp(SECTION.source, "g"))];
+  const onlyAct = cited.length === 1 ? cited[0]![2] : undefined;
+  if (cited.length === 1) spendAct(onlyAct);
+  return `${text.slice(0, run.close)}; ${sectionWords(onlyAct)}${text.slice(run.close)}`;
 }
 
 /** The section symbol and every abbreviation: our prose, never a name. */

@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { unreadSentence, unreadSources, type Dataset, type UnreadSource, type WatchState } from "permit-rulebook-data";
+import { unreadSentence, unreadSources, type Dataset, type Route, type UnreadSource, type WatchState } from "permit-rulebook-data";
 import { DAILY_CHECK_CLAIM, dailyCheck, unreadLabel } from "../src/lib/copy.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { footerFacts, navCountries } from "../src/lib/country-page.js";
 import { siteFooter } from "../src/lib/identity.js";
-import { routePages, type RoutePage } from "../src/lib/route-page.js";
+import { ownUnread, routePages, type RoutePage } from "../src/lib/route-page.js";
 import { lastWatchRun, unreadSourcesAt, watchState } from "../src/lib/site.js";
 
 /**
@@ -162,23 +162,39 @@ describe("the state this site is built against", () => {
    * and went on making it unqualified on 28 pages while `/data/` and the footer
    * had learned better (Standards review, 2026-09-15). Every surface is asked
    * here, over the state as the failing run would have recorded it.
+   *
+   * Since s23 the route page's own sentence speaks for the page's own
+   * sources: the footer's count is still every unread source the reader is
+   * looking at, but the clause under the scope heading is on the pages that
+   * cite the unread one — the Spanish pages resting on the UGE PDF — and the
+   * other pages say the plain thing (v1.1 gate critique, F3: 27 of 28 pages
+   * cast doubt on sources that were read fine).
    */
-  it("no surface asserts the unqualified claim while a source is unread", () => {
+  it("no surface asserts the unqualified claim in the footer while a source is unread; the route sentence names its own", () => {
     const unread = unreadSources(ds, AS_RECORDED);
     const run = watchState.last_run!;
+    const routes = routePages(ds, run, unread);
     const pages = [
-      ...routePages(ds, run, unread).map((p) => ({ path: p.path, html: p.html })),
+      ...routes.map((p) => ({ path: p.path, html: p.html })),
       { path: "/data/", html: dataPage(ds, run, unread).html },
     ];
     expect(pages.length).toBeGreaterThan(20);
-    for (const page of pages) {
+    for (const page of pages)
+      expect(readerSees(page.html), page.path).toContain("re-read daily (last run " + run + " · 1 source unread)");
+    expect(readerSees(dataPage(ds, run, unread).html)).not.toContain("a daily check re-reads every source.");
+    const citing = routes.filter((p) => ownUnread(ds, p.json.route as Route, unread).length);
+    expect(citing.map((p) => p.path).every((x) => x.startsWith("/spain/")), "the UGE PDF backs Spanish values").toBe(true);
+    expect(citing.length).toBeGreaterThan(0);
+    for (const page of routes) {
       const seen = readerSees(page.html);
-      expect(seen, page.path).not.toContain("a daily check re-reads every source.");
-      expect(seen, page.path).toContain("re-read daily (last run " + run + " · 1 source unread)");
+      if (citing.includes(page)) {
+        expect(seen, page.path).not.toContain("a daily check re-reads every source.");
+        expect(seen, page.path).toContain("a daily check re-reads every source; the last run did not reach one of this route's sources");
+      } else {
+        expect(seen, page.path).toContain("a daily check re-reads every source.");
+        expect(seen, page.path).not.toContain("did not reach");
+      }
     }
-    for (const page of routePages(ds, run, unread))
-      expect(readerSees(page.html), page.path)
-        .toContain("a daily check re-reads every source; the last run did not reach one of them");
   });
 
   it("and every surface says the plain thing again the moment nothing is unread", () => {
@@ -203,7 +219,8 @@ describe("the state this site is built against", () => {
    *
    * The words come from the helpers the pages render with — `dailyCheck`,
    * `unreadLabel`, `unreadSentence` — never retyped; the cases above pin the
-   * words themselves, on lists they chose.
+   * words themselves, on lists they chose. The route sentence is asked with
+   * the page's own count (s23, F3) and the footer with the whole list (s11).
    */
   function everySurfaceSays(run: string, unread: UnreadSource[], routes: RoutePage[], data: string): void {
     const day = unread.length
@@ -213,7 +230,7 @@ describe("the state this site is built against", () => {
     expect(routes.length, day).toBeGreaterThan(20);
     for (const page of routes) {
       const seen = readerSees(page.html);
-      expect(seen, `${page.path} on ${day}`).toContain(`${dailyCheck(unread.length)}.`);
+      expect(seen, `${page.path} on ${day}`).toContain(`${dailyCheck(ownUnread(ds, page.json.route as Route, unread).length)}.`);
       expect(seen, `${page.path} on ${day}`).toContain(parenthesis);
       if (!unread.length) expect(seen, `${page.path} on ${day}`).not.toContain("unread");
     }

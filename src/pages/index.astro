@@ -144,7 +144,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // s5d: every word a verdict says comes from here, beside the rules — the
       // page holds no field-id-to-label table of its own to fall through
       // (product-critique v0.7, B3).
-      shortLabelOf, unlockTitleOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
+      shortLabelOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
       // What an answer means here, where the label alone leaves two answers
       // hard to tell apart (human walk, 2026-09-08).
       unlockMeansOf, countryPhrase,
@@ -192,10 +192,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // result, in place of its "N not yet" (s21).
     import { unscoredTally, unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
     import {
-      carveOutHtml, caveatHtml, closedRowHtml, noticeHtml, precondHtml, provenanceHtml, railHtml,
-      readingHtml, scopedHtml,
+      carveOutHtml, caveatHtml, closedRowHtml, learnBoxHtml, noticeHtml, pointsLineHtml, precondHtml,
+      provenanceHtml, railHtml, readingHtml, scopedHtml,
       measuredCriterionOf,
     } from "../lib/card.js";
+    // What the screen does with the engine's unlock rows — their order, which
+    // are one step, and who is told the job-search sentence — beside the page
+    // so a test can read it (s23).
+    import { arrangeSteps, nearestStep, seekHintHtml, type Step } from "../lib/steps.js";
 
     const ds = dataset as unknown as Dataset;
     // One field-lookup idiom for the whole page: the dataset never changes
@@ -796,24 +800,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const provenanceFor = (r: RouteResult): string => provenanceHtml(ds, r, answers);
 
 
-    // s3: "I don't know" answers get an official find-out link — driven by the
-    // dataset's field `learn` sources, never hardcoded in the UI.
-    function learnBoxFor(r: RouteResult): string {
-      // Only where the unknown still binds: on a hard-failed route (wrong
-      // qualification, no offer) finding out changes nothing, and the link
-      // sends the user down a path that cannot open (critique #4).
-      const links = openUnknownsOf(r)
-        .map((f) => fieldOf(f)?.learn)
-        .filter((l): l is { label: string; url: string } => !!l);
-      if (!links.length) return "";
-      // The same first use, on the same screen's memory: this help carries
-      // "§ 18g AufenthG", and a screen explains a symbol once (Spec review,
-      // 2026-09-08).
-      return `<div class="learn">You can find out yourself: ${links
-        .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${
-          esc(glossSection(l.label, glossary))}</a>`)
-        .join(" · ")}.</div>`;
-    }
+    /** s3: "I don't know" answers get an official find-out link — the
+     * dataset's field `learn` source, rendered beside the page (lib/card.ts)
+     * since the stray full stop after it (s23, P5). */
+    const learnBoxFor = (r: RouteResult): string => learnBoxHtml(ds, r, answers, glossary);
 
     const periodOf = (field: string) => fieldOf(field)?.period;
 
@@ -917,9 +907,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           ${carveOutFor(r)}
           ${caveatFor(r)}
           ${readingFor(r)}
-          ${r.points ? `<div class="ptsline"><b>${r.points.scored} point${r.points.scored === 1 ? "" : "s"} — ${r.points.required} needed</b>${
-            r.points.items.length ? " · " + r.points.items.map((i) => `${esc(shortLabelOf(ds, i.field))} +${i.points}`).join(" · ") : ""
-          }</div>` : ""}
+          ${pointsLineHtml(ds, r)}
           ${r.status !== "hold" ? railFor(r) : ""}
           ${r.status === "near" && r.gap_max ? (() => {
             const gapField = gapFieldOf(r);
@@ -950,7 +938,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             ${precondFor(r)}
             ${carveOutFor(r)}
             ${caveatFor(r)}
-          ${readingFor(r)}
+            ${readingFor(r)}
+            ${pointsLineHtml(ds, r)}
             ${failDetail(r)}
             ${learnBoxFor(r)}
             <div class="foot">${provenanceFor(r)}<a class="next" href="${escAttr(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
@@ -1046,10 +1035,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         </details>` + elsewhereGroup;
     }
 
-    function unlockCard(u: ReturnType<typeof unlocks>[number], routes: RouteResult[]): string {
+    function unlockCard(step: Step, routes: RouteResult[]): string {
+      const u = step.unlock;
       return `
         <article class="unlock">
-          <h3>With <b>${esc(unlockTitleOf(ds, u, answers))}</b></h3>
+          <h3>With <b>${esc(step.title)}</b></h3>
           ${(() => { const means = unlockMeansOf(ds, u, answers);
             return means ? `<p class="unlock-means">${esc(means)}</p>` : ""; })()}
           <ul>${routes.map((r) =>
@@ -1156,8 +1146,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         return;
       }
 
-      // s3b: counterfactual leverage — what each alternative step would unlock.
-      const ups = unlocks(ds, answers);
+      // s3b: counterfactual leverage — what each alternative step would unlock;
+      // ordered by what the reader can do, each ladder one step (s23).
+      const ups = arrangeSteps(ds, unlocks(ds, answers), answers);
       // Notices ride above the normal layout, with the results intact.
       //
       // Two answers that cannot both be true ride at the very top of them: the
@@ -1232,15 +1223,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           "",
         );
       } else if (zeroOpen && ups.length) {
-        // The step worth naming: one that would fully meet a route beats one
-        // that only brings routes within reach, then breadth, then dataset
-        // order (strict >, so ties keep the engine's order).
-        const rank = (u: (typeof ups)[number]) =>
-          (u.routes.some((r) => r.status === "met") ? 1e6 : 0) + u.routes.length;
-        const bestUp = ups.reduce((best, u) => (rank(u) > rank(best) ? u : best));
+        // The step worth naming is the first one the list offers: the order
+        // is the rank — a step the reader can take before a situation they
+        // did not declare, one that meets a route before one that only brings
+        // routes within reach, then breadth, then the engine's order (s23).
+        const bestUp = nearestStep(ups)!;
         // Zero open is a starting point, not a dead end — the steps are the news.
         said(`Nothing open yet — ${ups.length} step${ups.length === 1 ? "" : "s"} would change that.`,
-          "", { nearest: unlockTitleOf(ds, bestUp, answers) });
+          "", { nearest: bestUp.title });
       } else if (zeroOpen) {
         // Nothing open and no single step would open one: no false hope. The
         // single-country result has no country sections to send anyone to, so
@@ -1330,10 +1320,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         )
         : "";
 
-      const seekHint = (rs: RouteResult[], hasUnlocks: boolean) =>
-        hasUnlocks && rs.some((r) => r.route.kind === "seek" && r.status !== "hold")
-          ? `<p class="unlock-hint">Your job-search permit above is exactly for this — lawful time in the country to land that offer.</p>`
-          : "";
+      // The job-search sentence, to the reader it is true of — one with no
+      // offer yet (s23, F1a).
+      const seekHint = (rs: RouteResult[], hasUnlocks: boolean) => seekHintHtml(ds, rs, answers, hasUnlocks);
 
       if (visible.length === 1) {
         // Single destination: the flat s3 layout, no country chrome.
@@ -1342,7 +1331,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         // also be what it renders first (human, 2026-09-08).
         const unlockSection = () => ups.length
           ? `<h2 class="ghead unlockh"><b>Steps that would unlock more</b> — each re-checked against the rules</h2>` +
-            ups.map((u) => unlockCard(u, u.routes)).join("") +
+            ups.map((u) => unlockCard(u, u.unlock.routes)).join("") +
             seekHint(results, true)
           : "";
         main.innerHTML = arrivalLine() + noticeCards + strip +
@@ -1362,7 +1351,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // all-hold ones collapsed with the tally (and any unlocking steps) visible.
       // With nothing open anywhere, the first country that has steps opens
       // instead — the hope is the point, and it was hidden in 10px tally text.
-      const withUps = new Set(ups.flatMap((u) => u.routes.map((r) => r.country)));
+      const withUps = new Set(ups.flatMap((u) => u.unlock.routes.map((r) => r.country)));
       main.innerHTML = arrivalLine() + noticeCards + strip + visible.map((c) => {
         const rs = results.filter((r) => r.country === c.code);
         const cUnsettled = rs.filter((r) => r.status === "met" && unsettledIds.has(r.route.id));
@@ -1373,7 +1362,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         };
         // Country-scoped unlock rows: each row's routes narrowed to this country.
         const cUps = ups
-          .map((u) => ({ u, routes: u.routes.filter((r) => r.country === c.code) }))
+          .map((u) => ({ u, routes: u.unlock.routes.filter((r) => r.country === c.code) }))
           .filter((x) => x.routes.length);
         const unknowns = openUnknownCount(rs);
         // A country's own closed routes are counted in its tally: the section
@@ -1947,7 +1936,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .gapnote{font-size:.85rem;background:var(--color-near-soft);border-left:3px solid var(--color-near);color:#63430f;
       padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
     .ptsline{font:500 .8rem var(--font-mono);color:var(--color-ink);margin:.5rem 0 .1rem}
-    .ptsline b{color:var(--color-met)}
+    /* The tally reads in the met colour only where the points are met: the
+       same line on a not-yet card is a count, not a verdict (s23, F4). */
+    .ptsline.met b{color:var(--color-met)}
 
     .foot{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;border-top:var(--rule-dotted);
       margin-top:.85rem;padding-top:.6rem;flex-wrap:wrap}

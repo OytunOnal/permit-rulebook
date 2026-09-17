@@ -9,7 +9,7 @@ import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
 import {
   DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PRODUCT_NAME,
   PROSE_OURS_TAIL, TAGLINE, TRANSLATION_POLICY, WRONG_DOOR_LABEL, dataLedeClose, dataLedeOpen, dataMetaDescription,
-  datasetDay,
+  datasetDay, proseProvenanceCounts,
 } from "./copy.js";
 import {
   DATA_LICENCE_FULL, REPO_DATA, absolute, analyticsBeacon, headMeta, lastWatchRun, readRange, unreadSourcesAt,
@@ -212,7 +212,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
         <li><b>Quote fidelity</b> — every sentence the dataset claims to have quoted is looked for again in a fresh snapshot of the page it cites. It runs where the snapshots live, in the data repository.</li>
         <li><b>Watch coverage</b> — every source a value cites is on the watchlist, and every entry on the watchlist backs a value.</li>
         <li><b>Prose provenance</b> — anything in quotation marks carries the source it is quoting, and what is ours is declared ours: ${
-    prose.with_provenance} sourced, ${prose.ours} ours, ${prose.declared_unsourced} standing on a dated reason.</li>
+    esc(proseProvenanceCounts(prose.with_provenance, prose.ours, prose.declared_unsourced))}.</li>
       </ul>
       <p class="lede">A cookieless counter (Cloudflare Web Analytics) records each page load: the page's address, where you came from, your country, and your browser and operating system versions; nothing you answer, nothing that identifies you, and nothing while you answer.</p>
       <p class="lede">${esc(TRANSLATION_POLICY)}</p>
