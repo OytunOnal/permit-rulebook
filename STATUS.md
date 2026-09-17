@@ -284,6 +284,7 @@ pencil never alone on a line; the route H1 as the name, the tagline its
 own line (the fingerprint moves). "onaylıyorum", or what is off.
 
 - [x] **s26 reviewed, walked and merged** (2026-09-17, your word). Live.
+- [x] **Seven pre-record reviews waived** (2026-09-17, your word "waive"; `docs/spine/reviews/waivers.md`).
 
 - [x] **s25 reviewed, walked and merged** (2026-09-17, your word). Live.
 - [x] Search Console → Datasets → *Validate fix* (2026-09-17, your word).
