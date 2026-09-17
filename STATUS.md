@@ -276,7 +276,18 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.**
+**Two things are blocked on you, from the first intake read** (2026-09-17):
+1. **The write-back word, per repo** — `permit-rulebook`: a comment on #8
+   (s10/s22 shipped; the after-reading pending), stays open. `permit-rulebook-data`:
+   close #7, #8, #17, #18, #19 each with a comment naming the slice that
+   closed it; a `held` comment on #16 (Spain's annual order, end of
+   December); #13/#15 already labelled and on the board. "uygula".
+2. **`docs/spine/metrics.md` targets** — six rows drafted from the one-pager's
+   Viability lines and the pre-registered numbers (liveness, watch finishes,
+   search/referral visits ≥ 300 by 2026-10-09, a stranger touching the data,
+   linking domains, site #8's CLS after-reading); the file is committed only
+   on your word: "metrikler tamam", or a row number and the target you want.
+
 
 - [x] **s27 reviewed, walked and merged** (2026-09-17, your word). Live.
 - [x] **Roadmap fork applied** (2026-09-17, your word "uygula": six kept, two to v1.3, one dropped).
@@ -522,7 +533,14 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**Skills reloaded again** (2026-09-17; steward-62/63, v0.3 slices 4–5): the
+the threat model, the architecture, the critiques, the announcement).**First intake read done** (2026-09-17, `/spine:steward` with nothing pasted):
+both trackers read with the fixed commands, counts agreeing (site 1, data 8,
+no PRs), nine items, none from a stranger — seven already handled by shipped
+slices or on the v1.2 board, one held on a source (data #16), one awaiting
+its after-reading (site #8). `docs/spine/intake.md` born with the markers;
+the item lines follow your word.
+
+**Skills reloaded again** (2026-09-17; steward-62/63, v0.3 slices 4–5): the
 review guard now also holds code committed after the newest review head
 (silent on master); the roadmap guard wants a clock on `later` — the fork
 was due and is applied on your word: SEPE limb, citizenship exceptions,
