@@ -276,11 +276,7 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the word for s28.** The scenario is
-`docs/spine/scenarios/s28-learn-links-are-actions.md` — the four learn labels
-as what the reader does there, in plain words (no `§ 18g AufenthG` in a
-link); link text never glossed; the three surfaces agree. "onaylıyorum", or
-what is off.
+**Nothing is blocked on you.** s28 is approved and building; the local build and the review come to you together.
 
 - [x] **Intake write-back** (2026-09-17, your word "uygula"): data #7, #8, #17, #18, #19 closed; #16 held; site #8 commented, open for its after-reading.
 - [x] **`docs/spine/metrics.md`** (2026-09-17, your word "metrikler tamam"): six rows; next readings 2026-09-24 (liveness, watch, CLS after) and 2026-10-09 (A2, A7, A8 — with the isolated walk).
