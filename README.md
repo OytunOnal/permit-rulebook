@@ -106,7 +106,12 @@ npm run assets         # re-render the favicon and the social card (needs Chrome
 ```
 
 `SITE_URL` sets where the build believes it lives; every absolute URL a link
-preview reads follows it. Unset, it uses `https://permitrulebook.com`.
+preview reads follows it. Unset, it uses `https://permitrulebook.com`. After
+each deploy that publishes something — a push, the daily rebuild, the data
+watch's dispatch — the workflow tells Bing which addresses changed over
+[IndexNow](https://www.indexnow.org/): one POST of every sitemap address,
+vouched for by the public key file at the site's root (`public/<key>.txt`),
+and never from a manual run or a re-run.
 
 ## The data
 
