@@ -3653,3 +3653,11 @@ hosted branch preview was not reachable from this network (pages.dev
 DNS-blocked); the walk was on the local production build, which steward-60
 names as the place for it. Deploy `85c505c` green; live read confirms both
 walks. **Gate:** yes.
+
+## 2026-09-17 — seven pre-record reviews waived 🛑
+
+**Decision:** s1, s2, s3, s4, s5f, s6 and s7 are real-green with no file in
+`docs/spine/reviews/` — the record discipline (steward-58) is a day old; each
+was reviewed when built and its findings sit in KANBAN's done line. Waived
+in `docs/spine/reviews/waivers.md` on the human's word ("waive"). From s25
+on, every merge carries its file. **Gate:** yes.
