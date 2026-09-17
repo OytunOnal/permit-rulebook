@@ -284,9 +284,7 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ## active
 
-- **s23 — the copy pass** (v1.1 gate adjustment 3: F1, F3, F4, P1–P7) · the
-  user-facing strings the isolated walk read as contradicting, unexplained,
-  repeated or modelling-voiced. Scenario approved 2026-09-17 ("onaylıyorum"), **building**.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -297,6 +295,12 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s23 — the copy pass** · real-green 2026-09-17 (human: "merge"; data
+  `53db438`, site `e12ec3c`). v1.1 gate adjustment 3: F1, F3, F4, P1–P7
+  cleared; the twelve strings in the reader's words, each derived or gated.
+  Still open from the same critique: F2 (the experience ladder), the
+  four-country headline's hierarchy, P8 (small slips), P10 (phone hero).
 
 - **s21 — the mark on the country, and on the four-country result** ·
   real-green 2026-09-16 (human: "merge"; live in `fc783ca`). v1.1 re-score

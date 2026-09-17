@@ -49,7 +49,19 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **v1.1 is stamped** (2026-09-16, the versions ledger in `KANBAN.md`, quoted
+live site: s9 through s18.** **s23 is live** (2026-09-17, deploy `e12ec3c` green, read on the live host:
+*2+ or 5+ years of related experience*, the explainer once, no *times out*,
+*(consolidated mirror, buzer.de)*, *163 sourced, 48 ours.*, *Question 1 of
+about 24*; dataset 2026.09.17). The copy pass the v1.1 critique asked for
+as adjustment 3 — twelve strings, each now derived or gated: the
+job-search sentence only without an offer, steps ordered by what the reader
+can do, the liveness line naming the route's own unread source, the
+Opportunity Card's tally on the not-yet card, one language step, the
+statute explainer once, one sentence for a two-limb rule, the curator's
+remark off the card, the scope line in the reader's words, the stray
+period, *of about*, the Türkiye notice naming no route.
+
+**v1.1 is stamped** (2026-09-16, the versions ledger in `KANBAN.md`, quoted
 by the README). The critic confirmed N1 and N2 cleared by operation on the
 live site: no blocker open, so v1.1 ships on blocker-clearance; 39/50 on
 RUBRIC 1.3 against v1's 36, four lenses up, none down. The stamp names
@@ -208,27 +220,10 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the word for s23.**
+**Nothing is blocked on you.**
 
-- [ ] **s23 is on the preview** (http://localhost:4500, 592 site + 588 data
-      tests green, assets true) **and the session read it**: a probe over all
-      37 built pages finds none of the old strings — no *"section 20a"*
-      stutter, no *"…or 5+ years of related experience"* repeat, no *"times
-      out"*, no *"stated but not asked"*, no *"did not reach one of them"*
-      on 27 pages (one page, the one citing BAMF, says its own source was
-      not reached), no *"0 standing on a dated reason"*, no Dutch clause in
-      the Türkiye notice; and the new ones in place — *§ = section* once per
-      page, *2+ or 5+ years of related experience*, *Any of these:*,
-      *(consolidated mirror, buzer.de)*, *scored — 2 conditions this
-      interview did not ask*, *Question 1 of about 24*. On the result
-      screens, with the critique's own personas: Deniz (offer) sees no
-      job-search sentence; Priya (exploring) sees *Nearest: full German
-      recognition* and her not-yet Opportunity Card says *5 points — 6
-      needed*; her steps run recognition → partial → 5+ years → *German at
-      A2 (elementary) or above* (one step) → transfer → research; the
-      explorer with an open seek route sees the sentence. Read a result, a
-      route page (`/germany/opportunity-card/`) and `/data/` once; then
-      "merge", or what is off.
+- [x] **s23 walked and merged** (2026-09-17, your word; the session read
+      every built page and three personas' results). Live.
 
 - [x] **s23 approved** (2026-09-17, *"onaylıyorum"*); **data half built** (579 tests): the notice ends at *that route's
       card says so*; the curator's remark was in a citation the card prints
