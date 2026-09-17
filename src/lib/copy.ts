@@ -310,6 +310,28 @@ export const FEEDBACK = "Feedback";
  * belongs to a country, which is the header's job and not this file's. */
 export const COUNTRIES = "Countries";
 
+/**
+ * The phone's menu control, in its two states.
+ *
+ * It read "Menu" open and closed: `aria-expanded` moved and the word did not,
+ * so a sighted reader had a control whose label stopped describing what a tap
+ * would do (v1.1 gate critique, P8 — s27). The script swaps the word from
+ * attributes the header renders off these two, so no user-facing string is
+ * typed into an inline script.
+ */
+export const MENU = "Menu";
+export const MENU_CLOSE = "Close";
+
+/**
+ * The 404's second door, in one sentence that is the heading of its section.
+ *
+ * It was a visually hidden h2 ("Start from your own situation") over a bold
+ * paragraph opening with the same words: a screen reader heard it twice, a
+ * sighted reader saw it once, and neither saw the same page (P8, s27). One
+ * element carries the words now, and it is the heading.
+ */
+export const NOT_FOUND_START = "Or start from your own situation.";
+
 /** The eyebrow, the lede and the h1 of `/feedback/`, as the mock draws them. */
 export const FEEDBACK_EYEBROW = "Read by a person.";
 export const FEEDBACK_LEDE =

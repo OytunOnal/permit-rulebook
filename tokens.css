@@ -33,7 +33,8 @@
   --font-serif: Cambria, Georgia, serif;            /* verdict headings, route names */
   --font-sans: "Segoe UI", system-ui, sans-serif;   /* body, labels, UI */
   --font-mono: Consolas, monospace;                 /* values, quotes, dates, declarations */
-  --text-hero: 400 2.2rem/1.2 var(--font-serif);    /* verdict heading; emphasis colour --color-near */
+  --text-hero-size: 2.2rem;                         /* said apart so a line set beside the hero can take a fraction of it (s27) */
+  --text-hero: 400 var(--text-hero-size)/1.2 var(--font-serif);    /* verdict heading; emphasis colour --color-near */
   --text-route: 700 1.08rem var(--font-serif);
   --text-body: 15px/1.6 var(--font-sans);
   --text-label: 700 .7rem var(--font-sans);         /* + letter-spacing .18em + uppercase */

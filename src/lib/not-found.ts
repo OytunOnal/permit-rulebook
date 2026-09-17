@@ -3,7 +3,7 @@ import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import { PAGE_CSS } from "./route-page.js";
 import { countryLinks, footerFacts, navCountries, siteReadDate } from "./country-page.js";
-import { PRODUCT_NAME, TAGLINE } from "./copy.js";
+import { NOT_FOUND_START, PRODUCT_NAME, TAGLINE } from "./copy.js";
 import { analyticsBeacon, url } from "./site.js";
 // One set of elements for the identity the shared CSS places (2026-09-08).
 import { MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
@@ -22,6 +22,12 @@ import { MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./ide
  * one, so this is that file, in the product's own design: the masthead with the
  * identity pair, one sentence, and the two ways on — the interview, and the
  * four countries. Nothing else; a person who is lost needs a door, not a page.
+ *
+ * The second door's heading is the sentence the reader sees. It was a hidden
+ * h2 over a bold paragraph that opened with the same words — read twice by a
+ * screen reader, seen once — so the bold sentence is the h2 now, drawn as the
+ * sentence was (`.cta-text`, in the shared sheet), and the section is labelled
+ * by it (v1.1 gate critique, P8 — s27).
  *
  * The pair is drawn by `identity.css`, reached through the route page's own
  * stylesheet. This module states none of its geometry, for the reason
@@ -69,8 +75,10 @@ ${iconLinks()}
     </nav>
 
     <section class="cta" aria-labelledby="cta-h">
-      <h2 class="visually-hidden" id="cta-h">Start from your own situation</h2>
-      <p><strong>Or start from your own situation.</strong> The questions are answered on this device only — nothing is sent anywhere.</p>
+      <div class="cta-text">
+        <h2 id="cta-h">${esc(NOT_FOUND_START)}</h2>
+        <p>The questions are answered on this device only — nothing is sent anywhere.</p>
+      </div>
       <a class="btn tap-min" href="${escAttr(url("/"))}">Check your own situation</a>
     </section>
   </main>

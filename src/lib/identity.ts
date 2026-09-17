@@ -1,5 +1,5 @@
 import {
-  COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW, PRODUCT_NAME, SEAL_LETTERS, unreadLabel,
+  COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW, MENU, MENU_CLOSE, PRODUCT_NAME, SEAL_LETTERS, unreadLabel,
 } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import { url } from "./site.js";
@@ -138,9 +138,12 @@ export function siteHeader(countries: NavLink[], place: HeaderPlace = {}): strin
     // tap behind Menu on a phone (s13).
     item({ path: FEEDBACK_PATH, label: FEEDBACK }),
   ].join("");
+  // The button's two words ride on it as attributes: the script that swaps
+  // them reads the button and never a word of its own (s27).
   return `<header class="site-head">
       <a class="wordmark tap-min" href="${escAttr(url("/"))}">${seal()}${esc(PRODUCT_NAME)}</a>
-      <button class="menu tap-min" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <button class="menu tap-min" type="button" aria-expanded="false" aria-controls="site-nav" data-word-closed="${
+    escAttr(MENU)}" data-word-open="${escAttr(MENU_CLOSE)}">${esc(MENU)}</button>
       <nav class="nav" id="site-nav" aria-label="Site">${links}</nav>
     </header>`;
 }
@@ -164,7 +167,9 @@ export const FEEDBACK_PATH = "/feedback";
  * expects — so Escape and a tap outside close it here, beside the menu they
  * already close. Everything it does it does by element and by attribute: no
  * country name is written into this script, and nothing it touches is
- * remembered anywhere.
+ * remembered anywhere — the button's own word included, which it reads off
+ * the button's `data-word-*` attributes and swaps with `aria-expanded`, so
+ * the control says what a tap will do (s27).
  *
  * On a phone the disclosure is not a disclosure: the menu shows the four
  * countries as rows under their heading, so opening the menu opens the groups
@@ -180,6 +185,7 @@ export const MENU_SCRIPT = `
       // The groups first: the item the focus moves to is inside one of them.
       for (const group of groups) group.open = open;
       button.setAttribute("aria-expanded", String(open));
+      button.textContent = open ? button.dataset.wordOpen : button.dataset.wordClosed;
       nav.classList.toggle("open", open);
       if (open) { const first = nav.querySelector("a"); if (first) first.focus(); }
     };

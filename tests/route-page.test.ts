@@ -151,9 +151,11 @@ describe("s6 — one page per route, generated from the dataset", () => {
     expect(met.filter((d) => !d.startsWith("--color-met")))
       .toEqual(Array(4).fill("color: var(--color-met)"));
     expect(near.filter((d) => !d.startsWith("--color-near"))).toEqual(["color: var(--color-near)"]);
-    // And they belong to the read-date emphasis and the hero accent.
+    // And they belong to the read-date emphasis and the hero accent — the
+    // accent shared by the H1's em and, on a route page, the tagline line
+    // under the H1 (s27): one declaration, two selectors.
     expect(PAGE_CSS).toContain(".src b { color: var(--color-met);");
-    expect(PAGE_CSS).toContain(".masthead-with-stamps h1 em { font-style: normal; color: var(--color-near);");
+    expect(PAGE_CSS).toContain(".masthead-with-stamps h1 em, .masthead-with-stamps .tagline { font-style: normal; color: var(--color-near);");
     // The soft verdict tints are never painted at all.
     for (const token of ["--color-met-soft", "--color-near-soft"]) {
       const uses = [...PAGE_CSS.matchAll(new RegExp(`var\\(${token}\\)`, "g"))];
