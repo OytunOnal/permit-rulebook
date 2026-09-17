@@ -53,7 +53,12 @@ live site: s9 through s18.** **Skills reloaded** (2026-09-17, human: "skiller g�
 60, 61). Applied: the `v1.x` bucket dissolved (one landed under v1.2, six to
 `later` with the steward-entry clock); the `docs/spine/` map (research,
 critiques, design critiques in their directories); checks stay on the local
-build, the hosted preview once before the merge.
+build, the hosted preview once before the merge — **not reachable from this
+network today:** `*.pages.dev` resolves to 213.14.227.50 here (an ISP block
+address; `permitrulebook.com` resolves normally), so the once-before-merge
+look at the hosted branch preview is yours if you want it, on a resolver
+that answers for pages.dev (1.1.1.1): https://s26-one-hierarchy.permit-rulebook.pages.dev/.
+The live site is GitHub Pages; the merge does not wait on it.
 
 **s26 is built, reviewed on three axes and walked** (2026-09-17; branch `s26-one-hierarchy` at `95f0bd0`, 633 tests, astro check 0, assets true, fingerprint unmoved; the third axis, Security, on the human's word — the slice reads a declared answer into the rendering). Waiting on the merge word: the next v1.2 fix in the critic's order,
 the four-country headline's hierarchy. Scenario written from the screen
