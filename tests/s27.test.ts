@@ -4,16 +4,19 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, type Dataset } from "permit-rulebook-data";
-import { MENU, MENU_CLOSE, NOT_FOUND_START, NOT_FOUND_START_NOTE, PRODUCT_NAME, ROUTE_TAGLINE } from "../src/lib/copy.js";
+import { MENU, MENU_CLOSE, NOT_FOUND_START, NOT_FOUND_START_NOTE, PRODUCT_NAME, ROUTE_DOOR, ROUTE_TAGLINE } from "../src/lib/copy.js";
 import { MENU_SCRIPT, siteHeader } from "../src/lib/identity.js";
 import { navCountries } from "../src/lib/country-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { declarationHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
+import { evaluate, type Profile } from "permit-rulebook-data";
+import { scopedHtml } from "../src/lib/card.js";
 import { glossSection } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
+import { url } from "../src/lib/site.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -129,6 +132,37 @@ describe("5 — a route's H1 is its name", () => {
       expect(page.html).toContain(`<title>${title}</title>`);
       expect(page.html).toContain(`<meta property="og:title" content="${title}">`);
     }
+  });
+});
+
+describe("7 — the tagline ends in a colon", () => {
+  it("it introduces what follows; only the tagline, the title and the preview unmoved (asserted under 5)", () => {
+    expect(ROUTE_TAGLINE).toBe("The rules, quoted and dated:");
+    expect(ROUTE_TAGLINE.endsWith(":")).toBe(true);
+  });
+});
+
+/** The German Opportunity Card open: one result card with the door under its scope line. */
+const OPENED: Profile = {
+  destination: "all", situation: "research", situation_country: "fr", citizenship: "TR", qualification: "degree",
+  recognition_de: "recognized", nl_recent_grad: "no", top200_grad: "no", german: "a1", funds_eur_month: "band_1",
+};
+
+describe("8 — the card's door is a door", () => {
+  it("the scope line stands alone, no separator after it; the door follows as its own element, the copy's words, an internal href", () => {
+    const address = routeAddresses(ds).find((a) => a.route.id === "de-chancenkarte")!;
+    const html = scopedHtml(address.route, OPENED, url(address.path));
+    const m = /^<div class="scoped">([^<]*)<a class="door" href="([^"]+)">([^<]*)<\/a><\/div>$/.exec(html);
+    expect(m, html).not.toBeNull();
+    const [, scope, href, words] = m!;
+    expect(scope!.trim()).not.toMatch(/[·:—-]$/);
+    expect(scope).toBe(scope!.trim());
+    expect(words).toBe(ROUTE_DOOR);
+    expect(href).toBe(url(address.path));
+    expect(href!.startsWith("/")).toBe(true);
+    expect(html).not.toContain(" · <a");
+    // And that card is one the walk below draws.
+    expect(evaluate(ds, OPENED).find((r) => r.route.id === "de-chancenkarte")!.status).toBe("met");
   });
 });
 
@@ -417,6 +451,43 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         expect(Math.abs(p.penTop - p.lastTop), `${where} — the pen's top is ${(p.penTop - p.lastTop).toFixed(1)} px off its answer's last line`).toBeLessThanOrEqual(2);
         expect(p.penLeft, `${where} — the pen is the first glyph on its line`).toBeGreaterThan(p.lastLeft + 1);
       }
+    } finally { server.close(); }
+  }, 180_000);
+
+  it("1280x900: under the open card the door is underlined, in the prose-link colour, on a line of its own beneath the scope line, at the tap size", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
+        await page.goto(server.url("/"), 300);
+        await page.evaluate(seed(OPENED as Record<string, string>));
+        await page.goto(server.url("/"), 1400);
+        return page.evaluate(`JSON.stringify((() => {
+          const scoped = document.querySelector(".route .scoped");
+          const door = scoped.querySelector(".door");
+          const s = getComputedStyle(door);
+          const range = document.createRange();
+          range.setStart(scoped, 0);
+          range.setEndBefore(door);
+          const line = [...range.getClientRects()].filter((r) => r.width > 0).pop();
+          const box = door.getBoundingClientRect();
+          return { text: door.textContent.trim(), href: door.getAttribute("href"), decoration: s.textDecorationLine, color: s.color,
+            band: getComputedStyle(document.documentElement).getPropertyValue("--color-band").trim(),
+            beneath: line && box.top >= line.bottom - 1, left: Math.round(box.left - scoped.getBoundingClientRect().left),
+            height: box.height, tapMin: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tap-min")),
+            problems: [] };
+        })())`);
+      }, { viewport: { width: 1280, height: 900 }, mobile: false }) as string) as {
+        text: string; href: string; decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
+      };
+      expect(seen.text).toBe(ROUTE_DOOR);
+      expect(seen.href).toMatch(/^\/[a-z-]+\/[a-z0-9-]+\/$/);
+      expect(seen.decoration).toBe("underline");
+      // The band colour, read back as the browser states it.
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(seen.band.slice(i, i + 2), 16));
+      expect(seen.color).toBe(`rgb(${r}, ${g}, ${b})`);
+      expect(seen.beneath, "the door shares the scope line's last line").toBe(true);
+      expect(seen.left).toBe(0);
+      expect(seen.height).toBeGreaterThanOrEqual(seen.tapMin);
     } finally { server.close(); }
   }, 180_000);
 
