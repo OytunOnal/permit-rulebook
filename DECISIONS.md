@@ -3609,3 +3609,14 @@ from the dated real-green lines of the last fortnight, the liveness number
 from the watch's unread list. Cheap default: a hand-drawn page would drift
 from the board within a week; a view cannot. Republished as one artifact link
 at each redraw. **Gate:** no — surfaced here.
+
+## 2026-09-17 — s26 approved: the named country gets the four-country headline 🛑
+
+**Decision:** on the four-country path, a reader who named a country at
+question 3 whose scored routes do not take their situation reads, when
+nothing is open anywhere, the same written state the direct path gives
+(s19), keyed by `situation_country`; that country's section first and open;
+the rest sentence names the country on this path. s21's "the four-country
+result has no headline to give one country" held only for a reader who had
+not named one. Every other four-country result unchanged. **Gate:** yes —
+the human's "onaylıyorum" on the six-point scenario.

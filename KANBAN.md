@@ -305,9 +305,9 @@ under the open version, not candidates. Candidates land here only through
 
 ## active
 
-- **s26 — one reader, one hierarchy** · scenario proposed 2026-09-17
-  (`docs/spine/scenarios/s26-one-reader-one-hierarchy.md`), awaiting the
-  human's word. v1.2 fix: the four-country headline's hierarchy.
+- **s26 — one reader, one hierarchy** · approved 2026-09-17 (human:
+  "onaylıyorum"); building in `../permit-rulebook-s26` (branch
+  `s26-one-hierarchy`). v1.2 fix: the four-country headline's hierarchy.
 
 ## mock-green
 

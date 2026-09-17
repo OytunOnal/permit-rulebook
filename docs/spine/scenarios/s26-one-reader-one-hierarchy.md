@@ -1,6 +1,6 @@
 # s26 — one reader, one hierarchy
 
-**Status:** proposed 2026-09-17. v1.2 fix: the four-country headline's
+**Status:** approved 2026-09-17 (human: "onaylıyorum"). v1.2 fix: the four-country headline's
 hierarchy (v1.1 re-score, polish; the residue N1 left).
 
 ## What happened

@@ -49,7 +49,7 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **s26 is proposed** (2026-09-17): the next v1.2 fix in the critic's order,
+live site: s9 through s18.** **s26 is approved and building** (2026-09-17, human: "onaylıyorum"; worktree `../permit-rulebook-s26`, builder agent, zero gates inside): the next v1.2 fix in the critic's order,
 the four-country headline's hierarchy. Scenario written from the screen
 (s19's direct-path state against the four-country *Nothing open on these
 answers* + *0 OPEN* with the sentence third); six points, decided, not left
@@ -252,11 +252,7 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the word for s26.** The scenario is
-`docs/spine/scenarios/s26-one-reader-one-hierarchy.md` — the four-country
-researcher who named France at question 3 reads France's written state as
-the headline, France's section first and open; every other four-country
-result unchanged. "onaylıyorum", or what is off.
+**Nothing is blocked on you.** s26 is approved and building; the preview and the review come to you together.
 
 - [x] **s25 reviewed, walked and merged** (2026-09-17, your word). Live.
 - [x] Search Console → Datasets → *Validate fix* (2026-09-17, your word).
