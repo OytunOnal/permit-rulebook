@@ -1643,7 +1643,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /* The door under the scope line: a standalone internal link, so the two
        signals the site already gives one — the underline and the prose-link
        colour (.sub a) — together, on a line of its own, at the tap size (s27). */
-    .scoped .door{display:flex;width:fit-content;align-items:center;min-height:var(--tap-min);color:var(--color-band);text-decoration:underline}
+    .scoped .door{display:flex;width:fit-content;align-items:center;min-height:var(--tap-min);color:var(--color-band);
+      text-decoration:underline;text-decoration-color:var(--color-line);text-underline-offset:.2em}
     .foot-links{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;margin-top:.6rem;font-size:.8rem}
     .foot-links a{display:inline-flex;align-items:center;min-height:var(--tap-min)}
     h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}

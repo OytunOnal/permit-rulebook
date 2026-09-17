@@ -30,6 +30,18 @@ export const TAGLINE = "Every route, quoted and dated.";
 export const ROUTE_TAGLINE = "The rules, quoted and dated:";
 
 /**
+ * A result card's door to the route's own page.
+ *
+ * It was the third item of the scope line — "quoted and dated · scored … ·
+ * The rules of this route" — set in the external-link red without its arrow,
+ * so it read as a label, and the separator dangled at a line's end when the
+ * link wrapped (the human's walk, 2026-09-17 — s27). A door is a line of its
+ * own, in the imperative, underlined, in the colour internal links in prose
+ * already wear.
+ */
+export const ROUTE_DOOR = "Read the rules of this route";
+
+/**
  * The one-line promise the README leads with and the social card carries.
  *
  * The two counts are read from the dataset rather than typed here: they were
@@ -334,17 +346,6 @@ export const MENU_CLOSE = "Close";
  */
 export const NOT_FOUND_START = "Or start from your own situation.";
 
-/**
- * A result card's door to the route's own page.
- *
- * It was the third item of the scope line — "quoted and dated · scored … ·
- * The rules of this route" — set in the external-link red without its arrow,
- * so it read as a label, and the separator dangled at a line's end when the
- * link wrapped (the human's walk, 2026-09-17 — s27). A door is a line of its
- * own, in the imperative, underlined, in the colour internal links in prose
- * already wear.
- */
-export const ROUTE_DOOR = "Read the rules of this route";
 /** The line that runs on after it: where the answers stay. */
 export const NOT_FOUND_START_NOTE = "The questions are answered on this device only — nothing is sent anywhere.";
 

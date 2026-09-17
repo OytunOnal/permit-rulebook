@@ -3,14 +3,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { deriveBands, fieldOptions, type Dataset } from "permit-rulebook-data";
+import { deriveBands, evaluate, fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import { MENU, MENU_CLOSE, NOT_FOUND_START, NOT_FOUND_START_NOTE, PRODUCT_NAME, ROUTE_DOOR, ROUTE_TAGLINE } from "../src/lib/copy.js";
 import { MENU_SCRIPT, siteHeader } from "../src/lib/identity.js";
 import { navCountries } from "../src/lib/country-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { declarationHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { evaluate, type Profile } from "permit-rulebook-data";
 import { scopedHtml } from "../src/lib/card.js";
 import { glossSection } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
@@ -137,7 +136,6 @@ describe("5 — a route's H1 is its name", () => {
 
 describe("7 — the tagline ends in a colon", () => {
   it("it introduces what follows; only the tagline, the title and the preview unmoved (asserted under 5)", () => {
-    expect(ROUTE_TAGLINE).toBe("The rules, quoted and dated:");
     expect(ROUTE_TAGLINE.endsWith(":")).toBe(true);
   });
 });
@@ -454,42 +452,49 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
     } finally { server.close(); }
   }, 180_000);
 
-  it("1280x900: under the open card the door is underlined, in the prose-link colour, on a line of its own beneath the scope line, at the tap size", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
-        await page.evaluate(seed(OPENED as Record<string, string>));
-        await page.goto(server.url("/"), 1400);
-        return page.evaluate(`JSON.stringify((() => {
-          const scoped = document.querySelector(".route .scoped");
-          const door = scoped.querySelector(".door");
-          const s = getComputedStyle(door);
-          const range = document.createRange();
-          range.setStart(scoped, 0);
-          range.setEndBefore(door);
-          const line = [...range.getClientRects()].filter((r) => r.width > 0).pop();
-          const box = door.getBoundingClientRect();
-          return { text: door.textContent.trim(), href: door.getAttribute("href"), decoration: s.textDecorationLine, color: s.color,
-            band: getComputedStyle(document.documentElement).getPropertyValue("--color-band").trim(),
-            beneath: line && box.top >= line.bottom - 1, left: Math.round(box.left - scoped.getBoundingClientRect().left),
-            height: box.height, tapMin: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tap-min")),
-            problems: [] };
-        })())`);
-      }, { viewport: { width: 1280, height: 900 }, mobile: false }) as string) as {
-        text: string; href: string; decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
-      };
-      expect(seen.text).toBe(ROUTE_DOOR);
-      expect(seen.href).toMatch(/^\/[a-z-]+\/[a-z0-9-]+\/$/);
-      expect(seen.decoration).toBe("underline");
-      // The band colour, read back as the browser states it.
-      const [r, g, b] = [1, 3, 5].map((i) => parseInt(seen.band.slice(i, i + 2), 16));
-      expect(seen.color).toBe(`rgb(${r}, ${g}, ${b})`);
-      expect(seen.beneath, "the door shares the scope line's last line").toBe(true);
-      expect(seen.left).toBe(0);
-      expect(seen.height).toBeGreaterThanOrEqual(seen.tapMin);
-    } finally { server.close(); }
-  }, 180_000);
+  for (const [name, viewport, mobile] of VIEWPORTS) {
+    it(`${name}: under the open card the door is underlined, in the prose-link colour, on a line of its own beneath the scope line, at the tap size`, async () => {
+      const server = await serve(dist);
+      try {
+        const seen = await withBrowser(async (page: BrowserPage) => {
+          await page.goto(server.url("/"), 300);
+          await page.evaluate(seed(OPENED as Record<string, string>));
+          await page.goto(server.url("/"), 1400);
+          const door = JSON.parse(await page.evaluate(`JSON.stringify((() => {
+            const scoped = document.querySelector(".route .scoped");
+            const door = scoped.querySelector(".door");
+            const s = getComputedStyle(door);
+            const range = document.createRange();
+            range.setStart(scoped, 0);
+            range.setEndBefore(door);
+            const line = [...range.getClientRects()].filter((r) => r.width > 0).pop();
+            const box = door.getBoundingClientRect();
+            return { text: door.textContent.trim(), href: door.getAttribute("href"), decoration: s.textDecorationLine, color: s.color,
+              band: getComputedStyle(document.documentElement).getPropertyValue("--color-band").trim(),
+              beneath: line && box.top >= line.bottom - 1, left: Math.round(box.left - scoped.getBoundingClientRect().left),
+              height: box.height, tapMin: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tap-min")) };
+          })())`)) as {
+            text: string; href: string; decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
+          };
+          return { door, problems: page.problems() };
+        }, { viewport, mobile }) as {
+          door: { text: string; href: string; decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number };
+          problems: string[];
+        };
+        expect(seen.problems).toEqual([]);
+        const { door } = seen;
+        expect(door.text).toBe(ROUTE_DOOR);
+        expect(door.href).toMatch(/^\/[a-z-]+\/[a-z0-9-]+\/$/);
+        expect(door.decoration).toBe("underline");
+        // The band colour, read back as the browser states it.
+        const [r, g, b] = [1, 3, 5].map((i) => parseInt(door.band.slice(i, i + 2), 16));
+        expect(door.color).toBe(`rgb(${r}, ${g}, ${b})`);
+        expect(door.beneath, `${name}: the door shares the scope line's last line`).toBe(true);
+        expect(door.left).toBe(0);
+        expect(door.height).toBeGreaterThanOrEqual(door.tapMin);
+      } finally { server.close(); }
+    }, 180_000);
+  }
 
   it("every built route page: the H1 is the route's name with no full stop after it, and the tagline element follows", () => {
     const addresses = routeAddresses(ds);
