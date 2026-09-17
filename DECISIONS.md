@@ -3661,3 +3661,12 @@ walks. **Gate:** yes.
 was reviewed when built and its findings sit in KANBAN's done line. Waived
 in `docs/spine/reviews/waivers.md` on the human's word ("waive"). From s25
 on, every merge carries its file. **Gate:** yes.
+
+## 2026-09-17 — s27 approved: five small slips 🛑
+
+**Decision:** P8's five slips as five decisions — *Close* when the menu is
+open (words from copy.ts via attributes); the disclosure mark bound to the
+country's name; the 404's sentence carried once, as the heading; the pencil
+bound to the answer's last word; the route H1 as the name with the tagline
+on its own line (the fingerprint moves, with the reason). **Gate:** yes —
+the human's "onaylıyorum".

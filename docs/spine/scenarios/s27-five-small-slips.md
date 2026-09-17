@@ -1,6 +1,6 @@
 # s27 — five small slips
 
-**Status:** proposed 2026-09-17. v1.2 fix: P8 (v1.1 gate critique, polish;
+**Status:** approved 2026-09-17 (human: "onaylıyorum"). v1.2 fix: P8 (v1.1 gate critique, polish;
 re-score: "the deviations are small and local").
 
 ## What happened
