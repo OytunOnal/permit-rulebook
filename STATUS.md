@@ -276,17 +276,10 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Two things are blocked on you, from the first intake read** (2026-09-17):
-1. **The write-back word, per repo** — `permit-rulebook`: a comment on #8
-   (s10/s22 shipped; the after-reading pending), stays open. `permit-rulebook-data`:
-   close #7, #8, #17, #18, #19 each with a comment naming the slice that
-   closed it; a `held` comment on #16 (Spain's annual order, end of
-   December); #13/#15 already labelled and on the board. "uygula".
-2. **`docs/spine/metrics.md` targets** — six rows drafted from the one-pager's
-   Viability lines and the pre-registered numbers (liveness, watch finishes,
-   search/referral visits ≥ 300 by 2026-10-09, a stranger touching the data,
-   linking domains, site #8's CLS after-reading); the file is committed only
-   on your word: "metrikler tamam", or a row number and the target you want.
+**Nothing is blocked on you.**
+
+- [x] **Intake write-back** (2026-09-17, your word "uygula"): data #7, #8, #17, #18, #19 closed; #16 held; site #8 commented, open for its after-reading.
+- [x] **`docs/spine/metrics.md`** (2026-09-17, your word "metrikler tamam"): six rows; next readings 2026-09-24 (liveness, watch, CLS after) and 2026-10-09 (A2, A7, A8 — with the isolated walk).
 
 
 - [x] **s27 reviewed, walked and merged** (2026-09-17, your word). Live.
