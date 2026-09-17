@@ -51,6 +51,22 @@ agreement is in. One reader, two hierarchies.
 6. **Nothing else changes.** The record, the counts, the cards, the route
    pages (the fingerprint does not move). s19's and s21's tests stay green.
 
+**Corrected 2026-09-17, by the build:** point 6's "s21's tests stay green"
+cannot hold as written — s21's browser case walks the exact walk points 1
+and 3 rewrite (*Any of these four* → research → France → nothing open) and
+pinned the two things they change: the headline (*Nothing open on these
+answers.*) and the section order (Germany first). Those two assertions now
+read s26's state on that walk (France's written state; France first); the
+seeds, the taps and s21's own decisions there — the mark at question 3, the
+sentence with its link on France's line, the other three lines, the not-yet
+body — are untouched, and s19's tests are green as they were. Two small
+shapes the points implied but did not name: the four-country verdict carries
+`lead`, the named country's answer, so the page can lead with its section
+without deriving the country a second time; and the copy's `possessive` is
+exported, so the proof that the rest sentences "differ only by the country's
+name" reads the one rule the route line already uses rather than typing its
+own.
+
 ## How it is proved
 
 - A unit case: for every (situation × country) pair `situationsAsked` marks,

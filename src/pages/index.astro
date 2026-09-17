@@ -150,7 +150,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       unlockMeansOf, countryPhrase,
       // The one answer the four-country result reads a country's line against (s21).
       SITUATION_FIELD,
-      type Dataset, type FieldOption, type Profile, type RouteResult,
+      type Country, type Dataset, type FieldOption, type Profile, type RouteResult,
     } from "permit-rulebook-data";
     import { routePath } from "../lib/slug.js";
     // Every internal URL the client writes goes through the same helper the
@@ -188,9 +188,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { FEEDBACK_PATH } from "../lib/identity.js";
     // The written state for a situation no scored route in the declared
     // country takes — derived from the dataset, in place of "Nothing open"
-    // (s19); and the same state in one country's line of the four-country
-    // result, in place of its "N not yet" (s21).
-    import { unscoredTally, unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
+    // (s19); the same state in one country's line of the four-country
+    // result, in place of its "N not yet" (s21); and, on that result, the
+    // order that leads with the country the reader named (s26).
+    import { namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
     import {
       carveOutHtml, caveatHtml, closedRowHtml, learnBoxHtml, noticeHtml, pointsLineHtml, precondHtml,
       provenanceHtml, railHtml, readingHtml, scopedHtml,
@@ -1198,16 +1199,20 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        * it did.
        */
       //
-      // On the four-country path it is keyed by the "all" answer and stays
-      // null: the headline there is the existing one, and the country whose
-      // scored routes do not take the situation says so in its own line
-      // (s21, below). The other branch — every visible country closed to the
-      // situation — is not drawn, because on this dataset it cannot occur:
-      // the "all" set is the union of the four and every offered situation
-      // is taken by a scored route somewhere (tests/s21: "every situation the
-      // interview offers is taken by a scored route in some country"). The
-      // day that assertion goes red, that branch needs a written state of its
-      // own, and this is where it goes.
+      // On the four-country path it is keyed by the country the reader named
+      // at question 3 (s26): the same researcher read this state on the
+      // France path and "Nothing open on these answers" here, the sentence
+      // that explained it third, in France's line under Germany's (s21 put
+      // it there; the product knew which country their agreement was in).
+      // With no country named, or one whose scored routes take the
+      // situation, it stays null and the headline is one of the three below.
+      // The other branch — every visible country closed to the situation —
+      // is not drawn, because on this dataset it cannot occur: the "all" set
+      // is the union of the four and every offered situation is taken by a
+      // scored route somewhere (tests/s21: "every situation the interview
+      // offers is taken by a scored route in some country"). The day that
+      // assertion goes red, that branch needs a written state of its own,
+      // and this is where it goes.
       const unscored = zeroOpen ? unscoredVerdict(ds, answers) : null;
       if (unscored) {
         said(unscored.headline, "", { unscored });
@@ -1352,7 +1357,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // With nothing open anywhere, the first country that has steps opens
       // instead — the hope is the point, and it was hidden in 10px tally text.
       const withUps = new Set(ups.flatMap((u) => u.unlock.routes.map((r) => r.country)));
-      main.innerHTML = arrivalLine() + noticeCards + strip + visible.map((c) => {
+      // The country the headline is about leads the list, open: a reader who
+      // named France at question 3 and read France's written state above
+      // found France's section third, collapsed, under Germany's (s26). The
+      // others follow in the dataset's order, with the rule above.
+      const leads = (c: Country) => c.code.toLowerCase() === unscored?.lead;
+      main.innerHTML = arrivalLine() + noticeCards + strip + namedFirst(visible, unscored?.lead).map((c) => {
         const rs = results.filter((r) => r.country === c.code);
         const cUnsettled = rs.filter((r) => r.status === "met" && unsettledIds.has(r.route.id));
         const g = {
@@ -1390,7 +1400,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         // With nothing open, the steps ARE the news: every section holding one
         // opens. Announcing "6 steps" and hiding two inside collapsed sections
         // is the withholding the headline exists to end (critique #4).
-        const open = g.met.length + cUnsettled.length + g.near.length > 0 || (zeroOpen && withUps.has(c.code));
+        const open = g.met.length + cUnsettled.length + g.near.length > 0 || (zeroOpen && withUps.has(c.code)) || leads(c);
         const inner =
           section("Open — criteria met", "", g.met.map((r) => fullCard(r, false)).join(""), g.met.length) +
           unsettledSection(cUnsettled, false) +

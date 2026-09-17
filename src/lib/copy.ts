@@ -485,27 +485,38 @@ export const notScoredQuotedLine = (country: string, routeName: string): string 
  * derived from the situations they ask and joined the way the hold list
  * joins them. Without a quoted route the subline is the second sentence
  * alone.
+ *
+ * The rest sentence has two forms. "The routes below" is true on the France
+ * page, where every route below is French; on the four-country result the
+ * same words would claim the other three countries' routes need what
+ * France's do, so there the sentence names the country (s26). Same steps,
+ * same words after the subject.
  */
 const unscoredClaim = (country: string, situation: string): string =>
   `No scored route in ${country} takes ${situation}`;
 export const unscoredHeadline = (country: string, situation: string): string => `${unscoredClaim(country, situation)}.`;
 export const READ_ITS_RULES = "read its rules";
 /** The possessive, for the one country whose name ends in an s. */
-const possessive = (name: string): string => (name.endsWith("s") ? `${name}'` : `${name}'s`);
+export const possessive = (name: string): string => (name.endsWith("s") ? `${name}'` : `${name}'s`);
 export const unscoredRouteLine = (country: string, situation: string, routeName: string): string =>
   `${possessive(country)} route for ${situation} — ${routeName} — is quoted here but not scored: ${READ_ITS_RULES}.`;
-export const unscoredRestLine = (steps: string): string => `The routes below need ${steps}.`;
+const routesBelowNeed = (steps: string): string => `routes below need ${steps}.`;
+export const unscoredRestLine = (steps: string): string => `The ${routesBelowNeed(steps)}`;
+export const unscoredNamedRestLine = (country: string, steps: string): string =>
+  `${possessive(country)} ${routesBelowNeed(steps)}`;
 
 /**
  * The same state on the four-country result, in the country's own summary
  * line (s21).
  *
- * The four-country result has no headline to give one country — three of the
- * four take the situation and the headline is theirs — so the line that used
- * to count France's routes as "5 not yet" says instead what the s19 headline
- * says, and then names the quoted route in the words the question-3 mark
- * uses of it. The route's name is the link on the screen; the line without a
- * route is the headline alone (v1.1 gate critique, N1).
+ * The line that used to count France's routes as "5 not yet" says instead
+ * what the s19 headline says, and then names the quoted route in the words
+ * the question-3 mark uses of it. The route's name is the link on the screen;
+ * the line without a route is the headline alone (v1.1 gate critique, N1).
+ * It was the only place the four-country result said it until s26 gave the
+ * named country the headline; it stays as the section's own tally, for the
+ * reader who skips the masthead, and for the result where something is open
+ * elsewhere and the headline is that.
  */
 export const unscoredTallyLine = (country: string, situation: string, routeName?: string): string =>
   routeName
