@@ -119,10 +119,7 @@ under the open version, not candidates. Candidates land here only through
 `spine:idea`.
 
 **Fixes**
-- **F2 — the experience ladder** · `y3in7` satisfies § 6 BeschV's "two years
-  in the last five" as `y2in5` does; third critique in a row. An engine
-  judgment: one axis, or a rule that reads the rung it names. *Started
-  2026-09-17.*
+- **F2 — the experience ladder** — **landed in s25** (2026-09-17).
 - **The four-country headline's hierarchy** · a France researcher on the
   *all* path still reads *Nothing open on these answers* over *0 OPEN*, with
   s21's sentence third; the direct path got a rewritten headline. One
@@ -308,10 +305,7 @@ under the open version, not candidates. Candidates land here only through
 
 ## active
 
-- **s25 — the experience ladder is two questions** (v1.2 fix F2) · one
-  question, four rungs and a false implication become two questions that
-  read what § 6 BeschV, § 20b, Ley 14/2013 and the IND actually ask.
-  Scenario approved 2026-09-17 ("approve"), **building**.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -322,6 +316,16 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s25 — the experience ladder is two questions** · real-green 2026-09-17
+  (human: "merge"; data `0292869`, site `8e432a4`). v1.2 fix F2, the
+  finding three critiques had made: one question with four rungs and a false
+  `y3in7 ⇒ y2in5` read § 6 BeschV's "two in the last five" as met for a
+  reader whose three years lay six-to-seven years ago. Two questions now —
+  the last five years (Germany's window), the last seven (the IND's) —
+  every rule on the rung it names, the Opportunity Card paying the best of
+  two rows. Schema 0.8.1; two Spanish citations corrected on the way. The
+  first slice with a recorded review (`docs/spine/reviews/s25.md`).
 
 - **s24 — the deploy tells Bing what changed** (IndexNow) · real-green
   2026-09-17 (human: "merge"; `318d059`). First run: *IndexNow answered

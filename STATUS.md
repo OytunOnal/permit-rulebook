@@ -49,7 +49,18 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **s24 is live** (2026-09-17, deploy `318d059` green): the first
+live site: s9 through s18.** **s25 is live** (2026-09-17, deploy `8e432a4` green, read on the live host:
+the two questions at 7 and 8, and the critique's reader — three years in
+the last seven, none of the two in the last five — now reads *Nothing open
+yet — 6 steps would change that* where the site had said *Criteria met*;
+`/data/` schema 0.8.1). The finding three critiques made is closed, and
+s25 is the first slice merged with its review on record
+(`docs/spine/reviews/s25.md`: Standards two hard findings fixed before the
+word, Spec 11/11 with the engine run by the reviewer). v1.2's fixes: F2
+done; next the four-country headline's hierarchy, P8/P10, the hold state,
+data #15/#13/#17.
+
+**s24 is live** (2026-09-17, deploy `318d059` green): the first
 `indexnow` job ran and Bing answered **202 to 36 addresses**; the key file
 is served at the root as text. From here every green deploy — a slice, the
 daily rebuild — tells Bing, Yandex, Naver and Seznam which pages to re-read,
@@ -227,34 +238,9 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the word for s25.**
+**Nothing is blocked on you.**
 
-- [ ] **s25 is on the preview** (http://localhost:4500; data 612 + site 624
-      tests green, schema 0.8.1). The session walked the interview: after
-      recognition, *Related skilled work experience in the last five
-      years?* (Under 2 years / 2 years or more), then *And in the last seven
-      years?* (Under 3 / 3 to under 5 / 5 or more), labels and shorts from
-      the dataset. The four browser cases in `tests/s25.test.ts` ran green
-      on this build: 2+/3–5 → Experienced worker **met** with the § 6
-      BeschV quote and the Opportunity Card at *Experience (last 5 years)
-      +2*; under 2/3–5 → **not yet**, no experience row; 2+/5+ → +3, never
-      2+3; an old record with the retired answer restores without it and
-      the resumed line says how many answers are kept. The session walked it in
-      Chrome: the two questions at 7 and 8, *met +2* / *not open, 3 points,
-      no experience row* / *met +3*, edited through *You declared*. **You
-      asked for the code review the process had dropped since s13** — the
-      pair ran: **Spec met** on both halves (the engine run by the reviewer,
-      not the tests); **Standards** found two hard breaches in the data
-      half — history `reason` fields saying a re-read happened when the
-      note said it did not (the enum gains `rule-rekeyed` and
-      `citation-corrected`), and four readings missing from the `not_asked`
-      twin — plus small ones; the site half merge-safe with a type to
-      derive from the package. The fixes landed: data `4b2a4ea` (612 tests; the history enum honest,
-      the twin complete, three assertions that rested on the false
-      implication corrected), site `fa05ce4` (624 tests, gated against that
-      data). **The review is on record** — `docs/spine/reviews/s25.md`, the
-      first under steward-58 (skills reloaded today) — so the word can be
-      asked with it in hand: "merge", or what is off.
+- [x] **s25 reviewed, walked and merged** (2026-09-17, your word). Live.
 
 - [x] **s25 approved** (2026-09-17, *"approve"*); **data half built** (612 tests, schema 0.8.1): two questions, every
       rule on the rung it names, the Opportunity Card paying the best of two
