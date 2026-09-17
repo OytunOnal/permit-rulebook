@@ -305,7 +305,9 @@ under the open version, not candidates. Candidates land here only through
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s26 — one reader, one hierarchy** · scenario proposed 2026-09-17
+  (`docs/spine/scenarios/s26-one-reader-one-hierarchy.md`), awaiting the
+  human's word. v1.2 fix: the four-country headline's hierarchy.
 
 ## mock-green
 
