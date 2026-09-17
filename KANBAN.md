@@ -52,6 +52,10 @@ under the open version, not candidates. Candidates land here only through
   glosses inside the link (*§ = section; AufenthG = the Residence Act*), so
   the link reads as a sentence. Data: the four labels as action sentences
   (ours, not quotes). Site: no gloss inside link text.
+- **The Algerian notice's learn label** (s28 light critique, 2026-09-17) · a
+  statement (*The page for Algerian nationals — certificat de résidence d'1
+  an*) rendered as the notice's foot link; the shape s28 fixed for the four
+  fields. Data: one label as an action.
 - **P10** · on a phone every question sits under the full hero and stamp.
 - **The finished-record hold state** · ~380 px blank under the eyebrow while
   the module loads (s22's trade); focus on `body` after a re-answer;
