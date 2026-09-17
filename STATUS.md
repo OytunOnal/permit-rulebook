@@ -533,7 +533,7 @@ These are the things only you can see, when you want to look:
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
 the threat model, the architecture, the critiques, the announcement).**s28 is built, reviewed on three axes and walked** (2026-09-17; data
-`4b1e983`, site branch pinned to it; data check 618, site 662 green — the one
+`4b1e983`, site `2c358f9` pinned to it, review record `docs/spine/reviews/s28.md`; data check 618, site 662 green — the one
 `pipeline` case waits for the data merge to reach the sibling checkout).
 Waiting on the merge word.
 
