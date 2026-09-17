@@ -229,6 +229,10 @@ CLS fix is not. The three lines, left here until the window closes:
 
 **Nothing is blocked on you.**
 
+- [x] **v1.2 is open** (2026-09-17, your word): the v1.1 residue and the data
+      items are its fixes, under `## roadmap › v1.2` in KANBAN; candidates
+      arrive through `spine:idea`; the stamp is yours when the last item is
+      live, one walk if that is 2026-10-09. **F2 started.**
 - [x] **s24 merged** (2026-09-17, your word); the first submission accepted.
 
 - [x] **s24 approved** (2026-09-17, *"tamamdır"*): the deploy tells Bing what

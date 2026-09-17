@@ -107,18 +107,42 @@ Promoted (or dropped, with evidence) at a boundary session.
   remains — NL and ES reduced thresholds shipped in s5c/s5d · bet: the SEPE
   catalogue is watchable once located. Source: s5 verification 4.2.
 
-- **A route page names its own unread sources** (v1.x candidate, held out of
-  s11 on 2026-09-15) · why: s11 qualifies the freshness claim on `/data/` and
-  in the footer from the dataset's unread list, and a route page's own claim —
-  "a daily check re-reads every source", on 28 pages — is qualified by the same
-  dataset-wide fact. But a route page is about *one* route: the honest sentence
-  there is whether the sources **this permit's values rest on** went unread,
-  which is a narrower and more useful thing to say · bet: the mapping already
-  exists (`datasetSourceCountries` walks source urls to countries; the same walk
-  gives source urls to routes), so this is a rendering change rather than a new
-  fact · held out on purpose: s11 owed that no surface asserts unqualified what
-  the product knows to be false, and widening it mid-slice would have been
-  gold-plating.
+- **A route page names its own unread sources** — **landed in s23** (F3,
+  2026-09-17): the route page filters the unread list by its own source
+  urls; one page names its own, 27 stay plain.
+### v1.2 — open (2026-09-17)
+
+The stamp is the human's, when the last item below is live; if that day is
+the 2026-10-09 reading, one isolated walk serves both (human, 2026-09-17).
+Fixes are the v1.1 critique's residue and the data tracker — corrections
+under the open version, not candidates. Candidates land here only through
+`spine:idea`.
+
+**Fixes**
+- **F2 — the experience ladder** · `y3in7` satisfies § 6 BeschV's "two years
+  in the last five" as `y2in5` does; third critique in a row. An engine
+  judgment: one axis, or a rule that reads the rung it names. *Started
+  2026-09-17.*
+- **The four-country headline's hierarchy** · a France researcher on the
+  *all* path still reads *Nothing open on these answers* over *0 OPEN*, with
+  s21's sentence third; the direct path got a rewritten headline. One
+  reader, two hierarchies.
+- **P8 — small slips** · *Menu* still reads *Menu* when open; the four-country
+  summaries put the triangle far left and the name far right; the 404 stacks
+  two "start from your own situation"; ✎ wraps to its own line in the desktop
+  sidebar.
+- **P10** · on a phone every question sits under the full hero and stamp.
+- **The finished-record hold state** · ~380 px blank under the eyebrow while
+  the module loads (s22's trade); focus on `body` after a re-answer;
+  `scrollbar-gutter: stable` for classic-scrollbar desktops.
+- **A `field` on precondition statements** (from s19) · "asked" derived by a
+  shared sentence, exact match; three routes share by containment.
+- **Data #15** · the free-movement notice's evidence for IS/LI/NO/CH.
+- **Data #13** · the Opportunity Card's link.
+- **Data #17** · the browser-read strategy for the IND (the road back from
+  the human tier; headless Chrome reads IND: measured yes).
+
+**Candidates** (through `spine:idea`; none filed yet for this version)
 
 ### v2 — wave 2
 - **What a permit leads to** (v1.x candidate, human 2026-09-11) · why: the
