@@ -242,9 +242,15 @@ CLS fix is not. The three lines, left here until the window closes:
       the resumed line says how many answers are kept. The session walked it in
       Chrome: the two questions at 7 and 8, *met +2* / *not open, 3 points,
       no experience row* / *met +3*, edited through *You declared*. **You
-      asked for the code review the process had dropped since s13** — a
-      Standards and a Spec reviewer are on both diffs now; the word waits
-      on them. Recorded in DECISIONS.
+      asked for the code review the process had dropped since s13** — the
+      pair ran: **Spec met** on both halves (the engine run by the reviewer,
+      not the tests); **Standards** found two hard breaches in the data
+      half — history `reason` fields saying a re-read happened when the
+      note said it did not (the enum gains `rule-rekeyed` and
+      `citation-corrected`), and four readings missing from the `not_asked`
+      twin — plus small ones; the site half merge-safe with a type to
+      derive from the package. Both builders have the lists; the word waits
+      on the fixes.
 
 - [x] **s25 approved** (2026-09-17, *"approve"*); **data half built** (612 tests, schema 0.8.1): two questions, every
       rule on the rung it names, the Opportunity Card paying the best of two

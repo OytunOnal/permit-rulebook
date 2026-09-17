@@ -111,6 +111,18 @@ recognition. A zero-point row is absent from the tally, not printed as +0.
 Six browser seeds carried `citizenship: "third_country"` — a class, not an
 answer — and the stricter restore drops it; they answer *IN* now.
 
+**Corrected 2026-09-17, by the reviews:** Spec met on both halves, verified
+by running the engine. Standards found two breaches in the data half, both
+inside the 0.8.1 bump: (1) a re-keyed rule's history line said
+`re-read-unchanged` while its note said no re-read happened — the machine
+field lied and the note confessed, and the test pinned the note's prose.
+The enum gains `rule-rekeyed` and `citation-corrected`; the test counts
+reasons, never words. (2) The four "floor" readings were named to the reader
+but not listed in `scope.not_asked` — the twin CONTRIBUTING makes the
+sentence checkable by; added, with the four `reason` lines revised. On the
+site: `AskedField` derives from the package's `Question`; the test seeds
+use one mapping.
+
 ## How it is proved
 
 - Data: a test per row of the table — the rule reads the field and values
