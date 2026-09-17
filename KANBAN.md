@@ -308,7 +308,10 @@ under the open version, not candidates. Candidates land here only through
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s25 — the experience ladder is two questions** (v1.2 fix F2) · one
+  question, four rungs and a false implication become two questions that
+  read what § 6 BeschV, § 20b, Ley 14/2013 and the IND actually ask.
+  Scenario drafted 2026-09-17, **awaiting approval**.
 
 ## mock-green
 

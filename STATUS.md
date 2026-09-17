@@ -227,8 +227,19 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.**
+**One thing is blocked on you: s25's scenario.**
 
+- [ ] **Approve s25** — `docs/spine/scenarios/s25-the-experience-ladder.md`.
+      Read from the sources today: § 6 BeschV and the Opportunity Card's
+      Nr. 7 ask *two years in the last five*; Nr. 6 asks *five in the last
+      seven*; Spain asks *three* with no window; the IND asks *three in the
+      last seven*. One question with four rungs and a false `implies`
+      (`y3in7 ⇒ y2in5`, added in s5f) cannot read those honestly. The slice
+      splits it into two: *in the last five years?* (under 2 / 2 or more)
+      and *and in the last seven?* (under 3 / 3 to under 5 / 5 or more);
+      every rule reads the rung it names; no implication. Cost accepted
+      once: records from before it lose their experience answers and are
+      asked again. Say "approve" or which line.
 - [x] **v1.2 is open** (2026-09-17, your word): the v1.1 residue and the data
       items are its fixes, under `## roadmap › v1.2` in KANBAN; candidates
       arrive through `spine:idea`; the stamp is yours when the last item is
