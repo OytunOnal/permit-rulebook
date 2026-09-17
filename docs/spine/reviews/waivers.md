@@ -9,3 +9,6 @@ waived: s4 — reviewed before steward-58; the review's findings live in KANBAN'
 waived: s5f — reviewed before steward-58; the review's findings live in KANBAN's done line, no file was kept. 2026-09-17
 waived: s6 — reviewed before steward-58; the review's findings live in KANBAN's done line, no file was kept. 2026-09-17
 waived: s7-nationality — reviewed before steward-58; the review's findings live in KANBAN's done line, no file was kept. 2026-09-17
+waived: s5 — reviewed before steward-58; the review's findings live in KANBAN's done line, no file was kept. 2026-09-17 (second pass of the guard, human: "waive")
+waived: s5b — reviewed before steward-58; the review's findings live in KANBAN's done line, no file was kept. 2026-09-17 (second pass of the guard, human: "waive")
+waived: s8-algeria — reviewed before steward-58; the review's findings live in KANBAN's done line, no file was kept. 2026-09-17 (second pass of the guard, human: "waive")

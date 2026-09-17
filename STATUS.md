@@ -279,7 +279,7 @@ CLS fix is not. The three lines, left here until the window closes:
 **Nothing is blocked on you.** s27 is approved and building; the local build and the review come to you together.
 
 - [x] **s26 reviewed, walked and merged** (2026-09-17, your word). Live.
-- [x] **Seven pre-record reviews waived** (2026-09-17, your word "waive"; `docs/spine/reviews/waivers.md`).
+- [x] **Ten pre-record reviews waived** (seven, then s5/s5b/s8 on the guard's second pass) (2026-09-17, your word "waive" twice; `docs/spine/reviews/waivers.md`).
 
 - [x] **s25 reviewed, walked and merged** (2026-09-17, your word). Live.
 - [x] Search Console → Datasets → *Validate fix* (2026-09-17, your word).

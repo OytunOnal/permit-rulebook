@@ -3670,3 +3670,9 @@ country's name; the 404's sentence carried once, as the heading; the pencil
 bound to the answer's last word; the route H1 as the name with the tagline
 on its own line (the fingerprint moves, with the reason). **Gate:** yes —
 the human's "onaylıyorum".
+
+## 2026-09-17 — three more pre-record reviews waived 🛑
+
+**Decision:** the guard's second pass counts mock-green too; s5, s5b and s8
+are the same class as the seven above (reviewed when built, findings in
+KANBAN, no file). Waived on the human's second "waive". **Gate:** yes.
