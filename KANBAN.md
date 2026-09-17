@@ -48,6 +48,12 @@ under the open version, not candidates. Candidates land here only through
   summaries put the triangle far left and the name far right; the 404 stacks
   two "start from your own situation"; ✎ wraps to its own line in the desktop
   sidebar.
+- **Learn links read as actions, unglossed** (human's walk, 2026-09-17) ·
+  three of the four `learn` labels are statements (*§ 18g AufenthG lists the
+  shortage groups by ISCO-08 code (…)*) set as link text, and the site
+  glosses inside the link (*§ = section; AufenthG = the Residence Act*), so
+  the link reads as a sentence. Data: the four labels as action sentences
+  (ours, not quotes). Site: no gloss inside link text.
 - **P10** · on a phone every question sits under the full hero and stamp.
 - **The finished-record hold state** · ~380 px blank under the eyebrow while
   the module loads (s22's trade); focus on `body` after a re-answer;
