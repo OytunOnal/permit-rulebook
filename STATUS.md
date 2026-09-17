@@ -532,7 +532,10 @@ the threat model, the architecture, the critiques, the announcement).**s29 is ap
 researched options — the BMI page for the Opportunity Card (A of three); two
 quotes for the free-movement notice, the IND's EEA/Swiss sentence and Your
 Europe's Swiss one, both 200 on a plain GET; the Algerian door as an
-action). Data only; worktree `../permit-rulebook-data-s29`.
+action). Data only; worktree `../permit-rulebook-data-s29`. Built (`0b84dc9`, data check
+637) and reviewed on three axes; the build found the BMI page behind a cookie
+check (400 to the watch's fetcher) — the sentinel is human-tier, 90 days, said
+to the human; one hard finding (content checks in tests) being removed.
 
 **s28 is live** (2026-09-17; data `76c1d52` then site `74a4c5a`, deploy green,
 read on the live host: the shortage question's help, the card's box and the
