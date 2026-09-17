@@ -33,83 +33,6 @@ Promoted (or dropped, with evidence) at a boundary session.
   boundary: per-route coverage tiers (research-01, PathWise), per-route page
   shape (research-01, Workbeyond), micro-page SEO (research-01, Visaora).
 
-### v1.x
-
-- **A browser-driven read for bot-walled sources** (v1.1 candidate, session
-  2026-09-10) · why: two of s8's sources — the Conseil d'État on Legifrance and
-  Directive 2021/1883 on EUR-Lex — answer this watch's fetcher with 403 and an
-  empty 202, and open in a real browser with the sentence in place, so they
-  ship on the human tier (`human_tier: 2`) with a 90-day re-read · bet: a
-  `browser` watch strategy (headless Chrome from the runner, `innerText`,
-  hash) reads what `fetch` is refused, and the tier goes back to 0 · **gated
-  on one measurement before it is opened:** headless Chrome from the CI runner
-  against both pages — the pass that let headed Chrome through may not let a
-  headless one · source: the human's question on 2026-09-10, "did you check
-  with the Chrome extension".
-
-  **Measurement, 2026-09-15 — the case is now three walls, not two, and one of
-  them is costing the daily promise.** The watch failed five days running
-  (2026-09-11 to 15, data #18) because the CI runner cannot reach two Spanish
-  sources — `es-uge-umbral-pdf` and `es-uge-index` — which answer a developer
-  machine with HTTP 200 the same day. And the IND highly-skilled-migrant page
-  now hands this fetcher 7,256 characters of navigation where it used to hand
-  14,451 with the rules in them (data #17): a 200 carrying only chrome, which
-  is the empty-202 failure wearing a different status code. So the walls are
-  Legifrance (403), EUR-Lex (empty 202), IND (shell) and inclusion.gob.es
-  (runner-only refusal) — and the last of these is not a quote-fidelity
-  inconvenience, it is why "re-read daily" stopped being true for two values.
-  **The gating measurement was run on 2026-09-15, from the runner, and it
-  answers the candidate: 2 of 5.** Headless Chrome (`/usr/bin/google-chrome`,
-  ubuntu-latest) against the five, with the sentence this project quotes from
-  each as the needle:
-
-  | source | what the browser got | sentence |
-  |---|---|---|
-  | eur-lex-blue-card-directive | 130,574 chars | **found** |
-  | nl-ind-highly-skilled-migrant | 9,816 chars | **found** |
-  | legifrance-ce-algerian-titles | 270 chars, title "Just a moment…" | no |
-  | es-uge-index | 219 chars, "Acceso no permitido" | no |
-  | es-uge-umbral-pdf | 219 chars, "Acceso no permitido" | — (a PDF) |
-
-  The runner and a laptop returned the same five rows, so the walls sort by
-  client rather than by address. **What this decides:** a `browser` strategy is
-  worth building for EUR-Lex and the IND — it takes human tier from 2 to 1 and
-  removes the risk of the IND's navigation-only shell ever landing as a
-  snapshot — and it does **not** rescue Legifrance, which answers headless
-  Chrome with a Cloudflare challenge. The Spanish pair was never a wall at all:
-  they 403 the watch's own User-Agent and serve 200 without it (data #18), so
-  they leave this candidate entirely.
-
-- **Compare, don't rank: published facts on each open route card** (v1.1,
-  human 2026-09-08) · why: a reader with five open routes gets no help
-  choosing, and "start with this one" would be advice with no published
-  basis · bet: facts an authority publishes — permit duration, family
-  reunification, path to permanent residence — beside each card let the
-  reader rank for themselves without the product ruling · source: the
-  second v1-gate critique (2026-09-08), "only you can decide" item 4.
-- **Quoted, not asked — pages for the 14 excluded active routes** (v1.1,
-  **first five promoted to s9 at the v1.1 boundary, 2026-09-10**; nine remain
-  here for v1.2)
-  human 2026-09-08) · why: the one-pager promised ~35–40 routes and the
-  product ships 23; the excluded routes are real and searched for, and the
-  third scope value ("rules quoted, nothing asked") exists for exactly them ·
-  bet: a route page that quotes and dates the rules without scoring earns the
-  same trust and traffic as a scored one (A2/A7) · first five: FR carte
-  salarié, ES cuenta ajena, ES digital nomad, NL GVVA, DE § 21 · source:
-  `data/exclusions.md`, the v1-gate critique's scope note.
-- ~~Print or save the record~~ · **dropped 2026-09-07 — done in s5d** (print
-  stylesheet, localStorage record).
-- **Affiliate layer** · the money model from the viability gate · bet:
-  route-relevant mandatory services convert without touching eligibility.
-- **More citizenship exceptions** · the mechanism shipped in s5c, the data did
-  not · bet: association agreements matter to enough users to earn a question.
-- **Reduced thresholds, remaining limb** · only the SEPE shortage catalogue
-  remains — NL and ES reduced thresholds shipped in s5c/s5d · bet: the SEPE
-  catalogue is watchable once located. Source: s5 verification 4.2.
-
-- **A route page names its own unread sources** — **landed in s23** (F3,
-  2026-09-17): the route page filters the unread list by its own source
-  urls; one page names its own, 27 stay plain.
 ### v1.2 — open (2026-09-17)
 
 The stamp is the human's, when the last item below is live; if that day is
@@ -138,6 +61,12 @@ under the open version, not candidates. Candidates land here only through
 - **Data #13** · the Opportunity Card's link.
 - **Data #17** · the browser-read strategy for the IND (the road back from
   the human tier; headless Chrome reads IND: measured yes).
+
+**Landed under this version** (moved from the `v1.x` bucket, steward-61,
+2026-09-17)
+- **A route page names its own unread sources** — **landed in s23** (F3,
+  2026-09-17): the route page filters the unread list by its own source
+  urls; one page names its own, 27 stay plain.
 
 **Candidates** (through `spine:idea`; none filed yet for this version)
 
@@ -191,7 +120,84 @@ under the open version, not candidates. Candidates land here only through
   critique of the navigation mock (F1), .
 - **Rest of Europe** · versioned at the s6 boundary 2026-09-07.
 
-### later (aging counter reset 2026-09-07 — next fork after three more versions)
+### later (clock in force: steward entries — 0 since 2026-09-17; the Genesis
+counter reset 2026-09-07 no longer ticks)
+
+_Six candidates below came from the `v1.x` bucket on 2026-09-17 (steward-61:
+a bucket never ages and never stamps); each is `later` since that day and
+returns as a fork at the fifth steward entry._
+
+- **A browser-driven read for bot-walled sources** (v1.1 candidate, session
+  2026-09-10) · why: two of s8's sources — the Conseil d'État on Legifrance and
+  Directive 2021/1883 on EUR-Lex — answer this watch's fetcher with 403 and an
+  empty 202, and open in a real browser with the sentence in place, so they
+  ship on the human tier (`human_tier: 2`) with a 90-day re-read · bet: a
+  `browser` watch strategy (headless Chrome from the runner, `innerText`,
+  hash) reads what `fetch` is refused, and the tier goes back to 0 · **gated
+  on one measurement before it is opened:** headless Chrome from the CI runner
+  against both pages — the pass that let headed Chrome through may not let a
+  headless one · source: the human's question on 2026-09-10, "did you check
+  with the Chrome extension".
+
+  **Measurement, 2026-09-15 — the case is now three walls, not two, and one of
+  them is costing the daily promise.** The watch failed five days running
+  (2026-09-11 to 15, data #18) because the CI runner cannot reach two Spanish
+  sources — `es-uge-umbral-pdf` and `es-uge-index` — which answer a developer
+  machine with HTTP 200 the same day. And the IND highly-skilled-migrant page
+  now hands this fetcher 7,256 characters of navigation where it used to hand
+  14,451 with the rules in them (data #17): a 200 carrying only chrome, which
+  is the empty-202 failure wearing a different status code. So the walls are
+  Legifrance (403), EUR-Lex (empty 202), IND (shell) and inclusion.gob.es
+  (runner-only refusal) — and the last of these is not a quote-fidelity
+  inconvenience, it is why "re-read daily" stopped being true for two values.
+  **The gating measurement was run on 2026-09-15, from the runner, and it
+  answers the candidate: 2 of 5.** Headless Chrome (`/usr/bin/google-chrome`,
+  ubuntu-latest) against the five, with the sentence this project quotes from
+  each as the needle:
+
+  | source | what the browser got | sentence |
+  |---|---|---|
+  | eur-lex-blue-card-directive | 130,574 chars | **found** |
+  | nl-ind-highly-skilled-migrant | 9,816 chars | **found** |
+  | legifrance-ce-algerian-titles | 270 chars, title "Just a moment…" | no |
+  | es-uge-index | 219 chars, "Acceso no permitido" | no |
+  | es-uge-umbral-pdf | 219 chars, "Acceso no permitido" | — (a PDF) |
+
+  The runner and a laptop returned the same five rows, so the walls sort by
+  client rather than by address. **What this decides:** a `browser` strategy is
+  worth building for EUR-Lex and the IND — it takes human tier from 2 to 1 and
+  removes the risk of the IND's navigation-only shell ever landing as a
+  snapshot — and it does **not** rescue Legifrance, which answers headless
+  Chrome with a Cloudflare challenge. The Spanish pair was never a wall at all:
+  they 403 the watch's own User-Agent and serve 200 without it (data #18), so
+  they leave this candidate entirely.
+- **Compare, don't rank: published facts on each open route card** (v1.1,
+  human 2026-09-08) · why: a reader with five open routes gets no help
+  choosing, and "start with this one" would be advice with no published
+  basis · bet: facts an authority publishes — permit duration, family
+  reunification, path to permanent residence — beside each card let the
+  reader rank for themselves without the product ruling · source: the
+  second v1-gate critique (2026-09-08), "only you can decide" item 4.
+- **Quoted, not asked — pages for the 14 excluded active routes** (v1.1,
+  **first five promoted to s9 at the v1.1 boundary, 2026-09-10**; nine remain
+  here for v1.2)
+  human 2026-09-08) · why: the one-pager promised ~35–40 routes and the
+  product ships 23; the excluded routes are real and searched for, and the
+  third scope value ("rules quoted, nothing asked") exists for exactly them ·
+  bet: a route page that quotes and dates the rules without scoring earns the
+  same trust and traffic as a scored one (A2/A7) · first five: FR carte
+  salarié, ES cuenta ajena, ES digital nomad, NL GVVA, DE § 21 · source:
+  `data/exclusions.md`, the v1-gate critique's scope note.
+- ~~Print or save the record~~ · **dropped 2026-09-07 — done in s5d** (print
+  stylesheet, localStorage record).
+- **Affiliate layer** · the money model from the viability gate · bet:
+  route-relevant mandatory services convert without touching eligibility.
+- **More citizenship exceptions** · the mechanism shipped in s5c, the data did
+  not · bet: association agreements matter to enough users to earn a question.
+- **Reduced thresholds, remaining limb** · only the SEPE shortage catalogue
+  remains — NL and ES reduced thresholds shipped in s5c/s5d · bet: the SEPE
+  catalogue is watchable once located. Source: s5 verification 4.2.
+
 - **Turkish UI** · the first audience is Turkish, the product is English · bet:
   worth it only once A8 shows organic traffic; trigger: Turkish share of
   post-launch traffic. Kept.
@@ -393,7 +399,7 @@ _(empty — everything real-green so far is stamped into done)_
 - **s13 — the feedback door** · real-green 2026-09-16 (human: "merge";
   site `f06badd`). Site #6, #7 (and #9, from s12) closed. Live 2026-09-16 in `6fe4eb5`. Scenario
   `docs/spine/scenarios/s13-feedback-door.md` with seven dated corrections
-  from the human's two preview walks; critique `docs/spine/critique-s13-light.md`.
+  from the human's two preview walks; critique `docs/spine/critiques/2026-09-16-s13-light.md`.
   Polish left for the tracker: the disclosure arrow's size, *Where (link)* as
   a body heading.
 

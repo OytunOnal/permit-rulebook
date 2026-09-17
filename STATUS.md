@@ -49,7 +49,13 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **s26 is built, reviewed on three axes and walked** (2026-09-17; branch `s26-one-hierarchy` at `95f0bd0`, 633 tests, astro check 0, assets true, fingerprint unmoved; the third axis, Security, on the human's word — the slice reads a declared answer into the rendering). Waiting on the merge word: the next v1.2 fix in the critic's order,
+live site: s9 through s18.** **Skills reloaded** (2026-09-17, human: "skiller güncellendi"; steward-59,
+60, 61). Applied: the `v1.x` bucket dissolved (one landed under v1.2, six to
+`later` with the steward-entry clock); the `docs/spine/` map (research,
+critiques, design critiques in their directories); checks stay on the local
+build, the hosted preview once before the merge.
+
+**s26 is built, reviewed on three axes and walked** (2026-09-17; branch `s26-one-hierarchy` at `95f0bd0`, 633 tests, astro check 0, assets true, fingerprint unmoved; the third axis, Security, on the human's word — the slice reads a declared answer into the rendering). Waiting on the merge word: the next v1.2 fix in the critic's order,
 the four-country headline's hierarchy. Scenario written from the screen
 (s19's direct-path state against the four-country *Nothing open on these
 answers* + *0 OPEN* with the sentence third); six points, decided, not left

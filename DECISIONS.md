@@ -3341,7 +3341,7 @@ including this one an hour ago.
 
 **Decided by the human, in conversation, after the second design round was
 on the table** (`docs/spine/design/s7-feedback-2.html`; critique in
-`docs/spine/critiques/2026-09-16-feedback-moment-design-critique.md`). The
+`docs/spine/design/critiques/2026-09-16-feedback-moment-design-critique.md`). The
 round had asked which *shape* the door takes; the conversation found the
 question underneath it — *what the door is* — and settled that first. Shape
 and placement go to a further drawn round; nothing is built yet.
@@ -3400,7 +3400,7 @@ is next.
 ## 2026-09-16 — the feedback door sits as F, with two amendments 🛑
 
 **Chosen by the human** from the third round (`docs/spine/design/s7-feedback-3.html`,
-critique `docs/spine/critiques/2026-09-16-feedback-door-placement-critique.md`):
+critique `docs/spine/design/critiques/2026-09-16-feedback-door-placement-critique.md`):
 **F** — one word, *Feedback*, in the header, under the verdict and in the
 footer, all leading to a page of the site's own, `/feedback/`, which holds
 the door (three `mailto:` templates, the alias in plain text, what happens
@@ -3620,3 +3620,26 @@ the rest sentence names the country on this path. s21's "the four-country
 result has no headline to give one country" held only for a reader who had
 not named one. Every other four-country result unchanged. **Gate:** yes —
 the human's "onaylıyorum" on the six-point scenario.
+
+## 2026-09-17 — skills reloaded (steward-59, 60, 61); two defaults applied
+
+**steward-61 — a roadmap heading is a version or `later`.** The `v1.x` bucket
+held seven candidates that could neither age nor stamp. Default applied:
+the one that landed (the route page's own unread sources, s23) sits under
+v1.2 as landed; the six others are `later` since today, each with its
+origin noted, and the `later` heading names the clock in force (steward
+entries, 0 since 2026-09-17). They return as a fork at the fifth entry.
+Reversible in one line. **Gate:** no — default, surfaced here.
+
+**steward-59 — the `docs/spine/` map.** Research reports moved under
+`docs/spine/research/`, product critiques (light) under
+`docs/spine/critiques/<date>-<id>-<mode>.md`, design and mock critiques
+under `docs/spine/design/critiques/`; every reference in the ledgers,
+scenarios and assumptions repointed. **Gate:** no — a move, no content changed.
+
+**steward-60 — checks on a local production build; the hosted preview once
+before the merge for the launch shape only.** Already the human's field
+instruction today ("local review"); s26 was walked and critiqued on the
+branch's local build. The hosted branch preview is opened once before the
+merge word is acted on, for headers and the phone on a real network. No
+change to record beyond this line.
