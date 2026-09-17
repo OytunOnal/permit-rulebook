@@ -268,7 +268,9 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s28 — a learn link says what the reader does there** · scenario proposed
+  2026-09-17 (`docs/spine/scenarios/s28-learn-links-are-actions.md`), awaiting
+  the human's word. v1.2 fix: the learn links (human's walk).
 
 ## mock-green
 
