@@ -1,6 +1,6 @@
 # s25 — the experience ladder is two questions
 
-**Status:** draft 2026-09-17, awaiting the human's approval. v1.1 critique F2
+**Status:** approved 2026-09-17 (human: "approve"). v1.1 critique F2
 (third run: F19 before it); the human chose "one axis" (*"1"*) of three ways.
 
 ## What happened
