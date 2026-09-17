@@ -277,8 +277,9 @@ CLS fix is not. The three lines, left here until the window closes:
   the post to say what was wrong and what it says now.
 
 **One thing is blocked on you: the merge word for s29.** The review is on
-record (`docs/spine/reviews/s29.md`, three axes, data `60f5a82`; one hard
-finding — content checks in tests — removed). One thing to know before the
+record (`docs/spine/reviews/s29.md`, three axes, data `60f5a82`, site pin
+branch `279082e` — the lock and two stamp date pins turned into derivations;
+one hard finding — content checks in tests — removed). One thing to know before the
 word: the BMI page you chose (A) is behind a cookie check for the watch's
 fetcher, so its sentinel is human-tier (a person's 90-day tick), not the
 daily read — the other candidates were worse. The local build at
