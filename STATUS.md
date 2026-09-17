@@ -239,8 +239,12 @@ CLS fix is not. The three lines, left here until the window closes:
       BeschV quote and the Opportunity Card at *Experience (last 5 years)
       +2*; under 2/3–5 → **not yet**, no experience row; 2+/5+ → +3, never
       2+3; an old record with the retired answer restores without it and
-      the resumed line says how many answers are kept. Walk it once — the
-      two questions, one result — then "merge", or what is off.
+      the resumed line says how many answers are kept. The session walked it in
+      Chrome: the two questions at 7 and 8, *met +2* / *not open, 3 points,
+      no experience row* / *met +3*, edited through *You declared*. **You
+      asked for the code review the process had dropped since s13** — a
+      Standards and a Spec reviewer are on both diffs now; the word waits
+      on them. Recorded in DECISIONS.
 
 - [x] **s25 approved** (2026-09-17, *"approve"*); **data half built** (612 tests, schema 0.8.1): two questions, every
       rule on the rung it names, the Opportunity Card paying the best of two

@@ -3563,3 +3563,17 @@ experience ladder (F2) wait on the board with the human's word "sonra".
 
 **Gate:** yes — the scope and every merge were the human's word; the stamp
 follows the critic's confirmation, not this session's judgment.
+
+## 2026-09-17 — the review pair was skipped for twelve slices; it comes back
+
+**Observed by the human** (*"code review çalıştırmayacak mıyız"*), on s25. The
+Standards/Spec reviewer pair ran on s13 and then not on s14 through s24:
+each of those went from the builder's report to the session's own walk to
+the human's word. The walks caught real things and the gates stayed green,
+but a walk is not a review — s15 shipped a scenario with the break on the
+wrong side of the dot, s19 a hand-kept `not_asked` list, s25 a
+"contradiction" that was not one, and it was the builders, not a reviewer,
+who caught them. **From here every slice that touches an engine, a schema,
+a record or a page a reader sees gets the pair before the preview** — the
+code-review skill's own rule, restated because it was dropped without a
+decision. s25 gets it now, both repositories, before the word.
