@@ -79,6 +79,7 @@ jobs:
       version: ${{ steps.built.outputs.version }}
       locked: ${{ steps.data.outputs.locked }}
       first_attempt: ${{ steps.data.outputs.first_attempt }}
+      urls: ${{ steps.urls.outputs.urls }}
     steps:
       # The site reads the dataset as a `file:` dependency, so the two have to
       # sit beside each other on disk. The site therefore lands in a
@@ -214,6 +215,20 @@ jobs:
         working-directory: site
         run: npm run measure:taps
 
+      # The addresses the deploy will announce to Bing (the `indexnow` job,
+      # below). This is the only job with `dist/` on disk — the deploy sees the
+      # Pages artifact and nothing else — so the list is read here, from the
+      # sitemap the build just wrote, and travels as a job output: one JSON
+      # array of a few kilobytes, well under the megabyte outputs allow, and no
+      # second artifact to upload and fetch.
+      - name: The addresses the deploy will announce
+        id: urls
+        working-directory: site
+        run: |
+          urls=$(grep -o '<loc>[^<]*' dist/sitemap.xml | sed 's/<loc>//' | jq -R . | jq -sc .)
+          echo "urls=$urls" >> "$GITHUB_OUTPUT"
+          echo "$(echo "$urls" | jq length) addresses in the sitemap"
+
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: site/dist
@@ -267,3 +282,61 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+
+  # Bing reads the sitemap on its own clock, and this site rebuilds daily and
+  # takes several slices a week. IndexNow is the protocol Bing (with Yandex,
+  # Naver and Seznam) accepts for "these addresses changed": a key file at the
+  # site's root — `public/<key>.txt`, whose name is the key — and one POST per
+  # deploy carrying every address in the sitemap, as
+  # `{host, key, keyLocation, urlList}` to https://api.indexnow.org/indexnow.
+  # No account, no secret: the key is public by the protocol's design, and the
+  # worst a stranger can do with it is submit our own addresses to Bing
+  # (docs/spine/threats.md). The key is read from the committed file, never
+  # typed here, so there is one copy of it (s24, 2026-09-17).
+  #
+  # Only a real deploy is announced — the gate `pin` uses, minus its
+  # data-commit condition, plus the push: not a `workflow_dispatch` preview,
+  # not a re-run that deployed nothing. And a notification must never fail a
+  # deploy: the job may fail without failing the run, and the step exits 0
+  # whatever Bing answers, printing the status for the log to keep.
+  indexnow:
+    needs: [build, deploy]
+    if: |
+      success()
+      && github.run_attempt == 1
+      && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    # Reads the key file out of the checkout; writes nothing anywhere.
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Tell Bing which addresses changed
+        env:
+          # Through the environment, never interpolated into the script body.
+          URLS: ${{ needs.build.outputs.urls }}
+        run: |
+          # Exactly one `public/<32 hex>.txt`, whose name is the key and whose
+          # content says so again. Anything else is a warning, not a failure.
+          files=$(ls public | grep -E '^[0-9a-f]{32}\.txt$' || true)
+          if [ "$(printf '%s\n' "$files" | grep -c .)" != "1" ]; then
+            echo "::warning::expected exactly one public/<32 hex>.txt IndexNow key file, found ${files:-none} — nothing sent."
+            exit 0
+          fi
+          key=$(cat "public/$files")
+          if [ "$key" != "${files%.txt}" ]; then
+            echo "::warning::the IndexNow key file's content is not its name — nothing sent."
+            exit 0
+          fi
+          if [ -z "$URLS" ] || [ "$URLS" = "[]" ]; then
+            echo "::warning::the build reported no addresses — nothing sent."
+            exit 0
+          fi
+          # The host and the key's address follow SITE_URL, as every address
+          # in the sitemap does — the protocol wants all three to agree.
+          host=$(printf '%s' "$SITE_URL" | sed -E 's#^https?://([^/]+).*#\1#')
+          body=$(jq -nc --arg host "$host" --arg key "$key" --arg keyLocation "${SITE_URL%/}/${key}.txt" --argjson urlList "$URLS" '$ARGS.named')
+          status=$(curl -sS -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json; charset=utf-8' --data "$body" https://api.indexnow.org/indexnow || echo "no answer")
+          echo "IndexNow answered $status to $(echo "$URLS" | jq length) addresses on $host"
+          exit 0
