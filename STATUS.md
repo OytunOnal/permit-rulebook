@@ -276,7 +276,17 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.** s29 is approved and building (data only); the local build and the review come to you together.
+**One thing is blocked on you: the merge word for s29.** The review is on
+record (`docs/spine/reviews/s29.md`, three axes, data `60f5a82`; one hard
+finding — content checks in tests — removed). One thing to know before the
+word: the BMI page you chose (A) is behind a cookie check for the watch's
+fetcher, so its sentinel is human-tier (a person's 90-day tick), not the
+daily read — the other candidates were worse. The local build at
+http://localhost:4526/: Germany → offer → degree → Türkiye → any answers →
+the Opportunity Card's *Official page* (bmi.bund.de); the Netherlands →
+offer → degree → passport Switzerland → *No work permit needed* with three
+quotes; `/france/eu-blue-card/` → the Algerian door. "merge" is the deploy:
+data first, then the site's pin.
 
 - [x] **s28 reviewed, walked and merged** (2026-09-17, your word). Live.
 
