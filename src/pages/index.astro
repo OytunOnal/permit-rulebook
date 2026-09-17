@@ -150,7 +150,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       unlockMeansOf, countryPhrase,
       // The one answer the four-country result reads a country's line against (s21).
       SITUATION_FIELD,
-      type Country, type Dataset, type FieldOption, type Profile, type RouteResult,
+      type Dataset, type FieldOption, type Profile, type RouteResult,
     } from "permit-rulebook-data";
     import { routePath } from "../lib/slug.js";
     // Every internal URL the client writes goes through the same helper the
@@ -191,7 +191,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // (s19); the same state in one country's line of the four-country
     // result, in place of its "N not yet" (s21); and, on that result, the
     // order that leads with the country the reader named (s26).
-    import { namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
+    import { leadCountry, leads, namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
     import {
       carveOutHtml, caveatHtml, closedRowHtml, learnBoxHtml, noticeHtml, pointsLineHtml, precondHtml,
       provenanceHtml, railHtml, readingHtml, scopedHtml,
@@ -1361,8 +1361,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // named France at question 3 and read France's written state above
       // found France's section third, collapsed, under Germany's (s26). The
       // others follow in the dataset's order, with the rule above.
-      const leads = (c: Country) => c.code.toLowerCase() === unscored?.lead;
-      main.innerHTML = arrivalLine() + noticeCards + strip + namedFirst(visible, unscored?.lead).map((c) => {
+      const lead = leadCountry(ds, answers, zeroOpen);
+      main.innerHTML = arrivalLine() + noticeCards + strip + namedFirst(visible, lead).map((c) => {
         const rs = results.filter((r) => r.country === c.code);
         const cUnsettled = rs.filter((r) => r.status === "met" && unsettledIds.has(r.route.id));
         const g = {
@@ -1400,7 +1400,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         // With nothing open, the steps ARE the news: every section holding one
         // opens. Announcing "6 steps" and hiding two inside collapsed sections
         // is the withholding the headline exists to end (critique #4).
-        const open = g.met.length + cUnsettled.length + g.near.length > 0 || (zeroOpen && withUps.has(c.code)) || leads(c);
+        const open = g.met.length + cUnsettled.length + g.near.length > 0 || (zeroOpen && withUps.has(c.code)) || leads(c, lead);
         const inner =
           section("Open — criteria met", "", g.met.map((r) => fullCard(r, false)).join(""), g.met.length) +
           unsettledSection(cUnsettled, false) +

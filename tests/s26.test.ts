@@ -7,10 +7,11 @@ import {
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import {
-  SITUATION_COUNTRY_FIELD, namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict,
+  SITUATION_COUNTRY_FIELD, leadCountry, leads, namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict,
 } from "../src/lib/situations.js";
 import { READ_ITS_RULES, possessive, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
+import { expectNothingLeft, type Sent } from "./wire.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -122,25 +123,45 @@ describe("s26 — the named country's section leads", () => {
     ...fourCountry("research", "fr"), citizenship: "TR", qualification: "degree", recognition_de: "recognized",
     nl_recent_grad: "no", top200_grad: "no", german: "a1", funds_eur_month: "band_1",
   };
+  /** An offer in Germany, nothing met: zero open, but Germany's routes take an offer. */
+  const offer: Profile = { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "offer", [SITUATION_COUNTRY_FIELD]: "de", citizenship: "TR", qualification: "none" };
+  /** An explorer: no offer, transfer or agreement, so no country named. */
+  const explorer: Profile = { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "none", citizenship: "TR", qualification: "none" };
+
+  /** The order the result draws, from the profile alone, the way the page derives it. */
+  const order = (answers: Profile): string[] =>
+    namedFirst(ds.countries, leadCountry(ds, answers, zeroOpen(answers))).map((c) => c.code);
 
   it("first, before the others in dataset order, when nothing is open anywhere", () => {
     expect(zeroOpen(walk)).toBe(true);
-    const lead = unscoredVerdict(ds, walk)!.lead;
+    const lead = leadCountry(ds, walk, zeroOpen(walk));
     expect(lead).toBe("fr");
-    expect(namedFirst(ds.countries, lead).map((c) => c.code)).toEqual(["FR", "DE", "ES", "NL"]);
+    expect(order(walk)).toEqual(["FR", "DE", "ES", "NL"]);
+    // The one predicate: the named country leads, and it is the only one that does.
+    expect(ds.countries.map((c) => leads(c, lead))).toEqual([false, true, false, false]);
     // Its line keeps s21's sentence and link.
     expect(unscoredTally(ds, france, "research")!.text).toBe(
       "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
     );
   });
 
-  it("dataset order with something open anywhere, and where the named country takes the situation", () => {
+  it("dataset order with something open anywhere, and where the named country takes the situation, and with no country named", () => {
+    // The headline is the open one; the written state is not drawn, and no country leads.
     expect(zeroOpen(opened)).toBe(false);
-    // The headline is the open one; the written state is not computed, and no country leads.
-    expect(namedFirst(ds.countries, undefined).map((c) => c.code)).toEqual(["DE", "FR", "ES", "NL"]);
-    // An offer in Germany, nothing met: zero open, but Germany's routes take an offer — no written state, no lead.
-    const offer: Profile = { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "offer", [SITUATION_COUNTRY_FIELD]: "de", citizenship: "TR", qualification: "none" };
+    expect(leadCountry(ds, opened, zeroOpen(opened))).toBeUndefined();
+    expect(order(opened)).toEqual(["DE", "FR", "ES", "NL"]);
+    // Zero open, but no written state for Germany: nothing leads.
+    expect(zeroOpen(offer)).toBe(true);
     expect(unscoredVerdict(ds, offer)).toBeNull();
+    expect(leadCountry(ds, offer, true)).toBeUndefined();
+    expect(order(offer)).toEqual(["DE", "FR", "ES", "NL"]);
+    // The explorer: nothing named, nothing leads.
+    expect(zeroOpen(explorer)).toBe(true);
+    expect(leadCountry(ds, explorer, true)).toBeUndefined();
+    expect(order(explorer)).toEqual(["DE", "FR", "ES", "NL"]);
+    // And the walk's own lead is nobody's the moment something is open: the decision is the headline's.
+    expect(leadCountry(ds, walk, false)).toBeUndefined();
+    expect(ds.countries.some((c) => leads(c, undefined))).toBe(false);
     // The order is stable: nothing else moves, and an unknown lead moves nothing.
     expect(namedFirst(ds.countries, "nl").map((c) => c.code)).toEqual(["NL", "DE", "FR", "ES"]);
     expect(namedFirst(ds.countries, "xx").map((c) => c.code)).toEqual(["DE", "FR", "ES", "NL"]);
@@ -153,7 +174,13 @@ describe("s26 — the named country's section leads", () => {
  * measured and at a desktop — the headline is France's, the door goes to the
  * quoted route, France's section leads open, Germany's line is what it was.
  * Then the walk that opens a German route: the open headline, France's line
- * doing the saying (s21 stands).
+ * doing the saying (s21 stands). Both walks with the network watched: the
+ * privacy walk in `record.test.ts` clicks the first option everywhere and
+ * never reaches question 3, so this is the one walk through it that reads
+ * what the page sent (Security review of s26). Then three results the
+ * points say are unchanged, seeded and read: the explorer and the offer in
+ * Germany keep the dataset's order and the steps rule; and a France that
+ * leads beside a Germany that holds steps — both open.
  */
 const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
@@ -171,6 +198,8 @@ interface BrowserPage {
   goto(url: string, settleMs?: number): Promise<void>;
   evaluate(expression: string): Promise<string>;
   problems(): string[];
+  requests(): Sent[];
+  forgetRequests(): void;
 }
 
 const seed = (answers: Record<string, string>) =>
@@ -190,6 +219,10 @@ interface Result {
   state: string; headline: string; subline: string; door: string | null; doorText: string | null; status: string;
   strip: string; main: string; problems: string[];
   lines: { name: string; open: boolean; tally: string; heads: string[]; link: { text: string; href: string } | null }[];
+  /** Every answer on the record and every route the screen links, for the wire check. */
+  declared: string[]; routes: string[];
+  /** What the page sent since the walk began. */
+  sent: Sent[];
 }
 
 /** The results screen, read once it is drawn. */
@@ -204,12 +237,23 @@ const readResult = async (page: BrowserPage): Promise<Result> => ({
   main: await page.evaluate('document.getElementById("main").textContent'),
   lines: JSON.parse(await page.evaluate(LINES)),
   problems: page.problems(),
+  declared: JSON.parse(await page.evaluate(
+    'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
+  )),
+  routes: JSON.parse(await page.evaluate(
+    'JSON.stringify([...document.querySelectorAll("#app a[href]")]'
+    + '.map((a) => a.getAttribute("href")).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+[/]?$/.test(h))'
+    + '.map((h) => h.replace(/[/]$/, "").split("/").pop()))',
+  )),
+  sent: page.requests(),
 });
 
 /** Question 3 answered France by the button, then the given answers, one tap each. */
 const walkFrom = async (page: BrowserPage, base: string, answers: string[]): Promise<Result> => {
   await page.goto(base, 300);
   await page.evaluate(seed({ destination: "all", situation: "research" }));
+  // The walk's own requests: from the load that draws question 3 on.
+  page.forgetRequests();
   await page.goto(base, 900);
   await page.evaluate(tap("fr"));
   await settle(400);
@@ -227,39 +271,47 @@ const walkFrom = async (page: BrowserPage, base: string, answers: string[]): Pro
   return readResult(page);
 };
 
+/** A result the record already holds, drawn on arrival. */
+const seeded = async (page: BrowserPage, base: string, answers: Record<string, string>): Promise<Result> => {
+  await page.goto(base, 300);
+  await page.evaluate(seed(answers));
+  await page.goto(base, 1400);
+  return readResult(page);
+};
+
 describe.skipIf(skipped !== null)("s26 — in the browser", () => {
   for (const [name, viewport, mobile] of [
     ["390x844", { width: 390, height: 844 }, true],
     ["1280x900", { width: 1280, height: 900 }, false],
   ] as const) {
-    it(`${name}: all four → research → France → nothing open reads France's written state, France's section first and open; a German route opening reads the open headline`, async () => {
+    it(`${name}: all four → research → France → nothing open reads France's written state, France's section first and open; a German route opening reads the open headline; nothing leaves the device`, async () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => ({
-          closed: await walkFrom(page, server.url("/"), ["none", "TR", "no", "no"]),
+          nothingOpen: await walkFrom(page, server.url("/"), ["none", "TR", "no", "no"]),
           opened: await walkFrom(page, server.url("/"), ["degree", "TR", "recognized", "no", "no", "a1", "band_1"]),
-        }), { viewport, mobile }) as { closed: Result; opened: Result };
+        }), { viewport, mobile, network: true }) as { nothingOpen: Result; opened: Result };
 
-        const { closed, opened } = seen;
-        expect(closed.problems).toEqual([]);
-        expect(closed.state).toBe("results");
+        const { nothingOpen, opened } = seen;
+        expect(nothingOpen.problems).toEqual([]);
+        expect(nothingOpen.state).toBe("results");
         // The headline is France's written state — the one s19 writes on the France path.
-        expect(closed.headline).toBe("No scored route in France takes a research hosting agreement.");
-        expect(closed.status).toBe("No scored route in France takes a research hosting agreement.");
-        expect(closed.subline).toBe(
+        expect(nothingOpen.headline).toBe("No scored route in France takes a research hosting agreement.");
+        expect(nothingOpen.status).toBe("No scored route in France takes a research hosting agreement.");
+        expect(nothingOpen.subline).toBe(
           "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not scored: "
           + "read its rules. France's routes below need a job offer or an intra-corporate transfer.",
         );
-        expect(closed.doorText).toBe("read its rules");
-        expect(closed.door).toBe(url("/france/talent-researcher"));
-        expect(closed.headline + closed.subline).not.toContain("Nothing open");
+        expect(nothingOpen.doorText).toBe("read its rules");
+        expect(nothingOpen.door).toBe(url("/france/talent-researcher"));
+        expect(nothingOpen.headline + nothingOpen.subline).not.toContain("Nothing open");
         // The strip stays, and the count is right.
-        expect(closed.strip).toMatch(/^0 open 0 within reach 23 not yet/);
+        expect(nothingOpen.strip).toMatch(/^0 open 0 within reach 23 not yet/);
         // France's section leads, open; the others follow in dataset order, collapsed as before.
-        expect(closed.lines.map((l) => [l.name, l.open])).toEqual([
+        expect(nothingOpen.lines.map((l) => [l.name, l.open])).toEqual([
           ["France", true], ["Germany", false], ["Spain", false], ["Netherlands", false],
         ]);
-        const [fr, germany] = closed.lines;
+        const [fr, germany] = nothingOpen.lines;
         expect(fr!.tally).toBe(
           "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
         );
@@ -281,7 +333,66 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
           "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
         );
         expect(opened.lines[1]!.link).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
+
+        // Answers never leave the device — on this path too. The record test's
+        // own assertion, over every request the two walks made.
+        const origin = server.origin as string;
+        for (const [where, walk] of [["the walk to nothing open", nothingOpen], ["the walk that opens a route", opened]] as const) {
+          expect(walk.declared.length, `${where} answered nothing`).toBeGreaterThan(5);
+          expect(walk.sent.length, `${where} sent nothing at all`).toBeGreaterThan(0);
+          expectNothingLeft(walk.sent, { origin, where, declared: walk.declared, routes: walk.routes });
+        }
       } finally { server.close(); }
     }, 180_000);
   }
+
+  it("the other four-country results are what they were: the explorer and the offer in Germany keep the dataset's order and the steps rule; a leading France and a Germany with steps are both open", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage) => ({
+        // No offer, transfer or agreement: no country named, steps in Germany and Spain.
+        explorer: await seeded(page, server.url("/"), {
+          destination: "all", situation: "none", citizenship: "TR", qualification: "none", nl_recent_grad: "no", top200_grad: "no",
+        }),
+        // An offer in Germany, nothing met: Germany's routes take an offer, so no written state; steps in Germany.
+        offer: await seeded(page, server.url("/"), {
+          destination: "all", situation: "offer", situation_country: "de", citizenship: "TR", qualification: "none",
+          occupation_shortage: "no", experience_5y: "lt2", experience_7y: "lt3", occupation_it: "no", salary_eur_year: "band_0",
+          nl_recent_grad: "no", top200_grad: "no",
+        }),
+        // The researcher with a recognised degree and the funds but no German: France leads; Germany holds the language steps.
+        both: await seeded(page, server.url("/"), {
+          destination: "all", situation: "research", situation_country: "fr", citizenship: "TR", qualification: "degree",
+          recognition_de: "recognized", nl_recent_grad: "no", top200_grad: "no", german: "none", english: "none", funds_eur_month: "band_1",
+        }),
+      }), { viewport: { width: 1280, height: 900 }, mobile: false }) as { explorer: Result; offer: Result; both: Result };
+
+      const { explorer, offer, both } = seen;
+      for (const [name, r] of Object.entries(seen)) {
+        expect(r.problems, name).toEqual([]);
+        expect(r.state, name).toBe("results");
+        expect(r.strip, name).toMatch(/^0 open 0 within reach /);
+      }
+      // The explorer: the steps headline, dataset order, the two sections holding a step open (critique #4).
+      expect(explorer.headline).toMatch(/^Nothing open yet — \d+ steps? would change that\./);
+      expect(explorer.lines.map((l) => [l.name, l.open])).toEqual([
+        ["Germany", true], ["France", false], ["Spain", true], ["Netherlands", false],
+      ]);
+      expect(explorer.lines.every((l) => l.link === null)).toBe(true);
+      // The offer in Germany: the same headline shape, dataset order, Germany's section open on its steps.
+      expect(offer.headline).toMatch(/^Nothing open yet — \d+ steps? would change that\./);
+      expect(offer.lines.map((l) => [l.name, l.open])).toEqual([
+        ["Germany", true], ["France", false], ["Spain", false], ["Netherlands", false],
+      ]);
+      expect(offer.lines.every((l) => l.link === null)).toBe(true);
+      // France leads, open, with its sentence; Germany, second, is open on its steps.
+      expect(both.headline).toBe("No scored route in France takes a research hosting agreement.");
+      expect(both.lines.map((l) => [l.name, l.open])).toEqual([
+        ["France", true], ["Germany", true], ["Spain", false], ["Netherlands", false],
+      ]);
+      expect(both.lines[0]!.link).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
+      expect(both.lines[1]!.tally).toMatch(/unlocking steps?$/);
+      expect(both.lines[1]!.heads.some((h) => h.startsWith("Steps that would unlock more here"))).toBe(true);
+    } finally { server.close(); }
+  }, 180_000);
 });

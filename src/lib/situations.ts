@@ -196,6 +196,24 @@ export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict 
 }
 
 /**
+ * Which country leads the four-country result, open — the one the reader
+ * named at question 3, when nothing is open anywhere and its scored routes
+ * do not take the declared situation — or none (s26). The decision is the
+ * headline's: the written state is drawn only on a zero-open result, and the
+ * country it names is the country that leads; with something open anywhere,
+ * or a written state for nobody, the sections keep the dataset's order. One
+ * function, so the page and the test cannot decide it two ways.
+ */
+export function leadCountry(ds: Dataset, answers: Profile, zeroOpen: boolean): string | undefined {
+  return zeroOpen ? unscoredVerdict(ds, answers)?.lead : undefined;
+}
+
+/** Whether this country is the one that leads: the one predicate the order
+ * and the section's open state read. */
+export const leads = (country: { code: string }, lead: string | undefined): boolean =>
+  lead !== undefined && country.code.toLowerCase() === lead;
+
+/**
  * The country sections of the four-country result, the named country's
  * first (s26): the section the headline is about leads the list, and the
  * others keep the dataset's order. `sort` is stable, so nothing else moves;
@@ -203,6 +221,5 @@ export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict 
  * dataset's.
  */
 export function namedFirst<T extends { code: string }>(countries: readonly T[], lead: string | undefined): T[] {
-  return [...countries].sort((a, b) =>
-    Number(b.code.toLowerCase() === lead) - Number(a.code.toLowerCase() === lead));
+  return [...countries].sort((a, b) => Number(leads(b, lead)) - Number(leads(a, lead)));
 }
