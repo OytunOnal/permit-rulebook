@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { countryAddresses, countryLinks, countryPage, countryPages } from "../src/lib/country-page.js";
+import { SECTION_EXPLAINER } from "../src/lib/copy.js";
 import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/identity.js";
 import { PAGE_CSS, routePages } from "../src/lib/route-page.js";
 import { builtPaths, indexedPaths, robotsTxt, sitemapXml } from "../src/lib/sitemap.js";
@@ -273,14 +274,16 @@ describe("a country page explains the symbol it prints", () => {
   it("glosses the first section citation, once, and leaves the rest short", () => {
     const germany = countries.find((p) => p.path === "/germany")!;
     const text = textOf(germany.html);
-    const glosses = text.match(/sections? [0-9]+[a-z]?/g) ?? [];
+    // The gloss explains the sign and never restates the number (s23, P1).
+    const glosses = text.match(new RegExp(SECTION_EXPLAINER, "g")) ?? [];
     expect(glosses.length, `glosses seen: ${glosses.join(", ")}`).toBe(1);
+    expect(text).not.toMatch(/sections? [0-9]/);
     // On the first name that carries one, in reading order.
     const at = text.indexOf(glosses[0]!);
     expect(text.slice(0, at).split("§").length - 1, "a bare § came first").toBe(1);
     // And a country with no citation at all grows none.
     for (const page of countries.filter((p) => p.path !== "/germany"))
-      expect(textOf(page.html), page.path).not.toMatch(/sections? [0-9]/);
+      expect(textOf(page.html), page.path).not.toContain(SECTION_EXPLAINER);
   });
 });
 

@@ -10,7 +10,7 @@ import {
   PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routePage, routePages,
   stampDate,
 } from "../src/lib/route-page.js";
-import { WRONG_DOOR_LABEL, datasetDay } from "../src/lib/copy.js";
+import { SECTION_EXPLAINER, WRONG_DOOR_LABEL, datasetDay } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { esc } from "../src/lib/reason.js";
@@ -465,11 +465,13 @@ describe("s6 — one page per route, generated from the dataset", () => {
     for (const page of german) {
       const text = textOf(page.html);
       expect((text.match(/§/g) ?? []).length, page.path).toBeGreaterThan(0);
-      // Exactly one gloss on the page, however many citations it carries.
-      // Singular or plural: a name that cites two sections is glossed once,
-      // after the whole citation ("§ 19c / § 6 BeschV; sections 19c and 6").
-      const glosses = text.match(/sections? [0-9]+[a-z]?/g) ?? [];
+      // Exactly one gloss on the page, however many citations it carries: a
+      // name that cites two sections is glossed once, after the whole
+      // citation ("§ 19c / § 6 BeschV; § = section"). The gloss explains the
+      // sign and never restates the number (s23, P1).
+      const glosses = text.match(new RegExp(SECTION_EXPLAINER, "g")) ?? [];
       expect(glosses.length, page.path).toBe(1);
+      expect(text, page.path).not.toMatch(/sections? [0-9]/);
       // Never inside a quote: what a source said is verbatim by contract.
       for (const q of page.html.matchAll(/<blockquote[^>]*>([^]*?)<[/]blockquote>/g))
         expect(q[1], page.path).not.toContain("section ");
@@ -477,13 +479,13 @@ describe("s6 — one page per route, generated from the dataset", () => {
     // A route whose own name carries the citation is glossed in the name, and
     // the name's own brackets are not doubled to do it.
     const academic = pages.find((x) => x.path === "/germany/skilled-worker-academic")!;
-    expect(textOf(academic.html)).toContain("Skilled worker — academic (§ 18b, section 18b)");
+    expect(textOf(academic.html)).toContain("Skilled worker — academic (§ 18b; § = section)");
     expect(textOf(academic.html)).not.toContain("(§ 18b (section");
     // Afterwards the short form stands — including in the list of neighbours.
     expect(textOf(academic.html)).toContain("Skilled worker — vocational (§ 18a)");
     // Nothing outside Germany grows a section gloss it has no citation for.
     for (const page of pages.filter((x) => !x.path.startsWith("/germany/")))
-      expect(textOf(page.html), page.path).not.toMatch(/sections? [0-9]/);
+      expect(textOf(page.html), page.path).not.toContain(SECTION_EXPLAINER);
   });
 
   /**
@@ -493,10 +495,10 @@ describe("s6 — one page per route, generated from the dataset", () => {
     const de = pages.find((x) => x.path === "/germany/eu-blue-card-general")!;
     const text = textOf(de.html);
     // Where the page's first section citation names its act, both are said in
-    // one breath rather than two abutting brackets.
-    expect(text).toContain("§ 18g AufenthG (section 18g of the Residence Act)");
+    // one breath rather than two abutting brackets — in one form (s23, P1).
+    expect(text).toContain("§ 18g AufenthG (§ = section; AufenthG = the Residence Act)");
     // Once, not on every citation on the page: the short form stands afterwards.
-    expect(text.split("section 18g of the Residence Act").length - 1).toBe(1);
+    expect(text.split("AufenthG = the Residence Act").length - 1).toBe(1);
     expect(text.split("AufenthG").length - 1).toBeGreaterThan(1);
     const beschv = pages.find((x) => x.path === "/germany/experienced-worker")!;
     expect(textOf(beschv.html)).toContain("BeschV (the Employment Ordinance)");

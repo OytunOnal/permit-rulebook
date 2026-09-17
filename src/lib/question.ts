@@ -2,7 +2,7 @@ import {
   deriveBands, fieldOptions, optionMeans, shortLabelOf,
   type Dataset, type FieldOption, type Profile, type Question,
 } from "permit-rulebook-data";
-import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, resumedLine } from "./copy.js";
+import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, questionCounter, resumedLine } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import { type Glossary, glossSection } from "./gloss.js";
 // Which situation answers a country's scored routes take, and the quoted
@@ -76,7 +76,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
           ${screen.arrival ?? ""}
           ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(dataset, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${
-            editing ? "Your answer — pick another to change it, the rest are kept" : `Question ${asked.length + 1} of up to ${total}`
+            editing ? "Your answer — pick another to change it, the rest are kept" : esc(questionCounter(asked.length + 1, total))
           }</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
           ${(() => {

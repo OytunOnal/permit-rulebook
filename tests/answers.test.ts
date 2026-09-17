@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { RECORD_VERSION } from "../src/lib/record.js";
+import { SECTION_EXPLAINER } from "../src/lib/copy.js";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
@@ -144,7 +145,11 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
 
       expect(seen.question.toLowerCase()).toContain("shortage");
       expect(seen.help, "the shortage question offers no help at all").toBeTruthy();
-      expect(seen.help!, "the symbol is printed and never said").toContain("section 18g");
+      // The explainer says what the sign means and does not restate the
+      // number — "(§ 18g, section 18g)" was the stutter s23 took off every
+      // heading (v1.1 gate critique, P1).
+      expect(seen.help!, "the symbol is printed and never said").toContain(SECTION_EXPLAINER);
+      expect(seen.help!).not.toContain("section 18g");
       // The citation itself survives whole — it is what a reader searches for.
       expect(seen.help!).toContain("§ 18g AufenthG");
     } finally {

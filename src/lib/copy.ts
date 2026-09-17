@@ -141,12 +141,22 @@ export const ROUTE_PAGE_UNSCORED_ADDENDUM =
  */
 const DAILY_CHECK = "a daily check re-reads every source";
 
-/** The route page, inside its own sentence about what is quoted. */
+/**
+ * The route page, inside its own sentence about what is quoted.
+ *
+ * `unread` here is how many of THIS ROUTE's sources the last run could not
+ * read — the s11 list filtered by the page's own source set. The first form
+ * counted the whole list, so on the day BAMF's graduate page did not answer,
+ * 27 of 28 route pages cast doubt on sources that had been read fine and
+ * none of them named the one that had not (v1.1 gate critique, F3). A page
+ * whose own sources were all read says the plain thing; one whose source was
+ * missed says so, and says what that means for the values on it. No country
+ * in the sentence: the route is the page.
+ */
 export const dailyCheck = (unread: number): string =>
-  // The noun counted here is a pronoun: "them" is the sources the first half
-  // of the sentence has just claimed are all re-read.
   unread === 0 ? DAILY_CHECK : `${DAILY_CHECK}; the last run did not reach ${
-    countedWords(unread, "of them", "of them")}`;
+    countedWords(unread, "of this route's sources", "of this route's sources")}; ${
+    unread === 1 ? "its" : "their"} values still show the day they were read`;
 
 /** `/data/`, which carries the whole exception sentence after it. */
 export const DAILY_CHECK_CLAIM = "Every source is re-read daily";
@@ -516,3 +526,66 @@ export const unscoredTallyLine = (country: string, situation: string, routeName?
 export const NOT_CHECKED_HEADING = "Also required — not checked here:";
 export const askedHeading = (declared: string): string =>
   `Asked in the interview — you declared “${declared}”:`;
+
+/**
+ * The sentence under the unlock steps for a reader who has no offer yet and
+ * an open job-search permit above (s23, F1a).
+ *
+ * It was typed into the results template and rendered to anyone with an open
+ * job-search route and a step to take — including a reader who had just
+ * declared "I have (or am about to get) a job offer there" (v1.1 gate
+ * critique, F1). Who sees it is decided beside the page, in `steps.ts`, from
+ * the situation answer the dataset marks as the fallback; these are only the
+ * words.
+ */
+export const SEEK_HINT =
+  "Your job-search permit above is exactly for this — lawful time in the country to land that offer.";
+
+/**
+ * A ladder's lowest rung that changes a verdict, said as the step it is (s23,
+ * F4). The unlock list offered "German at A2", "German at B1" and "German at
+ * B2 or higher" as three steps to the same card; a rung and every rung above
+ * it are one step, and the two words say so. The title before them is the
+ * engine's own for the rung.
+ */
+export const orAbove = (title: string): string => `${title} or above`;
+
+/**
+ * What the section sign means, said once per page beside the first citation
+ * that carries it (s23, P1).
+ *
+ * The first form restated the citation — "(§ 20a, section 20a)" — which read
+ * as a stutter on every heading it landed on, and landed on a different
+ * heading each render (v1.1 gate critique, P1). This explains the sign and
+ * nothing else; `gloss.ts` decides where it goes.
+ */
+export const SECTION_EXPLAINER = "§ = section";
+
+/**
+ * The lead-in to a rule's limbs on a route page (s23, P2). "Either of these
+ * answers this rule:" stood before three items on the Spanish Blue Card
+ * (v1.1 gate critique, P2); "any" is the word for a list of any length.
+ */
+export const ANY_OF = "Any of these:";
+
+/**
+ * `/data/`'s prose-provenance counts, after the gate's name (s23, P4).
+ *
+ * The third count is of sentences kept on a dated reason — a source that
+ * publishes only a scan, or a table — and it is usually zero. "0 standing on
+ * a dated reason" was modelling vocabulary on a reader's line, and a zero is
+ * not a fact a reader needs (v1.1 gate critique, P4; the scenario prefers
+ * dropping it). Where the count is not zero, the row says it in the reader's
+ * word.
+ */
+export const proseProvenanceCounts = (sourced: number, ours: number, dated: number): string => [
+  `${sourced} sourced`, `${ours} ours`, ...(dated ? [`${dated} kept on a dated reason`] : []),
+].join(", ");
+
+/**
+ * The interview's counter (s23, P6). "of up to 24" under "A few quick
+ * questions." was the one contradiction on the first screen for four runs
+ * (v1.1 gate critique, P6): the denominator moves with every answer, and
+ * "about" is the honest word for a number that moves.
+ */
+export const questionCounter = (n: number, about: number): string => `Question ${n} of about ${about}`;

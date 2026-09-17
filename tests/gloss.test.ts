@@ -3,6 +3,7 @@ import { RECORD_VERSION } from "../src/lib/record.js";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { type Glossary, glossSection, glossed } from "../src/lib/gloss.js";
+import { SECTION_EXPLAINER } from "../src/lib/copy.js";
 
 /**
  * A reader on a phone asked what "§" means (human walk, 2026-09-08).
@@ -11,6 +12,12 @@ import { type Glossary, glossSection, glossed } from "../src/lib/gloss.js";
  * results card before any prose does — and the card is the screen most readers
  * see first. One first use per screen says it in words; after that the short
  * form stands, because a name repeated with its gloss stops being a name.
+ *
+ * The words changed in s23: "(§ 18d, section 18d)" restated the citation and
+ * read as a stutter on whichever heading it landed on (v1.1 gate critique,
+ * P1). The gloss now explains the sign — "§ = section" — and, where the
+ * citation names its act, the act in the same form; the number stands once,
+ * in the citation.
  */
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -18,35 +25,36 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
 describe("the section symbol is said in words, once per page", () => {
   it("glosses the first citation and leaves the rest short", () => {
     const seen: Glossary = new Set();
-    expect(glossed("Researcher (§ 18d)", seen)).toBe("Researcher (§ 18d, section 18d)");
+    expect(glossed("Researcher (§ 18d)", seen)).toBe("Researcher (§ 18d; § = section)");
     // Second use on the same page: untouched.
     expect(glossed("Skilled worker — academic (§ 18b)", seen))
       .toBe("Skilled worker — academic (§ 18b)");
     // A fresh page says it again.
     expect(glossed("Skilled worker — academic (§ 18b)", new Set()))
-      .toBe("Skilled worker — academic (§ 18b, section 18b)");
+      .toBe("Skilled worker — academic (§ 18b; § = section)");
   });
 
   it("says the act in the same breath where the citation names one", () => {
     const seen: Glossary = new Set();
-    expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG (section 18g of the Residence Act)");
+    expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG (§ = section; AufenthG = the Residence Act)");
     // And does not then explain AufenthG a second time.
     expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG");
-    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (section 6 of the Employment Ordinance)");
+    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (§ = section; BeschV = the Employment Ordinance)");
   });
 
   it("expands nothing but the symbol in a name, and never inside the citation", () => {
     // A route is known by its name, and a citation is a string a person pastes
     // into a search box: "§ 19c / § 6 BeschV" has to survive whole. The words
     // follow the whole run, and name every section in it (Spec review,
-    // 2026-09-08; it used to cut the run in half).
+    // 2026-09-08; it used to cut the run in half). A run of several is
+    // glossed as the sign alone: the act is named only where one section
+    // cites it.
     expect(glossSection("Experienced worker (§ 19c / § 6 BeschV)", new Set()))
-      .toBe("Experienced worker (§ 19c / § 6 BeschV; sections 19c and 6)");
-    // One citation in the bracket keeps the shorter form.
+      .toBe("Experienced worker (§ 19c / § 6 BeschV; § = section)");
     expect(glossSection("Opportunity Card (Chancenkarte, § 20a)", new Set()))
-      .toBe("Opportunity Card (Chancenkarte, § 20a, section 20a)");
+      .toBe("Opportunity Card (Chancenkarte, § 20a; § = section)");
     // Outside a bracket the gloss brings its own.
-    expect(glossSection("§ 18d states it", new Set())).toBe("§ 18d (section 18d) states it");
+    expect(glossSection("§ 18d states it", new Set())).toBe("§ 18d (§ = section) states it");
     // And the citation itself is untouched in every case.
     for (const name of [
       "Experienced worker (§ 19c / § 6 BeschV)",
@@ -61,7 +69,7 @@ describe("the section symbol is said in words, once per page", () => {
     expect(glossed("EU Blue Card — general", seen)).toBe("EU Blue Card — general");
     // Nothing was spent, so the next line still gets its gloss.
     expect(glossed("ICT Card — intra-corporate transfer (§ 19)", seen))
-      .toBe("ICT Card — intra-corporate transfer (§ 19, section 19)");
+      .toBe("ICT Card — intra-corporate transfer (§ 19; § = section)");
   });
 });
 
@@ -111,8 +119,9 @@ describe.skipIf(skipped !== null)("the results card explains it too", () => {
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as string;
 
       expect(text, "no German route name reached the card").toContain("§ 18");
-      const glosses = text.match(/section [0-9]+[a-z]?/g) ?? [];
+      const glosses = text.match(new RegExp(SECTION_EXPLAINER, "g")) ?? [];
       expect(glosses.length, `glosses seen: ${glosses.join(", ")}`).toBe(1);
+      expect(text).not.toMatch(/section [0-9]/);
       // It lands in a route name, on the first § the screen shows.
       const at = text.indexOf(glosses[0]!);
       expect(text.slice(0, at).split("§").length - 1, "a bare § came first").toBe(1);
