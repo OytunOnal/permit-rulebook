@@ -146,6 +146,11 @@ export function questionCardHtml(screen: QuestionScreen): string {
  * catch, golden G3). The listeners that make them so stay with the page; what
  * lives here is the markup, so the build can draw the same panel the module
  * would have drawn.
+ *
+ * The pen is tied to the answer's last word by a space that cannot break: a
+ * long answer in the desktop sidebar wrapped, and the pen alone went to the
+ * second line — "University degree ⏎ ✎" at 1280 (v1.1 gate critique, P8 —
+ * s27). Now the last word goes with it or neither moves.
  */
 export function declarationHtml(
   dataset: Dataset, answers: Profile, asked: string[], currentField: string | null,
@@ -155,7 +160,7 @@ export function declarationHtml(
     const opt = (fieldOptions(dataset, f) as FieldOption[]).find((o) => o.value === answers[f]) ??
       deriveBands(dataset, f).find((b) => b.id === answers[f]);
     return opt
-      ? `<div class="done" data-field="${escAttr(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(dataset, f))}</dt><dd>${esc(opt.label)} <span class="pen" aria-hidden="true">✎</span></dd></div>`
+      ? `<div class="done" data-field="${escAttr(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(dataset, f))}</dt><dd>${esc(opt.label)}&nbsp;<span class="pen" aria-hidden="true">✎</span></dd></div>`
       : `<div><dt>${esc(shortLabelOf(dataset, f))}</dt><dd class="pending">—</dd></div>`;
   }).join("");
 }

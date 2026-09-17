@@ -1413,7 +1413,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           section("Not yet", "hold", holdList(g.hold, cUps.length > 0), g.hold.length) +
           closedSection(cClosed);
         return `<details class="country-sec"${open ? " open" : ""}>
-            <summary${closedTo ? ` class="said"` : ""}>${esc(c.name)} <span class="tally${closedTo ? " said" : ""}">${tallyParts}</span></summary>
+            <summary${closedTo ? ` class="said"` : ""}><span class="cname">${esc(c.name)}</span> <span class="tally${closedTo ? " said" : ""}">${tallyParts}</span></summary>
             <div class="cbody">${inner}</div>
           </details>`;
       }).join("") + sayLine;
@@ -1640,7 +1640,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /* What the interview asks of a route, said on the card in the same words
        the route page uses — ink on card, no new colour and no verdict colour. */
     .scoped{font:var(--text-source);color:var(--color-muted);margin:.35rem 0 .1rem}
-    .scoped a{font-weight:600;text-decoration:none;display:inline-flex;align-items:center;min-height:var(--tap-min)}
+    /* The door under the scope line: a standalone internal link, so the two
+       signals the site already gives one — the underline and the prose-link
+       colour (.sub a) — together, on a line of its own, at the tap size (s27). */
+    .scoped .door{display:flex;width:fit-content;align-items:center;min-height:var(--tap-min);color:var(--color-band);
+      text-decoration:underline;text-decoration-color:var(--color-line);text-underline-offset:.2em}
     .foot-links{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;margin-top:.6rem;font-size:.8rem}
     .foot-links a{display:inline-flex;align-items:center;min-height:var(--tap-min)}
     h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}
@@ -1824,8 +1828,17 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       font:700 .8rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-ink);
       border-bottom:2px solid var(--color-ink);padding-bottom:.4rem;margin:1.8rem 0 .4rem}
     details.country-sec > summary::-webkit-details-marker{display:none}
-    details.country-sec > summary::before{content:"▸ ";color:var(--color-muted)}
-    details.country-sec[open] > summary::before{content:"▾ "}
+    /* The mark is drawn on the name, not on the summary: as the summary's own
+       ::before it was a third flex item, and space-between put it at the far
+       left with the name in the middle (v1.1 gate critique, P8 — s27). An
+       inline block with no tracking of its own, so the space to the name is
+       the one margin and not the summary's .3em letter-spacing paid twice.
+       One line, always: beside the s21 sentence the name is the flex item
+       that gives way, and squeezed to its widest word it put the mark on a
+       line above the name (measured at 1280). */
+    details.country-sec > summary > .cname{white-space:nowrap}
+    details.country-sec > summary > .cname::before{content:"▸";display:inline-block;letter-spacing:0;margin-right:.35em;color:var(--color-muted)}
+    details.country-sec[open] > summary > .cname::before{content:"▾"}
     .tally{font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none;text-align:right}
     .tally i{font-style:normal;color:var(--color-band)}
     /* A line that is the s19 sentence rather than a count (s21): a sentence

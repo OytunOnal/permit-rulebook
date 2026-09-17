@@ -23,9 +23,23 @@ export const TAGLINE = "Every route, quoted and dated.";
  * one route, and its second line has said so since the approved route-page mock
  * ("The rules, quoted and dated."). Both live here rather than one of them
  * living in a template, so a change of voice is one edit and a test can read
- * which page says which (Spec review, 2026-09-08).
+ * which page says which (Spec review, 2026-09-08). Since s27 the line is its
+ * own element under the route's name, and it ends in a colon: it introduces
+ * what follows (the human's walk, 2026-09-17).
  */
-export const ROUTE_TAGLINE = "The rules, quoted and dated.";
+export const ROUTE_TAGLINE = "The rules, quoted and dated:";
+
+/**
+ * A result card's door to the route's own page.
+ *
+ * It was the third item of the scope line — "quoted and dated · scored … ·
+ * The rules of this route" — set in the external-link red without its arrow,
+ * so it read as a label, and the separator dangled at a line's end when the
+ * link wrapped (the human's walk, 2026-09-17 — s27). A door is a line of its
+ * own, in the imperative, underlined, in the colour internal links in prose
+ * already wear.
+ */
+export const ROUTE_DOOR = "Read the rules of this route";
 
 /**
  * The one-line promise the README leads with and the social card carries.
@@ -309,6 +323,31 @@ export const FEEDBACK = "Feedback";
  * the same four rows. The word is the country's own name on a page that
  * belongs to a country, which is the header's job and not this file's. */
 export const COUNTRIES = "Countries";
+
+/**
+ * The phone's menu control, in its two states.
+ *
+ * It read "Menu" open and closed: `aria-expanded` moved and the word did not,
+ * so a sighted reader had a control whose label stopped describing what a tap
+ * would do (v1.1 gate critique, P8 — s27). The script swaps the word from
+ * attributes the header renders off these two, so no user-facing string is
+ * typed into an inline script.
+ */
+export const MENU = "Menu";
+export const MENU_CLOSE = "Close";
+
+/**
+ * The 404's second door, in one sentence that is the heading of its section.
+ *
+ * It was a visually hidden h2 ("Start from your own situation") over a bold
+ * paragraph opening with the same words: a screen reader heard it twice, a
+ * sighted reader saw it once, and neither saw the same page (P8, s27). One
+ * element carries the words now, and it is the heading.
+ */
+export const NOT_FOUND_START = "Or start from your own situation.";
+
+/** The line that runs on after it: where the answers stay. */
+export const NOT_FOUND_START_NOTE = "The questions are answered on this device only — nothing is sent anywhere.";
 
 /** The eyebrow, the lede and the h1 of `/feedback/`, as the mock draws them. */
 export const FEEDBACK_EYEBROW = "Read by a person.";

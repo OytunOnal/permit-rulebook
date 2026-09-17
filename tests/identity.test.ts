@@ -177,16 +177,19 @@ const STAMP_STATE = `(() => {
   });
 })()`;
 
-/** The tagline under the question: its own line, one step smaller. */
+/** The tagline under the question: its own line, one step smaller. On a
+ * route page it is the H1's next element rather than its em — the heading is
+ * the route's name alone since s27 — and the same three things must hold. */
 const HEADING = `(() => {
   const h1 = document.querySelector("h1");
-  const em = h1.querySelector("em");
-  if (!em) return JSON.stringify({ display: "no em", rects: 0, smaller: false });
+  const next = h1.nextElementSibling;
+  const tagline = h1.querySelector("em") || (next && next.classList.contains("tagline") ? next : null);
+  if (!tagline) return JSON.stringify({ display: "no tagline", rects: 0, smaller: false });
   const size = (el) => Number.parseFloat(getComputedStyle(el).fontSize);
   return JSON.stringify({
-    display: getComputedStyle(em).display,
-    rects: em.getClientRects().length,
-    smaller: size(em) < size(h1),
+    display: getComputedStyle(tagline).display,
+    rects: tagline.getClientRects().length,
+    smaller: size(tagline) < size(h1),
   });
 })()`;
 

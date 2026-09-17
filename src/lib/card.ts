@@ -8,7 +8,7 @@ import {
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
-import { NOT_CHECKED_HEADING, askedHeading } from "./copy.js";
+import { NOT_CHECKED_HEADING, ROUTE_DOOR, askedHeading } from "./copy.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
 // it, on the screen's own memory (2026-09-08).
 import { type Glossary, glossSection } from "./gloss.js";
@@ -185,8 +185,10 @@ export function carveOutHtml(route: Route, answers: Profile): string {
  * built.
  */
 export function scopedHtml(route: Route, answers: Profile, href: string): string {
-  return `<div class="scoped">${esc(scopeLine(route, answers))} · <a href="${
-    escAttr(href)}">The rules of this route</a></div>`;
+  // The scope line stands alone; the door is a line of its own under it, not
+  // a third item after a separator (s27, point 8).
+  return `<div class="scoped">${esc(scopeLine(route, answers))}<a class="door" href="${
+    escAttr(href)}">${esc(ROUTE_DOOR)}</a></div>`;
 }
 
 /**

@@ -58,6 +58,21 @@ live build (2026-09-17):
    summary tests and the 404 tests stay green or move only where a point
    above moves them.
 
+**Corrected 2026-09-17, by the build:** point 5 names one fingerprint and
+point 1 moves two. The Menu button's two words ride on it as attributes
+(`data-word-closed`, `data-word-open`), and the header is on every page —
+so `/data/`'s clean-day fingerprint (`tests/fixtures/data-page-clean.json`,
+s11) moved with the route pages' and was regenerated with that reason; not
+a word of `/data/`'s own moved. Point 2's premise held, with one measured
+addition: beside the s21 sentence at 1280 the name is the flex item that
+gives way, and squeezed to its widest word it put the mark on a line above
+the name — the name element is `white-space: nowrap`, so mark and name are
+one line at every width. Point 6's "move only where a point moves them":
+`tests/route-page.test.ts` pins the accent's one declaration, whose selector
+now names the em and the tagline together (point 5); `tests/identity.test.ts`
+reads the tagline off the route page's `p.tagline` where it read the H1's
+`em` (point 5). Nothing else moved.
+
 ## How it is proved
 
 - Browser cases at 390×844 and 1280×900: the button's text before and after
@@ -77,3 +92,21 @@ live build (2026-09-17):
 
 It is not P10 (the question under the hero on a phone), not the hold state,
 and not a redesign of the sidebar or the country sections.
+
+**Amended 2026-09-17, from the human's walk of the local build** (two
+points, both copy the human decided):
+
+7. **The tagline ends in a colon.** *The rules, quoted and dated:* — it
+   introduces what follows. `ROUTE_TAGLINE` only; `<title>` and the social
+   card unchanged.
+8. **The card's door to the route page is a door.** Under a result card the
+   scope line (*quoted and dated · scored …*, the data package's words)
+   ended in *· The rules of this route* — a third item in the list, set in
+   the external-link red without its arrow, so it read as a label, and the
+   separator dangled at a line's end when the link wrapped. Now: the scope
+   line stands alone, no trailing separator; the door is its own line
+   beneath it, *Read the rules of this route*, underlined, in the colour
+   internal links in prose already use (`--color-band`) — the site's two
+   signals for a standalone internal link, together (option A of three;
+   human: "A"). The words live in `copy.ts`; the s7 pin on the old words
+   moves. Tap size unchanged.

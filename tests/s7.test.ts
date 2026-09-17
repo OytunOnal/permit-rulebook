@@ -6,6 +6,7 @@ import {
   type Dataset, type Profile, type Route, type RouteResult,
 } from "permit-rulebook-data";
 import { carveOutHtml, caveatHtml, precondHtml, provenanceHtml, scopedHtml } from "../src/lib/card.js";
+import { ROUTE_DOOR } from "../src/lib/copy.js";
 import { routePages } from "../src/lib/route-page.js";
 
 const ds = dataset as unknown as Dataset;
@@ -98,7 +99,7 @@ describe("s7 — a Turkish passport on the Dutch highly skilled migrant route", 
     expect(line).toContain(scopeLine(route, turkish));
     expect(line).not.toContain(scopeLine(route, {}));
     // Every card links on to the page that states the rules in full.
-    expect(line).toContain("The rules of this route");
+    expect(line).toContain(ROUTE_DOOR);
   });
 
   it("shows both halves on the route page, which has no reader", () => {

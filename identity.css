@@ -82,8 +82,18 @@
  * `<em>` is the standing tagline. `<b>` stays inline emphasis for the number
  * a result turns on ("One is short by EUR 4,766"), which must NOT become its
  * own line — two jobs, two elements, one rule each.
+ *
+ * On a route page the tagline is not in the H1 at all: the heading is the
+ * route's name, which ends in a bracket, and a full stop and a sentence after
+ * it read as one heading (v1.1 gate critique, P8 — s27). There it is a
+ * `p.tagline` under the H1, in the type the `<em>` has — the same colour from
+ * the same declaration, the hero's size at the em's .82, the same line, and
+ * the em's .15em above it in place of the heading's own bottom margin.
  */
-.masthead-with-stamps h1 em { font-style: normal; color: var(--color-near); display: block; font-size: .82em; margin-top: .15em; }
+.masthead-with-stamps h1 em, .masthead-with-stamps .tagline { font-style: normal; color: var(--color-near); display: block; }
+.masthead-with-stamps h1 em { font-size: .82em; margin-top: .15em; }
+.masthead-with-stamps h1:has(+ .tagline) { margin-bottom: 0; }
+.masthead-with-stamps .tagline { font: var(--text-hero); font-size: calc(var(--text-hero-size) * .82); line-height: 1.2; margin: .15em 0 var(--space-2); }
 
 /* ---------------------------------------------------------------------------
    The site header: identity and navigation, one rule set for one markup.

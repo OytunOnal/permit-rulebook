@@ -733,13 +733,20 @@ ${headMeta({ title, description: desc, path, kind: "article" })}
 <style>${PAGE_CSS}</style>`;
 
   const scored = isScored(route);
+  // The H1 is the name and nothing after it. It carried the tagline as an
+  // `<em>` behind a full stop — "…(§ 6 BeschV; § = section). The rules,
+  // quoted and dated." — a name that ends in a bracket, then a sentence, in
+  // one heading (v1.1 gate critique, P8 — s27). The tagline is its own line
+  // under it now, in the type the `<em>` had; the <title> and the social
+  // card never carried it and do not move.
   const body = `<div class="wrap">
 
   ${siteHeader(navCountries(dataset), { countryPath: countryPath(country), current: "true" })}
 
   <header class="masthead masthead-with-stamps">
     <div>
-      <h1>${esc(heading)}. <em>${esc(ROUTE_TAGLINE)}</em></h1>
+      <h1>${esc(heading)}</h1>
+      <p class="tagline">${esc(ROUTE_TAGLINE)}</p>
       <p class="lede">${route.summary ? `${esc(route.summary)} ` : ""}Every ${
     scored ? "number" : "condition"} on this page is the authority's own sentence, with the page it came from and the day we read it. ${
     esc(audienceSentence(country))} ${esc(scored ? ROUTE_PAGE_ADDENDUM : ROUTE_PAGE_UNSCORED_ADDENDUM)}</p>
@@ -928,6 +935,12 @@ ${lf(IDENTITY)}
 /* ---- check yours ---- */
 .cta { margin: var(--space-5) 0 0; padding: var(--space-4); background: var(--color-card); border: var(--rule-soft); display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
 .cta p { margin: 0; }
+/* The 404's second door: its heading is the bold opening sentence and the rest
+   of the paragraph runs on after it, on the same line, as the one paragraph
+   it used to be — so the heading a screen reader lands on is the sentence a
+   sighted reader sees, once (s27). */
+.cta .cta-text h2, .cta .cta-text p { display: inline; font: inherit; margin: 0; }
+.cta .cta-text h2 { font-weight: 700; }
 .cta a.btn { display: inline-flex; align-items: center; justify-content: center; text-align: center; min-height: var(--tap-min); line-height: 1.3; padding: .55rem var(--space-4); background: var(--color-ink); color: var(--color-bg); text-decoration: none; font: 700 .95rem var(--font-sans); }
 
 /* ---- the data behind the page: the developer's door ---- */
