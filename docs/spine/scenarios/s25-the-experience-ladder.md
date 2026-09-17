@@ -80,6 +80,25 @@ answer is a floor and the scenario says so on the card).
 6. **Nothing else changes.** The other fields, the verdict logic, the
    copy.
 
+**Corrected 2026-09-17, by the data build:** (3) the "contradiction" —
+`experience_5y = 2plus` with `experience_7y = lt3` — is not one: a reader
+with two and a half years of related work, all inside the last five,
+answers *2 years or more* and *under 3 years* and is right. The scenario's
+sentence ("two inside five is at least two inside seven") is true and
+proves nothing about "under three"; with these rungs no pairing is
+impossible. The pair is dropped; nothing replaces it. (2) The Opportunity
+Card's two experience rows key on two fields and the reader gets the best
+row, never the sum — that needed a schema word: 0.8.1, a points item as
+`rows: [{field, value, points}]`. The FR Blue Card fiche names no window
+for its five years (the seven-year window belongs to the listed-professions
+reduction, a reading); Spain names none either — recorded as a reading on
+four routes, which the scope line counts, so those four lines gain *"1
+condition in our own words"*: a consequence of saying so, accepted. Found
+on the way and corrected with its history line: `es-blue-card` cited art.
+71 bis.2 for a sentence that lives in art. 71.2 a). None of the history
+enum's reasons names a re-keyed rule; `re-read-unchanged` with a note
+carries it — a `rule-rekeyed` reason is a candidate for the schema.
+
 ## How it is proved
 
 - Data: a test per row of the table — the rule reads the field and values
