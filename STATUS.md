@@ -227,7 +227,20 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you** until s25 is on the preview.
+**One thing is blocked on you: the word for s25.**
+
+- [ ] **s25 is on the preview** (http://localhost:4500; data 612 + site 624
+      tests green, schema 0.8.1). The session walked the interview: after
+      recognition, *Related skilled work experience in the last five
+      years?* (Under 2 years / 2 years or more), then *And in the last seven
+      years?* (Under 3 / 3 to under 5 / 5 or more), labels and shorts from
+      the dataset. The four browser cases in `tests/s25.test.ts` ran green
+      on this build: 2+/3–5 → Experienced worker **met** with the § 6
+      BeschV quote and the Opportunity Card at *Experience (last 5 years)
+      +2*; under 2/3–5 → **not yet**, no experience row; 2+/5+ → +3, never
+      2+3; an old record with the retired answer restores without it and
+      the resumed line says how many answers are kept. Walk it once — the
+      two questions, one result — then "merge", or what is off.
 
 - [x] **s25 approved** (2026-09-17, *"approve"*); **data half built** (612 tests, schema 0.8.1): two questions, every
       rule on the rung it names, the Opportunity Card paying the best of two
