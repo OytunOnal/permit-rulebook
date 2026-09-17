@@ -3643,3 +3643,13 @@ instruction today ("local review"); s26 was walked and critiqued on the
 branch's local build. The hosted branch preview is opened once before the
 merge word is acted on, for headers and the phone on a real network. No
 change to record beyond this line.
+
+## 2026-09-17 — s26 merged 🛑
+
+**Decision:** merge on the human's word "merge", with the three-axis review
+on record (`docs/spine/reviews/s26.md`, head `95f0bd0`, no hard finding,
+three should-fixes landed) and the light critique (no new finding). The
+hosted branch preview was not reachable from this network (pages.dev
+DNS-blocked); the walk was on the local production build, which steward-60
+names as the place for it. Deploy `85c505c` green; live read confirms both
+walks. **Gate:** yes.

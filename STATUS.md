@@ -49,7 +49,15 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **Skills reloaded** (2026-09-17, human: "skiller güncellendi"; steward-59,
+live site: s9 through s18.** **s26 is live** (2026-09-17, deploy `85c505c` green, read on the live host at
+390: the four-country researcher who named France reads *No scored route in
+France takes a research hosting agreement.* with the door to the quoted
+route and France first and open; with a German route opening, *1 route
+looks open.*). v1.2's fixes: F2 and the four-country headline done; next
+P8 small slips, P10, the hold state, `field` on precondition statements,
+data #15/#13/#17 — six to land before the stamp.
+
+**Skills reloaded** (2026-09-17, human: "skiller güncellendi"; steward-59,
 60, 61). Applied: the `v1.x` bucket dissolved (one landed under v1.2, six to
 `later` with the steward-entry clock); the `docs/spine/` map (research,
 critiques, design critiques in their directories); checks stay on the local
@@ -60,7 +68,7 @@ look at the hosted branch preview is yours if you want it, on a resolver
 that answers for pages.dev (1.1.1.1): https://s26-one-hierarchy.permit-rulebook.pages.dev/.
 The live site is GitHub Pages; the merge does not wait on it.
 
-**s26 is built, reviewed on three axes and walked** (2026-09-17; branch `s26-one-hierarchy` at `95f0bd0`, 633 tests, astro check 0, assets true, fingerprint unmoved; the third axis, Security, on the human's word — the slice reads a declared answer into the rendering). Waiting on the merge word: the next v1.2 fix in the critic's order,
+**s26 was built, reviewed on three axes and walked** (2026-09-17; branch `s26-one-hierarchy` at `95f0bd0`, 633 tests, astro check 0, assets true, fingerprint unmoved; the third axis, Security, on the human's word — the slice reads a declared answer into the rendering). Waiting on the merge word: the next v1.2 fix in the critic's order,
 the four-country headline's hierarchy. Scenario written from the screen
 (s19's direct-path state against the four-country *Nothing open on these
 answers* + *0 OPEN* with the sentence third); six points, decided, not left
@@ -263,11 +271,9 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the merge word for s26.** The review is on
-record (`docs/spine/reviews/s26.md`, three axes, head `95f0bd0`, no hard
-finding, three should-fixes landed); the light critique found nothing new;
-the preview is local at http://localhost:4526/ (the branch's `dist/`). Walk
-the four-country researcher both ways; "merge" is the deploy.
+**Nothing is blocked on you.**
+
+- [x] **s26 reviewed, walked and merged** (2026-09-17, your word). Live.
 
 - [x] **s25 reviewed, walked and merged** (2026-09-17, your word). Live.
 - [x] Search Console → Datasets → *Validate fix* (2026-09-17, your word).

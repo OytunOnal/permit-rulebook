@@ -43,10 +43,7 @@ under the open version, not candidates. Candidates land here only through
 
 **Fixes**
 - **F2 — the experience ladder** — **landed in s25** (2026-09-17).
-- **The four-country headline's hierarchy** · a France researcher on the
-  *all* path still reads *Nothing open on these answers* over *0 OPEN*, with
-  s21's sentence third; the direct path got a rewritten headline. One
-  reader, two hierarchies.
+- **The four-country headline's hierarchy** — **landed in s26** (2026-09-17).
 - **P8 — small slips** · *Menu* still reads *Menu* when open; the four-country
   summaries put the triangle far left and the name far right; the 404 stacks
   two "start from your own situation"; ✎ wraps to its own line in the desktop
@@ -311,9 +308,7 @@ returns as a fork at the fifth steward entry._
 
 ## active
 
-- **s26 — one reader, one hierarchy** · approved 2026-09-17 (human:
-  "onaylıyorum"); building in `../permit-rulebook-s26` (branch
-  `s26-one-hierarchy`). v1.2 fix: the four-country headline's hierarchy.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -324,6 +319,17 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s26 — one reader, one hierarchy** · real-green 2026-09-17 (human:
+  "merge"; site `85c505c`). v1.2 fix: the four-country headline's hierarchy.
+  A reader who named a country at question 3 whose scored routes do not take
+  their situation reads, when nothing is open anywhere, the direct path's
+  written state as the headline — one function keyed by `situation_country`
+  — with that country's section first and open; every other four-country
+  result byte-for-byte what it was (measured on seeded screens). The first
+  three-axis review (Standards · Spec · Security, `docs/spine/reviews/s26.md`):
+  no hard finding; the "answers never leave the device" check now walks this
+  path.
 
 - **s25 — the experience ladder is two questions** · real-green 2026-09-17
   (human: "merge"; data `0292869`, site `8e432a4`). v1.2 fix F2, the
