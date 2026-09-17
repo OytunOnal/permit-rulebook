@@ -234,7 +234,10 @@ CLS fix is not. The three lines, left here until the window closes:
       rows. The build caught my scenario's "contradiction" as not one —
       dropped — and two wrong Spanish citations (the same paragraph cited as
       art. 71 bis.2 where the sentences live in art. 71.2 a)) — corrected with
-      the snapshot offsets as evidence. Site half building against it.
+      the snapshot offsets as evidence. **Site half built** (624 tests): the two questions in order, the three
+      walks (met +2 / not yet, no entry / met +3, never 2+3), an old record's
+      retired answer dropped and re-asked — a gap the build found and closed;
+      `CONTEXT.md` updated. One last import swap, then the preview.
 - [x] **v1.2 is open** (2026-09-17, your word): the v1.1 residue and the data
       items are its fixes, under `## roadmap › v1.2` in KANBAN; candidates
       arrive through `spine:idea`; the stamp is yours when the last item is

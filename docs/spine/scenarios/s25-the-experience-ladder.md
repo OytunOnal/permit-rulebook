@@ -99,6 +99,18 @@ on the way and corrected with its history line: `es-blue-card` cited art.
 enum's reasons names a re-keyed rule; `re-read-unchanged` with a note
 carries it — a `rule-rekeyed` reason is a candidate for the schema.
 
+**Corrected 2026-09-17, by the site build:** (1) "dropped by `restore` as an
+unknown value, the way any retired option is" described behaviour the site
+did not have — `restore` knew field ids, not their options, so a retired
+value would have sat on the ledger unscored and never been re-asked; built
+in this slice (`AskedField`: the record keeps only answers the interview
+can still take). (proof) The walk "recognised … and the tally +2" cannot
+both be true: a recognised qualification takes the Opportunity Card's
+direct path and scores no points; the walks answer *not yet* on
+recognition. A zero-point row is absent from the tally, not printed as +0.
+Six browser seeds carried `citizenship: "third_country"` — a class, not an
+answer — and the stricter restore drops it; they answer *IN* now.
+
 ## How it is proved
 
 - Data: a test per row of the table — the rule reads the field and values
