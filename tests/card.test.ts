@@ -120,7 +120,7 @@ describe("the rail names the threshold the reader was measured against", () => {
   it("a route with one threshold is unaffected", () => {
     const profile: Profile = {
       destination: "de", citizenship: "TR", situation: "offer", qualification: "degree",
-      recognition_de: "recognized", occupation_shortage: "yes", experience: "y2in5",
+      recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "2plus", experience_7y: "3to5",
       salary_eur_year: bandFor("salary_eur_year", 48000),
     };
     expect(railHtml(ds, resultOf(profile, "de-experienced-worker"), profile)).toContain("€45,630/year");
@@ -157,7 +157,7 @@ describe("the source list says which quote applied to this reader", () => {
     // that each of its two thresholds was not theirs (review 2026-09-07).
     const undecided: Profile = {
       destination: "nl", citizenship: "third_country", situation: "offer",
-      age_band: "u30", qualification: "degree", experience: "y2in5",
+      age_band: "u30", qualification: "degree", experience_5y: "2plus", experience_7y: "3to5",
     };
     const r = resultOf(undecided, "nl-hsm-under30");
     expect(r.status).toBe("hold");
@@ -207,7 +207,7 @@ describe("the source list says which quote applied to this reader", () => {
   it("a route with a single threshold marks nothing — there is nothing to tell apart", () => {
     const profile: Profile = {
       destination: "de", citizenship: "TR", situation: "offer", qualification: "degree",
-      recognition_de: "recognized", occupation_shortage: "yes", experience: "y2in5",
+      recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "2plus", experience_7y: "3to5",
       salary_eur_year: bandFor("salary_eur_year", 48000),
     };
     expect(provenanceHtml(ds, resultOf(profile, "de-experienced-worker"), profile)).not.toContain("applies to you");
@@ -316,7 +316,7 @@ describe("a quote on the results card is framed the way it is on a route page", 
   const german: Profile = {
     destination: "de", citizenship: "third_country", situation: "offer",
     qualification: "degree", recognition_de: "recognized", occupation_shortage: "yes",
-    experience: "y2in5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
+    experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
   };
 
   it("carries the quote's own language, never the page's", () => {

@@ -32,7 +32,7 @@ const PROFILE = {
   // agreement notice — the picture is of the product's ordinary output.
   destination: "de", citizenship: "IN", situation: "offer",
   qualification: "degree", recognition_de: "recognized", occupation_shortage: "yes",
-  experience: "y2in5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
+  experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
 };
 
 const server = await serve(join(root, "dist"));

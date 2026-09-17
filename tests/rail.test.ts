@@ -81,7 +81,7 @@ describe("the rail says where the reader stands", () => {
     // reduced one for a recent graduate — as a choice of paths.
     const profile: Profile = {
       destination: "nl", citizenship: "TR", situation: "offer", salary_eur_month: "band_3",
-      qualification: "degree", experience: "y2to5", nl_recent_grad: "yes", top200_grad: "no",
+      qualification: "degree", experience_5y: "2plus", experience_7y: "3to5", nl_recent_grad: "yes", top200_grad: "no",
       age_band: "a30to35",
     };
     const r = resultOf(profile, "nl-blue-card");

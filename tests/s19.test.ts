@@ -229,9 +229,11 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
     expect(textOf(researcher!.html)).toContain("Avoir une convention d'accueil souscrite");
   });
 
-  it("/data/ says schema 0.8.0 and dataset 2026.09.17, and counts 23 scored and 6 quoted", () => {
+  it("/data/ says schema 0.8.1 and dataset 2026.09.17, and counts 23 scored and 6 quoted", () => {
+    // 0.8.0 was s19's (`not_asked`); 0.8.1 is s25's, the points item with
+    // rows on two fields.
     const text = textOf(dataPage(ds).html);
-    expect(text).toContain("0.8.0");
+    expect(text).toContain("0.8.1");
     expect(text).toContain("2026-09-16");
     expect(text).toContain("23 routes scored against your answers");
     expect(text).toContain("6 more quoted and dated but not scored");

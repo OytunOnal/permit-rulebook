@@ -38,14 +38,14 @@ const routeOf = (id: string) => ds.countries.flatMap((c) => c.routes).find((r) =
 /** Deniz: Turkish engineer with a Berlin offer (persona P1). An offer-holder. */
 const DENIZ: Profile = {
   destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
-  recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience: "y3in7", german: "a1",
+  recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2", experience_7y: "3to5", german: "a1",
   english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5", age_band: "a30to35",
 };
 
 /** Priya: Indian analyst exploring all four (persona P2). No offer; one point short of the Opportunity Card. */
 const PRIYA: Profile = {
   destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
-  occupation_shortage: "unknown", experience: "y2in5", german: "none", english: "c1", nl_recent_grad: "no",
+  occupation_shortage: "unknown", experience_5y: "2plus", experience_7y: "3to5", german: "none", english: "c1", nl_recent_grad: "no",
   top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no", partner_ck: "no",
 };
 
@@ -147,8 +147,9 @@ describe("F4 — the not-yet Opportunity Card prints its tally, and the CEFR run
     expect(isLadder(ds, "english")).toBe(true);
     // Recognition is a choice of answers, not rungs: its rules name a head of the list.
     expect(isLadder(ds, "recognition_de")).toBe(false);
-    // The experience bands overlap and the rules skip a rung (F2, its own scenario).
-    expect(isLadder(ds, "experience")).toBe(false);
+    // The experience ladders are two questions now, each read as rungs (F2, s25).
+    expect(isLadder(ds, "experience_5y")).toBe(true);
+    expect(isLadder(ds, "experience_7y")).toBe(true);
     // A path is not a ladder, nor is a number.
     expect(isLadder(ds, SITUATION_FIELD)).toBe(false);
     expect(isLadder(ds, "salary_eur_year")).toBe(false);

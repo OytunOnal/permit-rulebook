@@ -277,12 +277,12 @@ const ARRIVALS = [
     record: {
       answers: {
         destination: "de", situation: "offer", qualification: "degree", citizenship: "TR",
-        occupation_shortage: "yes", recognition_de: "recognized", experience: "lt2",
+        occupation_shortage: "yes", recognition_de: "recognized", experience_5y: "lt2", experience_7y: "lt3",
         salary_eur_year: "band_4", german: "none", english: "none", funds_eur_month: "band_0",
       },
       history: [
         "destination", "situation", "qualification", "citizenship", "occupation_shortage",
-        "recognition_de", "experience", "salary_eur_year", "german", "english", "funds_eur_month",
+        "recognition_de", "experience_5y", "experience_7y", "salary_eur_year", "german", "english", "funds_eur_month",
       ],
     },
   },

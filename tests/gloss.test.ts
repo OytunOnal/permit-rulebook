@@ -97,11 +97,13 @@ interface BrowserPage {
   evaluate(expression: string): Promise<string>;
 }
 
-/** A German profile that opens German routes, so the cards carry § names. */
+/** A German profile that opens German routes, so the cards carry § names.
+ * A real passport: the record keeps only answers a question offers (s25), and
+ * the class the rules reason with was never one (Spec review, 2026-09-08). */
 const GERMAN = {
-  destination: "de", citizenship: "third_country", situation: "offer",
+  destination: "de", citizenship: "IN", situation: "offer",
   qualification: "degree", recognition_de: "recognized", occupation_shortage: "yes",
-  experience: "y2in5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
+  experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
 };
 
 describe.skipIf(skipped !== null)("the results card explains it too", () => {

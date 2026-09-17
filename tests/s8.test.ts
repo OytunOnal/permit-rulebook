@@ -21,7 +21,7 @@ const topBand = (field: string): string => deriveBands(ds, field).at(-1)!.id;
 const withPassport = (citizenship: string): Profile => ({
   destination: "fr", citizenship, situation: "offer", situation_country: "fr",
   qualification: "degree", fr_degree: "yes", fr_innovative_employer: "no", fr_local_contract: "no",
-  experience: "y5in7", salary_eur_year: topBand("salary_eur_year"),
+  experience_5y: "2plus", experience_7y: "5plus", salary_eur_year: topBand("salary_eur_year"),
 });
 
 /** The same reader, moved to France by their group — the profile fr-ict is for. */

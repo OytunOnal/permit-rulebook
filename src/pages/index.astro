@@ -1434,7 +1434,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // verdict before the engine has run (s22).
     const saveRecord = () => writeRecord(store, answers, asked, remainingQuestions(ds, answers).length === 0);
     function loadRecord() {
-      const kept = readRecord(store, ds.fields.map((f) => f.id));
+      // The questions this interview can ask, with the answers each takes: a
+      // field the rules retired, or an answer a field no longer offers, is
+      // dropped here rather than resurrected on the ledger (s25).
+      const kept = readRecord(store, questions);
       answers = kept.answers;
       asked = kept.history;
       // The rules may have moved since it was written: replay drops anything
