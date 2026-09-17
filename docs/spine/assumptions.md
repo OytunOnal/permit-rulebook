@@ -145,6 +145,13 @@ cheap one that would tell us whether the other two are worth paying for.
   — and the queries are exactly the ones a quoted-source site should own; no
   click has come from them yet. A2's bar (≥ 300 from search/referrals in days
   8–30) is unchanged and unmoved by this.
+- **Coverage, 2026-09-17 (Search Console export, state of 09-14):** 26 pages
+  indexed, 11 not — 7 *discovered, not yet crawled* (a new site's queue), 1
+  *crawled, not indexed* (which page: the drilldown, not yet read), 3 *page
+  with redirect* = the home page's host variants (`http://`, `http://www`,
+  `https://www`), each 301 → `https://permitrulebook.com/`, verified; the
+  sitemap lists the canonical host only. Impressions 64 on 09-14 (59 the day
+  before). Nothing to act on.
 - **Numbers that decide, written first (thirty days after the announcement):**
   A2 (organic traffic comes to open data) — `slice-verified` if Cloudflare
   Web Analytics shows ≥ 300 visits from search or referrals other than the

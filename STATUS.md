@@ -222,6 +222,10 @@ CLS fix is not. The three lines, left here until the window closes:
 
 **Nothing is blocked on you.**
 
+- [x] **Search Console coverage read** (2026-09-17): 26 indexed, 11 not —
+      7 queued, 1 crawled-not-indexed (drilldown not read), 3 redirects that
+      are the home page's host variants, all 301 to the canonical host,
+      verified. Nothing to act on; in `docs/spine/assumptions.md`.
 - [x] **s23 walked and merged** (2026-09-17, your word; the session read
       every built page and three personas' results). Live.
 
