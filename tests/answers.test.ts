@@ -3,6 +3,8 @@ import { RECORD_VERSION } from "../src/lib/record.js";
 import { SECTION_EXPLAINER } from "../src/lib/copy.js";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import dataset from "permit-rulebook-data/data/dataset.json";
+import type { Dataset } from "permit-rulebook-data";
 
 /**
  * Two things the interview did not do, walked in a browser.
@@ -16,6 +18,7 @@ import { fileURLToPath } from "node:url";
  * them in the sidebar and nothing on the screen noticing (F7).
  */
 
+const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 const { chromePath } = await import("../scripts/chrome.mjs");
@@ -123,11 +126,15 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
   }, 180000);
 
   /**
-   * The interview prints "§" too — the shortage question's own help cites
-   * § 18g AufenthG — and a screen explains a symbol the first time it uses it,
-   * wherever that use is (Spec review, 2026-09-08).
+   * The interview used to print "§" here — the shortage question's help cited
+   * § 18g AufenthG — and glossed it on first use (Spec review, 2026-09-08),
+   * so the link read "§ 18g AufenthG (§ = section; AufenthG = the Residence
+   * Act) lists …": an explainer inside a link, underlined end to end (the
+   * human's walk, 2026-09-17). The help is a link, and a link says what the
+   * reader does there in the data's own words, unglossed (s28); the screen's
+   * first-use explainer counts prose only.
    */
-  it("explains the section symbol on the screen that prints it", async () => {
+  it("prints the shortage question's help as the dataset's sentence, and glosses nothing in it", async () => {
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
@@ -147,13 +154,12 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
 
       expect(seen.question.toLowerCase()).toContain("shortage");
       expect(seen.help, "the shortage question offers no help at all").toBeTruthy();
-      // The explainer says what the sign means and does not restate the
-      // number — "(§ 18g, section 18g)" was the stutter s23 took off every
-      // heading (v1.1 gate critique, P1).
-      expect(seen.help!, "the symbol is printed and never said").toContain(SECTION_EXPLAINER);
-      expect(seen.help!).not.toContain("section 18g");
-      // The citation itself survives whole — it is what a reader searches for.
-      expect(seen.help!).toContain("§ 18g AufenthG");
+      // The link's text is the label as the data wrote it, whole.
+      const door = ds.fields.find((f) => f.id === "occupation_shortage")!.learn!;
+      expect(seen.help!).toContain(door.label);
+      // And nothing was explained into it: no explainer, no symbol to explain.
+      expect(seen.help!).not.toContain(SECTION_EXPLAINER);
+      expect(seen.help!).not.toContain("§");
     } finally {
       server.close();
     }

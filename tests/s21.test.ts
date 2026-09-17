@@ -29,7 +29,7 @@ const countryQuestion = () =>
 const countryScreen = (situation: string): string =>
   questionCardHtml({
     dataset: ds, question: countryQuestion(), answers: { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: situation },
-    asked: [DESTINATION_FIELD, SITUATION_FIELD], editing: null, total: 15, glossary: new Set(),
+    asked: [DESTINATION_FIELD, SITUATION_FIELD], editing: null, total: 15,
   });
 
 /** The marks on a drawn screen, keyed by the option they sit under. */
@@ -107,7 +107,7 @@ describe("s21 — question 3 marks a country the declared situation cannot use",
     // Question 2 for France, the same way (the s19 mark, announced too).
     const q2 = questionCardHtml({
       dataset: ds, question: remainingQuestions(ds, { [DESTINATION_FIELD]: "fr" }).find((q) => q.field === SITUATION_FIELD)!,
-      answers: { [DESTINATION_FIELD]: "fr" }, asked: [DESTINATION_FIELD], editing: null, total: 12, glossary: new Set(),
+      answers: { [DESTINATION_FIELD]: "fr" }, asked: [DESTINATION_FIELD], editing: null, total: 12,
     });
     const q2id = q2.match(/<small class="opt-mark"[^>]* id="([^"]+)"/)?.[1];
     expect(q2id).toBeTruthy();

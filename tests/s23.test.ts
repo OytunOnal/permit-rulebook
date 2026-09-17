@@ -297,13 +297,13 @@ describe("P4 — /data/ drops the zero", () => {
 describe("P5 — the Anabin link's stray full stop", () => {
   it("the learn box ends on the link: nothing after it can wrap alone", () => {
     const result = evaluate(ds, DENIZ).find((r) => r.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml(ds, result, DENIZ, new Set());
+    const html = learnBoxHtml(ds, result, DENIZ);
     expect(html).toContain("anabin");
     expect(html).toMatch(/<\/a><\/div>$/);
     expect(textOf(html)).not.toMatch(/↗ ?\.$/);
     expect(textOf(html)).not.toMatch(/\.$/);
     // A route with nothing left open has no box.
-    expect(learnBoxHtml(ds, evaluate(ds, DENIZ).find((r) => r.route.id === "de-experienced-worker")!, DENIZ, new Set())).toBe("");
+    expect(learnBoxHtml(ds, evaluate(ds, DENIZ).find((r) => r.route.id === "de-experienced-worker")!, DENIZ)).toBe("");
   });
 });
 
@@ -312,7 +312,7 @@ describe("P6 — the counter's honest word", () => {
     expect(questionCounter(1, 24)).toBe("Question 1 of about 24");
     const html = questionCardHtml({
       dataset: ds, question: { field: "destination", label: "x", options: fieldOptions(ds, "destination") },
-      answers: {}, asked: [], editing: null, total: 24, glossary: new Set(),
+      answers: {}, asked: [], editing: null, total: 24,
     });
     expect(textOf(html)).toContain("Question 1 of about 24");
     expect(textOf(html)).not.toContain("of up to");

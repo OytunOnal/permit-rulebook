@@ -54,6 +54,31 @@ where it goes and what the reader does there; a statement is prose.
    pages carry one of the three labels (the *What the checker asks* block)
    and regenerates with this reason; `/data/` shows the new dataset date.
 
+**Corrected 2026-09-17, by the build:** (1) The Dutch sentence as decided —
+*on the IND's orientation-year page* — fails the dataset's own rule that an
+abbreviation is expanded wherever our voice uses it (s5d, `verdict.test.ts`:
+`IND` must come with *immigration service*); the label reads *See the
+designated foreign institutions on the orientation-year page of the Dutch
+immigration service (IND)*, the form the question above it already uses. (2)
+The contract had no `learn` to sit beside — `CONTRIBUTING.md` never named the
+field — so the sentence is step 9 of *How a route is added*, after step 8
+(the questions' words). (1 and 4, the version) The dataset version is a date and
+already reads today's (`2026.09.17`, s23 this morning); it stays, as s25's
+did. (3) The
+third surface exists only where a rule has no quote to show — the route page
+draws *What the checker asks* under an unquoted rule — so only the two German
+doors reach it (Anabin on two German pages, `/germany/eu-blue-card-general/`
+and `/germany/eu-blue-card-shortage-occupation/`; the shortage door on the
+latter alone); the French and the Dutch
+doors have two surfaces, which agree. (4) `tests/fixtures/root-build.json` is
+over the frozen two-route dataset, whose routes carry only the Anabin label —
+unmoved, rightly; `/data/`'s fixture is unmoved with the version. Neither
+regenerates. Two older tests carried the retired premise and now assert this
+slice's decision: `answers.test.ts` (the interview's help line glossed `§`)
+and `route-page.test.ts` (no German page says *section <number>* anywhere —
+narrowed to the stutter's own shape, s23 P1, since the shortage door now says
+*section 18g of the Residence Act* in prose).
+
 ## How it is proved
 
 - Data: a test that every `learn.label` opens with a verb from the declared

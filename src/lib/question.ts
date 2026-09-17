@@ -4,7 +4,6 @@ import {
 } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, questionCounter, resumedLine } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
-import { type Glossary, glossSection } from "./gloss.js";
 // Which situation answers a country's scored routes take, and the quoted
 // route that would have asked otherwise — derived, never typed (s19); keyed
 // by the situation under a declared country, or by the country under a
@@ -60,12 +59,10 @@ export interface QuestionScreen {
    * line it draws is the sentence alone — the page moves its own "Start over"
    * in after it, so the control is the ledger's and there is never a second. */
   resumed?: number;
-  /** The abbreviations this screen has already expanded; mutated as it draws. */
-  glossary: Glossary;
 }
 
 export function questionCardHtml(screen: QuestionScreen): string {
-  const { dataset, question: q, answers, asked, editing, total, glossary } = screen;
+  const { dataset, question: q, answers, asked, editing, total } = screen;
   const longList = isLongList(q);
   const classed = hasClasses(q);
   const declared = q.options.find((o) => o.value === answers[q.field]);
@@ -84,11 +81,12 @@ export function questionCardHtml(screen: QuestionScreen): string {
             // it up belongs at the question, not three screens later on a
             // result card that already assumed an answer (isolated v1-gate
             // critique, 2026-09-08, F13). It is the dataset's own link — the
-            // same one the card and the route page show.
+            // same one the card and the route page show — and its label is the
+            // link's text as written: a link is not glossed (s28).
             const learn = dataset.fields.find((f) => f.id === q.field)?.learn;
             return learn
               ? `<p class="qlearn">Not sure? <a href="${escAttr(learn.url)}" target="_blank" rel="noopener">${
-                esc(glossSection(learn.label, glossary))}</a></p>`
+                esc(learn.label)}</a></p>`
               : "";
           })()}
           ${longList ? `

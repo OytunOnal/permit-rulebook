@@ -30,7 +30,7 @@ const situationQuestion = () => remainingQuestions(ds, { destination: "fr" }).fi
 const situationScreen = (destination: string): string =>
   questionCardHtml({
     dataset: ds, question: situationQuestion(), answers: { destination }, asked: ["destination"],
-    editing: null, total: 12, glossary: new Set(),
+    editing: null, total: 12,
   });
 
 /** The marks on a drawn situation screen, keyed by the option they sit under.

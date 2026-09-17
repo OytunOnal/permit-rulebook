@@ -102,7 +102,7 @@ describe("the two questions are asked from the dataset, in order, after recognit
       const def = ds.fields.find((f) => f.id === field)!;
       const question = deriveQuestions(ds).find((q) => q.field === field)!;
       const html = questionCardHtml({
-        dataset: ds, question, answers: {}, asked: [], editing: null, total: 10, glossary: new Set(),
+        dataset: ds, question, answers: {}, asked: [], editing: null, total: 10,
       });
       expect(html).toContain(`<h2 class="qlabel">${def.label}</h2>`);
       const buttons = [...html.matchAll(/<button class="opt" data-value="([^"]+)"[^>]*><span class="opt-label">([^<]+)</g)]

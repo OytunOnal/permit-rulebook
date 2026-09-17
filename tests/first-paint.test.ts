@@ -565,7 +565,7 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
     const questions = remainingQuestions(dataset, {});
     expect(inMain).toBe(questionCardHtml({
       dataset, question: questions[0], answers: {}, asked: [], editing: null,
-      total: questions.length, glossary: new Set(),
+      total: questions.length,
     }) + firstPaintPlaceholdersHtml());
   });
 
