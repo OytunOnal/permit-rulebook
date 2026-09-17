@@ -276,7 +276,7 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.**
+**Nothing is blocked on you.** s29 is approved and building (data only); the local build and the review come to you together.
 
 - [x] **s28 reviewed, walked and merged** (2026-09-17, your word). Live.
 
@@ -528,7 +528,13 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s28 is live** (2026-09-17; data `76c1d52` then site `74a4c5a`, deploy green,
+the threat model, the architecture, the critiques, the announcement).**s29 is approved and building** (2026-09-17, human: "tamamdır" on the
+researched options — the BMI page for the Opportunity Card (A of three); two
+quotes for the free-movement notice, the IND's EEA/Swiss sentence and Your
+Europe's Swiss one, both 200 on a plain GET; the Algerian door as an
+action). Data only; worktree `../permit-rulebook-data-s29`.
+
+**s28 is live** (2026-09-17; data `76c1d52` then site `74a4c5a`, deploy green,
 read on the live host: the shortage question's help, the card's box and the
 route page all say *Check the shortage groups in section 18g of the
 Residence Act (…)* as one link, no explainer inside). v1.2's fixes: F2, the

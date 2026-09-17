@@ -267,7 +267,10 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s29 — three data corrections** · approved 2026-09-17 (human: "tamamdır"
+  on the researched options; `docs/spine/scenarios/s29-three-data-corrections.md`);
+  building in `../permit-rulebook-data-s29` (branch `s29-data-corrections`).
+  v1.2 fixes: data #13, data #15, the Algerian notice's learn label.
 
 ## mock-green
 
