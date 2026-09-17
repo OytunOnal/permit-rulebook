@@ -103,11 +103,16 @@ describe("3 — the three surfaces agree", () => {
       // A route page draws the block only under a rule with no quote to show,
       // so a door reaches this surface only where its rule is unquoted: the
       // two German doors do, the French and the Dutch do not (corrected
-      // 2026-09-17). Where it is drawn, it agrees.
-      for (const b of asks.filter((b) => b.html.includes(`href="${escAttr(door.url)}"`)))
-        for (const a of anchorsOf(b.html).filter((a) => a.href === escAttr(door.url)))
-          // The route page draws its own external mark after the label.
-          expect(a.text.replace(/\s*&#8599;$/, ""), b.path).toBe(esc(door.label));
+      // 2026-09-17). Where it is drawn, it agrees — label and href both. A
+      // block is found by the question it lists, never by the href it is
+      // then held to.
+      const asked = `<li>${esc(ds.fields.find((f) => f.id === door.field)!.label)}</li>`;
+      for (const b of asks.filter((b) => b.html.includes(asked))) {
+        // The route page draws its own external mark after the label.
+        const links = anchorsOf(b.html).map((a) => ({ href: a.href, text: a.text.replace(/\s*&#8599;$/, "") }));
+        expect(links.filter((a) => a.text === esc(door.label) || a.href === escAttr(door.url)), b.path)
+          .toEqual([{ href: escAttr(door.url), text: esc(door.label) }]);
+      }
     });
   }
 
@@ -117,11 +122,23 @@ describe("3 — the three surfaces agree", () => {
     expect(on).toEqual(["/germany/eu-blue-card-shortage-occupation"]);
   });
 
-  it("the box on a card the door still binds carries the label and href the other two do", () => {
-    const result = evaluate(ds, UNSURE).find((r) => r.route.id === "de-blue-card-shortage")!;
-    const door = ds.fields.find((f) => f.id === SHORTAGE)!.learn!;
-    expect(anchorsOf(learnBoxHtml(ds, result, UNSURE))).toEqual([{ href: escAttr(door.url), text: esc(door.label) }]);
-  });
+  /** Two cards the doors still bind: the German one from the human's walk and
+   * a French one — a reader with a French offer, not sure the employer counts
+   * as innovative — so the box is held on a door no route page draws. */
+  for (const [field, route, profile] of [
+    [SHORTAGE, "de-blue-card-shortage", UNSURE],
+    ["fr_innovative_employer", "fr-talent-innovante", {
+      destination: "fr", situation: "offer", qualification: "degree", fr_degree: "yes", citizenship: "TR",
+      fr_innovative_employer: "unknown", salary_eur_year: "band_0",
+    }],
+  ] as const) {
+    it(`${field}: the box on the card it still binds carries the label and href the other surfaces do`, () => {
+      const result = evaluate(ds, profile).find((r) => r.route.id === route)!;
+      expect(result.status, `${route} is not on hold`).toBe("hold");
+      const door = ds.fields.find((f) => f.id === field)!.learn!;
+      expect(anchorsOf(learnBoxHtml(ds, result, profile))).toEqual([{ href: escAttr(door.url), text: esc(door.label) }]);
+    });
+  }
 });
 
 /**
