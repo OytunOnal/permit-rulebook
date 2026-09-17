@@ -98,6 +98,22 @@ and the repo's precedent for a notice-body edit is the commit message;
 the record is the test's dated comment and the merge commit, not a
 fabricated reading in `source.history`.
 
+**Corrected 2026-09-17, by the site build:** (4) "derived from the field
+being an ordered enum" — the dataset has no such flag; a field is a ladder
+when every rule on it reads "this rung or above" (each `in` names a tail of
+the option list, each `eq` the top, each points table climbs in option
+order): German and English are; recognition, experience (F2), situation and
+the money fields are not. The folded step keeps the option's own words —
+*"With German at A2 (elementary) or above"*. (6, 8) The two-limb phrase and
+the scope line's words are the data package's (`verdict.ts`, `scope.ts`),
+read by the heading, the condition line and the not-yet line from one
+place; changed there, not copied into the site. (2) The ordering key is the
+field's `kind` — *improvable* before *path* — the same set as "situation"
+today and honest if a second path field appears. (5) The explainer's words
+are now identical wherever they land; placement is still first use, so
+which heading carries it still follows order — the reader sees it once
+either way.
+
 ## How it is proved
 
 - For each item, a unit case over the rendered string: the offer-holder's

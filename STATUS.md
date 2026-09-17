@@ -212,7 +212,14 @@ CLS fix is not. The three lines, left here until the window closes:
 
 - [x] **s23 approved** (2026-09-17, *"onaylıyorum"*); **data half built** (579 tests): the notice ends at *that route's
       card says so*; the curator's remark was in a citation the card prints
-      and now lives in the watch entry's note. Site half building.
+      and now lives in the watch entry's note. **Site half built** (592 tests): the job-search sentence only without an
+      offer; steps ordered by what the reader can do and *Nearest* honest;
+      the liveness line names the route's own unread source (one page today)
+      and stays plain on 27; the not-yet Opportunity Card prints *5 points —
+      6 needed* and one language step; the explainer once; the counter *of
+      about*; the stray period gone. Two strings turned out to be the data
+      package's (the two-limb phrase, the scope words) — with the data
+      builder now.
 
 - [x] **s21 and s22 walked and merged** (2026-09-16, your word; the session
       walked both on the preview). Live.
