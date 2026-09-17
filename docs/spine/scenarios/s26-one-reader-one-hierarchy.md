@@ -51,6 +51,36 @@ agreement is in. One reader, two hierarchies.
 6. **Nothing else changes.** The record, the counts, the cards, the route
    pages (the fingerprint does not move). s19's and s21's tests stay green.
 
+**Corrected 2026-09-17, by the build:** point 6's "s21's tests stay green"
+cannot hold as written — s21's browser case walks the exact walk points 1
+and 3 rewrite (*Any of these four* → research → France → nothing open) and
+pinned what they change. Four of its assertions moved: the headline
+(*Nothing open on these answers.*) and the section order (Germany first) now
+read s26's state on that walk (France's written state; France first); the
+pin on the live region (`cstatus`, the same sentence) and the negative
+(`not.toContain("No scored route")`) are dropped there — the first lives on
+in s26's case, which pins `cstatus` to France's state; the second is
+inverted there (`not.toContain("Nothing open")`, and the opening walk keeps
+the original negative). The seeds, the taps and s21's own decisions — the
+mark at question 3, the sentence with its link on France's line, the other
+three lines, the not-yet body — are untouched, and s19's tests are green as
+they were. Two small shapes the points implied but did not name: the
+four-country verdict carries `lead`, the named country's answer, and one
+function (`leadCountry`) holds the decision "zero open → written state →
+lead; otherwise none", read by the page and by the test, with one predicate
+(`leads`) for the order and the section's open state; and the copy's
+`possessive` is exported, so the proof that the rest sentences "differ only
+by the country's name" reads the one rule the route line already uses
+rather than typing its own. On point 5 and point 3's second sentence: the
+review found them proved by reading only; three seeded screens now measure
+them — the explorer (`none`, nobody named) and the offer in Germany keep the
+dataset's order with the steps-holding sections open, and a researcher with
+a recognised degree, the funds and no German reads France first and open
+beside a Germany open on its language steps (the profile exists on this
+dataset; no unreachable branch to pin). The two walks run with the network
+watched and make the record test's own assertion — the privacy walk clicks
+the first option everywhere and never reaches question 3 (Security).
+
 ## How it is proved
 
 - A unit case: for every (situation × country) pair `situationsAsked` marks,

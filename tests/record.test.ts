@@ -7,6 +7,7 @@ import { RECORD_VERSION,
   clearRecord, loadRecord, restore, saveRecord, serialize, LEGACY_STORAGE_KEY, STORAGE_KEY,
   type RecordStore,
 } from "../src/lib/record.js";
+import { BEACON_ENDPOINT, BEACON_SCRIPT, expectNothingLeft, type Sent } from "./wire.js";
 
 const dataset = rawDataset as unknown as Dataset;
 const known = deriveQuestions(dataset);
@@ -198,28 +199,6 @@ if (skipped)
     "",
   ].join(String.fromCharCode(10)));
 
-interface Sent { url: string; method: string; postData: string; hasPostData: boolean }
-
-/** The two addresses outside this site that a page may talk to, and no others. */
-const BEACON_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
-const BEACON_ENDPOINT = "https://cloudflareinsights.com/cdn-cgi/rum";
-
-/**
- * Every field the counter's report is allowed to carry, measured off the wire
- * on 2026-09-08. It is an allow-list on purpose: a field Cloudflare adds later
- * fails here, and a person decides whether it may be sent (Security review).
- *
- * What each is: when the page loaded and an id for that load (`startTime`,
- * `pageloadId`, `st`, `eventType`, `nt`), the address (`location`), the
- * beacon's own version (`versions`), the browser engine and its version plus
- * the OS version (`bi`), the site's public id (`siteToken`), paint and
- * navigation timings (`firstPaint`, `firstContentfulPaint`, `timingsV2`) and
- * the tab's JS heap figures (`memory`). None of it is an answer.
- */
-const BEACON_FIELDS = [
-  "startTime", "pageloadId", "eventType", "nt", "location", "versions", "bi",
-  "siteToken", "st", "memory", "firstPaint", "firstContentfulPaint", "timingsV2",
-];
 interface BrowserPage {
   goto(url: string, settleMs?: number): Promise<void>;
   evaluate(expression: string): Promise<string>;
@@ -286,60 +265,9 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
       expect(seen.declared.length, "the walk answered nothing").toBeGreaterThan(5);
 
       const origin = server.origin as string;
-      const token = (value: string) =>
-        new RegExp(`(^|[^a-z0-9])${value.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
-
+      // The same assertion the s26 walk makes over its requests (tests/wire.ts).
       for (const [where, sent] of [["the walk", seen.walk], ["the edit", seen.afterEdit]] as const)
-        for (const request of sent) {
-          // The counter, and only the counter.
-          if (request.url.startsWith(BEACON_SCRIPT)) {
-            expect(request.method, `${where}: the beacon script was fetched with ${request.method}`).toBe("GET");
-            expect(request.url, `${where}: a query string on the beacon script`).toBe(BEACON_SCRIPT);
-            expect(request.hasPostData, `${where}: a body was sent to the beacon script`).toBe(false);
-            continue;
-          }
-          if (request.url.startsWith(BEACON_ENDPOINT)) {
-            // The preflight and the report itself, and nothing smuggled into
-            // the address.
-            expect(["POST", "OPTIONS"], `${where}: ${request.method} to the beacon`).toContain(request.method);
-            expect(request.url, `${where}: a query string on the beacon`).toBe(BEACON_ENDPOINT);
-            if (request.method === "OPTIONS") continue;
-            // What it actually sends, read off the wire.
-            const raw = String(request.postData ?? "");
-            expect(raw, `${where}: a report with no body`).not.toBe("");
-            // Only the page's own origin and path are masked. The query string
-            // is NOT: a route id there is the page's own address and allowed,
-            // an answer there would be a leak (Security review, 2026-09-08).
-            const body = raw.replace(/"location":"([^"?]*)([^"]*)"/g, (_m, _p, query) => `"location":"${query}"`);
-            for (const answer of seen.declared)
-              expect(token(answer).test(body.toLowerCase()), `${where}: ${answer} reached the beacon`).toBe(false);
-            for (const route of seen.routes)
-              expect(body.toLowerCase().includes(route.toLowerCase()), `${where}: ${route} reached the beacon`)
-                .toBe(false);
-            // And every field it carries is one a person has looked at.
-            const fields = Object.keys(JSON.parse(raw) as Record<string, unknown>);
-            for (const field of fields)
-              expect(BEACON_FIELDS, `${where}: the counter sent a field nobody has reviewed: ${field}`)
-                .toContain(field);
-            continue;
-          }
-          // Same origin: no third-party host, ever.
-          expect(request.url.startsWith(origin), `${where}: a request left this origin — ${request.url}`).toBe(true);
-          // GET only: nothing is submitted anywhere.
-          expect(request.method, `${where}: ${request.method} ${request.url}`).toBe("GET");
-          expect(request.hasPostData, `${where}: a body was sent to ${request.url}`).toBe(false);
-          expect(request.postData, `${where}: a body was sent to ${request.url}`).toBe("");
-          // No query string: an answer smuggled into one is still an answer
-          // leaving the device.
-          expect(request.url.includes("?"), `${where}: a query string on ${request.url}`).toBe(false);
-          // And nothing the reader declared appears in the URL as a value of
-          // its own. Matched on token boundaries: "de" is inside the word
-          // "index", and a hashed asset name is not a leak.
-          for (const answer of seen.declared) {
-            const token = new RegExp(`(^|[^a-z0-9])${answer.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
-            expect(token.test(request.url.toLowerCase()), `${where}: ${answer} reached ${request.url}`).toBe(false);
-          }
-        }
+        expectNothingLeft(sent, { origin, where, declared: seen.declared, routes: seen.routes });
 
       // The counter was actually running: a blocked beacon would make every
       // assertion above pass by having nothing to check (Security review).

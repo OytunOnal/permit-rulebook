@@ -312,14 +312,15 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
       expect(result.problems).toEqual([]);
       expect(result.state).toBe("results");
       expect(result.main).not.toContain("Both cannot be true");
-      // The existing headline: three of the four countries take research, so
-      // the result is not "no scored route takes it" — it is zero open, said
-      // as it always was, and the France line does the saying.
-      expect(result.headline).toBe("Nothing open on these answers.");
-      expect(result.status).toBe("Nothing open on these answers.");
-      expect(result.headline + result.subline).not.toContain("No scored route");
-      expect(result.lines.map((l) => l.name)).toEqual(["Germany", "France", "Spain", "Netherlands"]);
-      const [germany, fr, spain, netherlands] = result.lines;
+      // The headline this walk ended on was "Nothing open on these answers."
+      // when s21 built it — the France line did the saying, third in the
+      // list. s26 gave the headline to the country the reader named at
+      // question 3 and led with its section; tests/s26 pins those two, and
+      // what this case keeps is s21's own: the mark at question 3, and the
+      // sentence with its link on France's line.
+      expect(result.headline).toBe("No scored route in France takes a research hosting agreement.");
+      expect(result.lines.map((l) => l.name)).toEqual(["France", "Germany", "Spain", "Netherlands"]);
+      const [fr, germany, spain, netherlands] = result.lines;
       expect(fr!.tally).toBe(
         "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
       );
