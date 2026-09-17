@@ -21,3 +21,4 @@ last-read: OytunOnal/permit-rulebook-data 2026-09-16T10:00:18Z
 | 2026-09-17 | permit-rulebook-data | #16 | held: Spain's annual order (búsqueda de empleo quota), end of December 2026 | comment left; open |
 | 2026-09-17 | permit-rulebook-data | #17, #19 | not ours (IND page churn) + our fix s14 | one finding; both closed with a comment naming s14 |
 | 2026-09-17 | permit-rulebook-data | #18 | bug | the daily watch failed on the IND wall 09-11→09-16; s14/s15; 09-17 run clean; closed |
+| 2026-09-17 | permit-rulebook-data | #13, #15 | bug | shipped in s29 (data d062750); closed with a comment each |

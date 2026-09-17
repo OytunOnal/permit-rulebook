@@ -276,18 +276,9 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the merge word for s29.** The review is on
-record (`docs/spine/reviews/s29.md`, three axes, data `60f5a82`, site pin
-branch `279082e` — the lock and two stamp date pins turned into derivations;
-one hard finding — content checks in tests — removed). One thing to know before the
-word: the BMI page you chose (A) is behind a cookie check for the watch's
-fetcher, so its sentinel is human-tier (a person's 90-day tick), not the
-daily read — the other candidates were worse. The local build at
-http://localhost:4526/: Germany → offer → degree → Türkiye → any answers →
-the Opportunity Card's *Official page* (bmi.bund.de); the Netherlands →
-offer → degree → passport Switzerland → *No work permit needed* with three
-quotes; `/france/eu-blue-card/` → the Algerian door. "merge" is the deploy:
-data first, then the site's pin.
+**Nothing is blocked on you.**
+
+- [x] **s29 reviewed, walked and merged** (2026-09-17, your word, knowing the BMI sentinel is human-tier). Live; data #13 and #15 closed.
 
 - [x] **s28 reviewed, walked and merged** (2026-09-17, your word). Live.
 
@@ -539,14 +530,13 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s29 is approved and building** (2026-09-17, human: "tamamdır" on the
-researched options — the BMI page for the Opportunity Card (A of three); two
-quotes for the free-movement notice, the IND's EEA/Swiss sentence and Your
-Europe's Swiss one, both 200 on a plain GET; the Algerian door as an
-action). Data only; worktree `../permit-rulebook-data-s29`. Built (`0b84dc9`, data check
-637) and reviewed on three axes; the build found the BMI page behind a cookie
-check (400 to the watch's fetcher) — the sentinel is human-tier, 90 days, said
-to the human; one hard finding (content checks in tests) being removed.
+the threat model, the architecture, the critiques, the announcement).**s29 is live** (2026-09-17; data `d062750`, site `434d16c` with the social
+card re-rendered for the new read date; deploy green; read on the live host:
+the Opportunity Card's *Official page* → bmi.bund.de, the Swiss passport's
+screen with three quotes, the Algerian door). v1.2's fixes: F2, the
+four-country headline, P8, the learn links, #13, #15 and the Algerian label
+done; **left: P10, the hold state, `field` on precondition statements, data
+#17** — four to land before the stamp.
 
 **s28 is live** (2026-09-17; data `76c1d52` then site `74a4c5a`, deploy green,
 read on the live host: the shortage question's help, the card's box and the

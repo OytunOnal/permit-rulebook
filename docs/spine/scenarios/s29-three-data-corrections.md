@@ -1,7 +1,7 @@
 # s29 — three data corrections
 
 **Status:** approved 2026-09-17 (human: "tamamdır", on the researched
-options). v1.2 fixes data #13, data #15 and the Algerian notice's learn label
+options); real-green: 2026-09-17 (human: "merge"; data d062750, site 434d16c). v1.2 fixes data #13, data #15 and the Algerian notice's learn label
 (s28 light critique). Data only; the site changes by rebuilding.
 
 ## What happened

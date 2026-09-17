@@ -47,18 +47,15 @@ under the open version, not candidates. Candidates land here only through
 - **P8 — small slips** — **landed in s27** (2026-09-17), with the tagline's
   colon and the card's door from the human's walk.
 - **Learn links read as actions, unglossed** — **landed in s28** (2026-09-17).
-- **The Algerian notice's learn label** (s28 light critique, 2026-09-17) · a
-  statement (*The page for Algerian nationals — certificat de résidence d'1
-  an*) rendered as the notice's foot link; the shape s28 fixed for the four
-  fields. Data: one label as an action.
+- **The Algerian notice's learn label** — **landed in s29** (2026-09-17).
 - **P10** · on a phone every question sits under the full hero and stamp.
 - **The finished-record hold state** · ~380 px blank under the eyebrow while
   the module loads (s22's trade); focus on `body` after a re-answer;
   `scrollbar-gutter: stable` for classic-scrollbar desktops.
 - **A `field` on precondition statements** (from s19) · "asked" derived by a
   shared sentence, exact match; three routes share by containment.
-- **Data #15** · the free-movement notice's evidence for IS/LI/NO/CH.
-- **Data #13** · the Opportunity Card's link.
+- **Data #15** — **landed in s29** (2026-09-17).
+- **Data #13** — **landed in s29** (2026-09-17); the road back to the machine is a cookie-returning fetcher, smaller than #17.
 - **Data #17** · the browser-read strategy for the IND (the road back from
   the human tier; headless Chrome reads IND: measured yes).
 
@@ -267,10 +264,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-- **s29 — three data corrections** · approved 2026-09-17 (human: "tamamdır"
-  on the researched options; `docs/spine/scenarios/s29-three-data-corrections.md`);
-  building in `../permit-rulebook-data-s29` (branch `s29-data-corrections`).
-  v1.2 fixes: data #13, data #15, the Algerian notice's learn label.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -281,6 +275,15 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s29 — three data corrections** · real-green 2026-09-17 (human: "merge";
+  data `d062750`, site `434d16c`). v1.2 fixes data #13 (the Opportunity
+  Card's official page is the BMI's — a human-tier sentinel, since the page
+  answers the fetcher with a cookie check), data #15 (the free-movement
+  notice carries the IND's EEA/Swiss sentence and Your Europe's Swiss one,
+  both watched) and the Algerian door as an action. Three-axis review
+  (`docs/spine/reviews/s29.md`); one hard finding — content checks in
+  tests — removed. Both tracker issues closed.
 
 - **s28 — a learn link says what the reader does there** · real-green
   2026-09-17 (human: "merge"; data `76c1d52`, site `74a4c5a`). v1.2 fix from
