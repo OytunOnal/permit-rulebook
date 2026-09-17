@@ -137,13 +137,24 @@ Keeping both lets the watch stay quiet about the second and loud about the
 first.
 _Avoid_: file hash, checksum, digest (unqualified)
 
-**y3in7** (UI: "3+ years within the last 7"):
-The experience rung between the two-year and five-year bands, added so a person
-can declare what Ley 14/2013 art. 71.2 and art. 73.2.b actually count. It
-declares `implies: ["y2in5"]` because the ladder is ordinal: every route that
-reads experience pays this answer at least what the rung below it pays, and
-points score the best row an answer satisfies, never the sum.
-_Avoid_: three years, mid experience, the Spanish option
+**experience_5y** (UI: "Related skilled work experience in the last five years?"):
+One of the two experience questions, since s25 (2026-09-17). Two rungs —
+under 2 years, 2 years or more — the window Germany asks (§ 6 BeschV; the
+Opportunity Card's § 20b Abs. 1 Nr. 7). No option implies another.
+_Avoid_: the experience ladder, y2in5, "2+ within the last 5"
+
+**experience_7y** (UI: "And in the last seven years?"):
+The other experience question. Three rungs — under 3, 3 to under 5, 5 or
+more — the window the IND asks; Spain and France name no window for their
+three and five years, so this answer is a floor there (a reading on those
+routes). The Opportunity Card's Nr. 6 reads its top rung; a points item
+that reads both questions pays the best row, never the sum.
+_Avoid_: y3in7, y5in7, "3+ within the last 7", the yes/no question it replaced
+
+**retired: y3in7 and the implies list.** One question with four rungs and
+`y3in7 ⇒ y2in5` read § 6 BeschV's "two in the last five" as met for a
+reader whose three years lay six-to-seven years ago; caught by three
+critiques, split into the two questions above in s25.
 
 **Scope statement** (UI: "What the checker asks, and what it does not"):
 A route's declared fact about how much of it the interview decides, in one of
