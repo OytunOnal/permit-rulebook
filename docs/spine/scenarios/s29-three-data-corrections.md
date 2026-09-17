@@ -62,6 +62,52 @@ options). v1.2 fixes data #13, data #15 and the Algerian notice's learn label
    the new words; `/data/` shows the new date and quote count; the route
    fingerprint moves for `de-chancenkarte` and regenerates with the reason.
 
+**Corrected 2026-09-17, by the build:** (1) *"200 on a plain GET"* is true of
+a browser and false of this watch's fetcher: measured 2026-09-17 with its own
+client, with a browser User-Agent and with none, the BMI URL answers HTTP 307
+to `/cookie-check-d973` and sets an `AL_CHK-S` cookie; the check answers 307
+back to the page, which is 200 (64,498 bytes, English, static) only when the
+cookie is sent back. The fetcher follows redirects and keeps no cookie jar, so
+it lands on HTTP 400 *Zugriff nicht möglich* — on the html tier the entry would
+have failed the daily run every day. The entry `de-bmi-chancenkarte` is on the
+human tier (`max_age_days: 90`, `last_verified: 2026-09-17`), `kind: sentinel`
+— it backs no quote, and coverage would call a value-source entry there an
+orphan — and its sentinel sentence, recorded in the note and in
+`data/verify-s5e.md` §6 for the quarterly reader, is *The opportunity card is a
+new type of residence permit for those coming to Germany to look for work.*
+The road back to the machine is a fetcher that returns the cookie on one hop.
+Also (1): a route has no `history` — `info_url` is a bare string in the schema
+(`route` is `additionalProperties: false`) and the reason enum lives on
+`textHistoryEntry`, a superseded reading of a provenanced text, which an info
+page is not; with the schema unchanged (point 4) no reason from the enum can
+attach to the move, `re-read-unchanged` included. The dated, append-only record
+is the watch entry's own `history` line (`changed_at: 2026-09-17`, naming the
+old URL, data #13 and the candidates passed over) — the one log this repository
+keeps about a URL. (2) as predicted: the IND general page serves the sentence to
+a plain GET (200, 51,875 bytes), so `ind-eu-eea-swiss-citizens` is html-tier,
+sliced from *You are a citizen of the Union…* to *…tewerkstellingsvergunning or
+TWV).* with its baseline read in the same change; the Swiss sentence sits
+inside `eu-your-europe-work-permits`'s existing slice and its stored snapshot,
+so that entry covers it unchanged. Both quotes verify (156, from 154). (4) The
+version already read the day (`2026.09.17`, s23); the convention is the date
+with no suffix, and a second change on the same day keeps it (s25, s28 — and
+`CONTRIBUTING.md` is silent, practice decides). The newest read date moves to
+2026-09-17, which retires seven older pins that said "nothing was read at a
+source today" (s7, s8, s19, s23, s25, `engine.test.ts`) and the s14 verified
+count. (5) Two files outside the list moved because gates asked: `src/lang.ts`
+declares a language prefix per source and `info_url` is in its source set, so
+the BMI path gained `en` and the `handbookgermany.de` prefix — a host a route
+may no longer point at — left with it; `data/verify-s5e.md` gained §6, the
+human-tier rule's checklist line for a page that carries no quote. And (5),
+read in the site's code without touching it: `/data/` will not show a new
+version date (unchanged) nor a new quote count — `quotedValues` counts route
+values only, and the two new sentences are a notice's; what moves is the
+*read* date, on `/data/` and on every route page's RULES READ stamp, because
+`pageStamp` takes the audience notice's sources (s8), and the *changed* date
+stays 2026-09-16 (values only). Neither fixture moves: both are computed over
+`tests/fixtures/frozen-dataset.json`, which has no `de-chancenkarte` and one
+free-movement quote.
+
 ## How it is proved
 
 - Data: the validator and quote fidelity green (the two new quotes read from
