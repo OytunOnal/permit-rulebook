@@ -92,3 +92,21 @@ reads the tagline off the route page's `p.tagline` where it read the H1's
 
 It is not P10 (the question under the hero on a phone), not the hold state,
 and not a redesign of the sidebar or the country sections.
+
+**Amended 2026-09-17, from the human's walk of the local build** (two
+points, both copy the human decided):
+
+7. **The tagline ends in a colon.** *The rules, quoted and dated:* — it
+   introduces what follows. `ROUTE_TAGLINE` only; `<title>` and the social
+   card unchanged.
+8. **The card's door to the route page is a door.** Under a result card the
+   scope line (*quoted and dated · scored …*, the data package's words)
+   ended in *· The rules of this route* — a third item in the list, set in
+   the external-link red without its arrow, so it read as a label, and the
+   separator dangled at a line's end when the link wrapped. Now: the scope
+   line stands alone, no trailing separator; the door is its own line
+   beneath it, *Read the rules of this route*, underlined, in the colour
+   internal links in prose already use (`--color-band`) — the site's two
+   signals for a standalone internal link, together (option A of three;
+   human: "A"). The words live in `copy.ts`; the s7 pin on the old words
+   moves. Tap size unchanged.
