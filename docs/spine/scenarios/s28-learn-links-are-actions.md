@@ -1,6 +1,6 @@
 # s28 — a learn link says what the reader does there
 
-**Status:** approved 2026-09-17 (human: "onaylıyorum"). v1.2 fix from the human's walk (2026-09-17):
+**Status:** approved 2026-09-17 (human: "onaylıyorum"); real-green: 2026-09-17 (human: "merge"; data 76c1d52, site 74a4c5a). v1.2 fix from the human's walk (2026-09-17):
 *"§ 18g AufenthG (§ = section; AufenthG = the Residence Act) lists the
 shortage groups by ISCO-08 code (132, 133, …) — bu link çok garip duruyor."*
 

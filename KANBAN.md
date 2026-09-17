@@ -46,12 +46,7 @@ under the open version, not candidates. Candidates land here only through
 - **The four-country headline's hierarchy** — **landed in s26** (2026-09-17).
 - **P8 — small slips** — **landed in s27** (2026-09-17), with the tagline's
   colon and the card's door from the human's walk.
-- **Learn links read as actions, unglossed** (human's walk, 2026-09-17) ·
-  three of the four `learn` labels are statements (*§ 18g AufenthG lists the
-  shortage groups by ISCO-08 code (…)*) set as link text, and the site
-  glosses inside the link (*§ = section; AufenthG = the Residence Act*), so
-  the link reads as a sentence. Data: the four labels as action sentences
-  (ours, not quotes). Site: no gloss inside link text.
+- **Learn links read as actions, unglossed** — **landed in s28** (2026-09-17).
 - **The Algerian notice's learn label** (s28 light critique, 2026-09-17) · a
   statement (*The page for Algerian nationals — certificat de résidence d'1
   an*) rendered as the notice's foot link; the shape s28 fixed for the four
@@ -272,9 +267,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-- **s28 — a learn link says what the reader does there** · approved 2026-09-17
-  (human: "onaylıyorum"); building in `../permit-rulebook-s28` and
-  `../permit-rulebook-data-s28` (branches `s28-learn-links`). v1.2 fix: the learn links (human's walk).
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -285,6 +278,15 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s28 — a learn link says what the reader does there** · real-green
+  2026-09-17 (human: "merge"; data `76c1d52`, site `74a4c5a`). v1.2 fix from
+  the human's walk: three learn labels rewritten as what the reader does
+  there, in plain words (the contract's sentence and a test on its declared
+  verb set); link text never glossed on any of the three surfaces; label and
+  href asserted on each. Three-axis review on both repositories
+  (`docs/spine/reviews/s28.md`); the NL label kept s5d's "IND is explained"
+  rule.
 
 - **s27 — five small slips** · real-green 2026-09-17 (human: "merge"; site
   `46663d9`). v1.2 fix P8, plus two from the human's walk: *Close* on the

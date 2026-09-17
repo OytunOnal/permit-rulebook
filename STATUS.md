@@ -276,13 +276,9 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the merge word for s28.** The review is on
-record (`docs/spine/reviews/s28.md`, three axes on both repositories, no hard
-finding, every nit landed); the light critique found nothing new; the local
-build is at http://localhost:4526/ — Germany → offer → degree → Türkiye →
-the shortage question's help line; answer *I don't know* and read the box on
-the result; then `/germany/eu-blue-card-shortage-occupation/`. "merge" is
-the deploy: data lands first, then the site.
+**Nothing is blocked on you.**
+
+- [x] **s28 reviewed, walked and merged** (2026-09-17, your word). Live.
 
 - [x] **Intake write-back** (2026-09-17, your word "uygula"): data #7, #8, #17, #18, #19 closed; #16 held; site #8 commented, open for its after-reading.
 - [x] **`docs/spine/metrics.md`** (2026-09-17, your word "metrikler tamam"): six rows; next readings 2026-09-24 (liveness, watch, CLS after) and 2026-10-09 (A2, A7, A8 — with the isolated walk).
@@ -532,10 +528,13 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s28 is built, reviewed on three axes and walked** (2026-09-17; data
-`4b1e983`, site `2c358f9` pinned to it, review record `docs/spine/reviews/s28.md`; data check 618, site 662 green — the one
-`pipeline` case waits for the data merge to reach the sibling checkout).
-Waiting on the merge word.
+the threat model, the architecture, the critiques, the announcement).**s28 is live** (2026-09-17; data `76c1d52` then site `74a4c5a`, deploy green,
+read on the live host: the shortage question's help, the card's box and the
+route page all say *Check the shortage groups in section 18g of the
+Residence Act (…)* as one link, no explainer inside). v1.2's fixes: F2, the
+four-country headline, P8 and the learn links done; next the Algerian
+notice's label, P10, the hold state, `field` on precondition statements,
+data #15/#13/#17.
 
 **First intake read done** (2026-09-17, `/spine:steward` with nothing pasted):
 both trackers read with the fixed commands, counts agreeing (site 1, data 8,
