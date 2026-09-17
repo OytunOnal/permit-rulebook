@@ -220,7 +220,14 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you** until s24 is built.
+**One thing is blocked on you: the word for s24.**
+
+- [ ] **s24 is built** (605 tests; workflow parsed; no page byte moved): the
+      key file `/45d291d2213243d2f044343753a5bc7c.txt` (public by protocol),
+      an `indexnow` job that runs after a green deploy on push, schedule or
+      dispatch, posts the sitemap's addresses once, prints the status and
+      cannot fail the run. Nothing to walk; the proof is the first deploy's
+      log. Say "merge".
 
 - [x] **s24 approved** (2026-09-17, *"tamamdır"*): the deploy tells Bing what
       changed — an IndexNow key file at the root and one POST after a green
