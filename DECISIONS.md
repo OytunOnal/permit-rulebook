@@ -3577,3 +3577,22 @@ who caught them. **From here every slice that touches an engine, a schema,
 a record or a page a reader sees gets the pair before the preview** — the
 code-review skill's own rule, restated because it was dropped without a
 decision. s25 gets it now, both repositories, before the word.
+
+## 2026-09-17 — skills reloaded (steward-55 → 58); four rules now bind this project
+
+**The human's word:** *"skiller güncellendi."* Read from the skills' own
+ledger. **steward-56:** a version is stamped when the last candidate under
+its roadmap heading lands — Spine stamps (the walk, the line, the README)
+and reports; the stamp is never handed to the human; fixes ride under the
+open version. Born of this project's v1.1 sitting on the human's list from
+09-15 while seven slices shipped. v1.2 is already kept that way (opened
+today). **steward-58:** every code review is recorded in
+`docs/spine/reviews/<id>.md` with the reviewed commit's `head:`; a review
+guard (a second Stop hook) blocks a real-green declared without one; the
+merge word is asked for only with the review in hand. Born of s13–s25
+shipping unreviewed until the human asked. s25's record is the first
+(`docs/spine/reviews/s25.md`). **steward-57:** `docs/spine/road.html`, the
+journey drawn from the ledgers at every boundary and stamp; to be drawn at
+this boundary. **steward-55:** code writes nothing to the repo root. And
+rules.md now says it: everything on disk is English, the notebook excepted.
+**Cost:** one review record and one road redraw per slice from here.

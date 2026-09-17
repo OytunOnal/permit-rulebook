@@ -249,8 +249,12 @@ CLS fix is not. The three lines, left here until the window closes:
       note said it did not (the enum gains `rule-rekeyed` and
       `citation-corrected`), and four readings missing from the `not_asked`
       twin — plus small ones; the site half merge-safe with a type to
-      derive from the package. Both builders have the lists; the word waits
-      on the fixes.
+      derive from the package. The fixes landed: data `4b2a4ea` (612 tests; the history enum honest,
+      the twin complete, three assertions that rested on the false
+      implication corrected), site `fa05ce4` (624 tests, gated against that
+      data). **The review is on record** — `docs/spine/reviews/s25.md`, the
+      first under steward-58 (skills reloaded today) — so the word can be
+      asked with it in hand: "merge", or what is off.
 
 - [x] **s25 approved** (2026-09-17, *"approve"*); **data half built** (612 tests, schema 0.8.1): two questions, every
       rule on the rung it names, the Opportunity Card paying the best of two
