@@ -271,9 +271,9 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-- **s32 — a statement names the question that asks it** · scenario proposed
-  2026-09-18 (`docs/spine/scenarios/s32-a-statement-names-its-question.md`),
-  awaiting the human's word. v1.2 fix: `field` on precondition statements.
+- **s32 — a statement names the question that asks it** · approved 2026-09-18
+  (human: "onaylıyorum"); building in `../permit-rulebook-s32` and
+  `../permit-rulebook-data-s32` (branches `s32-statement-field`). v1.2 fix: `field` on precondition statements.
 
 ## mock-green
 
