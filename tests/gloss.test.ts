@@ -3,7 +3,6 @@ import { RECORD_VERSION } from "../src/lib/record.js";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { type Glossary, glossSection, glossed } from "../src/lib/gloss.js";
-import { SECTION_EXPLAINER } from "../src/lib/copy.js";
 
 /**
  * A reader on a phone asked what "§" means (human walk, 2026-09-08).
@@ -15,47 +14,52 @@ import { SECTION_EXPLAINER } from "../src/lib/copy.js";
  *
  * The words changed in s23: "(§ 18d, section 18d)" restated the citation and
  * read as a stutter on whichever heading it landed on (v1.1 gate critique,
- * P1). The gloss now explains the sign — "§ = section" — and, where the
- * citation names its act, the act in the same form; the number stands once,
- * in the citation.
+ * P1); the gloss then explained the sign — "§ = section" — once per page. And
+ * they went in s32's amendment 6 (the human's walk, 2026-09-18): the sign is
+ * read as a reader reads it, and carries no explainer anywhere. What a
+ * citation still explains, on first use, is the act it names — in its own
+ * form, in its own bracket, the number standing once in the citation.
  */
+
+/** The words that are gone (amendment 6) — pinned absent, never present. */
+const RETIRED_EXPLAINER = "§ = section";
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-describe("the section symbol is said in words, once per page", () => {
-  it("glosses the first citation and leaves the rest short", () => {
+describe("the section sign carries no explainer; the act it names is said once per page", () => {
+  it("a citation naming no act is left exactly as written, first use or not", () => {
+    // Amendment 6: "Researcher (§ 18d; § = section)" until the human's walk;
+    // the sign is read as a reader reads it.
     const seen: Glossary = new Set();
-    expect(glossed("Researcher (§ 18d)", seen)).toBe("Researcher (§ 18d; § = section)");
-    // Second use on the same page: untouched.
-    expect(glossed("Skilled worker — academic (§ 18b)", seen))
-      .toBe("Skilled worker — academic (§ 18b)");
-    // A fresh page says it again.
-    expect(glossed("Skilled worker — academic (§ 18b)", new Set()))
-      .toBe("Skilled worker — academic (§ 18b; § = section)");
+    expect(glossed("Researcher (§ 18d)", seen)).toBe("Researcher (§ 18d)");
+    expect(glossed("Skilled worker — academic (§ 18b)", seen)).toBe("Skilled worker — academic (§ 18b)");
+    expect(glossed("Skilled worker — academic (§ 18b)", new Set())).toBe("Skilled worker — academic (§ 18b)");
+    expect(glossSection("§ 18d states it", new Set())).toBe("§ 18d states it");
+    expect(glossSection("Opportunity Card (Chancenkarte, § 20a)", new Set())).toBe("Opportunity Card (Chancenkarte, § 20a)");
+    // And nothing is spent by it: no key for the sign exists any more.
+    expect(seen.size).toBe(0);
   });
 
-  it("says the act in the same breath where the citation names one", () => {
+  it("says the act where the citation names one, in the citation's own bracket, without the sign's words", () => {
     const seen: Glossary = new Set();
-    expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG (§ = section; AufenthG = the Residence Act)");
+    expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG (AufenthG = the Residence Act)");
     // And does not then explain AufenthG a second time.
     expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG");
-    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (§ = section; BeschV = the Employment Ordinance)");
+    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (BeschV = the Employment Ordinance)");
+    // Inside a name's own bracket the words follow the citation there.
+    expect(glossSection("Card (§ 6 BeschV)", new Set())).toBe("Card (§ 6 BeschV; BeschV = the Employment Ordinance)");
+    for (const text of ["§ 18g AufenthG", "§ 6 BeschV", "Card (§ 6 BeschV)"])
+      expect(glossed(text, new Set()), text).not.toContain(RETIRED_EXPLAINER);
   });
 
-  it("expands nothing but the symbol in a name, and never inside the citation", () => {
+  it("expands nothing inside a citation, and a run of several sections is left whole", () => {
     // A route is known by its name, and a citation is a string a person pastes
-    // into a search box: "§ 19c / § 6 BeschV" has to survive whole. The words
-    // follow the whole run, and name every section in it (Spec review,
-    // 2026-09-08; it used to cut the run in half). A run of several is
-    // glossed as the sign alone: the act is named only where one section
-    // cites it.
+    // into a search box: "§ 19c / § 6 BeschV" has to survive whole (Spec
+    // review, 2026-09-08; it used to cut the run in half). The act is named
+    // only where one section cites it; a run of several adds nothing and
+    // leaves the act for the prose after it.
     expect(glossSection("Experienced worker (§ 19c / § 6 BeschV)", new Set()))
-      .toBe("Experienced worker (§ 19c / § 6 BeschV; § = section)");
-    expect(glossSection("Opportunity Card (Chancenkarte, § 20a)", new Set()))
-      .toBe("Opportunity Card (Chancenkarte, § 20a; § = section)");
-    // Outside a bracket the gloss brings its own.
-    expect(glossSection("§ 18d states it", new Set())).toBe("§ 18d (§ = section) states it");
-    // And the citation itself is untouched in every case.
+      .toBe("Experienced worker (§ 19c / § 6 BeschV)");
     for (const name of [
       "Experienced worker (§ 19c / § 6 BeschV)",
       "Opportunity Card (Chancenkarte, § 20a)",
@@ -67,13 +71,11 @@ describe("the section symbol is said in words, once per page", () => {
   it("leaves text with no citation alone", () => {
     const seen: Glossary = new Set();
     expect(glossed("EU Blue Card — general", seen)).toBe("EU Blue Card — general");
-    // Nothing was spent, so the next line still gets its gloss.
-    expect(glossed("ICT Card — intra-corporate transfer (§ 19)", seen))
-      .toBe("ICT Card — intra-corporate transfer (§ 19; § = section)");
+    expect(glossed("ICT Card — intra-corporate transfer (§ 19)", seen)).toBe("ICT Card — intra-corporate transfer (§ 19)");
   });
 });
 
-/** And the results card actually says it, where a route name is the first use. */
+/** And the results card carries the sign bare, in the route names that cite it. */
 const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
@@ -86,7 +88,7 @@ const skipped = why();
 if (skipped)
   process.stderr.write([
     "",
-    `  !! THE SECTION GLOSS WAS NOT SEEN ON THE RESULTS CARD: ${skipped}.`,
+    `  !! THE SECTION SIGN WAS NOT SEEN ON THE RESULTS CARD: ${skipped}.`,
     "     Run: npm run build && npm test",
     "",
     "",
@@ -106,8 +108,8 @@ const GERMAN = {
   experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
 };
 
-describe.skipIf(skipped !== null)("the results card explains it too", () => {
-  it("glosses the first § the screen shows, in the route name it appears in", async () => {
+describe.skipIf(skipped !== null)("the results card carries the sign without an explainer", () => {
+  it("prints the § names bare — no explainer, no number restated (amendment 6)", async () => {
     const server = await serve(dist);
     try {
       const text = await withBrowser(async (page: BrowserPage) => {
@@ -121,14 +123,10 @@ describe.skipIf(skipped !== null)("the results card explains it too", () => {
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as string;
 
       expect(text, "no German route name reached the card").toContain("§ 18");
-      const glosses = text.match(new RegExp(SECTION_EXPLAINER, "g")) ?? [];
-      expect(glosses.length, `glosses seen: ${glosses.join(", ")}`).toBe(1);
+      // The explainer read once per screen from s23 to s32's amendment 6;
+      // the sign is read as a reader reads it now.
+      expect(text).not.toContain(RETIRED_EXPLAINER);
       expect(text).not.toMatch(/section [0-9]/);
-      // It lands in a route name, on the first § the screen shows.
-      const at = text.indexOf(glosses[0]!);
-      expect(text.slice(0, at).split("§").length - 1, "a bare § came first").toBe(1);
-      expect(text.slice(at - 14, at)).toContain("§ ");
-      // The name's own brackets are not doubled to hold it.
       expect(text).not.toMatch(/\(§ [0-9]+[a-z]? \(section/);
     } finally {
       server.close();

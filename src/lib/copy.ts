@@ -600,16 +600,11 @@ export const SEEK_HINT =
  */
 export const orAbove = (title: string): string => `${title} or above`;
 
-/**
- * What the section sign means, said once per page beside the first citation
- * that carries it (s23, P1).
- *
- * The first form restated the citation — "(§ 20a, section 20a)" — which read
- * as a stutter on every heading it landed on, and landed on a different
- * heading each render (v1.1 gate critique, P1). This explains the sign and
- * nothing else; `gloss.ts` decides where it goes.
- */
-export const SECTION_EXPLAINER = "§ = section";
+// The section sign carries no explainer. It read "§ = section" once per page
+// beside the first citation (s23, P1 — before that "(§ 20a, section 20a)", a
+// stutter), until the human's walk of s32 (2026-09-18): the sign is read as a
+// reader reads it. `gloss.ts` still names the act a citation cites, on first
+// use, in the citation's own bracket.
 
 /**
  * The lead-in to a rule's limbs on a route page (s23, P2). "Either of these

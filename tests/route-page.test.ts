@@ -10,7 +10,7 @@ import {
   PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routePage, routePages,
   stampDate,
 } from "../src/lib/route-page.js";
-import { SECTION_EXPLAINER, WRONG_DOOR_LABEL, datasetDay } from "../src/lib/copy.js";
+import { WRONG_DOOR_LABEL, datasetDay } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { esc } from "../src/lib/reason.js";
@@ -464,18 +464,16 @@ describe("s6 — one page per route, generated from the dataset", () => {
    * in the name of every German route, so it greets a stranger before any
    * prose does — and the name is where the page must answer.
    */
-  it("says the section symbol in words the first time a page uses it", () => {
+  it("prints the section symbol bare, and never restates a citation's number", () => {
     const german = pages.filter((x) => x.path.startsWith("/germany/"));
     expect(german.length).toBeGreaterThan(0);
     for (const page of german) {
       const text = textOf(page.html);
       expect((text.match(/§/g) ?? []).length, page.path).toBeGreaterThan(0);
-      // Exactly one gloss on the page, however many citations it carries: a
-      // name that cites two sections is glossed once, after the whole
-      // citation ("§ 19c / § 6 BeschV; § = section"). The gloss explains the
-      // sign and never restates the number (s23, P1).
-      const glosses = text.match(new RegExp(SECTION_EXPLAINER, "g")) ?? [];
-      expect(glosses.length, page.path).toBe(1);
+      // The explainer read "§ = section" once per page from s23's P1 until
+      // s32's amendment 6 (the human's walk, 2026-09-18): the sign is read
+      // as a reader reads it, so no page carries the words.
+      expect(text, page.path).not.toContain("§ = section");
       // The stutter is a § citation followed by its own number restated in
       // words — "(§ 18b, section 18b)" and "§ 18g AufenthG (section 18g of the
       // Residence Act)", the two forms s23 P1 retired. Prose may say "section
@@ -487,16 +485,13 @@ describe("s6 — one page per route, generated from the dataset", () => {
       for (const q of page.html.matchAll(/<blockquote[^>]*>([^]*?)<[/]blockquote>/g))
         expect(q[1], page.path).not.toContain("section ");
     }
-    // A route whose own name carries the citation is glossed in the name, and
-    // the name's own brackets are not doubled to do it.
+    // A route's name is the name it is known by: the citation in it stands
+    // as written, in the H1 and in the list of neighbours alike.
     const academic = pages.find((x) => x.path === "/germany/skilled-worker-academic")!;
-    expect(textOf(academic.html)).toContain("Skilled worker — academic (§ 18b; § = section)");
+    expect(textOf(academic.html)).toContain("Skilled worker — academic (§ 18b)");
+    expect(textOf(academic.html)).not.toContain("(§ 18b;");
     expect(textOf(academic.html)).not.toContain("(§ 18b (section");
-    // Afterwards the short form stands — including in the list of neighbours.
     expect(textOf(academic.html)).toContain("Skilled worker — vocational (§ 18a)");
-    // Nothing outside Germany grows a section gloss it has no citation for.
-    for (const page of pages.filter((x) => !x.path.startsWith("/germany/")))
-      expect(textOf(page.html), page.path).not.toContain(SECTION_EXPLAINER);
   });
 
   /**
@@ -505,9 +500,10 @@ describe("s6 — one page per route, generated from the dataset", () => {
   it("expands an abbreviation the first time a page uses it, and not after", () => {
     const de = pages.find((x) => x.path === "/germany/eu-blue-card-general")!;
     const text = textOf(de.html);
-    // Where the page's first section citation names its act, both are said in
-    // one breath rather than two abutting brackets — in one form (s23, P1).
-    expect(text).toContain("§ 18g AufenthG (§ = section; AufenthG = the Residence Act)");
+    // Where a section citation names its act, the act is said in the
+    // citation's own bracket, in one form (s23, P1) — and without the sign's
+    // words since s32's amendment 6.
+    expect(text).toContain("§ 18g AufenthG (AufenthG = the Residence Act)");
     // Once, not on every citation on the page: the short form stands afterwards.
     expect(text.split("AufenthG = the Residence Act").length - 1).toBe(1);
     expect(text.split("AufenthG").length - 1).toBeGreaterThan(1);

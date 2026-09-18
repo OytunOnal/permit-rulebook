@@ -6,9 +6,12 @@
  * legal culture they are opaque tokens dressed as authority (route-page
  * critique F8).
  *
- * The symbol itself is one of them. A reader on a phone asked what "§" means
- * (human walk, 2026-09-08) — it is in the name of every German route, so it
- * greets a stranger before any prose does.
+ * The symbol itself was one of them from 2026-09-08 (a reader on a phone asked
+ * what "§" means) until s32's amendment 6 (the human's walk, 2026-09-18: "§ =
+ * section yazmaya gerek yok"): the sign is read as a reader reads it, and the
+ * words are gone from every screen. What a citation still explains on first
+ * use is the act it names — "BeschV = the Employment Ordinance" — in the
+ * bracket the citation already has.
  *
  * The gloss is appended, never substituted into the citation: "§ 18g AufenthG"
  * stays the citation a reader can search for, and gains the words after it. It
@@ -18,9 +21,6 @@
  * One module, so the route page and the results card explain a symbol the same
  * way, and each page keeps its own memory of what it has already said.
  */
-
-// The words for the sign itself live with the product's other words (s23).
-import { SECTION_EXPLAINER } from "./copy.js";
 
 /** One page's memory of which abbreviations it has already explained. */
 export type Glossary = Set<string>;
@@ -40,7 +40,6 @@ export const ABBREVIATIONS: ReadonlyArray<readonly [token: RegExp, gloss: string
  * spends one parenthetical instead of two abutting ones.
  */
 const SECTION = /\u00a7[\u00a0\u202f ]?([0-9]+[a-z]?)( (?:AufenthG|BeschV))?/;
-const SECTION_KEY = "section-sign";
 
 /** The acts a section number can belong to, in the words the gloss uses. */
 const ACTS: Readonly<Record<string, string>> = {
@@ -69,58 +68,56 @@ function bracketRun(text: string, at: number): { open: number; close: number } |
 }
 
 /**
- * What the sign means — and, where the citation names its act, what the act
- * is, in the same form and the same breath.
+ * What the act a citation names is, in the citation's own form — "BeschV = the
+ * Employment Ordinance" — the first time the page names it, and nothing after.
+ * Spent against the abbreviation's own key, or `glossed` would explain the
+ * same act twice in one breath.
  *
- * It used to restate the citation: "(§ 20a, section 20a)", "(§ 19c / § 6
- * BeschV; sections 19c and 6)". On a heading that was a stutter, and a
- * different heading stuttered on each render (v1.1 gate critique, P1). The
- * words now explain the sign and nothing else, so they are the same words
- * wherever they land; the number is already there, once, in the citation.
+ * The words used to open with the sign — "§ = section; BeschV = …" — and
+ * before that restated the citation: "(§ 20a, section 20a)", a stutter on
+ * whichever heading it landed on (v1.1 gate critique, P1; s23). The sign's
+ * words went in s32's amendment 6: the human reads § as a reader does.
  */
-function sectionWords(act?: string): string {
-  const named = act ? ACTS[act.trim()] : undefined;
-  return named ? `${SECTION_EXPLAINER}; ${act!.trim()} = ${named}` : SECTION_EXPLAINER;
+function actWords(act: string | undefined, seen: Glossary): string | null {
+  const name = act?.trim();
+  if (!name || !ACTS[name]) return null;
+  const entry = ABBREVIATIONS.find(([token]) => token.test(name));
+  if (!entry || seen.has(entry[0].source)) return null;
+  seen.add(entry[0].source);
+  return `${name} = ${ACTS[name]}`;
 }
 
 /**
- * The section symbol, said in words the first time a page uses it. Safe on a
- * name: it expands nothing but the symbol, so a route keeps the name it is
- * known by — and it never lands inside a citation, only after it.
+ * The act a section citation names, said in words the first time a page cites
+ * it. Safe on a name: it expands nothing inside the citation, so a route keeps
+ * the name it is known by and the string a person would paste into a search
+ * box survives whole — the words land after the citation, never in it. A
+ * citation that names no act adds nothing: the sign carries no explainer
+ * (amendment 6).
  */
 export function glossSection(text: string, seen: Glossary): string {
-  if (seen.has(SECTION_KEY)) return text;
   const first = SECTION.exec(text);
   if (!first) return text;
-  seen.add(SECTION_KEY);
 
   const at = first.index;
-  const act = first[2];
-  // The act's own gloss is spent here too, or one breath would explain the same
-  // abbreviation twice.
-  const spendAct = (which: string | undefined) => {
-    if (!which) return;
-    const entry = ABBREVIATIONS.find(([token]) => token.test(which));
-    if (entry) seen.add(entry[0].source);
-  };
-
   const run = bracketRun(text, at);
   if (!run) {
-    spendAct(act);
-    return `${text.slice(0, at)}${first[0]} (${sectionWords(act)})${text.slice(at + first[0].length)}`;
+    const words = actWords(first[2], seen);
+    return words
+      ? `${text.slice(0, at)}${first[0]} (${words})${text.slice(at + first[0].length)}`
+      : text;
   }
 
-  // The gloss follows the whole run rather than cutting into it, and names
-  // the act only where the run cites one section; a run of several is
-  // glossed as the sign alone.
+  // The words follow the whole run rather than cutting into it, and name the
+  // act only where the run cites one section; a run of several ("§ 19c / § 6
+  // BeschV") is left as it is, and the prose that follows explains the act.
   const inside = text.slice(run.open, run.close);
   const cited = [...inside.matchAll(new RegExp(SECTION.source, "g"))];
-  const onlyAct = cited.length === 1 ? cited[0]![2] : undefined;
-  if (cited.length === 1) spendAct(onlyAct);
-  return `${text.slice(0, run.close)}; ${sectionWords(onlyAct)}${text.slice(run.close)}`;
+  const words = cited.length === 1 ? actWords(cited[0]![2], seen) : null;
+  return words ? `${text.slice(0, run.close)}; ${words}${text.slice(run.close)}` : text;
 }
 
-/** The section symbol and every abbreviation: our prose, never a name. */
+/** A citation's act and every abbreviation: our prose, never a name. */
 export function glossed(text: string, seen: Glossary): string {
   let out = glossSection(text, seen);
   for (const [token, gloss] of ABBREVIATIONS) {
