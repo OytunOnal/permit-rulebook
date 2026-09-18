@@ -35,41 +35,37 @@ Promoted (or dropped, with evidence) at a boundary session.
 
 ### v1.2 — open (2026-09-17)
 
-The stamp is the human's, when the last item below is live; if that day is
-the 2026-10-09 reading, one isolated walk serves both (human, 2026-09-17).
-Fixes are the v1.1 critique's residue and the data tracker — corrections
-under the open version, not candidates. Candidates land here only through
-`spine:idea`.
+The stamp is Spine's, when the last item below is live; if that day is the
+2026-10-09 reading, one isolated walk serves both (human, 2026-09-17). The
+fixes are the v1.1 critique's residue and the data tracker — corrections
+under the open version. A landed line carries its slice's title and the
+mark `promoted <date>`; the board's done column holds the step.
 
-**Fixes**
-- **F2 — the experience ladder** — **landed in s25** (2026-09-17).
-- **The four-country headline's hierarchy** — **landed in s26** (2026-09-17).
-- **P8 — small slips** — **landed in s27** (2026-09-17), with the tagline's
-  colon and the card's door from the human's walk.
-- **Learn links read as actions, unglossed** — **landed in s28** (2026-09-17).
-- **The Algerian notice's learn label** — **landed in s29** (2026-09-17).
-- **P10** — **landed in s30** (2026-09-18), with the ledger line above the
-  question and the result on a phone (the human's amendments).
+**Landed**
+- **the experience ladder is two questions** (F2) · promoted 2026-09-17 · s25
+- **one reader, one hierarchy** (the four-country headline) · promoted 2026-09-17 · s26
+- **five small slips** (P8, plus the tagline's colon and the card's door from the human's walk) · promoted 2026-09-17 · s27
+- **a learn link says what the reader does there** (the learn links, unglossed) · promoted 2026-09-17 · s28
+- **three data corrections** (data #13, data #15, the Algerian notice's learn label) · promoted 2026-09-17 · s29
+- **on a phone the next question comes up to meet the reader** (P10, with the ledger line above the question and the result — the human's amendments) · promoted 2026-09-18 · s30
+- **the hold state says where it is, and two small things** (the finished-record hold state, focus after a re-answer, `scrollbar-gutter`) · promoted 2026-09-18 · s31
+- **a statement names the question that asks it** (`field` on precondition statements, with the section sign's explainer gone — the human's walk) · promoted 2026-09-18 · s32
+- **the copy pass** (a route page names its own unread sources, F3 — moved from the `v1.x` bucket 2026-09-17) · promoted 2026-09-17 · s23
+
+**Queue** (in order; the first unpromoted line is the next slice)
+- **Data #17 — the browser-read strategy for the IND** · the road back from the
+  human tier (five IND route pages read by a person since s14; the BMI
+  sentinel since s29): headless Chrome from the runner reads what the
+  fetcher cannot (s14 measured yes) · bet: a `browser` watch strategy keeps
+  the daily read honest without a person; source: data #17, s14.
 - **Back on a restored record** (s30 build, 2026-09-18) · a reader who arrives
   fresh with a restored record and taps ← Back leaves the site (the rebuilt
   history has no entries in the browser); reload mid-interview then Back
-  lands on the first question. Pre-existing (s16-era); a steward pass.
+  lands on the first question · pre-existing (s16-era); a steward pass.
 - **An unknown link's first paint** (s30 delta review, 2026-09-18) · `?country=zz`
-  measures CLS 0.057 / 0.045 at 390×844 / 390×1400 on master — the masthead's
-  promise swaps from the link's to the fresh one after the module lands; an
-  arrival the s10 gate never seeded. A steward pass.
-- **The finished-record hold state** — **landed in s31** (2026-09-18), with the focus and the gutter.
-- **A `field` on precondition statements** — **landed in s32** (2026-09-18), with the section sign's explainer gone (the human's walk).
-- **Data #15** — **landed in s29** (2026-09-17).
-- **Data #13** — **landed in s29** (2026-09-17); the road back to the machine is a cookie-returning fetcher, smaller than #17.
-- **Data #17** · the browser-read strategy for the IND (the road back from
-  the human tier; headless Chrome reads IND: measured yes).
-
-**Landed under this version** (moved from the `v1.x` bucket, steward-61,
-2026-09-17)
-- **A route page names its own unread sources** — **landed in s23** (F3,
-  2026-09-17): the route page filters the unread list by its own source
-  urls; one page names its own, 27 stay plain.
+  measures CLS 0.057 / 0.045 at 390×844 / 390×1400 — the masthead's promise
+  swaps from the link's to the fresh one after the module lands; an arrival
+  the s10 gate never seeded · a steward pass.
 
 **Candidates** (through `spine:idea`; none filed yet for this version)
 
@@ -151,6 +147,15 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
 
 _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept — no evidence has touched them yet; the first metric reading is 2026-09-24._
 
+- **Model the 45+ age rules (55% threshold) as criteria** (from the old
+  backlog, 2026-09-18) · currently notes on the German cards · bet: an age
+  rule the engine scores is worth a question. Kept.
+- **Orientation-year English requirement** (from the old backlog, 2026-09-18) ·
+  IELTS 6.0 / equivalent on the Dutch orientation year · bet: the English
+  question already asked covers it once the rule is quoted. Kept.
+- **Country vocabulary follow-ups** (s5c review + light critique; from the old
+  backlog, 2026-09-18) · dependent territories and the class names · bet:
+  the vocabulary's edge cases matter to few readers. Kept.
 - **Affiliate layer** · the money model from the viability gate · bet:
   route-relevant mandatory services convert without touching eligibility. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 - **More citizenship exceptions** · the mechanism shipped in s5c, the data did
@@ -166,108 +171,6 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 - **Recognition helper** (Anabin and FR/ES/NL equivalents) · research first;
   Anabin is reachable now · bet: a per-country recognition source inventory
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
-## backlog
-
-- **`scrollbar-gutter: stable`** (from s22): on a desktop Chrome with classic
-  scrollbars the verdict's arrival can make a scrollbar appear and shift the
-  page 17 px — invisible to the headless harness. One CSS line on `html`;
-  measure with scrollbars shown.
-
-- **A `field` on precondition statements** (from s19): today "asked" is
-  derived by a shared sentence between a criterion and a statement, exact
-  match; three routes (de-researcher, de-ict-card, fr-ict) share by
-  containment and are not caught. A typed field is the cleaner derivation.
-
-
-
-- ~~es-ict's `situation` criterion carries the precondition's quote~~ → **fixed the same hour** (visa-rules `1399abc`, 2026-09-07): the criterion now cites art. 73.1, the sentence that defines the transfer; the live card quotes each sentence once; 120 quotes verified, 323 tests. Original entry kept:
-  **es-ict's `situation` criterion carries the precondition's quote** (found on
-  the s5f real-green walk, 2026-09-07, `bug`): `dataset.json` gives the
-  `situation eq ict` criterion art. 73.2.c ("relación laboral … de 3 meses") as
-  its source — the same sentence the precondition "three months with the group"
-  rightly carries — so the card quotes it twice. Fix: source the criterion from
-  the sentence that defines the transfer (art. 73.1, the traslado
-  intraempresarial definition), read from the BOE snapshot; no verdict changes;
-  the quote-fidelity gate must stay `ok`. Small; candidate for s6's sweep.
-
-- ~~PDF text extraction for the watch~~ → **promoted into s5f** (2026-09-07): both PDF-tier sources
-  carry a text layer behind embedded TrueType fonts; decoding the glyph tables
-  yields verbatim text. A pdf strategy that extracts text would move the five
-  unverifiable quotes to the machine tier and let the fidelity gate read them.
-  Source: the s5e human pass, done by the session.
-
-- ~~Bare preconditions carry no provenance~~ → **promoted into s5f** (s5e review, 2026-09-07): 38
-  route preconditions state what an authority requires with no source; s5d
-  built sourced precondition statements for exactly this and the conversion
-  was never finished. Source: s5e review, Standards axis.
-- ~~es-highly-qualified fails people Spain would pass~~ → **promoted into s5f, back-edge chosen FOR** (s5e, 2026-09-07):
-  Ley 14/2013 art. 71.2 counts three years of experience; the nearest option
-  asks five in seven. Changes verdicts — **back-edge candidate**, needs a
-  declarable three-year option or a rewording of the band. Source: s5e build
-  report; stated on the card as a reading meanwhile.
-
-- ~~Migrate remaining Turkish docs to English~~ → **promoted into s5f** (steward-3 language rule):
-  one-pager, assumptions, research-01, scenarios s1–s3b, older DECISIONS
-  entries (STATUS/KANBAN/ARCHITECTURE already translated).
-- ~~Buzer → official-source URL migration~~ · **dropped 2026-09-07, with evidence:** gesetze-im-internet.de times out from Türkiye (measured 2026-09-06); buzer.de is the reachable consolidated mirror and NOTICE says so. The migration would have killed the link for the reader the tool exists for. · Replace buzer.de mirror links
-  in the dataset with the verified gesetze-im-internet.de URLs (human
-  verified them via VPN; agents cannot reach the official site — relevant to
-  s4 source selection).
-- **Model the 45+ age rules (55% threshold) as criteria** (currently notes).
-- ~~Criterion-note provenance~~ · **dropped 2026-09-07 — done by s5e** (s5 review catch): verbatim legal quotes on
-  eq/in/any criteria ride as bare `note` strings — no source_url/retrieved_at,
-  so 7 routes (§18a/b, §18d, §19, es-ict, es-researcher, nl-orientation-year)
-  show zero provenance and their source pages escape watch coverage. Needs a
-  provenanced `basis` structure on non-numeric criteria + watchlist growth
-  (BAMF pages, IND route pages).
-- ~~Print / save the record~~ · **dropped 2026-09-07 — done in s5d** (golden G5): the "eligibility record" metaphor
-  has no export; refresh destroys it. Print stylesheet + "save as PDF" hint,
-  possibly a shareable-by-URL profile (privacy: answers in the fragment,
-  never sent). Joins s6.
-- ~~Reduced thresholds, three countries~~ · **folded into the roadmap item 2026-09-07; only SEPE remains** (s5 verification 4.2): NL HSM
-  €3,122 and Blue Card €4,754 for recent graduates; ES Blue Card €33,085.09
-  for CNO 1–2 shortage occupations or a qualification obtained in the last 3
-  years (and NOT for PAC nacional — it is per-route, not a global flag).
-  Needs a declarable "recent graduate" fact and the SEPE catalogue.
-- **More citizenship exceptions** — the mechanism shipped in s5c (`implies`
-  plus a notice keyed to a country); what is missing is data. Candidates: the
-  EU association agreements beyond Türkiye, and the countries whose nationals
-  have privileged access to Germany (§ 26 BeschV).
-- ~~FR talent subtypes — entreprise innovante, salarié en mission~~ · **dropped 2026-09-07 — done in s5c** (two routes shipped) (s5
-  verification 2.1): both thresholds equal €39,582 and are on F16922; what is
-  missing is a qualifier field for the employer/mission type, not a number.
-- **Orientation-year English requirement**: IELTS 6.0 / equivalent / an
-  English- or Dutch-taught programme. Stated as a precondition today; a gap
-  row would be better once there is a declarable field.
-- **Country vocabulary follow-ups** (s5c review + light critique): dependent
-  territories are deliberately absent — adding one back means sourcing which
-  passport its residents hold; CLDR labels "Congo - Kinshasa" and "Hong Kong
-  SAR China" read oddly; alias coverage is the 35 names people most often
-  type, not a complete exonym list.
-- **Public launch** (s6) · `visa-rules` public (licence ✓ MIT + CC BY 4.0,
-  CONTRIBUTING, per-route coverage tiers), site deploy with the phone walk on
-  the preview before any announcement, per-route micro-pages, disclaimer/legal
-  wording (A1 conditions), the rename to **Permit Rulebook** at the v1 tag, a
-  GitHub Sponsors link, GitHub/HN launch, and the v1-gate full critique in
-  isolation. _Tests A2, A7, A8 for real._
-
-### v1.x / wave 2 (post-v1)
-- **Affiliate layer** (viability decision 2026-09-02): route-relevant
-  mandatory services (blocked account, visa insurance, language) — labelled
-  "affiliate", multi-provider, disclosure next to the disclaimer; never
-  affects eligibility. (GitHub Sponsors link is small — may join s6.)
-- Trackerless ads evaluation — only if 25–50k visits/month is crossed
-- LLM extraction + code validation + auto-PR (full pipeline)
-- "Ask about this route" (quote-grounded RAG)
-- LLM build-time question-wording polish (A14)
-- Turkish UI
-- CA + AU (A6) · wave 3: rest of Europe · US as a separate decision
-- JobRadar integration (cross-referral)
-- Privacy-preserving usage counter
-- Recognition helper: look up the user's university/program in Anabin (and
-  FR/ES/NL equivalents) — research first (reachability, A1-compatible output
-  wording, per-country recognition source inventory)
-
 ## active
 
 _(empty — the next slice is chosen at the next boundary)_
