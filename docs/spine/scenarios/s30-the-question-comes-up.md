@@ -116,6 +116,14 @@ draws: `#app` — the ledger inside it — is hidden with the masthead by s22's
 verdict cover, and an element that appears is not one that shifted. So the
 ledger needs no cover of its own.
 
+**Corrected 2026-09-18, by the build (amendment 8):** the trial's "ledger 73,
+card 178" in point 6 and the correction above describe the anchor amendment 8
+moved. Measured on the build after an answer and after a ✎ correction, at
+390×844 and at 375×667 alike: the card's top at 71.8 (the header's 58.6 and
+its 13.6 gap, to the browser's rounding), scrollY 478, the ledger line's top
+at −33.4 and its bottom at 47.8 — above the card, its lower edge still on the
+screen, one swipe up. The ledger's place (amendments 6–7) is unchanged.
+
 ## How it is proved
 
 - Browser cases at 390×844 and 375×667: after the first answer the card's

@@ -136,20 +136,19 @@ const TAP_BACK = 'document.querySelector("#main #back").click()';
  * something of theirs to bring back. */
 const READ_ON = 'window.scrollBy({ top: Math.round(window.innerHeight / 4), behavior: "instant" })';
 
-/** After an answer the ledger line stands above the question, and it is the
- * line's top that sits one header and one gap under the viewport's top —
- * within the pixel the browser rounds a scroll to — with the card under it. */
+/** The question card's top sits one header and one gap under the viewport's
+ * top — within the pixel the browser rounds a scroll to — and the ledger line
+ * keeps its place above the card, on the screen or one swipe up (amendment
+ * 8: every answer had felt like arriving at *You declared*). */
 function expectLanded(step: Where, label: string): void {
   expect(step.state, `${label}: left the interview`).toBe("questions");
   expect(step.cardTop, `${label}: no question card`).not.toBeNull();
-  expect(step.declTop, `${label}: the ledger (${step.declTop}) is not above the card (${step.cardTop})`)
-    .toBeLessThan(step.cardTop!);
-  expect(step.cardTop!, `${label}: the card (${step.cardTop}) overlaps the ledger (bottom ${step.declBottom})`)
-    .toBeGreaterThanOrEqual(step.declBottom);
+  expect(step.declBottom, `${label}: the ledger (bottom ${step.declBottom}) is not above the card (${step.cardTop})`)
+    .toBeLessThanOrEqual(step.cardTop!);
   const landing = step.headerHeight + step.gap;
   expect(
-    Math.abs(step.declTop - landing),
-    `${label}: the ledger's top is at ${step.declTop} px, the landing is ${landing} px (scrollY ${step.scrollY})`,
+    Math.abs(step.cardTop! - landing),
+    `${label}: the card's top is at ${step.cardTop} px, the landing is ${landing} px (scrollY ${step.scrollY})`,
   ).toBeLessThanOrEqual(1);
 }
 

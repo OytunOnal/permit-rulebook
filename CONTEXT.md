@@ -212,10 +212,10 @@ _Avoid_: help link, reference link
 A *reveal* (s20) scrolls only when the card's top is off the screen — every
 gesture on a wide screen, where the card sits beside the ledger, and Start
 over on a narrow one, which draws the first question again. A *landing*
-(s30) brings the question — the ledger line or the card, whichever stands
-first — to just under the header (the header's measured height and its own
-padding) on a narrow screen after an answer, a correction, or a history move
-to a question later than the first. A verdict is not landed on: it keeps
+(s30) brings the question card's top to just under the header (the header's
+measured height and its own padding) on a narrow screen after an answer, a
+correction, or a history move to a question later than the first — the
+ledger line, when there is one, stays above it, one swipe up. A verdict is not landed on: it keeps
 s20's reveal of the masthead. The ledger's *place* is a separate matter from
 either: on a phone, once answers exist, the line stands above the question
 and above the result (s30, amendments 6–7). The first paint is neither: a

@@ -474,10 +474,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * ledger with room above it and the hero stays: s20's rule, as before.
      *
      * Once the reader has answered, the ledger line stands above the question
-     * and above the result on a phone (amendments 6–7), so what lands under
-     * the header after a gesture that draws a question is whichever of
-     * the two stands first — the stylesheet decides the order, the landing
-     * reads it. A correction lands too, on a narrow screen: with the ledger
+     * and above the result on a phone (amendments 6–7). The landing is the
+     * question all the same — the card's top under the header, the line one
+     * swipe up: landed on the line, every answer felt like arriving at "You
+     * declared" (amendment 8, the human's phone). A correction lands too, on
+     * a narrow screen: with the ledger
      * open above the card the re-drawn question sat below it, and s20's
      * reveal, seeing the card's top on screen, did nothing (human's walk of
      * the trial, 2026-09-18). So ✎ closes the ledger and lands as an answer
@@ -513,10 +514,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const land = () => {
         const { height } = headEl.getBoundingClientRect();
         const gap = parseFloat(getComputedStyle(headEl).paddingBottom);
-        const cardTop = card.getBoundingClientRect().top;
-        const declTop = decl.getBoundingClientRect().top;
-        const first = declTop < cardTop ? declTop : cardTop;
-        const top = window.scrollY + first - height - gap;
+        const top = window.scrollY + card.getBoundingClientRect().top - height - gap;
         window.scrollTo({ top, behavior: reducedMotion.matches ? "auto" : "smooth" });
       };
       if (moved) requestAnimationFrame(land);
