@@ -539,11 +539,13 @@ describe("the pre-paint script decides who the reader is from a few bytes (s10, 
   });
 
   it("says whether the reader has answered, so a phone paints the ledger line where it will stay (s30)", () => {
-    // A record and a link both bring an answer; a fresh visit brings none, and
-    // on a phone the ledger stands above the result once answers exist (s30 amendment 7), but the head writes no flag for a verdict: s22's cover hides #app until the module draws. The head
-    // cannot know whether a link's code is one the page knows, so the flag is
-    // written for every link and the module keeps its word for the first
-    // screen.
+    // A record and a link both bring an answer; a fresh visit brings none. A
+    // verdict's ledger is the module's to place, not the head's: on a phone it
+    // stands above the result once answers exist (s30 amendment 7), but s22's
+    // cover hides #app until the module draws, so the head has nothing to
+    // decide there. The head cannot know whether a link's code is one the
+    // page knows, so the flag is written for every link and the module keeps
+    // its word for the first screen.
     expect(flags({ stored: halfDone }).answered).toBe("");
     expect(flags({ search: "?country=fr", stored: null }).answered).toBe("");
     expect(flags({ search: "?country=zz", stored: null }).answered).toBe("");
