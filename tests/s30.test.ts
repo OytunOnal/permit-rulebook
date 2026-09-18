@@ -18,6 +18,12 @@ import { WIDE_QUERY } from "../src/lib/first-paint.js";
  * gesture, and compare it with the header's own measured height and the gap
  * the header keeps under itself — never a typed number. Narrow and wide are
  * the site's own breakpoint, `WIDE_QUERY`, as `matchMedia` reads it.
+ *
+ * Amendment 6 (the human's walk of the trial): once the reader has answered,
+ * the ledger line stands above the question on a phone, and it is the line
+ * that lands under the header with the question under it; the first question
+ * keeps F8's order. And a correction lands too — with the ledger open above
+ * the card the reopened question sat below it and s20's reveal did nothing.
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
@@ -57,6 +63,8 @@ const WHERE = `JSON.stringify((() => {
   const card = document.querySelector("#main .qcard");
   const first = card && (card.querySelector(".opt, #cfilter") || card.querySelector(".qlabel"));
   const head = document.querySelector(".site-head");
+  const decl = document.getElementById("decl");
+  const declBox = decl.getBoundingClientRect();
   const active = document.activeElement;
   return {
     state: document.getElementById("app").dataset.state,
@@ -64,6 +72,11 @@ const WHERE = `JSON.stringify((() => {
     scrollY: window.scrollY,
     viewport: window.innerHeight,
     cardTop: card ? card.getBoundingClientRect().top : null,
+    cardLeft: card ? card.getBoundingClientRect().left : null,
+    declTop: declBox.top,
+    declBottom: declBox.bottom,
+    declLeft: declBox.left,
+    declOpen: decl.open,
     headerHeight: head ? head.getBoundingClientRect().height : null,
     gap: head ? parseFloat(getComputedStyle(head).paddingBottom) : null,
     question: card ? (card.querySelector(".qlabel")?.textContent || "").trim() : "",
@@ -78,6 +91,11 @@ interface Where {
   scrollY: number;
   viewport: number;
   cardTop: number | null;
+  cardLeft: number | null;
+  declTop: number;
+  declBottom: number;
+  declLeft: number;
+  declOpen: boolean;
   headerHeight: number | null;
   gap: number | null;
   question: string;
@@ -99,17 +117,29 @@ const TAP_BACK = 'document.querySelector("#main #back").click()';
  * something of theirs to bring back. */
 const READ_ON = 'window.scrollBy({ top: Math.round(window.innerHeight / 4), behavior: "instant" })';
 
-/** The card's top is one header and one gap under the viewport's top — within
- * the pixel the browser rounds a scroll to. */
+/** After an answer the ledger line stands above the question, and it is the
+ * line's top that sits one header and one gap under the viewport's top —
+ * within the pixel the browser rounds a scroll to — with the card under it. */
 function expectLanded(step: Where, label: string): void {
   expect(step.state, `${label}: left the interview`).toBe("questions");
   expect(step.cardTop, `${label}: no question card`).not.toBeNull();
+  expect(step.declTop, `${label}: the ledger (${step.declTop}) is not above the card (${step.cardTop})`)
+    .toBeLessThan(step.cardTop!);
+  expect(step.cardTop!, `${label}: the card (${step.cardTop}) overlaps the ledger (bottom ${step.declBottom})`)
+    .toBeGreaterThanOrEqual(step.declBottom);
   const landing = step.headerHeight! + step.gap!;
   expect(
-    Math.abs(step.cardTop! - landing),
-    `${label}: the card's top is at ${step.cardTop} px, the landing is ${landing} px (scrollY ${step.scrollY})`,
+    Math.abs(step.declTop - landing),
+    `${label}: the ledger's top is at ${step.declTop} px, the landing is ${landing} px (scrollY ${step.scrollY})`,
   ).toBeLessThanOrEqual(1);
 }
+
+/** The ledger's ✎ on the first row, found by its field, never by its words —
+ * opened first, the way a reader reaches it. */
+const OPEN_AND_TAP_DESTINATION = `(() => {
+  document.getElementById("decl").open = true;
+  document.querySelector('#decl-list [data-field="destination"]').click();
+})()`;
 
 async function coldStart(page: BrowserPage, origin: (p: string) => string, settleMs = 1200): Promise<Where> {
   await page.goto(origin("/404.html"), 300);
@@ -153,8 +183,10 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
         }, { viewport, mobile: true });
         expect(seen.problems).toEqual([]);
         expect(seen.cold.wide, "the breakpoint reads this width as wide").toBe(false);
-        // The first paint is not a gesture: the cold load scrolls nothing.
+        // The first paint is not a gesture: the cold load scrolls nothing, and
+        // with nothing declared the question comes first (F8).
         expect(seen.cold.scrollY).toBe(0);
+        expect(seen.cold.cardTop!, "with nothing declared the ledger is above the question").toBeLessThan(seen.cold.declTop);
 
         expectLanded(seen.first, "after the first answer");
         expect(seen.first.question).not.toBe(seen.cold.question);
@@ -231,33 +263,35 @@ describe.skipIf(skipped !== null)("what does not change", () => {
     }
   }, 180000);
 
-  it("at 390x844 a ✎ correction keeps s20's rule: a card whose top is on the screen is not moved", async () => {
+  it("at 1280x900 a ✎ correction keeps s20's rule: a card whose top is on the screen is not moved", async () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await coldStart(page, server.url);
+        const cold = await coldStart(page, server.url);
         await page.evaluate(TAP_FIRST);
         await settle(900);
-        const landed = await where(page);
-        // The reader scrolls a little back up — the card's top is still on the
-        // screen, lower than the landing — then reopens the first row from the
-        // ledger (found by its field, never by its words). On a phone the
-        // ledger sits below the card, so opening it moves nothing above.
-        await page.evaluate(`window.scrollTo({ top: ${landed.scrollY} - Math.round(window.innerHeight / 4), behavior: "instant" })`);
+        const answered = await where(page);
+        // The reader reads a little way down — the card's top is still on the
+        // screen — then reopens the first row from the ledger beside it.
+        await page.evaluate(READ_ON);
         const before = await where(page);
-        await page.evaluate(`(() => {
-          document.getElementById("decl").open = true;
-          document.querySelector('#decl-list [data-field="destination"]').click();
-        })()`);
+        await page.evaluate(OPEN_AND_TAP_DESTINATION);
         await settle(900);
         const corrected = await where(page);
-        return { landed, before, corrected, problems: page.problems() };
-      }, { viewport: { width: 390, height: 844 }, mobile: true });
+        return { cold, answered, before, corrected, problems: page.problems() };
+      }, { viewport: { width: 1280, height: 900 }, mobile: false });
       expect(seen.problems).toEqual([]);
+      // The ledger is beside the card, before and after an answer: the order
+      // the grid gives a wide screen does not change.
+      for (const [label, step] of [["cold", seen.cold], ["after an answer", seen.answered]] as const) {
+        expect(step.declLeft, `${label}: the ledger is not to the left of the card`).toBeLessThan(step.cardLeft!);
+        expect(Math.abs(step.declTop - step.cardTop!), `${label}: the ledger is not beside the card`)
+          .toBeLessThan(step.declBottom - step.declTop);
+      }
       expect(seen.before.cardTop!).toBeGreaterThan(0);
       expect(seen.before.cardTop!).toBeLessThan(seen.before.viewport);
       expect(seen.corrected.state).toBe("questions");
-      expect(seen.corrected.question, "the correction did not reopen the first question").not.toBe(seen.landed.question);
+      expect(seen.corrected.question, "the correction did not reopen the first question").not.toBe(seen.answered.question);
       // s20: the card is revealed only when its top is off the screen. It was
       // on it, so the page stands where the reader left it.
       expect(seen.corrected.scrollY, "a correction moved a card the reader could already see").toBe(seen.before.scrollY);
@@ -266,4 +300,33 @@ describe.skipIf(skipped !== null)("what does not change", () => {
       server.close();
     }
   }, 180000);
+});
+
+describe.skipIf(skipped !== null)("on a phone a correction lands too (amendment 6)", () => {
+  for (const [name, viewport] of [
+    ["390x844", { width: 390, height: 844 }],
+    ["375x667", { width: 375, height: 667 }],
+  ] as const)
+    it(`at ${name}: the ledger opened, ✎ tapped — the ledger closes and lands, the question under it`, async () => {
+      const server = await serve(dist);
+      try {
+        const seen = await withBrowser(async (page: BrowserPage) => {
+          await coldStart(page, server.url);
+          await page.evaluate(TAP_FIRST);
+          await settle(900);
+          const answered = await where(page);
+          await page.evaluate(OPEN_AND_TAP_DESTINATION);
+          await settle(900);
+          const corrected = await where(page);
+          return { answered, corrected, problems: page.problems() };
+        }, { viewport, mobile: true });
+        expect(seen.problems).toEqual([]);
+        expect(seen.corrected.question, "the correction did not reopen the first question").not.toBe(seen.answered.question);
+        expect(seen.corrected.declOpen, "the ledger stayed open above the reopened question").toBe(false);
+        expectLanded(seen.corrected, "after ✎");
+        expect(seen.corrected.activeIsFirst, `the focus is on ${seen.corrected.active || "nothing"}`).toBe(true);
+      } finally {
+        server.close();
+      }
+    }, 180000);
 });

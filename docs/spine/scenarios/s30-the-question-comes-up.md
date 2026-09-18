@@ -70,6 +70,20 @@ own `padding-bottom` (`--space-3`, 13.6 px at 16 px), read from computed
 style: the breath the header keeps under itself, so the card sits under it by
 the same measure.
 
+**Corrected 2026-09-18, by the build (amendment 6):** "the CLS numbers do not
+move" holds to the gate and not to the thousandth. The order is the page's
+`data-answered`, written by the module from what the interview kept and, for
+a reader whose answers are on the device (`record`) or in the link (`link`),
+by the pre-paint script too — without which the ledger's move to the top
+measured 0.197 at 390×844 and 0.171 at 390×1400 on every returning arrival
+(over the s10 gate). With it, measured against the page before this amendment
+on the same machine: 390×844 record 0.001 → 0.003 (the ledger line is in view
+now, and its count's words change width), the two links 0.006 → 0.003;
+390×1400 record 0.037 → 0.030, links 0.063/0.062 → 0.055/0.054; the cold page
+0 → 0; the footer's travel unchanged on every row (+44 px on the record is
+s20's resumed line, not this). And "Start over" (`reset`) is not among the
+gestures point 6 names: on a narrow screen it keeps s20's reveal.
+
 ## How it is proved
 
 - Browser cases at 390×844 and 375×667: after the first answer the card's

@@ -471,9 +471,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * itself, both read from the header rather than typed — and the masthead
      * scrolls away with the rest. Narrow is the site's own breakpoint, read at
      * the moment of the gesture. On a wide screen the card sits beside the
-     * ledger with room above it and the hero stays: s20's rule, as before. A
-     * correction keeps s20's rule on every width — a reader who reopened a row
-     * they could already see is not jolted.
+     * ledger with room above it and the hero stays: s20's rule, as before.
+     *
+     * Once the reader has answered, the ledger line stands above the question
+     * on a phone (amendment 6), so what lands under the header is whichever of
+     * the two stands first — the stylesheet decides the order, the landing
+     * reads it. A correction lands too, on a narrow screen: with the ledger
+     * open above the card the re-drawn question sat below it, and s20's
+     * reveal, seeing the card's top on screen, did nothing (human's walk of
+     * the trial, 2026-09-18). So ✎ closes the ledger and lands as an answer
+     * does; s20's reveal is the wide screen's rule now.
      *
      * The card's ← Back is a history move (s16), and the browser brings back
      * the scroll the reader LEFT that entry at — which, once they had scrolled
@@ -494,14 +501,21 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     function landOnQuestion(card: Element, action: FlowAction): void {
       // Outside the first paint, `restore` is only ever the popstate render.
       const moved = action.kind === "restore";
-      if (wide.matches || !headEl || (action.kind !== "answer" && !moved)) {
+      const lands = action.kind === "answer" || action.kind === "edit" || moved;
+      if (wide.matches || !headEl || !lands) {
         if (!moved) reveal(card);
         return;
       }
+      // The ledger the correction came from folds away, so the question it
+      // reopened is the next thing under the line.
+      if (action.kind === "edit") decl.open = false;
       const land = () => {
         const { height } = headEl.getBoundingClientRect();
         const gap = parseFloat(getComputedStyle(headEl).paddingBottom);
-        const top = window.scrollY + card.getBoundingClientRect().top - height - gap;
+        const cardTop = card.getBoundingClientRect().top;
+        const declTop = decl.getBoundingClientRect().top;
+        const first = declTop < cardTop ? declTop : cardTop;
+        const top = window.scrollY + first - height - gap;
         window.scrollTo({ top, behavior: reducedMotion.matches ? "auto" : "smooth" });
       };
       if (moved) requestAnimationFrame(land);
@@ -618,6 +632,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       });
       say(declCount, declarationCount(asked.length));
       restart.hidden = currentField !== null;
+      // The fact the count states, as a state the stylesheet can read: on a
+      // phone the ledger line stands above the question once there is
+      // something in it to review (amendment 6). The pre-paint script writes
+      // the same flag for a reader whose answers are on the device, so the
+      // line is above from the first paint and nothing moves when the module
+      // draws (s10).
+      if (asked.length > 0) page.dataset.answered = "";
+      else delete page.dataset.answered;
     }
 
     /**
@@ -2046,9 +2068,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       body{padding:1.4rem .9rem 3rem}
       .cols{grid-template-columns:1fr}
       /* The question card comes first; "You declared" follows it, collapsed to
-         one line that expands on tap (F8). */
+         one line that expands on tap (F8) — for a reader with nothing declared.
+         Once there is something to review, the line stands above the question
+         (s30, amendment 6); a verdict keeps the ledger under the result. */
       main{order:1}
       .decl{order:2;position:static}
+      [data-answered] [data-state="questions"] .decl{order:0}
       .decl > summary{margin-bottom:0}
       .decl[open] > summary{margin-bottom:.6rem}
       .qcard{padding:1.1rem 1rem}
