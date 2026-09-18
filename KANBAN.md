@@ -58,9 +58,7 @@ under the open version, not candidates. Candidates land here only through
   measures CLS 0.057 / 0.045 at 390×844 / 390×1400 on master — the masthead's
   promise swaps from the link's to the fresh one after the module lands; an
   arrival the s10 gate never seeded. A steward pass.
-- **The finished-record hold state** · ~380 px blank under the eyebrow while
-  the module loads (s22's trade); focus on `body` after a re-answer;
-  `scrollbar-gutter: stable` for classic-scrollbar desktops.
+- **The finished-record hold state** — **landed in s31** (2026-09-18), with the focus and the gutter.
 - **A `field` on precondition statements** (from s19) · "asked" derived by a
   shared sentence, exact match; three routes share by containment.
 - **Data #15** — **landed in s29** (2026-09-17).
@@ -273,10 +271,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-- **s31 — the hold state says where it is, and two small things** · approved
-  2026-09-18 (human: "onaylıyorum"); building in `../permit-rulebook-s31`
-  (branch `s31-hold-state`). v1.2 fixes: the hold state, focus after a
-  re-answer, `scrollbar-gutter`.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -287,6 +282,15 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s31 — the hold state says where it is, and two small things** ·
+  real-green 2026-09-18 (human: "merge"; site `370f9e9`). v1.2 fixes: the
+  returning reader's hold is one line under the eyebrow (the covered parts
+  take no space; the s10 gate re-measured at 0/0/0 by the reviewer), focus
+  on the headline when a gesture draws the verdict, `scrollbar-gutter:
+  stable` (measured at 1280×1400 — at 900 the question page already
+  scrolls). Three-axis review (`docs/spine/reviews/s31.md`); *hold line* in
+  CONTEXT.md.
 
 - **s30 — on a phone the next question comes up to meet the reader** ·
   real-green 2026-09-18 (human: "merge"; site `3535086`). v1.2 fix P10, chosen

@@ -276,14 +276,9 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the merge word for s31.** The review is on
-record (`docs/spine/reviews/s31.md`, three axes, head `05c62af`, no hard
-finding, both should-fixes landed; the s10 gate re-measured by the reviewer
-at 0/0/0); the light critique found nothing new. To see the hold state
-yourself: the local build with the module held is what the test does; on
-the live site after the merge, a slow connection (DevTools → Network →
-Slow 3G) with a finished record shows the line under the eyebrow. "merge"
-is the deploy.
+**Nothing is blocked on you.**
+
+- [x] **s31 reviewed and merged** (2026-09-18, your word). Live.
 
 - [x] **s30 tried, amended three times and merged** (2026-09-18, your word). Live.
 
@@ -540,10 +535,12 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s31 is built, reviewed on three axes and captured** (2026-09-18; branch `s31-hold-state` at `05c62af`, 687 tests, astro check 0, assets true; hold line in the glossary). Waiting on the merge word: the hold state measured with the module
-held 4 s (eyebrow, ~1000 px of blank, the line at the bottom of the hidden
-box) and decided as one line under the eyebrow; focus after a re-answer;
-the scrollbar gutter. Three points, one "nothing else".
+the threat model, the architecture, the critiques, the announcement).**s31 is live** (2026-09-18; deploy `370f9e9` green; the live page carries
+the hold line and the stable gutter). v1.2's fixes: F2, the four-country
+headline, P8, the learn links, #13, #15, the Algerian label, P10 and the hold
+state done; **left: `field` on precondition statements, data #17** — and the
+steward items filed on the way (Back on a restored record; an unknown link's
+first paint). The stamp comes when the last fix lands.
 
 **s30 is live** (2026-09-18; deploy `3535086` green; read on the live host at
 390: every answer and ✎ lands the question at 72 px under the header, the
