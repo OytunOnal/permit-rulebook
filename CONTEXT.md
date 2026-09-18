@@ -208,6 +208,16 @@ The official place where an open unknown can be resolved by the person
 themselves (e.g. the Anabin database for degree recognition).
 _Avoid_: help link, reference link
 
+**Reveal / landing** (the two ways a drawn screen meets the reader):
+A *reveal* (s20) scrolls only when the card's top is off the screen — a
+correction from the ledger, and every gesture on a wide screen, where the
+card sits beside the ledger. A *landing* (s30) brings the card's top to just
+under the header — the header's measured height and its own padding — on a
+narrow screen after an answer, or after a history move to a question later
+than the first. The first paint is neither: a cold load, a restored record and
+a history move to the first screen keep the browser's own scroll.
+_Avoid_: scroll-to, jump, snap, autoscroll
+
 ### Verdicts
 
 **Met** (UI: "criteria met"):

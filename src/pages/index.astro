@@ -474,17 +474,38 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * ledger with room above it and the hero stays: s20's rule, as before. A
      * correction keeps s20's rule on every width — a reader who reopened a row
      * they could already see is not jolted.
+     *
+     * The card's ← Back is a history move (s16), and the browser brings back
+     * the scroll the reader LEFT that entry at — which, once they had scrolled
+     * on it, is not where the question is: measured at 390, an answer, a
+     * scroll of 250, an answer and Back put the card's top 177 px above the
+     * viewport (Spec review, 2026-09-18). The reader asked for that question,
+     * so on a narrow screen it lands the same way. The browser restores after
+     * the popstate handler and before the first animation frame — read in that
+     * order, in that walk — so the landing waits for the frame and comes after
+     * it. Where the history move is to the page's first screen the landing
+     * stays out of it: that screen keeps the top of the page, as at the cold
+     * load. On a wide screen a history move still scrolls nothing of ours.
      */
-    const siteHeader = document.querySelector<HTMLElement>(".site-head");
+    const headEl = document.querySelector<HTMLElement>(".site-head");
     /** One list for the breakpoint: the landing reads it here, the ledger
      * below listens to it. */
     const wide = window.matchMedia(WIDE_QUERY);
     function landOnQuestion(card: Element, action: FlowAction): void {
-      if (wide.matches || action.kind !== "answer" || !siteHeader) { reveal(card); return; }
-      const { height } = siteHeader.getBoundingClientRect();
-      const gap = parseFloat(getComputedStyle(siteHeader).paddingBottom) || 0;
-      const top = window.scrollY + card.getBoundingClientRect().top - height - gap;
-      window.scrollTo({ top, behavior: reducedMotion.matches ? "auto" : "smooth" });
+      // Outside the first paint, `restore` is only ever the popstate render.
+      const moved = action.kind === "restore";
+      if (wide.matches || !headEl || (action.kind !== "answer" && !moved)) {
+        if (!moved) reveal(card);
+        return;
+      }
+      const land = () => {
+        const { height } = headEl.getBoundingClientRect();
+        const gap = parseFloat(getComputedStyle(headEl).paddingBottom);
+        const top = window.scrollY + card.getBoundingClientRect().top - height - gap;
+        window.scrollTo({ top, behavior: reducedMotion.matches ? "auto" : "smooth" });
+      };
+      if (moved) requestAnimationFrame(land);
+      else land();
     }
     /** The first control on a question card — a button for a choice, the box
      * for a search — and the card's own heading where there is neither. The
@@ -768,7 +789,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         if (line) { line.append(" ", restart); restart.hidden = false; }
       }
       const card = main.querySelector<HTMLElement>(".qcard");
-      if (card && !arriving && !restoring) landOnQuestion(card, action);
+      // A history move to the page's first screen keeps the browser's own
+      // restore (the top of the page); every other gesture, the browser's Back
+      // included, hands the card to the landing.
+      if (card && !arriving && !(restoring && screens.current === 0)) landOnQuestion(card, action);
       if (longList) {
         // Every render of a search question puts the caret in it, whether or
         // not the box had to be rewritten to get here. A correction starts by

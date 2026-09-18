@@ -267,10 +267,10 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
       return result.value;
     },
     /**
-     * What the reader has asked the browser for — `prefers-reduced-motion`,
-     * `prefers-color-scheme` — as `matchMedia` and the stylesheet will read it.
-     * Set before `goto`, so the page's first read already sees it; a headless
-     * profile has no such preferences of its own to find (s30).
+     * A media feature the reader has set — `prefers-reduced-motion: reduce` is
+     * the one asked for — as `matchMedia` and the stylesheet will read it. Set
+     * before `goto`, so the page's first read already sees it; a headless
+     * profile has no such preference of its own to find (s30).
      */
     async emulateMedia(features) {
       await send("Emulation.setEmulatedMedia", { features }, sessionId);

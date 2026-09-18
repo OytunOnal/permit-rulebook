@@ -45,27 +45,30 @@ card sits beside the ledger with room above it, and the hero should stay.
    result's `landOnVerdict`, the desktop.
 
 **Corrected 2026-09-18, by the build:** point 1 names Back beside an answer
-as a gesture the landing answers, and point 3 says a browser history move
-scrolls nothing — on this site they are the same gesture. The card's ← Back
-*is* `history.back()` (s16: the screen's Back and the phone's Back are one
-gesture), so it renders under `restoring`, as `kind: "restore"`, and the
-landing does not fire on it; nothing there was touched. The question comes
-up under the header all the same, by the browser's own hand: every history
-entry keeps the scroll the reader left it at, and every question after the
-first was left where the landing put it. Measured on the build at 390×844:
-answers 1–3 land at scrollY 372 (card top 73 = the header's 58.6 + its
-13.6 gap); Back to the third and to the second question finds 372 already
-in place — read inside the popstate handler, before the render — and the
-card's top at 73; Back to the *first* question restores that entry's 0, the
-page as the cold load shows it (card at 445), which is the first question,
-the one point 1 excludes. The test pins Back after the second answer, as
-*How it is proved* asks; the mechanism is recorded here so nobody looks for
-it in `landOnQuestion`. The one Back that would render as `edit` — standing
-on the page's first entry with answers behind it — no walk reaches: the
-rebuilt list stands on its last entry, and on the first there is nothing
-behind. (1, the gap) The header's own `padding-bottom` (`--space-3`, 13.6 px
-at 16 px), read from computed style: the breath the header keeps under
-itself, so the card sits under it by the same measure.
+and point 3 says a browser history move scrolls nothing — on this site they
+are one gesture. The card's ← Back *is* `history.back()` (s16: the screen's
+Back and the phone's Back are one gesture), so it renders under `restoring`,
+as `kind: "restore"`, from the popstate handler. The resolution is point 1's:
+the reader asked for that question. The first build left Back to the
+browser, whose restore brings back the scroll the reader *left* the entry at
+— right only while they had not scrolled on it. The Spec review measured the
+other case at 390×844: an answer, a scroll of 250, an answer and Back put
+scrollY at 622 and the card's top 177 px above the viewport. So on a narrow
+screen a history move that draws a question later than the first lands it
+under the header too — after the browser's restore, which comes after the
+popstate handler and its microtasks and before the first animation frame
+(read in that order, in that walk: 372 in the handler, 622 in the frame), so
+the landing waits for the frame and wins; instant or smooth per reduced
+motion, as an answer's. Back to the *first* screen (`screens.current === 0`)
+keeps the browser's own restore — that entry's 0, the page as the cold load
+shows it — and on a wide screen a history move still scrolls nothing of ours;
+the cold load and a restored record are `arriving` and untouched. The one
+Back that would render as `edit` — standing on the page's first entry with
+answers behind it — no walk reaches: the rebuilt list stands on its last
+entry, and on the first there is nothing behind. (1, the gap) The header's
+own `padding-bottom` (`--space-3`, 13.6 px at 16 px), read from computed
+style: the breath the header keeps under itself, so the card sits under it by
+the same measure.
 
 ## How it is proved
 

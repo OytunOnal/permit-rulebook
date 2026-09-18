@@ -94,6 +94,10 @@ const TAP_FIRST = 'document.querySelector("#main .qcard .opt").click()';
  * had a frame: what an instant landing leaves, and a smooth one does not. */
 const TAP_FIRST_AND_READ = `(() => { ${TAP_FIRST}; return ${WHERE}; })()`;
 const TAP_BACK = 'document.querySelector("#main #back").click()';
+/** The reader reads on down the page before answering — a quarter of the
+ * viewport, so the card's top is still on the screen and the browser has
+ * something of theirs to bring back. */
+const READ_ON = 'window.scrollBy({ top: Math.round(window.innerHeight / 4), behavior: "instant" })';
 
 /** The card's top is one header and one gap under the viewport's top — within
  * the pixel the browser rounds a scroll to. */
@@ -133,7 +137,19 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
           await page.evaluate(TAP_BACK);
           await settle(900);
           const back = await where(page);
-          return { cold, first, second, back, problems: page.problems() };
+          // The reader reads on down the page, answers, and comes back: the
+          // browser restores the scroll they LEFT the entry at, which is not
+          // where the question is (Spec review, 2026-09-18: 622, card top
+          // -177 at 390).
+          await page.evaluate(READ_ON);
+          const readOn = await where(page);
+          await page.evaluate(TAP_FIRST);
+          await settle(900);
+          const third = await where(page);
+          await page.evaluate(TAP_BACK);
+          await settle(900);
+          const backFromScrolled = await where(page);
+          return { cold, first, second, back, readOn, third, backFromScrolled, problems: page.problems() };
         }, { viewport, mobile: true });
         expect(seen.problems).toEqual([]);
         expect(seen.cold.wide, "the breakpoint reads this width as wide").toBe(false);
@@ -147,9 +163,17 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
         expectLanded(seen.back, "after Back");
         expect(seen.back.question, "Back did not return to the question before").toBe(seen.first.question);
 
+        expect(seen.readOn.scrollY, "reading on did not move the page").toBeGreaterThan(seen.back.scrollY);
+        expectLanded(seen.third, "after the answer that followed reading on");
+        expectLanded(seen.backFromScrolled, "after Back to an entry the reader had scrolled on");
+        expect(seen.backFromScrolled.question).toBe(seen.back.question);
+
         // The focus behaviour does not change: the first control holds it,
         // and the page moved once to get there.
-        for (const [label, step] of [["first answer", seen.first], ["second answer", seen.second], ["Back", seen.back]] as const)
+        for (const [label, step] of [
+          ["first answer", seen.first], ["second answer", seen.second], ["Back", seen.back],
+          ["third answer", seen.third], ["Back from a scrolled entry", seen.backFromScrolled],
+        ] as const)
           expect(step.activeIsFirst, `after the ${label} the focus is on ${step.active || "nothing"}`).toBe(true);
       } finally {
         server.close();
@@ -160,6 +184,10 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
+        // The feature in CDP's own form (a name and a value, not a query), and
+        // then the platform's query for it — spelled the way the page spells it
+        // in its script, which declares it as a literal and exports nothing.
+        // This only checks the harness applied the preference.
         await page.emulateMedia([{ name: "prefers-reduced-motion", value: "reduce" }]);
         const cold = await coldStart(page, server.url);
         const reduced = await page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches");
