@@ -102,3 +102,11 @@ phone emulation** (one point, tried on a throwaway build first — human:
    card). The ledger's own behaviour — collapsed, expands on tap, ✎ per row
    — does not change; s20's correction landing keeps its rule. The order is
    a declared state of the page (answers exist), not a count typed into CSS.
+   **And a correction lands too, on a phone** (human's walk of the trial:
+   "ledgerı açıp düzeltmeye tıklayınca soruya gitmiyor" — with the ledger
+   open above the card, the re-drawn question sat below it and s20's
+   reveal, seeing the card's top on screen, did nothing). On a narrow
+   screen ✎ collapses the ledger and lands as an answer does — the ledger
+   line under the header, the question under it, the first control focused
+   without a second move. Point 3's rule (reveal only when off screen)
+   narrows to wide screens.
