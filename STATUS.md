@@ -278,7 +278,8 @@ CLS fix is not. The three lines, left here until the window closes:
 
 **One thing is blocked on you: the merge word for s32.** The review is on
 record (`docs/spine/reviews/s32.md`, three axes on both repositories, no hard
-finding, three should-fixes landed); the light critique found nothing new.
+finding, three should-fixes landed; your amendment — no *§ = section* anywhere —
+reviewed as a delta, site `1a68843`); the light critique found nothing new.
 The local build at http://localhost:4526/: Germany → *research* → any
 answers → the Researcher card says *Asked in the interview — you declared
 …*; Germany → *transfer* → the ICT card keeps the six months under *not
@@ -543,7 +544,7 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s32 is built, reviewed on three axes and read** (2026-09-18; data `9bbd24f`, site `93be021`; data check 647, site 694). Waiting on the merge word: read the three containment cases — two of
+the threat model, the architecture, the critiques, the announcement).**s32 is built, reviewed on three axes and read** (2026-09-18; data `9bbd24f`, site `1a68843` after the human's amendment 6 — the section sign carries no explainer; data check 647, site 694). Waiting on the merge word: read the three containment cases — two of
 the three would have been wrong under a containment rule (a tenure is not
 what the situation question asks) — so the key is a curator's field, not a
 sentence. Data + site.
