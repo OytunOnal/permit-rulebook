@@ -276,8 +276,9 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.**
+**Nothing is blocked on you.** s30 is approved and building; the local build and the review come to you together.
 
+- [x] **s30 tried and chosen** (2026-09-18, your word "tamamdır" on the phone-only trial).
 - [x] **s29 reviewed, walked and merged** (2026-09-17, your word, knowing the BMI sentinel is human-tier). Live; data #13 and #15 closed.
 
 - [x] **s28 reviewed, walked and merged** (2026-09-17, your word). Live.
@@ -530,7 +531,13 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s29 is live** (2026-09-17; data `d062750`, site `434d16c` with the social
+the threat model, the architecture, the critiques, the announcement).**s30 is approved and building** (2026-09-18): P10 — after every answer or
+Back on a phone the next question lands under the header; desktop unchanged;
+corrections keep s20's rule. Chosen from three options after a throwaway
+build the human tried in Chrome's phone emulation (worktree removed; the
+scenario carries the measurements).
+
+**s29 is live** (2026-09-17; data `d062750`, site `434d16c` with the social
 card re-rendered for the new read date; deploy green; read on the live host:
 the Opportunity Card's *Official page* → bmi.bund.de, the Swiss passport's
 screen with three quotes, the Algerian door). v1.2's fixes: F2, the

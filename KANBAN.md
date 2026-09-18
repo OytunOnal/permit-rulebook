@@ -264,7 +264,10 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s30 — on a phone the next question comes up to meet the reader** ·
+  approved 2026-09-18 (human: "tamamdır" after a trial build; option B,
+  phones only); building in `../permit-rulebook-s30` (branch
+  `s30-question-comes-up`). v1.2 fix: P10.
 
 ## mock-green
 
