@@ -3,8 +3,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  SITUATION_FIELD, deriveBands, evaluate, fieldOptions, forEachCriterion, isScored, remainingQuestions,
-  situationsAsked, type Dataset, type Profile, type Route,
+  SITUATION_FIELD, deriveBands, evaluate, fieldOptions, isScored, remainingQuestions,
+  situationsAsked, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
@@ -157,8 +157,10 @@ describe("s19 — the zero-open result through a marked option is a written stat
 /**
  * F8: the Spanish researcher card listed "A hosting agreement …" under "Also
  * required — not checked here" to a reader who had just declared one. A
- * precondition the interview asked — its sentence is the one a criterion on an
- * answered field stands on — renders as answered, in the s5 words.
+ * precondition the interview asked renders as answered, in the s5 words.
+ * "Asked" was its sentence being the one a criterion on an answered field
+ * stood on, until s32; it is the question the statement names (`field`)
+ * since, and this case reads that key — the decision it holds is unchanged.
  */
 describe("s19 — a condition the interview asked is never \"not checked here\"", () => {
   /** Every question answered with a real answer — the widest walk there is. */
@@ -172,15 +174,6 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
     return p;
   };
 
-  /** The sentences a route's answered criteria stand on. */
-  const askedQuotes = (route: Route, answers: Profile): Set<string> => {
-    const quotes = new Set<string>();
-    forEachCriterion(route.criteria, (c) => {
-      if ("field" in c && answers[c.field] !== undefined && "source" in c && c.source) quotes.add(c.source.quote);
-    });
-    return quotes;
-  };
-
   it("over every scored route with a full profile", () => {
     const answers = full();
     let moved = 0;
@@ -188,9 +181,8 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
       if (!isScored(r.route)) continue;
       const html = precondHtml(ds, r.route, answers);
       const notChecked = html.match(new RegExp(`<div class="precond"><b>${NOT_CHECKED_HEADING}</b>([\\s\\S]*?)</div>`))?.[1] ?? "";
-      const quotes = askedQuotes(r.route, answers);
       for (const s of (r.route.statements ?? []).filter((x) => x.kind === "precondition")) {
-        if (!s.source || !quotes.has(s.source.quote)) continue;
+        if (s.field === undefined || answers[s.field] === undefined) continue;
         moved++;
         expect(notChecked, `${r.route.id}: ${s.id} is asked and still "not checked here"`).not.toContain(s.text);
         expect(html, `${r.route.id}: ${s.id} is asked and not rendered as answered`).toContain("you declared");
@@ -229,11 +221,11 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
     expect(textOf(researcher!.html)).toContain("Avoir une convention d'accueil souscrite");
   });
 
-  it("/data/ says schema 0.8.1 and dataset 2026.09.17, and counts 23 scored and 6 quoted", () => {
+  it("/data/ says schema 0.8.2, and counts 23 scored and 6 quoted", () => {
     // 0.8.0 was s19's (`not_asked`); 0.8.1 is s25's, the points item with
-    // rows on two fields.
+    // rows on two fields; 0.8.2 is s32's, a statement naming its question.
     const text = textOf(dataPage(ds).html);
-    expect(text).toContain("0.8.1");
+    expect(text).toContain("0.8.2");
     expect(text).toContain("2026-09-16");
     expect(text).toContain("23 routes scored against your answers");
     expect(text).toContain("6 more quoted and dated but not scored");

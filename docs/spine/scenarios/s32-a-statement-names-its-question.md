@@ -54,6 +54,41 @@ question covers the statement — a typed field.
 5. **Nothing else changes.** Verdicts, counts, the record, the other
    routes' cards.
 
+**Corrected 2026-09-18, by the build:** (1) There is no changelog: 0.8.1's
+reason is written in the schema's own `description` of what it added (the
+`textHistoryEntry`, the two reasons, the table's `history`), so 0.8.2's is the
+`description` of `field` on `routeStatement`, with the comment on the type
+beside it. The schema holds the id's shape (`fieldDef.id`'s own pattern) and
+the validator the rest: `knownStatementField` (an id the dataset does not
+declare) and `statementFieldNotRead` (a field no criterion of the route
+reads, read through `referencedFields`), each naming the route and the
+statement. The contract had no sentence for it — `CONTRIBUTING.md` step 4
+said a precondition is what "no question can reach" — so the step gained
+one. (2) `askedByCriterion` keeps its signature with the route unread: the
+field is held to its route by the validator, so "the same statement on a
+different route" is no longer a case the data can produce, and the s19 data
+test's assertion of it is retired with the key. The s19 check the other way
+(a fielded statement named in `not_asked`) stays, renamed from
+`notAskedButQuotedByCriterion` to `notAskedButAsked`; the new cross-check is
+`quotedByCriterionUndecided`. Containment is not read by either — the
+scenario's own count (wrong twice in three) is the reason. (3) `not_asked`
+does not derive: s19 left it authored and validated (the contract's "authored,
+not derived"), so de-researcher's list is emptied by hand, its value moves to
+`every-deciding-rule-asked` and its `reason` is rewritten in the form s19 gave
+es-researcher's; `data/exclusions.md` records no German route but the
+self-employment one and is unmoved. Versions: schema `0.8.2`, dataset
+`2026.09.18` (the same-day convention, first change of the day), newest read
+date `2026-09-17` unchanged — every quote keeps its day. (4) The two tenures
+do not *return* to *not checked here*: they never left it. s19's rule was
+verbatim only, containment never matched, and on master both already read
+under that heading; what moves on the cards is de-researcher's hosting
+agreement alone (into the asked block, and its scope line to *scored against
+your answers*). No fingerprint moves: `tests/fixtures/root-build.json` is over
+the frozen two-route dataset (`de-blue-card-general`, `de-skilled-academic`),
+neither among the three, and a route page has no reader, so `askedFieldOf`
+answers null on every page whatever the field; `/data/`'s fixture is over the
+same frozen dataset. Neither regenerated.
+
 ## How it is proved
 
 - Data: the validator rejects a `field` the dataset does not declare and a
