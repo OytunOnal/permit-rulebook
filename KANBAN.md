@@ -48,7 +48,8 @@ under the open version, not candidates. Candidates land here only through
   colon and the card's door from the human's walk.
 - **Learn links read as actions, unglossed** — **landed in s28** (2026-09-17).
 - **The Algerian notice's learn label** — **landed in s29** (2026-09-17).
-- **P10** · on a phone every question sits under the full hero and stamp.
+- **P10** — **landed in s30** (2026-09-18), with the ledger line above the
+  question and the result on a phone (the human's amendments).
 - **Back on a restored record** (s30 build, 2026-09-18) · a reader who arrives
   fresh with a restored record and taps ← Back leaves the site (the rebuilt
   history has no entries in the browser); reload mid-interview then Back
@@ -272,10 +273,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-- **s30 — on a phone the next question comes up to meet the reader** ·
-  approved 2026-09-18 (human: "tamamdır" after a trial build; option B,
-  phones only); building in `../permit-rulebook-s30` (branch
-  `s30-question-comes-up`). v1.2 fix: P10.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -286,6 +284,18 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s30 — on a phone the next question comes up to meet the reader** ·
+  real-green 2026-09-18 (human: "merge"; site `3535086`). v1.2 fix P10, chosen
+  from three options after a throwaway build the human tried in Chrome's
+  phone emulation, then amended three times from the human's own walks:
+  the ledger line above the question and above the result once answers
+  exist (declared pre-paint, s10 gate at CLS 0), ✎ landing too, and the
+  landing on the question card itself. Every answer, correction or later
+  history move on a phone brings the card under the header; desktop
+  unchanged. Three-axis review on the build and on each delta
+  (`docs/spine/reviews/s30.md`); *reveal*/*landing* in CONTEXT.md; two
+  pre-existing Back behaviours and an unknown link's first paint filed.
 
 - **s29 — three data corrections** · real-green 2026-09-17 (human: "merge";
   data `d062750`, site `434d16c`). v1.2 fixes data #13 (the Opportunity

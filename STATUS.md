@@ -276,15 +276,9 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**One thing is blocked on you: the merge word for s30.** The review is on
-record (`docs/spine/reviews/s30.md`, three axes on the build and on both of
-your amendments — the ledger line above the question and above the result
-on a phone, ✎ landing too; head `9845619`, 676 tests, CLS 0 on the
-finished-record arrival; amendment 8 — the landing is the question, the
-ledger line above it — reviewed too). The local build at
-http://localhost:4526/ in Chrome's phone emulation: every answer lands on
-the question, the ledger line one swipe up; at the end it sits under the
-stamp. "merge" is the deploy.
+**Nothing is blocked on you.**
+
+- [x] **s30 tried, amended three times and merged** (2026-09-18, your word). Live.
 
 - [x] **s30 tried and chosen** (2026-09-18, your word "tamamdır" on the phone-only trial).
 - [x] **s29 reviewed, walked and merged** (2026-09-17, your word, knowing the BMI sentinel is human-tier). Live; data #13 and #15 closed.
@@ -539,11 +533,15 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s30 is built, reviewed on three axes and walked** (2026-09-18; branch `s30-question-comes-up` at `4ff0a46`, 668 tests, astro check 0, assets true; *reveal*/*landing* recorded in CONTEXT.md). Waiting on the merge word: P10 — after every answer or
-Back on a phone the next question lands under the header; desktop unchanged;
-corrections keep s20's rule. Chosen from three options after a throwaway
-build the human tried in Chrome's phone emulation (worktree removed; the
-scenario carries the measurements).
+the threat model, the architecture, the critiques, the announcement).**s30 is live** (2026-09-18; deploy `3535086` green; read on the live host at
+390: every answer and ✎ lands the question at 72 px under the header, the
+ledger line one swipe up; the verdict carries the ledger line under the
+stamp). v1.2's fixes: F2, the four-country headline, P8, the learn links,
+#13, #15, the Algerian label and P10 done; **left: the hold state / focus /
+`scrollbar-gutter`, `field` on precondition statements, data #17**, plus the
+three steward items filed on the way (Back on a restored record; an unknown
+link's first paint; the card's per-quote links if you want it). The stamp
+comes when the last fix lands.
 
 **s29 is live** (2026-09-17; data `d062750`, site `434d16c` with the social
 card re-rendered for the new read date; deploy green; read on the live host:

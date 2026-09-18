@@ -3,7 +3,7 @@
 **Status:** approved 2026-09-18 (human: "tamamdır", after trying a throwaway
 build in Chrome's phone emulation; option B of three, then "sadece mobil").
 v1.2 fix: P10 (v1.1 gate critique, polish; re-score: "each question starts
-445 px down").
+445 px down"). real-green: 2026-09-18 (human: "merge"; site 3535086).
 
 ## What happened
 
