@@ -87,3 +87,18 @@ the same measure.
 
 It is not the stamp's removal (A — declined), not a masthead redesign, and
 not a change to where a verdict lands.
+
+**Amended 2026-09-18, from the human's walk of the local build in Chrome's
+phone emulation** (one point, tried on a throwaway build first — human:
+"ledger üstte iyi"):
+
+6. **On a phone, once the reader has answered, the ledger line sits above
+   the question.** The collapsed *You declared · N answers — tap to review
+   or change* box moves from under the card to above it as soon as one
+   answer exists (the first question keeps F8's order: card first, the
+   empty ledger below); the landing brings the ledger line's top under the
+   header, the question follows it (measured on the trial: ledger 73, card
+   178 at 390). Wide screens unchanged (the ledger is already beside the
+   card). The ledger's own behaviour — collapsed, expands on tap, ✎ per row
+   — does not change; s20's correction landing keeps its rule. The order is
+   a declared state of the page (answers exist), not a count typed into CSS.
