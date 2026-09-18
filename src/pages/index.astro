@@ -456,6 +456,36 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (top >= 0 && top < window.innerHeight) return;
       el.scrollIntoView({ block: "start", behavior: reducedMotion.matches ? "auto" : "smooth" });
     }
+    /**
+     * On a phone the next question comes up to meet the reader.
+     *
+     * Every question after the first is drawn under the header, the headline,
+     * the subline and the stamp — 445 px down at 390 wide — with its first
+     * option at 550: at 844 tall the second option is often out of sight, at
+     * 667 a long first one is cut, and the reader who just tapped an answer
+     * scrolls to find what they were asked (v1.1 gate critique, P10). `reveal`
+     * never fires there: the card's top is on the screen; the question is not.
+     *
+     * So, on a narrow screen, an answer lands the card's top just under the
+     * header — one header's height and the breath the header keeps under
+     * itself, both read from the header rather than typed — and the masthead
+     * scrolls away with the rest. Narrow is the site's own breakpoint, read at
+     * the moment of the gesture. On a wide screen the card sits beside the
+     * ledger with room above it and the hero stays: s20's rule, as before. A
+     * correction keeps s20's rule on every width — a reader who reopened a row
+     * they could already see is not jolted.
+     */
+    const siteHeader = document.querySelector<HTMLElement>(".site-head");
+    /** One list for the breakpoint: the landing reads it here, the ledger
+     * below listens to it. */
+    const wide = window.matchMedia(WIDE_QUERY);
+    function landOnQuestion(card: Element, action: FlowAction): void {
+      if (wide.matches || action.kind !== "answer" || !siteHeader) { reveal(card); return; }
+      const { height } = siteHeader.getBoundingClientRect();
+      const gap = parseFloat(getComputedStyle(siteHeader).paddingBottom) || 0;
+      const top = window.scrollY + card.getBoundingClientRect().top - height - gap;
+      window.scrollTo({ top, behavior: reducedMotion.matches ? "auto" : "smooth" });
+    }
     /** The first control on a question card — a button for a choice, the box
      * for a search — and the card's own heading where there is neither. The
      * search box keeps v0.7's rule (the caret in it, its text selected), which
@@ -738,7 +768,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         if (line) { line.append(" ", restart); restart.hidden = false; }
       }
       const card = main.querySelector<HTMLElement>(".qcard");
-      if (card && !arriving && !restoring) reveal(card);
+      if (card && !arriving && !restoring) landOnQuestion(card, action);
       if (longList) {
         // Every render of a search question puts the caret in it, whether or
         // not the box had to be rewritten to get here. A correction starts by
@@ -1539,7 +1569,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * open — its summary is not a control there. Narrow starts collapsed, and
      * once the person opens or closes it themselves, that decision stands.
      */
-    const wide = window.matchMedia(WIDE_QUERY);
     let ledgerChosen = false;
     const syncLedger = () => {
       if (!ledgerChosen || wide.matches) decl.open = wide.matches;

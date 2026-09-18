@@ -44,6 +44,29 @@ card sits beside the ledger with room above it, and the hero should stay.
 5. **Nothing else changes.** The masthead, the stamp, the first screen, the
    result's `landOnVerdict`, the desktop.
 
+**Corrected 2026-09-18, by the build:** point 1 names Back beside an answer
+as a gesture the landing answers, and point 3 says a browser history move
+scrolls nothing — on this site they are the same gesture. The card's ← Back
+*is* `history.back()` (s16: the screen's Back and the phone's Back are one
+gesture), so it renders under `restoring`, as `kind: "restore"`, and the
+landing does not fire on it; nothing there was touched. The question comes
+up under the header all the same, by the browser's own hand: every history
+entry keeps the scroll the reader left it at, and every question after the
+first was left where the landing put it. Measured on the build at 390×844:
+answers 1–3 land at scrollY 372 (card top 73 = the header's 58.6 + its
+13.6 gap); Back to the third and to the second question finds 372 already
+in place — read inside the popstate handler, before the render — and the
+card's top at 73; Back to the *first* question restores that entry's 0, the
+page as the cold load shows it (card at 445), which is the first question,
+the one point 1 excludes. The test pins Back after the second answer, as
+*How it is proved* asks; the mechanism is recorded here so nobody looks for
+it in `landOnQuestion`. The one Back that would render as `edit` — standing
+on the page's first entry with answers behind it — no walk reaches: the
+rebuilt list stands on its last entry, and on the first there is nothing
+behind. (1, the gap) The header's own `padding-bottom` (`--space-3`, 13.6 px
+at 16 px), read from computed style: the breath the header keeps under
+itself, so the card sits under it by the same measure.
+
 ## How it is proved
 
 - Browser cases at 390×844 and 375×667: after the first answer the card's

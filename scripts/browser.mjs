@@ -266,6 +266,15 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
       const { result } = await send("Runtime.evaluate", { expression, returnByValue: true }, sessionId);
       return result.value;
     },
+    /**
+     * What the reader has asked the browser for — `prefers-reduced-motion`,
+     * `prefers-color-scheme` — as `matchMedia` and the stylesheet will read it.
+     * Set before `goto`, so the page's first read already sees it; a headless
+     * profile has no such preferences of its own to find (s30).
+     */
+    async emulateMedia(features) {
+      await send("Emulation.setEmulatedMedia", { features }, sessionId);
+    },
     /** The screen as a PNG, for a record a reader can look at. */
     async screenshot({ fullPage = false } = {}) {
       const { data } = await send(
