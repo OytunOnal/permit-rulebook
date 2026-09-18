@@ -20,10 +20,10 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * the question, in the result card's box, on the route page. Two of the three
  * glossed it, so the shortage link read "§ 18g AufenthG (§ = section;
  * AufenthG = the Residence Act) lists …" — an explainer inside a link,
- * (the sign's own words have since gone everywhere, s32 amendment 6; what
- * these cases hold is that a link is never glossed, so the absence pinned
- * below is the act's expansion)
- * underlined end to end. The labels are the data's (their own test holds them
+ * underlined end to end. (The sign's own words have since gone everywhere,
+ * s32 amendment 6; what these cases hold is that a link is never glossed, so
+ * the absence pinned below is the act's expansion.) The labels are the
+ * data's (their own test holds them
  * to the contract); what the site decides is that link text is never glossed
  * and that the three surfaces agree.
  */
