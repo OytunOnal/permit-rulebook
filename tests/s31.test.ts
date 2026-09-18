@@ -137,9 +137,7 @@ interface Hold {
 
 /**
  * The line is in the built page, between the eyebrow and the headline —
- * read off the HTML rather than the constant read back to itself, so
- * emptying it or moving it turns this red (DECISIONS.md — checks require
- * decisions, not content).
+ * read off the HTML, so emptying it or moving it turns this red.
  */
 describe.skipIf(!existsSync(dist))("the hold line ships in the masthead (s31)", () => {
   const built = readFileSync(join(dist, "index.html"), "utf8");
@@ -148,8 +146,6 @@ describe.skipIf(!existsSync(dist))("the hold line ships in the masthead (s31)", 
   it("is a sentence, the record line's own, under the eyebrow and above the headline", () => {
     const said = /<p class="stand-in stand-in-verdict">([^<]*)<\/p>/.exec(masthead)?.[1] ?? "";
     expect(said, "the hold line shipped empty, or not in the masthead").not.toBe("");
-    expect(said.length, `too short to be a sentence: ${JSON.stringify(said)}`).toBeGreaterThan(20);
-    expect(said, "not a sentence").toMatch(/[.!]$/);
     expect(said).toBe(RETURNING_LINE);
     expect(masthead).toContain(holdLineHtml());
     expect(masthead.indexOf('class="brand"')).toBeLessThan(masthead.indexOf("stand-in-verdict"));

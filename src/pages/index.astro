@@ -965,8 +965,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * reach it (v1.1 re-score). The headline is the element the live region
      * just read out, so it is the one to hold the focus — out of the tab
      * order, and without a second scroll: the reveal is the one move. The
-     * first paint keeps s10's rule: nothing takes the focus from a reader who
-     * has touched nothing (s31).
+     * focus is taken on every gesture-drawn verdict, one drawn over a result
+     * the reader was already on included — only the reveal is skipped then.
+     * The first paint and a history move keep s10's rule: nothing takes the
+     * focus from a reader who has touched nothing (s31).
      */
     const masthead = document.querySelector<HTMLElement>(".masthead-with-stamps")!;
     function landOnVerdict(wasResult: boolean): void {
@@ -1759,7 +1761,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .foot-links a{display:inline-flex;align-items:center;min-height:var(--tap-min)}
     h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}
     h1 b{color:var(--color-near)}
-    .sub{color:var(--color-muted);max-width:38rem;font-size:.92rem}
+    /* The hold line wears the subline's dress: it stands where the subline
+       will, in the same voice, so the two are one rule (s31). */
+    .sub,.stand-in-verdict{color:var(--color-muted);max-width:38rem;font-size:.92rem}
     /* The one door a verdict's subline can carry: the quoted route's page (s19). */
     .sub a{color:var(--color-band);font-weight:600;text-decoration:none}
     /* The masthead's two standing promises, both painted, one shown. Which one
@@ -1776,11 +1780,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        get — and is folded away here until the module closes it properly, in
        the same task it takes this flag down. */
     /* The line that stands in the box until the module has a screen to draw,
-       for a reader whose own screen is not the one the build painted. It sits
-       OVER question one rather than in place of it: the card keeps its height
-       because its contents are still there, only hidden, so the box a
-       returning reader meets is the box every reader meets and nothing below
-       it moves. Which line — or neither — was decided in <head> (s10). */
+       for a reader owed a question that is not the one the build painted —
+       a record part-way through, or a link that answered question one. It
+       sits OVER question one rather than in place of it: the card keeps its
+       height because its contents are still there, only hidden, so the box
+       those readers meet is the box a fresh visit meets and nothing below
+       it moves. Which line — or neither — was decided in <head> (s10). The
+       reader owed a verdict is the block below: no box, their line in the
+       masthead (s22, s31). */
     .stand-in{display:none}
     [data-first="record"] #main,[data-first="link"] #main{position:relative}
     [data-first="record"] .qcard > *,[data-first="link"] .qcard > *{visibility:hidden}
@@ -1809,7 +1816,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     [data-first="verdict"] #headline,[data-first="verdict"] #subline,[data-first="verdict"] #stamp,
     [data-first="verdict"] #app,[data-first="verdict"] footer.site-foot{display:none}
     [data-first="verdict"] .masthead-with-stamps{border-bottom-color:transparent}
-    [data-first="verdict"] .stand-in-verdict{display:block;margin-top:.5rem;max-width:38rem;color:var(--color-muted);font-size:.92rem}
+    [data-first="verdict"] .stand-in-verdict{display:block;margin-top:.5rem}
     [data-narrow] #decl[open] > :not(summary){display:none}
     [data-narrow] #decl[open] > summary{margin-bottom:0}
 

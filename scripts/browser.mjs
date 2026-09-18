@@ -157,7 +157,6 @@ export async function withBrowser(run, {
   // launch instead, which is the sweep that always works.
   sweepStaleProfiles();
   const userDataDir = join(tmpdir(), `${PROFILE_PREFIX}${process.pid}-${nextProfile++}`);
-  //
   // Scrollbars are hidden unless the caller asks for them: a measurement of
   // the page's shape wants the layout, not the platform's chrome around it.
   // The one case that asks is about the chrome — a classic scrollbar takes

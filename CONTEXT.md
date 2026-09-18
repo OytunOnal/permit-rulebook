@@ -217,12 +217,26 @@ measured height and its own padding) on a narrow screen after an answer, a
 correction, or a history move to a question later than the first — the
 ledger line, when there is one, stays above it, one swipe up. A verdict is
 not landed on: it keeps
-s20's reveal of the masthead. The ledger's *place* is a separate matter from
+s20's reveal of the masthead, and a gesture-drawn verdict takes the focus on
+the headline — the element the live region announces — with no second scroll
+(s31). The ledger's *place* is a separate matter from
 either: on a phone, once answers exist, the line stands above the question
 and above the result (s30, amendments 6–7). The first paint is neither: a
 cold load, a restored record and a history move to the first screen keep the
-browser's own scroll.
+browser's own scroll, and take no focus.
 _Avoid_: scroll-to, jump, snap, autoscroll
+
+**Hold line / hold state** (s31):
+The one line a returning reader owed a verdict sees under the eyebrow until
+the module draws — the record line's own sentence, *Your answers are on this
+device — bringing them back.* The hold state is the page while it stands:
+the header, the eyebrow, the line, and nothing else laid out — the headline,
+subline, stamp, box and footer the build painted take no room (s22 covered
+them in place, and the blank read as a failure). The covers come off in the
+task that draws the verdict; nothing that was visible changes place. It is
+not a stand-in in the box: those are the record and link readers' lines, over
+question one (s10).
+_Avoid_: skeleton, placeholder headline, loading state, spinner
 
 ### Verdicts
 
