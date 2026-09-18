@@ -540,7 +540,7 @@ describe("the pre-paint script decides who the reader is from a few bytes (s10, 
 
   it("says whether the reader has answered, so a phone paints the ledger line where it will stay (s30)", () => {
     // A record and a link both bring an answer; a fresh visit brings none, and
-    // a verdict's ledger sits under the result whatever it holds. The head
+    // on a phone the ledger stands above the result once answers exist (s30 amendment 7), but the head writes no flag for a verdict: s22's cover hides #app until the module draws. The head
     // cannot know whether a link's code is one the page knows, so the flag is
     // written for every link and the module keeps its word for the first
     // screen.
