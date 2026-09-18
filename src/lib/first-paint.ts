@@ -40,7 +40,12 @@ export const WIDE_QUERY = "(min-width: 761px)";
  * answered question one for them but may be everything they have answered, so
  * the box says only that it is setting up. Absent — a fresh visit, and the
  * page the build painted is already right. `data-narrow` — the ledger is a
- * disclosure here, and a closed one.
+ * disclosure here, and a closed one. `data-answered` — the reader has answered
+ * something (a record, or the link that answered question one), so on a phone
+ * the ledger line already stands above the question, where the module will
+ * keep it (s30, amendment 6) — for the first screen even when the link's code
+ * is one the page does not know: the head decides the first paint, and the
+ * module writes the flag from its own count only from the first gesture on.
  *
  * The two started readers are told apart because the sentence for one is false
  * for the other: a reader with no answers cannot have answers brought back
@@ -77,6 +82,7 @@ export const FIRST_PAINT_SCRIPT = `
       }
     } catch { /* a browser that refuses site data is a reader with no record */ }
     if (first) page.dataset.first = first;
+    if (first === "record" || first === "link") page.dataset.answered = "";
     if (!matchMedia(${JSON.stringify(WIDE_QUERY)}).matches) page.dataset.narrow = "";
   })();
 `;

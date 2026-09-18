@@ -456,6 +456,70 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (top >= 0 && top < window.innerHeight) return;
       el.scrollIntoView({ block: "start", behavior: reducedMotion.matches ? "auto" : "smooth" });
     }
+    /**
+     * On a phone the next question comes up to meet the reader.
+     *
+     * Every question after the first is drawn under the header, the headline,
+     * the subline and the stamp — 445 px down at 390 wide — with its first
+     * option at 550: at 844 tall the second option is often out of sight, at
+     * 667 a long first one is cut, and the reader who just tapped an answer
+     * scrolls to find what they were asked (v1.1 gate critique, P10). `reveal`
+     * never fires there: the card's top is on the screen; the question is not.
+     *
+     * So, on a narrow screen, an answer lands the card's top just under the
+     * header — one header's height and the breath the header keeps under
+     * itself, both read from the header rather than typed — and the masthead
+     * scrolls away with the rest. Narrow is the site's own breakpoint, read at
+     * the moment of the gesture. On a wide screen the card sits beside the
+     * ledger with room above it and the hero stays: s20's rule, as before.
+     *
+     * Once the reader has answered, the ledger line stands above the question
+     * and above the result on a phone (amendments 6–7). The landing is the
+     * question all the same — the card's top under the header, the line one
+     * swipe up: landed on the line, every answer felt like arriving at "You
+     * declared" (amendment 8, the human's phone). A correction lands too, on
+     * a narrow screen: with the ledger
+     * open above the card the re-drawn question sat below it, and s20's
+     * reveal, seeing the card's top on screen, did nothing (human's walk of
+     * the trial, 2026-09-18). So ✎ closes the ledger and lands as an answer
+     * does; s20's reveal is the wide screen's rule now.
+     *
+     * The card's ← Back is a history move (s16), and the browser brings back
+     * the scroll the reader LEFT that entry at — which, once they had scrolled
+     * on it, is not where the question is: measured at 390, an answer, a
+     * scroll of 250, an answer and Back put the card's top 177 px above the
+     * viewport (Spec review, 2026-09-18). The reader asked for that question,
+     * so on a narrow screen it lands the same way. The browser restores after
+     * the popstate handler and before the first animation frame — read in that
+     * order, in that walk — so the landing waits for the frame and comes after
+     * it. Where the history move is to the page's first screen the landing
+     * stays out of it: that screen keeps the top of the page, as at the cold
+     * load. On a wide screen a history move still scrolls nothing of ours.
+     */
+    const headEl = document.querySelector<HTMLElement>(".site-head");
+    /** One list for the breakpoint: the landing reads it here, the ledger
+     * below listens to it. */
+    const wide = window.matchMedia(WIDE_QUERY);
+    function landOnQuestion(card: Element, action: FlowAction): void {
+      // Outside the first paint, `restore` is only ever the popstate render.
+      const moved = action.kind === "restore";
+      const lands = action.kind === "answer" || action.kind === "edit" || moved;
+      if (wide.matches || !headEl || !lands) {
+        if (!moved) reveal(card);
+        return;
+      }
+      // The ledger the correction came from folds away, so the question it
+      // reopened is the next thing under the line.
+      if (action.kind === "edit") decl.open = false;
+      const land = () => {
+        const { height } = headEl.getBoundingClientRect();
+        const gap = parseFloat(getComputedStyle(headEl).paddingBottom);
+        const top = window.scrollY + card.getBoundingClientRect().top - height - gap;
+        window.scrollTo({ top, behavior: reducedMotion.matches ? "auto" : "smooth" });
+      };
+      if (moved) requestAnimationFrame(land);
+      else land();
+    }
     /** The first control on a question card — a button for a choice, the box
      * for a search — and the card's own heading where there is neither. The
      * search box keeps v0.7's rule (the caret in it, its text selected), which
@@ -567,6 +631,19 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       });
       say(declCount, declarationCount(asked.length));
       restart.hidden = currentField !== null;
+      // The fact the count states, as a state the stylesheet can read: on a
+      // phone the ledger line stands above the question and above the result
+      // once there is something in it to review (amendments 6–7). The
+      // pre-paint script writes
+      // the same flag for a reader whose answers are on the device or in the
+      // link, so the line is above from the first paint and nothing moves when
+      // the module draws (s10). The head's word stands for the first screen:
+      // a link whose code this page does not know brings no answer, and the
+      // line it was painted with — "You declared · nothing yet" — is true;
+      // moving it below after the module lands is the shift s10 forbids. The
+      // flag comes down on a gesture (Start over), never on the arrival.
+      if (asked.length > 0) page.dataset.answered = "";
+      else if (!arriving) delete page.dataset.answered;
     }
 
     /**
@@ -738,7 +815,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         if (line) { line.append(" ", restart); restart.hidden = false; }
       }
       const card = main.querySelector<HTMLElement>(".qcard");
-      if (card && !arriving && !restoring) reveal(card);
+      // A history move to the page's first screen keeps the browser's own
+      // restore (the top of the page); every other gesture, the browser's Back
+      // included, hands the card to the landing.
+      if (card && !arriving && !(restoring && screens.current === 0)) landOnQuestion(card, action);
       if (longList) {
         // Every render of a search question puts the caret in it, whether or
         // not the box had to be rewritten to get here. A correction starts by
@@ -1539,7 +1619,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * open — its summary is not a control there. Narrow starts collapsed, and
      * once the person opens or closes it themselves, that decision stands.
      */
-    const wide = window.matchMedia(WIDE_QUERY);
     let ledgerChosen = false;
     const syncLedger = () => {
       if (!ledgerChosen || wide.matches) decl.open = wide.matches;
@@ -1993,9 +2072,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       body{padding:1.4rem .9rem 3rem}
       .cols{grid-template-columns:1fr}
       /* The question card comes first; "You declared" follows it, collapsed to
-         one line that expands on tap (F8). */
+         one line that expands on tap (F8) — for a reader with nothing declared.
+         Once there is something to review, the line stands above the question
+         (s30, amendment 6) and above the verdict too (amendment 7): the way
+         back to any answer is at the top of the screen, not after every
+         card. One state decides both. */
       main{order:1}
       .decl{order:2;position:static}
+      [data-answered] .decl{order:0}
       .decl > summary{margin-bottom:0}
       .decl[open] > summary{margin-bottom:.6rem}
       .qcard{padding:1.1rem 1rem}
