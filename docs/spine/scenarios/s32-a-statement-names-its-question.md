@@ -106,3 +106,19 @@ read — corrected at the review, 2026-09-18.)
 
 It is not a change to what any statement says or quotes, not a new
 question, and not the scope line's words.
+
+**Amended 2026-09-18, from the human's walk of the local build** (human:
+"§ = section yazmaya gerek yok — ICT Card — a transfer within your company
+(§ 19; § = section)"):
+
+6. **The section sign carries no explainer.** s23's P1 replaced the
+   stuttering "(§ 20a, section 20a)" with *§ = section* once per screen;
+   the human reads the sign as a reader does and wants the words gone. The
+   gloss no longer says *§ = section* anywhere — headings, cards, route
+   pages, question help. An act's name still expands on its first use on a
+   screen where the citation names one (*BeschV = the Employment
+   Ordinance*), in the same bracket, without the sign's words. s23's
+   stutter rule stays: no citation restates its own number. The route
+   fingerprint moves (every H1 that carried the explainer) and regenerates
+   with this reason; the tests that pinned the explainer move to pin its
+   absence and the act expansion.
