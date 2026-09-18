@@ -1,6 +1,6 @@
 # s32 — a statement names the question that asks it
 
-**Status:** approved 2026-09-18 (human: "onaylıyorum"). v1.2 fix from s19's correction (6)/(7):
+**Status:** approved 2026-09-18 (human: "onaylıyorum"); real-green: 2026-09-18 (human: "merge"; data 295f204, site f7832f0). v1.2 fix from s19's correction (6)/(7):
 "a `field` on precondition statements is the cleaner derivation".
 
 ## What happened

@@ -59,8 +59,7 @@ under the open version, not candidates. Candidates land here only through
   promise swaps from the link's to the fresh one after the module lands; an
   arrival the s10 gate never seeded. A steward pass.
 - **The finished-record hold state** — **landed in s31** (2026-09-18), with the focus and the gutter.
-- **A `field` on precondition statements** (from s19) · "asked" derived by a
-  shared sentence, exact match; three routes share by containment.
+- **A `field` on precondition statements** — **landed in s32** (2026-09-18), with the section sign's explainer gone (the human's walk).
 - **Data #15** — **landed in s29** (2026-09-17).
 - **Data #13** — **landed in s29** (2026-09-17); the road back to the machine is a cookie-returning fetcher, smaller than #17.
 - **Data #17** · the browser-read strategy for the IND (the road back from
@@ -271,9 +270,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-- **s32 — a statement names the question that asks it** · approved 2026-09-18
-  (human: "onaylıyorum"); building in `../permit-rulebook-s32` and
-  `../permit-rulebook-data-s32` (branches `s32-statement-field`). v1.2 fix: `field` on precondition statements.
+_(empty — the next slice is chosen at the next boundary)_
 
 ## mock-green
 
@@ -284,6 +281,16 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s32 — a statement names the question that asks it** · real-green
+  2026-09-18 (human: "merge"; data `295f204`, site `f7832f0`). v1.2 fix from
+  s19: a typed `field` on precondition statements decides "asked" (schema
+  0.8.2; the shared-sentence rule retired; the validator holds the field to
+  its route and the verbatim cross-check the other way); eleven statements
+  decided — the two tenures were never asked, de-researcher's hosting
+  agreement is. Plus the human's amendment: the section sign carries no
+  explainer anywhere (the act's name still expands once). Three-axis
+  review on both repositories and on the delta (`docs/spine/reviews/s32.md`).
 
 - **s31 — the hold state says where it is, and two small things** ·
   real-green 2026-09-18 (human: "merge"; site `370f9e9`). v1.2 fixes: the
