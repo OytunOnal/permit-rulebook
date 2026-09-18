@@ -53,6 +53,10 @@ under the open version, not candidates. Candidates land here only through
   fresh with a restored record and taps ← Back leaves the site (the rebuilt
   history has no entries in the browser); reload mid-interview then Back
   lands on the first question. Pre-existing (s16-era); a steward pass.
+- **An unknown link's first paint** (s30 delta review, 2026-09-18) · `?country=zz`
+  measures CLS 0.057 / 0.045 at 390×844 / 390×1400 on master — the masthead's
+  promise swaps from the link's to the fresh one after the module lands; an
+  arrival the s10 gate never seeded. A steward pass.
 - **The finished-record hold state** · ~380 px blank under the eyebrow while
   the module loads (s22's trade); focus on `body` after a re-answer;
   `scrollbar-gutter: stable` for classic-scrollbar desktops.
