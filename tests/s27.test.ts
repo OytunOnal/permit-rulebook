@@ -414,7 +414,9 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
           return { route, country, problems: [...routeProblems, ...page.problems()] };
         }, { viewport, mobile }) as { route: Header; country: Header; problems: string[] };
         expect(seen.problems).toEqual([]);
-        expect(seen.route.h1).toBe("Experienced worker (§ 19c / § 6 BeschV; § = section)");
+        // The name alone — and since s32's amendment 6 without the sign's
+        // explainer after the citation.
+        expect(seen.route.h1).toBe("Experienced worker (§ 19c / § 6 BeschV)");
         expect(seen.route.nextTag).toBe("P");
         expect(seen.route.nextClass).toBe("tagline");
         expect(seen.route.nextText).toBe(ROUTE_TAGLINE);

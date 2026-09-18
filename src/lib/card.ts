@@ -77,11 +77,11 @@ export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profil
 export function precondHtml(ds: Dataset, route: Route, answers: Profile): string {
   const statements = binding(route, answers).filter((s) => s.kind === "precondition");
   // The ones the interview asked, by the field it asked them on, in the order
-  // the route's criteria read those fields.
+  // the statements name those fields.
   const asked = new Map<string, RouteStatement[]>();
   const unasked: RouteStatement[] = [];
   for (const s of statements) {
-    const field = askedFieldOf(ds, route, s, answers);
+    const field = askedFieldOf(ds, s, answers);
     if (field === null) { unasked.push(s); continue; }
     asked.set(field, [...(asked.get(field) ?? []), s]);
   }
@@ -98,32 +98,26 @@ export function precondHtml(ds: Dataset, route: Route, answers: Profile): string
 
 /**
  * The field the interview asked this precondition on, or null where it asked
- * none (s19, F8).
+ * none (s19, F8; the key since s32).
  *
- * A precondition statement names no field of its own. What it does carry is
- * the authority's sentence, and where that sentence is the one a criterion on
- * this route stands on, the criterion and the condition are one rule read
- * twice — the provenance list has deduplicated exactly that pair since s5f.
- * So a precondition is "asked" when a criterion of this route reads a field
- * the reader has declared and quotes the same sentence. The Spanish researcher
- * card's hosting agreement is the case: its sentence is the situation
- * criterion's, and the reader's research answer IS the declaration. Nothing
- * here is a list of which conditions are which; it is the dataset's own
- * sentences, matched.
+ * A precondition statement names the question whose answer covers it —
+ * `field`, a curator's decision typed in the dataset. It was derived here
+ * until s32, from the authority's sentence: a precondition was "asked" when
+ * a criterion of this route quoted the same sentence verbatim. Three more
+ * shared a sentence by containment and the sentence would have decided two
+ * of them wrongly — the German ICT card's six months with the company wraps
+ * the situation gate's own quote, and a tenure is not what the situation
+ * question asks — so the sentence is no longer read here at all. The Spanish
+ * researcher card's hosting agreement is still the case: its field is the
+ * situation, and the reader's research answer IS the declaration.
  *
  * Declared means answered with a real answer: an "I don't know", or the door
  * for a salary no band fits, leaves the condition unchecked, and the heading
  * that says so stays.
  */
-function askedFieldOf(ds: Dataset, route: Route, s: RouteStatement, answers: Profile): string | null {
-  if (!s.source) return null;
-  const quote = s.source.quote;
-  let found: string | null = null;
-  forEachCriterion(route.criteria, (c) => {
-    if (found !== null || !("field" in c) || !("source" in c) || !c.source) return;
-    if (c.source.quote === quote && isDeclared(ds, c.field, answers[c.field])) found = c.field;
-  });
-  return found;
+function askedFieldOf(ds: Dataset, s: RouteStatement, answers: Profile): string | null {
+  if (s.field === undefined) return null;
+  return isDeclared(ds, s.field, answers[s.field]) ? s.field : null;
 }
 
 /** A real answer on the record — not absent, not the "I don't know" option,

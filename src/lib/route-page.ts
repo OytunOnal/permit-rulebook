@@ -734,7 +734,7 @@ ${headMeta({ title, description: desc, path, kind: "article" })}
 
   const scored = isScored(route);
   // The H1 is the name and nothing after it. It carried the tagline as an
-  // `<em>` behind a full stop — "…(§ 6 BeschV; § = section). The rules,
+  // `<em>` behind a full stop — "…(§ 19c / § 6 BeschV). The rules,
   // quoted and dated." — a name that ends in a bracket, then a sentence, in
   // one heading (v1.1 gate critique, P8 — s27). The tagline is its own line
   // under it now, in the type the `<em>` had; the <title> and the social

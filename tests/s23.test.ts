@@ -9,7 +9,7 @@ import {
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import {
-  ANY_OF, SECTION_EXPLAINER, SEEK_HINT, dailyCheck, orAbove, proseProvenanceCounts, questionCounter,
+  ANY_OF, SEEK_HINT, dailyCheck, orAbove, proseProvenanceCounts, questionCounter,
 } from "../src/lib/copy.js";
 import { learnBoxHtml, pointsLineHtml, provenanceHtml } from "../src/lib/card.js";
 import { glossSection, glossed } from "../src/lib/gloss.js";
@@ -237,32 +237,33 @@ describe("F3 — the route page's liveness line names its own source or stays si
   });
 });
 
-describe("P1 — the statute explainer once, and never a stutter", () => {
-  it("explains the sign, not the number again", () => {
-    expect(SECTION_EXPLAINER).toBe("§ = section");
+describe("P1 — never a stutter; and, since s32's amendment 6, no explainer for the sign", () => {
+  it("restates no number, and explains the act alone where the citation names one", () => {
+    // P1 replaced "(§ 20a, section 20a)" with "§ = section" once per page;
+    // amendment 6 (the human's walk, 2026-09-18) took the sign's words away
+    // — the sign is read as a reader reads it. What stands is the rule: a
+    // citation never restates its own number, and the act it names is said
+    // once, in the citation's own bracket.
     expect(glossSection("Opportunity Card (Chancenkarte, § 20a)", new Set()))
-      .toBe("Opportunity Card (Chancenkarte, § 20a; § = section)");
+      .toBe("Opportunity Card (Chancenkarte, § 20a)");
     expect(glossSection("Experienced worker (§ 19c / § 6 BeschV)", new Set()))
-      .toBe("Experienced worker (§ 19c / § 6 BeschV; § = section)");
-    expect(glossSection("§ 18d states it", new Set())).toBe("§ 18d (§ = section) states it");
-    // Where the citation names its act, both are said in one bracket, in the same form.
-    expect(glossed("§ 18g AufenthG", new Set())).toBe("§ 18g AufenthG (§ = section; AufenthG = the Residence Act)");
-    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (§ = section; BeschV = the Employment Ordinance)");
+      .toBe("Experienced worker (§ 19c / § 6 BeschV)");
+    expect(glossSection("§ 18d states it", new Set())).toBe("§ 18d states it");
+    expect(glossed("§ 18g AufenthG", new Set())).toBe("§ 18g AufenthG (AufenthG = the Residence Act)");
+    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (BeschV = the Employment Ordinance)");
     // Once per page.
     const seen = new Set<string>();
-    glossSection("Researcher (§ 18d)", seen);
-    expect(glossSection("Skilled worker — academic (§ 18b)", seen)).toBe("Skilled worker — academic (§ 18b)");
+    glossed("§ 18g AufenthG", seen);
+    expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG");
   });
 
-  it("no built page carries the number twice, and every German page carries the explainer once", () => {
+  it("no built page carries the number twice, and none carries the sign's explainer", () => {
     const pages = builtPages();
     expect(pages.length).toBeGreaterThan(30);
     for (const { path, text } of pages) {
       expect(text, path).not.toMatch(/§ ([0-9]+[a-z]?)[,;] sections? \1\b/);
       expect(text, path).not.toMatch(/\(§ [0-9]+[a-z]?, section/);
-      const explained = text.split(SECTION_EXPLAINER).length - 1;
-      if (path.startsWith("/germany/")) expect(explained, path).toBe(1);
-      else expect(explained, path).toBeLessThanOrEqual(1);
+      expect(text, path).not.toContain("§ = section");
     }
   });
 });

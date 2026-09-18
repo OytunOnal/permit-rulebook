@@ -278,10 +278,13 @@ carries quote + source + date like any value, and is watched like one.
 _Avoid_: banner, message, info box
 
 **Precondition**:
-A plain-language condition the authority applies that the interview never
-asks (a recognised sponsor, market-rate pay, a professional registration).
+A plain-language condition the authority applies that the interview does not
+score (a recognised sponsor, market-rate pay, a professional registration).
 Shown on the card as "Also required — not checked here", never scored — so
-"criteria met" cannot overpromise.
+"criteria met" cannot overpromise. Where a question's answer covers it, the
+statement names that question in `field` and the card says "Asked in the
+interview — you declared …" instead (s32; the shared sentence was the key
+from s19 until then).
 _Avoid_: extra requirement, fine print
 
 **Short reason**:

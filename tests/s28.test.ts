@@ -3,7 +3,6 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, evaluate, type Dataset, type Profile } from "permit-rulebook-data";
-import { SECTION_EXPLAINER } from "../src/lib/copy.js";
 import { learnBoxHtml } from "../src/lib/card.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
@@ -21,7 +20,10 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * the question, in the result card's box, on the route page. Two of the three
  * glossed it, so the shortage link read "§ 18g AufenthG (§ = section;
  * AufenthG = the Residence Act) lists …" — an explainer inside a link,
- * underlined end to end. The labels are the data's (their own test holds them
+ * underlined end to end. (The sign's own words have since gone everywhere,
+ * s32 amendment 6; what these cases hold is that a link is never glossed, so
+ * the absence pinned below is the act's expansion.) The labels are the
+ * data's (their own test holds them
  * to the contract); what the site decides is that link text is never glossed
  * and that the three surfaces agree.
  */
@@ -31,6 +33,9 @@ const SHORTAGE = "occupation_shortage";
 
 /** A label that would be glossed if anything still glossed it. */
 const SYMBOL_LABEL = "§ 18g AufenthG lists the shortage groups";
+/** What glossing the label would add — the act on first use (the sign's own
+ * explainer is gone from every screen since s32's amendment 6). */
+const ACT_EXPANSION = "AufenthG = the Residence Act";
 
 /** The dataset with one door's label swapped: the decision is about the
  * renderer, not about the words the data ships today. */
@@ -61,7 +66,7 @@ describe("2 — link text is never glossed", () => {
     const [link, ...rest] = anchorsOf(html);
     expect(rest, "the box carries more than the one door").toEqual([]);
     expect(link.text).toBe(esc(SYMBOL_LABEL));
-    expect(html).not.toContain(SECTION_EXPLAINER);
+    expect(html).not.toContain(ACT_EXPANSION);
   });
 
   it("the question line prints the same label verbatim", () => {
@@ -75,7 +80,7 @@ describe("2 — link text is never glossed", () => {
     const [link, ...rest] = anchorsOf(line![1]);
     expect(rest).toEqual([]);
     expect(link.text).toBe(esc(SYMBOL_LABEL));
-    expect(html).not.toContain(SECTION_EXPLAINER);
+    expect(html).not.toContain(ACT_EXPANSION);
   });
 });
 
@@ -221,17 +226,17 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
       expect(seen.problems).toEqual([]);
       // Under the question: the sentence as one link, no explainer around it.
       expect(seen.help).toEqual([{ text: door.label, href: door.url }]);
-      expect(seen.helpText).not.toContain(SECTION_EXPLAINER);
+      expect(seen.helpText).not.toContain(ACT_EXPANSION);
       // The result: one box, on the card the unknown still binds, drawn open.
       expect(seen.state).toBe("results");
       expect(seen.boxes.length).toBe(1);
       expect(seen.boxes[0].open, "the hold row with the open question is not drawn open").toBe(true);
       expect(seen.boxes[0].links).toEqual([{ text: door.label, href: door.url }]);
-      expect(seen.boxes[0].text).not.toContain(SECTION_EXPLAINER);
+      expect(seen.boxes[0].text).not.toContain(ACT_EXPANSION);
       // The route page: the same sentence, the same address.
       expect(seen.asks.map((a) => ({ text: a.text.replace(/\s*↗$/, ""), href: a.href }))).toEqual([{ text: door.label, href: door.url }]);
       expect(seen.asksText).toContain("You can find this out yourself");
-      expect(seen.asksText).not.toContain(SECTION_EXPLAINER);
+      expect(seen.asksText).not.toContain(ACT_EXPANSION);
     } finally {
       server.close();
     }

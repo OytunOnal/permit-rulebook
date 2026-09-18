@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { SECTION_EXPLAINER } from "../src/lib/copy.js";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
@@ -157,8 +156,10 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
       // The link's text is the label as the data wrote it, whole.
       const door = ds.fields.find((f) => f.id === "occupation_shortage")!.learn!;
       expect(seen.help!).toContain(door.label);
-      // And nothing was explained into it: no explainer, no symbol to explain.
-      expect(seen.help!).not.toContain(SECTION_EXPLAINER);
+      // And nothing was explained into it: no act named, no symbol to explain
+      // (and the sign's own explainer is gone from every screen since s32's
+      // amendment 6).
+      expect(seen.help!).not.toContain("= the Residence Act");
       expect(seen.help!).not.toContain("§");
     } finally {
       server.close();
