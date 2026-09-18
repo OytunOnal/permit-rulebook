@@ -49,6 +49,10 @@ under the open version, not candidates. Candidates land here only through
 - **Learn links read as actions, unglossed** — **landed in s28** (2026-09-17).
 - **The Algerian notice's learn label** — **landed in s29** (2026-09-17).
 - **P10** · on a phone every question sits under the full hero and stamp.
+- **Back on a restored record** (s30 build, 2026-09-18) · a reader who arrives
+  fresh with a restored record and taps ← Back leaves the site (the rebuilt
+  history has no entries in the browser); reload mid-interview then Back
+  lands on the first question. Pre-existing (s16-era); a steward pass.
 - **The finished-record hold state** · ~380 px blank under the eyebrow while
   the module loads (s22's trade); focus on `body` after a re-answer;
   `scrollbar-gutter: stable` for classic-scrollbar desktops.

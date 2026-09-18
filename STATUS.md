@@ -276,7 +276,13 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.** s30 is approved and building; the local build and the review come to you together.
+**One thing is blocked on you: the merge word for s30.** The review is on
+record (`docs/spine/reviews/s30.md`, three axes, head `4ff0a46`; the Spec
+axis found Back after a scroll leaving the question above the viewport —
+fixed and pinned); the light critique found nothing new. The local build at
+http://localhost:4526/ in Chrome's phone emulation: answer, answer, scroll,
+answer, Back — the question is under the header every time. "merge" is the
+deploy.
 
 - [x] **s30 tried and chosen** (2026-09-18, your word "tamamdır" on the phone-only trial).
 - [x] **s29 reviewed, walked and merged** (2026-09-17, your word, knowing the BMI sentinel is human-tier). Live; data #13 and #15 closed.
@@ -531,7 +537,7 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s30 is approved and building** (2026-09-18): P10 — after every answer or
+the threat model, the architecture, the critiques, the announcement).**s30 is built, reviewed on three axes and walked** (2026-09-18; branch `s30-question-comes-up` at `4ff0a46`, 668 tests, astro check 0, assets true; *reveal*/*landing* recorded in CONTEXT.md). Waiting on the merge word: P10 — after every answer or
 Back on a phone the next question lands under the header; desktop unchanged;
 corrections keep s20's rule. Chosen from three options after a throwaway
 build the human tried in Chrome's phone emulation (worktree removed; the
