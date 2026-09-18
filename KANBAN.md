@@ -148,9 +148,9 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
   critique of the navigation mock (F1), .
 - **Rest of Europe** · versioned at the s6 boundary 2026-09-07.
 
-### later (clock: DECISIONS rows since 2026-09-17)
+### later (clock: DECISIONS rows since 2026-09-18)
 
-_Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Each kept line carries its reason._
+_Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept — no evidence has touched them yet; the first metric reading is 2026-09-24._
 
 - **Affiliate layer** · the money model from the viability gate · bet:
   route-relevant mandatory services convert without touching eligibility. **Kept 2026-09-17** (fork: no intake or metric evidence yet).

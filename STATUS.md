@@ -278,6 +278,8 @@ CLS fix is not. The three lines, left here until the window closes:
 
 **Nothing is blocked on you.** s32 is approved and building (data + site); the local build and the review come to you together.
 
+- [x] **Roadmap fork** (2026-09-18, your word "uygula": all six later candidates kept; clock reset).
+
 - [x] **s31 reviewed and merged** (2026-09-18, your word). Live.
 
 - [x] **s30 tried, amended three times and merged** (2026-09-18, your word). Live.
