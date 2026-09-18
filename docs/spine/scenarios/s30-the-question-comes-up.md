@@ -103,6 +103,19 @@ correction landing's own cases (390×844 and 375×667: the ledger closes and
 lands, the question under it); s20's rule for a correction is the wide
 screen's, pinned at 1280×900.
 
+**Corrected 2026-09-18, by the build (amendment 7):** one rule for both
+states — `[data-answered] .decl{order:0}` in the narrow block — replaces
+amendment 6's `[data-state="questions"]` one; `landOnVerdict` untouched.
+Measured on the build at 390×844: the verdict's ledger line at 440 from the
+page's top, the result at 545 (it was at 4969, under the routes). The s10
+finished-record arrival, gate's method, before → after: 390×844 CLS 0 → 0,
+390×1400 0 → 0, the footer's travel 4146 → 4146 px (the routes' height, s22's
+number; the scenario table's 4786 is from an older dataset). Nothing above
+the box moves because nothing of the ledger is painted before the module
+draws: `#app` — the ledger inside it — is hidden with the masthead by s22's
+verdict cover, and an element that appears is not one that shifted. So the
+ledger needs no cover of its own.
+
 ## How it is proved
 
 - Browser cases at 390×844 and 375×667: after the first answer the card's

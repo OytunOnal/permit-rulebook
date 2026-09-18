@@ -2074,10 +2074,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       /* The question card comes first; "You declared" follows it, collapsed to
          one line that expands on tap (F8) — for a reader with nothing declared.
          Once there is something to review, the line stands above the question
-         (s30, amendment 6); a verdict keeps the ledger under the result. */
+         (s30, amendment 6) and above the verdict too (amendment 7): the way
+         back to any answer is at the top of the screen, not after every
+         card. One state decides both. */
       main{order:1}
       .decl{order:2;position:static}
-      [data-answered] [data-state="questions"] .decl{order:0}
+      [data-answered] .decl{order:0}
       .decl > summary{margin-bottom:0}
       .decl[open] > summary{margin-bottom:.6rem}
       .qcard{padding:1.1rem 1rem}

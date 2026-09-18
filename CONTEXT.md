@@ -213,7 +213,8 @@ A *reveal* (s20) scrolls only when the card's top is off the screen — every
 gesture on a wide screen, where the card sits beside the ledger, and Start
 over on a narrow one, which draws the first question again. A *landing*
 (s30) brings the top of whatever stands first — the ledger line once the
-reader has answered, the card before that — to just under the header (the
+reader has answered, on a question and on a verdict alike, the card before
+that — to just under the header (the
 header's measured height and its own padding) on a narrow screen after an
 answer, a correction, or a history move to a question later than the first.
 The first paint is neither: a cold load, a restored record and a history move

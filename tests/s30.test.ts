@@ -74,11 +74,17 @@ const WHERE = `JSON.stringify((() => {
     viewport: window.innerHeight,
     cardTop: card ? card.getBoundingClientRect().top : null,
     cardLeft: card ? card.getBoundingClientRect().left : null,
+    mainLeft: document.getElementById("main").getBoundingClientRect().left,
+    mainTop: document.getElementById("main").getBoundingClientRect().top,
     declTop: declBox.top,
     declBottom: declBox.bottom,
     declLeft: declBox.left,
     declOpen: decl.open,
     answered: document.documentElement.dataset.answered !== undefined,
+    mastheadTop: document.querySelector(".masthead-with-stamps").getBoundingClientRect().top,
+    mastheadBottom: document.querySelector(".masthead-with-stamps").getBoundingClientRect().bottom,
+    stripTop: (() => { const el = document.querySelector("#main .strip"); return el ? el.getBoundingClientRect().top : null; })(),
+    headline: (document.getElementById("headline").textContent || "").trim(),
     headerHeight: head ? head.getBoundingClientRect().height : null,
     gap: head ? parseFloat(getComputedStyle(head).paddingBottom) : null,
     question: card ? (card.querySelector(".qlabel")?.textContent || "").trim() : "",
@@ -94,11 +100,19 @@ interface Where {
   viewport: number;
   cardTop: number | null;
   cardLeft: number | null;
+  mainLeft: number;
+  mainTop: number;
   declTop: number;
   declBottom: number;
   declLeft: number;
   declOpen: boolean;
   answered: boolean;
+  mastheadTop: number;
+  mastheadBottom: number;
+  /** The verdict's summary strip, the first thing of the result after the
+   * notices; null on a question screen. */
+  stripTop: number | null;
+  headline: string;
   headerHeight: number | null;
   gap: number | null;
   question: string;
@@ -371,6 +385,93 @@ describe.skipIf(skipped !== null)("a link the page does not know keeps the first
       expect(seen.landed.answered).toBe(true);
       expect(seen.landed.declTop).toBeLessThan(seen.landed.cardTop!);
       expect(seen.count).toBe("nothing yet");
+    } finally {
+      server.close();
+    }
+  }, 180000);
+});
+
+describe.skipIf(skipped !== null)("on a phone the ledger line sits above the result too (amendment 7)", () => {
+  /** s20's finished reader: an offer in Germany, a Turkish passport, the
+   * band just under the Blue Card line — a record that says it is done. */
+  const finished = {
+    destination: "de", situation: "offer", qualification: "degree", citizenship: "TR",
+    occupation_shortage: "yes", recognition_de: "recognized", experience_5y: "lt2", experience_7y: "lt3",
+    salary_eur_year: "band_4", german: "none", english: "none", funds_eur_month: "band_0",
+  };
+  const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
+    JSON.stringify(serialize(finished, Object.keys(finished), true))})`;
+  const OPEN_AND_TAP_SALARY = `(() => {
+    document.getElementById("decl").open = true;
+    document.querySelector('#decl-list [data-field="salary_eur_year"]').click();
+  })()`;
+  const ANSWER_ANOTHER_BAND = 'document.querySelector("#main .qcard .opt:not(.sel)").click()';
+
+  async function verdictWalk(page: BrowserPage, origin: (p: string) => string) {
+    await page.goto(origin("/404.html"), 300);
+    await page.evaluate(SEED);
+    await page.goto(origin("/"), 1600);
+    const verdict = await where(page);
+    await page.evaluate(OPEN_AND_TAP_SALARY);
+    await settle(900);
+    const corrected = await where(page);
+    await page.evaluate(ANSWER_ANOTHER_BAND);
+    await settle(900);
+    const returned = await where(page);
+    return { verdict, corrected, returned, problems: page.problems() };
+  }
+
+  /** The line under the masthead and above the strip: the way back to any
+   * answer is at the top of the verdict, not after every card. */
+  function expectLedgerAboveResult(step: Where, label: string): void {
+    expect(step.state, `${label}: not a verdict`).toBe("results");
+    expect(step.stripTop, `${label}: no summary strip`).not.toBeNull();
+    expect(step.declTop, `${label}: the ledger (${step.declTop}) is not under the masthead (bottom ${step.mastheadBottom})`)
+      .toBeGreaterThanOrEqual(step.mastheadBottom);
+    expect(step.declBottom, `${label}: the ledger (bottom ${step.declBottom}) is not above the strip (${step.stripTop})`)
+      .toBeLessThanOrEqual(step.stripTop!);
+  }
+
+  for (const [name, viewport] of [
+    ["390x844", { width: 390, height: 844 }],
+    ["375x667", { width: 375, height: 667 }],
+  ] as const)
+    it(`at ${name}: the verdict, ✎ from it, and the way back`, async () => {
+      const server = await serve(dist);
+      try {
+        const seen = await withBrowser((page: BrowserPage) => verdictWalk(page, server.url), { viewport, mobile: true });
+        expect(seen.problems).toEqual([]);
+        expect(seen.verdict.answered).toBe(true);
+        expectLedgerAboveResult(seen.verdict, "on arrival");
+        // ✎ from the verdict: the correction landing (amendment 6).
+        expect(seen.corrected.declOpen).toBe(false);
+        expectLanded(seen.corrected, "after ✎ from the verdict");
+        expect(seen.corrected.activeIsFirst, `the focus is on ${seen.corrected.active || "nothing"}`).toBe(true);
+        // The new band: back to the verdict on its masthead (s20's return),
+        // the ledger still above the result.
+        expect(seen.returned.headline).not.toBe("");
+        expect(seen.returned.headline).not.toBe(seen.verdict.headline);
+        // Rounded the way s20's own reading is: `scrollIntoView` lands a
+        // sub-pixel short of the edge at 2x.
+        expect(Math.round(seen.returned.mastheadTop), `the masthead's top is at ${seen.returned.mastheadTop} (scrollY ${seen.returned.scrollY})`)
+          .toBeGreaterThanOrEqual(0);
+        expectLedgerAboveResult(seen.returned, "after the answer");
+      } finally {
+        server.close();
+      }
+    }, 180000);
+
+  it("at 1280x900 the ledger stays beside the result", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser((page: BrowserPage) => verdictWalk(page, server.url), { viewport: { width: 1280, height: 900 }, mobile: false });
+      expect(seen.problems).toEqual([]);
+      for (const [label, step] of [["on arrival", seen.verdict], ["after the answer", seen.returned]] as const) {
+        expect(step.state, label).toBe("results");
+        expect(step.declLeft, `${label}: the ledger is not to the left of the result`).toBeLessThan(step.mainLeft);
+        expect(Math.abs(step.declTop - step.mainTop), `${label}: the ledger is not level with the result`)
+          .toBeLessThan(step.declBottom - step.declTop);
+      }
     } finally {
       server.close();
     }
