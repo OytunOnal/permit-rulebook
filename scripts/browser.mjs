@@ -143,7 +143,9 @@ const LOCAL_BEACON_NOISE = [
   /Failed to load resource: net::ERR_FAILED \(https:\/\/cloudflareinsights\.com\//,
 ];
 
-export async function withBrowser(run, { viewport = { width: 390, height: 844 }, mobile = true, network = false } = {}) {
+export async function withBrowser(run, {
+  viewport = { width: 390, height: 844 }, mobile = true, network = false, scrollbars = false,
+} = {}) {
   // A profile of its own, per launch. Three test files drive a browser, vitest
   // runs them in parallel, and Chrome exits 21 when a second instance opens the
   // same user-data-dir — which read as "the identity pair is missing" and "the
@@ -155,8 +157,14 @@ export async function withBrowser(run, { viewport = { width: 390, height: 844 },
   // launch instead, which is the sweep that always works.
   sweepStaleProfiles();
   const userDataDir = join(tmpdir(), `${PROFILE_PREFIX}${process.pid}-${nextProfile++}`);
+  //
+  // Scrollbars are hidden unless the caller asks for them: a measurement of
+  // the page's shape wants the layout, not the platform's chrome around it.
+  // The one case that asks is about the chrome — a classic scrollbar takes
+  // its width from the layout when it appears, and only a browser that
+  // draws one can show whether the page reserves the room (s31).
   const browser = spawn(chromePath(), [
-    "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
+    "--headless=new", "--disable-gpu", ...(scrollbars ? [] : ["--hide-scrollbars"]), "--no-first-run",
     "--remote-debugging-port=0", `--user-data-dir=${userDataDir}`, "about:blank",
   ], { stdio: ["ignore", "ignore", "pipe"] });
 

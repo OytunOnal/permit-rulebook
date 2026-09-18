@@ -10,7 +10,7 @@ import { datasetMeta, remainingQuestions } from "permit-rulebook-data";
 // The first question is the same for everyone until an answer is given, so the
 // build draws it — through the very code the module draws every later screen
 // with, never a second copy of the markup (s10, 2026-09-15).
-import { declarationCount, declarationHtml, firstPaintPlaceholdersHtml, questionCardHtml } from "../lib/question.js";
+import { declarationCount, declarationHtml, firstPaintPlaceholdersHtml, holdLineHtml, questionCardHtml } from "../lib/question.js";
 // The three things the page must know about the reader before it paints, read
 // in <head> so the stylesheet can paint the shape the module would have chosen
 // (s10, 2026-09-15).
@@ -65,6 +65,13 @@ const firstDeclaration = declarationHtml(dataset, {}, [], firstQuestions[0].fiel
  * 2026-09-15).
  */
 const firstStandIns = firstPaintPlaceholdersHtml();
+/**
+ * And, for the reader owed a verdict, the same sentence under the eyebrow:
+ * their headline has no shape a stylesheet could reserve, so nothing below
+ * the eyebrow is painted for them at all, and the line says where they are
+ * while the module draws (s31).
+ */
+const holdLine = holdLineHtml();
 /** What a search result says about the interview. */
 const INTRO_DESCRIPTION =
   "Which European work-permit routes fit? A check against dated, source-quoted "
@@ -95,6 +102,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     <header class="masthead-with-stamps">
       <div>
         <div class="brand">{TAGLINE}</div>
+        <Fragment set:html={holdLine} />
         <h1 id="headline" set:html={intro.headline}></h1>
         <p class="sub" id="subline"><span class="sub-fresh">{intro.subline}</span><span class="sub-started">{started.subline}</span></p>
       </div>
@@ -228,9 +236,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * box is exactly what the renderer would draw and a fresh visit is still a
      * page this module leaves alone. Nothing is painted between here and the
      * first render — the flag that hides the question comes down with it, in
-     * `advance` — so the box never blinks.
+     * `advance` — so the box never blinks. The reader owed a verdict has
+     * theirs in the masthead rather than in the box (s31), so the whole page
+     * is asked.
      */
-    for (const standIn of main.querySelectorAll(".stand-in")) standIn.remove();
+    for (const standIn of document.querySelectorAll(".stand-in")) standIn.remove();
 
     /**
      * Write markup into a box, unless it is already there.
@@ -947,12 +957,24 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * 8,000 px up (v1.1 gate critique, B2). Not when the reader was already
      * on a result, not on the first paint, and not on a browser history
      * move; the live region has said the headline by the time this runs.
+     *
+     * And the headline takes the focus. Every answer moves the focus to the
+     * next question's first control (F6), but the answer that draws the
+     * verdict left it on <body>: a keyboard reader who corrected a row was
+     * announced the new verdict and then tabbed through the whole header to
+     * reach it (v1.1 re-score). The headline is the element the live region
+     * just read out, so it is the one to hold the focus — out of the tab
+     * order, and without a second scroll: the reveal is the one move. The
+     * first paint keeps s10's rule: nothing takes the focus from a reader who
+     * has touched nothing (s31).
      */
     const masthead = document.querySelector<HTMLElement>(".masthead-with-stamps")!;
     function landOnVerdict(wasResult: boolean): void {
       if (showArrival()) return;
-      if (wasResult || arriving || restoring) return;
-      reveal(masthead);
+      if (arriving || restoring) return;
+      if (!wasResult) reveal(masthead);
+      headline.tabIndex = -1;
+      headline.focus({ preventScroll: true });
     }
 
     /**
@@ -1701,6 +1723,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
   <style is:global>
     *{margin:0;padding:0;box-sizing:border-box}
+    /* The room a classic scrollbar takes is kept whether or not one is drawn.
+       This is the one page whose length changes after it has painted — a
+       verdict is thousands of pixels where a question was a screen — and on
+       a desktop with non-overlay scrollbars the bar that appeared took its
+       width from the layout and moved the centred column (s22's note; 15 px
+       in headless Chrome, 7.5 px of column). The route and country pages
+       ship at their length, so the rule is this page's, beside the body it
+       styles, rather than the identity's or the tokens' (s31). */
+    html{scrollbar-gutter:stable}
     body{background:var(--color-bg);color:var(--color-ink);font:var(--text-body);padding:2.8rem 1.2rem 4rem}
     .wrap{max-width:var(--max-content);margin:0 auto}
     a{color:var(--color-stamp)}
@@ -1751,9 +1782,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        returning reader meets is the box every reader meets and nothing below
        it moves. Which line — or neither — was decided in <head> (s10). */
     .stand-in{display:none}
-    [data-first="record"] #main,[data-first="link"] #main,[data-first="verdict"] #main{position:relative}
+    [data-first="record"] #main,[data-first="link"] #main{position:relative}
     [data-first="record"] .qcard > *,[data-first="link"] .qcard > *{visibility:hidden}
-    [data-first="record"] .stand-in-record,[data-first="link"] .stand-in-link,[data-first="verdict"] .stand-in-record{
+    [data-first="record"] .stand-in-record,[data-first="link"] .stand-in-link{
       display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
       margin:0;padding:1.6rem 1.8rem;text-align:center;color:var(--color-muted);font-size:.92rem}
     /* A reader owed a verdict. Nothing the build painted is their page but the
@@ -1761,18 +1792,24 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        has no one shape a stylesheet could reserve — one to three lines, and
        a subline of two to five, by what the rules said (measured 2026-09-16,
        s22) — the card is not their screen, and the ledger and the footer are
-       about to be carried thousands of pixels down by the routes. So they
-       are covered, not moved: the line in the box is the only thing on the
-       screen that is theirs, and it is the only thing that was painted. The
+       about to be carried thousands of pixels down by the routes. s22 covered
+       them in place, and the covers kept their room: the reader met the
+       header, the eyebrow and — a thousand pixels of blank later — the line,
+       centred in a hidden box (measured 2026-09-18 at 390×844: eyebrow at
+       107–122, the line at 445–800), and the blank read as a failure. So
+       now they take no room at all until the module draws, and the line
+       stands in the masthead directly under the eyebrow — the one thing on
+       the screen that is theirs, where their headline is about to be. The
        covers come off in the task that draws the verdict; nothing that was
-       visible changes place, and what appears appears where it stays. The
-       rule under the masthead goes with them: the masthead's height is the
-       verdict's, and a line that moved with it would be the one thing left
-       to watch. */
+       visible changes place — the header and the eyebrow stay where they
+       are — and what appears, appears where it stays (s31; the s10 gate
+       measures it). The rule under the masthead goes with them: the
+       masthead's height is the verdict's, and a line that moved with it
+       would be the one thing left to watch. */
     [data-first="verdict"] #headline,[data-first="verdict"] #subline,[data-first="verdict"] #stamp,
-    [data-first="verdict"] #app,[data-first="verdict"] footer.site-foot{visibility:hidden}
+    [data-first="verdict"] #app,[data-first="verdict"] footer.site-foot{display:none}
     [data-first="verdict"] .masthead-with-stamps{border-bottom-color:transparent}
-    [data-first="verdict"] .stand-in-record{visibility:visible}
+    [data-first="verdict"] .stand-in-verdict{display:block;margin-top:.5rem;max-width:38rem;color:var(--color-muted);font-size:.92rem}
     [data-narrow] #decl[open] > :not(summary){display:none}
     [data-narrow] #decl[open] > summary{margin-bottom:0}
 

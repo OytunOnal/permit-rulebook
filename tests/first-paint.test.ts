@@ -69,17 +69,24 @@ import { url } from "../src/lib/site.js";
  * has no shape a stylesheet could reserve: one to three headline lines and
  * two to five of subline, by what the rules said. So for that reader nothing
  * the build painted is shown but the frame — the header, the tagline and the
- * line in the box — and the page appears where it stays.
+ * line — and the page appears where it stays. s22 covered the rest in place
+ * and the covers kept their room, so the line sat centred in a hidden box a
+ * thousand pixels under the eyebrow; since s31 the covered things take no
+ * room and the line stands under the eyebrow, where the headline lands.
+ * Re-measured 2026-09-18 with this file's method, before and after, at
+ * 390x844 / 390x1400 / 1280x900: 0 / 0 / 0 both ways, no shift source at
+ * all; the line at 130–154 under an eyebrow at 107–122 (was 445–800).
  *
  * And what the reader MEETS in that box, read at the same moment, at 390x844:
- * the box is 355 px on all five, because the stand-in covers question one
- * rather than replacing it.
+ * the box is 355 px on the four question arrivals, because the stand-in
+ * covers question one rather than replacing it; the verdict reader's box
+ * takes no room, and their line is in the masthead.
  *
  *   / cold, no record        question one — "Where are you looking to go?"
  *   /?country=fr             "Setting up your questions."
  *   / saved record           "Your answers are on this device — bringing them back."
  *   /?route=de-blue-card-…   "Setting up your questions."
- *   / finished record        "Your answers are on this device — bringing them back."
+ *   / finished record        "Your answers are on this device — bringing them back." (under the eyebrow)
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const DATASET = rawDataset as unknown as Dataset;
@@ -186,11 +193,13 @@ interface AtFirstPaint {
   first: string;
   /** The box the reader meets, in pixels. It is the same box whichever line is
    * in it: the stand-in sits OVER the question card rather than in place of
-   * it, so the card holds the height open (s10). */
+   * it, so the card holds the height open (s10). Zero for the reader owed a
+   * verdict, whose box takes no room until the module draws (s31). */
   box: number;
   /** Question one's label, if a reader can read it; empty if it is covered. */
   question: string;
-  /** The line standing in for it, if any. Never more than one. */
+  /** The line standing in for it, if any — in the box, or under the eyebrow
+   * for the reader owed a verdict (s31). Never more than one. */
   standIn: string[];
 }
 
@@ -437,16 +446,24 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
         expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBe(0);
       });
 
-      it("every reader meets the same box, to the pixel", () => {
+      it("every reader owed a question meets the same box, to the pixel; the reader owed a verdict meets none", () => {
         // The stand-in sits over question one rather than in place of it, so
         // the card holds the box open and the page below starts where it
         // starts for everybody. Said in pixels, because a box held open by a
         // number instead would drift the first time the card changed.
-        const boxes = ARRIVALS.map((a) => [a.name, built(screen.name, a.name).box] as const);
+        //
+        // Everybody but the reader whose screen is a verdict: nothing the
+        // build painted below the eyebrow is theirs, and since s31 it takes
+        // no room — the box included — until the module draws the page they
+        // came back to. Their line is under the eyebrow, not in a box.
+        const questioned = ARRIVALS.filter((a) => a.shape !== "verdict");
+        const boxes = questioned.map((a) => [a.name, built(screen.name, a.name).box] as const);
         const fresh = built(screen.name, ARRIVALS[0].name).box;
         expect(fresh, "the box has no height at all").toBeGreaterThan(100);
         expect(boxes.map(([, box]) => box), boxes.map(([n, b]) => `${n}: ${b}px`).join(" · "))
-          .toEqual(ARRIVALS.map(() => fresh));
+          .toEqual(questioned.map(() => fresh));
+        for (const a of ARRIVALS.filter((x) => x.shape === "verdict"))
+          expect(built(screen.name, a.name).box, `${a.name}: the covered box still holds its room`).toBe(0);
       });
 
       it("the cold / does not move the footer by a pixel", () => {
