@@ -474,7 +474,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * ledger with room above it and the hero stays: s20's rule, as before.
      *
      * Once the reader has answered, the ledger line stands above the question
-     * on a phone (amendment 6), so what lands under the header is whichever of
+     * and above the result on a phone (amendments 6–7), so what lands under
+     * the header after a gesture that draws a question is whichever of
      * the two stands first — the stylesheet decides the order, the landing
      * reads it. A correction lands too, on a narrow screen: with the ledger
      * open above the card the re-drawn question sat below it, and s20's
@@ -633,8 +634,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       say(declCount, declarationCount(asked.length));
       restart.hidden = currentField !== null;
       // The fact the count states, as a state the stylesheet can read: on a
-      // phone the ledger line stands above the question once there is
-      // something in it to review (amendment 6). The pre-paint script writes
+      // phone the ledger line stands above the question and above the result
+      // once there is something in it to review (amendments 6–7). The
+      // pre-paint script writes
       // the same flag for a reader whose answers are on the device or in the
       // link, so the line is above from the first paint and nothing moves when
       // the module draws (s10). The head's word stands for the first screen:

@@ -58,7 +58,9 @@ const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /**
  * Where the reader is, read the way a reader would: the card's top against
  * the viewport, the header's height and the breath it keeps under itself,
- * what holds the focus, and which question is being asked.
+ * what holds the focus, and which question is being asked. The page's frame
+ * — header, masthead, ledger, main — is on every screen and read straight;
+ * only the screen's own parts (the card, the strip) can be absent.
  */
 const WHERE = `JSON.stringify((() => {
   const card = document.querySelector("#main .qcard");
@@ -85,8 +87,8 @@ const WHERE = `JSON.stringify((() => {
     mastheadBottom: document.querySelector(".masthead-with-stamps").getBoundingClientRect().bottom,
     stripTop: (() => { const el = document.querySelector("#main .strip"); return el ? el.getBoundingClientRect().top : null; })(),
     headline: (document.getElementById("headline").textContent || "").trim(),
-    headerHeight: head ? head.getBoundingClientRect().height : null,
-    gap: head ? parseFloat(getComputedStyle(head).paddingBottom) : null,
+    headerHeight: head.getBoundingClientRect().height,
+    gap: parseFloat(getComputedStyle(head).paddingBottom),
     question: card ? (card.querySelector(".qlabel")?.textContent || "").trim() : "",
     activeIsFirst: !!first && active === first,
     active: !active ? "" : active.id ? "#" + active.id : active.tagName + "." + (active.className || "").split(" ")[0],
@@ -113,8 +115,8 @@ interface Where {
    * notices; null on a question screen. */
   stripTop: number | null;
   headline: string;
-  headerHeight: number | null;
-  gap: number | null;
+  headerHeight: number;
+  gap: number;
   question: string;
   activeIsFirst: boolean;
   active: string;
@@ -144,7 +146,7 @@ function expectLanded(step: Where, label: string): void {
     .toBeLessThan(step.cardTop!);
   expect(step.cardTop!, `${label}: the card (${step.cardTop}) overlaps the ledger (bottom ${step.declBottom})`)
     .toBeGreaterThanOrEqual(step.declBottom);
-  const landing = step.headerHeight! + step.gap!;
+  const landing = step.headerHeight + step.gap;
   expect(
     Math.abs(step.declTop - landing),
     `${label}: the ledger's top is at ${step.declTop} px, the landing is ${landing} px (scrollY ${step.scrollY})`,
@@ -447,10 +449,11 @@ describe.skipIf(skipped !== null)("on a phone the ledger line sits above the res
         expect(seen.corrected.declOpen).toBe(false);
         expectLanded(seen.corrected, "after ✎ from the verdict");
         expect(seen.corrected.activeIsFirst, `the focus is on ${seen.corrected.active || "nothing"}`).toBe(true);
-        // The new band: back to the verdict on its masthead (s20's return),
-        // the ledger still above the result.
+        // The new band: the verdict re-drawn, on its masthead (s20's return),
+        // the ledger still above the result. Whether the band changes the
+        // headline is the dataset's business, not this test's.
+        expect(seen.returned.state).toBe("results");
         expect(seen.returned.headline).not.toBe("");
-        expect(seen.returned.headline).not.toBe(seen.verdict.headline);
         // Rounded the way s20's own reading is: `scrollIntoView` lands a
         // sub-pixel short of the edge at 2x.
         expect(Math.round(seen.returned.mastheadTop), `the masthead's top is at ${seen.returned.mastheadTop} (scrollY ${seen.returned.scrollY})`)
