@@ -271,7 +271,9 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s32 — a statement names the question that asks it** · scenario proposed
+  2026-09-18 (`docs/spine/scenarios/s32-a-statement-names-its-question.md`),
+  awaiting the human's word. v1.2 fix: `field` on precondition statements.
 
 ## mock-green
 

@@ -276,7 +276,11 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.**
+**One thing is blocked on you: the word for s32.** The scenario is
+`docs/spine/scenarios/s32-a-statement-names-its-question.md` — a typed
+`field` on precondition statements replaces the shared-sentence rule for
+"asked" (schema 0.8.2); eleven statements decided, two tenure statements
+return to *not checked here*. "onaylıyorum", or what is off.
 
 - [x] **s31 reviewed and merged** (2026-09-18, your word). Live.
 
@@ -535,7 +539,12 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s31 is live** (2026-09-18; deploy `370f9e9` green; the live page carries
+the threat model, the architecture, the critiques, the announcement).**s32 is proposed** (2026-09-18): read the three containment cases — two of
+the three would have been wrong under a containment rule (a tenure is not
+what the situation question asks) — so the key is a curator's field, not a
+sentence. Data + site.
+
+**s31 is live** (2026-09-18; deploy `370f9e9` green; the live page carries
 the hold line and the stable gutter). v1.2's fixes: F2, the four-country
 headline, P8, the learn links, #13, #15, the Algerian label, P10 and the hold
 state done; **left: `field` on precondition statements, data #17** — and the
