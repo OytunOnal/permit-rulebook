@@ -138,7 +138,7 @@ const READ_ON = 'window.scrollBy({ top: Math.round(window.innerHeight / 4), beha
 
 /** The question card's top sits one header and one gap under the viewport's
  * top — within the pixel the browser rounds a scroll to — and the ledger line
- * keeps its place above the card, on the screen or one swipe up (amendment
+ * keeps its place above the card — its bottom at or above the card's top (amendment
  * 8: every answer had felt like arriving at *You declared*). */
 function expectLanded(step: Where, label: string): void {
   expect(step.state, `${label}: left the interview`).toBe("questions");
