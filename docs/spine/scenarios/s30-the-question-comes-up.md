@@ -171,3 +171,14 @@ throwaway build first — human: "tamamdır oldu şu an"):
    wide screens unchanged. The s10 finished-record arrival is measured
    again: the ledger's place is decided pre-paint, so nothing above the box
    moves after the module lands.
+
+**Amended 2026-09-18, from the human's walk on a phone** (human: "telefonda
+sorulara değil you declared'e geliyor ekran her cevabımda"):
+
+8. **The landing is the question, not the ledger line.** Amendment 6 sent
+   the ledger line's top under the header with the question 105 px below
+   it; on a phone every answer felt like arriving at *You declared*. The
+   anchor is the question card on every landing — answer, correction,
+   later history move — the card's top under the header; the ledger line
+   keeps its place above the card (one swipe up), and above the result.
+   Nothing else in amendments 6–7 changes.
