@@ -8,6 +8,7 @@ import {
 } from "permit-rulebook-data";
 import { precondHtml } from "../src/lib/card.js";
 import { NOT_CHECKED_HEADING, askedHeading } from "../src/lib/copy.js";
+import { esc } from "../src/lib/reason.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 
 const ds = dataset as unknown as Dataset;
@@ -26,6 +27,23 @@ function blocksOf(html: string): { notChecked: string | null; asked: string[] } 
   for (let m = re.exec(html); m; m = re.exec(html)) asked.push(`${m[1]} ${m[2]}`);
   return { notChecked, asked };
 }
+
+/** The eleven the scenario decides, by id: the nine that name their question
+ * and the two tenures that name none. What the sweep below holds the cards
+ * to, so the test does not read the implementation's own key back. */
+const DECIDED: { route: string; statement: string; field?: string }[] = [
+  { route: "fr-talent-qualifie", statement: "employment-contract-of-more-than-three-months", field: "situation" },
+  { route: "fr-talent-blue-card", statement: "employment-contract-of-at-least-six-months", field: "situation" },
+  { route: "fr-talent-innovante", statement: "work-tied-to-the-research-and-development-project", field: "situation" },
+  { route: "fr-talent-innovante", statement: "a-young-innovative-company-or-one-the-ministry-recognises", field: "fr_innovative_employer" },
+  { route: "fr-talent-mission", statement: "a-move-inside-one-company-or-group", field: "situation" },
+  { route: "es-researcher", statement: "hosting-agreement-or-contract-with-the-research-body", field: "situation" },
+  { route: "nl-blue-card", statement: "employment-contract-valid-for-six-months", field: "situation" },
+  { route: "nl-ict", statement: "three-months-with-the-company-outside-the-union", field: "situation" },
+  { route: "de-researcher", statement: "hosting-agreement-with-a-research-facility", field: "situation" },
+  { route: "de-ict-card", statement: "six-months-with-the-company-before-the-transfer" },
+  { route: "fr-ict", statement: "six-months-with-the-group-already" },
+];
 
 /** Three readers, one per changed card: a researcher in Germany, a transferee
  * in Germany, a transferee in France. */
@@ -108,19 +126,16 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     }
   });
 
-  it("nothing else moves: every other scored route draws the blocks it drew, keyed by field", () => {
-    // The eight verbatim matches carry the field they matched on, so the
-    // cards s19 moved stay moved; every other card has no field to read.
-    const full = (): Profile => ({
-      destination: "all", citizenship: "TR", situation: "offer", situation_country: "de",
-    });
-    const answers = full();
+  it("nothing else moves: every scored route draws exactly the asked blocks the eleven give it, and no other", () => {
+    // Held to the list above, not to the dataset's fields: a reader who has
+    // declared a situation, and nothing the employer question could cover.
+    const answers: Profile = { destination: "all", citizenship: "TR", situation: "offer", situation_country: "de" };
     for (const r of evaluate(ds, answers)) {
-      const html = precondHtml(ds, r.route, answers);
-      const fielded = routeStatements(r.route).filter((s) => s.kind === "precondition" && s.field !== undefined && answers[s.field] !== undefined);
-      const { asked } = blocksOf(html);
-      expect(asked.length, r.route.id).toBe(new Set(fielded.map((s) => s.field)).size);
-      for (const s of fielded) expect(asked.join(" "), `${r.route.id}: ${s.id}`).toContain(s.text.replace(/&/g, "&amp;"));
+      const decided = DECIDED.filter((d) => d.route === r.route.id && d.field !== undefined && answers[d.field] !== undefined);
+      const { asked } = blocksOf(precondHtml(ds, r.route, answers));
+      expect(asked.length, r.route.id).toBe(new Set(decided.map((d) => d.field)).size);
+      for (const d of decided)
+        expect(asked.join(" "), `${r.route.id}: ${d.statement}`).toContain(esc(statementOf(ds, d.route, d.statement).text));
     }
   });
 });

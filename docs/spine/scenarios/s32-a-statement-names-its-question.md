@@ -85,9 +85,11 @@ under that heading; what moves on the cards is de-researcher's hosting
 agreement alone (into the asked block, and its scope line to *scored against
 your answers*). No fingerprint moves: `tests/fixtures/root-build.json` is over
 the frozen two-route dataset (`de-blue-card-general`, `de-skilled-academic`),
-neither among the three, and a route page has no reader, so `askedFieldOf`
-answers null on every page whatever the field; `/data/`'s fixture is over the
-same frozen dataset. Neither regenerated.
+and none of the three routes is in it — de-researcher's own page does move
+(its scope line and its `reason`), and it is not fingerprinted; `/data/`'s
+fixture is over the same frozen dataset. Neither regenerated. (As first
+written this sentence pointed at `askedFieldOf`, which the route page does not
+read — corrected at the review, 2026-09-18.)
 
 ## How it is proved
 
