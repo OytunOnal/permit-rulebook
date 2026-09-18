@@ -210,7 +210,8 @@ _Avoid_: help link, reference link
 
 **Reveal / landing** (the two ways a drawn screen meets the reader):
 A *reveal* (s20) scrolls only when the card's top is off the screen — every
-gesture on a wide screen, where the card sits beside the ledger. A *landing*
+gesture on a wide screen, where the card sits beside the ledger, and Start
+over on a narrow one, which draws the first question again. A *landing*
 (s30) brings the top of whatever stands first — the ledger line once the
 reader has answered, the card before that — to just under the header (the
 header's measured height and its own padding) on a narrow screen after an

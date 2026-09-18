@@ -82,7 +82,26 @@ now, and its count's words change width), the two links 0.006 → 0.003;
 390×1400 record 0.037 → 0.030, links 0.063/0.062 → 0.055/0.054; the cold page
 0 → 0; the footer's travel unchanged on every row (+44 px on the record is
 s20's resumed line, not this). And "Start over" (`reset`) is not among the
-gestures point 6 names: on a narrow screen it keeps s20's reveal.
+gestures point 6 names: on a narrow screen it keeps s20's reveal. (Delta
+review) A link whose code the page does not know (`?country=zz`) is painted
+with the flag and brings no answer; the first build took the flag down on that
+render and moved the ledger below after the module landed — the move s10
+forbids. Three ways were weighed: the head cannot know the dataset's codes
+(the s13 sweep keeps every name out of the inlined script); leaving `link`
+unflagged pre-paint costs a valid link 0.197 / 0.172 at 390×844 / 390×1400
+(over the gate); so the head's word stands for the first screen — the flag
+comes down on a gesture, never on the arrival — and the unknown-link reader
+on a phone meets the ledger line *You declared · nothing yet* above question
+one, which is true. Measured with the s10 method: `?country=zz` (and an
+unknown route) 390×844 0.057, 390×1400 0.045, footer +94 px — the same to the
+thousandth on master before s30, and the nodes are `#app`, `#stamp` and the
+footer: the masthead's promise swapping from the link's to the fresh one, an
+arrival the gate does not seed, seen and not touched here; the ledger stays
+where it was painted. The valid link unchanged (0.003 / 0.055). The proof line "a ✎ correction at
+390 behaves as s20's test already pins" moved with amendment 6 to the
+correction landing's own cases (390×844 and 375×667: the ledger closes and
+lands, the question under it); s20's rule for a correction is the wide
+screen's, pinned at 1280×900.
 
 ## How it is proved
 

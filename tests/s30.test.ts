@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
+import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 
 /**
  * s30 — on a phone the next question comes up to meet the reader.
@@ -77,6 +78,7 @@ const WHERE = `JSON.stringify((() => {
     declBottom: declBox.bottom,
     declLeft: declBox.left,
     declOpen: decl.open,
+    answered: document.documentElement.dataset.answered !== undefined,
     headerHeight: head ? head.getBoundingClientRect().height : null,
     gap: head ? parseFloat(getComputedStyle(head).paddingBottom) : null,
     question: card ? (card.querySelector(".qlabel")?.textContent || "").trim() : "",
@@ -96,6 +98,7 @@ interface Where {
   declBottom: number;
   declLeft: number;
   declOpen: boolean;
+  answered: boolean;
   headerHeight: number | null;
   gap: number | null;
   question: string;
@@ -296,6 +299,78 @@ describe.skipIf(skipped !== null)("what does not change", () => {
       // on it, so the page stands where the reader left it.
       expect(seen.corrected.scrollY, "a correction moved a card the reader could already see").toBe(seen.before.scrollY);
       expect(seen.corrected.activeIsFirst, `the focus is on ${seen.corrected.active || "nothing"}`).toBe(true);
+    } finally {
+      server.close();
+    }
+  }, 180000);
+});
+
+describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back under the first question, the page stays", () => {
+  /** A reader four answers in, the way s20 seeds one: their first screen
+   * carries the resumed line, and Start over with it. */
+  const halfDone = { destination: "fr", citizenship: "TR", situation: "offer", situation_country: "fr" };
+  const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
+    JSON.stringify(serialize(halfDone, Object.keys(halfDone)))})`;
+
+  it("at 390x844", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage) => {
+        await page.goto(server.url("/404.html"), 300);
+        await page.evaluate(SEED);
+        await page.goto(server.url("/"), 1600);
+        const restored = await where(page);
+        // The reader reads a little way down — the card's top stays on the
+        // screen — then starts over from the resumed line.
+        await page.evaluate(READ_ON);
+        const before = await where(page);
+        await page.evaluate('document.querySelector("#main .resumed #restart").click()');
+        await settle(900);
+        const reset = await where(page);
+        return { restored, before, reset, problems: page.problems() };
+      }, { viewport: { width: 390, height: 844 }, mobile: true });
+      expect(seen.problems).toEqual([]);
+      // With answers on the device the ledger line is above from the first
+      // paint, and the first paint scrolls nothing.
+      expect(seen.restored.answered).toBe(true);
+      expect(seen.restored.declTop).toBeLessThan(seen.restored.cardTop!);
+      expect(seen.restored.scrollY).toBe(0);
+      expect(seen.before.cardTop!).toBeGreaterThan(0);
+      expect(seen.before.cardTop!).toBeLessThan(seen.before.viewport);
+      // Nothing declared any more: the flag is down, the question comes first
+      // again (F8), and the page stands where the reader left it — s20's
+      // reveal, the card's top being on the screen.
+      expect(seen.reset.answered).toBe(false);
+      expect(seen.reset.cardTop!, "the ledger did not go back under the question").toBeLessThan(seen.reset.declTop);
+      expect(seen.reset.question).not.toBe(seen.restored.question);
+      expect(seen.reset.scrollY, "Start over moved a page the reader could already see").toBe(seen.before.scrollY);
+    } finally {
+      server.close();
+    }
+  }, 180000);
+});
+
+describe.skipIf(skipped !== null)("a link the page does not know keeps the first paint's order on a phone", () => {
+  it("at 390x844: ?country=zz brings no answer, and the ledger line stays where the head put it", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage) => {
+        await page.goto(server.url("/404.html"), 300);
+        await page.evaluate("localStorage.clear()");
+        await page.goto(server.url("/?country=zz"), 1600);
+        const landed = await where(page);
+        const count = await page.evaluate('document.getElementById("decl-count").textContent');
+        return { landed, count, problems: page.problems() };
+      }, { viewport: { width: 390, height: 844 }, mobile: true });
+      expect(seen.problems).toEqual([]);
+      // The head wrote the flag for a link it cannot check; the module found
+      // no answer in it. Its word stands for the first screen: the line above
+      // question one says "nothing yet", which is true, and nothing moves
+      // after the module lands (s10).
+      expect(seen.landed.state).toBe("questions");
+      expect(seen.landed.answered).toBe(true);
+      expect(seen.landed.declTop).toBeLessThan(seen.landed.cardTop!);
+      expect(seen.count).toBe("nothing yet");
     } finally {
       server.close();
     }

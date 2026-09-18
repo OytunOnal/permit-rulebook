@@ -635,11 +635,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // The fact the count states, as a state the stylesheet can read: on a
       // phone the ledger line stands above the question once there is
       // something in it to review (amendment 6). The pre-paint script writes
-      // the same flag for a reader whose answers are on the device, so the
-      // line is above from the first paint and nothing moves when the module
-      // draws (s10).
+      // the same flag for a reader whose answers are on the device or in the
+      // link, so the line is above from the first paint and nothing moves when
+      // the module draws (s10). The head's word stands for the first screen:
+      // a link whose code this page does not know brings no answer, and the
+      // line it was painted with — "You declared · nothing yet" — is true;
+      // moving it below after the module lands is the shift s10 forbids. The
+      // flag comes down on a gesture (Start over), never on the arrival.
       if (asked.length > 0) page.dataset.answered = "";
-      else delete page.dataset.answered;
+      else if (!arriving) delete page.dataset.answered;
     }
 
     /**
