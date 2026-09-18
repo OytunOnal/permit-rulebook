@@ -49,7 +49,7 @@ run's only failure was `first-paint.test.ts` reading an `undefined` from
 the browser after a 250 ms settle on a slow runner, a flake recorded on the
 board): `/data/`'s Dataset block names its four countries as `Place`, the
 type Google's parser reads. Site #11 closed. **v1.1's state is now on the
-live site: s9 through s18.** **s27 is built, reviewed on three axes and walked** (2026-09-17; branch `s27-five-slips` at `66c0820`, 648 tests, astro check 0, assets true, two fingerprints regenerated with the reason). Amended twice from the human's walk (the tagline's colon; the card's door as a door, option A), the delta reviewed on three axes, 652 tests. Amended from the human's walk (the ledger line above the question on a phone once answers exist; ✎ lands too), the delta reviewed on three axes, 673 tests. Waiting on the merge word: P8, five small slips, measured on the
+live site: s9 through s18.** **s27 is built, reviewed on three axes and walked** (2026-09-17; branch `s27-five-slips` at `66c0820`, 648 tests, astro check 0, assets true, two fingerprints regenerated with the reason). Amended twice from the human's walk (the tagline's colon; the card's door as a door, option A), the delta reviewed on three axes, 652 tests. Amended twice from the human's walks (the ledger line above the question and above the result on a phone once answers exist; ✎ lands too), each delta reviewed on three axes, 676 tests. Waiting on the merge word: P8, five small slips, measured on the
 live build before writing (the hidden 404 heading is 1×1 on screen and read
 twice by a screen reader; the pen wraps on *University degree* at 1280; the
 menu says *Menu* when open). Five decisions, one "nothing else".
@@ -277,12 +277,12 @@ CLS fix is not. The three lines, left here until the window closes:
   the post to say what was wrong and what it says now.
 
 **One thing is blocked on you: the merge word for s30.** The review is on
-record (`docs/spine/reviews/s30.md`, three axes on the build and again on
-your amendment — the ledger line above the question on a phone, and ✎
-landing too; head `c4f2073`, 673 tests, CLS within the gate on every seeded
-arrival). The local build at http://localhost:4526/ in Chrome's phone
-emulation: answer, answer, open the ledger, ✎ — the question comes. "merge"
-is the deploy.
+record (`docs/spine/reviews/s30.md`, three axes on the build and on both of
+your amendments — the ledger line above the question and above the result
+on a phone, ✎ landing too; head `ad72246`, 676 tests, CLS 0 on the
+finished-record arrival). The local build at http://localhost:4526/ in
+Chrome's phone emulation: answer to the end, the ledger line under the
+stamp; ✎ from there. "merge" is the deploy.
 
 - [x] **s30 tried and chosen** (2026-09-18, your word "tamamdır" on the phone-only trial).
 - [x] **s29 reviewed, walked and merged** (2026-09-17, your word, knowing the BMI sentinel is human-tier). Live; data #13 and #15 closed.
