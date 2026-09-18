@@ -276,7 +276,13 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.** s32 is approved and building (data + site); the local build and the review come to you together.
+**One thing is blocked on you: the merge word for s32.** The review is on
+record (`docs/spine/reviews/s32.md`, three axes on both repositories, no hard
+finding, three should-fixes landed); the light critique found nothing new.
+The local build at http://localhost:4526/: Germany → *research* → any
+answers → the Researcher card says *Asked in the interview — you declared
+…*; Germany → *transfer* → the ICT card keeps the six months under *not
+checked here*. "merge" is the deploy: data first, then the site's pin.
 
 - [x] **Roadmap fork** (2026-09-18, your word "uygula": all six later candidates kept; clock reset).
 
@@ -537,7 +543,7 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s32 is approved and building** (2026-09-18, human: "onaylıyorum"; two worktrees, builder agent, zero gates inside): read the three containment cases — two of
+the threat model, the architecture, the critiques, the announcement).**s32 is built, reviewed on three axes and read** (2026-09-18; data `9bbd24f`, site `93be021`; data check 647, site 694). Waiting on the merge word: read the three containment cases — two of
 the three would have been wrong under a containment rule (a tenure is not
 what the situation question asks) — so the key is a curator's field, not a
 sentence. Data + site.
