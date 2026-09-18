@@ -276,7 +276,12 @@ CLS fix is not. The three lines, left here until the window closes:
   objection — fix the value with its history line, let the rebuild land, edit
   the post to say what was wrong and what it says now.
 
-**Nothing is blocked on you.**
+**One thing is blocked on you: the word for s31.** The scenario is
+`docs/spine/scenarios/s31-the-hold-state-and-two-small-things.md` — the
+finished-record hold state becomes one line under the eyebrow (the covered
+parts take no space; the s10 gate re-measured); focus lands on the headline
+when the verdict returns after a correction; `scrollbar-gutter: stable`.
+"onaylıyorum", or what is off.
 
 - [x] **s30 tried, amended three times and merged** (2026-09-18, your word). Live.
 
@@ -533,7 +538,12 @@ These are the things only you can see, when you want to look:
 
 Ledgers: this file (now), `KANBAN.md` (the board and the versions),
 `DECISIONS.md` (why anything is the way it is), `docs/spine/` (the scenario,
-the threat model, the architecture, the critiques, the announcement).**s30 is live** (2026-09-18; deploy `3535086` green; read on the live host at
+the threat model, the architecture, the critiques, the announcement).**s31 is proposed** (2026-09-18): the hold state measured with the module
+held 4 s (eyebrow, ~1000 px of blank, the line at the bottom of the hidden
+box) and decided as one line under the eyebrow; focus after a re-answer;
+the scrollbar gutter. Three points, one "nothing else".
+
+**s30 is live** (2026-09-18; deploy `3535086` green; read on the live host at
 390: every answer and ✎ lands the question at 72 px under the header, the
 ledger line one swipe up; the verdict carries the ledger line under the
 stamp). v1.2's fixes: F2, the four-country headline, P8, the learn links,
