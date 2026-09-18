@@ -188,3 +188,19 @@ export const declarationCount = (answered: number): string =>
 export const firstPaintPlaceholdersHtml = (): string =>
   `<p class="stand-in stand-in-record">${esc(RETURNING_LINE)}</p>`
   + `<p class="stand-in stand-in-link">${esc(LINK_ARRIVAL_LINE)}</p>`;
+
+/**
+ * The same sentence for the reader owed a verdict, in the masthead rather
+ * than in the box.
+ *
+ * Nothing the build painted below the eyebrow is that reader's — not the
+ * masthead's question, not the card, not the ledger, not the footer — and
+ * s22 covered it all in place: the covers kept their room and the line sat
+ * centred in a hidden box, a thousand pixels of blank under the eyebrow. Now
+ * the covered things take no room until the module draws, and the line
+ * stands directly under the eyebrow, where the headline will (s31). It is the
+ * record line's own words: the same fact is true for both readers, and one
+ * sentence cannot drift from itself.
+ */
+export const holdLineHtml = (): string =>
+  `<p class="stand-in stand-in-verdict">${esc(RETURNING_LINE)}</p>`;

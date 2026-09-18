@@ -50,6 +50,50 @@
 4. **Nothing else changes.** The other four arrivals keep their s10
    numbers; the interview's landing (s30) and reveal (s20) unchanged.
 
+**Corrected 2026-09-18, by the build:** (1) The shape registers no shift.
+The s10 gate's finished-record row, its own method (module 700 ms late,
+the observer buffered), before → after: 390×844 CLS 0 → 0, 390×1400 0 → 0,
+1280×900 0 → 0, no shift source on either side — what was visible (the
+header, the eyebrow) stays put, and what appears was never painted. The
+line's place: at 390 the eyebrow is at 107–122 and the line at 130–154 (it
+was 445–800, centred in the hidden box); at 1280, 130–145 and 153–176; the
+headline lands at the line's own top. The line is the record line's own
+sentence, rendered a second time by `holdLineHtml` into the masthead
+between the eyebrow and the `h1` (`.stand-in-verdict`), and the module
+removes every `.stand-in` on the page, not the box's alone. The masthead's
+rule stays transparent under the hold, for s22's reason with more force:
+with the covers gone it would sit under the line and move to under the
+subline when the verdict drew. The gate's "every reader meets the same box"
+case now says so for the four question arrivals and asserts the verdict
+reader's box takes no room; that row's footer travel is no longer a
+number (the footer has no box at the first paint). (2) "The s20 return" is
+`wasResult` false: ✎ sets `data-state="questions"` before it draws the
+question, so the answer that draws the verdict replaces a question —
+`landOnVerdict` reveals the masthead (s20) and now focuses the headline. A
+verdict drawn over a result by a gesture has no path today; the focus is
+taken on every gesture-drawn verdict and on none that is `arriving` or
+`restoring` — browser Back to a verdict keeps the old rule (nothing takes
+the focus), filed with the Back behaviours, not touched. (3) At 1280×900
+the question page is 1,315 px tall, so a classic scrollbar is there before
+and after the verdict on master as well: the column's edge is 456.5 → 456.5
+either way, and the scenario's viewport could not show the defect. It
+shows where the question page fits: measured at 1280×1400 with the
+scrollbars drawn (the harness hides them unless asked — `scrollbars: true`,
+s31), master 464 → 456.5 (a 15 px bar, 7.5 px of centred column); this
+build 456.5 → 456.5. The cold `/` at 1280×900 is 456.5 on both builds —
+unchanged; at 1280×1400 it is now 456.5 where master had 464 — the gutter
+on both states, the trade point 3 names. The rule is
+`html{scrollbar-gutter:stable}` in `index.astro`'s global style beside the
+`body` it styles: this is the one page whose length changes after it has
+painted; the route and country pages ship at their length, `identity.css`
+is the pair and `tokens.css` is values. Seen: Chrome reserves the gutter
+under `--hide-scrollbars` too, so every desktop measurement in the suite
+now sees the column 7.5 px further left — no case reads an absolute edge;
+the suite is green. (4) The other four rows, before and after, identical to
+the thousandth: 390×844 cold 0, the two links 0.003, record 0.003; 390×1400
+cold 0, links 0.055 / 0.054, record 0.030; 1280×900 cold 0, links 0.013 /
+0.009, record 0.002.
+
 ## How it is proved
 
 - The s10 gate re-run: finished-record CLS at three viewports, before and
