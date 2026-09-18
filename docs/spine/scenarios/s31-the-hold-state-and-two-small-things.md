@@ -1,6 +1,6 @@
 # s31 — the hold state says where it is, and two small things
 
-**Status:** proposed 2026-09-18. v1.2 fixes: the finished-record hold state
+**Status:** approved 2026-09-18 (human: "onaylıyorum"). v1.2 fixes: the finished-record hold state
 (s22's trade), focus after a re-answer (v1.1 re-score polish), and
 `scrollbar-gutter: stable` (s22, seen and not touched).
 

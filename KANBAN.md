@@ -273,9 +273,9 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 
 ## active
 
-- **s31 — the hold state says where it is, and two small things** · scenario
-  proposed 2026-09-18 (`docs/spine/scenarios/s31-the-hold-state-and-two-small-things.md`),
-  awaiting the human's word. v1.2 fixes: the hold state, focus after a
+- **s31 — the hold state says where it is, and two small things** · approved
+  2026-09-18 (human: "onaylıyorum"); building in `../permit-rulebook-s31`
+  (branch `s31-hold-state`). v1.2 fixes: the hold state, focus after a
   re-answer, `scrollbar-gutter`.
 
 ## mock-green
