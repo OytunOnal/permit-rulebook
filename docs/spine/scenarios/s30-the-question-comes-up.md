@@ -143,3 +143,18 @@ phone emulation** (one point, tried on a throwaway build first — human:
    line under the header, the question under it, the first control focused
    without a second move. Point 3's rule (reveal only when off screen)
    narrows to wide screens.
+
+**Amended 2026-09-18, from the human's walk of the local build** (tried on a
+throwaway build first — human: "tamamdır oldu şu an"):
+
+7. **On a phone the ledger line sits above the result too.** Once answers
+   exist, the collapsed *You declared · N answers — tap to review or change*
+   box stands under the masthead and above the notices, the strip and the
+   route sections (measured on the trial at 390: 2206 → 463), so the way
+   back to any answer is at the top of the verdict, not after every card.
+   `landOnVerdict` keeps landing on the masthead; ✎ from there follows
+   s20's verdict → question → verdict return, with the correction landing
+   of amendment 6. The same declared state (`data-answered`) decides it;
+   wide screens unchanged. The s10 finished-record arrival is measured
+   again: the ledger's place is decided pre-paint, so nothing above the box
+   moves after the module lands.
