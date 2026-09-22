@@ -58,6 +58,15 @@ mark `promoted <date>`; the board's done column holds the step.
   sentinel since s29): headless Chrome from the runner reads what the
   fetcher cannot (s14 measured yes) · bet: a `browser` watch strategy keeps
   the daily read honest without a person; source: data #17, s14.
+- **A source that fails once is read again** (intake #21, 2026-09-22) · the
+  daily watch gives up on the first `unreachable`: 09-20 six sources answered
+  403 (buzer.de ×5, wetten.overheid.nl), 09-21 three timed out (boe.es ×2,
+  bamf.de), 09-22 all 46 read clean — two red days for outages that were gone
+  by the next morning. A source unreachable in one run is retried (in the run,
+  or on the next) and only an unbroken second failure raises the flag · bet:
+  the sources' own hiccups, not our reach, are what redden the watch; source:
+  metric 2 off target 2026-09-22, data #21. Next to #17 — the same file, the
+  same tests.
 - **Back on a restored record** (s30 build, 2026-09-18) · a reader who arrives
   fresh with a restored record and taps ← Back leaves the site (the rebuilt
   history has no entries in the browser); reload mid-interview then Back

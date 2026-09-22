@@ -7,7 +7,7 @@ commands, counts agreeing with the listings (site 1 = 1, data 8 = 8; 0 open
 PRs on either).
 
 last-read: OytunOnal/permit-rulebook 2026-09-15T14:05:54Z
-last-read: OytunOnal/permit-rulebook-data 2026-09-16T10:00:18Z
+last-read: OytunOnal/permit-rulebook-data 2026-09-21T09:47:00Z
 
 ## Items
 
@@ -22,3 +22,4 @@ last-read: OytunOnal/permit-rulebook-data 2026-09-16T10:00:18Z
 | 2026-09-17 | permit-rulebook-data | #17, #19 | not ours (IND page churn) + our fix s14 | one finding; both closed with a comment naming s14 |
 | 2026-09-17 | permit-rulebook-data | #18 | bug | the daily watch failed on the IND wall 09-11→09-16; s14/s15; 09-17 run clean; closed |
 | 2026-09-17 | permit-rulebook-data | #13, #15 | bug | shipped in s29 (data d062750); closed with a comment each |
+| 2026-09-22 | permit-rulebook-data | #21 | not ours (source outages) + measurement | two runs red on source-side 403s and timeouts, green again 09-22; metric 2 read off target; the retry is a v1.2 queue item (human: "b"); closed with a comment |
