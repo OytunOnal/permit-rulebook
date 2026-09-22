@@ -152,9 +152,9 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
   critique of the navigation mock (F1), .
 - **Rest of Europe** · versioned at the s6 boundary 2026-09-07.
 
-### later (clock: DECISIONS rows since 2026-09-18)
+### later (clock: DECISIONS rows since 2026-09-23)
 
-_Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept — no evidence has touched them yet; the first metric reading is 2026-09-24._
+_Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept. Fork 2026-09-23 (human: "hepsi keep"): all six kept again — still no intake line or metric reading points at any of them; the numbers that could are the pre-registered readings of 2026-10-09._
 
 - **Model the 45+ age rules (55% threshold) as criteria** (from the old
   backlog, 2026-09-18) · currently notes on the German cards · bet: an age

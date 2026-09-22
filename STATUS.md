@@ -13,7 +13,8 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   browser-read strategy for the IND).
 - v1.2: 9 of 13 planned steps passed for real (nine slices s23–s32); 4
   queued — #17, the watch retry (from #21), then two steward items (Back on a
-  restored record; an unknown link's first paint). Roadmap: 21 candidates ahead, 9 unversioned under
+  restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
+  all six `later` candidates kept, clock reset. Roadmap: 21 candidates ahead, 9 unversioned under
   `later` (three moved from the old backlog; clock reset 2026-09-18).
 - Pace: 10 slices real-green in two days (s23–s32, 2026-09-17 → 18), ≈ 0.2
   days per slice; 3 to go → under a week at this pace — but #17 is larger
@@ -40,19 +41,21 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   drawn by Spine's generator (six tabs); STATUS short; KANBAN's backlog
   folded into the roadmap; ADRs folded into DECISIONS rows.
 - Metrics: 1 and 2 read 2026-09-22 (liveness on target, the watch not); 6
-  read 2026-09-23 (good 88 %, off the 92 % target; poor 0 %) and now on a
-  7-day clock; the pre-registered numbers on 2026-10-09 with the isolated
+  read 2026-09-23 (good 88 %, off the 92 % target; poor 0 %), next read
+  2026-09-30 — the breakdown is with the human, no slice queued until it and
+  the re-read agree on a target; the pre-registered numbers on 2026-10-09 with the isolated
   walk.
 - Nothing blocked on the human today.
 
 ## What is expected from you
 
-- [ ] **Two forks are open and waiting** (asked 2026-09-23): what to do about
-      the off-target CLS reading (A wait · B break the dashboard down · C queue
-      a gesture bound — recommended B), and the roadmap fork the guard asks for
-      (six `later` candidates, all ranked keep). Pass = a word for each; the
-      roadmap answer becomes the `roadmap fork:` row that resets the clock.
-      Why yours: both are versioning and priority calls, not measurements.
+- [ ] **Break the CLS reading down once** at Cloudflare → Web Analytics →
+      Core Web Vitals for permitrulebook.com: switch the view to per-page and
+      to device/browser for 16–23 Sep, bots excluded, and say which page and
+      which device carry the 12 % "needs improvement". Pass = a page path and
+      a device class (or "the view does not break down", which is an answer
+      too). Why yours: the dashboard is behind your Cloudflare login; the
+      session measured everything it could reach and found no counted shift.
 
 _(Bing → IndexNow confirmed by the human 2026-09-22: the submissions are listed.)_
 
