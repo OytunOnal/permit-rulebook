@@ -29,7 +29,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - The one open thread: #17's scenario is next — a `browser` watch strategy
   (headless Chrome on the runner) bringing the five IND pages and the BMI
   sentinel back from the human tier.
-- Skills reloaded 2026-09-18 (steward-64, v0.4): the road page is now
+- Skills reloaded 2026-09-22 (steward-66/67 and the roadmap's `after:`): forks
+  are four at a time and every default is said in the message; a worktree's
+  exit checks the directory gone — the leftover `_preview` worktrees (223 MB,
+  from s12) were removed today. Before that, 2026-09-18 (steward-64, v0.4): the road page is now
   drawn by Spine's generator (six tabs); STATUS short; KANBAN's backlog
   folded into the roadmap; ADRs folded into DECISIONS rows.
 - Metrics: 1 and 2 read 2026-09-22 (liveness on target, the watch not); the
