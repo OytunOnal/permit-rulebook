@@ -5,7 +5,7 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-22, intake read (#21 closed; metric 2 off target, the retry slice queued).
+- Last boundary: 2026-09-23, metric 6 read off target (CLS good 88 %); the isolated full walk ran the same day.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: nothing — the next slice is v1.2's queue head, data #17 (the
   browser-read strategy for the IND).
@@ -29,14 +29,17 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - The one open thread: #17's scenario is next — a `browser` watch strategy
   (headless Chrome on the runner) bringing the five IND pages and the BMI
   sentinel back from the human tier.
-- Skills reloaded 2026-09-22 (steward-66/67 and the roadmap's `after:`): forks
+- Skills reloaded 2026-09-23 (standards.md, the three gate words, the reviews'
+  Dismissed list): `docs/spine/standards.md` written from what the repos do.
+  Before that, 2026-09-22 (steward-66/67 and the roadmap's `after:`): forks
   are four at a time and every default is said in the message; a worktree's
   exit checks the directory gone — the leftover `_preview` worktrees (223 MB,
   from s12) were removed today. Before that, 2026-09-18 (steward-64, v0.4): the road page is now
   drawn by Spine's generator (six tabs); STATUS short; KANBAN's backlog
   folded into the roadmap; ADRs folded into DECISIONS rows.
-- Metrics: 1 and 2 read 2026-09-22 (liveness on target, the watch not); the
-  CLS after-reading is due 2026-09-24; the pre-registered numbers on 2026-10-09 with the isolated
+- Metrics: 1 and 2 read 2026-09-22 (liveness on target, the watch not); 6
+  read 2026-09-23 (good 88 %, off the 92 % target; poor 0 %) and now on a
+  7-day clock; the pre-registered numbers on 2026-10-09 with the isolated
   walk.
 - Nothing blocked on the human today.
 
