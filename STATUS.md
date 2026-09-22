@@ -5,7 +5,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-23, metric 6 read off target (CLS good 88 %); the isolated full walk ran the same day.
+- Last boundary: 2026-09-23, metric 6 read off target (CLS good 88 %); the
+  isolated full walk is running now (its report and screenshots land in
+  `docs/spine/critiques/2026-09-23-metric-reading-full*`).
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: nothing — the next slice is v1.2's queue head, data #17 (the
   browser-read strategy for the IND).
@@ -44,6 +46,13 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - Nothing blocked on the human today.
 
 ## What is expected from you
+
+- [ ] **Two forks are open and waiting** (asked 2026-09-23): what to do about
+      the off-target CLS reading (A wait · B break the dashboard down · C queue
+      a gesture bound — recommended B), and the roadmap fork the guard asks for
+      (six `later` candidates, all ranked keep). Pass = a word for each; the
+      roadmap answer becomes the `roadmap fork:` row that resets the clock.
+      Why yours: both are versioning and priority calls, not measurements.
 
 _(Bing → IndexNow confirmed by the human 2026-09-22: the submissions are listed.)_
 
