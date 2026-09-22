@@ -36,10 +36,8 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **Bing Webmaster Tools → IndexNow: confirm the submissions are listed**
-      at https://www.bing.com/webmasters/indexnow (any day). Pass = the last
-      deploy's date appears with 36+ URLs. Why yours: the tool is behind your
-      Microsoft login.
+_(Bing → IndexNow confirmed by the human 2026-09-22: the submissions are listed.)_
+
 - [ ] **On 2026-10-09, read the pre-registered numbers**: Cloudflare Web
       Analytics (visits from search and referrals, days 8–30, target ≥ 300),
       Search Console → Links (linking domains), and whether a stranger has
