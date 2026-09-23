@@ -53,6 +53,17 @@ mark `promoted <date>`; the board's done column holds the step.
 - **the copy pass** (a route page names its own unread sources, F3 — moved from the `v1.x` bucket 2026-09-17) · promoted 2026-09-17 · s23
 
 **Queue** (in order; the first unpromoted line is the next slice)
+- **A cached page outlives its assets** (the CLS chase, 2026-09-23; human:
+  "tamamdır" to option A) · `/` is served with a ten-minute cache while
+  `_astro/*` is content-hashed and replaced every deploy, so a reader holding
+  a ten-minute-old page asks for a stylesheet and a module that answer 404
+  (verified on the live host: `index.CpGG1ZDr.css`, `index.BcmUcb7-.css`,
+  `index.qYLZ_mcb.js`). The deploy carries the previous build's referenced
+  assets forward — one generation, fetched from the live site, never failing
+  the deploy, with a check that what it carries is byte-identical to what the
+  live host served · bet: one generation covers the ten-minute window, and a
+  reader never meets an unstyled page with a dead interview; source: the
+  2026-09-23 chase of metric 6.
 - **Data #17 — the browser-read strategy for the IND** · the road back from the
   human tier (five IND route pages read by a person since s14; the BMI
   sentinel since s29): headless Chrome from the runner reads what the

@@ -11,9 +11,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: nothing — the next slice is v1.2's queue head, data #17 (the
   browser-read strategy for the IND).
-- v1.2: 9 of 13 planned steps passed for real (nine slices s23–s32); 4
-  queued — #17, the watch retry (from #21), then two steward items (Back on a
-  restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
+- v1.2: 9 of 14 planned steps passed for real (nine slices s23–s32); 5
+  queued — the carried-assets fix first (a cached page outliving its assets,
+  the human's option A), then #17, the watch retry (from #21), then two
+  steward items (Back on a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
   all six `later` candidates kept, clock reset. Roadmap: 21 candidates ahead, 9 unversioned under
   `later` (three moved from the old backlog; clock reset 2026-09-18).
 - Pace: 10 slices real-green in two days (s23–s32, 2026-09-17 → 18), ≈ 0.2
@@ -29,6 +30,7 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - Metric 2 (the daily watch finishes) is off target: two red days, 09-20 and
   09-21, both source-side (403s, timeouts); 09-22 read all 46 clean. The
   retry slice is queued beside #17.
+- Next slice: the carried-assets fix — its scenario is not written yet.
 - The walk's three adjustments are with the human, unpicked: an English
   handle on every foreign quote; salary bands scoped to the country (and the
   question count's first screen); a home for *Start over* mid-interview with a
@@ -53,14 +55,6 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **One fork: what to do about a cached page outliving its assets**
-      (`/` is cached ten minutes; `_astro/*` is replaced every deploy and the
-      old names 404). A — carry the previous build's assets forward in the
-      deploy (one slice in this repo, no account touched). B — put the site
-      behind Cloudflare's proxy and shorten the HTML cache (a DNS change and a
-      cache rule in your account). C — accept the ten-minute window per deploy
-      and note it. Pass = a letter. Why yours: B touches your DNS and A
-      competes with #17 for the queue.
 
 - [ ] **Pick from the walk's three adjustments** (report §Recommended
       adjustments): 1 the foreign-quote handle · 2 country-scoped salary bands
