@@ -247,17 +247,12 @@ jobs:
       # `continue-on-error` to catch.
       #
       # The address arrives as an environment VALUE and the command line is
-      # empty, which is not a style choice. This step used to read
-      # `node scripts/carry-assets.mjs --origin "$SITE_URL"`, and the script
-      # reads any `--name value` as a flag: `SITE_URL` set to `--dry-run` made
-      # the step write no digest list and exit 0, and set to `--dist=<other>`
-      # put the list somewhere the artifact does not go — so one repository
-      # variable turned the whole mechanism off while every deploy stayed
-      # green (Security review, round 4; the reading is in the script's own
-      # header under "Where the address comes from"). A value cannot be read
-      # as a flag. Nothing may be appended to the `run:` line either, for the
-      # reason `tests/pipeline.test.ts` keeps beside its verbatim pin of this
-      # block.
+      # empty, which is not a style choice: the script reads any `--name value`
+      # as a flag, so a repository variable spliced into argv could turn the
+      # whole mechanism off with every deploy still green. The reading is in
+      # the script's own header, under "Where the address comes from". Nothing
+      # may be appended to the `run:` line either, for the reason
+      # `tests/pipeline.test.ts` keeps beside its verbatim pin of this block.
       - name: Carry the live site's assets forward, so a cached page still finds them
         working-directory: site
         env:

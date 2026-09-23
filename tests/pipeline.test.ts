@@ -224,16 +224,12 @@ describe("a cached page still finds its assets", () => {
    * upload begins. An edit to this step then goes through a deliberate edit
    * here, which is the point of a step nobody may quietly change.
    *
-   * The `run:` takes NO arguments, and that is the clause round 4 added. It
-   * used to read `node scripts/carry-assets.mjs --origin "$SITE_URL"`, which
-   * put a repository variable where the script reads flags: `SITE_URL` set to
-   * `--dry-run` made the step write no digest list and exit 0, and set to
-   * `--dist=<elsewhere>` put the list in another directory while the real
-   * `dist/` shipped without one — either of which leaves every later deploy
-   * with nothing to check a carried byte against, green, from a value no code
-   * review sees (Security review, round 4). The address travels as an
-   * environment value now, which cannot be read as a flag, and it is pinned
-   * here beside the rest of the block.
+   * The `run:` takes NO arguments, and that clause is load-bearing: the script
+   * reads any `--name value` as a flag, so a repository variable spliced into
+   * this command line is a way to turn the mechanism off while every deploy
+   * stays green. Why that is so is the script header's "Where the address
+   * comes from"; what this case does about it is pin the empty command line
+   * and the environment value beside the rest of the block.
    */
   it("the build job runs it, verbatim, as the last step before the upload", () => {
     const pages = read(join(workflows, "pages.yml"));

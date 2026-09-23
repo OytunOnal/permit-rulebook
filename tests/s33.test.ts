@@ -167,6 +167,20 @@ const pageOf = (refs: string[]): Buffer => Buffer.from(
 );
 
 /**
+ * A page of distinct `/_astro/` references, about `bytes` long. Distinct,
+ * because the cost a case measures with this is per NAME kept, not per byte
+ * scanned.
+ */
+const pageOfSize = (bytes: number): string => {
+  const refs: string[] = [];
+  for (let i = 0, n = 0; n < bytes; i += 1) {
+    refs.push(`/_astro/index.${String(i).padStart(8, "0")}.css`);
+    n += refs.at(-1)!.length + 30;
+  }
+  return pageOf(refs).toString("utf8");
+};
+
+/**
  * A whole live deploy: the page naming these assets, the digest list the build
  * that published that page wrote beside it, and the assets themselves. The
  * three travel together because on the live host they were published together
@@ -206,10 +220,9 @@ function dist(have: Record<string, Buffer> = {}): string {
  *
  * The origin is a parameter of its own and not part of `args`, because that is
  * the shape of the step: `pages.yml` sets `CARRY_ORIGIN` and passes no argv at
- * all. A repository variable that reached `argv` became a flag — `SITE_URL`
- * set to `--dry-run` made the step publish no digest list and stay green
- * (Security review, round 4) — so no case here may spell an origin on the
- * command line, and the one that tries is a case of its own.
+ * all. Why it must stay that way is the script header's "Where the address
+ * comes from"; the consequence for this file is that no case may spell an
+ * origin on the command line, and the one that tries is a case of its own.
  *
  * Asynchronously, and that is not a style choice: the stand-in origin above
  * listens on this very process, so a synchronous child would block the event
@@ -227,6 +240,12 @@ function carry(origin: string, args: string[] = []): Promise<{ status: number; o
 
 const carried = (dir: string): string[] => readdirSync(join(dir, "_astro")).sort();
 const lastLine = (out: string): string => out.trim().split("\n").at(-1) ?? "";
+/**
+ * The annotation the run summary carries, or "" when the step ended quiet.
+ * `::warning::` at the start of a line is the workflow command Actions reads,
+ * so it is read here the same way Actions reads it: line by line, anchored.
+ */
+const annotation = (out: string): string => out.split("\n").find((line) => line.startsWith("::warning::")) ?? "";
 
 afterEach(() => {
   for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
@@ -392,13 +411,11 @@ describe("the carrier takes the live generation forward", () => {
 
   it("takes the origin from the environment, and nothing on the command line can move it", async () => {
     // The step passes no argv, and this is why. `pages.yml` used to splice a
-    // repository variable into the command line — `node scripts/carry-assets.mjs
-    // --origin "$SITE_URL"` — and the flag reader took any `--name value`, so
-    // whoever could set that one variable could hand the script a flag instead
-    // of an address (Security review, round 4). The variable is a value now,
-    // read from the environment, and a command line that spells an origin is
-    // inert: this case hands it one, pointing at a host that would answer, and
-    // measures that not a packet reached it.
+    // repository variable into the command line, where the flag reader took
+    // any `--name value` — the script header's "Where the address comes from".
+    // The variable is a value now, read from the environment, and a command
+    // line that spells an origin is inert: this case hands it one, pointing at
+    // a host that would answer, and measures that not a packet reached it.
     const live = await origin(deploy({ [CSS_NAME]: CSS }));
     const decoy = await origin(deploy({ "index.DECOYAAA.css": CSS }));
     const out = dist();
@@ -413,12 +430,9 @@ describe("the carrier takes the live generation forward", () => {
 
   it("refuses an origin that is not a web address, and still publishes this build's digest list", async () => {
     // The two values that disarmed the whole mechanism while the deploy stayed
-    // green (Security review, round 4), measured on the real process with the
-    // step's own argv: `--dry-run` made the step write no list at all, and
-    // `--dist=<somewhere else>` put the list in that directory while the real
-    // `dist/` shipped without one. Either way every LATER deploy has nothing to
-    // check bytes against, so the window s33 closes is open again — green, from
-    // a value no code review sees.
+    // green, if either reached argv: `--dry-run`, and `--dist=<somewhere
+    // else>`. What that costs every later deploy is the script header's "Where
+    // the address comes from".
     //
     // So the list is the assertion. Whatever the origin turns out to be, the
     // build this step was pointed at leaves with the list the next deploy
@@ -692,29 +706,6 @@ describe("the carrier carries only what our own previous build attested to", () 
     } finally { live.close(); }
   });
 
-  it("says it carried nothing in different words from having nothing to carry", async () => {
-    // Refusing everything and having no work to do used to print the same last
-    // line, and nothing in this repository reads this step's output: a proxy
-    // change in front of Pages would reopen the cached-page window silently,
-    // and the first evidence would be a reader's unstyled page (Security
-    // review, round 3). Still exit 0 either way — it never fails the deploy.
-    const refusing = deploy({ [CSS_NAME]: CSS });
-    refusing[`/_astro/${CSS_NAME}`] = { status: 500, type: "text/html", body: Buffer.from("no") };
-    const bad = await origin(refusing);
-    const idle = await origin(deploy({ [CSS_NAME]: CSS }));
-    const nothingCarried = dist();
-    const nothingToCarry = dist({ [CSS_NAME]: CSS });
-    try {
-      const alarm = await carry(bad.url, ["--dist", nothingCarried]);
-      const quiet = await carry(idle.url, ["--dist", nothingToCarry]);
-      expect(alarm.status, alarm.out).toBe(0);
-      expect(quiet.status, quiet.out).toBe(0);
-      expect(carried(nothingCarried)).toEqual([]);
-      expect(lastLine(alarm.out), alarm.out).not.toBe(lastLine(quiet.out));
-      // And the loud one names what the reader is going to ask for and not get.
-      expect(lastLine(alarm.out)).toContain(CSS_NAME);
-    } finally { bad.close(); idle.close(); }
-  });
 });
 
 /**
@@ -733,15 +724,12 @@ describe("the carrier fetches from our origin and nowhere else", () => {
       // to name this very host and port: then only the `https:` makes it
       // foreign — the mirror of an `http://` reference on the live site, which
       // is https.
-      answers["/"] = {
-        type: "text/html; charset=utf-8",
-        body: pageOf([
-          "https://evil.example/_astro/absolute.DDDDDDDD.js",
-          "//evil.example/_astro/protocol-relative.EEEEEEEE.js",
-          `https://127.0.0.1:${new URL(live.url).port}/_astro/scheme.FFFFFFFF.js`,
-          `/_astro/${mine}`,
-        ]),
-      };
+      const foreign = [
+        "https://evil.example/_astro/absolute.DDDDDDDD.js",
+        "//evil.example/_astro/protocol-relative.EEEEEEEE.js",
+        `https://127.0.0.1:${new URL(live.url).port}/_astro/scheme.FFFFFFFF.js`,
+      ];
+      answers["/"] = { type: "text/html; charset=utf-8", body: pageOf([...foreign, `/_astro/${mine}`]) };
       const out = dist();
       const run = await carry(live.url, ["--dist", out]);
       expect(run.status, run.out).toBe(0);
@@ -749,8 +737,29 @@ describe("the carrier fetches from our origin and nowhere else", () => {
       // three foreign references either.
       expect(live.asked).toEqual(["/", `/${DIGESTS}`, `/_astro/${mine}`]);
       expect(carried(out)).toEqual([mine]);
-      for (const name of ["absolute.DDDDDDDD.js", "protocol-relative.EEEEEEEE.js", "scheme.FFFFFFFF.js"])
-        expect(run.out, `${name} was not reported`).toContain(name);
+      // Each of the three is reported, and each is reported as much of itself
+      // as a log line can afford: a page chooses how long its references are,
+      // so a refusal prints a bounded head of one rather than the whole of it
+      // (Security review, round 5).
+      for (const ref of foreign)
+        expect(run.out, `${ref} was not reported`).toContain(ref.slice(0, 30));
+    } finally { live.close(); }
+  });
+
+  it("reads the address it checked, whitespace and all", async () => {
+    // The boundary tested `origin.trim()` twice and then built the page URL out
+    // of `origin`, so the value that was checked and the value that was used
+    // were two different strings. Measured, round 5: `CARRY_ORIGIN` with a
+    // space at each end fetched `…/%20%20/` and answered 404 — a failure with
+    // no explanation in it, on a step whose whole job is to say what it could
+    // not do. One parse now, and what that parse returns is what is fetched.
+    const live = await origin(deploy({ [CSS_NAME]: CSS }));
+    const out = dist();
+    try {
+      const run = await carry(`  ${live.url}/  `, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      expect(live.asked, run.out).toEqual(["/", `/${DIGESTS}`, `/_astro/${CSS_NAME}`]);
+      expect(carried(out)).toEqual([CSS_NAME]);
     } finally { live.close(); }
   });
 
@@ -789,8 +798,14 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     const { names, refused } = readAssetNames(pageOf(refs).toString("utf8"), "https://example.test/");
     expect(names).toEqual(["index.HHHHHHHH.css"]);
     // Refused by name: every reference that did not become a name is handed
-    // back, so the caller can print it and nothing is dropped in silence.
-    expect(refused.map((r) => r.ref)).toEqual(refs.slice(0, 3));
+    // back, so the caller can print it and nothing is dropped in silence — as
+    // much of each as a log line can afford, and no more, because how long a
+    // reference is is the page's choice (Security review, round 5).
+    expect(refused).toHaveLength(3);
+    refused.forEach(({ ref }, i) => {
+      expect(refs[i].startsWith(ref.replace(/…$/, "")), `${ref} is not the head of ${refs[i]}`).toBe(true);
+      expect(ref.length, ref).toBeLessThanOrEqual(41);
+    });
   });
 
   it("refuses four hundred foreign references without a packet or four hundred lines", async () => {
@@ -855,6 +870,45 @@ describe("the carrier cannot fail the deploy", () => {
     } finally { live.close(); }
   });
 
+  it("prints nothing that can become a line of its own in the deploy log", async () => {
+    // In Actions a line beginning `::` is a workflow command, and this step
+    // prints values it did not write. Measured, round 5: an origin of
+    // `http://host/\r\n::error::…` printed a second line, and Actions would
+    // have read it as a command of ours. Only someone who can already set a
+    // repository variable can reach this — the page's own strings cannot,
+    // because a reference with whitespace in it never becomes a name — so it
+    // is the printing that is fixed rather than the trust: whatever this step
+    // is handed, it says on one line.
+    const out = dist();
+    const run = await carry("http://host.invalid/\r\n::error::title=pwn::injected", ["--dist", out]);
+    expect(run.status, run.out).toBe(0);
+    const commands = run.out.split("\n").filter((line) => line.startsWith("::"));
+    // The step's own annotation is a workflow command and is allowed to be
+    // one; a line the value wrote is not.
+    expect(commands.every((line) => line.startsWith("::warning::")), run.out).toBe(true);
+    expect(run.out, "the injected text was dropped instead of being shown on one line").toContain("injected");
+  });
+
+  it("keeps a reference a page names out of the log's length as well as out of the network", async () => {
+    // Three refusal branches printed the reference whole and one truncated it,
+    // so a page could put as many 400-character lines in a deploy's log as it
+    // could name references. A log nobody can read is the same as no log
+    // (Security review, round 5: a 430-character reference printed a
+    // 502-character line).
+    const long = `https://evil.example/_astro/${"a".repeat(400)}.js`;
+    const live = await origin({ "/": { type: "text/html; charset=utf-8", body: pageOf([long]) } });
+    const out = dist();
+    try {
+      const run = await carry(live.url, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      expect(live.asked, "a refused reference cost a request").toEqual(["/"]);
+      const longest = Math.max(...run.out.trim().split("\n").map((line) => line.length));
+      expect(longest, run.out).toBeLessThan(200);
+      // Still reported, and still recognisable as the reference it refused.
+      expect(run.out).toContain("evil.example");
+    } finally { live.close(); }
+  });
+
   it("survives a dist it cannot write into", async () => {
     const live = await origin(deploy({ [CSS_NAME]: CSS }));
     // `_astro` as a FILE: portable across platforms, where a permission bit is
@@ -875,49 +929,39 @@ describe("the carrier cannot fail the deploy", () => {
     } finally { live.close(); }
   });
 
-  /**
-   * A page of distinct `/_astro/` references, about `bytes` long. Distinct,
-   * because the cost this measures is per NAME kept, not per byte scanned.
-   */
-  const pageOfSize = (bytes: number): string => {
-    const refs: string[] = [];
-    for (let i = 0, n = 0; n < bytes; i += 1) {
-      refs.push(`/_astro/index.${String(i).padStart(8, "0")}.css`);
-      n += refs.at(-1)!.length + 30;
-    }
-    return pageOf(refs).toString("utf8");
-  };
-
   it("reads a page at its ceiling in time that grows with the page, not with its square", () => {
-    // `readAssetNames` kept its names in an array and asked `includes` before
-    // each push, so a page with many distinct names cost the square of their
-    // number — and none of it was interruptible, because the budget only sizes
-    // request timeouts and this loop runs after the body is read. A 1 MB page
-    // cost 76.1 s inside a 5,000 ms budget and reported no problem at all, and
-    // the 4 MB ceiling a page then had was about twenty minutes of CPU in a
-    // deploy job that, with `cancel-in-progress: false`, queues the next
-    // deploy behind it (Security review, round 4). Why that is so, and what
-    // the ceilings are now, is the script header's "What a page may cost this
-    // build".
+    // Reading the names out of a page was quadratic in how many distinct ones
+    // it held, and uninterruptible: the budget sizes request timeouts, and this
+    // loop runs after the body is in hand. Why that is worth a case, and what
+    // bounds it now, is the script header's "What a page may cost this build";
+    // this asserts the SHAPE, which is the part only a running clock shows.
     //
-    // So this measures the SHAPE, not a speed. Four times the page is about
-    // four times the work when the cost is linear and sixteen times when it is
-    // quadratic. Measured on these two exact pages, 2026-09-23: 96 ms and
-    // 1,684 ms before the repair, 4 ms and 17 ms after. The
-    // hundred-millisecond floor is there so that timer noise cannot decide a
-    // case about a shape — it did not carry this one, which failed at 1,684 ms
-    // against a bound of 768 ms when the quadratic was put back to check that
-    // it could.
+    // A clock is the instrument because there is no other one here: the cost is
+    // CPU inside a pure function, and nothing it returns differs when it is
+    // slow. So the margin carries the honesty instead. Four times the page is
+    // about four times the work when the cost is linear and sixteen times when
+    // it is quadratic, and the bound sits between them, at eight. Each page is
+    // read three times and the fastest read is the measurement — a loaded
+    // runner can only add time to a run, never take it away — and the
+    // hundred-millisecond floor keeps timer noise from deciding a case about a
+    // shape. Reproduced on these two exact pages, 2026-09-23: 96 ms and
+    // 1,684 ms with the quadratic in, 4 ms and 17 ms without it; put back to
+    // check that this bound can fail, the quadratic failed it at 1,684 ms
+    // against 768 ms.
     const quarter = pageOfSize(128 * 1024);
     const whole = pageOfSize(512 * 1024);
-    const took = (html: string): { ms: number; names: number } => {
-      const began = Date.now();
-      const { names } = readAssetNames(html, "https://example.test/");
-      return { ms: Date.now() - began, names: names.length };
+    const fastestOf = (html: string): { ms: number; names: number } => {
+      let ms = Number.POSITIVE_INFINITY;
+      let names = 0;
+      for (let run = 0; run < 3; run += 1) {
+        const began = Date.now();
+        names = readAssetNames(html, "https://example.test/").names.length;
+        ms = Math.min(ms, Date.now() - began);
+      }
+      return { ms, names };
     };
-    took(quarter); // warm, so the first run's compilation is not the measurement
-    const small = took(quarter).ms;
-    const large = took(whole);
+    const small = fastestOf(quarter).ms;
+    const large = fastestOf(whole);
     // The cost is per distinct name kept, so this is only measuring a shape if
     // the page holds thousands of them.
     expect(large.names, `a ${whole.length}-byte page held ${large.names} names`).toBeGreaterThan(9_000);
@@ -926,10 +970,9 @@ describe("the carrier cannot fail the deploy", () => {
   });
 
   it("refuses a page over the ceiling, so the reading above is the worst case there is", async () => {
-    // The ceiling on the page is the ceiling on that parse, and it was 4 MB —
-    // a number chosen for an asset and applied to a page, which is how seven
-    // minutes of parsing became reachable. A page is an index.html: today's is
-    // 11,569 bytes.
+    // The ceiling on the page is the ceiling on that parse, and it used to be
+    // 4 MB — a number chosen for an asset and applied to a page. A page is an
+    // index.html: today's is 11,569 bytes.
     const live = await origin({ "/": { type: "text/html; charset=utf-8", body: Buffer.from(pageOfSize(1024 * 1024), "utf8") } });
     const out = dist();
     try {
@@ -1027,5 +1070,146 @@ describe("the carrier cannot fail the deploy", () => {
       // It gave up on its own clock rather than the host's.
       expect(took, `the run took ${took} ms`).toBeLessThan(4_000);
     } finally { live.close(); }
+  });
+});
+
+/**
+ * Which of the three things happened, and whether the deploy log says so.
+ *
+ * Nothing in this repository reads this step's output, so the run summary is
+ * the only place a reader's broken page is ever going to be predicted: the
+ * quiet outcome has to be rare and true, and both loud ones have to be loud.
+ * When the step ends quiet and when it raises the annotation is one rule,
+ * written where the verdict is computed in `scripts/carry-assets.mjs`; these
+ * cases measure the real process against it.
+ *
+ * All three verdicts were computed from the wrong set before round 5, and each
+ * error is a case below.
+ */
+describe("the step says which of the three things happened", () => {
+  it("is quiet only when this build already has everything the live page names", async () => {
+    const live = await origin(deploy({ [CSS_NAME]: CSS }));
+    const out = dist({ [CSS_NAME]: CSS });
+    try {
+      const run = await carry(live.url, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      // It read the page and found nothing to do: one request, no annotation.
+      expect(live.asked).toEqual(["/"]);
+      expect(annotation(run.out), run.out).toBe("");
+    } finally { live.close(); }
+  });
+
+  it("raises the annotation on every path that gives up before it can look", async () => {
+    // The alarm used to be `needed.length && carried.length === 0`, and
+    // `needed` is filled only after the page has been fetched and parsed —
+    // so every return before that was as quiet as a healthy deploy. Measured
+    // on the real process, round 5: all seven, exit 0, no annotation. When the
+    // step could not look, it does not know whether the window is open, and
+    // that is exactly when it has to say so.
+    const stopped = await origin({ "/": { status: 503, type: "text/html", body: Buffer.from("down") } });
+    const flood = await origin({ "/": { type: "text/html; charset=utf-8", body: Buffer.from(pageOfSize(1024 * 1024), "utf8") } });
+    try {
+      const cases: [string, string][] = [
+        ["no origin at all", ""],
+        ["a value that is not an address", "ftp://permitrulebook.com/"],
+        ["an address that does not parse", "http://["],
+        ["a host that answers nothing", "http://127.0.0.1:1"],
+        ["a page that answers 503", stopped.url],
+        ["a page over the 512 KB ceiling", flood.url],
+      ];
+      for (const [label, value] of cases) {
+        const out = dist();
+        const run = await carry(value, ["--dist", out]);
+        expect(run.status, `${label}: ${run.out}`).toBe(0);
+        expect(annotation(run.out), `${label} ended as quiet as a healthy deploy: ${run.out}`).not.toBe("");
+        // And it says which of the three it is: it could not look, so it does
+        // not claim to know what a reader will find.
+        expect(annotation(run.out), `${label}: ${run.out}`).toContain("could not read the live page");
+      }
+      // The seventh return is the export's own: the CLI always passes a build
+      // directory, so `looked` is where that path is measured.
+      const live = await origin(deploy({ [CSS_NAME]: CSS }));
+      try {
+        expect((await carryAssets({ origin: live.url })).looked).toBe(false);
+      } finally { live.close(); }
+    } finally { stopped.close(); flood.close(); }
+  });
+
+  it("raises the annotation for a name it left behind, even when it carried another", async () => {
+    // `carried.length === 0` was the wrong predicate the day partial carrying
+    // became the normal outcome. Measured, round 5: the page named two, the
+    // list named one, one was carried and one left behind — and the step said
+    // nothing, while a reader holding that page still 404s on the one left.
+    const stale = "index.STALE001.css";
+    const shared = "index.SHARED02.js";
+    const answers = deploy({ [stale]: CSS, [shared]: JS });
+    answers[`/${DIGESTS}`] = { type: "text/plain; charset=utf-8", body: listOf({ [shared]: JS }) };
+    const live = await origin(answers);
+    const out = dist();
+    try {
+      const run = await carry(live.url, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      expect(carried(out)).toEqual([shared]);
+      expect(annotation(run.out), run.out).toContain(stale);
+      // The one it did carry is not what the reader is missing, so it is not
+      // in the line that names what the reader is missing.
+      expect(annotation(run.out), run.out).not.toContain(shared);
+    } finally { live.close(); }
+  });
+
+  it("does not call a healthy deploy a disagreement over one reference it could never carry", async () => {
+    // "The page and the list are from different deploys" was decided on
+    // `needed` — what the page names MINUS what this build already has. On the
+    // ordinary deploy that changed neither asset, both real names are already
+    // built, so one stray reference was the whole of `needed` and one equalled
+    // one: measured, round 5, a page naming both real assets and
+    // `/_astro/../../pwn.css` refused the entire run on a build that had
+    // nothing at risk. The verdict is about the page's WHOLE reference set
+    // against the list — those are the two things that either describe the
+    // same deploy or do not.
+    const answers = deploy({ [CSS_NAME]: CSS, [JS_NAME]: JS });
+    answers["/"] = {
+      type: "text/html; charset=utf-8",
+      body: pageOf([`/_astro/${CSS_NAME}`, `/_astro/${JS_NAME}`, "/_astro/../../pwn.css"]),
+    };
+    const live = await origin(answers);
+    const out = dist({ [CSS_NAME]: CSS, [JS_NAME]: JS });
+    try {
+      const run = await carry(live.url, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      expect(run.out, "a healthy deploy was called a disagreement between two generations")
+        .not.toContain("different deploys");
+      expect(carried(out)).toEqual([CSS_NAME, JS_NAME].sort());
+      // It still says what it could not carry, and still says it plainly: the
+      // reader's page asks for a name nothing here can account for.
+      expect(annotation(run.out), run.out).toContain("pwn.css");
+    } finally { live.close(); }
+  });
+
+  it("tells the three outcomes apart in the deploy log", async () => {
+    // Refusing everything, having no work to do, and never reaching the page
+    // used to print the same last line, and the first evidence of a silent
+    // step is a reader's unstyled page (Security review, rounds 3 and 5).
+    // Still exit 0 on all three: it never fails the deploy.
+    const refusing = deploy({ [CSS_NAME]: CSS });
+    refusing[`/_astro/${CSS_NAME}`] = { status: 500, type: "text/html", body: Buffer.from("no") };
+    const bad = await origin(refusing);
+    const idle = await origin(deploy({ [CSS_NAME]: CSS }));
+    const missing = dist();
+    const nothingToCarry = dist({ [CSS_NAME]: CSS });
+    const blind = dist();
+    try {
+      const alarm = await carry(bad.url, ["--dist", missing]);
+      const quiet = await carry(idle.url, ["--dist", nothingToCarry]);
+      const unseen = await carry("http://127.0.0.1:1", ["--dist", blind]);
+      for (const run of [alarm, quiet, unseen]) expect(run.status, run.out).toBe(0);
+      expect(carried(missing)).toEqual([]);
+      const said = [alarm, quiet, unseen].map((run) => lastLine(run.out));
+      expect(new Set(said).size, said.join("\n")).toBe(3);
+      // And the loud one names what the reader is going to ask for and not get.
+      expect(annotation(alarm.out), alarm.out).toContain(CSS_NAME);
+      expect(annotation(quiet.out), quiet.out).toBe("");
+      expect(annotation(unseen.out), unseen.out).not.toBe("");
+    } finally { bad.close(); idle.close(); }
   });
 });
