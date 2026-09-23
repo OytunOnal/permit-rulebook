@@ -53,11 +53,7 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 
 
-- [ ] **s33: one word left — `waive`.** The record holds one open Security
-      entry (the origin is a repository variable), so the ten pre-record
-      waivers must name it — `skips: .github/workflows/pages.yml:67` — or
-      the guard ignores them and lists the ten slices every turn. Pass =
-      "waive". Why yours: a waiver is given in sight of what it waives.
+_(s33 closed on the human's three words, 2026-09-23: "merge", "tamam" on point 1's narrowing, and "waive" — the ten pre-record waivers re-stated naming the one open Security entry, `.github/workflows/pages.yml:67`.)_
 - [ ] **s33's real-green cannot be read on its own deploy**, and the record
       says so: the slice touches nothing under `src/`, so both live assets
       rebuild under the same hashes and the proof-list bullet passes with no
