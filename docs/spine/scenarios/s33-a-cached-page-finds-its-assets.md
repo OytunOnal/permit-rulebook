@@ -1,6 +1,6 @@
 # s33 — a cached page still finds its assets
 
-**Status:** proposed 2026-09-23. v1.2 queue head; the human's option A of three
+**Status:** approved 2026-09-23 (human: "onaylıyorum"). v1.2 queue head; the human's option A of three
 ("tamamdır", 2026-09-23), from the chase of metric 6.
 
 ## What happened

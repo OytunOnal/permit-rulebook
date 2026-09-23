@@ -30,8 +30,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - Metric 2 (the daily watch finishes) is off target: two red days, 09-20 and
   09-21, both source-side (403s, timeouts); 09-22 read all 46 clean. The
   retry slice is queued beside #17.
-- Next slice: **s33 — a cached page still finds its assets**; the scenario is
-  written and waits for your word.
+- In flight: **s33 — a cached page still finds its assets** (approved
+  2026-09-23, building in `../permit-rulebook-s33`); its real-green is the
+  live check that today's two assets still answer 200 after its own deploy.
 - The walk's three adjustments are with the human, unpicked: an English
   handle on every foreign quote; salary bands scoped to the country (and the
   question count's first screen); a home for *Start over* mid-interview with a
@@ -56,12 +57,6 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **The word for s33** (`docs/spine/scenarios/s33-a-cached-page-finds-its-assets.md`):
-      the deploy carries the live page's two assets forward when the fresh
-      build does not have them — one generation, `curl` only, never failing
-      the deploy, what it carries checked byte-identical, and the
-      only-`/`-has-assets invariant pinned. Pass = "onaylıyorum", or what is
-      off. Why yours: it changes what the deploy publishes.
 
 
 - [ ] **Pick from the walk's three adjustments** (report §Recommended

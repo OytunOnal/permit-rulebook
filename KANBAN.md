@@ -53,7 +53,7 @@ mark `promoted <date>`; the board's done column holds the step.
 - **the copy pass** (a route page names its own unread sources, F3 — moved from the `v1.x` bucket 2026-09-17) · promoted 2026-09-17 · s23
 
 **Queue** (in order; the first unpromoted line is the next slice)
-- **A cached page outlives its assets** (the CLS chase, 2026-09-23; human:
+- **A cached page outlives its assets** · promoted 2026-09-23 · s33 · (the CLS chase, 2026-09-23; human:
   "tamamdır" to option A) · `/` is served with a ten-minute cache while
   `_astro/*` is content-hashed and replaced every deploy, so a reader holding
   a ten-minute-old page asks for a stylesheet and a module that answer 404
@@ -193,9 +193,9 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-- **s33 — a cached page still finds its assets** · scenario proposed
-  2026-09-23 (`docs/spine/scenarios/s33-a-cached-page-finds-its-assets.md`),
-  awaiting the human's word. v1.2 queue head (option A).
+- **s33 — a cached page still finds its assets** · approved 2026-09-23
+  (human: "onaylıyorum"); building in `../permit-rulebook-s33` (branch
+  `s33-carry-assets`). v1.2 queue head (option A).
 
 ## mock-green
 
