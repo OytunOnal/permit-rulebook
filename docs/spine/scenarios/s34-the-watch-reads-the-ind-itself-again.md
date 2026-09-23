@@ -239,7 +239,21 @@ before the merge with `--only --commit` from a developer machine — the state
 diff was the unread list and nothing else. **Point 5 gained a clause it did not ask for**:
 the browser sends `x-source-contact` beside the watch's name, as the fetcher
 has since data #18, so a host that wants to block this reader can reach its
-operator instead. **Point 6's proof list was met by the
+operator instead — and point 5's "the fetcher's own User-Agent name in its
+string" now reads *to the source, and to nobody else*. Both are added to the
+source's own requests as they leave, through a `Fetch` interception of every
+request the tab makes, because the tab-wide way of setting them told every
+host a page embeds who was reading AND made each cross-origin request
+non-simple, so Chrome preflighted it by name — against an ordinary CORS
+endpoint the preflight is refused and the page's own call fails, which renders
+a page short for this watch and for nobody else. The costs are a driver
+round-trip per request, and a request nothing ever answers spending the
+entry's budget rather than the run's. Two gaps are stated rather than closed:
+a source that registers a service worker routes its later fetches through a
+context this reader does not intercept, so those go out unnamed; and the
+session-wide User-Agent override stays, because removing it changes which
+variant ind.nl serves (round 2's measurement), so a third party still sees a
+plain Chrome string — it simply no longer sees this watch's name in it. **Point 6's proof list was met by the
 runner rather than locally**: the line asking for the watch run with `--commit`
 against the live pages before the merge was answered by the workflow's own
 dispatches — a measurement run with `commit=false`, then a baseline run with

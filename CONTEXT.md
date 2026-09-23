@@ -365,7 +365,15 @@ tiers when it differs from the address asked for — a redirect the fetcher
 followed, a form that posts back to a sub-path, a script that swapped the
 document. `read_at` is always an address, shortened past 200 characters
 because the address is the page's to choose; the day a reading was taken is a
-snapshot's `retrieved_at`.
+snapshot's `retrieved_at`. **The watch names itself to the source and to
+nobody else**: the fetcher's User-Agent name and its contact header are added
+to the source's own requests as they leave, so a host the page merely embeds
+sees exactly what a visitor's browser would send — no extra header, and so no
+preflight announcing one. Two gaps are known and stated rather than hidden: a
+source that registers a service worker routes its later fetches through a
+context this reader does not intercept, so those go out unnamed; and the
+session-wide User-Agent override stays, because removing it changes which
+variant ind.nl serves, so a third party still sees a plain Chrome string.
 _Avoid_: headless tier, rendered tier, scraping
 
 **Watch step**:
