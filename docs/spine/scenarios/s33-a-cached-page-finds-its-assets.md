@@ -173,8 +173,9 @@ carry nothing. One further **narrowing** belongs on this record, of point 1,
 which the two deviations above are the model for: point 1 asks for the
 `/_astro/…` names the live page **references**, and what this step reads is
 **a quoted string with no whitespace in it and `/_astro/` inside, wherever the
-page holds one** — the shapes Astro emits are what that covers and why it is
-drawn there, but it is not a rule about attributes and an earlier wording here
+page holds one** (the two quote marks need not be the same one, so `"…'` is
+read as readily as `"…"`) — the shapes Astro emits are what that covers and
+why it is drawn there, but it is not a rule about attributes and an earlier wording here
 called it one. It errs in both directions, and the second is the one this
 record was silent about. Narrow: a name a page holds any other way is not
 seen, so it is not carried and nothing says so — measured, round 7, the reader
@@ -183,13 +184,19 @@ is blind to `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare relative
 which a browser resolves to one of this deploy's real assets. Wide: because it
 knows nothing about markup, a `/_astro/` name held in an HTML comment or in an
 inline script string is read exactly as a `href` is (measured, round 9), so an
-old name left in either reaches `needed`, spends one of the twenty requests
-and, the live host no longer serving it, raises the `::warning::` saying a
-reader holding that page asks for it and gets a 404 — for a URL no reader will
-ever ask for. That is a **false** alarm, on the one line this step exists to
+old name left in either reaches `needed`. What it costs there turns on the live
+`asset-digests.txt`, and the two halves are exclusive (measured, 2026-09-23). A
+name the live deploy no longer publishes is not in that list, and the carry
+loop filters `needed` against the list before a request is counted, so such a
+name spends **none** of the twenty requests, draws the refusal line saying the
+list does not name it, and raises the `::warning::` saying a reader holding
+that page asks for it and gets a 404 — for a URL no reader will ever ask for.
+That annotation is the **false** alarm, on the one line this step exists to
 make trustworthy, and it is the cost of the narrowing in the direction the
-alarm is loudest; our own pages hold no such string, and what would tell the
-two apart is the same HTML parser the narrowing declines. The narrowing is
+alarm is loudest. A name the list still carries does spend one of the twenty,
+and is then carried: a wasted request and nothing else, no line and no
+annotation. Our own pages hold no such string, and what would tell either from
+a real reference is the same HTML parser the narrowing declines. The narrowing is
 deliberate —
 honouring what a browser resolves means `<base href>`, character references,
 `srcset` and CSS `url()`, and half a browser reads strings no reader asks for

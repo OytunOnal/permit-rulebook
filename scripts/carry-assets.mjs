@@ -233,9 +233,11 @@ const boundedList = (names) => (names.length <= 3 ? names.join(", ") : `${names.
 /**
  * As much of a string this step did not write as a log line can afford. A page
  * may name a reference of any length at all, and a refusal that printed one
- * whole let a page write the deploy's log twenty lines at a time. 40 for a
- * reference; the longer bound is for the one address a repository variable
- * holds, which has to survive being read.
+ * whole let a page write the deploy's log twenty lines at a time. 40 is the
+ * only bound in use: every call site takes the default — a reference, the host
+ * one names, the path one resolves to, a `content-type` the origin chose. The
+ * live address is not among them; it is the other population, and its rule is
+ * all or nothing — printed whole once it has parsed, or not printed at all.
  */
 const short = (text, max = 40) => (text.length > max ? `${text.slice(0, max)}…` : text);
 
@@ -354,8 +356,9 @@ function readAssetDigests(text) {
  * ## What shapes this reads, and what it does not
  *
  * It reads a QUOTED STRING with no whitespace in it and `/_astro/` inside,
- * wherever the page holds one. That covers the reference shapes Astro emits,
- * which is why it is what it is, but it is not a rule about attributes and
+ * wherever the page holds one — and the two quote marks need not be the same
+ * one, so `"…'` is read as readily as `"…"`. That covers the reference shapes
+ * Astro emits, which is why it is what it is, but it is not a rule about attributes and
  * must not be described as one: it knows nothing about markup, so a name in a
  * comment or in an inline script is read exactly as a `href` is (measured,
  * round 9).
@@ -367,11 +370,18 @@ function readAssetDigests(text) {
  * a browser resolves to one of this deploy's real assets, so they are a
  * missed CARRY and not only a missed alarm. Wide: a `/_astro/` name a page
  * holds in a comment or a script string, which no reader will ever ask for,
- * reaches `needed` all the same — it spends one of the twenty requests and,
- * the live host no longer serving it, raises the annotation that says a
- * reader holding this page gets a 404. A FALSE alarm, on the one line this
- * step exists to make trustworthy. Our own pages hold no such string, and
- * what would separate the two is an HTML parser, below.
+ * reaches `needed` all the same. What it costs there turns on the live
+ * `asset-digests.txt`, and the two halves are exclusive (measured,
+ * 2026-09-23). A name the live deploy no longer publishes is not in that list,
+ * and the carry loop filters `needed` against the list BEFORE `asked` is
+ * incremented — so such a name spends NONE of the twenty requests, draws the
+ * refusal line saying the list does not name it, and raises the annotation
+ * that says a reader holding this page gets a 404. That annotation is the
+ * FALSE alarm, on the one line this step exists to make trustworthy. A name
+ * the list still carries does spend one of the twenty, and is then carried: a
+ * wasted request and nothing else, no line and no annotation. Our own pages
+ * hold no such string, and what would separate either from a real reference is
+ * an HTML parser, below.
  *
  * They stay unread deliberately. Reading what a BROWSER resolves is not a
  * wider pattern here; it is a second HTML parser. A `<base href>` retargets

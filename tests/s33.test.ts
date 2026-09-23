@@ -1245,12 +1245,16 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     //
     // The scenario's narrowing paragraph declared "a quoted attribute value",
     // which is narrower than this and silent about the direction it costs: an
-    // old name left in a comment or in a script reaches `needed`, spends one
-    // of the twenty requests, and — the live host no longer serving it —
-    // raises the annotation saying a reader holding this page asks for it and
-    // gets a 404, for a URL no reader ever asks for. A FALSE alarm, which is
-    // the family this slice has spent five rounds closing, so the record says
-    // it now and this case is where it is measured (round 9).
+    // old name left in a comment or in a script reaches `needed`. If the live
+    // deploy no longer publishes it, it is not in the live `asset-digests.txt`
+    // and the carry loop filters it out before a request is counted — so it
+    // spends NONE of the twenty, draws the refusal line saying the list does
+    // not name it, and raises the annotation saying a reader holding this page
+    // asks for it and gets a 404, for a URL no reader ever asks for. That
+    // annotation is the FALSE alarm, the family this slice has spent five
+    // rounds closing. If the list still names it, it spends one of the twenty
+    // and is then carried, silently: the two cannot both befall one name
+    // (measured, 2026-09-23; the boundary this case pins is round 9's).
     const { names, unserved, refused } = readAssetNames(
       "<!DOCTYPE html><html><head>"
       + "<!-- <link rel=\"stylesheet\" href=\"/_astro/ghost.css\"> -->"
