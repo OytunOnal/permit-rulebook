@@ -173,3 +173,61 @@ stay with a person, and their notes say why with today's date. It is not a
 value change: every sentence stays as read, with its date, and a browser read
 that finds a sentence moved raises a flag for a curator, as an html read
 would. It does not touch a route page's text or any site code.
+
+**Corrected 2026-09-23, by the build:** the strategy landed as written and the
+seven read, but the form has two faces and the build walked into both. ind.nl
+serves the requirement list unasked to a client it recognises and the *Your
+situation* form to one that names itself — and the watch is the second kind, so
+the form is what it always meets. Read from a developer machine the pages
+showed no form at all, the build concluded it was gone and declared no steps,
+and that error was caught by a second: the no-steps attempt kept the old slice
+markers, the page's own lede and its footer, which the form-only page carries
+**both** of — so the runner's first baselines were 892 characters of form
+recorded as a clean read of a page whose every quoted sentence was missing. A
+marker a shell can match turns a failed read into a green one. The `from`
+markers now start below the form (`Requirements` on four; on the
+highly-skilled-migrant page the intra-corporate-transferee sentence, quoted and
+sitting above that heading), and a fixture holding the five shells the runner
+rendered checks that none of them can ever match again. Driving the form then
+took four corrections, each from a failed run rather than a guess: the option
+is **"Turkish"** — the list holds nationality adjectives, not country names —
+its suggestions are rendered as links and not as options; typing means real key
+events from Chrome, because a value written through the input's own setter
+fired no request at all; the radios are clicked by their visible label, not the
+input; and the last failure was the build's own — `listOf` asked the document
+for the first autocomplete menu and got the site search box's, empty and shut,
+while the field's menu sat second with *Turkish* and *Turkmen* in it. On the
+page's renderer freezing after each click, measured on a fixture that blocks
+its main thread: the settle rule survives it (a freeze costs its own duration,
+not a quiet window on top), and the choice is 800 ms between steps, 2.5 s
+before the reading, and one retry after a full settle — which moved the 30 s
+budget from surviving 2 s of freeze per click to 4 s and cut the five-step
+recipe from 16.7 s to 10.1 s. **Point 6, measured on the runner:** scheduled
+runs took 46–77 s before this slice; the measurement dispatch 102 s, the first
+baseline dispatch 121 s, and the run that reads the five with the full
+five-step recipe 213 s — about 20 s per stepped page, with the first read of a
+run carrying Chrome's cold start (34.5 s), and the whole job still well under
+the scenario's five-minute line. `expand` is in the recipe and earns nothing
+today: none of the thirty-eight sits behind *Show details*, and the sliced text
+is identical with the step and without it; it is kept as the guard it was
+written to be, at the cost of one click. **Provenance:** the five IND baselines
+were rendered on the runner by the workflow itself; EUR-Lex and the BMI notice
+were rendered on a developer machine and then confirmed `unchanged` by the
+runner, which is the only evidence this slice has that a laptop render and a
+runner render normalise to the same text — so a day-one `changed` on any of the
+seven is to be read, not waved through. The watch workflow gained two
+`workflow_dispatch` inputs, `commit` and `dispatch`, both defaulting to what
+the schedule already does and every guard written `!= 'false'`, because
+`github.event.inputs` is null on a schedule and the obvious spelling would have
+silently stopped the morning run committing. Two costs worth stating: a browser
+read is far heavier on a source than a fetch — ind.nl dropped this developer
+address at the TCP level for about ninety minutes after roughly thirty-five
+renders in half an hour, and the runner spent six renders per page across the
+day getting this right — and `.gitattributes` gained `*.ts diff`, because
+`src/watch/core.ts` holds a NUL byte in `sliceFingerprint` and git had been
+printing the file this slice changed most as binary. The promises this slice
+inverted were not only s14's: s29, s8, `tests/orientation.test.ts` and
+`tests/watch.test.ts` each held one, and each is retired by name where it
+stood. The glossary took **Browser tier** and **Watch step** — the latter not
+the suggested *Steps*, because `CONTEXT.md` already defines *Step-gated row*
+and *Leverage step*.
