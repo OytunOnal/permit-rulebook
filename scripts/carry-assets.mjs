@@ -247,6 +247,17 @@ const short = (text, max = 40) => (text.length > max ? `${text.slice(0, max)}…
  */
 const oneLine = (text) => text.replace(/[\u0000-\u001f\u007f]+/g, " ");
 
+/**
+ * Whether this run was given a build to fill at all — one spelling, because
+ * two would be a hole between them. `carryAssets` refuses the run on it and
+ * the CLI declines to write anything on it, and a value one of them accepted
+ * and the other did not is exactly how `--dist ""` came to publish
+ * `asset-digests.txt` into the PROCESS's own directory, and print a success
+ * line for it, on the same run that then refused for having nowhere to put
+ * anything (round 9).
+ */
+const noBuildDirectory = (dist) => typeof dist !== "string" || dist.trim() === "";
+
 /** An error as a sentence, with the cause `fetch failed` always hides. */
 const say = (e) => {
   const message = e instanceof Error ? e.message : String(e);
@@ -342,12 +353,25 @@ function readAssetDigests(text) {
  *
  * ## What shapes this reads, and what it does not
  *
- * It reads the reference shapes Astro emits: a quoted attribute value holding
- * a `/_astro/` path, no whitespace in it. Measured, round 7, this is blind to
- * five a browser would do something with — `/_ASTRO/x.css`, `/_astro%2Fx.css`,
- * a bare relative `_astro/x.css`, `/_astro\x.css`, and a reference with a tab
- * in it — and three of those five a browser resolves to one of this deploy's
- * real assets, so they are a missed CARRY and not only a missed alarm.
+ * It reads a QUOTED STRING with no whitespace in it and `/_astro/` inside,
+ * wherever the page holds one. That covers the reference shapes Astro emits,
+ * which is why it is what it is, but it is not a rule about attributes and
+ * must not be described as one: it knows nothing about markup, so a name in a
+ * comment or in an inline script is read exactly as a `href` is (measured,
+ * round 9).
+ *
+ * It errs in both directions, and each costs something different. Narrow:
+ * measured, round 7, it is blind to five shapes a browser would do something
+ * with — `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare relative `_astro/x.css`,
+ * `/_astro\x.css`, and a reference with a tab in it — and three of those five
+ * a browser resolves to one of this deploy's real assets, so they are a
+ * missed CARRY and not only a missed alarm. Wide: a `/_astro/` name a page
+ * holds in a comment or a script string, which no reader will ever ask for,
+ * reaches `needed` all the same — it spends one of the twenty requests and,
+ * the live host no longer serving it, raises the annotation that says a
+ * reader holding this page gets a 404. A FALSE alarm, on the one line this
+ * step exists to make trustworthy. Our own pages hold no such string, and
+ * what would separate the two is an HTML parser, below.
  *
  * They stay unread deliberately. Reading what a BROWSER resolves is not a
  * wider pattern here; it is a second HTML parser. A `<base href>` retargets
@@ -586,7 +610,24 @@ export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUD
   let looked = false;
   /** The page this run actually read, once there is one: what was parsed, not what was handed in. */
   let from = "";
-  const done = () => ({ carried, problems, alreadyBuilt, needed, unserved, looked, from });
+  /**
+   * What the counted line names where a page would be, when there is no page.
+   * It is decided AT THE BAIL that ends the run, because that is the only
+   * place that knows which bail it was. The CLI used to re-derive it from
+   * `origin` alone, asking one question — was the variable empty? — of three
+   * bails, so the one that is not about the origin at all was reported as
+   * though it were: measured, round 9, a valid `CARRY_ORIGIN` with an empty
+   * `dist` printed `0 asset(s) carried from a CARRY_ORIGIN no page could be
+   * read from` directly under `could not carry anything: no build directory
+   * was given`. Nothing was wrong with the variable, and the one line an
+   * incident is read from named it.
+   *
+   * The default is the parse failures', which are the two bails that reach
+   * here and say nothing of their own. Nothing of an unparsed value ever
+   * enters it — see "NEVER PRINT A VALUE THAT DID NOT PARSE" below.
+   */
+  let where = `a ${ORIGIN_VAR} no page could be read from`;
+  const done = () => ({ carried, problems, alreadyBuilt, needed, unserved, looked, from, where: from || where });
   const deadline = Date.now() + budgetMs;
   const left = () => Math.min(TIMEOUT_MS, deadline - Date.now());
 
@@ -595,6 +636,7 @@ export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUD
   // no such address any more; this is the whole of what "no origin" means.
   if (typeof origin !== "string" || origin.trim() === "") {
     problems.push("anything: no origin was given");
+    where = `an unset ${ORIGIN_VAR}`;
     return done();
   }
   // And it has to be an address rather than something that merely arrived in
@@ -604,7 +646,23 @@ export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUD
   //
   // NEVER PRINT A VALUE THAT DID NOT PARSE — the rule the two refusals here
   // and the counted line at the end all follow, and the reason there is no
-  // redaction in this file any more. A parsed address is safe to print:
+  // redaction of an ADDRESS in this file any more.
+  //
+  // Which population, because this file holds two and the rules differ. THIS
+  // one is the ENVIRONMENT's: `CARRY_ORIGIN`, one value, set by whoever can
+  // set a repository variable, and carrying a credential is a thing it does.
+  // For it the rule is all or nothing — printed whole once it has parsed
+  // (`new URL` has dropped the credentials by then), and not printed at all
+  // until it has. The other population is the LIVE PAGE's references and the
+  // origin's own header strings, which `readAssetNames` and the carry loop
+  // print unparsed all the time and must: they are how a deploy's log says
+  // which reference it refused and why, there may be four hundred of them,
+  // and nobody's secret is in them. Their rule is the one written above
+  // `readAssetNames`'s refusals — bounded by `short`, flattened by `oneLine`
+  // — and `could not carry http://[/_astro/x.css: it is not a URL` obeys it
+  // rather than breaking this one (Security review, round 9).
+  //
+  // A parsed address is safe to print:
   // `new URL` has already dropped the credentials from it. An UNPARSED one
   // cannot be made safe by a rule about its shape, and every such rule tried
   // here failed on the population it actually meets — by construction the
@@ -624,8 +682,11 @@ export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUD
   // And a build to fill. The signature lets this be left out, and `join` threw
   // a TypeError on it, which is not "everything comes back in `problems`".
   // Checked before a request is spent on a build there is nowhere to put.
-  if (typeof dist !== "string" || dist.trim() === "") {
+  if (noBuildDirectory(dist)) {
     problems.push("anything: no build directory was given");
+    // The one bail here that is not about the origin, and the counted line
+    // says so rather than naming a variable nothing was wrong with.
+    where = "nowhere — no build directory was given, so no page was asked for";
     return done();
   }
   // Parsed once, and the parse is what is read from and printed. The value
@@ -749,7 +810,15 @@ export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUD
     if (!asset.ok) { problems.push(`${name}: ${asset.why}`); continue; }
     if (asset.response.status !== 200) { problems.push(`${name}: answered ${asset.response.status}`); continue; }
     const type = (asset.response.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
-    if (!CARRIABLE.test(type)) { problems.push(`${name}: answered 200 as ${type || "no content type"}`); continue; }
+    // `short` here for the same reason as on every reference above, one
+    // population over: a `content-type` is a string the ORIGIN chose and this
+    // step did not write, and this was the one refusal that printed one whole.
+    // Measured, round 9: a 6,000-character `content-type` printed a
+    // 6,054-character line, bounded by nothing but Node's header limit and
+    // reachable once per asset, twenty times a run. `oneLine` already means it
+    // cannot start a line of its own, so the whole of the cost was a deploy
+    // log nobody can read — which is what `short` is for.
+    if (!CARRIABLE.test(type)) { problems.push(`${name}: answered 200 as ${type ? short(type) : "no content type"}`); continue; }
     const body = await bodyWithin(asset.response, MAX_ASSET_BYTES);
     if (!body.ok) { problems.push(`${name}: its body ${body.why}`); continue; }
     // A 0-byte file would publish a 200 that answers nothing under a name the
@@ -825,20 +894,41 @@ if (process.argv[1]?.split("\\").join("/").endsWith("/carry-assets.mjs")) {
   // what the build made, so it is written before anything is carried into it —
   // and it is published whether or not anything is carried, because without it
   // the next deploy has nothing to check bytes against.
-  if (dryRun) {
-    console.log(`would publish ${DIGESTS_NAME} for the next deploy`);
-  } else {
-    const published = writeAssetDigests(dist);
-    if (published.ok) console.log(`published ${DIGESTS_NAME}: ${published.count} asset(s) this build made, for the next deploy to check against`);
-    // An annotation, because a plain line here is invisible: on a deploy whose
-    // page names are all already built, this run has nothing missing and
-    // nothing to say, so a failed publish reads exactly like a healthy deploy
-    // — while the NEXT deploy is guaranteed to carry nothing, which is the
-    // window this step exists to close (Spec review, round 6).
-    else console.log(oneLine(`::warning::could not publish ${DIGESTS_NAME} — ${published.why}; the next deploy has nothing to check a carried byte against, so it will carry nothing and the window is open on it`));
+  //
+  // And the build it is written into is checked BEFORE it is written, which is
+  // one line further up than it used to be: this published first and
+  // unconditionally, so an empty `--dist` resolved the list's name against the
+  // PROCESS's own directory, wrote it there, and printed `published
+  // asset-digests.txt: 0 asset(s) this build made` — a success line, for a
+  // file in a directory nobody named — on the run that then refused with `no
+  // build directory was given` a line later (round 9). Two claims about the
+  // same value on the same four lines, one of them false. There is nothing to
+  // say here on that path: `carryAssets` below refuses the same value by name
+  // and its line is the whole of what happened. A directory that is REAL and
+  // cannot be written into is a different thing and keeps the publish's own
+  // failure line, below.
+  if (!noBuildDirectory(dist)) {
+    if (dryRun) {
+      console.log(`would publish ${DIGESTS_NAME} for the next deploy`);
+    } else {
+      const published = writeAssetDigests(dist);
+      if (published.ok) console.log(`published ${DIGESTS_NAME}: ${published.count} asset(s) this build made, for the next deploy to check against`);
+      // An annotation, because a plain line here is invisible: on a deploy
+      // whose page names are all already built, this run has nothing missing
+      // and nothing to say, so a failed publish reads exactly like a healthy
+      // deploy — while the NEXT deploy is guaranteed to carry nothing, which
+      // is the window this step exists to close (Spec review, round 6).
+      else console.log(oneLine(`::warning::could not publish ${DIGESTS_NAME} — ${published.why}; the next deploy has nothing to check a carried byte against, so it will carry nothing and the window is open on it`));
+    }
   }
 
-  let result = { carried: [], problems: [], alreadyBuilt: [], needed: [], unserved: [], looked: false, from: "" };
+  let result = {
+    carried: [], problems: [], alreadyBuilt: [], needed: [], unserved: [], looked: false, from: "",
+    // A throw is not one of `carryAssets`'s own bails and has none of their
+    // phrases to carry, so this one blames nothing: what stopped the run is
+    // the caught error, printed as its own line just above.
+    where: "nowhere — the line above says what stopped this run",
+  };
   try {
     result = await carryAssets({ origin, dist, dryRun });
   } catch (e) {
@@ -848,19 +938,20 @@ if (process.argv[1]?.split("\\").join("/").endsWith("/carry-assets.mjs")) {
     console.log(oneLine(`${dryRun ? "would carry" : "carried"} ${name}  ${bytes} bytes  sha256:${sha256}`));
   }
   for (const problem of result.problems) console.log(oneLine(`could not carry ${problem}`));
-  // Where the page came from, and only ever the parse: `result.from` is set
-  // the moment `new URL` succeeds, so this names a host exactly when a request
-  // was built for one. It used to fall back to the value as it arrived, which
-  // is how this line — the one an incident is read from — came to name a host
-  // no socket was ever opened on (round 8, and see "NEVER PRINT A VALUE THAT
-  // DID NOT PARSE" in `carryAssets`). With no parse there is no address to
-  // report, so it reports the variable and which of the two things was wrong
-  // with it; the lines above have already said why.
-  const where = result.from
-    || (origin.trim() === "" ? `an unset ${ORIGIN_VAR}` : `a ${ORIGIN_VAR} no page could be read from`);
+  // Where the page came from, and only ever the parse: `result.where` is
+  // `result.from` — set the moment `new URL` succeeds — whenever there is one,
+  // so this names a host exactly when a request was built for one. It used to
+  // fall back to the value as it arrived, which is how this line, the one an
+  // incident is read from, came to name a host no socket was ever opened on
+  // (round 8, and see "NEVER PRINT A VALUE THAT DID NOT PARSE" in
+  // `carryAssets`). With no parse there is no address to report, so what is
+  // printed is the phrase the bail that ended the run chose for itself; the
+  // lines above have already said why. This used to choose that phrase HERE,
+  // out of `origin` alone, and so had only two answers for three bails — see
+  // `where` in `carryAssets` for the one it was getting wrong (round 9).
   console.log(oneLine(
     `${result.carried.length} asset(s) ${dryRun ? "would be carried" : "carried"} `
-    + `from ${where}, `
+    + `from ${result.where}, `
     + `${result.alreadyBuilt.length} already in this build, ${result.problems.length} left behind`,
   ));
 

@@ -239,11 +239,15 @@ function dist(have: Record<string, Buffer> = {}): string {
  * listens on this very process, so a synchronous child would block the event
  * loop that has to answer it, and every case would read as a timeout.
  *
- * `cwd` is for the one case that hands the step an empty `--dist`: the digest
- * publish then resolves its name against the process's own directory, and a
- * case run from the repository root left an `asset-digests.txt` in the working
- * tree. Every other case passes a real directory and inherits the root, which
- * is where the workflow runs it from.
+ * `cwd` is the instrument of the two cases that hand the step an empty
+ * `--dist`: the step must write nothing at all on that path, and a run given a
+ * directory of its own is how a regression lands somewhere it can be asserted
+ * rather than in the working tree. It used to be the FIX for that defect
+ * rather than the instrument — the step did resolve `asset-digests.txt`
+ * against the process's own directory and write it there, and this helper's
+ * `cwd` was where that was answered (round 9). It is answered in the code now.
+ * Every other case passes a real directory and inherits the root, which is
+ * where the workflow runs it from.
  */
 function carry(origin: string, args: string[] = [], cwd?: string): Promise<{ status: number; out: string }> {
   return new Promise((resolve) => {
@@ -516,6 +520,31 @@ describe("the carrier takes the live generation forward", () => {
       // It gave up before spending a request on a build it could not fill.
       expect(live.asked).toEqual([]);
     } finally { live.close(); }
+  });
+
+  it("writes nothing anywhere when there is no build directory to write into", async () => {
+    // The step published the digest list BEFORE `carryAssets` was given a
+    // chance to refuse the directory, so `--dist ""` resolved the list's name
+    // against the PROCESS's own directory, wrote it there, and printed
+    // `published asset-digests.txt: 0 asset(s) this build made` — a success
+    // line, for a file in a directory nobody named — on the run that then
+    // refused with `no build directory was given` (round 9). Two claims about
+    // the same value, one of them false, on the same four lines.
+    //
+    // `cwd` is the instrument: the run is handed a directory of its own, so a
+    // regression lands there to be asserted rather than in the working tree.
+    const here = temp();
+    const run = await carry("https://permitrulebook.com/", ["--dist", ""], here);
+    expect(run.status, run.out).toBe(0);
+    expect(readdirSync(here), "the step wrote into whatever directory it was run from").toEqual([]);
+    expect(run.out, "a success line for a file that landed where nobody named").not.toContain(`published ${DIGESTS}`);
+    expect(run.out, "the run did not say what was missing").toContain("no build directory was given");
+    // The dry run says nothing either: `would publish` is a promise about the
+    // next deploy, and there is no build here for the next deploy to read.
+    const dry = await carry("https://permitrulebook.com/", ["--dry-run", "--dist", ""], here);
+    expect(dry.status, dry.out).toBe(0);
+    expect(readdirSync(here), dry.out).toEqual([]);
+    expect(dry.out, "a promise to publish a list into a build that does not exist").not.toContain("would publish");
   });
 });
 
@@ -1079,20 +1108,55 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     // `http://permitrulebook.com/x?to=a@evil.example` printed `0 asset(s)
     // would be carried from http://evil.example`.
     //
-    // Reachable with an ordinary origin, because the bail this run takes is
-    // the one before the page is parsed — no build directory — which leaves
-    // `from` empty and drops the line back onto the value as it arrived.
-    //
     // The rule that removes this and the credential leak above together, and
     // the regex with them: never print a value that did not parse. What parsed
     // is `from`, and `new URL` has already dropped the credentials from it;
-    // what did not parse has no diagnostic worth, so the line names the
-    // variable and says what was wrong with it instead.
+    // what did not parse has no diagnostic worth, so the line says what was
+    // wrong instead of showing the value.
+    //
+    // That is a rule about the ENVIRONMENT's one value, and not about every
+    // string this step prints — which population each rule governs is written
+    // beside the rule, in `carryAssets`.
+    //
+    // Two runs, because the value round 8 measured is a valid URL and only a
+    // run with no page read reaches this line at all. The first reaches it by
+    // the bail before the page is parsed; the second is a value of the same
+    // shape that cannot parse, which is the bail that names the variable.
     const run = await carry("http://permitrulebook.com/x?to=a@evil.example", ["--dist", ""], temp());
     expect(run.status, run.out).toBe(0);
     expect(summary(run.out), "the summary named a host this run never opened a socket on").not.toContain("evil.example");
     expect(summary(run.out), "the summary named an origin no page was read from").not.toContain("permitrulebook.com");
-    expect(summary(run.out), "the summary says nothing about where it was pointed").toContain("CARRY_ORIGIN");
+    const unparsed = await carry("//permitrulebook.com/x?to=a@evil.example", ["--dist", dist()]);
+    expect(unparsed.status, unparsed.out).toBe(0);
+    expect(summary(unparsed.out), "the summary showed a value that never parsed").not.toContain("evil.example");
+    expect(summary(unparsed.out), "the summary showed a value that never parsed").not.toContain("permitrulebook.com");
+    expect(summary(unparsed.out), "the summary says nothing about where it was pointed").toContain("CARRY_ORIGIN");
+  });
+
+  it("blames the origin on the counted line only when the origin was what was wrong", async () => {
+    // The same line, and the same reason for caring about it: it is what an
+    // incident is read from. It chose between two phrases by asking whether
+    // `CARRY_ORIGIN` was empty — while THREE bails reach it with no page read,
+    // and the third is not about the origin at all. Measured, round 9: a valid
+    // `CARRY_ORIGIN` with `--dist ""` printed `0 asset(s) carried from a
+    // CARRY_ORIGIN no page could be read from` directly under `could not carry
+    // anything: no build directory was given`. Nothing was wrong with the
+    // variable, and the line named it.
+    //
+    // The bail that ended the run is the only place that knows which bail it
+    // was, so the phrase is decided there and the CLI prints what it is handed.
+    const run = await carry("https://permitrulebook.com/", ["--dist", ""], temp());
+    expect(run.status, run.out).toBe(0);
+    expect(summary(run.out), "the origin was blamed for a missing build directory")
+      .not.toContain("no page could be read from");
+    expect(summary(run.out), "the line does not say what was actually missing").toContain("build directory");
+    // And the two bails that ARE about the origin still say so, and still say
+    // which of the two: unset is a variable nobody set, and the other is a
+    // value that is set and is not somewhere a page can be read from.
+    const unset = await carry("", ["--dist", dist()]);
+    expect(summary(unset.out), unset.out).toContain("an unset CARRY_ORIGIN");
+    const unreadable = await carry("not a url", ["--dist", dist()]);
+    expect(summary(unreadable.out), unreadable.out).toContain("no page could be read from");
   });
 
   it("reads the address it checked, whitespace and all", async () => {
@@ -1172,6 +1236,36 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     expect(unserved).toEqual([]);
   });
 
+  it("reads a quoted `/_astro/` path wherever the page holds it, not only in an attribute", () => {
+    // The boundary as the code actually draws it. The pattern is a quoted
+    // string with no whitespace in it and `/_astro/` inside; it knows nothing
+    // about attributes, so a name a page holds in a comment or in an inline
+    // script is read exactly as a `href` is, while an unquoted one is not read
+    // at all.
+    //
+    // The scenario's narrowing paragraph declared "a quoted attribute value",
+    // which is narrower than this and silent about the direction it costs: an
+    // old name left in a comment or in a script reaches `needed`, spends one
+    // of the twenty requests, and — the live host no longer serving it —
+    // raises the annotation saying a reader holding this page asks for it and
+    // gets a 404, for a URL no reader ever asks for. A FALSE alarm, which is
+    // the family this slice has spent five rounds closing, so the record says
+    // it now and this case is where it is measured (round 9).
+    const { names, unserved, refused } = readAssetNames(
+      "<!DOCTYPE html><html><head>"
+      + "<!-- <link rel=\"stylesheet\" href=\"/_astro/ghost.css\"> -->"
+      + "<script>const u = \"/_astro/inscript.js\";</script>"
+      + "<link rel=\"stylesheet\" href=\"/_astro/real.css\">"
+      + "</head><body>an unquoted /_astro/bare.css</body></html>",
+      "https://example.test/",
+    );
+    expect(names, "the reader saw an attribute and not the page").toEqual(["ghost.css", "inscript.js", "real.css"]);
+    // Nothing is said about any of them: the two the page did not mean to
+    // serve are indistinguishable here from the one it did.
+    expect(unserved).toEqual([]);
+    expect(refused).toEqual([]);
+  });
+
   it("refuses four hundred foreign references without a packet or four hundred lines", async () => {
     // The other half of the ceiling: a reference that never becomes a name
     // costs no request, but it used to cost a line, and a page is a stranger's
@@ -1238,20 +1332,33 @@ describe("the carrier cannot fail the deploy", () => {
       // closed)` today — and is not asserted, because a dependency's wording
       // is not this step's decision.
       //
-      // This replaces an assertion that the run did NOT say "aborted due to
-      // timeout" (round 7). The reasoning for that was right about the risk
-      // and wrong about the instrument: an absence can only ever weaken, and
-      // it weakens silently — the day Node's wording moves it goes vacuously
-      // true and this case passes on a starved runner that exercised nothing
-      // but the clock. The mark rots the other way: it goes red. Of the three
-      // shapes a starved runner reaches, two carry no `its body` at all — the
-      // budget spent before the request, and the fetch giving up before any
-      // body — so this case now fails on them instead of passing. The third, a
-      // clock that fires mid-body, does print `its body`, and no string in
-      // this step separates it from a socket that died there; what shrinks
-      // that window is the origin above, which queues its drop on the flush of
-      // the very bytes the client is reading (round 8). See `refusedOver`.
+      // TWO MARKS, and not one, because the three shapes a starved runner
+      // reaches are not covered by either alone. Measured, round 9, against a
+      // stand-in origin driven into each: the budget spent before the request
+      // prints `anything: asset-digests.txt: The operation was aborted due to
+      // timeout`, the fetch giving up before any body prints `index.…css:
+      // fetch failed (other side closed)`, and a clock firing mid-body prints
+      // `index.…css: its body The operation was aborted due to timeout`. The
+      // first two carry no `its body` at all, so the positive mark goes RED on
+      // them — which is what a mark is for, and what round 8 added it for. The
+      // third carries `its body` and passes it, and is caught by the absence
+      // instead. Disjoint shapes, so dropping either leaves one of the three
+      // green for the wrong reason: round 8 replaced the absence with the mark
+      // and lost the clock; this keeps both.
+      //
+      // They fail differently on purpose. The mark is the step's own wording
+      // and is allowed to go red the day this step changes it. The absence is
+      // a dependency's — Node's `The operation was aborted due to timeout` —
+      // and an absence can only ever weaken if that wording moves, never turn
+      // a deploy red over it. Pinning the socket's own cause (`terminated
+      // (other side closed)`, undici's) is the one thing neither does.
+      //
+      // What shrinks the clock's window rather than asserting it away is the
+      // origin above, which queues its drop on the flush of the very bytes the
+      // client is reading (round 8). See `refusedOver`.
       refusedOver(run.out, `${CSS_NAME}: its body`, "reading the body far enough to find it ended early");
+      expect(run.out, "the socket died on the step's own clock, not on the origin's silence")
+        .not.toContain("aborted due to timeout");
     } finally { live.close(); }
   });
 
@@ -1291,6 +1398,33 @@ describe("the carrier cannot fail the deploy", () => {
       expect(longest, run.out).toBeLessThan(200);
       // Still reported, and still recognisable as the reference it refused.
       expect(run.out).toContain("evil.example");
+    } finally { live.close(); }
+  });
+
+  it("keeps the content type an origin answers with out of the log's length too", async () => {
+    // The same rule one population over, and the one refusal that skipped
+    // `short`. A `content-type` is the origin's string, not the page's, and
+    // nothing bounded it: measured, round 9, a 6,000-character `content-type`
+    // printed a 6,054-character line, up to Node's header limit and up to
+    // twenty times in one run. `oneLine` means it cannot forge a workflow
+    // command, so the whole of the cost is a deploy log nobody can read —
+    // which is exactly what `short` exists to stop.
+    const answers = deploy({ [CSS_NAME]: CSS });
+    // Hand-framed, because `res.writeHead` will not send a header of this
+    // size; the body is the real one, so the refusal turns on the type alone.
+    answers[`/_astro/${CSS_NAME}`] = {
+      raw: { headers: [`content-type: x-${"a".repeat(6000)}`, `content-length: ${CSS.length}`], body: CSS },
+    };
+    const live = await origin(answers);
+    const out = dist();
+    try {
+      const run = await carry(live.url, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      expect(carried(out)).toEqual([]);
+      const longest = Math.max(...run.out.trim().split("\n").map((line) => line.length));
+      expect(longest, run.out).toBeLessThan(200);
+      // Still reported, and still recognisable as the type it refused.
+      expect(run.out, run.out).toContain("answered 200 as x-aaa");
     } finally { live.close(); }
   });
 
