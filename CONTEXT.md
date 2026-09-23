@@ -355,7 +355,12 @@ script-rendered requirement list, a cookie round-trip, a challenge that answers
 a fetcher with an empty body. Seven entries since 2026-09-23 — the five IND
 route pages, the Opportunity Card's BMI notice and the Blue Card directive on
 EUR-Lex. It is a strategy that can fail where the human arm could not, and the
-day it cannot open a browser is a red day, not a quiet one.
+day it cannot open a browser is a red day, not a quiet one. **The origin is
+the trust line**: a reading that ends on an origin the entry does not name —
+by a redirect on load, or by a step that pressed its way there — is refused as
+unreachable, because a third party's bytes must never be hashed as the
+authority's. A move within the entry's own origin is read, and the address it
+was read at travels back with the reading so a curator can see it.
 _Avoid_: headless tier, rendered tier, scraping
 
 **Watch step**:

@@ -219,8 +219,17 @@ merely says it is collapsed opened the IND's own navigation menu into the
 snapshot; and a security review then found the sharper half, that a disclosure
 which is a link takes the tab with it — measured, a cross-origin anchor wearing
 `aria-expanded` returned another site's body as the source's own reading — so
-after the steps the reader now refuses any page whose origin is not where it
-landed, and reports where the tab went. **Point 6's proof list was met by the
+the origin the entry names is now the only origin a reading may come from: a
+page that redirects or meta-refreshes to a third party on load is refused as
+surely as a step that presses its way there, while
+a redirect around the source's own site (the Opportunity Card's cookie check)
+still reads; a move within that origin is allowed and the address it was read
+at is logged beside the timing, because the origin is the trust line and a
+sub-path is not. The fetch tier got the same guard in the same round, being
+the same harm one tier over. **Point 5 gained a clause it did not ask for**:
+the browser sends `x-source-contact` beside the watch's name, as the fetcher
+has since data #18, so a host that wants to block this reader can reach its
+operator instead. **Point 6's proof list was met by the
 runner rather than locally**: the line asking for the watch run with `--commit`
 against the live pages before the merge was answered by the workflow's own
 dispatches — a measurement run with `commit=false`, then a baseline run with
