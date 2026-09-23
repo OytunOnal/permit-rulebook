@@ -4,6 +4,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDir, readLock } from "../scripts/data-pin.mjs";
+import { readAssetNames } from "../scripts/carry-assets.mjs";
 
 /**
  * The pipeline's own security and the data it builds against (Spine
@@ -200,6 +201,38 @@ describe("a cached page still finds its assets", () => {
       }
     })(dist);
     expect(pages.sort()).toEqual(["index.html"]);
+  });
+
+  /**
+   * The other half of the same assumption, and the one nothing was watching.
+   *
+   * The carrier reads references out of HTML with a pattern, not with a
+   * browser, and `scripts/carry-assets.mjs`'s "What shapes this reads" writes
+   * down why: honouring what a browser resolves means `<base href>`, character
+   * references, `srcset` and CSS `url()`, and half a browser reads strings no
+   * reader asks for while still missing the ones it cannot parse. So the
+   * pattern reads what Astro emits — measured, round 7, it is blind to
+   * `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare relative `_astro/x.css`,
+   * `/_astro\x.css` and a reference with a tab in it, and three of those five
+   * a browser resolves to one of this deploy's real assets.
+   *
+   * What that costs the day Astro emits one of them is the step reading fewer
+   * names than the page holds and saying NOTHING about it — no request, no
+   * problem line, no annotation, which is the silent window s33 exists to
+   * close. A comment cannot notice that; this can. Every file the build put in
+   * `_astro/` is a file the page references, so the reader finding all of them
+   * is the check, and it goes red on the shape as well as on the count.
+   */
+  it.skipIf(missing)("the carrier's reader finds every asset this build published", () => {
+    const { names, refused, unserved } = readAssetNames(
+      read(join(dist, "index.html")),
+      "https://permitrulebook.com/",
+    );
+    expect(names.sort(), "a built asset the carrier's reader cannot see in the page that names it")
+      .toEqual(readdirSync(join(dist, "_astro")).sort());
+    // And our own page holds nothing this step would decline, in either sense.
+    expect(refused).toEqual([]);
+    expect(unserved).toEqual([]);
   });
 
   /**

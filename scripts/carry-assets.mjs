@@ -245,8 +245,25 @@ const short = (text, max = 40) => (text.length > max ? `${text.slice(0, max)}…
  * parse has had the chance to drop the credentials the parse drops. A password
  * in a log is the same secret whether or not the value it sat in was an
  * address this step would have used.
+ *
+ * Everything between `://` and the LAST `@` goes, and that greed is the whole
+ * point. This used to stop at the first `/`, `?` or `#`, which is a rule about
+ * what the password is made of rather than about where it ends: a password
+ * carrying one of those three ended the match early AND failed `new URL`, so
+ * the value took the path that prints what it was handed and printed the
+ * secret whole — measured on the real process, round 7, thirteen password
+ * shapes: three leaked, three echoes each, one of them the Actions run
+ * summary. A guard that holds only for the passwords it likes is not a guard.
+ *
+ * What greed costs is a value whose PATH carries an `@` and no credentials at
+ * all — `http://host/x?to=a@b` prints as `http://b`, the host gone out of a
+ * line whose job is to say which address failed. That is the side to be wrong
+ * on: the line is a diagnostic, the secret is a secret, and the value this
+ * reads is `SITE_URL`, an origin, where an `@` is already the abnormal thing.
+ * `[\s\S]` and not `.` so a value carrying a line break cannot hide an `@`
+ * behind it from a rule that stops at one.
  */
-const withoutCredentials = (text) => text.replace(/(:\/\/)[^/?#\s]*@/g, "$1");
+const withoutCredentials = (text) => text.replace(/(:\/\/)[\s\S]*@/, "$1");
 
 /**
  * One line, whatever it is handed. In Actions a line beginning `::` is a
@@ -326,15 +343,57 @@ function readAssetDigests(text) {
  * a stranger's string, and the one thing taken from it is a file name, which
  * the caller turns back into a URL under the origin IT chose. A reference that
  * points at another host, at another scheme, or at no name this filesystem
- * would accept is refused by name and reported — an absolute reference to
- * another host, a protocol-relative one and a plaintext one all reached the
- * network before this read names only.
+ * would accept is declined by name and reported, never fetched — an absolute
+ * reference to another host, a protocol-relative one and a plaintext one all
+ * reached the network before this read names only.
  *
  * Names only, but not names alone: a name is one of THIS deploy's assets only
  * when the reference RESOLVES to the URL this step would build for it. Those
- * that do come back in `names`; those that resolve somewhere else under our own
- * origin come back in `unserved`, which is neither carried nor fetched, because
- * the deploy does not serve what the reader is going to ask for.
+ * that do come back in `names`; those that resolve under our own origin to
+ * anything else come back in `unserved`, which is neither carried nor fetched,
+ * because the deploy does not serve what the reader is going to ask for. The
+ * rest — another host, another scheme, a string that resolves nowhere — come
+ * back in `refused`.
+ *
+ * WHERE A REFERENCE RESOLVES IS WHAT SPLITS THE TWO, and nothing else. It used
+ * to be which branch of this loop a reference fell out of, so a reference under
+ * our own origin naming a path this deploy does not publish was reported and
+ * not annotated whenever it failed on its NAME rather than on its path:
+ * measured, round 7, `/_astro/sub%2Fold.css`, `/_astro/old.css/.`, `/_astro/`
+ * and a 140-character name each printed a refusal line and raised no
+ * annotation, while the reader holding that page asks our own host for that
+ * URL and gets a 404. `refused` is what no reader's request of ours can come
+ * of: a host that is not this site answers for itself, and a string neither
+ * this nor a browser resolves is a request nobody makes.
+ *
+ * ## What shapes this reads, and what it does not
+ *
+ * It reads the reference shapes Astro emits: a quoted attribute value holding
+ * a `/_astro/` path, no whitespace in it. Measured, round 7, this is blind to
+ * five a browser would do something with — `/_ASTRO/x.css`, `/_astro%2Fx.css`,
+ * a bare relative `_astro/x.css`, `/_astro\x.css`, and a reference with a tab
+ * in it — and three of those five a browser resolves to one of this deploy's
+ * real assets, so they are a missed CARRY and not only a missed alarm.
+ *
+ * They stay unread deliberately. Reading what a BROWSER resolves is not a
+ * wider pattern here; it is a second HTML parser. A `<base href>` retargets
+ * every relative reference in the document, so honouring bare-relative ones
+ * without honouring `<base>` resolves them to a URL no reader ever asks for —
+ * a new wrongness rather than a smaller one. Character references decode
+ * before a URL is parsed (`/_astro&#47;x.css` is a path to a browser and text
+ * here). `srcset` and CSS `url()` hold references no attribute-quote scan
+ * sees. And whitespace inside an attribute is REMOVED by a browser rather than
+ * refused, while the exclusion of it here is what keeps a reference the page
+ * chose from ever carrying a line break into a name. Half a browser reads
+ * strings no reader asks for and still misses the ones it cannot parse.
+ *
+ * What goes wrong the day Astro emits something else: this reads fewer names
+ * than the page holds, carries fewer files than the reader needs, and says
+ * NOTHING — no request, no problem line, no annotation, which is precisely the
+ * silent window this step exists to close. So the boundary is not left to a
+ * comment: `tests/pipeline.test.ts` reads the real built page with this very
+ * function and asserts it finds every file the build put in `_astro/`, and
+ * goes red the day a shape it cannot read appears in our own output.
  */
 export function readAssetNames(html, pageUrl) {
   const ours = new URL(pageUrl).origin;
@@ -359,11 +418,14 @@ export function readAssetNames(html, pageUrl) {
     // the deploy's. Three of these four used to print it whole.
     try { url = new URL(ref, pageUrl); } catch { refused.push({ ref: short(ref), why: "is not a URL" }); continue; }
     if (url.origin !== ours) { refused.push({ ref: short(ref), why: `names ${short(url.origin)}, which is not this site` }); continue; }
+    // Past this line every reference is one our own host will be asked for, so
+    // every way of failing from here on is a 404 the reader will hit and goes
+    // to `unserved` rather than to `refused`.
     const name = url.pathname.split("/").pop() ?? "";
-    if (name.length > MAX_NAME) { refused.push({ ref: short(name), why: `is longer than ${MAX_NAME} characters` }); continue; }
+    if (name.length > MAX_NAME) { unserved.push({ ref: short(name), why: `is longer than ${MAX_NAME} characters, so this deploy publishes nothing under it` }); continue; }
     // Only a plain file name may become a path under `dist/_astro/` — the one
     // rule, which `.` and `..` fail inside the pattern rather than beside it.
-    if (!PLAIN_NAME.test(name)) { refused.push({ ref: short(ref), why: "is not a plain file name" }); continue; }
+    if (!PLAIN_NAME.test(name)) { unserved.push({ ref: short(ref), why: "is not a plain file name, so this deploy publishes nothing under it" }); continue; }
     // And the name has to be the whole of what the reference asks for. This
     // used to keep the name and throw the resolved path away, so a reference
     // that climbed out of `_astro/` (`/_astro/../real.css`, which resolves to
@@ -434,8 +496,22 @@ async function get(url, timeoutMs) {
  * fire. It stays because it costs a comparison, and the day undici's behaviour
  * changes it is the line that notices. Nothing here decides that a body is the
  * right file — only its digest does.
+ *
+ * EXPORTED FOR A TEST, which this file has refused before: `DEFAULT_ORIGIN`
+ * was exported so a case could name it, and that widened the module's surface
+ * for a convenience. The difference is what is on the other side of the
+ * export. This function's correctness IS the threat — it is handed a length it
+ * counted itself and calls `Buffer.concat(chunks, total)` with it, where too
+ * small truncates the file and too large pads it with zeroes, either way a
+ * file of the wrong bytes on disk under a name the deploy swears by. Proving
+ * that through the process needs a body that arrives in more than one chunk,
+ * which needs a server on the test worker's own event loop and a client
+ * waiting on it — and that case is the one thing in this slice's suite that
+ * ever failed s33's own deploy on a loaded runner. A test that hands the
+ * chunks over directly has no clock in it at all. A constant a test wanted to
+ * name buys nothing for that price; this buys the proof back.
  */
-async function bodyWithin(response, limit) {
+export async function bodyWithin(response, limit) {
   const encoding = (response.headers.get("content-encoding") ?? "").trim().toLowerCase();
   if (encoding && encoding !== "identity") return { ok: false, why: `arrived ${encoding}-encoded, which is not the bytes the page asks for` };
 
@@ -489,14 +565,16 @@ async function getAssetDigests(url, timeoutMs) {
  * What it returns is also what the verdict at the bottom of this file is made
  * of: `needed` is what the live page references and this build lacks, whether
  * or not any of it could be carried, and `looked` is whether this run ever got
- * as far as knowing that. Having nothing to carry, carrying none of what was
- * needed, and never reaching the page are three outcomes, and these two fields
- * are what tells them apart. `unserved` is the fourth thing a page can hold: a
- * reference that resolves somewhere this deploy does not publish, which is
- * neither carried nor missing but is still a 404 the reader will hit.
+ * as far as knowing that. Having nothing to do, never reaching the page, and
+ * looking and finding something still missing are the three outcomes, and
+ * these two fields are what tells them apart. `unserved` is one of the ways
+ * the third happens and not an outcome of its own: a reference that resolves
+ * under our origin to somewhere this deploy does not publish, which is neither
+ * carried nor missing from this build but is still a 404 the reader will hit.
  * `alreadyBuilt` and `needed` between them hold every name the page references
  * that IS one of this deploy's assets, so both being empty is a live page that
- * references none of them.
+ * references none of them — the third outcome again, with the missing thing
+ * being the page's own evidence rather than a file.
  *
  * @param {{ origin?: string, dist?: string, dryRun?: boolean, budgetMs?: number }} [options]
  */
@@ -505,7 +583,13 @@ export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUD
   const problems = [];
   const alreadyBuilt = [];
   const needed = [];
-  /** References under our own origin that resolve somewhere this deploy does not serve. */
+  /**
+   * References under our own origin that resolve somewhere this deploy does
+   * not publish, exactly as `readAssetNames` hands them back — `{ ref, why }`
+   * there and `{ ref, why }` here. It was a `string[]` on this side, which is
+   * one name for two shapes and forced the destructure above to call the other
+   * one something else (Standards review, round 7).
+   */
   const unserved = [];
   /**
    * Whether this run got far enough to know what the live page needs. Every
@@ -580,19 +664,25 @@ export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUD
   const html = await bodyWithin(page.response, MAX_PAGE_BYTES);
   if (!html.ok) { problems.push(`the live page ${pageUrl}: its body ${html.why}`); return done(); }
 
-  const { names, refused, unserved: elsewhere } = readAssetNames(html.bytes.toString("utf8"), pageUrl);
+  const references = readAssetNames(html.bytes.toString("utf8"), pageUrl);
+  const { names } = references;
   // The reasons differ reference by reference, so these stay lines rather than
   // a folded list — but there is the same bottom to how many a page can print
   // as to how many it can fetch. A reference that resolves off this deploy is
   // reported the same way: it is a reference this step declined, and the line
-  // says where it resolved to, which is what the reader is going to ask for.
-  const declined = [...refused, ...elsewhere];
+  // says why, which is what the reader is going to run into.
+  const declined = [...references.refused, ...references.unserved];
   for (const { ref, why } of declined.slice(0, MAX_ASSETS)) problems.push(`${ref}: it ${why}`);
   if (declined.length > MAX_ASSETS)
     problems.push(`the ${declined.length - MAX_ASSETS} further reference(s) this page named: each refused unread`);
-  // Kept apart from the rest for the verdict: this one predicts a 404 for the
-  // reader, and the others do not.
-  unserved.push(...elsewhere.map(({ ref }) => ref));
+  // Kept apart from the rest for the verdict: these resolve under OUR OWN
+  // origin to something this deploy does not publish, so each is a request the
+  // reader's browser makes to our host and a 404 it gets back. The rest name
+  // another host, which answers for itself, or resolve nowhere at all, which
+  // is a request no browser makes either. Same shape on both sides of this
+  // line: what `readAssetNames` hands back is what the verdict reads, so
+  // there is one `unserved` and not two.
+  unserved.push(...references.unserved);
 
   for (const name of names) {
     // Already in this build: no request, so no cost, so no ceiling.
@@ -763,30 +853,48 @@ if (process.argv[1]?.split("\\").join("/").endsWith("/carry-assets.mjs")) {
   // Nothing downstream reads this step's output, so the run summary is where a
   // reader's broken page is predicted or nowhere.
   //
-  // It ends quiet only when it read the live page, that page references at
-  // least one of this deploy's assets, every such reference resolves to one,
-  // and every name is in this build now. Anything else is a `::warning::` on
-  // the run summary, as the IndexNow step already uses for "nothing sent", and
-  // each says which it is. The ones below all used to be as quiet as a healthy
-  // deploy: the alarm was `needed.length && carried.length === 0`, which no run
-  // that gave up before the page was read could reach and which a run that
-  // carried one name of two never reached either (round 5); then a reference
-  // reduced to its basename was scored against this build and ended the run
-  // quiet on a URL the deploy does not serve, and a page holding no reference
-  // at all was granted silence on evidence nothing had validated (round 6).
-  // Exit 0 on every one of them: this step never fails a deploy. The failed
-  // digest publish is annotated where it happens, above, being about the next
-  // deploy rather than about this page.
+  // THREE OUTCOMES, and they are the whole of what this step says about the
+  // page a reader is holding: nothing to do · could not look · looked and
+  // something is still missing. It ends quiet only on the first. The third has
+  // three shapes below, each its own line because each is a different thing
+  // that page needs and does not have — a file this build lacks, a URL this
+  // deploy does not publish, or any evidence at all that what answered was a
+  // page this site published. Three lines, one outcome; a page can be wrong in
+  // more than one of these ways at once and each is worth saying.
+  //
+  // Anything but the first is a `::warning::` on the run summary, as the
+  // IndexNow step already uses for "nothing sent", and each says which it is.
+  // The ones below all used to be as quiet as a healthy deploy: the alarm was
+  // `needed.length && carried.length === 0`, which no run that gave up before
+  // the page was read could reach and which a run that carried one name of two
+  // never reached either (round 5); then a reference reduced to its basename
+  // was scored against this build and ended the run quiet on a URL the deploy
+  // does not serve, and a page holding no reference at all was granted silence
+  // on evidence nothing had validated (round 6). Exit 0 on every one of them:
+  // this step never fails a deploy. The failed digest publish is annotated
+  // where it happens, above, and is not one of these three because it is not
+  // about this page at all — its subject is the NEXT deploy, which without a
+  // list has nothing to check a carried byte against.
   const missing = result.needed.filter((name) => !result.carried.some((asset) => asset.name === name));
+  const unserved = result.unserved.map(({ ref }) => ref);
   if (!result.looked) {
     console.log(oneLine(
       "::warning::could not read the live page, so this deploy does not know whether a reader holding it"
       + ` still finds its assets: ${result.problems.at(-1) ?? "no reason was given"}`,
     ));
   } else {
-    // It read the page. Two different 404s can still be waiting for the reader
-    // holding it, and a third thing can be wrong with the page itself — each
-    // its own line, because each sends the reader somewhere else.
+    // A page whose every reference is unserved raises the first of these AND
+    // the third, and that is the intended reading of two true things rather
+    // than one predicate being loose. The narrower predicate — counting
+    // `unserved` in with `alreadyBuilt` and `needed` — would still fire on a
+    // proxy notice, because a page referencing nothing has no unserved
+    // reference either; what it would cost is this page, which would then
+    // report only that one URL 404s and withhold the other half, that NOTHING
+    // on it matched this deploy, which is the evidence that the page answering
+    // may not be ours at all. Two questions, two answers, and neither answers
+    // the other (the build's earlier reason for this — that a narrower
+    // predicate "would leave a proxy page silent" — was simply not true; Spec
+    // review, round 7).
     if (result.alreadyBuilt.length + result.needed.length === 0) {
       console.log(oneLine(
         "::warning::the live page answered 200 and references none of this deploy's assets"
@@ -799,10 +907,10 @@ if (process.argv[1]?.split("\\").join("/").endsWith("/carry-assets.mjs")) {
         + ` — a reader holding that page asks for ${missing.length === 1 ? "it" : "them"} and gets a 404`,
       ));
     }
-    if (result.unserved.length) {
+    if (unserved.length) {
       console.log(oneLine(
-        `::warning::the live page references ${boundedList(result.unserved)}, which ${result.unserved.length === 1 ? "does" : "do"} not resolve to this deploy's assets`
-        + ` — a reader holding that page asks for ${result.unserved.length === 1 ? "that URL" : "those URLs"} and gets a 404, and this step does not carry ${result.unserved.length === 1 ? "it" : "them"}`,
+        `::warning::the live page references ${boundedList(unserved)}, which ${unserved.length === 1 ? "does" : "do"} not resolve to this deploy's assets`
+        + ` — a reader holding that page asks for ${unserved.length === 1 ? "that URL" : "those URLs"} and gets a 404, and this step does not carry ${unserved.length === 1 ? "it" : "them"}`,
       ));
     }
   }

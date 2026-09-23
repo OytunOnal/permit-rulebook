@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
-import { carryAssets, readAssetNames, writeAssetDigests } from "../scripts/carry-assets.mjs";
+import { bodyWithin, carryAssets, readAssetNames, writeAssetDigests } from "../scripts/carry-assets.mjs";
 
 /**
  * s33 — the carrier that lets a cached page still find its assets.
@@ -252,6 +252,16 @@ const carried = (dir: string): string[] => readdirSync(join(dir, "_astro")).sort
  * on instead — the digest the build recorded, the ceiling, the word for the
  * shape it refused — so a case that passes because the origin was slow goes
  * red here rather than quietly (round 7).
+ *
+ * `mark` is the assertion and `decision` is only ever a message, which is the
+ * right shape for both and not an argument left unbound. The mark is the
+ * evidence — a string this step prints on one route and no other — and it is
+ * the only half a test can check. The decision is what that string MEANS, and
+ * it has no spelling in the output to be compared against: it exists so that
+ * the one person who will ever read it, looking at a red run, is told what the
+ * case was about rather than being handed a substring and left to work it out.
+ * Binding it to something would mean inventing a second place for the step's
+ * own wording to live, which is the defect this helper was written to catch.
  */
 const refusedOver = (out: string, mark: string, decision: string): void => {
   expect(out, `nothing was carried, but the step never got as far as ${decision}`).toContain(mark);
@@ -540,7 +550,12 @@ describe("the carrier carries only what our own previous build attested to", () 
       expect(carried(out)).toEqual([]);
       // It asked for the list and stopped there: not one asset was fetched.
       expect(live.asked).toEqual(["/", `/${DIGESTS}`]);
-      expect(run.out).toContain(DIGESTS);
+      // On the list's own 404, and not on the clock: a list request that times
+      // out leaves `live.asked` and the printed name exactly as this does —
+      // measured against a starved origin, round 7, where all three of this
+      // case's assertions held on `asset-digests.txt: its body The operation
+      // was aborted due to timeout`. See `refusedOver`.
+      refusedOver(run.out, "published no digest list", "learning that the live deploy published no list");
     } finally { live.close(); }
   });
 
@@ -555,7 +570,9 @@ describe("the carrier carries only what our own previous build attested to", () 
       expect(run.status, run.out).toBe(0);
       expect(carried(out)).toEqual([]);
       expect(live.asked).toEqual(["/", `/${DIGESTS}`]);
-      expect(run.out).toContain(DIGESTS);
+      // On the cut line, and not on the clock — the same starved origin turns
+      // this case green for the wrong reason too. See `refusedOver`.
+      refusedOver(run.out, "is not a sha256 and a name", "reading the list far enough to fail on a line");
     } finally { live.close(); }
   });
 
@@ -574,7 +591,10 @@ describe("the carrier carries only what our own previous build attested to", () 
       expect(run.status, run.out).toBe(0);
       expect(carried(out)).toEqual([]);
       expect(live.asked).toEqual(["/", `/${DIGESTS}`]);
-      expect(run.out).toContain(CSS_NAME);
+      // On the two generations disagreeing, and not on the clock: a starved
+      // list request leaves this case's other three assertions exactly as they
+      // are here. See `refusedOver`.
+      refusedOver(run.out, "different deploys", "comparing the list against the page's whole reference set");
     } finally { live.close(); }
   });
 
@@ -631,7 +651,10 @@ describe("the carrier carries only what our own previous build attested to", () 
       expect(carried(out)).toEqual([]);
       // The list failed to parse, so not one asset was asked for.
       expect(live.asked).toEqual(["/", `/${DIGESTS}`]);
-      expect(run.out).toContain(DIGESTS);
+      // On the line the list's own reader refused, and not on the clock — the
+      // same shape as the two list cases above, and the same starved origin
+      // turns it green without the list ever being read. See `refusedOver`.
+      refusedOver(run.out, "is not a sha256 and a name", "reading the list and refusing the name it holds");
     } finally { live.close(); }
   });
 
@@ -655,9 +678,20 @@ describe("the carrier carries only what our own previous build attested to", () 
     // 187 ms. On the two-vCPU runner `pages.yml` builds on, it reached the
     // step's 10 s clock: the step refused, correctly, and this case went red —
     // s33's own test intermittently failing s33's own deploy. Three failures
-    // in five full runs, measured here, 2026-09-23. What shrinking gives up is
-    // a multi-chunk reassembly that nothing ever asserted and no chunk size
-    // was ever pinned for; what it buys is a deploy this case cannot fail.
+    // in five full runs, measured here, 2026-09-23.
+    //
+    // What shrinking gave up was named wrongly when it was done: it was said
+    // to be "a multi-chunk reassembly that nothing ever asserted", and the
+    // deleted line asserted exactly that — 104,000 bytes off the wire, read
+    // back off disk, compared byte for byte. Verified after the shrink: no
+    // body left in this file was both multi-chunk and successfully
+    // reassembled, so `Buffer.concat(chunks, total)` went unproven, and a
+    // wrong `total` there is a truncated or padded file on disk under a name
+    // the deploy swears by. The proof is back, four cases down, where it is
+    // made of three chunks handed straight to `bodyWithin` and has no origin,
+    // no socket and no clock in it (round 7). What shrinking cost, correctly
+    // stated, is that this case no longer carries the attack's byte count;
+    // what it bought is a deploy this case cannot fail.
     const answers = deploy({ [CSS_NAME]: CSS });
     answers[`/_astro/${CSS_NAME}`] = {
       raw: { headers: ["content-type: text/css", `content-length: ${CSS.length}`], body: CSS },
@@ -745,6 +779,34 @@ describe("the carrier carries only what our own previous build attested to", () 
       // that is about the body. See `refusedOver`.
       refusedOver(run.out, "empty body", "finding the body empty");
     } finally { live.close(); }
+  });
+
+  it("puts a body that arrives in several chunks back together byte for byte", async () => {
+    // The proof the control above gave up when it shrank, rebuilt where a clock
+    // cannot reach it. `Buffer.concat(chunks, total)` is handed a length this
+    // step counted itself, and a wrong one is not an error: too small truncates
+    // the file, too large pads it with zeroes — either way a file of the wrong
+    // bytes on disk under a name the deploy swears by, which is this step's own
+    // threat. Verified independently after the shrink: no body left in this
+    // file is both multi-chunk and successfully reassembled.
+    //
+    // So the chunks are handed over directly: no server on this worker's event
+    // loop, no socket, no clock, nothing a loaded runner can slow down. Three
+    // of them, of three different lengths and three different fills, so a
+    // reassembly that dropped one, reordered them or mis-counted the total
+    // fails on the bytes rather than on the length alone.
+    const chunks = [Buffer.alloc(65_536, 0x61), Buffer.alloc(38_463, 0x62), Buffer.from("ü\r\n", "utf8")];
+    const whole = Buffer.concat(chunks);
+    const body = await bodyWithin(
+      {
+        headers: { get: (name: string) => (name.toLowerCase() === "content-length" ? String(whole.length) : null) },
+        body: (async function* stream() { for (const chunk of chunks) yield chunk; })(),
+      },
+      4 * 1024 * 1024,
+    );
+    expect(body.ok, JSON.stringify(body)).toBe(true);
+    expect(body.bytes!.length).toBe(whole.length);
+    expect(body.bytes!.equals(whole), "the reassembled body is not the bytes that arrived").toBe(true);
   });
 
   it("refuses gzip bytes that call themselves identity", async () => {
@@ -859,22 +921,83 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     } finally { live.close(); }
   });
 
-  it("keeps a credential in the address out of the deploy log", async () => {
+  it("annotates every reference that resolves under our own origin to a URL this deploy does not publish", async () => {
+    // Which refusals predict a reader's 404 used to be decided by which branch
+    // of the reader they fell out of rather than by where they resolve, and the
+    // comment beside the split claimed the others did not predict one. Measured
+    // on the real process, round 7, each of these beside one healthy asset in a
+    // healthy `dist/`: a refusal line and no annotation at all — while the
+    // reference resolves under our own origin to a path this deploy does not
+    // publish, which is a 404 for the reader holding that page and is the
+    // failure this step exists not to be silent about.
+    //
+    // The rule the code holds now is where the reference RESOLVES: under our
+    // origin and not to one of this deploy's assets is the reader's 404,
+    // whatever made it one. Another host's is that host's business, and a
+    // reference that resolves nowhere is a request no browser makes either.
+    const mine = "index.KKKKKKKK.css";
+    for (const [label, ref, mark] of [
+      ["a percent-encoded separator", "/_astro/sub%2Fold.css", "/_astro/sub%2Fold.css"],
+      ["a trailing dot segment", "/_astro/old.css/.", "/_astro/old.css/."],
+      ["the directory itself", "/_astro/", "/_astro/"],
+      ["a name over the 128-character ceiling", `/_astro/${"a".repeat(136)}.css`, "a".repeat(40)],
+    ] as [string, string, string][]) {
+      const answers = deploy({ [mine]: CSS });
+      answers["/"] = { type: "text/html; charset=utf-8", body: pageOf([`/_astro/${mine}`, ref]) };
+      const live = await origin(answers);
+      // This build already has the healthy one, so nothing else can raise an
+      // annotation: no name is missing and the page does reference one of ours.
+      const out = dist({ [mine]: CSS });
+      try {
+        const run = await carry(live.url, ["--dist", out]);
+        expect(run.status, `${label}: ${run.out}`).toBe(0);
+        // Not fetched, either: a URL this deploy does not publish is named, not
+        // asked for.
+        expect(live.asked, `${label}: ${run.out}`).toEqual(["/"]);
+        expect(annotations(run.out), `${label} left the reader's 404 unannounced: ${run.out}`).toContain(mark);
+        expect(annotations(run.out), `${label}: ${run.out}`).toContain("gets a 404");
+      } finally { live.close(); }
+    }
+  });
+
+  it("keeps a credential in the address out of the deploy log, whatever the password is made of", async () => {
     // `CARRY_ORIGIN` is a repository variable, and the parse that clears the
     // fragment and the query left `user:password@` in. Measured, round 6:
     // `http://user:s3cr3t@host/` echoed the secret four times, once onto the
     // run summary — a secret reaching a deploy log, which is the whole of the
     // effect, since undici refuses to fetch such a URL at all.
-    const secret = "s3cr3t";
+    //
+    // The redaction that closed it then held only for passwords made of
+    // characters it happened to allow: it stopped at the first `/`, `?` or `#`,
+    // which is exactly what a password may carry, and a value carrying one also
+    // fails `new URL` — so it took the unparsed path and printed itself whole.
+    // Measured on the real process, round 7, thirteen password shapes: three
+    // leaked (`?`, `#`, `/`), three echoes each, one of them the run summary.
+    // So the shapes are the case, and a guard that depends on what the secret
+    // is made of is not a guard.
+    const secret = "s3cr3tPW";
     const live = await origin(deploy({ [CSS_NAME]: CSS }));
     const out = dist();
     try {
-      const run = await carry(`http://reader:${secret}@${new URL(live.url).host}/`, ["--dist", out]);
-      expect(run.status, run.out).toBe(0);
-      expect(run.out, "the repository variable's secret reached the deploy log").not.toContain(secret);
+      // The four the finding named, each one a character the old rule ended at
+      // or an `@` inside the password, which is where "the last `@`" is the
+      // only reading that does not cut the secret in half.
+      for (const [label, password] of [
+        ["a question mark", `${secret}?x`],
+        ["a hash", `${secret}#x`],
+        ["a space", `${secret} x`],
+        ["an at sign", `${secret}@x`],
+      ] as [string, string][]) {
+        const run = await carry(`http://reader:${password}@${new URL(live.url).host}/`, ["--dist", dist()]);
+        expect(run.status, `${label}: ${run.out}`).toBe(0);
+        expect(run.out, `${label}: the repository variable's secret reached the deploy log`).not.toContain(secret);
+      }
       // Dropped, not the address with them: what is left is still the page this
       // step was pointed at, and it is read.
-      expect(carried(out), run.out).toEqual([CSS_NAME]);
+      const plain = await carry(`http://reader:${secret}@${new URL(live.url).host}/`, ["--dist", out]);
+      expect(plain.status, plain.out).toBe(0);
+      expect(plain.out, "the repository variable's secret reached the deploy log").not.toContain(secret);
+      expect(carried(out), plain.out).toEqual([CSS_NAME]);
       // And on the paths that print the value as it arrived, before any parse
       // has had a chance to clean it.
       const refused = await carry(`ftp://reader:${secret}@permitrulebook.com/`, ["--dist", dist()]);
@@ -916,6 +1039,14 @@ describe("the carrier fetches from our origin and nowhere else", () => {
       expect(elsewhere.asked, "the carrier followed the redirect off the host").toEqual([]);
       expect(carried(out)).toEqual([]);
       expect(run.out).toContain(moved);
+      // On the redirect, and not on the clock. Measured against a starved
+      // origin, round 7: all three assertions above held while the step
+      // printed `index.…css: its body The operation was aborted due to
+      // timeout` and never saw a `location:` header at all. The mark is the
+      // concept rather than the sentence, because the words belong to undici
+      // — today `fetch failed (unexpected redirect)` — and a dependency's
+      // wording is not this step's decision. See `refusedOver`.
+      refusedOver(run.out, "redirect", "refusing the redirect instead of following it");
     } finally { live.close(); elsewhere.close(); }
   });
 
@@ -926,25 +1057,30 @@ describe("the carrier fetches from our origin and nowhere else", () => {
       "https://evil.example/_astro/absolute.js",
       // A protocol-relative reference inherits the page's scheme, so only the
       // host makes this one foreign — and the host is enough.
-      "//evil.example/_astro/protocol-relative.js",
+      "//evil.example/_astro/relative.js",
       // Same host, plaintext: the scheme is part of the origin, and an https
       // site whose page names an http asset is a page to distrust.
       "http://example.test/_astro/plaintext.js",
       "/_astro/index.HHHHHHHH.css",
     ];
-    const { names, refused } = readAssetNames(pageOf(refs).toString("utf8"), "https://example.test/");
+    const { names, refused, unserved } = readAssetNames(pageOf(refs).toString("utf8"), "https://example.test/");
     expect(names).toEqual(["index.HHHHHHHH.css"]);
     // Refused by name: every reference that did not become a name is handed
-    // back, so the caller can print it and nothing is dropped in silence — as
-    // much of each as a log line can afford, and no more, because how long a
-    // reference is is the page's choice (Security review, round 5).
-    // It asserts the decision rather than a bound: `startsWith` and a ceiling
-    // both hold for an empty string and for a bare ellipsis, so the pair could
-    // not fail (Standards review, round 6). What is asserted is the reference
-    // as the log is entitled to it — whole under 40 characters, its first 40
-    // and an ellipsis over.
-    const asLogged = (ref: string): string => (ref.length > 40 ? `${ref.slice(0, 40)}…` : ref);
-    expect(refused.map(({ ref }) => ref)).toEqual(refs.slice(0, 3).map(asLogged));
+    // back, so the caller can print it and nothing is dropped in silence. All
+    // three name a host that is not ours, which is the bucket that predicts no
+    // request to our origin and therefore no annotation — where they resolve
+    // is what decides that, so a case about the three foreign shapes is also
+    // the case that says `unserved` stays empty for them (round 7).
+    //
+    // These three are short enough to come back whole, and that is deliberate:
+    // the bound on a printed reference is `short`'s and is spelled there, once.
+    // It used to be re-typed here as a 40-and-ellipsis rule beside a reference
+    // two characters over it, which is the same rule in two places (Standards
+    // review, round 7). Where it is MEASURED is on the real process, three
+    // describes down, against a 430-character reference that takes the same
+    // refusal branch as these.
+    expect(refused.map(({ ref }) => ref)).toEqual(refs.slice(0, 3));
+    expect(unserved).toEqual([]);
   });
 
   it("refuses four hundred foreign references without a packet or four hundred lines", async () => {
@@ -1006,6 +1142,18 @@ describe("the carrier cannot fail the deploy", () => {
       // Not a truncated stylesheet on disk: nothing at all.
       expect(carried(out)).toEqual([]);
       expect(run.out).toContain(CSS_NAME);
+      // This case has no `refusedOver` mark of its own, and that is a decision
+      // rather than an omission. A socket that dies mid-body and a clock that
+      // runs out reach the same line of this step by the same route, and the
+      // only string that tells them apart is the underlying cause — undici's
+      // `fetch failed (other side closed)` against Node's `The operation was
+      // aborted due to timeout`. Pinning the first makes a dependency's
+      // wording a red deploy; so what is asserted is the second's ABSENCE,
+      // which can only ever weaken if that wording moves, never go red for it.
+      // The origin here destroys the socket in the same tick as the headers,
+      // so a starved runner has almost nothing to starve (round 7).
+      expect(run.out, "the socket died on the step's own clock, not on the origin's silence")
+        .not.toContain("aborted due to timeout");
     } finally { live.close(); }
   });
 
