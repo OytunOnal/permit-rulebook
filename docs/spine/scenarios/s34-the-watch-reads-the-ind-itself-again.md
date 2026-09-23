@@ -207,7 +207,9 @@ runs took 46–77 s before this slice; the measurement dispatch 102 s, the first
 baseline dispatch 121 s, and the run that reads the five with the full
 five-step recipe 213 s — about 20 s per stepped page, with the first read of a
 run carrying Chrome's cold start (34.5 s), and the whole job still well under
-the scenario's five-minute line. `expand` is in the recipe and earns nothing
+the scenario's five-minute line — and the figure held on the final code, run
+35926499955 reading the five at 20–23 s, EUR-Lex at 5.1 and the BMI notice at
+9.4. `expand` is in the recipe and earns nothing
 today: none of the thirty-eight sits behind *Show details*, and the sliced text
 is identical with the step and without it; it is kept as the guard it was
 written to be, at the cost of one click. **Point 2's vocabulary is narrower

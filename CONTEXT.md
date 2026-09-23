@@ -360,7 +360,11 @@ the trust line**: a reading that ends on an origin the entry does not name —
 by a redirect on load, or by a step that pressed its way there — is refused as
 unreachable, because a third party's bytes must never be hashed as the
 authority's. A move within the entry's own origin is read, and the address it
-was read at travels back with the reading so a curator can see it.
+was read at travels back with the reading, logged as **`read_at`** on both
+tiers when it differs from the address asked for — a redirect the fetcher
+followed, a form that posts back to a sub-path, a script that swapped the
+document. `read_at` is always an address; the day a reading was taken is a
+snapshot's `retrieved_at`.
 _Avoid_: headless tier, rendered tier, scraping
 
 **Watch step**:
