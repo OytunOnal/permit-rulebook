@@ -240,12 +240,17 @@ function carry(origin: string, args: string[] = []): Promise<{ status: number; o
 
 const carried = (dir: string): string[] => readdirSync(join(dir, "_astro")).sort();
 const lastLine = (out: string): string => out.trim().split("\n").at(-1) ?? "";
+/** The run's counted line, wherever the annotations after it leave it. */
+const summary = (out: string): string => out.split("\n").find((line) => line.includes("left behind")) ?? "";
 /**
- * The annotation the run summary carries, or "" when the step ended quiet.
- * `::warning::` at the start of a line is the workflow command Actions reads,
- * so it is read here the same way Actions reads it: line by line, anchored.
+ * Every annotation the run summary carries, as one block, or "" when the step
+ * ended quiet. `::warning::` at the start of a line is the workflow command
+ * Actions reads, so they are read here the same way Actions reads them: line by
+ * line, anchored. Every, and not the first, because one page can be wrong in
+ * more than one way at once and each way sends the reader somewhere else
+ * (round 6).
  */
-const annotation = (out: string): string => out.split("\n").find((line) => line.startsWith("::warning::")) ?? "";
+const annotations = (out: string): string => out.split("\n").filter((line) => line.startsWith("::warning::")).join("\n");
 
 afterEach(() => {
   for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
@@ -623,8 +628,11 @@ describe("the carrier carries only what our own previous build attested to", () 
     try {
       const run = await carry(live.url, ["--dist", out]);
       expect(run.status, run.out).toBe(0);
-      expect(carried(out)).toEqual([CSS_NAME]);
-      expect(readFileSync(join(out, "_astro", CSS_NAME)).equals(asset)).toBe(true);
+      // With the step's own reason, because this case is 104,000 bytes over a
+      // hand-framed socket and the only interesting way for it to fail is one
+      // the step will have printed (round 6, chasing a flake under load).
+      expect(carried(out), run.out).toEqual([CSS_NAME]);
+      expect(readFileSync(join(out, "_astro", CSS_NAME)).equals(asset), run.out).toBe(true);
     } finally { live.close(); }
   });
 
@@ -746,6 +754,82 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     } finally { live.close(); }
   });
 
+  it("counts a reference as ours only when it resolves to this page's own `_astro/`", async () => {
+    // The step read the basename out of the reference and threw the resolved
+    // path away, so `/_astro/../real.css` — which resolves to `/real.css`, a
+    // URL this deploy does not publish — scored as "already in this build"
+    // against `dist/_astro/real.css`. Measured, round 6: `0 carried, 1 already
+    // in this build, 0 left behind`, no annotation, and the reader holding that
+    // page 404s. A name is one of this deploy's assets only when the whole
+    // resolved path is the one this step would build for that name.
+    const real = "index.IIIIIIII.css";
+    const answers = deploy({ [real]: CSS });
+    answers["/"] = { type: "text/html; charset=utf-8", body: pageOf([`/_astro/../${real}`]) };
+    const live = await origin(answers);
+    const out = dist({ [real]: CSS });
+    try {
+      const run = await carry(live.url, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      // Never fetched, and never counted as built: the page, and nothing else.
+      expect(live.asked, run.out).toEqual(["/"]);
+      expect(summary(run.out), run.out).toContain("0 already in this build");
+      expect(summary(run.out), run.out).toContain("1 left behind");
+      expect(annotations(run.out), "the reader 404s on a URL and the run said nothing").toContain(real);
+    } finally { live.close(); }
+  });
+
+  it("counts a root-absolute reference as ours only under the base this deploy serves", async () => {
+    // Without a custom domain the site is served from a subpath, so a page
+    // carrying a root-absolute `/_astro/old.css` names a URL the host 404s.
+    // The step took the basename and rebuilt it under the base: measured,
+    // round 6, it fetched `/base/_astro/old.css`, carried it, and reported
+    // `1 carried, 0 left behind` for a URL the deploy will never serve.
+    const base = "/permit-rulebook";
+    const stale = "index.JJJJJJJJ.css";
+    // The live deploy has both, under its base, and its digest list names both:
+    // nothing else refuses this one, so what the step does with it is decided
+    // by where the reference resolves and by nothing else. The host 404s the
+    // root-absolute path, the way Pages does.
+    const answers = deploy({ [CSS_NAME]: CSS, [stale]: Buffer.from("/* the stale one */\n", "utf8") }, base);
+    answers[`${base}/`] = {
+      type: "text/html; charset=utf-8",
+      body: pageOf([`${base}/_astro/${CSS_NAME}`, `/_astro/${stale}`]),
+    };
+    const live = await origin(answers);
+    const out = dist();
+    try {
+      const run = await carry(`${live.url}${base}/`, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      expect(live.asked, run.out).not.toContain(`${base}/_astro/${stale}`);
+      expect(carried(out), run.out).toEqual([CSS_NAME]);
+      expect(annotations(run.out), run.out).toContain(stale);
+    } finally { live.close(); }
+  });
+
+  it("keeps a credential in the address out of the deploy log", async () => {
+    // `CARRY_ORIGIN` is a repository variable, and the parse that clears the
+    // fragment and the query left `user:password@` in. Measured, round 6:
+    // `http://user:s3cr3t@host/` echoed the secret four times, once onto the
+    // run summary — a secret reaching a deploy log, which is the whole of the
+    // effect, since undici refuses to fetch such a URL at all.
+    const secret = "s3cr3t";
+    const live = await origin(deploy({ [CSS_NAME]: CSS }));
+    const out = dist();
+    try {
+      const run = await carry(`http://reader:${secret}@${new URL(live.url).host}/`, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      expect(run.out, "the repository variable's secret reached the deploy log").not.toContain(secret);
+      // Dropped, not the address with them: what is left is still the page this
+      // step was pointed at, and it is read.
+      expect(carried(out), run.out).toEqual([CSS_NAME]);
+      // And on the paths that print the value as it arrived, before any parse
+      // has had a chance to clean it.
+      const refused = await carry(`ftp://reader:${secret}@permitrulebook.com/`, ["--dist", dist()]);
+      expect(refused.status, refused.out).toBe(0);
+      expect(refused.out, "a value refused unparsed took the secret into the log with it").not.toContain(secret);
+    } finally { live.close(); }
+  });
+
   it("reads the address it checked, whitespace and all", async () => {
     // The boundary tested `origin.trim()` twice and then built the page URL out
     // of `origin`, so the value that was checked and the value that was used
@@ -801,11 +885,13 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     // back, so the caller can print it and nothing is dropped in silence — as
     // much of each as a log line can afford, and no more, because how long a
     // reference is is the page's choice (Security review, round 5).
-    expect(refused).toHaveLength(3);
-    refused.forEach(({ ref }, i) => {
-      expect(refs[i].startsWith(ref.replace(/…$/, "")), `${ref} is not the head of ${refs[i]}`).toBe(true);
-      expect(ref.length, ref).toBeLessThanOrEqual(41);
-    });
+    // It asserts the decision rather than a bound: `startsWith` and a ceiling
+    // both hold for an empty string and for a bare ellipsis, so the pair could
+    // not fail (Standards review, round 6). What is asserted is the reference
+    // as the log is entitled to it — whole under 40 characters, its first 40
+    // and an ellipsis over.
+    const asLogged = (ref: string): string => (ref.length > 40 ? `${ref.slice(0, 40)}…` : ref);
+    expect(refused.map(({ ref }) => ref)).toEqual(refs.slice(0, 3).map(asLogged));
   });
 
   it("refuses four hundred foreign references without a packet or four hundred lines", async () => {
@@ -1095,7 +1181,7 @@ describe("the step says which of the three things happened", () => {
       expect(run.status, run.out).toBe(0);
       // It read the page and found nothing to do: one request, no annotation.
       expect(live.asked).toEqual(["/"]);
-      expect(annotation(run.out), run.out).toBe("");
+      expect(annotations(run.out), run.out).toBe("");
     } finally { live.close(); }
   });
 
@@ -1121,10 +1207,10 @@ describe("the step says which of the three things happened", () => {
         const out = dist();
         const run = await carry(value, ["--dist", out]);
         expect(run.status, `${label}: ${run.out}`).toBe(0);
-        expect(annotation(run.out), `${label} ended as quiet as a healthy deploy: ${run.out}`).not.toBe("");
+        expect(annotations(run.out), `${label} ended as quiet as a healthy deploy: ${run.out}`).not.toBe("");
         // And it says which of the three it is: it could not look, so it does
         // not claim to know what a reader will find.
-        expect(annotation(run.out), `${label}: ${run.out}`).toContain("could not read the live page");
+        expect(annotations(run.out), `${label}: ${run.out}`).toContain("could not read the live page");
       }
       // The seventh return is the export's own: the CLI always passes a build
       // directory, so `looked` is where that path is measured.
@@ -1150,10 +1236,10 @@ describe("the step says which of the three things happened", () => {
       const run = await carry(live.url, ["--dist", out]);
       expect(run.status, run.out).toBe(0);
       expect(carried(out)).toEqual([shared]);
-      expect(annotation(run.out), run.out).toContain(stale);
+      expect(annotations(run.out), run.out).toContain(stale);
       // The one it did carry is not what the reader is missing, so it is not
       // in the line that names what the reader is missing.
-      expect(annotation(run.out), run.out).not.toContain(shared);
+      expect(annotations(run.out), run.out).not.toContain(shared);
     } finally { live.close(); }
   });
 
@@ -1182,7 +1268,49 @@ describe("the step says which of the three things happened", () => {
       expect(carried(out)).toEqual([CSS_NAME, JS_NAME].sort());
       // It still says what it could not carry, and still says it plainly: the
       // reader's page asks for a name nothing here can account for.
-      expect(annotation(run.out), run.out).toContain("pwn.css");
+      expect(annotations(run.out), run.out).toContain("pwn.css");
+    } finally { live.close(); }
+  });
+
+  it("does not end quiet on a 200 page that names none of this deploy's assets", async () => {
+    // The step returned before the digest list when nothing was needed, so a
+    // proxy notice, a maintenance page or an error page answered 200 was
+    // granted the silence of a healthy deploy on evidence it never validated
+    // (Security review, round 6). Our own `/` always names assets; a live page
+    // that names none is not this site's deploy answering.
+    const live = await origin({
+      "/": { type: "text/html; charset=utf-8", body: Buffer.from("<!DOCTYPE html><html><body>back soon</body></html>", "utf8") },
+    });
+    const out = dist({ [CSS_NAME]: CSS });
+    try {
+      const run = await carry(live.url, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      expect(live.asked, run.out).toEqual(["/"]);
+      expect(annotations(run.out), `a page with nothing in it ended as quiet as a healthy deploy: ${run.out}`).not.toBe("");
+      // And it says which outcome this is: the page was read, so the step does
+      // not claim it could not look.
+      expect(annotations(run.out), run.out).not.toContain("could not read the live page");
+    } finally { live.close(); }
+  });
+
+  it("raises the annotation when this build could not publish its own digest list", async () => {
+    // A failed publish printed a plain line. On a deploy whose page names are
+    // all already built the run is then indistinguishable from a healthy one —
+    // while the NEXT deploy is guaranteed to carry nothing, which is the window
+    // this slice exists to close (Spec review, round 6).
+    const live = await origin(deploy({ [CSS_NAME]: CSS }));
+    // The shape the finding names, and the reason it was invisible: this build
+    // already has every name the live page references, so there is nothing to
+    // carry, nothing missing and nothing else for the step to say. The list's
+    // own path is a DIRECTORY — portable, where a permission bit is not — so
+    // the publish is the one thing that fails.
+    const out = dist({ [CSS_NAME]: CSS });
+    mkdirSync(join(out, DIGESTS));
+    try {
+      const run = await carry(live.url, ["--dist", out]);
+      expect(run.status, run.out).toBe(0);
+      expect(live.asked, "the run had nothing to carry, which is what hid this").toEqual(["/"]);
+      expect(annotations(run.out), run.out).toContain(DIGESTS);
     } finally { live.close(); }
   });
 
@@ -1207,9 +1335,9 @@ describe("the step says which of the three things happened", () => {
       const said = [alarm, quiet, unseen].map((run) => lastLine(run.out));
       expect(new Set(said).size, said.join("\n")).toBe(3);
       // And the loud one names what the reader is going to ask for and not get.
-      expect(annotation(alarm.out), alarm.out).toContain(CSS_NAME);
-      expect(annotation(quiet.out), quiet.out).toBe("");
-      expect(annotation(unseen.out), unseen.out).not.toBe("");
+      expect(annotations(alarm.out), alarm.out).toContain(CSS_NAME);
+      expect(annotations(quiet.out), quiet.out).toBe("");
+      expect(annotations(unseen.out), unseen.out).not.toBe("");
     } finally { bad.close(); idle.close(); }
   });
 });

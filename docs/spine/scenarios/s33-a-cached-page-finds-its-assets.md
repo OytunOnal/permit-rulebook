@@ -150,7 +150,26 @@ nested `env:` under this step passed all four of its assertions while the step
 fetched a foreign host. Over-pinning a deploy step is the deliberate trade: an
 edit to it now goes through a deliberate edit to that test, and it retires an
 earlier pin of the exact `run` string, which spelled a spelling nobody had
-declared.
+declared. Round 6 then corrected four things this step was **claiming**. A
+reference counts as one of this deploy's assets only when it **resolves to**
+the URL the step would build for its name, base path and all: reducing it to a
+basename let `/_astro/../real.css` score as "already in this build" against
+`dist/_astro/real.css` — `0 carried, 1 already in this build, 0 left behind`,
+no annotation, and a reader 404ing on `/real.css` — and let a root-absolute
+`/_astro/old.css` on a subpath origin be fetched from under the base and
+reported carried for a URL the deploy will never serve. Nothing escaped
+`dist/_astro/` in either: what was lost was the alarm. Such a reference is now
+neither fetched nor counted, and it is annotated for what it is, a URL the
+reader asks for and does not get. The parse that clears the fragment and the
+query clears the **credentials** too — `CARRY_ORIGIN=http://user:s3cr3t@host/`
+echoed the secret four times, once onto the run summary, for a fetch undici
+refuses anyway. A 200 page referencing **none** of this deploy's assets is
+annotated instead of being granted the silence of a healthy deploy: ours always
+names two, and a step that validated nothing should not sound like one that
+found nothing wrong. And a **failed digest publish** is an annotation rather
+than a plain line, because on a deploy whose page names are all already built
+it read exactly like a healthy run while the next deploy was guaranteed to
+carry nothing.
 
 ## How it is proved
 

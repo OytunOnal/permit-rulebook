@@ -366,3 +366,15 @@ _Avoid_: mirror, backup, sync
 The set of content-hashed `/_astro/` files one deploy publishes. A deploy
 carries exactly one previous generation forward.
 _Avoid_: version, build (of the assets)
+
+**The digest list** (`asset-digests.txt`):
+The file a build publishes beside its page, one line per asset it put in
+`_astro/`: that file's sha256 and its name. It is the only thing the next
+deploy checks a carried byte against.
+_Avoid_: manifest, checksum file, lockfile
+
+**The three outcomes**:
+The step's whole verdict vocabulary — nothing to do · could not look · looked
+and something is still missing. Which one a run ended in is what its last
+lines say, and what tells a healthy deploy from a silent one.
+_Avoid_: success/failure, pass/fail (the step has no failure)
