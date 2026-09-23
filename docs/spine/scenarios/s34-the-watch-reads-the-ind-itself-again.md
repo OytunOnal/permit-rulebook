@@ -1,6 +1,6 @@
 # s34 — the watch reads the IND itself again
 
-**Status:** proposed 2026-09-23. v1.2 queue head: data #17, the road back from
+**Status:** approved 2026-09-23 (human: "onaylıyorum"). v1.2 queue head: data #17, the road back from
 the human tier (s14, s29). Data slice; the site changes by rebuilding against
 the pin, plus one glossary entry.
 
