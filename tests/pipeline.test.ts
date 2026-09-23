@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDir, readLock } from "../scripts/data-pin.mjs";
 
@@ -162,5 +162,65 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
     expect(pin).toContain("contents: write");
     const build = job("build").slice(0, job("build").indexOf(`${LF}  pin:`));
     expect(build, "the build job can write to the repository").not.toMatch(/contents: write/);
+  });
+});
+
+/**
+ * s33 — the step that carries the previous generation's assets forward.
+ *
+ * `/` is served with `Cache-Control: max-age=600` and the two files it needs
+ * are content-hashed, so a reader who returns inside those ten minutes asks
+ * for files the last deploy removed (measured live 2026-09-23: three 404s).
+ * The build now copies the live generation into `dist/` before the artifact
+ * goes up. Two things about that step are worth pinning: what it has to cover,
+ * and that it can never take the deploy down with it.
+ */
+describe("a cached page still finds its assets", () => {
+  const dist = join(root, "dist");
+  const missing = existsSync(dist) ? null : "no dist/ — run npm run build first";
+
+  it("never lets a pipeline skip the built site", () => {
+    if (missing) expect(process.env.CI, `CI cannot skip: ${missing}`).toBeFalsy();
+    else expect(missing).toBeNull();
+  });
+
+  /**
+   * The carrier reads ONE live page, so the whole exposure has to be one page.
+   * The day a second page gains a bundle of its own this case goes red, and the
+   * step has to widen to read that page too — which is the point of pinning it
+   * rather than assuming it (s33, point 4).
+   */
+  it.skipIf(missing)("exactly one built page references /_astro/", () => {
+    const pages: string[] = [];
+    (function walk(here: string): void {
+      for (const entry of readdirSync(here, { withFileTypes: true })) {
+        const full = join(here, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (entry.name.endsWith(".html") && read(full).includes("/_astro/"))
+          pages.push(relative(dist, full).split(sep).join("/"));
+      }
+    })(dist);
+    expect(pages.sort()).toEqual(["index.html"]);
+  });
+
+  it("the build job runs it before the upload, with no action and no way to fail", () => {
+    const pages = read(join(workflows, "pages.yml"));
+    const build = pages.slice(pages.indexOf(`${LF}  build:`), pages.indexOf(`${LF}  pin:`));
+    const step = build.indexOf("node scripts/carry-assets.mjs");
+    expect(step, "the build job does not run the carrier").toBeGreaterThan(-1);
+    // Before the artifact is sealed: a file carried after the upload is a file
+    // nobody deploys.
+    const upload = build.indexOf("actions/upload-pages-artifact");
+    expect(upload, "the build job no longer uploads an artifact").toBeGreaterThan(-1);
+    expect(step, "the carrier runs after the artifact is uploaded").toBeLessThan(upload);
+    // No new action for this: the job already has node, and every `uses:` is a
+    // supply chain of its own (the pinning case above).
+    const name = build.lastIndexOf("- name:", step);
+    expect(build.slice(name, step), "the carrier step pulls in an action").not.toContain("uses:");
+    // And it cannot fail the deploy. The script's own last line is the guard —
+    // a shell `||` in the workflow would hide a crash instead of surviving one.
+    const carrier = read(join(root, "scripts", "carry-assets.mjs"));
+    expect(carrier, "the carrier does not always exit 0").toContain("process.exit(0)");
+    expect(carrier, "the carrier can exit non-zero").not.toMatch(/process\.exit\((?!0\))/);
   });
 });

@@ -229,6 +229,32 @@ jobs:
           echo "urls=$urls" >> "$GITHUB_OUTPUT"
           echo "$(echo "$urls" | jq length) addresses in the sitemap"
 
+      # The last thing before the artifact is sealed, because it adds files to
+      # `dist/` and a file carried after the upload is a file nobody deploys.
+      #
+      # GitHub Pages serves `/` with `Cache-Control: max-age=600` — its header,
+      # not ours, and not one we can set on this host — so a reader's browser
+      # may hold the page for ten minutes. The two files that page needs are
+      # content-hashed, and every deploy that changes either one publishes a new
+      # name and drops the old. A reader returning inside that window therefore
+      # asks for files that are gone: measured live 2026-09-23,
+      # `/_astro/index.CpGG1ZDr.css`, `/_astro/index.BcmUcb7-.css` and
+      # `/_astro/index.qYLZ_mcb.js` all answered 404, which is an unstyled page
+      # whose interview never runs. This copies the generation the live site
+      # references right now into the build about to replace it, so both answer
+      # 200. One generation only — two deploys inside ten minutes still leave
+      # the earliest reader broken, and that limit is on the record (s33).
+      #
+      # No new action and no new token: `node`, which this job already has, and
+      # `SITE_URL`, which is the one place the site's address is decided. The
+      # script writes only what the host answered as 200 CSS or JavaScript, and
+      # it exits 0 whatever the network does — a carrier that cannot carry must
+      # never fail a deploy, so there is nothing here for `continue-on-error`
+      # to catch.
+      - name: Carry the live site's assets forward, so a cached page still finds them
+        working-directory: site
+        run: node scripts/carry-assets.mjs --origin "$SITE_URL"
+
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: site/dist

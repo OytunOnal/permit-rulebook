@@ -59,6 +59,31 @@ on each). The whole exposure is one page and two files.
 5. **Nothing else changes.** The artifact is still `site/dist`; the data pin,
    the IndexNow job, the tests and the pages themselves are untouched.
 
+**Corrected 2026-09-23, by the build:** point 2 named the mechanism as "`curl`
+and the shell, as the IndexNow step does", which this scenario's own proof
+section contradicts: it asks for `scripts/carry-assets.mjs` *"so it can be
+tested without a deploy"*. A shell body inside a workflow step has no unit —
+the four guards that make this step safe (200 only, a CSS or JavaScript content
+type only, byte-identical, exit 0 whatever happens) would be unasserted shell,
+proved by reading the YAML rather than by running it. The constraint point 2 is
+actually protecting is "no new action", and a node script satisfies it: the
+build job already has node, the step is `run: node scripts/carry-assets.mjs`,
+and it adds no `uses:`, no token and no permission. Two consequences point 2
+left to the builder, stated here: the guard is **explicit, not
+`continue-on-error`** — the script's own last line is `process.exit(0)`, so
+there is nothing for the workflow to catch and a crash cannot hide behind a
+shell `||`; and the origin is **`$SITE_URL`**, not a typed domain, read as
+given — without a custom domain the site is served from a subpath and reading
+the host root would read a stranger's page.
+
+Three premises checked and true, not corrected: only `index.html` references
+`/_astro/` in a fresh build (the other 37 pages: zero); the two live files are
+`index.BEnxC2y6.css` (27,533 bytes) and
+`index.astro_astro_type_script_index_0_lang.Bev-BElT.js` (243,728 bytes), the
+names this scenario predicted; and the live host serves both as `text/css` and
+`text/javascript`, so the content-type guard passes what it must (dry run
+against `https://permitrulebook.com`, 2026-09-23).
+
 ## How it is proved
 
 - Unit: the carrier is a small script (`scripts/carry-assets.mjs`) so it can
