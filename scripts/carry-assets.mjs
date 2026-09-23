@@ -240,32 +240,6 @@ const boundedList = (names) => (names.length <= 3 ? names.join(", ") : `${names.
 const short = (text, max = 40) => (text.length > max ? `${text.slice(0, max)}…` : text);
 
 /**
- * A value as a deploy log may hold it. The address arrives in a repository
- * variable, and the paths that refuse one print it as it arrived — before any
- * parse has had the chance to drop the credentials the parse drops. A password
- * in a log is the same secret whether or not the value it sat in was an
- * address this step would have used.
- *
- * Everything between `://` and the LAST `@` goes, and that greed is the whole
- * point. This used to stop at the first `/`, `?` or `#`, which is a rule about
- * what the password is made of rather than about where it ends: a password
- * carrying one of those three ended the match early AND failed `new URL`, so
- * the value took the path that prints what it was handed and printed the
- * secret whole — measured on the real process, round 7, thirteen password
- * shapes: three leaked, three echoes each, one of them the Actions run
- * summary. A guard that holds only for the passwords it likes is not a guard.
- *
- * What greed costs is a value whose PATH carries an `@` and no credentials at
- * all — `http://host/x?to=a@b` prints as `http://b`, the host gone out of a
- * line whose job is to say which address failed. That is the side to be wrong
- * on: the line is a diagnostic, the secret is a secret, and the value this
- * reads is `SITE_URL`, an origin, where an `@` is already the abnormal thing.
- * `[\s\S]` and not `.` so a value carrying a line break cannot hide an `@`
- * behind it from a rule that stops at one.
- */
-const withoutCredentials = (text) => text.replace(/(:\/\/)[\s\S]*@/, "$1");
-
-/**
  * One line, whatever it is handed. In Actions a line beginning `::` is a
  * workflow command, so a value this step prints but did not write — an address
  * out of a repository variable — must not be able to end a line and start
@@ -525,9 +499,21 @@ export async function bodyWithin(response, limit) {
   if (response.body) {
     try {
       for await (const chunk of response.body) {
-        total += chunk.length;
+        // Converted first and counted after, so `total` is the length of what
+        // `Buffer.concat` is handed rather than the length of what arrived.
+        // Counted the other way round, a chunk whose two counts differ made
+        // the two disagree: a string `üü` counted 2 characters and
+        // concatenated 4 bytes, and `Buffer.concat(chunks, 2)` returned half
+        // the value with `ok: true` — the silent truncation this file's header
+        // calls this step's own threat, and the ceiling below miscounted by
+        // the same amount. Unreachable through the step, where undici yields
+        // `Uint8Array` and the two counts agree; reachable through the export,
+        // which is the whole population this function has to be honest to
+        // (Security review, round 8).
+        const bytes = Buffer.from(chunk);
+        total += bytes.length;
         if (total > limit) return { ok: false, why: `is over the ${limit}-byte ceiling` };
-        chunks.push(Buffer.from(chunk));
+        chunks.push(bytes);
       }
     } catch (e) {
       return { ok: false, why: say(e) };
@@ -615,9 +601,24 @@ export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUD
   // the variable that holds one. `new URL` below would refuse most of these
   // too, but as a parse error; a value beginning `--` deserves to be named for
   // what it is (header: "Where the address comes from").
+  //
+  // NEVER PRINT A VALUE THAT DID NOT PARSE — the rule the two refusals here
+  // and the counted line at the end all follow, and the reason there is no
+  // redaction in this file any more. A parsed address is safe to print:
+  // `new URL` has already dropped the credentials from it. An UNPARSED one
+  // cannot be made safe by a rule about its shape, and every such rule tried
+  // here failed on the population it actually meets — by construction the
+  // values that reach these two lines are the ones that failed `^https?://`
+  // or failed `new URL`. A redaction anchored on `://` did not fire on them
+  // at all (round 8: `u:pw@host/` and `//u:pw@host/`, three echoes each, one
+  // on the run summary), and widening it to the last `@` anywhere did not
+  // lose a host but SUBSTITUTED one — a valid origin whose query carried an
+  // `@` was reported read from the query's host, on the one line an incident
+  // is read from. So: name the variable, say what was wrong with it, and
+  // print nothing of it. Not even a length, which is a secret's length.
   const given = origin.trim();
   if (!/^https?:\/\//i.test(given)) {
-    problems.push(`anything: ${short(withoutCredentials(given), 120)} is not an absolute http(s) address, so it is not somewhere to read a page from`);
+    problems.push(`anything: ${ORIGIN_VAR} is not an absolute http(s) address, so it is not somewhere to read a page from`);
     return done();
   }
   // And a build to fill. The signature lets this be left out, and `join` threw
@@ -635,8 +636,12 @@ export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUD
   // address with nothing stray left in it: whitespace, a line break and a
   // fragment all end here rather than in a request or in a log line.
   let home;
-  try { home = new URL(given); } catch (e) {
-    problems.push(`anything: ${short(withoutCredentials(given), 120)} — ${say(e)}`);
+  try { home = new URL(given); } catch {
+    // Not `say(e)` either, and for the same reason one step further out: the
+    // error's wording is the runtime's, not this step's, and the runtime is
+    // free to start putting the input it refused into it. Node's is the
+    // constant "Invalid URL" today, which says nothing this line does not.
+    problems.push(`anything: ${ORIGIN_VAR} is not a URL, so it is not somewhere to read a page from`);
     return done();
   }
   home.hash = "";
@@ -843,9 +848,19 @@ if (process.argv[1]?.split("\\").join("/").endsWith("/carry-assets.mjs")) {
     console.log(oneLine(`${dryRun ? "would carry" : "carried"} ${name}  ${bytes} bytes  sha256:${sha256}`));
   }
   for (const problem of result.problems) console.log(oneLine(`could not carry ${problem}`));
+  // Where the page came from, and only ever the parse: `result.from` is set
+  // the moment `new URL` succeeds, so this names a host exactly when a request
+  // was built for one. It used to fall back to the value as it arrived, which
+  // is how this line — the one an incident is read from — came to name a host
+  // no socket was ever opened on (round 8, and see "NEVER PRINT A VALUE THAT
+  // DID NOT PARSE" in `carryAssets`). With no parse there is no address to
+  // report, so it reports the variable and which of the two things was wrong
+  // with it; the lines above have already said why.
+  const where = result.from
+    || (origin.trim() === "" ? `an unset ${ORIGIN_VAR}` : `a ${ORIGIN_VAR} no page could be read from`);
   console.log(oneLine(
     `${result.carried.length} asset(s) ${dryRun ? "would be carried" : "carried"} `
-    + `from ${result.from || short(withoutCredentials(origin), 120) || `an unset ${ORIGIN_VAR}`}, `
+    + `from ${where}, `
     + `${result.alreadyBuilt.length} already in this build, ${result.problems.length} left behind`,
   ));
 

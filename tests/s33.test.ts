@@ -59,7 +59,15 @@ type Answer = {
   body?: Buffer;
   /** Answer a redirect instead, to this address. */
   redirectTo?: string;
-  /** Write this many bytes of the body, promise more, then drop the socket. */
+  /**
+   * Write this many bytes of the body, promise more, then drop the socket —
+   * once those bytes are actually on the wire. Dropping it in the same tick as
+   * the write dropped them with it: measured 5/5 on the real process, the
+   * client never got a usable response at all and the step gave up one branch
+   * earlier, at the fetch, so the case named for a body that stops halfway
+   * never reached a body (round 8). Queued on the write's flush it is 5/5 the
+   * other way, `its body terminated (other side closed)`.
+   */
   dropAfter?: number;
   /** Answer only after this long — a host that has stopped answering. */
   delayMs?: number;
@@ -114,8 +122,11 @@ async function origin(answers: Record<string, Answer>): Promise<{
           // A promise of more than arrives: the shape of a CDN edge that dies
           // mid-response, which is where the first cut exited 1.
           res.writeHead(200, { "content-type": answer.type ?? "text/css", "content-length": String(body.length + 1000) });
-          res.write(body.subarray(0, answer.dropAfter));
-          res.socket?.destroy();
+          // The drop is queued on the write's own flush, so the headers and
+          // these bytes are on the wire before the socket goes: that is what
+          // makes this a body that stops halfway rather than a response that
+          // never arrives. See `dropAfter`.
+          res.write(body.subarray(0, answer.dropAfter), () => res.socket?.destroy());
           return;
         }
         if (answer.gzip) {
@@ -227,11 +238,17 @@ function dist(have: Record<string, Buffer> = {}): string {
  * Asynchronously, and that is not a style choice: the stand-in origin above
  * listens on this very process, so a synchronous child would block the event
  * loop that has to answer it, and every case would read as a timeout.
+ *
+ * `cwd` is for the one case that hands the step an empty `--dist`: the digest
+ * publish then resolves its name against the process's own directory, and a
+ * case run from the repository root left an `asset-digests.txt` in the working
+ * tree. Every other case passes a real directory and inherits the root, which
+ * is where the workflow runs it from.
  */
-function carry(origin: string, args: string[] = []): Promise<{ status: number; out: string }> {
+function carry(origin: string, args: string[] = [], cwd?: string): Promise<{ status: number; out: string }> {
   return new Promise((resolve) => {
     const env = { ...process.env, CARRY_ORIGIN: origin };
-    execFile(process.execPath, [carrier, ...args], { encoding: "utf8", env }, (error, stdout, stderr) => {
+    execFile(process.execPath, [carrier, ...args], { encoding: "utf8", env, cwd }, (error, stdout, stderr) => {
       const status = error ? ((error as { code?: number }).code ?? 1) : 0;
       resolve({ status, out: `${stdout}${stderr}` });
     });
@@ -809,6 +826,34 @@ describe("the carrier carries only what our own previous build attested to", () 
     expect(body.bytes!.equals(whole), "the reassembled body is not the bytes that arrived").toBe(true);
   });
 
+  it("counts the bytes it concatenates, not the characters the chunk was written as", async () => {
+    // The same `total`, and the other way it can be wrong. It was counted off
+    // `chunk.length` BEFORE `Buffer.from(chunk)` — characters for a string
+    // chunk, bytes for the Buffer it becomes — so a two-character `üü` counted
+    // 2 and concatenated 4, and `Buffer.concat(chunks, 2)` returned half the
+    // value with `ok: true`. That is the silent truncation the header calls
+    // this step's own threat, arriving through the door the export opened.
+    //
+    // Not reachable through the step: undici yields `Uint8Array`, where the
+    // two counts agree. So this case is about what the export promises the
+    // caller it was opened for, which is the only reason it is exported.
+    const whole = Buffer.from("üü", "utf8");
+    const body = await bodyWithin(
+      { headers: { get: () => null }, body: (async function* stream() { yield "ü"; yield "ü"; })() },
+      4 * 1024 * 1024,
+    );
+    expect(body.ok, JSON.stringify(body)).toBe(true);
+    expect(body.bytes!.equals(whole), "the value came back short of the bytes it was made of").toBe(true);
+    // And the ceiling is that same count, so the miscount let a body walk past
+    // it as well: measured before the fix, six characters of twelve bytes came
+    // back `ok` under an eight-byte ceiling.
+    const over = await bodyWithin(
+      { headers: { get: () => null }, body: (async function* stream() { yield "ü".repeat(6); })() },
+      8,
+    );
+    expect(over.ok, "twelve bytes came back ok under an eight-byte ceiling").toBe(false);
+  });
+
   it("refuses gzip bytes that call themselves identity", async () => {
     // The header says what the origin chose to say; the bytes are gzip. Nothing
     // in the exchange can tell them apart — the digest can.
@@ -999,11 +1044,55 @@ describe("the carrier fetches from our origin and nowhere else", () => {
       expect(plain.out, "the repository variable's secret reached the deploy log").not.toContain(secret);
       expect(carried(out), plain.out).toEqual([CSS_NAME]);
       // And on the paths that print the value as it arrived, before any parse
-      // has had a chance to clean it.
-      const refused = await carry(`ftp://reader:${secret}@permitrulebook.com/`, ["--dist", dist()]);
-      expect(refused.status, refused.out).toBe(0);
-      expect(refused.out, "a value refused unparsed took the secret into the log with it").not.toContain(secret);
+      // has had a chance to clean it. The redaction was weakest exactly here:
+      // it required a literal `://`, and these are the values that reach it —
+      // by construction the ones that failed `^https?://` or failed `new URL`,
+      // the population where `://` is most likely to be absent. Measured on
+      // the real process, round 8: the two schemeless shapes printed the
+      // password three times each, one of them the run summary — the same
+      // shape and the same count as the round-6 finding the redaction was
+      // written for. A guard that holds only for the values it happens to
+      // recognise is not a guard; what holds is not printing a value that did
+      // not parse.
+      for (const [label, value] of [
+        ["another scheme", `ftp://reader:${secret}@permitrulebook.com/`],
+        ["no scheme at all", `u:${secret}@permitrulebook.com/`],
+        ["protocol-relative", `//reader:${secret}@permitrulebook.com/`],
+      ] as [string, string][]) {
+        const refused = await carry(value, ["--dist", dist()]);
+        expect(refused.status, `${label}: ${refused.out}`).toBe(0);
+        expect(refused.out, `${label}: a value refused unparsed took the secret into the log with it`).not.toContain(secret);
+        // Positive, so the absences above cannot be the whole of the case: the
+        // line still says which variable was unusable, which is the diagnostic
+        // the value itself was standing in for.
+        expect(refused.out, `${label}: nothing in the log says which variable was unusable`).toContain("CARRY_ORIGIN");
+      }
     } finally { live.close(); }
+  });
+
+  it("names no host on the summary line that no socket was opened on", async () => {
+    // The counted line says which origin this run read, and it exists to be
+    // read during an incident. The redaction it went through was greedy to the
+    // last `@` anywhere in the value, which does not lose a host — it
+    // SUBSTITUTES one: a valid origin whose query carries an `@` came out as
+    // the query's own host. Measured, round 8:
+    // `http://permitrulebook.com/x?to=a@evil.example` printed `0 asset(s)
+    // would be carried from http://evil.example`.
+    //
+    // Reachable with an ordinary origin, because the bail this run takes is
+    // the one before the page is parsed — no build directory — which leaves
+    // `from` empty and drops the line back onto the value as it arrived.
+    //
+    // The rule that removes this and the credential leak above together, and
+    // the regex with them: never print a value that did not parse. What parsed
+    // is `from`, and `new URL` has already dropped the credentials from it;
+    // what did not parse has no diagnostic worth, so the line names the
+    // variable and says what was wrong with it instead.
+    const run = await carry("http://permitrulebook.com/x?to=a@evil.example", ["--dist", ""], temp());
+    expect(run.status, run.out).toBe(0);
+    expect(summary(run.out), "the summary named a host this run never opened a socket on").not.toContain("evil.example");
+    expect(summary(run.out), "the summary named an origin no page was read from").not.toContain("permitrulebook.com");
+    expect(summary(run.out), "the summary says nothing about where it was pointed").toContain("CARRY_ORIGIN");
   });
 
   it("reads the address it checked, whitespace and all", async () => {
@@ -1142,18 +1231,27 @@ describe("the carrier cannot fail the deploy", () => {
       // Not a truncated stylesheet on disk: nothing at all.
       expect(carried(out)).toEqual([]);
       expect(run.out).toContain(CSS_NAME);
-      // This case has no `refusedOver` mark of its own, and that is a decision
-      // rather than an omission. A socket that dies mid-body and a clock that
-      // runs out reach the same line of this step by the same route, and the
-      // only string that tells them apart is the underlying cause — undici's
-      // `fetch failed (other side closed)` against Node's `The operation was
-      // aborted due to timeout`. Pinning the first makes a dependency's
-      // wording a red deploy; so what is asserted is the second's ABSENCE,
-      // which can only ever weaken if that wording moves, never go red for it.
-      // The origin here destroys the socket in the same tick as the headers,
-      // so a starved runner has almost nothing to starve (round 7).
-      expect(run.out, "the socket died on the step's own clock, not on the origin's silence")
-        .not.toContain("aborted due to timeout");
+      // The mark is `<name>: its body`, and every word of it is this step's
+      // own: that prefix is written at the one branch this step reaches when
+      // an answer's headers were read, a body was begun, and the body is what
+      // failed. The cause after it belongs to undici — `terminated (other side
+      // closed)` today — and is not asserted, because a dependency's wording
+      // is not this step's decision.
+      //
+      // This replaces an assertion that the run did NOT say "aborted due to
+      // timeout" (round 7). The reasoning for that was right about the risk
+      // and wrong about the instrument: an absence can only ever weaken, and
+      // it weakens silently — the day Node's wording moves it goes vacuously
+      // true and this case passes on a starved runner that exercised nothing
+      // but the clock. The mark rots the other way: it goes red. Of the three
+      // shapes a starved runner reaches, two carry no `its body` at all — the
+      // budget spent before the request, and the fetch giving up before any
+      // body — so this case now fails on them instead of passing. The third, a
+      // clock that fires mid-body, does print `its body`, and no string in
+      // this step separates it from a socket that died there; what shrinks
+      // that window is the origin above, which queues its drop on the flush of
+      // the very bytes the client is reading (round 8). See `refusedOver`.
+      refusedOver(run.out, `${CSS_NAME}: its body`, "reading the body far enough to find it ended early");
     } finally { live.close(); }
   });
 

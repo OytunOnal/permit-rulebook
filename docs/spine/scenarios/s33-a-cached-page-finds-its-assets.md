@@ -169,7 +169,23 @@ names two, and a step that validated nothing should not sound like one that
 found nothing wrong. And a **failed digest publish** is an annotation rather
 than a plain line, because on a deploy whose page names are all already built
 it read exactly like a healthy run while the next deploy was guaranteed to
-carry nothing.
+carry nothing. One further **narrowing** belongs on this record, of point 1,
+which the two deviations above are the model for: point 1 asks for the
+`/_astro/…` names the live page **references**, and what this step reads is
+the reference shapes **Astro emits** — a quoted attribute value with no
+whitespace in it. A name a page holds any other way is not seen, so it is not
+carried and nothing says so: measured, round 7, the reader is blind to
+`/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare relative `_astro/x.css`,
+`/_astro\x.css` and a reference with a tab in it, three of which a browser
+resolves to one of this deploy's real assets. The narrowing is deliberate —
+honouring what a browser resolves means `<base href>`, character references,
+`srcset` and CSS `url()`, and half a browser reads strings no reader asks for
+while still missing the ones it cannot parse — and it is declared here rather
+than left to the code and to the `pipeline.test.ts` case that pins it, because
+that case reads **this build's** `dist/index.html` while the step reads the
+**live** page: it cannot go red for a live page whose reference shapes differ
+from what this build emits, which is exactly the page the "references none of
+this deploy's assets" annotation exists for.
 
 ## How it is proved
 
