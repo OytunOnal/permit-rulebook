@@ -374,7 +374,9 @@ deploy checks a carried byte against.
 _Avoid_: manifest, checksum file, lockfile
 
 **The three outcomes**:
-The step's whole verdict vocabulary — nothing to do · could not look · looked
-and something is still missing. Which one a run ended in is what its last
-lines say, and what tells a healthy deploy from a silent one.
+The step's verdict on the page it read — nothing to do · could not look ·
+looked and something is still missing. The third has three shapes and a run
+may print more than one. Which outcome a run ended in is what its last lines
+say, and what tells a healthy deploy from a silent one. The annotation for a
+failed digest publish is not one of them: its subject is the next deploy.
 _Avoid_: success/failure, pass/fail (the step has no failure)
