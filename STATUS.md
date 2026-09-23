@@ -31,17 +31,16 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   09-21, both source-side (403s, timeouts); 09-22 read all 46 clean. The
   retry slice is queued beside #17.
 - In flight: **s33 — a cached page still finds its assets** (approved
-  2026-09-23, in `../permit-rulebook-s33`). Built, then three fix rounds on
-  three axes: the carrier now fetches only from `$SITE_URL`, refuses a
-  re-encoded or empty body, counts requests not successes, and — the third
-  round's whole point — checks every carried byte against `asset-digests.txt`,
-  a list each build publishes beside its page, because every guard built on the
-  origin's own headers was circular (a `content-length` that lies low, or is
-  absent, truncates in silence). Round 4's review is running. Two consequences
-  the roadmap must hold: the first deploy after the merge publishes the list and
-  carries nothing, so the carry is only exercised on the **second** deploy; and
-  nothing in the repo consumes the step's output — a `::warning::` is the only
-  alarm when the window is open.
+  2026-09-23, built in `../permit-rulebook-s33`, reviewed and recorded).
+  Nine delta rounds on three axes, eighteen reviews, 14 hard findings closed
+  (11 Security, 2 Spec, 1 Standards); the record is
+  `docs/spine/reviews/s33.md`, `head: 3e7ba76`. The last round came back
+  with no hard finding on any axis. What the slice does: each build publishes
+  `asset-digests.txt` beside its page, and the next deploy carries a
+  previous-generation asset only if the bytes hash to what our own build
+  recorded — because every guard built on the origin's own headers was
+  circular. Waiting on the human: the merge word, the ratification of point
+  1's narrowing, and a re-stated waiver naming the open entry.
 - The walk's three adjustments are with the human, unpicked: an English
   handle on every foreign quote; salary bands scoped to the country (and the
   question count's first screen); a home for *Start over* mid-interview with a
@@ -71,17 +70,41 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   pageviews of one desktop client at 897 px, not reproducible here in 15
   seeded arrivals at five widths — next read 2026-09-30; the pre-registered numbers on 2026-10-09 with the isolated
   walk.
-- One word is blocked on the human: s33's merge, once round 4's review is
-  recorded.
+- One Security finding stays open and only the human's word can close it:
+  the step fetches from `$SITE_URL`, a repository variable, so whoever can
+  set it can have bytes of their choosing published from our own origin,
+  where `script-src 'self'` covers them and there is no SRI. Narrowed over
+  six rounds, not closed; it is the record's `open with reason:` line.
 
 ## What is expected from you
 
 
 
-- [ ] **s33's merge word**, once round 4's review is written to
-      `docs/spine/reviews/s33.md`. Pass = "merge". Why yours: merge is the
-      deploy, and this slice publishes bytes it fetched from the internet —
-      and its real-green cannot be read until the deploy after it.
+- [ ] **s33: three words, in one message if you like.** (1) `merge` — site
+      only, and merge is the deploy. (2) Ratify or refuse **point 1's
+      narrowing**: point 1 asks for the `/_astro/…` names the live page
+      references; the step reads quoted strings holding `/_astro/` wherever
+      the page holds them, and is blind to `/_ASTRO/x.css`,
+      `/_astro%2Fx.css`, a bare relative `_astro/x.css`, a \ separator
+      form, and a reference with a tab in it — three of which a browser
+      resolves to a real asset, so they are not carried and nothing says so.
+      Chasing them means writing a second HTML parser;
+      `tests/pipeline.test.ts` goes red if this build's own page ever holds
+      a shape the reader misses. Pass = "tamam" or "genişlet". (3) `waive`
+      again: the record now holds one open Security entry, so the ten
+      pre-record waivers must name it —
+      `skips: .github/workflows/pages.yml:67` — or the guard ignores them.
+      Why yours: merge is the deploy, a narrowing of an approved requirement
+      is a gate, and a waiver is given in sight of what it waives.
+- [ ] **s33's real-green cannot be read on its own deploy**, and the record
+      says so: the slice touches nothing under `src/`, so both live assets
+      rebuild under the same hashes and the proof-list bullet passes with no
+      byte carried. Read it in two parts — on the first deploy after this one
+      that changes a file under `src/`, `/asset-digests.txt` answers 200
+      and the log says `published asset-digests.txt: N asset(s)`; on the
+      deploy after **that**, the previous generation's two `/_astro/` names
+      still answer 200 and the log names them as carried. Pass = those two
+      readings. Why yours: they are calendar-spaced, not session-spaced.
 - [ ] **Pick from the walk's three adjustments** (report §Recommended
       adjustments): 1 the foreign-quote handle · 2 country-scoped salary bands
       and the honest count · 3 *Start over* mid-interview and the resumed word.
