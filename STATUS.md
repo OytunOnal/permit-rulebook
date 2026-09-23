@@ -15,8 +15,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - v1.2: 10 of 14 planned steps passed for real (ten slices s23–s33); 4
   queued — #17, the watch retry (from #21), then two steward items (Back on
   a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
-  all six `later` candidates kept, clock reset. Roadmap: 21 candidates ahead, 9 unversioned under
-  `later` (three moved from the old backlog; clock reset 2026-09-18).
+  all six `later` candidates kept, clock reset. Roadmap: 23 candidates ahead, 11 unversioned under
+  `later` (two added 2026-09-23 from s33: the digest-list split, and a
+  Security-only read of the launch code — human: "uygula") (three moved from the old backlog; clock reset 2026-09-18).
 - Pace: 10 slices real-green in two days (s23–s32, 2026-09-17 → 18), ≈ 0.2
   days per slice; 3 to go → under a week at this pace — but #17 is larger
   than the ones behind (a browser in CI, a new watch strategy), so read it as

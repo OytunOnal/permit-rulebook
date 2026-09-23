@@ -167,6 +167,16 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
 
 _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept. Fork 2026-09-23 (human: "hepsi keep"): all six kept again — still no intake line or metric reading points at any of them; the numbers that could are the pre-registered readings of 2026-10-09._
 
+- **A Security-only read of the launch code** (from s33's waiver,
+  2026-09-23; human: "uygula") · the ten pre-record slices s1–s8-algeria are
+  the whole product — the interview engine, the saved record, the four
+  countries' data, the public pages — and were reviewed under their day's
+  two-axis discipline; no Security axis has ever read them. One axis, not
+  three; a findings list, not a record per slice; scoped to the code that is
+  live today · bet: s33 drew 11 hard Security findings from one new file in
+  nine rounds, and that same eye has never looked at the ten files readers
+  actually use. Its clock is a reading, not the calendar: an intake line, a
+  metric, or an incident that points at the launch code promotes it.
 - **Split the digest list out of the carrier** (`scripts/asset-digests.mjs`,
   from s33's review, 2026-09-23) · `carry-assets.mjs` is 1,024 lines at 674
   comment / 313 code, and the digest list is already its own thing — its own
