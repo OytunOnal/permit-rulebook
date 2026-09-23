@@ -226,9 +226,17 @@ page that redirects or meta-refreshes to a third party on load is refused as
 surely as a step that presses its way there, while
 a redirect around the source's own site (the Opportunity Card's cookie check)
 still reads; a move within that origin is allowed and the address it was read
-at is logged beside the timing, because the origin is the trust line and a
-sub-path is not. The fetch tier got the same guard in the same round, being
-the same harm one tier over. **Point 5 gained a clause it did not ask for**:
+at is logged — as its own `watch:read_at` event, on the fetch tier as well as
+the browser one — because the origin is the trust line and a sub-path is not.
+The fetch tier got the same guard in the same round, being the same harm one
+tier over, and then a rewrite of its own that the nine points do not cover: it
+judges a redirect BEFORE taking it, so an off-site target is refused without
+ever being requested, the status reported is the redirect's own rather than a
+stranger's, and a chain is capped at five hops within the source's site. One
+housekeeping note for the record: `ind-turkish-citizens` was left unread by
+the runner on 2026-09-23 through a transient fetch failure, and was re-read
+before the merge with `--only --commit` from a developer machine — the state
+diff was the unread list and nothing else. **Point 5 gained a clause it did not ask for**:
 the browser sends `x-source-contact` beside the watch's name, as the fetcher
 has since data #18, so a host that wants to block this reader can reach its
 operator instead. **Point 6's proof list was met by the

@@ -363,7 +363,8 @@ authority's. A move within the entry's own origin is read, and the address it
 was read at travels back with the reading, logged as **`read_at`** on both
 tiers when it differs from the address asked for — a redirect the fetcher
 followed, a form that posts back to a sub-path, a script that swapped the
-document. `read_at` is always an address; the day a reading was taken is a
+document. `read_at` is always an address, shortened past 200 characters
+because the address is the page's to choose; the day a reading was taken is a
 snapshot's `retrieved_at`.
 _Avoid_: headless tier, rendered tier, scraping
 
