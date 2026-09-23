@@ -5,9 +5,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-23, metric 6 read off target (CLS good 88 %) and the
-  isolated full walk run the same day: 38/50, no blocker, no layout shift on
-  117 arrivals (`docs/spine/critiques/2026-09-23-metric-reading-full.md`).
+- Last boundary: 2026-09-23, metric 6 read off target, the walk run the same
+  day (38/50, no blocker), the breakdown taken and the lead chased: not
+  reproduced — but the chase found that a cached page can outlive its assets.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: nothing — the next slice is v1.2's queue head, data #17 (the
   browser-read strategy for the IND).
@@ -45,13 +45,22 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   drawn by Spine's generator (six tabs); STATUS short; KANBAN's backlog
   folded into the roadmap; ADRs folded into DECISIONS rows.
 - Metrics: 1 and 2 read 2026-09-22 (liveness on target, the watch not); 6
-  read 2026-09-23 (good 88 %, off the 92 % target; poor 0 %), next read
-  2026-09-30 — the breakdown is with the human, no slice queued until it and
-  the re-read agree on a target; the pre-registered numbers on 2026-10-09 with the isolated
+  read 2026-09-23 (good 88 %, off target) and broken down the same day: two
+  pageviews of one desktop client at 897 px, not reproducible here in 15
+  seeded arrivals at five widths — next read 2026-09-30; the pre-registered numbers on 2026-10-09 with the isolated
   walk.
 - Nothing blocked on the human today.
 
 ## What is expected from you
+
+- [ ] **One fork: what to do about a cached page outliving its assets**
+      (`/` is cached ten minutes; `_astro/*` is replaced every deploy and the
+      old names 404). A — carry the previous build's assets forward in the
+      deploy (one slice in this repo, no account touched). B — put the site
+      behind Cloudflare's proxy and shorten the HTML cache (a DNS change and a
+      cache rule in your account). C — accept the ten-minute window per deploy
+      and note it. Pass = a letter. Why yours: B touches your DNS and A
+      competes with #17 for the queue.
 
 - [ ] **Pick from the walk's three adjustments** (report §Recommended
       adjustments): 1 the foreign-quote handle · 2 country-scoped salary bands
@@ -70,13 +79,6 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
       derive it from the page. Pass = three answers; the third may become a
       copy fix.
 
-- [ ] **Break the CLS reading down once** at Cloudflare → Web Analytics →
-      Core Web Vitals for permitrulebook.com: switch the view to per-page and
-      to device/browser for 16–23 Sep, bots excluded, and say which page and
-      which device carry the 12 % "needs improvement". Pass = a page path and
-      a device class (or "the view does not break down", which is an answer
-      too). Why yours: the dashboard is behind your Cloudflare login; the
-      session measured everything it could reach and found no counted shift.
 
 _(Bing → IndexNow confirmed by the human 2026-09-22: the submissions are listed.)_
 
