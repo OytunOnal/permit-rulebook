@@ -166,14 +166,13 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
 });
 
 /**
- * s33 — the step that carries the previous generation's assets forward.
+ * s33 — the step that carries the previous generation's assets forward. Why it
+ * exists is written in `scripts/carry-assets.mjs`'s own header; what is pinned
+ * here is what the step has to cover and where it sits in the job.
  *
- * `/` is served with `Cache-Control: max-age=600` and the two files it needs
- * are content-hashed, so a reader who returns inside those ten minutes asks
- * for files the last deploy removed (measured live 2026-09-23: three 404s).
- * The build now copies the live generation into `dist/` before the artifact
- * goes up. Two things about that step are worth pinning: what it has to cover,
- * and that it can never take the deploy down with it.
+ * That it cannot fail the deploy is proved by running it, in
+ * `tests/s33.test.ts` — a workflow file cannot show that, and neither can
+ * reading the script's source.
  */
 describe("a cached page still finds its assets", () => {
   const dist = join(root, "dist");
@@ -203,7 +202,7 @@ describe("a cached page still finds its assets", () => {
     expect(pages.sort()).toEqual(["index.html"]);
   });
 
-  it("the build job runs it before the upload, with no action and no way to fail", () => {
+  it("the build job runs it before the upload, and pulls in no action to do it", () => {
     const pages = read(join(workflows, "pages.yml"));
     const build = pages.slice(pages.indexOf(`${LF}  build:`), pages.indexOf(`${LF}  pin:`));
     const step = build.indexOf("node scripts/carry-assets.mjs");
@@ -217,10 +216,5 @@ describe("a cached page still finds its assets", () => {
     // supply chain of its own (the pinning case above).
     const name = build.lastIndexOf("- name:", step);
     expect(build.slice(name, step), "the carrier step pulls in an action").not.toContain("uses:");
-    // And it cannot fail the deploy. The script's own last line is the guard —
-    // a shell `||` in the workflow would hide a crash instead of surviving one.
-    const carrier = read(join(root, "scripts", "carry-assets.mjs"));
-    expect(carrier, "the carrier does not always exit 0").toContain("process.exit(0)");
-    expect(carrier, "the carrier can exit non-zero").not.toMatch(/process\.exit\((?!0\))/);
   });
 });
