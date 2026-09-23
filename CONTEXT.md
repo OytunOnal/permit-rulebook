@@ -332,18 +332,43 @@ official-recheck reminder) but announces that values may have moved.
 _Avoid_: extra source, misc
 
 **Human tier**:
-A source no machine here can read — since s5f that means a page whose
-operative text never reaches a fetch (a bot wall, a form-gated render that
-stays a shell), not a PDF: embedded-font PDFs are read by Pdf-text, and a
-scanned one is declared Scanned-image rather than left for a person. A
-human-tier entry carries a verification age and raises reminders instead of
-being fetched. Empty from 2026-09-07 to 2026-09-10 (`human_tier: 0`); since
-then it holds two — a Conseil d'État decision on Legifrance and the Blue Card
-directive on EUR-Lex, both of which a real browser reads and this fetcher does
-not. The tier measures the watch's reach, not the source's standing: the
-number is read that way, and a browser-driven read for bot-walled pages is the
-candidate that would empty it again.
-_Avoid_: manual source, glyph-encoded PDF (a reason it once had)
+A source **no client here can read** — since s34 that means neither a fetch nor
+a real browser reaches its operative text, because anything a browser reaches
+is a Browser tier entry instead. A human-tier entry carries a verification age
+and raises reminders instead of being fetched. It held nine entries after s14;
+since 2026-09-23 it holds two, and exactly **one dataset sentence**
+(`human_tier: 1`): the Conseil d'État decision on Legifrance, where headless
+Chrome from the runner met a Cloudflare challenge — a wall against the client —
+and the official statute recheck on gesetze-im-internet, reachable only through
+a VPN, which is a geography and not a client. The tier measures the watch's
+reach, not the source's standing, and the number is read that way.
+_Avoid_: manual source, glyph-encoded PDF (a reason it once had), bot-walled
+page (most are Browser tier now)
+
+**Browser tier**:
+A watched page read **as rendered**: headless Chrome opens it, performs the
+entry's Watch steps, waits for it to settle, and hands back the document's
+HTML — and from there it is the html strategy exactly, tag-stripped,
+normalised and sliced, with a missing marker reported unreachable. It is for a
+page whose operative text never reaches a fetch but does reach a browser: a
+script-rendered requirement list, a cookie round-trip, a challenge that answers
+a fetcher with an empty body. Seven entries since 2026-09-23 — the five IND
+route pages, the Opportunity Card's BMI notice and the Blue Card directive on
+EUR-Lex. It is a strategy that can fail where the human arm could not, and the
+day it cannot open a browser is a red day, not a quiet one.
+_Avoid_: headless tier, rendered tier, scraping
+
+**Watch step**:
+One declared thing a Browser tier entry does to a page before it is read, from
+a closed vocabulary the coverage gate enforces: choose an option in a field
+(`select`), answer a yes/no question (`answer`), press a control (`press`),
+open every collapsed block (`expand`). Each names what it acts on by the
+control's **accessible name**, never by a CSS selector: a class name is ours to
+lose, a label is what the authority shows a person. An entry with no steps is
+simply rendered; a step that cannot be performed makes the entry unreachable
+with the step named, never a green day that read the wrong page.
+_Avoid_: action, script, macro, recipe; plain "step" (taken by Step-gated row
+and Leverage step)
 
 **Flag**:
 The artifact a detected change or due reminder produces — named source,
