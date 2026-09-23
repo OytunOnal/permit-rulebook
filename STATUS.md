@@ -5,9 +5,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-23, metric 6 read off target (CLS good 88 %); the
-  isolated full walk is running now (its report and screenshots land in
-  `docs/spine/critiques/2026-09-23-metric-reading-full*`).
+- Last boundary: 2026-09-23, metric 6 read off target (CLS good 88 %) and the
+  isolated full walk run the same day: 38/50, no blocker, no layout shift on
+  117 arrivals (`docs/spine/critiques/2026-09-23-metric-reading-full.md`).
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: nothing — the next slice is v1.2's queue head, data #17 (the
   browser-read strategy for the IND).
@@ -29,6 +29,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - Metric 2 (the daily watch finishes) is off target: two red days, 09-20 and
   09-21, both source-side (403s, timeouts); 09-22 read all 46 clean. The
   retry slice is queued beside #17.
+- The walk's three adjustments are with the human, unpicked: an English
+  handle on every foreign quote; salary bands scoped to the country (and the
+  question count's first screen); a home for *Start over* mid-interview with a
+  word when a session resumes.
 - The one open thread: #17's scenario is next — a `browser` watch strategy
   (headless Chrome on the runner) bringing the five IND pages and the BMI
   sentinel back from the human tier.
@@ -48,6 +52,23 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - Nothing blocked on the human today.
 
 ## What is expected from you
+
+- [ ] **Pick from the walk's three adjustments** (report §Recommended
+      adjustments): 1 the foreign-quote handle · 2 country-scoped salary bands
+      and the honest count · 3 *Start over* mid-interview and the resumed word.
+      Pass = "apply all", "apply 1 and 2", "apply 1", or none with a reason;
+      each stands alone and each becomes a queue item under v1.2. Why yours:
+      adjustment 1 changes a promise (what the reader is shown of a foreign
+      source), and priority against #17 is a versioning call.
+- [ ] **Three checks only you can make** (report §For the human): tap a
+      declared row on a results screen on a real touch device (does it open
+      that question in one tap, with the ✓ on your old answer?); run a screen
+      reader over the results screen and say whether the announcement order
+      makes sense; and say which populations `/data/`'s two counts describe
+      ("QUOTED VALUES — 185" against "Prose provenance — 163 sourced, 52
+      ours") — the screen does not tell a reader, and the session could not
+      derive it from the page. Pass = three answers; the third may become a
+      copy fix.
 
 - [ ] **Break the CLS reading down once** at Cloudflare → Web Analytics →
       Core Web Vitals for permitrulebook.com: switch the view to per-page and
