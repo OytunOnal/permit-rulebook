@@ -64,7 +64,7 @@ mark `promoted <date>`; the board's done column holds the step.
 - **the copy pass** (a route page names its own unread sources, F3 — moved from the `v1.x` bucket 2026-09-17) · promoted 2026-09-17 · s23
 
 **Queue** (in order; the first unpromoted line is the next slice)
-- **Data #17 — the browser-read strategy for the IND** · the road back from the
+- **Data #17 — the browser-read strategy for the IND** · proposed 2026-09-23 · s34 · the road back from the
   human tier (five IND route pages read by a person since s14; the BMI
   sentinel since s29): headless Chrome from the runner reads what the
   fetcher cannot (s14 measured yes) · bet: a `browser` watch strategy keeps
@@ -213,7 +213,13 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-_(empty)_
+- **s34 — the watch reads the IND itself again** · proposed 2026-09-23,
+  awaiting the human's approval
+  (`docs/spine/scenarios/s34-the-watch-reads-the-ind-itself-again.md`). Data
+  #17: a `browser` strategy — headless Chrome on the runner, steps declared
+  on the entry — takes seven entries off the human tier (the five IND route
+  pages, the BMI notice, EUR-Lex); Legifrance and gesetze stay, with the
+  reason. v1.2 queue head.
 
 ## mock-green
 

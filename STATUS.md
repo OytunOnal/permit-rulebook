@@ -9,9 +9,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   `asset-digests.txt` and carries the previous generation against it. Nine
   delta rounds; the record is `docs/spine/reviews/s33.md`.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: nothing — the next slice is v1.2's queue head, data #17 (the
-  browser-read strategy for the IND). Point 1's narrowing ratified ("tamam"); one
-  word on s33 is still open (below).
+- In flight: **s34 — the watch reads the IND itself again** (data #17),
+  proposed 2026-09-23 and waiting for the human's approval. s33 is closed on
+  all three words.
 - v1.2: 10 of 14 planned steps passed for real (ten slices s23–s33); 4
   queued — #17, the watch retry (from #21), then two steward items (Back on
   a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
@@ -50,6 +50,20 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   six rounds, not closed; it is the record's `open with reason:` line.
 
 ## What is expected from you
+
+- [ ] **Approve s34's scenario** —
+      `docs/spine/scenarios/s34-the-watch-reads-the-ind-itself-again.md`. A
+      `browser` watch strategy: headless Chrome on the runner renders the page,
+      performs the steps the entry declares (the IND form: nationality Türkiye,
+      no permit, none expired; *View information*; open the collapsed blocks),
+      and from there the read is the html strategy's — slice markers, text
+      snapshot, the quote gate. Seven entries leave the human tier (five IND,
+      the BMI notice, EUR-Lex); Legifrance (a Cloudflare challenge) and gesetze
+      (a VPN geography) stay. `human_tier` goes 40 → 1. Stated bet: seven
+      entries move from an arm that cannot fail to one that can, and metric 2
+      counts red days — the retry slice is next in the same file. Pass =
+      "onaylıyorum", or the point to change. Why yours: it is a slice, and it
+      changes what the site claims to re-read daily.
 
 
 
