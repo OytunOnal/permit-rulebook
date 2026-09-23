@@ -226,8 +226,8 @@ _(empty — everything real-green so far is stamped into done)_
   hash to what our own build recorded — because every guard built on the
   origin's own headers was the origin vouching for itself. Nine delta rounds
   on three axes, 14 hard findings closed; one Security entry stays open
-  (the origin is a repository variable) and point 1's narrowing awaits the
-  human's ratification (`docs/spine/reviews/s33.md`).
+  (the origin is a repository variable) and point 1's narrowing was ratified
+  the same day (human: "tamam"; `docs/spine/reviews/s33.md`).
 
 - **s32 — a statement names the question that asks it** · real-green
   2026-09-18 (human: "merge"; data `295f204`, site `f7832f0`). v1.2 fix from

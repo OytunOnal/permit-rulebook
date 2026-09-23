@@ -10,7 +10,8 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   delta rounds; the record is `docs/spine/reviews/s33.md`.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: nothing — the next slice is v1.2's queue head, data #17 (the
-  browser-read strategy for the IND). Two words on s33 are still open (below).
+  browser-read strategy for the IND). Point 1's narrowing ratified ("tamam"); one
+  word on s33 is still open (below).
 - v1.2: 10 of 14 planned steps passed for real (ten slices s23–s33); 4
   queued — #17, the watch retry (from #21), then two steward items (Back on
   a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
@@ -51,20 +52,11 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 
 
-- [ ] **s33: two words left.** (1) Ratify or refuse **point 1's narrowing**:
-      point 1 asks for the `/_astro/…` names the live page references; the
-      step reads quoted strings holding `/_astro/` wherever the page holds
-      them, and is blind to `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare
-      relative `_astro/x.css`, a backslash-separator form, and a reference
-      with a tab in it — three of which a browser resolves to a real asset,
-      so they are not carried and nothing says so. Chasing them means a
-      second HTML parser; `tests/pipeline.test.ts` goes red if this build's
-      own page ever holds a shape the reader misses. Pass = "tamam" or
-      "genişlet". (2) `waive` again: the record holds one open Security
-      entry, so the ten pre-record waivers must name it —
-      `skips: .github/workflows/pages.yml:67` — or the guard ignores them.
-      Why yours: a narrowing of an approved requirement is a gate, and a
-      waiver is given in sight of what it waives.
+- [ ] **s33: one word left — `waive`.** The record holds one open Security
+      entry (the origin is a repository variable), so the ten pre-record
+      waivers must name it — `skips: .github/workflows/pages.yml:67` — or
+      the guard ignores them and lists the ten slices every turn. Pass =
+      "waive". Why yours: a waiver is given in sight of what it waives.
 - [ ] **s33's real-green cannot be read on its own deploy**, and the record
       says so: the slice touches nothing under `src/`, so both live assets
       rebuild under the same hashes and the proof-list bullet passes with no
