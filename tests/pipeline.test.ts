@@ -223,19 +223,49 @@ describe("a cached page still finds its assets", () => {
    * thing before the artifact is sealed, because the block ends where the
    * upload begins. An edit to this step then goes through a deliberate edit
    * here, which is the point of a step nobody may quietly change.
+   *
+   * The `run:` takes NO arguments, and that is the clause round 4 added. It
+   * used to read `node scripts/carry-assets.mjs --origin "$SITE_URL"`, which
+   * put a repository variable where the script reads flags: `SITE_URL` set to
+   * `--dry-run` made the step write no digest list and exit 0, and set to
+   * `--dist=<elsewhere>` put the list in another directory while the real
+   * `dist/` shipped without one — either of which leaves every later deploy
+   * with nothing to check a carried byte against, green, from a value no code
+   * review sees (Security review, round 4). The address travels as an
+   * environment value now, which cannot be read as a flag, and it is pinned
+   * here beside the rest of the block.
    */
   it("the build job runs it, verbatim, as the last step before the upload", () => {
     const pages = read(join(workflows, "pages.yml"));
     // The build job's own text: the carrier has to be in THIS job, where
-    // `dist/` is on disk and the artifact is made.
-    const build = pages.slice(pages.indexOf(`${LF}  build:${LF}`), pages.indexOf(`${LF}  pin:${LF}`));
-    expect(build, "the build job is not where it was").not.toBe("");
+    // `dist/` is on disk and the artifact is made. Both ends are asserted
+    // before the slice, because `slice(i, -1)` is a legal call that spans to
+    // the end of the file: renaming the `pin:` job used to make the end index
+    // `-1`, and this case went on passing while it no longer checked the one
+    // thing its name claims (Standards review, round 4 — the one mutation of
+    // thirteen that stayed green).
+    const from = pages.indexOf(`${LF}  build:${LF}`);
+    const to = pages.indexOf(`${LF}  pin:${LF}`);
+    expect(from, "the build job is not where it was").toBeGreaterThanOrEqual(0);
+    expect(to, "the pin job is not where it was, so this case can no longer tell which job the carrier is in")
+      .toBeGreaterThan(from);
+    const build = pages.slice(from, to);
     // Why it sits here rather than anywhere else is the comment beside it in
     // `pages.yml`, which owns that reason.
-    expect(build).toContain(
+    expect(
+      build,
+      "the carrier step in pages.yml is not the block this case pins. Every clause of point 4 is in that"
+      + " one string, so a diff of a 200-character literal is the wrong place to read this: compare the step"
+      + " in pages.yml with the literal below, line by line. Its name, its working directory, the origin"
+      + " arriving as an environment value rather than as argv, a `run:` of one command with nothing"
+      + " appended, and the upload immediately after it are each load-bearing — and each is a deliberate"
+      + " edit here when the step is meant to change.",
+    ).toContain(
       `      - name: Carry the live site's assets forward, so a cached page still finds them${LF}`
       + `        working-directory: site${LF}`
-      + `        run: node scripts/carry-assets.mjs --origin "$SITE_URL"${LF}`
+      + `        env:${LF}`
+      + `          CARRY_ORIGIN: \${{ env.SITE_URL }}${LF}`
+      + `        run: node scripts/carry-assets.mjs${LF}`
       + LF
       + "      - uses: actions/upload-pages-artifact@",
     );

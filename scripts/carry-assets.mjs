@@ -30,43 +30,121 @@
  * review, 2026-09-23: the first cut promised this and exited 1 on three of
  * them).
  *
+ * ## Where the address comes from
+ *
+ * From the environment, in `CARRY_ORIGIN`, and from nowhere else.
+ *
+ * It used to come from `argv`. `pages.yml` ran
+ * `node scripts/carry-assets.mjs --origin "$SITE_URL"`, and `flag()` at the
+ * bottom of this file reads any `--name value` or `--name=value` — so the one
+ * repository variable that decides this site's address was a step away from
+ * being a flag instead. Measured with that step's exact argv (Security review,
+ * round 4): `SITE_URL=--dry-run` printed `would publish asset-digests.txt`,
+ * wrote no list and exited 0; `SITE_URL=--dist=<another directory>` put the
+ * list in that directory while the real `dist/` shipped without one. Either
+ * ships an artifact with no `asset-digests.txt` in it, so every LATER deploy
+ * has nothing to check a carried byte against and carries nothing — this step
+ * permanently off, the deploy green, from a value no code review reads. It is
+ * the `--budget-ms` failure mode the flag reader's own comment says was
+ * removed, reached from a repository variable instead.
+ *
+ * A value cannot become a flag, so the address travels as a value. `--dist`
+ * and `--dry-run` stay: they are the surface a test and a person at a terminal
+ * drive this by, and nothing in a deploy passes them. The deploy passes no
+ * argv at all, and `tests/pipeline.test.ts` pins the step's whole block, that
+ * empty command line included.
+ *
+ * There is no built-in fallback address. An origin this was not given is an
+ * origin it does not have: it says so and carries nothing, rather than
+ * quietly reaching for production from somebody else's build.
+ *
  * It fetches only from the origin it was given. A name comes out of the live
  * HTML, but the URL is always built here, from that origin — a reference to
  * another host, a protocol-relative one or a plaintext one is refused by name
  * and never fetched, and a redirect is an error rather than a hop, so nothing
  * the page says can make this reach a host nobody chose.
  *
- * And a hostile or broken origin cannot make it run away with the build: a
- * name is at most 128 characters, a body at most 4 MB, a run asks for at most
- * 20 assets and lasts at most 60 seconds, and whatever is left over is printed
- * as not carried — in a bounded list, because a page that names four hundred
- * files must not become four hundred lines in a deploy's log.
+ * ## What a page may cost this build
  *
- * ## What makes a carried byte trustworthy
+ * A name is at most 128 characters. A page is at most 512 KB and an asset at
+ * most 4 MB — two ceilings, because they bound two different things and one
+ * number for both is how the first became untrue. A run asks the origin for at
+ * most 20 assets, and whatever is left over is printed as not carried, in a
+ * bounded list, because a page that names four hundred files must not become
+ * four hundred lines in a deploy's log.
  *
- * Not HTTP. An origin declares its own `content-length`, so every guard built
- * on that declaration is the origin vouching for itself, and three measured
- * holes proved it on the real process, 2026-09-23 (Security review, round 3):
- * an answer with NO `content-length` had no length to check and put 5,000
- * bytes of a 104,000-byte stylesheet on disk under the previous generation's
- * exact name; one that declared 5,000 made undici stop there, so the bytes
- * counted equalled the bytes declared and the same truncated file was written
- * and reported carried; `content-length: 0` agreed with itself and published a
- * 0-byte file, which answers 200 with nothing — worse than the 404 this step
- * exists to fix, and silent.
+ * `BUDGET_MS` bounds how long this will WAIT ON THE NETWORK: it sizes request
+ * timeouts and it does nothing else, so a run that never waits can no more be
+ * interrupted by it than a run that waits forever can outlast it. Everything
+ * in this step that is not a request has to be cheap enough that this is not a
+ * lie, and one thing was not: reading the names out of a page was quadratic in
+ * how many distinct names the page held, and ran to completion after the body
+ * was in hand, with nothing checking a clock. Measured on the real export
+ * against a raw origin, 2026-09-23 (Security review, round 4): a 1,024,001-byte
+ * page — a quarter of the 4 MB ceiling a page then had — took 76.1 s with a
+ * 5,000 ms budget and reported no problem at all, and the curve was clean
+ * (128 KB → 1.6 s, 256 KB → 9.6 s, 512 KB → 31.3 s), so the ceiling itself was
+ * about twenty minutes of uninterruptible CPU inside a deploy job. With
+ * `cancel-in-progress: false` on the workflow's concurrency group, the next
+ * deploy queues behind it. Reproduced here at the same shape before the
+ * repair: a page of distinct names took 0.37 s at 128 KB, 1.52 s at 256 KB,
+ * 6.13 s at 512 KB and 25.5 s at 1 MB.
  *
- * So the authority sits outside the exchange, in something our own build made:
- * every build publishes `asset-digests.txt` beside its page — one line per file
- * it put in `_astro/`, the sha256 and the name — and the next deploy carries a
- * byte only if it hashes to what OUR OWN previous build said that name was. A
- * truncated body fails its digest, a truncated list fails to parse, an empty
- * body fails both. A name the list does not carry is not carried.
+ * The reading is linear now, and the page has a ceiling that is true of it:
+ * 512 KB of names reads in 17 ms, and 512 KB is forty-four times today's
+ * `index.html` (11,569 bytes). What remains uninterruptible is milliseconds.
+ *
+ * ## What makes a carried byte trustworthy, and what does not
+ *
+ * This section is the one place that reading is written down. The tests and
+ * the scenario point at it; neither repeats it.
+ *
+ * Not the HTTP exchange. An origin declares its own `content-length`, so every
+ * guard built on that declaration is the origin vouching for itself: measured
+ * on the real process against raw-socket origins, 2026-09-23, an answer with
+ * no `content-length`, one that declared less than it sent, and
+ * `content-length: 0` each put a file of the wrong length on disk under the
+ * previous generation's exact name, reported carried, exit 0.
+ *
+ * So the authority moved to something our own build made. Every build
+ * publishes `asset-digests.txt` beside its page — one line per file it put in
+ * `_astro/`, the sha256 and the name — and the next deploy writes a byte only
+ * if it hashes to what the list published beside that page says that name is.
+ *
+ * Now be exact about what that buys, because an earlier wording here claimed
+ * more, and two review axes arrived at the same objection independently (round
+ * 4). The list comes from the same origin as the page, over the same HTTP,
+ * unsigned. It moves the authority out of the HTTP FRAMING. It does not move
+ * it off the ORIGIN, and it cannot: measured, an origin serving both wrote
+ * 104,017 arbitrary bytes under the previous generation's exact name and this
+ * step reported no problem — as it must, because a list we have no way to
+ * authenticate says whatever the host that serves it says.
+ *
+ * What the list does refuse, each measured on the real process: a body
+ * truncated in transit, whatever its headers declared; a stale or foreign
+ * object served under a name from another generation; an HTML error page
+ * answered 200 under an asset's name; a list truncated in transit; an empty
+ * body; and a deploy landing between the page request and the list request,
+ * which leaves the two describing different generations. Those are the
+ * failures this step actually meets — a CDN edge, a proxy, a half-finished
+ * deploy — and every one of them ends in one file not carried rather than in a
+ * wrong file published under a name the deploy swears by.
+ *
+ * What it cannot refuse is the origin itself. If the live host serves hostile
+ * bytes under a name it also lists, this carries them into the next deploy —
+ * and so does every reader's browser, from that same host, with no help from
+ * us. The origin is the trust boundary. The list is the check that what
+ * crossed it is what that host had already published under that name.
  *
  * The page and the list are published together and fetched together, so they
- * describe the same deploy. When they do not — a proxy holding one and not the
- * other, a deploy landing between the two requests — there is nothing here to
- * check a byte against, and the run is refused whole and says THAT is why, in
- * words that are not "nothing to carry".
+ * describe the same deploy. When the list describes NONE of the names the page
+ * still needs, they are from different deploys and there is nothing here to
+ * check any byte against: the run is refused whole and says THAT is why, in
+ * words that are not "nothing to carry". When it describes some of them, the
+ * ones it does not name are the ones not carried — one stray reference in a
+ * page this step does not own is not a reason to leave the real assets behind
+ * (Security review, round 4: `/_astro/../../pwn.css` normalises to `pwn.css`,
+ * which no list of ours carries, and both real assets were left behind).
  *
  * The first deploy after this was merged finds no list live yet and carries
  * nothing that once, publishing the list the deploy after it reads.
@@ -88,18 +166,14 @@
  *    transfer while the bytes are the file. An answer that LIES about its
  *    encoding declares nothing to refuse it by, and is caught by the digest;
  *  - the declared length, when there is one, must be the number of bytes read.
- *    This is a BACKSTOP and it has never fired: undici enforces the
- *    declaration itself and throws first (a short body is "its body
- *    terminated", a duplicate header "does not match content-length header"),
- *    and a declaration that lies low makes undici stop at it, so the two
- *    numbers agree. Instrumented across 13 header shapes, 2026-09-23: zero
+ *    A backstop behind undici's own enforcement, which throws first, and it
+ *    has never fired: instrumented across 13 header shapes, 2026-09-23, zero
  *    hits. It stays because it costs a comparison and the day undici's
  *    behaviour changes it is the line that notices.
  *
- *   node scripts/carry-assets.mjs                 # the live site into ./dist
- *   node scripts/carry-assets.mjs --origin <url>  # where the live site is
- *   node scripts/carry-assets.mjs --dist <dir>    # which build to fill
- *   node scripts/carry-assets.mjs --dry-run       # fetch and report, write nothing
+ *   CARRY_ORIGIN=<url> node scripts/carry-assets.mjs  # the live site into ./dist
+ *   node scripts/carry-assets.mjs --dist <dir>        # which build to fill
+ *   node scripts/carry-assets.mjs --dry-run           # fetch and report, write nothing
  */
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -107,15 +181,12 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
- * Where the site lives when nobody says otherwise.
- *
- * The workflow always passes `--origin "$SITE_URL"`, so this is the default for
- * a person at a terminal. It is deliberately NOT `SITE_URL`'s own fallback in
- * `pages.yml`: that fallback is the Pages address a run with nothing configured
- * deploys to, and this is the custom domain the site actually answers on — the
- * one whose cached pages are the defect.
+ * The environment variable the live site's address arrives in — the header's
+ * "Where the address comes from" is why it is an environment variable and not
+ * a flag. `pages.yml` sets it from `SITE_URL`, the one place this site's
+ * address is decided, and that is the only edge that sets it in a deploy.
  */
-const DEFAULT_ORIGIN = "https://permitrulebook.com";
+const ORIGIN_VAR = "CARRY_ORIGIN";
 
 /**
  * The digest list: what this build published, so the next deploy can tell a
@@ -145,22 +216,32 @@ const TIMEOUT_MS = 10_000;
 const BUDGET_MS = 60_000;
 
 /**
- * What one origin may make this step do. Today the page names two assets of
- * 27 KB and 244 KB; these are the orders of magnitude above that, so a page
- * that has been tampered with cannot turn a deploy into a download.
+ * What one origin may make this step do. Today the page is 11,569 bytes and
+ * names two assets of 27 KB and 244 KB; these are the orders of magnitude
+ * above that, so a page that has been tampered with cannot turn a deploy into
+ * a download — or, at `MAX_PAGE_BYTES`, into a parse (see the header).
+ *
+ * A page and an asset get ceilings of their own because they bound different
+ * things: how much text is read for names, and how large a file may be written.
+ * One number for both meant the page inherited an asset's 4 MB, which is what
+ * made twenty minutes of parsing reachable (Security review, round 4).
  *
  * `MAX_ASSETS` counts requests, not files carried: four hundred references
  * that all 404 used to cost four hundred requests against our own origin,
  * because nothing that failed counted towards the ceiling (Security review,
- * 2026-09-23). The page and the digest list are two more requests, and there
- * are always exactly those two.
+ * 2026-09-23). The page is one request on top of that, always; the digest list
+ * is one more, and only when there is something to carry — `carryAssets`
+ * returns before fetching it when this build already has everything the live
+ * page names, and `getAssetDigests` says the same thing in its own words.
  *
- * `MAX_LIST_BYTES` is the same idea one file down: today's list is two lines
- * of 89 bytes, and 64 KB is six hundred assets' worth.
+ * `MAX_LIST_BYTES` is the same idea one file down: today's list is a 33-byte
+ * header and two lines of 85 and 121 bytes, and 64 KB holds five hundred more
+ * of the longer one.
  */
 const MAX_NAME = 128;
 const MAX_ASSETS = 20;
-const MAX_BYTES = 4 * 1024 * 1024;
+const MAX_PAGE_BYTES = 512 * 1024;
+const MAX_ASSET_BYTES = 4 * 1024 * 1024;
 const MAX_LIST_BYTES = 64 * 1024;
 
 /**
@@ -168,10 +249,17 @@ const MAX_LIST_BYTES = 64 * 1024;
  * written into the digest list, or be read back out of it — one rule, spelled
  * once, because a name the list can hold and the carrier would refuse (or the
  * other way round) is a hole between two spellings of the same idea.
+ *
+ * Spelled once means the STRING below, not two regexes that look alike: they
+ * were two, and they diverged — `.` and `..` were excluded by a line of
+ * JavaScript beside the first one only, so a list line naming `..` parsed
+ * while the page's reader refused the same string (Standards review, round 4).
+ * The exclusion is in the pattern now, so both ends hold it or neither does.
  */
-const PLAIN_NAME = new RegExp(`^[A-Za-z0-9._-]{1,${MAX_NAME}}$`);
+const NAME_PATTERN = `(?!\\.\\.?$)[A-Za-z0-9._-]{1,${MAX_NAME}}`;
+const PLAIN_NAME = new RegExp(`^${NAME_PATTERN}$`);
 /** One line of the list: a sha256, two spaces, a name — `sha256sum`'s shape. */
-const DIGESTS_LINE = new RegExp(`^([0-9a-f]{64}) {2}([A-Za-z0-9._-]{1,${MAX_NAME}})$`);
+const DIGESTS_LINE = new RegExp(`^([0-9a-f]{64}) {2}(${NAME_PATTERN})$`);
 
 /**
  * What may be written into `dist/_astro/`. A host that has lost a file answers
@@ -266,7 +354,15 @@ function readAssetDigests(text) {
  */
 export function readAssetNames(html, pageUrl) {
   const ours = new URL(pageUrl).origin;
+  // Both sets, and both for the same reason: a page is allowed to name the
+  // same thing as often as it likes, and answering "have I seen this?" by
+  // walking what has been kept so far is quadratic in how many distinct names
+  // the page holds. `names.includes` here cost 25.5 s on a 1 MB page and had
+  // no clock on it — the header's "What a page may cost this build" is the
+  // measurement. Order is kept because the log reads better in the page's own
+  // order, so the set is the membership test and the array is the answer.
   const names = [];
+  const kept = new Set();
   const refused = [];
   const seen = new Set();
   for (const [, ref] of html.matchAll(/["']([^"'\s]*\/_astro\/[^"'\s]*)["']/g)) {
@@ -277,12 +373,12 @@ export function readAssetNames(html, pageUrl) {
     if (url.origin !== ours) { refused.push({ ref, why: `names ${url.origin}, which is not this site` }); continue; }
     const name = url.pathname.split("/").pop() ?? "";
     if (name.length > MAX_NAME) { refused.push({ ref: name.slice(0, 40) + "…", why: `is longer than ${MAX_NAME} characters` }); continue; }
-    // Only a plain file name may become a path under `dist/_astro/`.
-    if (!PLAIN_NAME.test(name) || name === "." || name === "..") {
-      refused.push({ ref, why: "is not a plain file name" });
-      continue;
-    }
-    if (!names.includes(name)) names.push(name);
+    // Only a plain file name may become a path under `dist/_astro/` — the one
+    // rule, which `.` and `..` fail inside the pattern rather than beside it.
+    if (!PLAIN_NAME.test(name)) { refused.push({ ref, why: "is not a plain file name" }); continue; }
+    if (kept.has(name)) continue;
+    kept.add(name);
+    names.push(name);
   }
   return { names, refused };
 }
@@ -383,7 +479,7 @@ async function getAssetDigests(url, timeoutMs) {
  *
  * @param {{ origin?: string, dist?: string, dryRun?: boolean, budgetMs?: number }} [options]
  */
-export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = false, budgetMs = BUDGET_MS } = {}) {
+export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUDGET_MS } = {}) {
   const carried = [];
   const problems = [];
   const alreadyBuilt = [];
@@ -392,10 +488,22 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
   const deadline = Date.now() + budgetMs;
   const left = () => Math.min(TIMEOUT_MS, deadline - Date.now());
 
-  // An empty `--origin` used to fall through to the default and quietly carry
-  // production's assets into somebody else's build (Standards review).
+  // An empty origin used to fall through to a hard-coded production address
+  // and quietly carry production's assets into somebody else's build
+  // (Standards review). There is no such address any more; this is the whole
+  // of what "no origin" now means.
   if (typeof origin !== "string" || origin.trim() === "") {
     problems.push("anything: no origin was given");
+    return done();
+  }
+  // And it has to be an address rather than something that merely arrived in
+  // the variable that holds one. `new URL` below would refuse most of these
+  // too, but it would refuse them as a parse error; a value that begins `--`
+  // deserves to be named for what it is, because that is the shape of the
+  // repository variable that used to become a flag (header: "Where the address
+  // comes from"). An absolute `http(s)` address, or nothing is carried.
+  if (!/^https?:\/\//i.test(origin.trim())) {
+    problems.push(`anything: ${origin} is not an absolute http(s) address, so it is not somewhere to read a page from`);
     return done();
   }
   // And a build to fill. The signature lets this be left out; `join` threw a
@@ -422,7 +530,7 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
   const page = await get(pageUrl, left());
   if (!page.ok) { problems.push(`the live page ${pageUrl}: ${page.why}`); return done(); }
   if (page.response.status !== 200) { problems.push(`the live page ${pageUrl}: answered ${page.response.status}`); return done(); }
-  const html = await bodyWithin(page.response, MAX_BYTES);
+  const html = await bodyWithin(page.response, MAX_PAGE_BYTES);
   if (!html.ok) { problems.push(`the live page ${pageUrl}: its body ${html.why}`); return done(); }
 
   const { names, refused } = readAssetNames(html.bytes.toString("utf8"), pageUrl);
@@ -442,18 +550,33 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
 
   const list = await getAssetDigests(new URL(DIGESTS_NAME, pageUrl).href, left());
   if (!list.ok) { problems.push(`anything: ${list.why}`); return done(); }
-  // The page and the list are published together, so a name in one and not the
-  // other means they came from different deploys — a proxy holding one of them,
-  // or a deploy that landed between these two requests. Nothing here can say
-  // what those bytes should be, so nothing is carried and the line says that,
-  // rather than reading like a page with no assets to carry.
-  const unlisted = names.filter((name) => !list.digests.has(name));
-  if (unlisted.length) {
+  // Two different things, which used to be one and cost the slice its whole
+  // job (Security review, round 4).
+  //
+  // A name the list does not carry is THAT NAME not carried: nothing here can
+  // say what its bytes should be. A page reference `/_astro/../../pwn.css`
+  // normalises to `pwn.css`, which no list of ours will ever carry, and
+  // refusing the run over it left both real assets behind — one attribute in a
+  // page this step does not own, turning the step off and announcing it.
+  //
+  // NONE of the needed names being in the list is the other case: the page and
+  // the list are from different deploys — a proxy holding one of them, or a
+  // deploy that landed between these two requests — and then there is nothing
+  // to check ANY byte against, so the run is refused whole and says so in
+  // words that do not read like a page with no assets to carry.
+  const unlisted = needed.filter((name) => !list.digests.has(name));
+  if (unlisted.length === needed.length) {
     problems.push(
-      `anything: the live page names ${boundedList(unlisted)}, which ${DIGESTS_NAME} does not`
+      `anything: ${DIGESTS_NAME} names none of what the live page needs (${boundedList(needed)})`
       + " — the page and the list are from different deploys, so there is nothing to check these bytes against",
     );
     return done();
+  }
+  if (unlisted.length) {
+    problems.push(
+      `${boundedList(unlisted)}: ${DIGESTS_NAME} does not name ${unlisted.length === 1 ? "it" : "them"},`
+      + " so there is nothing to check those bytes against",
+    );
   }
 
   /** What was asked of the origin — the ceiling counts these, not the wins. */
@@ -461,7 +584,7 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
   const overCeiling = [];
   const overBudget = [];
 
-  for (const name of needed) {
+  for (const name of needed.filter((name) => list.digests.has(name))) {
     const target = join(dist, "_astro", name);
     if (asked >= MAX_ASSETS) { overCeiling.push(name); continue; }
     if (deadline - Date.now() <= 0) { overBudget.push(name); continue; }
@@ -473,7 +596,7 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
     if (asset.response.status !== 200) { problems.push(`${name}: answered ${asset.response.status}`); continue; }
     const type = (asset.response.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
     if (!CARRIABLE.test(type)) { problems.push(`${name}: answered 200 as ${type || "no content type"}`); continue; }
-    const body = await bodyWithin(asset.response, MAX_BYTES);
+    const body = await bodyWithin(asset.response, MAX_ASSET_BYTES);
     if (!body.ok) { problems.push(`${name}: its body ${body.why}`); continue; }
     // A 0-byte file would publish a 200 that answers nothing under a name the
     // deploy swears by — the defect this step exists to fix, with no console
@@ -504,7 +627,15 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
   return done();
 }
 
-/** `--name value` or `--name=value`; a flag that is not there keeps its default. */
+/**
+ * `--name value` or `--name=value`; a flag that is not there keeps its default.
+ *
+ * This reads whatever is on the command line as a flag, which is exactly why
+ * the live site's address is not on the command line: see the header, "Where
+ * the address comes from". What is left here — `--dist` and `--dry-run` — a
+ * deploy never passes, and the pinned block in `tests/pipeline.test.ts` is how
+ * that stays true.
+ */
 function flag(argv, name) {
   const i = argv.indexOf(`--${name}`);
   if (i >= 0 && argv[i + 1] !== undefined && !argv[i + 1].startsWith("--")) return argv[i + 1];
@@ -525,12 +656,17 @@ if (process.argv[1]?.split("\\").join("/").endsWith("/carry-assets.mjs")) {
   const argv = process.argv.slice(2);
   const dryRun = argv.includes("--dry-run");
   const dist = flag(argv, "dist") ?? join(root, "dist");
-  const origin = flag(argv, "origin") ?? DEFAULT_ORIGIN;
-  // No flag moves the budget. It is a ceiling this slice put on the step, not
-  // a knob: `--budget-ms 1` in `pages.yml` would make the step a no-op that
-  // prints `0 asset(s) carried` and exits 0 — the defect back, and the deploy
-  // green over it (Spec review, 2026-09-23). The tests hand `carryAssets` a
-  // budget directly.
+  // The address is a value in the environment and never a flag, so that the
+  // one repository variable holding it cannot be read as one — the header's
+  // "Where the address comes from" is the measurement. `?? ""` rather than a
+  // fallback address: an origin this was not given is refused by
+  // `carryAssets`, which says so and carries nothing.
+  const origin = process.env[ORIGIN_VAR] ?? "";
+  // No flag moves the budget either, and for the same reason one step further
+  // on: `--budget-ms 1` would make the step a no-op that prints
+  // `0 asset(s) carried` and exits 0 — the defect back, and the deploy green
+  // over it (Spec review, 2026-09-23). The tests hand `carryAssets` a budget
+  // directly.
 
   // This build's own digests first, for the deploy after this one: it describes
   // what the build made, so it is written before anything is carried into it —
@@ -555,7 +691,7 @@ if (process.argv[1]?.split("\\").join("/").endsWith("/carry-assets.mjs")) {
   }
   for (const problem of result.problems) console.log(`could not carry ${problem}`);
   console.log(
-    `${result.carried.length} asset(s) ${dryRun ? "would be carried" : "carried"} from ${origin}, `
+    `${result.carried.length} asset(s) ${dryRun ? "would be carried" : "carried"} from ${origin || `an unset ${ORIGIN_VAR}`}, `
     + `${result.alreadyBuilt.length} already in this build, ${result.problems.length} left behind`,
   );
   // Refusing everything and having nothing to do used to print that same line

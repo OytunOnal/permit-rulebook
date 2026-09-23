@@ -77,12 +77,26 @@ given and never the host root, because without a custom domain the site is
 served from a subpath — and it is the ONLY host this step fetches from: a name
 comes out of the live HTML but the URL is built from that origin, a reference
 to another host or scheme is refused by name, and a redirect is an error rather
-than a hop (Security review, 2026-09-23). And the step carries **ceilings** the
-scenario did not ask for and a hostile page makes necessary: a name of at most
-128 characters, a body of at most 4 MB, at most 20 **requests** for assets —
-counted whether they answer or 404, because counting only the ones that worked
-let 400 references cost 401 requests — and 60 seconds for the whole run, each
-overrun printed as not carried, in a list with a bottom to it. Three premises
+than a hop (Security review, 2026-09-23). It reaches the script as an
+**environment value**, `CARRY_ORIGIN`, and the deploy's command line is empty:
+the step used to splice the variable into argv as `--origin "$SITE_URL"`, and
+the script reads any `--name value` as a flag, so `SITE_URL` set to `--dry-run`
+made the step write no digest list and exit 0, and set to `--dist=<elsewhere>`
+put the list where the artifact does not go — every later deploy then having
+nothing to check a byte against, this step permanently off and every deploy
+green, from one repository variable (Security review, round 4). A value cannot
+be read as a flag. The step also refuses anything that is not an absolute
+`http(s)` address. And the step carries **ceilings** the scenario did not ask
+for and a hostile page makes necessary: a name of at most 128 characters, a
+**page** of at most 512 KB and an **asset** of at most 4 MB (one number for
+both let the page inherit an asset's size, and reading names out of a page was
+quadratic in how many it held — 76.1 s for a 1 MB page, about twenty minutes at
+4 MB, uninterruptible inside the deploy job and reported as nothing; the
+reading is linear now and 512 KB of it costs 17 ms), at most 20 **requests**
+for assets — counted whether they answer or 404, because counting only the ones
+that worked let 400 references cost 401 requests — and a 60-second budget,
+which bounds how long the run will **wait on the network** and nothing else,
+each overrun printed as not carried, in a list with a bottom to it. Three premises
 checked: only `index.html` references `/_astro/` in a fresh build (the other 37
 pages: zero) and the two live files are `index.BEnxC2y6.css` (27,533 bytes) and
 `index.astro_astro_type_script_index_0_lang.Bev-BElT.js` (243,728 bytes), the
@@ -93,28 +107,33 @@ this paragraph recorded (measured against `https://permitrulebook.com`,
 deviations rather than as readings of the points they depart from. The first is
 from point 3: it asks that what is carried be what the live host served, and
 the build cannot honour that out of the HTTP exchange, because framing cannot
-attest to a file. Measured on the real process against raw-socket origins,
-2026-09-23 — an answer with no `content-length` had no length to check and put
-5,000 bytes of a 104,000-byte stylesheet on disk under the previous
-generation's exact name, reported carried; one declaring 5,000 made `undici`
-stop at the declaration, so the bytes read equalled the bytes declared and the
-same truncated file was written; `content-length: 0` agreed with itself and
-published a 0-byte file, which answers 200 with nothing. Every guard built on
-the origin's own headers is the origin vouching for itself, so the authority
-moved outside the exchange to something our own build made: each build
-publishes **`asset-digests.txt`** beside its page — one line per file it put in
-`_astro/`, the sha256 and the name — and the next deploy carries a byte only if
-it hashes to what our own previous build recorded under that name. A name the
-list does not carry is not carried, a truncated body fails its digest, a
-truncated list fails to parse, and an empty body is refused outright. When the
-page and the list disagree — a proxy holding one and not the other, a deploy
-landing between the two requests — the run is refused whole and its line says
-THAT is why, not "nothing to carry". The request still asks for `identity` and
-an answer that declares another encoding is still refused, so what is written
-is the file and not an archive of it; but the declared length is now recorded
-for what it is — `undici` enforces it and throws first, and this step's own
-comparison is a backstop that fired zero times across 13 measured header
-shapes. The second deviation is from point 5: "nothing else changes" now has
+attest to a file — three measured holes in the origin's own headers each put a
+file of the wrong length on disk under the previous generation's exact name and
+reported it carried. That reading is kept in one place, `carry-assets.mjs`'s
+header under "What makes a carried byte trustworthy, and what does not", and is
+not re-told here or in the tests; what belongs on this record is the decision
+and its limit. The decision: each build publishes **`asset-digests.txt`** beside
+its page — one line per file it put in `_astro/`, the sha256 and the name — and
+the next deploy writes a byte only if it hashes to what the list beside that
+page says that name is. The limit, which an earlier wording of this paragraph
+overstated and both review axes caught independently: the list arrives from the
+same origin, over the same HTTP, unsigned, so it moves the authority out of the
+HTTP **framing** and not off the **origin** — measured, an origin serving both
+wrote 104,017 arbitrary bytes under the previous generation's exact name with
+nothing reported. What it does refuse, all measured: a truncated body, a stale
+or foreign object under a known name, an error page answered 200, a truncated
+list, an empty body, and a deploy landing between the two requests. The origin
+is the trust boundary; the list checks that what crossed it is what that host
+had already published under that name. A name the list does not carry is that
+name not carried — and only that name: refusing the whole run over one stray
+reference left both real assets behind (`/_astro/../../pwn.css` normalises to
+`pwn.css`), so the two cases are now separate lines, and it is **none** of the
+needed names being listed that means the page and the list are from different
+deploys and refuses the run. The request still asks for `identity` and an answer
+that declares another encoding is still refused, so what is written is the file
+and not an archive of it; the declared length is a backstop that fired zero
+times across 13 measured header shapes. The second deviation is from point 5:
+"nothing else changes" now has
 one exception, the one more file in `dist/` that authority is. It is written by
 the carrier step itself, so `npm run build` and `assets:check` are untouched
 and both still pass; nothing links to it and nothing but the next deploy reads

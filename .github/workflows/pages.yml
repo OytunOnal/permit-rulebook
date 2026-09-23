@@ -245,9 +245,24 @@ jobs:
       # place the site's address is decided. The script catches every failure
       # and exits 0 on every path, so there is nothing here for
       # `continue-on-error` to catch.
+      #
+      # The address arrives as an environment VALUE and the command line is
+      # empty, which is not a style choice. This step used to read
+      # `node scripts/carry-assets.mjs --origin "$SITE_URL"`, and the script
+      # reads any `--name value` as a flag: `SITE_URL` set to `--dry-run` made
+      # the step write no digest list and exit 0, and set to `--dist=<other>`
+      # put the list somewhere the artifact does not go — so one repository
+      # variable turned the whole mechanism off while every deploy stayed
+      # green (Security review, round 4; the reading is in the script's own
+      # header under "Where the address comes from"). A value cannot be read
+      # as a flag. Nothing may be appended to the `run:` line either, for the
+      # reason `tests/pipeline.test.ts` keeps beside its verbatim pin of this
+      # block.
       - name: Carry the live site's assets forward, so a cached page still finds them
         working-directory: site
-        run: node scripts/carry-assets.mjs --origin "$SITE_URL"
+        env:
+          CARRY_ORIGIN: ${{ env.SITE_URL }}
+        run: node scripts/carry-assets.mjs
 
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
