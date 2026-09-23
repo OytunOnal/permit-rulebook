@@ -1,8 +1,8 @@
 /**
  * Carry the live site's assets forward, so a cached page still finds them.
  *
- * This file is the one place the reason is written down; the workflow step, the
- * two test files and the scenario point here rather than repeat it.
+ * This file is where the reason is written down for the code: the workflow step
+ * and the two test files point here rather than repeat it.
  *
  * GitHub Pages serves `/` with `Cache-Control: max-age=600` — its header, not
  * ours, and not one we can change on this host. So a reader's browser, and any
@@ -37,19 +37,28 @@
  * the page says can make this reach a host nobody chose.
  *
  * And a hostile or broken origin cannot make it run away with the build: a
- * name is at most 128 characters, a body at most 4 MB, a run carries at most
+ * name is at most 128 characters, a body at most 4 MB, a run asks for at most
  * 20 assets and lasts at most 60 seconds, and whatever is left over is printed
- * as not carried.
+ * as not carried — in a bounded list, because a page that names four hundred
+ * files must not become four hundred lines in a deploy's log.
  *
  * A file is written only when the host answered `200` with a CSS or JavaScript
  * content type, byte for byte, under the name the page asked for, with its
  * sha256 printed beside it.
  *
+ * Byte for byte means the bytes on the wire, so the request asks for
+ * `identity` and an answer that arrives encoded anyway is refused: fetch
+ * decompresses whatever it is sent, and `content-length` would then describe
+ * the transfer rather than the file — a number that attests to nothing, and
+ * under which a cut stream decodes to a partial asset in silence (measured
+ * 2026-09-23: a 104,000-byte asset declared at 40 bytes and gzipped came back
+ * as 14,192 bytes with no error). Asked for `identity`, the live host declares
+ * exactly what it sends, and that is the length this step checks.
+ *
  *   node scripts/carry-assets.mjs                 # the live site into ./dist
  *   node scripts/carry-assets.mjs --origin <url>  # where the live site is
  *   node scripts/carry-assets.mjs --dist <dir>    # which build to fill
  *   node scripts/carry-assets.mjs --dry-run       # fetch and report, write nothing
- *   node scripts/carry-assets.mjs --budget-ms <n> # the whole run's wall clock
  */
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -65,13 +74,18 @@ import { fileURLToPath } from "node:url";
  * deploys to, and this is the custom domain the site actually answers on — the
  * one whose cached pages are the defect.
  */
-const DEFAULT_ORIGIN = "https://permitrulebook.com";
+export const DEFAULT_ORIGIN = "https://permitrulebook.com";
 
 /**
  * A slow host must not hold a deploy open. Ten seconds per request is long
- * enough for a cold CDN edge; sixty for the whole run is more than four
- * requests could honestly need, and it is the ceiling on how long a silent
- * origin can cost this build.
+ * enough for a cold CDN edge, and sixty for the whole run is the ceiling on
+ * how long a silent origin can cost this build.
+ *
+ * The two are deliberately not multiplied out: twenty requests at ten seconds
+ * each would be two hundred, so on a slow origin it is this budget and not the
+ * asset ceiling that ends the run — early, and saying which names it did not
+ * reach. Today's page names two assets, and a healthy host answers both in
+ * well under a second.
  */
 const TIMEOUT_MS = 10_000;
 const BUDGET_MS = 60_000;
@@ -80,6 +94,11 @@ const BUDGET_MS = 60_000;
  * What one origin may make this step do. Today the page names two assets of
  * 27 KB and 244 KB; these are the orders of magnitude above that, so a page
  * that has been tampered with cannot turn a deploy into a download.
+ *
+ * `MAX_ASSETS` counts requests, not files carried: four hundred references
+ * that all 404 used to cost four hundred requests against our own origin,
+ * because nothing that failed counted towards the ceiling (Security review,
+ * 2026-09-23).
  */
 const MAX_NAME = 128;
 const MAX_ASSETS = 20;
@@ -91,6 +110,13 @@ const MAX_BYTES = 4 * 1024 * 1024;
  * break the very deploy this step exists to save.
  */
 const CARRIABLE = /^(?:text\/css|text\/javascript|application\/javascript|application\/ecmascript|text\/ecmascript)$/;
+
+/**
+ * A list of names with a bottom to it. A page that names four hundred files
+ * would otherwise be four hundred lines in a deploy's log, which is the same
+ * thing as no log at all.
+ */
+const few = (names) => (names.length <= 3 ? names.join(", ") : `${names.slice(0, 3).join(", ")} and ${names.length - 3} more`);
 
 /** An error as a sentence, with the cause `fetch failed` always hides. */
 const say = (e) => {
@@ -137,11 +163,19 @@ export function readAssetNames(html, pageUrl) {
  * Fetch, with every failure a sentence rather than a stack, and a redirect a
  * failure rather than a hop: following one would walk off the origin this step
  * is allowed to read.
+ *
+ * `identity`, because this step writes what arrives: see the header. It is a
+ * request, not a guarantee — what to do with an answer that ignores it is
+ * `bodyWithin`'s.
  */
 async function get(url, timeoutMs) {
   if (timeoutMs <= 0) return { ok: false, why: "the run's time budget was already spent" };
   try {
-    const response = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), redirect: "error" });
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(timeoutMs),
+      redirect: "error",
+      headers: { "accept-encoding": "identity" },
+    });
     return { ok: true, response };
   } catch (e) {
     return { ok: false, why: say(e) };
@@ -153,29 +187,51 @@ async function get(url, timeoutMs) {
  * moment it passes the ceiling, so an endless response is the origin's problem
  * and not the build's. A body that stops mid-stream throws here and nowhere
  * else.
+ *
+ * An answer that arrives encoded is refused unread. `get` asked for
+ * `identity`; fetch decompresses anything that comes back anyway, which leaves
+ * `content-length` describing the transfer while these bytes are the file, and
+ * no way to tell a whole asset from a stream that was cut (the header carries
+ * the measurement). Refusing costs one printed line and the previous
+ * generation of one file; accepting would write a partial stylesheet under a
+ * name the deploy swears by.
+ *
+ * What a declared length is worth once that holds: it describes these very
+ * bytes, so they must be exactly that many.
  */
 async function bodyWithin(response, limit) {
-  const declared = Number(response.headers.get("content-length"));
-  if (Number.isFinite(declared) && declared > limit) return { ok: false, why: `declares ${declared} bytes, over the ${limit}-byte ceiling` };
-  if (!response.body) return { ok: true, bytes: Buffer.alloc(0) };
+  const encoding = (response.headers.get("content-encoding") ?? "").trim().toLowerCase();
+  if (encoding && encoding !== "identity") return { ok: false, why: `arrived ${encoding}-encoded, which is not the bytes the page asks for` };
+
+  const header = response.headers.get("content-length");
+  const declared = header === null ? Number.NaN : Number(header);
+  const promised = Number.isFinite(declared) && declared >= 0;
+  if (promised && declared > limit) return { ok: false, why: `declares ${declared} bytes, over the ${limit}-byte ceiling` };
+
   const chunks = [];
   let total = 0;
-  try {
-    for await (const chunk of response.body) {
-      total += chunk.length;
-      if (total > limit) return { ok: false, why: `is over the ${limit}-byte ceiling` };
-      chunks.push(Buffer.from(chunk));
+  if (response.body) {
+    try {
+      for await (const chunk of response.body) {
+        total += chunk.length;
+        if (total > limit) return { ok: false, why: `is over the ${limit}-byte ceiling` };
+        chunks.push(Buffer.from(chunk));
+      }
+    } catch (e) {
+      return { ok: false, why: say(e) };
     }
-  } catch (e) {
-    return { ok: false, why: say(e) };
   }
+  if (promised && total !== declared) return { ok: false, why: `is ${total} bytes, not the ${declared} it declared` };
   return { ok: true, bytes: Buffer.concat(chunks, total) };
 }
 
 /**
  * Fill `dist` with whatever the live `origin` still references and this build
  * does not have. Returns what happened; printing is the caller's. It throws
- * nothing: everything it could not do comes back in `problems`.
+ * nothing: everything it could not do comes back in `problems` — including
+ * being called without the two things it cannot work without.
+ *
+ * @param {{ origin?: string, dist?: string, dryRun?: boolean, budgetMs?: number }} [options]
  */
 export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = false, budgetMs = BUDGET_MS } = {}) {
   const carried = [];
@@ -189,6 +245,14 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
   // production's assets into somebody else's build (Standards review).
   if (typeof origin !== "string" || origin.trim() === "") {
     problems.push("anything: no origin was given");
+    return done();
+  }
+  // And a build to fill. The signature lets this be left out; `join` threw a
+  // TypeError on it, which is not "everything comes back in `problems`"
+  // (Standards review, 2026-09-23). Checked here, before a request is spent on
+  // a build there is nowhere to put.
+  if (typeof dist !== "string" || dist.trim() === "") {
+    problems.push("anything: no build directory was given");
     return done();
   }
   // The origin as given, not its host root: without a custom domain the site
@@ -211,14 +275,25 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
   if (!html.ok) { problems.push(`the live page ${pageUrl}: its body ${html.why}`); return done(); }
 
   const { names, refused } = readAssetNames(html.bytes.toString("utf8"), pageUrl);
-  for (const { ref, why } of refused) problems.push(`${ref}: it ${why}`);
+  // The reasons differ reference by reference, so these stay lines rather than
+  // a folded list — but there is the same bottom to how many a page can print
+  // as to how many it can fetch.
+  for (const { ref, why } of refused.slice(0, MAX_ASSETS)) problems.push(`${ref}: it ${why}`);
+  if (refused.length > MAX_ASSETS)
+    problems.push(`the ${refused.length - MAX_ASSETS} further reference(s) this page named: each refused unread`);
+
+  /** What was asked of the origin — the ceiling counts these, not the wins. */
+  let asked = 0;
+  const overCeiling = [];
+  const overBudget = [];
 
   for (const name of names) {
-    if (carried.length >= MAX_ASSETS) { problems.push(`${name}: this run had already carried its ceiling of ${MAX_ASSETS}`); continue; }
-    if (deadline - Date.now() <= 0) { problems.push(`${name}: the run's ${budgetMs} ms budget was spent`); continue; }
-
     const target = join(dist, "_astro", name);
+    // Already in this build: no request, so no cost, so no ceiling.
     if (existsSync(target)) { alreadyBuilt.push(name); continue; }
+    if (asked >= MAX_ASSETS) { overCeiling.push(name); continue; }
+    if (deadline - Date.now() <= 0) { overBudget.push(name); continue; }
+    asked += 1;
 
     // Built here, from the origin this run was given — never from the ref.
     const asset = await get(new URL(`_astro/${name}`, pageUrl).href, left());
@@ -240,6 +315,11 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
     }
     carried.push({ name, bytes: body.bytes.length, sha256: createHash("sha256").update(body.bytes).digest("hex") });
   }
+
+  // One line each, however many names are behind them.
+  if (overCeiling.length)
+    problems.push(`${few(overCeiling)}: this run had already asked the origin for its ceiling of ${MAX_ASSETS} assets`);
+  if (overBudget.length) problems.push(`${few(overBudget)}: the run's ${budgetMs} ms budget was spent`);
   return done();
 }
 
@@ -265,12 +345,15 @@ if (process.argv[1]?.split("\\").join("/").endsWith("/carry-assets.mjs")) {
   const dryRun = argv.includes("--dry-run");
   const dist = flag(argv, "dist") ?? join(root, "dist");
   const origin = flag(argv, "origin") ?? DEFAULT_ORIGIN;
-  const budget = Number(flag(argv, "budget-ms") ?? BUDGET_MS);
-  const budgetMs = Number.isFinite(budget) && budget > 0 ? budget : BUDGET_MS;
+  // No flag moves the budget. It is a ceiling this slice put on the step, not
+  // a knob: `--budget-ms 1` in `pages.yml` would make the step a no-op that
+  // prints `0 asset(s) carried` and exits 0 — the defect back, and the deploy
+  // green over it (Spec review, 2026-09-23). The tests hand `carryAssets` a
+  // budget directly.
 
   let result = { carried: [], problems: [], alreadyBuilt: [] };
   try {
-    result = await carryAssets({ origin, dist, dryRun, budgetMs });
+    result = await carryAssets({ origin, dist, dryRun });
   } catch (e) {
     result.problems.push(`anything: ${say(e)}`);
   }

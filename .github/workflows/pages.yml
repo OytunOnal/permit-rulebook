@@ -229,22 +229,17 @@ jobs:
           echo "urls=$urls" >> "$GITHUB_OUTPUT"
           echo "$(echo "$urls" | jq length) addresses in the sitemap"
 
-      # The last thing before the artifact is sealed, because it adds files to
-      # `dist/` and a file carried after the upload is a file nobody deploys.
+      # Why a deploy carries the previous generation's assets at all, the one
+      # generation it keeps, and the ceilings it holds an origin to: all of it
+      # is in `site/scripts/carry-assets.mjs`'s own header, which is the place
+      # it is kept true.
       #
-      # GitHub Pages serves `/` with `Cache-Control: max-age=600` while the two
-      # files that page needs are content-hashed, so a reader returning inside
-      # that window asks for files the last deploy removed — three 404s measured
-      # live on 2026-09-23. This copies the generation the live site references
-      # now into the build about to replace it. The whole reason, the one
-      # generation it keeps and the ceilings it holds an origin to are written
-      # in the script's own header; this is the only copy of them.
-      #
-      # No new action and no new token: `node`, which this job already has, and
-      # `SITE_URL`, which is the one place the site's address is decided and the
-      # only host the script will fetch from. It catches every failure and exits
-      # 0 on every path, so there is nothing here for `continue-on-error` to
-      # catch — proved by running it (`tests/s33.test.ts`), not by reading it.
+      # What the step is: the last thing before the artifact is sealed, because
+      # it adds files to `dist/` and a file carried after the upload is a file
+      # nobody deploys. No new action and no new token — `node`, which this job
+      # already has, and `SITE_URL`, the one place the site's address is
+      # decided. The script catches every failure and exits 0 on every path, so
+      # there is nothing here for `continue-on-error` to catch.
       - name: Carry the live site's assets forward, so a cached page still finds them
         working-directory: site
         run: node scripts/carry-assets.mjs --origin "$SITE_URL"

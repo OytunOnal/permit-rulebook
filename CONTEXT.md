@@ -355,10 +355,6 @@ The first recorded snapshot of a source, against which change is measured.
 
 ### The deploy
 
-The words below are about the pipeline, not about permits. They live here
-because the code leans on them; the sections above are the product's own
-language, and a term that never leaves the build stays in this one.
-
 **Carry** (verb):
 To copy an asset the LIVE site still references into the fresh `dist/` about
 to replace it — byte-identical, under the same name — so a page a reader's
@@ -368,7 +364,5 @@ _Avoid_: mirror, backup, sync
 
 **Generation** (of assets):
 The set of content-hashed `/_astro/` files one deploy publishes. A deploy
-keeps exactly one previous generation alive; two deploys inside the page's
-ten-minute cache still leave the earliest reader broken, and that limit is on
-the record.
+carries exactly one previous generation forward.
 _Avoid_: version, build (of the assets)

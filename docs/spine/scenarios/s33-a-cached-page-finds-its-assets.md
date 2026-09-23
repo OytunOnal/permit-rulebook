@@ -79,15 +79,25 @@ comes out of the live HTML but the URL is built from that origin, a reference
 to another host or scheme is refused by name, and a redirect is an error rather
 than a hop (Security review, 2026-09-23). And the step carries **ceilings** the
 scenario did not ask for and a hostile page makes necessary: a name of at most
-128 characters, a body of at most 4 MB, at most 20 assets, and 60 seconds for
-the whole run, each overrun printed as not carried. Three premises checked:
-only `index.html` references `/_astro/` in a fresh build (the other 37 pages:
-zero) and the two live files are `index.BEnxC2y6.css` (27,533 bytes) and
+128 characters, a body of at most 4 MB, at most 20 **requests** for assets —
+counted whether they answer or 404, because counting only the ones that worked
+let 400 references cost 401 requests — and 60 seconds for the whole run, each
+overrun printed as not carried, in a list with a bottom to it. Three premises
+checked: only `index.html` references `/_astro/` in a fresh build (the other 37
+pages: zero) and the two live files are `index.BEnxC2y6.css` (27,533 bytes) and
 `index.astro_astro_type_script_index_0_lang.Bev-BElT.js` (243,728 bytes), the
 names this scenario predicted — both true; but the live module is served as
 **`application/javascript`**, not `text/javascript` as an earlier reading of
 this paragraph recorded (measured against `https://permitrulebook.com`,
-2026-09-23; the guard accepts either).
+2026-09-23; the guard accepts either). Point 3's **"byte for byte" is the bytes
+on the wire**: the request asks for `identity` encoding, and an answer that
+arrives encoded anyway is refused rather than written. `fetch` decompresses
+whatever it is sent, so `content-length` would then describe the transfer and
+not the file — a number attesting to nothing, and one a cut stream decodes
+under in silence (measured the same day: that 104,000-byte asset, declared at
+40 bytes and gzipped, came back as 14,192 bytes with no error). Asked for
+`identity`, the live host declares exactly what it sends — the 27,533 and
+243,728 above — and a body that is not the length it declared is refused.
 
 ## How it is proved
 
