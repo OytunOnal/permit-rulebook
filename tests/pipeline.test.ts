@@ -22,58 +22,6 @@ const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").
 const yamlFiles = (dir: string): string[] =>
   readdirSync(dir).filter((f) => f.endsWith(".yml") || f.endsWith(".yaml")).map((f) => join(dir, f));
 
-/**
- * The steps of one job, each as its own keys — so a case can ask what a step
- * IS rather than whether some string appears somewhere near it.
- *
- * This is as much YAML as a workflow step is: a list of block mappings of
- * plain scalars, with `|` for the ones written over several lines. Nested
- * mappings (`with:`) are stepped over; no case here needs them. It is
- * hand-written rather than pulled from a package on purpose — the first case
- * in this file is that every `uses:` names a pinned commit, and a test whose
- * own dependency floats would be a strange place to argue that from.
- */
-function stepsOf(yaml: string, job: string): Record<string, string>[] {
-  const lines = yaml.split("\n");
-  const first = lines.indexOf(`  ${job}:`);
-  if (first < 0) return [];
-  const from = lines.indexOf("    steps:", first);
-  if (from < 0) return [];
-
-  const steps: Record<string, string>[] = [];
-  let step: Record<string, string> | undefined;
-  let block: string | undefined;
-  let lines_: string[] = [];
-  const close = (): void => {
-    if (step && block) step[block] = lines_.join("\n").trimEnd();
-    block = undefined;
-    lines_ = [];
-  };
-  /** `key: value`, or the opening of a `|` block whose lines follow. */
-  const put = (key: string, value: string): void => {
-    if (!step) return;
-    if (/^[|>][-+]?$/.test(value)) { close(); block = key; return; }
-    step[key] = value.trim();
-  };
-
-  for (const line of lines.slice(from + 1)) {
-    // A job ends where the next one starts, or where anything else at its own
-    // indent does.
-    if (line.trim() !== "" && !line.startsWith("      ")) break;
-    if (block) {
-      if (line.trim() === "" || line.startsWith("          ")) { lines_.push(line.slice(10)); continue; }
-      close();
-    }
-    if (line.trim() === "" || line.trimStart().startsWith("#")) continue;
-    const opens = /^ {6}- ([\w-]+):(.*)$/.exec(line);
-    if (opens) { close(); step = {}; steps.push(step); put(opens[1]!, opens[2]!); continue; }
-    const key = /^ {8}([\w-]+):(.*)$/.exec(line);
-    if (key) put(key[1]!, key[2]!);
-  }
-  close();
-  return steps;
-}
-
 describe("every action is pinned to a commit, and every job asks for the least it needs", () => {
   const files = yamlFiles(workflows);
 
@@ -255,37 +203,41 @@ describe("a cached page still finds its assets", () => {
   });
 
   /**
-   * All three of point 4's clauses, and the third one is why this reads the
-   * step rather than the file's text.
+   * All three of point 4's clauses, as one verbatim block.
    *
-   * "Cannot fail the job" is two things together. One: the carrier exits 0 on
-   * every path, which only a running process can show and `tests/s33.test.ts`
-   * does. Two: the carrier's exit code is the only one this step has — a
-   * `run` of one command, with no `&&`, `||`, `;` and no second line to carry
-   * another. Without the second, the first is worth nothing: appending
-   * `&& test -f dist/_astro/index.css` to this line takes the deploy down
-   * while every other test in the repository stays green (Spec review,
-   * 2026-09-23). So the whole `run` is pinned, which also keeps an argument
-   * the scenario never asked for — a `--budget-ms 1` that would quietly make
-   * the step do nothing — from being added without this case going red.
+   * This used to read the step through a hand-written YAML parser, which is a
+   * second thing to be wrong: it only ever saw keys at exactly eight spaces,
+   * so a nested `env:` under this step — `SITE_URL: https://evil.example/` —
+   * passed every assertion while the step fetched a foreign host, and its `|`
+   * branch was unreachable, so five of this job's fifteen steps parsed as
+   * `{"run":"|"}` (Standards and Security review, round 3). Pinning the block
+   * as text deletes the parser, its dead branch and its blind spot together.
+   *
+   * Over-pinning a deploy step is the trade this case wants. Every clause of
+   * point 4 falls out of the one string, including the two that a reading of
+   * the step's keys could not carry: that the step's exit code is the
+   * carrier's own — one command, no `&&`, no `||`, no second line, no
+   * `continue-on-error`, nothing appended (appending
+   * `&& test -f dist/_astro/index.css` took the deploy down while every other
+   * test stayed green — Spec review, 2026-09-23) — and that it is the last
+   * thing before the artifact is sealed, because the block ends where the
+   * upload begins. An edit to this step then goes through a deliberate edit
+   * here, which is the point of a step nobody may quietly change.
    */
-  it("the build job runs it before the upload, pulls in no action, and cannot fail the job", () => {
-    const steps = stepsOf(read(join(workflows, "pages.yml")), "build");
-    expect(steps.length, "the build job's steps did not parse").toBeGreaterThan(5);
-
-    const carrier = steps.findIndex((step) => (step.run ?? "").includes("carry-assets.mjs"));
-    expect(carrier, "the build job does not run the carrier").toBeGreaterThan(-1);
-    // Before the artifact is sealed: a file carried after the upload is a file
-    // nobody deploys.
-    const upload = steps.findIndex((step) => (step.uses ?? "").includes("actions/upload-pages-artifact"));
-    expect(upload, "the build job no longer uploads an artifact").toBeGreaterThan(-1);
-    expect(carrier, "the carrier runs after the artifact is uploaded").toBeLessThan(upload);
-    // No new action for this: the job already has node, and every `uses:` is a
-    // supply chain of its own (the pinning case above).
-    expect(steps[carrier]!.uses, "the carrier step pulls in an action").toBeUndefined();
-    // One command, so the only exit code the job sees is the carrier's own.
-    expect(steps[carrier]!.run).toBe('node scripts/carry-assets.mjs --origin "$SITE_URL"');
-    // And nothing catching a failure it cannot have: the guard is the script's.
-    expect(steps[carrier]!["continue-on-error"], "the step leans on continue-on-error").toBeUndefined();
+  it("the build job runs it, verbatim, as the last step before the upload", () => {
+    const pages = read(join(workflows, "pages.yml"));
+    // The build job's own text: the carrier has to be in THIS job, where
+    // `dist/` is on disk and the artifact is made.
+    const build = pages.slice(pages.indexOf(`${LF}  build:${LF}`), pages.indexOf(`${LF}  pin:${LF}`));
+    expect(build, "the build job is not where it was").not.toBe("");
+    // Why it sits here rather than anywhere else is the comment beside it in
+    // `pages.yml`, which owns that reason.
+    expect(build).toContain(
+      `      - name: Carry the live site's assets forward, so a cached page still finds them${LF}`
+      + `        working-directory: site${LF}`
+      + `        run: node scripts/carry-assets.mjs --origin "$SITE_URL"${LF}`
+      + LF
+      + "      - uses: actions/upload-pages-artifact@",
+    );
   });
 });

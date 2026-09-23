@@ -236,10 +236,15 @@ jobs:
       #
       # What the step is: the last thing before the artifact is sealed, because
       # it adds files to `dist/` and a file carried after the upload is a file
-      # nobody deploys. No new action and no new token — `node`, which this job
-      # already has, and `SITE_URL`, the one place the site's address is
-      # decided. The script catches every failure and exits 0 on every path, so
-      # there is nothing here for `continue-on-error` to catch.
+      # nobody deploys — this is where that reason is kept, and the case in
+      # `tests/pipeline.test.ts` that pins this step's position points here.
+      # Two kinds of file: the assets it carries forward, and `asset-digests.txt`,
+      # the list of what THIS build made, which is the only thing the next
+      # deploy will check a carried byte against. No new action and no new
+      # token — `node`, which this job already has, and `SITE_URL`, the one
+      # place the site's address is decided. The script catches every failure
+      # and exits 0 on every path, so there is nothing here for
+      # `continue-on-error` to catch.
       - name: Carry the live site's assets forward, so a cached page still finds them
         working-directory: site
         run: node scripts/carry-assets.mjs --origin "$SITE_URL"

@@ -89,15 +89,49 @@ pages: zero) and the two live files are `index.BEnxC2y6.css` (27,533 bytes) and
 names this scenario predicted — both true; but the live module is served as
 **`application/javascript`**, not `text/javascript` as an earlier reading of
 this paragraph recorded (measured against `https://permitrulebook.com`,
-2026-09-23; the guard accepts either). Point 3's **"byte for byte" is the bytes
-on the wire**: the request asks for `identity` encoding, and an answer that
-arrives encoded anyway is refused rather than written. `fetch` decompresses
-whatever it is sent, so `content-length` would then describe the transfer and
-not the file — a number attesting to nothing, and one a cut stream decodes
-under in silence (measured the same day: that 104,000-byte asset, declared at
-40 bytes and gzipped, came back as 14,192 bytes with no error). Asked for
-`identity`, the live host declares exactly what it sends — the 27,533 and
-243,728 above — and a body that is not the length it declared is refused.
+2026-09-23; the guard accepts either). Then two **deviations**, stated as
+deviations rather than as readings of the points they depart from. The first is
+from point 3: it asks that what is carried be what the live host served, and
+the build cannot honour that out of the HTTP exchange, because framing cannot
+attest to a file. Measured on the real process against raw-socket origins,
+2026-09-23 — an answer with no `content-length` had no length to check and put
+5,000 bytes of a 104,000-byte stylesheet on disk under the previous
+generation's exact name, reported carried; one declaring 5,000 made `undici`
+stop at the declaration, so the bytes read equalled the bytes declared and the
+same truncated file was written; `content-length: 0` agreed with itself and
+published a 0-byte file, which answers 200 with nothing. Every guard built on
+the origin's own headers is the origin vouching for itself, so the authority
+moved outside the exchange to something our own build made: each build
+publishes **`asset-digests.txt`** beside its page — one line per file it put in
+`_astro/`, the sha256 and the name — and the next deploy carries a byte only if
+it hashes to what our own previous build recorded under that name. A name the
+list does not carry is not carried, a truncated body fails its digest, a
+truncated list fails to parse, and an empty body is refused outright. When the
+page and the list disagree — a proxy holding one and not the other, a deploy
+landing between the two requests — the run is refused whole and its line says
+THAT is why, not "nothing to carry". The request still asks for `identity` and
+an answer that declares another encoding is still refused, so what is written
+is the file and not an archive of it; but the declared length is now recorded
+for what it is — `undici` enforces it and throws first, and this step's own
+comparison is a backstop that fired zero times across 13 measured header
+shapes. The second deviation is from point 5: "nothing else changes" now has
+one exception, the one more file in `dist/` that authority is. It is written by
+the carrier step itself, so `npm run build` and `assets:check` are untouched
+and both still pass; nothing links to it and nothing but the next deploy reads
+it. Two consequences on the record. The first deploy after this merges finds no
+list live yet, so it carries nothing that once and publishes the list the
+deploy after it reads — **this slice's real-green needs two deploys**. And
+because refusing everything and having nothing to do are no longer the same
+outcome, the step's last line now says which: the refusal is a `::warning::`
+naming what a reader holding the cached page will ask for and not get, still
+exit 0, still unable to fail the deploy. Point 4's second test, finally,
+asserts the step's **whole block in `pages.yml`, verbatim**, instead of parsing
+the YAML — the hand-written parser read only keys at exactly eight spaces, so a
+nested `env:` under this step passed all four of its assertions while the step
+fetched a foreign host. Over-pinning a deploy step is the deliberate trade: an
+edit to it now goes through a deliberate edit to that test, and it retires an
+earlier pin of the exact `run` string, which spelled a spelling nobody had
+declared.
 
 ## How it is proved
 

@@ -42,18 +42,59 @@
  * as not carried — in a bounded list, because a page that names four hundred
  * files must not become four hundred lines in a deploy's log.
  *
- * A file is written only when the host answered `200` with a CSS or JavaScript
- * content type, byte for byte, under the name the page asked for, with its
- * sha256 printed beside it.
+ * ## What makes a carried byte trustworthy
  *
- * Byte for byte means the bytes on the wire, so the request asks for
- * `identity` and an answer that arrives encoded anyway is refused: fetch
- * decompresses whatever it is sent, and `content-length` would then describe
- * the transfer rather than the file — a number that attests to nothing, and
- * under which a cut stream decodes to a partial asset in silence (measured
- * 2026-09-23: a 104,000-byte asset declared at 40 bytes and gzipped came back
- * as 14,192 bytes with no error). Asked for `identity`, the live host declares
- * exactly what it sends, and that is the length this step checks.
+ * Not HTTP. An origin declares its own `content-length`, so every guard built
+ * on that declaration is the origin vouching for itself, and three measured
+ * holes proved it on the real process, 2026-09-23 (Security review, round 3):
+ * an answer with NO `content-length` had no length to check and put 5,000
+ * bytes of a 104,000-byte stylesheet on disk under the previous generation's
+ * exact name; one that declared 5,000 made undici stop there, so the bytes
+ * counted equalled the bytes declared and the same truncated file was written
+ * and reported carried; `content-length: 0` agreed with itself and published a
+ * 0-byte file, which answers 200 with nothing — worse than the 404 this step
+ * exists to fix, and silent.
+ *
+ * So the authority sits outside the exchange, in something our own build made:
+ * every build publishes `asset-digests.txt` beside its page — one line per file
+ * it put in `_astro/`, the sha256 and the name — and the next deploy carries a
+ * byte only if it hashes to what OUR OWN previous build said that name was. A
+ * truncated body fails its digest, a truncated list fails to parse, an empty
+ * body fails both. A name the list does not carry is not carried.
+ *
+ * The page and the list are published together and fetched together, so they
+ * describe the same deploy. When they do not — a proxy holding one and not the
+ * other, a deploy landing between the two requests — there is nothing here to
+ * check a byte against, and the run is refused whole and says THAT is why, in
+ * words that are not "nothing to carry".
+ *
+ * The first deploy after this was merged finds no list live yet and carries
+ * nothing that once, publishing the list the deploy after it reads.
+ *
+ * ## The guards this file actually performs
+ *
+ * Written out because a header that claims a guard the code does not run is
+ * worse than no header (Standards review, round 3):
+ *
+ *  - the status is 200, the content type is CSS or JavaScript, and the body is
+ *    not empty — each refused here, by name;
+ *  - the body hashes to the digest our previous build published for that name;
+ *  - the request asks for `identity` and an answer that DECLARES another
+ *    encoding is refused: fetch would decompress it, and what is written must
+ *    be the file rather than an archive of it. Measured 2026-09-23, and this
+ *    file is where that reading is kept: answered gzip, a 104,000-byte asset
+ *    came back declaring 14,192 bytes, and the same asset declared at 40 bytes
+ *    decoded to 14,192 with no error at all — the declaration describing the
+ *    transfer while the bytes are the file. An answer that LIES about its
+ *    encoding declares nothing to refuse it by, and is caught by the digest;
+ *  - the declared length, when there is one, must be the number of bytes read.
+ *    This is a BACKSTOP and it has never fired: undici enforces the
+ *    declaration itself and throws first (a short body is "its body
+ *    terminated", a duplicate header "does not match content-length header"),
+ *    and a declaration that lies low makes undici stop at it, so the two
+ *    numbers agree. Instrumented across 13 header shapes, 2026-09-23: zero
+ *    hits. It stays because it costs a comparison and the day undici's
+ *    behaviour changes it is the line that notices.
  *
  *   node scripts/carry-assets.mjs                 # the live site into ./dist
  *   node scripts/carry-assets.mjs --origin <url>  # where the live site is
@@ -61,7 +102,7 @@
  *   node scripts/carry-assets.mjs --dry-run       # fetch and report, write nothing
  */
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -74,7 +115,20 @@ import { fileURLToPath } from "node:url";
  * deploys to, and this is the custom domain the site actually answers on — the
  * one whose cached pages are the defect.
  */
-export const DEFAULT_ORIGIN = "https://permitrulebook.com";
+const DEFAULT_ORIGIN = "https://permitrulebook.com";
+
+/**
+ * The digest list: what this build published, so the next deploy can tell a
+ * carried file from a story about one.
+ *
+ * It sits beside the page rather than in `_astro/`, because it is not an asset
+ * and nothing hashes it. Its first line is fixed so that an HTML error page, a
+ * proxy's notice or a truncated transfer cannot be read as a list — the name
+ * and the content type an origin puts on a response are the same word of the
+ * same stranger this file already refuses to take at face value.
+ */
+const DIGESTS_NAME = "asset-digests.txt";
+const DIGESTS_HEADER = "permit-rulebook asset digests v1";
 
 /**
  * A slow host must not hold a deploy open. Ten seconds per request is long
@@ -98,11 +152,26 @@ const BUDGET_MS = 60_000;
  * `MAX_ASSETS` counts requests, not files carried: four hundred references
  * that all 404 used to cost four hundred requests against our own origin,
  * because nothing that failed counted towards the ceiling (Security review,
- * 2026-09-23).
+ * 2026-09-23). The page and the digest list are two more requests, and there
+ * are always exactly those two.
+ *
+ * `MAX_LIST_BYTES` is the same idea one file down: today's list is two lines
+ * of 89 bytes, and 64 KB is six hundred assets' worth.
  */
 const MAX_NAME = 128;
 const MAX_ASSETS = 20;
 const MAX_BYTES = 4 * 1024 * 1024;
+const MAX_LIST_BYTES = 64 * 1024;
+
+/**
+ * The only shape of name that may become a path under `dist/_astro/`, be
+ * written into the digest list, or be read back out of it — one rule, spelled
+ * once, because a name the list can hold and the carrier would refuse (or the
+ * other way round) is a hole between two spellings of the same idea.
+ */
+const PLAIN_NAME = new RegExp(`^[A-Za-z0-9._-]{1,${MAX_NAME}}$`);
+/** One line of the list: a sha256, two spaces, a name — `sha256sum`'s shape. */
+const DIGESTS_LINE = new RegExp(`^([0-9a-f]{64}) {2}([A-Za-z0-9._-]{1,${MAX_NAME}})$`);
 
 /**
  * What may be written into `dist/_astro/`. A host that has lost a file answers
@@ -112,11 +181,11 @@ const MAX_BYTES = 4 * 1024 * 1024;
 const CARRIABLE = /^(?:text\/css|text\/javascript|application\/javascript|application\/ecmascript|text\/ecmascript)$/;
 
 /**
- * A list of names with a bottom to it. A page that names four hundred files
- * would otherwise be four hundred lines in a deploy's log, which is the same
- * thing as no log at all.
+ * Some names as one line, with a bottom to it. A page that names four hundred
+ * files would otherwise be four hundred lines in a deploy's log, which is the
+ * same thing as no log at all.
  */
-const few = (names) => (names.length <= 3 ? names.join(", ") : `${names.slice(0, 3).join(", ")} and ${names.length - 3} more`);
+const boundedList = (names) => (names.length <= 3 ? names.join(", ") : `${names.slice(0, 3).join(", ")} and ${names.length - 3} more`);
 
 /** An error as a sentence, with the cause `fetch failed` always hides. */
 const say = (e) => {
@@ -124,6 +193,65 @@ const say = (e) => {
   const cause = e instanceof Error && e.cause instanceof Error ? e.cause.message : "";
   return cause && !message.includes(cause) ? `${message} (${cause})` : message;
 };
+
+/** The sha256 of some bytes, as the digest list spells it. */
+const digestOf = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
+/**
+ * Publish what this build built, so the deploy after this one can check the
+ * bytes it fetches against something we made rather than against the origin's
+ * own headers.
+ *
+ * It describes this build's OWN assets: it runs before anything is carried, so
+ * a file carried from the previous generation is not in it. That is what keeps
+ * the chain one generation long, the same way the step itself is.
+ *
+ * A name this file's own reader would refuse is left out rather than written:
+ * one unparseable line would cost the next deploy the whole list. Astro has
+ * never produced one.
+ *
+ * Returns what happened; it throws nothing, because it is called from a step
+ * that may not fail.
+ */
+export function writeAssetDigests(dist) {
+  try {
+    const dir = join(dist, "_astro");
+    const names = existsSync(dir)
+      ? readdirSync(dir, { withFileTypes: true })
+        .filter((entry) => entry.isFile() && PLAIN_NAME.test(entry.name))
+        .map((entry) => entry.name)
+        .sort()
+      : [];
+    const lines = [DIGESTS_HEADER, ...names.map((name) => `${digestOf(readFileSync(join(dir, name)))}  ${name}`)];
+    writeFileSync(join(dist, DIGESTS_NAME), `${lines.join("\n")}\n`);
+    return { ok: true, count: names.length };
+  } catch (e) {
+    return { ok: false, why: say(e) };
+  }
+}
+
+/**
+ * Read a digest list, strictly.
+ *
+ * Strictly, because this is the one input that decides what may be written: a
+ * line that is not a sha256 and a name fails the whole list rather than being
+ * skipped, so a transfer cut mid-line refuses the run instead of shrinking it.
+ * A cut that lands exactly on a line boundary parses — and is caught one step
+ * later, by a page that names something the list no longer does.
+ */
+function readAssetDigests(text) {
+  const lines = text.split("\n");
+  if (lines.at(-1) === "") lines.pop();
+  if (lines[0] !== DIGESTS_HEADER) return { ok: false, why: `does not begin "${DIGESTS_HEADER}"` };
+  const digests = new Map();
+  for (let i = 1; i < lines.length; i += 1) {
+    const line = DIGESTS_LINE.exec(lines[i]);
+    if (!line) return { ok: false, why: `line ${i + 1} is not a sha256 and a name` };
+    if (digests.has(line[2])) return { ok: false, why: `names ${line[2]} twice` };
+    digests.set(line[2], line[1]);
+  }
+  return { ok: true, digests };
+}
 
 /**
  * Read the asset names a page asks for — names only.
@@ -150,7 +278,7 @@ export function readAssetNames(html, pageUrl) {
     const name = url.pathname.split("/").pop() ?? "";
     if (name.length > MAX_NAME) { refused.push({ ref: name.slice(0, 40) + "…", why: `is longer than ${MAX_NAME} characters` }); continue; }
     // Only a plain file name may become a path under `dist/_astro/`.
-    if (!/^[A-Za-z0-9._-]+$/.test(name) || name === "." || name === "..") {
+    if (!PLAIN_NAME.test(name) || name === "." || name === "..") {
       refused.push({ ref, why: "is not a plain file name" });
       continue;
     }
@@ -166,7 +294,7 @@ export function readAssetNames(html, pageUrl) {
  *
  * `identity`, because this step writes what arrives: see the header. It is a
  * request, not a guarantee — what to do with an answer that ignores it is
- * `bodyWithin`'s.
+ * `bodyWithin`'s, and what to do with one that lies about it is the digest's.
  */
 async function get(url, timeoutMs) {
   if (timeoutMs <= 0) return { ok: false, why: "the run's time budget was already spent" };
@@ -188,16 +316,15 @@ async function get(url, timeoutMs) {
  * and not the build's. A body that stops mid-stream throws here and nowhere
  * else.
  *
- * An answer that arrives encoded is refused unread. `get` asked for
- * `identity`; fetch decompresses anything that comes back anyway, which leaves
- * `content-length` describing the transfer while these bytes are the file, and
- * no way to tell a whole asset from a stream that was cut (the header carries
- * the measurement). Refusing costs one printed line and the previous
- * generation of one file; accepting would write a partial stylesheet under a
- * name the deploy swears by.
+ * An answer that declares an encoding is refused unread: `get` asked for
+ * `identity`, and fetch decompresses anything that comes back anyway, so what
+ * would be written is an unpacking of the file rather than the file. Refusing
+ * costs one printed line and the previous generation of one file.
  *
- * What a declared length is worth once that holds: it describes these very
- * bytes, so they must be exactly that many.
+ * The declared length is checked against what was read, and the header says
+ * what that check is worth: it is a backstop behind undici's own enforcement,
+ * and it has never fired. Nothing here decides that a body is the right file —
+ * only its digest does.
  */
 async function bodyWithin(response, limit) {
   const encoding = (response.headers.get("content-encoding") ?? "").trim().toLowerCase();
@@ -226,10 +353,33 @@ async function bodyWithin(response, limit) {
 }
 
 /**
- * Fill `dist` with whatever the live `origin` still references and this build
- * does not have. Returns what happened; printing is the caller's. It throws
- * nothing: everything it could not do comes back in `problems` — including
- * being called without the two things it cannot work without.
+ * The live deploy's digest list, or the reason this run will carry nothing.
+ *
+ * One request, and only when there is something to carry: a deploy that
+ * changed neither asset has nothing to check, and spending a request to learn
+ * that is a request too many.
+ */
+async function getAssetDigests(url, timeoutMs) {
+  const answer = await get(url, timeoutMs);
+  if (!answer.ok) return { ok: false, why: `${DIGESTS_NAME}: ${answer.why}` };
+  if (answer.response.status !== 200)
+    return { ok: false, why: `${DIGESTS_NAME}: answered ${answer.response.status} — the live deploy published no digest list for this one to check bytes against` };
+  const body = await bodyWithin(answer.response, MAX_LIST_BYTES);
+  if (!body.ok) return { ok: false, why: `${DIGESTS_NAME}: its body ${body.why}` };
+  const list = readAssetDigests(body.bytes.toString("utf8"));
+  return list.ok ? list : { ok: false, why: `${DIGESTS_NAME}: it ${list.why}` };
+}
+
+/**
+ * Fill `dist` with whatever the live `origin` still references, this build does
+ * not have, and the live deploy's own digest list attests to. Returns what
+ * happened; printing is the caller's. It throws nothing: everything it could
+ * not do comes back in `problems` — including being called without the two
+ * things it cannot work without.
+ *
+ * `needed` is what the live page references and this build lacks, whether or
+ * not any of it could be carried: carrying none of it is a different outcome
+ * from having nothing to carry, and only this number tells them apart.
  *
  * @param {{ origin?: string, dist?: string, dryRun?: boolean, budgetMs?: number }} [options]
  */
@@ -237,7 +387,8 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
   const carried = [];
   const problems = [];
   const alreadyBuilt = [];
-  const done = () => ({ carried, problems, alreadyBuilt });
+  const needed = [];
+  const done = () => ({ carried, problems, alreadyBuilt, needed });
   const deadline = Date.now() + budgetMs;
   const left = () => Math.min(TIMEOUT_MS, deadline - Date.now());
 
@@ -282,15 +433,36 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
   if (refused.length > MAX_ASSETS)
     problems.push(`the ${refused.length - MAX_ASSETS} further reference(s) this page named: each refused unread`);
 
+  for (const name of names) {
+    // Already in this build: no request, so no cost, so no ceiling.
+    if (existsSync(join(dist, "_astro", name))) alreadyBuilt.push(name);
+    else needed.push(name);
+  }
+  if (needed.length === 0) return done();
+
+  const list = await getAssetDigests(new URL(DIGESTS_NAME, pageUrl).href, left());
+  if (!list.ok) { problems.push(`anything: ${list.why}`); return done(); }
+  // The page and the list are published together, so a name in one and not the
+  // other means they came from different deploys — a proxy holding one of them,
+  // or a deploy that landed between these two requests. Nothing here can say
+  // what those bytes should be, so nothing is carried and the line says that,
+  // rather than reading like a page with no assets to carry.
+  const unlisted = names.filter((name) => !list.digests.has(name));
+  if (unlisted.length) {
+    problems.push(
+      `anything: the live page names ${boundedList(unlisted)}, which ${DIGESTS_NAME} does not`
+      + " — the page and the list are from different deploys, so there is nothing to check these bytes against",
+    );
+    return done();
+  }
+
   /** What was asked of the origin — the ceiling counts these, not the wins. */
   let asked = 0;
   const overCeiling = [];
   const overBudget = [];
 
-  for (const name of names) {
+  for (const name of needed) {
     const target = join(dist, "_astro", name);
-    // Already in this build: no request, so no cost, so no ceiling.
-    if (existsSync(target)) { alreadyBuilt.push(name); continue; }
     if (asked >= MAX_ASSETS) { overCeiling.push(name); continue; }
     if (deadline - Date.now() <= 0) { overBudget.push(name); continue; }
     asked += 1;
@@ -303,6 +475,15 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
     if (!CARRIABLE.test(type)) { problems.push(`${name}: answered 200 as ${type || "no content type"}`); continue; }
     const body = await bodyWithin(asset.response, MAX_BYTES);
     if (!body.ok) { problems.push(`${name}: its body ${body.why}`); continue; }
+    // A 0-byte file would publish a 200 that answers nothing under a name the
+    // deploy swears by — the defect this step exists to fix, with no console
+    // error to find it by. Refused before it is even hashed.
+    if (body.bytes.length === 0) { problems.push(`${name}: answered 200 with an empty body`); continue; }
+    const digest = digestOf(body.bytes);
+    if (digest !== list.digests.get(name)) {
+      problems.push(`${name}: its ${body.bytes.length} bytes are sha256:${digest}, not the sha256:${list.digests.get(name)} the build that published this page recorded`);
+      continue;
+    }
 
     if (!dryRun) {
       try {
@@ -313,13 +494,13 @@ export async function carryAssets({ origin = DEFAULT_ORIGIN, dist, dryRun = fals
         continue;
       }
     }
-    carried.push({ name, bytes: body.bytes.length, sha256: createHash("sha256").update(body.bytes).digest("hex") });
+    carried.push({ name, bytes: body.bytes.length, sha256: digest });
   }
 
   // One line each, however many names are behind them.
   if (overCeiling.length)
-    problems.push(`${few(overCeiling)}: this run had already asked the origin for its ceiling of ${MAX_ASSETS} assets`);
-  if (overBudget.length) problems.push(`${few(overBudget)}: the run's ${budgetMs} ms budget was spent`);
+    problems.push(`${boundedList(overCeiling)}: this run had already asked the origin for its ceiling of ${MAX_ASSETS} assets`);
+  if (overBudget.length) problems.push(`${boundedList(overBudget)}: the run's ${budgetMs} ms budget was spent`);
   return done();
 }
 
@@ -351,7 +532,19 @@ if (process.argv[1]?.split("\\").join("/").endsWith("/carry-assets.mjs")) {
   // green over it (Spec review, 2026-09-23). The tests hand `carryAssets` a
   // budget directly.
 
-  let result = { carried: [], problems: [], alreadyBuilt: [] };
+  // This build's own digests first, for the deploy after this one: it describes
+  // what the build made, so it is written before anything is carried into it —
+  // and it is published whether or not anything is carried, because without it
+  // the next deploy has nothing to check bytes against.
+  if (dryRun) {
+    console.log(`would publish ${DIGESTS_NAME} for the next deploy`);
+  } else {
+    const published = writeAssetDigests(dist);
+    if (published.ok) console.log(`published ${DIGESTS_NAME}: ${published.count} asset(s) this build made, for the next deploy to check against`);
+    else console.log(`could not publish ${DIGESTS_NAME} — ${published.why}; the next deploy will carry nothing`);
+  }
+
+  let result = { carried: [], problems: [], alreadyBuilt: [], needed: [] };
   try {
     result = await carryAssets({ origin, dist, dryRun });
   } catch (e) {
@@ -365,5 +558,20 @@ if (process.argv[1]?.split("\\").join("/").endsWith("/carry-assets.mjs")) {
     `${result.carried.length} asset(s) ${dryRun ? "would be carried" : "carried"} from ${origin}, `
     + `${result.alreadyBuilt.length} already in this build, ${result.problems.length} left behind`,
   );
+  // Refusing everything and having nothing to do used to print that same line
+  // and nothing else, and no other step reads this one's output: a proxy change
+  // in front of Pages would reopen the cached-page window silently, and the
+  // first evidence would be a reader's unstyled page (Security review, round
+  // 3). So the two outcomes end differently, and the loud one is a warning
+  // annotation the run summary carries — `::warning::`, as the IndexNow step
+  // already uses for "nothing sent". It is still exit 0: this step never fails
+  // a deploy.
+  if (result.needed.length && result.carried.length === 0) {
+    console.log(
+      `::warning::nothing was carried: the live page still references ${boundedList(result.needed)}`
+      + ` — a reader holding that page gets a 404 for ${result.needed.length === 1 ? "it" : "them"},`
+      + " which is the window s33 exists to close, open on this deploy",
+    );
+  }
   process.exit(0);
 }
