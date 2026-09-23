@@ -31,8 +31,17 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   09-21, both source-side (403s, timeouts); 09-22 read all 46 clean. The
   retry slice is queued beside #17.
 - In flight: **s33 — a cached page still finds its assets** (approved
-  2026-09-23, building in `../permit-rulebook-s33`); its real-green is the
-  live check that today's two assets still answer 200 after its own deploy.
+  2026-09-23, in `../permit-rulebook-s33`). Built, then three fix rounds on
+  three axes: the carrier now fetches only from `$SITE_URL`, refuses a
+  re-encoded or empty body, counts requests not successes, and — the third
+  round's whole point — checks every carried byte against `asset-digests.txt`,
+  a list each build publishes beside its page, because every guard built on the
+  origin's own headers was circular (a `content-length` that lies low, or is
+  absent, truncates in silence). Round 4's review is running. Two consequences
+  the roadmap must hold: the first deploy after the merge publishes the list and
+  carries nothing, so the carry is only exercised on the **second** deploy; and
+  nothing in the repo consumes the step's output — a `::warning::` is the only
+  alarm when the window is open.
 - The walk's three adjustments are with the human, unpicked: an English
   handle on every foreign quote; salary bands scoped to the country (and the
   question count's first screen); a home for *Start over* mid-interview with a
@@ -40,8 +49,17 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - The one open thread: #17's scenario is next — a `browser` watch strategy
   (headless Chrome on the runner) bringing the five IND pages and the BMI
   sentinel back from the human tier.
-- Skills reloaded 2026-09-23 (standards.md, the three gate words, the reviews'
-  Dismissed list): `docs/spine/standards.md` written from what the repos do.
+- Skills changed again 2026-09-23 (steward-69, Security widenings), mid-slice
+  and not yet applied project-side: a breach of a security invariant is hard on
+  any axis and is a Security finding wherever found; a Security finding is never
+  dismissed, never handed to another entry, and is carried as `open with
+  reason:` with a STATUS ask when only the human's word can close it; a waiver
+  carries `skips:` or the guard ignores it (the ten pre-record waivers were
+  re-stated today on the human's word, `skips: none`); and the guard's idea of
+  code now includes `skills/`, `agents/`, `docs/spine/scenarios/`,
+  `threats.md` and `.claude-plugin/`. Earlier 2026-09-23 (standards.md, the
+  three gate words, the reviews' Dismissed list): `docs/spine/standards.md`
+  written from what the repos do.
   Before that, 2026-09-22 (steward-66/67 and the roadmap's `after:`): forks
   are four at a time and every default is said in the message; a worktree's
   exit checks the directory gone — the leftover `_preview` worktrees (223 MB,
@@ -53,12 +71,17 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   pageviews of one desktop client at 897 px, not reproducible here in 15
   seeded arrivals at five widths — next read 2026-09-30; the pre-registered numbers on 2026-10-09 with the isolated
   walk.
-- Nothing blocked on the human today.
+- One word is blocked on the human: s33's merge, once round 4's review is
+  recorded.
 
 ## What is expected from you
 
 
 
+- [ ] **s33's merge word**, once round 4's review is written to
+      `docs/spine/reviews/s33.md`. Pass = "merge". Why yours: merge is the
+      deploy, and this slice publishes bytes it fetched from the internet —
+      and its real-green cannot be read until the deploy after it.
 - [ ] **Pick from the walk's three adjustments** (report §Recommended
       adjustments): 1 the foreign-quote handle · 2 country-scoped salary bands
       and the honest count · 3 *Start over* mid-interview and the resumed word.
