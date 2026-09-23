@@ -5,16 +5,15 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-23, metric 6 read off target, the walk run the same
-  day (38/50, no blocker), the breakdown taken and the lead chased: not
-  reproduced — but the chase found that a cached page can outlive its assets.
+- Last boundary: 2026-09-23, s33 merged and live — the deploy publishes
+  `asset-digests.txt` and carries the previous generation against it. Nine
+  delta rounds; the record is `docs/spine/reviews/s33.md`.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: nothing — the next slice is v1.2's queue head, data #17 (the
-  browser-read strategy for the IND).
-- v1.2: 9 of 14 planned steps passed for real (nine slices s23–s32); 5
-  queued — the carried-assets fix first (a cached page outliving its assets,
-  the human's option A), then #17, the watch retry (from #21), then two
-  steward items (Back on a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
+  browser-read strategy for the IND). Two words on s33 are still open (below).
+- v1.2: 10 of 14 planned steps passed for real (ten slices s23–s33); 4
+  queued — #17, the watch retry (from #21), then two steward items (Back on
+  a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
   all six `later` candidates kept, clock reset. Roadmap: 21 candidates ahead, 9 unversioned under
   `later` (three moved from the old backlog; clock reset 2026-09-18).
 - Pace: 10 slices real-green in two days (s23–s32, 2026-09-17 → 18), ≈ 0.2
@@ -24,52 +23,24 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is happening now
 
-- Live: https://permitrulebook.com at `f7832f0`, dataset 2026.09.18, schema
-  0.8.2; 694 site tests, 647 data tests; the daily watch read every source
-  today.
+- Live: https://permitrulebook.com at `1cc7800` (s33), dataset 2026.09.18,
+  schema 0.8.2; 757 site tests, 647 data tests. The daily watch did **not**
+  read every source today: `bamf-hochschulabsolvent` is unread on
+  2026-09-23 — the third red day in four (09-20, 09-21, 09-23); the retry
+  slice is queued beside #17.
 - Metric 2 (the daily watch finishes) is off target: two red days, 09-20 and
   09-21, both source-side (403s, timeouts); 09-22 read all 46 clean. The
   retry slice is queued beside #17.
-- In flight: **s33 — a cached page still finds its assets** (approved
-  2026-09-23, built in `../permit-rulebook-s33`, reviewed and recorded).
-  Nine delta rounds on three axes, eighteen reviews, 14 hard findings closed
-  (11 Security, 2 Spec, 1 Standards); the record is
-  `docs/spine/reviews/s33.md`, `head: 3e7ba76`. The last round came back
-  with no hard finding on any axis. What the slice does: each build publishes
-  `asset-digests.txt` beside its page, and the next deploy carries a
-  previous-generation asset only if the bytes hash to what our own build
-  recorded — because every guard built on the origin's own headers was
-  circular. Waiting on the human: the merge word, the ratification of point
-  1's narrowing, and a re-stated waiver naming the open entry.
-- The walk's three adjustments are with the human, unpicked: an English
-  handle on every foreign quote; salary bands scoped to the country (and the
-  question count's first screen); a home for *Start over* mid-interview with a
-  word when a session resumes.
-- The one open thread: #17's scenario is next — a `browser` watch strategy
-  (headless Chrome on the runner) bringing the five IND pages and the BMI
-  sentinel back from the human tier.
-- Skills changed again 2026-09-23 (steward-69, Security widenings), mid-slice
-  and not yet applied project-side: a breach of a security invariant is hard on
-  any axis and is a Security finding wherever found; a Security finding is never
-  dismissed, never handed to another entry, and is carried as `open with
-  reason:` with a STATUS ask when only the human's word can close it; a waiver
-  carries `skips:` or the guard ignores it (the ten pre-record waivers were
-  re-stated today on the human's word, `skips: none`); and the guard's idea of
-  code now includes `skills/`, `agents/`, `docs/spine/scenarios/`,
-  `threats.md` and `.claude-plugin/`. Earlier 2026-09-23 (standards.md, the
-  three gate words, the reviews' Dismissed list): `docs/spine/standards.md`
-  written from what the repos do.
-  Before that, 2026-09-22 (steward-66/67 and the roadmap's `after:`): forks
-  are four at a time and every default is said in the message; a worktree's
-  exit checks the directory gone — the leftover `_preview` worktrees (223 MB,
-  from s12) were removed today. Before that, 2026-09-18 (steward-64, v0.4): the road page is now
-  drawn by Spine's generator (six tabs); STATUS short; KANBAN's backlog
-  folded into the roadmap; ADRs folded into DECISIONS rows.
-- Metrics: 1 and 2 read 2026-09-22 (liveness on target, the watch not); 6
-  read 2026-09-23 (good 88 %, off target) and broken down the same day: two
-  pageviews of one desktop client at 897 px, not reproducible here in 15
-  seeded arrivals at five widths — next read 2026-09-30; the pre-registered numbers on 2026-10-09 with the isolated
-  walk.
+- s33 is live and its carry is not yet exercised: the slice touched nothing
+  under `src/`, so the deploy's carrier logged `0 asset(s) carried, 2
+  already in this build, 0 left behind` — the quiet outcome, correct — and
+  published the first `asset-digests.txt` (live, two sha256 lines matching
+  the local build). The carry is first exercised on the deploy after the
+  first `src/` change; the reading is your calendar item below.
+- A local trap found while merging, recorded in DECISIONS: the suite reads
+  `dist/` and the sibling data clone, so after any data change it must be
+  `git pull` in the data repo and `npm run build` before `npm test`, or it
+  goes red for a reason that is not a defect. CI already does both in order.
 - One Security finding stays open and only the human's word can close it:
   the step fetches from `$SITE_URL`, a repository variable, so whoever can
   set it can have bytes of their choosing published from our own origin,
@@ -80,22 +51,20 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 
 
-- [ ] **s33: three words, in one message if you like.** (1) `merge` — site
-      only, and merge is the deploy. (2) Ratify or refuse **point 1's
-      narrowing**: point 1 asks for the `/_astro/…` names the live page
-      references; the step reads quoted strings holding `/_astro/` wherever
-      the page holds them, and is blind to `/_ASTRO/x.css`,
-      `/_astro%2Fx.css`, a bare relative `_astro/x.css`, a \ separator
-      form, and a reference with a tab in it — three of which a browser
-      resolves to a real asset, so they are not carried and nothing says so.
-      Chasing them means writing a second HTML parser;
-      `tests/pipeline.test.ts` goes red if this build's own page ever holds
-      a shape the reader misses. Pass = "tamam" or "genişlet". (3) `waive`
-      again: the record now holds one open Security entry, so the ten
-      pre-record waivers must name it —
+- [ ] **s33: two words left.** (1) Ratify or refuse **point 1's narrowing**:
+      point 1 asks for the `/_astro/…` names the live page references; the
+      step reads quoted strings holding `/_astro/` wherever the page holds
+      them, and is blind to `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare
+      relative `_astro/x.css`, a backslash-separator form, and a reference
+      with a tab in it — three of which a browser resolves to a real asset,
+      so they are not carried and nothing says so. Chasing them means a
+      second HTML parser; `tests/pipeline.test.ts` goes red if this build's
+      own page ever holds a shape the reader misses. Pass = "tamam" or
+      "genişlet". (2) `waive` again: the record holds one open Security
+      entry, so the ten pre-record waivers must name it —
       `skips: .github/workflows/pages.yml:67` — or the guard ignores them.
-      Why yours: merge is the deploy, a narrowing of an approved requirement
-      is a gate, and a waiver is given in sight of what it waives.
+      Why yours: a narrowing of an approved requirement is a gate, and a
+      waiver is given in sight of what it waives.
 - [ ] **s33's real-green cannot be read on its own deploy**, and the record
       says so: the slice touches nothing under `src/`, so both live assets
       rebuild under the same hashes and the proof-list bullet passes with no

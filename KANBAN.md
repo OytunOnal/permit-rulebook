@@ -42,6 +42,17 @@ under the open version. A landed line carries its slice's title and the
 mark `promoted <date>`; the board's done column holds the step.
 
 **Landed**
+- **A cached page outlives its assets** · promoted 2026-09-23 · s33 · live 2026-09-23 · (the CLS chase, 2026-09-23; human:
+  "tamamdır" to option A) · `/` is served with a ten-minute cache while
+  `_astro/*` is content-hashed and replaced every deploy, so a reader holding
+  a ten-minute-old page asks for a stylesheet and a module that answer 404
+  (verified on the live host: `index.CpGG1ZDr.css`, `index.BcmUcb7-.css`,
+  `index.qYLZ_mcb.js`). The deploy carries the previous build's referenced
+  assets forward — one generation, fetched from the live site, never failing
+  the deploy, with a check that what it carries is byte-identical to what the
+  live host served · bet: one generation covers the ten-minute window, and a
+  reader never meets an unstyled page with a dead interview; source: the
+  2026-09-23 chase of metric 6.
 - **the experience ladder is two questions** (F2) · promoted 2026-09-17 · s25
 - **one reader, one hierarchy** (the four-country headline) · promoted 2026-09-17 · s26
 - **five small slips** (P8, plus the tagline's colon and the card's door from the human's walk) · promoted 2026-09-17 · s27
@@ -53,17 +64,6 @@ mark `promoted <date>`; the board's done column holds the step.
 - **the copy pass** (a route page names its own unread sources, F3 — moved from the `v1.x` bucket 2026-09-17) · promoted 2026-09-17 · s23
 
 **Queue** (in order; the first unpromoted line is the next slice)
-- **A cached page outlives its assets** · promoted 2026-09-23 · s33 · (the CLS chase, 2026-09-23; human:
-  "tamamdır" to option A) · `/` is served with a ten-minute cache while
-  `_astro/*` is content-hashed and replaced every deploy, so a reader holding
-  a ten-minute-old page asks for a stylesheet and a module that answer 404
-  (verified on the live host: `index.CpGG1ZDr.css`, `index.BcmUcb7-.css`,
-  `index.qYLZ_mcb.js`). The deploy carries the previous build's referenced
-  assets forward — one generation, fetched from the live site, never failing
-  the deploy, with a check that what it carries is byte-identical to what the
-  live host served · bet: one generation covers the ten-minute window, and a
-  reader never meets an unstyled page with a dead interview; source: the
-  2026-09-23 chase of metric 6.
 - **Data #17 — the browser-read strategy for the IND** · the road back from the
   human tier (five IND route pages read by a person since s14; the BMI
   sentinel since s29): headless Chrome from the runner reads what the
@@ -167,6 +167,16 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
 
 _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept. Fork 2026-09-23 (human: "hepsi keep"): all six kept again — still no intake line or metric reading points at any of them; the numbers that could are the pre-registered readings of 2026-10-09._
 
+- **Split the digest list out of the carrier** (`scripts/asset-digests.mjs`,
+  from s33's review, 2026-09-23) · `carry-assets.mjs` is 1,024 lines at 674
+  comment / 313 code, and the digest list is already its own thing — its own
+  `CONTEXT.md` term, its own vocabulary, its own import in two test files;
+  about 185 lines: the trust section, `writeAssetDigests`,
+  `readAssetDigests`, `getAssetDigests`, the four list constants,
+  `digestOf` · bet: a file with two subjects rots at the seam; the split is
+  a no-behaviour refactor that gets more expensive every round it waits.
+  Deferred on 2026-09-23 because a refactor touching every line of a
+  security-critical file is at its worst at the end of a nine-round loop.
 - **Model the 45+ age rules (55% threshold) as criteria** (from the old
   backlog, 2026-09-18) · currently notes on the German cards · bet: an age
   rule the engine scores is worth a question. Kept.
@@ -193,9 +203,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-- **s33 — a cached page still finds its assets** · approved 2026-09-23
-  (human: "onaylıyorum"); building in `../permit-rulebook-s33` (branch
-  `s33-carry-assets`). v1.2 queue head (option A).
+_(empty)_
 
 ## mock-green
 
@@ -206,6 +214,20 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s33 — a cached page still finds its assets** · real-green 2026-09-23
+  on the proof list as written (human: "merge"; site `1cc7800`, run
+  35892373166 green; both live assets still 200, `asset-digests.txt` live
+  with two sha256 lines matching the local build) — **and the carry itself is
+  not yet exercised**: the slice touches nothing under `src/`, so nothing
+  was needed; the record reads the real-green in two parts on later deploys.
+  What landed: each build publishes `asset-digests.txt` beside its page,
+  and the next deploy carries a previous-generation asset only if its bytes
+  hash to what our own build recorded — because every guard built on the
+  origin's own headers was the origin vouching for itself. Nine delta rounds
+  on three axes, 14 hard findings closed; one Security entry stays open
+  (the origin is a repository variable) and point 1's narrowing awaits the
+  human's ratification (`docs/spine/reviews/s33.md`).
 
 - **s32 — a statement names the question that asks it** · real-green
   2026-09-18 (human: "merge"; data `295f204`, site `f7832f0`). v1.2 fix from
