@@ -239,6 +239,23 @@ function carry(origin: string, args: string[] = []): Promise<{ status: number; o
 }
 
 const carried = (dir: string): string[] => readdirSync(join(dir, "_astro")).sort();
+/**
+ * The refusal a case is actually about, in the step's own words.
+ *
+ * Every refusal in this file looks the same from outside: nothing in `_astro/`
+ * and the name on a line. So does the step's clock running out — measured, on
+ * an origin that sent headers and then went quiet: `could not carry
+ * index.AAAAAAAA.css: its body The operation was aborted due to timeout`,
+ * exit 0, `_astro/` empty. A case asserting only "nothing carried, and the
+ * name is printed" is therefore green either way, and on a starved runner the
+ * second route is real. Each refusal below names the thing its verdict turns
+ * on instead — the digest the build recorded, the ceiling, the word for the
+ * shape it refused — so a case that passes because the origin was slow goes
+ * red here rather than quietly (round 7).
+ */
+const refusedOver = (out: string, mark: string, decision: string): void => {
+  expect(out, `nothing was carried, but the step never got as far as ${decision}`).toContain(mark);
+};
 const lastLine = (out: string): string => out.trim().split("\n").at(-1) ?? "";
 /** The run's counted line, wherever the annotations after it leave it. */
 const summary = (out: string): string => out.split("\n").find((line) => line.includes("left behind")) ?? "";
@@ -323,6 +340,10 @@ describe("the carrier takes the live generation forward", () => {
       expect(run.status, run.out).toBe(0);
       expect(carried(out)).toEqual([]);
       expect(run.out).toContain(CSS_NAME);
+      // Refused unread, on the encoding it declared — 104,000 bytes of 'a'
+      // compress to 342 on the wire, so this case holds the attack's size
+      // without ever draining it. See `refusedOver`.
+      refusedOver(run.out, "gzip-encoded", "reading the encoding it declared");
     } finally { live.close(); }
   });
 
@@ -618,21 +639,38 @@ describe("the carrier carries only what our own previous build attested to", () 
     // The control for the four cases after it: the same raw socket, the same
     // hand-written headers, a body that IS the file — carried. Whatever those
     // four refuse, it is not the framing.
-    const asset = Buffer.alloc(104_000, 0x61);
-    const answers = deploy({ [CSS_NAME]: asset });
+    //
+    // The decision here is that an honest origin serving a whole body is
+    // carried and its digest matches — the one case that keeps the eight
+    // refusals around it from being a blanket refusal. The body's SIZE is no
+    // part of that decision, so this is the same small stylesheet every other
+    // honest case uses. The attack's own 104,000 bytes are still proved, by
+    // the two refusals below that carry them.
+    //
+    // It was 104,000 bytes here until this round, and that is why it moved.
+    // Measured on loopback: 104,000 is the only body in this file that arrives
+    // in two stream chunks — 65,536, then 38,464 — so it was the only case
+    // whose client ever waited idle for an origin to produce more, and that
+    // origin is a server on the test worker's own event loop. Healthy it cost
+    // 187 ms. On the two-vCPU runner `pages.yml` builds on, it reached the
+    // step's 10 s clock: the step refused, correctly, and this case went red —
+    // s33's own test intermittently failing s33's own deploy. Three failures
+    // in five full runs, measured here, 2026-09-23. What shrinking gives up is
+    // a multi-chunk reassembly that nothing ever asserted and no chunk size
+    // was ever pinned for; what it buys is a deploy this case cannot fail.
+    const answers = deploy({ [CSS_NAME]: CSS });
     answers[`/_astro/${CSS_NAME}`] = {
-      raw: { headers: ["content-type: text/css", `content-length: ${asset.length}`], body: asset },
+      raw: { headers: ["content-type: text/css", `content-length: ${CSS.length}`], body: CSS },
     };
     const live = await origin(answers);
     const out = dist();
     try {
       const run = await carry(live.url, ["--dist", out]);
       expect(run.status, run.out).toBe(0);
-      // With the step's own reason, because this case is 104,000 bytes over a
-      // hand-framed socket and the only interesting way for it to fail is one
-      // the step will have printed (round 6, chasing a flake under load).
+      // With the step's own reason, because the only interesting way for a
+      // hand-framed answer to fail is one the step will have printed.
       expect(carried(out), run.out).toEqual([CSS_NAME]);
-      expect(readFileSync(join(out, "_astro", CSS_NAME)).equals(asset), run.out).toBe(true);
+      expect(readFileSync(join(out, "_astro", CSS_NAME)).equals(CSS), run.out).toBe(true);
     } finally { live.close(); }
   });
 
@@ -651,6 +689,10 @@ describe("the carrier carries only what our own previous build attested to", () 
       expect(run.status, run.out).toBe(0);
       expect(carried(out)).toEqual([]);
       expect(run.out).toContain(CSS_NAME);
+      // The 104,000 bytes this case is named for live in the digest, not on the
+      // wire: 5,000 of them are sent, and the step's verdict is that they are
+      // not what the build recorded. See `refusedOver`.
+      refusedOver(run.out, `sha256:${sha256(asset)}`, "checking the digest the build recorded");
     } finally { live.close(); }
   });
 
@@ -668,6 +710,10 @@ describe("the carrier carries only what our own previous build attested to", () 
       expect(run.status, run.out).toBe(0);
       expect(carried(out)).toEqual([]);
       expect(run.out).toContain(CSS_NAME);
+      // The origin writes all 104,000; the client stops at the 5,000 it was
+      // promised and never waits on the rest, which is why this case can hold
+      // the attack's size and the control above cannot. See `refusedOver`.
+      refusedOver(run.out, `sha256:${sha256(asset)}`, "checking the digest the build recorded");
     } finally { live.close(); }
   });
 
@@ -694,6 +740,10 @@ describe("the carrier carries only what our own previous build attested to", () 
       expect(live.asked).toEqual(["/", `/${DIGESTS}`, `/_astro/${CSS_NAME}`]);
       expect(carried(out)).toEqual([]);
       expect(run.out).toContain(CSS_NAME);
+      // For being empty, which is the whole of this case, and not for the
+      // clock — the digest agrees here, so emptiness is the only verdict left
+      // that is about the body. See `refusedOver`.
+      refusedOver(run.out, "empty body", "finding the body empty");
     } finally { live.close(); }
   });
 
@@ -711,6 +761,9 @@ describe("the carrier carries only what our own previous build attested to", () 
       expect(run.status, run.out).toBe(0);
       expect(carried(out)).toEqual([]);
       expect(run.out).toContain(CSS_NAME);
+      // By the digest — the point of the case is that nothing else could have
+      // caught it, so the digest is the verdict to assert. See `refusedOver`.
+      refusedOver(run.out, `sha256:${sha256(CSS)}`, "checking the digest the build recorded");
     } finally { live.close(); }
   });
 
@@ -1082,6 +1135,12 @@ describe("the carrier cannot fail the deploy", () => {
       expect(run.status, run.out).toBe(0);
       expect(carried(out)).toEqual([]);
       expect(run.out).toContain(CSS_NAME);
+      // This is the largest drain in the file — measured, 4 MB of the 5 reach
+      // the child before the ceiling trips — and it is safe for the reason the
+      // control above was not: the client never waits, it aborts the moment
+      // the count passes. Asserting the ceiling is what says so. See
+      // `refusedOver`.
+      refusedOver(run.out, String(4 * 1024 * 1024), "counting the body past the asset ceiling");
     } finally { live.close(); }
   });
 
