@@ -229,6 +229,36 @@ jobs:
           echo "urls=$urls" >> "$GITHUB_OUTPUT"
           echo "$(echo "$urls" | jq length) addresses in the sitemap"
 
+      # Why a deploy carries the previous generation's assets at all, the one
+      # generation it keeps, and the ceilings it holds an origin to: all of it
+      # is in `site/scripts/carry-assets.mjs`'s own header, which is the place
+      # it is kept true.
+      #
+      # What the step is: the last thing before the artifact is sealed, because
+      # it adds files to `dist/` and a file carried after the upload is a file
+      # nobody deploys — this is where that reason is kept, and the case in
+      # `tests/pipeline.test.ts` that pins this step's position points here.
+      # Two kinds of file: the assets it carries forward, and `asset-digests.txt`,
+      # the list of what THIS build made, which is the only thing the next
+      # deploy will check a carried byte against. No new action and no new
+      # token — `node`, which this job already has, and `SITE_URL`, the one
+      # place the site's address is decided. The script catches every failure
+      # and exits 0 on every path, so there is nothing here for
+      # `continue-on-error` to catch.
+      #
+      # The address arrives as an environment VALUE and the command line is
+      # empty, which is not a style choice: the script reads any `--name value`
+      # as a flag, so a repository variable spliced into argv could turn the
+      # whole mechanism off with every deploy still green. The reading is in
+      # the script's own header, under "Where the address comes from". Nothing
+      # may be appended to the `run:` line either, for the reason
+      # `tests/pipeline.test.ts` keeps beside its verbatim pin of this block.
+      - name: Carry the live site's assets forward, so a cached page still finds them
+        working-directory: site
+        env:
+          CARRY_ORIGIN: ${{ env.SITE_URL }}
+        run: node scripts/carry-assets.mjs
+
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: site/dist

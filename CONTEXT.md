@@ -352,3 +352,31 @@ _Avoid_: alert, notification
 
 **Baseline**:
 The first recorded snapshot of a source, against which change is measured.
+
+### The deploy
+
+**Carry** (verb):
+To copy an asset the LIVE site still references into the fresh `dist/` about
+to replace it — byte-identical, under the same name — so a page a reader's
+browser cached still finds what it asks for. Its object is one asset; its
+subject is the deploy (`scripts/carry-assets.mjs`, s33).
+_Avoid_: mirror, backup, sync
+
+**Generation** (of assets):
+The set of content-hashed `/_astro/` files one deploy publishes. A deploy
+carries exactly one previous generation forward.
+_Avoid_: version, build (of the assets)
+
+**The digest list** (`asset-digests.txt`):
+The file a build publishes beside its page, one line per asset it put in
+`_astro/`: that file's sha256 and its name. It is the only thing the next
+deploy checks a carried byte against.
+_Avoid_: manifest, checksum file, lockfile
+
+**The three outcomes**:
+The step's verdict on the page it read — nothing to do · could not look ·
+looked and something is still missing. The third has three shapes and a run
+may print more than one. Which outcome a run ended in is what its last lines
+say, and what tells a healthy deploy from a silent one. The annotation for a
+failed digest publish is not one of them: its subject is the next deploy.
+_Avoid_: success/failure, pass/fail (the step has no failure)
