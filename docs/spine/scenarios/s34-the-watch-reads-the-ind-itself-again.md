@@ -210,7 +210,23 @@ run carrying Chrome's cold start (34.5 s), and the whole job still well under
 the scenario's five-minute line. `expand` is in the recipe and earns nothing
 today: none of the thirty-eight sits behind *Show details*, and the sliced text
 is identical with the step and without it; it is kept as the guard it was
-written to be, at the cost of one click. **Provenance:** the five IND baselines
+written to be, at the cost of one click. **Point 2's vocabulary is narrower
+than it was written**, in one arm and deliberately: `expand` opens every
+collapsed block *in the page's own content, never in its furniture, and never
+by pressing a link* — nav, header, footer, aside and dialog are out, named
+structurally so the rule survives a reworded heading. Opening everything that
+merely says it is collapsed opened the IND's own navigation menu into the
+snapshot; and a security review then found the sharper half, that a disclosure
+which is a link takes the tab with it — measured, a cross-origin anchor wearing
+`aria-expanded` returned another site's body as the source's own reading — so
+after the steps the reader now refuses any page whose origin is not where it
+landed, and reports where the tab went. **Point 6's proof list was met by the
+runner rather than locally**: the line asking for the watch run with `--commit`
+against the live pages before the merge was answered by the workflow's own
+dispatches — a measurement run with `commit=false`, then a baseline run with
+`commit=true dispatch=false` — because the five IND pages are served the form
+only to a client that names itself, and the runner is the machine that reads
+them every morning. **Provenance:** the five IND baselines
 were rendered on the runner by the workflow itself; EUR-Lex and the BMI notice
 were rendered on a developer machine and then confirmed `unchanged` by the
 runner, which is the only evidence this slice has that a laptop render and a

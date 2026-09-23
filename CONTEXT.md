@@ -362,11 +362,14 @@ _Avoid_: headless tier, rendered tier, scraping
 One declared thing a Browser tier entry does to a page before it is read, from
 a closed vocabulary the coverage gate enforces: choose an option in a field
 (`select`), answer a yes/no question (`answer`), press a control (`press`),
-open every collapsed block (`expand`). Each names what it acts on by the
+open every collapsed block **in the page's own content, never its furniture,
+and never by pressing a link** (`expand`). Each names what it acts on by the
 control's **accessible name**, never by a CSS selector: a class name is ours to
 lose, a label is what the authority shows a person. An entry with no steps is
 simply rendered; a step that cannot be performed makes the entry unreachable
-with the step named, never a green day that read the wrong page.
+with the step named, never a green day that read the wrong page — and a step
+that moves the browser to another origin makes it unreachable too, because a
+third party's bytes must never be hashed as the authority's.
 _Avoid_: action, script, macro, recipe; plain "step" (taken by Step-gated row
 and Leverage step)
 
