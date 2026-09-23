@@ -193,7 +193,9 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-_(empty — the next slice is chosen at the next boundary)_
+- **s33 — a cached page still finds its assets** · scenario proposed
+  2026-09-23 (`docs/spine/scenarios/s33-a-cached-page-finds-its-assets.md`),
+  awaiting the human's word. v1.2 queue head (option A).
 
 ## mock-green
 
