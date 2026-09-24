@@ -155,3 +155,19 @@ entry with `since: "2026-09-23"`.
   us there; here it is whatever the fetcher says today.
 - Not a longer budget: 30 s per source stands (s34's default, DECISIONS
   2026-09-24); the retry spends a second budget, not a bigger one.
+
+**Corrected 2026-09-24, by the build:** three things in *How it is proved*
+turned out to be smaller or other than written. The budget spent is not
+proved end to end in `tests/s34-fetcher.test.ts`: `BUDGET_MS` is one number
+both readers borrow and is not a parameter, so making it injectable to keep
+the case fast would be changing the code to suit the test — the class is
+asked of the error path instead, of exactly what `AbortSignal.timeout`
+rejects a `fetch` with. The browser case cannot be one case: a missing field
+is refused by the source and is therefore never retried, so “a browser retry
+is one more open” is shown against a page the fixture server answers `503`
+to, which is transient by point 1's own rule — the missing field proves the
+class and the 503 proves the second open. And the states already on disk
+list their unread sources without a `since`: a source on that list was
+unread on the run before, which is what being on it means, so the first run
+under this rule reads the two `bamf` entries of 2026-09-24 as outages rather
+than giving them a lapse's day of grace, and is red if they fail again.
