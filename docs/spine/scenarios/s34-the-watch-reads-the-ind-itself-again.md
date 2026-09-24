@@ -207,9 +207,9 @@ runs took 46–77 s before this slice; the measurement dispatch 102 s, the first
 baseline dispatch 121 s, and the run that reads the five with the full
 five-step recipe 213 s — about 20 s per stepped page, with the first read of a
 run carrying Chrome's cold start (34.5 s), and the whole job still well under
-the scenario's five-minute line, which the final code still keeps. `expand` is
-in the recipe and earns nothing
-today: none of the thirty-eight sits behind *Show details*, and the sliced text
+the scenario's five-minute line — three runs on the final code (35926499955,
+35936470807, 35939456782) read the seven, the five stepped at 20–24 s, the
+job under four minutes. `expand` is in the recipe and earns nothing today: none of the thirty-eight sits behind *Show details*, and the sliced text
 is identical with the step and without it; it is kept as the guard it was
 written to be, at the cost of one click. **Point 2's vocabulary is narrower
 than it was written**, in one arm and deliberately: `expand` opens every
@@ -217,18 +217,17 @@ collapsed block *in the page's own content, never in its furniture, and never
 by pressing a link* — nav, header, footer, aside and dialog are out, named
 structurally so the rule survives a reworded heading. Opening everything that
 merely says it is collapsed opened the IND's own navigation menu into the
-snapshot; and a security review then found the sharper half, that a disclosure
-which is a link takes the tab with it — measured, a cross-origin anchor wearing
-`aria-expanded` returned another site's body as the source's own reading — so
+snapshot; and sharper, a disclosure which is a link takes the tab with it —
+measured, a cross-origin anchor wearing `aria-expanded` returned another site's
+body as the source's own reading — so
 the origin the entry names is now the only origin a reading may come from: a
-page that redirects or meta-refreshes to a third party on load is refused as
-surely as a step that presses its way there, while
-a redirect around the source's own site (the Opportunity Card's cookie check)
-still reads; a move within that origin is allowed and the address it was read
+page that redirects or meta-refreshes to a third party is refused like
+a step that presses its way there, while a redirect around the source's own
+site (the Opportunity Card's cookie check) still reads; a move within that origin is allowed and the address it was read
 at is logged — as its own `watch:read_at` event, on the fetch tier as well as
 the browser one — because the origin is the trust line and a sub-path is not.
-The fetch tier got the same guard in the same round, being the same harm one
-tier over, and then a rewrite of its own that the nine points do not cover: it
+The fetch tier got the same guard, and then a rewrite of its own that the nine
+points do not cover: it
 judges a redirect BEFORE taking it, so an off-site target is refused without
 ever being requested, the status reported is the redirect's own rather than a
 stranger's, and a chain is capped at five hops. One
@@ -263,8 +262,8 @@ http on the same host, a real government source's TLS downgrade, and a link
 that works for a reader was reported broken every morning (run 35934301563).
 The policy now lives in the `STRATEGIES` table, per strategy: a strategy whose
 bytes become a reading keeps the strict rule, because what a source redirects
-to is not the source; `link`, which is fetched and never compared, follows
-anywhere a person's browser would. The hop cap holds for both, neither will
+to is not the source; `link`, which is fetched and never compared, follows any
+http(s) host the floor allows. The hop cap holds for both, neither will
 carry credentials, and a link that lands somewhere other than its address says
 so in the daily log as a `read_at` line — visible, but not a flag and not a red
 day, because a link that moved is news for a curator and not a change to a
