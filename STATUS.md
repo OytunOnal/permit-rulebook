@@ -54,6 +54,22 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
+- [ ] **s34, one more corner, then the merge.** The floor under a `link`
+      entry's redirects now parses IPv6, and the Security axis named the
+      prefixes it does not cover: NAT64 (`64:ff9b::/96`), 6to4 (`2002::/16`),
+      the deprecated compat form (`::/96`) and site-local (`fec0::/10`) — each
+      embeds or means a private address and each was requested from a public
+      entry in the reviewer's probe; no source in the watchlist does this.
+      (a) `sınır`: declare the floor's boundary in the reader's header (the
+      literal families measured to reach loopback on the runner) and fold the
+      rest into the resolve-time address check already under `later`, merge;
+      (b) `düzelt`: the four prefixes added, one more round, then merge; (c)
+      `ayrı`: as (a), with the four prefixes as their own entry. Pass = "sınır",
+      "düzelt" or "ayrı" — and "merge" for the merge, data first. Why yours: the
+      floor stops the building on a corner; the real fix is the resolve-time
+      check, a mechanism, not a prefix list. asked: 2026-09-24 entry: s34
+
+
 - [x] 2026-09-24 **s34's brake**: the three corners went to the human with the
       three options. Pass = "sınır", "düzelt" or "ayrı" — answered "düzelt": one
       delta with its round, then the change closes. asked: 2026-09-24 entry: s34
