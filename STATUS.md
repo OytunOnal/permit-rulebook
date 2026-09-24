@@ -51,6 +51,11 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   trace against this branch, so a data sha closed nothing and the ten
   pre-record waivers were ignored (DECISIONS 2026-09-24; reported to Spine,
   which confirmed it and reads DECISIONS at one 512 KB cap since today).
+- A delta round is written into the record before the next delta opens:
+  s36's rounds 5 and 6 were reviewed and built but written only at the
+  close, so three Security lines stood without their traces through the
+  merge (DECISIONS 2026-09-25; the guard found it the moment the merge
+  landed). The record now carries both rounds and their closures.
 - s36 is live and not yet real-green: the runner read all 46 through the new
   connect path six times on the branch (the last, 36062451413: 46/46, 173 s),
   but the scheduled run on data master is the one that counts. The fetch tier
