@@ -5,9 +5,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-23, s33 merged and live — the deploy publishes
-  `asset-digests.txt` and carries the previous generation against it. Nine
-  delta rounds; the record is `docs/spine/reviews/s33.md`.
+- Last boundary: 2026-09-24, skills reloaded (steward-70 to 76: the loop's
+  four rules and the brake) mid-way through s34's review; s33 live since
+  2026-09-23 (`docs/spine/reviews/s33.md`).
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: **s34 — the watch reads the IND itself again** (data #17),
   approved 2026-09-23 (human: "onaylıyorum"), building in two worktrees
