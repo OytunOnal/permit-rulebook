@@ -59,7 +59,7 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **s35's brake: the alternating-day hole.** Round 1's Security axis found
+- [x] 2026-09-24 **s35's brake: the alternating-day hole** — answered "düzelt". Round 1's Security axis found
       that the approved rule (point 3: red on two consecutive unread runs)
       lets a source that fails every other morning stay a green lapse for
       ever — `since` drops on each good day, nothing accumulates
