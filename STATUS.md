@@ -5,18 +5,18 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-24, s34 merged and live — the watch reads the IND
-  itself through a browser strategy (`docs/spine/reviews/s34.md`); its
-  real-green is the first scheduled run.
+- Last boundary: 2026-09-24, s34 real-green on the first scheduled run —
+  the watch reads the IND itself through a browser strategy
+  (`docs/spine/reviews/s34.md`); the workflows' runner and actions pinned.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: **s34** is merged and live (data `5a28fee`, site `3bceff0`);
-  its real-green waits on the first scheduled watch run on data master — the
-  seven browser entries read with no `unreachable`, the state committed, the
-  site's pin landing with `human_tier: 1`. Nothing is being built.
-- v1.2: 10 of 14 planned steps passed for real (ten slices s23–s33), one
-  live and waiting on its real-green (s34); 3 queued — the watch retry (from
-  #21, the queue head), then two steward items (Back on a restored record;
-  an unknown link's first paint). Roadmap fork 2026-09-23:
+- In flight: nothing. The next slice is v1.2's queue head, the watch retry
+  (intake #21): a source that fails once is read again — four red days in
+  five (09-20, 09-21, 09-23, 09-24), all source-side.
+- v1.2: 11 of 14 planned steps passed for real (eleven slices s23–s34); 3
+  queued — the watch retry (from #21, the queue head), then two steward
+  items (Back on a restored record; an unknown link's first paint). Two
+  `later` candidates carried `after: s34` and are now the fork's
+  questions. Roadmap fork 2026-09-23:
   all six `later` candidates kept, clock reset. Roadmap: 24 candidates ahead, 12 unversioned under
   `later`, every one with an `after:` since the fork of 2026-09-24 (ten on
   the readings of 2026-10-09, two on s34's real-green) (three moved from the old backlog; clock reset 2026-09-18).
@@ -27,25 +27,27 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is happening now
 
-- Live: https://permitrulebook.com at `3bceff0` (s34), data pinned at
-  `5a28fee`, dataset 2026.09.18, schema 0.8.2; 757 site tests, 741 data
-  tests; `/data/` says *re-read daily* of the IND's pages. The daily watch did **not**
-  read every source today: `bamf-hochschulabsolvent` is unread on
-  2026-09-23 — the third red day in four (09-20, 09-21, 09-23); the retry
-  slice is queued beside #17.
-- Metric 2 (the daily watch finishes) is off target: two red days, 09-20 and
-  09-21, both source-side (403s, timeouts); 09-22 read all 46 clean. The
-  retry slice is queued beside #17.
+- Live: https://permitrulebook.com at `4b095d6` (s34 + the workflow pins),
+  data pinned at `c25bc8c` (the 2026-09-24 state), dataset 2026.09.18,
+  schema 0.8.2; 757 site tests, 741 data tests; `/data/` says *re-read
+  daily — last run 2026-09-24*. The daily watch did **not** read every
+  source today: `bamf-hochschulabsolvent` and `bamf-selbstaendige-taetigkeit`
+  answered `fetch failed` — the fourth red day in five; the retry slice is
+  the queue head.
+- Metric 2 (the daily watch finishes) is off target: four red days in five
+  (09-20, 09-21, 09-23, 09-24), all source-side (403s, timeouts, `fetch
+  failed` on bamf.de); 09-22 read all 46 clean. The retry slice is next.
 - s33 is live and its carry is not yet exercised: the slice touched nothing
   under `src/`, so the deploy's carrier logged `0 asset(s) carried, 2
   already in this build, 0 left behind` — the quiet outcome, correct — and
   published the first `asset-digests.txt` (live, two sha256 lines matching
   the local build). The carry is first exercised on the deploy after the
   first `src/` change; the reading is your calendar item below.
-- s34 is live and not yet real-green: the runner read the seven browser
-  entries three times on the branch; the scheduled run on data master is the
-  one that counts, and it is your calendar item below. Until the retry slice
-  lands, a browser entry that meets the runner's slow minute is a red day.
+- s34 is real-green (the scheduled run 35985154468: seven browser entries
+  read, state `c25bc8c`, pin `4df0655`); the same run is red for two BAMF
+  fetch-tier entries (`fetch failed`) — #21's ground. Both workflows now
+  pin `ubuntu-24.04` and Node 24 actions (DECISIONS, runner-pin-2026-09-24);
+  the move to Ubuntu 26 is a `later` candidate with `after: 2026-10-19`.
 - One Security finding stays open and only the human's word can close it:
   the step fetches from `$SITE_URL`, a repository variable, so whoever can
   set it can have bytes of their choosing published from our own origin,
@@ -54,7 +56,7 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **Read s34's real-green after the first scheduled watch run.** Open
+- [x] 2026-09-24 **Read s34's real-green after the first scheduled watch run** — answered "yeşil". Open
       https://github.com/OytunOnal/permit-rulebook-data/actions, the newest
       `watch` run started by schedule after 2026-09-24, and its log: the
       seven browser entries (the five `nl-ind-*`, `de-bmi-chancenkarte`,

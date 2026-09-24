@@ -42,8 +42,8 @@ under the open version. A landed line carries its slice's title and the
 mark `promoted <date>`; the board's done column holds the step.
 
 **Landed**
-- **Data #17 — the browser-read strategy for the IND** · promoted 2026-09-23 · s34 · live 2026-09-24 (real-green
-  on the first scheduled run) · the road back from the human tier (five IND
+- **Data #17 — the browser-read strategy for the IND** · promoted 2026-09-23 · s34 · live 2026-09-24 ·
+  real-green 2026-09-24 · the road back from the human tier (five IND
   route pages read by a person since s14; the BMI sentinel since s29):
   headless Chrome from the runner reads what the fetcher cannot (s14 measured
   yes) · bet: a `browser` watch strategy keeps the daily read honest without
@@ -235,19 +235,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-- **s34 — the watch reads the IND itself again** · approved 2026-09-23
-  (human: "onaylıyorum") · **merged and live 2026-09-24** (human: "merge";
-  data `5a28fee`, site `3bceff0`, deploy run 35945286811 green; the branches
-  and worktrees gone) · **real-green waits on the first scheduled watch run**
-  on data master: the seven browser entries read with no `unreachable`, the
-  state committed, the site's pin landing with `human_tier: 1`
-  (`docs/spine/scenarios/s34-the-watch-reads-the-ind-itself-again.md`,
-  `docs/spine/reviews/s34.md`). What landed: a `browser` watch strategy —
-  headless Chrome on the runner, steps declared on the entry, from there the
-  html read — takes seven entries off the human tier (the five IND route
-  pages, the BMI notice, EUR-Lex; `human_tier` 40 → 1, `verified` 156 → 195,
-  the dataset untouched); Legifrance and gesetze stay, with the reason; the
-  fetch tier judges a redirect before taking it; three coverage refusals.
+_(empty)_
 
 ## mock-green
 
@@ -258,6 +246,20 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s34 — the watch reads the IND itself again** · real-green 2026-09-24
+  (human: "yeşil"; the first scheduled watch run after the merge,
+  35985154468: the seven browser entries read with no `unreachable`, state
+  `c25bc8c`, the site's pin `4df0655` with `human_tier: 1`, `/data/`
+  *re-read daily — last run 2026-09-24*) · merged 2026-09-24 (human: "merge";
+  data `5a28fee`, site `3bceff0`). A `browser` watch strategy — headless
+  Chrome on the runner, steps declared on the entry, from there the html
+  read — takes seven entries off the human tier (the five IND route pages,
+  the BMI notice, EUR-Lex; `human_tier` 40 → 1, `verified` 156 → 195, the
+  dataset untouched); Legifrance and gesetze stay, with the reason; the fetch
+  tier judges a redirect before taking it. Nine review rounds, 14 hard
+  findings closed, the reloaded floor's first brake answered ("düzelt",
+  "sınır"); `docs/spine/reviews/s34.md`.
 
 - **s33 — a cached page still finds its assets** · real-green 2026-09-23
   on the proof list as written (human: "merge"; site `1cc7800`, run
