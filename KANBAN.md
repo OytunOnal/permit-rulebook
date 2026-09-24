@@ -42,6 +42,12 @@ under the open version. A landed line carries its slice's title and the
 mark `promoted <date>`; the board's done column holds the step.
 
 **Landed**
+- **Data #17 — the browser-read strategy for the IND** · promoted 2026-09-23 · s34 · live 2026-09-24 (real-green
+  on the first scheduled run) · the road back from the human tier (five IND
+  route pages read by a person since s14; the BMI sentinel since s29):
+  headless Chrome from the runner reads what the fetcher cannot (s14 measured
+  yes) · bet: a `browser` watch strategy keeps the daily read honest without
+  a person; source: data #17, s14.
 - **A cached page outlives its assets** · promoted 2026-09-23 · s33 · live 2026-09-23 · (the CLS chase, 2026-09-23; human:
   "tamamdır" to option A) · `/` is served with a ten-minute cache while
   `_astro/*` is content-hashed and replaced every deploy, so a reader holding
@@ -64,11 +70,6 @@ mark `promoted <date>`; the board's done column holds the step.
 - **the copy pass** (a route page names its own unread sources, F3 — moved from the `v1.x` bucket 2026-09-17) · promoted 2026-09-17 · s23
 
 **Queue** (in order; the first unpromoted line is the next slice)
-- **Data #17 — the browser-read strategy for the IND** · promoted 2026-09-23 · s34 · the road back from the
-  human tier (five IND route pages read by a person since s14; the BMI
-  sentinel since s29): headless Chrome from the runner reads what the
-  fetcher cannot (s14 measured yes) · bet: a `browser` watch strategy keeps
-  the daily read honest without a person; source: data #17, s14.
 - **A source that fails once is read again** (intake #21, 2026-09-22) · the
   daily watch gives up on the first `unreachable`: 09-20 six sources answered
   403 (buzer.de ×5, wetten.overheid.nl), 09-21 three timed out (boe.es ×2,
@@ -225,13 +226,18 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 ## active
 
 - **s34 — the watch reads the IND itself again** · approved 2026-09-23
-  (human: "onaylıyorum"); building in `../permit-rulebook-data-s34` and
-  `../permit-rulebook-s34` (branch `s34-browser-strategy` in both)
-  (`docs/spine/scenarios/s34-the-watch-reads-the-ind-itself-again.md`). Data
-  #17: a `browser` strategy — headless Chrome on the runner, steps declared
-  on the entry — takes seven entries off the human tier (the five IND route
-  pages, the BMI notice, EUR-Lex); Legifrance and gesetze stay, with the
-  reason. v1.2 queue head.
+  (human: "onaylıyorum") · **merged and live 2026-09-24** (human: "merge";
+  data `5a28fee`, site `3bceff0`, deploy run 35945286811 green; the branches
+  and worktrees gone) · **real-green waits on the first scheduled watch run**
+  on data master: the seven browser entries read with no `unreachable`, the
+  state committed, the site's pin landing with `human_tier: 1`
+  (`docs/spine/scenarios/s34-the-watch-reads-the-ind-itself-again.md`,
+  `docs/spine/reviews/s34.md`). What landed: a `browser` watch strategy —
+  headless Chrome on the runner, steps declared on the entry, from there the
+  html read — takes seven entries off the human tier (the five IND route
+  pages, the BMI notice, EUR-Lex; `human_tier` 40 → 1, `verified` 156 → 195,
+  the dataset untouched); Legifrance and gesetze stay, with the reason; the
+  fetch tier judges a redirect before taking it; three coverage refusals.
 
 ## mock-green
 

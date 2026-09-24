@@ -5,31 +5,31 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-24, skills reloaded (steward-70 to 76: the loop's
-  four rules and the brake) mid-way through s34's review; s33 live since
-  2026-09-23 (`docs/spine/reviews/s33.md`).
+- Last boundary: 2026-09-24, s34 merged and live — the watch reads the IND
+  itself through a browser strategy (`docs/spine/reviews/s34.md`); its
+  real-green is the first scheduled run.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: **s34 — the watch reads the IND itself again** (data #17),
-  built and reviewed — eight rounds, 14 hard findings closed, the runner
-  reading all seven with the final code — and **braked** on three corners
-  under the reloaded floor; the human said "düzelt" — one delta with its
-  round, then the merge (data first, the site pins). The record is on the
-  branch (`docs/spine/reviews/s34.md`).
-- v1.2: 10 of 14 planned steps passed for real (ten slices s23–s33); 4
-  queued — #17, the watch retry (from #21), then two steward items (Back on
-  a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
+- In flight: **s34** is merged and live (data `5a28fee`, site `3bceff0`);
+  its real-green waits on the first scheduled watch run on data master — the
+  seven browser entries read with no `unreachable`, the state committed, the
+  site's pin landing with `human_tier: 1`. Nothing is being built.
+- v1.2: 10 of 14 planned steps passed for real (ten slices s23–s33), one
+  live and waiting on its real-green (s34); 3 queued — the watch retry (from
+  #21, the queue head), then two steward items (Back on a restored record;
+  an unknown link's first paint). Roadmap fork 2026-09-23:
   all six `later` candidates kept, clock reset. Roadmap: 24 candidates ahead, 12 unversioned under
   `later`, every one with an `after:` since the fork of 2026-09-24 (ten on
   the readings of 2026-10-09, two on s34's real-green) (three moved from the old backlog; clock reset 2026-09-18).
 - Pace: 10 slices real-green in two days (s23–s32, 2026-09-17 → 18), ≈ 0.2
-  days per slice; 3 to go → under a week at this pace — but #17 is larger
-  than the ones behind (a browser in CI, a new watch strategy), so read it as
-  days, not hours.
+  days per slice; the two after took a day each (s33 approved and live
+  2026-09-23; s34 approved 2026-09-23, live 2026-09-24); 3 to go → days at
+  the recent pace, the retry slice the size of s33, not s34.
 
 ## What is happening now
 
-- Live: https://permitrulebook.com at `1cc7800` (s33), dataset 2026.09.18,
-  schema 0.8.2; 757 site tests, 647 data tests. The daily watch did **not**
+- Live: https://permitrulebook.com at `3bceff0` (s34), data pinned at
+  `5a28fee`, dataset 2026.09.18, schema 0.8.2; 757 site tests, 741 data
+  tests; `/data/` says *re-read daily* of the IND's pages. The daily watch did **not**
   read every source today: `bamf-hochschulabsolvent` is unread on
   2026-09-23 — the third red day in four (09-20, 09-21, 09-23); the retry
   slice is queued beside #17.
@@ -42,10 +42,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   published the first `asset-digests.txt` (live, two sha256 lines matching
   the local build). The carry is first exercised on the deploy after the
   first `src/` change; the reading is your calendar item below.
-- A local trap found while merging, recorded in DECISIONS: the suite reads
-  `dist/` and the sibling data clone, so after any data change it must be
-  `git pull` in the data repo and `npm run build` before `npm test`, or it
-  goes red for a reason that is not a defect. CI already does both in order.
+- s34 is live and not yet real-green: the runner read the seven browser
+  entries three times on the branch; the scheduled run on data master is the
+  one that counts, and it is your calendar item below. Until the retry slice
+  lands, a browser entry that meets the runner's slow minute is a red day.
 - One Security finding stays open and only the human's word can close it:
   the step fetches from `$SITE_URL`, a repository variable, so whoever can
   set it can have bytes of their choosing published from our own origin,
@@ -54,6 +54,16 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
+- [ ] **Read s34's real-green after the first scheduled watch run.** Open
+      https://github.com/OytunOnal/permit-rulebook-data/actions, the newest
+      `watch` run started by schedule after 2026-09-24, and its log: the
+      seven browser entries (the five `nl-ind-*`, `de-bmi-chancenkarte`,
+      `eur-lex-blue-card-directive`) read `ok`, none `unreachable`, and the
+      state commit landed; then
+      https://permitrulebook.com/data/ still says *re-read daily* of the
+      IND's pages. Pass = "yeşil" if both hold, or the failing line pasted
+      here. Why yours: the run is calendar-spaced and lands while no
+      session is open. asked: 2026-09-24 entry: s34
 - [x] 2026-09-24 **s34's last corner**: the IPv6 transition prefixes. Pass =
       "sınır", "önek" or "ayrı" — answered "sınır": the floor's boundary is
       declared in its header; the four prefixes join the resolve-time candidate.
