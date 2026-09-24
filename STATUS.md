@@ -54,8 +54,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [x] 2026-09-24 **s34's brake — "düzelt"**: one delta with its round for the four
-      corners, then the change closes. asked: 2026-09-24 entry: s34
+- [x] 2026-09-24 **s34's brake**: the three corners went to the human with the
+      three options. Pass = "sınır", "düzelt" or "ayrı" — answered "düzelt": one
+      delta with its round, then the change closes. asked: 2026-09-24 entry: s34
+
 
 _(s34 approved by the human 2026-09-23: "onaylıyorum".)_
 
