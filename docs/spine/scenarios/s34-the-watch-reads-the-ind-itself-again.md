@@ -207,8 +207,7 @@ runs took 46–77 s before this slice; the measurement dispatch 102 s, the first
 baseline dispatch 121 s, and the run that reads the five with the full
 five-step recipe 213 s — about 20 s per stepped page, with the first read of a
 run carrying Chrome's cold start (34.5 s), and the whole job still well under
-the scenario's five-minute line — and on the final code, run 35936470807 read
-the five at 21–24 s, EUR-Lex at 26.4 and the BMI notice at 12.5. `expand` is
+the scenario's five-minute line, which the final code still keeps. `expand` is
 in the recipe and earns nothing
 today: none of the thirty-eight sits behind *Show details*, and the sliced text
 is identical with the step and without it; it is kept as the guard it was
@@ -232,8 +231,7 @@ The fetch tier got the same guard in the same round, being the same harm one
 tier over, and then a rewrite of its own that the nine points do not cover: it
 judges a redirect BEFORE taking it, so an off-site target is refused without
 ever being requested, the status reported is the redirect's own rather than a
-stranger's, and a chain is capped at five hops — all of that for a reading,
-while a `link` is followed where it is sent. One
+stranger's, and a chain is capped at five hops. One
 housekeeping note for the record: `ind-turkish-citizens` was left unread by
 the runner on 2026-09-23 through a transient fetch failure, and was re-read
 before the merge with `--only --commit` from a developer machine — the state
