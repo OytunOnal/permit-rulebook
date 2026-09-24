@@ -404,33 +404,33 @@ _Avoid_: action, script, macro, recipe; plain "step" (taken by Step-gated row
 and Leverage step)
 
 **Failure class**:
-What kind of failure a read met, in one of three words, decided by the reader
-that met it. **Transient** — nothing refused anything and the reading simply
-did not happen: a network error (the cause code travels in the text,
-`fetch failed (ECONNRESET)`), the 30 s budget spent, `408`, `425`, `429`, any
-`5xx`, an empty body. **Refused by the source** — the source answered and the
-answer was no or was not the page: any other `4xx`, a bot wall, a page that
-moved, a Watch step that finds no field. **Refused by us** — the floor
-declined to make the request at all: a credentialled or malformed address, an
-off-origin redirect or navigation, a private or loopback target, too many
-hops, no browser on the runner. A transient failure is read once more after
-the pass; neither refusal is, because the source's answer will not change in
-three minutes and ours must not.
+Whose "no" a read met, in one of three words, decided by the reader that met
+it. **Transient** — nobody refused anything and the reading simply did not
+happen: the source asked for a moment, or called it its own fault, or nothing
+answered at all. **Refused by the source** — the source answered, and the
+answer was no or was not the page: a bot wall, a page that moved, a page
+whose control the authority renamed. **Refused by us** — this watch declined
+to make the request at all, because of where the address led or what it
+carried. The split decides three things: what is read a second time, what
+reddens the morning, and on which morning. A transient failure is read once
+more after the pass; neither refusal is, because the source's answer will not
+change in three minutes and ours must not.
 _Avoid_: error type, severity, retryable
 
 **Lapse**:
-A source unread on one run that the run before did read — one silent morning.
-It is reported unreachable like any other, the page still says the last run
-did not reach it, and the run itself stays **green**: four of the five runs
-before 2026-09-24 were red for something that read clean the next morning.
-The first day is recorded as `since` on the state's unread item.
+A source the run could not read on one morning of the last seven, and on no
+other — one silent morning inside the week. It is reported unreachable like
+any other, the page still says the last run did not reach it, and the run
+itself stays **green**: four of the five runs before 2026-09-24 were red for
+something that read clean the next morning.
 _Avoid_: blip, hiccup (the cause, not the state), transient (a Failure class)
 
 **Outage**:
-A source unread on two consecutive runs — the second silent morning, counted
-from the `since` the first one wrote. The run is **red**, which is what a red
-run now means. A refusal by us is red on its first morning instead, because
-waiting a day changes nothing about an address the watch will not request.
+A source the run could not read on two or more mornings of the last seven,
+however those mornings fell — a source that goes quiet every other day is an
+outage on the second one. The run is **red**, which is what a red run now
+means. A refusal by us is red on its first morning instead, because waiting a
+day changes nothing about an address the watch will not request.
 _Avoid_: downtime, failure, persistent lapse
 
 **Flag**:
