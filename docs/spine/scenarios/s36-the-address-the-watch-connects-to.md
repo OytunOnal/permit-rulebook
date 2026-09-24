@@ -148,34 +148,34 @@ not spell are spelled.
 
 **Corrected 2026-09-24, by the build:**
 
-Six claims above were wrong or unprovable. The code follows the corrected
+Seven claims above were wrong or unprovable. The code follows the corrected
 reading; nothing here is new.
 
 - **The second-call proof** ("The check is on the connect"). A resolver
-  answering public first and private after is **not** refused, and cannot be:
-  the hook resolves once, judges what came back and connects to it. What is
-  proved tells a hook from a pre-flight: a name answering loopback first is
-  read and **the fixture records the request** (a pre-flight would take the
-  second answer and record nothing); reversed, it is refused, nothing
-  recorded.
+  answering public first and private after is **not** refused: the hook
+  resolves once, judges what came back and connects to it — proving it would
+  mean dialling a real public address. What is proved tells them apart: a name
+  answering loopback first is read and **the fixture records the request** (a
+  pre-flight would take the second and record nothing); reversed, refused,
+  nothing recorded.
 - **"the single address it approved"** (point 1). Node asks the hook for *all*
   a name's addresses (`{ hints: 0, all: true }`, measured 2026-09-24, Node
   v24.20.0) and selects among them; the fetcher judges every one, so nothing
   unjudged is dialled.
-- **"same headers"** (point 5). `fetch` sent four of its own beside the
-  watch's two (`accept: */*`, `accept-language: *`, `sec-fetch-mode: cors`,
-  `accept-encoding: gzip, deflate`; same day, Node v24.20.0). All six travel;
-  the body is decompressed here, under a measured bound, inside the budget; on
-  the wire only the order changed (`Host` after ours).
+- **"same headers"** (point 5). `fetch` sent four of its own beside our two
+  (`accept: */*`, `accept-language: *`, `sec-fetch-mode: cors`,
+  `accept-encoding: gzip, deflate`; same day, same Node). All six travel; the
+  body is decompressed here, under a measured bound, inside the budget; on the
+  wire only the order changed (`Host` after ours).
 - **"same errors"** (point 5) and **"not a change to the browser tier"**
   (point 6). Three browser-tier sentences changed, each bounding words not
   ours: a page's value is quoted (`aria-expanded "true"`); a page's request
-  list bounds its addresses at `MOST_OF_AN_ADDRESS`, which were unbounded;
+  list bounds its addresses at `MOST_OF_AN_ADDRESS`, unbounded before;
   Chrome's own error text is made printable. The fetch tier is unchanged.
 - **"from a public entry"** (the four prefixes) and **the private-or-loopback
-  exemption** (what this slice is not). Both from the loopback fixture entry:
-  a stub resolver cannot stand a public-named entry in front of one, and
-  link-local is refused under any entry, site-local under either; an entry
-  that IS such an address stays green, one NAMED so it resolves to one does
-  not — point 2's relative rule governs, `allowedAddress` judging what came
-  back against `addressKind(entryHost)`, public for a name.
+  exemption** (what this slice is not). Both from the loopback fixture: a stub
+  resolver cannot stand a public-named entry before one; link-local is refused
+  under any entry, site-local under either; an entry that IS such an address
+  stays green, one NAMED so it resolves to one does not — point 2's relative
+  rule governs, not point 1: `allowedAddress` judges what came back against
+  `addressKind(entryHost)`, public for a name.
