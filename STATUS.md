@@ -9,9 +9,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   the watch reads the IND itself through a browser strategy
   (`docs/spine/reviews/s34.md`); the workflows' runner and actions pinned.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: nothing. The next slice is v1.2's queue head, the watch retry
-  (intake #21): a source that fails once is read again — four red days in
-  five (09-20, 09-21, 09-23, 09-24), all source-side.
+- In flight: **s35 — a source that fails once is read again** (data #21),
+  scenario written 2026-09-24 and waiting on your word; nothing is built.
+  Four red days in five (09-20, 09-21, 09-23, 09-24), all source-side, none
+  still there the next morning.
 - v1.2: 11 of 15 planned steps passed for real (eleven slices s23–s34); 4
   queued — the watch retry (from #21, the queue head), the resolve-time
   address check (versioned at the fork of 2026-09-24), then two steward
@@ -56,6 +57,15 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
+- [ ] **Approve s35's scenario, or say what to change.** Read
+      `docs/spine/scenarios/s35-a-source-that-fails-once-is-read-again.md`:
+      eight points — a failure has a class, a transient one is retried once
+      after the pass, one unread day is a lapse and two are an outage, a
+      refusal by us is red at once, the workflow does not change, the page
+      does not change, metric 2 keeps its row, the words. Pass =
+      "onaylıyorum", or a point's number with the change. Why yours: the
+      exam is written before the build, and it moves what makes a run red.
+      asked: 2026-09-24 entry: s35
 - [x] 2026-09-24 **Read s34's real-green after the first scheduled watch run** — answered "yeşil". Open
       https://github.com/OytunOnal/permit-rulebook-data/actions, the newest
       `watch` run started by schedule after 2026-09-24, and its log: the

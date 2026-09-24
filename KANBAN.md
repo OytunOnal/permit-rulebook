@@ -70,7 +70,7 @@ mark `promoted <date>`; the board's done column holds the step.
 - **the copy pass** (a route page names its own unread sources, F3 — moved from the `v1.x` bucket 2026-09-17) · promoted 2026-09-17 · s23
 
 **Queue** (in order; the first unpromoted line is the next slice)
-- **A source that fails once is read again** (intake #21, 2026-09-22) · the
+- **A source that fails once is read again** (intake #21, 2026-09-22) · promoted 2026-09-24 · s35 · the
   daily watch gives up on the first `unreachable`: 09-20 six sources answered
   403 (buzer.de ×5, wetten.overheid.nl), 09-21 three timed out (boe.es ×2,
   bamf.de), 09-22 all 46 read clean — two red days for outages that were gone
@@ -238,7 +238,14 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-_(empty)_
+- **s35 — a source that fails once is read again** · scenario written
+  2026-09-24, **awaiting the human's approval**
+  (`docs/spine/scenarios/s35-a-source-that-fails-once-is-read-again.md`).
+  Data #21: a failure has a class (transient · refused by the source ·
+  refused by us); a transient failure is asked once more after the pass; one
+  unread day is a lapse (green, `since` in the state), two in a row an
+  outage (red); a refusal by us is red the same day; nothing a reader sees
+  changes. Real-green is the metric-2 reading of 2026-09-29.
 
 ## mock-green
 
