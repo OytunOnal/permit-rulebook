@@ -160,15 +160,15 @@ reading; nothing here is a new promise.
   records the request** — a pre-flight would connect to the second answer and
   record nothing — and the same name reversed is refused, recording nothing.
 - **"the single address it approved"** (point 1). Node asks the hook for *all*
-  of a name's addresses (`{ hints: 0, all: true }`, measured 2026-09-24 on
+  a name's addresses (`{ hints: 0, all: true }`, measured 2026-09-24 on Node
   v24.20.0) and selects among them. The fetcher hands back the list, every
-  address judged: nothing unjudged can be connected to.
+  address judged: nothing unjudged is connected to.
 - **"same headers"** (point 5). `fetch` sent four of its own beside the
   watch's two: `accept: */*`, `accept-language: *`, `sec-fetch-mode: cors`,
-  `accept-encoding: gzip, deflate` (measured 2026-09-24, v24.20.0). All six
-  travel; the body is decompressed here, under a measured bound and inside the
-  budget. On the wire only the order changed: `Host` now follows the watch's
-  own headers.
+  `accept-encoding: gzip, deflate` (measured 2026-09-24, Node v24.20.0). All
+  six travel; the body is decompressed here, under a measured bound, inside
+  the budget. On the wire only the order changed: `Host` now follows the
+  watch's own headers.
 - **"from a public entry"** (the four prefixes). Proved from the loopback
   fixture entry: a stub resolver cannot stand a public-named entry in front of
   one, the relative rule refusing that pair. The outcome is the same —
