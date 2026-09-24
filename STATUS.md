@@ -10,8 +10,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   (`docs/spine/reviews/s34.md`); the workflows' runner and actions pinned.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: **s35 — a source that fails once is read again** (data #21),
-  approved 2026-09-24 ("onaylıyorum"); building on branch `s35-retry` in
-  both repositories (`../permit-rulebook-data-s35`, `../permit-rulebook-s35`).
+  built and reviewed — five rounds, fifteen reviews, four deltas; the change
+  closed on delta 4 and both brakes are answered ("düzelt", "sınır").
+  Waiting on the word to merge; real-green is the metric-2 reading of
+  2026-09-29.
   Four red days in five (09-20, 09-21, 09-23, 09-24), all source-side, none
   still there the next morning.
 - v1.2: 11 of 15 planned steps passed for real (eleven slices s23–s34); 4
@@ -59,8 +61,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **s35's second brake: three corners at the repository's own write
-      boundary.** The change closes on delta 4 (no behaviour finding in its
+- [x] 2026-09-24 **s35's second brake: three corners at the repository's own write
+      boundary** — answered "sınır": the header declares the clock's day; the id
+      grammar and the two older readers become one `later` candidate. The change closes on delta 4 (no behaviour finding in its
       hunks), with three Security lines open, none with a live instance and
       every one needing repo write: (1) in the change — a `last_run` dated
       after today cancels the migration, green-ward

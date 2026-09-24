@@ -177,6 +177,24 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
 
 ### later (clock: DECISIONS rows since 2026-09-24)
 
+- **An id is a word the watch chose** · after: s35 (from s35's delta rounds 3
+  and 4, 2026-09-24; human: "sınır") · nothing anywhere spells what a
+  watchlist id may be: `checkCoverage` gates urls, kind, steps, glyphs and
+  credentials and never the id, so an id of `constructor` or `__proto__` is
+  legal — and every record this project keys by id reads through a plain
+  object's prototype. s35 closed that for the week's mornings
+  (`daysBySource`, a null-prototype record) and left it standing in s11's
+  `entries` (`../permit-rulebook-data/src/watch/core.ts:476`: id
+  `constructor` throws `prev.history is not iterable` outside the per-entry
+  `try` and the whole run dies; `nextEntries["__proto__"]` is never baselined
+  — a permanent silent green) and in `state.ts:202,226`, which read the
+  state's `unread` unguarded and take the coverage gate down with a
+  `TypeError`. Three parts, one afternoon: a grammar in the coverage gate
+  (`^[a-z0-9-]+$`, plus the duplicate-id check nobody wrote), a
+  null-prototype `entries`, `unreadOf` in `state.ts` · bet: a name the code
+  trusts is a boundary like any other, and one grammar closes the class for
+  every record at once — cheaper than a null-prototype record per site.
+  Source: s35's delta rounds 3 and 4, the human's "sınır".
 - **Move the two workflows to Ubuntu 26** · after: 2026-10-19 (the runner's
   own notice on the 2026-09-24 watch run: `ubuntu-latest` migrates to
   Ubuntu 26 from that day) · both workflows are pinned to `ubuntu-24.04`
@@ -239,8 +257,12 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
 ## active
 
 - **s35 — a source that fails once is read again** · approved 2026-09-24
-  (human: "onaylıyorum"); building on `s35-retry` in `../permit-rulebook-data-s35`
-  and `../permit-rulebook-s35`
+  (human: "onaylıyorum"); built and reviewed on `s35-retry` in
+  `../permit-rulebook-data-s35` and `../permit-rulebook-s35` — five rounds,
+  fifteen reviews, four deltas, the change closed on delta 4 (data
+  `c98dc3a`, site `b99f2c2`, 802 data tests); two brakes answered, "düzelt"
+  (the week's window) and "sınır" (the id grammar to `later`). Waiting on
+  the word to merge (`docs/spine/reviews/s35.md`)
   (`docs/spine/scenarios/s35-a-source-that-fails-once-is-read-again.md`).
   Data #21: a failure has a class (transient · refused by the source ·
   refused by us); a transient failure is asked once more after the pass; one
