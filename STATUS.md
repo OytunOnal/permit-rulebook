@@ -28,8 +28,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is happening now
 
-- Live: https://permitrulebook.com at `4b095d6` (s34 + the workflow pins),
-  data pinned at `c25bc8c` (the 2026-09-24 state), dataset 2026.09.18,
+- Live: https://permitrulebook.com at `cb9aca8` (s34 + the workflow pins;
+  the scheduled deploy of 12:07 UTC), data pinned at `b4ddd68` (the
+  2026-09-24 state plus the runner pin), dataset 2026.09.18,
   schema 0.8.2; 757 site tests, 741 data tests; `/data/` says *re-read
   daily — last run 2026-09-24*. The daily watch did **not** read every
   source today: `bamf-hochschulabsolvent` and `bamf-selbstaendige-taetigkeit`
