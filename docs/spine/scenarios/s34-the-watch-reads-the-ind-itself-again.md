@@ -173,3 +173,128 @@ stay with a person, and their notes say why with today's date. It is not a
 value change: every sentence stays as read, with its date, and a browser read
 that finds a sentence moved raises a flag for a curator, as an html read
 would. It does not touch a route page's text or any site code.
+
+**Corrected 2026-09-23, by the build:** the strategy landed as written and the
+seven read, but the form has two faces and the build walked into both. ind.nl
+serves the requirement list unasked to a client it recognises and the *Your
+situation* form to one that names itself — and the watch is the second kind, so
+the form is what it always meets. Read from a developer machine the pages
+showed no form at all, the build concluded it was gone and declared no steps,
+and that error was caught by a second: the no-steps attempt kept the old slice
+markers, the page's own lede and its footer, which the form-only page carries
+**both** of — so the runner's first baselines were 892 characters of form
+recorded as a clean read of a page whose every quoted sentence was missing. A
+marker a shell can match turns a failed read into a green one. The `from`
+markers now start below the form (`Requirements` on four; on the
+highly-skilled-migrant page the intra-corporate-transferee sentence, quoted and
+sitting above that heading), and a fixture holding the five shells the runner
+rendered checks that none of them can ever match again. Driving the form then
+took four corrections, each from a failed run rather than a guess: the option
+is **"Turkish"** — the list holds nationality adjectives, not country names —
+its suggestions are rendered as links and not as options; typing means real key
+events from Chrome, because a value written through the input's own setter
+fired no request at all; the radios are clicked by their visible label, not the
+input; and the last failure was the build's own — `listOf` asked the document
+for the first autocomplete menu and got the site search box's, empty and shut,
+while the field's menu sat second with *Turkish* and *Turkmen* in it. On the
+page's renderer freezing after each click, measured on a fixture that blocks
+its main thread: the settle rule survives it (a freeze costs its own duration,
+not a quiet window on top), and the choice is 800 ms between steps, 2.5 s
+before the reading, and one retry after a full settle — which moved the 30 s
+budget from surviving 2 s of freeze per click to 4 s and cut the five-step
+recipe from 16.7 s to 10.1 s. **Point 6, measured on the runner:** scheduled
+runs took 46–77 s before this slice; the measurement dispatch 102 s, the first
+baseline dispatch 121 s, and the run that reads the five with the full
+five-step recipe 213 s — about 20 s per stepped page, with the first read of a
+run carrying Chrome's cold start (34.5 s), and the whole job still well under
+the scenario's five-minute line — three runs on the final code (35926499955,
+35936470807, 35939456782) read the seven, the five stepped at 20–24 s, the
+job under four minutes. `expand` is in the recipe and earns nothing today: none of the thirty-eight sits behind *Show details*, and the sliced text
+is identical with the step and without it; it is kept as the guard it was
+written to be, at the cost of one click. **Point 2's vocabulary is narrower
+than it was written**, in one arm and deliberately: `expand` opens every
+collapsed block *in the page's own content, never in its furniture, and never
+by pressing a link* — nav, header, footer, aside and dialog are out, named
+structurally so the rule survives a reworded heading. Opening everything that
+merely says it is collapsed opened the IND's own navigation menu into the
+snapshot; and sharper, a disclosure which is a link takes the tab with it —
+measured, a cross-origin anchor wearing `aria-expanded` returned another site's
+body as the source's own reading — so
+the origin the entry names is now the only origin a reading may come from: a
+page that redirects or meta-refreshes to a third party is refused like
+a step that presses its way there, while a redirect around the source's own
+site (the Opportunity Card's cookie check) still reads; a move within that origin is allowed and the address it was read
+at is logged — as its own `watch:read_at` event, on the fetch tier as well as
+the browser one — because the origin is the trust line and a sub-path is not.
+The fetch tier got the same guard, and then a rewrite of its own that the nine
+points do not cover: it
+judges a redirect BEFORE taking it, so an off-site target is refused without
+ever being requested, the status reported is the redirect's own rather than a
+stranger's, and a chain is capped at five hops. One
+housekeeping note for the record: `ind-turkish-citizens` was left unread by
+the runner on 2026-09-23 through a transient fetch failure, and was re-read
+before the merge with `--only --commit` from a developer machine — the state
+diff was the unread list and nothing else. **Point 5 gained a clause it did not ask for**:
+the browser sends `x-source-contact` beside the watch's name, as the fetcher
+has since data #18, so a host that wants to block this reader can reach its
+operator instead — and point 5's "the fetcher's own User-Agent name in its
+string" now reads *to the source, and to nobody else*. Both are added to the
+source's own requests as they leave, through a `Fetch` interception of every
+request the tab makes, because the tab-wide way of setting them told every
+host a page embeds who was reading AND made each cross-origin request
+non-simple, so Chrome preflighted it by name — against an ordinary CORS
+endpoint the preflight is refused and the page's own call fails, which renders
+a page short for this watch and for nobody else. The costs are a driver
+round-trip per request, and a request nothing ever answers spending the
+entry's budget rather than the run's. Three gaps are stated rather than closed: a
+source that registers a service worker routes its fetches through a context
+this reader does not intercept, the worker's own script request included, so
+that one reaches the source unnamed; the session-wide User-Agent override
+stays, because removing it changes which variant ind.nl serves (round 2's
+measurement), so a third party still sees a plain Chrome string — it simply no
+longer sees this watch's name in it; and the reading is the main frame's
+document alone, so a source that moved its requirement list into a subframe
+while its lede and footer stayed put would match its markers and record a
+shell. **The redirect rule turned out to need a scope as well as a value.** The
+fetch tier's same-origin guard, written for readings, made `learn-anabin`
+unreachable on the runner — `anabin.kmk.org` answers https with a 301 to plain
+http on the same host, a real government source's TLS downgrade, and a link
+that works for a reader was reported broken every morning (run 35934301563).
+The policy now lives in the `STRATEGIES` table, per strategy: a strategy whose
+bytes become a reading keeps the strict rule, because what a source redirects
+to is not the source; `link`, which is fetched and never compared, follows any
+http(s) host the floor allows. The hop cap holds for both, neither will
+carry credentials, and a link that lands somewhere other than its address says
+so in the daily log as a `read_at` line — visible, but not a flag and not a red
+day, because a link that moved is news for a curator and not a change to a
+value. **And the gate grew a refusal:** an address carrying a name and password
+fails `npm run check` as `urls_with_credentials`, naming the entry and never
+what it carries, because no source here needs credentials and a reader that
+sends them is one that can leak them — both readers refuse such an address at
+run time too, and every report is made with the address stripped of it. **Point 6's proof list was met by the
+runner rather than locally**: the line asking for the watch run with `--commit`
+against the live pages before the merge was answered by the workflow's own
+dispatches — a measurement run with `commit=false`, then a baseline run with
+`commit=true dispatch=false` — because the five IND pages are served the form
+only to a client that names itself, and the runner is the machine that reads
+them every morning. **Provenance:** the five IND baselines
+were rendered on the runner by the workflow itself; EUR-Lex and the BMI notice
+were rendered on a developer machine and then confirmed `unchanged` by the
+runner, which is the only evidence this slice has that a laptop render and a
+runner render normalise to the same text — so a day-one `changed` on any of the
+seven is to be read, not waved through. The watch workflow gained two
+`workflow_dispatch` inputs, `commit` and `dispatch`, both defaulting to what
+the schedule already does and every guard written `!= 'false'`, because
+`github.event.inputs` is null on a schedule and the obvious spelling would have
+silently stopped the morning run committing. Two costs worth stating: a browser
+read is far heavier on a source than a fetch — ind.nl dropped this developer
+address at the TCP level for about ninety minutes after roughly thirty-five
+renders in half an hour, and the runner spent six renders per page across the
+day getting this right — and `.gitattributes` gained `*.ts diff`, because
+`src/watch/core.ts` holds a NUL byte in `sliceFingerprint` and git had been
+printing the file this slice changed most as binary. The promises this slice
+inverted were not only s14's: s29, s8, `tests/orientation.test.ts` and
+`tests/watch.test.ts` each held one, and each is retired by name where it
+stood. The glossary took **Browser tier** and **Watch step** — the latter not
+the suggested *Steps*, because `CONTEXT.md` already defines *Step-gated row*
+and *Leverage step*.

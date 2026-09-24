@@ -321,7 +321,15 @@ _Avoid_: suggestion, tip, recommendation (unqualified)
 
 **Watchlist**:
 The declared set of monitored official sources; coverage against the dataset
-is enforced both ways, not promised.
+is enforced both ways, not promised. The coverage gate also refuses a watched
+address that carries a name and password (`urls_with_credentials`): no source
+here needs one, and a reader that sends credentials is one that can leak them,
+so it fails at `npm run check` where a person can fix it rather than on a
+morning. **How far a redirect may be followed is the strategy's to say**: one
+whose bytes become a reading keeps to the same origin, because what a source
+redirects to is not the source; a Learn link, which is fetched and never
+compared, follows anywhere a person's browser would — including a downgrade to
+plain http — because what it watches is that a click arrives somewhere.
 
 **Value source**:
 A watched page/document that backs specific dataset values.
@@ -332,18 +340,68 @@ official-recheck reminder) but announces that values may have moved.
 _Avoid_: extra source, misc
 
 **Human tier**:
-A source no machine here can read — since s5f that means a page whose
-operative text never reaches a fetch (a bot wall, a form-gated render that
-stays a shell), not a PDF: embedded-font PDFs are read by Pdf-text, and a
-scanned one is declared Scanned-image rather than left for a person. A
-human-tier entry carries a verification age and raises reminders instead of
-being fetched. Empty from 2026-09-07 to 2026-09-10 (`human_tier: 0`); since
-then it holds two — a Conseil d'État decision on Legifrance and the Blue Card
-directive on EUR-Lex, both of which a real browser reads and this fetcher does
-not. The tier measures the watch's reach, not the source's standing: the
-number is read that way, and a browser-driven read for bot-walled pages is the
-candidate that would empty it again.
-_Avoid_: manual source, glyph-encoded PDF (a reason it once had)
+A source **no client here can read** — since s34 that means neither a fetch nor
+a real browser reaches its operative text, because anything a browser reaches
+is a Browser tier entry instead. A human-tier entry carries a verification age
+and raises reminders instead of being fetched. It held nine entries after s14;
+since 2026-09-23 it holds two, and exactly **one dataset sentence**
+(`human_tier: 1`): the Conseil d'État decision on Legifrance, where headless
+Chrome from the runner met a Cloudflare challenge — a wall against the client —
+and the official statute recheck on gesetze-im-internet, reachable only through
+a VPN, which is a geography and not a client. The tier measures the watch's
+reach, not the source's standing, and the number is read that way.
+_Avoid_: manual source, glyph-encoded PDF (a reason it once had), bot-walled
+page (most are Browser tier now)
+
+**Browser tier**:
+A watched page read **as rendered**: headless Chrome opens it, performs the
+entry's Watch steps, waits for it to settle, and hands back the document's
+HTML — and from there it is the html strategy exactly, tag-stripped,
+normalised and sliced, with a missing marker reported unreachable. It is for a
+page whose operative text never reaches a fetch but does reach a browser: a
+script-rendered requirement list, a cookie round-trip, a challenge that answers
+a fetcher with an empty body. Seven entries since 2026-09-23 — the five IND
+route pages, the Opportunity Card's BMI notice and the Blue Card directive on
+EUR-Lex. It is a strategy that can fail where the human arm could not, and the
+day it cannot open a browser is a red day, not a quiet one. **The origin is
+the trust line**: a reading that ends on an origin the entry does not name —
+by a redirect on load, or by a step that pressed its way there — is refused as
+unreachable, because a third party's bytes must never be hashed as the
+authority's. A move within the entry's own origin is read, and the address it
+was read at travels back with the reading, logged as **`read_at`** on both
+tiers when it differs from the address asked for — a redirect the fetcher
+followed, a form that posts back to a sub-path, a script that swapped the
+document. `read_at` is always an address, shortened past 200 characters
+because the address is the page's to choose; the day a reading was taken is a
+snapshot's `retrieved_at`. **The watch names itself to the source and to
+nobody else**: the fetcher's User-Agent name and its contact header are added
+to the source's own requests as they leave, so a host the page merely embeds
+sees exactly what a visitor's browser would send — no extra header, and so no
+preflight announcing one. Three gaps are known and stated rather than hidden. A
+source that registers a service worker routes its fetches through a context
+this reader does not intercept — the worker's own script request included, so
+that one reaches the source unnamed. The session-wide User-Agent override
+stays, because removing it changes which variant ind.nl serves, so a third
+party still sees a plain Chrome string. And the reading is the **main frame's
+document alone**: a source that moved its requirement list into a subframe
+while its lede and footer stayed in the main frame would match its markers and
+record a shell. None is closed; all three are written down.
+_Avoid_: headless tier, rendered tier, scraping
+
+**Watch step**:
+One declared thing a Browser tier entry does to a page before it is read, from
+a closed vocabulary the coverage gate enforces: choose an option in a field
+(`select`), answer a yes/no question (`answer`), press a control (`press`),
+open every collapsed block **in the page's own content, never its furniture,
+and never by pressing a link** (`expand`). Each names what it acts on by the
+control's **accessible name**, never by a CSS selector: a class name is ours to
+lose, a label is what the authority shows a person. An entry with no steps is
+simply rendered; a step that cannot be performed makes the entry unreachable
+with the step named, never a green day that read the wrong page — and a step
+that moves the browser to another origin makes it unreachable too, because a
+third party's bytes must never be hashed as the authority's.
+_Avoid_: action, script, macro, recipe; plain "step" (taken by Step-gated row
+and Leverage step)
 
 **Flag**:
 The artifact a detected change or due reminder produces — named source,
