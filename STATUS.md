@@ -10,8 +10,8 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   (`docs/spine/reviews/s35.md`); real-green is the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: **s36 — the address the watch connects to** (the resolve-time
-  address check), scenario written 2026-09-24 on `s36-resolve-time` and
-  waiting on your word; nothing is built. s35 is live and waits on its
+  address check), approved 2026-09-24 ("onaylıyorum"); building on
+  `s36-resolve-time` in both repositories. s35 is live and waits on its
   real-green (the metric-2 reading of 2026-09-29).
   Four red days in five (09-20, 09-21, 09-23, 09-24), all source-side, none
   still there the next morning.
@@ -67,7 +67,7 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **Approve s36's scenario, or say what to change.** It is on its own
+- [x] 2026-09-24 **Approve s36's scenario, or say what to change** — answered "onaylıyorum". It is on its own
       branch: `git -C ../permit-rulebook-s36 show` or GitHub's
       `s36-resolve-time`,
       `docs/spine/scenarios/s36-the-address-the-watch-connects-to.md`. Eight

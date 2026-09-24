@@ -256,9 +256,9 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-- **s36 — the address the watch connects to** · scenario written 2026-09-24
-  on branch `s36-resolve-time` (the site worktree `../permit-rulebook-s36`),
-  **awaiting the human's approval**
+- **s36 — the address the watch connects to** · approved 2026-09-24 (human:
+  "onaylıyorum"); building on `s36-resolve-time` in
+  `../permit-rulebook-data-s36` and `../permit-rulebook-s36`
   (`docs/spine/scenarios/s36-the-address-the-watch-connects-to.md` on that
   branch). v1.2's queue head: the fetch tier resolves a name, judges every
   address the resolver gives, and connects to the one it judged; the four
