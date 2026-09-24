@@ -321,7 +321,15 @@ _Avoid_: suggestion, tip, recommendation (unqualified)
 
 **Watchlist**:
 The declared set of monitored official sources; coverage against the dataset
-is enforced both ways, not promised.
+is enforced both ways, not promised. The coverage gate also refuses a watched
+address that carries a name and password (`urls_with_credentials`): no source
+here needs one, and a reader that sends credentials is one that can leak them,
+so it fails at `npm run check` where a person can fix it rather than on a
+morning. **How far a redirect may be followed is the strategy's to say**: one
+whose bytes become a reading keeps to the same origin, because what a source
+redirects to is not the source; a Learn link, which is fetched and never
+compared, follows anywhere a person's browser would — including a downgrade to
+plain http — because what it watches is that a click arrives somewhere.
 
 **Value source**:
 A watched page/document that backs specific dataset values.
@@ -369,11 +377,15 @@ snapshot's `retrieved_at`. **The watch names itself to the source and to
 nobody else**: the fetcher's User-Agent name and its contact header are added
 to the source's own requests as they leave, so a host the page merely embeds
 sees exactly what a visitor's browser would send — no extra header, and so no
-preflight announcing one. Two gaps are known and stated rather than hidden: a
-source that registers a service worker routes its later fetches through a
-context this reader does not intercept, so those go out unnamed; and the
-session-wide User-Agent override stays, because removing it changes which
-variant ind.nl serves, so a third party still sees a plain Chrome string.
+preflight announcing one. Three gaps are known and stated rather than hidden. A
+source that registers a service worker routes its fetches through a context
+this reader does not intercept — the worker's own script request included, so
+that one reaches the source unnamed. The session-wide User-Agent override
+stays, because removing it changes which variant ind.nl serves, so a third
+party still sees a plain Chrome string. And the reading is the **main frame's
+document alone**: a source that moved its requirement list into a subframe
+while its lede and footer stayed in the main frame would match its markers and
+record a shell. None is closed; all three are written down.
 _Avoid_: headless tier, rendered tier, scraping
 
 **Watch step**:

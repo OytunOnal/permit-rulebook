@@ -248,12 +248,32 @@ non-simple, so Chrome preflighted it by name — against an ordinary CORS
 endpoint the preflight is refused and the page's own call fails, which renders
 a page short for this watch and for nobody else. The costs are a driver
 round-trip per request, and a request nothing ever answers spending the
-entry's budget rather than the run's. Two gaps are stated rather than closed:
-a source that registers a service worker routes its later fetches through a
-context this reader does not intercept, so those go out unnamed; and the
-session-wide User-Agent override stays, because removing it changes which
-variant ind.nl serves (round 2's measurement), so a third party still sees a
-plain Chrome string — it simply no longer sees this watch's name in it. **Point 6's proof list was met by the
+entry's budget rather than the run's. Three gaps are stated rather than closed: a
+source that registers a service worker routes its fetches through a context
+this reader does not intercept, the worker's own script request included, so
+that one reaches the source unnamed; the session-wide User-Agent override
+stays, because removing it changes which variant ind.nl serves (round 2's
+measurement), so a third party still sees a plain Chrome string — it simply no
+longer sees this watch's name in it; and the reading is the main frame's
+document alone, so a source that moved its requirement list into a subframe
+while its lede and footer stayed put would match its markers and record a
+shell. **The redirect rule turned out to need a scope as well as a value.** The
+fetch tier's same-origin guard, written for readings, made `learn-anabin`
+unreachable on the runner — `anabin.kmk.org` answers https with a 301 to plain
+http on the same host, a real government source's TLS downgrade, and a link
+that works for a reader was reported broken every morning (run 35934301563).
+The policy now lives in the `STRATEGIES` table, per strategy: a strategy whose
+bytes become a reading keeps the strict rule, because what a source redirects
+to is not the source; `link`, which is fetched and never compared, follows
+anywhere a person's browser would. The hop cap holds for both, neither will
+carry credentials, and a link that lands somewhere other than its address says
+so in the daily log as a `read_at` line — visible, but not a flag and not a red
+day, because a link that moved is news for a curator and not a change to a
+value. **And the gate grew a refusal:** an address carrying a name and password
+fails `npm run check` as `urls_with_credentials`, naming the entry and never
+what it carries, because no source here needs credentials and a reader that
+sends them is one that can leak them — both readers refuse such an address at
+run time too, and every report is made with the address stripped of it. **Point 6's proof list was met by the
 runner rather than locally**: the line asking for the watch run with `--commit`
 against the live pages before the merge was answered by the workflow's own
 dispatches — a measurement run with `commit=false`, then a baseline run with
