@@ -63,9 +63,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
       (a) `sınır`: declare the floor's boundary in the reader's header (the
       literal families measured to reach loopback on the runner) and fold the
       rest into the resolve-time address check already under `later`, merge;
-      (b) `düzelt`: the four prefixes added, one more round, then merge; (c)
+      (b) `önek`: the four prefixes added, one more round, then merge; (c)
       `ayrı`: as (a), with the four prefixes as their own entry. Pass = "sınır",
-      "düzelt" or "ayrı" — and "merge" for the merge, data first. Why yours: the
+      "önek" or "ayrı" — and "merge" for the merge, data first (option b is `önek`, not `düzelt`: the day's earlier gate row already carries "düzelt" for s34). Why yours: the
       floor stops the building on a corner; the real fix is the resolve-time
       check, a mechanism, not a prefix list. asked: 2026-09-24 entry: s34
 
