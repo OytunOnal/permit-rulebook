@@ -145,3 +145,36 @@ not spell are spelled.
   build decides quietly.
 - Not a wider refusal than today's rule: public stays public, and an entry
   on a private or loopback address may still be read where it already is.
+
+**Corrected 2026-09-24, by the build:**
+
+Three claims above were wrong or could not be proved as written. The code
+follows the corrected reading; nothing here is a new promise.
+
+- **The second-call proof** ("The check is on the connect, not on a
+  pre-flight"). A resolver that answers `93.184.216.34` first and `10.0.0.5`
+  after is **not** refused, and cannot be: the hook resolves once, judges what
+  came back, and connects to it — the first answer is public, so it is
+  approved and dialled. Proving that claim would mean letting a test dial a
+  real public address. What actually distinguishes the hook from a
+  resolve-then-fetch implementation is the opposite pair, and that is what is
+  built and proved: a name whose first answer is the fixture's own loopback
+  address and whose later answers are `10.0.0.5` is **read**, and the fixture
+  **records the request** — a pre-flight implementation would connect to the
+  second answer and the fixture would record nothing; the same name with the
+  answers the other way round is refused and the fixture records nothing. The
+  proof of "the check is on the connect" is the arrival of the request at the
+  address that was judged, not the absence of one.
+- **"the single address it approved"** (point 1). Node asks the hook for
+  *all* of a name's addresses (`{ hints: 0, all: true }`, measured 2026-09-24
+  on v24.20.0) and does its own selection among them. The fetcher hands back
+  the list it was given, every address in it judged; what is guaranteed is
+  that nothing unjudged can be connected to — not that one address goes down.
+- **"same headers"** (point 5). The `fetch` this tier used sent four headers
+  of its own beside the watch's two: `accept: */*`, `accept-language: *`,
+  `sec-fetch-mode: cors` and `accept-encoding: gzip, deflate` (measured
+  2026-09-24 against a local fixture, Node v24.20.0). "Same headers" is kept
+  literally — all six travel, and the body is decompressed here, because
+  sources answer gzipped on account of the fourth. What changed on the wire is
+  the order alone: `Host` is now written after the watch's own headers instead
+  of before them.
