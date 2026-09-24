@@ -10,7 +10,8 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   (`docs/spine/reviews/s34.md`); the workflows' runner and actions pinned.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: **s35 — a source that fails once is read again** (data #21),
-  scenario written 2026-09-24 and waiting on your word; nothing is built.
+  approved 2026-09-24 ("onaylıyorum"); building on branch `s35-retry` in
+  both repositories (`../permit-rulebook-data-s35`, `../permit-rulebook-s35`).
   Four red days in five (09-20, 09-21, 09-23, 09-24), all source-side, none
   still there the next morning.
 - v1.2: 11 of 15 planned steps passed for real (eleven slices s23–s34); 4
@@ -58,7 +59,7 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **Approve s35's scenario, or say what to change.** Read
+- [x] 2026-09-24 **Approve s35's scenario, or say what to change** — answered "onaylıyorum". Read
       `docs/spine/scenarios/s35-a-source-that-fails-once-is-read-again.md`:
       eight points — a failure has a class, a transient one is retried once
       after the pass, one unread day is a lapse and two are an outage, a

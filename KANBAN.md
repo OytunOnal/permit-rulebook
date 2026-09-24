@@ -238,8 +238,9 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-- **s35 — a source that fails once is read again** · scenario written
-  2026-09-24, **awaiting the human's approval**
+- **s35 — a source that fails once is read again** · approved 2026-09-24
+  (human: "onaylıyorum"); building on `s35-retry` in `../permit-rulebook-data-s35`
+  and `../permit-rulebook-s35`
   (`docs/spine/scenarios/s35-a-source-that-fails-once-is-read-again.md`).
   Data #21: a failure has a class (transient · refused by the source ·
   refused by us); a transient failure is asked once more after the pass; one
