@@ -59,6 +59,25 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
+- [ ] **s35's second brake: three corners at the repository's own write
+      boundary.** The change closes on delta 4 (no behaviour finding in its
+      hunks), with three Security lines open, none with a live instance and
+      every one needing repo write: (1) in the change — a `last_run` dated
+      after today cancels the migration, green-ward
+      (`../permit-rulebook-data/src/watch/core.ts:742-743 @ d3081eb`, declared
+      in the header); (2) outside it — s11's `state.entries[id]` reads through
+      the prototype, so a watchlist id spelled `constructor` kills the run and
+      `__proto__` is a permanent silent green (`core.ts:476`; no id grammar
+      exists anywhere); (3) outside it — `state.ts:202,226` read `unread`
+      unguarded and the coverage gate fails loudly on `unread: 5`. Pass =
+      "sınır" (the change closes as it is: (1) stays declared in the boundary's
+      header, (2) and (3) become one `later` candidate — an id grammar in the
+      coverage gate plus null-prototype `entries` and `unreadOf` in
+      `state.ts`), "düzelt" (delta 5 with its round: clamp (1) to today, and
+      (2)+(3) fixed here as s11 code touched by this change) or "ayrı" (all
+      three to their own entry; the change waits). Why yours: (2) is the
+      class this change just closed for `lapses`, standing in older code, and
+      whether s35 owns it is a scope call. asked: 2026-09-24 entry: s35
 - [x] 2026-09-24 **s35's brake: the alternating-day hole** — answered "düzelt". Round 1's Security axis found
       that the approved rule (point 3: red on two consecutive unread runs)
       lets a source that fails every other morning stay a green lapse for
