@@ -5,22 +5,19 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-24, s35 merged and live — a source that fails once
-  is read again, and a red run now means an outage
-  (`docs/spine/reviews/s35.md`); real-green is the 2026-09-29 metric reading.
+- Last boundary: 2026-09-25, s36 merged and live — the watch connects to the
+  address it judged (`docs/spine/reviews/s36.md`); real-green is the first
+  scheduled run. s35 waits on the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: **s36 — the address the watch connects to** (the resolve-time
-  address check), built and reviewed — eight rounds, twenty-one reviews,
-  seven deltas; the change closed on delta 7 (data `36bb2ca`, site
-  `766a116`, 849 data tests, the runner reading 46/46 five times). Waiting
-  on the word to merge (`docs/spine/reviews/s36.md` on the branch). s35 is live and waits on its
+- In flight: nothing. s36 is live and waits on its real-green (the first
+  scheduled run through the new connect path); s35 waits on the 2026-09-29
+  metric reading. The queue head is **Back on a restored record**. s35 is live and waits on its
   real-green (the metric-2 reading of 2026-09-29).
   Four red days in five (09-20, 09-21, 09-23, 09-24), all source-side, none
   still there the next morning.
-- v1.2: 11 of 15 planned steps passed for real (eleven slices s23–s34), one
-  live and waiting on its reading (s35); 3 queued — the resolve-time address
-  check (the queue head), then two steward items (Back on a restored record;
-  an unknown link's first paint). Roadmap fork 2026-09-23:
+- v1.2: 11 of 15 planned steps passed for real (eleven slices s23–s34), two
+  live and waiting on their readings (s35, s36); 2 queued — two steward items
+  (Back on a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
   all six `later` candidates kept, clock reset. Roadmap: 25 candidates ahead, 12 unversioned under
   `later`, every one with an `after:` (eleven on the readings of 2026-10-09,
   one on 2026-10-19; the fork on s34's real-green versioned one and dated
@@ -32,8 +29,8 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is happening now
 
-- Live: https://permitrulebook.com at `6e8259c` (s35), data pinned at
-  `a9e6277`, dataset 2026.09.18,
+- Live: https://permitrulebook.com at `bc0a9ad` (s36), data pinned at
+  `dbf2dad`, dataset 2026.09.18,
   schema 0.8.2; 757 site tests, 741 data tests; `/data/` says *re-read
   daily — last run 2026-09-24*. The daily watch did **not** read every
   source today: `bamf-hochschulabsolvent` and `bamf-selbstaendige-taetigkeit`
@@ -54,6 +51,12 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   trace against this branch, so a data sha closed nothing and the ten
   pre-record waivers were ignored (DECISIONS 2026-09-24; reported to Spine,
   which confirmed it and reads DECISIONS at one 512 KB cap since today).
+- s36 is live and not yet real-green: the runner read all 46 through the new
+  connect path six times on the branch (the last, 36062451413: 46/46, 173 s),
+  but the scheduled run on data master is the one that counts. The fetch tier
+  now makes its own request (`node:http`/`node:https` with a `lookup` hook),
+  which costs about 22 extra connection setups a day and is proved on the
+  wire by those runner runs, not by unit tests.
 - s35 is live and not yet real-green: the runner read the final code clean
   three times on the branch (the last, 36023789695: 46/46, 161 s), but the
   slice's claim is about a week and the 2026-09-29 metric reading is what

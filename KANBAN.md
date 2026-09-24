@@ -79,7 +79,7 @@ mark `promoted <date>`; the board's done column holds the step.
   the sources' own hiccups, not our reach, are what redden the watch; source:
   metric 2 off target 2026-09-22, data #21. Next to #17 — the same file, the
   same tests.
-- **Resolve-time address check for the fetchers** · promoted 2026-09-24 · s36 · versioned to v1.2 at the fork of
+- **Resolve-time address check for the fetchers** · promoted 2026-09-24 · s36 · live 2026-09-25 · versioned to v1.2 at the fork of
   2026-09-24 (human: "uygula"; from s34's Security review, 2026-09-24) · the floor under a `link` entry's redirects
   classes the literal host, so a hostname that resolves to a private or
   loopback address at request time passes it (DNS rebinding); the code's own
@@ -269,14 +269,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-- **s36 — the address the watch connects to** · approved 2026-09-24 (human:
-  "onaylıyorum"); building on `s36-resolve-time` in
-  `../permit-rulebook-data-s36` and `../permit-rulebook-s36`
-  (`docs/spine/scenarios/s36-the-address-the-watch-connects-to.md` on that
-  branch). v1.2's queue head: the fetch tier resolves a name, judges every
-  address the resolver gives, and connects to the one it judged; the four
-  transition and legacy prefixes are spelled; the browser tier keeps its own
-  rule and says so.
+_(empty)_
 
 ## mock-green
 
@@ -287,6 +280,21 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s36 — the address the watch connects to** · merged and live 2026-09-25
+  (human: "merge"; data `dbf2dad`, site `bc0a9ad`, deploy run 36066130541
+  green) — **real-green waits on the first scheduled run**: all 46 sources
+  read through the new connect path with none `unreachable`. What landed: the
+  fetch tier resolves a name inside the connection's own `lookup` hook,
+  classifies every address the resolver gives with the floor's relative rule
+  and connects only to one it judged — so a source can no longer name a public
+  host and have the watch connect to a private one; the four transition and
+  legacy prefixes (NAT64, 6to4, the compat form, site-local) are spelled; a
+  body is bounded on the wire and unpacked (16 MiB, measured against the
+  largest the watch reads, 1,040,895 bytes); every printed sentence is cut and
+  made printable by one owner, on both tiers. No page, no string, no dataset
+  field changed. Eight review rounds, twenty-one reviews, seven deltas; the
+  runner read 46/46 six times; `docs/spine/reviews/s36.md`.
 
 - **s35 — a source that fails once is read again** · merged and live
   2026-09-24 (human: "merge"; data `a9e6277`, site `6e8259c`, deploy run
