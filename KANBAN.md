@@ -177,6 +177,19 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
 
 ### later (clock: DECISIONS rows since 2026-09-24)
 
+- **A flag quotes a page; the quote is the page's** · after: s36 (from s36's
+  delta round 4, 2026-09-24; human: "ayrı") · a flag file exists so a person
+  can judge a change, so it carries `report.context` — the diff of the page —
+  verbatim into committed Markdown (`../permit-rulebook-data/src/watch/core.ts:507`
+  → `cli-watch.ts:68`) and from there into the issue a curator reads: a source
+  that puts `
+## ` or a bidi override in its own text ends the paragraph and
+  reorders what follows. Sanitising the quote would change what the curator
+  reads, which is why this is not a line in s36 · bet: the fix is the flag's
+  FORMAT, not its content — the quoted block fenced so Markdown cannot act on
+  it, the steering characters dropped as `printable` drops them, the page's
+  words otherwise untouched. By design since s11; s36 named it. Source: s36's
+  delta round 4, the human's "ayrı".
 - **An id is a word the watch chose** · after: s35 (from s35's delta rounds 3
   and 4, 2026-09-24; human: "sınır") · nothing anywhere spells what a
   watchlist id may be: `checkCoverage` gates urls, kind, steps, glyphs and
