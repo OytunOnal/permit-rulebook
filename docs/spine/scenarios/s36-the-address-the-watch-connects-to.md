@@ -148,34 +148,34 @@ not spell are spelled.
 
 **Corrected 2026-09-24, by the build:**
 
-Five claims above were wrong or unprovable as written. The code follows the
-corrected reading; nothing here is a new promise.
+Five claims above were wrong or unprovable. The code follows the corrected
+reading; nothing here is a new promise.
 
 - **The second-call proof** ("The check is on the connect"). A resolver that
   answers public first and private after is **not** refused, and cannot be:
   the hook resolves once, judges what came back, and connects to it; proving
-  that claim would mean dialling a real public address. The opposite pair is
-  what tells the hook from a pre-flight, and is what is proved: a name whose
+  that claim would mean dialling a real public address. The opposite pair
+  tells the hook from a pre-flight, and is what is proved: a name whose
   first answer is the fixture's loopback address is read and **the fixture
   records the request** — a pre-flight would connect to the second answer and
   record nothing — and the same name reversed is refused, recording nothing.
 - **"the single address it approved"** (point 1). Node asks the hook for *all*
-  of a name's addresses (`{ all: true }`, measured 2026-09-24 on v24.20.0) and
-  selects among them. The fetcher hands back the list it was given, every
-  address judged: nothing unjudged can be connected to — not that one address
-  goes down.
+  of a name's addresses (`{ hints: 0, all: true }`, measured 2026-09-24 on
+  v24.20.0) and selects among them. The fetcher hands back the list, every
+  address judged: nothing unjudged can be connected to.
 - **"same headers"** (point 5). `fetch` sent four of its own beside the
   watch's two: `accept: */*`, `accept-language: *`, `sec-fetch-mode: cors`,
-  `accept-encoding: gzip, deflate` (measured 2026-09-24, Node v24.20.0). All
-  six travel; the body is decompressed here, under a measured bound and inside
-  the budget. On the wire only the order changed: `Host` now follows the
-  watch's own headers.
+  `accept-encoding: gzip, deflate` (measured 2026-09-24, v24.20.0). All six
+  travel; the body is decompressed here, under a measured bound and inside the
+  budget. On the wire only the order changed: `Host` now follows the watch's
+  own headers.
 - **"from a public entry"** (the four prefixes). Proved from the loopback
   fixture entry: a stub resolver cannot stand a public-named entry in front of
-  a loopback fixture, the relative rule refusing that pair. The outcome is the
-  same — link-local refused under any entry, site-local under a loopback
-  entry as under a public one.
+  one, the relative rule refusing that pair. The outcome is the same —
+  link-local refused under any entry, site-local under either.
 - **"an entry on a private or loopback address may still be read where it
   already is"** (what this slice is not). True of an entry that IS such an
   address, which the loopback fixture keeps green; false of one NAMED in a way
-  that resolves to one, which point 1 refuses. Point 1 governs.
+  that resolves to one. Point 2's relative rule governs, not point 1:
+  `allowedAddress` judges what came back against `addressKind(entryHost)`,
+  public for a name.
