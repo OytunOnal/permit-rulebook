@@ -70,7 +70,7 @@ mark `promoted <date>`; the board's done column holds the step.
 - **the copy pass** (a route page names its own unread sources, F3 — moved from the `v1.x` bucket 2026-09-17) · promoted 2026-09-17 · s23
 
 **Queue** (in order; the first unpromoted line is the next slice)
-- **A source that fails once is read again** (intake #21, 2026-09-22) · promoted 2026-09-24 · s35 · the
+- **A source that fails once is read again** (intake #21, 2026-09-22) · promoted 2026-09-24 · s35 · live 2026-09-24 · the
   daily watch gives up on the first `unreachable`: 09-20 six sources answered
   403 (buzer.de ×5, wetten.overheid.nl), 09-21 three timed out (boe.es ×2,
   bamf.de), 09-22 all 46 read clean — two red days for outages that were gone
@@ -256,19 +256,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-- **s35 — a source that fails once is read again** · approved 2026-09-24
-  (human: "onaylıyorum"); built and reviewed on `s35-retry` in
-  `../permit-rulebook-data-s35` and `../permit-rulebook-s35` — five rounds,
-  fifteen reviews, four deltas, the change closed on delta 4 (data
-  `c98dc3a`, site `b99f2c2`, 802 data tests); two brakes answered, "düzelt"
-  (the week's window) and "sınır" (the id grammar to `later`). Waiting on
-  the word to merge (`docs/spine/reviews/s35.md`)
-  (`docs/spine/scenarios/s35-a-source-that-fails-once-is-read-again.md`).
-  Data #21: a failure has a class (transient · refused by the source ·
-  refused by us); a transient failure is asked once more after the pass; one
-  unread day is a lapse (green, `since` in the state), two in a row an
-  outage (red); a refusal by us is red the same day; nothing a reader sees
-  changes. Real-green is the metric-2 reading of 2026-09-29.
+_(empty)_
 
 ## mock-green
 
@@ -279,6 +267,19 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s35 — a source that fails once is read again** · merged and live
+  2026-09-24 (human: "merge"; data `a9e6277`, site `6e8259c`, deploy run
+  36025114404 green) — **real-green waits on the metric-2 reading of
+  2026-09-29**: over the seven runs ending that day, every red run names an
+  outage or a refusal by us, and no run is red for a source that read clean
+  the next morning. What landed: a failure has a class (transient · refused
+  by the source · refused by us), a transient one is asked once more after
+  the pass, one silent morning is a lapse and two within seven days are an
+  outage (the human's word "düzelt"), the state keeps each source's mornings
+  and reads a file's days as days; the page and the workflow do not change.
+  Five review rounds, fifteen reviews, four deltas, two brakes answered
+  ("düzelt", "sınır"); `docs/spine/reviews/s35.md`.
 
 - **s34 — the watch reads the IND itself again** · real-green 2026-09-24
   (human: "yeşil"; the first scheduled watch run after the merge,

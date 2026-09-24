@@ -5,21 +5,19 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-24, s34 real-green on the first scheduled run —
-  the watch reads the IND itself through a browser strategy
-  (`docs/spine/reviews/s34.md`); the workflows' runner and actions pinned.
+- Last boundary: 2026-09-24, s35 merged and live — a source that fails once
+  is read again, and a red run now means an outage
+  (`docs/spine/reviews/s35.md`); real-green is the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: **s35 — a source that fails once is read again** (data #21),
-  built and reviewed — five rounds, fifteen reviews, four deltas; the change
-  closed on delta 4 and both brakes are answered ("düzelt", "sınır").
-  Waiting on the word to merge; real-green is the metric-2 reading of
-  2026-09-29.
+- In flight: nothing. s35 is live and waits on its real-green (the metric-2
+  reading of 2026-09-29); the queue head is the resolve-time address check,
+  versioned at the fork of 2026-09-24.
   Four red days in five (09-20, 09-21, 09-23, 09-24), all source-side, none
   still there the next morning.
-- v1.2: 11 of 15 planned steps passed for real (eleven slices s23–s34); 4
-  queued — the watch retry (from #21, the queue head), the resolve-time
-  address check (versioned at the fork of 2026-09-24), then two steward
-  items (Back on a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
+- v1.2: 11 of 15 planned steps passed for real (eleven slices s23–s34), one
+  live and waiting on its reading (s35); 3 queued — the resolve-time address
+  check (the queue head), then two steward items (Back on a restored record;
+  an unknown link's first paint). Roadmap fork 2026-09-23:
   all six `later` candidates kept, clock reset. Roadmap: 25 candidates ahead, 12 unversioned under
   `later`, every one with an `after:` (eleven on the readings of 2026-10-09,
   one on 2026-10-19; the fork on s34's real-green versioned one and dated
@@ -31,28 +29,30 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is happening now
 
-- Live: https://permitrulebook.com at `cb9aca8` (s34 + the workflow pins;
-  the scheduled deploy of 12:07 UTC), data pinned at `b4ddd68` (the
-  2026-09-24 state plus the runner pin), dataset 2026.09.18,
+- Live: https://permitrulebook.com at `6e8259c` (s35), data pinned at
+  `a9e6277`, dataset 2026.09.18,
   schema 0.8.2; 757 site tests, 741 data tests; `/data/` says *re-read
   daily — last run 2026-09-24*. The daily watch did **not** read every
   source today: `bamf-hochschulabsolvent` and `bamf-selbstaendige-taetigkeit`
   answered `fetch failed` — the fourth red day in five; the retry slice is
   the queue head.
-- Metric 2 (the daily watch finishes) is off target: four red days in five
-  (09-20, 09-21, 09-23, 09-24), all source-side (403s, timeouts, `fetch
-  failed` on bamf.de); 09-22 read all 46 clean. The retry slice is next.
+- Metric 2 (the daily watch finishes) is off target on the old rule: four
+  red days in five (09-20, 09-21, 09-23, 09-24), all source-side and every
+  one of them clean the next morning. The 2026-09-29 reading is the first
+  under s35's rule and is s35's own real-green.
 - s33 is live and its carry is not yet exercised: the slice touched nothing
   under `src/`, so the deploy's carrier logged `0 asset(s) carried, 2
   already in this build, 0 left behind` — the quiet outcome, correct — and
   published the first `asset-digests.txt` (live, two sha256 lines matching
   the local build). The carry is first exercised on the deploy after the
   first `src/` change; the reading is your calendar item below.
-- s34 is real-green (the scheduled run 35985154468: seven browser entries
-  read, state `c25bc8c`, pin `4df0655`); the same run is red for two BAMF
-  fetch-tier entries (`fetch failed`) — #21's ground. Both workflows now
-  pin `ubuntu-24.04` and Node 24 actions (DECISIONS, runner-pin-2026-09-24);
-  the move to Ubuntu 26 is a `later` candidate with `after: 2026-10-19`.
+- s35 is live and not yet real-green: the runner read the final code clean
+  three times on the branch (the last, 36023789695: 46/46, 161 s), but the
+  slice's claim is about a week and the 2026-09-29 metric reading is what
+  proves it. From today a single silent morning is a green lapse; a red run
+  means an outage (two silent mornings in seven) or a refusal by us.
+  Both workflows pin `ubuntu-24.04` and Node 24 actions; the move to
+  Ubuntu 26 is a `later` candidate with `after: 2026-10-19`.
 - One Security finding stays open and only the human's word can close it:
   the step fetches from `$SITE_URL`, a repository variable, so whoever can
   set it can have bytes of their choosing published from our own origin,
