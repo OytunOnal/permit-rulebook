@@ -46,6 +46,11 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   published the first `asset-digests.txt` (live, two sha256 lines matching
   the local build). The carry is first exercised on the deploy after the
   first `src/` change; the reading is your calendar item below.
+- A record whose fix lives in the data repository now names the day of its
+  DECISIONS gate row beside the sibling commit: the review guard resolves a
+  trace against this branch, so a data sha closed nothing and the ten
+  pre-record waivers were ignored (DECISIONS 2026-09-24; reported to Spine,
+  which confirmed it and reads DECISIONS at one 512 KB cap since today).
 - s35 is live and not yet real-green: the runner read the final code clean
   three times on the branch (the last, 36023789695: 46/46, 161 s), but the
   slice's claim is about a week and the 2026-09-29 metric reading is what
