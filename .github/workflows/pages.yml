@@ -68,7 +68,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned 2026-09-24; ubuntu-latest moves to Ubuntu 26 on 2026-10-19 and the move is a dated roadmap item
     # Reads two repositories and writes nothing: the one line that records which
     # data commit deployed is written by the `pin` job, which is the only job
     # holding a write token (Standards review, 2026-09-08).
@@ -85,7 +85,7 @@ jobs:
       # sit beside each other on disk. The site therefore lands in a
       # subdirectory of its own, or that `..` would climb out of the workspace.
       - name: Check out the site
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
         with:
           path: site
 
@@ -142,7 +142,7 @@ jobs:
           echo "first_attempt=$first_attempt" >> "$GITHUB_OUTPUT"
 
       - name: Check out the data
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
         with:
           repository: OytunOnal/permit-rulebook-data
           path: ${{ steps.data.outputs.dir }}
@@ -164,7 +164,7 @@ jobs:
           echo "version=$(node -p "require('./$dir/data/dataset.json').dataset_version")" >> "$GITHUB_OUTPUT"
           echo "Building against data $sha (lock says ${{ steps.data.outputs.locked }})"
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
         with: { node-version: 22 }
 
       - name: Build and check the dataset package
@@ -274,11 +274,11 @@ jobs:
       github.run_attempt == 1
       && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
       && needs.build.outputs.built != needs.build.outputs.locked
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned 2026-09-24; ubuntu-latest moves to Ubuntu 26 on 2026-10-19 and the move is a dated roadmap item
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
       - name: Record the data commit that just proved itself
         env:
           BUILT: ${{ needs.build.outputs.built }}
@@ -300,7 +300,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned 2026-09-24; ubuntu-latest moves to Ubuntu 26 on 2026-10-19 and the move is a dated roadmap item
     # The only job that publishes: an artifact upload and the OIDC token Pages
     # signs the deployment with.
     permissions:
@@ -335,13 +335,13 @@ jobs:
       success()
       && github.run_attempt == 1
       && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned 2026-09-24; ubuntu-latest moves to Ubuntu 26 on 2026-10-19 and the move is a dated roadmap item
     continue-on-error: true
     # Reads the key file out of the checkout; writes nothing anywhere.
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
       - name: Tell Bing which addresses changed
         env:
           # Through the environment, never interpolated into the script body.

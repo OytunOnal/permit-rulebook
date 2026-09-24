@@ -166,6 +166,16 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
 
 ### later (clock: DECISIONS rows since 2026-09-24)
 
+- **Move the two workflows to Ubuntu 26** · after: 2026-10-19 (the runner's
+  own notice on the 2026-09-24 watch run: `ubuntu-latest` migrates to
+  Ubuntu 26 from that day) · both workflows are pinned to `ubuntu-24.04`
+  since 2026-09-24 (human: "uygula") so the image changes on a day we pick,
+  not under a scheduled run — the browser tier reads the image's Chrome and
+  the site's harness runs there too · bet: an explicit label costs one line
+  and turns a surprise red day into a read: unpin, dispatch the watch with
+  `commit=false`, read the seven browser lines and the site's deploy on the
+  new image, then pin `ubuntu-26.04`. Source: the runner's notice,
+  run 35985154468.
 _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept. Fork 2026-09-23 (human: "hepsi keep"): all six kept again. Fork 2026-09-24 (human: "uygula"): nothing points at any of them yet, so ten take `after: 2026-10-09` — the pre-registered readings are the evidence that could — and the two born of s33/s34's reviews take `after: s34`; the twelfth, the resolve-time address check, born with that day. The guard asks again only when a condition lands._
 
 - **Resolve-time address check for the fetchers** · after: s34 (from s34's
