@@ -59,6 +59,19 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
+- [ ] **s35's brake: the alternating-day hole.** Round 1's Security axis found
+      that the approved rule (point 3: red on two consecutive unread runs)
+      lets a source that fails every other morning stay a green lapse for
+      ever — `since` drops on each good day, nothing accumulates
+      (`../permit-rulebook-data/src/watch/core.ts:561-570 @ e5425f0`; no live
+      instance, but bamf.de was unread 09-21, read 09-22, unread 09-23/24).
+      Pass = "sınır" (declare it: consecutive runs only, the weekly metric-2
+      read counts lapses), "düzelt" (the cheap fix with its round: the unread
+      item keeps its recent unread days and the run is red on two unread in
+      the last seven, the metric's own window; `since` becomes that list's
+      first day) or "ayrı" (its own entry). Why yours: it changes the rule you
+      approved this morning and what makes a run red. asked: 2026-09-24
+      entry: s35
 - [x] 2026-09-24 **Approve s35's scenario, or say what to change** — answered "onaylıyorum". Read
       `docs/spine/scenarios/s35-a-source-that-fails-once-is-read-again.md`:
       eight points — a failure has a class, a transient one is retried once
