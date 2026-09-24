@@ -12,17 +12,17 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - In flight: nothing. The next slice is v1.2's queue head, the watch retry
   (intake #21): a source that fails once is read again — four red days in
   five (09-20, 09-21, 09-23, 09-24), all source-side.
-- v1.2: 11 of 14 planned steps passed for real (eleven slices s23–s34); 3
-  queued — the watch retry (from #21, the queue head), then two steward
-  items (Back on a restored record; an unknown link's first paint). Two
-  `later` candidates carried `after: s34` and are now the fork's
-  questions. Roadmap fork 2026-09-23:
-  all six `later` candidates kept, clock reset. Roadmap: 24 candidates ahead, 12 unversioned under
-  `later`, every one with an `after:` since the fork of 2026-09-24 (ten on
-  the readings of 2026-10-09, two on s34's real-green) (three moved from the old backlog; clock reset 2026-09-18).
+- v1.2: 11 of 15 planned steps passed for real (eleven slices s23–s34); 4
+  queued — the watch retry (from #21, the queue head), the resolve-time
+  address check (versioned at the fork of 2026-09-24), then two steward
+  items (Back on a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
+  all six `later` candidates kept, clock reset. Roadmap: 25 candidates ahead, 12 unversioned under
+  `later`, every one with an `after:` (eleven on the readings of 2026-10-09,
+  one on 2026-10-19; the fork on s34's real-green versioned one and dated
+  the other) (three moved from the old backlog; clock reset 2026-09-18).
 - Pace: 10 slices real-green in two days (s23–s32, 2026-09-17 → 18), ≈ 0.2
   days per slice; the two after took a day each (s33 approved and live
-  2026-09-23; s34 approved 2026-09-23, live 2026-09-24); 3 to go → days at
+  2026-09-23; s34 approved 2026-09-23, live 2026-09-24); 4 to go → days at
   the recent pace, the retry slice the size of s33, not s34.
 
 ## What is happening now

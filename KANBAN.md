@@ -79,6 +79,17 @@ mark `promoted <date>`; the board's done column holds the step.
   the sources' own hiccups, not our reach, are what redden the watch; source:
   metric 2 off target 2026-09-22, data #21. Next to #17 — the same file, the
   same tests.
+- **Resolve-time address check for the fetchers** · versioned to v1.2 at the fork of
+  2026-09-24 (human: "uygula"; from s34's Security review, 2026-09-24) · the floor under a `link` entry's redirects
+  classes the literal host, so a hostname that resolves to a private or
+  loopback address at request time passes it (DNS rebinding); the code's own
+  comment declares this as its boundary · bet: pinning the connect address
+  is a real mechanism (resolve, check the class, connect to what was
+  checked), worth its own entry rather than a line in the floor. The floor's declared
+  boundary (human: "sınır", 2026-09-24) leaves to this candidate the
+  transition and legacy prefixes that embed or mean another address — NAT64
+  `64:ff9b::/96`, 6to4 `2002::/16`, the compat form `::/96`, site-local
+  `fec0::/10`.
 - **Back on a restored record** (s30 build, 2026-09-18) · a reader who arrives
   fresh with a restored record and taps ← Back leaves the site (the rebuilt
   history has no entries in the browser); reload mid-interview then Back
@@ -176,19 +187,8 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
   `commit=false`, read the seven browser lines and the site's deploy on the
   new image, then pin `ubuntu-26.04`. Source: the runner's notice,
   run 35985154468.
-_Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept. Fork 2026-09-23 (human: "hepsi keep"): all six kept again. Fork 2026-09-24 (human: "uygula"): nothing points at any of them yet, so ten take `after: 2026-10-09` — the pre-registered readings are the evidence that could — and the two born of s33/s34's reviews take `after: s34`; the twelfth, the resolve-time address check, born with that day. The guard asks again only when a condition lands._
+_Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept. Fork 2026-09-23 (human: "hepsi keep"): all six kept again. Fork 2026-09-24 (human: "uygula"): nothing points at any of them yet, so ten take `after: 2026-10-09` — the pre-registered readings are the evidence that could — and the two born of s33/s34's reviews take `after: s34`; the twelfth, the resolve-time address check, born with that day. The guard asks again only when a condition lands. Fork 2026-09-24, on s34's real-green (human: "uygula"): the resolve-time address check versioned to v1.2 behind the retry slice; the digest-list split takes `after: 2026-10-09`._
 
-- **Resolve-time address check for the fetchers** · after: s34 (from s34's
-  Security review, 2026-09-24) · the floor under a `link` entry's redirects
-  classes the literal host, so a hostname that resolves to a private or
-  loopback address at request time passes it (DNS rebinding); the code's own
-  comment declares this as its boundary · bet: pinning the connect address
-  is a real mechanism (resolve, check the class, connect to what was
-  checked), worth its own entry rather than a line in the floor. The floor's declared
-  boundary (human: "sınır", 2026-09-24) leaves to this candidate the
-  transition and legacy prefixes that embed or mean another address — NAT64
-  `64:ff9b::/96`, 6to4 `2002::/16`, the compat form `::/96`, site-local
-  `fec0::/10`.
 - **A Security-only read of the launch code** · after: 2026-10-09 (from s33's waiver,
   2026-09-23; human: "uygula") · the ten pre-record slices s1–s8-algeria are
   the whole product — the interview engine, the saved record, the four
@@ -199,7 +199,10 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   nine rounds, and that same eye has never looked at the ten files readers
   actually use. Its clock is a reading, not the calendar: an intake line, a
   metric, or an incident that points at the launch code promotes it.
-- **Split the digest list out of the carrier** · after: s34 (`scripts/asset-digests.mjs`,
+- **Split the digest list out of the carrier** · after: 2026-10-09 (was `after: s34`;
+  the fork of 2026-09-24, human: "uygula" — s33's two-part real-green is
+  read on the two deploys after the first `src/` change, and the split waits
+  for the carry to have run once as written; `scripts/asset-digests.mjs`,
   from s33's review, 2026-09-23) · `carry-assets.mjs` is 1,024 lines at 674
   comment / 313 code, and the digest list is already its own thing — its own
   `CONTEXT.md` term, its own vocabulary, its own import in two test files;
