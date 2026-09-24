@@ -166,8 +166,8 @@ rejects a `fetch` with. The browser case cannot be one case: a missing field
 is refused by the source and is therefore never retried, so “a browser retry
 is one more open” is shown against a page the fixture server answers `503`
 to, which is transient by point 1's own rule — the missing field proves the
-class and the 503 proves the second open. And the states already on disk
-list their unread sources without a `since`: a source on that list was
-unread on the run before, which is what being on it means, so the first run
-under this rule reads the two `bamf` entries of 2026-09-24 as outages rather
-than giving them a lapse's day of grace, and is red if they fail again.
+class and the 503 proves the second open. And the brake is a week, not
+the run before: a run is red when a source went unread on two or more of
+the last seven mornings, however they fell. The states on disk carry no
+days at all, and a source they list was unread on that run, so the two
+`bamf` entries of 2026-09-24 start with one silent morning each.
