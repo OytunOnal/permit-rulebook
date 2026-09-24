@@ -163,11 +163,18 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
   critique of the navigation mock (F1), .
 - **Rest of Europe** · versioned at the s6 boundary 2026-09-07.
 
-### later (clock: DECISIONS rows since 2026-09-23)
+### later (clock: DECISIONS rows since 2026-09-24)
 
-_Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept. Fork 2026-09-23 (human: "hepsi keep"): all six kept again — still no intake line or metric reading points at any of them; the numbers that could are the pre-registered readings of 2026-10-09._
+_Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept. Fork 2026-09-23 (human: "hepsi keep"): all six kept again. Fork 2026-09-24 (human: "uygula"): nothing points at any of them yet, so ten take `after: 2026-10-09` — the pre-registered readings are the evidence that could — and the two born of s33/s34's reviews take `after: s34`; the twelfth, the resolve-time address check, born with that day. The guard asks again only when a condition lands._
 
-- **A Security-only read of the launch code** (from s33's waiver,
+- **Resolve-time address check for the fetchers** · after: s34 (from s34's
+  Security review, 2026-09-24) · the floor under a `link` entry's redirects
+  classes the literal host, so a hostname that resolves to a private or
+  loopback address at request time passes it (DNS rebinding); the code's own
+  comment declares this as its boundary · bet: pinning the connect address
+  is a real mechanism (resolve, check the class, connect to what was
+  checked), worth its own entry rather than a line in the floor.
+- **A Security-only read of the launch code** · after: 2026-10-09 (from s33's waiver,
   2026-09-23; human: "uygula") · the ten pre-record slices s1–s8-algeria are
   the whole product — the interview engine, the saved record, the four
   countries' data, the public pages — and were reviewed under their day's
@@ -177,7 +184,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   nine rounds, and that same eye has never looked at the ten files readers
   actually use. Its clock is a reading, not the calendar: an intake line, a
   metric, or an incident that points at the launch code promotes it.
-- **Split the digest list out of the carrier** (`scripts/asset-digests.mjs`,
+- **Split the digest list out of the carrier** · after: s34 (`scripts/asset-digests.mjs`,
   from s33's review, 2026-09-23) · `carry-assets.mjs` is 1,024 lines at 674
   comment / 313 code, and the digest list is already its own thing — its own
   `CONTEXT.md` term, its own vocabulary, its own import in two test files;
@@ -187,28 +194,28 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   a no-behaviour refactor that gets more expensive every round it waits.
   Deferred on 2026-09-23 because a refactor touching every line of a
   security-critical file is at its worst at the end of a nine-round loop.
-- **Model the 45+ age rules (55% threshold) as criteria** (from the old
+- **Model the 45+ age rules (55% threshold) as criteria** · after: 2026-10-09 (from the old
   backlog, 2026-09-18) · currently notes on the German cards · bet: an age
   rule the engine scores is worth a question. Kept.
-- **Orientation-year English requirement** (from the old backlog, 2026-09-18) ·
+- **Orientation-year English requirement** · after: 2026-10-09 (from the old backlog, 2026-09-18) ·
   IELTS 6.0 / equivalent on the Dutch orientation year · bet: the English
   question already asked covers it once the rule is quoted. Kept.
-- **Country vocabulary follow-ups** (s5c review + light critique; from the old
+- **Country vocabulary follow-ups** · after: 2026-10-09 (s5c review + light critique; from the old
   backlog, 2026-09-18) · dependent territories and the class names · bet:
   the vocabulary's edge cases matter to few readers. Kept.
-- **Affiliate layer** · the money model from the viability gate · bet:
+- **Affiliate layer** · after: 2026-10-09 · the money model from the viability gate · bet:
   route-relevant mandatory services convert without touching eligibility. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
-- **More citizenship exceptions** · the mechanism shipped in s5c, the data did
+- **More citizenship exceptions** · after: 2026-10-09 · the mechanism shipped in s5c, the data did
   not · bet: association agreements matter to enough users to earn a question. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
-- **Reduced thresholds, remaining limb** · only the SEPE shortage catalogue
+- **Reduced thresholds, remaining limb** · after: 2026-10-09 · only the SEPE shortage catalogue
   remains — NL and ES reduced thresholds shipped in s5c/s5d · bet: the SEPE
   catalogue is watchable once located. Source: s5 verification 4.2. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
-- **Turkish UI** · the first audience is Turkish, the product is English · bet:
+- **Turkish UI** · after: 2026-10-09 · the first audience is Turkish, the product is English · bet:
   worth it only once A8 shows organic traffic; trigger: Turkish share of
   post-launch traffic. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
-- **Quote-grounded "ask about this route"** · a presentation layer over the
+- **Quote-grounded "ask about this route"** · after: 2026-10-09 · a presentation layer over the
   quotes, not a decision layer · bet: value unproven before launch. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
-- **Recognition helper** (Anabin and FR/ES/NL equivalents) · research first;
+- **Recognition helper** · after: 2026-10-09 (Anabin and FR/ES/NL equivalents) · research first;
   Anabin is reachable now · bet: a per-country recognition source inventory
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
