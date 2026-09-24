@@ -79,7 +79,7 @@ mark `promoted <date>`; the board's done column holds the step.
   the sources' own hiccups, not our reach, are what redden the watch; source:
   metric 2 off target 2026-09-22, data #21. Next to #17 — the same file, the
   same tests.
-- **Resolve-time address check for the fetchers** · versioned to v1.2 at the fork of
+- **Resolve-time address check for the fetchers** · promoted 2026-09-24 · s36 · versioned to v1.2 at the fork of
   2026-09-24 (human: "uygula"; from s34's Security review, 2026-09-24) · the floor under a `link` entry's redirects
   classes the literal host, so a hostname that resolves to a private or
   loopback address at request time passes it (DNS rebinding); the code's own
@@ -256,7 +256,14 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-_(empty)_
+- **s36 — the address the watch connects to** · scenario written 2026-09-24
+  on branch `s36-resolve-time` (the site worktree `../permit-rulebook-s36`),
+  **awaiting the human's approval**
+  (`docs/spine/scenarios/s36-the-address-the-watch-connects-to.md` on that
+  branch). v1.2's queue head: the fetch tier resolves a name, judges every
+  address the resolver gives, and connects to the one it judged; the four
+  transition and legacy prefixes are spelled; the browser tier keeps its own
+  rule and says so.
 
 ## mock-green
 

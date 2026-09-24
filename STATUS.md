@@ -9,9 +9,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   is read again, and a red run now means an outage
   (`docs/spine/reviews/s35.md`); real-green is the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: nothing. s35 is live and waits on its real-green (the metric-2
-  reading of 2026-09-29); the queue head is the resolve-time address check,
-  versioned at the fork of 2026-09-24.
+- In flight: **s36 — the address the watch connects to** (the resolve-time
+  address check), scenario written 2026-09-24 on `s36-resolve-time` and
+  waiting on your word; nothing is built. s35 is live and waits on its
+  real-green (the metric-2 reading of 2026-09-29).
   Four red days in five (09-20, 09-21, 09-23, 09-24), all source-side, none
   still there the next morning.
 - v1.2: 11 of 15 planned steps passed for real (eleven slices s23–s34), one
@@ -66,6 +67,19 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
+- [ ] **Approve s36's scenario, or say what to change.** It is on its own
+      branch: `git -C ../permit-rulebook-s36 show` or GitHub's
+      `s36-resolve-time`,
+      `docs/spine/scenarios/s36-the-address-the-watch-connects-to.md`. Eight
+      points — the fetch tier connects to the address it judged (Node's own
+      request hook, no new dependency), every answer of a multi-answer name
+      judged, the four transition prefixes spelled, the entry's own address
+      checked the same way, what the watch reads unchanged, the browser tier
+      declared as Chrome's, the boundary redrawn, the words. Pass =
+      "onaylıyorum", or a point's number with the change. Why yours: it moves
+      the fetcher off global `fetch` onto Node's request, which is a bigger
+      change than the hole it closes is a danger (no live instance, no source
+      in the watchlist reaches it). asked: 2026-09-24 entry: s36
 - [x] 2026-09-24 **s35's second brake: three corners at the repository's own write
       boundary** — answered "sınır": the header declares the clock's day; the id
       grammar and the two older readers become one `later` candidate. The change closes on delta 4 (no behaviour finding in its
