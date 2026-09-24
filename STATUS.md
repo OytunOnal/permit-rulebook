@@ -73,8 +73,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
       "sınır" (the change closes as it is: (1) stays declared in the boundary's
       header, (2) and (3) become one `later` candidate — an id grammar in the
       coverage gate plus null-prototype `entries` and `unreadOf` in
-      `state.ts`), "düzelt" (delta 5 with its round: clamp (1) to today, and
-      (2)+(3) fixed here as s11 code touched by this change) or "ayrı" (all
+      `state.ts`), "kırp" (delta 5 with its round: clamp (1) to today, and
+      (2)+(3) fixed here as s11 code touched by this change — the word is not
+      "düzelt" because that word already answered this entry's first brake)
+      or "ayrı" (all
       three to their own entry; the change waits). Why yours: (2) is the
       class this change just closed for `lapses`, standing in older code, and
       whether s35 owns it is a scope call. asked: 2026-09-24 entry: s35
