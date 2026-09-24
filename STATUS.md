@@ -10,8 +10,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   2026-09-23 (`docs/spine/reviews/s33.md`).
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: **s34 — the watch reads the IND itself again** (data #17),
-  approved 2026-09-23 (human: "onaylıyorum"), building in two worktrees
-  (data `../permit-rulebook-data-s34`, site `../permit-rulebook-s34`).
+  built and reviewed — eight rounds, 14 hard findings closed, the runner
+  reading all seven with the final code — and **braked** on three corners
+  under the reloaded floor; the record is on the branch
+  (`docs/spine/reviews/s34.md`). Waiting on the human's word.
 - v1.2: 10 of 14 planned steps passed for real (ten slices s23–s33); 4
   queued — #17, the watch retry (from #21), then two steward items (Back on
   a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
@@ -50,6 +52,21 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   six rounds, not closed; it is the record's `open with reason:` line.
 
 ## What is expected from you
+
+- [ ] **s34 is braked: choose for its three corners.** Three behaviour findings
+      on running code that only the reviewer's own input reached — a `link`
+      redirect to an IPv6-mapped loopback (`[::ffff:7f00:1]`) passes the floor
+      that refuses `127.0.0.1`; the new gate is silenced by writing
+      `kind: sentinel` beside `strategy: link`; the browser's unused
+      `anywhere` branch has no address bound — plus a log line that attributes
+      the previous page's request counts to a failed entry. (a) `sınır`:
+      declare the boundary in the reader's header and merge as is; (b)
+      `düzelt`: one delta with its round — IPv6 literals normalised, the gate
+      keyed on dataset citation, the bound applied, the cost reset per read —
+      then merge; (c) `ayrı`: the resolve-time address check as its own entry,
+      merge as is. Pass = "sınır", "düzelt" or "ayrı". Why yours: the floor
+      stops the building on a corner and the choice costs a round or a declared
+      gap. asked: 2026-09-24 entry: s34
 
 _(s34 approved by the human 2026-09-23: "onaylıyorum".)_
 
