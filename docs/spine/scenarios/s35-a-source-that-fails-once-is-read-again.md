@@ -156,18 +156,18 @@ entry with `since: "2026-09-23"`.
 - Not a longer budget: 30 s per source stands (s34's default, DECISIONS
   2026-09-24); the retry spends a second budget, not a bigger one.
 
-**Corrected 2026-09-24, by the build:** three things in *How it is proved*
+**Corrected 2026-09-24, by the build:** four things in *How it is proved*
 turned out to be smaller or other than written. The budget spent is not
-proved end to end in `tests/s34-fetcher.test.ts`: `BUDGET_MS` is one number
-both readers borrow and is not a parameter, so making it injectable to keep
-the case fast would be changing the code to suit the test — the class is
-asked of the error path instead, of exactly what `AbortSignal.timeout`
-rejects a `fetch` with. The browser case cannot be one case: a missing field
-is refused by the source and is therefore never retried, so “a browser retry
-is one more open” is shown against a page the fixture server answers `503`
-to, which is transient by point 1's own rule — the missing field proves the
-class and the 503 proves the second open. And the brake is a week, not
-the run before: a run is red when a source went unread on two or more of
-the last seven mornings, however they fell. The states on disk carry no
-days at all, and a source they list was unread on that run, so the two
-`bamf` entries of 2026-09-24 start with one silent morning each.
+proved end to end: `BUDGET_MS` is one number both readers borrow and is not
+a parameter, so making it injectable would be changing the code to suit the
+test — the class is asked of the error path instead. The browser case cannot
+be one case: a missing field is refused by the source and never retried, so
+“a browser retry is one more open” is shown against a page the fixture
+server answers `503` to. And the brake is a week, not the run before: a run
+is red when a source went unread on two or more of the last seven mornings,
+however they fell. There is no `since`: the mornings live on the state's
+`lapses`, a list of days per source. A source that answers drops off
+`unread` while its earlier mornings stand, and a `--only` pass keeps every
+untouched source's days. The states on disk carry no days at all, and a
+source they list was unread on that run, so the two `bamf` entries of
+2026-09-24 start with one silent morning each.
