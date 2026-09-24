@@ -173,7 +173,11 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   loopback address at request time passes it (DNS rebinding); the code's own
   comment declares this as its boundary · bet: pinning the connect address
   is a real mechanism (resolve, check the class, connect to what was
-  checked), worth its own entry rather than a line in the floor.
+  checked), worth its own entry rather than a line in the floor. The floor's declared
+  boundary (human: "sınır", 2026-09-24) leaves to this candidate the
+  transition and legacy prefixes that embed or mean another address — NAT64
+  `64:ff9b::/96`, 6to4 `2002::/16`, the compat form `::/96`, site-local
+  `fec0::/10`.
 - **A Security-only read of the launch code** · after: 2026-10-09 (from s33's waiver,
   2026-09-23; human: "uygula") · the ten pre-record slices s1–s8-algeria are
   the whole product — the interview engine, the saved record, the four
