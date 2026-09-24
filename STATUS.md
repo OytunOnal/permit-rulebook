@@ -12,8 +12,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - In flight: **s34 — the watch reads the IND itself again** (data #17),
   built and reviewed — eight rounds, 14 hard findings closed, the runner
   reading all seven with the final code — and **braked** on three corners
-  under the reloaded floor; the record is on the branch
-  (`docs/spine/reviews/s34.md`). Waiting on the human's word.
+  under the reloaded floor; the human said "düzelt" — one delta with its
+  round, then the merge (data first, the site pins). The record is on the
+  branch (`docs/spine/reviews/s34.md`).
 - v1.2: 10 of 14 planned steps passed for real (ten slices s23–s33); 4
   queued — #17, the watch retry (from #21), then two steward items (Back on
   a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
@@ -53,20 +54,8 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **s34 is braked: choose for its three corners.** Three behaviour findings
-      on running code that only the reviewer's own input reached — a `link`
-      redirect to an IPv6-mapped loopback (`[::ffff:7f00:1]`) passes the floor
-      that refuses `127.0.0.1`; the new gate is silenced by writing
-      `kind: sentinel` beside `strategy: link`; the browser's unused
-      `anywhere` branch has no address bound — plus a log line that attributes
-      the previous page's request counts to a failed entry. (a) `sınır`:
-      declare the boundary in the reader's header and merge as is; (b)
-      `düzelt`: one delta with its round — IPv6 literals normalised, the gate
-      keyed on dataset citation, the bound applied, the cost reset per read —
-      then merge; (c) `ayrı`: the resolve-time address check as its own entry,
-      merge as is. Pass = "sınır", "düzelt" or "ayrı". Why yours: the floor
-      stops the building on a corner and the choice costs a round or a declared
-      gap. asked: 2026-09-24 entry: s34
+- [x] 2026-09-24 **s34's brake — "düzelt"**: one delta with its round for the four
+      corners, then the change closes. asked: 2026-09-24 entry: s34
 
 _(s34 approved by the human 2026-09-23: "onaylıyorum".)_
 
