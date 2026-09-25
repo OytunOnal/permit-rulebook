@@ -12,7 +12,7 @@ pre-registered numbers of 2026-09-08 (A2, A7, A8) and do not move.
 | # | metric | target | source | kind | cadence | next |
 |---|---|---|---|---|---|---|
 | 1 | Dataset liveness — open source-change flags older than 48 h | 0 | `gh issue list -R OytunOnal/permit-rulebook-data --state open --label source-change --json number,createdAt` | command | 7 | 2026-09-29 |
-| 2 | The daily watch finishes — failures in the last 7 runs | 0 (one single-day failure tolerated) | `gh run list -R OytunOnal/permit-rulebook-data --limit 10 --json conclusion,createdAt` | command | 7 | 2026-09-29 |
+| 2 | The daily watch finishes — failures in the last 7 runs | 0 (one single-day failure tolerated) | `gh run list -R OytunOnal/permit-rulebook-data --workflow watch.yml --event schedule --branch master --limit 10 --json conclusion,createdAt` (scheduled runs on master only — since 2026-09-25; the plain `--limit 10` counted a slice's measurement dispatches, nine of the last ten that day) | command | 7 | 2026-09-29 |
 | 3 | Visits from search and referrals, days 8–30 (A2) | ≥ 300 | Cloudflare Web Analytics, last 30 days, bots excluded, referrer ≠ direct | ask | 30 | 2026-10-09 |
 | 4 | A stranger touched the data (A7) — issues, PRs or forks by a non-owner | ≥ 1 | `gh issue list -R OytunOnal/permit-rulebook-data --state all --limit 100 --json number,author,createdAt` (the session filters out OytunOnal and app/github-actions) | command | 30 | 2026-10-09 |
 | 5 | Domains linking to the site (A8) | as pre-registered 2026-09-08 (STATUS: "how many domains link to it") | Google Search Console → Links → top linking sites | ask | 30 | 2026-10-09 |

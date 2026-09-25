@@ -71,6 +71,16 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
+- [ ] **On or after 2026-09-29, say whether s35 is real-green.** The session
+      reads metric 2 with `gh run list -R OytunOnal/permit-rulebook-data
+      --workflow watch.yml --event schedule --branch master --limit 10` and
+      reports the five scheduled runs under s35's rule (09-25 to 09-29): every
+      red run among them must name an outage (a source unread twice in seven
+      days) or a refusal by us, and no run may be red for a source that read
+      clean the next morning. 09-25 already read 46/46 clean. Pass = "yeşil",
+      or the failing run named. Why yours: the reading is a week wide and the
+      word closes s35 and data #22. asked: 2026-09-25 entry: s35
+
 - [x] 2026-09-24 **Approve s36's scenario, or say what to change** — answered "onaylıyorum". It is on its own
       branch: `git -C ../permit-rulebook-s36 show` or GitHub's
       `s36-resolve-time`,
