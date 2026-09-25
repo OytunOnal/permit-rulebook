@@ -111,7 +111,8 @@ const SETTLE = {
 const READ_RETRY = { times: 4, everyMs: 400 };
 
 /** A walk: `at()` reads where the tab stands, `openFromOutside()` opens `/`
- * onto the seeded record from `/data/` — an outside entry, `live(n)` answers n questions in the tab. */
+ * onto the seeded record from `/data/` — an outside entrance — and `live(n)`
+ * answers n questions in the tab. */
 function walker(page: BrowserPage, url: (path: string) => string) {
   // A Back that leaves the site is a new document: a read that lands while it
   // is still loading is asked again rather than failing the walk on timing.
@@ -155,8 +156,8 @@ type Viewport = { viewport: { width: number; height: number }; mobile: boolean }
 const WIDE: Viewport = { viewport: { width: 1100, height: 900 }, mobile: false };
 const PHONE: Viewport = { viewport: { width: 390, height: 844 }, mobile: true };
 
-/** The first proof: three screen Backs from the outside entry, each a question back,
- * none of them off the site. */
+/** The first proof: three screen Backs from the outside entrance, each a
+ * question back, none of them off the site. */
 async function threeScreenBacks(size: Viewport) {
   const server = await serve(dist);
   try {
@@ -202,7 +203,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
     expectThreeStepsBack(await threeScreenBacks(PHONE), "390 × 844");
   }, 180000);
 
-  it("from the screen an outside entry opened on, the browser's Back still leaves to the page before", async () => {
+  it("from the screen an outside entrance opened on, the browser's Back still leaves to the page before", async () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
@@ -217,7 +218,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
     }
   }, 180000);
 
-  it("an answer after an outside entry is held, and the screen it opened on is still the edge", async () => {
+  it("an answer after an outside entrance is held, and the screen it opened on is still the edge", async () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
@@ -248,13 +249,13 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
   }, 180000);
 
   /**
-   * The navigation's type cannot carry this: an outside entry that is then
+   * The navigation's type cannot carry this: an outside entrance that is then
    * reloaded reads `reload`, and one left and returned to reads
    * `back_forward`, while the browser still holds only the screen it opened
    * on (headless Chrome, 2026-09-25). The entry's own state says how many
    * held steps stand behind it.
    */
-  it("an outside entry reloaded, or left and returned to, still steps back in place", async () => {
+  it("an outside entrance reloaded, or left and returned to, still steps back in place", async () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
@@ -451,12 +452,12 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
   }
 
   /**
-   * Point 3 after an outside entry: a screen reached by answering in this tab
-   * is one the two Backs agree on — straight after the entry, and after a step
-   * back in place first. The Spec axis probed both by hand (s37 round 1); these
+   * Point 3 after an outside entrance: a screen reached by answering in this
+   * tab is one the two Backs agree on — straight after the entrance, and after
+   * a step back in place first. The Spec axis probed both by hand (s37 round 1); these
    * are those walks, each Back from its own fresh walk.
    */
-  it("after an outside entry, the two Backs agree on every screen reached by answering", async () => {
+  it("after an outside entrance, the two Backs agree on every screen reached by answering", async () => {
     const server = await serve(dist);
     try {
       type Walk = { answeredOn: Where; answered: Where; back: Where };

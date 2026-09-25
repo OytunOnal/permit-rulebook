@@ -115,15 +115,15 @@ or has no stored record.
 
 **Corrected 2026-09-25, by the build:** point 1's "after a reload or a return
 through the browser's own history they begin at the first question (the
-browser kept them)" is true only of an interview walked in the tab. An arrival
-onto a stored record that is then reloaded reads `reload`, and one left for
-`/data/` and returned to reads `back_forward`, while the browser still holds
-only the arrival — measured in headless Chrome on the built site,
-`history.length` 3 and `/data/` behind in both; a rule keyed to the type alone
-sends the screen's Back to `/data/` there. So the claim is replaced: after a
-reload or a return the held entries begin where they began before it. Point
-4's "more reliable" source is the entry itself: every entry the page writes
-carries how many held steps stand behind it (`{ step, held }` in its state),
-which the browser keeps with the entry and drops with it; anything unreadable,
-an entry written before this slice included, is an arrival. The proof list gains the reloaded and the returned arrival as
-cases of the first proof, not as a new promise.
+browser kept them)" is true only of an interview walked in the tab. An outside
+entrance onto a stored record that is then reloaded, or left for `/data/` and
+returned to, is a re-entrance on which the browser still holds only the screen
+it opened on — measured in headless Chrome on the built site, `history.length`
+3 and `/data/` behind in both. So the claim is replaced, and point 4 with it:
+the page does not read the navigation's type. Every entry it writes carries
+how many held steps stand behind it (`{ step, held }` in its state), which the
+browser keeps with the entry and drops with it; the first held step is read
+from the entry the page stands on, and an entry whose count cannot be read,
+one written before this slice included, counts as an outside entrance. The
+proof list gains the reloaded and the returned outside entrance as cases of
+the first proof, not as a new promise.

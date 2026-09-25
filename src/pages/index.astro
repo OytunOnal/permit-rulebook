@@ -805,9 +805,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           // never land on different screens (human, 2026-09-08): this asks the
           // browser to go back, and the popstate handler shows the question that
           // entry was showing. Nothing is erased on the way. It asks only for a
-          // step the browser holds — on an outside entry onto a stored record
-          // the steps behind are the page's own, and the browser's Back from
-          // there is the page the reader came from (s37).
+          // step the browser holds — on an outside entrance onto a stored
+          // record the steps behind are the page's own, and the browser's Back
+          // from there is the page the reader came from (s37).
           if (backFor(screens) === "browser") { window.history.back(); return; }
           // Nothing of ours behind in the browser, so the step is the one
           // editing a declared row makes: the previous question in place.
@@ -1598,9 +1598,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * back keeps everything answered since — the same thing editing an earlier
      * row has always done.
      *
-     * The browser does not always hold what the list says: an outside entry
-     * onto a stored record rebuilds the list behind the screen it opened on
-     * with nothing of ours behind it in the browser, and "← Back" as
+     * The browser does not always hold what the list says: an outside
+     * entrance onto a stored record rebuilds the list behind the screen it
+     * opened on with nothing of ours behind it in the browser, and "← Back" as
      * `history.back()` took the reader off the site (s37, 2026-09-25). There
      * the screen's Back steps back in place; the browser's own Back leaves, as
      * it does from any page just opened.
@@ -1731,8 +1731,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       screens.entries = rebuilt.entries;
       screens.current = rebuilt.current;
       // The list is rebuilt whatever the browser holds; where the held steps
-      // begin is read from the entry the page opened onto. An outside entry
-      // onto a stored record holds only the screen it opened on (s37).
+      // begin is read from the entry the page opened onto. An outside
+      // entrance onto a stored record holds only the screen it opened on (s37).
       screens.firstHeld = firstHeldStep(openedOnto, screens.current);
       window.history.replaceState(entryState(screens), "");
     })();

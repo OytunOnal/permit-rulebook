@@ -317,13 +317,13 @@ const isCount = (value: unknown): value is number => Number.isSafeInteger(value)
  * count no larger than that step, which is every count the page writes;
  * anything else — missing, a string, a negative, a fraction, an infinity, NaN,
  * more steps held than the entry stands on — is read as 0, nothing held
- * behind, which is an outside entry. That is the safe side: stepping back in
- * place never leaves the site, and `history.back()` onto nothing does
+ * behind, which is an outside entrance. That is the safe side: stepping back
+ * in place never leaves the site, and `history.back()` onto nothing does
  * (Security review, s37 rounds 1 and 2).
  *
  * It includes the build before s37, which wrote `{ step }` alone: a tab left
  * open across the deploy reloads onto an entry that says nothing of what is
- * held, and it is read as an outside entry. For a tab that had walked its
+ * held, and it is read as an outside entrance. For a tab that had walked its
  * questions live the two Backs then disagree once — the screen's steps in
  * place, the browser's goes back — which is the smaller harm: read the other
  * way, a tab that had opened onto a stored record would be sent off the site.
@@ -339,21 +339,21 @@ export function readEntry(state: unknown): { step: number | undefined; held: num
  * stands on `current`, opened onto an entry whose state is `state`.
  *
  * The rebuilt list is right about the questions and says nothing about what
- * the browser holds. A re-entry — a reload, a return through the browser's
- * history, a restored session — keeps every entry the interview wrote; an
- * outside entry onto a stored record holds one, the screen it opened on, and
- * a "← Back" that asked the browser for the step before it took the reader
- * off the site (s37, measured 2026-09-25).
+ * the browser holds. A re-entrance — a reload, a return through the
+ * browser's history, a restored session — keeps every entry the interview
+ * wrote; an outside entrance onto a stored record holds one, the screen it
+ * opened on, and a "← Back" that asked the browser for the step before it
+ * took the reader off the site (s37, measured 2026-09-25).
  *
- * The navigation's type cannot tell them apart: an outside entry that is then
- * reloaded, or left and returned to, reads `reload` or `back_forward` while
- * the browser still holds only the screen it opened on — measured in headless
- * Chrome the same day, `history.length` 3 and `/data/` behind in both. The
- * entry itself can: every entry carries how many held steps stand behind it,
- * and the browser keeps that state with the entry through a reload, a return
- * and a restored session, and drops it with the entry. The held steps begin
- * that many steps before the one the rebuilt list stands on, however long the
- * record has grown since.
+ * The navigation's type cannot tell them apart: an outside entrance that is
+ * then reloaded, or left and returned to, reads `reload` or `back_forward`
+ * while the browser still holds only the screen it opened on — measured in
+ * headless Chrome the same day, `history.length` 3 and `/data/` behind in
+ * both. The entry itself can: every entry carries how many held steps stand
+ * behind it, and the browser keeps that state with the entry through a
+ * reload, a return and a restored session, and drops it with the entry. The
+ * held steps begin that many steps before the one the rebuilt list stands on,
+ * however long the record has grown since.
  *
  * Unless the list has fewer steps before `current` than that: the record
  * shrank under the entry — another tab started over — and the entries behind

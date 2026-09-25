@@ -94,9 +94,9 @@ describe("one history entry per question", () => {
  * s37: a reader who opens the site onto a stored record is shown the question
  * the record left them on, with the page's list rebuilt behind it — but the
  * browser holds one entry of this interview, the screen it opened on — an
- * outside entry — and "← Back" as
- * `history.back()` took them off the site (measured 2026-09-25). The screen's
- * Back hands the browser only steps it holds.
+ * outside entrance — and "← Back" as `history.back()` took them off the site
+ * (measured 2026-09-25). The screen's Back hands the browser only steps it
+ * holds.
  */
 /** The nine held counts the Security axis measured (s37 round 1): none of them
  * a count the page could have written. */
@@ -111,7 +111,7 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
   };
   const OUTSIDE = 3;
 
-  it("an outside entry onto a stored record holds nothing behind the screen it opened on", () => {
+  it("an outside entrance onto a stored record holds nothing behind the screen it opened on", () => {
     const h = openedOnto(null);
     expect(h.current).toBe(3);
     expect(h.firstHeld).toBe(OUTSIDE);
@@ -126,7 +126,7 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     ] as const) recordScreen(live, field, advance);
     expect(openedOnto(entryState(live)).firstHeld).toBe(0);
     expect(backFor(openedOnto(entryState(live)))).toBe("browser");
-    // An outside entry, then reloaded or left and returned to: the browser
+    // An outside entrance, then reloaded or left and returned to: the browser
     // still holds only the screen it opened on, and the entry says so.
     const opened = openedOnto(null);
     expect(openedOnto(entryState(opened)).firstHeld).toBe(OUTSIDE);
@@ -155,16 +155,16 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
 
   /**
    * Only a count the page could have written is believed: a non-negative
-   * integer a history could hold. Anything else is read as an outside entry,
-   * because stepping back in place never leaves the site and `history.back()`
-   * onto nothing does. The shapes are the nine the Security axis measured
+   * integer a history could hold. Anything else is read as an outside
+   * entrance, because stepping back in place never leaves the site and
+   * `history.back()` onto nothing does. The shapes are the nine the Security axis measured
    * (s37 round 1) against the round-0 code, which kept the first held step as
    * a step number and read it as `max(0, min(value, current))`: there -1 and
    * -Infinity read as every step held, NaN stuck as NaN, 2.5 as half a step,
    * 1e308 and Infinity as the screen on show only because the clamp caught
    * them, and "5", {} and null fell to the navigation's type.
    */
-  it("a held count that is not a non-negative integer is an outside entry", () => {
+  it("a held count that is not a non-negative integer is an outside entrance", () => {
     for (const held of NOT_A_COUNT) {
       const h = openedOnto({ step: 3, held });
       expect(h.firstHeld, `held: ${String(held)}`).toBe(OUTSIDE);
@@ -173,7 +173,8 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     // Missing altogether, or no state at all.
     expect(openedOnto({ step: 3 }).firstHeld).toBe(OUTSIDE);
     for (const state of [undefined, "5", 5, []]) expect(openedOnto(state).firstHeld).toBe(OUTSIDE);
-    // 0 is a count the page writes — on an outside entry — and is believed as one.
+    // 0 is a count the page writes — on an outside entrance — and is
+    // believed as one.
     expect(readEntry({ step: 3, held: 0 }).held).toBe(0);
     expect(openedOnto({ step: 3, held: 0 }).firstHeld).toBe(OUTSIDE);
     // And a count it could have written is believed.
@@ -183,17 +184,18 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
   /**
    * The build before s37 wrote `{ step }` alone, so a tab left open across
    * the deploy reloads onto an entry that says nothing about what is held.
-   * It is read as an outside entry. For a tab that had walked its questions
-   * live, the two Backs then disagree once — the screen's steps in place, the
-   * browser's goes back — and that is the smaller harm: read the other way, a
-   * tab that had opened onto a stored record would be sent off the site.
+   * It is read as an outside entrance. For a tab that had walked its
+   * questions live, the two Backs then disagree once — the screen's steps in
+   * place, the browser's goes back — and that is the smaller harm: read the
+   * other way, a tab that had opened onto a stored record would be sent off
+   * the site.
    */
-  it("an entry written before the held count is an outside entry, however it was reached", () => {
+  it("an entry written before the held count is an outside entrance, however it was reached", () => {
     expect(openedOnto({ step: 3 }).firstHeld).toBe(OUTSIDE);
     expect(readEntry({ step: 3 }).step).toBe(3);
   });
 
-  it("an answer after an outside entry is held, and the screen it opened on is still the edge", () => {
+  it("an answer after an outside entrance is held, and the screen it opened on is still the edge", () => {
     const h = openedOnto(null);
     expect(recordScreen(h, "occupation_it", true)).toEqual({ how: "push", step: 4 });
     // One entry of ours behind: the browser can go back onto it.
@@ -295,11 +297,12 @@ describe("what an entry carries is written and read in one place", () => {
   /**
    * The page writes `held` as `current - firstHeld` with `firstHeld` never
    * below 0, so an entry it wrote never holds more steps than the one it
-   * names. A larger count is not one the page wrote: `{ step: 3, held: 2^53 - 1 }`
-   * gave a first held step of 0 and sent the screen's Back to the browser
-   * (Security review, s37 delta round 1). It is an outside entry.
+   * names. A larger count is not one the page wrote: `{ step: 3, held:
+   * 2^53 - 1 }` gave a first held step of 0 and sent the screen's Back to the
+   * browser (Security review, s37 delta round 1). It is read as an outside
+   * entrance.
    */
-  it("a held count larger than the step it stands on is an outside entry", () => {
+  it("a held count larger than the step it stands on is an outside entrance", () => {
     for (const held of [4, 100, Number.MAX_SAFE_INTEGER]) {
       expect(readEntry({ step: 3, held }).held, `held: ${held}`).toBe(0);
       expect(firstHeldStep({ step: 3, held }, 3), `held: ${held}`).toBe(3);
