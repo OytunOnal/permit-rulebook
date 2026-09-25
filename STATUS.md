@@ -5,20 +5,16 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-25, skills reloaded (steward-79 to 84) after s36 —
-  a `Dismissed` line names no axis; s36 merged and live — the watch connects to the
-  address it judged (`docs/spine/reviews/s36.md`); real-green is the first
-  scheduled run. s35 waits on the 2026-09-29 metric reading.
+- Last boundary: 2026-09-25, s36 real-green on the first scheduled run — the
+  watch connects to the address it judged (`docs/spine/reviews/s36.md`);
+  skills reloaded the same day (steward-79 to 84: a `Dismissed` line names no
+  axis). s35 waits on the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: nothing. s36 is live and waits on its real-green (the first
-  scheduled run through the new connect path); s35 waits on the 2026-09-29
-  metric reading. The queue head is **Back on a restored record**. s35 is live and waits on its
-  real-green (the metric-2 reading of 2026-09-29).
-  Four red days in five (09-20, 09-21, 09-23, 09-24), all source-side, none
-  still there the next morning.
-- v1.2: 11 of 15 planned steps passed for real (eleven slices s23–s34), two
-  live and waiting on their readings (s35, s36); 2 queued — two steward items
-  (Back on a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
+- In flight: nothing. s36 is real-green; s35 waits on the 2026-09-29 metric
+  reading. The queue head is **Back on a restored record**.
+- v1.2: 12 of 15 planned steps passed for real (twelve slices s23–s36, s35
+  excepted); 1 live and waiting on its reading (s35); 2 queued — two steward
+  items (Back on a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
   all six `later` candidates kept, clock reset. Roadmap: 25 candidates ahead, 12 unversioned under
   `later`, every one with an `after:` (eleven on the readings of 2026-10-09,
   one on 2026-10-19; the fork on s34's real-green versioned one and dated
@@ -30,16 +26,14 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is happening now
 
-- Live: https://permitrulebook.com at `bc0a9ad` (s36), data pinned at
-  `dbf2dad`, dataset 2026.09.18,
-  schema 0.8.2; 757 site tests, 741 data tests; `/data/` says *re-read
-  daily — last run 2026-09-24*. The daily watch did **not** read every
-  source today: `bamf-hochschulabsolvent` and `bamf-selbstaendige-taetigkeit`
-  answered `fetch failed` — the fourth red day in five; the retry slice is
-  the queue head.
+- Live: https://permitrulebook.com at `d1f7b81` (the scheduled deploy after
+  today's watch), data pinned at `1c42cd8`, dataset 2026.09.18, schema
+  0.8.2; 757 site tests, 849 data tests; `/data/` says *re-read daily — last
+  run 2026-09-25*. Today's watch read all 46 sources clean, the first
+  scheduled run on the new connect path.
 - Metric 2 (the daily watch finishes) is off target on the old rule: four
-  red days in five (09-20, 09-21, 09-23, 09-24), all source-side and every
-  one of them clean the next morning. The 2026-09-29 reading is the first
+  red days in five to 09-24, all source-side and every one clean the next
+  morning; 09-25 read all 46 clean. The 2026-09-29 reading is the first
   under s35's rule and is s35's own real-green.
 - s33 is live and its carry is not yet exercised: the slice touched nothing
   under `src/`, so the deploy's carrier logged `0 asset(s) carried, 2
@@ -57,12 +51,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   close, so three Security lines stood without their traces through the
   merge (DECISIONS 2026-09-25; the guard found it the moment the merge
   landed). The record now carries both rounds and their closures.
-- s36 is live and not yet real-green: the runner read all 46 through the new
-  connect path six times on the branch (the last, 36062451413: 46/46, 173 s),
-  but the scheduled run on data master is the one that counts. The fetch tier
-  now makes its own request (`node:http`/`node:https` with a `lookup` hook),
-  which costs about 22 extra connection setups a day and is proved on the
-  wire by those runner runs, not by unit tests.
+- s36 is real-green (the scheduled run 36122852274: 46 sources, nothing
+  unreachable, 170 s — the same range as the old tier's runs). The fetch
+  tier now makes its own request (`node:http`/`node:https` with a `lookup`
+  hook), so the watch connects only to an address it judged.
 - s35 is live and not yet real-green: the runner read the final code clean
   three times on the branch (the last, 36023789695: 46/46, 161 s), but the
   slice's claim is about a week and the 2026-09-29 metric reading is what

@@ -79,7 +79,7 @@ mark `promoted <date>`; the board's done column holds the step.
   the sources' own hiccups, not our reach, are what redden the watch; source:
   metric 2 off target 2026-09-22, data #21. Next to #17 — the same file, the
   same tests.
-- **Resolve-time address check for the fetchers** · promoted 2026-09-24 · s36 · live 2026-09-25 · versioned to v1.2 at the fork of
+- **Resolve-time address check for the fetchers** · promoted 2026-09-24 · s36 · real-green 2026-09-25 · versioned to v1.2 at the fork of
   2026-09-24 (human: "uygula"; from s34's Security review, 2026-09-24) · the floor under a `link` entry's redirects
   classes the literal host, so a hostname that resolves to a private or
   loopback address at request time passes it (DNS rebinding); the code's own
@@ -281,10 +281,11 @@ _(empty — everything real-green so far is stamped into done)_
 
 ## done
 
-- **s36 — the address the watch connects to** · merged and live 2026-09-25
-  (human: "merge"; data `dbf2dad`, site `bc0a9ad`, deploy run 36066130541
-  green) — **real-green waits on the first scheduled run**: all 46 sources
-  read through the new connect path with none `unreachable`. What landed: the
+- **s36 — the address the watch connects to** · real-green 2026-09-25
+  (human: "yeşil"; the first scheduled run after the merge, 36122852274:
+  46 sources read through the new connect path, none `unreachable`, state
+  `1c42cd8`, the site's pin `d1f7b81`) · merged 2026-09-25 (human: "merge";
+  data `dbf2dad`, site `bc0a9ad`, deploy run 36066130541 green). What landed: the
   fetch tier resolves a name inside the connection's own `lookup` hook,
   classifies every address the resolver gives with the floor's relative rule
   and connects only to one it judged — so a source can no longer name a public
