@@ -314,10 +314,12 @@ const isCount = (value: unknown): value is number => Number.isSafeInteger(value)
 /**
  * What a load or a popstate believes of an entry's state. A step only where it
  * is a count, or none — the entry is not ours. A held count only where it is a
- * count; anything else — missing, a string, a negative, a fraction, an
- * infinity, NaN — is read as 0, nothing held behind, which is an outside
- * entry. That is the safe side: stepping back in place never leaves the site,
- * and `history.back()` onto nothing does (Security review, s37 round 1).
+ * count no larger than that step, which is every count the page writes;
+ * anything else — missing, a string, a negative, a fraction, an infinity, NaN,
+ * more steps held than the entry stands on — is read as 0, nothing held
+ * behind, which is an outside entry. That is the safe side: stepping back in
+ * place never leaves the site, and `history.back()` onto nothing does
+ * (Security review, s37 rounds 1 and 2).
  *
  * It includes the build before s37, which wrote `{ step }` alone: a tab left
  * open across the deploy reloads onto an entry that says nothing of what is
@@ -328,7 +330,8 @@ const isCount = (value: unknown): value is number => Number.isSafeInteger(value)
  */
 export function readEntry(state: unknown): { step: number | undefined; held: number } {
   const s = (state !== null && typeof state === "object" ? state : {}) as Record<string, unknown>;
-  return { step: isCount(s.step) ? s.step : undefined, held: isCount(s.held) ? s.held : 0 };
+  const step = isCount(s.step) ? s.step : undefined;
+  return { step, held: step !== undefined && isCount(s.held) && s.held <= step ? s.held : 0 };
 }
 
 /**
@@ -351,9 +354,23 @@ export function readEntry(state: unknown): { step: number | undefined; held: num
  * and a restored session, and drops it with the entry. The held steps begin
  * that many steps before the one the rebuilt list stands on, however long the
  * record has grown since.
+ *
+ * Unless the list has fewer steps before `current` than that: the record
+ * shrank under the entry — another tab started over — and the entries behind
+ * name steps this list no longer has. Each clamps onto the question already
+ * on screen, where the screen offers no Back (headless Chrome, s37 delta 2),
+ * so none of them is believed held and the screen's Back steps in place.
+ *
+ * A popstate asks the same question of the entry it lands on: the page knows,
+ * from the entry it stands on, how many of its steps the browser holds behind
+ * it. Read once on load, a record grown in another tab turned the screen's
+ * Back to stepping in place a step early, and the browser's Back from there
+ * was a dead tap (Spec review, s37 delta round 1).
  */
 export function firstHeldStep(state: unknown, current: number): number {
-  return Math.max(0, Math.max(0, current) - readEntry(state).held);
+  const top = Math.max(0, current);
+  const { held } = readEntry(state);
+  return held <= top ? top - held : top;
 }
 
 /**

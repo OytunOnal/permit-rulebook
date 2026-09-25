@@ -98,6 +98,10 @@ describe("one history entry per question", () => {
  * `history.back()` took them off the site (measured 2026-09-25). The screen's
  * Back hands the browser only steps it holds.
  */
+/** The nine held counts the Security axis measured (s37 round 1): none of them
+ * a count the page could have written. */
+const NOT_A_COUNT: unknown[] = ["5", {}, -1, -Infinity, 1e308, Infinity, NaN, 2.5, null];
+
 describe("the screen's Back asks the browser only for entries it holds", () => {
   /** The page rebuilt onto three answers, opened onto an entry whose state is `state`. */
   const openedOnto = (state: unknown) => {
@@ -126,9 +130,27 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     // still holds only the screen it opened on, and the entry says so.
     const opened = openedOnto(null);
     expect(openedOnto(entryState(opened)).firstHeld).toBe(OUTSIDE);
-    // More held behind the entry than the rebuilt list has steps: all of them.
+  });
+
+  /**
+   * The record shrunk under the entry — another tab started over and answered
+   * one. The entry says five held steps stand behind it, the rebuilt list has
+   * three before the screen on show: the entries behind name steps this list
+   * no longer has, and each clamps onto the question already on screen, where
+   * the screen offers no Back (measured in headless Chrome, s37 delta 2).
+   * None of them is believed held, and the screen's Back steps back in place.
+   */
+  it("more held behind the entry than the list has steps before it: none of them", () => {
     const longer = historyFor(["destination", "citizenship", "situation", "qualification", "occupation_it"], null);
-    expect(openedOnto(entryState(longer)).firstHeld).toBe(0);
+    const h = openedOnto(entryState(longer));
+    expect(h.firstHeld).toBe(OUTSIDE);
+    expect(backFor(h)).toBe("in-place");
+    // Exactly as many as the list has: all of them.
+    expect(firstHeldStep({ step: 5, held: 3 }, 3)).toBe(0);
+    // A popped entry is read the same way: a stale step clamped onto the
+    // list's last screen, three held behind it where the list has one.
+    expect(firstHeldStep({ step: 5, held: 3 }, 1)).toBe(1);
+    expect(firstHeldStep({ step: 5, held: 1 }, 1)).toBe(0);
   });
 
   /**
@@ -136,11 +158,14 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
    * integer a history could hold. Anything else is read as an outside entry,
    * because stepping back in place never leaves the site and `history.back()`
    * onto nothing does. The shapes are the nine the Security axis measured
-   * (s37 round 1), each of which resolved to "every step held" or stuck as
-   * NaN before this rule.
+   * (s37 round 1) against the round-0 code, which kept the first held step as
+   * a step number and read it as `max(0, min(value, current))`: there -1 and
+   * -Infinity read as every step held, NaN stuck as NaN, 2.5 as half a step,
+   * 1e308 and Infinity as the screen on show only because the clamp caught
+   * them, and "5", {} and null fell to the navigation's type.
    */
   it("a held count that is not a non-negative integer is an outside entry", () => {
-    for (const held of ["5", {}, -1, -Infinity, 1e308, Infinity, NaN, 2.5, null]) {
+    for (const held of NOT_A_COUNT) {
       const h = openedOnto({ step: 3, held });
       expect(h.firstHeld, `held: ${String(held)}`).toBe(OUTSIDE);
       expect(backFor(h), `held: ${String(held)}`).toBe("in-place");
@@ -260,11 +285,29 @@ describe("what an entry carries is written and read in one place", () => {
   });
 
   it("the reader believes a held count only where the builder could have written it", () => {
-    // The nine shapes the Security axis measured (s37 round 1), and a fraction.
-    for (const held of ["5", {}, -1, -Infinity, 1e308, Infinity, NaN, 2.5])
+    // The same nine shapes the Security axis measured (s37 round 1).
+    for (const held of NOT_A_COUNT)
       expect(readEntry({ step: 3, held }).held, `held: ${String(held)}`).toBe(0);
     expect(readEntry({ step: 3 }).held).toBe(0);
     for (const held of [0, 1, 3]) expect(readEntry({ step: 3, held }).held).toBe(held);
+  });
+
+  /**
+   * The page writes `held` as `current - firstHeld` with `firstHeld` never
+   * below 0, so an entry it wrote never holds more steps than the one it
+   * names. A larger count is not one the page wrote: `{ step: 3, held: 2^53 - 1 }`
+   * gave a first held step of 0 and sent the screen's Back to the browser
+   * (Security review, s37 delta round 1). It is an outside entry.
+   */
+  it("a held count larger than the step it stands on is an outside entry", () => {
+    for (const held of [4, 100, Number.MAX_SAFE_INTEGER]) {
+      expect(readEntry({ step: 3, held }).held, `held: ${held}`).toBe(0);
+      expect(firstHeldStep({ step: 3, held }, 3), `held: ${held}`).toBe(3);
+    }
+    // A step it cannot read believes no count at all.
+    expect(readEntry({ held: 2 }).held).toBe(0);
+    // Up to the step itself, the count is one the page writes.
+    for (const held of [0, 2, 3]) expect(readEntry({ step: 3, held }).held).toBe(held);
   });
 });
 

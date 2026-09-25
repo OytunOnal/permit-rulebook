@@ -127,6 +127,14 @@ export async function serve(dir, { base = siteBase(), delayJsMs = 0 } = {}) {
 }
 
 /**
+ * How long `goto` gives a page before it returns, when the caller names no
+ * wait: long enough for the interview's module script to take a turn. A
+ * caller that means "the harness default" imports this rather than retyping
+ * the number.
+ */
+export const GOTO_SETTLE_MS = 400;
+
+/**
  * Headless Chrome, attached over CDP, handed to `run` as a small page object:
  *
  *   goto(url)        navigate and settle
@@ -186,11 +194,19 @@ export async function withBrowser(run, {
 
   let nextId = 0;
   const pending = new Map();
-  const problems = [];
-  /** Every request the page made, when the caller asked to watch. */
-  const requests = [];
+  /**
+   * What each tab has thrown and asked for, by its CDP session: every event a
+   * tab raises carries its session, so a second tab's errors are its own and
+   * its `goto` empties only its own list (s37 delta 2 — the lists had been
+   * one, shared by every tab).
+   */
+  const tabs = new Map();
   socket.addEventListener("message", (event) => {
     const message = JSON.parse(event.data);
+    const tab = tabs.get(message.sessionId);
+    // An event from no tab of ours — the browser's own — has no list to go on.
+    if (message.method && !tab) return;
+    const { problems, requests } = tab ?? {};
     if (message.method === "Runtime.exceptionThrown") {
       const d = message.params.exceptionDetails;
       problems.push(`exception: ${d.exception?.description ?? d.text}`);
@@ -248,10 +264,15 @@ export async function withBrowser(run, {
     try { rmSync(userDataDir, { recursive: true, force: true }); } catch { /* in use */ }
   });
 
-  /** A tab, attached and set up the same way whichever it is. */
+  /** A tab, attached and set up the same way whichever it is, with its own
+   * lists of problems and requests. */
   async function openTab() {
     const { targetId } = await send("Target.createTarget", { url: "about:blank" });
     const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
+    const problems = [];
+    /** Every request the page made, when the caller asked to watch. */
+    const requests = [];
+    tabs.set(sessionId, { problems, requests });
     await send("Page.enable", {}, sessionId);
     await send("Runtime.enable", {}, sessionId);
     await send("Log.enable", {}, sessionId);
@@ -269,11 +290,13 @@ export async function withBrowser(run, {
        * A second tab in the same browser — the same profile, so the same
        * origin's storage — for what one tab does to another (s37: a record
        * grown in another tab). It is not brought to the front; `front()` does.
+       * What it throws and asks for is its own: `problems()` and `requests()`
+       * on each tab read that tab alone.
        */
       openTab,
       /** Makes this tab the one the browser shows. */
       front: () => send("Page.bringToFront", {}, sessionId),
-      async goto(url, settleMs = 400) {
+      async goto(url, settleMs = GOTO_SETTLE_MS) {
         problems.length = 0;
         await send("Page.navigate", { url }, sessionId);
         // The interview draws its screen from a module script; give it a turn.
