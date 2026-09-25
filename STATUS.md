@@ -5,7 +5,8 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## Where are we
 
-- Last boundary: 2026-09-25, s36 merged and live — the watch connects to the
+- Last boundary: 2026-09-25, skills reloaded (steward-79 to 84) after s36 —
+  a `Dismissed` line names no axis; s36 merged and live — the watch connects to the
   address it judged (`docs/spine/reviews/s36.md`); real-green is the first
   scheduled run. s35 waits on the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
