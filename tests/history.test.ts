@@ -18,7 +18,10 @@ import {
  * — so the numbers stopped naming the questions, and a phone that throttles a
  * burst of `pushState` calls dropped the extra entries while the page kept
  * counting. One entry per question screen now, and "← Back" is `history.back()`
- * itself, so the two gestures cannot land on different screens.
+ * itself wherever the browser holds a step of ours behind the reader, so there
+ * the two gestures cannot land on different screens. Where it holds none — the
+ * screen a stored record was opened onto — the screen's Back steps back in
+ * place and the browser's leaves (s37).
  */
 
 describe("a reloaded page rebuilds the entries the browser kept", () => {

@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
-import { RECORD_VERSION } from "../src/lib/record.js";
+import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
 
 /**
  * s37 — Back on a restored record.
@@ -48,10 +48,10 @@ const asks = (field: string) => ds.fields.find((f) => f.id === field)!.label;
 
 /** Three answers, in the order they were given: the scenario's record. */
 const RECORD = { destination: "de", citizenship: "IN", situation: "offer" };
-const seed = `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
+const seed = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(JSON.stringify({
   version: RECORD_VERSION, answers: RECORD, history: Object.keys(RECORD),
 }))})`;
-const CLEAR = 'localStorage.removeItem("permit-rulebook.record.v1")';
+const CLEAR = `localStorage.removeItem(${JSON.stringify(STORAGE_KEY)})`;
 
 /** Answer whatever the current question offers, whichever kind it is. */
 const ANSWER = `(() => {
@@ -71,6 +71,30 @@ const WHERE = 'JSON.stringify({ path: location.pathname,'
 
 const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * How long each kind of gesture is given before the tab is read — one wait
+ * per kind, whichever walk makes it. Measured on the built site in headless
+ * Chrome, 2026-09-25, eight runs alone on the machine: an answer or a Back
+ * that stays on the page drew in at most 14 ms, opening `/` or reloading it
+ * in at most 82 ms, and a Back off the site to `/data/` in at most 230 ms.
+ * The suite drives several browsers side by side, so each wait is many times
+ * the slowest reading of its kind.
+ */
+const SETTLE = {
+  /** An answer, or a Back that lands on a question of this page. */
+  onPage: 450,
+  /** A gesture that loads a document: opening `/`, a reload, a Back or Forward across pages. */
+  newDocument: 1200,
+  /** `/data/`, opened only to be left: nothing on it is waited for, so the
+   * harness's own `goto` default (400 ms, scripts/browser.mjs). */
+  offInterview: 400,
+};
+
+/** A read that lands while a new document is still loading is asked again:
+ * four more times, `SETTLE.offInterview` apart — 1.6 s past the gesture's own
+ * wait, several times the slowest document load measured above. */
+const READ_RETRIES = 4;
+
 /** A walk: `at()` reads where the tab stands, `arrive()` opens `/` onto the
  * seeded record from `/data/`, `live(n)` answers n questions in the tab. */
 function walker(page: BrowserPage, url: (path: string) => string) {
@@ -79,14 +103,14 @@ function walker(page: BrowserPage, url: (path: string) => string) {
   const at = async (): Promise<Where> => {
     for (let tries = 0; ; tries++) {
       try { return JSON.parse(await page.evaluate(WHERE)) as Where; } catch (e) {
-        if (tries >= 4) throw e;
-        await settle(400);
+        if (tries >= READ_RETRIES) throw e;
+        await settle(SETTLE.offInterview);
       }
     }
   };
   // The gesture runs on the page's next task, so the evaluation has returned
   // before a Back that leaves the site tears the document down.
-  const act = async (expression: string, ms = 700) => {
+  const act = async (expression: string, ms = SETTLE.onPage) => {
     await page.evaluate(`setTimeout(() => { ${expression}; }, 0), 0`);
     await settle(ms);
     return at();
@@ -94,23 +118,25 @@ function walker(page: BrowserPage, url: (path: string) => string) {
   return {
     at, act,
     async arrive() {
-      await page.goto(url("/data/"), 500);
+      await page.goto(url("/data/"), SETTLE.offInterview);
       await page.evaluate(seed);
-      await page.goto(url("/"), 1200);
+      await page.goto(url("/"), SETTLE.newDocument);
       return at();
     },
     async live(n: number) {
-      await page.goto(url("/data/"), 500);
+      await page.goto(url("/data/"), SETTLE.offInterview);
       await page.evaluate(CLEAR);
-      await page.goto(url("/"), 1200);
+      await page.goto(url("/"), SETTLE.newDocument);
       const seen = [await at()];
-      for (let i = 0; i < n; i++) seen.push(await act(ANSWER, 350));
+      for (let i = 0; i < n; i++) seen.push(await act(ANSWER));
       return seen;
     },
   };
 }
 
 type Viewport = { viewport: { width: number; height: number }; mobile: boolean };
+/** The scenario's two sizes: the desktop the fault was measured at, and the
+ * phone width its proof list asks for. */
 const WIDE: Viewport = { viewport: { width: 1100, height: 900 }, mobile: false };
 const PHONE: Viewport = { viewport: { width: 390, height: 844 }, mobile: true };
 
@@ -167,7 +193,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const w = walker(page, server.url);
         const arrival = await w.arrive();
-        return { arrival, back: await w.act(BROWSER_BACK, 1200) };
+        return { arrival, back: await w.act(BROWSER_BACK, SETTLE.newDocument) };
       }, WIDE) as { arrival: Where; back: Where };
       expect(seen.arrival.question).toBe(asks("qualification"));
       expect(seen.back.path, "the browser's Back was held on the site").toBe("/data/");
@@ -182,11 +208,11 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const w = walker(page, server.url);
         const arrival = await w.arrive();
-        const advanced = await w.act(ANSWER, 450);
+        const advanced = await w.act(ANSWER);
         const back1 = await w.act(SCREEN_BACK);
         const back2 = await w.act(SCREEN_BACK);
         // From there nothing of ours is behind in the browser, so its Back leaves.
-        const browserBack = await w.act(BROWSER_BACK, 1200);
+        const browserBack = await w.act(BROWSER_BACK, SETTLE.newDocument);
         return { arrival, advanced, back1, back2, browserBack };
       }, PHONE) as Record<"arrival" | "advanced" | "back1" | "back2" | "browserBack", Where>;
 
@@ -218,11 +244,11 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const w = walker(page, server.url);
         await w.arrive();
-        const reloaded = await w.act("location.reload()", 1200);
+        const reloaded = await w.act("location.reload()", SETTLE.newDocument);
         const afterReload = await w.act(SCREEN_BACK);
         await w.arrive();
-        const left = await w.act(BROWSER_BACK, 1200);
-        const returned = await w.act("history.forward()", 1200);
+        const left = await w.act(BROWSER_BACK, SETTLE.newDocument);
+        const returned = await w.act("history.forward()", SETTLE.newDocument);
         const afterReturn = await w.act(SCREEN_BACK);
         return { reloaded, afterReload, left, returned, afterReturn };
       }, WIDE) as Record<"reloaded" | "afterReload" | "left" | "returned" | "afterReturn", Where>;
@@ -245,7 +271,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const w = walker(page, server.url);
         const live = await w.live(3);
-        const reloaded = await w.act("location.reload()", 1200);
+        const reloaded = await w.act("location.reload()", SETTLE.newDocument);
         const screenBack = await w.act(SCREEN_BACK);
         const browserBack = await w.act(BROWSER_BACK);
         return { live, reloaded, screenBack, browserBack };
