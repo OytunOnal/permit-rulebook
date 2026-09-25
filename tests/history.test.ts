@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { clampStep, emptyHistory, historyFor, recordScreen, screenAt } from "../src/lib/screen.js";
+import {
+  backFor, clampStep, emptyHistory, firstHeldStep, historyFor, recordScreen, screenAt,
+} from "../src/lib/screen.js";
 
 /**
  * The phone's back gesture, on the human's walk of 2026-09-08.
@@ -82,6 +84,89 @@ describe("one history entry per question", () => {
     h.current = 1;
     expect(recordScreen(h, "qualification", true)).toEqual({ how: "push", step: 2 });
     expect(h.entries.map((e) => e.field)).toEqual(["destination", "situation", "qualification"]);
+  });
+});
+
+/**
+ * s37: a reader who opens the site onto a stored record is shown the question
+ * the record left them on, with the page's list rebuilt behind it — but the
+ * browser holds one entry of this interview, the arrival, and "← Back" as
+ * `history.back()` took them off the site (measured 2026-09-25). The screen's
+ * Back hands the browser only steps it holds.
+ */
+describe("the screen's Back asks the browser only for entries it holds", () => {
+  const arrived = (state: unknown, navigation: string | undefined) => {
+    const h = historyFor(["destination", "citizenship", "situation"], "qualification");
+    h.firstHeld = firstHeldStep({ state, navigation }, h.current);
+    return h;
+  };
+
+  it("a fresh arrival onto a stored record holds nothing behind the arrival screen", () => {
+    const h = arrived(null, "navigate");
+    expect(h.current).toBe(3);
+    expect(h.firstHeld).toBe(3);
+    expect(backFor(h)).toBe("in-place");
+  });
+
+  it("a navigation type the page cannot read counts as an arrival", () => {
+    expect(arrived(null, undefined).firstHeld).toBe(3);
+    expect(arrived(null, "prerender").firstHeld).toBe(3);
+    // A reload of an entry nothing of ours ever wrote: nothing of ours behind it.
+    expect(arrived(null, "reload").firstHeld).toBe(3);
+  });
+
+  it("an entry that says where the held steps begin is believed, whatever the navigation", () => {
+    // Walked live in this tab, then reloaded: every step is held.
+    expect(arrived({ step: 3, firstHeld: 0 }, "reload").firstHeld).toBe(0);
+    expect(backFor(arrived({ step: 3, firstHeld: 0 }, "reload"))).toBe("browser");
+    // Arrived onto the record, then reloaded or left and returned to: the
+    // browser still holds only the arrival, and the entry says so.
+    expect(arrived({ step: 3, firstHeld: 3 }, "reload").firstHeld).toBe(3);
+    expect(arrived({ step: 3, firstHeld: 3 }, "back_forward").firstHeld).toBe(3);
+    // A list rebuilt shorter than the entry remembers stands on its last step.
+    expect(arrived({ step: 7, firstHeld: 6 }, "reload").firstHeld).toBe(3);
+  });
+
+  it("an entry written before the rule, reloaded or returned to, holds every step", () => {
+    // The earlier slice's reload repair: entries then carried only their step.
+    expect(arrived({ step: 3 }, "reload").firstHeld).toBe(0);
+    expect(arrived({ step: 3 }, "back_forward").firstHeld).toBe(0);
+    expect(arrived({ step: 3 }, "navigate").firstHeld).toBe(3);
+  });
+
+  it("an answer after the arrival is held, and the arrival screen is still the edge", () => {
+    const h = arrived(null, "navigate");
+    expect(recordScreen(h, "occupation_it", true)).toEqual({ how: "push", step: 4 });
+    // One entry of ours behind: the browser can go back onto it.
+    expect(backFor(h)).toBe("browser");
+    // Back on the arrival screen, nothing of ours is behind again.
+    h.current = 3;
+    expect(backFor(h)).toBe("in-place");
+    // Stepping back in place rewrites the entry; it never moves the edge.
+    expect(recordScreen(h, "situation", false)).toEqual({ how: "replace", step: 3 });
+    expect(h.firstHeld).toBe(3);
+    expect(backFor(h)).toBe("in-place");
+  });
+
+  it("starting over stands on a held entry: the edge goes back to the first step", () => {
+    const h = arrived(null, "navigate");
+    // "Start over" empties the list; its first screen rewrites the entry the
+    // reader is standing on, which the browser holds.
+    h.entries.length = 0;
+    h.current = -1;
+    recordScreen(h, "destination", false);
+    expect(h.firstHeld).toBe(0);
+    recordScreen(h, "citizenship", true);
+    expect(backFor(h)).toBe("browser");
+  });
+
+  it("a live walk from the first question holds every step", () => {
+    const h = emptyHistory();
+    recordScreen(h, "destination", false);
+    expect(backFor(h)).toBe("in-place");
+    recordScreen(h, "citizenship", true);
+    expect(h.firstHeld).toBe(0);
+    expect(backFor(h)).toBe("browser");
   });
 });
 

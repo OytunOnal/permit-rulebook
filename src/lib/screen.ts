@@ -222,9 +222,16 @@ export interface ScreenHistory {
   entries: HistoryEntry[];
   /** Which entry the reader is standing on; -1 before the first render. */
   current: number;
+  /**
+   * The first step the browser holds an entry of this interview for. Every
+   * step from here to `current` is one `history.back()` can land on; the
+   * steps before it are the page's own, rebuilt from the record, and the
+   * browser has nothing of ours there (s37).
+   */
+  firstHeld: number;
 }
 
-export const emptyHistory = (): ScreenHistory => ({ entries: [], current: -1 });
+export const emptyHistory = (): ScreenHistory => ({ entries: [], current: -1, firstHeld: 0 });
 
 /** What the page should do with the browser's history for this render. */
 export interface HistoryMove {
@@ -246,7 +253,13 @@ export function recordScreen(history: ScreenHistory, field: string | null, advan
     history.entries.push({ field });
     return { how: "push", step: history.current };
   }
-  if (history.current < 0) history.current = 0;
+  if (history.current < 0) {
+    // The first screen — of the page, or after "Start over" — rewrites the
+    // entry the reader is standing on, which the browser holds: the steps
+    // counted from it are all held.
+    history.current = 0;
+    history.firstHeld = 0;
+  }
   history.entries[history.current] = { field };
   return { how: "replace", step: history.current };
 }
@@ -269,7 +282,59 @@ export function screenAt(history: ScreenHistory, step: number): HistoryEntry | u
 export function historyFor(answered: string[], showing: string | null): ScreenHistory {
   const entries: HistoryEntry[] = answered.map((field) => ({ field }));
   entries.push({ field: showing });
-  return { entries, current: entries.length - 1 };
+  return { entries, current: entries.length - 1, firstHeld: 0 };
+}
+
+/** What the page can read about how it came to be showing: the state on the
+ * entry it opened onto, and the navigation's own type. */
+export interface Landing {
+  /** `history.state` before the page wrote anything. */
+  state: unknown;
+  /** `performance.getEntriesByType("navigation")[0]?.type`; undefined when
+   * the browser does not say. */
+  navigation: string | undefined;
+}
+
+/**
+ * Where the held steps begin, for a page that has just rebuilt its list and
+ * stands on `current`.
+ *
+ * The rebuilt list is right about the questions and says nothing about what
+ * the browser holds. A reload or a return through the browser's history keeps
+ * every entry the interview wrote; a fresh arrival onto a stored record holds
+ * one — the arrival — and a "← Back" that asked the browser for the step
+ * before it took the reader off the site (s37, measured 2026-09-25).
+ *
+ * The navigation's type alone cannot tell them apart: an arrival that is then
+ * reloaded, or left and returned to, reads `reload` or `back_forward` while
+ * the browser still holds only the arrival — measured in headless Chrome the
+ * same day, `history.length` 3 and `/data/` behind in both. The entry itself
+ * can: the page writes where the held steps begin into every entry's state,
+ * and the browser keeps that state with the entry through a reload, a return
+ * and a restored session, and drops it with the entry. An entry that carries
+ * it is believed. One written before the rule carries only its step, and
+ * there the type decides as the earlier reload repair assumed: a reload or a
+ * return holds every step. Anything else — no state, a type the page cannot
+ * read — is an arrival, because stepping back in place is safe everywhere and
+ * `history.back()` onto nothing leaves the site.
+ */
+export function firstHeldStep(landing: Landing, current: number): number {
+  const state = (landing.state ?? {}) as { step?: unknown; firstHeld?: unknown };
+  const top = Math.max(0, current);
+  if (typeof state.firstHeld === "number") return Math.max(0, Math.min(state.firstHeld, top));
+  const returned = landing.navigation === "reload" || landing.navigation === "back_forward";
+  if (typeof state.step === "number" && returned) return 0;
+  return top;
+}
+
+/**
+ * What the screen's "← Back" does from where the reader stands. Past the first
+ * held step it is `history.back()`, so the screen's Back and the phone's are
+ * one gesture (human, 2026-09-08); on or before it the browser has nothing of
+ * ours behind, and the previous question is shown in place instead.
+ */
+export function backFor(history: ScreenHistory): "browser" | "in-place" {
+  return history.current > history.firstHeld ? "browser" : "in-place";
 }
 
 /**
