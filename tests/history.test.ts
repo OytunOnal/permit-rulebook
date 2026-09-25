@@ -118,16 +118,22 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     expect(arrived(null, "reload").firstHeld).toBe(3);
   });
 
-  it("an entry that says where the held steps begin is believed, whatever the navigation", () => {
+  it("an entry that says how many held steps stand behind it is believed, whatever the navigation", () => {
     // Walked live in this tab, then reloaded: every step is held.
-    expect(arrived({ step: 3, firstHeld: 0 }, "reload").firstHeld).toBe(0);
-    expect(backFor(arrived({ step: 3, firstHeld: 0 }, "reload"))).toBe("browser");
-    // Arrived onto the record, then reloaded or left and returned to: the
-    // browser still holds only the arrival, and the entry says so.
-    expect(arrived({ step: 3, firstHeld: 3 }, "reload").firstHeld).toBe(3);
-    expect(arrived({ step: 3, firstHeld: 3 }, "back_forward").firstHeld).toBe(3);
-    // A list rebuilt shorter than the entry remembers stands on its last step.
-    expect(arrived({ step: 7, firstHeld: 6 }, "reload").firstHeld).toBe(3);
+    const live = emptyHistory();
+    for (const [field, advance] of [
+      ["destination", false], ["citizenship", true], ["situation", true], ["qualification", true],
+    ] as const) recordScreen(live, field, advance);
+    expect(arrived(entryState(live), "reload").firstHeld).toBe(0);
+    expect(backFor(arrived(entryState(live), "reload"))).toBe("browser");
+    // Opened onto the record, then reloaded or left and returned to: the
+    // browser still holds only the screen it opened on, and the entry says so.
+    const opened = arrived(null, "navigate");
+    expect(arrived(entryState(opened), "reload").firstHeld).toBe(3);
+    expect(arrived(entryState(opened), "back_forward").firstHeld).toBe(3);
+    // More held behind the entry than the rebuilt list has steps: all of them.
+    const longer = historyFor(["destination", "citizenship", "situation", "qualification", "occupation_it"], null);
+    expect(arrived(entryState(longer), "reload").firstHeld).toBe(0);
   });
 
   it("an entry written before the rule, reloaded or returned to, holds every step", () => {
@@ -191,6 +197,34 @@ describe("what an entry carries is written and read in one place", () => {
     const reloaded = historyFor(["destination", "citizenship"], "situation");
     reloaded.firstHeld = firstHeldStep({ state: entryState(h), navigation: "reload" }, reloaded.current);
     expect(reloaded.firstHeld).toBe(h.firstHeld);
+  });
+
+  /**
+   * Tab A opens onto three answers; tab B, same origin, answers two more; tab
+   * A reloads onto the entry it wrote. The rebuilt list is two steps longer
+   * than the one that entry was written against, so an edge kept as a step
+   * number stood behind the reader and the screen's Back left the site
+   * (Security review, s37 round 1). What the entry has to carry is how many
+   * held steps stand behind it, which a longer list does not move.
+   */
+  it("a record grown in another tab moves the list, not what the browser holds", () => {
+    const tabA = historyFor(["destination", "citizenship", "situation"], "qualification");
+    tabA.firstHeld = firstHeldStep({ state: null, navigation: "navigate" }, tabA.current);
+    const grown = ["destination", "citizenship", "situation", "qualification", "occupation_it"];
+    const reloaded = historyFor(grown, "salary");
+    reloaded.firstHeld = firstHeldStep({ state: entryState(tabA), navigation: "reload" }, reloaded.current);
+    expect(reloaded.firstHeld).toBe(reloaded.current);
+    expect(backFor(reloaded)).toBe("in-place");
+
+    // Walked live from the first question, then grown: every step walked is
+    // still held behind the entry, and only those.
+    const live = emptyHistory();
+    for (const [field, advance] of [
+      ["destination", false], ["citizenship", true], ["situation", true], ["qualification", true],
+    ] as const) recordScreen(live, field, advance);
+    const again = historyFor(grown, "salary");
+    again.firstHeld = firstHeldStep({ state: entryState(live), navigation: "reload" }, again.current);
+    expect(again.current - again.firstHeld).toBe(3);
   });
 
   it("a state nothing of ours wrote names no step", () => {

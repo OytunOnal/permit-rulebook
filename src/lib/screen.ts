@@ -309,9 +309,11 @@ export interface Landing {
  * reloaded, or left and returned to, reads `reload` or `back_forward` while
  * the browser still holds only the arrival — measured in headless Chrome the
  * same day, `history.length` 3 and `/data/` behind in both. The entry itself
- * can: the page writes where the held steps begin into every entry's state,
- * and the browser keeps that state with the entry through a reload, a return
- * and a restored session, and drops it with the entry. An entry that carries
+ * can: the page writes into every entry's state how many held steps stand
+ * behind it, and the browser keeps that state with the entry through a
+ * reload, a return and a restored session, and drops it with the entry. The
+ * held steps then begin that many steps before the one the rebuilt list
+ * stands on, however long the record has grown since. An entry that carries
  * it is believed. One written before the rule carries only its step, and
  * there the type decides as the earlier reload repair assumed: a reload or a
  * return holds every step. Anything else — no state, a type the page cannot
@@ -321,7 +323,7 @@ export interface Landing {
 export function firstHeldStep(landing: Landing, current: number): number {
   const state = readEntry(landing.state);
   const top = Math.max(0, current);
-  if (state.firstHeld !== undefined) return Math.max(0, Math.min(state.firstHeld, top));
+  if (state.held !== undefined) return Math.max(0, top - state.held);
   const returned = landing.navigation === "reload" || landing.navigation === "back_forward";
   if (state.step !== undefined && returned) return 0;
   return top;
@@ -331,8 +333,14 @@ export function firstHeldStep(landing: Landing, current: number): number {
 export interface EntryState {
   /** The step of the page's list the entry shows. */
   step: number;
-  /** Where the held steps begin. */
-  firstHeld: number;
+  /**
+   * How many held steps stand behind this one — how many times the browser
+   * can go back from it and stay in the interview. A count, not the step they
+   * begin at: a record grown in another tab rebuilds a longer list on reload,
+   * and a step number written against the shorter one then stood behind the
+   * reader, so the screen's Back left the site (Security review, s37 round 1).
+   */
+  held: number;
 }
 
 /**
@@ -340,7 +348,7 @@ export interface EntryState {
  * `pushState` and `replaceState` writes, so the shape has one author (s37).
  */
 export function entryState(history: ScreenHistory): EntryState {
-  return { step: history.current, firstHeld: history.firstHeld };
+  return { step: history.current, held: history.current - history.firstHeld };
 }
 
 /**
@@ -351,7 +359,7 @@ export function readEntry(state: unknown): Partial<EntryState> {
   const s = (state !== null && typeof state === "object" ? state : {}) as Record<string, unknown>;
   return {
     step: typeof s.step === "number" ? s.step : undefined,
-    firstHeld: typeof s.firstHeld === "number" ? s.firstHeld : undefined,
+    held: typeof s.held === "number" ? s.held : undefined,
   };
 }
 

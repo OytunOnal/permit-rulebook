@@ -1629,8 +1629,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     function recordScreen(field: string | null, advance: boolean) {
       if (restoring) return;
       const move = recordEntry(screens, field, advance);
-      // Every entry says where the held steps begin, so a reload or a return
-      // onto it can tell (s37).
+      // Every entry says how many held steps stand behind it, so a reload or
+      // a return onto it can tell (s37).
       const state = entryState(screens);
       // The first screen REPLACES the page's own entry rather than adding one:
       // pushing there would trap the visitor on the site, because Back would

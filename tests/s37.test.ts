@@ -42,6 +42,11 @@ interface BrowserPage {
   goto(url: string, settleMs?: number): Promise<void>;
   evaluate(expression: string): Promise<string>;
 }
+/** A second tab on the same browser, and bringing a tab to the front. */
+interface Tabs {
+  openTab(): Promise<BrowserPage & Tabs>;
+  front(): Promise<void>;
+}
 
 /** The question each field asks, in the dataset's own words. */
 const asks = (field: string) => ds.fields.find((f) => f.id === field)!.label;
@@ -260,6 +265,43 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       expect(seen.returned.question).toBe(asks("qualification"));
       expect(seen.afterReturn.path, "after a return the screen's Back left the site").toBe("/");
       expect(seen.afterReturn.question).toBe(asks("situation"));
+    } finally {
+      server.close();
+    }
+  }, 180000);
+
+  /**
+   * Two tabs on one origin share the record and nothing else. Tab A opens `/`
+   * onto three answers; tab B answers two more; tab A reloads and rebuilds a
+   * list two steps longer than the one its entry was written against. An edge
+   * kept as a step number then stood behind the reader, and the screen's Back
+   * went to `/data/` (Security review, s37 round 1, at both shas).
+   */
+  it("a record grown in another tab, then a reload, still steps back in place", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage & Tabs) => {
+        const a = walker(page, server.url);
+        const opened = await a.arrive();
+        const tabB = await page.openTab();
+        await tabB.front();
+        const b = walker(tabB, server.url);
+        await tabB.goto(server.url("/"), SETTLE.newDocument);
+        const inB = [await b.at(), await b.act(ANSWER), await b.act(ANSWER)];
+        await page.front();
+        const reloaded = await a.act("location.reload()", SETTLE.newDocument);
+        const back = await a.act(SCREEN_BACK);
+        return { opened, inB, reloaded, back };
+      }, WIDE) as { opened: Where; inB: Where[]; reloaded: Where; back: Where };
+
+      // Tab B opened on the same record, and each answer moved it on.
+      expect(seen.inB[0]!.question).toBe(seen.opened.question);
+      expect(new Set(seen.inB.map((s) => s.question)).size).toBe(3);
+      // The reload restores what tab B left: two questions further on.
+      expect(seen.reloaded.question).toBe(seen.inB[2]!.question);
+      expect(seen.back.path, "the screen's Back left the site").toBe("/");
+      expect(seen.back.question).toBe(seen.inB[1]!.question);
+      expect(seen.back.length, "stepping back in place pushed an entry").toBe(seen.reloaded.length);
     } finally {
       server.close();
     }

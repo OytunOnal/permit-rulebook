@@ -248,71 +248,84 @@ export async function withBrowser(run, {
     try { rmSync(userDataDir, { recursive: true, force: true }); } catch { /* in use */ }
   });
 
-  const { targetId } = await send("Target.createTarget", { url: "about:blank" });
-  const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
-  await send("Page.enable", {}, sessionId);
-  await send("Runtime.enable", {}, sessionId);
-  await send("Log.enable", {}, sessionId);
-  // Off by default: only the case that asks a question about the network pays
-  // for the events. "Answers never leave the device" is a promise about what
-  // the page DOES, so the only honest check is what it actually sent
-  // (human, 2026-09-08).
-  if (network) await send("Network.enable", {}, sessionId);
-  await send("Emulation.setDeviceMetricsOverride", {
-    width: viewport.width, height: viewport.height, deviceScaleFactor: 2, mobile,
-  }, sessionId);
+  /** A tab, attached and set up the same way whichever it is. */
+  async function openTab() {
+    const { targetId } = await send("Target.createTarget", { url: "about:blank" });
+    const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
+    await send("Page.enable", {}, sessionId);
+    await send("Runtime.enable", {}, sessionId);
+    await send("Log.enable", {}, sessionId);
+    // Off by default: only the case that asks a question about the network pays
+    // for the events. "Answers never leave the device" is a promise about what
+    // the page DOES, so the only honest check is what it actually sent
+    // (human, 2026-09-08).
+    if (network) await send("Network.enable", {}, sessionId);
+    await send("Emulation.setDeviceMetricsOverride", {
+      width: viewport.width, height: viewport.height, deviceScaleFactor: 2, mobile,
+    }, sessionId);
 
-  const page = {
-    async goto(url, settleMs = 400) {
-      problems.length = 0;
-      await send("Page.navigate", { url }, sessionId);
-      // The interview draws its screen from a module script; give it a turn.
-      await new Promise((r) => setTimeout(r, settleMs));
-    },
-    async evaluate(expression) {
-      const { result } = await send("Runtime.evaluate", { expression, returnByValue: true }, sessionId);
-      return result.value;
-    },
-    /**
-     * A media feature the reader has set — `prefers-reduced-motion: reduce` is
-     * the one asked for — as `matchMedia` and the stylesheet will read it. Set
-     * before `goto`, so the page's first read already sees it; a headless
-     * profile has no such preference of its own to find (s30).
-     */
-    async emulateMedia(features) {
-      await send("Emulation.setEmulatedMedia", { features }, sessionId);
-    },
-    /** The screen as a PNG, for a record a reader can look at. */
-    async screenshot({ fullPage = false } = {}) {
-      const { data } = await send(
-        "Page.captureScreenshot",
-        { format: "png", captureBeyondViewport: fullPage },
-        sessionId,
-      );
-      return Buffer.from(data, "base64");
-    },
-    /**
-     * Everything the page threw or logged as an error — except the traffic
-     * counter's two local-only failures.
-     *
-     * Cloudflare's beacon endpoint answers `Access-Control-Allow-Origin:
-     * http://127.0.0.1`, without the port a local static server has to use, so
-     * every local run logs a preflight refusal and the load failure that
-     * follows it — for a request that is fine in production (2026-09-08).
-     * Exactly those two messages are dropped, not every line that mentions the
-     * host: a script error thrown BY the beacon, or any other complaint naming
-     * it, still fails the run (Spec review, 2026-09-08).
-     *
-     * The counter is not silenced either. `tests/record.test.ts` asserts the
-     * script was fetched and a report was actually sent, so a page that stopped
-     * counting fails there.
-     */
-    problems: () => problems.filter((p) => !LOCAL_BEACON_NOISE.some((rule) => rule.test(p))),
-    /** The unfiltered list, for a caller that wants the counter's noise too. */
-    allProblems: () => [...problems],
-    requests: () => requests.map((r) => ({ ...r })),
-    forgetRequests: () => { requests.length = 0; },
-  };
+    const page = {
+      /**
+       * A second tab in the same browser — the same profile, so the same
+       * origin's storage — for what one tab does to another (s37: a record
+       * grown in another tab). It is not brought to the front; `front()` does.
+       */
+      openTab,
+      /** Makes this tab the one the browser shows. */
+      front: () => send("Page.bringToFront", {}, sessionId),
+      async goto(url, settleMs = 400) {
+        problems.length = 0;
+        await send("Page.navigate", { url }, sessionId);
+        // The interview draws its screen from a module script; give it a turn.
+        await new Promise((r) => setTimeout(r, settleMs));
+      },
+      async evaluate(expression) {
+        const { result } = await send("Runtime.evaluate", { expression, returnByValue: true }, sessionId);
+        return result.value;
+      },
+      /**
+       * A media feature the reader has set — `prefers-reduced-motion: reduce` is
+       * the one asked for — as `matchMedia` and the stylesheet will read it. Set
+       * before `goto`, so the page's first read already sees it; a headless
+       * profile has no such preference of its own to find (s30).
+       */
+      async emulateMedia(features) {
+        await send("Emulation.setEmulatedMedia", { features }, sessionId);
+      },
+      /** The screen as a PNG, for a record a reader can look at. */
+      async screenshot({ fullPage = false } = {}) {
+        const { data } = await send(
+          "Page.captureScreenshot",
+          { format: "png", captureBeyondViewport: fullPage },
+          sessionId,
+        );
+        return Buffer.from(data, "base64");
+      },
+      /**
+       * Everything the page threw or logged as an error — except the traffic
+       * counter's two local-only failures.
+       *
+       * Cloudflare's beacon endpoint answers `Access-Control-Allow-Origin:
+       * http://127.0.0.1`, without the port a local static server has to use, so
+       * every local run logs a preflight refusal and the load failure that
+       * follows it — for a request that is fine in production (2026-09-08).
+       * Exactly those two messages are dropped, not every line that mentions the
+       * host: a script error thrown BY the beacon, or any other complaint naming
+       * it, still fails the run (Spec review, 2026-09-08).
+       *
+       * The counter is not silenced either. `tests/record.test.ts` asserts the
+       * script was fetched and a report was actually sent, so a page that stopped
+       * counting fails there.
+       */
+      problems: () => problems.filter((p) => !LOCAL_BEACON_NOISE.some((rule) => rule.test(p))),
+      /** The unfiltered list, for a caller that wants the counter's noise too. */
+      allProblems: () => [...problems],
+      requests: () => requests.map((r) => ({ ...r })),
+      forgetRequests: () => { requests.length = 0; },
+    };
+    return page;
+  }
+  const page = await openTab();
 
   try {
     return await run(page);
