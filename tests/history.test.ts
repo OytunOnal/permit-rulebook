@@ -90,6 +90,10 @@ describe("one history entry per question", () => {
   });
 });
 
+/** The nine held counts the Security axis measured (s37 round 1): none of them
+ * a count the page could have written. */
+const NOT_A_COUNT: unknown[] = ["5", {}, -1, -Infinity, 1e308, Infinity, NaN, 2.5, null];
+
 /**
  * s37: a reader who opens the site onto a stored record is shown the question
  * the record left them on, with the page's list rebuilt behind it — but the
@@ -98,10 +102,6 @@ describe("one history entry per question", () => {
  * (measured 2026-09-25). The screen's Back hands the browser only steps it
  * holds.
  */
-/** The nine held counts the Security axis measured (s37 round 1): none of them
- * a count the page could have written. */
-const NOT_A_COUNT: unknown[] = ["5", {}, -1, -Infinity, 1e308, Infinity, NaN, 2.5, null];
-
 describe("the screen's Back asks the browser only for entries it holds", () => {
   /** The page rebuilt onto three answers, opened onto an entry whose state is `state`. */
   const openedOnto = (state: unknown) => {
@@ -133,36 +133,76 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
   });
 
   /**
-   * The record shrunk under the entry — another tab started over and answered
-   * one. The entry says five held steps stand behind it, the rebuilt list has
-   * three before the screen on show: the entries behind name steps this list
-   * no longer has, and each clamps onto the question already on screen, where
-   * the screen offers no Back (measured in headless Chrome, s37 delta 2).
-   * None of them is believed held, and the screen's Back steps back in place.
+   * Another tab shares the record and not the history: it grows the record,
+   * or starts over and answers again, and this tab's entries stay as they were
+   * written, against a list the page no longer rebuilds. Popped, an entry
+   * naming a step past the list clamps onto the question already on screen —
+   * a dead tap, and the "← Back" gone after it (headless Chrome, s37 delta
+   * rounds 1 and 2; the round's shallow shrink was `{ step: 6, held: 3 }`
+   * reloaded onto three answers). So an entry's held count is believed only
+   * where the record did not change under it: where the step it names is the
+   * step the page stands on (human, 2026-09-25). Anywhere else nothing is
+   * held, and the screen's Back steps back in place.
    */
-  it("more held behind the entry than the list has steps before it: none of them", () => {
+  it("an entry's held count is believed only where the record did not change under it", () => {
+    // Unchanged: the entry names the step the rebuilt list stands on.
+    expect(firstHeldStep({ step: 3, held: 3 }, 3)).toBe(0);
+    expect(firstHeldStep({ step: 3, held: 1 }, 3)).toBe(2);
+    // Shrunk — the entry names a step past the list: none held. The first is
+    // the round's shallow shrink; the second the assertion it named, which
+    // read 0 and sent the screen's Back onto stale entries.
+    expect(firstHeldStep({ step: 6, held: 3 }, 3)).toBe(3);
+    expect(firstHeldStep({ step: 5, held: 3 }, 3)).toBe(3);
+    // The Security axis's other shapes: opened on two and two answered, the
+    // other tab starting over with two; opened on three and three answered,
+    // the other tab starting over with four; and the deep shrink, with one.
+    expect(firstHeldStep({ step: 4, held: 2 }, 2)).toBe(2);
+    expect(firstHeldStep({ step: 6, held: 3 }, 4)).toBe(4);
+    expect(firstHeldStep({ step: 6, held: 3 }, 1)).toBe(1);
+    // Grown — the entry names a step before the list's top: none held.
+    expect(firstHeldStep({ step: 3, held: 3 }, 4)).toBe(4);
+    expect(firstHeldStep({ step: 3, held: 3 }, 5)).toBe(5);
     const longer = historyFor(["destination", "citizenship", "situation", "qualification", "occupation_it"], null);
     const h = openedOnto(entryState(longer));
     expect(h.firstHeld).toBe(OUTSIDE);
     expect(backFor(h)).toBe("in-place");
-    // Exactly as many as the list has: all of them.
-    expect(firstHeldStep({ step: 5, held: 3 }, 3)).toBe(0);
-    // A popped entry is read the same way: a stale step clamped onto the
-    // list's last screen, three held behind it where the list has one.
+  });
+
+  /**
+   * A record started over in another tab and answered back to the same
+   * length leaves the entry naming the step the page stands on: the entry
+   * cannot tell it from an unchanged record, and it is believed. Every entry
+   * behind then names a step the rebuilt list has, one below the last, so a
+   * Back onto it shows the question before — never the one on screen, never
+   * off the site.
+   */
+  it("a record restarted to the same length reads as unchanged, and every step behind is one the list has", () => {
+    expect(firstHeldStep({ step: 4, held: 2 }, 4)).toBe(2);
+  });
+
+  /**
+   * A popstate reads the entry it lands on against the step it lands at: the
+   * entry's step clamped to the list. An entry the list still has is one the
+   * record did not change under, and its count is believed; a stale entry
+   * clamped onto the list's last screen counts nothing held.
+   */
+  it("a popped entry is believed where it lands on its own step, and not where it was clamped", () => {
+    expect(firstHeldStep({ step: 2, held: 2 }, 2)).toBe(0);
     expect(firstHeldStep({ step: 5, held: 3 }, 1)).toBe(1);
-    expect(firstHeldStep({ step: 5, held: 1 }, 1)).toBe(0);
+    expect(firstHeldStep({ step: 5, held: 1 }, 1)).toBe(1);
   });
 
   /**
    * Only a count the page could have written is believed: a non-negative
    * integer a history could hold. Anything else is read as an outside
    * entrance, because stepping back in place never leaves the site and
-   * `history.back()` onto nothing does. The shapes are the nine the Security axis measured
-   * (s37 round 1) against the round-0 code, which kept the first held step as
-   * a step number and read it as `max(0, min(value, current))`: there -1 and
-   * -Infinity read as every step held, NaN stuck as NaN, 2.5 as half a step,
-   * 1e308 and Infinity as the screen on show only because the clamp caught
-   * them, and "5", {} and null fell to the navigation's type.
+   * `history.back()` onto nothing does. The shapes are the nine the Security
+   * axis measured (s37 round 1) against the round-0 code, which kept the
+   * first held step as a step number and read it as
+   * `max(0, min(value, current))`: there -1 and -Infinity read as every step
+   * held, NaN stuck as NaN, 2.5 as half a step, 1e308 and Infinity as the
+   * screen on show only because the clamp caught them, and "5", {} and null
+   * fell to the navigation's type.
    */
   it("a held count that is not a non-negative integer is an outside entrance", () => {
     for (const held of NOT_A_COUNT) {
@@ -256,10 +296,11 @@ describe("what an entry carries is written and read in one place", () => {
    * A reloads onto the entry it wrote. The rebuilt list is two steps longer
    * than the one that entry was written against, so an edge kept as a step
    * number stood behind the reader and the screen's Back left the site
-   * (Security review, s37 round 1). What the entry has to carry is how many
-   * held steps stand behind it, which a longer list does not move.
+   * (Security review, s37 round 1). The entry carries how many held steps
+   * stand behind it, and a count written against a shorter list is not
+   * believed against a longer one (human, 2026-09-25).
    */
-  it("a record grown in another tab moves the list, not what the browser holds", () => {
+  it("a record grown in another tab moves the list, and nothing behind it is held", () => {
     const tabA = historyFor(["destination", "citizenship", "situation"], "qualification");
     tabA.firstHeld = firstHeldStep(null, tabA.current);
     const grown = ["destination", "citizenship", "situation", "qualification", "occupation_it"];
@@ -268,15 +309,18 @@ describe("what an entry carries is written and read in one place", () => {
     expect(reloaded.firstHeld).toBe(reloaded.current);
     expect(backFor(reloaded)).toBe("in-place");
 
-    // Walked live from the first question, then grown: every step walked is
-    // still held behind the entry, and only those.
+    // Walked live from the first question, then grown: the steps walked are
+    // behind the entry in the browser, but they name steps of the shorter
+    // list, and a Back popped onto them skipped the grown questions. Nothing
+    // is believed held; the screen's Back steps back in place.
     const live = emptyHistory();
     for (const [field, advance] of [
       ["destination", false], ["citizenship", true], ["situation", true], ["qualification", true],
     ] as const) recordScreen(live, field, advance);
     const again = historyFor(grown, "salary");
     again.firstHeld = firstHeldStep(entryState(live), again.current);
-    expect(again.current - again.firstHeld).toBe(3);
+    expect(again.firstHeld).toBe(again.current);
+    expect(backFor(again)).toBe("in-place");
   });
 
   it("a state nothing of ours wrote names no step and holds nothing", () => {
