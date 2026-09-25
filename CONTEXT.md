@@ -237,7 +237,7 @@ task that draws the verdict; nothing that was visible changes place. It is
 not a stand-in in the box: those are the record and link readers' lines, over
 question one (s10).
 _Avoid_: skeleton, placeholder headline, loading state, spinner; held (s37's
-held step, a history entry the browser keeps behind the interview)
+held step, a step of the interview the browser holds a history entry for)
 
 **Outside entrance / re-entrance** (s37, the two ways the interview page is
 opened):
@@ -249,7 +249,8 @@ interview wrote — a reload, the browser's Back or Forward onto it, a restored
 session — and that entry says how many held steps stand behind it. An outside
 entrance that is reloaded is a re-entrance that still has nothing held behind
 it; an entry whose count cannot be read counts as an outside entrance. The
-*entry* is the thing `pushState` makes; the *entrance* is how the page came to
+*entry* is a browser history entry — one the page wrote with `pushState` or
+`replaceState`, or one it did not; the *entrance* is how the page came to
 stand on one.
 _Avoid_: entry (for the way in — it is the history entry), arrival (a reader
 sent from a country or route page), landing (s30's move of the question card),
@@ -263,8 +264,10 @@ is held; the steps before it are the page's own, rebuilt from the record. Past
 it the screen's "← Back" is the browser's Back; on it or before it, the
 screen's Back shows the previous question in place and the browser's leaves
 the site. It is read from the entry the page stands on — on load and on every
-Back or Forward — and where that entry holds more steps than the list has
-before it (the record shrank in another tab), none of them is held.
+Back or Forward — and believed only when the record did not change under that
+entry, when the step it names is the step the page stands on: after the
+record grew or shrank in another tab, none is held (one started over and
+answered back to the same length reads as unchanged).
 _Avoid_: history depth, history index, arrival screen; hold, hold state (the
 s31 line a returning reader sees while the module draws — nothing to do with
 the browser's history)
