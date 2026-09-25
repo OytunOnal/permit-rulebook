@@ -10,9 +10,10 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   skills reloaded the same day (steward-79 to 84: a `Dismissed` line names no
   axis). s35 waits on the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: **s37 — Back on a restored record**, approved 2026-09-25; built
-  and reviewed three rounds on `s37-restored-back`, **braked** on a two-tab
-  corner — your word on STATUS. s35
+- In flight: **s37 — Back on a restored record**, built and reviewed — four
+  rounds, eleven reviews, three deltas; the change closed on delta 3 (branch
+  `s37-restored-back` at the record commit, 790 tests). Waiting on the word
+  to merge. s35
   waits on the 2026-09-29 metric reading.
 - v1.2: 12 of 16 planned steps passed for real (twelve slices s23–s36, s35
   excepted); 1 live and waiting on its reading (s35); 3 queued — two steward
