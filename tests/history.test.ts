@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
-  backFor, clampStep, emptyHistory, firstHeldStep, historyFor, recordScreen, screenAt,
+  backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, readEntry, recordScreen, screenAt,
 } from "../src/lib/screen.js";
 
 /**
@@ -167,6 +167,33 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     recordScreen(h, "citizenship", true);
     expect(h.firstHeld).toBe(0);
     expect(backFor(h)).toBe("browser");
+  });
+});
+
+/**
+ * The entry's state has one owner: `entryState` is the object every
+ * `pushState`/`replaceState` writes, and `readEntry` is what a load or a
+ * popstate believes of it. Written in one file and read in another, a rename
+ * on either side stayed green (Standards review, s37 round 1).
+ */
+describe("what an entry carries is written and read in one place", () => {
+  it("a state the page wrote reads back as the step it names and where the held steps begin", () => {
+    const h = emptyHistory();
+    recordScreen(h, "destination", false);
+    recordScreen(h, "citizenship", true);
+    recordScreen(h, "situation", true);
+    const back = readEntry(entryState(h));
+    expect(back.step).toBe(2);
+    // Reloaded onto that entry, the page's rule gives back the edge it had.
+    const reloaded = historyFor(["destination", "citizenship"], "situation");
+    reloaded.firstHeld = firstHeldStep({ state: entryState(h), navigation: "reload" }, reloaded.current);
+    expect(reloaded.firstHeld).toBe(h.firstHeld);
+  });
+
+  it("a state nothing of ours wrote names no step", () => {
+    expect(readEntry(null).step).toBeUndefined();
+    expect(readEntry({ step: "2" }).step).toBeUndefined();
+    expect(readEntry("2").step).toBeUndefined();
   });
 });
 

@@ -319,12 +319,40 @@ export interface Landing {
  * `history.back()` onto nothing leaves the site.
  */
 export function firstHeldStep(landing: Landing, current: number): number {
-  const state = (landing.state ?? {}) as { step?: unknown; firstHeld?: unknown };
+  const state = readEntry(landing.state);
   const top = Math.max(0, current);
-  if (typeof state.firstHeld === "number") return Math.max(0, Math.min(state.firstHeld, top));
+  if (state.firstHeld !== undefined) return Math.max(0, Math.min(state.firstHeld, top));
   const returned = landing.navigation === "reload" || landing.navigation === "back_forward";
-  if (typeof state.step === "number" && returned) return 0;
+  if (state.step !== undefined && returned) return 0;
   return top;
+}
+
+/** What every entry the interview writes carries in `history.state`. */
+export interface EntryState {
+  /** The step of the page's list the entry shows. */
+  step: number;
+  /** Where the held steps begin. */
+  firstHeld: number;
+}
+
+/**
+ * The state for the entry the reader stands on: the one object every
+ * `pushState` and `replaceState` writes, so the shape has one author (s37).
+ */
+export function entryState(history: ScreenHistory): EntryState {
+  return { step: history.current, firstHeld: history.firstHeld };
+}
+
+/**
+ * What a load or a popstate believes of an entry's state: each field only
+ * where it is the kind the page writes. Anything else is not ours.
+ */
+export function readEntry(state: unknown): Partial<EntryState> {
+  const s = (state !== null && typeof state === "object" ? state : {}) as Record<string, unknown>;
+  return {
+    step: typeof s.step === "number" ? s.step : undefined,
+    firstHeld: typeof s.firstHeld === "number" ? s.firstHeld : undefined,
+  };
 }
 
 /**
