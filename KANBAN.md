@@ -100,6 +100,20 @@ mark `promoted <date>`; the board's done column holds the step.
   the s10 gate never seeded · a steward pass.
 
 **Candidates** (through `spine:idea`; none filed yet for this version)
+- **A flag quotes a page; the quote is the page's** · versioned to v1.2 at the fork of
+  2026-09-25 (human: "uygula", last in the queue; from s36's delta round 4,
+  2026-09-24, human: "ayrı") · a flag file exists so a person
+  can judge a change, so it carries `report.context` — the diff of the page —
+  verbatim into committed Markdown (`../permit-rulebook-data/src/watch/core.ts:507`
+  → `cli-watch.ts:68`) and from there into the issue a curator reads: a source
+  that puts `
+## ` or a bidi override in its own text ends the paragraph and
+  reorders what follows. Sanitising the quote would change what the curator
+  reads, which is why this is not a line in s36 · bet: the fix is the flag's
+  FORMAT, not its content — the quoted block fenced so Markdown cannot act on
+  it, the steering characters dropped as `printable` drops them, the page's
+  words otherwise untouched. By design since s11; s36 named it. Source: s36's
+  delta round 4, the human's "ayrı".
 
 ### v1.3
 
@@ -177,19 +191,6 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
 
 ### later (clock: DECISIONS rows since 2026-09-24)
 
-- **A flag quotes a page; the quote is the page's** · after: s36 (from s36's
-  delta round 4, 2026-09-24; human: "ayrı") · a flag file exists so a person
-  can judge a change, so it carries `report.context` — the diff of the page —
-  verbatim into committed Markdown (`../permit-rulebook-data/src/watch/core.ts:507`
-  → `cli-watch.ts:68`) and from there into the issue a curator reads: a source
-  that puts `
-## ` or a bidi override in its own text ends the paragraph and
-  reorders what follows. Sanitising the quote would change what the curator
-  reads, which is why this is not a line in s36 · bet: the fix is the flag's
-  FORMAT, not its content — the quoted block fenced so Markdown cannot act on
-  it, the steering characters dropped as `printable` drops them, the page's
-  words otherwise untouched. By design since s11; s36 named it. Source: s36's
-  delta round 4, the human's "ayrı".
 - **An id is a word the watch chose** · after: s35 (from s35's delta rounds 3
   and 4, 2026-09-24; human: "sınır") · nothing anywhere spells what a
   watchlist id may be: `checkCoverage` gates urls, kind, steps, glyphs and
@@ -218,7 +219,7 @@ _Opened at the roadmap fork of 2026-09-17; candidates, not commitments. Not befo
   `commit=false`, read the seven browser lines and the site's deploy on the
   new image, then pin `ubuntu-26.04`. Source: the runner's notice,
   run 35985154468.
-_Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept. Fork 2026-09-23 (human: "hepsi keep"): all six kept again. Fork 2026-09-24 (human: "uygula"): nothing points at any of them yet, so ten take `after: 2026-10-09` — the pre-registered readings are the evidence that could — and the two born of s33/s34's reviews take `after: s34`; the twelfth, the resolve-time address check, born with that day. The guard asks again only when a condition lands. Fork 2026-09-24, on s34's real-green (human: "uygula"): the resolve-time address check versioned to v1.2 behind the retry slice; the digest-list split takes `after: 2026-10-09`._
+_Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one dropped as a duplicate of v1.2's data #17. Fork 2026-09-18 (human: "uygula"): all six kept. Fork 2026-09-23 (human: "hepsi keep"): all six kept again. Fork 2026-09-24 (human: "uygula"): nothing points at any of them yet, so ten take `after: 2026-10-09` — the pre-registered readings are the evidence that could — and the two born of s33/s34's reviews take `after: s34`; the twelfth, the resolve-time address check, born with that day. The guard asks again only when a condition lands. Fork 2026-09-24, on s34's real-green (human: "uygula"): the resolve-time address check versioned to v1.2 behind the retry slice; the digest-list split takes `after: 2026-10-09`. Fork 2026-09-25, on s36's real-green (human: "uygula"): the flag's quoted page versioned to v1.2, last in the queue behind the two steward items._
 
 - **A Security-only read of the launch code** · after: 2026-10-09 (from s33's waiver,
   2026-09-23; human: "uygula") · the ten pre-record slices s1–s8-algeria are

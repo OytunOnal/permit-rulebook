@@ -12,13 +12,14 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
 - In flight: nothing. s36 is real-green; s35 waits on the 2026-09-29 metric
   reading. The queue head is **Back on a restored record**.
-- v1.2: 12 of 15 planned steps passed for real (twelve slices s23–s36, s35
-  excepted); 1 live and waiting on its reading (s35); 2 queued — two steward
-  items (Back on a restored record; an unknown link's first paint). Roadmap fork 2026-09-23:
+- v1.2: 12 of 16 planned steps passed for real (twelve slices s23–s36, s35
+  excepted); 1 live and waiting on its reading (s35); 3 queued — two steward
+  items (Back on a restored record; an unknown link's first paint) and the
+  flag's quoted page, versioned at the fork of 2026-09-25. Roadmap fork 2026-09-23:
   all six `later` candidates kept, clock reset. Roadmap: 25 candidates ahead, 12 unversioned under
-  `later`, every one with an `after:` (eleven on the readings of 2026-10-09,
-  one on 2026-10-19; the fork on s34's real-green versioned one and dated
-  the other) (three moved from the old backlog; clock reset 2026-09-18).
+  `later`, every one with an `after:` (ten on the readings of 2026-10-09, one
+  on 2026-10-19, one on s35; the forks of 2026-09-24 and 2026-09-25 versioned
+  one candidate each into v1.2) (three moved from the old backlog; clock reset 2026-09-18).
 - Pace: 10 slices real-green in two days (s23–s32, 2026-09-17 → 18), ≈ 0.2
   days per slice; the two after took a day each (s33 approved and live
   2026-09-23; s34 approved 2026-09-23, live 2026-09-24); 4 to go → days at
