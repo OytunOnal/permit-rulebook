@@ -238,6 +238,27 @@ not a stand-in in the box: those are the record and link readers' lines, over
 question one (s10).
 _Avoid_: skeleton, placeholder headline, loading state, spinner
 
+**Outside entry / re-entry** (s37, the two ways the interview page is opened):
+An *outside entry* opens the page onto a browser history entry the interview
+did not write — a typed address, a link, a bookmark, the step from `/data/`.
+Nothing of the interview is held behind it, however many answers the record
+brings back. A *re-entry* opens the page onto an entry the interview wrote —
+a reload, the browser's Back or Forward onto it, a restored session — and that
+entry says how many held steps stand behind it. An outside entry that is
+reloaded is a re-entry that still has nothing held behind it; an entry whose
+count cannot be read counts as an outside entry.
+_Avoid_: arrival (a reader sent from a country or route page), landing (s30's
+move of the question card), return, fresh visit, reload (as the name of either)
+
+**Held step / first held step** (s37):
+A *held step* is a step of the interview's list the browser holds a history
+entry for — one the browser's Back can land on without leaving the site. The
+*first held step* is where they begin: every step from it to the one on screen
+is held; the steps before it are the page's own, rebuilt from the record. Past
+it the screen's "← Back" is the browser's Back; on it or before it, the screen's
+Back shows the previous question in place and the browser's leaves the site.
+_Avoid_: history depth, history index, arrival screen
+
 ### Verdicts
 
 **Met** (UI: "criteria met"):

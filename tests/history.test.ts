@@ -93,7 +93,8 @@ describe("one history entry per question", () => {
 /**
  * s37: a reader who opens the site onto a stored record is shown the question
  * the record left them on, with the page's list rebuilt behind it — but the
- * browser holds one entry of this interview, the arrival, and "← Back" as
+ * browser holds one entry of this interview, the screen it opened on — an
+ * outside entry — and "← Back" as
  * `history.back()` took them off the site (measured 2026-09-25). The screen's
  * Back hands the browser only steps it holds.
  */
@@ -167,12 +168,12 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     expect(readEntry({ step: 3 }).step).toBe(3);
   });
 
-  it("an answer after the arrival is held, and the arrival screen is still the edge", () => {
+  it("an answer after an outside entry is held, and the screen it opened on is still the edge", () => {
     const h = openedOnto(null);
     expect(recordScreen(h, "occupation_it", true)).toEqual({ how: "push", step: 4 });
     // One entry of ours behind: the browser can go back onto it.
     expect(backFor(h)).toBe("browser");
-    // Back on the arrival screen, nothing of ours is behind again.
+    // Back on the screen it opened on, nothing of ours is behind again.
     h.current = 3;
     expect(backFor(h)).toBe("in-place");
     // Stepping back in place rewrites the entry; it never moves the edge.

@@ -123,8 +123,7 @@ only the arrival — measured in headless Chrome on the built site,
 sends the screen's Back to `/data/` there. So the claim is replaced: after a
 reload or a return the held entries begin where they began before it. Point
 4's "more reliable" source is the entry itself: every entry the page writes
-carries where the held steps begin (`{ step, firstHeld }` in its state), which
-the browser keeps with the entry and drops with it; the navigation's type
-decides only for an entry written before this slice, and anything unreadable
-is an arrival. The proof list gains the reloaded and the returned arrival as
+carries how many held steps stand behind it (`{ step, held }` in its state),
+which the browser keeps with the entry and drops with it; anything unreadable,
+an entry written before this slice included, is an arrival. The proof list gains the reloaded and the returned arrival as
 cases of the first proof, not as a new promise.

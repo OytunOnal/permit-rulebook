@@ -11,10 +11,10 @@ import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
  * A tab visits `/data/`, the record holds three answers, the reader opens `/`:
  * the interview restores to the fourth question and shows "← Back". The page
  * had rebuilt a list of four screens and stood on the last, but the browser
- * held one entry of the interview — the arrival — and the screen's Back, as
- * `history.back()`, went to `/data/` (measured 2026-09-25). The screen's Back
- * now asks the browser only for entries it holds; the browser's own Back is
- * left alone.
+ * held one entry of the interview — the screen it opened on — and the
+ * screen's Back, as `history.back()`, went to `/data/` (measured 2026-09-25).
+ * The screen's Back now asks the browser only for entries it holds; the
+ * browser's own Back is left alone.
  */
 
 const ds = dataset as unknown as Dataset;
@@ -100,8 +100,8 @@ const SETTLE = {
  * wait, several times the slowest document load measured above. */
 const READ_RETRIES = 4;
 
-/** A walk: `at()` reads where the tab stands, `arrive()` opens `/` onto the
- * seeded record from `/data/`, `live(n)` answers n questions in the tab. */
+/** A walk: `at()` reads where the tab stands, `openFromOutside()` opens `/`
+ * onto the seeded record from `/data/` — an outside entry, `live(n)` answers n questions in the tab. */
 function walker(page: BrowserPage, url: (path: string) => string) {
   // A Back that leaves the site is a new document: a read that lands while it
   // is still loading is asked again rather than failing the walk on timing.
@@ -122,7 +122,7 @@ function walker(page: BrowserPage, url: (path: string) => string) {
   };
   return {
     at, act,
-    async arrive() {
+    async openFromOutside() {
       await page.goto(url("/data/"), SETTLE.offInterview);
       await page.evaluate(seed);
       await page.goto(url("/"), SETTLE.newDocument);
@@ -145,26 +145,26 @@ type Viewport = { viewport: { width: number; height: number }; mobile: boolean }
 const WIDE: Viewport = { viewport: { width: 1100, height: 900 }, mobile: false };
 const PHONE: Viewport = { viewport: { width: 390, height: 844 }, mobile: true };
 
-/** The first proof: three screen Backs from the arrival, each a question back,
+/** The first proof: three screen Backs from the outside entry, each a question back,
  * none of them off the site. */
 async function threeScreenBacks(size: Viewport) {
   const server = await serve(dist);
   try {
     return await withBrowser(async (page: BrowserPage) => {
       const w = walker(page, server.url);
-      const arrival = await w.arrive();
+      const opened = await w.openFromOutside();
       const backs: Where[] = [];
       for (let i = 0; i < 3; i++) backs.push(await w.act(SCREEN_BACK));
-      return { arrival, backs };
-    }, size) as { arrival: Where; backs: Where[] };
+      return { opened, backs };
+    }, size) as { opened: Where; backs: Where[] };
   } finally {
     server.close();
   }
 }
 
-function expectThreeStepsBack(seen: { arrival: Where; backs: Where[] }, where: string) {
-  expect(seen.arrival.path).toBe("/");
-  expect(seen.arrival.question, `${where}: the record did not restore to the fourth question`)
+function expectThreeStepsBack(seen: { opened: Where; backs: Where[] }, where: string) {
+  expect(seen.opened.path).toBe("/");
+  expect(seen.opened.question, `${where}: the record did not restore to the fourth question`)
     .toBe(asks("qualification"));
   const expected = ["situation", "citizenship", "destination"].map(asks);
   seen.backs.forEach((screen, i) => {
@@ -172,7 +172,7 @@ function expectThreeStepsBack(seen: { arrival: Where; backs: Where[] }, where: s
     expect(screen.question, `${where}: tap ${i + 1} is not the question before`).toBe(expected[i]);
     // Stepping back in place pushes nothing: the browser's history stays the
     // length the reader walked it (point 2).
-    expect(screen.length, `${where}: tap ${i + 1} changed the browser's history`).toBe(seen.arrival.length);
+    expect(screen.length, `${where}: tap ${i + 1} changed the browser's history`).toBe(seen.opened.length);
   });
 }
 
@@ -192,42 +192,42 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
     expectThreeStepsBack(await threeScreenBacks(PHONE), "390 × 844");
   }, 180000);
 
-  it("the browser's Back from the arrival screen still leaves, to the page the reader came from", async () => {
+  it("from the screen an outside entry opened on, the browser's Back still leaves to the page before", async () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const w = walker(page, server.url);
-        const arrival = await w.arrive();
-        return { arrival, back: await w.act(BROWSER_BACK, SETTLE.newDocument) };
-      }, WIDE) as { arrival: Where; back: Where };
-      expect(seen.arrival.question).toBe(asks("qualification"));
+        const opened = await w.openFromOutside();
+        return { opened, back: await w.act(BROWSER_BACK, SETTLE.newDocument) };
+      }, WIDE) as { opened: Where; back: Where };
+      expect(seen.opened.question).toBe(asks("qualification"));
       expect(seen.back.path, "the browser's Back was held on the site").toBe("/data/");
     } finally {
       server.close();
     }
   }, 180000);
 
-  it("an answer after the arrival is a step the browser holds, and the arrival is still the edge", async () => {
+  it("an answer after an outside entry is held, and the screen it opened on is still the edge", async () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const w = walker(page, server.url);
-        const arrival = await w.arrive();
+        const opened = await w.openFromOutside();
         const advanced = await w.act(ANSWER);
         const back1 = await w.act(SCREEN_BACK);
         const back2 = await w.act(SCREEN_BACK);
         // From there nothing of ours is behind in the browser, so its Back leaves.
         const browserBack = await w.act(BROWSER_BACK, SETTLE.newDocument);
-        return { arrival, advanced, back1, back2, browserBack };
-      }, PHONE) as Record<"arrival" | "advanced" | "back1" | "back2" | "browserBack", Where>;
+        return { opened, advanced, back1, back2, browserBack };
+      }, PHONE) as Record<"opened" | "advanced" | "back1" | "back2" | "browserBack", Where>;
 
-      expect(seen.advanced.question).not.toBe(seen.arrival.question);
-      expect(seen.advanced.step).toBe((seen.arrival.step ?? NaN) + 1);
-      expect(seen.advanced.length, "an answer is one entry").toBe(seen.arrival.length + 1);
-      // The first Back goes onto the entry the answer pushed: the arrival screen.
+      expect(seen.advanced.question).not.toBe(seen.opened.question);
+      expect(seen.advanced.step).toBe((seen.opened.step ?? NaN) + 1);
+      expect(seen.advanced.length, "an answer is one entry").toBe(seen.opened.length + 1);
+      // The first Back goes onto the entry the answer pushed: the screen it opened on.
       expect(seen.back1.path).toBe("/");
       expect(seen.back1.question).toBe(asks("qualification"));
-      expect(seen.back1.step).toBe(seen.arrival.step);
+      expect(seen.back1.step).toBe(seen.opened.step);
       // The second is behind the first held step: in place, not off the site.
       expect(seen.back2.path, "the second Back left the site").toBe("/");
       expect(seen.back2.question).toBe(asks("situation"));
@@ -238,20 +238,21 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
   }, 180000);
 
   /**
-   * The navigation's type cannot carry this alone: an arrival that is then
+   * The navigation's type cannot carry this: an outside entry that is then
    * reloaded reads `reload`, and one left and returned to reads
-   * `back_forward`, while the browser still holds only the arrival (headless
-   * Chrome, 2026-09-25). The entry's own state says where the held steps begin.
+   * `back_forward`, while the browser still holds only the screen it opened
+   * on (headless Chrome, 2026-09-25). The entry's own state says how many
+   * held steps stand behind it.
    */
-  it("an arrival reloaded, or left and returned to, still steps back in place", async () => {
+  it("an outside entry reloaded, or left and returned to, still steps back in place", async () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const w = walker(page, server.url);
-        await w.arrive();
+        await w.openFromOutside();
         const reloaded = await w.act("location.reload()", SETTLE.newDocument);
         const afterReload = await w.act(SCREEN_BACK);
-        await w.arrive();
+        await w.openFromOutside();
         const left = await w.act(BROWSER_BACK, SETTLE.newDocument);
         const returned = await w.act("history.forward()", SETTLE.newDocument);
         const afterReturn = await w.act(SCREEN_BACK);
@@ -282,7 +283,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
     try {
       const seen = await withBrowser(async (page: BrowserPage & Tabs) => {
         const a = walker(page, server.url);
-        const opened = await a.arrive();
+        const opened = await a.openFromOutside();
         const tabB = await page.openTab();
         await tabB.front();
         const b = walker(tabB, server.url);
