@@ -10,8 +10,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   skills reloaded the same day (steward-79 to 84: a `Dismissed` line names no
   axis). s35 waits on the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: **s37 — Back on a restored record**, approved 2026-09-25
-  ("onaylıyorum"); building on `s37-restored-back` (`../permit-rulebook-s37`). s35
+- In flight: **s37 — Back on a restored record**, approved 2026-09-25; built
+  and reviewed three rounds on `s37-restored-back`, **braked** on a two-tab
+  corner — your word on STATUS. s35
   waits on the 2026-09-29 metric reading.
 - v1.2: 12 of 16 planned steps passed for real (twelve slices s23–s36, s35
   excepted); 1 live and waiting on its reading (s35); 3 queued — two steward
@@ -71,6 +72,22 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   six rounds, not closed; it is the record's `open with reason:` line.
 
 ## What is expected from you
+
+- [ ] **s37's brake: a dead tap when another tab changed the record.** The
+      slice's promise holds — in ten two-tab walks in real Chrome the
+      interview's "← Back" never left the site — but when a second tab
+      shrinks the record (Start over, a few answers) and the first tab reloads,
+      its first Back can land on the question it is already on (a dead tap)
+      and the "← Back" then disappears. No live instance; the same at the base
+      (record `docs/spine/reviews/s37.md` on the branch). Pass = "sınır"
+      (declare it in `screen.ts`'s header: history is trusted within one tab's
+      own walk), "düzelt" (one rule and a round: trust the held entries only
+      when the record did not change under this entry — any change, the
+      screen's Back steps in place and can neither leave nor tap dead; cost:
+      after such a change the browser's own Back and the screen's disagree)
+      or "ayrı" (its own entry; s37 closes as it stands). Why yours: it is a
+      corner only two tabs reach, and the next round can find another in it.
+      asked: 2026-09-25 entry: s37
 
 - [x] 2026-09-25 **Approve s37's scenario, or say what to change** — answered "onaylıyorum". On its own branch:
       `docs/spine/scenarios/s37-back-on-a-restored-record.md` on
