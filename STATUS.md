@@ -10,8 +10,9 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   skills reloaded the same day (steward-79 to 84: a `Dismissed` line names no
   axis). s35 waits on the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: nothing. s36 is real-green; s35 waits on the 2026-09-29 metric
-  reading. The queue head is **Back on a restored record**.
+- In flight: **s37 — Back on a restored record**, scenario written 2026-09-25
+  on `s37-restored-back` and waiting on your word; nothing is built. s35
+  waits on the 2026-09-29 metric reading.
 - v1.2: 12 of 16 planned steps passed for real (twelve slices s23–s36, s35
   excepted); 1 live and waiting on its reading (s35); 3 queued — two steward
   items (Back on a restored record; an unknown link's first paint) and the
@@ -70,6 +71,19 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   six rounds, not closed; it is the record's `open with reason:` line.
 
 ## What is expected from you
+
+- [ ] **Approve s37's scenario, or say what to change.** On its own branch:
+      `docs/spine/scenarios/s37-back-on-a-restored-record.md` on
+      `s37-restored-back`. Measured today: a reader who comes back with a
+      stored record and taps the interview's "← Back" is taken off the site;
+      the reload half of the old queue line no longer happens. The fix: the
+      screen's Back asks the browser to go back only onto an entry the
+      browser holds, otherwise it steps to the previous question in place;
+      the browser's own Back is untouched (it still leaves from the arrival
+      screen, as on any page just opened). Pass = "onaylıyorum", or a
+      point's number with the change. Why yours: it bends your rule of
+      2026-09-08 (the two Backs are one gesture) on exactly one screen.
+      asked: 2026-09-25 entry: s37
 
 - [ ] **On or after 2026-09-29, say whether s35 is real-green.** The session
       reads metric 2 with `gh run list -R OytunOnal/permit-rulebook-data

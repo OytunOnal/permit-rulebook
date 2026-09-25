@@ -90,7 +90,7 @@ mark `promoted <date>`; the board's done column holds the step.
   transition and legacy prefixes that embed or mean another address — NAT64
   `64:ff9b::/96`, 6to4 `2002::/16`, the compat form `::/96`, site-local
   `fec0::/10`.
-- **Back on a restored record** (s30 build, 2026-09-18) · a reader who arrives
+- **Back on a restored record** (s30 build, 2026-09-18) · promoted 2026-09-25 · s37 · a reader who arrives
   fresh with a restored record and taps ← Back leaves the site (the rebuilt
   history has no entries in the browser); reload mid-interview then Back
   lands on the first question · pre-existing (s16-era); a steward pass.
@@ -270,7 +270,13 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-_(empty)_
+- **s37 — Back on a restored record** · scenario written 2026-09-25 on branch
+  `s37-restored-back` (worktree `../permit-rulebook-s37`), **awaiting the
+  human's approval** (`docs/spine/scenarios/s37-back-on-a-restored-record.md`
+  on that branch). Measured: a reader arriving with a stored record who taps
+  the interview's "← Back" leaves the site; the reload half of the queue line
+  no longer happens. The screen's Back asks the browser to go back only onto
+  an entry the browser holds; the browser's Back is untouched.
 
 ## mock-green
 
