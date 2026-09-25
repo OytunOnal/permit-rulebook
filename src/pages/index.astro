@@ -176,8 +176,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { type Glossary, glossSection } from "../lib/gloss.js";
     import { activeOption, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
     import {
-      clampStep, emptyHistory, historyFor, mastheadFor, recordScreen as recordEntry, screenAfter,
-      screenAt, type Explore, type FlowAction,
+      backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, mastheadFor, readEntry,
+      recordScreen as recordEntry, screenAfter, screenAt, type Explore, type FlowAction,
     } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     // The reason column's markup, beside the page rather than in it, so what
@@ -804,10 +804,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           // The screen's Back and the phone's Back are one gesture, so they can
           // never land on different screens (human, 2026-09-08): this asks the
           // browser to go back, and the popstate handler shows the question that
-          // entry was showing. Nothing is erased on the way.
-          if (screens.current > 0) { window.history.back(); return; }
-          // Standing on our first entry: there is nothing of ours behind, so the
-          // step is the one editing a declared row makes.
+          // entry was showing. Nothing is erased on the way. It asks only for a
+          // step the browser holds — on an outside entrance onto a stored
+          // record the steps behind are the page's own, and the browser's Back
+          // from there is the page the reader came from (s37).
+          if (backFor(screens) === "browser") { window.history.back(); return; }
+          // Nothing of ours behind in the browser, so the step is the one
+          // editing a declared row makes: the previous question in place.
           const at = editing ? asked.indexOf(editing) : asked.length;
           const prev = asked[at - 1];
           if (prev === undefined) return;
@@ -1589,19 +1592,35 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      *
      * One entry per question screen, then, and one gesture behind both Backs:
      * advancing to a new question pushes, every other render replaces the entry
-     * it is standing on, and "← Back" IS `history.back()`. An entry remembers
-     * which question it was showing rather than a copy of the answers, so
-     * stepping back keeps everything answered since — the same thing editing an
-     * earlier row has always done.
+     * it is standing on, and "← Back" IS `history.back()` wherever the browser
+     * holds an entry of ours behind the reader. An entry remembers which
+     * question it was showing rather than a copy of the answers, so stepping
+     * back keeps everything answered since — the same thing editing an earlier
+     * row has always done.
+     *
+     * The browser does not always hold what the list says: an outside
+     * entrance onto a stored record rebuilds the list behind the screen it
+     * opened on with nothing of ours behind it in the browser, and "← Back" as
+     * `history.back()` took the reader off the site (s37, 2026-09-25). There
+     * the screen's Back steps back in place; the browser's own Back leaves, as
+     * it does from any page just opened.
      */
     const screens = emptyHistory();
+    /**
+     * The state on the entry the page opened onto, read before it writes one
+     * of its own: the rebuild after the first render decides from it where
+     * the steps the browser holds begin (s37).
+     */
+    const openedOnto: unknown = window.history.state;
     /** Whether we are the ones moving the reader, rather than the browser. */
     let restoring = false;
 
     function recordScreen(field: string | null, advance: boolean) {
       if (restoring) return;
       const move = recordEntry(screens, field, advance);
-      const state = { step: move.step };
+      // Every entry says how many held steps stand behind it, so a reload or
+      // a return onto it can tell (s37).
+      const state = entryState(screens);
       // The first screen REPLACES the page's own entry rather than adding one:
       // pushing there would trap the visitor on the site, because Back would
       // always land on another of our own screens.
@@ -1610,10 +1629,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     }
 
     window.addEventListener("popstate", (e) => {
-      const step = (e.state as { step?: number } | null)?.step;
+      const { step } = readEntry(e.state);
       // An entry we did not write, or one "Start over" has since invalidated:
       // leave the screen alone rather than restoring a stranger's answers.
-      if (typeof step !== "number") return;
+      if (step === undefined) return;
       // A step this page has no entry for — a reload rebuilt a shorter list,
       // or the dataset stopped asking something — lands on the nearest question
       // it does have. Doing nothing is what left the gesture dead.
@@ -1621,6 +1640,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const screen = screenAt(screens, at);
       if (!screen) return;
       screens.current = at;
+      // How many of its steps the browser holds behind the reader is read
+      // from the entry it now stands on, not remembered from the load, and
+      // believed only where that entry lands on its own step: a record grown
+      // or shrunk in another tab moved the list under it (s37).
+      screens.firstHeld = firstHeldStep(e.state, at);
       restoring = true;
       if (screen.field === null) {
         editing = null;
@@ -1707,7 +1731,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const rebuilt = historyFor(asked, showing);
       screens.entries = rebuilt.entries;
       screens.current = rebuilt.current;
-      window.history.replaceState({ step: screens.current }, "");
+      // The list is rebuilt whatever the browser holds; where the held steps
+      // begin is read from the entry the page opened onto. An outside
+      // entrance onto a stored record holds only the screen it opened on (s37).
+      screens.firstHeld = firstHeldStep(openedOnto, screens.current);
+      window.history.replaceState(entryState(screens), "");
     })();
 
     // Dev-only layout probe: ?dev-probe=1 writes the widest offenders into the

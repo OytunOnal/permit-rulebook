@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { clampStep, emptyHistory, historyFor, recordScreen, screenAt } from "../src/lib/screen.js";
+import {
+  backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, readEntry, recordScreen, screenAt,
+} from "../src/lib/screen.js";
 
 /**
  * The phone's back gesture, on the human's walk of 2026-09-08.
@@ -16,7 +18,10 @@ import { clampStep, emptyHistory, historyFor, recordScreen, screenAt } from "../
  * — so the numbers stopped naming the questions, and a phone that throttles a
  * burst of `pushState` calls dropped the extra entries while the page kept
  * counting. One entry per question screen now, and "← Back" is `history.back()`
- * itself, so the two gestures cannot land on different screens.
+ * itself wherever the browser holds a step of ours behind the reader, so there
+ * the two gestures cannot land on different screens. Where it holds none — the
+ * screen a stored record was opened onto — the screen's Back steps back in
+ * place and the browser's leaves (s37).
  */
 
 describe("a reloaded page rebuilds the entries the browser kept", () => {
@@ -82,6 +87,276 @@ describe("one history entry per question", () => {
     h.current = 1;
     expect(recordScreen(h, "qualification", true)).toEqual({ how: "push", step: 2 });
     expect(h.entries.map((e) => e.field)).toEqual(["destination", "situation", "qualification"]);
+  });
+});
+
+/** The nine held counts the Security axis measured (s37 round 1): none of them
+ * a count the page could have written. */
+const NOT_A_COUNT: unknown[] = ["5", {}, -1, -Infinity, 1e308, Infinity, NaN, 2.5, null];
+
+/**
+ * s37: a reader who opens the site onto a stored record is shown the question
+ * the record left them on, with the page's list rebuilt behind it — but the
+ * browser holds one entry of this interview, the screen it opened on — an
+ * outside entrance — and "← Back" as `history.back()` took them off the site
+ * (measured 2026-09-25). The screen's Back hands the browser only steps it
+ * holds.
+ */
+describe("the screen's Back asks the browser only for entries it holds", () => {
+  /** The page rebuilt onto three answers, opened onto an entry whose state is `state`. */
+  const openedOnto = (state: unknown) => {
+    const h = historyFor(["destination", "citizenship", "situation"], "qualification");
+    h.firstHeld = firstHeldStep(state, h.current);
+    return h;
+  };
+  const OUTSIDE = 3;
+
+  it("an outside entrance onto a stored record holds nothing behind the screen it opened on", () => {
+    const h = openedOnto(null);
+    expect(h.current).toBe(3);
+    expect(h.firstHeld).toBe(OUTSIDE);
+    expect(backFor(h)).toBe("in-place");
+  });
+
+  it("an entry that says how many held steps stand behind it is believed, however the page was opened", () => {
+    // Walked live in this tab, then reloaded: every step is held.
+    const live = emptyHistory();
+    for (const [field, advance] of [
+      ["destination", false], ["citizenship", true], ["situation", true], ["qualification", true],
+    ] as const) recordScreen(live, field, advance);
+    expect(openedOnto(entryState(live)).firstHeld).toBe(0);
+    expect(backFor(openedOnto(entryState(live)))).toBe("browser");
+    // An outside entrance, then reloaded or left and returned to: the browser
+    // still holds only the screen it opened on, and the entry says so.
+    const opened = openedOnto(null);
+    expect(openedOnto(entryState(opened)).firstHeld).toBe(OUTSIDE);
+  });
+
+  /**
+   * Another tab shares the record and not the history: it grows the record,
+   * or starts over and answers again, and this tab's entries stay as they were
+   * written, against a list the page no longer rebuilds. Popped, an entry
+   * naming a step past the list clamps onto the question already on screen —
+   * a dead tap, and the "← Back" gone after it (headless Chrome, s37 delta
+   * rounds 1 and 2; the round's shallow shrink was `{ step: 6, held: 3 }`
+   * reloaded onto three answers). So an entry's held count is believed only
+   * where the step it names is the step the page stands on (human,
+   * 2026-09-25) — on load the rebuilt list's last step, which a record grown
+   * or shrunk in another tab no longer is. Anywhere else nothing is held, and
+   * the screen's Back steps back in place.
+   */
+  it("an entry's held count is believed only where its step is the step the page stands on", () => {
+    // The entry names the step the rebuilt list stands on.
+    expect(firstHeldStep({ step: 3, held: 3 }, 3)).toBe(0);
+    expect(firstHeldStep({ step: 3, held: 1 }, 3)).toBe(2);
+    // Shrunk — the entry names a step past the list: none held. The first is
+    // the round's shallow shrink; the second the assertion it named, which
+    // read 0 and sent the screen's Back onto stale entries.
+    expect(firstHeldStep({ step: 6, held: 3 }, 3)).toBe(3);
+    expect(firstHeldStep({ step: 5, held: 3 }, 3)).toBe(3);
+    // The Security axis's other shapes: opened on two and two answered, the
+    // other tab starting over with two; opened on three and three answered,
+    // the other tab starting over with four; and the deep shrink, with one.
+    expect(firstHeldStep({ step: 4, held: 2 }, 2)).toBe(2);
+    expect(firstHeldStep({ step: 6, held: 3 }, 4)).toBe(4);
+    expect(firstHeldStep({ step: 6, held: 3 }, 1)).toBe(1);
+    // Grown — the entry names a step before the list's top: none held.
+    expect(firstHeldStep({ step: 3, held: 3 }, 4)).toBe(4);
+    expect(firstHeldStep({ step: 3, held: 3 }, 5)).toBe(5);
+    const longer = historyFor(["destination", "citizenship", "situation", "qualification", "occupation_it"], null);
+    const h = openedOnto(entryState(longer));
+    expect(h.firstHeld).toBe(OUTSIDE);
+    expect(backFor(h)).toBe("in-place");
+  });
+
+  /**
+   * What the rule can see is the entry's step and its held count. A record
+   * started over in another tab and answered back to the same length leaves
+   * both as an unchanged record would, so it reads as unchanged: this pins
+   * what the entry can tell, not a decision that restarts are believed. Every
+   * entry behind then names a step the rebuilt list has, so a Back onto it
+   * shows the question before — never the one on screen, never off the site.
+   */
+  it("a record restarted to the same length reads as unchanged, and every step behind is one the list has", () => {
+    expect(firstHeldStep({ step: 4, held: 2 }, 4)).toBe(2);
+  });
+
+  /**
+   * A popstate reads the entry it lands on against the step it lands at: the
+   * entry's step clamped to the list. An entry the list still has is
+   * believed, even after a shallow grow or shrink in another tab, since every
+   * entry behind it names a step the list has too; a stale entry clamped onto
+   * the list's last screen counts nothing held.
+   */
+  it("a popped entry is believed where it lands on its own step, and not where it was clamped", () => {
+    expect(firstHeldStep({ step: 2, held: 2 }, 2)).toBe(0);
+    expect(firstHeldStep({ step: 5, held: 3 }, 1)).toBe(1);
+    expect(firstHeldStep({ step: 5, held: 1 }, 1)).toBe(1);
+  });
+
+  /**
+   * Only a count the page could have written is believed: a non-negative
+   * integer a history could hold. Anything else is read as an outside
+   * entrance, because stepping back in place never leaves the site and
+   * `history.back()` onto nothing does. The shapes are the nine the Security
+   * axis measured (s37 round 1) against the round-0 code, which kept the
+   * first held step as a step number and read it as
+   * `max(0, min(value, current))`: there -1 and -Infinity read as every step
+   * held, NaN stuck as NaN, 2.5 as half a step, 1e308 and Infinity as the
+   * screen on show only because the clamp caught them, and "5", {} and null
+   * fell to the navigation's type.
+   */
+  it("a held count that is not a non-negative integer is an outside entrance", () => {
+    for (const held of NOT_A_COUNT) {
+      const h = openedOnto({ step: 3, held });
+      expect(h.firstHeld, `held: ${String(held)}`).toBe(OUTSIDE);
+      expect(backFor(h), `held: ${String(held)}`).toBe("in-place");
+    }
+    // Missing altogether, or no state at all.
+    expect(openedOnto({ step: 3 }).firstHeld).toBe(OUTSIDE);
+    for (const state of [undefined, "5", 5, []]) expect(openedOnto(state).firstHeld).toBe(OUTSIDE);
+    // 0 is a count the page writes — on an outside entrance — and is
+    // believed as one.
+    expect(readEntry({ step: 3, held: 0 }).held).toBe(0);
+    expect(openedOnto({ step: 3, held: 0 }).firstHeld).toBe(OUTSIDE);
+    // And a count it could have written is believed.
+    expect(openedOnto({ step: 3, held: 2 }).firstHeld).toBe(1);
+  });
+
+  /**
+   * The build before s37 wrote `{ step }` alone, so a tab left open across
+   * the deploy reloads onto an entry that says nothing about what is held.
+   * It is read as an outside entrance. For a tab that had walked its
+   * questions live, the two Backs then disagree once — the screen's steps in
+   * place, the browser's goes back — and that is the smaller harm: read the
+   * other way, a tab that had opened onto a stored record would be sent off
+   * the site.
+   */
+  it("an entry written before the held count is an outside entrance, however it was reached", () => {
+    expect(openedOnto({ step: 3 }).firstHeld).toBe(OUTSIDE);
+    expect(readEntry({ step: 3 }).step).toBe(3);
+  });
+
+  it("an answer after an outside entrance is held, and the screen it opened on is still the edge", () => {
+    const h = openedOnto(null);
+    expect(recordScreen(h, "occupation_it", true)).toEqual({ how: "push", step: 4 });
+    // One entry of ours behind: the browser can go back onto it.
+    expect(backFor(h)).toBe("browser");
+    // Back on the screen it opened on, nothing of ours is behind again.
+    h.current = 3;
+    expect(backFor(h)).toBe("in-place");
+    // Stepping back in place rewrites the entry; it never moves the edge.
+    expect(recordScreen(h, "situation", false)).toEqual({ how: "replace", step: 3 });
+    expect(h.firstHeld).toBe(3);
+    expect(backFor(h)).toBe("in-place");
+  });
+
+  it("starting over stands on a held entry: the edge goes back to the first step", () => {
+    const h = openedOnto(null);
+    // "Start over" empties the list; its first screen rewrites the entry the
+    // reader is standing on, which the browser holds.
+    h.entries.length = 0;
+    h.current = -1;
+    recordScreen(h, "destination", false);
+    expect(h.firstHeld).toBe(0);
+    recordScreen(h, "citizenship", true);
+    expect(backFor(h)).toBe("browser");
+  });
+
+  it("a live walk from the first question holds every step", () => {
+    const h = emptyHistory();
+    recordScreen(h, "destination", false);
+    expect(backFor(h)).toBe("in-place");
+    recordScreen(h, "citizenship", true);
+    expect(h.firstHeld).toBe(0);
+    expect(backFor(h)).toBe("browser");
+  });
+});
+
+/**
+ * The entry's state has one owner: `entryState` is the object every
+ * `pushState`/`replaceState` writes, and `readEntry` is what a load or a
+ * popstate believes of it. Written in one file and read in another, a rename
+ * on either side stayed green (Standards review, s37 round 1).
+ */
+describe("what an entry carries is written and read in one place", () => {
+  it("a state the page wrote reads back as the step it names and where the held steps begin", () => {
+    const h = emptyHistory();
+    recordScreen(h, "destination", false);
+    recordScreen(h, "citizenship", true);
+    recordScreen(h, "situation", true);
+    const back = readEntry(entryState(h));
+    expect(back.step).toBe(2);
+    // Reloaded onto that entry, the page's rule gives back the edge it had.
+    const reloaded = historyFor(["destination", "citizenship"], "situation");
+    reloaded.firstHeld = firstHeldStep(entryState(h), reloaded.current);
+    expect(reloaded.firstHeld).toBe(h.firstHeld);
+  });
+
+  /**
+   * Tab A opens onto three answers; tab B, same origin, answers two more; tab
+   * A reloads onto the entry it wrote. The rebuilt list is two steps longer
+   * than the one that entry was written against, so an edge kept as a step
+   * number stood behind the reader and the screen's Back left the site
+   * (Security review, s37 round 1). The entry carries how many held steps
+   * stand behind it, and a count written against a shorter list is not
+   * believed against a longer one (human, 2026-09-25).
+   */
+  it("a record grown in another tab moves the list, and nothing behind it is held", () => {
+    const tabA = historyFor(["destination", "citizenship", "situation"], "qualification");
+    tabA.firstHeld = firstHeldStep(null, tabA.current);
+    const grown = ["destination", "citizenship", "situation", "qualification", "occupation_it"];
+    const reloaded = historyFor(grown, "salary");
+    reloaded.firstHeld = firstHeldStep(entryState(tabA), reloaded.current);
+    expect(reloaded.firstHeld).toBe(reloaded.current);
+    expect(backFor(reloaded)).toBe("in-place");
+
+    // Walked live from the first question, then grown: the steps walked are
+    // behind the entry in the browser, but they name steps of the shorter
+    // list, and a Back popped onto them skipped the grown questions. Nothing
+    // is believed held; the screen's Back steps back in place.
+    const live = emptyHistory();
+    for (const [field, advance] of [
+      ["destination", false], ["citizenship", true], ["situation", true], ["qualification", true],
+    ] as const) recordScreen(live, field, advance);
+    const again = historyFor(grown, "salary");
+    again.firstHeld = firstHeldStep(entryState(live), again.current);
+    expect(again.firstHeld).toBe(again.current);
+    expect(backFor(again)).toBe("in-place");
+  });
+
+  it("a state nothing of ours wrote names no step and holds nothing", () => {
+    for (const state of [null, undefined, "2", 2, { step: "2" }, { step: -1 }, { step: NaN }, { step: 1.5 }]) {
+      expect(readEntry(state).step, JSON.stringify(state)).toBeUndefined();
+      expect(readEntry(state).held, JSON.stringify(state)).toBe(0);
+    }
+  });
+
+  it("the reader believes a held count only where the builder could have written it", () => {
+    // The same nine shapes the Security axis measured (s37 round 1).
+    for (const held of NOT_A_COUNT)
+      expect(readEntry({ step: 3, held }).held, `held: ${String(held)}`).toBe(0);
+    expect(readEntry({ step: 3 }).held).toBe(0);
+    for (const held of [0, 1, 3]) expect(readEntry({ step: 3, held }).held).toBe(held);
+  });
+
+  /**
+   * The page writes `held` as `current - firstHeld` with `firstHeld` never
+   * below 0, so an entry it wrote never holds more steps than the one it
+   * names. A larger count is not one the page wrote: `{ step: 3, held:
+   * 2^53 - 1 }` gave a first held step of 0 and sent the screen's Back to the
+   * browser (Security review, s37 delta round 1). It is read as an outside
+   * entrance.
+   */
+  it("a held count larger than the step it stands on is an outside entrance", () => {
+    for (const held of [4, 100, Number.MAX_SAFE_INTEGER]) {
+      expect(readEntry({ step: 3, held }).held, `held: ${held}`).toBe(0);
+      expect(firstHeldStep({ step: 3, held }, 3), `held: ${held}`).toBe(3);
+    }
+    // A step it cannot read believes no count at all.
+    expect(readEntry({ held: 2 }).held).toBe(0);
+    // Up to the step itself, the count is one the page writes.
+    for (const held of [0, 2, 3]) expect(readEntry({ step: 3, held }).held).toBe(held);
   });
 });
 

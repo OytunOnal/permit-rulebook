@@ -236,7 +236,43 @@ them in place, and the blank read as a failure). The covers come off in the
 task that draws the verdict; nothing that was visible changes place. It is
 not a stand-in in the box: those are the record and link readers' lines, over
 question one (s10).
-_Avoid_: skeleton, placeholder headline, loading state, spinner
+_Avoid_: skeleton, placeholder headline, loading state, spinner; held (s37's
+held step, a step of the interview the browser holds a history entry for)
+
+**Outside entrance / re-entrance** (s37, the two ways the interview page is
+opened):
+An *outside entrance* opens the page onto a browser history entry the
+interview did not write — a typed address, a link, a bookmark, the step from
+`/data/`. Nothing of the interview is held behind it, however many answers
+the record brings back. A *re-entrance* opens the page onto an entry the
+interview wrote — a reload, the browser's Back or Forward onto it, a restored
+session — and that entry says how many held steps stand behind it. An outside
+entrance that is reloaded is a re-entrance that still has nothing held behind
+it; an entry whose count cannot be read counts as an outside entrance. The
+*entry* is a browser history entry — one the page wrote with `pushState` or
+`replaceState`, or one it did not; the *entrance* is how the page came to
+stand on one.
+_Avoid_: entry (for the way in — it is the history entry), arrival (a reader
+sent from a country or route page), landing (s30's move of the question card),
+return, fresh visit, reload (as the name of either)
+
+**Held step / first held step** (s37):
+A *held step* is a step of the interview's list the browser holds a history
+entry for — one the browser's Back can land on without leaving the site. The
+*first held step* is where they begin: every step from it to the one on screen
+is held; the steps before it are the page's own, rebuilt from the record. Past
+it the screen's "← Back" is the browser's Back; on it or before it, the
+screen's Back shows the previous question in place and the browser's leaves
+the site. It is read from the entry the page stands on — on load and on every
+Back or Forward — and believed only when the step that entry names is the
+step the page stands on. On load that is the list's last step: after the
+record grew or shrank in another tab none is held, and one started over back
+to the same length reads as unchanged. On a Back or Forward it is the entry's
+own step wherever the list still has it, and every step behind is one the
+list has too.
+_Avoid_: history depth, history index, arrival screen; hold, hold state (the
+s31 line a returning reader sees while the module draws — nothing to do with
+the browser's history)
 
 ### Verdicts
 

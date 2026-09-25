@@ -222,9 +222,16 @@ export interface ScreenHistory {
   entries: HistoryEntry[];
   /** Which entry the reader is standing on; -1 before the first render. */
   current: number;
+  /**
+   * The first step the browser holds an entry of this interview for. Every
+   * step from here to `current` is one `history.back()` can land on; the
+   * steps before it are the page's own, rebuilt from the record, and the
+   * browser has nothing of ours there (s37).
+   */
+  firstHeld: number;
 }
 
-export const emptyHistory = (): ScreenHistory => ({ entries: [], current: -1 });
+export const emptyHistory = (): ScreenHistory => ({ entries: [], current: -1, firstHeld: 0 });
 
 /** What the page should do with the browser's history for this render. */
 export interface HistoryMove {
@@ -246,7 +253,13 @@ export function recordScreen(history: ScreenHistory, field: string | null, advan
     history.entries.push({ field });
     return { how: "push", step: history.current };
   }
-  if (history.current < 0) history.current = 0;
+  if (history.current < 0) {
+    // The first screen — of the page, or after "Start over" — rewrites the
+    // entry the reader is standing on, which the browser holds: the steps
+    // counted from it are all held.
+    history.current = 0;
+    history.firstHeld = 0;
+  }
   history.entries[history.current] = { field };
   return { how: "replace", step: history.current };
 }
@@ -269,7 +282,114 @@ export function screenAt(history: ScreenHistory, step: number): HistoryEntry | u
 export function historyFor(answered: string[], showing: string | null): ScreenHistory {
   const entries: HistoryEntry[] = answered.map((field) => ({ field }));
   entries.push({ field: showing });
-  return { entries, current: entries.length - 1 };
+  return { entries, current: entries.length - 1, firstHeld: 0 };
+}
+
+/** What every entry the interview writes carries in `history.state`. */
+export interface EntryState {
+  /** The step of the page's list the entry shows. */
+  step: number;
+  /**
+   * How many held steps stand behind this one — how many times the browser
+   * can go back from it and stay in the interview. A count, not the step they
+   * begin at: a record grown in another tab rebuilds a longer list on reload,
+   * and a step number written against the shorter one then stood behind the
+   * reader, so the screen's Back left the site (Security review, s37 round 1).
+   */
+  held: number;
+}
+
+/**
+ * The state for the entry the reader stands on: the one object every
+ * `pushState` and `replaceState` writes, so the shape has one author (s37).
+ */
+export function entryState(history: ScreenHistory): EntryState {
+  return { step: history.current, held: history.current - history.firstHeld };
+}
+
+/** A count a history could hold: a non-negative integer, and a safe one — a
+ * count past that is not one the page wrote. */
+const isCount = (value: unknown): value is number => Number.isSafeInteger(value) && (value as number) >= 0;
+
+/**
+ * What a load or a popstate believes of an entry's state. A step only where it
+ * is a count, or none — the entry is not ours. A held count only where it is a
+ * count no larger than that step, which is every count the page writes;
+ * anything else — missing, a string, a negative, a fraction, an infinity, NaN,
+ * more steps held than the entry stands on — is read as 0, nothing held
+ * behind, which is an outside entrance. That is the safe side: stepping back
+ * in place never leaves the site, and `history.back()` onto nothing does
+ * (Security review, s37 rounds 1 and 2).
+ *
+ * It includes the build before s37, which wrote `{ step }` alone: a tab left
+ * open across the deploy reloads onto an entry that says nothing of what is
+ * held, and it is read as an outside entrance. For a tab that had walked its
+ * questions live the two Backs then disagree once — the screen's steps in
+ * place, the browser's goes back — which is the smaller harm: read the other
+ * way, a tab that had opened onto a stored record would be sent off the site.
+ */
+export function readEntry(state: unknown): { step: number | undefined; held: number } {
+  const s = (state !== null && typeof state === "object" ? state : {}) as Record<string, unknown>;
+  const step = isCount(s.step) ? s.step : undefined;
+  return { step, held: step !== undefined && isCount(s.held) && s.held <= step ? s.held : 0 };
+}
+
+/**
+ * Where the held steps begin, for a page that has just rebuilt its list and
+ * stands on `current`, opened onto an entry whose state is `state`.
+ *
+ * The rebuilt list is right about the questions and says nothing about what
+ * the browser holds. A re-entrance — a reload, a return through the
+ * browser's history, a restored session — keeps every entry the interview
+ * wrote; an outside entrance onto a stored record holds one, the screen it
+ * opened on, and a "← Back" that asked the browser for the step before it
+ * took the reader off the site (s37, measured 2026-09-25).
+ *
+ * The navigation's type cannot tell them apart: an outside entrance that is
+ * then reloaded, or left and returned to, reads `reload` or `back_forward`
+ * while the browser still holds only the screen it opened on — measured in
+ * headless Chrome the same day, `history.length` 3 and `/data/` behind in
+ * both. The entry itself can: every entry carries how many held steps stand
+ * behind it, and the browser keeps that state with the entry through a
+ * reload, a return and a restored session, and drops it with the entry.
+ *
+ * The count is believed only where the step the entry names is the step the
+ * page stands on (human, 2026-09-25). Another tab shares the record and not
+ * the history: it grows the record, or starts over and answers again, and the
+ * entries behind this one still name steps of the list they were written
+ * against. Popped, one past the rebuilt list clamps onto the question already
+ * on screen — a dead tap, and the screen's Back gone after it (headless
+ * Chrome, s37 delta rounds 1 and 2) — and over a grown list they skip the
+ * questions the other tab added. Where the count is not believed nothing is
+ * held, and the screen's Back steps back in place, which can neither leave
+ * the site nor stay put.
+ *
+ * `current` is where the page stands. On load it is the rebuilt list's last
+ * step, so a record grown or shrunk in another tab holds nothing, and one
+ * started over back to the same length reads as unchanged. On a popstate it
+ * is the popped entry's step clamped to the list, not the list's last step: a
+ * Back mid-interview lands on an entry with steps ahead of it and held steps
+ * behind it that the browser still has. Where the clamp moved it nothing is
+ * held; where it did not, the count is believed even after a shallow grow or
+ * shrink in another tab — safely, since every entry behind it names a step
+ * the list still has. Read once on load instead, a record grown in another
+ * tab left the first held step where the grown list put it while the Backs
+ * popped entries further down (Spec review, s37 delta round 1).
+ */
+export function firstHeldStep(state: unknown, current: number): number {
+  const top = Math.max(0, current);
+  const { step, held } = readEntry(state);
+  return step === top ? top - held : top;
+}
+
+/**
+ * What the screen's "← Back" does from where the reader stands. Past the first
+ * held step it is `history.back()`, so the screen's Back and the phone's are
+ * one gesture (human, 2026-09-08); on or before it the browser has nothing of
+ * ours behind, and the previous question is shown in place instead.
+ */
+export function backFor(history: ScreenHistory): "browser" | "in-place" {
+  return history.current > history.firstHeld ? "browser" : "in-place";
 }
 
 /**
