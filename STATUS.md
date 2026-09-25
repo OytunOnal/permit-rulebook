@@ -10,8 +10,8 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   skills reloaded the same day (steward-79 to 84: a `Dismissed` line names no
   axis). s35 waits on the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: **s37 — Back on a restored record**, scenario written 2026-09-25
-  on `s37-restored-back` and waiting on your word; nothing is built. s35
+- In flight: **s37 — Back on a restored record**, approved 2026-09-25
+  ("onaylıyorum"); building on `s37-restored-back` (`../permit-rulebook-s37`). s35
   waits on the 2026-09-29 metric reading.
 - v1.2: 12 of 16 planned steps passed for real (twelve slices s23–s36, s35
   excepted); 1 live and waiting on its reading (s35); 3 queued — two steward
@@ -72,7 +72,7 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **Approve s37's scenario, or say what to change.** On its own branch:
+- [x] 2026-09-25 **Approve s37's scenario, or say what to change** — answered "onaylıyorum". On its own branch:
       `docs/spine/scenarios/s37-back-on-a-restored-record.md` on
       `s37-restored-back`. Measured today: a reader who comes back with a
       stored record and taps the interview's "← Back" is taken off the site;

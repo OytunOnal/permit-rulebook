@@ -270,9 +270,9 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-- **s37 — Back on a restored record** · scenario written 2026-09-25 on branch
-  `s37-restored-back` (worktree `../permit-rulebook-s37`), **awaiting the
-  human's approval** (`docs/spine/scenarios/s37-back-on-a-restored-record.md`
+- **s37 — Back on a restored record** · approved 2026-09-25 (human:
+  "onaylıyorum"); building on `s37-restored-back` (worktree
+  `../permit-rulebook-s37`) (`docs/spine/scenarios/s37-back-on-a-restored-record.md`
   on that branch). Measured: a reader arriving with a stored record who taps
   the interview's "← Back" leaves the site; the reload half of the queue line
   no longer happens. The screen's Back asks the browser to go back only onto
