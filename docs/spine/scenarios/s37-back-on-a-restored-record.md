@@ -112,3 +112,19 @@ or has no stored record.
 - Not the unknown link's first paint (v1.2's next queue item) and not the
   flag's quoted page (the last).
 - Not a new control: the button exists; this makes it go where it says.
+
+**Corrected 2026-09-25, by the build:** point 1's "after a reload or a return
+through the browser's own history they begin at the first question (the
+browser kept them)" is true only of an interview walked in the tab. An arrival
+onto a stored record that is then reloaded reads `reload`, and one left for
+`/data/` and returned to reads `back_forward`, while the browser still holds
+only the arrival — measured in headless Chrome on the built site,
+`history.length` 3 and `/data/` behind in both; a rule keyed to the type alone
+sends the screen's Back to `/data/` there. So the claim is replaced: after a
+reload or a return the held entries begin where they began before it. Point
+4's "more reliable" source is the entry itself: every entry the page writes
+carries where the held steps begin (`{ step, firstHeld }` in its state), which
+the browser keeps with the entry and drops with it; the navigation's type
+decides only for an entry written before this slice, and anything unreadable
+is an arrival. The proof list gains the reloaded and the returned arrival as
+cases of the first proof, not as a new promise.
