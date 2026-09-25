@@ -308,6 +308,47 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
     }
   }, 180000);
 
+  /**
+   * Point 3 after an outside entry: a screen reached by answering in this tab
+   * is one the two Backs agree on — straight after the entry, and after a step
+   * back in place first. The Spec axis probed both by hand (s37 round 1); these
+   * are those walks, each Back from its own fresh walk.
+   */
+  it("after an outside entry, the two Backs agree on every screen reached by answering", async () => {
+    const server = await serve(dist);
+    try {
+      type Walk = { answeredOn: Where; answered: Where; back: Where };
+      const seen = await withBrowser(async (page: BrowserPage) => {
+        const w = walker(page, server.url);
+        const walk = async (inPlaceFirst: boolean, goBack: string): Promise<Walk> => {
+          let answeredOn = await w.openFromOutside();
+          if (inPlaceFirst) answeredOn = await w.act(SCREEN_BACK);
+          const answered = await w.act(ANSWER);
+          return { answeredOn, answered, back: await w.act(goBack) };
+        };
+        return {
+          straight: { screen: await walk(false, SCREEN_BACK), browser: await walk(false, BROWSER_BACK) },
+          inPlaceFirst: { screen: await walk(true, SCREEN_BACK), browser: await walk(true, BROWSER_BACK) },
+        };
+      }, PHONE) as Record<"straight" | "inPlaceFirst", Record<"screen" | "browser", Walk>>;
+
+      // The screen answered on: the one opened on, or the one a Back in place showed.
+      expect(seen.straight.screen.answeredOn.question).toBe(asks("qualification"));
+      expect(seen.inPlaceFirst.screen.answeredOn.question).toBe(asks("situation"));
+      for (const [how, { screen, browser }] of Object.entries(seen)) {
+        expect(screen.answered.question, `${how}: the two walks answered differently`).toBe(browser.answered.question);
+        expect(screen.answered.question, `${how}: the answer did not move on`).not.toBe(screen.answeredOn.question);
+        for (const back of [screen.back, browser.back]) expect(back.path, `${how}: a Back left the site`).toBe("/");
+        expect(screen.back.question, `${how}: the two Backs disagree`).toBe(browser.back.question);
+        expect(screen.back.step).toBe(browser.back.step);
+        // And both land on the screen the answer was given on.
+        expect(screen.back.question).toBe(screen.answeredOn.question);
+      }
+    } finally {
+      server.close();
+    }
+  }, 180000);
+
   it("the reload path stays mended: three answered live, a reload, then step 3 → 2 → 1", async () => {
     const server = await serve(dist);
     try {
