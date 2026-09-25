@@ -177,7 +177,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { activeOption, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
     import {
       backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, mastheadFor, readEntry,
-      recordScreen as recordEntry, screenAfter, screenAt, type Explore, type FlowAction, type Landing,
+      recordScreen as recordEntry, screenAfter, screenAt, type Explore, type FlowAction,
     } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     // The reason column's markup, beside the page rather than in it, so what
@@ -805,7 +805,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           // never land on different screens (human, 2026-09-08): this asks the
           // browser to go back, and the popstate handler shows the question that
           // entry was showing. Nothing is erased on the way. It asks only for a
-          // step the browser holds — after a fresh arrival onto a stored record
+          // step the browser holds — on an outside entry onto a stored record
           // the steps behind are the page's own, and the browser's Back from
           // there is the page the reader came from (s37).
           if (backFor(screens) === "browser") { window.history.back(); return; }
@@ -1598,31 +1598,20 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * back keeps everything answered since — the same thing editing an earlier
      * row has always done.
      *
-     * The browser does not always hold what the list says: a fresh arrival
-     * onto a stored record rebuilds the list behind the arrival screen with
-     * nothing of ours behind it in the browser, and "← Back" as
+     * The browser does not always hold what the list says: an outside entry
+     * onto a stored record rebuilds the list behind the screen it opened on
+     * with nothing of ours behind it in the browser, and "← Back" as
      * `history.back()` took the reader off the site (s37, 2026-09-25). There
      * the screen's Back steps back in place; the browser's own Back leaves, as
      * it does from any page just opened.
      */
     const screens = emptyHistory();
     /**
-     * How the page came to be showing, read before it writes an entry of its
-     * own: the state on the entry it opened onto, and the navigation's type.
-     * The rebuild after the first render decides from it where the steps the
-     * browser holds begin (s37). A type the browser does not report is left
-     * undefined, which the rule reads as an arrival.
+     * The state on the entry the page opened onto, read before it writes one
+     * of its own: the rebuild after the first render decides from it where
+     * the steps the browser holds begin (s37).
      */
-    const landing: Landing = {
-      state: window.history.state,
-      navigation: (() => {
-        try {
-          return (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined)?.type;
-        } catch {
-          return undefined;
-        }
-      })(),
-    };
+    const openedOnto: unknown = window.history.state;
     /** Whether we are the ones moving the reader, rather than the browser. */
     let restoring = false;
 
@@ -1738,9 +1727,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       screens.entries = rebuilt.entries;
       screens.current = rebuilt.current;
       // The list is rebuilt whatever the browser holds; where the held steps
-      // begin is read from how the page was opened. A fresh arrival onto a
-      // stored record holds only the screen it arrived on (s37).
-      screens.firstHeld = firstHeldStep(landing, screens.current);
+      // begin is read from the entry the page opened onto. An outside entry
+      // onto a stored record holds only the screen it opened on (s37).
+      screens.firstHeld = firstHeldStep(openedOnto, screens.current);
       window.history.replaceState(entryState(screens), "");
     })();
 

@@ -98,53 +98,77 @@ describe("one history entry per question", () => {
  * Back hands the browser only steps it holds.
  */
 describe("the screen's Back asks the browser only for entries it holds", () => {
-  const arrived = (state: unknown, navigation: string | undefined) => {
+  /** The page rebuilt onto three answers, opened onto an entry whose state is `state`. */
+  const openedOnto = (state: unknown) => {
     const h = historyFor(["destination", "citizenship", "situation"], "qualification");
-    h.firstHeld = firstHeldStep({ state, navigation }, h.current);
+    h.firstHeld = firstHeldStep(state, h.current);
     return h;
   };
+  const OUTSIDE = 3;
 
-  it("a fresh arrival onto a stored record holds nothing behind the arrival screen", () => {
-    const h = arrived(null, "navigate");
+  it("an outside entry onto a stored record holds nothing behind the screen it opened on", () => {
+    const h = openedOnto(null);
     expect(h.current).toBe(3);
-    expect(h.firstHeld).toBe(3);
+    expect(h.firstHeld).toBe(OUTSIDE);
     expect(backFor(h)).toBe("in-place");
   });
 
-  it("a navigation type the page cannot read counts as an arrival", () => {
-    expect(arrived(null, undefined).firstHeld).toBe(3);
-    expect(arrived(null, "prerender").firstHeld).toBe(3);
-    // A reload of an entry nothing of ours ever wrote: nothing of ours behind it.
-    expect(arrived(null, "reload").firstHeld).toBe(3);
-  });
-
-  it("an entry that says how many held steps stand behind it is believed, whatever the navigation", () => {
+  it("an entry that says how many held steps stand behind it is believed, however the page was opened", () => {
     // Walked live in this tab, then reloaded: every step is held.
     const live = emptyHistory();
     for (const [field, advance] of [
       ["destination", false], ["citizenship", true], ["situation", true], ["qualification", true],
     ] as const) recordScreen(live, field, advance);
-    expect(arrived(entryState(live), "reload").firstHeld).toBe(0);
-    expect(backFor(arrived(entryState(live), "reload"))).toBe("browser");
-    // Opened onto the record, then reloaded or left and returned to: the
-    // browser still holds only the screen it opened on, and the entry says so.
-    const opened = arrived(null, "navigate");
-    expect(arrived(entryState(opened), "reload").firstHeld).toBe(3);
-    expect(arrived(entryState(opened), "back_forward").firstHeld).toBe(3);
+    expect(openedOnto(entryState(live)).firstHeld).toBe(0);
+    expect(backFor(openedOnto(entryState(live)))).toBe("browser");
+    // An outside entry, then reloaded or left and returned to: the browser
+    // still holds only the screen it opened on, and the entry says so.
+    const opened = openedOnto(null);
+    expect(openedOnto(entryState(opened)).firstHeld).toBe(OUTSIDE);
     // More held behind the entry than the rebuilt list has steps: all of them.
     const longer = historyFor(["destination", "citizenship", "situation", "qualification", "occupation_it"], null);
-    expect(arrived(entryState(longer), "reload").firstHeld).toBe(0);
+    expect(openedOnto(entryState(longer)).firstHeld).toBe(0);
   });
 
-  it("an entry written before the rule, reloaded or returned to, holds every step", () => {
-    // The earlier slice's reload repair: entries then carried only their step.
-    expect(arrived({ step: 3 }, "reload").firstHeld).toBe(0);
-    expect(arrived({ step: 3 }, "back_forward").firstHeld).toBe(0);
-    expect(arrived({ step: 3 }, "navigate").firstHeld).toBe(3);
+  /**
+   * Only a count the page could have written is believed: a non-negative
+   * integer a history could hold. Anything else is read as an outside entry,
+   * because stepping back in place never leaves the site and `history.back()`
+   * onto nothing does. The shapes are the nine the Security axis measured
+   * (s37 round 1), each of which resolved to "every step held" or stuck as
+   * NaN before this rule.
+   */
+  it("a held count that is not a non-negative integer is an outside entry", () => {
+    for (const held of ["5", {}, -1, -Infinity, 1e308, Infinity, NaN, 2.5, null]) {
+      const h = openedOnto({ step: 3, held });
+      expect(h.firstHeld, `held: ${String(held)}`).toBe(OUTSIDE);
+      expect(backFor(h), `held: ${String(held)}`).toBe("in-place");
+    }
+    // Missing altogether, or no state at all.
+    expect(openedOnto({ step: 3 }).firstHeld).toBe(OUTSIDE);
+    for (const state of [undefined, "5", 5, []]) expect(openedOnto(state).firstHeld).toBe(OUTSIDE);
+    // 0 is a count the page writes — on an outside entry — and is believed as one.
+    expect(readEntry({ step: 3, held: 0 }).held).toBe(0);
+    expect(openedOnto({ step: 3, held: 0 }).firstHeld).toBe(OUTSIDE);
+    // And a count it could have written is believed.
+    expect(openedOnto({ step: 3, held: 2 }).firstHeld).toBe(1);
+  });
+
+  /**
+   * The build before s37 wrote `{ step }` alone, so a tab left open across
+   * the deploy reloads onto an entry that says nothing about what is held.
+   * It is read as an outside entry. For a tab that had walked its questions
+   * live, the two Backs then disagree once — the screen's steps in place, the
+   * browser's goes back — and that is the smaller harm: read the other way, a
+   * tab that had opened onto a stored record would be sent off the site.
+   */
+  it("an entry written before the held count is an outside entry, however it was reached", () => {
+    expect(openedOnto({ step: 3 }).firstHeld).toBe(OUTSIDE);
+    expect(readEntry({ step: 3 }).step).toBe(3);
   });
 
   it("an answer after the arrival is held, and the arrival screen is still the edge", () => {
-    const h = arrived(null, "navigate");
+    const h = openedOnto(null);
     expect(recordScreen(h, "occupation_it", true)).toEqual({ how: "push", step: 4 });
     // One entry of ours behind: the browser can go back onto it.
     expect(backFor(h)).toBe("browser");
@@ -158,7 +182,7 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
   });
 
   it("starting over stands on a held entry: the edge goes back to the first step", () => {
-    const h = arrived(null, "navigate");
+    const h = openedOnto(null);
     // "Start over" empties the list; its first screen rewrites the entry the
     // reader is standing on, which the browser holds.
     h.entries.length = 0;
@@ -195,7 +219,7 @@ describe("what an entry carries is written and read in one place", () => {
     expect(back.step).toBe(2);
     // Reloaded onto that entry, the page's rule gives back the edge it had.
     const reloaded = historyFor(["destination", "citizenship"], "situation");
-    reloaded.firstHeld = firstHeldStep({ state: entryState(h), navigation: "reload" }, reloaded.current);
+    reloaded.firstHeld = firstHeldStep(entryState(h), reloaded.current);
     expect(reloaded.firstHeld).toBe(h.firstHeld);
   });
 
@@ -209,10 +233,10 @@ describe("what an entry carries is written and read in one place", () => {
    */
   it("a record grown in another tab moves the list, not what the browser holds", () => {
     const tabA = historyFor(["destination", "citizenship", "situation"], "qualification");
-    tabA.firstHeld = firstHeldStep({ state: null, navigation: "navigate" }, tabA.current);
+    tabA.firstHeld = firstHeldStep(null, tabA.current);
     const grown = ["destination", "citizenship", "situation", "qualification", "occupation_it"];
     const reloaded = historyFor(grown, "salary");
-    reloaded.firstHeld = firstHeldStep({ state: entryState(tabA), navigation: "reload" }, reloaded.current);
+    reloaded.firstHeld = firstHeldStep(entryState(tabA), reloaded.current);
     expect(reloaded.firstHeld).toBe(reloaded.current);
     expect(backFor(reloaded)).toBe("in-place");
 
@@ -223,14 +247,23 @@ describe("what an entry carries is written and read in one place", () => {
       ["destination", false], ["citizenship", true], ["situation", true], ["qualification", true],
     ] as const) recordScreen(live, field, advance);
     const again = historyFor(grown, "salary");
-    again.firstHeld = firstHeldStep({ state: entryState(live), navigation: "reload" }, again.current);
+    again.firstHeld = firstHeldStep(entryState(live), again.current);
     expect(again.current - again.firstHeld).toBe(3);
   });
 
-  it("a state nothing of ours wrote names no step", () => {
-    expect(readEntry(null).step).toBeUndefined();
-    expect(readEntry({ step: "2" }).step).toBeUndefined();
-    expect(readEntry("2").step).toBeUndefined();
+  it("a state nothing of ours wrote names no step and holds nothing", () => {
+    for (const state of [null, undefined, "2", 2, { step: "2" }, { step: -1 }, { step: NaN }, { step: 1.5 }]) {
+      expect(readEntry(state).step, JSON.stringify(state)).toBeUndefined();
+      expect(readEntry(state).held, JSON.stringify(state)).toBe(0);
+    }
+  });
+
+  it("the reader believes a held count only where the builder could have written it", () => {
+    // The nine shapes the Security axis measured (s37 round 1), and a fraction.
+    for (const held of ["5", {}, -1, -Infinity, 1e308, Infinity, NaN, 2.5])
+      expect(readEntry({ step: 3, held }).held, `held: ${String(held)}`).toBe(0);
+    expect(readEntry({ step: 3 }).held).toBe(0);
+    for (const held of [0, 1, 3]) expect(readEntry({ step: 3, held }).held).toBe(held);
   });
 });
 

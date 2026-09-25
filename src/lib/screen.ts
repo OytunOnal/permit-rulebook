@@ -285,50 +285,6 @@ export function historyFor(answered: string[], showing: string | null): ScreenHi
   return { entries, current: entries.length - 1, firstHeld: 0 };
 }
 
-/** What the page can read about how it came to be showing: the state on the
- * entry it opened onto, and the navigation's own type. */
-export interface Landing {
-  /** `history.state` before the page wrote anything. */
-  state: unknown;
-  /** `performance.getEntriesByType("navigation")[0]?.type`; undefined when
-   * the browser does not say. */
-  navigation: string | undefined;
-}
-
-/**
- * Where the held steps begin, for a page that has just rebuilt its list and
- * stands on `current`.
- *
- * The rebuilt list is right about the questions and says nothing about what
- * the browser holds. A reload or a return through the browser's history keeps
- * every entry the interview wrote; a fresh arrival onto a stored record holds
- * one — the arrival — and a "← Back" that asked the browser for the step
- * before it took the reader off the site (s37, measured 2026-09-25).
- *
- * The navigation's type alone cannot tell them apart: an arrival that is then
- * reloaded, or left and returned to, reads `reload` or `back_forward` while
- * the browser still holds only the arrival — measured in headless Chrome the
- * same day, `history.length` 3 and `/data/` behind in both. The entry itself
- * can: the page writes into every entry's state how many held steps stand
- * behind it, and the browser keeps that state with the entry through a
- * reload, a return and a restored session, and drops it with the entry. The
- * held steps then begin that many steps before the one the rebuilt list
- * stands on, however long the record has grown since. An entry that carries
- * it is believed. One written before the rule carries only its step, and
- * there the type decides as the earlier reload repair assumed: a reload or a
- * return holds every step. Anything else — no state, a type the page cannot
- * read — is an arrival, because stepping back in place is safe everywhere and
- * `history.back()` onto nothing leaves the site.
- */
-export function firstHeldStep(landing: Landing, current: number): number {
-  const state = readEntry(landing.state);
-  const top = Math.max(0, current);
-  if (state.held !== undefined) return Math.max(0, top - state.held);
-  const returned = landing.navigation === "reload" || landing.navigation === "back_forward";
-  if (state.step !== undefined && returned) return 0;
-  return top;
-}
-
 /** What every entry the interview writes carries in `history.state`. */
 export interface EntryState {
   /** The step of the page's list the entry shows. */
@@ -351,16 +307,53 @@ export function entryState(history: ScreenHistory): EntryState {
   return { step: history.current, held: history.current - history.firstHeld };
 }
 
+/** A count a history could hold: a non-negative integer, and a safe one — a
+ * count past that is not one the page wrote. */
+const isCount = (value: unknown): value is number => Number.isSafeInteger(value) && (value as number) >= 0;
+
 /**
- * What a load or a popstate believes of an entry's state: each field only
- * where it is the kind the page writes. Anything else is not ours.
+ * What a load or a popstate believes of an entry's state. A step only where it
+ * is a count, or none — the entry is not ours. A held count only where it is a
+ * count; anything else — missing, a string, a negative, a fraction, an
+ * infinity, NaN — is read as 0, nothing held behind, which is an outside
+ * entry. That is the safe side: stepping back in place never leaves the site,
+ * and `history.back()` onto nothing does (Security review, s37 round 1).
+ *
+ * It includes the build before s37, which wrote `{ step }` alone: a tab left
+ * open across the deploy reloads onto an entry that says nothing of what is
+ * held, and it is read as an outside entry. For a tab that had walked its
+ * questions live the two Backs then disagree once — the screen's steps in
+ * place, the browser's goes back — which is the smaller harm: read the other
+ * way, a tab that had opened onto a stored record would be sent off the site.
  */
-export function readEntry(state: unknown): Partial<EntryState> {
+export function readEntry(state: unknown): { step: number | undefined; held: number } {
   const s = (state !== null && typeof state === "object" ? state : {}) as Record<string, unknown>;
-  return {
-    step: typeof s.step === "number" ? s.step : undefined,
-    held: typeof s.held === "number" ? s.held : undefined,
-  };
+  return { step: isCount(s.step) ? s.step : undefined, held: isCount(s.held) ? s.held : 0 };
+}
+
+/**
+ * Where the held steps begin, for a page that has just rebuilt its list and
+ * stands on `current`, opened onto an entry whose state is `state`.
+ *
+ * The rebuilt list is right about the questions and says nothing about what
+ * the browser holds. A re-entry — a reload, a return through the browser's
+ * history, a restored session — keeps every entry the interview wrote; an
+ * outside entry onto a stored record holds one, the screen it opened on, and
+ * a "← Back" that asked the browser for the step before it took the reader
+ * off the site (s37, measured 2026-09-25).
+ *
+ * The navigation's type cannot tell them apart: an outside entry that is then
+ * reloaded, or left and returned to, reads `reload` or `back_forward` while
+ * the browser still holds only the screen it opened on — measured in headless
+ * Chrome the same day, `history.length` 3 and `/data/` behind in both. The
+ * entry itself can: every entry carries how many held steps stand behind it,
+ * and the browser keeps that state with the entry through a reload, a return
+ * and a restored session, and drops it with the entry. The held steps begin
+ * that many steps before the one the rebuilt list stands on, however long the
+ * record has grown since.
+ */
+export function firstHeldStep(state: unknown, current: number): number {
+  return Math.max(0, Math.max(0, current) - readEntry(state).held);
 }
 
 /**
