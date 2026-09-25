@@ -140,12 +140,13 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
    * a dead tap, and the "← Back" gone after it (headless Chrome, s37 delta
    * rounds 1 and 2; the round's shallow shrink was `{ step: 6, held: 3 }`
    * reloaded onto three answers). So an entry's held count is believed only
-   * where the record did not change under it: where the step it names is the
-   * step the page stands on (human, 2026-09-25). Anywhere else nothing is
-   * held, and the screen's Back steps back in place.
+   * where the step it names is the step the page stands on (human,
+   * 2026-09-25) — on load the rebuilt list's last step, which a record grown
+   * or shrunk in another tab no longer is. Anywhere else nothing is held, and
+   * the screen's Back steps back in place.
    */
-  it("an entry's held count is believed only where the record did not change under it", () => {
-    // Unchanged: the entry names the step the rebuilt list stands on.
+  it("an entry's held count is believed only where its step is the step the page stands on", () => {
+    // The entry names the step the rebuilt list stands on.
     expect(firstHeldStep({ step: 3, held: 3 }, 3)).toBe(0);
     expect(firstHeldStep({ step: 3, held: 1 }, 3)).toBe(2);
     // Shrunk — the entry names a step past the list: none held. The first is
