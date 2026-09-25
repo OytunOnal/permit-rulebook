@@ -73,7 +73,7 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is expected from you
 
-- [ ] **s37's brake: a dead tap when another tab changed the record.** The
+- [x] 2026-09-25 **s37's brake: a dead tap when another tab changed the record** — answered "düzelt". The
       slice's promise holds — in ten two-tab walks in real Chrome the
       interview's "← Back" never left the site — but when a second tab
       shrinks the record (Start over, a few answers) and the first tab reloads,
