@@ -10,13 +10,12 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   skills reloaded the same day (steward-79 to 84: a `Dismissed` line names no
   axis). s35 waits on the 2026-09-29 metric reading.
 - Current version: **v1.1** (stamped 2026-09-16); v1.2 open since 2026-09-17.
-- In flight: **s37 — Back on a restored record**, built and reviewed — four
-  rounds, eleven reviews, three deltas; the change closed on delta 3 (branch
-  `s37-restored-back` at the record commit, 790 tests). Waiting on the word
-  to merge. s35
+- In flight: nothing. s37 is live and waits on its real-green (the live walk
+  and one tap on your phone); s35 waits on the 2026-09-29 metric reading. The
+  queue head is **An unknown link's first paint**. s35
   waits on the 2026-09-29 metric reading.
 - v1.2: 12 of 16 planned steps passed for real (twelve slices s23–s36, s35
-  excepted); 1 live and waiting on its reading (s35); 3 queued — two steward
+  excepted); 2 live and waiting on their readings (s35, s37); 2 queued — two steward
   items (Back on a restored record; an unknown link's first paint) and the
   flag's quoted page, versioned at the fork of 2026-09-25. Roadmap fork 2026-09-23:
   all six `later` candidates kept, clock reset. Roadmap: 25 candidates ahead, 12 unversioned under
@@ -30,9 +29,8 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 
 ## What is happening now
 
-- Live: https://permitrulebook.com at `d1f7b81` (the scheduled deploy after
-  today's watch), data pinned at `1c42cd8`, dataset 2026.09.18, schema
-  0.8.2; 757 site tests, 849 data tests; `/data/` says *re-read daily — last
+- Live: https://permitrulebook.com at `14d399d` (s37), data pinned at
+  `1c42cd8`, dataset 2026.09.18, schema 0.8.2; 790 site tests, 849 data tests; `/data/` says *re-read daily — last
   run 2026-09-25*. Today's watch read all 46 sources clean, the first
   scheduled run on the new connect path.
 - Metric 2 (the daily watch finishes) is off target on the old rule: four
@@ -73,6 +71,15 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
   six rounds, not closed; it is the record's `open with reason:` line.
 
 ## What is expected from you
+
+- [ ] **One tap on your phone for s37's real-green.** On your phone, open
+      https://permitrulebook.com/ and answer two or three questions; close
+      the tab; open https://permitrulebook.com/data/ in a new tab and then
+      the home page again from there — the interview comes back where you
+      left it. Tap the interview's own "← Back". Pass = "yeşil" if it shows
+      the question before and you stay on the site, or what it did instead.
+      Why yours: a real gesture on a real phone is the one thing a headless
+      browser cannot make. asked: 2026-09-25 entry: s37
 
 - [x] 2026-09-25 **s37's brake: a dead tap when another tab changed the record** — answered "düzelt". The
       slice's promise holds — in ten two-tab walks in real Chrome the

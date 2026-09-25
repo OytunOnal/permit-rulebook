@@ -90,7 +90,7 @@ mark `promoted <date>`; the board's done column holds the step.
   transition and legacy prefixes that embed or mean another address — NAT64
   `64:ff9b::/96`, 6to4 `2002::/16`, the compat form `::/96`, site-local
   `fec0::/10`.
-- **Back on a restored record** (s30 build, 2026-09-18) · promoted 2026-09-25 · s37 · a reader who arrives
+- **Back on a restored record** (s30 build, 2026-09-18) · promoted 2026-09-25 · s37 · live 2026-09-25 · a reader who arrives
   fresh with a restored record and taps ← Back leaves the site (the rebuilt
   history has no entries in the browser); reload mid-interview then Back
   lands on the first question · pre-existing (s16-era); a steward pass.
@@ -270,13 +270,7 @@ _Roadmap fork 2026-09-17 (human: "uygula"): six kept, two versioned to v1.3, one
   exists. Kept. **Kept 2026-09-17** (fork: no intake or metric evidence yet).
 ## active
 
-- **s37 — Back on a restored record** · approved 2026-09-25 (human:
-  "onaylıyorum"); building on `s37-restored-back` (worktree
-  `../permit-rulebook-s37`) (`docs/spine/scenarios/s37-back-on-a-restored-record.md`
-  on that branch). Measured: a reader arriving with a stored record who taps
-  the interview's "← Back" leaves the site; the reload half of the queue line
-  no longer happens. The screen's Back asks the browser to go back only onto
-  an entry the browser holds; the browser's Back is untouched.
+_(empty)_
 
 ## mock-green
 
@@ -287,6 +281,19 @@ _(empty)_
 _(empty — everything real-green so far is stamped into done)_
 
 ## done
+
+- **s37 — Back on a restored record** · merged and live 2026-09-25 (human:
+  "merge"; site `14d399d`, deploy run 36159979338 green) — **real-green waits
+  on the live walk**: a restored entrance on `https://permitrulebook.com/` at
+  phone width, three screen Backs, each the question before and never off the
+  site; and the human's own phone for one tap. What landed: the interview's
+  "← Back" asks the browser to go back only onto an entry the browser holds
+  for this interview, and steps to the previous question in place otherwise;
+  every history entry carries how many of the page's steps the browser holds
+  behind it, believed only where the entry's step is the step the page stands
+  on; the page no longer reads the navigation's type; the browser's own Back
+  untouched. Four rounds, eleven reviews, three deltas, one brake ("düzelt");
+  `docs/spine/reviews/s37.md`.
 
 - **s36 — the address the watch connects to** · real-green 2026-09-25
   (human: "yeşil"; the first scheduled run after the merge, 36122852274:
