@@ -353,26 +353,28 @@ export function readEntry(state: unknown): { step: number | undefined; held: num
  * behind it, and the browser keeps that state with the entry through a
  * reload, a return and a restored session, and drops it with the entry.
  *
- * The count is believed only where the record did not change under the
- * entry — where the step the entry names is the step the page stands on
- * (human, 2026-09-25). Another tab shares the record and not the history: it
- * grows the record, or starts over and answers again, and the entries behind
- * this one still name steps of the list they were written against. Popped,
- * one past the rebuilt list clamps onto the question already on screen — a
- * dead tap, and the screen's Back gone after it (headless Chrome, s37 delta
- * rounds 1 and 2) — and over a grown list they skip the questions the other
- * tab added. On any change nothing is held, and the screen's Back steps back
- * in place, which can neither leave the site nor stay put.
+ * The count is believed only where the step the entry names is the step the
+ * page stands on (human, 2026-09-25). Another tab shares the record and not
+ * the history: it grows the record, or starts over and answers again, and the
+ * entries behind this one still name steps of the list they were written
+ * against. Popped, one past the rebuilt list clamps onto the question already
+ * on screen — a dead tap, and the screen's Back gone after it (headless
+ * Chrome, s37 delta rounds 1 and 2) — and over a grown list they skip the
+ * questions the other tab added. Where the count is not believed nothing is
+ * held, and the screen's Back steps back in place, which can neither leave
+ * the site nor stay put.
  *
  * `current` is where the page stands. On load it is the rebuilt list's last
- * step, where the record's own last question is. On a popstate it is the
- * popped entry's step clamped to the list, not the list's last step: a Back
- * mid-interview lands on an entry with steps ahead of it and held steps
- * behind it that the browser still has, and it names the step it was written
- * at. Where the clamp moved it, the entry names a step this list does not
- * have, and nothing is held. Read once on load instead, a record grown in
- * another tab left the first held step where the grown list put it while the
- * Backs popped entries further down (Spec review, s37 delta round 1).
+ * step, so a record grown or shrunk in another tab holds nothing, and one
+ * started over back to the same length reads as unchanged. On a popstate it
+ * is the popped entry's step clamped to the list, not the list's last step: a
+ * Back mid-interview lands on an entry with steps ahead of it and held steps
+ * behind it that the browser still has. Where the clamp moved it nothing is
+ * held; where it did not, the count is believed even after a shallow grow or
+ * shrink in another tab — safely, since every entry behind it names a step
+ * the list still has. Read once on load instead, a record grown in another
+ * tab left the first held step where the grown list put it while the Backs
+ * popped entries further down (Spec review, s37 delta round 1).
  */
 export function firstHeldStep(state: unknown, current: number): number {
   const top = Math.max(0, current);

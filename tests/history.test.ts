@@ -169,12 +169,12 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
   });
 
   /**
-   * A record started over in another tab and answered back to the same
-   * length leaves the entry naming the step the page stands on: the entry
-   * cannot tell it from an unchanged record, and it is believed. Every entry
-   * behind then names a step the rebuilt list has, one below the last, so a
-   * Back onto it shows the question before — never the one on screen, never
-   * off the site.
+   * What the rule can see is the entry's step and its held count. A record
+   * started over in another tab and answered back to the same length leaves
+   * both as an unchanged record would, so it reads as unchanged: this pins
+   * what the entry can tell, not a decision that restarts are believed. Every
+   * entry behind then names a step the rebuilt list has, so a Back onto it
+   * shows the question before — never the one on screen, never off the site.
    */
   it("a record restarted to the same length reads as unchanged, and every step behind is one the list has", () => {
     expect(firstHeldStep({ step: 4, held: 2 }, 4)).toBe(2);
@@ -182,9 +182,10 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
 
   /**
    * A popstate reads the entry it lands on against the step it lands at: the
-   * entry's step clamped to the list. An entry the list still has is one the
-   * record did not change under, and its count is believed; a stale entry
-   * clamped onto the list's last screen counts nothing held.
+   * entry's step clamped to the list. An entry the list still has is
+   * believed, even after a shallow grow or shrink in another tab, since every
+   * entry behind it names a step the list has too; a stale entry clamped onto
+   * the list's last screen counts nothing held.
    */
   it("a popped entry is believed where it lands on its own step, and not where it was clamped", () => {
     expect(firstHeldStep({ step: 2, held: 2 }, 2)).toBe(0);

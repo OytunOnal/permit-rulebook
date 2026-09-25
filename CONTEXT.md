@@ -264,10 +264,12 @@ is held; the steps before it are the page's own, rebuilt from the record. Past
 it the screen's "← Back" is the browser's Back; on it or before it, the
 screen's Back shows the previous question in place and the browser's leaves
 the site. It is read from the entry the page stands on — on load and on every
-Back or Forward — and believed only when the record did not change under that
-entry, when the step it names is the step the page stands on: after the
-record grew or shrank in another tab, none is held (one started over and
-answered back to the same length reads as unchanged).
+Back or Forward — and believed only when the step that entry names is the
+step the page stands on. On load that is the list's last step: after the
+record grew or shrank in another tab none is held, and one started over back
+to the same length reads as unchanged. On a Back or Forward it is the entry's
+own step wherever the list still has it, and every step behind is one the
+list has too.
 _Avoid_: history depth, history index, arrival screen; hold, hold state (the
 s31 line a returning reader sees while the module draws — nothing to do with
 the browser's history)

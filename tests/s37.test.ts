@@ -599,4 +599,36 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       server.close();
     }
   }, 180000);
+
+  /**
+   * A popstate reads the entry it lands on against the step it lands at, not
+   * against the list's last step. Read against the last, the browser's Back
+   * from step 5 lands on step 4 with nothing held, the screen's Back then
+   * steps back in place, and the browser's Back after it shows that same
+   * question again — a dead Back in a single tab, which no other walk caught.
+   */
+  it("in one tab, the browser's Back, the screen's, then the browser's: each a question back", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: BrowserPage) => {
+        const w = walker(page, server.url);
+        const live = await w.live(5);
+        const backs: Where[] = [];
+        for (const gesture of [BROWSER_BACK, SCREEN_BACK, BROWSER_BACK]) backs.push(await w.act(gesture, SETTLE.onPage));
+        return { live, backs };
+      }, PHONE) as { live: Where[]; backs: Where[] };
+
+      const questions = seen.live.map((s) => s.question);
+      expect(new Set(questions).size, questions.join(" | ")).toBe(6);
+      expect(seen.backs.map((s) => s.question), "a Back showed the question already on screen")
+        .toEqual([4, 3, 2].map((step) => questions[step]));
+      seen.backs.forEach((screen, i) => {
+        expect(screen.path, `Back ${i + 1} left the site`).toBe("/");
+        expect(screen.step, `Back ${i + 1} is not a step back`).toBe(4 - i);
+        expect(screen.length, `Back ${i + 1} changed the browser's history`).toBe(seen.live[5]!.length);
+      });
+    } finally {
+      server.close();
+    }
+  }, 180000);
 });

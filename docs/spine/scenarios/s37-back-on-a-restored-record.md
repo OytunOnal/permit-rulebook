@@ -118,10 +118,10 @@ through the browser's own history they begin at the first question (the
 browser kept them)" holds only for an interview walked in the tab. An outside
 entrance then reloaded, or left for `/data/` and returned to, reads `reload`
 or `back_forward` while the browser holds only the screen it opened on
-(headless Chrome, built site), so a page reading the type would send the
-screen's Back off the site. Point 4 goes with it: the page does not read the
-navigation's type. Every entry it writes carries how many held steps stand
-behind it (`{ step, held }`), believed only when the record did not change
-under the entry — its step is the one the page stands on; an unreadable or
-changed entry holds none. The reloaded and returned outside entrance join the
-first proof as cases, not as a new promise.
+(`history.length` 3, `/data/` behind; headless Chrome, built site), so a page
+reading the type would send the screen's Back off the site. Point 4 goes with
+it: the page does not read the navigation's type. Every entry it writes
+carries how many held steps stand behind it (`{ step, held }`), believed only
+where its step is the one the page stands on; any other entry holds none. The
+reloaded and returned outside entrance join the first proof as cases, not as a
+new promise.
