@@ -176,8 +176,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { type Glossary, glossSection } from "../lib/gloss.js";
     import { activeOption, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
     import {
-      clampStep, emptyHistory, historyFor, mastheadFor, recordScreen as recordEntry, screenAfter,
-      screenAt, type Explore, type FlowAction,
+      backFor, clampStep, emptyHistory, firstHeldStep, historyFor, mastheadFor, recordScreen as recordEntry,
+      screenAfter, screenAt, type Explore, type FlowAction, type Landing,
     } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     // The reason column's markup, beside the page rather than in it, so what
@@ -804,10 +804,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           // The screen's Back and the phone's Back are one gesture, so they can
           // never land on different screens (human, 2026-09-08): this asks the
           // browser to go back, and the popstate handler shows the question that
-          // entry was showing. Nothing is erased on the way.
-          if (screens.current > 0) { window.history.back(); return; }
-          // Standing on our first entry: there is nothing of ours behind, so the
-          // step is the one editing a declared row makes.
+          // entry was showing. Nothing is erased on the way. It asks only for a
+          // step the browser holds — after a fresh arrival onto a stored record
+          // the steps behind are the page's own, and the browser's Back from
+          // there is the page the reader came from (s37).
+          if (backFor(screens) === "browser") { window.history.back(); return; }
+          // Nothing of ours behind in the browser, so the step is the one
+          // editing a declared row makes: the previous question in place.
           const at = editing ? asked.indexOf(editing) : asked.length;
           const prev = asked[at - 1];
           if (prev === undefined) return;
@@ -1589,19 +1592,46 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      *
      * One entry per question screen, then, and one gesture behind both Backs:
      * advancing to a new question pushes, every other render replaces the entry
-     * it is standing on, and "← Back" IS `history.back()`. An entry remembers
-     * which question it was showing rather than a copy of the answers, so
-     * stepping back keeps everything answered since — the same thing editing an
-     * earlier row has always done.
+     * it is standing on, and "← Back" IS `history.back()` wherever the browser
+     * holds an entry of ours behind the reader. An entry remembers which
+     * question it was showing rather than a copy of the answers, so stepping
+     * back keeps everything answered since — the same thing editing an earlier
+     * row has always done.
+     *
+     * The browser does not always hold what the list says: a fresh arrival
+     * onto a stored record rebuilds the list behind the arrival screen with
+     * nothing of ours behind it in the browser, and "← Back" as
+     * `history.back()` took the reader off the site (s37, 2026-09-25). There
+     * the screen's Back steps back in place; the browser's own Back leaves, as
+     * it does from any page just opened.
      */
     const screens = emptyHistory();
+    /**
+     * How the page came to be showing, read before it writes an entry of its
+     * own: the state on the entry it opened onto, and the navigation's type.
+     * The rebuild after the first render decides from it where the steps the
+     * browser holds begin (s37). A type the browser does not report is left
+     * undefined, which the rule reads as an arrival.
+     */
+    const landing: Landing = {
+      state: window.history.state,
+      navigation: (() => {
+        try {
+          return (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined)?.type;
+        } catch {
+          return undefined;
+        }
+      })(),
+    };
     /** Whether we are the ones moving the reader, rather than the browser. */
     let restoring = false;
 
     function recordScreen(field: string | null, advance: boolean) {
       if (restoring) return;
       const move = recordEntry(screens, field, advance);
-      const state = { step: move.step };
+      // Every entry says where the held steps begin, so a reload or a return
+      // onto it can tell (s37).
+      const state = { step: move.step, firstHeld: screens.firstHeld };
       // The first screen REPLACES the page's own entry rather than adding one:
       // pushing there would trap the visitor on the site, because Back would
       // always land on another of our own screens.
@@ -1707,7 +1737,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const rebuilt = historyFor(asked, showing);
       screens.entries = rebuilt.entries;
       screens.current = rebuilt.current;
-      window.history.replaceState({ step: screens.current }, "");
+      // The list is rebuilt whatever the browser holds; where the held steps
+      // begin is read from how the page was opened. A fresh arrival onto a
+      // stored record holds only the screen it arrived on (s37).
+      screens.firstHeld = firstHeldStep(landing, screens.current);
+      window.history.replaceState({ step: screens.current, firstHeld: screens.firstHeld }, "");
     })();
 
     // Dev-only layout probe: ?dev-probe=1 writes the widest offenders into the
