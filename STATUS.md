@@ -1,5 +1,7 @@
 # STATUS — Permit Rulebook
 
+> **Frozen on 2026-10-17** as the ledger era's history: the project moved onto the tracker (`docs/spine/migration-v2.md`). The work is on [GitHub Issues](https://github.com/OytunOnal/permit-rulebook/issues) and The Road (`docs/spine/road.html`); hard-to-reverse decisions go to `docs/adr/`. Nothing below changes.
+
 Short by rule: the human follows the dashboard (`docs/spine/road.html`); this
 file is the sessions' orientation at the door. History is in `DECISIONS.md`.
 

@@ -8,3 +8,7 @@
 # platform; the parsers stay defensive, but they no longer carry the product
 # alone.
 * text=auto eol=lf
+
+# The structure check writes this file with LF; named on its own so a run
+# never reads as a change with no diff, whatever the line above becomes.
+docs/spine/structure.json text eol=lf

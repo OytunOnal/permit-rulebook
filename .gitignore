@@ -4,3 +4,9 @@ dist/
 .env
 .env.*
 !.env.example
+
+# The tracker snapshot The Road is drawn from; written on every draw.
+docs/spine/issues.json
+
+# Run output and agents' scratch (CODING_STANDARDS.md, Security).
+.run/

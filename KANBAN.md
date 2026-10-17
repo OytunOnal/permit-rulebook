@@ -1,5 +1,7 @@
 # KANBAN — Visa Navigator
 
+> **Frozen on 2026-10-17** as the ledger era's history: the project moved onto the tracker (`docs/spine/migration-v2.md`). The work is on [GitHub Issues](https://github.com/OytunOnal/permit-rulebook/issues) and The Road (`docs/spine/road.html`); hard-to-reverse decisions go to `docs/adr/`. Nothing below changes.
+
 Slices go by their **capability name**; short IDs (s1, s2…) are filename sort
 keys only. A slice advances only on a run acceptance scenario: **mock-green**
 when it passes on mocks, **real-green** when it passes for real. The moment a

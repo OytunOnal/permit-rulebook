@@ -19,11 +19,12 @@ import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "../src/lib/copy.js";
  *
  *   · the ledgers — STATUS.md, KANBAN.md, DECISIONS.md — keep their history
  *     unedited by instruction; they record what happened under the old name;
- *   · `CONTEXT.md` and everything under `docs/spine/**` are the project's own
- *     record of itself, not strings a reader of the product ever sees — which
- *     is where the Turkish notes of the 2026-08-26 design conversation now
- *     live (`docs/spine/notes-pre-genesis.md`), pre-history rather than
- *     product copy (human, 2026-09-08);
+ *   · `GLOSSARY.md` (named `CONTEXT.md` until 2026-10-17) and everything
+ *     under `docs/spine/**` are the project's own record of itself, not
+ *     strings a reader of the product ever sees — which is where the Turkish
+ *     notes of the 2026-08-26 design conversation now live
+ *     (`docs/spine/notes-pre-genesis.md`), pre-history rather than product
+ *     copy (human, 2026-09-08);
  *   · git history itself, which is the point of having it.
  *
  * Everything else — every page, every library, every README, both package
@@ -54,7 +55,7 @@ const REPOS = {
  * in a package manifest is a path, not a name, and is excluded by that rule
  * rather than by an oversight.
  */
-const HISTORY = ["STATUS.md", "KANBAN.md", "DECISIONS.md", "CONTEXT.md"];
+const HISTORY = ["STATUS.md", "KANBAN.md", "DECISIONS.md", "GLOSSARY.md"];
 
 /** Directory and filename prefixes that are records of what happened, not
  * strings a reader of the product meets. Each is named in the describe() above;
@@ -149,7 +150,7 @@ const isTheDependencyPath = (file: string, line: string): boolean => {
 const isTheMigratedKey = (file: string, line: string): boolean =>
   file === "src/lib/record.ts" && /^export const LEGACY_STORAGE_KEY = /.test(line.trim());
 
-describe("s6 — the working name is gone from everything a reader can see (ledgers, CONTEXT.md, docs/spine, docs/adr, data/verify-* and git history excluded by name)", () => {
+describe("s6 — the working name is gone from everything a reader can see (ledgers, GLOSSARY.md, docs/spine, docs/adr, data/verify-* and git history excluded by name)", () => {
   for (const [name, repo] of Object.entries(REPOS))
     it(`${name}: no tracked file outside the excluded history carries the working name`, () => {
       const offenders: string[] = [];
