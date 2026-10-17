@@ -110,7 +110,7 @@ file is the sessions' orientation at the door. History is in `DECISIONS.md`.
       2026-09-08 (the two Backs are one gesture) on exactly one screen.
       asked: 2026-09-25 entry: s37
 
-- [ ] **On or after 2026-09-29, say whether s35 is real-green.** The session
+- [x] 2026-10-17 **On or after 2026-09-29, say whether s35 is real-green** — answered "s35 green". The session
       reads metric 2 with `gh run list -R OytunOnal/permit-rulebook-data
       --workflow watch.yml --event schedule --branch master --limit 10` and
       reports the five scheduled runs under s35's rule (09-25 to 09-29): every

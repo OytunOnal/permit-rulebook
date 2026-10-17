@@ -70,7 +70,7 @@ mark `promoted <date>`; the board's done column holds the step.
 - **the copy pass** (a route page names its own unread sources, F3 — moved from the `v1.x` bucket 2026-09-17) · promoted 2026-09-17 · s23
 
 **Queue** (in order; the first unpromoted line is the next slice)
-- **A source that fails once is read again** (intake #21, 2026-09-22) · promoted 2026-09-24 · s35 · live 2026-09-24 · the
+- **A source that fails once is read again** (intake #21, 2026-09-22) · promoted 2026-09-24 · s35 · real-green 2026-10-17 · the
   daily watch gives up on the first `unreachable`: 09-20 six sources answered
   403 (buzer.de ×5, wetten.overheid.nl), 09-21 three timed out (boe.es ×2,
   bamf.de), 09-22 all 46 read clean — two red days for outages that were gone
@@ -311,10 +311,12 @@ _(empty — everything real-green so far is stamped into done)_
   field changed. Eight review rounds, twenty-one reviews, seven deltas; the
   runner read 46/46 six times; `docs/spine/reviews/s36.md`.
 
-- **s35 — a source that fails once is read again** · merged and live
-  2026-09-24 (human: "merge"; data `a9e6277`, site `6e8259c`, deploy run
-  36025114404 green) — **real-green waits on the metric-2 reading of
-  2026-09-29**: over the seven runs ending that day, every red run names an
+- **s35 — a source that fails once is read again** · real-green 2026-10-17
+  (human: "s35 green"; metric 2 read 2026-10-17: since the merge 21 scheduled
+  runs, 20 green, the one red run — 10-16 — naming two outages and nothing
+  else; 09-25 to 09-29 all five green) · merged 2026-09-24 (human: "merge";
+  data `a9e6277`, site `6e8259c`, deploy run 36025114404 green). The claim
+  as registered: every red run names an
   outage or a refusal by us, and no run is red for a source that read clean
   the next morning. What landed: a failure has a class (transient · refused
   by the source · refused by us), a transient one is asked once more after
