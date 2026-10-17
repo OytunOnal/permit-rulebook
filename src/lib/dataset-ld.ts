@@ -43,7 +43,7 @@ export function datasetLd(dataset: Dataset, path: string): string {
       + `${counts.scored} scored against a reader's declared answers and ${counts.quotedOnly} quoted and dated `
       + "without being scored. Every value — salary threshold, qualification, experience, language level — carries the "
       + "sentence it came from on the authority's own page and the day that page was read. "
-      + "Re-read daily; a change to a source raises a flag a person walks.",
+      + "Re-read daily; a change to a source raises a flag a person reads within two days.",
     url: absolute(path),
     sameAs: REPO_DATA,
     version: dataset.dataset_version,

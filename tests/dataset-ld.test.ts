@@ -54,6 +54,17 @@ describe("the data page's Dataset block", () => {
     }
   });
 
+  /**
+   * The promise a crawler carries is the page's own, and it names the time the
+   * data repository's clock keeps: a flag no person has walked by its second
+   * morning turns the watch red (#62). "Walks" is our word for that read, not
+   * a reader's, so the description says "reads".
+   */
+  it("promises a flag is read within two days, in a reader's words", () => {
+    expect(String(ld.description)).toContain("a flag a person reads within two days");
+    expect(String(ld.description)).not.toMatch(/\bwalks?\b/);
+  });
+
   it("states the same day and the same version as the page", () => {
     expect(ld.dateModified).toBe(siteReadDate(ds));
     expect(ld.version).toBe(ds.dataset_version);

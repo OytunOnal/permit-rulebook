@@ -289,10 +289,12 @@ export const dataLedeClose = (door: string): string => `Take it, check it, and i
  * moved source "files an issue in the tracker" — a tracker the reader had not
  * met, and since s13 not where a reader goes. The exception clause before it
  * is s11's and prints on its own terms; this is the part that follows it on
- * every day (s16).
+ * every day (s16). "Within two days" is the time the data repository's clock
+ * keeps — a flag still open on its second morning turns the watch red — and
+ * the sentence did not say it until that clock was merged (#62).
  */
 export const FRESHNESS_HUMAN_HAND =
-  "A source that has moved raises a flag and a person reads it: the values on this site, and the dates beside "
+  "A source that has moved raises a flag and a person reads it within two days: the values on this site, and the dates beside "
   + "them, change when a person changes them, never on their own.";
 
 /**
