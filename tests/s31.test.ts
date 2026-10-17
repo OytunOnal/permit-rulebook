@@ -96,7 +96,7 @@ const HOLD = `JSON.stringify((() => {
     .filter((el) => { const r = el.getBoundingClientRect(); return r.height > 0 && r.top >= box(line).bottom - 1; })
     .map((el) => el.id ? "#" + el.id : el.tagName + "." + (el.className || "").split(" ")[0]);
   return {
-    first: document.documentElement.dataset.first ?? "",
+    cover: document.documentElement.dataset.cover ?? "",
     state: document.getElementById("app").dataset.state,
     headerShown: shown(head),
     brandShown: shown(brand),
@@ -118,7 +118,7 @@ const HOLD = `JSON.stringify((() => {
 })())`;
 
 interface Hold {
-  first: string;
+  cover: string;
   state: string;
   headerShown: boolean;
   brandShown: boolean;
@@ -177,7 +177,7 @@ describe.skipIf(skipped !== null)("the hold state is one line under the eyebrow 
         }, { viewport, mobile });
         expect(seen.problems).toEqual([]);
         const h = seen.held;
-        expect(h.first, "the pre-paint script did not name a reader owed a verdict").toBe("verdict");
+        expect(h.cover, "the pre-paint script did not name a reader owed a verdict").toBe("verdict");
         expect(h.state, "the module had already drawn — the hold was not held").toBe("questions");
         expect(h.headerShown, "the site header is not on the screen").toBe(true);
         expect(h.brandShown, "the eyebrow is not on the screen").toBe(true);
