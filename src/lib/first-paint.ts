@@ -79,7 +79,11 @@ export interface Cover {
  * answered, so the box says only that it is setting up. Both stand-ins sit
  * OVER question one rather than in place of it: the card keeps its height
  * because its contents are still there, only hidden, so the box those readers
- * meet is the box a fresh visit meets and nothing below it moves (s10).
+ * meet is the box a fresh visit meets and nothing below it moves (s10). The
+ * screen the module then draws for them is not that box's height, so the
+ * footer takes no room until it does, and appears at the page's end, where it
+ * stays; and the ledger's count, which says "nothing yet" until the module
+ * writes theirs, is unseen until then (#66).
  *
  * `verdict` — the record says the interview was finished, so their screen is a
  * verdict and nothing the build painted is theirs but the frame. The
@@ -101,11 +105,11 @@ export interface Cover {
  */
 export const COVERS = {
   record: {
-    hides: { ".qcard > *": "in place" },
+    hides: { ".qcard > *": "in place", "footer.site-foot": "no room", "#decl-count": "in place" },
     uncovers: { standIn: "stand-in-record", standing: "over the box" },
   },
   link: {
-    hides: { ".qcard > *": "in place" },
+    hides: { ".qcard > *": "in place", "footer.site-foot": "no room", "#decl-count": "in place" },
     uncovers: { standIn: "stand-in-link", standing: "over the box" },
   },
   verdict: {
@@ -192,10 +196,14 @@ function coverRules(name: string, cover: Cover): string {
  * the page to inline in `<head>`. The policy's `style-src` already allows
  * inline styles.
  *
- * The standing promise: both of the masthead's promises are painted and one is
- * shown. Which one is seeded before the first paint: the module used to swap
- * the text when it landed 700 ms later, and the whole interview slid up under
- * the reader (s10, 2026-09-15).
+ * The standing promise: both of the masthead's promises are painted, in one
+ * cell, and one is shown while the other is hidden in place, so the masthead is
+ * always the height of the longer one. Which one shows is seeded before the
+ * first paint, but the seed cannot always be the page's word: a link whose
+ * code the site no longer knows is painted as a reader who has started, and
+ * the module finds nothing answered. Swapping promises of two heights moved
+ * the whole interview under the reader (s10; #13), and the head cannot know
+ * the codes without naming the dataset.
  *
  * The ledger ships open — that is what a reader with no script should get —
  * and on a narrow screen it is folded away here until the module closes it
@@ -206,9 +214,11 @@ function coverRules(name: string, cover: Cover): string {
 export const FIRST_PAINT_STYLE = [
   ".stand-in{display:none}",
   ...Object.entries(COVERS).map(([name, cover]) => coverRules(name, cover)),
-  ".sub-started{display:none}",
-  `[data-promise="started"] .sub-fresh{display:none}`,
-  `[data-promise="started"] .sub-started{display:inline}`,
+  ".standing-promise{display:grid}",
+  ".standing-promise > *{grid-area:1/1}",
+  ".sub-started{visibility:hidden}",
+  `[data-promise="started"] .sub-fresh{visibility:hidden}`,
+  `[data-promise="started"] .sub-started{visibility:visible}`,
   "[data-narrow] #decl[open] > :not(summary){display:none}",
   "[data-narrow] #decl[open] > summary{margin-bottom:0}",
   `@media ${NARROW_MEDIA}{[data-answered] .decl{order:0}}`,
