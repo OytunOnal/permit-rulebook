@@ -1,7 +1,9 @@
 import { STORAGE_KEY } from "./record.js";
 
 /**
- * What the page has to know about the reader before it paints.
+ * The interview's first paint, owned end to end: the covers, the stylesheet
+ * rules keyed to them, the seeds, the threshold, and the one step that takes
+ * the covers off.
  *
  * s10 put the first question in the HTML, and the interview stopped moving.
  * What still moved was everything the module decided AFTER the HTML had
@@ -15,37 +17,108 @@ import { STORAGE_KEY } from "./record.js";
  * So the decisions are taken before the first paint instead, by the smallest
  * script that can take them: it reads the two things the module would read —
  * the record, and the link the reader followed — plus the width, and writes
- * what it found on `<html>`. The stylesheet does the rest, so the page paints
- * in the shape the module would have chosen and the module arrives to a page
- * that needs nothing done to it.
+ * what it found on `<html>`. The stylesheet below does the rest, so the page
+ * paints in the shape the module would have chosen and the module arrives to
+ * a page that needs nothing done to it.
  *
- * It is inline and in `<head>` because it must run before the first paint,
- * and it is hashed into the policy like the menu's script is. Everything it
- * reads, it reads from where the module reads it.
+ * Four things leave this file: the head script (inline in `<head>` because it
+ * must run before the first paint, and hashed into the policy like the menu's
+ * script), the stylesheet the page inlines beside it, the threshold, and
+ * `coversOff`. Everything the script reads, it reads from where the module
+ * reads it.
+ *
+ * What it writes on `<html>` is three kinds of thing, each with one writer
+ * after the first paint:
+ * - `data-cover`, the cover (see `COVERS`): written by the head script only,
+ *   removed by `coversOff` only;
+ * - `data-promise`, the masthead's standing promise, `fresh` or `started`: the
+ *   page's own state, which the page writes on every question screen and the
+ *   head script seeds;
+ * - `data-answered` and `data-narrow`, the ledger's two seeds: the head script
+ *   seeds them and the page's own decisions write them after.
  */
 
-/** The width above which the ledger is a fixed panel rather than a disclosure.
- * The stylesheet says the same number in its own media queries; a stylesheet
- * cannot import, and the two are read together. */
-export const WIDE_QUERY = "(min-width: 761px)";
+/**
+ * The width from which the ledger is a fixed panel rather than a disclosure,
+ * written once for the first paint: the head script's query, the stylesheet's
+ * narrow rule and the page's live ledger all read it from here. The site's own
+ * layout breakpoint, in the page's stylesheet, is a separate copy.
+ */
+const WIDE_FROM_PX = 761;
+export const WIDE_QUERY = `(min-width: ${WIDE_FROM_PX}px)`;
+const NARROW_MEDIA = `(max-width:${WIDE_FROM_PX - 1}px)`;
+
+/** How a cover hides a part: in place, keeping its room; out of the flow,
+ * taking none; or, for the masthead, only the rule it draws under itself. */
+type Hiding = "in place" | "no room" | "its rule";
+const HIDING: Record<Hiding, string> = {
+  "in place": "visibility:hidden",
+  "no room": "display:none",
+  "its rule": "border-bottom-color:transparent",
+};
+
+/** Where a stand-in stands while its cover is on: over the box, which keeps
+ * its room because the card under it is hidden in place; or in the masthead,
+ * under the eyebrow, where the reader's headline is about to be (s31). */
+type Standing = "over the box" | "in the masthead";
+
+export interface Cover {
+  /** What the cover hides of the page the build painted, by selector. */
+  readonly hides: Readonly<Record<string, Hiding>>;
+  /** The stand-in it uncovers, by class, and where that line stands. */
+  readonly uncovers: { readonly standIn: string; readonly standing: Standing };
+}
 
 /**
- * `data-first` says which of four readers this is. `"record"` — answers are
- * on this device, so the short promise is theirs and the box says the answers
- * are coming back. `"verdict"` — the record says the interview was finished,
- * so their screen is a verdict and nothing the build painted is theirs but
- * the frame: the masthead's question, the card, the ledger and the footer are
- * all covered until the module draws the page they came back to (s22).
- * `"link"` — they pressed "Check yours" on a country or route page, which has
- * answered question one for them but may be everything they have answered, so
- * the box says only that it is setting up. Absent — a fresh visit, and the
- * page the build painted is already right. `data-narrow` — the ledger is a
- * disclosure here, and a closed one. `data-answered` — the reader has answered
- * something (a record, or the link that answered question one), so on a phone
- * the ledger line already stands above the question, where the module will
- * keep it (s30, amendment 6) — for the first screen even when the link's code
- * is one the page does not know: the head decides the first paint, and the
- * module writes the flag from its own count only from the first gesture on.
+ * Every cover the head script can write, and the stylesheet's cover rules are
+ * rendered from this set and from nothing else.
+ *
+ * `record` — answers are on this device, so the box says the answers are
+ * coming back. `link` — they pressed "Check yours" on a country or route page,
+ * which has answered question one for them but may be everything they have
+ * answered, so the box says only that it is setting up. Both stand-ins sit
+ * OVER question one rather than in place of it: the card keeps its height
+ * because its contents are still there, only hidden, so the box those readers
+ * meet is the box a fresh visit meets and nothing below it moves (s10).
+ *
+ * `verdict` — the record says the interview was finished, so their screen is a
+ * verdict and nothing the build painted is theirs but the frame. The
+ * masthead's question is not their headline, and the verdict's has no one
+ * shape a stylesheet could reserve — one to three lines, and a subline of two
+ * to five, by what the rules said (measured 2026-09-16, s22). The card is not
+ * their screen, and the ledger and the footer are about to be carried
+ * thousands of pixels down by the routes. s22 covered them in place, and the
+ * covers kept their room: the reader met the header, the eyebrow and — a
+ * thousand pixels of blank later — the line, centred in a hidden box
+ * (measured 2026-09-18 at 390×844: eyebrow at 107–122, the line at 445–800),
+ * and the blank read as a failure. So now they take no room at all until the
+ * module draws, and the line stands in the masthead directly under the
+ * eyebrow. The rule under the masthead goes with them: the masthead's height
+ * is the verdict's, and a line that moved with it would be the one thing left
+ * to watch (s31).
+ *
+ * A fresh visit gets no cover: the page the build painted is already right.
+ */
+export const COVERS = {
+  record: {
+    hides: { ".qcard > *": "in place" },
+    uncovers: { standIn: "stand-in-record", standing: "over the box" },
+  },
+  link: {
+    hides: { ".qcard > *": "in place" },
+    uncovers: { standIn: "stand-in-link", standing: "over the box" },
+  },
+  verdict: {
+    hides: {
+      "#headline": "no room", "#subline": "no room", "#stamp": "no room", "#app": "no room",
+      "footer.site-foot": "no room", ".masthead-with-stamps": "its rule",
+    },
+    uncovers: { standIn: "stand-in-verdict", standing: "in the masthead" },
+  },
+} as const satisfies Record<string, Cover>;
+
+/**
+ * The head script.
  *
  * The two started readers are told apart because the sentence for one is false
  * for the other: a reader with no answers cannot have answers brought back
@@ -57,6 +130,14 @@ export const WIDE_QUERY = "(min-width: 761px)";
  * Reading it costs a `JSON.parse` of a few hundred bytes, and nothing else in
  * the record is looked at — the answers stay the module's business. A record
  * that does not parse is still a record: the module decides what it is.
+ *
+ * `data-answered` says the reader has answered something (a record, or the
+ * link that answered question one), so on a phone the ledger line already
+ * stands above the question, where the module will keep it (s30, amendment
+ * 6) — for the first screen even when the link's code is one the page does
+ * not know: the head seeds the first paint, and the module writes it from its
+ * own count only from the first gesture on. `data-narrow` says the ledger is a
+ * disclosure here, and a closed one.
  *
  * Nothing here says anything a module could not work out; it says it early
  * enough to matter, and it names nothing from the dataset — no country, no
@@ -73,16 +154,74 @@ export const WIDE_QUERY = "(min-width: 761px)";
 export const FIRST_PAINT_SCRIPT = `
   (() => {
     const page = document.documentElement;
-    let first = /[?&](country|route)=/.test(location.search) ? "link" : "";
+    let cover = /[?&](country|route)=/.test(location.search) ? "link" : "";
     try {
       const raw = localStorage.getItem(${JSON.stringify(STORAGE_KEY)});
       if (raw) {
-        first = "record";
-        try { if (JSON.parse(raw).done === true) first = "verdict"; } catch { /* the module decides */ }
+        cover = "record";
+        try { if (JSON.parse(raw).done === true) cover = "verdict"; } catch { /* the module decides */ }
       }
     } catch { /* a browser that refuses site data is a reader with no record */ }
-    if (first) page.dataset.first = first;
-    if (first === "record" || first === "link") page.dataset.answered = "";
+    if (cover) page.dataset.cover = cover;
+    page.dataset.promise = cover ? "started" : "fresh";
+    if (cover === "record" || cover === "link") page.dataset.answered = "";
     if (!matchMedia(${JSON.stringify(WIDE_QUERY)}).matches) page.dataset.narrow = "";
   })();
 `;
+
+const on = (cover: string) => `[data-cover=${JSON.stringify(cover)}]`;
+
+/** The stand-in's own rules, by where it stands. */
+const STANDS: Record<Standing, (cover: string, standIn: string) => string> = {
+  "over the box": (cover, standIn) =>
+    `${on(cover)} #main{position:relative}
+${on(cover)} .${standIn}{display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
+  margin:0;padding:1.6rem 1.8rem;text-align:center;color:var(--color-muted);font-size:.92rem}`,
+  "in the masthead": (cover, standIn) => `${on(cover)} .${standIn}{display:block;margin-top:.5rem}`,
+};
+
+function coverRules(name: string, cover: Cover): string {
+  const by = new Map<Hiding, string[]>();
+  for (const [part, how] of Object.entries(cover.hides)) by.set(how, [...(by.get(how) ?? []), part]);
+  const hidden = [...by].map(([how, parts]) => `${parts.map((p) => `${on(name)} ${p}`).join(",")}{${HIDING[how]}}`);
+  return [...hidden, STANDS[cover.uncovers.standing](name, cover.uncovers.standIn)].join("\n");
+}
+
+/**
+ * Every stylesheet rule keyed to a cover, to a seed or to the threshold, for
+ * the page to inline in `<head>`. The policy's `style-src` already allows
+ * inline styles.
+ *
+ * The standing promise: both of the masthead's promises are painted and one is
+ * shown. Which one is seeded before the first paint: the module used to swap
+ * the text when it landed 700 ms later, and the whole interview slid up under
+ * the reader (s10, 2026-09-15).
+ *
+ * The ledger ships open — that is what a reader with no script should get —
+ * and on a narrow screen it is folded away here until the module closes it
+ * properly, in the same task it takes the seed down. On a narrow screen, once
+ * something is answered, the ledger line stands above the question and above
+ * the verdict (s30, amendments 6–7).
+ */
+export const FIRST_PAINT_STYLE = [
+  ".stand-in{display:none}",
+  ...Object.entries(COVERS).map(([name, cover]) => coverRules(name, cover)),
+  ".sub-started{display:none}",
+  `[data-promise="started"] .sub-fresh{display:none}`,
+  `[data-promise="started"] .sub-started{display:inline}`,
+  "[data-narrow] #decl[open] > :not(summary){display:none}",
+  "[data-narrow] #decl[open] > summary{margin-bottom:0}",
+  `@media ${NARROW_MEDIA}{[data-answered] .decl{order:0}}`,
+].join("\n");
+
+/**
+ * Take every cover off. The page calls it once, in the task that draws the
+ * reader's first screen, so nothing is painted between the two and no cover
+ * outlives that screen: a finished record restored straight to its verdict
+ * once left one standing, and the reader's next correction drew a question
+ * card with every child invisible (s20's walk, 2026-09-16). It touches the
+ * cover alone: the standing promise and the seeds are the page's.
+ */
+export function coversOff(root: { dataset: Record<string, string | undefined> }): void {
+  delete root.dataset.cover;
+}

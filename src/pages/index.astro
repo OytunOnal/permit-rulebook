@@ -12,9 +12,9 @@ import { datasetMeta, remainingQuestions } from "permit-rulebook-data";
 // with, never a second copy of the markup (s10, 2026-09-15).
 import { declarationCount, declarationHtml, firstPaintPlaceholdersHtml, holdLineHtml, questionCardHtml } from "../lib/question.js";
 // The three things the page must know about the reader before it paints, read
-// in <head> so the stylesheet can paint the shape the module would have chosen
-// (s10, 2026-09-15).
-import { FIRST_PAINT_SCRIPT } from "../lib/first-paint.js";
+// in <head>, and the rules that paint the shape the module would have chosen
+// from them (s10, 2026-09-15).
+import { FIRST_PAINT_SCRIPT, FIRST_PAINT_STYLE } from "../lib/first-paint.js";
 // The masthead is one function of which screen is showing, server and client
 // alike — a second copy of the intro copy here is how "Start over" left a
 // stale claim on question 1 (product-critique v0.7, B4).
@@ -40,7 +40,7 @@ const intro = mastheadFor({ kind: "question", started: false });
 /**
  * The masthead's other standing form: the promise shortens once it has been
  * read, and a reader with a record read it last time. Both are painted, and
- * the pre-paint script's flag says which one this reader gets — the module
+ * the promise the pre-paint script seeds says which one this reader gets — the module
  * used to swap the text 700 ms in, which pulled the whole interview up under
  * them (s10).
  */
@@ -85,6 +85,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <Fragment set:html={contentSecurityPolicy()} />
   <script is:inline set:html={FIRST_PAINT_SCRIPT}></script>
+  <style is:inline set:html={FIRST_PAINT_STYLE}></style>
   <title>{PRODUCT_NAME} — which work-permit routes fit?</title>
   <Fragment set:html={iconLinks()} />
   <Fragment set:html={headMeta({
@@ -188,8 +189,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // screen it would have drawn already on the page (s10).
     import { declarationCount, declarationHtml, hasClasses, isLongList, questionCardHtml } from "../lib/question.js";
     // The width the ledger stops being a disclosure at, said once, and read
-    // here and by the script that runs before the first paint (s10).
-    import { WIDE_QUERY } from "../lib/first-paint.js";
+    // here and by the script that runs before the first paint (s10); and the
+    // one step that takes the first paint's covers off.
+    import { WIDE_QUERY, coversOff } from "../lib/first-paint.js";
     // One date format, everywhere a date prints (decision 12); and the line
     // under the verdict, in the words copy.ts holds (s13).
     import { FEEDBACK, isoDay, resultFeedbackLine } from "../lib/copy.js";
@@ -235,8 +237,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * It goes now, before anything is compared, so what `paint` finds in the
      * box is exactly what the renderer would draw and a fresh visit is still a
      * page this module leaves alone. Nothing is painted between here and the
-     * first render — the flag that hides the question comes down with it, in
-     * `advance` — so the box never blinks. The reader owed a verdict has
+     * first render — the cover that hides the question comes off just before
+     * it, in the same task — so the box never blinks. The reader owed a verdict has
      * theirs in the masthead rather than in the box (s31), so the whole page
      * is asked.
      */
@@ -557,30 +559,19 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const m = mastheadFor(screen);
       draw(headline, m.headline);
       // The build painted both of the masthead's standing promises and an
-      // inline script in <head> chose between them before the first paint, so
-      // choosing again here is setting the same attribute rather than writing
-      // the text a second time. A verdict's subline is not standing — it
-      // counts what was compared — so that one is written, and once it is the
-      // two spans are gone for good. The spans are looked for by name: a
+      // inline script in <head> seeded which one shows before the first paint,
+      // so writing the promise here is setting the same attribute rather than
+      // writing the text a second time. A verdict's subline is not standing —
+      // it counts what was compared — so that one is written, and once it is
+      // the two spans are gone for good. The spans are looked for by name: a
       // verdict's subline may carry a link of its own (s19), and a child that
       // is not one of the two promises is no reason to leave it standing on a
       // question screen.
       const standing = screen.kind === "question" ? (screen.started ? "started" : "fresh") : null;
       if (standing !== null && subline.querySelector(".sub-fresh")) {
-        if (page.dataset.first !== standing) page.dataset.first = standing;
+        if (page.dataset.promise !== standing) page.dataset.promise = standing;
         return;
       }
-      // The pre-paint flags also hide the card's contents under the stand-in
-      // — and, for a reader owed a verdict, everything else the build painted
-      // that is not theirs (s22) — and they must not outlive the first screen
-      // this module draws. A finished record restored straight to its verdict
-      // left "record" standing — the verdict has no standing promise to
-      // choose between — and the reader's next correction drew a question
-      // card with every child invisible (found by s20's walk, 2026-09-16).
-      // The reader has answered something, whatever the screen: that is the
-      // flag's word. The covers come off in the same task the screen is
-      // drawn, so nothing is painted in between.
-      if (["record", "link", "verdict"].includes(page.dataset.first ?? "")) page.dataset.first = "started";
       // The one subline that carries a link — the s19 written state's door to
       // the quoted route — is drawn as the markup the masthead composed; every
       // other subline is written as text, as it always was.
@@ -644,14 +635,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // The fact the count states, as a state the stylesheet can read: on a
       // phone the ledger line stands above the question and above the result
       // once there is something in it to review (amendments 6–7). The
-      // pre-paint script writes
-      // the same flag for a reader whose answers are on the device or in the
-      // link, so the line is above from the first paint and nothing moves when
-      // the module draws (s10). The head's word stands for the first screen:
-      // a link whose code this page does not know brings no answer, and the
-      // line it was painted with — "You declared · nothing yet" — is true;
-      // moving it below after the module lands is the shift s10 forbids. The
-      // flag comes down on a gesture (Start over), never on the arrival.
+      // pre-paint script seeds the same state for a reader whose answers are
+      // on the device or in the link, so the line is above from the first
+      // paint and nothing moves when the module draws (s10). The head's word
+      // stands for the first screen: a link whose code this page does not
+      // know brings no answer, and the line it was painted with — "You
+      // declared · nothing yet" — is true; moving it below after the module
+      // lands is the shift s10 forbids. The seed comes down on a gesture
+      // (Start over), never on the arrival.
       if (asked.length > 0) page.dataset.answered = "";
       else if (!arriving) delete page.dataset.answered;
     }
@@ -1671,7 +1662,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const syncLedger = () => {
       if (!ledgerChosen || wide.matches) decl.open = wide.matches;
       // The stylesheet folded the panel away before the first paint on the
-      // strength of the flag the pre-paint script wrote; the flag comes down
+      // strength of the seed the pre-paint script wrote; the seed comes down
       // in the same task the real decision is made, so nothing is painted
       // between the two and the reader's own taps are not fought (s10).
       delete page.dataset.narrow;
@@ -1712,7 +1703,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     }
 
     // The first screen is whatever the stored record left behind — a fresh
-    // interview when there is none.
+    // interview when there is none. The first paint's covers come off here,
+    // once, in the task that draws it, so nothing is painted in between.
+    coversOff(page);
     renderQuestion({ kind: "restore" });
     // Everything from here on is a gesture, and a gesture lands where it drew.
     arriving = false;
@@ -1794,59 +1787,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .sub,.stand-in-verdict{color:var(--color-muted);max-width:38rem;font-size:.92rem}
     /* The one door a verdict's subline can carry: the quoted route's page (s19). */
     .sub a{color:var(--color-band);font-weight:600;text-decoration:none}
-    /* The masthead's two standing promises, both painted, one shown. Which one
-       is decided in <head> before the first paint (lib/first-paint.ts): the
-       module used to swap the text when it landed 700 ms later, and the whole
-       interview slid up under the reader (s10, 2026-09-15). */
-    .sub-started{display:none}
-    [data-first] .sub-fresh{display:none}
-    [data-first] .sub-started{display:inline}
-    [data-first="fresh"] .sub-fresh{display:inline}
-    [data-first="fresh"] .sub-started{display:none}
-    /* The same, for the ledger, which is a closed disclosure on a narrow
-       screen. It ships open — that is what a reader with no script should
-       get — and is folded away here until the module closes it properly, in
-       the same task it takes this flag down. */
-    /* The line that stands in the box until the module has a screen to draw,
-       for a reader owed a question that is not the one the build painted —
-       a record part-way through, or a link that answered question one. It
-       sits OVER question one rather than in place of it: the card keeps its
-       height because its contents are still there, only hidden, so the box
-       those readers meet is the box a fresh visit meets and nothing below
-       it moves. Which line — or neither — was decided in <head> (s10). The
-       reader owed a verdict is the block below: no box, their line in the
-       masthead (s22, s31). */
-    .stand-in{display:none}
-    [data-first="record"] #main,[data-first="link"] #main{position:relative}
-    [data-first="record"] .qcard > *,[data-first="link"] .qcard > *{visibility:hidden}
-    [data-first="record"] .stand-in-record,[data-first="link"] .stand-in-link{
-      display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
-      margin:0;padding:1.6rem 1.8rem;text-align:center;color:var(--color-muted);font-size:.92rem}
-    /* A reader owed a verdict. Nothing the build painted is their page but the
-       frame: the masthead's question is not their headline and the verdict's
-       has no one shape a stylesheet could reserve — one to three lines, and
-       a subline of two to five, by what the rules said (measured 2026-09-16,
-       s22) — the card is not their screen, and the ledger and the footer are
-       about to be carried thousands of pixels down by the routes. s22 covered
-       them in place, and the covers kept their room: the reader met the
-       header, the eyebrow and — a thousand pixels of blank later — the line,
-       centred in a hidden box (measured 2026-09-18 at 390×844: eyebrow at
-       107–122, the line at 445–800), and the blank read as a failure. So
-       now they take no room at all until the module draws, and the line
-       stands in the masthead directly under the eyebrow — the one thing on
-       the screen that is theirs, where their headline is about to be. The
-       covers come off in the task that draws the verdict; nothing that was
-       visible changes place — the header and the eyebrow stay where they
-       are — and what appears, appears where it stays (s31; the s10 gate
-       measures it). The rule under the masthead goes with them: the
-       masthead's height is the verdict's, and a line that moved with it
-       would be the one thing left to watch. */
-    [data-first="verdict"] #headline,[data-first="verdict"] #subline,[data-first="verdict"] #stamp,
-    [data-first="verdict"] #app,[data-first="verdict"] footer.site-foot{display:none}
-    [data-first="verdict"] .masthead-with-stamps{border-bottom-color:transparent}
-    [data-first="verdict"] .stand-in-verdict{display:block;margin-top:.5rem}
-    [data-narrow] #decl[open] > :not(summary){display:none}
-    [data-narrow] #decl[open] > summary{margin-bottom:0}
+    /* Every rule keyed to the first paint's covers, to its seeds — the
+       standing promise, the ledger's narrow and answered states — or to the
+       narrow/wide threshold is rendered by lib/first-paint.ts and inlined in
+       <head>. */
 
     /* The question is first in the DOM so a phone opens on it; on a wide
        screen `order` puts the ledger back in the left column (F8). */
@@ -2146,12 +2090,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       /* The question card comes first; "You declared" follows it, collapsed to
          one line that expands on tap (F8) — for a reader with nothing declared.
          Once there is something to review, the line stands above the question
-         (s30, amendment 6) and above the verdict too (amendment 7): the way
-         back to any answer is at the top of the screen, not after every
-         card. One state decides both. */
+         (s30, amendment 6) and above the verdict too (amendment 7), by the
+         first paint's answered rule (lib/first-paint.ts). */
       main{order:1}
       .decl{order:2;position:static}
-      [data-answered] .decl{order:0}
       .decl > summary{margin-bottom:0}
       .decl[open] > summary{margin-bottom:.6rem}
       .qcard{padding:1.1rem 1rem}
@@ -2168,8 +2110,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       h1{font-size:1.6rem}
       .stamps[hidden]{display:none}
     }
-    /* Wide: the ledger is a fixed panel, so its disclosure control is not a
-       control at all — the script keeps it open. */
     /* Wide: the ledger is a fixed panel, so its disclosure control is not a
        control at all — it stays the panel heading, and the script keeps the
        panel open. */

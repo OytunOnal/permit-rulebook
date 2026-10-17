@@ -6,7 +6,7 @@ import { runInNewContext } from "node:vm";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy.js";
-import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
+import { COVERS, FIRST_PAINT_SCRIPT, coversOff } from "../src/lib/first-paint.js";
 import { firstPaintPlaceholdersHtml, questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
@@ -170,7 +170,7 @@ const INSTALL = `(() => {
  * is a comparison of exactly that. And it reads what a reader actually sees in
  * the box, because from s10's second round the built page carries question one
  * AND the two lines that stand in for it, and which of the three shows is the
- * stylesheet's answer to a flag — not something the built HTML can be read for
+ * stylesheet's answer to a cover — not something the built HTML can be read for
  * (human's walk, 2026-09-15).
  */
 const AT_FIRST_PAINT = `(() => {
@@ -180,7 +180,7 @@ const AT_FIRST_PAINT = `(() => {
     && getComputedStyle(el).display !== "none" && !!el.offsetParent;
   return JSON.stringify({
     held: !!window.__built,
-    first: document.documentElement.dataset.first ?? "",
+    cover: document.documentElement.dataset.cover ?? "",
     box: Math.round(document.getElementById("main").getBoundingClientRect().height),
     question: shown(document.querySelector(".qlabel")) ? document.querySelector(".qlabel").textContent : "",
     standIn: [...document.querySelectorAll(".stand-in")].filter(shown).map((el) => el.textContent),
@@ -189,8 +189,8 @@ const AT_FIRST_PAINT = `(() => {
 
 interface AtFirstPaint {
   held: boolean;
-  /** What the pre-paint script wrote on `<html>` — which reader this is. */
-  first: string;
+  /** The cover the pre-paint script wrote on `<html>` — which reader this is. */
+  cover: string;
   /** The box the reader meets, in pixels. It is the same box whichever line is
    * in it: the stand-in sits OVER the question card rather than in place of
    * it, so the card holds the height open (s10). Zero for the reader owed a
@@ -246,7 +246,7 @@ interface Measured {
  * Every way a reader's first screen can differ from the one the build drew.
  * All five are measured at all three viewports. `shape` is the reader the
  * pre-paint script names — `fresh`, `link`, `record` or, since s22, `verdict`
- * — and the stand-in and the flag are asserted from it.
+ * — and the stand-in and the cover are asserted from it.
  */
 const ARRIVALS = [
   { name: "/ cold, with no record", path: "/", record: null, shape: "fresh" },
@@ -340,9 +340,9 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
   const STAND_IN = {
     fresh: [], record: [RETURNING_LINE], link: [LINK_ARRIVAL_LINE], verdict: [RETURNING_LINE],
   } as const;
-  /** The word the pre-paint script writes for each reader — none for a fresh
+  /** The cover the pre-paint script writes for each reader — none for a fresh
    * visit, and `verdict` for a record that says it was finished (s22). */
-  const FLAG = { fresh: "", record: "record", link: "link", verdict: "verdict" } as const;
+  const COVER = { fresh: "", record: "record", link: "link", verdict: "verdict" } as const;
   const cold = (viewport: string) => read(viewport, ARRIVALS[0].name);
 
   beforeAll(async () => {
@@ -394,8 +394,8 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           // 2026-09-15), so the box carries the reader's own line instead, and
           // question one is covered for exactly those readers.
           const b = built(screen.name, arrival.name);
-          expect(b.first, `the pre-paint script wrote data-first=${JSON.stringify(b.first)}`)
-            .toBe(FLAG[arrival.shape]);
+          expect(b.cover, `the pre-paint script wrote data-cover=${JSON.stringify(b.cover)}`)
+            .toBe(COVER[arrival.shape]);
           expect(b.standIn, `the box read ${JSON.stringify(b.standIn)}`)
             .toEqual([...STAND_IN[arrival.shape]]);
           if (arrival.shape === "fresh")
@@ -504,7 +504,9 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
  * to be right about what the product never writes too (s22).
  */
 describe("the pre-paint script decides who the reader is from a few bytes (s10, s22)", () => {
-  const flags = (o: { search?: string; stored?: string | null; throws?: boolean }): Record<string, string> => {
+  interface Reader { search?: string; stored?: string | null; throws?: boolean; narrow?: boolean }
+  /** What the head script writes on `<html>` for this reader. */
+  const written = (o: Reader): Record<string, string> => {
     const dataset: Record<string, string> = {};
     runInNewContext(FIRST_PAINT_SCRIPT, {
       document: { documentElement: { dataset } },
@@ -512,47 +514,87 @@ describe("the pre-paint script decides who the reader is from a few bytes (s10, 
       localStorage: {
         getItem: () => { if (o.throws) throw new Error("blocked"); return o.stored ?? null; },
       },
-      matchMedia: () => ({ matches: true }),
+      matchMedia: () => ({ matches: !o.narrow }),
     });
     return dataset;
   };
   const halfDone = serialize({ destination: "fr" }, ["destination"]);
   const finished = serialize({ destination: "fr" }, ["destination"], true);
 
+  /** Every reader the head script tells apart, at both sides of the threshold. */
+  const READERS: Record<string, Reader> = Object.fromEntries([
+    ["fresh", { stored: null }],
+    ["a record part-way", { stored: halfDone }],
+    ["a finished record", { stored: finished }],
+    ["a record from before the bit", { stored: JSON.stringify({ version: 1, answers: {}, history: [] }) }],
+    ["a record that is not JSON", { stored: "{" }],
+    ["a country link", { search: "?country=fr" }],
+    ["a route link", { search: "?route=de-blue-card-general" }],
+    ["an unknown link", { search: "?country=zz" }],
+    ["a link and a record", { search: "?country=fr", stored: halfDone }],
+    ["a link and a finished record", { search: "?route=x", stored: finished }],
+    ["a blocked store", { throws: true }],
+    ["a blocked store and a link", { search: "?country=fr", throws: true }],
+  ].flatMap(([name, r]) => [[`${name}, wide`, r], [`${name}, narrow`, { ...(r as Reader), narrow: true }]]));
+
+  it("every cover it writes is a declared one, and covers off takes it off and nothing else (#67)", () => {
+    // The set is the contract the stylesheet's cover rules are rendered from,
+    // so a cover outside it is one no rule hides and no step takes off; a
+    // cover left standing drew a card with every child invisible (s20).
+    for (const [name, reader] of Object.entries(READERS)) {
+      const dataset = written(reader);
+      const cover = dataset.cover;
+      if (cover !== undefined) {
+        expect(Object.keys(COVERS), `${name}: wrote the cover ${JSON.stringify(cover)}`).toContain(cover);
+        expect(Object.keys(COVERS[cover as keyof typeof COVERS].hides).length, `${name}: ${cover} hides nothing`)
+          .toBeGreaterThan(0);
+      }
+      // The page then writes its own state: the promise it settles on, which
+      // here is the other one than the seed, so a step that rewrote it shows.
+      dataset.promise = dataset.promise === "fresh" ? "started" : "fresh";
+      const asThePageWroteThem = { ...dataset };
+      coversOff({ dataset });
+      for (const member of Object.keys(COVERS))
+        expect(Object.values(dataset), `${name}: ${member} still stands`).not.toContain(member);
+      delete asThePageWroteThem.cover;
+      expect(dataset, `${name}: covers off touched more than the cover`).toEqual(asThePageWroteThem);
+    }
+  });
+
   it("a fresh visit is nobody in particular", () => {
-    expect(flags({ stored: null }).first).toBeUndefined();
+    expect(written({ stored: null }).cover).toBeUndefined();
   });
 
   it("a record is a returning reader; a finished one is a reader owed a verdict", () => {
-    expect(flags({ stored: halfDone }).first).toBe("record");
-    expect(flags({ stored: finished }).first).toBe("verdict");
+    expect(written({ stored: halfDone }).cover).toBe("record");
+    expect(written({ stored: finished }).cover).toBe("verdict");
   });
 
   it("a record from before the bit existed is a returning reader, not a verdict", () => {
-    expect(flags({ stored: JSON.stringify({ version: 1, answers: { destination: "fr" }, history: ["destination"] }) }).first)
+    expect(written({ stored: JSON.stringify({ version: 1, answers: { destination: "fr" }, history: ["destination"] }) }).cover)
       .toBe("record");
   });
 
   it("reads one key, and nothing else in the record can stand in for it", () => {
     // The bit is the product's own word, in the product's own place: a truthy
     // value under the same name, or the word under another name, is not it.
-    expect(flags({ stored: JSON.stringify({ version: 1, answers: {}, history: [], done: "yes" }) }).first).toBe("record");
-    expect(flags({ stored: JSON.stringify({ version: 1, answers: {}, history: [], finished: true }) }).first).toBe("record");
+    expect(written({ stored: JSON.stringify({ version: 1, answers: {}, history: [], done: "yes" }) }).cover).toBe("record");
+    expect(written({ stored: JSON.stringify({ version: 1, answers: {}, history: [], finished: true }) }).cover).toBe("record");
   });
 
   it("a record that is not JSON is still a record, never a crashed head", () => {
-    expect(flags({ stored: "{" }).first).toBe("record");
+    expect(written({ stored: "{" }).cover).toBe("record");
   });
 
   it("a record wins over a link, and a finished one still does", () => {
-    expect(flags({ search: "?country=fr", stored: null }).first).toBe("link");
-    expect(flags({ search: "?country=fr", stored: halfDone }).first).toBe("record");
-    expect(flags({ search: "?route=fr-talent-blue-card", stored: finished }).first).toBe("verdict");
+    expect(written({ search: "?country=fr", stored: null }).cover).toBe("link");
+    expect(written({ search: "?country=fr", stored: halfDone }).cover).toBe("record");
+    expect(written({ search: "?route=fr-talent-blue-card", stored: finished }).cover).toBe("verdict");
   });
 
   it("a browser that refuses site data is a reader with no record", () => {
-    expect(flags({ throws: true }).first).toBeUndefined();
-    expect(flags({ search: "?country=fr", throws: true }).first).toBe("link");
+    expect(written({ throws: true }).cover).toBeUndefined();
+    expect(written({ search: "?country=fr", throws: true }).cover).toBe("link");
   });
 
   it("says whether the reader has answered, so a phone paints the ledger line where it will stay (s30)", () => {
@@ -561,13 +603,13 @@ describe("the pre-paint script decides who the reader is from a few bytes (s10, 
     // stands above the result once answers exist (s30 amendment 7), but s22's
     // cover hides #app until the module draws, so the head has nothing to
     // decide there. The head cannot know whether a link's code is one the
-    // page knows, so the flag is written for every link and the module keeps
+    // page knows, so the seed is written for every link and the module keeps
     // its word for the first screen.
-    expect(flags({ stored: halfDone }).answered).toBe("");
-    expect(flags({ search: "?country=fr", stored: null }).answered).toBe("");
-    expect(flags({ search: "?country=zz", stored: null }).answered).toBe("");
-    expect(flags({ stored: null }).answered).toBeUndefined();
-    expect(flags({ stored: finished }).answered).toBeUndefined();
+    expect(written({ stored: halfDone }).answered).toBe("");
+    expect(written({ search: "?country=fr", stored: null }).answered).toBe("");
+    expect(written({ search: "?country=zz", stored: null }).answered).toBe("");
+    expect(written({ stored: null }).answered).toBeUndefined();
+    expect(written({ stored: finished }).answered).toBeUndefined();
   });
 
   it("names nothing from the dataset", () => {

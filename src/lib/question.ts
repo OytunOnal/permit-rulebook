@@ -175,14 +175,14 @@ export const declarationCount = (answered: number): string =>
  * the one the build painted.
  *
  * Both are painted; the stylesheet shows at most one, on the strength of the
- * flag the pre-paint script wrote before anything appeared (s10). They sit
+ * cover the pre-paint script wrote before anything appeared (s10). They sit
  * inside the box and over the question rather than in place of it: the card
  * keeps its own height because its contents are still there, hidden, so the
  * box a returning reader meets is the box every reader meets and the page
  * below it does not move. The module takes them out the moment it has a real
  * screen to draw.
  *
- * A reader with no script never sees either — no flag is ever set — and gets
+ * A reader with no script never sees either — no cover is ever written — and gets
  * question one and the line that says why they cannot answer it.
  */
 export const firstPaintPlaceholdersHtml = (): string =>
