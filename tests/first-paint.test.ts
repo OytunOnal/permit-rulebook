@@ -6,8 +6,8 @@ import { runInNewContext } from "node:vm";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy.js";
-import { COVERS, FIRST_PAINT_SCRIPT, coversOff } from "../src/lib/first-paint.js";
-import { firstPaintPlaceholdersHtml, questionCardHtml } from "../src/lib/question.js";
+import { COVERS, FIRST_PAINT_SCRIPT, WIDE_FROM_PX, takeCoversOff } from "../src/lib/first-paint.js";
+import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
@@ -150,10 +150,11 @@ const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
  */
 const INSTALL = `(() => {
   window.__cls = [];
+  const elementOf = (node) => node && (node.nodeType === 1 ? node : node.parentElement);
   const named = (node) => {
     const parts = [];
-    for (let el = node && (node.nodeType === 1 ? node : node.parentElement);
-      el && el !== document.body && parts.length < 4; el = el.parentElement) {
+    const pathCanTake = (el) => el && el !== document.body && parts.length < 4;
+    for (let el = elementOf(node); pathCanTake(el); el = el.parentElement) {
       if (el.id) { parts.unshift("#" + el.id); break; }
       parts.unshift(el.tagName.toLowerCase() + (el.classList[0] ? "." + el.classList[0] : ""));
     }
@@ -164,7 +165,7 @@ const INSTALL = `(() => {
     .map((e) => ({
       value: e.value,
       sources: (e.sources ?? []).map((s) => {
-        const el = s.node && (s.node.nodeType === 1 ? s.node : s.node.parentElement);
+        const el = elementOf(s.node);
         return {
           node: named(s.node),
           dx: Math.round(s.currentRect.x - s.previousRect.x),
@@ -202,7 +203,8 @@ const AT_FIRST_PAINT = `(() => {
     question: shown(document.querySelector(".qlabel")) ? document.querySelector(".qlabel").textContent : "",
     standIn: [...document.querySelectorAll(".stand-in")].filter(shown).map((el) => el.textContent),
     footBox,
-    count: shown(document.getElementById("decl-count")) ? document.getElementById("decl-count").textContent : "",
+    count: document.getElementById("decl-count")?.textContent ?? "",
+    countShown: shown(document.getElementById("decl-count")),
   });
 })()`;
 
@@ -222,8 +224,10 @@ interface AtFirstPaint {
   standIn: string[];
   /** Whether the footer takes any room on the page yet. */
   footBox: boolean;
-  /** The ledger's count, if a reader can see it; empty if it is unseen. */
+  /** The ledger's count as the build wrote it, for a failure to quote. */
   count: string;
+  /** Whether a reader can see the ledger's count. */
+  countShown: boolean;
 }
 
 const READ = `JSON.stringify({
@@ -355,7 +359,8 @@ const key = (viewport: string, arrival: string) => `${viewport} · ${arrival}`;
 /** What was read, for a failure that names what moved and why. */
 const signed = (px: number) => `${px >= 0 ? "+" : ""}${px}px`;
 const detail = (m: Measured) =>
-  `${m.shifts.map((s) => `[${s.value} ${s.sources.map((x) => `${x.node} x${signed(x.dx)} y${signed(x.dy)}`).join(", ")}]`)
+  `${m.shifts.map((s) => `[${s.value} ${s.sources
+    .map((source) => `${source.node} x${signed(source.dx)} y${signed(source.dy)}`).join(", ")}]`)
     .join(" ") || "(no shift)"}`
   + ` · footer ${m.footMoved === null ? "had no room at first paint" : signed(m.footMoved)}`
   + ` · subline ${m.subline}px · ledger ${m.ledgerOpen ? "open" : "closed"}`;
@@ -485,9 +490,9 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           // the line widened in view when the module wrote the real count.
           const b = built(screen.name, arrival.name);
           if (arrival.shape !== "fresh")
-            expect(b.count, `the count read ${JSON.stringify(b.count)} before the module drew`).toBe("");
-          else if (screen.viewport.width < 761)
-            expect(b.count, "a fresh visit on a phone was not shown its count").not.toBe("");
+            expect(b.countShown, `the count read ${JSON.stringify(b.count)} before the module drew`).toBe(false);
+          else if (screen.viewport.width < WIDE_FROM_PX)
+            expect(b.countShown, "a fresh visit on a phone was not shown its count").toBe(true);
         });
       }
 
@@ -542,7 +547,7 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
         // decided in <head> now, before anything is painted.
         const m = cold(screen.name);
         expect(m.ledgerOpen, `the ledger came out ${m.ledgerOpen ? "open" : "closed"}`)
-          .toBe(screen.viewport.width >= 761);
+          .toBe(screen.viewport.width >= WIDE_FROM_PX);
       });
     });
 });
@@ -606,7 +611,7 @@ describe("the pre-paint script decides who the reader is from a few bytes (s10, 
       // here is the other one than the seed, so a step that rewrote it shows.
       dataset.promise = dataset.promise === "fresh" ? "started" : "fresh";
       const asThePageWroteThem = { ...dataset };
-      coversOff({ dataset });
+      takeCoversOff({ dataset });
       for (const member of Object.keys(COVERS))
         expect(Object.values(dataset), `${name}: ${member} still stands`).not.toContain(member);
       delete asThePageWroteThem.cover;
@@ -693,7 +698,7 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
     expect(inMain).toBe(questionCardHtml({
       dataset, question: questions[0], answers: {}, asked: [], editing: null,
       total: questions.length,
-    }) + firstPaintPlaceholdersHtml());
+    }) + renderStandInsOverQuestionOne());
   });
 
   it("tells a reader with no script, in a sentence, why they cannot answer it", () => {

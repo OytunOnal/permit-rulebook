@@ -10,7 +10,7 @@ import { datasetMeta, remainingQuestions } from "permit-rulebook-data";
 // The first question is the same for everyone until an answer is given, so the
 // build draws it — through the very code the module draws every later screen
 // with, never a second copy of the markup (s10, 2026-09-15).
-import { declarationCount, declarationHtml, firstPaintPlaceholdersHtml, holdLineHtml, questionCardHtml } from "../lib/question.js";
+import { declarationCount, declarationHtml, holdLineHtml, questionCardHtml, renderStandInsOverQuestionOne } from "../lib/question.js";
 // The three things the page must know about the reader before it paints, read
 // in <head>, and the rules that paint the shape the module would have chosen
 // from them (s10, 2026-09-15).
@@ -64,7 +64,7 @@ const firstDeclaration = declarationHtml(dataset, {}, [], firstQuestions[0].fiel
  * landed, which is the one thing this product does not do (human's walk,
  * 2026-09-15).
  */
-const firstStandIns = firstPaintPlaceholdersHtml();
+const firstStandIns = renderStandInsOverQuestionOne();
 /**
  * And, for the reader owed a verdict, the same sentence under the eyebrow:
  * their headline has no shape a stylesheet could reserve, so nothing below
@@ -191,7 +191,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The width the ledger stops being a disclosure at, said once, and read
     // here and by the script that runs before the first paint (s10); and the
     // one step that takes the first paint's covers off.
-    import { WIDE_QUERY, coversOff } from "../lib/first-paint.js";
+    import { WIDE_QUERY, takeCoversOff } from "../lib/first-paint.js";
     // One date format, everywhere a date prints (decision 12); and the line
     // under the verdict, in the words copy.ts holds (s13).
     import { FEEDBACK, isoDay, resultFeedbackLine } from "../lib/copy.js";
@@ -1705,7 +1705,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The first screen is whatever the stored record left behind — a fresh
     // interview when there is none. The first paint's covers come off here,
     // once, in the task that draws it, so nothing is painted in between.
-    coversOff(page);
+    takeCoversOff(page);
     renderQuestion({ kind: "restore" });
     // Everything from here on is a gesture, and a gesture lands where it drew.
     arriving = false;

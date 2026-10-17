@@ -185,7 +185,7 @@ export const declarationCount = (answered: number): string =>
  * A reader with no script never sees either — no cover is ever written — and gets
  * question one and the line that says why they cannot answer it.
  */
-export const firstPaintPlaceholdersHtml = (): string =>
+export const renderStandInsOverQuestionOne = (): string =>
   `<p class="stand-in stand-in-record">${esc(RETURNING_LINE)}</p>`
   + `<p class="stand-in stand-in-link">${esc(LINK_ARRIVAL_LINE)}</p>`;
 

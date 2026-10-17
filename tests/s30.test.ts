@@ -352,7 +352,7 @@ describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back u
       expect(seen.restored.scrollY).toBe(0);
       expect(seen.before.cardTop!).toBeGreaterThan(0);
       expect(seen.before.cardTop!).toBeLessThan(seen.before.viewport);
-      // Nothing declared any more: the flag is down, the question comes first
+      // Nothing declared any more: the seed is down, the question comes first
       // again (F8), and the page stands where the reader left it — s20's
       // reveal, the card's top being on the screen.
       expect(seen.reset.answered).toBe(false);
@@ -378,7 +378,7 @@ describe.skipIf(skipped !== null)("a link the page does not know keeps the first
         return { landed, count, problems: page.problems() };
       }, { viewport: { width: 390, height: 844 }, mobile: true });
       expect(seen.problems).toEqual([]);
-      // The head wrote the flag for a link it cannot check; the module found
+      // The head wrote the seed for a link it cannot check; the module found
       // no answer in it. Its word stands for the first screen: the line above
       // question one says "nothing yet", which is true, and nothing moves
       // after the module lands (s10).

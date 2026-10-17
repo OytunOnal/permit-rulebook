@@ -21,16 +21,16 @@ import { STORAGE_KEY } from "./record.js";
  * paints in the shape the module would have chosen and the module arrives to
  * a page that needs nothing done to it.
  *
- * Four things leave this file: the head script (inline in `<head>` because it
+ * Six things leave this file: the head script (inline in `<head>` because it
  * must run before the first paint, and hashed into the policy like the menu's
- * script), the stylesheet the page inlines beside it, the threshold, and
- * `coversOff`. Everything the script reads, it reads from where the module
- * reads it.
+ * script), the stylesheet the page inlines beside it, the threshold as a width
+ * and as a media query, the set of covers, and `takeCoversOff`. Everything the
+ * script reads, it reads from where the module reads it.
  *
  * What it writes on `<html>` is three kinds of thing, each with one writer
  * after the first paint:
  * - `data-cover`, the cover (see `COVERS`): written by the head script only,
- *   removed by `coversOff` only;
+ *   removed by `takeCoversOff` only;
  * - `data-promise`, the masthead's standing promise, `fresh` or `started`: the
  *   page's own state, which the page writes on every question screen and the
  *   head script seeds;
@@ -41,10 +41,11 @@ import { STORAGE_KEY } from "./record.js";
 /**
  * The width from which the ledger is a fixed panel rather than a disclosure,
  * written once for the first paint: the head script's query, the stylesheet's
- * narrow rule and the page's live ledger all read it from here. The site's own
- * layout breakpoint, in the page's stylesheet, is a separate copy.
+ * narrow rule, the page's live ledger and the browser gate's viewports all
+ * read it from here. The site's own layout breakpoint, in the page's
+ * stylesheet, is a separate copy.
  */
-const WIDE_FROM_PX = 761;
+export const WIDE_FROM_PX = 761;
 export const WIDE_QUERY = `(min-width: ${WIDE_FROM_PX}px)`;
 const NARROW_MEDIA = `(max-width:${WIDE_FROM_PX - 1}px)`;
 
@@ -62,12 +63,19 @@ const HIDING: Record<Hiding, string> = {
  * under the eyebrow, where the reader's headline is about to be (s31). */
 type Standing = "over the box" | "in the masthead";
 
-export interface Cover {
+interface Cover {
   /** What the cover hides of the page the build painted, by selector. */
   readonly hides: Readonly<Record<string, Hiding>>;
   /** The stand-in it uncovers, by class, and where that line stands. */
   readonly uncovers: { readonly standIn: string; readonly standing: Standing };
 }
+
+/** What the two covers whose stand-in stands over the box hide: question
+ * one's contents in place, so the box keeps its height, and the footer and
+ * the ledger's count until the module draws. */
+const HIDDEN_UNDER_A_BOX_STAND_IN = {
+  ".qcard > *": "in place", "footer.site-foot": "no room", "#decl-count": "in place",
+} as const satisfies Record<string, Hiding>;
 
 /**
  * Every cover the head script can write, and the stylesheet's cover rules are
@@ -91,25 +99,23 @@ export interface Cover {
  * shape a stylesheet could reserve — one to three lines, and a subline of two
  * to five, by what the rules said (measured 2026-09-16, s22). The card is not
  * their screen, and the ledger and the footer are about to be carried
- * thousands of pixels down by the routes. s22 covered them in place, and the
- * covers kept their room: the reader met the header, the eyebrow and — a
- * thousand pixels of blank later — the line, centred in a hidden box
- * (measured 2026-09-18 at 390×844: eyebrow at 107–122, the line at 445–800),
- * and the blank read as a failure. So now they take no room at all until the
- * module draws, and the line stands in the masthead directly under the
- * eyebrow. The rule under the masthead goes with them: the masthead's height
- * is the verdict's, and a line that moved with it would be the one thing left
- * to watch (s31).
+ * thousands of pixels down by the routes. They take no room at all until the
+ * module draws, because covered in place they would leave a thousand pixels
+ * of blank between the eyebrow and the line, and the blank reads as a
+ * failure; the line stands in the masthead directly under the eyebrow. The
+ * rule under the masthead goes with them: the masthead's height is the
+ * verdict's, and a line that moved with it would be the one thing left to
+ * watch (s31).
  *
  * A fresh visit gets no cover: the page the build painted is already right.
  */
 export const COVERS = {
   record: {
-    hides: { ".qcard > *": "in place", "footer.site-foot": "no room", "#decl-count": "in place" },
+    hides: HIDDEN_UNDER_A_BOX_STAND_IN,
     uncovers: { standIn: "stand-in-record", standing: "over the box" },
   },
   link: {
-    hides: { ".qcard > *": "in place", "footer.site-foot": "no room", "#decl-count": "in place" },
+    hides: HIDDEN_UNDER_A_BOX_STAND_IN,
     uncovers: { standIn: "stand-in-link", standing: "over the box" },
   },
   verdict: {
@@ -173,22 +179,27 @@ export const FIRST_PAINT_SCRIPT = `
   })();
 `;
 
-const on = (cover: string) => `[data-cover=${JSON.stringify(cover)}]`;
+type CoverName = keyof typeof COVERS;
+
+const coverSelector = (cover: CoverName) => `[data-cover=${JSON.stringify(cover)}]`;
 
 /** The stand-in's own rules, by where it stands. */
-const STANDS: Record<Standing, (cover: string, standIn: string) => string> = {
+const STAND_IN_RULES: Record<Standing, (cover: CoverName, standIn: string) => string> = {
   "over the box": (cover, standIn) =>
-    `${on(cover)} #main{position:relative}
-${on(cover)} .${standIn}{display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
+    `${coverSelector(cover)} #main{position:relative}
+${coverSelector(cover)} .${standIn}{display:flex;position:absolute;inset:0;align-items:center;justify-content:center;
   margin:0;padding:1.6rem 1.8rem;text-align:center;color:var(--color-muted);font-size:.92rem}`,
-  "in the masthead": (cover, standIn) => `${on(cover)} .${standIn}{display:block;margin-top:.5rem}`,
+  "in the masthead": (cover, standIn) => `${coverSelector(cover)} .${standIn}{display:block;margin-top:.5rem}`,
 };
 
-function coverRules(name: string, cover: Cover): string {
-  const by = new Map<Hiding, string[]>();
-  for (const [part, how] of Object.entries(cover.hides)) by.set(how, [...(by.get(how) ?? []), part]);
-  const hidden = [...by].map(([how, parts]) => `${parts.map((p) => `${on(name)} ${p}`).join(",")}{${HIDING[how]}}`);
-  return [...hidden, STANDS[cover.uncovers.standing](name, cover.uncovers.standIn)].join("\n");
+function coverRules(name: CoverName): string {
+  const cover: Cover = COVERS[name];
+  const partsByHiding = new Map<Hiding, string[]>();
+  for (const [part, how] of Object.entries(cover.hides))
+    partsByHiding.set(how, [...(partsByHiding.get(how) ?? []), part]);
+  const hidden = [...partsByHiding]
+    .map(([how, parts]) => `${parts.map((p) => `${coverSelector(name)} ${p}`).join(",")}{${HIDING[how]}}`);
+  return [...hidden, STAND_IN_RULES[cover.uncovers.standing](name, cover.uncovers.standIn)].join("\n");
 }
 
 /**
@@ -213,7 +224,7 @@ function coverRules(name: string, cover: Cover): string {
  */
 export const FIRST_PAINT_STYLE = [
   ".stand-in{display:none}",
-  ...Object.entries(COVERS).map(([name, cover]) => coverRules(name, cover)),
+  ...(Object.keys(COVERS) as CoverName[]).map(coverRules),
   ".standing-promise{display:grid}",
   ".standing-promise > *{grid-area:1/1}",
   ".sub-started{visibility:hidden}",
@@ -227,11 +238,11 @@ export const FIRST_PAINT_STYLE = [
 /**
  * Take every cover off. The page calls it once, in the task that draws the
  * reader's first screen, so nothing is painted between the two and no cover
- * outlives that screen: a finished record restored straight to its verdict
- * once left one standing, and the reader's next correction drew a question
- * card with every child invisible (s20's walk, 2026-09-16). It touches the
- * cover alone: the standing promise and the seeds are the page's.
+ * outlives that screen: a cover left standing under a verdict would have the
+ * reader's next correction draw a question card with every child invisible.
+ * It touches the cover alone: the standing promise and the seeds are the
+ * page's.
  */
-export function coversOff(root: { dataset: Record<string, string | undefined> }): void {
+export function takeCoversOff(root: { dataset: Record<string, string | undefined> }): void {
   delete root.dataset.cover;
 }
