@@ -6,8 +6,8 @@ import { runInNewContext } from "node:vm";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy.js";
-import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
-import { firstPaintPlaceholdersHtml, questionCardHtml } from "../src/lib/question.js";
+import { COVERS, FIRST_PAINT_SCRIPT, WIDE_FROM_PX, takeCoversOff } from "../src/lib/first-paint.js";
+import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
@@ -121,42 +121,58 @@ interface BrowserPage {
 const DELAY_JS_MS = 700;
 
 /**
- * The scenario's bound — below 0.1, inside Google's "good", which is 0.1 or
- * less. Every arrival at every viewport measured 0 on 2026-09-15, once the
- * shape of the first paint stopped being decided after it.
- */
-const GOOD = 0.1;
-
-/**
- * Three screens, because the defect hid in one of them. At 390x844 the footer
- * is below the fold on every arrival and its movement costs nothing; at
- * 390x1400 the same page moved it 44 to 140 px in plain sight. A gate that
- * measured only the short phone would have called a moving footer fixed
- * (Spec review, 2026-09-15). The desktop row is where the ledger is a panel
- * rather than a disclosure, which is the other decision the module used to
- * take after the page had painted.
+ * Four screens, because the defect hid in them. At 390x844 the footer is below
+ * the fold on every arrival and its movement costs nothing; at 390x1400 the
+ * same page moved it 44 to 140 px in plain sight. A gate that measured only the
+ * short phone would have called a moving footer fixed (Spec review,
+ * 2026-09-15). The desktop rows are where the ledger is a panel rather than a
+ * disclosure, which is the other decision the module used to take after the
+ * page had painted; at 1280x800 the footer is in view as well (#66).
  */
 const VIEWPORTS = [
   { name: "390x844", viewport: { width: 390, height: 844 }, mobile: true },
   { name: "390x1400", viewport: { width: 390, height: 1400 }, mobile: true },
   { name: "1280x900", viewport: { width: 1280, height: 900 }, mobile: false },
+  { name: "1280x800", viewport: { width: 1280, height: 800 }, mobile: false },
 ] as const;
+
+/** Everything ABOVE the box: the site's header and the masthead. */
+const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
 
 /**
  * The observer goes in after the load and reads `buffered: true`, so it still
  * sees the shifts that happened before it existed. It is installed rather than
  * awaited because the driver's `evaluate` hands back a value, not a promise —
  * hence the beat between installing and reading.
+ *
+ * Each source is named the way the field's debug rows name it — a path up to
+ * the nearest id — with how far it travelled, so a failure says where to look.
  */
 const INSTALL = `(() => {
   window.__cls = [];
+  const elementOf = (node) => node && (node.nodeType === 1 ? node : node.parentElement);
+  const named = (node) => {
+    const parts = [];
+    const pathCanTake = (el) => el && el !== document.body && parts.length < 4;
+    for (let el = elementOf(node); pathCanTake(el); el = el.parentElement) {
+      if (el.id) { parts.unshift("#" + el.id); break; }
+      parts.unshift(el.tagName.toLowerCase() + (el.classList[0] ? "." + el.classList[0] : ""));
+    }
+    return parts.join(">") || "?";
+  };
   new PerformanceObserver((l) => window.__cls.push(...l.getEntries()
     .filter((e) => !e.hadRecentInput)
     .map((e) => ({
       value: e.value,
-      nodes: (e.sources ?? []).map((s) => !s.node ? "?"
-        : s.node.id ? "#" + s.node.id
-        : s.node.tagName + (s.node.className ? "." + String(s.node.className).split(" ")[0] : "")).slice(0, 3),
+      sources: (e.sources ?? []).map((s) => {
+        const el = elementOf(s.node);
+        return {
+          node: named(s.node),
+          dx: Math.round(s.currentRect.x - s.previousRect.x),
+          dy: Math.round(s.currentRect.y - s.previousRect.y),
+          above: !!el && !!el.closest(${JSON.stringify(ABOVE_THE_BOX)}),
+        };
+      }),
     })))).observe({ type: "layout-shift", buffered: true });
   return "installed";
 })()`;
@@ -170,27 +186,32 @@ const INSTALL = `(() => {
  * is a comparison of exactly that. And it reads what a reader actually sees in
  * the box, because from s10's second round the built page carries question one
  * AND the two lines that stand in for it, and which of the three shows is the
- * stylesheet's answer to a flag — not something the built HTML can be read for
+ * stylesheet's answer to a cover — not something the built HTML can be read for
  * (human's walk, 2026-09-15).
  */
 const AT_FIRST_PAINT = `(() => {
   window.__built = document.querySelector("#main > *");
-  window.__foot = document.querySelector("footer.site-foot").getBoundingClientRect().top;
+  const foot = document.querySelector("footer.site-foot");
+  const footBox = foot.getClientRects().length > 0;
+  window.__foot = footBox ? foot.getBoundingClientRect().top : null;
   const shown = (el) => el && getComputedStyle(el).visibility === "visible"
     && getComputedStyle(el).display !== "none" && !!el.offsetParent;
   return JSON.stringify({
     held: !!window.__built,
-    first: document.documentElement.dataset.first ?? "",
+    cover: document.documentElement.dataset.cover ?? "",
     box: Math.round(document.getElementById("main").getBoundingClientRect().height),
     question: shown(document.querySelector(".qlabel")) ? document.querySelector(".qlabel").textContent : "",
     standIn: [...document.querySelectorAll(".stand-in")].filter(shown).map((el) => el.textContent),
+    footBox,
+    count: document.getElementById("decl-count")?.textContent ?? "",
+    countShown: shown(document.getElementById("decl-count")),
   });
 })()`;
 
 interface AtFirstPaint {
   held: boolean;
-  /** What the pre-paint script wrote on `<html>` — which reader this is. */
-  first: string;
+  /** The cover the pre-paint script wrote on `<html>` — which reader this is. */
+  cover: string;
   /** The box the reader meets, in pixels. It is the same box whichever line is
    * in it: the stand-in sits OVER the question card rather than in place of
    * it, so the card holds the height open (s10). Zero for the reader owed a
@@ -201,13 +222,21 @@ interface AtFirstPaint {
   /** The line standing in for it, if any — in the box, or under the eyebrow
    * for the reader owed a verdict (s31). Never more than one. */
   standIn: string[];
+  /** Whether the footer takes any room on the page yet. */
+  footBox: boolean;
+  /** The ledger's count as the build wrote it, for a failure to quote. */
+  count: string;
+  /** Whether a reader can see the ledger's count. */
+  countShown: boolean;
 }
 
 const READ = `JSON.stringify({
   cls: window.__cls.reduce((s, e) => s + e.value, 0),
-  shifts: window.__cls.map((e) => ({ value: Math.round(e.value * 1000) / 1000, nodes: e.nodes })),
+  shifts: window.__cls.map((e) => ({ value: Math.round(e.value * 10000) / 10000, sources: e.sources })),
   sameCard: window.__built === document.querySelector("#main > *"),
-  footMoved: Math.round(document.querySelector("footer.site-foot").getBoundingClientRect().top - window.__foot),
+  footBox: document.querySelector("footer.site-foot").getClientRects().length > 0,
+  footMoved: window.__foot === null ? null
+    : Math.round(document.querySelector("footer.site-foot").getBoundingClientRect().top - window.__foot),
   subline: Math.round(document.getElementById("subline").getBoundingClientRect().height),
   ledgerOpen: document.getElementById("decl").open,
   resumed: !!document.querySelector("#main .qcard .resumed"),
@@ -216,14 +245,19 @@ const READ = `JSON.stringify({
 
 interface Measured {
   cls: number;
-  shifts: { value: number; nodes: string[] }[];
+  /** Each shift, with every node it moved: named, how far across and down it
+   * went, and whether it is above the box. */
+  shifts: { value: number; sources: { node: string; dx: number; dy: number; above: boolean }[] }[];
   /** Whether the node the build drew is still the node on the screen. */
   sameCard: boolean;
+  /** Whether the footer takes room once the module has drawn. */
+  footBox: boolean;
   /** How far the footer travelled between the build's paint and the module's,
-   * in pixels, signed. The scenario's second requirement is about this number
-   * and the aggregate hides it: at 390x844 the footer is off the bottom of the
-   * screen and can move 140 px for nothing (Spec review, 2026-09-15). */
-  footMoved: number;
+   * in pixels, signed; null when the first paint gave it no room. The
+   * scenario's second requirement is about this number and the aggregate
+   * hides it: at 390x844 the footer is off the bottom of the screen and can
+   * move 140 px for nothing (Spec review, 2026-09-15). */
+  footMoved: number | null;
   /**
    * The masthead's promise, in pixels. It is the direct cause of every shift
    * this page had left once the box was full — the long form is painted for a
@@ -244,9 +278,9 @@ interface Measured {
 
 /**
  * Every way a reader's first screen can differ from the one the build drew.
- * All five are measured at all three viewports. `shape` is the reader the
+ * All seven are measured at all four viewports. `shape` is the reader the
  * pre-paint script names — `fresh`, `link`, `record` or, since s22, `verdict`
- * — and the stand-in and the flag are asserted from it.
+ * — and the stand-in and the cover are asserted from it.
  */
 const ARRIVALS = [
   { name: "/ cold, with no record", path: "/", record: null, shape: "fresh" },
@@ -295,6 +329,11 @@ const ARRIVALS = [
       ],
     },
   },
+  // A link whose code the site no longer knows: the head cannot tell it from
+  // a known one, so it is painted as a link arrival, and the module then finds
+  // nothing answered and settles on the other standing promise (#13).
+  { name: "/?country=zz — a country code the site does not know", path: "/?country=zz", record: null, shape: "link" },
+  { name: "/?route=zz — a route the site does not know", path: "/?route=zz", record: null, shape: "link" },
 ] as const;
 
 /**
@@ -309,28 +348,21 @@ const LANDS_ON: Record<(typeof ARRIVALS)[number]["name"], "questions" | "results
   "/ with a saved record": "questions",
   "/?route=de-blue-card-general — from a route page": "questions",
   "/ with a finished record": "results",
+  "/?country=zz — a country code the site does not know": "questions",
+  "/?route=zz — a route the site does not know": "questions",
 };
-
-/**
- * Everything ABOVE the box, which may never move on any arrival.
- *
- * This is the decision the pre-paint script exists to keep: what the masthead
- * says and how tall it is are settled before the page paints, so a reader with
- * a record does not watch the whole interview slide up under a promise that
- * shortened 700 ms in. It was 0.082 of the 0.156 that arrival used to measure,
- * and it is the one part of this that is fixed by construction rather than by
- * viewport — so it is asserted as zero, not as a budget.
- */
-const ABOVE_THE_BOX = ["#headline", "#subline", "#stamp", "DIV.stamp", "HEADER.masthead-with-stamps"];
 
 const measured = new Map<string, Measured>();
 const atFirstPaint = new Map<string, AtFirstPaint>();
 const key = (viewport: string, arrival: string) => `${viewport} · ${arrival}`;
 
 /** What was read, for a failure that names what moved and why. */
+const signed = (px: number) => `${px >= 0 ? "+" : ""}${px}px`;
 const detail = (m: Measured) =>
-  `${m.shifts.map((s) => `[${s.value} ${s.nodes.join(",")}]`).join(" ") || "(no shift)"}`
-  + ` · footer ${m.footMoved >= 0 ? "+" : ""}${m.footMoved}px`
+  `${m.shifts.map((s) => `[${s.value} ${s.sources
+    .map((source) => `${source.node} x${signed(source.dx)} y${signed(source.dy)}`).join(", ")}]`)
+    .join(" ") || "(no shift)"}`
+  + ` · footer ${m.footMoved === null ? "had no room at first paint" : signed(m.footMoved)}`
   + ` · subline ${m.subline}px · ledger ${m.ledgerOpen ? "open" : "closed"}`;
 
 describe.skipIf(skipped !== null)("the page as it first paints is already the page (s10)", () => {
@@ -340,9 +372,9 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
   const STAND_IN = {
     fresh: [], record: [RETURNING_LINE], link: [LINK_ARRIVAL_LINE], verdict: [RETURNING_LINE],
   } as const;
-  /** The word the pre-paint script writes for each reader — none for a fresh
+  /** The cover the pre-paint script writes for each reader — none for a fresh
    * visit, and `verdict` for a record that says it was finished (s22). */
-  const FLAG = { fresh: "", record: "record", link: "link", verdict: "verdict" } as const;
+  const COVER = { fresh: "", record: "record", link: "link", verdict: "verdict" } as const;
   const cold = (viewport: string) => read(viewport, ARRIVALS[0].name);
 
   beforeAll(async () => {
@@ -383,8 +415,10 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
     describe(screen.name, () => {
       for (const arrival of ARRIVALS) {
         it(`${arrival.name}: nothing the reader did not ask for moves`, () => {
+          // Exactly zero, not a budget under Google's "good": every arrival
+          // the field sends can paint where it stays (#66).
           const m = read(screen.name, arrival.name);
-          expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBeLessThan(GOOD);
+          expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBe(0);
         });
 
         it(`${arrival.name}: the box says something true before the module lands`, () => {
@@ -394,8 +428,8 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           // 2026-09-15), so the box carries the reader's own line instead, and
           // question one is covered for exactly those readers.
           const b = built(screen.name, arrival.name);
-          expect(b.first, `the pre-paint script wrote data-first=${JSON.stringify(b.first)}`)
-            .toBe(FLAG[arrival.shape]);
+          expect(b.cover, `the pre-paint script wrote data-cover=${JSON.stringify(b.cover)}`)
+            .toBe(COVER[arrival.shape]);
           expect(b.standIn, `the box read ${JSON.stringify(b.standIn)}`)
             .toEqual([...STAND_IN[arrival.shape]]);
           if (arrival.shape === "fresh")
@@ -431,10 +465,34 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
         it(`${arrival.name}: nothing above the box moves`, () => {
           // The aggregate would forgive a masthead that resized a little, and
           // a masthead that resizes takes the whole interview with it. Nothing
-          // above the box is allowed to move at all, on any arrival.
+          // above the box is allowed to move at all, on any arrival: what the
+          // masthead says and how tall it is are settled before the page
+          // paints, so this is asserted as zero, not as a budget.
           const m = read(screen.name, arrival.name);
-          const moved = m.shifts.flatMap((s) => s.nodes).filter((n) => ABOVE_THE_BOX.includes(n));
+          const moved = m.shifts.flatMap((s) => s.sources).filter((x) => x.above).map((x) => x.node);
           expect(moved, `${moved.join(", ")} moved — ${detail(m)}`).toEqual([]);
+        });
+
+        it(`${arrival.name}: the footer takes room only once the reader's screen is drawn (#66)`, () => {
+          // The reader's own screen is not the height of the one the build
+          // painted, so a footer laid out under the built one moves when the
+          // module draws. For a reader with a cover it takes no room until
+          // then, and appears at the page's end, where it stays.
+          const b = built(screen.name, arrival.name);
+          const m = read(screen.name, arrival.name);
+          expect(b.footBox, `at first paint the footer ${b.footBox ? "took" : "took no"} room`)
+            .toBe(arrival.shape === "fresh");
+          expect(m.footBox, "the footer took no room once the module had drawn").toBe(true);
+        });
+
+        it(`${arrival.name}: the ledger's count is unseen until it is the reader's (#66)`, () => {
+          // "Nothing yet" is untrue for a reader with a record or a link, and
+          // the line widened in view when the module wrote the real count.
+          const b = built(screen.name, arrival.name);
+          if (arrival.shape !== "fresh")
+            expect(b.countShown, `the count read ${JSON.stringify(b.count)} before the module drew`).toBe(false);
+          else if (screen.viewport.width < WIDE_FROM_PX)
+            expect(b.countShown, "a fresh visit on a phone was not shown its count").toBe(true);
         });
       }
 
@@ -489,7 +547,7 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
         // decided in <head> now, before anything is painted.
         const m = cold(screen.name);
         expect(m.ledgerOpen, `the ledger came out ${m.ledgerOpen ? "open" : "closed"}`)
-          .toBe(screen.viewport.width >= 761);
+          .toBe(screen.viewport.width >= WIDE_FROM_PX);
       });
     });
 });
@@ -504,7 +562,9 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
  * to be right about what the product never writes too (s22).
  */
 describe("the pre-paint script decides who the reader is from a few bytes (s10, s22)", () => {
-  const flags = (o: { search?: string; stored?: string | null; throws?: boolean }): Record<string, string> => {
+  interface Reader { search?: string; stored?: string | null; throws?: boolean; narrow?: boolean }
+  /** What the head script writes on `<html>` for this reader. */
+  const written = (o: Reader): Record<string, string> => {
     const dataset: Record<string, string> = {};
     runInNewContext(FIRST_PAINT_SCRIPT, {
       document: { documentElement: { dataset } },
@@ -512,47 +572,87 @@ describe("the pre-paint script decides who the reader is from a few bytes (s10, 
       localStorage: {
         getItem: () => { if (o.throws) throw new Error("blocked"); return o.stored ?? null; },
       },
-      matchMedia: () => ({ matches: true }),
+      matchMedia: () => ({ matches: !o.narrow }),
     });
     return dataset;
   };
   const halfDone = serialize({ destination: "fr" }, ["destination"]);
   const finished = serialize({ destination: "fr" }, ["destination"], true);
 
+  /** Every reader the head script tells apart, at both sides of the threshold. */
+  const READERS: Record<string, Reader> = Object.fromEntries([
+    ["fresh", { stored: null }],
+    ["a record part-way", { stored: halfDone }],
+    ["a finished record", { stored: finished }],
+    ["a record from before the bit", { stored: JSON.stringify({ version: 1, answers: {}, history: [] }) }],
+    ["a record that is not JSON", { stored: "{" }],
+    ["a country link", { search: "?country=fr" }],
+    ["a route link", { search: "?route=de-blue-card-general" }],
+    ["an unknown link", { search: "?country=zz" }],
+    ["a link and a record", { search: "?country=fr", stored: halfDone }],
+    ["a link and a finished record", { search: "?route=x", stored: finished }],
+    ["a blocked store", { throws: true }],
+    ["a blocked store and a link", { search: "?country=fr", throws: true }],
+  ].flatMap(([name, r]) => [[`${name}, wide`, r], [`${name}, narrow`, { ...(r as Reader), narrow: true }]]));
+
+  it("every cover it writes is a declared one, and covers off takes it off and nothing else (#67)", () => {
+    // The set is the contract the stylesheet's cover rules are rendered from,
+    // so a cover outside it is one no rule hides and no step takes off; a
+    // cover left standing drew a card with every child invisible (s20).
+    for (const [name, reader] of Object.entries(READERS)) {
+      const dataset = written(reader);
+      const cover = dataset.cover;
+      if (cover !== undefined) {
+        expect(Object.keys(COVERS), `${name}: wrote the cover ${JSON.stringify(cover)}`).toContain(cover);
+        expect(Object.keys(COVERS[cover as keyof typeof COVERS].hides).length, `${name}: ${cover} hides nothing`)
+          .toBeGreaterThan(0);
+      }
+      // The page then writes its own state: the promise it settles on, which
+      // here is the other one than the seed, so a step that rewrote it shows.
+      dataset.promise = dataset.promise === "fresh" ? "started" : "fresh";
+      const asThePageWroteThem = { ...dataset };
+      takeCoversOff({ dataset });
+      for (const member of Object.keys(COVERS))
+        expect(Object.values(dataset), `${name}: ${member} still stands`).not.toContain(member);
+      delete asThePageWroteThem.cover;
+      expect(dataset, `${name}: covers off touched more than the cover`).toEqual(asThePageWroteThem);
+    }
+  });
+
   it("a fresh visit is nobody in particular", () => {
-    expect(flags({ stored: null }).first).toBeUndefined();
+    expect(written({ stored: null }).cover).toBeUndefined();
   });
 
   it("a record is a returning reader; a finished one is a reader owed a verdict", () => {
-    expect(flags({ stored: halfDone }).first).toBe("record");
-    expect(flags({ stored: finished }).first).toBe("verdict");
+    expect(written({ stored: halfDone }).cover).toBe("record");
+    expect(written({ stored: finished }).cover).toBe("verdict");
   });
 
   it("a record from before the bit existed is a returning reader, not a verdict", () => {
-    expect(flags({ stored: JSON.stringify({ version: 1, answers: { destination: "fr" }, history: ["destination"] }) }).first)
+    expect(written({ stored: JSON.stringify({ version: 1, answers: { destination: "fr" }, history: ["destination"] }) }).cover)
       .toBe("record");
   });
 
   it("reads one key, and nothing else in the record can stand in for it", () => {
     // The bit is the product's own word, in the product's own place: a truthy
     // value under the same name, or the word under another name, is not it.
-    expect(flags({ stored: JSON.stringify({ version: 1, answers: {}, history: [], done: "yes" }) }).first).toBe("record");
-    expect(flags({ stored: JSON.stringify({ version: 1, answers: {}, history: [], finished: true }) }).first).toBe("record");
+    expect(written({ stored: JSON.stringify({ version: 1, answers: {}, history: [], done: "yes" }) }).cover).toBe("record");
+    expect(written({ stored: JSON.stringify({ version: 1, answers: {}, history: [], finished: true }) }).cover).toBe("record");
   });
 
   it("a record that is not JSON is still a record, never a crashed head", () => {
-    expect(flags({ stored: "{" }).first).toBe("record");
+    expect(written({ stored: "{" }).cover).toBe("record");
   });
 
   it("a record wins over a link, and a finished one still does", () => {
-    expect(flags({ search: "?country=fr", stored: null }).first).toBe("link");
-    expect(flags({ search: "?country=fr", stored: halfDone }).first).toBe("record");
-    expect(flags({ search: "?route=fr-talent-blue-card", stored: finished }).first).toBe("verdict");
+    expect(written({ search: "?country=fr", stored: null }).cover).toBe("link");
+    expect(written({ search: "?country=fr", stored: halfDone }).cover).toBe("record");
+    expect(written({ search: "?route=fr-talent-blue-card", stored: finished }).cover).toBe("verdict");
   });
 
   it("a browser that refuses site data is a reader with no record", () => {
-    expect(flags({ throws: true }).first).toBeUndefined();
-    expect(flags({ search: "?country=fr", throws: true }).first).toBe("link");
+    expect(written({ throws: true }).cover).toBeUndefined();
+    expect(written({ search: "?country=fr", throws: true }).cover).toBe("link");
   });
 
   it("says whether the reader has answered, so a phone paints the ledger line where it will stay (s30)", () => {
@@ -561,13 +661,13 @@ describe("the pre-paint script decides who the reader is from a few bytes (s10, 
     // stands above the result once answers exist (s30 amendment 7), but s22's
     // cover hides #app until the module draws, so the head has nothing to
     // decide there. The head cannot know whether a link's code is one the
-    // page knows, so the flag is written for every link and the module keeps
+    // page knows, so the seed is written for every link and the module keeps
     // its word for the first screen.
-    expect(flags({ stored: halfDone }).answered).toBe("");
-    expect(flags({ search: "?country=fr", stored: null }).answered).toBe("");
-    expect(flags({ search: "?country=zz", stored: null }).answered).toBe("");
-    expect(flags({ stored: null }).answered).toBeUndefined();
-    expect(flags({ stored: finished }).answered).toBeUndefined();
+    expect(written({ stored: halfDone }).answered).toBe("");
+    expect(written({ search: "?country=fr", stored: null }).answered).toBe("");
+    expect(written({ search: "?country=zz", stored: null }).answered).toBe("");
+    expect(written({ stored: null }).answered).toBeUndefined();
+    expect(written({ stored: finished }).answered).toBeUndefined();
   });
 
   it("names nothing from the dataset", () => {
@@ -598,7 +698,7 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
     expect(inMain).toBe(questionCardHtml({
       dataset, question: questions[0], answers: {}, asked: [], editing: null,
       total: questions.length,
-    }) + firstPaintPlaceholdersHtml());
+    }) + renderStandInsOverQuestionOne());
   });
 
   it("tells a reader with no script, in a sentence, why they cannot answer it", () => {

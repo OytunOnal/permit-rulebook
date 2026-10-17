@@ -153,7 +153,7 @@ interface Where {
   live: string;
   active: string;
   /** Whether that first control can be seen at all — a card drawn under a
-   * first-paint flag that outlived its screen had every child invisible. */
+   * first-paint cover that outlived its screen had every child invisible. */
   firstShown: boolean;
   activeIsFirst: boolean;
   activeInCard: boolean;
@@ -219,7 +219,7 @@ describe.skipIf(skipped !== null)("✎ on a result lands on the question and the
         expect(q.cardTop!, `the card's top is below the viewport (${q.cardTop} px of ${q.viewport})`)
           .toBeLessThan(q.viewport);
         // The card is drawn with its contents visible. A finished record that
-        // restored straight to its verdict left the first-paint flag standing,
+        // restored straight to its verdict left the first-paint cover standing,
         // and the correction drew a card with every child hidden (an s10
         // defect, found by this walk).
         expect(q.firstShown, "the question card's first option is invisible").toBe(true);
