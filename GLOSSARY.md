@@ -498,12 +498,20 @@ _Avoid_: downtime, failure, persistent lapse
 
 **Flag**:
 The artifact a detected change or due reminder produces — named source,
-hashes, quoted context; a human turns it into a dataset update. A flag is
+hashes, the page's *excerpt*; a human turns it into a dataset update. A flag is
 **walked** when a person reads the changed page against every quote its entry
 backs, corrects the dataset where a value moved, and closes the flag with what
 was found — a value moved, the text moved and no value did, or the page came
 back as it was.
 _Avoid_: alert, notification; triage (a label role) or intake read for the walk
+
+**Excerpt** (#14):
+The page's own words around the first difference, as the run read them: cut
+at both ends, with nothing that steers how text is drawn, and otherwise never
+rewritten. It is set apart so nothing in it acts on the page it is shown in,
+and every word around it is ours. An excerpt is not a *quote*: a quote is a
+sentence the dataset stands on.
+_Avoid_: quote, diff, context, snippet
 
 **Overdue flag**:
 A flag no person has walked by the second morning after the day it was
