@@ -121,42 +121,57 @@ interface BrowserPage {
 const DELAY_JS_MS = 700;
 
 /**
- * The scenario's bound — below 0.1, inside Google's "good", which is 0.1 or
- * less. Every arrival at every viewport measured 0 on 2026-09-15, once the
- * shape of the first paint stopped being decided after it.
- */
-const GOOD = 0.1;
-
-/**
- * Three screens, because the defect hid in one of them. At 390x844 the footer
- * is below the fold on every arrival and its movement costs nothing; at
- * 390x1400 the same page moved it 44 to 140 px in plain sight. A gate that
- * measured only the short phone would have called a moving footer fixed
- * (Spec review, 2026-09-15). The desktop row is where the ledger is a panel
- * rather than a disclosure, which is the other decision the module used to
- * take after the page had painted.
+ * Four screens, because the defect hid in them. At 390x844 the footer is below
+ * the fold on every arrival and its movement costs nothing; at 390x1400 the
+ * same page moved it 44 to 140 px in plain sight. A gate that measured only the
+ * short phone would have called a moving footer fixed (Spec review,
+ * 2026-09-15). The desktop rows are where the ledger is a panel rather than a
+ * disclosure, which is the other decision the module used to take after the
+ * page had painted; at 1280x800 the footer is in view as well (#66).
  */
 const VIEWPORTS = [
   { name: "390x844", viewport: { width: 390, height: 844 }, mobile: true },
   { name: "390x1400", viewport: { width: 390, height: 1400 }, mobile: true },
   { name: "1280x900", viewport: { width: 1280, height: 900 }, mobile: false },
+  { name: "1280x800", viewport: { width: 1280, height: 800 }, mobile: false },
 ] as const;
+
+/** Everything ABOVE the box: the site's header and the masthead. */
+const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
 
 /**
  * The observer goes in after the load and reads `buffered: true`, so it still
  * sees the shifts that happened before it existed. It is installed rather than
  * awaited because the driver's `evaluate` hands back a value, not a promise —
  * hence the beat between installing and reading.
+ *
+ * Each source is named the way the field's debug rows name it — a path up to
+ * the nearest id — with how far it travelled, so a failure says where to look.
  */
 const INSTALL = `(() => {
   window.__cls = [];
+  const named = (node) => {
+    const parts = [];
+    for (let el = node && (node.nodeType === 1 ? node : node.parentElement);
+      el && el !== document.body && parts.length < 4; el = el.parentElement) {
+      if (el.id) { parts.unshift("#" + el.id); break; }
+      parts.unshift(el.tagName.toLowerCase() + (el.classList[0] ? "." + el.classList[0] : ""));
+    }
+    return parts.join(">") || "?";
+  };
   new PerformanceObserver((l) => window.__cls.push(...l.getEntries()
     .filter((e) => !e.hadRecentInput)
     .map((e) => ({
       value: e.value,
-      nodes: (e.sources ?? []).map((s) => !s.node ? "?"
-        : s.node.id ? "#" + s.node.id
-        : s.node.tagName + (s.node.className ? "." + String(s.node.className).split(" ")[0] : "")).slice(0, 3),
+      sources: (e.sources ?? []).map((s) => {
+        const el = s.node && (s.node.nodeType === 1 ? s.node : s.node.parentElement);
+        return {
+          node: named(s.node),
+          dx: Math.round(s.currentRect.x - s.previousRect.x),
+          dy: Math.round(s.currentRect.y - s.previousRect.y),
+          above: !!el && !!el.closest(${JSON.stringify(ABOVE_THE_BOX)}),
+        };
+      }),
     })))).observe({ type: "layout-shift", buffered: true });
   return "installed";
 })()`;
@@ -175,7 +190,9 @@ const INSTALL = `(() => {
  */
 const AT_FIRST_PAINT = `(() => {
   window.__built = document.querySelector("#main > *");
-  window.__foot = document.querySelector("footer.site-foot").getBoundingClientRect().top;
+  const foot = document.querySelector("footer.site-foot");
+  const footBox = foot.getClientRects().length > 0;
+  window.__foot = footBox ? foot.getBoundingClientRect().top : null;
   const shown = (el) => el && getComputedStyle(el).visibility === "visible"
     && getComputedStyle(el).display !== "none" && !!el.offsetParent;
   return JSON.stringify({
@@ -184,6 +201,8 @@ const AT_FIRST_PAINT = `(() => {
     box: Math.round(document.getElementById("main").getBoundingClientRect().height),
     question: shown(document.querySelector(".qlabel")) ? document.querySelector(".qlabel").textContent : "",
     standIn: [...document.querySelectorAll(".stand-in")].filter(shown).map((el) => el.textContent),
+    footBox,
+    count: shown(document.getElementById("decl-count")) ? document.getElementById("decl-count").textContent : "",
   });
 })()`;
 
@@ -201,13 +220,19 @@ interface AtFirstPaint {
   /** The line standing in for it, if any — in the box, or under the eyebrow
    * for the reader owed a verdict (s31). Never more than one. */
   standIn: string[];
+  /** Whether the footer takes any room on the page yet. */
+  footBox: boolean;
+  /** The ledger's count, if a reader can see it; empty if it is unseen. */
+  count: string;
 }
 
 const READ = `JSON.stringify({
   cls: window.__cls.reduce((s, e) => s + e.value, 0),
-  shifts: window.__cls.map((e) => ({ value: Math.round(e.value * 1000) / 1000, nodes: e.nodes })),
+  shifts: window.__cls.map((e) => ({ value: Math.round(e.value * 10000) / 10000, sources: e.sources })),
   sameCard: window.__built === document.querySelector("#main > *"),
-  footMoved: Math.round(document.querySelector("footer.site-foot").getBoundingClientRect().top - window.__foot),
+  footBox: document.querySelector("footer.site-foot").getClientRects().length > 0,
+  footMoved: window.__foot === null ? null
+    : Math.round(document.querySelector("footer.site-foot").getBoundingClientRect().top - window.__foot),
   subline: Math.round(document.getElementById("subline").getBoundingClientRect().height),
   ledgerOpen: document.getElementById("decl").open,
   resumed: !!document.querySelector("#main .qcard .resumed"),
@@ -216,14 +241,19 @@ const READ = `JSON.stringify({
 
 interface Measured {
   cls: number;
-  shifts: { value: number; nodes: string[] }[];
+  /** Each shift, with every node it moved: named, how far across and down it
+   * went, and whether it is above the box. */
+  shifts: { value: number; sources: { node: string; dx: number; dy: number; above: boolean }[] }[];
   /** Whether the node the build drew is still the node on the screen. */
   sameCard: boolean;
+  /** Whether the footer takes room once the module has drawn. */
+  footBox: boolean;
   /** How far the footer travelled between the build's paint and the module's,
-   * in pixels, signed. The scenario's second requirement is about this number
-   * and the aggregate hides it: at 390x844 the footer is off the bottom of the
-   * screen and can move 140 px for nothing (Spec review, 2026-09-15). */
-  footMoved: number;
+   * in pixels, signed; null when the first paint gave it no room. The
+   * scenario's second requirement is about this number and the aggregate
+   * hides it: at 390x844 the footer is off the bottom of the screen and can
+   * move 140 px for nothing (Spec review, 2026-09-15). */
+  footMoved: number | null;
   /**
    * The masthead's promise, in pixels. It is the direct cause of every shift
    * this page had left once the box was full — the long form is painted for a
@@ -244,7 +274,7 @@ interface Measured {
 
 /**
  * Every way a reader's first screen can differ from the one the build drew.
- * All five are measured at all three viewports. `shape` is the reader the
+ * All seven are measured at all four viewports. `shape` is the reader the
  * pre-paint script names — `fresh`, `link`, `record` or, since s22, `verdict`
  * — and the stand-in and the cover are asserted from it.
  */
@@ -295,6 +325,11 @@ const ARRIVALS = [
       ],
     },
   },
+  // A link whose code the site no longer knows: the head cannot tell it from
+  // a known one, so it is painted as a link arrival, and the module then finds
+  // nothing answered and settles on the other standing promise (#13).
+  { name: "/?country=zz — a country code the site does not know", path: "/?country=zz", record: null, shape: "link" },
+  { name: "/?route=zz — a route the site does not know", path: "/?route=zz", record: null, shape: "link" },
 ] as const;
 
 /**
@@ -309,28 +344,20 @@ const LANDS_ON: Record<(typeof ARRIVALS)[number]["name"], "questions" | "results
   "/ with a saved record": "questions",
   "/?route=de-blue-card-general — from a route page": "questions",
   "/ with a finished record": "results",
+  "/?country=zz — a country code the site does not know": "questions",
+  "/?route=zz — a route the site does not know": "questions",
 };
-
-/**
- * Everything ABOVE the box, which may never move on any arrival.
- *
- * This is the decision the pre-paint script exists to keep: what the masthead
- * says and how tall it is are settled before the page paints, so a reader with
- * a record does not watch the whole interview slide up under a promise that
- * shortened 700 ms in. It was 0.082 of the 0.156 that arrival used to measure,
- * and it is the one part of this that is fixed by construction rather than by
- * viewport — so it is asserted as zero, not as a budget.
- */
-const ABOVE_THE_BOX = ["#headline", "#subline", "#stamp", "DIV.stamp", "HEADER.masthead-with-stamps"];
 
 const measured = new Map<string, Measured>();
 const atFirstPaint = new Map<string, AtFirstPaint>();
 const key = (viewport: string, arrival: string) => `${viewport} · ${arrival}`;
 
 /** What was read, for a failure that names what moved and why. */
+const signed = (px: number) => `${px >= 0 ? "+" : ""}${px}px`;
 const detail = (m: Measured) =>
-  `${m.shifts.map((s) => `[${s.value} ${s.nodes.join(",")}]`).join(" ") || "(no shift)"}`
-  + ` · footer ${m.footMoved >= 0 ? "+" : ""}${m.footMoved}px`
+  `${m.shifts.map((s) => `[${s.value} ${s.sources.map((x) => `${x.node} x${signed(x.dx)} y${signed(x.dy)}`).join(", ")}]`)
+    .join(" ") || "(no shift)"}`
+  + ` · footer ${m.footMoved === null ? "had no room at first paint" : signed(m.footMoved)}`
   + ` · subline ${m.subline}px · ledger ${m.ledgerOpen ? "open" : "closed"}`;
 
 describe.skipIf(skipped !== null)("the page as it first paints is already the page (s10)", () => {
@@ -383,8 +410,10 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
     describe(screen.name, () => {
       for (const arrival of ARRIVALS) {
         it(`${arrival.name}: nothing the reader did not ask for moves`, () => {
+          // Exactly zero, not a budget under Google's "good": every arrival
+          // the field sends can paint where it stays (#66).
           const m = read(screen.name, arrival.name);
-          expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBeLessThan(GOOD);
+          expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBe(0);
         });
 
         it(`${arrival.name}: the box says something true before the module lands`, () => {
@@ -431,10 +460,34 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
         it(`${arrival.name}: nothing above the box moves`, () => {
           // The aggregate would forgive a masthead that resized a little, and
           // a masthead that resizes takes the whole interview with it. Nothing
-          // above the box is allowed to move at all, on any arrival.
+          // above the box is allowed to move at all, on any arrival: what the
+          // masthead says and how tall it is are settled before the page
+          // paints, so this is asserted as zero, not as a budget.
           const m = read(screen.name, arrival.name);
-          const moved = m.shifts.flatMap((s) => s.nodes).filter((n) => ABOVE_THE_BOX.includes(n));
+          const moved = m.shifts.flatMap((s) => s.sources).filter((x) => x.above).map((x) => x.node);
           expect(moved, `${moved.join(", ")} moved — ${detail(m)}`).toEqual([]);
+        });
+
+        it(`${arrival.name}: the footer takes room only once the reader's screen is drawn (#66)`, () => {
+          // The reader's own screen is not the height of the one the build
+          // painted, so a footer laid out under the built one moves when the
+          // module draws. For a reader with a cover it takes no room until
+          // then, and appears at the page's end, where it stays.
+          const b = built(screen.name, arrival.name);
+          const m = read(screen.name, arrival.name);
+          expect(b.footBox, `at first paint the footer ${b.footBox ? "took" : "took no"} room`)
+            .toBe(arrival.shape === "fresh");
+          expect(m.footBox, "the footer took no room once the module had drawn").toBe(true);
+        });
+
+        it(`${arrival.name}: the ledger's count is unseen until it is the reader's (#66)`, () => {
+          // "Nothing yet" is untrue for a reader with a record or a link, and
+          // the line widened in view when the module wrote the real count.
+          const b = built(screen.name, arrival.name);
+          if (arrival.shape !== "fresh")
+            expect(b.count, `the count read ${JSON.stringify(b.count)} before the module drew`).toBe("");
+          else if (screen.viewport.width < 761)
+            expect(b.count, "a fresh visit on a phone was not shown its count").not.toBe("");
         });
       }
 
