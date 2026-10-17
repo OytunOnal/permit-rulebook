@@ -284,16 +284,43 @@ export const DATA_LEDE_CLOSE_TAIL = "tell us";
 export const dataLedeClose = (door: string): string => `Take it, check it, and if something is wrong, ${door}.`;
 
 /**
+ * How soon a person reads a flag, as the site promises it. It is the time the
+ * data repository's clock keeps (`OVERDUE_AFTER_DAYS` in permit-rulebook-data's
+ * `src/watch/overdue.ts`): a flag still open on the second UTC morning after
+ * the day it was raised turns the watch red (#62). Typed here and not read
+ * from there, by the human's decision on the review of #64: it is a promise to
+ * a reader, not a threshold the site computes with, and changing the clock is
+ * a #62-sized decision that changes this with it. Both sentences that make the
+ * promise compose it from here.
+ */
+export const FLAG_READ_WITHIN = "within two days";
+
+/**
  * The freshness sentence's second half on `/data/`: what happens when a source
  * moves, and the one thing that never happens on its own. It used to say a
  * moved source "files an issue in the tracker" — a tracker the reader had not
  * met, and since s13 not where a reader goes. The exception clause before it
  * is s11's and prints on its own terms; this is the part that follows it on
- * every day (s16).
+ * every day (s16). It did not say how soon a person reads the flag until the
+ * clock that keeps that time was merged (#62).
  */
 export const FRESHNESS_HUMAN_HAND =
-  "A source that has moved raises a flag and a person reads it: the values on this site, and the dates beside "
+  `A source that has moved raises a flag and a person reads it ${FLAG_READ_WITHIN}: the values on this site, and the dates beside `
   + "them, change when a person changes them, never on their own.";
+
+/**
+ * The Dataset block's description on `/data/`. A dataset index (Google's
+ * Dataset Search) reads it, and a person reads it in that index's result, so
+ * it lives with the site's other words rather than beside the JSON (Standards
+ * review of #64). The counts are the page's own; the last sentence is the
+ * page's own promise, in the same clause.
+ */
+export const datasetDescription = (total: number, scored: number, quotedOnly: number, countries: number): string =>
+  `${total} employment-based work-permit routes across ${countries} European countries: `
+  + `${scored} scored against a reader's declared answers and ${quotedOnly} quoted and dated `
+  + "without being scored. Every value — salary threshold, qualification, experience, language level — carries the "
+  + "sentence it came from on the authority's own page and the day that page was read. "
+  + `Re-read daily; a change to a source raises a flag a person reads ${FLAG_READ_WITHIN}.`;
 
 /**
  * What a search result and a link preview say about `/data/`. The counts are

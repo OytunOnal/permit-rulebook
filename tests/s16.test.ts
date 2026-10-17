@@ -74,7 +74,7 @@ describe("/data/ in the reader's words", () => {
     // without this case knowing.
     expect(bodyText(html)).toContain(FRESHNESS_HUMAN_HAND);
     expect(FRESHNESS_HUMAN_HAND).toBe(
-      "A source that has moved raises a flag and a person reads it: the values on this site, and the dates beside "
+      "A source that has moved raises a flag and a person reads it within two days: the values on this site, and the dates beside "
       + "them, change when a person changes them, never on their own.");
     // The exception clause before it is s11's and is untouched: the sentence
     // still opens with the claim and the run, on the same line.

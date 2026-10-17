@@ -6,6 +6,7 @@ import type { Dataset } from "permit-rulebook-data";
 import { datasetLd } from "../src/lib/dataset-ld.js";
 import { siteReadDate } from "../src/lib/country-page.js";
 import { DATA_PATH } from "../src/lib/identity.js";
+import { FLAG_READ_WITHIN, FRESHNESS_HUMAN_HAND } from "../src/lib/copy.js";
 
 /**
  * The data page tells a dataset index what it is holding.
@@ -52,6 +53,19 @@ describe("the data page's Dataset block", () => {
       expect(existsSync(root(`dist${path}`)), `${d.contentUrl} is offered but not built`).toBe(true);
       JSON.parse(readFileSync(root(`dist${path}`), "utf8")); // and it is JSON
     }
+  });
+
+  /**
+   * The promise a crawler carries is the page's own: both sentences that say
+   * how soon a flag is read compose that time from one constant, so neither
+   * can move without the other (#62; Standards review of #64). The time is the
+   * data repository's clock's, and is pinned with its source.
+   */
+  it("carries the page's own promise of how soon a flag is read", () => {
+    expect(String(ld.description)).toContain(FLAG_READ_WITHIN);
+    expect(FRESHNESS_HUMAN_HAND).toContain(FLAG_READ_WITHIN);
+    // permit-rulebook-data, src/watch/overdue.ts: OVERDUE_AFTER_DAYS = 2.
+    expect(FLAG_READ_WITHIN).toBe("within two days");
   });
 
   it("states the same day and the same version as the page", () => {
