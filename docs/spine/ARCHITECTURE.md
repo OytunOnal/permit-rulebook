@@ -111,7 +111,12 @@ click on the tracker link. Answers never leave the device.
   repository, tracker), one call to action that pre-scopes the interview.
 - **Interview** — questions by information gain, then results: grouped
   verdicts, the rail, statements, unlock steps, learn links; runs entirely in
-  the browser.
+  the browser. Its first paint is one module, `src/lib/first-paint.ts` (#66).
+  An inline head script reads the record, the link and the width before
+  anything paints, and writes a cover and the first-paint seeds on `<html>`.
+  The stylesheet it renders hides what each cover hides. The page takes the
+  covers off once, as it draws the reader's first screen, so no arrival moves
+  the page.
 - **Record** — localStorage (legacy key migrated) or nothing; a print
   stylesheet for a paper copy.
 - **Tracker** — `permit-rulebook-data/issues` with `bug`, `design-flaw`,
