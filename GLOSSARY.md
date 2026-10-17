@@ -258,6 +258,13 @@ whether a reader has started and stays true from screen to screen.
 _Avoid_: placeholder, skeleton, mask, flag (a flag is the watch's — see
 **Flag**); "started" as the name of a cover coming off
 
+**First-paint seed** (#66):
+A decision the page takes about the reader before it paints: which standing
+promise is theirs, whether they have answered anything, whether the screen is
+narrow. From the first screen on, the page goes on taking the same decision
+itself. A seed is not a cover: it never comes off, it changes hands.
+_Avoid_: flag, default, initial state
+
 **Outside entrance / re-entrance** (s37, the two ways the interview page is
 opened):
 An *outside entrance* opens the page onto a browser history entry the
