@@ -239,6 +239,25 @@ question one (s10).
 _Avoid_: skeleton, placeholder headline, loading state, spinner; held (s37's
 held step, a step of the interview the browser holds a history entry for)
 
+**Standing promise** (s10, #8):
+The masthead's line under the headline, saying what the page will do for
+this reader. There are two: one for a reader who has not started, and one for
+a reader who has. It stays true from screen to screen until the reader starts
+or starts over. It is not a cover, and it never comes off.
+_Avoid_: subline (the element that carries it, which a verdict also writes),
+"started" as the name of a cover coming off
+
+**Cover / stand-in** (s10, s22, #8):
+A *cover* hides part of the page the build painted, for the first paint only.
+It is drawn for a reader the build's page is not right for: one whose answers
+are on the device, one who followed a link that answered for them, or one owed
+a verdict. A *stand-in* is the line shown in the covered place until then. The
+covers come off once, in the task that draws the reader's first screen, and
+never come back. A cover is not the masthead's *standing promise*, which says
+whether a reader has started and stays true from screen to screen.
+_Avoid_: placeholder, skeleton, mask, flag (a flag is the watch's — see
+**Flag**); "started" as the name of a cover coming off
+
 **Outside entrance / re-entrance** (s37, the two ways the interview page is
 opened):
 An *outside entrance* opens the page onto a browser history entry the
