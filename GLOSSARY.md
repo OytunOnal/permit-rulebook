@@ -471,8 +471,12 @@ _Avoid_: downtime, failure, persistent lapse
 
 **Flag**:
 The artifact a detected change or due reminder produces — named source,
-hashes, quoted context; a human turns it into a dataset update.
-_Avoid_: alert, notification
+hashes, quoted context; a human turns it into a dataset update. A flag is
+**walked** when a person reads the changed page against every quote its entry
+backs, corrects the dataset where a value moved, and closes the flag with what
+was found — a value moved, the text moved and no value did, or the page came
+back as it was.
+_Avoid_: alert, notification; triage (a label role) or intake read for the walk
 
 **Baseline**:
 The first recorded snapshot of a source, against which change is measured.

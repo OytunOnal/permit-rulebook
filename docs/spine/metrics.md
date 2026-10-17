@@ -23,6 +23,7 @@ writer is #36. Until it lands the session reads them as #36 describes. Rows 3,
 
 | Date | Metric | Value | Source | n |
 |---|---|---|---|---|
+| 2026-10-17 | 1 | 0 | `gh issue list -R OytunOnal/permit-rulebook-data --label source-change --state open --json number,createdAt`, after #12 walked data #23–#27 | 0 open |
 
 ### Before the tracker (to 2026-10-17)
 
