@@ -99,9 +99,10 @@ click on the tracker link. Answers never leave the device.
 - **Build** — Astro, `base` derived from `SITE_URL`; an invalid dataset breaks
   the build; the social card is rendered from the dataset's own facts with a
   sidecar that makes a stale card fail CI.
-- **Dist** — 25 pages (the interview, the status page, 23 route pages
-  generated from the dataset, never typed) plus 23 JSON endpoints, favicons,
-  the social card.
+- **Dist** — 38 pages (the interview, `/data/`, `/feedback/`, the status
+  page, the 404, 4 country pages, 29 route pages generated from the dataset,
+  never typed) plus 29 route JSON endpoints, the dataset and the countries as
+  JSON, the sitemap, favicons, the social card.
 - **CI** — `pages.yml`: both repositories checked out, data gates, build,
   tests with a real browser over `dist/`, asset truth, base-path check, tap
   targets at 390 px, then deploy.

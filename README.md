@@ -19,32 +19,27 @@ them. This repository is the site; that one is the ruleset.
 wants the rules rather than an opinion — and anyone who needs the ruleset
 itself.
 
-**What it does now** — the latest line of the versions ledger
-([KANBAN.md](KANBAN.md), `## versions`):
+**What it does now** — v1.2.0, from its
+[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.0):
 
-> **v1.1** — The site that answers back. Public at https://permitrulebook.com,
-> stamped 2026-09-16 at s18's merge and confirmed at s22's: 29 routes across
-> Germany, France, Spain and the Netherlands — 23 scored against a reader's
-> answers, 6 quoted and dated but not scored, each with a page of its own —
-> and 192 quotes re-read daily, each carrying the authority's sentence, its
-> page and the day it was read; five of the Dutch pages are read by a person
-> on a 90-day clock since the IND put its requirements behind a form. What
-> changed since v1: a question that no scored route in the chosen country can
-> use says so before it is picked, and a result reached that way is a written
-> state naming the route that would; a partial watch run says which sources
-> it missed, on every page; the first paint no longer shifts on any of five
-> arrivals, a returning reader's included; the feedback door is one word,
-> Feedback, on every page, opening a mail with the subject written; the
-> header folds the countries under one word; every correction lands on the
-> question and returns to the verdict; `/data/` says what it holds in the
-> reader's words. Two isolated critiques on RUBRIC 1.3 the same day — 35/50
-> with two blockers, 39/50 with none after four slices — every blocker
-> cleared by operation on the live site. 568 + 573 tests, 0 vulnerabilities
-> in either repository. (2026-09-16)
+> Public at https://permitrulebook.com: 29 routes across Germany, France,
+> Spain and the Netherlands — 23 scored against a reader's answers, 6 quoted
+> and dated but not scored, each with a page of its own — and 204 quotes, each
+> carrying the authority's sentence, its page and the day it was read. The
+> watch re-reads 46 sources every morning; two are read by a person, because a
+> browser reads them and the fetcher cannot. What changed since v1.1: a changed
+> source nobody has walked by its second morning turns the morning red; a
+> flag quotes the page's words without letting them act on the tracker; the
+> watch reads the IND itself again and reads a failing source twice; a route
+> page dates only what it prints; the first paint holds still on every
+> arrival; Back on a restored record keeps the answer. The isolated walk:
+> 38/50 on RUBRIC 1.3, one blocker fixed, one shipped with its reason
+> ([#77](https://github.com/OytunOnal/permit-rulebook/issues/77)).
+> 922 + 902 tests. (2026-10-18)
 
 **How to run it.** Both repositories side by side — the site reads the dataset
 package from the sibling directory its manifest names. Tried from a fresh clone
-on 2026-09-08:
+on 2026-10-18:
 
 ```
 git clone https://github.com/OytunOnal/permit-rulebook-data.git && git clone https://github.com/OytunOnal/permit-rulebook.git && cd permit-rulebook-data && npm ci && npm run build && cd ../permit-rulebook && npm ci && npm run build
@@ -71,7 +66,7 @@ device: the evaluation runs in the browser, there is no server to send it to,
 and the record is kept in the browser's own storage or not at all.
 
 Beside the interview there is a page for every route in the dataset, at
-`/{country}/{route}` — `/germany/eu-blue-card-general` and twenty-two others.
+`/{country}/{route}` — `/germany/eu-blue-card-general` and twenty-eight others.
 A route page describes the rules and never rules on the reader: every number on
 it is the authority's own sentence, with the page it came from, the day it was
 read, and the language it is written in. Each one carries its own door to the
