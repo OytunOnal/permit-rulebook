@@ -267,14 +267,14 @@ interface QuoteOptions {
 }
 
 /** A read date as a quote and a headline figure both print it. */
-const readTime = (day: string): string => `<time datetime="${escAttr(day)}">${esc(readOn(day))}</time>`;
+const readDateTime = (day: string): string => `<time datetime="${escAttr(day)}">${esc(readOn(day))}</time>`;
 
 function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen: Glossary = new Set()): string {
   const { lang, host, note } = quoteFrame(value, o.amount);
   return `<div class="src">
         <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
     o.label ? ` · ${esc(o.label)}` : ""}${
-    value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${readTime(value.retrieved_at)}</b>${
+    value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
     noteHtml(note)}</span>
         <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
     esc(o.linkText ?? "Official page")} &#8599;</a>
@@ -618,10 +618,10 @@ function headlineFigures(dataset: Dataset, route: Route): string {
   if (amounts.length)
     return amounts.map((c) => `<b>${esc(formatEURPer(c.threshold.amount, periodOf(dataset, c.field)))}</b>${
       c.threshold_label ? ` <span class="answer-label">— ${esc(c.threshold_label)}</span>` : ""} · ${
-      readTime(c.threshold.retrieved_at)}`).join("<br>");
+      readDateTime(c.threshold.retrieved_at)}`).join("<br>");
   if (!points) return "";
   return `<b>${esc(pointsFigure(points.required.value))}</b> <span class="answer-label">${esc(POINTS_FIGURE_LABEL)}</span> · ${
-    readTime(points.required.retrieved_at)}`;
+    readDateTime(points.required.retrieved_at)}`;
 }
 
 /**
