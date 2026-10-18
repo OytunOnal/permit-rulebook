@@ -557,10 +557,23 @@ export interface RouteFigure {
   value: string;
 }
 
-export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
+type Points = Extract<Criterion, { op: "points" }>;
+
+/**
+ * The figures a route turns on, which the headline panel and the country card
+ * both print: its thresholds, one per amount and lowest first, or failing
+ * those its points total.
+ */
+function figuresOf(dataset: Dataset, route: Route): { amounts: Gte[]; points?: Points } {
+  const seen = new Set<number>();
   const amounts = ruleCriteria(dataset, route).flatMap(gteUnder)
+    .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
     .sort((a, b) => a.threshold.amount - b.threshold.amount);
-  const points = route.criteria.flatMap((c) => (c.op === "points" ? [c] : []));
+  return { amounts, points: route.criteria.find((c): c is Points => c.op === "points") };
+}
+
+export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
+  const { amounts, points } = figuresOf(dataset, route);
   if (amounts.length) {
     const own = amounts[0]!;
     const field = dataset.fields.find((f) => f.id === own.field);
@@ -568,13 +581,13 @@ export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
     // these routes, and the field says which: one is what a job pays you, the
     // other is what you must be able to show you have.
     const label = /funds/.test(own.field) ? "funds to show" : "salary threshold";
-    const from = amounts.some((c) => c.threshold.amount !== own.threshold.amount) ? "from " : "";
+    const from = amounts.length > 1 ? "from " : "";
     return {
       label,
       value: `${from}${formatEURPer(own.threshold.amount, field?.period)}`,
     };
   }
-  if (points.length) return { label: "points needed", value: String(points[0]!.required.value) };
+  if (points) return { label: "points needed", value: String(points.required.value) };
   return { label: "no salary threshold", value: "" };
 }
 
@@ -592,18 +605,14 @@ export function gist(route: Route): string {
  * day its quote below prints. Empty where the route asks for no number.
  */
 function headlineFigures(dataset: Dataset, route: Route): string {
-  const seen = new Set<number>();
-  const amounts = ruleCriteria(dataset, route).flatMap(gteUnder)
-    .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
-    .sort((a, b) => a.threshold.amount - b.threshold.amount);
+  const { amounts, points } = figuresOf(dataset, route);
   if (amounts.length)
     return amounts.map((c) => `<b>${esc(formatEURPer(c.threshold.amount, periodOf(dataset, c.field)))}</b>${
       c.threshold_label ? ` <span class="answer-label">— ${esc(c.threshold_label)}</span>` : ""} · ${
       readTime(c.threshold.retrieved_at)}`).join("<br>");
-  const points = route.criteria.flatMap((c) => (c.op === "points" ? [c] : []));
-  if (!points.length) return "";
-  return `<b>${esc(pointsFigure(points[0]!.required.value))}</b> <span class="answer-label">${esc(POINTS_FIGURE_LABEL)}</span> · ${
-    readTime(points[0]!.required.retrieved_at)}`;
+  if (!points) return "";
+  return `<b>${esc(pointsFigure(points.required.value))}</b> <span class="answer-label">${esc(POINTS_FIGURE_LABEL)}</span> · ${
+    readTime(points.required.retrieved_at)}`;
 }
 
 /**
