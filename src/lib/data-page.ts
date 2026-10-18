@@ -9,7 +9,7 @@ import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
 import {
   DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PRODUCT_NAME,
   PROSE_OURS_TAIL, TAGLINE, TRANSLATION_POLICY, WRONG_DOOR_LABEL, dataLedeClose, dataLedeOpen, dataMetaDescription,
-  datasetDay, proseProvenanceCounts,
+  datasetDay, proseProvenanceCounts, readOn,
 } from "./copy.js";
 import {
   DATA_LICENCE_FULL, REPO_DATA, absolute, analyticsBeacon, headMeta, lastWatchRun, readRange, unreadSourcesAt,
@@ -241,8 +241,8 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
       ${dataset.countries.map((country) => `
       <nav class="jsonlinks" aria-label="${escAttr(`${withArticle(country)} as JSON`)}">
         <b class="label">${esc(withArticle(country))}</b>${country.routes.map((route) => `
-        <a class="tap-min" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>read ${
-    esc(pageStamp(dataset, route))}</small></a>`).join("")}
+        <a class="tap-min" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>${
+    esc(readOn(pageStamp(dataset, route)))}</small></a>`).join("")}
       </nav>`).join("")}
     </section>
   </main>

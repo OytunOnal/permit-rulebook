@@ -137,8 +137,10 @@ export const ROUTE_PAGE_UNSCORED_ADDENDUM =
   "This route is one the checker does not score — the rules are stated here and nothing is asked of you.";
 
 /**
- * The day a quote's page was read, as the quote and the headline figure both
- * print it: the figure is dated by its own reading, so the two cannot differ.
+ * The day a page was read, in the one form every read date takes: a quote on
+ * a route page or a results card, a headline figure, a country card and the
+ * data door's route list. The figure is dated by its own reading, so it and
+ * its quote cannot differ.
  */
 export const readOn = (day: string): string => `read ${day}`;
 

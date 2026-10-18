@@ -11,7 +11,7 @@ import {
   PAGE_CSS, audienceSentence, gist, pageStamp, routeFigure, withArticle,
 } from "./route-page.js";
 import {
-  DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay,
+  DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay, readOn,
 } from "./copy.js";
 import {
   DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, OWNER, REPO_DATA, analyticsBeacon,
@@ -160,7 +160,7 @@ function routeCard(dataset: Dataset, country: Country, route: Route, seen: Gloss
     esc(glossSection(route.name, seen))}</span><p class="gist">${esc(gist(route))}</p><p class="meta">${
     figure ? `<span>${esc(figure.label)}${figure.value ? ` <b>${esc(figure.value)}</b>` : ""}</span>` : ""}<span>${
     esc(scopeLine(route))}</span><span class="read"><time datetime="${
-    escAttr(pageStamp(dataset, route))}">read ${esc(pageStamp(dataset, route))}</time></span></p></a></li>`;
+    escAttr(pageStamp(dataset, route))}">${esc(readOn(pageStamp(dataset, route)))}</time></span></p></a></li>`;
 }
 
 export function countryPage(dataset: Dataset, address: CountryAddress): CountryPage {

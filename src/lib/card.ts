@@ -8,7 +8,7 @@ import {
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
-import { NOT_CHECKED_HEADING, ROUTE_DOOR, askedHeading } from "./copy.js";
+import { NOT_CHECKED_HEADING, ROUTE_DOOR, askedHeading, readOn } from "./copy.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
 // it, on the screen's own memory (2026-09-08).
 // One frame for every quote the product shows (2026-09-08).
@@ -414,7 +414,7 @@ export function provenanceHtml(ds: Dataset, r: RouteResult, answers: Profile): s
     return `<div class="src${contested && amount !== undefined && applied === false ? " unapplied" : ""}"><i${
       lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
-      value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b>${
+      value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
       noteHtml(note)}</div>`;
   });
   // One sentence, one line.
@@ -479,7 +479,7 @@ function srcLine(value: { quote: string; source_url: string; retrieved_at: strin
   const { shown, trimmed } = quoteForCard(value.quote);
   return `<div class="src"${trimmed ? ` title="${escAttr(value.quote)}"` : ""}><i${
     lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(shown)}”</i> · ${esc(host)}${
-    value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>read ${esc(value.retrieved_at)}</b>${
+    value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
     noteHtml(note)}</div>`;
 }
 
