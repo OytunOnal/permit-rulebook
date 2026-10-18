@@ -137,6 +137,19 @@ export const ROUTE_PAGE_UNSCORED_ADDENDUM =
   "This route is one the checker does not score — the rules are stated here and nothing is asked of you.";
 
 /**
+ * The day a quote's page was read, as the quote and the headline figure both
+ * print it: the figure is dated by its own reading, so the two cannot differ.
+ */
+export const readOn = (day: string): string => `read ${day}`;
+
+/**
+ * Under a route page's headline figures. Each figure carries its own read date,
+ * so this line names none; a panel with no figure has no sentence to point to
+ * and does not carry it.
+ */
+export const ANSWER_SOURCED = "From the authority's own page, with the sentence it came from below.";
+
+/**
  * What the site says about the daily check — the claim, and the qualification a
  * partial run puts on it.
  *

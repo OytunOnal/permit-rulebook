@@ -7,10 +7,10 @@ import {
   routeStatements, statementSources, type Dataset, type Route,
 } from "permit-rulebook-data";
 import {
-  PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routePage, routePages,
-  stampDate,
+  PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routeFigure, routePage, routePages,
 } from "../src/lib/route-page.js";
-import { WRONG_DOOR_LABEL, datasetDay } from "../src/lib/copy.js";
+import { countryPages } from "../src/lib/country-page.js";
+import { ANSWER_SOURCED, WRONG_DOOR_LABEL, datasetDay } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { esc } from "../src/lib/reason.js";
@@ -37,6 +37,14 @@ const textOf = (html: string): string =>
     .replace(/<[^>]+>/g, " ")
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#8599;/g, " ")
     .replace(/\s+/g, " ");
+
+/** The read dates of the quotes a page prints, in page order. */
+const quoteDatesOf = (html: string): string[] =>
+  [...html.matchAll(/<div class="src">[\s\S]*?<\/div>/g)]
+    .flatMap((m) => [...m[0].matchAll(/datetime="([^"]+)"/g)].map((d) => d[1]));
+
+/** The panel a route page opens on: the figure it asks for, and the day it was read. */
+const answerOf = (html: string): string => /<section class="answer"[\s\S]*?<\/section>/.exec(html)?.[0] ?? "";
 
 /** Every `<a>` and `<button>` a page ships, with the classes it carries. */
 const controlsOf = (html: string): string[][] =>
@@ -242,19 +250,11 @@ describe("s6 — one page per route, generated from the dataset", () => {
     expect(textOf(de.html)).toContain("The source writes 50.700 where this page writes 50,700");
   });
 
-  it("the stamp is the newest read date on the page, and every date is ISO", () => {
+  it("the stamp is the newest date among the quotes the page prints, and every date is ISO", () => {
     for (const address of routeAddresses(ds)) {
       const page = routePage(ds, address);
       expect(page.readDate, page.path).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      // The page's own content. The shared footer states a fact about the
-      // whole dataset — the span every value was read over — which is later
-      // than this route's own reading and is not a claim about this route
-      // (footer, 2026-09-08).
-      const body = page.html.slice(0, page.html.indexOf('<footer class="site-foot">'));
-      const onPage = [...body.matchAll(/datetime="(\d{4}-\d{2}-\d{2})"/g)].map((m) => m[1]);
-      expect(onPage, page.path).toContain(page.readDate);
-      // Nothing on the page was read later than the stamp claims.
-      for (const d of onPage) expect(d <= page.readDate, `${page.path}: ${d}`).toBe(true);
+      expect(page.readDate, page.path).toBe(quoteDatesOf(page.html).sort().at(-1));
       // Never a second date format beside it.
       expect(textOf(page.html), page.path).not.toMatch(/\d{2}\s*·\s*\d{2}\s*·\s*\d{4}/);
       expect(textOf(page.html), page.path).not.toMatch(/\d{4}\.\d{2}\.\d{2}/);
@@ -337,23 +337,6 @@ describe("s6 — one page per route, generated from the dataset", () => {
       for (const word of ["modelled", "modeled", "modelling", "criterion", "criteria", "field id", "pipeline"])
         expect(ours, `${page.path}: ${word}`).not.toContain(word);
     }
-  });
-
-  it("the stamp aggregates the page's own dates and nothing else", () => {
-    const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-blue-card-general")!;
-    const dates: string[] = [];
-    forEachCriterion(route.criteria, (c) => {
-      for (const e of provenancedValuesOf(c)) dates.push(e.value.retrieved_at);
-    });
-    for (const s of routeStatements(route)) if (s.source) dates.push(s.source.retrieved_at);
-    // The notice's own read dates are on the page too, so the stamp aggregates
-    // both — it is the newest of everything printed, not merely no older. Every
-    // side of the notice: since s29 the free-movement notice carries two more
-    // sentences in `sources[]` (the EEA and the Swiss reads, 2026-09-17), and
-    // each is printed with its date.
-    const notice = audienceNotice(ds)!;
-    for (const value of noticeSources(notice)) dates.push(value.retrieved_at);
-    expect(stampDate(route, notice)).toBe([...dates].sort().at(-1)!);
   });
 
   /**
@@ -592,5 +575,66 @@ describe("s6 — one page per route, generated from the dataset", () => {
           expect(quoteLanguage(e.value.source_url), `${route.id}: ${e.value.source_url}`).toBeTruthy();
       });
     }
+  });
+});
+
+/**
+ * A page dates only what it prints (#76). The audience notice carries more
+ * sentences than a route page prints: its `sources` stand on the results card,
+ * and on a route page the citizenship card quotes only its `source`. So the
+ * dataset is bent until a date reaches the notice and nothing printed: a
+ * stamp read from the notice's whole list shows it, a stamp read from the page
+ * cannot.
+ */
+describe("a route page dates what it prints", () => {
+  const NEVER_PRINTED = "2026-09-30";
+  const bent = structuredClone(ds);
+  const audience = (bent.notices ?? []).find((n) => n.kind === "no-permit-needed");
+  for (const value of audience?.sources ?? []) value.retrieved_at = NEVER_PRINTED;
+  const bentPages = routeAddresses(bent).map((a) => ({ route: a.route, page: routePage(bent, a) }));
+
+  it("draws the stamp from no source the page leaves out", () => {
+    expect(audience?.sources?.length, "the notice no longer carries a source the page leaves out").toBeTruthy();
+    for (const { page } of bentPages) {
+      expect(page.readDate, page.path).toBe(quoteDatesOf(page.html).sort().at(-1));
+      expect(page.html, page.path).not.toContain(NEVER_PRINTED);
+    }
+    for (const page of countryPages(bent)) expect(page.html, page.path).not.toContain(NEVER_PRINTED);
+  });
+
+  it("dates each headline figure by its own reading, the date its quote prints", () => {
+    const moved = structuredClone(ds);
+    const spain = moved.countries.find((c) => c.code === "ES")!;
+    const route = spain.routes.find((r) => r.id === "es-blue-card")!;
+    // Two figures, each read on a day nothing else on the page was read.
+    const days = ["2026-08-21", "2026-08-22"];
+    const figures: { amount: number; day: string }[] = [];
+    forEachCriterion(route.criteria, (c) => {
+      if (c.op !== "gte") return;
+      const day = days[figures.length]!;
+      c.threshold.retrieved_at = day;
+      figures.push({ amount: c.threshold.amount, day });
+    });
+    expect(figures.length, "the route no longer carries two figures").toBe(2);
+    const page = routePage(moved, routeAddresses(moved).find((a) => a.route.id === route.id)!);
+    const lines = answerOf(page.html).split("<br>");
+    for (const { amount, day } of figures) {
+      const line = lines.find((l) => l.includes(formatEUR(amount)));
+      expect(line, `${formatEUR(amount)} is not in the panel`).toBeDefined();
+      expect([...line!.matchAll(/datetime="([^"]+)"/g)].map((d) => d[1])).toEqual([day]);
+      expect(quoteDatesOf(page.html), `${day} is not the date a quote prints`).toContain(day);
+    }
+    expect(answerOf(page.html)).not.toContain(`datetime="${page.readDate}"`);
+  });
+
+  it("a panel with no figure promises no sentence below it and dates nothing", () => {
+    const without = bentPages.filter(({ route }) => isScored(route) && !routeFigure(bent, route).value);
+    expect(without.length, "no scored route is left without a figure").toBeGreaterThan(0);
+    for (const { page } of without) {
+      expect(answerOf(page.html), page.path).not.toContain(ANSWER_SOURCED);
+      expect(answerOf(page.html), page.path).not.toContain("<time");
+    }
+    for (const { route, page } of bentPages)
+      if (routeFigure(bent, route).value) expect(answerOf(page.html), page.path).toContain(ANSWER_SOURCED);
   });
 });
