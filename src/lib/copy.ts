@@ -151,6 +151,18 @@ export const readOn = (day: string): string => `read ${day}`;
  */
 export const ANSWER_SOURCED = "From the authority's own page, with the sentence it came from below.";
 
+/** A points route's headline figure, and what stands beside it. */
+export const pointsFigure = (points: number): string => `${points} points`;
+export const POINTS_FIGURE_LABEL = "— from the official table";
+
+/**
+ * The panel of a route that asks for no number. The absence is the answer to
+ * "what is the threshold", and no sentence states an absence, so it points to
+ * the conditions rather than to a quote.
+ */
+export const NO_FIGURE = "No salary or points threshold";
+export const NO_FIGURE_LABEL = "— what this route asks for is in the conditions below";
+
 /**
  * What the site says about the daily check — the claim, and the qualification a
  * partial run puts on it.

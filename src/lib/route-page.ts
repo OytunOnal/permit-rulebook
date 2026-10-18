@@ -43,8 +43,8 @@ import {
   absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
 } from "./site.js";
 import {
-  ANSWER_SOURCED, ANY_OF, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE,
-  WRONG_DOOR_LABEL, dailyCheck, readOn,
+  ANSWER_SOURCED, ANY_OF, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM,
+  ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck, pointsFigure, readOn,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -602,7 +602,7 @@ function headlineFigures(dataset: Dataset, route: Route): string {
       readTime(c.threshold.retrieved_at)}`).join("<br>");
   const points = route.criteria.flatMap((c) => (c.op === "points" ? [c] : []));
   if (!points.length) return "";
-  return `<b>${points[0]!.required.value} points</b> <span class="answer-label">— from the official table</span> · ${
+  return `<b>${esc(pointsFigure(points[0]!.required.value))}</b> <span class="answer-label">${esc(POINTS_FIGURE_LABEL)}</span> · ${
     readTime(points[0]!.required.retrieved_at)}`;
 }
 
@@ -619,7 +619,7 @@ function answerBlock(dataset: Dataset, route: Route): string {
     <h2 class="label" id="answer-h">What this route asks for</h2>${figures ? `
     <p class="answer-figure">${figures}</p>
     <p class="answer-read">${esc(ANSWER_SOURCED)}</p>` : `
-    <p class="answer-figure"><b>No salary or points threshold</b> <span class="answer-label">— what this route asks for is in the conditions below</span></p>`}
+    <p class="answer-figure"><b>${esc(NO_FIGURE)}</b> <span class="answer-label">${esc(NO_FIGURE_LABEL)}</span></p>`}
   </section>`;
 }
 
