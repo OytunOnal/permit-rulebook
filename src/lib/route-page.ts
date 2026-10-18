@@ -155,18 +155,9 @@ export const withArticle = (country: Country): string =>
 export const audienceSentence = (country: Country): string =>
   `This page is for people who need a permit to work in ${withArticle(country)}.`;
 
-/** Every provenanced value on this route, in the order the page prints them. */
-function routeValues(route: Route): ProvenanceEntry[] {
-  const out: ProvenanceEntry[] = [];
-  forEachCriterion(route.criteria, (c) => out.push(...provenancedValuesOf(c)));
-  // Both halves of a statement: a carve-out's quote is on the page too.
-  for (const s of routeStatements(route)) for (const source of statementSources(s)) out.push({ value: source });
-  return out;
-}
-
 /**
- * Every source this page quotes: its values', its statements', and those of
- * the notices about it (s23, F3).
+ * Every source this page quotes: the pages behind `printedSources`, the same
+ * set the stamp is drawn from (s23, F3).
  *
  * The liveness line reads the s11 unread list through this set, so a route
  * page qualifies the daily-check claim only when one of ITS sources went
@@ -175,9 +166,7 @@ function routeValues(route: Route): ProvenanceEntry[] {
  * "the last run did not reach one of them" (v1.1 gate critique, F3).
  */
 export function routeSourceUrls(dataset: Dataset, route: Route): Set<string> {
-  const urls = new Set(routeValues(route).map((e) => e.value.source_url));
-  for (const n of noticesOn(dataset, route)) for (const value of noticeSources(n)) urls.add(value.source_url);
-  return urls;
+  return new Set(printedSources(dataset, route).map((v) => v.source_url));
 }
 
 /** Of the run's unread list, the sources this page quotes. */

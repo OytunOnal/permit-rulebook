@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  SITUATION_FIELD, evaluate, fieldOptions, unlockTitleOf, unlocks,
+  SITUATION_FIELD, evaluate, fieldOptions, forEachCriterion, unlockTitleOf, unlocks,
   type Dataset, type Profile, type UnreadSource,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
@@ -189,8 +189,16 @@ describe("F4 — the not-yet Opportunity Card prints its tally, and the CEFR run
 describe("F3 — the route page's liveness line names its own source or stays silent", () => {
   const run = lastWatchRun();
   const address = (id: string) => routeAddresses(ds).find((a) => a.route.id === id)!;
-  /** An unread source of the Opportunity Card's own: its points table's page. */
-  const ownUrl = [...routeSourceUrls(ds, routeOf("de-chancenkarte"))][0]!;
+  /**
+   * An unread source of the Opportunity Card's own: its points table's page.
+   * Named through the criterion, since the page's first source is the
+   * citizenship card's, which every scored page prints.
+   */
+  const pointsTables: string[] = [];
+  forEachCriterion(routeOf("de-chancenkarte").criteria, (c) => {
+    if (c.op === "points") pointsTables.push(c.required.source_url);
+  });
+  const ownUrl = pointsTables[0]!;
   const own: UnreadSource = { id: "own", url: ownUrl, last_read: "2026-09-07", countries: ["DE"] };
   const other: UnreadSource = {
     id: "es-uge-umbral-pdf", last_read: "2026-09-07", countries: ["ES"],

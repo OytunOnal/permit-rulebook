@@ -4,7 +4,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   scopeLine, forEachCriterion, formatEUR, formatEURPer, isScored, noticeSources, provenancedValuesOf,
   quoteLanguage,
-  routeStatements, statementSources, type Dataset, type Route,
+  routeStatements, statementSources, type Dataset, type Route, type UnreadSource,
 } from "permit-rulebook-data";
 import {
   PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routeFigure, routePage, routePages,
@@ -15,7 +15,7 @@ import { feedbackPage } from "../src/lib/feedback-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { datasetLd } from "../src/lib/dataset-ld.js";
 import { sitemapEntries } from "../src/lib/sitemap.js";
-import { ANSWER_SOURCED, WRONG_DOOR_LABEL, datasetDay } from "../src/lib/copy.js";
+import { ANSWER_SOURCED, WRONG_DOOR_LABEL, dailyCheck, datasetDay } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/identity.js";
 import { esc } from "../src/lib/reason.js";
@@ -620,6 +620,24 @@ describe("a route page dates what it prints", () => {
     for (const address of [...routeAddresses(bent), ...countryAddresses(bent)])
       expect(lastmod.get(address.path), address.path).not.toBe(NEVER_PRINTED);
     for (const page of countryPages(bent)) expect(stampOf(page.html), page.path).not.toBe(NEVER_PRINTED);
+  });
+
+  /**
+   * The liveness line and the stamp read one set of this page's sources. The
+   * citizenship card prints the audience notice's `source`, so a run that
+   * could not read it is a run that missed one of this page's sources.
+   */
+  it("qualifies its daily-check line when the run missed a sentence the page prints", () => {
+    const notice = audienceNotice(ds)!;
+    const unread: UnreadSource[] = [
+      { id: "audience", url: notice.source.source_url, last_read: notice.source.retrieved_at, countries: [] },
+    ];
+    const prints = (html: string): boolean => html.includes(esc(notice.source.quote));
+    const pagesWith = routeAddresses(ds).map((a) => routePage(ds, a, "2026-09-30", unread));
+    expect(pagesWith.filter((p) => prints(p.html)).length, "no route page prints the notice's sentence")
+      .toBeGreaterThan(0);
+    for (const page of pagesWith)
+      expect(page.html.includes(esc(dailyCheck(1))), page.path).toBe(prints(page.html));
   });
 
   it("dates each headline figure by its own reading, the date its quote prints", () => {
