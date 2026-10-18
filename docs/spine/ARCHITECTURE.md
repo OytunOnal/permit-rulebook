@@ -64,9 +64,13 @@ click on the tracker link. Answers never leave the device.
   fetcher and a browser (Chrome over its own protocol); both refuse an entry
   address that is malformed, credentialled, not a page, or link-local before
   anything is asked, and the fetcher also judges every address a name
-  resolves to (a name Chrome resolves is #50).
-- **Flags** — one file per change with the quoted diff; walked by a person,
-  who edits the dataset or records what was found, within two days.
+  resolves to (a name Chrome resolves is #50). What a finished run says (its
+  flags, its log lines and its exit code) is decided in one module, `run-says`;
+  the CLI only reads, prints and writes (#72).
+- **Flags** — one file per change, with the page's *excerpt* in a fenced code
+  block so nothing in it acts on the issue, and every line around it ours
+  (#72); walked by a person, who edits the dataset or records what was found,
+  within two days.
 - **Dataset** — `data/dataset.json` (schema 0.5.0): 23 routes, 4 countries;
   every numeric value with its source URL, verbatim quote, retrieval date and
   append-only history; per route its statements (preconditions and caveats in
