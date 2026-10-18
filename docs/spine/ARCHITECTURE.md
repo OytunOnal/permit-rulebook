@@ -113,6 +113,10 @@ click on the tracker link. Answers never leave the device.
 - **Route page** — rules in interview order, the rail with its label list,
   quotes with language and read date, the scope block, the data door (JSON,
   repository, tracker), one call to action that pre-scopes the interview.
+  It dates only what it prints: each headline figure carries its own read
+  date, and the stamp, the country cards and the liveness line read one set,
+  the quotes the page prints. A site-wide page (/data/, /feedback/, the 404,
+  the sitemap) dates the whole dataset, as the interview does (#76).
 - **Interview** — questions by information gain, then results: grouped
   verdicts, the rail, statements, unlock steps, learn links; runs entirely in
   the browser. Its first paint is one module, `src/lib/first-paint.ts` (#66).
