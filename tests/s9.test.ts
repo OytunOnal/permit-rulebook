@@ -7,6 +7,7 @@ import { dataPage } from "../src/lib/data-page.js";
 import { indexedPaths } from "../src/lib/sitemap.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { arrivalFrom, countryArrivalFrom, destinationForCountry } from "../src/lib/scope.js";
+import { NO_FIGURE } from "../src/lib/copy.js";
 
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds, "2026-09-10");
@@ -98,7 +99,7 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
       expect(html, a.route.id).not.toContain(`?route=${a.route.id}`);
       expect(text, a.route.id).not.toContain("Where do you stand on this route?");
       expect(text, a.route.id).not.toContain("What this route asks for");
-      expect(text, a.route.id).not.toContain("No salary or points threshold");
+      expect(text, a.route.id).not.toContain(NO_FIGURE);
       // No rule cards: a rule card is what a criterion renders as, and this
       // route has none.
       expect(html.includes('<article class="rule">'), a.route.id).toBe(false);

@@ -43,7 +43,8 @@ import {
   absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
 } from "./site.js";
 import {
-  ANY_OF, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck,
+  ANSWER_SOURCED, ANY_OF, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM,
+  ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck, pointsFigure, readOn,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -154,21 +155,9 @@ export const withArticle = (country: Country): string =>
 export const audienceSentence = (country: Country): string =>
   `This page is for people who need a permit to work in ${withArticle(country)}.`;
 
-/** Every provenanced value on this route, in the order the page prints them. */
-function routeValues(route: Route): ProvenanceEntry[] {
-  const out: ProvenanceEntry[] = [];
-  forEachCriterion(route.criteria, (c) => out.push(...provenancedValuesOf(c)));
-  // Both halves of a statement: the stamp is the latest read date on the page
-  // (decision 12), and a carve-out's quote is on the page (Standards review,
-  // 2026-09-10 — this was the one call site the accessor was written for that
-  // still read one half).
-  for (const s of routeStatements(route)) for (const source of statementSources(s)) out.push({ value: source });
-  return out;
-}
-
 /**
- * Every source this page quotes: its values', its statements', and those of
- * the notices about it (s23, F3).
+ * Every source this page quotes: the pages behind `printedSources`, the same
+ * set the stamp is drawn from (s23, F3).
  *
  * The liveness line reads the s11 unread list through this set, so a route
  * page qualifies the daily-check claim only when one of ITS sources went
@@ -177,9 +166,7 @@ function routeValues(route: Route): ProvenanceEntry[] {
  * "the last run did not reach one of them" (v1.1 gate critique, F3).
  */
 export function routeSourceUrls(dataset: Dataset, route: Route): Set<string> {
-  const urls = new Set(routeValues(route).map((e) => e.value.source_url));
-  for (const n of noticesOn(dataset, route)) for (const value of noticeSources(n)) urls.add(value.source_url);
-  return urls;
+  return new Set(printedSources(dataset, route).map((v) => v.source_url));
 }
 
 /** Of the run's unread list, the sources this page quotes. */
@@ -187,21 +174,6 @@ export const ownUnread = (dataset: Dataset, route: Route, unread: UnreadSource[]
   const own = routeSourceUrls(dataset, route);
   return unread.filter((u) => own.has(u.url));
 };
-
-/**
- * The stamp's date: the newest read date among the page's own quotes.
- *
- * The mock's first cut showed the OLDEST of three dates in the headline trust
- * artefact, with no line saying what it aggregated (critique F3). Decision 12
- * settles it — the stamp equals the latest read date on the page, so a reader
- * can derive the number from the lines below it.
- */
-export function stampDate(route: Route, notice?: Notice, alsoOn: Notice[] = []): string {
-  const dates = routeValues(route).map((e) => e.value.retrieved_at);
-  for (const n of [...(notice ? [notice] : []), ...alsoOn])
-    for (const value of noticeSources(n)) dates.push(value.retrieved_at);
-  return dates.sort().at(-1) ?? "";
-}
 
 /**
  * The notices this route's page carries — the ones the dataset says are about
@@ -241,17 +213,35 @@ function noticeSection(n: Notice, seen: Glossary): string {
 }
 
 /**
- * The stamp one route page carries: the newest read date among everything
- * printed on it — its own quotes, the audience notice, and any notice the
- * dataset says is about this route.
- *
- * One function, because four surfaces print this date (the page, the country
- * index, the data door and the sitemap) and three of them passed `stampDate`
- * two arguments where it now takes three. A country index reading 2026-09-07
- * beside a page reading 2026-09-10 is two claims about one page (s8).
+ * The notices a route page prints: the ones about it, on a page that scores.
+ * A page that does not score carries no results furniture, these blocks
+ * included (s9).
+ */
+function printedNotices(dataset: Dataset, route: Route): Notice[] {
+  return isScored(route) ? noticesOn(dataset, route) : [];
+}
+
+/**
+ * Every quote a route page prints: its rule cards', its statements' and its
+ * notices'. A notice carries more sentences than a route page prints; only
+ * the ones printed here count.
+ */
+function printedSources(dataset: Dataset, route: Route): ProvenanceEntry["value"][] {
+  const notice = audienceNotice(dataset);
+  const out = ruleCriteria(dataset, route).flatMap((c) => cardValues(c, notice)).map((e) => e.value);
+  for (const s of routeStatements(route)) out.push(...statementSources(s));
+  for (const n of printedNotices(dataset, route)) out.push(...noticeSources(n));
+  return out;
+}
+
+/**
+ * The stamp one route page carries: the newest read date among the quotes it
+ * prints, so a reader finds that day below it. Four surfaces print it (the
+ * page, the country index, the data door and the sitemap), so it is one
+ * function.
  */
 export function pageStamp(dataset: Dataset, route: Route): string {
-  return stampDate(route, audienceNotice(dataset), noticesOn(dataset, route));
+  return printedSources(dataset, route).map((v) => v.retrieved_at).sort().at(-1) ?? "";
 }
 
 /**
@@ -276,12 +266,15 @@ interface QuoteOptions {
   linkText?: string;
 }
 
+/** A read date as a quote and a headline figure both print it. */
+const readDateTime = (day: string): string => `<time datetime="${escAttr(day)}">${esc(readOn(day))}</time>`;
+
 function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen: Glossary = new Set()): string {
   const { lang, host, note } = quoteFrame(value, o.amount);
   return `<div class="src">
         <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
     o.label ? ` · ${esc(o.label)}` : ""}${
-    value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b><time datetime="${escAttr(value.retrieved_at)}">read ${esc(value.retrieved_at)}</time></b>${
+    value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
     noteHtml(note)}</span>
         <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
     esc(o.linkText ?? "Official page")} &#8599;</a>
@@ -429,14 +422,20 @@ function asksBlock(dataset: Dataset, c: Criterion): string {
       escAttr(l.url)}" target="_blank" rel="noopener">${esc(l.label)} &#8599;</a></p>`).join("")}</div>`;
 }
 
-function ruleCard(
-  dataset: Dataset, country: Country, route: Route, c: Criterion, seen: Glossary, notice?: Notice,
-): string {
+/** The quotes one rule card prints. */
+function cardValues(c: Criterion, notice?: Notice): ProvenanceEntry[] {
   const values = valuesUnder(c);
   // A closure names the same field and makes the opposite claim, so it is not
   // the audience card and never borrows the free-movement notice's words.
   const isAudience = "field" in c && c.field === "citizenship" && c.op !== "not-in";
   if (isAudience && notice && !values.length) values.push({ value: notice.source });
+  return values;
+}
+
+function ruleCard(
+  dataset: Dataset, country: Country, route: Route, c: Criterion, seen: Glossary, notice?: Notice,
+): string {
+  const values = cardValues(c, notice);
   const thresholds = gteUnder(c);
   const year = thresholds.length ? thresholds[0].threshold.retrieved_at.slice(0, 4) : "";
   // A card with no evidence and no scale is one sentence restating its own
@@ -567,10 +566,23 @@ export interface RouteFigure {
   value: string;
 }
 
-export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
+type Points = Extract<Criterion, { op: "points" }>;
+
+/**
+ * The figures a route turns on, which the headline panel and the country card
+ * both print: its thresholds, one per amount and lowest first, or failing
+ * those its points total.
+ */
+function figuresOf(dataset: Dataset, route: Route): { amounts: Gte[]; points?: Points } {
+  const seen = new Set<number>();
   const amounts = ruleCriteria(dataset, route).flatMap(gteUnder)
+    .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
     .sort((a, b) => a.threshold.amount - b.threshold.amount);
-  const points = route.criteria.flatMap((c) => (c.op === "points" ? [c] : []));
+  return { amounts, points: route.criteria.find((c): c is Points => c.op === "points") };
+}
+
+export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
+  const { amounts, points } = figuresOf(dataset, route);
   if (amounts.length) {
     const own = amounts[0]!;
     const field = dataset.fields.find((f) => f.id === own.field);
@@ -578,13 +590,13 @@ export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
     // these routes, and the field says which: one is what a job pays you, the
     // other is what you must be able to show you have.
     const label = /funds/.test(own.field) ? "funds to show" : "salary threshold";
-    const from = amounts.some((c) => c.threshold.amount !== own.threshold.amount) ? "from " : "";
+    const from = amounts.length > 1 ? "from " : "";
     return {
       label,
       value: `${from}${formatEURPer(own.threshold.amount, field?.period)}`,
     };
   }
-  if (points.length) return { label: "points needed", value: String(points[0]!.required.value) };
+  if (points) return { label: "points needed", value: String(points.required.value) };
   return { label: "no salary threshold", value: "" };
 }
 
@@ -598,39 +610,34 @@ export function gist(route: Route): string {
 }
 
 /**
- * What a search visitor came for, before anything explains itself: the number
- * this route asks for, the day we read it, and the way in.
- *
- * It was 1.5 screens down on a desktop and 2.4 on a phone, behind a box about
- * what the interview does and does not ask — a disclaimer about a screen the
- * visitor has never seen (isolated v1-gate critique, 2026-09-08, F1). The box
- * still says what it says; it says it after the answer.
- *
- * A route that asks for no money says so in the same place: the absence is an
- * answer to "what is the threshold", and leaving it blank reads as a page that
- * forgot its own number.
+ * The headline figures, each with the day its own page was read, which is the
+ * day its quote below prints. Empty where the route asks for no number.
  */
-function answerBlock(dataset: Dataset, route: Route, read: string): string {
-  const thresholds = ruleCriteria(dataset, route).flatMap(gteUnder);
-  const seen = new Set<number>();
-  const amounts = thresholds
-    .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
-    .sort((a, b) => a.threshold.amount - b.threshold.amount);
-  const points = route.criteria.flatMap((c) => (c.op === "points" ? [c] : []));
+function headlineFigures(dataset: Dataset, route: Route): string {
+  const { amounts, points } = figuresOf(dataset, route);
+  if (amounts.length)
+    return amounts.map((c) => `<b>${esc(formatEURPer(c.threshold.amount, periodOf(dataset, c.field)))}</b>${
+      c.threshold_label ? ` <span class="answer-label">— ${esc(c.threshold_label)}</span>` : ""} · ${
+      readDateTime(c.threshold.retrieved_at)}`).join("<br>");
+  if (!points) return "";
+  return `<b>${esc(pointsFigure(points.required.value))}</b> <span class="answer-label">${esc(POINTS_FIGURE_LABEL)}</span> · ${
+    readDateTime(points.required.retrieved_at)}`;
+}
 
-  const asks = amounts.length
-    ? amounts.map((c) => `<b>${esc(formatEURPer(c.threshold.amount, periodOf(dataset, c.field)))}</b>${
-      c.threshold_label ? ` <span class="answer-label">— ${esc(c.threshold_label)}</span>` : ""}`).join("<br>")
-    : points.length
-      ? `<b>${points[0]!.required.value} points</b> <span class="answer-label">— from the official table</span>`
-      : `<b>No salary or points threshold</b> <span class="answer-label">— what this route asks for is in the conditions below</span>`;
-
+/**
+ * What a search visitor came for, before anything explains itself: the number
+ * this route asks for, the day it was read, and the way in. A route that asks
+ * for no money says so in the same place, since the absence is an answer to
+ * "what is the threshold"; no sentence states an absence, so it points to none.
+ */
+function answerBlock(dataset: Dataset, route: Route): string {
+  const figures = headlineFigures(dataset, route);
   return `
   <section class="answer" aria-labelledby="answer-h">
-    <h2 class="label" id="answer-h">What this route asks for</h2>
-    <p class="answer-figure">${asks}</p>
-    <p class="answer-read">Read from the authority's own page on <b><time datetime="${
-    escAttr(read)}">${esc(read)}</time></b>, with the sentence it came from below.</p>
+    <h2 class="label" id="answer-h">What this route asks for</h2>${figures ? `
+    <p class="answer-figure">${figures}</p>
+    <p class="answer-read">${esc(ANSWER_SOURCED)}</p>` : `
+    <p class="answer-figure"><b>${esc(NO_FIGURE)}</b> <span class="answer-label">${esc(NO_FIGURE_LABEL)}</span></p>`}
   </section>`;
 }
 
@@ -705,7 +712,7 @@ export function routePage(
 ): RoutePage {
   const { country, route } = address;
   const notice = audienceNotice(dataset);
-  const about = noticesOn(dataset, route);
+  const about = printedNotices(dataset, route);
   const read = pageStamp(dataset, route);
   const title = `${route.name} · ${country.name} · ${PRODUCT_NAME}`;
   const desc = description(dataset, country, route);
@@ -756,7 +763,7 @@ ${headMeta({ title, description: desc, path, kind: "article" })}
 
   <div class="page">
   <main>${scored ? `
-${answerBlock(dataset, route, read)}${about.map((n) => noticeSection(n, seen)).join("")}
+${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join("")}
   <section class="cta" aria-labelledby="cta-h">
     <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
     <p><strong>Where do you stand on this route?</strong> The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>

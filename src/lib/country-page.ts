@@ -2,7 +2,7 @@
 // dataset package spells it, so the site and the data cannot disagree about
 // what eight is called (Standards review, 2026-09-08).
 import {
-  countedWords, isScored, joinAnd, scopeLine,
+  countedWords, datasetMeta, isScored, joinAnd, scopeLine,
   type Country, type Dataset, type Notice, type Route, type UnreadSource,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
@@ -11,7 +11,7 @@ import {
   PAGE_CSS, audienceSentence, gist, pageStamp, routeFigure, withArticle,
 } from "./route-page.js";
 import {
-  DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay,
+  DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay, readOn,
 } from "./copy.js";
 import {
   DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, OWNER, REPO_DATA, analyticsBeacon,
@@ -105,15 +105,14 @@ export function countryReadDate(dataset: Dataset, country: Country): string {
 }
 
 /**
- * The newest read date behind anything this site publishes, derived the same
- * way every page's own date is — the newest of the four countries'. The
- * dataset's own summary carries this figure too, but it is typed as possibly
- * absent, and a date printed on a page may not be.
+ * The date a site-wide page carries: the newest read date in the whole
+ * dataset, the one the home page prints. `/data/` hands over every sentence,
+ * the ones only the results card prints included, so its date is the
+ * dataset's, not the newest route page's. The summary is absent only for a
+ * dataset with no read value at all, where no page has a day to print either.
  */
 export function siteReadDate(dataset: Dataset): string {
-  return countryAddresses(dataset)
-    .map((a) => countryReadDate(dataset, a.country))
-    .sort().at(-1) ?? "";
+  return datasetMeta(dataset).newest_retrieved_at ?? "";
 }
 
 /**
@@ -161,7 +160,7 @@ function routeCard(dataset: Dataset, country: Country, route: Route, seen: Gloss
     esc(glossSection(route.name, seen))}</span><p class="gist">${esc(gist(route))}</p><p class="meta">${
     figure ? `<span>${esc(figure.label)}${figure.value ? ` <b>${esc(figure.value)}</b>` : ""}</span>` : ""}<span>${
     esc(scopeLine(route))}</span><span class="read"><time datetime="${
-    escAttr(pageStamp(dataset, route))}">read ${esc(pageStamp(dataset, route))}</time></span></p></a></li>`;
+    escAttr(pageStamp(dataset, route))}">${esc(readOn(pageStamp(dataset, route)))}</time></span></p></a></li>`;
 }
 
 export function countryPage(dataset: Dataset, address: CountryAddress): CountryPage {

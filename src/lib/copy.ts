@@ -137,6 +137,33 @@ export const ROUTE_PAGE_UNSCORED_ADDENDUM =
   "This route is one the checker does not score — the rules are stated here and nothing is asked of you.";
 
 /**
+ * The day a page was read, in the one form every read date takes: a quote on
+ * a route page or a results card, a headline figure, a country card and the
+ * data door's route list. The figure is dated by its own reading, so it and
+ * its quote cannot differ.
+ */
+export const readOn = (day: string): string => `read ${day}`;
+
+/**
+ * Under a route page's headline figures. Each figure carries its own read date,
+ * so this line names none; a panel with no figure has no sentence to point to
+ * and does not carry it.
+ */
+export const ANSWER_SOURCED = "From the authority's own page, with the sentence it came from below.";
+
+/** A points route's headline figure, and what stands beside it. */
+export const pointsFigure = (points: number): string => `${points} points`;
+export const POINTS_FIGURE_LABEL = "— from the official table";
+
+/**
+ * The panel of a route that asks for no number. The absence is the answer to
+ * "what is the threshold", and no sentence states an absence, so it points to
+ * the conditions rather than to a quote.
+ */
+export const NO_FIGURE = "No salary or points threshold";
+export const NO_FIGURE_LABEL = "— what this route asks for is in the conditions below";
+
+/**
  * What the site says about the daily check — the claim, and the qualification a
  * partial run puts on it.
  *

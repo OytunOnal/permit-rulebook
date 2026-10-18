@@ -76,11 +76,10 @@ describe("what /data/ says about when a value changed", () => {
    * The case that holds the decision, on the only dataset that can hold it.
    *
    * The page carries two read dates: the newest `retrieved_at` among VALUES,
-   * and the newest `pageStamp` on the site — which folds in the audience notice
-   * and a route's own notices. They coincide on the shipped dataset and on the
-   * frozen one, so every other case here passes with either date wired to the
-   * row, and the choice between them would be a decision no check could see
-   * (Spec review, 2026-09-15).
+   * and the dataset's newest read date — which folds in every notice's
+   * sentences. They are a day apart on the shipped dataset, and a later read
+   * of a value would close that day, so no case that leaves the dataset as it
+   * is can hold the choice between them.
    *
    * So the dataset is bent until they cannot coincide: the EU free-movement
    * notice is re-read three weeks after the newest value. A notice re-read

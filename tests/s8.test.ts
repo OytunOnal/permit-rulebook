@@ -3,12 +3,11 @@ import { esc, escAttr } from "../src/lib/reason.js";
 import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  closedBy, deriveBands, evaluate, isClosed, noticeSources, notices, routeProvenance,
+  closedBy, deriveBands, evaluate, isClosed, noticeSources, notices,
   type Dataset, type Notice, type Profile, type RouteResult,
 } from "permit-rulebook-data";
 import { closedRowHtml, noticeHtml, quoteForCard } from "../src/lib/card.js";
-import { audienceNotice, routePages } from "../src/lib/route-page.js";
-import { routeAddresses } from "../src/lib/slug.js";
+import { routePages } from "../src/lib/route-page.js";
 
 const ds = dataset as unknown as Dataset;
 const page = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
@@ -187,22 +186,15 @@ describe("s8 — a page is never quieter than a card", () => {
   });
 
   it("counts the notice's read dates in the stamp of the pages that carry it", () => {
-    // Pinned "2026-09-10" — the day the Algerian notice was read — until s29,
-    // when the free-movement audience notice, printed on every route page,
-    // gained two sentences read on 2026-09-17 and the stamp moved with them.
-    // The point stands as a derivation: the Algerian notice's dates count (the
-    // stamp is never older than its newest), and the stamp is the newest of
-    // everything the page prints — its own quotes and both notices' sides.
-    const newest = (dates: string[]) => [...dates].sort().at(-1)!;
-    const algerian = newest(noticeSources(OPEN_QUESTION).map((s) => s.retrieved_at));
-    for (const address of TALENT_PAGES) {
-      const built = routePages(ds).find((p) => p.path === address)!;
-      const route = routeAddresses(ds).find((a) => a.path === address)!.route;
-      const own = routeProvenance(route).map((e) => e.value.retrieved_at);
-      const audience = noticeSources(audienceNotice(ds)!).map((s) => s.retrieved_at);
-      expect(built.readDate >= algerian, address).toBe(true);
-      expect(built.readDate, address).toBe(newest([...own, ...audience, ...noticeSources(OPEN_QUESTION).map((s) => s.retrieved_at)]));
-    }
+    // The page prints every side of the notice, so a side read after
+    // everything else on the page moves the stamp; on a page it is not about,
+    // it moves nothing.
+    const REREAD = "2026-09-29";
+    const bent = structuredClone(ds);
+    const notice = (bent.notices ?? []).find((n) => n.id === OPEN_QUESTION.id)!;
+    noticeSources(notice).at(-1)!.retrieved_at = REREAD;
+    for (const built of routePages(bent))
+      expect(built.readDate === REREAD, built.path).toBe(TALENT_PAGES.includes(built.path));
   });
 });
 

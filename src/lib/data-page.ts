@@ -9,7 +9,7 @@ import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
 import {
   DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PRODUCT_NAME,
   PROSE_OURS_TAIL, TAGLINE, TRANSLATION_POLICY, WRONG_DOOR_LABEL, dataLedeClose, dataLedeOpen, dataMetaDescription,
-  datasetDay, proseProvenanceCounts,
+  datasetDay, proseProvenanceCounts, readOn,
 } from "./copy.js";
 import {
   DATA_LICENCE_FULL, REPO_DATA, absolute, analyticsBeacon, headMeta, lastWatchRun, readRange, unreadSourcesAt,
@@ -88,11 +88,11 @@ export function dataPage(
 ): DataPage {
   // The page carries two read dates, and they are not the same date.
   //
-  // `read` is the newest `pageStamp` on the site — the newest quote date
-  // ANYWHERE this site publishes, the audience notice and a route's own
-  // notices included. A notice re-read today is a page read today, so the
-  // RULES READ stamp and the footer's range are right to take it, and they
-  // keep it.
+  // `read` is the dataset's newest read date — the newest quote date ANYWHERE
+  // this site publishes, every sentence of every notice included, since this
+  // page hands the whole dataset over. A notice re-read today is a page read
+  // today, so the RULES READ stamp and the footer's range are right to take
+  // it, and they keep it.
   //
   // `changed` is the newest `retrieved_at` among VALUES and nothing else,
   // which is the only date the word "changed" allows: re-reading a notice is
@@ -241,8 +241,8 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
       ${dataset.countries.map((country) => `
       <nav class="jsonlinks" aria-label="${escAttr(`${withArticle(country)} as JSON`)}">
         <b class="label">${esc(withArticle(country))}</b>${country.routes.map((route) => `
-        <a class="tap-min" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>read ${
-    esc(pageStamp(dataset, route))}</small></a>`).join("")}
+        <a class="tap-min" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>${
+    esc(readOn(pageStamp(dataset, route)))}</small></a>`).join("")}
       </nav>`).join("")}
     </section>
   </main>
