@@ -213,15 +213,24 @@ function noticeSection(n: Notice, seen: Glossary): string {
 }
 
 /**
- * Every quote a route page prints: its rule cards', its statements' and, on a
- * scored page, the notices about it. A notice carries more sentences than a
- * route page prints; only the ones printed here count.
+ * The notices a route page prints: the ones about it, on a page that scores.
+ * A page that does not score carries no results furniture, these blocks
+ * included (s9).
+ */
+function printedNotices(dataset: Dataset, route: Route): Notice[] {
+  return isScored(route) ? noticesOn(dataset, route) : [];
+}
+
+/**
+ * Every quote a route page prints: its rule cards', its statements' and its
+ * notices'. A notice carries more sentences than a route page prints; only
+ * the ones printed here count.
  */
 function printedSources(dataset: Dataset, route: Route): ProvenanceEntry["value"][] {
   const notice = audienceNotice(dataset);
   const out = ruleCriteria(dataset, route).flatMap((c) => cardValues(c, notice)).map((e) => e.value);
   for (const s of routeStatements(route)) out.push(...statementSources(s));
-  if (isScored(route)) for (const n of noticesOn(dataset, route)) out.push(...noticeSources(n));
+  for (const n of printedNotices(dataset, route)) out.push(...noticeSources(n));
   return out;
 }
 
@@ -703,7 +712,7 @@ export function routePage(
 ): RoutePage {
   const { country, route } = address;
   const notice = audienceNotice(dataset);
-  const about = noticesOn(dataset, route);
+  const about = printedNotices(dataset, route);
   const read = pageStamp(dataset, route);
   const title = `${route.name} · ${country.name} · ${PRODUCT_NAME}`;
   const desc = description(dataset, country, route);
