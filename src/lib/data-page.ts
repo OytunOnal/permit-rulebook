@@ -88,11 +88,11 @@ export function dataPage(
 ): DataPage {
   // The page carries two read dates, and they are not the same date.
   //
-  // `read` is the newest `pageStamp` on the site — the newest quote date
-  // ANYWHERE this site publishes, the audience notice and a route's own
-  // notices included. A notice re-read today is a page read today, so the
-  // RULES READ stamp and the footer's range are right to take it, and they
-  // keep it.
+  // `read` is the dataset's newest read date — the newest quote date ANYWHERE
+  // this site publishes, every sentence of every notice included, since this
+  // page hands the whole dataset over. A notice re-read today is a page read
+  // today, so the RULES READ stamp and the footer's range are right to take
+  // it, and they keep it.
   //
   // `changed` is the newest `retrieved_at` among VALUES and nothing else,
   // which is the only date the word "changed" allows: re-reading a notice is

@@ -9,10 +9,15 @@ import {
 import {
   PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routeFigure, routePage, routePages,
 } from "../src/lib/route-page.js";
-import { countryPages } from "../src/lib/country-page.js";
+import { countryAddresses, countryPages } from "../src/lib/country-page.js";
+import { dataPage } from "../src/lib/data-page.js";
+import { feedbackPage } from "../src/lib/feedback-page.js";
+import { notFoundPage } from "../src/lib/not-found.js";
+import { datasetLd } from "../src/lib/dataset-ld.js";
+import { sitemapEntries } from "../src/lib/sitemap.js";
 import { ANSWER_SOURCED, WRONG_DOOR_LABEL, datasetDay } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
-import { FEEDBACK_PATH } from "../src/lib/identity.js";
+import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/identity.js";
 import { esc } from "../src/lib/reason.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 // The frame round a quote lives with the quote, not with the page that shows
@@ -600,6 +605,21 @@ describe("a route page dates what it prints", () => {
       expect(page.html, page.path).not.toContain(NEVER_PRINTED);
     }
     for (const page of countryPages(bent)) expect(page.html, page.path).not.toContain(NEVER_PRINTED);
+  });
+
+  it("a site-wide page dates the whole dataset, the sentences only the results card prints included", () => {
+    const stampOf = (html: string): string | undefined =>
+      /<div class="stamps">[\s\S]*?<time datetime="([^"]*)"/.exec(html)?.[1];
+    expect(stampOf(dataPage(bent).html), "/data/").toBe(NEVER_PRINTED);
+    expect(stampOf(feedbackPage(bent).html), "/feedback/").toBe(NEVER_PRINTED);
+    expect(stampOf(notFoundPage(bent).html), "404").toBe(NEVER_PRINTED);
+    expect(JSON.parse(datasetLd(bent, DATA_PATH)).dateModified, "Dataset JSON-LD").toBe(NEVER_PRINTED);
+    const lastmod = new Map(sitemapEntries(bent).map((e) => [e.path, e.lastmod]));
+    for (const path of ["/", DATA_PATH, FEEDBACK_PATH]) expect(lastmod.get(path), path).toBe(NEVER_PRINTED);
+    // A route page and a country page still date only what they print.
+    for (const address of [...routeAddresses(bent), ...countryAddresses(bent)])
+      expect(lastmod.get(address.path), address.path).not.toBe(NEVER_PRINTED);
+    for (const page of countryPages(bent)) expect(stampOf(page.html), page.path).not.toBe(NEVER_PRINTED);
   });
 
   it("dates each headline figure by its own reading, the date its quote prints", () => {
