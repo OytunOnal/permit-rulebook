@@ -80,8 +80,10 @@ pull request.
 - A test asserts a decision, not content. A check keyed to a substring, a word
   count or a sentence's shape is a finding unless the contract declares that
   set and the test names it.
-- No source-grep: a test reads rendered output or runs the engine. One
-  precedent: the sweep that proves a retired name is gone.
+- No source-grep: a test reads rendered output or runs the engine. Two
+  precedents: the sweep that proves a retired name is gone, and a workflow,
+  which no test can run: its jobs, its steps, their order and their conditions
+  are read from its file.
 - A test that pins a date, a version or a count says why when it moves.
 - Browser cases measure geometry and state from the running page, through
   `scripts/browser.mjs`.

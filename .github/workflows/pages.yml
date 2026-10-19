@@ -70,7 +70,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04 # pinned 2026-09-24; ubuntu-latest moves to Ubuntu 26 on 2026-10-19 and the move is a dated roadmap item
+    runs-on: ubuntu-26.04 # named, never -latest: the image changes only when this file does, and the browser cases drive the image's own Chrome (#24)
     # Reads two repositories and writes nothing: the one line that records which
     # data commit deployed is written by the `pin` job, which is the only job
     # holding a write token (Standards review, 2026-09-08).
@@ -265,6 +265,23 @@ jobs:
         with:
           path: site/dist
 
+  # Every dependency in the lockfile, dev ones included: the test runner and
+  # the build run in the job above. A known advisory at high or above turns
+  # this job, and so the run, red; nothing `needs` it, so the deploy still
+  # publishes the day's values (#47). `npm audit` reads the lockfile alone,
+  # so this job installs nothing and checks out only the site. The data's own
+  # dependencies are audited by its watch.
+  audit:
+    runs-on: ubuntu-26.04 # named, never -latest: the build job says why
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
+        with: { node-version: 22 }
+      - name: Audit the dependencies
+        run: npm audit --audit-level=high
+
   # The lock records a combination that actually built and deployed. Only the
   # two triggers that build against the newest data may move it, and only on a
   # first attempt: a rerun keeps its event name, and would otherwise pin
@@ -276,7 +293,7 @@ jobs:
       github.run_attempt == 1
       && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
       && needs.build.outputs.built != needs.build.outputs.locked
-    runs-on: ubuntu-24.04 # pinned 2026-09-24; ubuntu-latest moves to Ubuntu 26 on 2026-10-19 and the move is a dated roadmap item
+    runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     permissions:
       contents: write
     steps:
@@ -302,7 +319,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: ubuntu-24.04 # pinned 2026-09-24; ubuntu-latest moves to Ubuntu 26 on 2026-10-19 and the move is a dated roadmap item
+    runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     # The only job that publishes: an artifact upload and the OIDC token Pages
     # signs the deployment with.
     permissions:
@@ -337,7 +354,7 @@ jobs:
       success()
       && github.run_attempt == 1
       && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
-    runs-on: ubuntu-24.04 # pinned 2026-09-24; ubuntu-latest moves to Ubuntu 26 on 2026-10-19 and the move is a dated roadmap item
+    runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     continue-on-error: true
     # Reads the key file out of the checkout; writes nothing anywhere.
     permissions:
