@@ -126,8 +126,11 @@ click on the tracker link. Answers never leave the device.
   The stylesheet it renders hides what each cover hides. The page takes the
   covers off once, as it draws the reader's first screen, so no arrival moves
   the page.
+  The headline has one writer, `mastheadFor`: its own markup is one
+  emphasis, and every other word, the dataset's included, is escaped (#25).
 - **Record** — localStorage (legacy key migrated) or nothing; a print
-  stylesheet for a paper copy.
+  stylesheet for a paper copy. A record longer than any the page writes
+  (8 KB) is no record, and is never parsed (#25).
 - **Tracker** — `permit-rulebook-data/issues` with `bug`, `design-flaw`,
   `new-need`; reached only by the reader's own click.
 
