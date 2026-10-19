@@ -66,7 +66,9 @@ click on the tracker link. Answers never leave the device.
   anything is asked, and the fetcher also judges every address a name
   resolves to (a name Chrome resolves is #50). What a finished run says (its
   flags, its log lines and its exit code) is decided in one module, `run-says`;
-  the CLI only reads, prints and writes (#72).
+  the CLI only reads, prints and writes (#72). It audits every installed
+  dependency first; a known advisory at high or above turns the run red at its
+  end and stops none of its reading (#24).
 - **Flags** — one file per change, with the page's *excerpt* in a fenced code
   block so nothing in it acts on the issue, and every line around it ours
   (#72); walked by a person, who edits the dataset or records what was found,
@@ -105,7 +107,10 @@ click on the tracker link. Answers never leave the device.
   JSON, the sitemap, favicons, the social card.
 - **CI** — `pages.yml`: both repositories checked out, data gates, build,
   tests with a real browser over `dist/`, asset truth, base-path check, tap
-  targets at 390 px, then deploy.
+  targets at 390 px, then deploy. Beside the build, a job nothing waits on
+  audits the site's lockfile: an advisory reddens the run, never holds the
+  deploy. Both workflows run on a named image, `ubuntu-26.04`, never `-latest`
+  (#24).
 - **Pages** — GitHub Pages at the custom domain, HTTPS enforced; static files
   only; the accepted cost is no response headers of our own.
 
