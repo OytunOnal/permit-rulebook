@@ -5,7 +5,7 @@ import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDir, readLock } from "../scripts/data-pin.mjs";
 import { readAssetNames } from "../scripts/carry-assets.mjs";
-import { jobNamesOf, jobOf, pagesYaml as pages, readText, workflowFiles, workflowsDir } from "./workflow-text.js";
+import { jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
 /**
  * The pipeline's own security and the data it builds against (Spine
@@ -20,11 +20,9 @@ import { jobNamesOf, jobOf, pagesYaml as pages, readText, workflowFiles, workflo
 const root = fileURLToPath(new URL("..", import.meta.url));
 
 describe("every action is pinned to a commit, and every job asks for the least it needs", () => {
-  const files = workflowFiles.map((f) => join(workflowsDir, f));
-
   it("no `uses:` names a tag or a branch — all of them name a 40-hex commit", () => {
-    expect(files.length, "no workflows to check").toBeGreaterThan(0);
-    for (const file of files)
+    expect(workflowPaths.length, "no workflows to check").toBeGreaterThan(0);
+    for (const file of workflowPaths)
       for (const line of readText(file).split("\n")) {
         const used = /uses:\s*(\S+)/.exec(line);
         if (!used) continue;
@@ -36,7 +34,7 @@ describe("every action is pinned to a commit, and every job asks for the least i
   });
 
   it("the workflow's floor is contents: read, and only the jobs that need more raise it", () => {
-    for (const file of files) {
+    for (const file of workflowPaths) {
       const yaml = readText(file);
       const top = yaml.slice(0, yaml.indexOf("jobs:"));
       expect(top, `${file}: no top-level permissions block`).toMatch(/^permissions:\s*$/m);
@@ -51,7 +49,7 @@ describe("every action is pinned to a commit, and every job asks for the least i
   });
 
   it("no secret is written into a workflow in plain text", () => {
-    for (const file of files) {
+    for (const file of workflowPaths) {
       const yaml = readText(file);
       // A secret reaches a workflow through `secrets.` and nowhere else.
       for (const line of yaml.split("\n")) {
@@ -179,16 +177,16 @@ describe("a cached page still finds its assets", () => {
    * rather than assuming it (s33, point 4).
    */
   it.skipIf(missing)("exactly one built page references /_astro/", () => {
-    const pages: string[] = [];
+    const htmlPages: string[] = [];
     (function walk(here: string): void {
       for (const entry of readdirSync(here, { withFileTypes: true })) {
         const full = join(here, entry.name);
         if (entry.isDirectory()) walk(full);
         else if (entry.name.endsWith(".html") && readText(full).includes("/_astro/"))
-          pages.push(relative(dist, full).split(sep).join("/"));
+          htmlPages.push(relative(dist, full).split(sep).join("/"));
       }
     })(dist);
-    expect(pages.sort()).toEqual(["index.html"]);
+    expect(htmlPages.sort()).toEqual(["index.html"]);
   });
 
   /**

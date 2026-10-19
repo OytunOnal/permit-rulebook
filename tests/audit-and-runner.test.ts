@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { join } from "node:path";
-import { jobNamesOf, jobOf, pagesYaml as pages, readText, workflowFiles, workflowsDir } from "./workflow-text.js";
+import { basename } from "node:path";
+import { jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
 /**
  * The toolchain the deploy runs on (#24).
@@ -46,12 +46,12 @@ describe("the dependencies are audited on every run (#47)", () => {
 
 describe("the runner image is named, never -latest", () => {
   it("every job of every workflow runs on a pinned image", () => {
-    let jobs = 0;
-    for (const file of workflowFiles)
-      for (const [, image] of readText(join(workflowsDir, file)).matchAll(/^\s*runs-on:\s*(\S+)/gm)) {
-        jobs += 1;
-        expect(image, `${file} runs on an image that moves under it`).not.toMatch(/-latest$/);
+    let runsOnLines = 0;
+    for (const path of workflowPaths)
+      for (const [, image] of readText(path).matchAll(/^\s*runs-on:\s*(\S+)/gm)) {
+        runsOnLines += 1;
+        expect(image, `${basename(path)} runs on an image that moves under it`).not.toMatch(/-latest$/);
       }
-    expect(jobs, "no job found — this case would pass vacuously").toBeGreaterThan(0);
+    expect(runsOnLines, "no runs-on: line found — this case would pass vacuously").toBeGreaterThan(0);
   });
 });

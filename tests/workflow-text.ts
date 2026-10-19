@@ -6,24 +6,32 @@ import { fileURLToPath } from "node:url";
 export const readText = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");
 
 /** The workflows, read as text by the tests that hold their decisions. */
-export const workflowsDir = fileURLToPath(new URL("../.github/workflows/", import.meta.url));
+const workflowsDir = fileURLToPath(new URL("../.github/workflows/", import.meta.url));
 
-/** Every workflow file's name in that folder. */
-export const workflowFiles: string[] = readdirSync(workflowsDir).filter((f) => f.endsWith(".yml") || f.endsWith(".yaml"));
+/** Every workflow file in that folder, as a full path. */
+export const workflowPaths: string[] = readdirSync(workflowsDir)
+  .filter((f) => f.endsWith(".yml") || f.endsWith(".yaml"))
+  .map((f) => join(workflowsDir, f));
 
 /** The Pages workflow's text. */
 export const pagesYaml = readText(join(workflowsDir, "pages.yml"));
 
-/** Every job's name, in the order the file declares them. The keys under `on:` are triggers, not jobs. */
-export const jobNamesOf = (yaml: string): string[] =>
-  [...yaml.slice(yaml.indexOf("jobs:")).matchAll(/^ {2}([a-z][a-z0-9-]*):\n/gm)].map((m) => m[1]!);
+/** A job's header: its name at two spaces' indent, alone on its line. */
+const JOB_HEADER = /^ {2}([a-z][a-z0-9-]*):\n/gm;
 
-/** One job's text: from its name to the next job at the same indent; "" if absent. */
-export const jobOf = (yaml: string, name: string): string => {
+/** Each job's header, in the order the file declares them. The keys under `on:` are triggers, not jobs. */
+const jobHeadersOf = (yaml: string): { jobs: string; headers: RegExpMatchArray[] } => {
   const jobs = yaml.slice(yaml.indexOf("jobs:"));
-  const start = jobs.indexOf(`\n  ${name}:\n`);
-  if (start < 0) return "";
-  const rest = jobs.slice(start + 1);
-  const next = rest.slice(1).search(/\n {2}[a-z][a-z0-9-]*:\n/);
-  return next < 0 ? rest : rest.slice(0, next + 1);
+  return { jobs, headers: [...jobs.matchAll(JOB_HEADER)] };
+};
+
+/** Every job's name, in the order the file declares them. */
+export const jobNamesOf = (yaml: string): string[] => jobHeadersOf(yaml).headers.map((m) => m[1]!);
+
+/** One job's text: from its name to the next job's; "" if absent. */
+export const jobOf = (yaml: string, name: string): string => {
+  const { jobs, headers } = jobHeadersOf(yaml);
+  const at = headers.findIndex((m) => m[1] === name);
+  if (at < 0) return "";
+  return jobs.slice(headers[at]!.index, headers[at + 1]?.index);
 };

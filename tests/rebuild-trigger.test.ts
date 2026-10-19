@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { pagesYaml as pages, readText, workflowFiles, workflowsDir } from "./workflow-text.js";
+import { pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
 /**
  * The published card said "checked daily" and nothing made that true.
@@ -85,9 +85,11 @@ describe("automated commits are attributed to the automation", () => {
    * reintroduce the defect here.
    */
   it("no workflow in this repository claims a stranger's identity", () => {
-    expect(workflowFiles, "the workflow directory is empty — this case would pass vacuously").toContain("pages.yml");
-    for (const file of workflowFiles) {
-      const yaml = readText(join(workflowsDir, file));
+    expect(workflowPaths.some((path) => path.endsWith("pages.yml")),
+      "the workflow directory has no pages.yml — this case would pass vacuously").toBe(true);
+    for (const path of workflowPaths) {
+      const file = basename(path);
+      const yaml = readText(path);
       // Every noreply address a workflow ACTS on is a git identity, and there
       // is exactly one this project is allowed to commit under. Comment lines
       // are prose — YAML's and the shell's alike — and the comment explaining
