@@ -4,6 +4,7 @@ import {
 } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, questionCounter, resumedLine } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
+import { QUERY_MAX_LENGTH } from "./listbox.js";
 // Which situation answers a country's scored routes take, and the quoted
 // route that would have asked otherwise — derived, never typed (s19); keyed
 // by the situation under a declared country, or by the country under a
@@ -92,7 +93,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
           ${longList ? `
             <div class="csearch">
               <span class="mag" aria-hidden="true">⌕</span>
-              <input type="text" id="cfilter" autocomplete="off" spellcheck="false"
+              <input type="text" id="cfilter" autocomplete="off" spellcheck="false" maxlength="${escAttr(String(QUERY_MAX_LENGTH))}"
                 role="combobox" aria-expanded="false" aria-autocomplete="list"
                 aria-label="Search the list" aria-controls="clist" placeholder="Start typing…"
                 value="${escAttr(declared?.label ?? "")}">

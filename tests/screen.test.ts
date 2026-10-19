@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import dataset from "permit-rulebook-data/data/dataset.json";
+import { SITUATION_FIELD, type Dataset } from "permit-rulebook-data";
+import { unscoredVerdict } from "../src/lib/situations.js";
 import {
   INTRO_SUBLINE, SHORT_SUBLINE, claimsAComparison, mastheadFor, screenAfter,
   type FlowAction, type Screen,
@@ -216,5 +219,34 @@ describe("claimsAComparison tests what it is named for", () => {
       "Code compared your answers against the rules.",
     ])
       expect(claimsAComparison(claim), claim).toBe(true);
+  });
+});
+
+describe("the headline escapes what the dataset says (#25)", () => {
+  // The headline is drawn as markup, for its one <b>. A notice's title, a
+  // country's name and a situation's label are the dataset's, and a pull
+  // request can put a tag in any of them: a <meta> refresh there sends the
+  // reader off the site, and the CSP does not stop it.
+  const HOSTILE = "<meta http-equiv=refresh content=0;url=https://example.org>";
+  const tagIn = (html: string) => /<(?!\/?b>)/.test(html);
+
+  it("a notice's title", () => {
+    expect(tagIn(mastheadFor({ kind: "notice", title: HOSTILE }).headline)).toBe(false);
+  });
+
+  it("the sentence and its emphasis, as the page hands them over", () => {
+    const m = mastheadFor({ kind: "results", answered: 3, routes: 23, headline: HOSTILE, emphasis: HOSTILE });
+    expect(tagIn(m.headline)).toBe(false);
+    expect(m.headline).toContain("<b>");
+  });
+
+  it("an unscored verdict built from a country's name and a situation's label", () => {
+    const wrecked = JSON.parse(JSON.stringify(dataset)) as Dataset;
+    wrecked.countries.find((c) => c.code === "FR")!.name = HOSTILE;
+    const option = wrecked.fields.find((f) => f.id === SITUATION_FIELD)!.options!.find((o) => o.value === "research")!;
+    option.short = HOSTILE;
+    const v = unscoredVerdict(wrecked, { destination: "fr", situation: "research" })!;
+    const m = mastheadFor({ kind: "results", answered: 2, routes: 5, headline: v.headline, unscored: v });
+    expect(tagIn(m.headline)).toBe(false);
   });
 });

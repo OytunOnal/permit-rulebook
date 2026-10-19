@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, type Dataset } from "permit-rulebook-data";
-import { RECORD_VERSION,
+import { RECORD_MAX_LENGTH, RECORD_VERSION,
   clearRecord, loadRecord, restore, saveRecord, serialize, LEGACY_STORAGE_KEY, STORAGE_KEY,
   type RecordStore,
 } from "../src/lib/record.js";
@@ -18,6 +18,12 @@ describe("the record survives leaving the page (F2, F10)", () => {
     const answers = { destination: "nl", citizenship: "TR", situation: "offer" };
     const history = ["destination", "citizenship", "situation"];
     expect(restore(serialize(answers, history), known)).toEqual({ answers, history });
+  });
+
+  it("a record longer than any the page writes is no record, and is not parsed (#25)", () => {
+    const answers = { destination: "nl" };
+    const raw = JSON.stringify({ version: RECORD_VERSION, answers, history: ["destination"], pad: "x".repeat(RECORD_MAX_LENGTH) });
+    expect(restore(raw, known)).toEqual({ answers: {}, history: [] });
   });
 
   it("an absent, empty or corrupt record starts a fresh interview rather than crashing", () => {

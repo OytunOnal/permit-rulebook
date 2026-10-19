@@ -6,6 +6,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { escAttr } from "../src/lib/reason.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
+import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
 import type { Dataset } from "permit-rulebook-data";
 
 /**
@@ -104,5 +105,15 @@ describe("nothing reaches an attribute unescaped", () => {
       for (const attr of html.matchAll(/(?:href|src|content|title|value|aria-label)="([^"]*)"/g))
         expect(attr[1], `${path}: ${attr[0].slice(0, 80)}`).not.toMatch(/<[a-zA-Z/]/);
     }
+  });
+});
+
+describe("nothing from the dataset reaches the social card's markup (#25)", () => {
+  it("a country's name with a tag in it is drawn as text", () => {
+    const wrecked = JSON.parse(JSON.stringify(ds)) as Dataset;
+    wrecked.countries[0]!.name = "<img src=https://example.org/x>";
+    const html = socialCardHtml(socialCardFacts(wrecked, "2026-10-19", { product: "P", tagline: "T" }), "");
+    expect(html).not.toContain("<img");
+    expect(html).toContain("&lt;img");
   });
 });

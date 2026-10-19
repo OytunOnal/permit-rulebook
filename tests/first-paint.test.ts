@@ -7,8 +7,8 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy.js";
 import { COVERS, FIRST_PAINT_SCRIPT, WIDE_FROM_PX, takeCoversOff } from "../src/lib/first-paint.js";
+import { RECORD_MAX_LENGTH, STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/question.js";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { url } from "../src/lib/site.js";
@@ -638,6 +638,11 @@ describe("the pre-paint script decides who the reader is from a few bytes (s10, 
     // value under the same name, or the word under another name, is not it.
     expect(written({ stored: JSON.stringify({ version: 1, answers: {}, history: [], done: "yes" }) }).cover).toBe("record");
     expect(written({ stored: JSON.stringify({ version: 1, answers: {}, history: [], finished: true }) }).cover).toBe("record");
+  });
+
+  it("a record longer than any the page writes is no record: the head does not parse it (#25)", () => {
+    const stored = JSON.stringify({ version: 1, answers: {}, history: [], done: true, pad: "x".repeat(RECORD_MAX_LENGTH) });
+    expect(written({ stored }).cover).toBeUndefined();
   });
 
   it("a record that is not JSON is still a record, never a crashed head", () => {
