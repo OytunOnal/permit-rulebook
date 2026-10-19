@@ -426,7 +426,7 @@ a fetcher with an empty body. Seven entries since 2026-09-23 — the five IND
 route pages, the Opportunity Card's BMI notice and the Blue Card directive on
 EUR-Lex. It is a strategy that can fail where the human arm could not, and the
 day it cannot open a browser is a red day, not a quiet one. **The origin is
-the trust line**: a reading that ends on an origin the entry does not name —
+part of the trust line**: a reading that ends on an origin the entry does not name —
 by a redirect on load, or by a step that pressed its way there — is refused as
 unreachable, because a third party's bytes must never be hashed as the
 authority's. A move within the entry's own origin is read, and the address it
@@ -449,6 +449,22 @@ document alone**: a source that moved its requirement list into a subframe
 while its lede and footer stayed in the main frame would match its markers and
 record a shell. None is closed; all three are written down.
 _Avoid_: headless tier, rendered tier, scraping
+
+**Trust line**:
+Where the watch may go, one rule for both of its readers, asked at four
+moments: the entry address, a redirect target, the addresses a name stands for,
+and the page a reader ends on. A link-local address is never a source, since it is
+where a hosted runner keeps its credentials. Beyond that, a source may not send
+the watch somewhere it could not have gone itself, so a public page that points
+into a private or loopback network is refused. An address carrying a name and
+password, or on a scheme that is not a page, is never asked for. A reading
+stays on its entry's own origin. Every spelling of an address is judged by
+the one address it means, and an address inside a network operator's own
+translation prefix is never the open web. Crossing the line is `refused-by-us`,
+and the refusal names the kind of address, never the address. The coverage
+gate asks the same entry question, so a curator hears it before the merge. One
+gap is stated: a name the browser resolves for itself is not judged.
+_Avoid_: floor, address policy
 
 **Watch step**:
 One declared thing a Browser tier entry does to a page before it is read, from
