@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { readdirSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
 /**
  * The published card said "checked daily" and nothing made that true.
@@ -24,13 +24,6 @@ import { fileURLToPath } from "node:url";
  * (`tests/rebuild-dispatch.test.ts` there): that the watch actually sends the
  * event, and that it fails loudly rather than skipping when its token is unset.
  */
-
-const workflowsDir = fileURLToPath(new URL("../.github/workflows/", import.meta.url));
-
-/** CRLF is a checkout detail on Windows, not a fact about the file. */
-const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");
-
-const pages = read(join(workflowsDir, "pages.yml"));
 
 /** The canonical GitHub Actions bot, said once so the two repositories agree. */
 const BOT_NAME = "github-actions[bot]";
@@ -69,7 +62,7 @@ describe("the site rebuilds when the data moves", () => {
   });
 
   it("and its hour sits comfortably after the watch that feeds it", () => {
-    const watch = read(join(dataRepo, ".github", "workflows", "watch.yml"));
+    const watch = readText(join(dataRepo, ".github", "workflows", "watch.yml"));
     const site = cronMinutes(pages);
     const data = cronMinutes(watch);
     expect(data, "the data watch is no longer at 05:17 UTC").toBe(5 * 60 + 17);
@@ -92,10 +85,11 @@ describe("automated commits are attributed to the automation", () => {
    * reintroduce the defect here.
    */
   it("no workflow in this repository claims a stranger's identity", () => {
-    const files = readdirSync(workflowsDir).filter((f) => f.endsWith(".yml") || f.endsWith(".yaml"));
-    expect(files, "the workflow directory is empty — this case would pass vacuously").toContain("pages.yml");
-    for (const file of files) {
-      const yaml = read(join(workflowsDir, file));
+    expect(workflowPaths.some((path) => path.endsWith("pages.yml")),
+      "the workflow directory has no pages.yml — this case would pass vacuously").toBe(true);
+    for (const path of workflowPaths) {
+      const file = basename(path);
+      const yaml = readText(path);
       // Every noreply address a workflow ACTS on is a git identity, and there
       // is exactly one this project is allowed to commit under. Comment lines
       // are prose — YAML's and the shell's alike — and the comment explaining

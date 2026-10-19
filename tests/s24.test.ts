@@ -8,6 +8,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { sitemapEntries, sitemapXml } from "../src/lib/sitemap.js";
 import { absolute } from "../src/lib/site.js";
+import { jobOf, pagesYaml as pages, readText } from "./workflow-text.js";
 
 /**
  * s24 — the deploy tells Bing what changed (IndexNow).
@@ -26,20 +27,6 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const publicDir = join(root, "public");
 const dist = join(root, "dist");
 const ds = dataset as unknown as Dataset;
-
-/** CRLF is a checkout detail on Windows, not a fact about the file. */
-const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");
-
-const pages = read(join(root, ".github", "workflows", "pages.yml"));
-
-/** One job's text: from its name to the next job at the same indent; "" if absent. */
-const jobOf = (name: string): string => {
-  const start = pages.indexOf(`\n  ${name}:\n`);
-  if (start < 0) return "";
-  const rest = pages.slice(start + 1);
-  const next = rest.slice(1).search(/\n {2}[a-z][a-z0-9-]*:\n/);
-  return next < 0 ? rest : rest.slice(0, next + 1);
-};
 
 /** The key file's name IS the key: 32 lowercase hex characters, `.txt`. */
 const KEY_FILE = /^([0-9a-f]{32})\.txt$/;
@@ -68,7 +55,7 @@ describe("a key file at the root (point 1)", () => {
 });
 
 describe("one job after a green deploy (points 2 and 3)", () => {
-  const job = jobOf("indexnow");
+  const job = jobOf(pages, "indexnow");
 
   it("runs after both the build and the deploy, and never fails the run", () => {
     expect(job, "pages.yml has no job \"indexnow\"").not.toBe("");
@@ -119,7 +106,7 @@ describe("one job after a green deploy (points 2 and 3)", () => {
   });
 
   it("announces the addresses the build read from dist/sitemap.xml", () => {
-    const build = jobOf("build");
+    const build = jobOf(pages, "build");
     expect(build).toContain("dist/sitemap.xml");
     expect(build).toMatch(/^\s{6}urls: \$\{\{ steps\.\w+\.outputs\.urls \}\}$/m);
     // Through the environment, never interpolated into the script body.
@@ -161,13 +148,13 @@ describe.skipIf(!bash)("the workflow's own extraction reads every <loc> and noth
 
 describe("recorded where a reader can see it (point 4)", () => {
   it("README says what is sent and to whom", () => {
-    const readme = read(join(root, "README.md"));
+    const readme = readText(join(root, "README.md"));
     expect(readme).toContain("IndexNow");
     expect(readme).toMatch(/Bing/);
   });
 
   it("the threat model accepts the public key in one row", () => {
-    const threats = read(join(root, "docs", "spine", "threats.md"));
+    const threats = readText(join(root, "docs", "spine", "threats.md"));
     const row = threats.split("\n").find((l) => l.startsWith("|") && l.includes("IndexNow"));
     expect(row, "threats.md has no IndexNow row").toBeDefined();
     expect(row).toMatch(/\*\*Accepted, because\*\*/);

@@ -12,7 +12,7 @@ const CANDIDATES = [
   "C:/Program Files/Google/Chrome/Application/chrome.exe",
   "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  // GitHub's ubuntu-latest image ships Chrome and Chromium; which name is
+  // GitHub's Ubuntu images ship Chrome and Chromium; which name is
   // installed has changed between images, so all of them are asked for, and
   // PATH is asked last in case a future image moves them again.
   "/usr/bin/google-chrome",

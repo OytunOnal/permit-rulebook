@@ -5,6 +5,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { routePages } from "../src/lib/route-page.js";
 import { absolute, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
+import { pagesYaml } from "./workflow-text.js";
 
 /**
  * The site has to be correct under any base.
@@ -101,7 +102,6 @@ describe("the same paths under a subpath", () => {
     // The case above proves the helper; `npm run check:base` proves the site.
     const scripts = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).scripts;
     expect(scripts["check:base"]).toBe("node scripts/check-base.mjs");
-    const workflow = readFileSync(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8");
-    expect(workflow).toContain("npm run check:base");
+    expect(pagesYaml).toContain("npm run check:base");
   });
 });
