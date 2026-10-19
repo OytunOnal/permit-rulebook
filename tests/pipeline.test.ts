@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDir, readLock } from "../scripts/data-pin.mjs";
 import { readAssetNames } from "../scripts/carry-assets.mjs";
+import { jobNamesOf, jobOf, pagesYaml as pages, readText, workflowFiles, workflowsDir } from "./workflow-text.js";
 
 /**
  * The pipeline's own security and the data it builds against (Spine
@@ -17,19 +18,14 @@ import { readAssetNames } from "../scripts/carry-assets.mjs";
  */
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const workflows = join(root, ".github", "workflows");
-const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");
-
-const yamlFiles = (dir: string): string[] =>
-  readdirSync(dir).filter((f) => f.endsWith(".yml") || f.endsWith(".yaml")).map((f) => join(dir, f));
 
 describe("every action is pinned to a commit, and every job asks for the least it needs", () => {
-  const files = yamlFiles(workflows);
+  const files = workflowFiles.map((f) => join(workflowsDir, f));
 
   it("no `uses:` names a tag or a branch — all of them name a 40-hex commit", () => {
     expect(files.length, "no workflows to check").toBeGreaterThan(0);
     for (const file of files)
-      for (const line of read(file).split("\n")) {
+      for (const line of readText(file).split("\n")) {
         const used = /uses:\s*(\S+)/.exec(line);
         if (!used) continue;
         const [, ref] = used;
@@ -41,7 +37,7 @@ describe("every action is pinned to a commit, and every job asks for the least i
 
   it("the workflow's floor is contents: read, and only the jobs that need more raise it", () => {
     for (const file of files) {
-      const yaml = read(file);
+      const yaml = readText(file);
       const top = yaml.slice(0, yaml.indexOf("jobs:"));
       expect(top, `${file}: no top-level permissions block`).toMatch(/^permissions:\s*$/m);
       expect(top, `${file}: the floor is not contents: read`).toMatch(/^permissions:\s*\n\s+contents: read\s*$/m);
@@ -49,20 +45,14 @@ describe("every action is pinned to a commit, and every job asks for the least i
       expect(top, `${file}: a write scope above the jobs`).not.toMatch(/^\s+(pages|id-token|issues): write/m);
       // Every job states its own permissions rather than inheriting silently.
       // Jobs only: the keys under `on:` are triggers, not jobs.
-      const after = yaml.slice(yaml.indexOf("jobs:"));
-      const jobs = [...after.matchAll(/^ {2}([a-z][a-z0-9-]*):\n/gm)].map((m) => m[1]!);
-      for (const job of jobs) {
-        const block = after.slice(after.indexOf(`  ${job}:\n`));
-        const next = block.slice(1).search(/\n {2}[a-z][a-z0-9-]*:\n/);
-        const own = next < 0 ? block : block.slice(0, next + 1);
-        expect(own, `${file}: job "${job}" states no permissions`).toMatch(/^\s{4}permissions:/m);
-      }
+      for (const job of jobNamesOf(yaml))
+        expect(jobOf(yaml, job), `${file}: job "${job}" states no permissions`).toMatch(/^\s{4}permissions:/m);
     }
   });
 
   it("no secret is written into a workflow in plain text", () => {
     for (const file of files) {
-      const yaml = read(file);
+      const yaml = readText(file);
       // A secret reaches a workflow through `secrets.` and nowhere else.
       for (const line of yaml.split("\n")) {
         if (/^\s*#/.test(line)) continue;
@@ -126,7 +116,6 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
   });
 
   it("the workflow builds a push against the lock, and the daily runs against the newest", () => {
-    const pages = read(join(workflows, "pages.yml"));
     expect(pages).toContain("locked=$(sed -n 's/^sha=//p' data.lock)");
     expect(pages).toContain("ref: ${{ steps.data.outputs.ref }}");
     // The payload is a stranger's string: it arrives through the environment,
@@ -145,7 +134,6 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
    * 2026-09-08).
    */
   it("only a first attempt of the two newest-data triggers may advance the lock", () => {
-    const pages = read(join(workflows, "pages.yml"));
     // The build's choice of ref reads the attempt.
     expect(pages).toContain("RUN_ATTEMPT: ${{ github.run_attempt }}");
     expect(pages).toContain('first_attempt=$([ "$RUN_ATTEMPT" = "1" ] && echo yes || echo no)');
@@ -196,7 +184,7 @@ describe("a cached page still finds its assets", () => {
       for (const entry of readdirSync(here, { withFileTypes: true })) {
         const full = join(here, entry.name);
         if (entry.isDirectory()) walk(full);
-        else if (entry.name.endsWith(".html") && read(full).includes("/_astro/"))
+        else if (entry.name.endsWith(".html") && readText(full).includes("/_astro/"))
           pages.push(relative(dist, full).split(sep).join("/"));
       }
     })(dist);
@@ -225,7 +213,7 @@ describe("a cached page still finds its assets", () => {
    */
   it.skipIf(missing)("the carrier's reader finds every asset this build published", () => {
     const { names, refused, unserved } = readAssetNames(
-      read(join(dist, "index.html")),
+      readText(join(dist, "index.html")),
       "https://permitrulebook.com/",
     );
     expect(names.sort(), "a built asset the carrier's reader cannot see in the page that names it")
@@ -265,7 +253,6 @@ describe("a cached page still finds its assets", () => {
    * and the environment value beside the rest of the block.
    */
   it("the build job runs it, verbatim, as the last step before the upload", () => {
-    const pages = read(join(workflows, "pages.yml"));
     // The build job's own text: the carrier has to be in THIS job, where
     // `dist/` is on disk and the artifact is made. Both ends are asserted
     // before the slice, because `slice(i, -1)` is a legal call that spans to
