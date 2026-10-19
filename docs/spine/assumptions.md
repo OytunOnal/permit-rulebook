@@ -63,6 +63,13 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   generated text from falling out of sync with the rule set through commit-review discipline. — `untested`
 
 
+- **A20 — a hostile dataset is the test that holds the escaping.** A
+  standing browser case over a build whose dataset carries a tag in every
+  free-text field would have caught the headline that took dataset words raw
+  from launch until #99, and will catch the next text sink. Each
+  `threats.md` row that names its case, with the case checked to exist,
+  keeps a claim from outgrowing its test (#101, retro of #25). — `untested`
+
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
 Three roadmap candidates rest on these. None is tested, and the first is the
