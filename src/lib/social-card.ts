@@ -1,6 +1,4 @@
 import { isScored, type Dataset } from "permit-rulebook-data";
-// `.ts`, not `.js`: `scripts/render-assets.mjs` loads this file in Node with no
-// build step, and Node resolves a specifier literally.
 import { esc } from "./reason.ts";
 
 /**
@@ -47,10 +45,11 @@ export const CARD_HEADLINE = "Which work-permit routes could fit?";
 /**
  * Everything on the card, read off the dataset and the product's own words.
  *
- * The words are passed in rather than imported so this module has no runtime
- * import at all: the render script is plain Node, and Node resolves a `.js`
- * specifier literally. One module with no dependencies is readable by the
- * script, the site and the suite alike.
+ * The render script is plain Node with no build step, and Node resolves a
+ * specifier literally, so this module keeps its imports few: the words are
+ * passed in rather than imported from `copy.ts`, and its one relative import,
+ * `esc`, is named by its `.ts` specifier. That keeps it readable by the script,
+ * the site and the suite alike.
  */
 export function socialCardFacts(
   dataset: Dataset, newestReadDate: string, words: { product: string; tagline: string },

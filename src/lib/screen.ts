@@ -48,9 +48,10 @@ export type Explore = "one-country" | "several-countries";
 
 export interface Masthead {
   /**
-   * innerHTML — the headline carries one <b> emphasis. Composed here from
-   * escaped parts: its words can be the dataset's (a notice's title, a
-   * country's name), and a tag in them would be drawn (#25).
+   * innerHTML — the only markup of its own is one emphasis (`<em>` on the
+   * intro, `<b>` on a result). Every other word is escaped: they can be the
+   * dataset's (a notice's title, a country's name), and a tag in them would be
+   * drawn (#25).
    */
   headline: string;
   /** textContent — never markup, so nothing can be smuggled into it. */
