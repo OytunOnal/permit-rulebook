@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { fieldOptions, matchOptions, type Dataset } from "permit-rulebook-data";
+import { fieldOptions, matchOptions, remainingQuestions, type Dataset } from "permit-rulebook-data";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import {
-  activeOption, onKey, shownOptions, stateFor, type ListboxKey, type ListboxState,
+  QUERY_MAX_LENGTH, activeOption, onKey, shownOptions, stateFor, type ListboxKey, type ListboxState,
 } from "../src/lib/listbox.js";
+import { questionCardHtml } from "../src/lib/question.js";
 
 const dataset = rawDataset as unknown as Dataset;
 const countries = fieldOptions(dataset, "citizenship");
@@ -104,5 +105,23 @@ describe("invariant: the committed country equals the highlighted option (B1)", 
     state = stateFor("nigeria");
     expect(state.active).toBe(0);
     expect(activeOption(countries, state)!.value).toBe("NG");
+  });
+});
+
+describe("the search is bounded by length (#25)", () => {
+  it("a query is cut to the cap before anything matches it", () => {
+    expect(stateFor("x".repeat(10_000)).query).toHaveLength(QUERY_MAX_LENGTH);
+  });
+
+  it("the cap still fits every name a country is found by", () => {
+    for (const o of countries)
+      for (const name of [o.label, ...(o.aliases ?? [])])
+        expect(name.length, name).toBeLessThanOrEqual(QUERY_MAX_LENGTH);
+  });
+
+  it("the box takes no more than the cap", () => {
+    const question = remainingQuestions(dataset, {}).find((q) => q.field === "citizenship")!;
+    const html = questionCardHtml({ dataset, question, answers: {}, asked: [], editing: null, total: 12 });
+    expect(html).toMatch(new RegExp(`id="cfilter"[^>]*maxlength="${QUERY_MAX_LENGTH}"`));
   });
 });

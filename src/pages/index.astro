@@ -1275,7 +1275,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         verdictText = emphasis ? `${sentence} ${emphasis}` : sentence;
         advance({
           kind: "compare", routes: results.length,
-          headline: emphasis ? `${sentence} <b>${emphasis}</b>` : sentence,
+          headline: sentence, ...(emphasis ? { emphasis } : {}),
           ...rest,
         });
       };

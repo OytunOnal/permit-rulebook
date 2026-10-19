@@ -26,6 +26,13 @@ export type ListboxKey = "ArrowDown" | "ArrowUp" | "Home" | "End" | "Enter" | "E
 export const SHOWN_LIMIT = 60;
 
 /**
+ * The longest query the search takes. Every name a country is found by is
+ * shorter; past that, each keystroke would fold and match text no name can
+ * hold (#25).
+ */
+export const QUERY_MAX_LENGTH = 64;
+
+/**
  * A fresh state for a query — which is the whole of what typing does: the
  * list is re-ranked and the highlight returns to the top of it. An untouched
  * box highlights nothing: on an empty
@@ -33,7 +40,8 @@ export const SHOWN_LIMIT = 60;
  * Enter would answer "Afghanistan" for someone who never chose it.
  */
 export function stateFor(query: string): ListboxState {
-  return { query, active: query.trim() ? 0 : -1, open: true };
+  const bounded = query.slice(0, QUERY_MAX_LENGTH);
+  return { query: bounded, active: bounded.trim() ? 0 : -1, open: true };
 }
 
 /** The rows on screen, in the order the matcher ranks them (exact name first). */

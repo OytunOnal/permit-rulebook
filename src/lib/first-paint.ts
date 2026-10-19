@@ -1,4 +1,4 @@
-import { STORAGE_KEY } from "./record.js";
+import { RECORD_MAX_LENGTH, STORAGE_KEY } from "./record.js";
 
 /**
  * The interview's first paint, owned end to end: the covers, the stylesheet
@@ -167,7 +167,7 @@ export const FIRST_PAINT_SCRIPT = `
     let cover = /[?&](country|route)=/.test(location.search) ? "link" : "";
     try {
       const raw = localStorage.getItem(${JSON.stringify(STORAGE_KEY)});
-      if (raw) {
+      if (raw && raw.length <= ${RECORD_MAX_LENGTH}) {
         cover = "record";
         try { if (JSON.parse(raw).done === true) cover = "verdict"; } catch { /* the module decides */ }
       }

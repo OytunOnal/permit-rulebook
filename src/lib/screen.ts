@@ -28,7 +28,9 @@ export type Screen =
    * are country sections below to send anyone to (product-critique v0.7, F7).
    */
   | {
-    kind: "results"; answered: number; routes: number; headline: string;
+    kind: "results"; answered: number; routes: number;
+    /** The verdict in words, and the words after it the headline stresses. */
+    headline: string; emphasis?: string;
     nearest?: string; explore?: Explore;
     /**
      * The written state for a situation no scored route in the declared
@@ -45,7 +47,11 @@ export type Screen =
 export type Explore = "one-country" | "several-countries";
 
 export interface Masthead {
-  /** innerHTML — the headline carries one <b> emphasis. */
+  /**
+   * innerHTML — the headline carries one <b> emphasis. Composed here from
+   * escaped parts: its words can be the dataset's (a notice's title, a
+   * country's name), and a tag in them would be drawn (#25).
+   */
   headline: string;
   /** textContent — never markup, so nothing can be smuggled into it. */
   subline: string;
@@ -92,13 +98,16 @@ const EXPLORE_SENTENCE: Record<Explore, string> = {
   "several-countries": " Change an answer to explore — or see each country's reasons below.",
 };
 
+const headlineHtml = ({ headline, emphasis }: { headline: string; emphasis?: string }): string =>
+  emphasis ? `${esc(headline)} <b>${esc(emphasis)}</b>` : esc(headline);
+
 export function mastheadFor(screen: Screen): Masthead {
   switch (screen.kind) {
     case "question":
       return { headline: INTRO_HEADLINE, subline: screen.started ? SHORT_SUBLINE : INTRO_SUBLINE };
     case "notice":
       return {
-        headline: `${screen.title}.`,
+        headline: `${esc(screen.title)}.`,
         subline: "Nothing to compare: the published rule below answers your situation directly.",
       };
     case "results": {
@@ -116,13 +125,13 @@ export function mastheadFor(screen: Screen): Masthead {
         const sublineHtml = door
           ? esc(subline).replace(esc(door.text), `<a href="${escAttr(door.href)}">${esc(door.text)}</a>`)
           : esc(subline);
-        return { headline: screen.headline, subline, sublineHtml };
+        return { headline: headlineHtml(screen), subline, sublineHtml };
       }
       let subline = `Your ${answers} ${were} compared against ${sets}. Every value below shows its official ` +
         "quote and the date we read it from the source.";
       if (screen.nearest) subline += ` Nearest: ${screen.nearest}.`;
       if (screen.explore) subline += EXPLORE_SENTENCE[screen.explore];
-      return { headline: screen.headline, subline };
+      return { headline: headlineHtml(screen), subline };
     }
   }
 }
@@ -143,7 +152,10 @@ export type FlowAction =
   /** "Start over". */
   | { kind: "reset" }
   /** The interview ended and the routes were compared. */
-  | { kind: "compare"; routes: number; headline: string; nearest?: string; explore?: Explore; unscored?: UnscoredVerdict }
+  | {
+    kind: "compare"; routes: number; headline: string; emphasis?: string;
+    nearest?: string; explore?: Explore; unscored?: UnscoredVerdict;
+  }
   /** A published notice answers the person outright, so nothing was compared. */
   | { kind: "answered-outright"; title: string };
 
@@ -169,7 +181,7 @@ export function screenAfter(action: FlowAction, interview: Interview): Screen {
     case "compare":
       return {
         kind: "results", answered: interview.answered, routes: action.routes,
-        headline: action.headline, nearest: action.nearest, explore: action.explore, unscored: action.unscored,
+        headline: action.headline, emphasis: action.emphasis, nearest: action.nearest, explore: action.explore, unscored: action.unscored,
       };
     case "answered-outright":
       return { kind: "notice", title: action.title };

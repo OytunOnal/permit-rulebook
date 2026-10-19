@@ -39,6 +39,13 @@ export const LEGACY_STORAGE_KEY = "visa-navigator.record.v1";
  */
 export const RECORD_VERSION = 1;
 
+/**
+ * The longest record read back. The longest today's questions can write is
+ * about 1 KB; eight times that leaves the dataset room to grow and still bounds
+ * what a crafted record makes the page parse and walk (#25).
+ */
+export const RECORD_MAX_LENGTH = 8192;
+
 export interface StoredRecord {
   version: typeof RECORD_VERSION;
   answers: Profile;
@@ -80,7 +87,7 @@ export type AskedField = Pick<Question, "field" | "options">;
  */
 export function restore(raw: string | null, asked: readonly AskedField[]): { answers: Profile; history: string[] } {
   const empty = { answers: {} as Profile, history: [] as string[] };
-  if (!raw) return empty;
+  if (!raw || raw.length > RECORD_MAX_LENGTH) return empty;
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);

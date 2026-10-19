@@ -1,4 +1,7 @@
 import { isScored, type Dataset } from "permit-rulebook-data";
+// `.ts`, not `.js`: `scripts/render-assets.mjs` loads this file in Node with no
+// build step, and Node resolves a specifier literally.
+import { esc } from "./reason.ts";
 
 /**
  * The social card, as facts and as a page.
@@ -101,11 +104,11 @@ html, body { margin: 0; padding: 0; }
 .foot b { color: var(--color-ink); font-weight: 600; }
 </style><div class="og">
   <div class="row">
-    <h1>${facts.headline} <em>${facts.tagline}</em></h1>
-    <span class="stamps"><span class="mark">PR</span><span class="stamp">Rules read<br>${facts.read}</span></span>
+    <h1>${esc(facts.headline)} <em>${esc(facts.tagline)}</em></h1>
+    <span class="stamps"><span class="mark">PR</span><span class="stamp">Rules read<br>${esc(facts.read)}</span></span>
   </div>
   <div class="foot">
-    <span>${facts.countries.join(" · ")} · ${facts.scored} routes scored${facts.quotedOnly ? ` · ${facts.quotedOnly} quoted` : ""}</span>
+    <span>${esc(facts.countries.join(" · "))} · ${facts.scored} routes scored${facts.quotedOnly ? ` · ${facts.quotedOnly} quoted` : ""}</span>
     <span>every value with its official sentence · <b>checked daily</b></span>
   </div>
 </div>`;
