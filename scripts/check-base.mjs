@@ -17,8 +17,7 @@
  * changed, the real check lives here, where it is honest — and CI runs it.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { childEnv } from "./child-env.mjs";
@@ -40,7 +39,11 @@ const emitted = (dir) => {
 };
 
 const problems = [];
-const dist = mkdtempSync(join(tmpdir(), "permit-rulebook-base-"));
+// Inside the project, not the OS temp folder: the build moves files from the
+// project into its output with a rename, which cannot cross filesystems, and
+// on GitHub's Ubuntu 26.04 image the temp folder is one of its own (#24).
+mkdirSync(join(root, ".run"), { recursive: true });
+const dist = mkdtempSync(join(root, ".run", "base-"));
 
 try {
   execFileSync(process.execPath, [join(root, "node_modules", "astro", "bin", "astro.mjs"), "build", "--outDir", dist], {
