@@ -115,10 +115,14 @@ click on the tracker link. Answers never leave the device.
   copies the live generation's assets into `dist/`, only from the site's own
   address and only bytes the previous build's digest list attests; it is a
   deep module, one level per file, whose flow is given the live site, and it
-  never fails the deploy (#110). Beside the build, a job nothing waits on
-  audits the site's lockfile: an advisory reddens the run, never holds the
-  deploy. Both workflows run on a named image, `ubuntu-26.04`, never `-latest`
-  (#24).
+  never fails the deploy (#110). Beside the build, the audit job reads the
+  site's lockfile: an advisory reddens the run, never holds the deploy; only
+  `report` waits on it, and runs whatever its result. `report` runs last, on
+  a scheduled or dispatched run's first attempt, after the build, the deploy,
+  the pin and the audit: a red keeps one issue, `deploy run failed`, and the
+  first green closes it, through the data package's kept-issue CLI built from
+  the commit `data.lock` names (#117). Both workflows run on a named image,
+  `ubuntu-26.04`, never `-latest` (#24).
 - **Pages** — GitHub Pages at the custom domain, HTTPS enforced; static files
   only; the accepted cost is no response headers of our own.
 
