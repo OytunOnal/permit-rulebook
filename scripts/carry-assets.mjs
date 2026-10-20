@@ -22,9 +22,10 @@
  * process exits 0 on every path, because a deploy that failed over a rescue of
  * the previous generation would be worse than the window it was rescuing.
  *
- * This file is where the reasons live: the workflow step and the two test
- * files point here rather than repeat them, and a reason that belongs beside
- * the code holding it stays there rather than being told twice.
+ * This file is where the reasons live, except the rules' own, which sit
+ * beside each rule in `carry-assets/`: the workflow step and the tests point
+ * here rather than repeat them, and a reason that belongs beside the code
+ * holding it stays there rather than being told twice.
  *
  * ## Where the address comes from
  *
@@ -55,60 +56,32 @@
  *
  * ## What a page may cost this build
  *
- * A name is at most 128 characters. A page is at most 512 KB and an asset at
- * most 4 MB — two ceilings, because they bound two different things: how much
- * text is read for names, and how large a file may be written. One number for
- * both is how a page came to inherit an asset's 4 MB. A run asks the origin
+ * A name is bounded where names are read, in `carry-assets/asset-names.mjs`.
+ * A page is at most 512 KB and an asset at most 4 MB — two ceilings, because
+ * they bound two different things: how much text is read for names, and how
+ * large a file may be written. One number for both is how a page came to
+ * inherit an asset's 4 MB. A run asks the origin
  * for at most 20 assets, counted whether they answer or 404, because counting
  * only the ones that worked let four hundred dead references cost four hundred
  * requests against our own origin.
  *
- * The log is bounded for the same reason the network is. A page that names
- * four hundred files is a bounded list, not four hundred lines; a string this
- * step did not write is printed shortened and on one line, because a log
- * nobody can read is the same as no log — and in Actions a line beginning `::`
- * is a workflow command.
+ * The log is bounded for the same reason the network is, and how is
+ * `carry-assets/log-wording.mjs`'s.
  *
  * `BUDGET_MS` bounds how long this will WAIT ON THE NETWORK: it sizes request
  * timeouts and does nothing else, so a run that never waits can no more be
  * interrupted by it than a run that waits forever can outlast it. Everything
- * here that is not a request has to be cheap enough that this is not a lie,
- * and one thing was not: reading the names out of a page was quadratic in how
- * many distinct ones it held, ran to completion after the body was in hand,
- * and had no clock on it at all — minutes of uninterruptible CPU inside a
- * deploy job which, with `cancel-in-progress: false`, queues the next deploy
- * behind it. The reading is linear now and the page's ceiling is true of it:
- * 512 KB of names reads in 17 ms, against an `index.html` of 11,569 bytes.
+ * that is not a request has to be cheap enough that this is not a lie: the
+ * costly one is reading the names out of a page, which runs after the body is
+ * in hand, with no clock on it, inside a deploy job which, with
+ * `cancel-in-progress: false`, queues the next deploy behind it. Why that
+ * reading is linear in the page is `carry-assets/asset-names.mjs`'s.
  *
  * ## What makes a carried byte trustworthy, and what does not
  *
- * This section is the one place that reading is written down; the tests and
- * the scenario point at it.
- *
- * Not the HTTP exchange. An origin declares its own `content-length`, so a
- * guard built on that declaration is the origin vouching for itself: measured
- * against raw-socket origins, an answer with no `content-length`, one that
- * declared less than it sent, and `content-length: 0` each put a file of the
- * wrong length on disk under the previous generation's exact name.
- *
- * So the authority is something our own build made. Every build publishes
- * `asset-digests.txt` beside its page — one line per file it put in `_astro/`,
- * the sha256 and the name — and the next deploy writes a byte only if it
- * hashes to what the list published beside that page says that name is.
- *
- * Be exact about what that buys, because an earlier wording here claimed more.
- * The list arrives from the same origin as the page, over the same HTTP,
- * unsigned: it moves the authority out of the HTTP FRAMING, and it cannot move
- * it off the ORIGIN. A host serving both says whatever it likes under a name
- * it also lists, and this step carries it — as does every reader's browser,
- * from that same host, with no help from us. The origin is the trust boundary;
- * the list is the check that what crossed it is what that host had already
- * published under that name. What it therefore refuses is a transfer that went
- * wrong rather than a host that means harm: a truncated body, a stale or
- * foreign object under a known name, an error page answered 200, a truncated
- * list, an empty body, and a deploy landing between the two requests. Each
- * ends in one file not carried, rather than a wrong file published under a
- * name the deploy swears by.
+ * The digest list, and why it and not the HTTP exchange is what a carried byte
+ * is checked against, is `carry-assets/digest-list.mjs`'s; what the carry does
+ * with the list is here.
  *
  * The page and the list are published together and fetched together, so they
  * describe the same deploy. Whether they do is a question about the page's
@@ -132,10 +105,12 @@
  *   node scripts/carry-assets.mjs --dist <dir>        # which build to fill
  *   node scripts/carry-assets.mjs --dry-run           # fetch and report, write nothing
  */
-import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readAssetNames } from "./carry-assets/asset-names.mjs";
+import { DIGESTS_NAME, digestOf, readAssetDigests, writeAssetDigests } from "./carry-assets/digest-list.mjs";
+import { boundedList, oneLine, say, short } from "./carry-assets/log-wording.mjs";
 
 /**
  * The environment variable the live site's address arrives in — the header's
@@ -144,18 +119,6 @@ import { fileURLToPath } from "node:url";
  * address is decided, and that is the only edge that sets it in a deploy.
  */
 const ORIGIN_VAR = "CARRY_ORIGIN";
-
-/**
- * The digest list: what this build published, so the next deploy can tell a
- * carried file from a story about one. It sits beside the page rather than in
- * `_astro/` because it is not an asset and nothing hashes it, and its first
- * line is fixed so that an HTML error page, a proxy's notice or a truncated
- * transfer cannot be read as a list — the name and the content type an origin
- * puts on a response are the word of the same stranger this file already
- * refuses to take at face value.
- */
-const DIGESTS_NAME = "asset-digests.txt";
-const DIGESTS_HEADER = "permit-rulebook asset digests v1";
 
 /**
  * A slow host must not hold a deploy open. Ten seconds per request is long
@@ -186,35 +149,10 @@ const BUDGET_MS = 60_000;
  * header and two lines of 85 and 121 bytes, and 64 KB holds five hundred more
  * of the longer one.
  */
-const MAX_NAME = 128;
 const MAX_ASSETS = 20;
 const MAX_PAGE_BYTES = 512 * 1024;
 const MAX_ASSET_BYTES = 4 * 1024 * 1024;
 const MAX_LIST_BYTES = 64 * 1024;
-
-/**
- * The only shape of name that may become a path under `dist/_astro/`, be
- * written into the digest list, or be read back out of it — one rule, spelled
- * once, because a name the list can hold and the carrier would refuse (or the
- * other way round) is a hole between two spellings of the same idea.
- *
- * Spelled once means the STRING below, not two regexes that look alike: they
- * were two, and they diverged — `.` and `..` were excluded by a line of
- * JavaScript beside one of them only, so a list line naming `..` parsed while
- * the page's reader refused the same string. The exclusion is inside the
- * pattern now, so both ends hold it or neither does.
- *
- * Being a string to splice, it carries no anchor of its own and must not
- * depend on one: the exclusion is written against what FOLLOWS the name, not
- * against the end of the subject, so the only thing a splice has to guarantee
- * is that no `[A-Za-z0-9._-]` comes straight after it. Both call sites end
- * there, which satisfies it; so would a `/`, a quote or a space.
- */
-const NAME_CHARS = "A-Za-z0-9._-";
-const NAME_PATTERN = `(?!\\.\\.?(?![${NAME_CHARS}]))[${NAME_CHARS}]{1,${MAX_NAME}}`;
-const PLAIN_NAME = new RegExp(`^${NAME_PATTERN}$`);
-/** One line of the list: a sha256, two spaces, a name — `sha256sum`'s shape. */
-const DIGESTS_LINE = new RegExp(`^([0-9a-f]{64}) {2}(${NAME_PATTERN})$`);
 
 /**
  * What may be written into `dist/_astro/`. A host that has lost a file answers
@@ -222,32 +160,6 @@ const DIGESTS_LINE = new RegExp(`^([0-9a-f]{64}) {2}(${NAME_PATTERN})$`);
  * break the very deploy this step exists to save.
  */
 const CARRIABLE = /^(?:text\/css|text\/javascript|application\/javascript|application\/ecmascript|text\/ecmascript)$/;
-
-/**
- * Some names as one line, with a bottom to it. A page that names four hundred
- * files would otherwise be four hundred lines in a deploy's log, which is the
- * same thing as no log at all.
- */
-const boundedList = (names) => (names.length <= 3 ? names.join(", ") : `${names.slice(0, 3).join(", ")} and ${names.length - 3} more`);
-
-/**
- * As much of a string this step did not write as a log line can afford. A page
- * may name a reference of any length at all, and a refusal that printed one
- * whole let a page write the deploy's log twenty lines at a time. 40 is the
- * only bound in use: every call site takes the default — a reference, the host
- * one names, the path one resolves to, a `content-type` the origin chose. The
- * live address is not among them; it is the other population, and its rule is
- * all or nothing — printed whole once it has parsed, or not printed at all.
- */
-const short = (text, max = 40) => (text.length > max ? `${text.slice(0, max)}…` : text);
-
-/**
- * One line, whatever it is handed. In Actions a line beginning `::` is a
- * workflow command, so a value this step prints but did not write — an address
- * out of a repository variable — must not be able to end a line and start
- * another one of its own.
- */
-const oneLine = (text) => text.replace(/[\u0000-\u001f\u007f]+/g, " ");
 
 /**
  * Whether this run was given a build to fill at all — one spelling, because
@@ -259,207 +171,6 @@ const oneLine = (text) => text.replace(/[\u0000-\u001f\u007f]+/g, " ");
  * anything (round 9).
  */
 const noBuildDirectory = (dist) => typeof dist !== "string" || dist.trim() === "";
-
-/** An error as a sentence, with the cause `fetch failed` always hides. */
-const say = (e) => {
-  const message = e instanceof Error ? e.message : String(e);
-  const cause = e instanceof Error && e.cause instanceof Error ? e.cause.message : "";
-  return cause && !message.includes(cause) ? `${message} (${cause})` : message;
-};
-
-/** The sha256 of some bytes, as the digest list spells it. */
-const digestOf = (bytes) => createHash("sha256").update(bytes).digest("hex");
-
-/**
- * Publish what this build built, so the deploy after this one can check the
- * bytes it fetches against something we made rather than against the origin's
- * own headers.
- *
- * It describes this build's OWN assets: it runs before anything is carried, so
- * a file carried from the previous generation is not in it. That is what keeps
- * the chain one generation long, the same way the step itself is.
- *
- * A name this file's own reader would refuse is left out rather than written:
- * one unparseable line would cost the next deploy the whole list. It returns
- * what happened and throws nothing, being called from a step that may not fail.
- */
-export function writeAssetDigests(dist) {
-  try {
-    const dir = join(dist, "_astro");
-    const names = existsSync(dir)
-      ? readdirSync(dir, { withFileTypes: true })
-        .filter((entry) => entry.isFile() && PLAIN_NAME.test(entry.name))
-        .map((entry) => entry.name)
-        .sort()
-      : [];
-    const lines = [DIGESTS_HEADER, ...names.map((name) => `${digestOf(readFileSync(join(dir, name)))}  ${name}`)];
-    writeFileSync(join(dist, DIGESTS_NAME), `${lines.join("\n")}\n`);
-    return { ok: true, count: names.length };
-  } catch (e) {
-    return { ok: false, why: say(e) };
-  }
-}
-
-/**
- * Read a digest list, strictly.
- *
- * Strictly, because this is the one input that decides what may be written: a
- * line that is not a sha256 and a name fails the whole list rather than being
- * skipped, so a transfer cut mid-line refuses the run instead of shrinking it.
- * A cut that lands exactly on a line boundary parses — and is caught one step
- * later, by a page that names something the list no longer does.
- */
-function readAssetDigests(text) {
-  const lines = text.split("\n");
-  if (lines.at(-1) === "") lines.pop();
-  if (lines[0] !== DIGESTS_HEADER) return { ok: false, why: `does not begin "${DIGESTS_HEADER}"` };
-  const digests = new Map();
-  for (let i = 1; i < lines.length; i += 1) {
-    const line = DIGESTS_LINE.exec(lines[i]);
-    if (!line) return { ok: false, why: `line ${i + 1} is not a sha256 and a name` };
-    if (digests.has(line[2])) return { ok: false, why: `names ${line[2]} twice` };
-    digests.set(line[2], line[1]);
-  }
-  return { ok: true, digests };
-}
-
-/**
- * Read the asset names a page asks for — names only.
- *
- * The reference's own URL is never fetched and never returned: the live HTML is
- * a stranger's string, and the one thing taken from it is a file name, which
- * the caller turns back into a URL under the origin IT chose. A reference that
- * points at another host, at another scheme, or at no name this filesystem
- * would accept is declined by name and reported, never fetched — an absolute
- * reference to another host, a protocol-relative one and a plaintext one all
- * reached the network before this read names only.
- *
- * Names only, but not names alone: a name is one of THIS deploy's assets only
- * when the reference RESOLVES to the URL this step would build for it. Those
- * that do come back in `names`; those that resolve under our own origin to
- * anything else come back in `unserved`, which is neither carried nor fetched,
- * because the deploy does not serve what the reader is going to ask for. The
- * rest — another host, another scheme, a string that resolves nowhere — come
- * back in `refused`.
- *
- * WHERE A REFERENCE RESOLVES IS WHAT SPLITS THE TWO, and nothing else. It used
- * to be which branch of this loop a reference fell out of, so a reference under
- * our own origin naming a path this deploy does not publish was reported and
- * not annotated whenever it failed on its NAME rather than on its path:
- * measured, round 7, `/_astro/sub%2Fold.css`, `/_astro/old.css/.`, `/_astro/`
- * and a 140-character name each printed a refusal line and raised no
- * annotation, while the reader holding that page asks our own host for that
- * URL and gets a 404. `refused` is what no reader's request of ours can come
- * of: a host that is not this site answers for itself, and a string neither
- * this nor a browser resolves is a request nobody makes.
- *
- * ## What shapes this reads, and what it does not
- *
- * It reads a QUOTED STRING with no whitespace in it and `/_astro/` inside,
- * wherever the page holds one — and the two quote marks need not be the same
- * one, so `"…'` is read as readily as `"…"`. That covers the reference shapes
- * Astro emits, which is why it is what it is, but it is not a rule about attributes and
- * must not be described as one: it knows nothing about markup, so a name in a
- * comment or in an inline script is read exactly as a `href` is (measured,
- * round 9).
- *
- * It errs in both directions, and each costs something different. Narrow:
- * measured, round 7, it is blind to five shapes a browser would do something
- * with — `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare relative `_astro/x.css`,
- * `/_astro\x.css`, and a reference with a tab in it — and three of those five
- * a browser resolves to one of this deploy's real assets, so they are a
- * missed CARRY and not only a missed alarm. Wide: a `/_astro/` name a page
- * holds in a comment or a script string, which no reader will ever ask for,
- * reaches `needed` all the same. What it costs there turns on the live
- * `asset-digests.txt`, and the two halves are exclusive (measured,
- * 2026-09-23). A name the live deploy no longer publishes is not in that list,
- * and the carry loop filters `needed` against the list BEFORE `asked` is
- * incremented — so such a name spends NONE of the twenty requests, draws the
- * refusal line saying the list does not name it, and raises the annotation
- * that says a reader holding this page gets a 404. That annotation is the
- * FALSE alarm, on the one line this step exists to make trustworthy. A name
- * the list still carries does spend one of the twenty, and is then carried: a
- * wasted request and nothing else, no line and no annotation. Our own pages
- * hold no such string, and what would separate either from a real reference is
- * an HTML parser, below.
- *
- * They stay unread deliberately. Reading what a BROWSER resolves is not a
- * wider pattern here; it is a second HTML parser. A `<base href>` retargets
- * every relative reference in the document, so honouring bare-relative ones
- * without honouring `<base>` resolves them to a URL no reader ever asks for —
- * a new wrongness rather than a smaller one. Character references decode
- * before a URL is parsed (`/_astro&#47;x.css` is a path to a browser and text
- * here). `srcset` and CSS `url()` hold references no attribute-quote scan
- * sees. And whitespace inside an attribute is REMOVED by a browser rather than
- * refused, while the exclusion of it here is what keeps a reference the page
- * chose from ever carrying a line break into a name. Half a browser reads
- * strings no reader asks for and still misses the ones it cannot parse.
- *
- * What goes wrong the day Astro emits something else: this reads fewer names
- * than the page holds, carries fewer files than the reader needs, and says
- * NOTHING — no request, no problem line, no annotation, which is precisely the
- * silent window this step exists to close. So the boundary is not left to a
- * comment: `tests/pipeline.test.ts` reads the real built page with this very
- * function and asserts it finds every file the build put in `_astro/`, and
- * goes red the day a shape it cannot read appears in our own output.
- */
-export function readAssetNames(html, pageUrl) {
-  const ours = new URL(pageUrl).origin;
-  // Both sets, and both for the same reason: a page is allowed to name the
-  // same thing as often as it likes, and answering "have I seen this?" by
-  // walking what has been kept so far is quadratic in how many distinct names
-  // the page holds — the header's "What a page may cost this build" is why
-  // that is not affordable here. Order is kept because the log reads better in
-  // the page's own order, so the set is the membership test and the array is
-  // the answer.
-  const names = [];
-  const kept = new Set();
-  const refused = [];
-  const unserved = [];
-  const seen = new Set();
-  for (const [, ref] of html.matchAll(/["']([^"'\s]*\/_astro\/[^"'\s]*)["']/g)) {
-    if (seen.has(ref)) continue;
-    seen.add(ref);
-    let url;
-    // Every refusal reports a BOUNDED piece of the reference, not the
-    // reference: a page names strings of its own choosing, and a log line is
-    // the deploy's. Three of these four used to print it whole.
-    try { url = new URL(ref, pageUrl); } catch { refused.push({ ref: short(ref), why: "is not a URL" }); continue; }
-    if (url.origin !== ours) { refused.push({ ref: short(ref), why: `names ${short(url.origin)}, which is not this site` }); continue; }
-    // Past this line every reference is one our own host will be asked for, so
-    // every way of failing from here on is a 404 the reader will hit and goes
-    // to `unserved` rather than to `refused`.
-    const name = url.pathname.split("/").pop() ?? "";
-    if (name.length > MAX_NAME) { unserved.push({ ref: short(name), why: `is longer than ${MAX_NAME} characters, so this deploy publishes nothing under it` }); continue; }
-    // Only a plain file name may become a path under `dist/_astro/` — the one
-    // rule, which `.` and `..` fail inside the pattern rather than beside it.
-    if (!PLAIN_NAME.test(name)) { unserved.push({ ref: short(ref), why: "is not a plain file name, so this deploy publishes nothing under it" }); continue; }
-    // And the name has to be the whole of what the reference asks for. This
-    // used to keep the name and throw the resolved path away, so a reference
-    // that climbed out of `_astro/` (`/_astro/../real.css`, which resolves to
-    // `/real.css`) was scored against `dist/_astro/real.css` and reported
-    // "already in this build", and a root-absolute `/_astro/old.css` in a page
-    // served from a subpath was fetched from under the base and reported
-    // carried. Both are URLs this deploy does not serve and both ended the run
-    // quiet, which is the alarm gone (Security review, round 6).
-    //
-    // Compared on the PATH: a static host resolves a path to a file, and a
-    // query or a fragment on the reference is the reader's business and not the
-    // file's. Both paths go in the line, because on a subpath origin the
-    // reference and where it resolved are the same string, and "it resolves to
-    // itself, which is not ours" tells a reader nothing — the path this deploy
-    // would have had for that name is the whole of the difference.
-    const target = new URL(`_astro/${name}`, pageUrl);
-    if (url.pathname !== target.pathname) {
-      unserved.push({ ref: short(ref), why: `resolves to ${short(url.pathname)}, not to this deploy's ${short(target.pathname)}` });
-      continue;
-    }
-    if (kept.has(name)) continue;
-    kept.add(name);
-    names.push(name);
-  }
-  return { names, refused, unserved };
-}
 
 /**
  * Fetch, with every failure a sentence rather than a stack, and a redirect a
@@ -667,8 +378,8 @@ export async function carryAssets({ origin, dist, dryRun = false, budgetMs = BUD
   // origin's own header strings, which `readAssetNames` and the carry loop
   // print unparsed all the time and must: they are how a deploy's log says
   // which reference it refused and why, there may be four hundred of them,
-  // and nobody's secret is in them. Their rule is the one written above
-  // `readAssetNames`'s refusals — bounded by `short`, flattened by `oneLine`
+  // and nobody's secret is in them. Their rule is
+  // `carry-assets/log-wording.mjs`'s — bounded by `short`, flattened by `oneLine`
   // — and `could not carry http://[/_astro/x.css: it is not a URL` obeys it
   // rather than breaking this one (Security review, round 9).
   //
