@@ -569,7 +569,7 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     //
     // That is a rule about the ENVIRONMENT's one value, and not about every
     // string this step prints — which population each rule governs is written
-    // beside the rule, in `carryAssets`'s flow.
+    // beside the rule, at `pageUrlOf` in the flow.
     //
     // Two runs, because this value is a valid URL and only a run with no page
     // read reaches this line at all. The first reaches it by the bail before

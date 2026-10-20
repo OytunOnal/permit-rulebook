@@ -193,14 +193,15 @@ describe("a cached page still finds its assets", () => {
    * The other half of the same assumption, and the one nothing was watching.
    *
    * The carrier reads references out of HTML with a pattern, not with a
-   * browser, and `scripts/carry-assets/asset-names.mjs`'s "What shapes this reads" writes
-   * down why: honouring what a browser resolves means `<base href>`, character
-   * references, `srcset` and CSS `url()`, and half a browser reads strings no
-   * reader asks for while still missing the ones it cannot parse. So the
-   * pattern reads what Astro emits — measured, round 7, it is blind to
-   * `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare relative `_astro/x.css`,
-   * `/_astro\x.css` and a reference with a tab in it, and three of those five
-   * a browser resolves to one of this deploy's real assets.
+   * browser, and `scripts/carry-assets/asset-names.mjs`'s "What shapes this
+   * reads" writes down why: honouring what a browser resolves means
+   * `<base href>`, character references, `srcset` and CSS `url()`, and half a
+   * browser reads strings no reader asks for while still missing the ones it
+   * cannot parse. So the pattern reads what Astro emits — measured, round 7,
+   * it is blind to `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare relative
+   * `_astro/x.css`, `/_astro\x.css` and a reference with a tab in it, and
+   * three of those five a browser resolves to one of this deploy's real
+   * assets.
    *
    * What that costs the day Astro emits one of them is the step reading fewer
    * names than the page holds and saying NOTHING about it — no request, no
@@ -247,8 +248,8 @@ describe("a cached page still finds its assets", () => {
    * reads any `--name value` as a flag, so a repository variable spliced into
    * this command line is a way to turn the mechanism off while every deploy
    * stays green. Why that is so is `scripts/carry-assets.mjs`'s header, "Where
-   * the address comes from"; what this case does about it is pin the empty command line
-   * and the environment value beside the rest of the block.
+   * the address comes from"; what this case does about it is pin the empty
+   * command line and the environment value beside the rest of the block.
    */
   it("the build job runs it, verbatim, as the last step before the upload", () => {
     // The build job's own text: the carrier has to be in THIS job, where

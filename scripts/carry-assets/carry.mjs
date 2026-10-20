@@ -128,6 +128,18 @@ const BUDGET_MS = 60_000;
  * something to carry — `recordOfCarry` ends before fetching it when this
  * build already has everything the live page names.
  *
+ * A `/_astro/` name a page holds in a comment or a script string, which
+ * `readAssetNames` reads as readily as a reference, reaches `needed` all the
+ * same. What it costs there turns on the live `asset-digests.txt`, and the
+ * two halves are exclusive. A name the live deploy no longer publishes is not
+ * in that list, and the carry loop filters `needed` against the list BEFORE
+ * `asked` is incremented — so such a name spends NONE of the twenty requests,
+ * draws the refusal line saying the list does not name it, and raises the
+ * annotation that says a reader holding this page gets a 404. That annotation
+ * is the FALSE alarm, on the one line the carry exists to make trustworthy. A
+ * name the list still carries does spend one of the twenty, and is then
+ * carried: a wasted request and nothing else, no line and no annotation.
+ *
  * `MAX_LIST_BYTES` is the same idea one file down: today's list is a 33-byte
  * header and two lines of 85 and 121 bytes, and 64 KB holds five hundred more
  * of the longer one.

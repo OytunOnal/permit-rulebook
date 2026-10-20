@@ -253,9 +253,9 @@ jobs:
       # as a flag, so a repository variable spliced into argv could turn the
       # whole mechanism off with every deploy still green. The reading is in
       # `site/scripts/carry-assets.mjs`'s own header, under "Where the address
-      # comes from". Nothing
-      # may be appended to the `run:` line either, for the reason
-      # `tests/pipeline.test.ts` keeps beside its verbatim pin of this block.
+      # comes from". Nothing may be appended to the `run:` line either, for the
+      # reason `tests/pipeline.test.ts` keeps beside its verbatim pin of this
+      # block.
       - name: Carry the live site's assets forward, so a cached page still finds them
         working-directory: site
         env:

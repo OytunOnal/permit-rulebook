@@ -70,18 +70,10 @@ export const PLAIN_NAME = new RegExp(`^${NAME_PATTERN}$`);
  * reference with a tab in it — and three of those five a browser resolves to
  * one of this deploy's real assets, so they are a missed CARRY and not only a
  * missed alarm. Wide: a `/_astro/` name a page holds in a comment or a script
- * string, which no reader will ever ask for, reaches `needed` all the same.
- * What it costs there turns on the live `asset-digests.txt`, and the two
- * halves are exclusive. A name the live deploy no longer publishes is not in
- * that list, and the carry loop filters `needed` against the list BEFORE
- * `asked` is incremented — so such a name spends NONE of the twenty requests,
- * draws the refusal line saying the list does not name it, and raises the
- * annotation that says a reader holding this page gets a 404. That annotation
- * is the FALSE alarm, on the one line the carry exists to make trustworthy. A
- * name the list still carries does spend one of the twenty, and is then
- * carried: a wasted request and nothing else, no line and no annotation. Our
- * own pages hold no such string, and what would separate either from a real
- * reference is an HTML parser, below.
+ * string, which no reader will ever ask for, reaches `needed` all the same;
+ * what that costs a run is the flow's, beside its count of twenty requests in
+ * `carry.mjs`. Our own pages hold no such string, and what would separate one
+ * from a real reference is an HTML parser, below.
  *
  * They stay unread deliberately. Reading what a BROWSER resolves is not a
  * wider pattern here; it is a second HTML parser. A `<base href>` retargets
