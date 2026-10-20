@@ -236,7 +236,7 @@ export async function carryAssets({ origin, dist, liveAnswerFor, dryRun = false,
   // A throw is not one of the run's own bails and has none of their phrases to
   // carry, so this one blames nothing: what stopped the run is the caught
   // error, printed as its own line just above.
-  let record = recordOf({ problems: [], where: "nowhere — the line above says what stopped this run" });
+  let record = carryRecordOf({ problems: [], where: "nowhere — the line above says what stopped this run" });
   try {
     record = await recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs });
   } catch (e) {
@@ -312,13 +312,13 @@ async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) 
   const run = { dist, dryRun, budgetMs, deadline, answerWithinBudget };
 
   const address = pageUrlOf(origin, dist);
-  if (!address.pageUrl) return recordOf(address);
+  if (!address.pageUrl) return carryRecordOf(address);
   const page = await assetNamesOfLivePage(address.pageUrl, run);
-  if (page.needed.length === 0) return recordOf(page);
+  if (page.needed.length === 0) return carryRecordOf(page);
   const list = await liveDigestsMatchingPage(page, run);
-  if (!list.digests) return recordOf({ ...page, problems: [...page.problems, ...list.problems] });
+  if (!list.digests) return carryRecordOf({ ...page, problems: [...page.problems, ...list.problems] });
   const carry = await carryAttestedAssets(page, list.digests, run);
-  return recordOf({ ...page, carried: carry.carried, problems: [...page.problems, ...list.problems, ...carry.problems] });
+  return carryRecordOf({ ...page, carried: carry.carried, problems: [...page.problems, ...list.problems, ...carry.problems] });
 }
 
 /**
@@ -326,7 +326,7 @@ async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) 
  * that never ran found nothing, and `where` is the page read whenever there
  * is one.
  */
-function recordOf({ carried = [], problems, alreadyBuilt = [], needed = [], unserved = [], looked = false, from = "", where = from }) {
+function carryRecordOf({ carried = [], problems, alreadyBuilt = [], needed = [], unserved = [], looked = false, from = "", where = from }) {
   return { carried, problems, alreadyBuilt, needed, unserved, looked, from, where };
 }
 
