@@ -31,6 +31,12 @@ name: deploy
 # `repository_dispatch` is the fast path: the watch fires a `dataset-updated`
 # event the moment it actually commits new state, so a real change reaches the
 # published page in minutes instead of waiting for tomorrow's cron.
+
+# The one issue this workflow files: `deploy run failed`, under the `deploy`
+# label, kept by the `report` job (below). A red scheduled or dispatched run
+# opens it, or comments on it, reopening it when closed; the first green run
+# of those two kinds closes it with a line linking that run. Only a first
+# attempt counts; a re-run, a push and a hand dispatch file nothing (#117).
 on:
   push:
     branches: [master]
@@ -54,8 +60,9 @@ on:
 
 # The floor for the whole workflow, and the ceiling for every job that does not
 # raise it: a build that only reads two repositories needs nothing else. The
-# deploy job asks for the two Pages tokens where it needs them, and nowhere
-# above (Spine steward-40, 2026-09-08).
+# deploy job asks for the two Pages tokens where it needs them, the pin for
+# its one commit and the report for its one issue, and nowhere above (Spine
+# steward-40, 2026-09-08).
 permissions:
   contents: read
 
@@ -73,7 +80,8 @@ jobs:
     runs-on: ubuntu-26.04 # named, never -latest: the image changes only when this file does, and the browser cases drive the image's own Chrome (#24)
     # Reads two repositories and writes nothing: the one line that records which
     # data commit deployed is written by the `pin` job, which is the only job
-    # holding a write token (Standards review, 2026-09-08).
+    # holding a write token to the repository's contents (Standards review,
+    # 2026-09-08).
     permissions:
       contents: read
     outputs:
@@ -268,10 +276,11 @@ jobs:
 
   # Every dependency in the lockfile, dev ones included: the test runner and
   # the build run in the job above. A known advisory at high or above turns
-  # this job, and so the run, red; nothing `needs` it, so the deploy still
-  # publishes the day's values (#47). `npm audit` reads the lockfile alone,
-  # so this job installs nothing and checks out only the site. The data's own
-  # dependencies are audited by its watch.
+  # this job, and so the run, red; only the `report` needs it, and runs
+  # whatever its result, so the deploy still publishes the day's values (#47).
+  # `npm audit` reads the lockfile alone, so this job installs nothing and
+  # checks out only the site. The data's own dependencies are audited by its
+  # watch.
   audit:
     runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     permissions:
@@ -390,3 +399,78 @@ jobs:
           status=$(curl -sS -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json; charset=utf-8' --data "$body" https://api.indexnow.org/indexnow || echo "no answer")
           echo "IndexNow answered $status to $(echo "$URLS" | jq length) addresses on $host"
           exit 0
+
+  # A scheduled or dispatched deploy has nobody at the other end, so its red
+  # keeps one issue, `deploy run failed`, and its first green closes it, with
+  # a line linking the run (#117, decisions 3 to 6 and 13). A push, a hand
+  # dispatch and a re-run have a person watching: they keep nothing, and a
+  # push's or a re-run's green proves nothing about the daily page, since both
+  # build against data.lock's data. IndexNow is not among the needs: it cannot
+  # redden the run, so it cannot raise the alarm either.
+  #
+  # `always()`, because a red or cancelled job is what it is here to say. What
+  # the run found is `scripts/deploy-finding.mjs`'s; the tracker is kept by the
+  # data package's kept-issue CLI, built alone from the data commit `data.lock`
+  # names: that commit has built and deployed once, so neither a broken data
+  # master nor a dispatch naming no data commit can silence this job.
+  report:
+    needs: [build, deploy, pin, audit]
+    if: ${{ always() && github.run_attempt == 1 && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch') }}
+    runs-on: ubuntu-26.04 # named, never -latest: the build job says why
+    permissions:
+      # Reads `data.lock` and the finding's module out of the site.
+      contents: read
+      # Opens, comments on, reopens and closes `deploy run failed`.
+      issues: write
+    steps:
+      - name: Check out the site
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
+        with:
+          path: site
+          persist-credentials: false
+
+      - name: The data commit data.lock names
+        id: lock
+        working-directory: site
+        run: |
+          sha=$(sed -n 's/^sha=//p' data.lock)
+          case "$sha" in
+            [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
+            *) echo "::error::data.lock names no 40-hex commit, so there is no kept-issue CLI to build."; exit 1 ;;
+          esac
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the data at that commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
+        with:
+          repository: OytunOnal/permit-rulebook-data
+          ref: ${{ steps.lock.outputs.sha }}
+          path: data-at-lock
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
+        with: { node-version: 22 }
+
+      # Only the compiler is needed, and this job holds a write token: no
+      # dependency's install script runs here.
+      - name: Install the data's compiler
+        working-directory: data-at-lock
+        run: npm ci --ignore-scripts
+      - name: Build the kept-issue CLI alone
+        working-directory: data-at-lock
+        run: npm run build:kept-issue
+
+      # The four results as one JSON object; each is one of GitHub's own words
+      # for a job's result, and the module refuses anything else.
+      - name: What the run found
+        working-directory: site
+        env:
+          JOB_RESULTS: '{"build":"${{ needs.build.result }}","deploy":"${{ needs.deploy.result }}","pin":"${{ needs.pin.result }}","audit":"${{ needs.audit.result }}"}'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/cli-deploy-finding.mjs > "$RUNNER_TEMP/deploy-finding.json"
+
+      - name: Keep deploy run failed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: node data-at-lock/dist/kept-issue-cli/src/watch/cli-kept-issue.js --title "deploy run failed" --label deploy --label-color b60205 --label-description "The daily deploy itself" --finding-file "$RUNNER_TEMP/deploy-finding.json"
