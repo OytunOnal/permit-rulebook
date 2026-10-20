@@ -194,11 +194,13 @@ function digestListLines(dist, dryRun) {
  * everything it could not do comes back in `problems`, including being called
  * without the things it cannot work without.
  *
+ * `liveAnswerFor(url, { byteCeiling, timeoutMs })` is the live site: it
+ * answers `{ ok: true, status, contentType, bytes }` or `{ ok: false, why }`.
+ *
  * @param {{
  *   origin?: string,
  *   dist?: string,
- *   liveAnswerFor?: (url: string, limits: { byteCeiling: number, timeoutMs: number }) => Promise<
- *     { ok: true, status: number, contentType: string, bytes: Buffer } | { ok: false, why: string }>,
+ *   liveAnswerFor?: (url: string, limits: { byteCeiling: number, timeoutMs: number }) => Promise<any>,
  *   dryRun?: boolean,
  *   budgetMs?: number,
  * }} [options]
