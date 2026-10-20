@@ -289,7 +289,7 @@ describe("the carrier carries only what our own previous build attested to", () 
     );
   });
 
-  it("publishes it as part of the step, before it carries anything into the build", async () => {
+  it("publishes this build's digest list as part of the step, before it carries anything into the build", async () => {
     // The list describes what this build BUILT, so it is written before a
     // carried file lands in `_astro/` — and it is published whether or not
     // anything is carried, because the next deploy's whole check is this file.
@@ -799,7 +799,7 @@ describe("the carrier cannot fail the deploy", () => {
     } finally { live.close(); }
   });
 
-  it("refuses a page over the ceiling, so the reading above is the worst case there is", async () => {
+  it("refuses a live page over its 512 KB ceiling before asking for anything else", async () => {
     // The ceiling on the page is the ceiling on reading its names, and it is
     // the page's own: a page is an index.html, today 11,569 bytes, and 512 KB
     // is not an asset's 4 MB.
