@@ -63,11 +63,8 @@
  * only the ones that worked let four hundred dead references cost four hundred
  * requests against our own origin.
  *
- * The log is bounded for the same reason the network is. A page that names
- * four hundred files is a bounded list, not four hundred lines; a string this
- * step did not write is printed shortened and on one line, because a log
- * nobody can read is the same as no log — and in Actions a line beginning `::`
- * is a workflow command.
+ * The log is bounded for the same reason the network is, and how is
+ * `carry-assets/log-wording.mjs`'s.
  *
  * `BUDGET_MS` bounds how long this will WAIT ON THE NETWORK: it sizes request
  * timeouts and does nothing else, so a run that never waits can no more be
@@ -136,6 +133,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { boundedList, oneLine, say, short } from "./carry-assets/log-wording.mjs";
 
 /**
  * The environment variable the live site's address arrives in — the header's
@@ -224,32 +222,6 @@ const DIGESTS_LINE = new RegExp(`^([0-9a-f]{64}) {2}(${NAME_PATTERN})$`);
 const CARRIABLE = /^(?:text\/css|text\/javascript|application\/javascript|application\/ecmascript|text\/ecmascript)$/;
 
 /**
- * Some names as one line, with a bottom to it. A page that names four hundred
- * files would otherwise be four hundred lines in a deploy's log, which is the
- * same thing as no log at all.
- */
-const boundedList = (names) => (names.length <= 3 ? names.join(", ") : `${names.slice(0, 3).join(", ")} and ${names.length - 3} more`);
-
-/**
- * As much of a string this step did not write as a log line can afford. A page
- * may name a reference of any length at all, and a refusal that printed one
- * whole let a page write the deploy's log twenty lines at a time. 40 is the
- * only bound in use: every call site takes the default — a reference, the host
- * one names, the path one resolves to, a `content-type` the origin chose. The
- * live address is not among them; it is the other population, and its rule is
- * all or nothing — printed whole once it has parsed, or not printed at all.
- */
-const short = (text, max = 40) => (text.length > max ? `${text.slice(0, max)}…` : text);
-
-/**
- * One line, whatever it is handed. In Actions a line beginning `::` is a
- * workflow command, so a value this step prints but did not write — an address
- * out of a repository variable — must not be able to end a line and start
- * another one of its own.
- */
-const oneLine = (text) => text.replace(/[\u0000-\u001f\u007f]+/g, " ");
-
-/**
  * Whether this run was given a build to fill at all — one spelling, because
  * two would be a hole between them. `carryAssets` refuses the run on it and
  * the CLI declines to write anything on it, and a value one of them accepted
@@ -259,13 +231,6 @@ const oneLine = (text) => text.replace(/[\u0000-\u001f\u007f]+/g, " ");
  * anything (round 9).
  */
 const noBuildDirectory = (dist) => typeof dist !== "string" || dist.trim() === "";
-
-/** An error as a sentence, with the cause `fetch failed` always hides. */
-const say = (e) => {
-  const message = e instanceof Error ? e.message : String(e);
-  const cause = e instanceof Error && e.cause instanceof Error ? e.cause.message : "";
-  return cause && !message.includes(cause) ? `${message} (${cause})` : message;
-};
 
 /** The sha256 of some bytes, as the digest list spells it. */
 const digestOf = (bytes) => createHash("sha256").update(bytes).digest("hex");
