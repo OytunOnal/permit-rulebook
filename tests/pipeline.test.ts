@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { basename, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDir, readLock } from "../scripts/data-pin.mjs";
 import { readAssetNames } from "../scripts/carry-assets/asset-names.mjs";
@@ -284,6 +284,68 @@ describe("a cached page still finds its assets", () => {
       + LF
       + "      - uses: actions/upload-pages-artifact@",
     );
+  });
+});
+
+/**
+ * `deploy run failed` (#117, decisions 3 to 5 and 13; site seam 8). A red
+ * scheduled or dispatched deploy has nobody at the other end, so the `report`
+ * job keeps one issue for it; a push and a hand dispatch have a person
+ * watching, and keep nothing. What the run found is `deployFindingOf`'s
+ * (`tests/deploy-finding.test.ts`); which runs keep the issue, and with what
+ * token, lives only here in the YAML, so it is pinned here.
+ */
+describe("a red deploy nobody watches keeps deploy run failed", () => {
+  const report = jobOf(pages, "report");
+  /** A key's value on its own line in a job, at the job's own indent. */
+  const jobKey = (job: string, key: string): string => new RegExp(`^ {4}${key}:\\s*(.+)$`, "m").exec(job)?.[1]?.trim() ?? "";
+
+  it("report needs build, deploy, pin and audit", () => {
+    expect(report, "pages.yml has no report job").not.toBe("");
+    const needs = /^\[(.*)\]$/.exec(jobKey(report, "needs"))?.[1]?.split(",").map((job) => job.trim()) ?? [];
+    expect(needs.sort()).toEqual(["audit", "build", "deploy", "pin"]);
+  });
+
+  it("report runs whatever their result, on schedule and repository_dispatch only", () => {
+    const condition = jobKey(report, "if");
+    // `always()`: a red or cancelled job is what the report is there to say.
+    expect(condition).toMatch(/^\$\{\{\s*always\(\)\s*&&/);
+    const events = [...condition.matchAll(/github\.event_name\s*==\s*'([a-z_]+)'/g)].map((m) => m[1]);
+    expect(events.sort()).toEqual(["repository_dispatch", "schedule"]);
+    // Any other way to name an event could widen the set past those two.
+    expect(condition).toBe("${{ always() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch') }}");
+  });
+
+  it("report is the only job with issues: write", () => {
+    const writers = workflowPaths.flatMap((file) => {
+      const yaml = readText(file);
+      return jobNamesOf(yaml).filter((job) => /^\s+issues:\s*write\s*$/m.test(jobOf(yaml, job))).map((job) => `${basename(file)}: ${job}`);
+    });
+    expect(writers).toEqual(["pages.yml: report"]);
+    // And it writes nowhere else.
+    expect(report.match(/^\s+[a-z-]+:\s*write\s*$/gm)?.map((line) => line.trim())).toEqual(["issues: write"]);
+  });
+
+  /**
+   * The data commit `data.lock` names has built and deployed once, so a
+   * broken data master, or a dispatch naming no data commit at all, cannot
+   * silence the report (#117, decision 2).
+   */
+  it("report builds the kept-issue CLI from the data commit data.lock names", () => {
+    const steps = report.split(/^ {6}- /m);
+    const dataCheckout = steps.find((step) => /^\s{10}repository: OytunOnal\/permit-rulebook-data$/m.test(step)) ?? "";
+    expect(dataCheckout, "report checks out no data").toMatch(/^(?:name:.*\n\s{8})?uses: actions\/checkout@/);
+    const ref = /^\s{10}ref:\s*(.+)$/m.exec(dataCheckout)?.[1]?.trim();
+    expect(ref).toBe("${{ steps.lock.outputs.sha }}");
+    // The step that gives that sha reads it out of data.lock.
+    const lockStep = steps.find((step) => /^ {8}id: lock$/m.test(step)) ?? "";
+    expect(lockStep, "no step reads the sha out of data.lock").toMatch(/^ {10}.*\bdata\.lock\b/m);
+    // Never the run's own data checkout, never a dispatch's sha.
+    expect(report).not.toMatch(/client_payload|steps\.data\.outputs|needs\.build\.outputs/);
+    // Only the CLI is built, with no install script run beside the write token.
+    expect(report).toMatch(/^\s+run: npm ci --ignore-scripts$/m);
+    expect(report).toMatch(/^\s+run: npm run build:kept-issue$/m);
+    expect(report).not.toMatch(/npm run (build|check)$/m);
   });
 });
 
