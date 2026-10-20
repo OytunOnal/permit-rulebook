@@ -65,12 +65,11 @@ describe("a red deploy names what went red", () => {
  * decision 13; Security).
  */
 describe("results the report cannot read give red, never green", () => {
-  const { build: _build, ...withoutBuild } = ALL_PASSED;
   it.each([
     ["not JSON", "{build: success"],
     ["JSON that is not an object", "[\"success\"]"],
     ["null", "null"],
-    ["a job missing", resultsOf(withoutBuild)],
+    ["a job missing", resultsOf({ deploy: "success", pin: "success", audit: "success" })],
     ["an unknown result", resultsOf({ ...ALL_PASSED, deploy: "neutral" })],
     ["a result that is not text", JSON.stringify({ ...ALL_PASSED, audit: 0 })],
     ["text far longer than four results", resultsOf({ ...ALL_PASSED, padding: "x".repeat(10_000) })],
