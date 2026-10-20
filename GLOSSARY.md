@@ -547,6 +547,13 @@ says so there; the first green run of the same kind closes it with a line
 naming that run. A person reads it, and never has to close it.
 _Avoid_: alarm, status issue, notification
 
+**Finding**:
+What a run found, in its kept issue's terms, and the only thing a run tells
+it: **red** (say so, with what failed), **green** (close it, naming the run),
+or **unsaid** (leave it as it is, because the run could not tell, as when the
+clock could not read the open flags). An unsaid run is neither red nor green.
+_Avoid_: result, status, outcome (a job's own result, before it is a finding)
+
 **Baseline**:
 The first recorded snapshot of a source, against which change is measured.
 
