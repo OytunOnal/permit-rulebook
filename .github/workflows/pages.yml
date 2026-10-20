@@ -277,9 +277,10 @@ jobs:
   # Every dependency in the lockfile, dev ones included: the test runner and
   # the build run in the job above. A known advisory at high or above turns
   # this job, and so the run, red; only the `report` needs it, and runs
-  # whatever its result, so the deploy still publishes the day's values (#47). `npm audit` reads the lockfile alone,
-  # so this job installs nothing and checks out only the site. The data's own
-  # dependencies are audited by its watch.
+  # whatever its result, so the deploy still publishes the day's values (#47).
+  # `npm audit` reads the lockfile alone, so this job installs nothing and
+  # checks out only the site. The data's own dependencies are audited by its
+  # watch.
   audit:
     runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     permissions:
