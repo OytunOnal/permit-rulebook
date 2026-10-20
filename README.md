@@ -19,27 +19,26 @@ them. This repository is the site; that one is the ruleset.
 wants the rules rather than an opinion — and anyone who needs the ruleset
 itself.
 
-**What it does now** — v1.2.0, from its
-[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.0):
+**What it does now** — v1.2.1, from its
+[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.1):
 
 > Public at https://permitrulebook.com: 29 routes across Germany, France,
 > Spain and the Netherlands — 23 scored against a reader's answers, 6 quoted
 > and dated but not scored, each with a page of its own — and 204 quotes, each
 > carrying the authority's sentence, its page and the day it was read. The
 > watch re-reads 46 sources every morning; two are read by a person, because a
-> browser reads them and the fetcher cannot. What changed since v1.1: a changed
-> source nobody has walked by its second morning turns the morning red; a
-> flag quotes the page's words without letting them act on the tracker; the
-> watch reads the IND itself again and reads a failing source twice; a route
-> page dates only what it prints; the first paint holds still on every
-> arrival; Back on a restored record keeps the answer. The isolated walk:
-> 38/50 on RUBRIC 1.3, one blocker fixed, one shipped with its reason
-> ([#77](https://github.com/OytunOnal/permit-rulebook/issues/77)).
-> 922 + 902 tests. (2026-10-18)
+> browser reads them and the fetcher cannot. What changed since v1.2.0: the
+> deploy and the watch trust only reviewed code and their own sources — the
+> site's address is a line of reviewed code, the watch goes only where one
+> module allows, and a red watch, deploy or data check keeps one issue that its
+> next green run closes. Nothing a reader sees changed. The isolated walk:
+> 36/50 on RUBRIC 1.3, one blocker shipped with its reason
+> ([#55](https://github.com/OytunOnal/permit-rulebook/issues/55)).
+> 966 + 1220 tests. (2026-10-21)
 
 **How to run it.** Both repositories side by side — the site reads the dataset
 package from the sibling directory its manifest names. Tried from a fresh clone
-on 2026-10-18:
+on 2026-10-21:
 
 ```
 git clone https://github.com/OytunOnal/permit-rulebook-data.git && git clone https://github.com/OytunOnal/permit-rulebook.git && cd permit-rulebook-data && npm ci && npm run build && cd ../permit-rulebook && npm ci && npm run build
@@ -106,7 +105,9 @@ each deploy that publishes something — a push, the daily rebuild, the data
 watch's dispatch — the workflow tells Bing which addresses changed over
 [IndexNow](https://www.indexnow.org/): one POST of every sitemap address,
 vouched for by the public key file at the site's root (`public/<key>.txt`),
-and never from a manual run or a re-run.
+and never from a manual run or a re-run. A red daily rebuild or dispatched
+deploy opens one issue, `deploy run failed`, naming the jobs that did not pass
+and whether the day's page was published; the next green one closes it.
 
 ## The data
 
