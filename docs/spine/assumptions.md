@@ -69,6 +69,11 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   from launch until #99, and will catch the next text sink. Each
   `threats.md` row that names its case, with the case checked to exist,
   keeps a claim from outgrowing its test (#101, retro of #25). — `untested`
+- **A21 — a slice's test time halves when the slow suites run once.** The
+  browser and timer suites in their own vitest project in each repository, a
+  fast script for the inner loop, and per-file counts written by the green
+  cut a slice's test time by more than half without losing a case (#116,
+  retros of #49, #104 and #110). — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
