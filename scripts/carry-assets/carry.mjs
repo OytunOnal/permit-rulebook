@@ -233,13 +233,10 @@ function digestListLines(dist, { dryRun }) {
  */
 export async function carryAssets({ origin, dist, liveAnswerFor, dryRun = false, budgetMs = BUDGET_MS } = {}) {
   const digestListLogLines = digestListLines(dist, { dryRun });
-  let record = {
-    carried: [], problems: [], alreadyBuilt: [], needed: [], unserved: [], looked: false, from: "",
-    // A throw is not one of the run's own bails and has none of their phrases
-    // to carry, so this one blames nothing: what stopped the run is the caught
-    // error, printed as its own line just above.
-    where: "nowhere — the line above says what stopped this run",
-  };
+  // A throw is not one of the run's own bails and has none of their phrases to
+  // carry, so this one blames nothing: what stopped the run is the caught
+  // error, printed as its own line just above.
+  let record = recordOf({ problems: [], where: "nowhere — the line above says what stopped this run" });
   try {
     record = await recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs });
   } catch (e) {
@@ -269,9 +266,11 @@ async function liveAssetDigests(answerWithinBudget, url) {
 /**
  * What one run did: which names it carried and from where, which it left
  * behind and why. Every field `logLinesOf` reads to tell the three outcomes
- * apart comes from here. It runs in three phases — read the live page, read
- * its digest list, carry each asset — and a phase that ends the run leaves
- * its reason in `problems` and the phases after it unrun.
+ * apart comes from here. It runs in phases — parse the address, read the live
+ * page, read its digest list, carry each asset — and each returns what it
+ * found, which this merges in the order the phases ran, so the lines come out
+ * in that order. A phase that ends the run returns its reason in `problems`
+ * and leaves the phases after it unrun.
  *
  * `needed` is what the live page references and this build lacks, whether or
  * not any of it could be carried, and `looked` is whether this run ever got
@@ -294,18 +293,12 @@ async function liveAssetDigests(answerWithinBudget, url) {
  *
  * `from` is the page this run actually read, once there is one: what was
  * parsed, not what was handed in. `where` is what the counted line names where
- * a page would be, when there is no page. It is decided AT THE BAIL that ends
- * the run, because that is the only place that knows which bail it was: three
- * bails reach the counted line with no page read, and only two of them are
- * about the origin. The default is the parse failures', which are the two
- * bails that say nothing of their own. Nothing of an unparsed value ever
- * enters it — see `pageUrlOf`.
+ * a page would be, when there is no page. `pageUrlOf` decides it AT THE BAIL
+ * that ends the run, because that is the only place that knows which bail it
+ * was: three phrases reach the counted line with no page read, and only two of
+ * them are about the origin. Nothing of an unparsed value ever enters it.
  */
 async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) {
-  const record = {
-    carried: [], problems: [], alreadyBuilt: [], needed: [], unserved: [], looked: false, from: "",
-    where: `a ${ORIGIN_VAR} no page could be read from`,
-  };
   const deadline = Date.now() + budgetMs;
   /**
    * The live answer for `url`, with the request's timeout cut to what is left
@@ -318,17 +311,29 @@ async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) 
   };
   const run = { dist, dryRun, budgetMs, deadline, answerWithinBudget };
 
-  const names = await assetNamesOfLivePage(record, origin, run);
-  if (record.needed.length > 0) {
-    const digests = await liveDigestsMatchingPage(record, names, run);
-    if (digests) record.carried.push(...await carriedAssetsOf(record, digests, run));
-  }
-  return { ...record, where: record.from || record.where };
+  const address = pageUrlOf(origin, dist);
+  if (!address.pageUrl) return recordOf(address);
+  const page = await assetNamesOfLivePage(address.pageUrl, run);
+  if (page.needed.length === 0) return recordOf(page);
+  const list = await liveDigestsMatchingPage(page, run);
+  if (!list.digests) return recordOf({ ...page, problems: [...page.problems, ...list.problems] });
+  const carry = await carryAttestedAssets(page, list.digests, run);
+  return recordOf({ ...page, carried: carry.carried, problems: [...page.problems, ...list.problems, ...carry.problems] });
 }
 
 /**
- * The address to read the live page from, parsed, or "" once `record` says why
- * there is none. The origin has to be given, has to be an address rather than
+ * The record `logLinesOf` reads, from what the phases that ran found: a phase
+ * that never ran found nothing, and `where` is the page read whenever there
+ * is one.
+ */
+function recordOf({ carried = [], problems, alreadyBuilt = [], needed = [], unserved = [], looked = false, from = "", where = from }) {
+  return { carried, problems, alreadyBuilt, needed, unserved, looked, from, where };
+}
+
+/**
+ * The address to read the live page from, parsed, in `pageUrl` — or "" there,
+ * with `problems` saying why there is none and `where` the phrase the counted
+ * line names in its place. The origin has to be given, has to be an address rather than
  * something that merely arrived in the variable that holds one, and needs a
  * build to fill, checked before a request is spent on a build there is
  * nowhere to put.
@@ -368,30 +373,28 @@ async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) 
  * it: whitespace, a line break and a fragment all end here rather than in a
  * request or in a log line.
  */
-function pageUrlOf(record, origin, dist) {
-  if (typeof origin !== "string" || origin.trim() === "") {
-    record.problems.push("anything: no origin was given");
-    record.where = `an unset ${ORIGIN_VAR}`;
-    return "";
-  }
+function pageUrlOf(origin, dist) {
+  // The two parse failures say nothing of the value, so they share one phrase.
+  const unparsed = `a ${ORIGIN_VAR} no page could be read from`;
+  if (typeof origin !== "string" || origin.trim() === "")
+    return { pageUrl: "", problems: ["anything: no origin was given"], where: `an unset ${ORIGIN_VAR}` };
   const given = origin.trim();
   if (!/^https?:\/\//i.test(given)) {
-    record.problems.push(`anything: ${ORIGIN_VAR} is not an absolute http(s) address, so it is not somewhere to read a page from`);
-    return "";
+    const problem = `anything: ${ORIGIN_VAR} is not an absolute http(s) address, so it is not somewhere to read a page from`;
+    return { pageUrl: "", problems: [problem], where: unparsed };
   }
   if (noBuildDirectory(dist)) {
-    record.problems.push("anything: no build directory was given");
     // The one bail here that is not about the origin, and the counted line
     // says so rather than naming a variable nothing was wrong with.
-    record.where = "nowhere — no build directory was given, so no page was asked for";
-    return "";
+    const where = "nowhere — no build directory was given, so no page was asked for";
+    return { pageUrl: "", problems: ["anything: no build directory was given"], where };
   }
   let home;
   try { home = new URL(given); } catch {
     // Not `sentenceOfError(e)` either: the error's wording is the runtime's,
     // which is free to start putting the input it refused into it.
-    record.problems.push(`anything: ${ORIGIN_VAR} is not a URL, so it is not somewhere to read a page from`);
-    return "";
+    const problem = `anything: ${ORIGIN_VAR} is not a URL, so it is not somewhere to read a page from`;
+    return { pageUrl: "", problems: [problem], where: unparsed };
   }
   home.hash = "";
   home.search = "";
@@ -402,13 +405,14 @@ function pageUrlOf(record, origin, dist) {
   // The origin as given, path and all: a site served from a subpath carries
   // it in its address (`check:base` guards the same edge).
   if (!home.pathname.endsWith("/")) home.pathname += "/";
-  return home.href;
+  return { pageUrl: home.href, problems: [], where: home.href };
 }
 
 /**
- * The first phase, reading the live page: the names it references that are
- * this deploy's assets, with `record` holding which of them this build
- * already has, which it needs, and every reference it declined.
+ * The phase that reads the live page at `pageUrl`: the names it references
+ * that are this deploy's assets, which of them this build already has and
+ * which it needs, every reference it declined, and whether it got as far as
+ * looking.
  *
  * The reasons differ reference by reference, so the declined ones stay lines
  * rather than a folded list — but there is the same bottom to how many a page
@@ -421,39 +425,39 @@ function pageUrlOf(record, origin, dist) {
  * another host, which answers for itself, or resolve nowhere at all, which is
  * a request no browser makes either.
  */
-async function assetNamesOfLivePage(record, origin, run) {
-  const pageUrl = pageUrlOf(record, origin, run.dist);
-  if (!pageUrl) return [];
-  record.from = pageUrl;
+async function assetNamesOfLivePage(pageUrl, run) {
+  const unread = { names: [], from: pageUrl, unserved: [], alreadyBuilt: [], needed: [], looked: false };
   const page = await run.answerWithinBudget(pageUrl, MAX_PAGE_BYTES);
-  if (!page.ok) { record.problems.push(`the live page ${pageUrl}: ${page.why}`); return []; }
-  if (page.status !== 200) { record.problems.push(`the live page ${pageUrl}: answered ${page.status}`); return []; }
+  if (!page.ok) return { ...unread, problems: [`the live page ${pageUrl}: ${page.why}`] };
+  if (page.status !== 200) return { ...unread, problems: [`the live page ${pageUrl}: answered ${page.status}`] };
   const html = await page.readBody();
-  if (!html.ok) { record.problems.push(`the live page ${pageUrl}: its body ${html.why}`); return []; }
+  if (!html.ok) return { ...unread, problems: [`the live page ${pageUrl}: its body ${html.why}`] };
 
   const references = readAssetNames(html.bytes.toString("utf8"), pageUrl);
   const declined = [...references.refused, ...references.unserved];
-  for (const { ref, why } of declined.slice(0, MAX_ASSETS)) record.problems.push(`${ref}: it ${why}`);
+  const problems = declined.slice(0, MAX_ASSETS).map(({ ref, why }) => `${ref}: it ${why}`);
   if (declined.length > MAX_ASSETS)
-    record.problems.push(`the ${declined.length - MAX_ASSETS} further reference(s) this page named: each refused unread`);
-  record.unserved.push(...references.unserved);
+    problems.push(`the ${declined.length - MAX_ASSETS} further reference(s) this page named: each refused unread`);
 
+  const alreadyBuilt = [];
+  const needed = [];
   for (const name of references.names) {
     // Already in this build: no request, so no cost, so no ceiling.
-    if (existsSync(join(run.dist, "_astro", name))) record.alreadyBuilt.push(name);
-    else record.needed.push(name);
+    if (existsSync(join(run.dist, "_astro", name))) alreadyBuilt.push(name);
+    else needed.push(name);
   }
-  // From here on this run knows what a reader holding the live page will ask
+  // `looked`: this run now knows what a reader holding the live page will ask
   // for, so what it says at the end is about those names rather than about not
   // having looked.
-  record.looked = true;
-  return references.names;
+  const unserved = [...references.unserved];
+  return { names: references.names, from: pageUrl, problems, unserved, alreadyBuilt, needed, looked: true };
 }
 
 /**
- * The second phase, reading the live page's digest list: its digests, when
- * the list describes this page, or null once `record` says why there is
- * nothing to check a byte against.
+ * The phase that reads the digest list beside the live `page`: its digests,
+ * when the list describes that page, with `problems` naming the needed names
+ * it does not carry — or null, with `problems` saying why there is nothing to
+ * check a byte against.
  *
  * Two questions, asked of two different sets. Whether the page and the list
  * describe the same deploy is asked of the page's WHOLE reference set: they
@@ -472,51 +476,53 @@ async function assetNamesOfLivePage(record, origin, run) {
  * asset behind — one attribute in a page this step does not own, turning the
  * step off.
  */
-async function liveDigestsMatchingPage(record, names, run) {
-  const list = await liveAssetDigests(run.answerWithinBudget, new URL(DIGESTS_NAME, record.from).href);
-  if (!list.ok) { record.problems.push(`anything: ${list.why}`); return null; }
+async function liveDigestsMatchingPage(page, run) {
+  const list = await liveAssetDigests(run.answerWithinBudget, new URL(DIGESTS_NAME, page.from).href);
+  if (!list.ok) return { digests: null, problems: [`anything: ${list.why}`] };
+  const { names } = page;
   if (!names.some((name) => list.digests.has(name))) {
-    record.problems.push(
-      `anything: ${DIGESTS_NAME} names none of the ${names.length} asset(s) this page references (${boundedList(names)})`
-      + " — the page and the list are from different deploys, so there is nothing to check these bytes against",
-    );
-    return null;
+    const problem = `anything: ${DIGESTS_NAME} names none of the ${names.length} asset(s) this page references (${boundedList(names)})`
+      + " — the page and the list are from different deploys, so there is nothing to check these bytes against";
+    return { digests: null, problems: [problem] };
   }
-  const unlisted = record.needed.filter((name) => !list.digests.has(name));
+  const problems = [];
+  const unlisted = page.needed.filter((name) => !list.digests.has(name));
   if (unlisted.length) {
-    record.problems.push(
+    problems.push(
       `${boundedList(unlisted)}: ${DIGESTS_NAME} does not name ${unlisted.length === 1 ? "it" : "them"},`
       + " so there is nothing to check those bytes against",
     );
   }
-  return list.digests;
+  return { digests: list.digests, problems };
 }
 
 /**
- * The third phase, carrying each asset: every name this build needs and the
- * list attests to, fetched, checked and written into `dist/_astro/` (named
- * only, under `dryRun`), with `record` holding why each one left behind was.
- * The ceiling counts what was asked of the origin, not the wins.
+ * The phase that carries: every name the live `page` needs and `digests`
+ * attests to, fetched, checked and written into `dist/_astro/` (named only,
+ * under `dryRun`). Returns what it carried, and in `problems` why each one
+ * left behind was. The ceiling counts what was asked of the origin, not the
+ * wins.
  */
-async function carriedAssetsOf(record, digests, run) {
+async function carryAttestedAssets(page, digests, run) {
   const carried = [];
+  const problems = [];
   let asked = 0;
   const overCeiling = [];
   const overBudget = [];
-  for (const name of record.needed.filter((name) => digests.has(name))) {
+  for (const name of page.needed.filter((name) => digests.has(name))) {
     if (asked >= MAX_ASSETS) { overCeiling.push(name); continue; }
     if (run.deadline - Date.now() <= 0) { overBudget.push(name); continue; }
     asked += 1;
     // Built here, from the origin this run was given — never from the ref.
-    const url = new URL(`_astro/${name}`, record.from).href;
+    const url = new URL(`_astro/${name}`, page.from).href;
     const asset = await attestedAssetOf(url, digests.get(name), run.answerWithinBudget);
-    if (!asset.ok) { record.problems.push(`${name}: ${asset.why}`); continue; }
+    if (!asset.ok) { problems.push(`${name}: ${asset.why}`); continue; }
     if (!run.dryRun) {
       try {
         mkdirSync(join(run.dist, "_astro"), { recursive: true });
         writeFileSync(join(run.dist, "_astro", name), asset.bytes);
       } catch (e) {
-        record.problems.push(`${name}: it could not be written — ${sentenceOfError(e)}`);
+        problems.push(`${name}: it could not be written — ${sentenceOfError(e)}`);
         continue;
       }
     }
@@ -524,9 +530,9 @@ async function carriedAssetsOf(record, digests, run) {
   }
   // One line each, however many names are behind them.
   if (overCeiling.length)
-    record.problems.push(`${boundedList(overCeiling)}: this run had already asked the origin for its ceiling of ${MAX_ASSETS} assets`);
-  if (overBudget.length) record.problems.push(`${boundedList(overBudget)}: the run's ${run.budgetMs} ms budget was spent`);
-  return carried;
+    problems.push(`${boundedList(overCeiling)}: this run had already asked the origin for its ceiling of ${MAX_ASSETS} assets`);
+  if (overBudget.length) problems.push(`${boundedList(overBudget)}: the run's ${run.budgetMs} ms budget was spent`);
+  return { carried, problems };
 }
 
 /**
