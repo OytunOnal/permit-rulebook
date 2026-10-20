@@ -85,7 +85,7 @@ describe("a run the report cannot link gives red, never a green that links nothi
   it("an empty run address, though the four jobs passed", () => {
     const finding = deployFindingOf(resultsOf(ALL_PASSED), "");
     expect(finding.kind, "the finding is not red").toBe("red");
-    const body = finding.kind === "red" ? finding.body : "";
+    const body: string = finding.kind === "red" ? finding.body : "";
     expect(body.split("\n").some((line) => line.startsWith(DEPLOY_FINDING_WORDS.unread)), "the body does not say what was unread")
       .toBe(true);
   });
