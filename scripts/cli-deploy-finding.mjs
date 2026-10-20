@@ -1,4 +1,4 @@
-// @level main
+// @level presentation
 /**
  * The deploy report's first step (#117, decision 13): prints the run's finding
  * as one JSON `RunFinding` on stdout, which the step writes to a file for the
