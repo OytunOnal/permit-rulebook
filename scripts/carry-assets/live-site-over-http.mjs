@@ -12,12 +12,18 @@
  */
 import { sentenceOfError } from "./log-wording.mjs";
 
+/** @typedef {import("./carry.mjs").LiveAnswer} LiveAnswer */
+
 /**
- * What the live site answers for `url`, read whole up to `byteCeiling` bytes
- * within `timeoutMs`, or the reason there is no answer to read. Every failure
- * is a sentence rather than a stack; it throws nothing. A failure of the body
- * says "its body", so a line naming the URL reads the same whichever half of
- * the exchange failed.
+ * What the live site answers for `url` within `timeoutMs`, or the reason there
+ * is no answer. The body is read only when the caller asks for it, up to
+ * `byteCeiling` bytes and inside the same timeout, so an answer refused on its
+ * status or its type costs no body. Every failure is a sentence rather than a
+ * stack; it throws nothing.
+ *
+ * @param {string} url
+ * @param {{ byteCeiling: number, timeoutMs: number }} limits
+ * @returns {Promise<LiveAnswer>}
  */
 export async function liveAnswerOverHttp(url, { byteCeiling, timeoutMs }) {
   let response;
@@ -30,9 +36,12 @@ export async function liveAnswerOverHttp(url, { byteCeiling, timeoutMs }) {
   } catch (e) {
     return { ok: false, why: sentenceOfError(e) };
   }
-  const body = await bodyWithin(response, byteCeiling);
-  if (!body.ok) return { ok: false, why: `its body ${body.why}` };
-  return { ok: true, status: response.status, contentType: response.headers.get("content-type") ?? "", bytes: body.bytes };
+  return {
+    ok: true,
+    status: response.status,
+    contentType: response.headers.get("content-type") ?? "",
+    readBody: () => bodyWithin(response, byteCeiling),
+  };
 }
 
 /**

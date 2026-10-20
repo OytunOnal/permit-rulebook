@@ -1,3 +1,5 @@
+import type { LiveAnswer } from "../../scripts/carry-assets/carry.mjs";
+
 /**
  * The live site in memory, for the carry's flow: what each URL answers, as
  * `liveAnswerFor` would hand it over, with no socket anywhere. Each site gets
@@ -5,17 +7,13 @@
  * opened, so a URL off every open site is one nothing answers — the shape of
  * a host that is down.
  *
- * It keeps the reader's one promise the flow leans on, the byte ceiling: an
- * answer longer than the ceiling the flow passed is refused, as the reader
- * over HTTP refuses it.
+ * It keeps the reader's one promise the flow leans on, the byte ceiling: a
+ * body longer than the ceiling the flow passed is refused when it is read, as
+ * the reader over HTTP refuses it.
  */
 
 /** What the live site answers for one path. */
 export type Answer = { status?: number; type?: string; body?: Buffer };
-
-export type LiveAnswer =
-  | { ok: true; status: number; contentType: string; bytes: Buffer }
-  | { ok: false; why: string };
 
 type OpenSite = { answers: Record<string, Answer>; asked: string[] };
 
@@ -42,9 +40,14 @@ export async function liveAnswerFor(url: string, { byteCeiling }: { byteCeiling:
   const site = openSites.get(at.origin);
   if (!site) return { ok: false, why: `fetch failed (nothing answers at ${at.host})` };
   site.asked.push(at.pathname);
-  const answer = site.answers[at.pathname];
-  if (!answer) return { ok: true, status: 404, contentType: "text/html", bytes: Buffer.from("not found") };
+  const answer = site.answers[at.pathname] ?? { status: 404, type: "text/html", body: Buffer.from("not found") };
   const bytes = answer.body ?? Buffer.alloc(0);
-  if (bytes.length > byteCeiling) return { ok: false, why: `its body is over the ${byteCeiling}-byte ceiling` };
-  return { ok: true, status: answer.status ?? 200, contentType: answer.type ?? "application/octet-stream", bytes };
+  return {
+    ok: true,
+    status: answer.status ?? 200,
+    contentType: answer.type ?? "application/octet-stream",
+    readBody: async () => (bytes.length > byteCeiling
+      ? { ok: false, why: `is over the ${byteCeiling}-byte ceiling` }
+      : { ok: true, bytes }),
+  };
 }

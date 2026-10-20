@@ -21,9 +21,11 @@
  * nothing here throws, because a deploy that failed over a rescue of the
  * previous generation would be worse than the window it was rescuing.
  *
- * The live site is an input, `liveAnswerFor`: what it answers for a URL, read
- * up to a byte ceiling within a timeout. Every rule about what an answer means
- * — its status, its content type, whether its bytes are the file — is here.
+ * The live site is an input, `liveAnswerFor`: what it answers for a URL within
+ * a timeout, with its body read on request up to a byte ceiling. Every rule
+ * about what an answer means — its status, its content type, whether its
+ * bytes are the file — is here, and the body is read only once the status and
+ * the type have passed.
  *
  * ## Where it reads from
  *
@@ -81,6 +83,17 @@ import { join } from "node:path";
 import { readAssetNames } from "./asset-names.mjs";
 import { DIGESTS_NAME, digestListOf, digestOf, readAssetDigests } from "./digest-list.mjs";
 import { boundedList, oneLine, sentenceOfError, short } from "./log-wording.mjs";
+
+/**
+ * The live site's answer for one URL, as `liveAnswerFor` hands it over: its
+ * status and content type, and `readBody`, which reads the body up to the
+ * byte ceiling the call was given — or why there is no answer at all.
+ *
+ * @typedef {{ ok: true, bytes: Buffer } | { ok: false, why: string }} LiveBody
+ * @typedef {{ ok: true, status: number, contentType: string, readBody: () => Promise<LiveBody> }
+ *   | { ok: false, why: string }} LiveAnswer
+ * @typedef {(url: string, limits: { byteCeiling: number, timeoutMs: number }) => Promise<LiveAnswer>} LiveAnswerFor
+ */
 
 /**
  * The environment variable the live site's address arrives in, which the
@@ -194,13 +207,10 @@ function digestListLines(dist, dryRun) {
  * everything it could not do comes back in `problems`, including being called
  * without the things it cannot work without.
  *
- * `liveAnswerFor(url, { byteCeiling, timeoutMs })` is the live site: it
- * answers `{ ok: true, status, contentType, bytes }` or `{ ok: false, why }`.
- *
  * @param {{
  *   origin?: string,
  *   dist?: string,
- *   liveAnswerFor?: (url: string, limits: { byteCeiling: number, timeoutMs: number }) => Promise<any>,
+ *   liveAnswerFor?: LiveAnswerFor,
  *   dryRun?: boolean,
  *   budgetMs?: number,
  * }} [options]
@@ -234,7 +244,9 @@ async function liveAssetDigests(answerWithinBudget, url) {
   if (!answer.ok) return { ok: false, why: `${DIGESTS_NAME}: ${answer.why}` };
   if (answer.status !== 200)
     return { ok: false, why: `${DIGESTS_NAME}: answered ${answer.status} — the live deploy published no digest list for this one to check bytes against` };
-  const list = readAssetDigests(answer.bytes.toString("utf8"));
+  const body = await answer.readBody();
+  if (!body.ok) return { ok: false, why: `${DIGESTS_NAME}: its body ${body.why}` };
+  const list = readAssetDigests(body.bytes.toString("utf8"));
   return list.ok ? list : { ok: false, why: `${DIGESTS_NAME}: it ${list.why}` };
 }
 
@@ -381,8 +393,10 @@ async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) 
   const page = await answerWithinBudget(pageUrl, MAX_PAGE_BYTES);
   if (!page.ok) { problems.push(`the live page ${pageUrl}: ${page.why}`); return done(); }
   if (page.status !== 200) { problems.push(`the live page ${pageUrl}: answered ${page.status}`); return done(); }
+  const html = await page.readBody();
+  if (!html.ok) { problems.push(`the live page ${pageUrl}: its body ${html.why}`); return done(); }
 
-  const references = readAssetNames(page.bytes.toString("utf8"), pageUrl);
+  const references = readAssetNames(html.bytes.toString("utf8"), pageUrl);
   const { names } = references;
   // The reasons differ reference by reference, so these stay lines rather than
   // a folded list — but there is the same bottom to how many a page can print
@@ -467,26 +481,28 @@ async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) 
     // cannot start a line of its own, so what `short` saves is a deploy log
     // somebody can read.
     if (!CARRIABLE.test(type)) { problems.push(`${name}: answered 200 as ${type ? short(type) : "no content type"}`); continue; }
+    const body = await asset.readBody();
+    if (!body.ok) { problems.push(`${name}: its body ${body.why}`); continue; }
     // A 0-byte file would publish a 200 that answers nothing under a name the
     // deploy swears by — the defect this step exists to fix, with no console
     // error to find it by. Refused before it is even hashed.
-    if (asset.bytes.length === 0) { problems.push(`${name}: answered 200 with an empty body`); continue; }
-    const digest = digestOf(asset.bytes);
+    if (body.bytes.length === 0) { problems.push(`${name}: answered 200 with an empty body`); continue; }
+    const digest = digestOf(body.bytes);
     if (digest !== list.digests.get(name)) {
-      problems.push(`${name}: its ${asset.bytes.length} bytes are sha256:${digest}, not the sha256:${list.digests.get(name)} the build that published this page recorded`);
+      problems.push(`${name}: its ${body.bytes.length} bytes are sha256:${digest}, not the sha256:${list.digests.get(name)} the build that published this page recorded`);
       continue;
     }
 
     if (!dryRun) {
       try {
         mkdirSync(join(dist, "_astro"), { recursive: true });
-        writeFileSync(target, asset.bytes);
+        writeFileSync(target, body.bytes);
       } catch (e) {
         problems.push(`${name}: it could not be written — ${sentenceOfError(e)}`);
         continue;
       }
     }
-    carried.push({ name, bytes: asset.bytes.length, sha256: digest });
+    carried.push({ name, bytes: body.bytes.length, sha256: digest });
   }
 
   // One line each, however many names are behind them.
