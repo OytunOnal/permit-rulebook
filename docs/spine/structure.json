@@ -1,0 +1,5019 @@
+{
+ "tool": "dependency-cruiser 18.7.0 + tsc 6.0.3 + @astrojs/compiler 2.13.1",
+ "modules": [
+  {
+   "path": "scripts/carry-assets",
+   "entries": [
+    {
+     "file": "scripts/carry-assets/asset-names.mjs",
+     "level": "domain"
+    },
+    {
+     "file": "scripts/carry-assets/carry.mjs",
+     "level": "application infrastructure"
+    },
+    {
+     "file": "scripts/carry-assets/digest-list.mjs",
+     "level": "domain"
+    },
+    {
+     "file": "scripts/carry-assets/live-site-over-http.mjs",
+     "level": "infrastructure"
+    },
+    {
+     "file": "scripts/carry-assets/log-wording.mjs",
+     "level": "presentation"
+    }
+   ],
+   "files": [
+    "scripts/carry-assets/asset-names.mjs",
+    "scripts/carry-assets/carry.mjs",
+    "scripts/carry-assets/digest-list.mjs",
+    "scripts/carry-assets/live-site-over-http.mjs",
+    "scripts/carry-assets/log-wording.mjs"
+   ]
+  }
+ ],
+ "levels": {
+  "astro.config.mjs": "main",
+  "scripts/browser.mjs": "infrastructure",
+  "scripts/carry-assets.mjs": "main",
+  "scripts/carry-assets/asset-names.mjs": "domain",
+  "scripts/carry-assets/carry.mjs": "application infrastructure",
+  "scripts/carry-assets/digest-list.mjs": "domain",
+  "scripts/carry-assets/live-site-over-http.mjs": "infrastructure",
+  "scripts/carry-assets/log-wording.mjs": "presentation",
+  "scripts/check-base.mjs": "infrastructure main",
+  "scripts/child-env.mjs": "infrastructure",
+  "scripts/chrome.mjs": "infrastructure",
+  "scripts/data-pin.mjs": "infrastructure main",
+  "scripts/dev-server.mjs": "infrastructure",
+  "scripts/measure-taps.mjs": "infrastructure main",
+  "scripts/render-assets.mjs": "infrastructure main",
+  "scripts/shot.mjs": "infrastructure main",
+  "scripts/site-base.mjs": "infrastructure",
+  "scripts/smoke.mjs": "infrastructure main",
+  "src/lib/card.ts": "presentation",
+  "src/lib/clipboard.ts": "presentation",
+  "src/lib/copy.ts": "presentation",
+  "src/lib/country-page.ts": "presentation",
+  "src/lib/csp.ts": "presentation",
+  "src/lib/data-page.ts": "presentation",
+  "src/lib/dataset-ld.ts": "presentation",
+  "src/lib/feedback-page.ts": "presentation",
+  "src/lib/first-paint.ts": "presentation",
+  "src/lib/gloss.ts": "presentation",
+  "src/lib/identity.ts": "presentation",
+  "src/lib/listbox.ts": "presentation",
+  "src/lib/not-found.ts": "presentation",
+  "src/lib/question.ts": "presentation",
+  "src/lib/quote.ts": "presentation",
+  "src/lib/reason.ts": "presentation",
+  "src/lib/record.ts": "application",
+  "src/lib/route-page.ts": "presentation",
+  "src/lib/scope.ts": "application presentation",
+  "src/lib/screen.ts": "application presentation",
+  "src/lib/site.ts": "presentation",
+  "src/lib/sitemap.ts": "presentation",
+  "src/lib/situations.ts": "presentation",
+  "src/lib/slug.ts": "presentation",
+  "src/lib/social-card.ts": "presentation",
+  "src/lib/steps.ts": "presentation",
+  "src/pages/404.astro": "presentation",
+  "src/pages/[country]/[route].astro": "presentation",
+  "src/pages/[country]/[route].json.ts": "presentation",
+  "src/pages/[country]/index.astro": "presentation",
+  "src/pages/countries.json.ts": "presentation",
+  "src/pages/data.astro": "presentation",
+  "src/pages/dataset.json.ts": "presentation",
+  "src/pages/feedback.astro": "presentation",
+  "src/pages/index.astro": "presentation infrastructure main",
+  "src/pages/robots.txt.ts": "presentation",
+  "src/pages/sitemap.xml.ts": "presentation",
+  "src/pages/status.astro": "presentation",
+  "vitest.config.ts": "main"
+ },
+ "edges": [
+  {
+   "from": "scripts/browser.mjs",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser.mjs",
+   "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets.mjs",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets.mjs",
+   "to": "scripts/carry-assets/live-site-over-http.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets.mjs",
+   "to": "scripts/carry-assets/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/asset-names.mjs",
+   "to": "scripts/carry-assets/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/carry-assets/asset-names.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/carry-assets/digest-list.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/carry-assets/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/digest-list.mjs",
+   "to": "scripts/carry-assets/asset-names.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-site-over-http.mjs",
+   "to": "scripts/carry-assets/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/check-base.mjs",
+   "to": "scripts/child-env.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/dev-server.mjs",
+   "to": "scripts/child-env.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/dev-server.mjs",
+   "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/dev-server.mjs",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/measure-taps.mjs",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/measure-taps.mjs",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/render-assets.mjs",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/render-assets.mjs",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/render-assets.mjs",
+   "to": "src/lib/social-card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/shot.mjs",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/shot.mjs",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/smoke.mjs",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/smoke.mjs",
+   "to": "scripts/dev-server.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/smoke.mjs",
+   "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/card.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/card.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/card.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/csp.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/csp.ts",
+   "to": "src/lib/clipboard.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/csp.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/csp.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/csp.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/csp.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/csp.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/dataset-ld.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-ld.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-ld.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-ld.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-ld.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/clipboard.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/csp.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/first-paint.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/identity.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/identity.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/identity.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
+   "to": "src/lib/csp.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/question.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/question.ts",
+   "to": "src/lib/listbox.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/question.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/question.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/quote.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "identity.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/csp.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "tokens.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/screen.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/screen.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/site.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/site.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/sitemap.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/sitemap.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/sitemap.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/sitemap.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/sitemap.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/situations.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/situations.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/situations.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/situations.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/social-card.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/steps.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/steps.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/404.astro",
+   "to": "src/lib/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/[country]/[route].astro",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/[country]/[route].astro",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/[country]/[route].json.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/[country]/[route].json.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/[country]/index.astro",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/countries.json.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/data.astro",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/feedback.astro",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "identity.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/csp.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/listbox.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/screen.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "tokens.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/robots.txt.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/sitemap.xml.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/status.astro",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/address.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/answers.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/answers.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/answers.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/audit-and-runner.test.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/base-path.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/base-path.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/base-path.test.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/card.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/asset-names.test.ts",
+   "to": "scripts/carry-assets/asset-names.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/asset-names.test.ts",
+   "to": "tests/carry-assets/live-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts",
+   "to": "tests/carry-assets/carry-runs.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts",
+   "to": "tests/carry-assets/live-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts",
+   "to": "tests/carry-assets/live-site-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-runs.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-runs.ts",
+   "to": "tests/carry-assets/live-site-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "to": "scripts/carry-assets/asset-names.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "to": "tests/carry-assets/carry-runs.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "to": "tests/carry-assets/live-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "to": "tests/carry-assets/live-site-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/deploy-fixtures.ts",
+   "to": "tests/carry-assets/live-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/deploy-fixtures.ts",
+   "to": "tests/carry-assets/live-site-in-memory.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/carry-assets/digest-list.test.ts",
+   "to": "scripts/carry-assets/digest-list.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/digest-list.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-in-memory.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http.test.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http.test.ts",
+   "to": "scripts/carry-assets/live-site-over-http.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http.test.ts",
+   "to": "tests/carry-assets/carry-runs.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http.test.ts",
+   "to": "tests/carry-assets/live-site-in-memory.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/csp.test.ts",
+   "to": "src/lib/clipboard.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/csp.test.ts",
+   "to": "src/lib/csp.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/csp.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/csp.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/csp.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/dataset-ld.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/dataset-ld.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/dataset-ld.test.ts",
+   "to": "src/lib/dataset-ld.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/dataset-ld.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
+   "to": "src/lib/social-card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/fold.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/fold.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/fold.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/fold.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/history.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/history.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/history.test.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/listbox.test.ts",
+   "to": "src/lib/listbox.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/listbox.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/means.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/means.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/means.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/name-sweep.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/name-sweep.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/not-found.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/not-found.test.ts",
+   "to": "src/lib/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/not-found.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/not-found.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "src/lib/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pipeline.test.ts",
+   "to": "scripts/carry-assets/asset-names.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pipeline.test.ts",
+   "to": "scripts/data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pipeline.test.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/rail.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reason.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/rebuild-trigger.test.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/record.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/record.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/record.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/record.test.ts",
+   "to": "tests/wire.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/dataset-ld.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/clipboard.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s16.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s16.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s16.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s16.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s16.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s17.test.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s20.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s20.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s20.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s20.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s20.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s20.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s24.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s24.test.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s24.test.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
+   "to": "src/lib/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "tests/wire.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s30.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s30.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s30.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s30.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s31.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s31.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s31.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s31.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s31.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s37.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s37.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s37.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s5e.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s5e.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s6-edges.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s6-edges.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s6-edges.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s6-edges.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s7.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s7.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s7.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s8.test.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s8.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s8.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s9.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s9.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s9.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s9.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s9.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s9.test.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s9.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke.test.ts",
+   "to": "scripts/dev-server.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke.test.ts",
+   "to": "scripts/smoke.mjs",
+   "kind": "dependency"
+  }
+ ],
+ "declarations": {
+  "scripts/carry-assets/asset-names.mjs": [
+   {
+    "name": "MAX_NAME",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "NAME_CHARS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "NAME_PATTERN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "PLAIN_NAME",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "readAssetNames",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "verdictOnReference",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
+  "scripts/carry-assets/carry.mjs": [
+   {
+    "name": "ORIGIN_VAR",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "TIMEOUT_MS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "BUDGET_MS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "MAX_ASSETS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "MAX_PAGE_BYTES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "MAX_ASSET_BYTES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "MAX_LIST_BYTES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "CARRIABLE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "noBuildDirectory",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "writeAssetDigests",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "digestListLines",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "carryAssets",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "liveAssetDigests",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "recordOfCarry",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "carryRecordOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pageUrlOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "assetNamesOfLivePage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "liveDigestsMatchingPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "carryAttestedAssets",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "attestedAssetOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "logLinesOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "verdictLinesOf",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
+  "scripts/carry-assets/digest-list.mjs": [
+   {
+    "name": "DIGESTS_NAME",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DIGESTS_HEADER",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "DIGESTS_LINE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "digestOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "digestListOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "byName",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readAssetDigests",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/carry-assets/live-site-over-http.mjs": [
+   {
+    "name": "liveAnswerOverHttp",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "bodyWithin",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/carry-assets/log-wording.mjs": [
+   {
+    "name": "boundedList",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "short",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "oneLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "sentenceOfError",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "astro.config.mjs": [
+   {
+    "name": "SITE_URL",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "BASE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "default",
+    "kind": "other",
+    "exported": true
+   }
+  ],
+  "scripts/browser.mjs": [
+   {
+    "name": "openThings",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "nextProfile",
+    "kind": "other",
+    "exported": false
+   },
+   {
+    "name": "PROFILE_PREFIX",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "sweepStaleProfiles",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "closeEverything",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "hooked",
+    "kind": "other",
+    "exported": false
+   },
+   {
+    "name": "hookExit",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "owned",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "TYPES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "serve",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "GOTO_SETTLE_MS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "LOCAL_BEACON_NOISE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "withBrowser",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/carry-assets.mjs": [
+   {
+    "name": "flag",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "giveUp",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "root",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "argv",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "dryRun",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "dist",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "origin",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "logLines",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/check-base.mjs": [
+   {
+    "name": "root",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "BASE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SITE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "emitted",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "problems",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "dist",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/child-env.mjs": [
+   {
+    "name": "childEnv",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/chrome.mjs": [
+   {
+    "name": "CANDIDATES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "ON_PATH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "fromPath",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "chromePath",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/data-pin.mjs": [
+   {
+    "name": "root",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "lockPath",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "dataDir",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "readLock",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "at",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
+  "scripts/dev-server.mjs": [
+   {
+    "name": "SITE_ROOT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "ASTRO_BIN",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "freePort",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "notOurDevServer",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "startDev",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/measure-taps.mjs": [
+   {
+    "name": "dist",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "TAP_MIN",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "VIEWPORT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "PROBE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "builtPages",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pages",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "DRAWN",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "seedFor",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "server",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "failures",
+    "kind": "other",
+    "exported": false
+   },
+   {
+    "name": "overflows",
+    "kind": "other",
+    "exported": false
+   }
+  ],
+  "scripts/render-assets.mjs": [
+   {
+    "name": "root",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "publicDir",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "check",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "CARD",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "ICON_SIZES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "ICO_SIZES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SIDECAR",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "shoot",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "markPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "ico",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "main",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
+  "scripts/shot.mjs": [
+   {
+    "name": "root",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "today",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "out",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "PROFILE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "server",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/site-base.mjs": [
+   {
+    "name": "siteBase",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "at",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/smoke.mjs": [
+   {
+    "name": "dist",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "CHECKS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "walk",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "DEFAULT_SURFACES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "smoke",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/card.ts": [
+   {
+    "name": "Gte",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "gteCriteriaOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "decidesOnANumber",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "bandOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "measuredCriterionOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "precondHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "askedFieldOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "isDeclared",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "binding",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "carveOutHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "scopedHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "proseBlock",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "sourcedCaveatHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "REASON_SAID",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "unsourcedSaid",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "unsourcedCaveatHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "caveatHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "readingHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "decidingThresholds",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "bandStandsAt",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "railHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "provenanceHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "quoteForCard",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "srcLine",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "closedRowHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "noticeHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pointsLineHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "learnBoxHtml",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/clipboard.ts": [
+   {
+    "name": "COPY_SCRIPT",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "src/lib/copy.ts": [
+   {
+    "name": "PRODUCT_NAME",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "TAGLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ROUTE_TAGLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ROUTE_DOOR",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "promise",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "DISCLAIMER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NO_SCRIPT_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RETURNING_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "LINK_ARRIVAL_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "resumedLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ROUTE_PAGE_ADDENDUM",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ROUTE_PAGE_UNSCORED_ADDENDUM",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "readOn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ANSWER_SOURCED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "pointsFigure",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "POINTS_FIGURE_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NO_FIGURE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NO_FIGURE_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DAILY_CHECK",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "dailyCheck",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "DAILY_CHECK_CLAIM",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "unreadLabel",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "freshnessNote",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SEAL_LETTERS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "isoDay",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "datasetDay",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "TRANSLATION_POLICY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NEWEST_VALUE_CHANGED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "LAST_CHECKED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "PROSE_OURS_TAIL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_LEDE_OPEN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "dataLedeOpen",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "DATA_LEDE_CLOSE_TAIL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "dataLedeClose",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "FLAG_READ_WITHIN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FRESHNESS_HUMAN_HAND",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "datasetDescription",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "dataMetaDescription",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "COUNTRIES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "MENU",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "MENU_CLOSE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_START",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_START_NOTE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_EYEBROW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_LEDE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_META_DESCRIPTION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FeedbackDoor",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_DOORS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WRONG_DOOR_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "feedbackTemplateLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_OWN_APP_LEAD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_OWN_APP",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_NOTE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "COPY_ADDRESS_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "COPIED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_GITHUB_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_GITHUB_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "TRACKER_WRONG_VALUE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "TRACKER_NEW_NEED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_FOOTER_ROW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RESULT_FEEDBACK_ASK",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "resultFeedbackLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "notScoredLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "READ_IT_HERE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "IS_QUOTED_NOT_SCORED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "notScoredQuotedLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "unscoredClaim",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "unscoredHeadline",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "READ_ITS_RULES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "possessive",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "unscoredRouteLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routesBelowNeed",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "unscoredRestLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "unscoredNamedRestLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "unscoredTallyLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "NOT_CHECKED_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "askedHeading",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SEEK_HINT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "orAbove",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ANY_OF",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "proseProvenanceCounts",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "questionCounter",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/country-page.ts": [
+   {
+    "name": "CountryAddress",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "countryAddresses",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CountryLink",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "countryLinks",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "navCountries",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CountryPage",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "countryReadDate",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "siteReadDate",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "description",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "QUOTED_ONLY_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "sentenceCase",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "routeCard",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryPage",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "countryPages",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "footerFacts",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/csp.ts": [
+   {
+    "name": "INLINE_SCRIPTS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "sha256",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "contentSecurityPolicy",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/data-page.ts": [
+   {
+    "name": "DataPage",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "DATASET_JSON_PATH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "COUNTRIES_JSON_PATH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "quotedValues",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "RouteCounts",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "routeCounts",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "dataPage",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "statusAlias",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "countriesJson",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/dataset-ld.ts": [
+   {
+    "name": "CC_BY_4",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "datasetLd",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/feedback-page.ts": [
+   {
+    "name": "FeedbackPage",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "feedbackMailto",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "feedbackGmail",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "doorHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "COPY_ICON",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "out",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "feedbackPage",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/first-paint.ts": [
+   {
+    "name": "WIDE_FROM_PX",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WIDE_QUERY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NARROW_MEDIA",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "Hiding",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "HIDING",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "Standing",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "Cover",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "HIDDEN_UNDER_A_BOX_STAND_IN",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "COVERS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FIRST_PAINT_SCRIPT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CoverName",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "coverSelector",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "STAND_IN_RULES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "coverRules",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "FIRST_PAINT_STYLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "takeCoversOff",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/gloss.ts": [
+   {
+    "name": "Glossary",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "ABBREVIATIONS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SECTION",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "ACTS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "bracketRun",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "actWords",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "glossSection",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "glossed",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/identity.ts": [
+   {
+    "name": "iconLinks",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "seal",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "stamps",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "rulesRead",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "HeaderPlace",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "NavLink",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "siteHeader",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "DATA_PATH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_PATH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "MENU_SCRIPT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FooterPlace",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "FooterFacts",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "out",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "SEP",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SEP_BREAK",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "siteFooter",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/listbox.ts": [
+   {
+    "name": "ListboxState",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "ListboxKey",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "SHOWN_LIMIT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QUERY_MAX_LENGTH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "stateFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "shownOptions",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "activeOption",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "KeyResult",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "onKey",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "rowId",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/not-found.ts": [
+   {
+    "name": "NotFoundPage",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "notFoundPage",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/question.ts": [
+   {
+    "name": "LONG_LIST_ABOVE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "isLongList",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "hasClasses",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "QuestionScreen",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "questionCardHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "declarationHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "declarationCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "renderStandInsOverQuestionOne",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "holdLineHtml",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/quote.ts": [
+   {
+    "name": "QuoteFrame",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "hostOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "separatorNote",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "quoteFrame",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "NOTE_SEPARATOR",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "noteHtml",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/reason.ts": [
+   {
+    "name": "esc",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "escAttr",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "whyHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "failDetailHtml",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/record.ts": [
+   {
+    "name": "STORAGE_KEY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "LEGACY_STORAGE_KEY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RECORD_VERSION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RECORD_MAX_LENGTH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "StoredRecord",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "serialize",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "AskedField",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "restore",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "RecordStore",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "saveRecord",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "clearRecord",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "loadRecord",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/route-page.ts": [
+   {
+    "name": "lf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "TAP_CLASSES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "tapMin",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "tapInline",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "capitalise",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "periodOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "Gte",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "valuesUnder",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "gteUnder",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "TAKES_THE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "withArticle",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "audienceSentence",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routeSourceUrls",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ownUnread",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "noticesOn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "noticeSection",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "printedNotices",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "printedSources",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pageStamp",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "audienceNotice",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "QuoteOptions",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "readDateTime",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "quoteBlock",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "RailRow",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "railRows",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "railHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "ruleHeading",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "ruleKind",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "rulePlain",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "asksBlock",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "cardValues",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "ruleCard",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "ruleCriteria",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "REASON_SAID",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "unsourcedSaid",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "carveOutBlock",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "statedBlocks",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "RouteFigure",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "Points",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "figuresOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "routeFigure",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "gist",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "headlineFigures",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "answerBlock",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "neighbours",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "RoutePage",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "description",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "routePage",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routePages",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "PAGE_CSS",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "src/lib/scope.ts": [
+   {
+    "name": "ScopedArrival",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "arrivalFrom",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "destinationFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "scopedFirst",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "countryArrivalFrom",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "destinationForCountry",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "questionPhrase",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "replayRecord",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "arrivalPlan",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "arrivalSentence",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/screen.ts": [
+   {
+    "name": "Screen",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "Explore",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "Masthead",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "INTRO_SUBLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SHORT_SUBLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "INTRO_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "EXPLORE_SENTENCE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "headlineHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "mastheadFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "FlowAction",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "Interview",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "screenAfter",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "claimsAComparison",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "HistoryEntry",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "ScreenHistory",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "emptyHistory",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "HistoryMove",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "recordScreen",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "screenAt",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "historyFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "EntryState",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "entryState",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "isCount",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readEntry",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "firstHeldStep",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "backFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "clampStep",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/site.ts": [
+   {
+    "name": "DEFAULT_SITE_URL",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SITE_URL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "BASE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "url",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ORIGIN",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "absolute",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "REPO_DATA",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "TRACKER_URL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_ADDRESS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "GMAIL_COMPOSE_URL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "EXCLUSIONS_URL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NEW_NEED_URL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SPONSOR_URL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ANALYTICS_TOKEN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ANALYTICS_SCRIPT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ANALYTICS_BEACON",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "analyticsBeacon",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "OWNER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_LICENCE_URL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_LICENCE_NAME",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_LICENCE_FULL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SOCIAL_CARD_PATH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "headMeta",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "readRange",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "lastWatchRun",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "watchState",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "unreadSourcesAt",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/sitemap.ts": [
+   {
+    "name": "builtPaths",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "indexedPaths",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SitemapEntry",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "sitemapEntries",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "escXml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "sitemapXml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "robotsTxt",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/situations.ts": [
+   {
+    "name": "NotScoredMark",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "situationPhrase",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "notScoredFor",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SITUATION_COUNTRY_FIELD",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "markUnder",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "notScoredMarkHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "UnscoredTally",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "unscoredTally",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "UnscoredVerdict",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "unscoredVerdict",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "leadCountry",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "leads",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "namedFirst",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/slug.ts": [
+   {
+    "name": "DIACRITICS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "withoutBrackets",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "slugify",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countrySlug",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routeSlug",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routePath",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "countryPath",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routeJsonPath",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "RouteAddress",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "routeAddresses",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/social-card.ts": [
+   {
+    "name": "SocialCardFacts",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "CARD_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "socialCardFacts",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "socialCardHtml",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/steps.ts": [
+   {
+    "name": "Step",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "isLadder",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ladderCache",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "arrangeSteps",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "nearestStep",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "seekHintHtml",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/pages/404.astro": [
+   {
+    "name": "dataset",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "html",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "src/pages/[country]/[route].astro": [
+   {
+    "name": "getStaticPaths",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "html",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "src/pages/[country]/[route].json.ts": [
+   {
+    "name": "getStaticPaths",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "GET",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/pages/[country]/index.astro": [
+   {
+    "name": "getStaticPaths",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "html",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "src/pages/countries.json.ts": [
+   {
+    "name": "GET",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/pages/data.astro": [
+   {
+    "name": "html",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "src/pages/dataset.json.ts": [
+   {
+    "name": "GET",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/pages/feedback.astro": [
+   {
+    "name": "html",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "src/pages/index.astro": [
+   {
+    "name": "dataset",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "meta",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "intro",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "started",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "firstQuestions",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "firstScreen",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "firstDeclaration",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "firstStandIns",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "holdLine",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "INTRO_DESCRIPTION",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "src/pages/robots.txt.ts": [
+   {
+    "name": "GET",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/pages/sitemap.xml.ts": [
+   {
+    "name": "GET",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/pages/status.astro": [
+   {
+    "name": "html",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "vitest.config.ts": [
+   {
+    "name": "default",
+    "kind": "other",
+    "exported": true
+   }
+  ]
+ },
+ "loose": [
+  "astro.config.mjs",
+  "scripts/browser.mjs",
+  "scripts/carry-assets.mjs",
+  "scripts/check-base.mjs",
+  "scripts/child-env.mjs",
+  "scripts/chrome.mjs",
+  "scripts/data-pin.mjs",
+  "scripts/dev-server.mjs",
+  "scripts/measure-taps.mjs",
+  "scripts/render-assets.mjs",
+  "scripts/shot.mjs",
+  "scripts/site-base.mjs",
+  "scripts/smoke.mjs",
+  "src/lib/card.ts",
+  "src/lib/clipboard.ts",
+  "src/lib/copy.ts",
+  "src/lib/country-page.ts",
+  "src/lib/csp.ts",
+  "src/lib/data-page.ts",
+  "src/lib/dataset-ld.ts",
+  "src/lib/feedback-page.ts",
+  "src/lib/first-paint.ts",
+  "src/lib/gloss.ts",
+  "src/lib/identity.ts",
+  "src/lib/listbox.ts",
+  "src/lib/not-found.ts",
+  "src/lib/question.ts",
+  "src/lib/quote.ts",
+  "src/lib/reason.ts",
+  "src/lib/record.ts",
+  "src/lib/route-page.ts",
+  "src/lib/scope.ts",
+  "src/lib/screen.ts",
+  "src/lib/site.ts",
+  "src/lib/sitemap.ts",
+  "src/lib/situations.ts",
+  "src/lib/slug.ts",
+  "src/lib/social-card.ts",
+  "src/lib/steps.ts",
+  "src/pages/404.astro",
+  "src/pages/[country]/[route].astro",
+  "src/pages/[country]/[route].json.ts",
+  "src/pages/[country]/index.astro",
+  "src/pages/countries.json.ts",
+  "src/pages/data.astro",
+  "src/pages/dataset.json.ts",
+  "src/pages/feedback.astro",
+  "src/pages/index.astro",
+  "src/pages/robots.txt.ts",
+  "src/pages/sitemap.xml.ts",
+  "src/pages/status.astro",
+  "vitest.config.ts"
+ ],
+ "digest": "f3904111c37f90cc28892f440a2b31bb932469025c3c1b87d6b4723b433140f8"
+}
