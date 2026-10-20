@@ -220,7 +220,7 @@ function digestListLines(dist, { dryRun }) {
  * }} [options]
  */
 export async function carryAssets({ origin, dist, liveAnswerFor, dryRun = false, budgetMs = BUDGET_MS } = {}) {
-  const published = digestListLines(dist, { dryRun });
+  const digestListLogLines = digestListLines(dist, { dryRun });
   let record = {
     carried: [], problems: [], alreadyBuilt: [], needed: [], unserved: [], looked: false, from: "",
     // A throw is not one of the run's own bails and has none of their phrases
@@ -233,7 +233,7 @@ export async function carryAssets({ origin, dist, liveAnswerFor, dryRun = false,
   } catch (e) {
     record.problems.push(`anything: ${sentenceOfError(e)}`);
   }
-  return { ...record, logLines: [...published,...logLinesOf(record, { dryRun })] };
+  return { ...record, logLines: [...digestListLogLines, ...logLinesOf(record, { dryRun })] };
 }
 
 /**

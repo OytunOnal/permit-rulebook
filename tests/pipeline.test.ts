@@ -301,8 +301,8 @@ describe("the site's address is reviewed code", () => {
 
   it("the deploy reads no repository variable", () => {
     for (const context of REPOSITORY_VARIABLE_CONTEXTS) {
-      const read = new RegExp(`\\b${context}\\s*[.[]`);
-      const lines = pages.split(LF).filter((line) => read.test(line)).map((line) => line.trim());
+      const contextReadPattern = new RegExp(`\\b${context}\\s*[.[]`);
+      const lines = pages.split(LF).filter((line) => contextReadPattern.test(line)).map((line) => line.trim());
       expect(lines, `pages.yml reads the \`${context}\` context`).toEqual([]);
     }
   });

@@ -28,7 +28,7 @@ export const sha256 = (bytes: Buffer): string => createHash("sha256").update(byt
  */
 export const DIGESTS = "asset-digests.txt";
 export const HEADER = "permit-rulebook asset digests v1";
-export const listOf = (assets: Record<string, Buffer>): Buffer => Buffer.from(
+export const digestListBytesOf = (assets: Record<string, Buffer>): Buffer => Buffer.from(
   [HEADER, ...Object.entries(assets).map(([name, bytes]) => `${sha256(bytes)}  ${name}`), ""].join("\n"),
   "utf8",
 );
@@ -37,7 +37,7 @@ export const listOf = (assets: Record<string, Buffer>): Buffer => Buffer.from(
  * The live page, naming its assets the way Astro writes them — root-absolute,
  * under the base the site is served from.
  */
-export const page = (names: string | string[], base = ""): Buffer => pageOf(
+export const pageNaming = (names: string | string[], base = ""): Buffer => pageOf(
   [names].flat().map((n) => `${base}/_astro/${n}`),
 );
 
@@ -47,10 +47,10 @@ export const page = (names: string | string[], base = ""): Buffer => pageOf(
  * three travel together because on the live host they were published together
  * — a case that wants them to disagree says so by hand.
  */
-export function deploy(assets: Record<string, Buffer>, base = ""): Record<string, Answer> {
+export function liveDeployAnswers(assets: Record<string, Buffer>, base = ""): Record<string, Answer> {
   const answers: Record<string, Answer> = {
-    [`${base}/`]: { type: "text/html; charset=utf-8", body: page(Object.keys(assets), base) },
-    [`${base}/${DIGESTS}`]: { type: "text/plain; charset=utf-8", body: listOf(assets) },
+    [`${base}/`]: { type: "text/html; charset=utf-8", body: pageNaming(Object.keys(assets), base) },
+    [`${base}/${DIGESTS}`]: { type: "text/plain; charset=utf-8", body: digestListBytesOf(assets) },
   };
   for (const [name, bytes] of Object.entries(assets))
     answers[`${base}/_astro/${name}`] = { type: name.endsWith(".css") ? "text/css; charset=utf-8" : "text/javascript; charset=utf-8", body: bytes };
@@ -60,7 +60,7 @@ export function deploy(assets: Record<string, Buffer>, base = ""): Record<string
 const temporary: string[] = [];
 
 /** A fresh temp directory, swept after the case. */
-export function temp(): string {
+export function tempDirectory(): string {
   const dir = mkdtempSync(join(tmpdir(), "permit-rulebook-carry-"));
   temporary.push(dir);
   return dir;
@@ -72,14 +72,14 @@ export function sweepTemporary(): void {
 }
 
 /** A `dist/` holding whatever this build already produced. */
-export function dist(have: Record<string, Buffer> = {}): string {
-  const dir = temp();
+export function distHolding(have: Record<string, Buffer> = {}): string {
+  const dir = tempDirectory();
   mkdirSync(join(dir, "_astro"), { recursive: true });
   for (const [name, bytes] of Object.entries(have)) writeFileSync(join(dir, "_astro", name), bytes);
   return dir;
 }
 
-export const carried = (dir: string): string[] => readdirSync(join(dir, "_astro")).sort();
+export const astroFilesIn = (dir: string): string[] => readdirSync(join(dir, "_astro")).sort();
 
 /**
  * The refusal a case is actually about, in the step's own words.
@@ -102,6 +102,6 @@ export const carried = (dir: string): string[] => readdirSync(join(dir, "_astro"
  * that the one person who will ever read it, looking at a red run, is told
  * what the case was about.
  */
-export const refusedOver = (out: string, mark: string, decision: string): void => {
+export const expectRefusedOver = (out: string, mark: string, decision: string): void => {
   expect(out, `nothing was carried, but the step never got as far as ${decision}`).toContain(mark);
 };
