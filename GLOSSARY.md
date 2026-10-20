@@ -383,11 +383,11 @@ _Avoid_: suggestion, tip, recommendation (unqualified)
 
 **Watchlist**:
 The declared set of monitored official sources; coverage against the dataset
-is enforced both ways, not promised. The coverage gate also refuses a watched
-address that carries a name and password (`urls_with_credentials`): no source
-here needs one, and a reader that sends credentials is one that can leak them,
-so it fails at `npm run check` where a person can fix it rather than on a
-morning. **How far a redirect may be followed is the strategy's to say**: one
+is enforced both ways, not promised. The coverage gate also asks each watched
+address the trust line's entry question, so it refuses what the run would
+refuse: an address that is malformed, carries a name and password, is not a
+page, or is link-local. It fails at `npm run check`, where a person can fix it,
+rather than on a morning. **How far a redirect may be followed is the strategy's to say**: one
 whose bytes become a reading keeps to the same origin, because what a source
 redirects to is not the source; a Learn link, which is fetched and never
 compared, follows anywhere a person's browser would — including a downgrade to

@@ -61,10 +61,12 @@ click on the tracker link. Answers never leave the device.
   Actions and files an issue (`source-change`) per flag; a flag still open on
   the second UTC morning after it was raised turns the run red and is named
   in one issue the run keeps, `overdue flags` (#62). Two readers, a
-  fetcher and a browser (Chrome over its own protocol); both refuse an entry
-  address that is malformed, credentialled, not a page, or link-local before
-  anything is asked, and the fetcher also judges every address a name
-  resolves to (a name Chrome resolves is #50). What a finished run says (its
+  fetcher and a browser (Chrome over its own protocol), and the coverage gate
+  ask one module, `trust-line`, where the watch may go: the entry address, a
+  redirect target, every address a name resolves to (the fetcher's; a name
+  Chrome resolves for itself is the stated gap) and the page a reader lands
+  on. It imports only the failure wording; the fetcher keeps only HTTP (#104).
+  What a finished run says (its
   flags, its log lines and its exit code) is decided in one module, `run-says`;
   the CLI only reads, prints and writes (#72). It audits every installed
   dependency first; a known advisory at high or above turns the run red at its
