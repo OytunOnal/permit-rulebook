@@ -14,7 +14,7 @@ const DEPLOY_JOBS = ["build", "deploy", "pin", "audit"];
 const SKIPPED_BY_DESIGN = ["pin"];
 
 /** Every result GitHub gives a job; anything else is results not read. */
-const JOB_RESULTS = ["success", "failure", "cancelled", "skipped"];
+const GITHUB_JOB_RESULT_WORDS = ["success", "failure", "cancelled", "skipped"];
 
 /** Four job names and their results are well under this; longer text is not theirs. */
 const JOB_RESULTS_LIMIT = 1024;
@@ -45,11 +45,11 @@ export function deployFindingOf(jobResults, runUrl) {
   if (typeof results === "string") {
     return { kind: "red", body: [DEPLOY_FINDING_WORDS.red, `${DEPLOY_FINDING_WORDS.unreadResults}${results}.`, runLine].join("\n") };
   }
-  const notPassed = DEPLOY_JOBS.filter((job) => !passed(job, results[job]));
-  if (notPassed.length === 0) return { kind: "green", closing: `${DEPLOY_FINDING_WORDS.closing} ${runLine}` };
-  const named = notPassed.map((job) => `${job} (${results[job]})`).join(", ");
+  const jobsThatDidNotPass = DEPLOY_JOBS.filter((job) => !hasPassed(job, results[job]));
+  if (jobsThatDidNotPass.length === 0) return { kind: "green", closing: `${DEPLOY_FINDING_WORDS.closing} ${runLine}` };
+  const jobsAndResultsText = jobsThatDidNotPass.map((job) => `${job} (${results[job]})`).join(", ");
   const publishedLine = results.deploy === "success" ? DEPLOY_FINDING_WORDS.published : DEPLOY_FINDING_WORDS.notPublished;
-  const body = [DEPLOY_FINDING_WORDS.red, `${DEPLOY_FINDING_WORDS.jobsNotPassed}${named}`, publishedLine, runLine];
+  const body = [DEPLOY_FINDING_WORDS.red, `${DEPLOY_FINDING_WORDS.jobsNotPassed}${jobsAndResultsText}`, publishedLine, runLine];
   return { kind: "red", body: body.join("\n") };
 }
 
@@ -57,7 +57,15 @@ export function deployFindingOf(jobResults, runUrl) {
  * @param {string} job
  * @param {string} result
  */
-const passed = (job, result) => result === "success" || (result === "skipped" && SKIPPED_BY_DESIGN.includes(job));
+const hasPassed = (job, result) => result === "success" || (result === "skipped" && SKIPPED_BY_DESIGN.includes(job));
+
+/**
+ * Whether parsed JSON is an object of named values: not null, not an array.
+ *
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+const isJsonObject = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
  * Each deploy job's result, or why the text does not hold them.
@@ -73,8 +81,8 @@ function readJobResults(text) {
   } catch {
     return "the text is not JSON";
   }
-  if (typeof results !== "object" || results === null || Array.isArray(results)) return "the text is not an object";
-  const unread = DEPLOY_JOBS.find((job) => !JOB_RESULTS.includes(results[job]));
-  if (unread) return `the job ${unread} has no known result`;
+  if (!isJsonObject(results)) return "the text is not an object";
+  const jobWithNoKnownResult = DEPLOY_JOBS.find((job) => !GITHUB_JOB_RESULT_WORDS.includes(results[job]));
+  if (jobWithNoKnownResult) return `the job ${jobWithNoKnownResult} has no known result`;
   return results;
 }
