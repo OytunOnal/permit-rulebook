@@ -4,7 +4,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDir, readLock } from "../scripts/data-pin.mjs";
-import { readAssetNames } from "../scripts/carry-assets.mjs";
+import { readAssetNames } from "../scripts/carry-assets/asset-names.mjs";
 import { jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
 /**

@@ -7,7 +7,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
-import { bodyWithin, carryAssets, readAssetNames, writeAssetDigests } from "../scripts/carry-assets.mjs";
+import { bodyWithin, carryAssets, writeAssetDigests } from "../scripts/carry-assets.mjs";
+import { readAssetNames } from "../scripts/carry-assets/asset-names.mjs";
+import { pageOf, pageOfSize } from "./carry-assets/live-page.js";
 
 /**
  * s33 — the carrier that lets a cached page still find its assets.
@@ -166,30 +168,6 @@ async function origin(answers: Record<string, Answer>): Promise<{
 const page = (names: string | string[], base = ""): Buffer => pageOf(
   [names].flat().map((n) => `${base}/_astro/${n}`),
 );
-
-/** The live page, naming whatever a case wants it to name, verbatim. */
-const pageOf = (refs: string[]): Buffer => Buffer.from(
-  `<!DOCTYPE html><html><head>${refs
-    .map((ref) => (ref.endsWith(".css")
-      ? `<link rel="stylesheet" href="${ref}">`
-      : `<script type="module" src="${ref}"></script>`))
-    .join("")}</head><body></body></html>`,
-  "utf8",
-);
-
-/**
- * A page of distinct `/_astro/` references, about `bytes` long. Distinct,
- * because the cost a case measures with this is per NAME kept, not per byte
- * scanned.
- */
-const pageOfSize = (bytes: number): string => {
-  const refs: string[] = [];
-  for (let i = 0, n = 0; n < bytes; i += 1) {
-    refs.push(`/_astro/index.${String(i).padStart(8, "0")}.css`);
-    n += refs.at(-1)!.length + 30;
-  }
-  return pageOf(refs).toString("utf8");
-};
 
 /**
  * A whole live deploy: the page naming these assets, the digest list the build
@@ -1203,73 +1181,6 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     } finally { live.close(); elsewhere.close(); }
   });
 
-  it("keeps only the names under our own origin, and hands back every reference it refused", () => {
-    // The parsing rule itself, where the three foreign shapes can be read one
-    // beside the other. What the process does with them is the case above.
-    const refs = [
-      "https://evil.example/_astro/absolute.js",
-      // A protocol-relative reference inherits the page's scheme, so only the
-      // host makes this one foreign — and the host is enough.
-      "//evil.example/_astro/relative.js",
-      // Same host, plaintext: the scheme is part of the origin, and an https
-      // site whose page names an http asset is a page to distrust.
-      "http://example.test/_astro/plaintext.js",
-      "/_astro/index.HHHHHHHH.css",
-    ];
-    const { names, refused, unserved } = readAssetNames(pageOf(refs).toString("utf8"), "https://example.test/");
-    expect(names).toEqual(["index.HHHHHHHH.css"]);
-    // Refused by name: every reference that did not become a name is handed
-    // back, so the caller can print it and nothing is dropped in silence. All
-    // three name a host that is not ours, which is the bucket that predicts no
-    // request to our origin and therefore no annotation — where they resolve
-    // is what decides that, so a case about the three foreign shapes is also
-    // the case that says `unserved` stays empty for them (round 7).
-    //
-    // These three are short enough to come back whole, and that is deliberate:
-    // the bound on a printed reference is `short`'s and is spelled there, once.
-    // It used to be re-typed here as a 40-and-ellipsis rule beside a reference
-    // two characters over it, which is the same rule in two places (Standards
-    // review, round 7). Where it is MEASURED is on the real process, three
-    // describes down, against a 430-character reference that takes the same
-    // refusal branch as these.
-    expect(refused.map(({ ref }) => ref)).toEqual(refs.slice(0, 3));
-    expect(unserved).toEqual([]);
-  });
-
-  it("reads a quoted `/_astro/` path wherever the page holds it, not only in an attribute", () => {
-    // The boundary as the code actually draws it. The pattern is a quoted
-    // string with no whitespace in it and `/_astro/` inside; it knows nothing
-    // about attributes, so a name a page holds in a comment or in an inline
-    // script is read exactly as a `href` is, while an unquoted one is not read
-    // at all.
-    //
-    // The scenario's narrowing paragraph declared "a quoted attribute value",
-    // which is narrower than this and silent about the direction it costs: an
-    // old name left in a comment or in a script reaches `needed`. If the live
-    // deploy no longer publishes it, it is not in the live `asset-digests.txt`
-    // and the carry loop filters it out before a request is counted — so it
-    // spends NONE of the twenty, draws the refusal line saying the list does
-    // not name it, and raises the annotation saying a reader holding this page
-    // asks for it and gets a 404, for a URL no reader ever asks for. That
-    // annotation is the FALSE alarm, the family this slice has spent five
-    // rounds closing. If the list still names it, it spends one of the twenty
-    // and is then carried, silently: the two cannot both befall one name
-    // (measured, 2026-09-23; the boundary this case pins is round 9's).
-    const { names, unserved, refused } = readAssetNames(
-      "<!DOCTYPE html><html><head>"
-      + "<!-- <link rel=\"stylesheet\" href=\"/_astro/ghost.css\"> -->"
-      + "<script>const u = \"/_astro/inscript.js\";</script>"
-      + "<link rel=\"stylesheet\" href=\"/_astro/real.css\">"
-      + "</head><body>an unquoted /_astro/bare.css</body></html>",
-      "https://example.test/",
-    );
-    expect(names, "the reader saw an attribute and not the page").toEqual(["ghost.css", "inscript.js", "real.css"]);
-    // Nothing is said about any of them: the two the page did not mean to
-    // serve are indistinguishable here from the one it did.
-    expect(unserved).toEqual([]);
-    expect(refused).toEqual([]);
-  });
-
   it("refuses four hundred foreign references without a packet or four hundred lines", async () => {
     // The other half of the ceiling: a reference that never becomes a name
     // costs no request, but it used to cost a line, and a page is a stranger's
@@ -1450,46 +1361,6 @@ describe("the carrier cannot fail the deploy", () => {
       expect(run.out).toContain(DIGESTS);
       expect(run.out).toContain(CSS_NAME);
     } finally { live.close(); }
-  });
-
-  it("reads a page at its ceiling in time that grows with the page, not with its square", () => {
-    // Reading the names out of a page was quadratic in how many distinct ones
-    // it held, and uninterruptible: the budget sizes request timeouts, and this
-    // loop runs after the body is in hand. Why that is worth a case, and what
-    // bounds it now, is the script header's "What a page may cost this build";
-    // this asserts the SHAPE, which is the part only a running clock shows.
-    //
-    // A clock is the instrument because there is no other one here: the cost is
-    // CPU inside a pure function, and nothing it returns differs when it is
-    // slow. So the margin carries the honesty instead. Four times the page is
-    // about four times the work when the cost is linear and sixteen times when
-    // it is quadratic, and the bound sits between them, at eight. Each page is
-    // read three times and the fastest read is the measurement — a loaded
-    // runner can only add time to a run, never take it away — and the
-    // hundred-millisecond floor keeps timer noise from deciding a case about a
-    // shape. Reproduced on these two exact pages, 2026-09-23: 96 ms and
-    // 1,684 ms with the quadratic in, 4 ms and 17 ms without it; put back to
-    // check that this bound can fail, the quadratic failed it at 1,684 ms
-    // against 768 ms.
-    const quarter = pageOfSize(128 * 1024);
-    const whole = pageOfSize(512 * 1024);
-    const fastestOf = (html: string): { ms: number; names: number } => {
-      let ms = Number.POSITIVE_INFINITY;
-      let names = 0;
-      for (let run = 0; run < 3; run += 1) {
-        const began = Date.now();
-        names = readAssetNames(html, "https://example.test/").names.length;
-        ms = Math.min(ms, Date.now() - began);
-      }
-      return { ms, names };
-    };
-    const small = fastestOf(quarter).ms;
-    const large = fastestOf(whole);
-    // The cost is per distinct name kept, so this is only measuring a shape if
-    // the page holds thousands of them.
-    expect(large.names, `a ${whole.length}-byte page held ${large.names} names`).toBeGreaterThan(9_000);
-    expect(large.ms, `${whole.length} bytes took ${large.ms} ms; ${quarter.length} bytes took ${small} ms`)
-      .toBeLessThan(Math.max(small * 8, 100));
   });
 
   it("refuses a page over the ceiling, so the reading above is the worst case there is", async () => {
