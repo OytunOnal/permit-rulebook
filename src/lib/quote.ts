@@ -1,3 +1,4 @@
+// @level presentation
 import { LANGUAGE_NAMES, formatEUR, quoteLanguage } from "permit-rulebook-data";
 import { esc } from "./reason.js";
 

@@ -1,3 +1,4 @@
+// @level presentation
 import {
   answerLabel, bindsReader, carveOutFor, closedBy, decidingCriteria, deriveBands, fieldOptions, forEachCriterion,
   formatEUR, formatEURPer,

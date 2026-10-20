@@ -1,3 +1,4 @@
+// @level infrastructure
 /**
  * The path the site is served under, for anything that drives it.
  *

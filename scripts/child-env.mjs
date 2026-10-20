@@ -1,3 +1,4 @@
+// @level infrastructure
 /**
  * The environment a build or a server should run in, which is not always the
  * one we are running in.

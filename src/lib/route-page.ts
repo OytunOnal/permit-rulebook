@@ -1,3 +1,4 @@
+// @level presentation
 import {
   scopeLine, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
   isLocalization, isScored, joinAnd, joinOr, noticeSources, provenancedValuesOf,

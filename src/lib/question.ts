@@ -1,3 +1,4 @@
+// @level presentation
 import {
   deriveBands, fieldOptions, optionMeans, shortLabelOf,
   type Dataset, type FieldOption, type Profile, type Question,

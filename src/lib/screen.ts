@@ -1,3 +1,4 @@
+// @level application presentation
 import { esc, escAttr } from "./reason.js";
 import type { UnscoredVerdict } from "./situations.js";
 

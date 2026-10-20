@@ -1,3 +1,4 @@
+// @level infrastructure main
 /**
  * Write the sibling data repository's HEAD into `data.lock`.
  *

@@ -1,3 +1,4 @@
+// @level domain
 /**
  * The digest list's format: written by one build, read back by the next.
  *

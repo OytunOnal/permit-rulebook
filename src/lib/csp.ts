@@ -1,3 +1,4 @@
+// @level presentation
 import { createHash } from "node:crypto";
 import { FIRST_PAINT_SCRIPT } from "./first-paint.js";
 import { MENU_SCRIPT } from "./identity.js";

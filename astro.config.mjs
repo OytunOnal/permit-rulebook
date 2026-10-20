@@ -1,3 +1,4 @@
+// @level main
 import { defineConfig } from "astro/config";
 
 /**

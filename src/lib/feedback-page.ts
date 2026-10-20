@@ -1,3 +1,4 @@
+// @level presentation
 import type { Dataset } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
