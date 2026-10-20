@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
-import { bodyWithin, carryAssets, writeAssetDigests } from "../scripts/carry-assets.mjs";
+import { bodyWithin, carryAssets } from "../scripts/carry-assets.mjs";
 import { readAssetNames } from "../scripts/carry-assets/asset-names.mjs";
 import { pageOf, pageOfSize } from "./carry-assets/live-page.js";
 
@@ -528,7 +528,7 @@ describe("the carrier takes the live generation forward", () => {
 
 /**
  * The authority for a carried byte: the digest list, and what it is and is not
- * worth. That reading is written once, in `scripts/carry-assets.mjs`'s header
+ * worth. That reading is written once, in `scripts/carry-assets/digest-list.mjs`
  * under "What makes a carried byte trustworthy", and it is not repeated here
  * — the measurements that argue for each case are in the case.
  *
@@ -536,15 +536,6 @@ describe("the carrier takes the live generation forward", () => {
  * are written, which are refused, and how few requests a refusal costs.
  */
 describe("the carrier carries only what our own previous build attested to", () => {
-  it("publishes the digest list this build's assets will be checked against", () => {
-    const out = dist({ [CSS_NAME]: CSS, [JS_NAME]: JS });
-    const result = writeAssetDigests(out);
-    expect(result.ok, JSON.stringify(result)).toBe(true);
-    expect(readFileSync(join(out, DIGESTS), "utf8")).toBe(
-      `${HEADER}\n${sha256(CSS)}  ${CSS_NAME}\n${sha256(JS)}  ${JS_NAME}\n`,
-    );
-  });
-
   it("publishes it as part of the step, before it carries anything into the build", async () => {
     // The list describes what this build BUILT, so it is written before a
     // carried file lands in `_astro/` — and it is published whether or not

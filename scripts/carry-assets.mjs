@@ -22,9 +22,10 @@
  * process exits 0 on every path, because a deploy that failed over a rescue of
  * the previous generation would be worse than the window it was rescuing.
  *
- * This file is where the reasons live: the workflow step and the two test
- * files point here rather than repeat them, and a reason that belongs beside
- * the code holding it stays there rather than being told twice.
+ * This file is where the reasons live, except the rules' own, which sit
+ * beside each rule in `carry-assets/`: the workflow step and the tests point
+ * here rather than repeat them, and a reason that belongs beside the code
+ * holding it stays there rather than being told twice.
  *
  * ## Where the address comes from
  *
@@ -56,10 +57,10 @@
  * ## What a page may cost this build
  *
  * A name is bounded where names are read, in `carry-assets/asset-names.mjs`.
- * A page is at most 512 KB and an asset at
- * most 4 MB — two ceilings, because they bound two different things: how much
- * text is read for names, and how large a file may be written. One number for
- * both is how a page came to inherit an asset's 4 MB. A run asks the origin
+ * A page is at most 512 KB and an asset at most 4 MB — two ceilings, because
+ * they bound two different things: how much text is read for names, and how
+ * large a file may be written. One number for both is how a page came to
+ * inherit an asset's 4 MB. A run asks the origin
  * for at most 20 assets, counted whether they answer or 404, because counting
  * only the ones that worked let four hundred dead references cost four hundred
  * requests against our own origin.
@@ -78,33 +79,9 @@
  *
  * ## What makes a carried byte trustworthy, and what does not
  *
- * This section is the one place that reading is written down; the tests and
- * the scenario point at it.
- *
- * Not the HTTP exchange. An origin declares its own `content-length`, so a
- * guard built on that declaration is the origin vouching for itself: measured
- * against raw-socket origins, an answer with no `content-length`, one that
- * declared less than it sent, and `content-length: 0` each put a file of the
- * wrong length on disk under the previous generation's exact name.
- *
- * So the authority is something our own build made. Every build publishes
- * `asset-digests.txt` beside its page — one line per file it put in `_astro/`,
- * the sha256 and the name — and the next deploy writes a byte only if it
- * hashes to what the list published beside that page says that name is.
- *
- * Be exact about what that buys, because an earlier wording here claimed more.
- * The list arrives from the same origin as the page, over the same HTTP,
- * unsigned: it moves the authority out of the HTTP FRAMING, and it cannot move
- * it off the ORIGIN. A host serving both says whatever it likes under a name
- * it also lists, and this step carries it — as does every reader's browser,
- * from that same host, with no help from us. The origin is the trust boundary;
- * the list is the check that what crossed it is what that host had already
- * published under that name. What it therefore refuses is a transfer that went
- * wrong rather than a host that means harm: a truncated body, a stale or
- * foreign object under a known name, an error page answered 200, a truncated
- * list, an empty body, and a deploy landing between the two requests. Each
- * ends in one file not carried, rather than a wrong file published under a
- * name the deploy swears by.
+ * The digest list, and why it and not the HTTP exchange is what a carried byte
+ * is checked against, is `carry-assets/digest-list.mjs`'s; what the carry does
+ * with the list is here.
  *
  * The page and the list are published together and fetched together, so they
  * describe the same deploy. Whether they do is a question about the page's
@@ -128,11 +105,11 @@
  *   node scripts/carry-assets.mjs --dist <dir>        # which build to fill
  *   node scripts/carry-assets.mjs --dry-run           # fetch and report, write nothing
  */
-import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { NAME_PATTERN, PLAIN_NAME, readAssetNames } from "./carry-assets/asset-names.mjs";
+import { readAssetNames } from "./carry-assets/asset-names.mjs";
+import { DIGESTS_NAME, digestOf, readAssetDigests, writeAssetDigests } from "./carry-assets/digest-list.mjs";
 import { boundedList, oneLine, say, short } from "./carry-assets/log-wording.mjs";
 
 /**
@@ -142,18 +119,6 @@ import { boundedList, oneLine, say, short } from "./carry-assets/log-wording.mjs
  * address is decided, and that is the only edge that sets it in a deploy.
  */
 const ORIGIN_VAR = "CARRY_ORIGIN";
-
-/**
- * The digest list: what this build published, so the next deploy can tell a
- * carried file from a story about one. It sits beside the page rather than in
- * `_astro/` because it is not an asset and nothing hashes it, and its first
- * line is fixed so that an HTML error page, a proxy's notice or a truncated
- * transfer cannot be read as a list — the name and the content type an origin
- * puts on a response are the word of the same stranger this file already
- * refuses to take at face value.
- */
-const DIGESTS_NAME = "asset-digests.txt";
-const DIGESTS_HEADER = "permit-rulebook asset digests v1";
 
 /**
  * A slow host must not hold a deploy open. Ten seconds per request is long
@@ -189,9 +154,6 @@ const MAX_PAGE_BYTES = 512 * 1024;
 const MAX_ASSET_BYTES = 4 * 1024 * 1024;
 const MAX_LIST_BYTES = 64 * 1024;
 
-/** One line of the list: a sha256, two spaces, a name — `sha256sum`'s shape. */
-const DIGESTS_LINE = new RegExp(`^([0-9a-f]{64}) {2}(${NAME_PATTERN})$`);
-
 /**
  * What may be written into `dist/_astro/`. A host that has lost a file answers
  * `200` with an HTML page saying so — writing that over a stylesheet would
@@ -209,62 +171,6 @@ const CARRIABLE = /^(?:text\/css|text\/javascript|application\/javascript|applic
  * anything (round 9).
  */
 const noBuildDirectory = (dist) => typeof dist !== "string" || dist.trim() === "";
-
-/** The sha256 of some bytes, as the digest list spells it. */
-const digestOf = (bytes) => createHash("sha256").update(bytes).digest("hex");
-
-/**
- * Publish what this build built, so the deploy after this one can check the
- * bytes it fetches against something we made rather than against the origin's
- * own headers.
- *
- * It describes this build's OWN assets: it runs before anything is carried, so
- * a file carried from the previous generation is not in it. That is what keeps
- * the chain one generation long, the same way the step itself is.
- *
- * A name this file's own reader would refuse is left out rather than written:
- * one unparseable line would cost the next deploy the whole list. It returns
- * what happened and throws nothing, being called from a step that may not fail.
- */
-export function writeAssetDigests(dist) {
-  try {
-    const dir = join(dist, "_astro");
-    const names = existsSync(dir)
-      ? readdirSync(dir, { withFileTypes: true })
-        .filter((entry) => entry.isFile() && PLAIN_NAME.test(entry.name))
-        .map((entry) => entry.name)
-        .sort()
-      : [];
-    const lines = [DIGESTS_HEADER, ...names.map((name) => `${digestOf(readFileSync(join(dir, name)))}  ${name}`)];
-    writeFileSync(join(dist, DIGESTS_NAME), `${lines.join("\n")}\n`);
-    return { ok: true, count: names.length };
-  } catch (e) {
-    return { ok: false, why: say(e) };
-  }
-}
-
-/**
- * Read a digest list, strictly.
- *
- * Strictly, because this is the one input that decides what may be written: a
- * line that is not a sha256 and a name fails the whole list rather than being
- * skipped, so a transfer cut mid-line refuses the run instead of shrinking it.
- * A cut that lands exactly on a line boundary parses — and is caught one step
- * later, by a page that names something the list no longer does.
- */
-function readAssetDigests(text) {
-  const lines = text.split("\n");
-  if (lines.at(-1) === "") lines.pop();
-  if (lines[0] !== DIGESTS_HEADER) return { ok: false, why: `does not begin "${DIGESTS_HEADER}"` };
-  const digests = new Map();
-  for (let i = 1; i < lines.length; i += 1) {
-    const line = DIGESTS_LINE.exec(lines[i]);
-    if (!line) return { ok: false, why: `line ${i + 1} is not a sha256 and a name` };
-    if (digests.has(line[2])) return { ok: false, why: `names ${line[2]} twice` };
-    digests.set(line[2], line[1]);
-  }
-  return { ok: true, digests };
-}
 
 /**
  * Fetch, with every failure a sentence rather than a stack, and a redirect a
