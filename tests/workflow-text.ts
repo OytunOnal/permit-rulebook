@@ -28,6 +28,10 @@ const jobHeadersOf = (yaml: string): { jobs: string; headers: RegExpMatchArray[]
 /** Every job's name, in the order the file declares them. */
 export const jobNamesOf = (yaml: string): string[] => jobHeadersOf(yaml).headers.map((m) => m[1]!);
 
+/** A key's value on its own line in a job's text, at the job's own indent; "" if absent. */
+export const jobKeyValueOf = (job: string, key: string): string =>
+  new RegExp(`^ {4}${key}:\\s*(.+)$`, "m").exec(job)?.[1]?.trim() ?? "";
+
 /** One job's text: from its name to the next job's; "" if absent. */
 export const jobOf = (yaml: string, name: string): string => {
   const { jobs, headers } = jobHeadersOf(yaml);

@@ -5,7 +5,7 @@ import { basename, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDir, readLock } from "../scripts/data-pin.mjs";
 import { readAssetNames } from "../scripts/carry-assets/asset-names.mjs";
-import { jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
+import { jobKeyValueOf, jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
 /**
  * The pipeline's own security and the data it builds against (Spine
@@ -297,12 +297,10 @@ describe("a cached page still finds its assets", () => {
  */
 describe("a red deploy nobody watches keeps deploy run failed", () => {
   const report = jobOf(pages, "report");
-  /** A key's value on its own line in a job, at the job's own indent. */
-  const jobKey = (job: string, key: string): string => new RegExp(`^ {4}${key}:\\s*(.+)$`, "m").exec(job)?.[1]?.trim() ?? "";
 
   it("report needs build, deploy, pin and audit", () => {
     expect(report, "pages.yml has no report job").not.toBe("");
-    const needs = /^\[(.*)\]$/.exec(jobKey(report, "needs"))?.[1]?.split(",").map((job) => job.trim()) ?? [];
+    const needs = /^\[(.*)\]$/.exec(jobKeyValueOf(report, "needs"))?.[1]?.split(",").map((job) => job.trim()) ?? [];
     expect(needs.sort()).toEqual(["audit", "build", "deploy", "pin"]);
   });
 
@@ -312,7 +310,7 @@ describe("a red deploy nobody watches keeps deploy run failed", () => {
     // set past those two. A re-run builds against data.lock's old data and
     // has a person watching, so only a first attempt keeps the issue, as
     // `pin` and `indexnow` ask.
-    expect(jobKey(report, "if")).toBe(
+    expect(jobKeyValueOf(report, "if")).toBe(
       "${{ always() && github.run_attempt == 1 && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch') }}",
     );
   });
