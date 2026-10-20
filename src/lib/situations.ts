@@ -1,3 +1,4 @@
+// @level presentation
 import {
   DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, isScored, joinOr, situationsAsked,
   type Country, type Dataset, type Profile,

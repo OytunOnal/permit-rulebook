@@ -15,8 +15,14 @@ pull request.
 - Format: none configured.
 - Typecheck: site `npm run build` (`astro check && astro build`); data
   `npm run build` (`tsc -p tsconfig.json`) and `npm run typecheck:tests`.
-- Structure: not yet run. `docs/spine/dependency-rules.md` and
-  `docs/spine/structure.json` arrive with the structure check (#37).
+- Structure: in the site's root, `node ${CLAUDE_PLUGIN_ROOT}/scripts/structure.mjs`
+  writes `docs/spine/structure.json` from the code, and
+  `node ${CLAUDE_PLUGIN_ROOT}/scripts/structure-check.mjs` reads it against
+  `docs/spine/dependency-rules.md`. Every source file carries its `// @level`
+  tag as its first comment (an Astro file's, on the line after its first
+  `---`). The check is red on one line until the carry's folder is reshaped:
+  `scripts/carry-assets` holds five files at its root, and no exception can
+  cover that (#37).
 - Green means: the site — `npm test` (vitest, browser cases drive headless
   Chrome over `dist/`), `npm run build` with 0 errors, `npm run assets:check`
   true; the data — `npm run check` end to end (build, typecheck:tests,

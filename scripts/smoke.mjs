@@ -1,3 +1,4 @@
+// @level infrastructure main
 /**
  * Does the site actually run?
  *

@@ -1,3 +1,4 @@
+// @level infrastructure main
 /**
  * The assets someone meets in the first minute, rendered for real.
  *

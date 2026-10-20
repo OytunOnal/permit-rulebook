@@ -1,3 +1,4 @@
+// @level infrastructure main
 /**
  * Is the site correct under a subpath?
  *
