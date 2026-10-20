@@ -36,7 +36,7 @@ export const short = (text, max = 40) => (text.length > max ? `${text.slice(0, m
 export const oneLine = (text) => text.replace(/[\u0000-\u001f\u007f]+/g, " ");
 
 /** An error as a sentence, with the cause `fetch failed` always hides. */
-export const say = (e) => {
+export const sentenceOfError = (e) => {
   const message = e instanceof Error ? e.message : String(e);
   const cause = e instanceof Error && e.cause instanceof Error ? e.cause.message : "";
   return cause && !message.includes(cause) ? `${message} (${cause})` : message;

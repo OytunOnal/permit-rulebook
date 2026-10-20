@@ -5,13 +5,13 @@ import { pageOf, pageOfSize } from "./live-page.js";
 /**
  * Which references in a live page are this deploy's assets, as plain calls on
  * `readAssetNames`. What the running step does with each answer — what it
- * fetches, prints and annotates — is `tests/s33.test.ts`'s.
+ * fetches, prints and annotates — is `carry.test.ts`'s.
  */
 describe("which references in a live page are this deploy's assets", () => {
   it("keeps only the names under our own origin, and hands back every reference it refused", () => {
     // The parsing rule itself, where the three foreign shapes can be read one
     // beside the other. What the running step does with them is
-    // `tests/s33.test.ts`'s case on another host, another scheme or no host.
+    // `carry.test.ts`'s case on another host, another scheme or no host.
     const refs = [
       "https://evil.example/_astro/absolute.js",
       // A protocol-relative reference inherits the page's scheme, so only the
@@ -33,7 +33,7 @@ describe("which references in a live page are this deploy's assets", () => {
     //
     // These three are short enough to come back whole, and that is deliberate:
     // the bound on a printed reference is `short`'s and is spelled there, once.
-    // Where it is MEASURED is on the running step, in `tests/s33.test.ts`,
+    // Where it is MEASURED is on the running step, in `carry.test.ts`,
     // against a 430-character reference that takes the same refusal branch as
     // these.
     expect(refused.map(({ ref }) => ref)).toEqual(refs.slice(0, 3));

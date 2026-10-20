@@ -28,10 +28,7 @@
  * file published under a name the deploy swears by.
  */
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { NAME_PATTERN, PLAIN_NAME } from "./asset-names.mjs";
-import { say } from "./log-wording.mjs";
 
 /**
  * The digest list: what this build published, so the next deploy can tell a
@@ -52,33 +49,18 @@ const DIGESTS_LINE = new RegExp(`^([0-9a-f]{64}) {2}(${NAME_PATTERN})$`);
 export const digestOf = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 /**
- * Publish what this build built, so the deploy after this one can check the
- * bytes it fetches against something we made rather than against the origin's
- * own headers.
- *
- * It describes this build's OWN assets: it runs before anything is carried, so
- * a file carried from the previous generation is not in it. That is what keeps
- * the chain one generation long, the same way the carry itself is.
+ * The digest list of some files, given as `{ name, bytes }`: its text, and how
+ * many names it holds. Sorted by name, so the same build always writes the
+ * same list.
  *
  * A name this file's own reader would refuse is left out rather than written:
- * one unparseable line would cost the next deploy the whole list. It returns
- * what happened and throws nothing, being called from a step that may not fail.
+ * one unparseable line would cost the next deploy the whole list.
  */
-export function writeAssetDigests(dist) {
-  try {
-    const dir = join(dist, "_astro");
-    const names = existsSync(dir)
-      ? readdirSync(dir, { withFileTypes: true })
-        .filter((entry) => entry.isFile() && PLAIN_NAME.test(entry.name))
-        .map((entry) => entry.name)
-        .sort()
-      : [];
-    const lines = [DIGESTS_HEADER, ...names.map((name) => `${digestOf(readFileSync(join(dir, name)))}  ${name}`)];
-    writeFileSync(join(dist, DIGESTS_NAME), `${lines.join("\n")}\n`);
-    return { ok: true, count: names.length };
-  } catch (e) {
-    return { ok: false, why: say(e) };
-  }
+export function digestListOf(files) {
+  const bytesByName = new Map(files.map(({ name, bytes }) => [name, bytes]));
+  const names = [...bytesByName.keys()].filter((name) => PLAIN_NAME.test(name)).sort();
+  const lines = [DIGESTS_HEADER, ...names.map((name) => `${digestOf(bytesByName.get(name))}  ${name}`)];
+  return { text: `${lines.join("\n")}\n`, count: names.length };
 }
 
 /**

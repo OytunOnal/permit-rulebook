@@ -154,11 +154,11 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
 
 /**
  * s33 — the step that carries the previous generation's assets forward. Why it
- * exists is written in `scripts/carry-assets.mjs`'s own header; what is pinned
- * here is what the step has to cover and where it sits in the job.
+ * exists is written in `scripts/carry-assets/carry.mjs`'s own header; what is
+ * pinned here is what the step has to cover and where it sits in the job.
  *
  * That it cannot fail the deploy is proved by running it, in
- * `tests/s33.test.ts` — a workflow file cannot show that, and neither can
+ * `tests/carry-assets/` — a workflow file cannot show that, and neither can
  * reading the script's source.
  */
 describe("a cached page still finds its assets", () => {
@@ -193,7 +193,7 @@ describe("a cached page still finds its assets", () => {
    * The other half of the same assumption, and the one nothing was watching.
    *
    * The carrier reads references out of HTML with a pattern, not with a
-   * browser, and `scripts/carry-assets.mjs`'s "What shapes this reads" writes
+   * browser, and `scripts/carry-assets/asset-names.mjs`'s "What shapes this reads" writes
    * down why: honouring what a browser resolves means `<base href>`, character
    * references, `srcset` and CSS `url()`, and half a browser reads strings no
    * reader asks for while still missing the ones it cannot parse. So the
@@ -246,8 +246,8 @@ describe("a cached page still finds its assets", () => {
    * The `run:` takes NO arguments, and that clause is load-bearing: the script
    * reads any `--name value` as a flag, so a repository variable spliced into
    * this command line is a way to turn the mechanism off while every deploy
-   * stays green. Why that is so is the script header's "Where the address
-   * comes from"; what this case does about it is pin the empty command line
+   * stays green. Why that is so is `scripts/carry-assets.mjs`'s header, "Where
+   * the address comes from"; what this case does about it is pin the empty command line
    * and the environment value beside the rest of the block.
    */
   it("the build job runs it, verbatim, as the last step before the upload", () => {

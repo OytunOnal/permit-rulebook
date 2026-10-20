@@ -233,8 +233,8 @@ jobs:
 
       # Why a deploy carries the previous generation's assets at all, the one
       # generation it keeps, and the ceilings it holds an origin to: all of it
-      # is in `site/scripts/carry-assets.mjs`'s own header, which is the place
-      # it is kept true.
+      # is in `site/scripts/carry-assets/carry.mjs`'s own header, which is the
+      # place it is kept true.
       #
       # What the step is: the last thing before the artifact is sealed, because
       # it adds files to `dist/` and a file carried after the upload is a file
@@ -252,7 +252,8 @@ jobs:
       # empty, which is not a style choice: the script reads any `--name value`
       # as a flag, so a repository variable spliced into argv could turn the
       # whole mechanism off with every deploy still green. The reading is in
-      # the script's own header, under "Where the address comes from". Nothing
+      # `site/scripts/carry-assets.mjs`'s own header, under "Where the address
+      # comes from". Nothing
       # may be appended to the `run:` line either, for the reason
       # `tests/pipeline.test.ts` keeps beside its verbatim pin of this block.
       - name: Carry the live site's assets forward, so a cached page still finds them
