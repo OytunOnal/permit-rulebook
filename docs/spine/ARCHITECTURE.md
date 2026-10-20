@@ -58,9 +58,14 @@ click on the tracker link. Answers never leave the device.
   html, pdf-text (embedded-font text layer, bytes hash beside words hash) and
   link liveness; slices bind each page to its operative text; glyph
   corrections are declared data; `human_tier: 2` since 2026-09-10 (two sources a browser reads and this fetcher cannot — see the glossary); runs daily in GitHub
-  Actions and files an issue (`source-change`) per flag; a flag still open on
+  Actions and, after its state is pushed, files an issue (`source-change`) per
+  flag this run created or changed; a flag still open on
   the second UTC morning after it was raised turns the run red and is named
-  in one issue the run keeps, `overdue flags` (#62). Two readers, a
+  in one issue the run keeps, `overdue flags` (#62). A red run on master keeps
+  `watch run failed`, and the first green one closes it (#117). Every kept
+  issue is decided in one module, `kept-issue`, and carried to the tracker by
+  one CLI, built on its own so a broken build cannot silence it, that runs
+  `gh` with no shell (#117). Two readers, a
   fetcher and a browser (Chrome over its own protocol), and the coverage gate
   ask one module, `trust-line`, where the watch may go: the entry address, a
   redirect target, every address a name resolves to (the fetcher's; a name
@@ -89,6 +94,9 @@ click on the tracker link. Answers never leave the device.
   both ways · quote fidelity (every shipped quote found in its snapshot) ·
   prose provenance (every renderable sentence is authority, ours or label,
   keyed on the declared kind). A failing gate fails the build downstream.
+  The data repository runs them on every push to master, every pull request
+  and after every watch run (`check.yml`); a red check after a watch run keeps
+  `check failed on master`, and the next green one closes it (#117).
 
 **Diagram 2 — permit-rulebook** (this repository; MIT)
 
