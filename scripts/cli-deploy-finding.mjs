@@ -8,7 +8,8 @@
  *   JOB_RESULTS='{"build":"success",...}' RUN_URL=<url> node scripts/cli-deploy-finding.mjs
  *
  * Both arrive as environment values, never as argv or in a script's body. A
- * missing value is read as empty, which `deployFindingOf` turns into red.
+ * missing value is read as empty, and `deployFindingOf` turns either one
+ * empty into red: empty results are not JSON, and a green needs a run to link.
  */
 import { deployFindingOf } from "./deploy-finding.mjs";
 

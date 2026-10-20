@@ -76,9 +76,19 @@ describe("results the report cannot read give red, never green", () => {
     ["text far longer than four results", resultsOf({ ...ALL_PASSED, padding: "x".repeat(10_000) })],
   ])("%s", (_case, results) => {
     const body = redBodyOf(results);
-    expect(body.split("\n").some((line) => line.startsWith(DEPLOY_FINDING_WORDS.unreadResults)), "the body does not say the results were unread")
+    expect(body.split("\n").some((line) => line.startsWith(DEPLOY_FINDING_WORDS.unread)), "the body does not say the results were unread")
       .toBe(true);
     expect(body).toContain(RUN_URL);
+  });
+});
+
+describe("a run the report cannot link gives red, never a green that links nothing", () => {
+  it("an empty run address, though the four jobs passed", () => {
+    const finding = deployFindingOf(resultsOf(ALL_PASSED), "");
+    expect(finding.kind, "the finding is not red").toBe("red");
+    const body = finding.kind === "red" ? finding.body : "";
+    expect(body.split("\n").some((line) => line.startsWith(DEPLOY_FINDING_WORDS.unread)), "the body does not say what was unread")
+      .toBe(true);
   });
 });
 

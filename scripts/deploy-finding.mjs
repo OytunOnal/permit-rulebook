@@ -25,14 +25,15 @@ export const DEPLOY_FINDING_WORDS = {
   jobsNotPassed: "Jobs that did not pass: ",
   published: "Today's page was published.",
   notPublished: "Today's page was not published.",
-  unreadResults: "The report could not read the jobs' results, so it cannot say the deploy is green: ",
-  /** Why the results could not be read, each ending the `unreadResults` line. */
+  unread: "The report could not read what the run found, so it cannot say the deploy is green: ",
+  /** Why the report could not read the run, each ending the `unread` line. */
   unreadReasons: {
-    tooLong: `the text is longer than ${JOB_RESULTS_LIMIT} characters`,
-    notJson: "the text is not JSON",
-    notAnObject: "the text is not an object",
+    tooLong: `the jobs' results are longer than ${JOB_RESULTS_LIMIT} characters`,
+    notJson: "the jobs' results are not JSON",
+    notAnObject: "the jobs' results are not an object",
     /** @param {string} job */
     noKnownResult: (job) => `the job ${job} has no known result`,
+    noRunUrl: "the run's address is empty",
   },
   closing: "Closed by a green scheduled or dispatched deploy.",
   run: "Run: ",
@@ -41,26 +42,36 @@ export const DEPLOY_FINDING_WORDS = {
 /**
  * The deploy's finding for its four jobs' results: green only when each passed
  * or was skipped by design; red naming the others, saying whether today's page
- * was published, and red too when the results cannot be read.
+ * was published, and red too when the results cannot be read. A run with no
+ * address is red as well: a green must link the run that closed the issue.
  *
  * @param {string} jobResults JSON: each job's name to its result
  * @param {string} runUrl the run the finding links
  * @returns {RunFinding}
  */
 export function deployFindingOf(jobResults, runUrl) {
+  if (runUrl === "") return redFindingOf([unreadLineOf(DEPLOY_FINDING_WORDS.unreadReasons.noRunUrl)]);
   const runLine = `${DEPLOY_FINDING_WORDS.run}${runUrl}`;
   const reading = readJobResults(jobResults);
-  if (reading.kind === "unread") {
-    return { kind: "red", body: [DEPLOY_FINDING_WORDS.red, `${DEPLOY_FINDING_WORDS.unreadResults}${reading.reason}.`, runLine].join("\n") };
-  }
+  if (reading.kind === "unread") return redFindingOf([unreadLineOf(reading.reason), runLine]);
   const { results } = reading;
   const jobsThatDidNotPass = DEPLOY_JOBS.filter((job) => !hasPassed(job, results[job]));
   if (jobsThatDidNotPass.length === 0) return { kind: "green", closing: `${DEPLOY_FINDING_WORDS.closing} ${runLine}` };
   const jobsAndResultsText = jobsThatDidNotPass.map((job) => `${job} (${results[job]})`).join(", ");
   const publishedLine = results.deploy === "success" ? DEPLOY_FINDING_WORDS.published : DEPLOY_FINDING_WORDS.notPublished;
-  const body = [DEPLOY_FINDING_WORDS.red, `${DEPLOY_FINDING_WORDS.jobsNotPassed}${jobsAndResultsText}`, publishedLine, runLine];
-  return { kind: "red", body: body.join("\n") };
+  return redFindingOf([`${DEPLOY_FINDING_WORDS.jobsNotPassed}${jobsAndResultsText}`, publishedLine, runLine]);
 }
+
+/**
+ * A red finding whose body is the red lead, then `lines`.
+ *
+ * @param {string[]} lines
+ * @returns {RunFinding}
+ */
+const redFindingOf = (lines) => ({ kind: "red", body: [DEPLOY_FINDING_WORDS.red, ...lines].join("\n") });
+
+/** @param {string} reason */
+const unreadLineOf = (reason) => `${DEPLOY_FINDING_WORDS.unread}${reason}.`;
 
 /**
  * @param {string} job
