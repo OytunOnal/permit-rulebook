@@ -539,6 +539,14 @@ not before.
 _Avoid_: stale flag, unwalked flag, open flag; clock (what counts the days,
 not what is overdue)
 
+**Kept issue**:
+One issue a run opens, comments on, reopens and closes by itself, because what
+it says is the run's own state: `overdue flags`, `watch run failed`, `deploy
+run failed`, `check failed on master`. A red run with nobody at the other end
+says so there; the first green run of the same kind closes it with a line
+naming that run. A person reads it, and never has to close it.
+_Avoid_: alarm, status issue, notification
+
 **Baseline**:
 The first recorded snapshot of a source, against which change is measured.
 
