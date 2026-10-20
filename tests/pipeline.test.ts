@@ -302,7 +302,10 @@ describe("the site's address is reviewed code", () => {
 
   it("the deploy reads no repository variable", () => {
     for (const context of REPOSITORY_VARIABLE_CONTEXTS) {
-      const contextReadPattern = new RegExp(`\\b${context}\\s*[.[]`);
+      // A property read (`vars.X`, `vars['X']`), which an `if:` may hold with
+      // no `${{ }}` around it, or the context named anywhere inside an
+      // expression, where `toJSON(vars)` reads every variable at once.
+      const contextReadPattern = new RegExp(`\\b${context}\\s*[.[]|\\$\\{\\{(?:(?!\\}\\}).)*\\b${context}\\b`);
       const lines = pages.split(LF).filter((line) => contextReadPattern.test(line)).map((line) => line.trim());
       expect(lines, `pages.yml reads the \`${context}\` context`).toEqual([]);
     }
