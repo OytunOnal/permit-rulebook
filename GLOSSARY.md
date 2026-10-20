@@ -544,6 +544,13 @@ The first recorded snapshot of a source, against which change is measured.
 
 ### The deploy
 
+**The site's address**:
+The one URL the site is published under, and the only origin the deploy reads
+the live site from. It is decided in reviewed code, never in a setting, because
+whoever decides it decides where the site's own links and carried files come
+from.
+_Avoid_: site URL (as a setting), domain, host
+
 **Carry** (verb):
 To copy an asset the LIVE site still references into the fresh `dist/` about
 to replace it — byte-identical, under the same name — so a page a reader's
