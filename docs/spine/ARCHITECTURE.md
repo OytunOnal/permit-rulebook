@@ -100,7 +100,9 @@ click on the tracker link. Answers never leave the device.
 - **Tokens** — `tokens.css` (the design system) and `identity.css` (the
   identity pair: the tilted PR stamp over the read-date stamp; one source,
   inlined by the route page, linked by the interview).
-- **Build** — Astro, `base` derived from `SITE_URL`; an invalid dataset breaks
+- **Build** — Astro, `base` derived from `SITE_URL`, the site's address, which
+  is one literal line in `pages.yml`: the deploy reads no repository variable
+  (#110). An invalid dataset breaks
   the build; the social card is rendered from the dataset's own facts with a
   sidecar that makes a stale card fail CI.
 - **Dist** — 38 pages (the interview, `/data/`, `/feedback/`, the status
@@ -109,7 +111,11 @@ click on the tracker link. Answers never leave the device.
   JSON, the sitemap, favicons, the social card.
 - **CI** — `pages.yml`: both repositories checked out, data gates, build,
   tests with a real browser over `dist/`, asset truth, base-path check, tap
-  targets at 390 px, then deploy. Beside the build, a job nothing waits on
+  targets at 390 px, the carry, then deploy. The carry (`scripts/carry-assets`)
+  copies the live generation's assets into `dist/`, only from the site's own
+  address and only bytes the previous build's digest list attests; it is a
+  deep module, one level per file, whose flow is given the live site, and it
+  never fails the deploy (#110). Beside the build, a job nothing waits on
   audits the site's lockfile: an advisory reddens the run, never holds the
   deploy. Both workflows run on a named image, `ubuntu-26.04`, never `-latest`
   (#24).
