@@ -69,9 +69,10 @@
  * The page and the list are published together and fetched together, so they
  * describe the same deploy. Whether they do is a question about the page's
  * whole reference set; whether one name can be carried is a question about
- * that name alone. Both are asked, and answered, where `recordOfCarry` reads
- * the list. A live deploy that published no list is one this carries nothing
- * from, and this build's list is published either way, for the deploy after.
+ * that name alone. Both are asked, and answered, where
+ * `liveDigestsMatchingPage` reads the list. A live deploy that published no
+ * list is one this carries nothing from, and this build's list is published
+ * either way, for the deploy after.
  *
  * Each guard carries its own reason beside itself, where a reader can see the
  * line as well as the claim. When this step ends quiet and when it says the
@@ -124,7 +125,7 @@ const BUDGET_MS = 60_000;
  * `MAX_ASSETS` counts requests, not files carried, so a reference that fails
  * costs one of the twenty like one that works. The page is one request on top
  * of that, always; the digest list is one more, and only when there is
- * something to carry — `recordOfCarry` returns before fetching it when this
+ * something to carry — `recordOfCarry` ends before fetching it when this
  * build already has everything the live page names.
  *
  * `MAX_LIST_BYTES` is the same idea one file down: today's list is a 33-byte
@@ -189,7 +190,7 @@ export function writeAssetDigests(dist) {
  * directory that is real and cannot be written into is a different thing, and
  * keeps the publish's own failure line.
  */
-function digestListLines(dist, dryRun) {
+function digestListLines(dist, { dryRun }) {
   if (noBuildDirectory(dist)) return [];
   if (dryRun) return [`would publish ${DIGESTS_NAME} for the next deploy`];
   const published = writeAssetDigests(dist);
@@ -219,7 +220,7 @@ function digestListLines(dist, dryRun) {
  * }} [options]
  */
 export async function carryAssets({ origin, dist, liveAnswerFor, dryRun = false, budgetMs = BUDGET_MS } = {}) {
-  const published = digestListLines(dist, dryRun);
+  const published = digestListLines(dist, { dryRun });
   let record = {
     carried: [], problems: [], alreadyBuilt: [], needed: [], unserved: [], looked: false, from: "",
     // A throw is not one of the run's own bails and has none of their phrases
@@ -232,7 +233,7 @@ export async function carryAssets({ origin, dist, liveAnswerFor, dryRun = false,
   } catch (e) {
     record.problems.push(`anything: ${sentenceOfError(e)}`);
   }
-  return { ...record, logLines: [...published, ...logLinesOf(record, dryRun)] };
+  return { ...record, logLines: [...published,...logLinesOf(record, { dryRun })] };
 }
 
 /**
@@ -256,52 +257,43 @@ async function liveAssetDigests(answerWithinBudget, url) {
 /**
  * What one run did: which names it carried and from where, which it left
  * behind and why. Every field `logLinesOf` reads to tell the three outcomes
- * apart comes from here.
+ * apart comes from here. It runs in three phases — read the live page, read
+ * its digest list, carry each asset — and a phase that ends the run leaves
+ * its reason in `problems` and the phases after it unrun.
  *
  * `needed` is what the live page references and this build lacks, whether or
  * not any of it could be carried, and `looked` is whether this run ever got
  * as far as knowing that. Having nothing to do, never reaching the page, and
  * looking and finding something still missing are the three outcomes, and
- * these two fields are what tells them apart. `unserved` is one of the ways
- * the third happens and not an outcome of its own: a reference that resolves
- * under our origin to somewhere this deploy does not publish, which is neither
- * carried nor missing from this build but is still a 404 the reader will hit.
- * `alreadyBuilt` and `needed` between them hold every name the page references
- * that IS one of this deploy's assets, so both being empty is a live page that
- * references none of them — the third outcome again, with the missing thing
- * being the page's own evidence rather than a file.
+ * these two fields are what tells them apart. Every return before `looked` is
+ * set is a run that could not look, and a step that could not look does not
+ * know whether the window is open — which is the one thing its reader has to
+ * be able to tell apart from a healthy deploy.
+ *
+ * `unserved` is one of the ways the third happens and not an outcome of its
+ * own: references under our own origin that resolve somewhere this deploy
+ * does not publish, exactly as `readAssetNames` hands them back (`{ ref, why
+ * }`), which are neither carried nor missing from this build but are still a
+ * 404 the reader will hit. `alreadyBuilt` and `needed` between them hold every
+ * name the page references that IS one of this deploy's assets, so both being
+ * empty is a live page that references none of them — the third outcome
+ * again, with the missing thing being the page's own evidence rather than a
+ * file.
+ *
+ * `from` is the page this run actually read, once there is one: what was
+ * parsed, not what was handed in. `where` is what the counted line names where
+ * a page would be, when there is no page. It is decided AT THE BAIL that ends
+ * the run, because that is the only place that knows which bail it was: three
+ * bails reach the counted line with no page read, and only two of them are
+ * about the origin. The default is the parse failures', which are the two
+ * bails that say nothing of their own. Nothing of an unparsed value ever
+ * enters it — see `pageUrlOf`.
  */
 async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) {
-  const carried = [];
-  const problems = [];
-  const alreadyBuilt = [];
-  const needed = [];
-  /**
-   * References under our own origin that resolve somewhere this deploy does
-   * not publish, exactly as `readAssetNames` hands them back: `{ ref, why }`.
-   */
-  const unserved = [];
-  /**
-   * Whether this run got far enough to know what the live page needs. Every
-   * return above that point is a run that could not look, and a step that could
-   * not look does not know whether the window is open — which is the one thing
-   * its reader has to be able to tell apart from a healthy deploy.
-   */
-  let looked = false;
-  /** The page this run actually read, once there is one: what was parsed, not what was handed in. */
-  let from = "";
-  /**
-   * What the counted line names where a page would be, when there is no page.
-   * It is decided AT THE BAIL that ends the run, because that is the only
-   * place that knows which bail it was: three bails reach the counted line with
-   * no page read, and only two of them are about the origin.
-   *
-   * The default is the parse failures', which are the two bails that reach
-   * here and say nothing of their own. Nothing of an unparsed value ever
-   * enters it — see "NEVER PRINT A VALUE THAT DID NOT PARSE" below.
-   */
-  let where = `a ${ORIGIN_VAR} no page could be read from`;
-  const done = () => ({ carried, problems, alreadyBuilt, needed, unserved, looked, from, where: from || where });
+  const record = {
+    carried: [], problems: [], alreadyBuilt: [], needed: [], unserved: [], looked: false, from: "",
+    where: `a ${ORIGIN_VAR} no page could be read from`,
+  };
   const deadline = Date.now() + budgetMs;
   /**
    * The live answer for `url`, with the request's timeout cut to what is left
@@ -312,207 +304,246 @@ async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) 
     if (timeoutMs <= 0) return Promise.resolve({ ok: false, why: "the run's time budget was already spent" });
     return liveAnswerFor(url, { byteCeiling, timeoutMs });
   };
+  const run = { dist, dryRun, budgetMs, deadline, answerWithinBudget };
 
-  // No origin is the whole of what "no origin" means: there is no built-in
-  // address to fall back to, so a build somewhere else never quietly carries
-  // production's assets.
-  if (typeof origin !== "string" || origin.trim() === "") {
-    problems.push("anything: no origin was given");
-    where = `an unset ${ORIGIN_VAR}`;
-    return done();
+  const names = await assetNamesOfLivePage(record, origin, run);
+  if (record.needed.length > 0) {
+    const digests = await liveDigestsMatchingPage(record, names, run);
+    if (digests) record.carried.push(...await carriedAssetsOf(record, digests, run));
   }
-  // And it has to be an address rather than something that merely arrived in
-  // the variable that holds one. `new URL` below would refuse most of these
-  // too, but as a parse error; a value beginning `--` deserves to be named for
-  // what it is (the entry's "Where the address comes from").
-  //
-  // NEVER PRINT A VALUE THAT DID NOT PARSE — the rule the two refusals here
-  // and the counted line at the end all follow.
-  //
-  // Which population, because this file holds two and the rules differ. THIS
-  // one is the ENVIRONMENT's: `CARRY_ORIGIN`, one value, and carrying a
-  // credential is a thing it does. For it the rule is all or nothing — printed
-  // whole once it has parsed (`new URL` has dropped the credentials by then),
-  // and not printed at all until it has. The other population is the LIVE
-  // PAGE's references and the origin's own header strings, which
-  // `readAssetNames` and the carry loop print unparsed all the time and must:
-  // they are how a deploy's log says which reference it refused and why, there
-  // may be four hundred of them, and nobody's secret is in them. Their rule is
-  // `log-wording.mjs`'s — bounded by `short`, flattened by `oneLine` — and
-  // `could not carry http://[/_astro/x.css: it is not a URL` obeys it rather
-  // than breaking this one.
-  //
-  // An UNPARSED address cannot be made safe by a rule about its shape: by
-  // construction the values that reach these two lines are the ones that
-  // failed `^https?://` or failed `new URL`, so a redaction keyed to `://` or
-  // to an `@` would meet exactly the values it cannot read — missing a
-  // credential, or reporting a host taken from the query. So: name the
-  // variable, say what was wrong with it, and print nothing of it. Not even a
-  // length, which is a secret's length.
+  return { ...record, where: record.from || record.where };
+}
+
+/**
+ * The address to read the live page from, parsed, or "" once `record` says why
+ * there is none. The origin has to be given, has to be an address rather than
+ * something that merely arrived in the variable that holds one, and needs a
+ * build to fill, checked before a request is spent on a build there is
+ * nowhere to put.
+ *
+ * No origin is the whole of what "no origin" means: there is no built-in
+ * address to fall back to, so a build somewhere else never quietly carries
+ * production's assets. `new URL` would refuse most values that are not an
+ * address too, but as a parse error; a value beginning `--` deserves to be
+ * named for what it is (the entry's "Where the address comes from").
+ *
+ * NEVER PRINT A VALUE THAT DID NOT PARSE — the rule the two refusals here and
+ * the counted line at the end all follow.
+ *
+ * Which population, because this file holds two and the rules differ. THIS
+ * one is the ENVIRONMENT's: `CARRY_ORIGIN`, one value, and carrying a
+ * credential is a thing it does. For it the rule is all or nothing — printed
+ * whole once it has parsed (`new URL` has dropped the credentials by then),
+ * and not printed at all until it has. The other population is the LIVE
+ * PAGE's references and the origin's own header strings, which
+ * `readAssetNames` and the carry loop print unparsed all the time and must:
+ * they are how a deploy's log says which reference it refused and why, there
+ * may be four hundred of them, and nobody's secret is in them. Their rule is
+ * `log-wording.mjs`'s — bounded by `short`, flattened by `oneLine` — and
+ * `could not carry http://[/_astro/x.css: it is not a URL` obeys it rather
+ * than breaking this one.
+ *
+ * An UNPARSED address cannot be made safe by a rule about its shape: by
+ * construction the values that reach these two lines are the ones that
+ * failed `^https?://` or failed `new URL`, so a redaction keyed to `://` or
+ * to an `@` would meet exactly the values it cannot read — missing a
+ * credential, or reporting a host taken from the query. So: name the
+ * variable, say what was wrong with it, and print nothing of it. Not even a
+ * length, which is a secret's length.
+ *
+ * The parse is what is read from and printed, so the value that was checked
+ * and the value that is fetched are one string, with nothing stray left in
+ * it: whitespace, a line break and a fragment all end here rather than in a
+ * request or in a log line.
+ */
+function pageUrlOf(record, origin, dist) {
+  if (typeof origin !== "string" || origin.trim() === "") {
+    record.problems.push("anything: no origin was given");
+    record.where = `an unset ${ORIGIN_VAR}`;
+    return "";
+  }
   const given = origin.trim();
   if (!/^https?:\/\//i.test(given)) {
-    problems.push(`anything: ${ORIGIN_VAR} is not an absolute http(s) address, so it is not somewhere to read a page from`);
-    return done();
+    record.problems.push(`anything: ${ORIGIN_VAR} is not an absolute http(s) address, so it is not somewhere to read a page from`);
+    return "";
   }
-  // And a build to fill, checked before a request is spent on a build there is
-  // nowhere to put.
   if (noBuildDirectory(dist)) {
-    problems.push("anything: no build directory was given");
+    record.problems.push("anything: no build directory was given");
     // The one bail here that is not about the origin, and the counted line
     // says so rather than naming a variable nothing was wrong with.
-    where = "nowhere — no build directory was given, so no page was asked for";
-    return done();
+    record.where = "nowhere — no build directory was given, so no page was asked for";
+    return "";
   }
-  // Parsed once, and the parse is what is read from and printed, so the value
-  // that was checked and the value that is fetched are one string. The parse
-  // is also the only spelling of the address with nothing stray left in it:
-  // whitespace, a line break and a fragment all end here rather than in a
-  // request or in a log line.
   let home;
   try { home = new URL(given); } catch {
-    // Not `sentenceOfError(e)` either, and for the same reason one step
-    // further out: the error's wording is the runtime's, not this step's, and
-    // the runtime is free to start putting the input it refused into it.
-    // Node's is the constant "Invalid URL" today, which says nothing this line
-    // does not.
-    problems.push(`anything: ${ORIGIN_VAR} is not a URL, so it is not somewhere to read a page from`);
-    return done();
+    // Not `sentenceOfError(e)` either: the error's wording is the runtime's,
+    // which is free to start putting the input it refused into it.
+    record.problems.push(`anything: ${ORIGIN_VAR} is not a URL, so it is not somewhere to read a page from`);
+    return "";
   }
   home.hash = "";
   home.search = "";
-  // And the credentials: `user:password@` survives the parse into the page
-  // URL, into `from` and into every line this step prints. undici refuses to
-  // build a request from a URL carrying credentials at all, so all they could
-  // do here is put a secret in a deploy log.
+  // `user:password@` would survive into every line this step prints, and
+  // undici refuses to build a request from a URL carrying credentials at all.
   home.username = "";
   home.password = "";
-  // The origin as given, path and all, not its host root: a site served from
-  // a subpath carries it in its address, so reading the root would read
-  // somebody else's page (`check:base` guards the same edge).
+  // The origin as given, path and all: a site served from a subpath carries
+  // it in its address (`check:base` guards the same edge).
   if (!home.pathname.endsWith("/")) home.pathname += "/";
-  const pageUrl = home.href;
-  from = pageUrl;
+  return home.href;
+}
 
-  const page = await answerWithinBudget(pageUrl, MAX_PAGE_BYTES);
-  if (!page.ok) { problems.push(`the live page ${pageUrl}: ${page.why}`); return done(); }
-  if (page.status !== 200) { problems.push(`the live page ${pageUrl}: answered ${page.status}`); return done(); }
+/**
+ * The first phase, reading the live page: the names it references that are
+ * this deploy's assets, with `record` holding which of them this build
+ * already has, which it needs, and every reference it declined.
+ *
+ * The reasons differ reference by reference, so the declined ones stay lines
+ * rather than a folded list — but there is the same bottom to how many a page
+ * can print as to how many it can fetch. A reference that resolves off this
+ * deploy is reported the same way: it is a reference this step declined, and
+ * the line says why, which is what the reader is going to run into. It is
+ * also kept apart in `unserved` for the verdict: it resolves under OUR OWN
+ * origin to something this deploy does not publish, so it is a request the
+ * reader's browser makes to our host and a 404 it gets back. The rest name
+ * another host, which answers for itself, or resolve nowhere at all, which is
+ * a request no browser makes either.
+ */
+async function assetNamesOfLivePage(record, origin, run) {
+  const pageUrl = pageUrlOf(record, origin, run.dist);
+  if (!pageUrl) return [];
+  record.from = pageUrl;
+  const page = await run.answerWithinBudget(pageUrl, MAX_PAGE_BYTES);
+  if (!page.ok) { record.problems.push(`the live page ${pageUrl}: ${page.why}`); return []; }
+  if (page.status !== 200) { record.problems.push(`the live page ${pageUrl}: answered ${page.status}`); return []; }
   const html = await page.readBody();
-  if (!html.ok) { problems.push(`the live page ${pageUrl}: its body ${html.why}`); return done(); }
+  if (!html.ok) { record.problems.push(`the live page ${pageUrl}: its body ${html.why}`); return []; }
 
   const references = readAssetNames(html.bytes.toString("utf8"), pageUrl);
-  const { names } = references;
-  // The reasons differ reference by reference, so these stay lines rather than
-  // a folded list — but there is the same bottom to how many a page can print
-  // as to how many it can fetch. A reference that resolves off this deploy is
-  // reported the same way: it is a reference this step declined, and the line
-  // says why, which is what the reader is going to run into.
   const declined = [...references.refused, ...references.unserved];
-  for (const { ref, why } of declined.slice(0, MAX_ASSETS)) problems.push(`${ref}: it ${why}`);
+  for (const { ref, why } of declined.slice(0, MAX_ASSETS)) record.problems.push(`${ref}: it ${why}`);
   if (declined.length > MAX_ASSETS)
-    problems.push(`the ${declined.length - MAX_ASSETS} further reference(s) this page named: each refused unread`);
-  // Kept apart from the rest for the verdict: these resolve under OUR OWN
-  // origin to something this deploy does not publish, so each is a request the
-  // reader's browser makes to our host and a 404 it gets back. The rest name
-  // another host, which answers for itself, or resolve nowhere at all, which
-  // is a request no browser makes either.
-  unserved.push(...references.unserved);
+    record.problems.push(`the ${declined.length - MAX_ASSETS} further reference(s) this page named: each refused unread`);
+  record.unserved.push(...references.unserved);
 
-  for (const name of names) {
+  for (const name of references.names) {
     // Already in this build: no request, so no cost, so no ceiling.
-    if (existsSync(join(dist, "_astro", name))) alreadyBuilt.push(name);
-    else needed.push(name);
+    if (existsSync(join(run.dist, "_astro", name))) record.alreadyBuilt.push(name);
+    else record.needed.push(name);
   }
   // From here on this run knows what a reader holding the live page will ask
   // for, so what it says at the end is about those names rather than about not
   // having looked.
-  looked = true;
-  if (needed.length === 0) return done();
+  record.looked = true;
+  return references.names;
+}
 
-  const list = await liveAssetDigests(answerWithinBudget, new URL(DIGESTS_NAME, pageUrl).href);
-  if (!list.ok) { problems.push(`anything: ${list.why}`); return done(); }
-  // Two questions, asked of two different sets.
-  //
-  // Whether the page and the list describe the same deploy is asked of the
-  // page's WHOLE reference set: they are published together, so a list naming
-  // not one of the names its page references is not that page's list — a proxy
-  // holding one of them, or a deploy that landed between these two requests —
-  // and there is then nothing to check ANY byte against. Asked of what is left
-  // to carry instead, it would make an ordinary deploy a disagreement: both
-  // real names are already built on a deploy that changed neither, so one
-  // stray reference would be the whole of `needed`.
+/**
+ * The second phase, reading the live page's digest list: its digests, when
+ * the list describes this page, or null once `record` says why there is
+ * nothing to check a byte against.
+ *
+ * Two questions, asked of two different sets. Whether the page and the list
+ * describe the same deploy is asked of the page's WHOLE reference set: they
+ * are published together, so a list naming not one of the names its page
+ * references is not that page's list — a proxy holding one of them, or a
+ * deploy that landed between these two requests — and there is then nothing
+ * to check ANY byte against. Asked of what is left to carry instead, it would
+ * make an ordinary deploy a disagreement: both real names are already built on
+ * a deploy that changed neither, so one stray reference would be the whole of
+ * `needed`.
+ *
+ * Whether one name can be carried is asked of that name alone: nothing here
+ * can say what the bytes of a name the list does not carry should be. A page
+ * reference `/_astro/../../pwn.css` normalises to `pwn.css`, which no list of
+ * ours will ever carry, and refusing the run over it would leave every real
+ * asset behind — one attribute in a page this step does not own, turning the
+ * step off.
+ */
+async function liveDigestsMatchingPage(record, names, run) {
+  const list = await liveAssetDigests(run.answerWithinBudget, new URL(DIGESTS_NAME, record.from).href);
+  if (!list.ok) { record.problems.push(`anything: ${list.why}`); return null; }
   if (!names.some((name) => list.digests.has(name))) {
-    problems.push(
+    record.problems.push(
       `anything: ${DIGESTS_NAME} names none of the ${names.length} asset(s) this page references (${boundedList(names)})`
       + " — the page and the list are from different deploys, so there is nothing to check these bytes against",
     );
-    return done();
+    return null;
   }
-  // Whether one name can be carried is asked of that name alone: nothing here
-  // can say what the bytes of a name the list does not carry should be. A page
-  // reference `/_astro/../../pwn.css` normalises to `pwn.css`, which no list of
-  // ours will ever carry, and refusing the run over it would leave every real
-  // asset behind — one attribute in a page this step does not own, turning the
-  // step off.
-  const unlisted = needed.filter((name) => !list.digests.has(name));
+  const unlisted = record.needed.filter((name) => !list.digests.has(name));
   if (unlisted.length) {
-    problems.push(
+    record.problems.push(
       `${boundedList(unlisted)}: ${DIGESTS_NAME} does not name ${unlisted.length === 1 ? "it" : "them"},`
       + " so there is nothing to check those bytes against",
     );
   }
+  return list.digests;
+}
 
-  /** What was asked of the origin — the ceiling counts these, not the wins. */
+/**
+ * The third phase, carrying each asset: every name this build needs and the
+ * list attests to, fetched, checked and written into `dist/_astro/` (named
+ * only, under `dryRun`), with `record` holding why each one left behind was.
+ * The ceiling counts what was asked of the origin, not the wins.
+ */
+async function carriedAssetsOf(record, digests, run) {
+  const carried = [];
   let asked = 0;
   const overCeiling = [];
   const overBudget = [];
-
-  for (const name of needed.filter((name) => list.digests.has(name))) {
-    const target = join(dist, "_astro", name);
+  for (const name of record.needed.filter((name) => digests.has(name))) {
     if (asked >= MAX_ASSETS) { overCeiling.push(name); continue; }
-    if (deadline - Date.now() <= 0) { overBudget.push(name); continue; }
+    if (run.deadline - Date.now() <= 0) { overBudget.push(name); continue; }
     asked += 1;
-
     // Built here, from the origin this run was given — never from the ref.
-    const asset = await answerWithinBudget(new URL(`_astro/${name}`, pageUrl).href, MAX_ASSET_BYTES);
-    if (!asset.ok) { problems.push(`${name}: ${asset.why}`); continue; }
-    if (asset.status !== 200) { problems.push(`${name}: answered ${asset.status}`); continue; }
-    const type = asset.contentType.split(";")[0].trim().toLowerCase();
-    // `short` here for the same reason as on every reference above, one
-    // population over: a `content-type` is a string the ORIGIN chose and this
-    // step did not write, bounded by nothing but Node's header limit and
-    // reachable once per asset, twenty times a run. `oneLine` already means it
-    // cannot start a line of its own, so what `short` saves is a deploy log
-    // somebody can read.
-    if (!CARRIABLE.test(type)) { problems.push(`${name}: answered 200 as ${type ? short(type) : "no content type"}`); continue; }
-    const body = await asset.readBody();
-    if (!body.ok) { problems.push(`${name}: its body ${body.why}`); continue; }
-    // A 0-byte file would publish a 200 that answers nothing under a name the
-    // deploy swears by — the defect this step exists to fix, with no console
-    // error to find it by. Refused before it is even hashed.
-    if (body.bytes.length === 0) { problems.push(`${name}: answered 200 with an empty body`); continue; }
-    const digest = digestOf(body.bytes);
-    if (digest !== list.digests.get(name)) {
-      problems.push(`${name}: its ${body.bytes.length} bytes are sha256:${digest}, not the sha256:${list.digests.get(name)} the build that published this page recorded`);
-      continue;
-    }
-
-    if (!dryRun) {
+    const url = new URL(`_astro/${name}`, record.from).href;
+    const asset = await attestedAssetOf(url, digests.get(name), run.answerWithinBudget);
+    if (!asset.ok) { record.problems.push(`${name}: ${asset.why}`); continue; }
+    if (!run.dryRun) {
       try {
-        mkdirSync(join(dist, "_astro"), { recursive: true });
-        writeFileSync(target, body.bytes);
+        mkdirSync(join(run.dist, "_astro"), { recursive: true });
+        writeFileSync(join(run.dist, "_astro", name), asset.bytes);
       } catch (e) {
-        problems.push(`${name}: it could not be written — ${sentenceOfError(e)}`);
+        record.problems.push(`${name}: it could not be written — ${sentenceOfError(e)}`);
         continue;
       }
     }
-    carried.push({ name, bytes: body.bytes.length, sha256: digest });
+    carried.push({ name, bytes: asset.bytes.length, sha256: asset.digest });
   }
-
   // One line each, however many names are behind them.
   if (overCeiling.length)
-    problems.push(`${boundedList(overCeiling)}: this run had already asked the origin for its ceiling of ${MAX_ASSETS} assets`);
-  if (overBudget.length) problems.push(`${boundedList(overBudget)}: the run's ${budgetMs} ms budget was spent`);
-  return done();
+    record.problems.push(`${boundedList(overCeiling)}: this run had already asked the origin for its ceiling of ${MAX_ASSETS} assets`);
+  if (overBudget.length) record.problems.push(`${boundedList(overBudget)}: the run's ${run.budgetMs} ms budget was spent`);
+  return carried;
+}
+
+/**
+ * The bytes the origin answers at `url`, once its status, its type, its length
+ * and its digest have all passed, with that digest — or why they did not.
+ *
+ * `short` on the type for the same reason as on every reference, one
+ * population over: a `content-type` is a string the ORIGIN chose and this
+ * step did not write, bounded by nothing but Node's header limit and reachable
+ * once per asset, twenty times a run. `oneLine` already means it cannot start
+ * a line of its own, so what `short` saves is a deploy log somebody can read.
+ *
+ * A 0-byte file would publish a 200 that answers nothing under a name the
+ * deploy swears by — the defect this step exists to fix, with no console error
+ * to find it by. It is refused before it is even hashed.
+ */
+async function attestedAssetOf(url, recordedDigest, answerWithinBudget) {
+  const asset = await answerWithinBudget(url, MAX_ASSET_BYTES);
+  if (!asset.ok) return { ok: false, why: asset.why };
+  if (asset.status !== 200) return { ok: false, why: `answered ${asset.status}` };
+  const type = asset.contentType.split(";")[0].trim().toLowerCase();
+  if (!CARRIABLE.test(type)) return { ok: false, why: `answered 200 as ${type ? short(type) : "no content type"}` };
+  const body = await asset.readBody();
+  if (!body.ok) return { ok: false, why: `its body ${body.why}` };
+  if (body.bytes.length === 0) return { ok: false, why: "answered 200 with an empty body" };
+  const digest = digestOf(body.bytes);
+  if (digest !== recordedDigest)
+    return { ok: false, why: `its ${body.bytes.length} bytes are sha256:${digest}, not the sha256:${recordedDigest} the build that published this page recorded` };
+  return { ok: true, bytes: body.bytes, digest };
 }
 
 /**
@@ -539,7 +570,7 @@ async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) 
  * this page at all — its subject is the NEXT deploy, which without a list has
  * nothing to check a carried byte against.
  */
-function logLinesOf(record, dryRun) {
+function logLinesOf(record, { dryRun }) {
   const lines = [];
   for (const { name, bytes, sha256 } of record.carried) {
     lines.push(oneLine(`${dryRun ? "would carry" : "carried"} ${name}  ${bytes} bytes  sha256:${sha256}`));

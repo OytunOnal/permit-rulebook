@@ -121,41 +121,51 @@ export function readAssetNames(html, pageUrl) {
   for (const [, ref] of html.matchAll(/["']([^"'\s]*\/_astro\/[^"'\s]*)["']/g)) {
     if (seen.has(ref)) continue;
     seen.add(ref);
-    let url;
-    // Every refusal reports a BOUNDED piece of the reference, not the
-    // reference: a page names strings of its own choosing, and a log line is
-    // the deploy's.
-    try { url = new URL(ref, pageUrl); } catch { refused.push({ ref: short(ref), why: "is not a URL" }); continue; }
-    if (url.origin !== ours) { refused.push({ ref: short(ref), why: `names ${short(url.origin)}, which is not this site` }); continue; }
-    // Past this line every reference is one our own host will be asked for, so
-    // every way of failing from here on is a 404 the reader will hit and goes
-    // to `unserved` rather than to `refused`.
-    const name = url.pathname.split("/").pop() ?? "";
-    if (name.length > MAX_NAME) { unserved.push({ ref: short(name), why: `is longer than ${MAX_NAME} characters, so this deploy publishes nothing under it` }); continue; }
-    // Only a plain file name may become a path under `dist/_astro/` — the one
-    // rule, which `.` and `..` fail inside the pattern rather than beside it.
-    if (!PLAIN_NAME.test(name)) { unserved.push({ ref: short(ref), why: "is not a plain file name, so this deploy publishes nothing under it" }); continue; }
-    // And the name has to be the whole of what the reference asks for. A
-    // reference that climbs out of `_astro/` (`/_astro/../real.css` resolves to
-    // `/real.css`), or a root-absolute `/_astro/old.css` in a page served from
-    // a subpath, names a URL this deploy does not serve; scored by its bare
-    // name against `dist/_astro/`, it would end the run quiet over a reader's
-    // 404.
-    //
-    // Compared on the PATH: a static host resolves a path to a file, and a
-    // query or a fragment on the reference is the reader's business and not the
-    // file's. Both paths go in the line, because on a subpath origin the
-    // reference and where it resolved are the same string, and "it resolves to
-    // itself, which is not ours" tells a reader nothing — the path this deploy
-    // would have had for that name is the whole of the difference.
-    const target = new URL(`_astro/${name}`, pageUrl);
-    if (url.pathname !== target.pathname) {
-      unserved.push({ ref: short(ref), why: `resolves to ${short(url.pathname)}, not to this deploy's ${short(target.pathname)}` });
-      continue;
+    const verdict = verdictOnReference(ref, pageUrl, ours);
+    if (verdict.refused) refused.push(verdict.refused);
+    else if (verdict.unserved) unserved.push(verdict.unserved);
+    else if (!kept.has(verdict.name)) {
+      kept.add(verdict.name);
+      names.push(verdict.name);
     }
-    if (kept.has(name)) continue;
-    kept.add(name);
-    names.push(name);
   }
   return { names, refused, unserved };
+}
+
+/**
+ * What one reference is: `{ name }` when it is one of this deploy's assets,
+ * or `{ refused }` or `{ unserved }`, each a `{ ref, why }`, when it is not.
+ *
+ * Every refusal reports a BOUNDED piece of the reference, not the reference:
+ * a page names strings of its own choosing, and a log line is the deploy's.
+ *
+ * The name has to be the whole of what the reference asks for. A reference
+ * that climbs out of `_astro/` (`/_astro/../real.css` resolves to
+ * `/real.css`), or a root-absolute `/_astro/old.css` in a page served from a
+ * subpath, names a URL this deploy does not serve; scored by its bare name
+ * against `dist/_astro/`, it would end the run quiet over a reader's 404.
+ *
+ * Compared on the PATH: a static host resolves a path to a file, and a query
+ * or a fragment on the reference is the reader's business and not the file's.
+ * Both paths go in the line, because on a subpath origin the reference and
+ * where it resolved are the same string, and "it resolves to itself, which is
+ * not ours" tells a reader nothing — the path this deploy would have had for
+ * that name is the whole of the difference.
+ */
+function verdictOnReference(ref, pageUrl, ours) {
+  let url;
+  try { url = new URL(ref, pageUrl); } catch { return { refused: { ref: short(ref), why: "is not a URL" } }; }
+  if (url.origin !== ours) return { refused: { ref: short(ref), why: `names ${short(url.origin)}, which is not this site` } };
+  // Past this line every reference is one our own host will be asked for, so
+  // every way of failing from here on is a 404 the reader will hit and goes
+  // to `unserved` rather than to `refused`.
+  const name = url.pathname.split("/").pop() ?? "";
+  if (name.length > MAX_NAME) return { unserved: { ref: short(name), why: `is longer than ${MAX_NAME} characters, so this deploy publishes nothing under it` } };
+  // Only a plain file name may become a path under `dist/_astro/` — the one
+  // rule, which `.` and `..` fail inside the pattern rather than beside it.
+  if (!PLAIN_NAME.test(name)) return { unserved: { ref: short(ref), why: "is not a plain file name, so this deploy publishes nothing under it" } };
+  const target = new URL(`_astro/${name}`, pageUrl);
+  if (url.pathname !== target.pathname)
+    return { unserved: { ref: short(ref), why: `resolves to ${short(url.pathname)}, not to this deploy's ${short(target.pathname)}` } };
+  return { name };
 }

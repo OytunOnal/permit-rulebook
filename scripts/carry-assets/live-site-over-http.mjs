@@ -87,21 +87,20 @@ export async function bodyWithin(response, limit) {
 
   const chunks = [];
   let total = 0;
-  if (response.body) {
-    try {
-      for await (const chunk of response.body) {
-        // Converted first and counted after, so `total` is the length of what
-        // `Buffer.concat` is handed rather than the length of what arrived: a
-        // string chunk `üü` is 2 characters and 4 bytes, and counting the
-        // characters would truncate it and let it past the ceiling.
-        const bytes = Buffer.from(chunk);
-        total += bytes.length;
-        if (total > limit) return { ok: false, why: `is over the ${limit}-byte ceiling` };
-        chunks.push(bytes);
-      }
-    } catch (e) {
-      return { ok: false, why: sentenceOfError(e) };
+  try {
+    // A response with no body has no chunks to read.
+    for await (const chunk of response.body ?? []) {
+      // Converted first and counted after, so `total` is the length of what
+      // `Buffer.concat` is handed rather than the length of what arrived: a
+      // string chunk `üü` is 2 characters and 4 bytes, and counting the
+      // characters would truncate it and let it past the ceiling.
+      const bytes = Buffer.from(chunk);
+      total += bytes.length;
+      if (total > limit) return { ok: false, why: `is over the ${limit}-byte ceiling` };
+      chunks.push(bytes);
     }
+  } catch (e) {
+    return { ok: false, why: sentenceOfError(e) };
   }
   if (promised && total !== declared) return { ok: false, why: `is ${total} bytes, not the ${declared} it declared` };
   return { ok: true, bytes: Buffer.concat(chunks, total) };
