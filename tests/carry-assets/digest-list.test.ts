@@ -5,8 +5,8 @@ import { CSS, CSS_NAME, HEADER, JS, JS_NAME, sha256 } from "./deploy-fixtures.js
 /**
  * The digest list's format, as plain calls: the list a build writes and the
  * reading the next deploy holds it to. What the carry does with a list it
- * reads — what it carries, refuses and says — is the flow's, in the carry's
- * own test files.
+ * reads — what it carries, refuses and says — is the flow's, in the two
+ * `carry-*.test.ts` files.
  */
 describe("the digest list's format", () => {
   it("lists the plain names without reading the bytes of a name it leaves out", () => {

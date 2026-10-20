@@ -19,12 +19,13 @@ import type { Answer } from "./live-site-in-memory.js";
  * the timeout holds. Why each of these is so is written in
  * `scripts/carry-assets/live-site-over-http.mjs`.
  *
- * Most cases drive the real entry as a child process against a local stand-in
- * for the live origin — the deploy's own command, with the reader it passes —
- * so the exit code is an assertion. The two that reach `bodyWithin` hand it
- * chunks directly, and the one that holds a budget it is handed calls the flow
- * with this reader. What the carry decides about each answer is
- * `carry.test.ts`'s, against an in-memory live site.
+ * Most cases drive the real entry as a child process (`entryRunAsChildProcess`)
+ * against a local stand-in for the live origin — the deploy's own command,
+ * with the reader it passes — so the exit code is an assertion. The two that
+ * reach `bodyWithin` hand it chunks directly, and the one that holds a budget
+ * it is handed calls the flow with this reader. What the carry decides about
+ * each answer is the flow's, in the two `carry-*.test.ts` files, against an
+ * in-memory live site.
  */
 
 /** What the live host answers for one path, over HTTP. */
