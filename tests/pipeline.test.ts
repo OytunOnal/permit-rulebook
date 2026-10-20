@@ -4,7 +4,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDir, readLock } from "../scripts/data-pin.mjs";
-import { readAssetNames } from "../scripts/carry-assets.mjs";
+import { readAssetNames } from "../scripts/carry-assets/asset-names.mjs";
 import { jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
 /**
@@ -154,11 +154,11 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
 
 /**
  * s33 — the step that carries the previous generation's assets forward. Why it
- * exists is written in `scripts/carry-assets.mjs`'s own header; what is pinned
- * here is what the step has to cover and where it sits in the job.
+ * exists is written in `scripts/carry-assets/carry.mjs`'s own header; what is
+ * pinned here is what the step has to cover and where it sits in the job.
  *
  * That it cannot fail the deploy is proved by running it, in
- * `tests/s33.test.ts` — a workflow file cannot show that, and neither can
+ * `tests/carry-assets/` — a workflow file cannot show that, and neither can
  * reading the script's source.
  */
 describe("a cached page still finds its assets", () => {
@@ -193,14 +193,15 @@ describe("a cached page still finds its assets", () => {
    * The other half of the same assumption, and the one nothing was watching.
    *
    * The carrier reads references out of HTML with a pattern, not with a
-   * browser, and `scripts/carry-assets.mjs`'s "What shapes this reads" writes
-   * down why: honouring what a browser resolves means `<base href>`, character
-   * references, `srcset` and CSS `url()`, and half a browser reads strings no
-   * reader asks for while still missing the ones it cannot parse. So the
-   * pattern reads what Astro emits — measured, round 7, it is blind to
-   * `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare relative `_astro/x.css`,
-   * `/_astro\x.css` and a reference with a tab in it, and three of those five
-   * a browser resolves to one of this deploy's real assets.
+   * browser, and `scripts/carry-assets/asset-names.mjs`'s "What shapes this
+   * reads" writes down why: honouring what a browser resolves means
+   * `<base href>`, character references, `srcset` and CSS `url()`, and half a
+   * browser reads strings no reader asks for while still missing the ones it
+   * cannot parse. So the pattern reads what Astro emits — measured, round 7,
+   * it is blind to `/_ASTRO/x.css`, `/_astro%2Fx.css`, a bare relative
+   * `_astro/x.css`, `/_astro\x.css` and a reference with a tab in it, and
+   * three of those five a browser resolves to one of this deploy's real
+   * assets.
    *
    * What that costs the day Astro emits one of them is the step reading fewer
    * names than the page holds and saying NOTHING about it — no request, no
@@ -246,9 +247,9 @@ describe("a cached page still finds its assets", () => {
    * The `run:` takes NO arguments, and that clause is load-bearing: the script
    * reads any `--name value` as a flag, so a repository variable spliced into
    * this command line is a way to turn the mechanism off while every deploy
-   * stays green. Why that is so is the script header's "Where the address
-   * comes from"; what this case does about it is pin the empty command line
-   * and the environment value beside the rest of the block.
+   * stays green. Why that is so is `scripts/carry-assets.mjs`'s header, "Where
+   * the address comes from"; what this case does about it is pin the empty
+   * command line and the environment value beside the rest of the block.
    */
   it("the build job runs it, verbatim, as the last step before the upload", () => {
     // The build job's own text: the carrier has to be in THIS job, where
@@ -283,5 +284,30 @@ describe("a cached page still finds its assets", () => {
       + LF
       + "      - uses: actions/upload-pages-artifact@",
     );
+  });
+});
+
+/**
+ * The site's address is a literal in the deploy workflow, reviewed like any
+ * code. A repository variable is a setting no review reads, and whoever can
+ * write one would decide where the carry reads the live site from and which
+ * host the canonical links and the sitemap name. So the deploy reads none.
+ *
+ * The declared set is GitHub's `vars` context, the one way a workflow reads a
+ * repository variable. The address's value is not asserted, so a domain change
+ * stays a one-line edit.
+ */
+describe("the site's address is reviewed code", () => {
+  const REPOSITORY_VARIABLE_CONTEXTS = ["vars"];
+
+  it("the deploy reads no repository variable", () => {
+    for (const context of REPOSITORY_VARIABLE_CONTEXTS) {
+      // A property read (`vars.X`, `vars['X']`), which an `if:` may hold with
+      // no `${{ }}` around it, or the context named anywhere inside an
+      // expression, where `toJSON(vars)` reads every variable at once.
+      const contextReadPattern = new RegExp(`\\b${context}\\s*[.[]|\\$\\{\\{(?:(?!\\}\\}).)*\\b${context}\\b`);
+      const lines = pages.split(LF).filter((line) => contextReadPattern.test(line)).map((line) => line.trim());
+      expect(lines, `pages.yml reads the \`${context}\` context`).toEqual([]);
+    }
   });
 });

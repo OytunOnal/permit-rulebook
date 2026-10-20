@@ -109,7 +109,7 @@ from point 3: it asks that what is carried be what the live host served, and
 the build cannot honour that out of the HTTP exchange, because framing cannot
 attest to a file — three measured holes in the origin's own headers each put a
 file of the wrong length on disk under the previous generation's exact name and
-reported it carried. That reading is kept in one place, `carry-assets.mjs`'s
+reported it carried. That reading is kept in one place, `carry-assets/digest-list.mjs`'s
 header under "What makes a carried byte trustworthy, and what does not", and is
 not re-told here or in the tests; what belongs on this record is the decision
 and its limit. The decision: each build publishes **`asset-digests.txt`** beside
