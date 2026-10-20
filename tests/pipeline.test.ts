@@ -285,3 +285,25 @@ describe("a cached page still finds its assets", () => {
     );
   });
 });
+
+/**
+ * The site's address is a literal in the deploy workflow, reviewed like any
+ * code. A repository variable is a setting no review reads, and whoever can
+ * write one would decide where the carry reads the live site from and which
+ * host the canonical links and the sitemap name. So the deploy reads none.
+ *
+ * The declared set is GitHub's `vars` context, the one way a workflow reads a
+ * repository variable. The address's value is not asserted, so a domain change
+ * stays a one-line edit.
+ */
+describe("the site's address is reviewed code", () => {
+  const REPOSITORY_VARIABLE_CONTEXTS = ["vars"];
+
+  it("the deploy reads no repository variable", () => {
+    for (const context of REPOSITORY_VARIABLE_CONTEXTS) {
+      const read = new RegExp(`\\b${context}\\s*[.[]`);
+      const lines = pages.split(LF).filter((line) => read.test(line)).map((line) => line.trim());
+      expect(lines, `pages.yml reads the \`${context}\` context`).toEqual([]);
+    }
+  });
+});
