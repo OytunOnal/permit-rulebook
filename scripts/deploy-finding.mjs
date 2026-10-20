@@ -26,6 +26,14 @@ export const DEPLOY_FINDING_WORDS = {
   published: "Today's page was published.",
   notPublished: "Today's page was not published.",
   unreadResults: "The report could not read the jobs' results, so it cannot say the deploy is green: ",
+  /** Why the results could not be read, each ending the `unreadResults` line. */
+  unreadReasons: {
+    tooLong: `the text is longer than ${JOB_RESULTS_LIMIT} characters`,
+    notJson: "the text is not JSON",
+    notAnObject: "the text is not an object",
+    /** @param {string} job */
+    noKnownResult: (job) => `the job ${job} has no known result`,
+  },
   closing: "Closed by a green scheduled or dispatched deploy.",
   run: "Run: ",
 };
@@ -41,10 +49,11 @@ export const DEPLOY_FINDING_WORDS = {
  */
 export function deployFindingOf(jobResults, runUrl) {
   const runLine = `${DEPLOY_FINDING_WORDS.run}${runUrl}`;
-  const results = readJobResults(jobResults);
-  if (typeof results === "string") {
-    return { kind: "red", body: [DEPLOY_FINDING_WORDS.red, `${DEPLOY_FINDING_WORDS.unreadResults}${results}.`, runLine].join("\n") };
+  const reading = readJobResults(jobResults);
+  if (reading.kind === "unread") {
+    return { kind: "red", body: [DEPLOY_FINDING_WORDS.red, `${DEPLOY_FINDING_WORDS.unreadResults}${reading.reason}.`, runLine].join("\n") };
   }
+  const { results } = reading;
   const jobsThatDidNotPass = DEPLOY_JOBS.filter((job) => !hasPassed(job, results[job]));
   if (jobsThatDidNotPass.length === 0) return { kind: "green", closing: `${DEPLOY_FINDING_WORDS.closing} ${runLine}` };
   const jobsAndResultsText = jobsThatDidNotPass.map((job) => `${job} (${results[job]})`).join(", ");
@@ -71,18 +80,19 @@ const isJsonObject = (value) => typeof value === "object" && value !== null && !
  * Each deploy job's result, or why the text does not hold them.
  *
  * @param {string} text
- * @returns {Record<string, string> | string}
+ * @returns {{ kind: "read", results: Record<string, string> } | { kind: "unread", reason: string }}
  */
 function readJobResults(text) {
-  if (text.length > JOB_RESULTS_LIMIT) return `the text is longer than ${JOB_RESULTS_LIMIT} characters`;
+  const reasons = DEPLOY_FINDING_WORDS.unreadReasons;
+  if (text.length > JOB_RESULTS_LIMIT) return { kind: "unread", reason: reasons.tooLong };
   let results;
   try {
     results = JSON.parse(text);
   } catch {
-    return "the text is not JSON";
+    return { kind: "unread", reason: reasons.notJson };
   }
-  if (!isJsonObject(results)) return "the text is not an object";
+  if (!isJsonObject(results)) return { kind: "unread", reason: reasons.notAnObject };
   const jobWithNoKnownResult = DEPLOY_JOBS.find((job) => !GITHUB_JOB_RESULT_WORDS.includes(results[job]));
-  if (jobWithNoKnownResult) return `the job ${jobWithNoKnownResult} has no known result`;
-  return results;
+  if (jobWithNoKnownResult) return { kind: "unread", reason: reasons.noKnownResult(jobWithNoKnownResult) };
+  return { kind: "read", results };
 }
