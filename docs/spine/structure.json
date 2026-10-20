@@ -46,7 +46,9 @@
   "scripts/check-base.mjs": "infrastructure main",
   "scripts/child-env.mjs": "infrastructure",
   "scripts/chrome.mjs": "infrastructure",
+  "scripts/cli-deploy-finding.mjs": "main",
   "scripts/data-pin.mjs": "infrastructure main",
+  "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
   "scripts/measure-taps.mjs": "infrastructure main",
   "scripts/render-assets.mjs": "infrastructure main",
@@ -152,6 +154,11 @@
   {
    "from": "scripts/check-base.mjs",
    "to": "scripts/child-env.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/cli-deploy-finding.mjs",
+   "to": "scripts/deploy-finding.mjs",
    "kind": "dependency"
   },
   {
@@ -1012,6 +1019,11 @@
   {
    "from": "tests/dataset-ld.test.ts",
    "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/deploy-finding.test.ts",
+   "to": "scripts/deploy-finding.mjs",
    "kind": "dependency"
   },
   {
@@ -2588,6 +2600,7 @@
     "exported": true
    }
   ],
+  "scripts/cli-deploy-finding.mjs": [],
   "scripts/data-pin.mjs": [
    {
     "name": "root",
@@ -2611,6 +2624,48 @@
    },
    {
     "name": "at",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
+  "scripts/deploy-finding.mjs": [
+   {
+    "name": "DEPLOY_JOBS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SKIPPED_BY_DESIGN",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "JOB_RESULTS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "JOB_RESULTS_LIMIT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "DEPLOY_FINDING_WORDS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "deployFindingOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "passed",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readJobResults",
     "kind": "fn",
     "exported": false
    }
@@ -4968,7 +5023,9 @@
   "scripts/check-base.mjs",
   "scripts/child-env.mjs",
   "scripts/chrome.mjs",
+  "scripts/cli-deploy-finding.mjs",
   "scripts/data-pin.mjs",
+  "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
   "scripts/measure-taps.mjs",
   "scripts/render-assets.mjs",
@@ -5015,5 +5072,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "f3904111c37f90cc28892f440a2b31bb932469025c3c1b87d6b4723b433140f8"
+ "digest": "106edcc306e3fc94f974eb5b45948869a83cf4f1537fc692a00bbb8fb4415a81"
 }
