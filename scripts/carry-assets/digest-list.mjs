@@ -49,19 +49,23 @@ const DIGESTS_LINE = new RegExp(`^([0-9a-f]{64}) {2}(${NAME_PATTERN})$`);
 export const digestOf = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 /**
- * The digest list of some files, given as `{ name, bytes }`: its text, and how
- * many names it holds. Sorted by name, so the same build always writes the
- * same list.
+ * The digest list of some files, given as `{ name, bytes }` with unique
+ * names: its text, and how many names it holds. Sorted by name, so the same
+ * build always writes the same list.
  *
  * A name this file's own reader would refuse is left out rather than written:
- * one unparseable line would cost the next deploy the whole list.
+ * one unparseable line would cost the next deploy the whole list. It is left
+ * out before its `bytes` are read, so a file the list will never name cannot
+ * fail the list either.
  */
 export function digestListOf(files) {
-  const bytesByName = new Map(files.map(({ name, bytes }) => [name, bytes]));
-  const names = [...bytesByName.keys()].filter((name) => PLAIN_NAME.test(name)).sort();
-  const lines = [DIGESTS_HEADER, ...names.map((name) => `${digestOf(bytesByName.get(name))}  ${name}`)];
-  return { text: `${lines.join("\n")}\n`, count: names.length };
+  const listed = files.filter(({ name }) => PLAIN_NAME.test(name)).sort(byName);
+  const lines = [DIGESTS_HEADER, ...listed.map(({ name, bytes }) => `${digestOf(bytes)}  ${name}`)];
+  return { text: `${lines.join("\n")}\n`, count: listed.length };
 }
+
+/** Two files in the order a plain `.sort()` puts their names: by code unit. */
+const byName = (a, b) => (a.name < b.name ? -1 : Number(a.name > b.name));
 
 /**
  * Read a digest list, strictly.

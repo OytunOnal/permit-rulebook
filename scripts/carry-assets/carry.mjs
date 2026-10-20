@@ -160,6 +160,9 @@ const noBuildDirectory = (dist) => typeof dist !== "string" || dist.trim() === "
  * a file carried from the previous generation is not in it. That is what keeps
  * the chain one generation long, the same way the carry itself is. It returns
  * what happened and throws nothing, being called from a step that may not fail.
+ *
+ * A file's bytes are read only when the list asks for them, which is only for
+ * a name it will hold.
  */
 export function writeAssetDigests(dist) {
   try {
@@ -167,7 +170,7 @@ export function writeAssetDigests(dist) {
     const files = existsSync(dir)
       ? readdirSync(dir, { withFileTypes: true })
         .filter((entry) => entry.isFile())
-        .map((entry) => ({ name: entry.name, bytes: readFileSync(join(dir, entry.name)) }))
+        .map((entry) => ({ name: entry.name, get bytes() { return readFileSync(join(dir, entry.name)); } }))
       : [];
     const list = digestListOf(files);
     writeFileSync(join(dist, DIGESTS_NAME), list.text);
