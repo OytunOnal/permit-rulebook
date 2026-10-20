@@ -35,8 +35,8 @@ name: deploy
 # The one issue this workflow files: `deploy run failed`, under the `deploy`
 # label, kept by the `report` job (below). A red scheduled or dispatched run
 # opens it, or comments on it, reopening it when closed; the first green run
-# of those two kinds closes it with a line linking that run. A push and a
-# hand dispatch file nothing (#117).
+# of those two kinds closes it with a line linking that run. Only a first
+# attempt counts; a re-run, a push and a hand dispatch file nothing (#117).
 on:
   push:
     branches: [master]
@@ -401,10 +401,11 @@ jobs:
 
   # A scheduled or dispatched deploy has nobody at the other end, so its red
   # keeps one issue, `deploy run failed`, and its first green closes it, with
-  # a line linking the run (#117, decisions 3 to 6 and 13). A push and a hand
-  # dispatch have a person watching: they keep nothing, and a push's green
-  # proves nothing about the daily page. IndexNow is not among the needs: it
-  # cannot redden the run, so it cannot raise the alarm either.
+  # a line linking the run (#117, decisions 3 to 6 and 13). A push, a hand
+  # dispatch and a re-run have a person watching: they keep nothing, and a
+  # push's or a re-run's green proves nothing about the daily page, since both
+  # build against data.lock's data. IndexNow is not among the needs: it cannot
+  # redden the run, so it cannot raise the alarm either.
   #
   # `always()`, because a red or cancelled job is what it is here to say. What
   # the run found is `scripts/deploy-finding.mjs`'s; the tracker is kept by the
@@ -413,7 +414,7 @@ jobs:
   # master nor a dispatch naming no data commit can silence this job.
   report:
     needs: [build, deploy, pin, audit]
-    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch') }}
+    if: ${{ always() && github.run_attempt == 1 && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch') }}
     runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     permissions:
       # Reads `data.lock` and the finding's module out of the site.

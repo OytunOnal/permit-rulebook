@@ -306,14 +306,18 @@ describe("a red deploy nobody watches keeps deploy run failed", () => {
     expect(needs.sort()).toEqual(["audit", "build", "deploy", "pin"]);
   });
 
-  it("report runs whatever their result, on schedule and repository_dispatch only", () => {
+  it("report runs whatever their result, on a scheduled or dispatched run's first attempt only", () => {
     const condition = jobKey(report, "if");
     // `always()`: a red or cancelled job is what the report is there to say.
     expect(condition).toMatch(/^\$\{\{\s*always\(\)\s*&&/);
     const events = [...condition.matchAll(/github\.event_name\s*==\s*'([a-z_]+)'/g)].map((m) => m[1]);
     expect(events.sort()).toEqual(["repository_dispatch", "schedule"]);
-    // Any other way to name an event could widen the set past those two.
-    expect(condition).toBe("${{ always() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch') }}");
+    // Any other way to name an event could widen the set past those two. A
+    // re-run builds against data.lock's old data and has a person watching,
+    // so only a first attempt keeps the issue, as `pin` and `indexnow` ask.
+    expect(condition).toBe(
+      "${{ always() && github.run_attempt == 1 && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch') }}",
+    );
   });
 
   it("report is the only job with issues: write", () => {
