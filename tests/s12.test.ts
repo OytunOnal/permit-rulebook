@@ -88,7 +88,10 @@ describe("what /data/ says about when a value changed", () => {
    * the contrast is the thing being proved.
    */
   it("does not follow a notice's read date, though the stamp on the same page does", () => {
-    const NOTICE_DAY = "2026-09-30";
+    // After every read the dataset carries: its newest is 2026-10-21 since
+    // the German Blue Card's IT path was read (#134), past the 2026-09-30
+    // this case bent to before.
+    const NOTICE_DAY = "2026-11-30";
     const fake = structuredClone(ds);
     const notice = (fake.notices ?? []).find((n) => n.kind === "no-permit-needed");
     expect(notice, "the dataset no longer carries the notice this case bends").toBeDefined();

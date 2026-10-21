@@ -592,7 +592,10 @@ describe("s6 — one page per route, generated from the dataset", () => {
  * cannot.
  */
 describe("a route page dates what it prints", () => {
-  const NEVER_PRINTED = "2026-09-30";
+  // Newer than every read the dataset carries, so only the bent sources can
+  // put it on a stamp: the dataset's newest read is 2026-10-21 since the
+  // German Blue Card's IT path was read (#134), past the 2026-09-30 used before.
+  const NEVER_PRINTED = "2026-11-30";
   const bent = structuredClone(ds);
   const audience = (bent.notices ?? []).find((n) => n.kind === "no-permit-needed");
   for (const value of audience?.sources ?? []) value.retrieved_at = NEVER_PRINTED;
