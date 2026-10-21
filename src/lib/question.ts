@@ -1,11 +1,12 @@
 // @level presentation
 import {
-  countryPhrase, deriveQuestions, optionMeans, reckonAskingRoutes, shortLabelOf,
+  countryPhrase, deriveQuestions, joinAnd, optionMeans, reckonAskingRoutes, shortLabelOf,
   type Dataset, type OpenRoute, type Profile, type Question,
 } from "permit-rulebook-data";
 import {
-  ASKED_FOR, ASKED_FOR_COUNTS_JOIN, ASKED_FOR_ROUTES_JOIN, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE,
-  askedForFirstCount, askedForNextCount, askedForRouteHtml, questionCounter, resumedLine,
+  ASKED_FOR, ASKED_FOR_COUNTS_JOIN, ASKED_FOR_ROUTES_JOIN, EDIT_LINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
+  RETURNING_LINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, questionCounter, resumedLine,
+  setAsideLead,
 } from "./copy.js";
 import { type Glossary, glossSection } from "./gloss.js";
 import { esc, escAttr } from "./reason.js";
@@ -128,7 +129,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
           ${screen.arrival ?? ""}
           ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(dataset, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${
-            editing ? "Your answer — pick another to change it, the rest are kept" : esc(questionCounter(asked.length + 1, total))
+            esc(editing ? EDIT_LINE : questionCounter(asked.length + 1, total))
           }</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
           ${askedForLineHtml(dataset, answers, q.field, screen.glossary ?? new Set())}
@@ -221,6 +222,19 @@ export function declarationHtml(
       ? `<div class="done" data-field="${escAttr(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(dataset, f))}</dt><dd>${esc(opt.label)}&nbsp;<span class="pen" aria-hidden="true">✎</span></dd></div>`
       : `<div><dt>${esc(shortLabelOf(dataset, f))}</dt><dd class="pending">—</dd></div>`;
   }).join("");
+}
+
+/**
+ * The set-aside line: the answers the last edit's replay dropped, each by its
+ * short label. Nothing when nothing was set aside. Each name carries its
+ * field, so a reader of the page can tell which answer it is without reading
+ * the words. A span, because the folded panel shows it in its summary row,
+ * which holds phrasing only.
+ */
+export function setAsideHtml(dataset: Dataset, setAside: readonly string[]): string {
+  if (!setAside.length) return "";
+  const names = setAside.map((f) => `<b data-set-aside="${escAttr(f)}">${esc(shortLabelOf(dataset, f))}</b>`);
+  return `<span class="set-aside">${esc(setAsideLead(setAside.length))} ${joinAnd(names)}.</span>`;
 }
 
 /** On a phone the ledger collapses to this one line; on a wide screen the

@@ -139,19 +139,27 @@ export function questionPhrase(dataset: Dataset, field: string): string {
  * unexplained. One implementation, because the interview replays on an edit
  * and on an arrival, and two copies of this rule would disagree about what a
  * reader still has on the record.
+ *
+ * `setAside` is every answer the replay dropped, in asked order: after an
+ * edit the panel names them once, so nothing the reader said leaves in
+ * silence (#137).
  */
 export function replayRecord(
   dataset: Dataset, answers: Profile, order: readonly string[],
-): { answers: Profile; order: string[] } {
+): { answers: Profile; order: string[]; setAside: string[] } {
   const kept: Profile = {};
   const keptOrder: string[] = [];
+  const setAside: string[] = [];
   for (const field of order) {
     if (answers[field] === undefined) continue;
-    if (!remainingQuestions(dataset, kept).some((q) => q.field === field)) continue;
+    if (!remainingQuestions(dataset, kept).some((q) => q.field === field)) {
+      setAside.push(field);
+      continue;
+    }
     kept[field] = answers[field];
     keptOrder.push(field);
   }
-  return { answers: kept, order: keptOrder };
+  return { answers: kept, order: keptOrder, setAside };
 }
 
 /**
