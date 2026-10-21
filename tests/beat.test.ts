@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { STORAGE_KEY } from "../src/lib/record.js";
+import {
+  DESK, WATCH_SHIFTS, beatMsOf, dist, openCold, serve, settle, skipReason, waitOutTheBeat, warnNotWalked,
+  withBrowser, type BrowserPage,
+} from "./browser-walk.js";
 
 /**
  * #86 — a fast second click answers the next question.
@@ -19,45 +21,11 @@ import { STORAGE_KEY } from "../src/lib/record.js";
  *
  * The clicks and keys are the platform's own, at a point of the viewport or on
  * the focused element, so whatever the new card has drawn under that point is
- * what the second one lands on.
+ * what the second one lands on. The walks run on the desktop, where the card
+ * sits beside the ledger and nothing scrolls after an answer.
  */
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
-
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write([
-    "",
-    `  !! THE BEAT BETWEEN QUESTIONS WAS NOT WALKED IN A BROWSER: ${skipped}.`,
-    "     Run: npm run build && npm test",
-    "",
-    "",
-  ].join(String.fromCharCode(10)));
-
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  emulateMedia(features: { name: string; value: string }[]): Promise<void>;
-  clickAt(x: number, y: number): Promise<void>;
-  pressEnter(): Promise<void>;
-  type(text: string): Promise<void>;
-  back(): Promise<void>;
-  problems(): string[];
-}
-
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-/** The desktop, where the card sits beside the ledger and nothing scrolls
- * after an answer: the next question's options are drawn where the last
- * one's were (#86's screens). */
-const DESK = { viewport: { width: 1280, height: 900 }, mobile: false };
+const skipped = skipReason();
+if (skipped) warnNotWalked("THE BEAT BETWEEN QUESTIONS", skipped);
 
 /** Where the reader is: how many answers the record holds, the question on
  * the screen, whether it is the search, whether the focus is on its first
@@ -97,26 +65,6 @@ async function clickOn(page: BrowserPage, selector: string): Promise<void> {
   await page.clickAt(at.x, at.y);
 }
 
-/** The beat in milliseconds, as the built stylesheet carries it, in either
- * unit (`tokens.css` says why). */
-const BEAT_MS = `(() => {
-  const value = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
-  return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
-})()`;
-
-/** The beat's length in milliseconds. A page without the token fails here
- * rather than waiting nothing. */
-async function beatMsOf(page: BrowserPage): Promise<number> {
-  const ms = Number(await page.evaluate(BEAT_MS));
-  if (!(ms > 0)) throw new Error("the page declares no --motion-beat");
-  return ms;
-}
-
-/** Past the beat, with room for a frame or two. */
-async function waitOutTheBeat(page: BrowserPage): Promise<void> {
-  await settle((await beatMsOf(page)) + 150);
-}
-
 /** The screen once a gesture has drawn a question other than `before`, read
  * the moment it is there: a history move draws on the browser's turn, not
  * the gesture's. */
@@ -129,10 +77,9 @@ async function drawnAfter(page: BrowserPage, before: string): Promise<Where> {
   throw new Error(`no question replaced "${before}"`);
 }
 
+/** The first screen with nothing on the record, and its first option's centre. */
 async function coldStart(page: BrowserPage, origin: (p: string) => string): Promise<Point> {
-  await page.goto(origin("/404.html"), 300);
-  await page.evaluate("localStorage.clear()");
-  await page.goto(origin("/"), 1200);
+  await openCold(page, origin);
   return pointOf(page, FIRST_OPTION);
 }
 
@@ -207,15 +154,6 @@ async function doubleClickOnAnOption(page: BrowserPage, origin: (p: string) => s
     return { cold, drawn, under, elapsedMs, beatMs, after: await where(page) };
   }
 }
-
-/** A layout-shift observer, counting what CLS counts. */
-const WATCH_SHIFTS = `(() => {
-  window.__cls = 0;
-  new PerformanceObserver((l) => {
-    for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
-  }).observe({ type: "layout-shift", buffered: true });
-  return "watching";
-})()`;
 
 describe.skipIf(skipped !== null)("a question card a gesture draws takes no click for a beat (#86)", () => {
   it("two clicks at the same point within the beat leave one answer", async () => {

@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
 import { EDIT_LINE } from "../src/lib/copy.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
+import {
+  PHONE, WATCH_SHIFTS, dist, serve, settle, skipReason, warnNotWalked, withBrowser, type BrowserPage,
+} from "./browser-walk.js";
 
 /**
  * #137 — a change of country names the answers it set aside.
@@ -19,7 +20,6 @@ import { replayRecord } from "../src/lib/scope.js";
  * dataset: Spain asks neither the French degree nor the innovative employer.
  */
 const ds = rawDataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 interface Walk { answers: Profile; order: string[] }
 
@@ -70,25 +70,9 @@ describe("the replay reports what it set aside", () => {
   });
 });
 
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const skipped = skipReason();
+if (skipped) warnNotWalked("THE SET-ASIDE LINE", skipped);
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write(`\n  !! THE SET-ASIDE LINE WAS NOT WALKED IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
-
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
-
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const fieldByLabel = new Map(ds.fields.map((f) => [f.label, f.id]));
 
 /** What a screen shows, read from the page: the card or the verdict, the
@@ -165,11 +149,6 @@ async function moveDestination(page: BrowserPage, url: (p: string) => string, wa
 }
 
 const DESKTOP = { viewport: { width: 1240, height: 900 }, mobile: false };
-const PHONE = { viewport: { width: 390, height: 844 }, mobile: true };
-
-interface PhonePage extends BrowserPage {
-  clickAt(x: number, y: number): Promise<void>;
-}
 
 /** On a phone the panel folds to its summary row: whether it is folded, and
  * each set-aside mark that shows, and whether it shows inside that row's box. */
@@ -190,7 +169,7 @@ interface Summary { collapsed: boolean; shown: { field: string; inSummary: boole
 
 /** A real tap at the centre of the element, scrolled into view first: the
  * platform's own input, which CLS does not count a shift after. */
-async function tapOn(page: PhonePage, selector: string): Promise<void> {
+async function tapOn(page: BrowserPage, selector: string): Promise<void> {
   const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
     const el = document.querySelector(${JSON.stringify(selector)});
     el.scrollIntoView({ block: "center" });
@@ -201,20 +180,11 @@ async function tapOn(page: PhonePage, selector: string): Promise<void> {
 }
 
 /** A tap that draws a screen, and the screen it draws, out of its beat. */
-async function tapToNext(page: PhonePage, selector: string): Promise<Seen> {
+async function tapToNext(page: BrowserPage, selector: string): Promise<Seen> {
   const before = await screenOf(page);
   await tapOn(page, selector);
   return screenAfter(page, before);
 }
-
-/** A layout-shift observer, counting what CLS counts. */
-const WATCH_SHIFTS = `(() => {
-  window.__cls = 0;
-  new PerformanceObserver((l) => {
-    for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
-  }).observe({ type: "layout-shift", buffered: true });
-  return "watching";
-})()`;
 
 describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   it("France → Spain to a question: its panel names the French answers, the screen after does not", async () => {
@@ -311,7 +281,7 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   it("on a phone, with the panel folded, the summary row names them, the screen after does not, and nothing shifts", async () => {
     const server = await serve(dist);
     try {
-      const seen = await withBrowser(async (page: PhonePage) => {
+      const seen = await withBrowser(async (page: BrowserPage) => {
         const verdict = await openOnVerdict(page, server.url, TO_A_QUESTION);
         await page.evaluate(WATCH_SHIFTS);
         await tapOn(page, "#decl > summary");

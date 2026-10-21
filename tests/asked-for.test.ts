@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
-import { deriveBands, fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
+import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
+import {
+  DESK, PHONE, QLABEL, answer, dist, middleBandOf, serve, settle, skipReason, topBandOf, waitOutTheBeat, walkTo,
+  warnNotWalked, withBrowser, type BrowserPage,
+} from "./browser-walk.js";
 
 /**
  * #139 — a question that only some of the reader's open routes read says
@@ -16,46 +18,9 @@ import { deriveBands, fieldOptions, type Dataset, type Profile } from "permit-ru
  * the real dataset when the walk was chosen, and are written here as facts.
  */
 const ds = rawDataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write([
-    "",
-    `  !! THE ASKED-FOR LINE WAS NOT WALKED IN A BROWSER: ${skipped}.`,
-    "     Run: npm run build && npm test",
-    "",
-    "",
-  ].join(String.fromCharCode(10)));
-
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  clickAt(x: number, y: number): Promise<void>;
-  problems(): string[];
-}
-
-/** The desktop, where the declared panel stands open beside the question. */
-const DESK = { viewport: { width: 1280, height: 900 }, mobile: false };
-/** A phone. */
-const PHONE = { viewport: { width: 390, height: 844 }, mobile: true };
-
-const middleBandOf = (field: string): string => {
-  const bands = deriveBands(ds, field);
-  return bands[Math.floor(bands.length / 2)]!.id;
-};
-const topBandOf = (field: string): string => {
-  const bands = deriveBands(ds, field);
-  return bands[bands.length - 1]!.id;
-};
+const skipped = skipReason();
+if (skipped) warnNotWalked("THE ASKED-FOR LINE", skipped);
 
 /**
  * An Indian passport, a degree not yet recognised in Germany, a German job
@@ -90,75 +55,7 @@ const IT_NO_DEGREE: Profile = {
   age_band: "a30to35", de_stay6m: "no", partner_ck: "no", funds_eur_month: middleBandOf("funds_eur_month"),
 };
 
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-const QLABEL = '(() => { const h = document.querySelector("#main .qcard .qlabel"); return h ? h.textContent.trim() : ""; })()';
-const STATE = 'document.getElementById("app").dataset.state';
 const labelOf = (field: string): string => ds.fields.find((f) => f.id === field)!.label;
-
-/** The beat in milliseconds, as the built stylesheet carries it (beat.test.ts). */
-const BEAT_MS = `(() => {
-  const value = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
-  return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
-})()`;
-
-async function waitOutTheBeat(page: BrowserPage): Promise<void> {
-  const ms = Number(await page.evaluate(BEAT_MS));
-  if (!(ms > 0)) throw new Error("the page declares no --motion-beat");
-  await settle(ms + 150);
-}
-
-/** Picks `value` on the question on the screen: its button, or — on the
- * search — the row the option's own name finds. */
-const pick = (value: string, searchFor: string) => `(() => {
-  const opt = document.querySelector(${JSON.stringify(`#main .qcard .opt[data-value='${value}']`)});
-  if (opt) { opt.click(); return "opt"; }
-  const input = document.querySelector("#cfilter");
-  if (!input) return "no option";
-  input.value = ${JSON.stringify(searchFor)};
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-  const row = document.querySelector(${JSON.stringify(`#clist .copt[data-value='${value}']`)});
-  if (!row) return "no row";
-  row.click();
-  return "row";
-})()`;
-
-async function answer(page: BrowserPage, field: string, value: string): Promise<void> {
-  const name = fieldOptions(ds, field).find((o) => o.value === value)?.label ?? value;
-  const how = await page.evaluate(pick(value, name));
-  if (how !== "opt" && how !== "row") throw new Error(`${field} = ${value}: ${how}`);
-  await waitOutTheBeat(page);
-}
-
-/** The field of the question on the screen, from its label. */
-async function fieldOnScreen(page: BrowserPage): Promise<string> {
-  const label = await page.evaluate(QLABEL);
-  const field = ds.fields.find((f) => f.label === label)?.id;
-  if (!field) throw new Error(`no field for the question "${label}"`);
-  return field;
-}
-
-/**
- * From a cold start, answers whatever question is on the screen from the
- * reader's profile until `target` is on the screen, and stops there,
- * unanswered. Hands back the fields answered, in order.
- */
-async function walkTo(page: BrowserPage, origin: (p: string) => string, reader: Profile, target: string): Promise<string[]> {
-  await page.goto(origin("/404.html"), 300);
-  await page.evaluate("localStorage.clear()");
-  await page.goto(origin("/"), 1200);
-  const asked: string[] = [];
-  for (let i = 0; i < 30; i++) {
-    if ((await page.evaluate(STATE)) === "results") throw new Error(`the verdict came before ${target}; asked ${asked.join(", ")}`);
-    const field = await fieldOnScreen(page);
-    if (field === target) return asked;
-    const value = reader[field];
-    if (value === undefined) throw new Error(`the reader has no answer for ${field}`);
-    await answer(page, field, value);
-    asked.push(field);
-  }
-  throw new Error(`${target} was never asked; asked ${asked.join(", ")}`);
-}
 
 /** What the line on the question card marks: the routes it names, each with
  * its country, and the count per country where it counts. */

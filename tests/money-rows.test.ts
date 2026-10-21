@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
-import { deriveBands, deriveQuestions, fieldOptions, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
+import { deriveQuestions, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
 import { STORAGE_KEY } from "../src/lib/record.js";
+import {
+  DESK, QLABEL, answer, dist, middleBandOf, serve, settle, skipReason, waitOutTheBeat, walkTo, warnNotWalked,
+  withBrowser, type BrowserPage,
+} from "./browser-walk.js";
 
 /**
  * #136 — a money question answered with its open unknown (the field's
@@ -20,35 +22,9 @@ import { STORAGE_KEY } from "../src/lib/record.js";
  * the answer's words.
  */
 const ds = rawDataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write([
-    "",
-    `  !! THE MONEY ROWS WERE NOT WALKED IN A BROWSER: ${skipped}.`,
-    "     Run: npm run build && npm test",
-    "",
-    "",
-  ].join(String.fromCharCode(10)));
-
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  clickAt(x: number, y: number): Promise<void>;
-  problems(): string[];
-}
-
-/** The desktop, where the declared panel stands open beside the question. */
-const DESK = { viewport: { width: 1280, height: 900 }, mobile: false };
+const skipped = skipReason();
+if (skipped) warnNotWalked("THE MONEY ROWS", skipped);
 
 /** The open unknown on a money question: the answer that is not a band, the
  * option the question marks `is_unknown`. Its value is what the record holds. */
@@ -59,12 +35,6 @@ const UNKNOWN = (() => {
     throw new Error("every money question should offer one open unknown");
   return [...values][0]!;
 })();
-
-/** A band in the middle of a money field's ladder, for a reader who knows. */
-const middleBandOf = (field: string): string => {
-  const bands = deriveBands(ds, field);
-  return bands[Math.floor(bands.length / 2)]!.id;
-};
 
 /**
  * One reader, with an answer for every question either walk can reach: a
@@ -81,46 +51,8 @@ const readerFor = (destination: "de" | "nl"): Profile => ({
   german: "a1", english: "b2", age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 });
 
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-const QLABEL = '(() => { const h = document.querySelector("#main .qcard .qlabel"); return h ? h.textContent.trim() : ""; })()';
-const STATE = 'document.getElementById("app").dataset.state';
 const RECORDED = (field: string) =>
   `(JSON.parse(localStorage.getItem(${JSON.stringify(STORAGE_KEY)}) || "{}").answers || {})[${JSON.stringify(field)}] ?? ""`;
-
-/** The beat in milliseconds, as the built stylesheet carries it (beat.test.ts). */
-const BEAT_MS = `(() => {
-  const value = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
-  return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
-})()`;
-
-async function waitOutTheBeat(page: BrowserPage): Promise<void> {
-  const ms = Number(await page.evaluate(BEAT_MS));
-  if (!(ms > 0)) throw new Error("the page declares no --motion-beat");
-  await settle(ms + 150);
-}
-
-/** Picks `value` on the question on the screen: its button, or — on the
- * search — the row the option's own name finds. */
-const pick = (value: string, searchFor: string) => `(() => {
-  const opt = document.querySelector(${JSON.stringify(`#main .qcard .opt[data-value='${value}']`)});
-  if (opt) { opt.click(); return "opt"; }
-  const input = document.querySelector("#cfilter");
-  if (!input) return "no option";
-  input.value = ${JSON.stringify(searchFor)};
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-  const row = document.querySelector(${JSON.stringify(`#clist .copt[data-value='${value}']`)});
-  if (!row) return "no row";
-  row.click();
-  return "row";
-})()`;
-
-async function answer(page: BrowserPage, field: string, value: string): Promise<void> {
-  const name = fieldOptions(ds, field).find((o) => o.value === value)?.label ?? value;
-  const how = await page.evaluate(pick(value, name));
-  if (how !== "opt" && how !== "row") throw new Error(`${field} = ${value}: ${how}`);
-  await waitOutTheBeat(page);
-}
 
 /**
  * From a cold start, answers whatever question is on the screen from the
@@ -129,23 +61,9 @@ async function answer(page: BrowserPage, field: string, value: string): Promise<
  * fields asked, in order.
  */
 async function walkToUnknown(page: BrowserPage, origin: (p: string) => string, reader: Profile, target: string): Promise<string[]> {
-  await page.goto(origin("/404.html"), 300);
-  await page.evaluate("localStorage.clear()");
-  await page.goto(origin("/"), 1200);
-  const byLabel = new Map(ds.fields.map((f) => [f.label, f.id]));
-  const asked: string[] = [];
-  for (let i = 0; i < 30; i++) {
-    if ((await page.evaluate(STATE)) === "results") throw new Error(`the verdict came before ${target}; asked ${asked.join(", ")}`);
-    const label = await page.evaluate(QLABEL);
-    const field = byLabel.get(label);
-    if (!field) throw new Error(`no field for the question "${label}"`);
-    const value = field === target ? UNKNOWN : reader[field];
-    if (value === undefined) throw new Error(`the reader has no answer for ${field}`);
-    await answer(page, field, value);
-    asked.push(field);
-    if (field === target) return asked;
-  }
-  throw new Error(`${target} was never asked; asked ${asked.join(", ")}`);
+  const asked = await walkTo(page, origin, reader, target);
+  await answer(page, target, UNKNOWN);
+  return [...asked, target];
 }
 
 /** The declared panel's row for a field, found by the short label the
