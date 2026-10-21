@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import {
-  DESK, PHONE, QLABEL, answer, middleBandOf, settle, skipReason, topBandOf, waitOutTheBeat, walkTo,
+  DESK, PHONE, QLABEL, answer, middleBandOf, settle, skipReason, tapOn, topBandOf, waitOutTheBeat, walkTo,
   warnNotWalked, withSite, type BrowserPage,
 } from "./browser-walk.js";
 
@@ -90,6 +90,35 @@ function expectTheCardWithALine<T extends { question: string; line: Line | null 
 }
 
 const namedRoutes = (line: Line) => line.named.map((n) => [n.route, n.country]);
+
+/** A layout-shift observer counting what CLS counts from now on: the walk's
+ * own scripted answers shifted the page before, and are not the card's. */
+const WATCH_SHIFTS_FROM_NOW = `(() => {
+  window.__cls = 0;
+  new PerformanceObserver((l) => {
+    for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
+  }).observe({ type: "layout-shift" });
+})()`;
+
+/** The asked-for line's box against its card's: inside it or not, how many
+ * lines it wraps to, and whether each option stays on the card. */
+const LINE_GEOMETRY = `JSON.stringify((() => {
+  const card = document.querySelector("#main .qcard").getBoundingClientRect();
+  const el = document.querySelector("#main .qcard [data-asked-for]");
+  if (!el) return null;
+  const line = el.getBoundingClientRect();
+  const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
+  const inside = (b) => b.left >= card.left && b.right <= card.right && b.top >= card.top && b.bottom <= card.bottom;
+  return {
+    lineInside: inside(line),
+    lineOverflows: el.scrollWidth > el.clientWidth,
+    lines: Math.round(line.height / lineHeight),
+    options: [...document.querySelectorAll("#main .qcard .opt")].map((o) => inside(o.getBoundingClientRect())),
+    pageOverflows: document.documentElement.scrollWidth > window.innerWidth,
+  };
+})())`;
+
+interface LineGeometry { lineInside: boolean; lineOverflows: boolean; lines: number; options: boolean[]; pageOverflows: boolean }
 
 describe.skipIf(skipped !== null)("a question says which routes ask it: the asked-for line (#139)", () => {
   for (const field of ["funds_eur_month", "age_band"])
@@ -211,41 +240,12 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     const seen = await withSite(async (site) => {
       const { page } = site;
       await walkTo(site, IT_NO_DEGREE, "experience_5y");
-      // What CLS counts from here on: the walk's own scripted answers shifted
-      // the page before, and are not this card's.
-      await page.evaluate(`(() => {
-        window.__cls = 0;
-        new PerformanceObserver((l) => {
-          for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
-        }).observe({ type: "layout-shift" });
-      })()`);
+      await page.evaluate(WATCH_SHIFTS_FROM_NOW);
       // The answer that draws the seven-year card, by a real tap.
-      const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-        const opt = document.querySelector("#main .qcard .opt[data-value='${IT_NO_DEGREE.experience_5y}']");
-        opt.scrollIntoView({ block: "center" });
-        const box = opt.getBoundingClientRect();
-        return { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) };
-      })())`)) as { x: number; y: number };
-      await page.clickAt(at.x, at.y);
+      await tapOn(page, `#main .qcard .opt[data-value='${IT_NO_DEGREE.experience_5y}']`);
       await waitOutTheBeat(page);
       await settle(800);
-      const geometry = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-        const card = document.querySelector("#main .qcard").getBoundingClientRect();
-        const el = document.querySelector("#main .qcard [data-asked-for]");
-        if (!el) return null;
-        const line = el.getBoundingClientRect();
-        const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
-        const inside = (b) => b.left >= card.left && b.right <= card.right && b.top >= card.top && b.bottom <= card.bottom;
-        return {
-          lineInside: inside(line),
-          lineOverflows: el.scrollWidth > el.clientWidth,
-          lines: Math.round(line.height / lineHeight),
-          options: [...document.querySelectorAll("#main .qcard .opt")].map((o) => inside(o.getBoundingClientRect())),
-          pageOverflows: document.documentElement.scrollWidth > window.innerWidth,
-        };
-      })())`)) as {
-        lineInside: boolean; lineOverflows: boolean; lines: number; options: boolean[]; pageOverflows: boolean;
-      } | null;
+      const geometry = JSON.parse(await page.evaluate(LINE_GEOMETRY)) as LineGeometry | null;
       return {
         ...(await screenOf(page)), geometry, cls: Number(await page.evaluate("window.__cls")), problems: page.problems(),
       };

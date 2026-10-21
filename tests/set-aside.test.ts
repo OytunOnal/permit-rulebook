@@ -5,7 +5,7 @@ import { EDIT_LINE } from "../src/lib/copy.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import {
-  PHONE, WATCH_SHIFTS, settle, skipReason, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+  PHONE, WATCH_SHIFTS, settle, skipReason, tapOn, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 
 /**
@@ -166,18 +166,6 @@ const SUMMARY = `JSON.stringify((() => {
   };
 })())`;
 interface Summary { collapsed: boolean; shown: { field: string; inSummary: boolean }[] }
-
-/** A real tap at the centre of the element, scrolled into view first: the
- * platform's own input, which CLS does not count a shift after. */
-async function tapOn(page: BrowserPage, selector: string): Promise<void> {
-  const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-    const el = document.querySelector(${JSON.stringify(selector)});
-    el.scrollIntoView({ block: "center" });
-    const r = el.getBoundingClientRect();
-    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
-  })())`)) as { x: number; y: number };
-  await page.clickAt(at.x, at.y);
-}
 
 /** A tap that draws a screen, and the screen it draws, out of its beat. */
 async function tapToNext(page: BrowserPage, selector: string): Promise<Seen> {

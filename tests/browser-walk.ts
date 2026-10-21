@@ -167,6 +167,20 @@ export async function walkTo(site: PageOnSite, reader: Profile, target: string):
   throw new Error(`${target} was never asked; asked ${asked.join(", ")}`);
 }
 
+/** A real tap at the centre of the element, scrolled into view first: the
+ * platform's own input, which CLS does not count a shift after. */
+export async function tapOn(page: BrowserPage, selector: string): Promise<void> {
+  const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
+    const el = document.querySelector(${JSON.stringify(selector)});
+    if (!el) return null;
+    el.scrollIntoView({ block: "center" });
+    const r = el.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  })())`)) as { x: number; y: number } | null;
+  if (!at) throw new Error(`nothing on the page matches ${selector}`);
+  await page.clickAt(at.x, at.y);
+}
+
 /** A layout-shift observer, counting what CLS counts, from the page's load. */
 export const WATCH_SHIFTS = `(() => {
   window.__cls = 0;
