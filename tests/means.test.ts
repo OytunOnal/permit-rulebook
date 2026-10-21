@@ -32,14 +32,14 @@ const WALK = {
 describe("the answer and the step both say what they mean", () => {
   it("the sentence is the dataset's, with the reader's own place in it", () => {
     const said = optionMeans(optionOf("situation", "offer"), ds, WALK);
-    expect(said).toContain("An employment contract with an employer in the Netherlands itself");
+    expect(said).toContain("An employment contract directly with an employer in the Netherlands");
     // A reader already employed by the Dutch company from abroad has a job, not
     // an offer, and hesitated at the label (human, 2026-09-08).
     expect(said).toContain("including one you already hold");
     expect(said).toContain("not a transfer to a branch on a contract you hold abroad");
     // Derived, not typed: the same option reads differently for another reader.
     expect(optionMeans(optionOf("situation", "offer"), ds, { destination: "de" }))
-      .toContain("an employer in Germany itself");
+      .toContain("an employer in Germany");
     expect(said).not.toContain("{place}");
   });
 
@@ -138,7 +138,7 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
       const step = seen.rows.find((r) => r.head.includes("job offer"));
       expect(step, "the walk's leverage row is gone").toBeDefined();
       expect(step!.head, "the row is still scanned by its short step").toBe("With a job offer");
-      expect(step!.means).toContain("an employer in the Netherlands itself");
+      expect(step!.means).toContain("an employer in the Netherlands");
       // A step with nothing to distinguish stays one line.
       expect(seen.rows.find((r) => r.head.includes("hosting agreement"))?.means).toBeNull();
     } finally {
@@ -170,7 +170,7 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
       const german = rows.find((r) => r.head.includes("job offer") && r.head.includes("Germany"));
       expect(german, "the German fork of the job-offer step is gone").toBeDefined();
       expect(german!.head).toBe("With a job offer in Germany");
-      expect(german!.means).toContain("an employer in Germany itself");
+      expect(german!.means).toContain("an employer in Germany");
       for (const r of rows) {
         expect(r.head, "a heading is carrying a field's subject text").not.toContain(
           "your offer, transfer or agreement");

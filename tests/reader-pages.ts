@@ -78,9 +78,15 @@ export function walks(): Walk[] {
   return out;
 }
 
+/** A question card, with its question's field and the answers given before it. */
+export interface QuestionCard extends ReaderPage {
+  field: string;
+  before: Profile;
+}
+
 /** Every question card each walk meets, drawn on the answers given before it. */
-export function questionCards(): ReaderPage[] {
-  const cards: ReaderPage[] = [];
+export function questionCards(): QuestionCard[] {
+  const cards: QuestionCard[] = [];
   for (const { answers, order } of walks())
     order.forEach((field, i) => {
       const before: Profile = Object.fromEntries(order.slice(0, i).map((f) => [f, answers[f]!]));
@@ -88,6 +94,7 @@ export function questionCards(): ReaderPage[] {
       const question = remaining.find((q) => q.field === field);
       if (!question) return;
       cards.push({
+        field, before,
         where: `question ${field} after ${JSON.stringify(before)}`,
         html: questionCardHtml({
           dataset: ds, question, answers: before, asked: order.slice(0, i), editing: null, total: remaining.length,
@@ -112,6 +119,19 @@ async function drawn(site: PageOnSite, path: string, record: Walk | null): Promi
   return (JSON.parse(await page.evaluate(DRAWN)) as { html: string }).html;
 }
 
+/** A results screen the module drew, with the walk that reached it. */
+export interface DrawnResult extends ReaderPage {
+  walk: Walk;
+}
+
+/** The results — masthead and cards — the module draws at the end of every walk. */
+export async function drawnResults(site: PageOnSite): Promise<DrawnResult[]> {
+  const results: DrawnResult[] = [];
+  for (const walk of walks())
+    results.push({ where: `results for ${JSON.stringify(walk.answers)}`, html: await drawn(site, "/", walk), walk });
+  return results;
+}
+
 /**
  * The screens the module draws in the browser: the results — masthead and
  * cards — at the end of every walk, and the arrival line from each country
@@ -119,10 +139,8 @@ async function drawn(site: PageOnSite, path: string, record: Walk | null): Promi
  * for one whose record is another country's.
  */
 export async function drawnScreens(site: PageOnSite): Promise<ReaderPage[]> {
-  const screens: ReaderPage[] = [];
+  const screens: ReaderPage[] = await drawnResults(site);
   const all = walks();
-  for (const walk of all)
-    screens.push({ where: `results for ${JSON.stringify(walk.answers)}`, html: await drawn(site, "/", walk) });
   for (const country of ds.countries) {
     const code = country.code.toLowerCase();
     const elsewhere = all.find((w) => w.answers[DESTINATION_FIELD] !== code && w.answers[DESTINATION_FIELD] !== "all")!;
@@ -144,6 +162,11 @@ const decode = (text: string): string => text
   .replace(/&amp;/g, "&");
 
 const squeeze = (text: string): string => text.split(/\s+/).join(" ").trim();
+
+/** A fragment of markup as the text a reader reads in it. */
+export function plainTextOf(fragment: string): string {
+  return squeeze(decode(fragment.replace(/<[^>]+>/g, " ")));
+}
 
 /** Our own words on a page: without the markup a reader never reads as text,
  * and without the authority's quotes, which are its words and never ours. */
