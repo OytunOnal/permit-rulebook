@@ -2,7 +2,7 @@
 import {
   answerLabel, bindsReader, carveOutFor, closedBy, decidingCriteria, deriveBands, fieldOptions, forEachCriterion,
   formatEUR, formatEURPer,
-  gapCriterionOf, liveUnknowns, noticeSources,
+  gapCriterionOf, learnLinkOf, liveUnknowns, noticeSources,
   resultProvenance,
   routeReadings, routeStatements, scopeLine, shortLabelOf,
   type Band, type Criterion, type Dataset, type Notice, type Profile, type Route, type RouteResult,
@@ -580,11 +580,12 @@ export function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  * inside it was a sentence underlined end to end (the human's walk,
  * 2026-09-17, s28). The dataset's contract keeps the label free of anything
  * that would want one. Where the page is a consolidated text, the label is
- * followed by what the page is (#158).
+ * followed by what the page is (#158). Any route the label names is said in
+ * full (#159).
  */
 export function learnBoxHtml(ds: Dataset, r: RouteResult, answers: Profile): string {
   const links = liveUnknowns(r, answers)
-    .map((f) => ds.fields.find((d) => d.id === f)?.learn)
+    .map((f) => learnLinkOf(ds, f))
     .filter((l): l is { label: string; url: string } => !!l);
   if (!links.length) return "";
   return `<div class="learn">You can find out yourself: ${links
