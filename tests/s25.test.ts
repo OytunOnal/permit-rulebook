@@ -45,7 +45,7 @@ const SEVEN = "experience_7y";
  */
 const OFFER: Profile = {
   destination: "de", situation: "offer", situation_country: "de", citizenship: "TR", qualification: "vocational",
-  recognition_de: "not_yet", occupation_shortage: "yes", occupation_it: "no", salary_eur_year: "band_4",
+  recognition_de: "not_assessed", occupation_shortage: "yes", occupation_it: "no", salary_eur_year: "band_4",
   german: "a1", english: "none", funds_eur_month: "band_1", age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 };
 const withExperience = (five: string, seven: string): Profile => ({ ...OFFER, [FIVE]: five, [SEVEN]: seven });
@@ -216,14 +216,14 @@ describe("the Opportunity Card's tally names the winning row's field", () => {
 describe("a record from before this slice loses its experience answers", () => {
   const old = {
     destination: "de", situation: "offer", qualification: "vocational", citizenship: "TR",
-    recognition_de: "not_yet", experience: "y3in7", experience_7y: "yes",
+    recognition_de: "not_assessed", experience: "y3in7", experience_7y: "yes",
   };
   const known = deriveQuestions(ds);
 
   it("the retired field is dropped, and so is the retired answer on the field that stayed", () => {
     const kept = restore(serialize(old, Object.keys(old)), known);
     expect(kept.answers).toEqual({
-      destination: "de", situation: "offer", qualification: "vocational", citizenship: "TR", recognition_de: "not_yet",
+      destination: "de", situation: "offer", qualification: "vocational", citizenship: "TR", recognition_de: "not_assessed",
     });
     expect(kept.history).toEqual(["destination", "situation", "qualification", "citizenship", "recognition_de"]);
   });
@@ -313,7 +313,7 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
   // `occupation_it` is on the record: Germany asks it before the experience
   // questions since the shortage Blue Card's IT path reads it (#134).
   const seeded = {
-    destination: "de", situation: "offer", qualification: "vocational", citizenship: "TR", recognition_de: "not_yet",
+    destination: "de", situation: "offer", qualification: "vocational", citizenship: "TR", recognition_de: "not_assessed",
     occupation_it: OFFER.occupation_it!,
   };
   const cardNamed = (cards: Card[], word: string) => cards.find((c) => c.name.includes(word))!;

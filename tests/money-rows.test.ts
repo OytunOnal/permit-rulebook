@@ -43,7 +43,7 @@ const UNKNOWN = (() => {
  */
 const readerFor = (destination: "de" | "nl"): Profile => ({
   destination, situation: "offer", situation_country: destination, citizenship: "TR",
-  qualification: "vocational", qualification_recent: "no", recognition_de: "not_yet",
+  qualification: "vocational", qualification_recent: "no", recognition_de: "not_assessed",
   experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes", occupation_it: "no",
   salary_eur_year: middleBandOf("salary_eur_year"), salary_eur_month: middleBandOf("salary_eur_month"),
   funds_eur_month: middleBandOf("funds_eur_month"),
