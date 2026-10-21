@@ -230,8 +230,9 @@ _Avoid_: scroll-to, jump, snap, autoscroll
 The moment after a gesture draws a question card, when the card fades in and
 its options take no click. It is the same length with or without motion;
 under reduced motion only the fade is gone. A beat follows every question
-card a gesture draws: an answer, a correction, Back, Start over, the
-browser's own Back and Forward. The first paint has none.
+card a gesture draws: an answer, a correction, Back, Keep this answer, Start
+over, the browser's own Back and Forward. The first paint has none, and the
+verdict has none.
 _Avoid_: reveal (s20's scroll), arrival (a reader sent from a country or route
 page), entrance (how the page came to stand on an entry), debounce, cooldown
 
