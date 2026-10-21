@@ -92,7 +92,7 @@ const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const fieldByLabel = new Map(ds.fields.map((f) => [f.label, f.id]));
 
 /** What a screen shows, read from the page: the card or the verdict, the
- * panel, and each answer the set-aside line names with the name it shows. */
+ * panel, and each answer the set-aside line shows, with the name it shows. */
 const SCREEN = `JSON.stringify((() => {
   const label = document.querySelector("#main .qcard .qlabel");
   const meta = document.querySelector("#main .qcard .qmeta");
@@ -102,6 +102,7 @@ const SCREEN = `JSON.stringify((() => {
     meta: meta ? meta.textContent.trim() : null,
     rows: document.querySelectorAll("#decl-list [data-field]").length,
     named: [...document.querySelectorAll("#decl [data-set-aside]")]
+      .filter((el) => el.checkVisibility({ visibilityProperty: true, opacityProperty: true }))
       .map((el) => ({ field: el.dataset.setAside, name: el.textContent.trim() })),
   };
 })())`;
@@ -124,6 +125,11 @@ type Seen = Awaited<ReturnType<typeof screenOf>>;
 async function act(page: BrowserPage, gesture: string): Promise<Seen> {
   const before = await screenOf(page);
   await page.evaluate(gesture);
+  return screenAfter(page, before);
+}
+
+/** The screen once it differs from `before`, out of its beat. */
+async function screenAfter(page: BrowserPage, before: Seen): Promise<Seen> {
   for (let waited = 0; waited < 5000; waited += 100) {
     await settle(100);
     const now = await screenOf(page);
@@ -141,19 +147,74 @@ const PENCIL = (field: string) => `(() => {
 const TAP = (value: string) => `document.querySelector("#main .qcard .opt[data-value='${value}']").click()`;
 const named = (fields: string[]) => fields.map((field) => ({ field, name: shortLabelOf(ds, field) }));
 
-/** Seed the walk's record, open on its verdict, and move its destination. */
-async function moveDestination(page: BrowserPage, url: (p: string) => string, walk: Walk, to: string) {
+/** Seed the walk's record and open on its verdict. */
+async function openOnVerdict(page: BrowserPage, url: (p: string) => string, walk: Walk): Promise<Seen> {
   await page.goto(url("/404.html"), 300);
   await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
     JSON.stringify(serialize(walk.answers, walk.order, true))})`);
   await page.goto(url("/"), 1600);
-  const verdict = await screenOf(page);
+  return screenOf(page);
+}
+
+/** Seed the walk's record, open on its verdict, and move its destination. */
+async function moveDestination(page: BrowserPage, url: (p: string) => string, walk: Walk, to: string) {
+  const verdict = await openOnVerdict(page, url, walk);
   const editing = await act(page, PENCIL("destination"));
   const next = await act(page, TAP(to));
   return { verdict, editing, next };
 }
 
 const DESKTOP = { viewport: { width: 1240, height: 900 }, mobile: false };
+const PHONE = { viewport: { width: 390, height: 844 }, mobile: true };
+
+interface PhonePage extends BrowserPage {
+  clickAt(x: number, y: number): Promise<void>;
+}
+
+/** On a phone the panel folds to its summary row: whether it is folded, and
+ * each set-aside mark that shows, and whether it shows inside that row's box. */
+const SUMMARY = `JSON.stringify((() => {
+  const decl = document.getElementById("decl");
+  const row = decl.querySelector(":scope > summary").getBoundingClientRect();
+  const inside = (r) => r.top >= row.top && r.bottom <= row.bottom && r.left >= row.left && r.right <= row.right;
+  return {
+    collapsed: !decl.open,
+    shown: [...decl.querySelectorAll("[data-set-aside]")]
+      // A folded panel keeps its rows' boxes; the platform's own check knows
+      // they are not rendered.
+      .filter((el) => el.checkVisibility({ visibilityProperty: true, opacityProperty: true }))
+      .map((el) => ({ field: el.dataset.setAside, inSummary: inside(el.getBoundingClientRect()) })),
+  };
+})())`;
+interface Summary { collapsed: boolean; shown: { field: string; inSummary: boolean }[] }
+
+/** A real tap at the centre of the element, scrolled into view first: the
+ * platform's own input, which CLS does not count a shift after. */
+async function tapOn(page: PhonePage, selector: string): Promise<void> {
+  const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
+    const el = document.querySelector(${JSON.stringify(selector)});
+    el.scrollIntoView({ block: "center" });
+    const r = el.getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+  })())`)) as { x: number; y: number };
+  await page.clickAt(at.x, at.y);
+}
+
+/** A tap that draws a screen, and the screen it draws, out of its beat. */
+async function tapToNext(page: PhonePage, selector: string): Promise<Seen> {
+  const before = await screenOf(page);
+  await tapOn(page, selector);
+  return screenAfter(page, before);
+}
+
+/** A layout-shift observer, counting what CLS counts. */
+const WATCH_SHIFTS = `(() => {
+  window.__cls = 0;
+  new PerformanceObserver((l) => {
+    for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
+  }).observe({ type: "layout-shift", buffered: true });
+  return "watching";
+})()`;
 
 describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   it("France → Spain to a question: its panel names the French answers, the screen after does not", async () => {
@@ -242,6 +303,41 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
       expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
       expect(EDIT_LINE, "copy.ts holds no edit line").toBeTypeOf("string");
       expect(seen.editing.meta).toBe(EDIT_LINE);
+    } finally {
+      server.close();
+    }
+  }, 180_000);
+
+  it("on a phone, with the panel folded, the summary row names them, the screen after does not, and nothing shifts", async () => {
+    const server = await serve(dist);
+    try {
+      const seen = await withBrowser(async (page: PhonePage) => {
+        const verdict = await openOnVerdict(page, server.url, TO_A_QUESTION);
+        await page.evaluate(WATCH_SHIFTS);
+        await tapOn(page, "#decl > summary");
+        await settle(300);
+        const editing = await tapToNext(page, '#decl-list [data-field="destination"]');
+        const next = await tapToNext(page, "#main .qcard .opt[data-value='es']");
+        const nextRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
+        const after = await tapToNext(page, "#main .qcard .opt[data-value='yes']");
+        const afterRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
+        const cls = Number(await page.evaluate("window.__cls"));
+        return { verdict, editing, next, nextRow, after, afterRow, cls, problems: page.problems() };
+      }, PHONE) as {
+        verdict: Seen; editing: Seen; next: Seen; nextRow: Summary; after: Seen; afterRow: Summary;
+        cls: number; problems: string[];
+      };
+      expect(seen.problems).toEqual([]);
+      expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
+      expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
+      expect(seen.next.field, "Spain did not ask its own question next").toBe("qualification_recent");
+      expect(seen.nextRow.collapsed, "the panel is open, not folded to its summary row").toBe(true);
+      expect(seen.nextRow.shown).toEqual(
+        ["fr_degree", "fr_innovative_employer"].map((field) => ({ field, inSummary: true })));
+      expect(seen.after.state, "the answer did not lead to the verdict").toBe("results");
+      expect(seen.afterRow.collapsed, "the panel is open, not folded to its summary row").toBe(true);
+      expect(seen.afterRow.shown).toEqual([]);
+      expect(seen.cls, "the summary row's line shifted the page").toBe(0);
     } finally {
       server.close();
     }

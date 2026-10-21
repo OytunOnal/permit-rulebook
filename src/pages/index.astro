@@ -129,7 +129,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     -->
     <p class="visually-hidden" id="cstatus" role="status" aria-live="polite"></p>
       <details class="decl" id="decl" open>
-        <summary><span class="decl-title">You declared</span><span class="decl-count" id="decl-count">{declarationCount(0)}</span></summary>
+        <summary><span class="decl-title">You declared</span><span class="decl-count" id="decl-count">{declarationCount(0)}</span><span class="decl-set-aside-folded" id="decl-set-aside-folded"></span></summary>
         <dl id="decl-list" set:html={firstDeclaration}></dl>
         <div id="decl-set-aside"></div>
         <a class="edit" href="#" id="restart" hidden>Start over</a>
@@ -224,6 +224,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const decl = document.getElementById("decl") as HTMLDetailsElement;
     const declList = document.getElementById("decl-list")!;
     const declSetAside = document.getElementById("decl-set-aside")!;
+    const declSetAsideFolded = document.getElementById("decl-set-aside-folded")!;
     const restart = document.getElementById("restart")!;
     const headline = document.getElementById("headline")!;
     const subline = document.getElementById("subline")!;
@@ -672,7 +673,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); } });
         });
       });
-      draw(declSetAside, setAsideHtml(ds, setAside));
+      // One line, in two places: under the rows, and in the summary row for a
+      // phone whose panel is folded, where the rows cannot be seen. The
+      // stylesheet shows the one that can be.
+      const setAsideLine = setAsideHtml(ds, setAside);
+      draw(declSetAside, setAsideLine);
+      draw(declSetAsideFolded, setAsideLine);
       setAside = [];
       say(declCount, declarationCount(asked.length));
       restart.hidden = currentField !== null;
@@ -1866,7 +1872,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .decl dd.pending{color:var(--color-muted);font-weight:400}
     .decl .edit{display:inline-flex;align-items:center;margin-top:.8rem;font-size:.85rem;min-height:var(--tap-min)}
     .decl .edit[hidden]{display:none}
-    .decl .set-aside{margin:.7rem 0 0;font-size:.78rem;line-height:1.4;color:var(--color-muted)}
+    .decl .set-aside{display:block;margin:.7rem 0 0;font:400 .78rem/1.4 var(--font-sans);
+      letter-spacing:0;text-transform:none;text-align:left;color:var(--color-muted)}
+    .decl-set-aside-folded{display:none}
 
     /* Question mode */
     .qcard{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:1.6rem 1.8rem}
@@ -2152,6 +2160,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       .decl{order:2;position:static}
       .decl > summary{margin-bottom:0}
       .decl[open] > summary{margin-bottom:.6rem}
+      /* Folded, the summary row is all of the panel a phone shows, so the
+         set-aside line stands in it, on a row of its own (#137). */
+      .decl:not([open]) > summary{flex-wrap:wrap}
+      .decl:not([open]) .decl-set-aside-folded{display:block;flex-basis:100%}
+      .decl-set-aside-folded .set-aside{margin:0 0 .2rem}
       .qcard{padding:1.1rem 1rem}
       .opt{white-space:normal}
       .copt{flex-wrap:wrap;gap:.15rem}

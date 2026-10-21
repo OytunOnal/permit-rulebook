@@ -169,14 +169,15 @@ export function declarationHtml(
 
 /**
  * The set-aside line: the answers the last edit's replay dropped, each by its
- * short label, under the panel's rows. Nothing when nothing was set aside.
- * Each name carries its field, so a reader of the page can tell which answer
- * it is without reading the words.
+ * short label. Nothing when nothing was set aside. Each name carries its
+ * field, so a reader of the page can tell which answer it is without reading
+ * the words. A span, because the folded panel shows it in its summary row,
+ * which holds phrasing only.
  */
 export function setAsideHtml(dataset: Dataset, setAside: readonly string[]): string {
   if (!setAside.length) return "";
   const names = setAside.map((f) => `<b data-set-aside="${escAttr(f)}">${esc(shortLabelOf(dataset, f))}</b>`);
-  return `<p class="set-aside">${esc(setAsideLead(setAside.length))} ${joinAnd(names)}.</p>`;
+  return `<span class="set-aside">${esc(setAsideLead(setAside.length))} ${joinAnd(names)}.</span>`;
 }
 
 /** On a phone the ledger collapses to this one line; on a wide screen the
