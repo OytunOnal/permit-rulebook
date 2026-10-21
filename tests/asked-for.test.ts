@@ -30,7 +30,7 @@ if (skipped) warnNotWalked("THE ASKED-FOR LINE", skipped);
  */
 const GERMANY_OFFER: Profile = {
   destination: "de", citizenship: "IN", situation: "offer", qualification: "degree", qualification_recent: "no",
-  recognition_de: "not_yet", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
+  recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
   occupation_it: "no", salary_eur_year: middleBandOf("salary_eur_year"), german: "a1", english: "b2",
   age_band: "a30to35", de_stay6m: "no", partner_ck: "no", funds_eur_month: middleBandOf("funds_eur_month"),
 };
@@ -51,7 +51,7 @@ const FOUR_SPAIN: Profile = {
  * both read the seven-year window. */
 const IT_NO_DEGREE: Profile = {
   destination: "de", citizenship: "IN", situation: "offer", qualification: "vocational", qualification_recent: "no",
-  recognition_de: "not_yet", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "unknown",
+  recognition_de: "not_recognised", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "unknown",
   occupation_it: "yes", salary_eur_year: topBandOf("salary_eur_year"), german: "a1", english: "b2",
   age_band: "a30to35", de_stay6m: "no", partner_ck: "no", funds_eur_month: middleBandOf("funds_eur_month"),
 };
