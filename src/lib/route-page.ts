@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  scopeLine, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
+  scopeLine, countryPhrase, countryPossessiveAtStart, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
   isLocalization, isScored, joinAnd, joinOr, noticeSources, provenancedValuesOf,
   referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
@@ -132,29 +132,13 @@ function gteUnder(c: Criterion): Gte[] {
 }
 
 /**
- * The Netherlands takes an article and the other three do not. Nothing in the
- * dataset says so — a country carries its name, not its grammar — so the one
- * exception is declared here rather than showing a reader "a permit to work in
- * Netherlands" on six pages.
- *
- * Keyed on the country code, not on the display name: a name is a string that
- * can be re-worded, and re-wording it would silently drop the article. DEBT: a
- * fact about a country belongs in `countries.json` beside its name and its
- * class; it is one word for one country today, and it moves there the second
- * country that needs it (Standards review, 2026-09-07).
- */
-const TAKES_THE = new Set(["NL"]);
-export const withArticle = (country: Country): string =>
-  TAKES_THE.has(country.code) ? `the ${country.name}` : country.name;
-
-/**
  * Who the page is for, said before the first rule. An Irish reader who lands on
  * a German route page from a search is told here, not after seven rules and a
  * refusal (scenario step 10), and the call to action below leads to the notice
  * that answers her rather than to a rejection.
  */
 export const audienceSentence = (country: Country): string =>
-  `This page is for people who need a permit to work in ${withArticle(country)}.`;
+  `This page is for people who need a permit to work in ${countryPhrase(country.code)}.`;
 
 /**
  * Every source this page quotes: the pages behind `printedSources`, the same
@@ -663,7 +647,7 @@ function neighbours(country: Country, route: Route): string {
   if (!others.length) return "";
   return `
     <nav class="neighbours" aria-labelledby="also-here">
-      <h2 class="label" id="also-here">Also in ${esc(country.name)}</h2>
+      <h2 class="label" id="also-here">Also in ${esc(countryPhrase(country.code))}</h2>
       <ul>${others.map((r) => `
         <li><a ${tapMin()} href="${escAttr(url(routePath(country, r)))}">${esc(r.name)}<small>${
     esc(gist(r))}</small></a></li>`).join("")}
@@ -693,7 +677,7 @@ function description(dataset: Dataset, country: Country, route: Route): string {
   // route's name and an empty list. What a search result should promise is
   // what the page actually is (s9).
   if (!isScored(route))
-    return `${country.name}'s ${route.name}: the conditions as the authority states them, each with `
+    return `${countryPossessiveAtStart(country.code)} ${route.name}: the conditions as the authority states them, each with `
       + "the sentence it came from and the day that page was read. Quoted and dated here; not scored.";
   const bits: string[] = [];
   forEachCriterion(route.criteria, (c) => {
@@ -706,7 +690,7 @@ function description(dataset: Dataset, country: Country, route: Route): string {
     if (c.op === "gte" || (("field" in c) && c.field === "citizenship")) continue;
     bits.push(criterionPhrase(dataset, c));
   }
-  return `${country.name}'s ${route.name}: ${joinAnd(bits)} — every value quoted from its ` +
+  return `${countryPossessiveAtStart(country.code)} ${route.name}: ${joinAnd(bits)} — every value quoted from its ` +
     "official page with the date it was read.";
 }
 

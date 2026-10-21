@@ -112,7 +112,7 @@ function countedRoutesHtml(routes: OpenRoute[]): string {
   const perCountry = new Map<string, number>();
   for (const { country } of routes) perCountry.set(country, (perCountry.get(country) ?? 0) + 1);
   return [...perCountry].map(([country, count], i) => {
-    const place = countryPhrase(country) ?? country;
+    const place = countryPhrase(country);
     const words = i === 0 ? askedForFirstCount(count, place) : askedForNextCount(count, place);
     return `<span data-country="${escAttr(country)}" data-routes="${escAttr(String(count))}">${esc(words)}</span>`;
   }).join(ASKED_FOR_COUNTS_JOIN);
