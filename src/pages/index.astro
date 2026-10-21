@@ -707,7 +707,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * is forgotten rather than shown as a stale row. Returns the answers it
      * set aside, for an edit to name.
      */
-    function replayAnswers(): string[] {
+    function answersSetAsideByReplay(): string[] {
       const replayed = replayRecord(ds, answers, asked);
       answers = replayed.answers;
       asked = replayed.order;
@@ -743,7 +743,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           // survives unless the flow no longer asks it, and what it does not
           // survive is named on the next screen.
           editing = null;
-          setAside = replayAnswers();
+          setAside = answersSetAsideByReplay();
         } else {
           asked.push(q.field);
         }
@@ -1608,7 +1608,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       asked = kept.history;
       // The rules may have moved since it was written: replay drops anything
       // this interview would no longer ask.
-      replayAnswers();
+      answersSetAsideByReplay();
     }
 
     restart.addEventListener("click", (e) => {
