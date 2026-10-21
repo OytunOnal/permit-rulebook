@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { STORAGE_KEY } from "../src/lib/record.js";
 import {
-  DESK, WATCH_SHIFTS, beatMsOf, dist, openCold, serve, settle, skipReason, waitOutTheBeat, warnNotWalked,
-  withBrowser, type BrowserPage,
+  DESK, WATCH_SHIFTS, beatMsOf, openCold, settle, skipReason, waitOutTheBeat, warnNotWalked, withSite,
+  type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 
 /**
@@ -78,9 +78,9 @@ async function drawnAfter(page: BrowserPage, before: string): Promise<Where> {
 }
 
 /** The first screen with nothing on the record, and its first option's centre. */
-async function coldStart(page: BrowserPage, origin: (p: string) => string): Promise<Point> {
-  await openCold(page, origin);
-  return pointOf(page, FIRST_OPTION);
+async function coldStart(site: PageOnSite): Promise<Point> {
+  await openCold(site);
+  return pointOf(site.page, FIRST_OPTION);
 }
 
 /** Answers `count` questions with the first option each, a beat apart. */
@@ -136,9 +136,10 @@ interface DoubleClick { cold: Where; drawn: Where; under: string; elapsedMs: num
  * options lower, and a second click on its padding answers nothing with or
  * without a guard. Null when no option's centre does.
  */
-async function doubleClickOnAnOption(page: BrowserPage, origin: (p: string) => string): Promise<DoubleClick | null> {
+async function doubleClickOnAnOption(site: PageOnSite): Promise<DoubleClick | null> {
+  const { page } = site;
   for (let i = 0; ; i++) {
-    await coldStart(page, origin);
+    await coldStart(site);
     const at = (JSON.parse(await page.evaluate(OPTION_CENTRES)) as Point[])[i];
     if (!at) return null;
     const cold = await where(page);
@@ -157,263 +158,210 @@ async function doubleClickOnAnOption(page: BrowserPage, origin: (p: string) => s
 
 describe.skipIf(skipped !== null)("a question card a gesture draws takes no click for a beat (#86)", () => {
   it("two clicks at the same point within the beat leave one answer", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => ({
-        twice: await doubleClickOnAnOption(page, server.url), problems: page.problems(),
-      }), DESK) as { twice: DoubleClick | null; problems: string[] };
-      expect(seen.problems).toEqual([]);
-      expect(seen.twice, "no option's centre lands on an option of the card its click draws").not.toBeNull();
-      const { cold, drawn, under, elapsedMs, beatMs, after } = seen.twice!;
-      expect(drawn.answers, "the first click did not answer").toBe(1);
-      expect(under, "the second click's point is on no option of the drawn card").not.toBe("");
-      expect(elapsedMs, "the second click came after the beat").toBeLessThan(beatMs);
-      expect(after.answers, "the second click answered the question it landed on").toBe(1);
-      expect(after.question).not.toBe(cold.question);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => ({
+      twice: await doubleClickOnAnOption(site), problems: site.page.problems(),
+    }), DESK) as { twice: DoubleClick | null; problems: string[] };
+    expect(seen.problems).toEqual([]);
+    expect(seen.twice, "no option's centre lands on an option of the card its click draws").not.toBeNull();
+    const { cold, drawn, under, elapsedMs, beatMs, after } = seen.twice!;
+    expect(drawn.answers, "the first click did not answer").toBe(1);
+    expect(under, "the second click's point is on no option of the drawn card").not.toBe("");
+    expect(elapsedMs, "the second click came after the beat").toBeLessThan(beatMs);
+    expect(after.answers, "the second click answered the question it landed on").toBe(1);
+    expect(after.question).not.toBe(cold.question);
   }, 120000);
 
   it("a click after the beat answers", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const at = await coldStart(page, server.url);
-        await page.clickAt(at.x, at.y);
-        await waitOutTheBeat(page);
-        const first = await where(page);
-        // On the new card's own first option: an asked-for line (#139) can
-        // draw it lower than the last card's.
-        await clickOn(page, FIRST_OPTION);
-        await waitOutTheBeat(page);
-        return { first, second: await where(page), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expect(seen.first.answers).toBe(1);
-      expect(seen.second.answers, "the guard did not lift after the beat").toBe(2);
-      expect(seen.second.question).not.toBe(seen.first.question);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const at = await coldStart(site);
+      await page.clickAt(at.x, at.y);
+      await waitOutTheBeat(page);
+      const first = await where(page);
+      // On the new card's own first option: an asked-for line (#139) can
+      // draw it lower than the last card's.
+      await clickOn(page, FIRST_OPTION);
+      await waitOutTheBeat(page);
+      return { first, second: await where(page), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.first.answers).toBe(1);
+    expect(seen.second.answers, "the guard did not lift after the beat").toBe(2);
+    expect(seen.second.question).not.toBe(seen.first.question);
   }, 120000);
 
   it("two fast Enters on the focused first option leave one answer", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const at = await coldStart(page, server.url);
-        await page.clickAt(at.x, at.y);
-        await waitOutTheBeat(page);
-        const ready = await where(page);
-        await page.pressEnter();
-        await page.pressEnter();
-        await waitOutTheBeat(page);
-        return { ready, after: await where(page), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expect(seen.ready.focusOnFirst, "the focus was not on the first option to press Enter on").toBe(true);
-      expect(seen.after.answers, "the second Enter answered the question it landed on").toBe(2);
-      expect(seen.after.question).not.toBe(seen.ready.question);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const at = await coldStart(site);
+      await page.clickAt(at.x, at.y);
+      await waitOutTheBeat(page);
+      const ready = await where(page);
+      await page.pressEnter();
+      await page.pressEnter();
+      await waitOutTheBeat(page);
+      return { ready, after: await where(page), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.ready.focusOnFirst, "the focus was not on the first option to press Enter on").toBe(true);
+    expect(seen.after.answers, "the second Enter answered the question it landed on").toBe(2);
+    expect(seen.after.question).not.toBe(seen.ready.question);
   }, 120000);
 
   it("Enter in the search box ← Back has drawn commits nothing within the beat, and commits after it", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await coldStart(page, server.url);
-        let now = await where(page);
-        for (let i = 0; i < 10 && !now.search; i++) now = await answerFirstOptions(page, 1);
-        const search = now;
-        await page.type("a");
-        await page.pressEnter();
-        await waitOutTheBeat(page);
-        const past = await where(page);
-        await clickOn(page, "#back");
-        const drawn = await drawnAfter(page, past.question);
-        await page.pressEnter();
-        await waitOutTheBeat(page);
-        const within = await where(page);
-        await page.pressEnter();
-        await waitOutTheBeat(page);
-        return { search, past, drawn, within, after: await where(page), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expect(seen.search.search, "the walk never reached the search").toBe(true);
-      expect(seen.past.question, "Enter in the search did not commit").not.toBe(seen.search.question);
-      expect(seen.drawn.search, "← Back did not draw the search").toBe(true);
-      expect(seen.within.question, "Enter inside the beat committed the search's row").toBe(seen.drawn.question);
-      expect(seen.after.question, "Enter after the beat did not commit").not.toBe(seen.drawn.question);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await coldStart(site);
+      let now = await where(page);
+      for (let i = 0; i < 10 && !now.search; i++) now = await answerFirstOptions(page, 1);
+      const search = now;
+      await page.type("a");
+      await page.pressEnter();
+      await waitOutTheBeat(page);
+      const past = await where(page);
+      await clickOn(page, "#back");
+      const drawn = await drawnAfter(page, past.question);
+      await page.pressEnter();
+      await waitOutTheBeat(page);
+      const within = await where(page);
+      await page.pressEnter();
+      await waitOutTheBeat(page);
+      return { search, past, drawn, within, after: await where(page), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.search.search, "the walk never reached the search").toBe(true);
+    expect(seen.past.question, "Enter in the search did not commit").not.toBe(seen.search.question);
+    expect(seen.drawn.search, "← Back did not draw the search").toBe(true);
+    expect(seen.within.question, "Enter inside the beat committed the search's row").toBe(seen.drawn.question);
+    expect(seen.after.question, "Enter after the beat did not commit").not.toBe(seen.drawn.question);
   }, 120000);
 
   it("← Back draws its card with a beat", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await coldStart(page, server.url);
-        const now = await answerFirstOptions(page, 2);
-        await clickOn(page, "#back");
-        return { ...(await clicksAroundTheBeat(page, now.question)), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expectTheBeatHeld(seen);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await coldStart(site);
+      const now = await answerFirstOptions(page, 2);
+      await clickOn(page, "#back");
+      return { ...(await clicksAroundTheBeat(page, now.question)), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expectTheBeatHeld(seen);
   }, 120000);
 
   it("✎, a correction, draws its card with a beat", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await coldStart(page, server.url);
-        const now = await answerFirstOptions(page, 2);
-        await clickOn(page, "[data-field]");
-        return { ...(await clicksAroundTheBeat(page, now.question)), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expectTheBeatHeld(seen);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await coldStart(site);
+      const now = await answerFirstOptions(page, 2);
+      await clickOn(page, "[data-field]");
+      return { ...(await clicksAroundTheBeat(page, now.question)), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expectTheBeatHeld(seen);
   }, 120000);
 
   it("Keep this answer draws its card with a beat", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await coldStart(page, server.url);
-        await answerFirstOptions(page, 2);
-        await clickOn(page, "[data-field]");
-        await waitOutTheBeat(page);
-        const editing = await where(page);
-        await clickOn(page, "#done");
-        return { ...(await clicksAroundTheBeat(page, editing.question)), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expectTheBeatHeld(seen);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await coldStart(site);
+      await answerFirstOptions(page, 2);
+      await clickOn(page, "[data-field]");
+      await waitOutTheBeat(page);
+      const editing = await where(page);
+      await clickOn(page, "#done");
+      return { ...(await clicksAroundTheBeat(page, editing.question)), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expectTheBeatHeld(seen);
   }, 120000);
 
   it("Start over draws its card with a beat", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await coldStart(page, server.url);
-        await answerFirstOptions(page, 2);
-        // The resumed line carries "Start over" while a question is on the table.
-        await page.goto(server.url("/"), 1200);
-        const resumed = await where(page);
-        await clickOn(page, "#restart");
-        return { ...(await clicksAroundTheBeat(page, resumed.question)), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expect(seen.drawn.answers, "Start over did not clear the record").toBe(0);
-      expectTheBeatHeld(seen);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await coldStart(site);
+      await answerFirstOptions(page, 2);
+      // The resumed line carries "Start over" while a question is on the table.
+      await page.goto(site.url("/"), 1200);
+      const resumed = await where(page);
+      await clickOn(page, "#restart");
+      return { ...(await clicksAroundTheBeat(page, resumed.question)), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.drawn.answers, "Start over did not clear the record").toBe(0);
+    expectTheBeatHeld(seen);
   }, 120000);
 
   it("the browser's Back draws its card with a beat", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await coldStart(page, server.url);
-        const now = await answerFirstOptions(page, 2);
-        await page.back();
-        return { ...(await clicksAroundTheBeat(page, now.question)), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expectTheBeatHeld(seen);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await coldStart(site);
+      const now = await answerFirstOptions(page, 2);
+      await page.back();
+      return { ...(await clicksAroundTheBeat(page, now.question)), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expectTheBeatHeld(seen);
   }, 120000);
 
   it("after an answer the focus is on the new card's first option, zero Tabs away", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const at = await coldStart(page, server.url);
-        await page.clickAt(at.x, at.y);
-        await waitOutTheBeat(page);
-        return { after: await where(page), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expect(seen.after.answers).toBe(1);
-      expect(seen.after.focusOnFirst).toBe(true);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const at = await coldStart(site);
+      await page.clickAt(at.x, at.y);
+      await waitOutTheBeat(page);
+      return { after: await where(page), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.after.answers).toBe(1);
+    expect(seen.after.focusOnFirst).toBe(true);
   }, 120000);
 
   it("with reduced motion the guard holds and the card runs no animation", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.emulateMedia([{ name: "prefers-reduced-motion", value: "reduce" }]);
-        const at = await coldStart(page, server.url);
-        const reduced = await page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches");
-        await page.clickAt(at.x, at.y);
-        const drawn = await where(page);
-        await page.clickAt(at.x, at.y);
-        await waitOutTheBeat(page);
-        return { reduced, drawn, after: await where(page), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expect(seen.reduced, "the browser did not take the reduced-motion preference").toBe(true);
-      expect(seen.drawn.cardAnimations, "the card animated for a reader who asked for no motion").toBe(0);
-      expect(seen.after.answers, "without motion the second click answered").toBe(1);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await page.emulateMedia([{ name: "prefers-reduced-motion", value: "reduce" }]);
+      const at = await coldStart(site);
+      const reduced = await page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches");
+      await page.clickAt(at.x, at.y);
+      const drawn = await where(page);
+      await page.clickAt(at.x, at.y);
+      await waitOutTheBeat(page);
+      return { reduced, drawn, after: await where(page), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.reduced, "the browser did not take the reduced-motion preference").toBe(true);
+    expect(seen.drawn.cardAnimations, "the card animated for a reader who asked for no motion").toBe(0);
+    expect(seen.after.answers, "without motion the second click answered").toBe(1);
   }, 120000);
 
   it("nothing on the page shifts across an answer: CLS stays 0", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const at = await coldStart(page, server.url);
-        await page.evaluate(WATCH_SHIFTS);
-        await page.clickAt(at.x, at.y);
-        await waitOutTheBeat(page);
-        // The new card's own first option: an asked-for line (#139) can draw
-        // it lower than the last card's.
-        await clickOn(page, FIRST_OPTION);
-        await waitOutTheBeat(page);
-        return { cls: Number(await page.evaluate("window.__cls")), after: await where(page), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expect(seen.after.answers).toBe(2);
-      expect(seen.cls).toBe(0);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const at = await coldStart(site);
+      await page.evaluate(WATCH_SHIFTS);
+      await page.clickAt(at.x, at.y);
+      await waitOutTheBeat(page);
+      // The new card's own first option: an asked-for line (#139) can draw
+      // it lower than the last card's.
+      await clickOn(page, FIRST_OPTION);
+      await waitOutTheBeat(page);
+      return { cls: Number(await page.evaluate("window.__cls")), after: await where(page), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.after.answers).toBe(2);
+    expect(seen.cls).toBe(0);
   }, 120000);
 
   it("the first paint has no beat: an option answers at once", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const at = await coldStart(page, server.url);
-        const cold = await where(page);
-        await page.clickAt(at.x, at.y);
-        return { cold, after: await where(page), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expect(seen.cold.answers).toBe(0);
-      expect(seen.after.answers, "the first paint's option did not answer").toBe(1);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const at = await coldStart(site);
+      const cold = await where(page);
+      await page.clickAt(at.x, at.y);
+      return { cold, after: await where(page), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.cold.answers).toBe(0);
+    expect(seen.after.answers, "the first paint's option did not answer").toBe(1);
   }, 120000);
 });

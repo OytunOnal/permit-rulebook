@@ -5,7 +5,7 @@ import { EDIT_LINE } from "../src/lib/copy.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import {
-  PHONE, WATCH_SHIFTS, dist, serve, settle, skipReason, warnNotWalked, withBrowser, type BrowserPage,
+  PHONE, WATCH_SHIFTS, settle, skipReason, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 
 /**
@@ -132,7 +132,7 @@ const TAP = (value: string) => `document.querySelector("#main .qcard .opt[data-v
 const named = (fields: string[]) => fields.map((field) => ({ field, name: shortLabelOf(ds, field) }));
 
 /** Seed the walk's record and open on its verdict. */
-async function openOnVerdict(page: BrowserPage, url: (p: string) => string, walk: Walk): Promise<Seen> {
+async function openOnVerdict({ page, url }: PageOnSite, walk: Walk): Promise<Seen> {
   await page.goto(url("/404.html"), 300);
   await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
     JSON.stringify(serialize(walk.answers, walk.order, true))})`);
@@ -141,10 +141,10 @@ async function openOnVerdict(page: BrowserPage, url: (p: string) => string, walk
 }
 
 /** Seed the walk's record, open on its verdict, and move its destination. */
-async function moveDestination(page: BrowserPage, url: (p: string) => string, walk: Walk, to: string) {
-  const verdict = await openOnVerdict(page, url, walk);
-  const editing = await act(page, PENCIL("destination"));
-  const next = await act(page, TAP(to));
+async function moveDestination(site: PageOnSite, walk: Walk, to: string) {
+  const verdict = await openOnVerdict(site, walk);
+  const editing = await act(site.page, PENCIL("destination"));
+  const next = await act(site.page, TAP(to));
   return { verdict, editing, next };
 }
 
@@ -188,128 +188,101 @@ async function tapToNext(page: BrowserPage, selector: string): Promise<Seen> {
 
 describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   it("France → Spain to a question: its panel names the French answers, the screen after does not", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const moved = await moveDestination(page, server.url, TO_A_QUESTION, "es");
-        const after = await act(page, TAP("yes"));
-        return { ...moved, after, problems: page.problems() };
-      }, DESKTOP) as { verdict: Seen; editing: Seen; next: Seen; after: Seen; problems: string[] };
-      expect(seen.problems).toEqual([]);
-      expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
-      expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
-      expect(seen.next.field, "Spain did not ask its own question next").toBe("qualification_recent");
-      expect(seen.next.rows, "the panel is not drawn").toBeGreaterThan(0);
-      expect(seen.next.named).toEqual(named(["fr_degree", "fr_innovative_employer"]));
-      expect(seen.after.state, "the answer did not lead to the verdict").toBe("results");
-      expect(seen.after.rows, "the panel is not drawn").toBeGreaterThan(0);
-      expect(seen.after.named).toEqual([]);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const moved = await moveDestination(site, TO_A_QUESTION, "es");
+      const after = await act(page, TAP("yes"));
+      return { ...moved, after, problems: page.problems() };
+    }, DESKTOP) as { verdict: Seen; editing: Seen; next: Seen; after: Seen; problems: string[] };
+    expect(seen.problems).toEqual([]);
+    expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
+    expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
+    expect(seen.next.field, "Spain did not ask its own question next").toBe("qualification_recent");
+    expect(seen.next.rows, "the panel is not drawn").toBeGreaterThan(0);
+    expect(seen.next.named).toEqual(named(["fr_degree", "fr_innovative_employer"]));
+    expect(seen.after.state, "the answer did not lead to the verdict").toBe("results");
+    expect(seen.after.rows, "the panel is not drawn").toBeGreaterThan(0);
+    expect(seen.after.named).toEqual([]);
   }, 180_000);
 
   it("a change that leads straight to the result names the set-aside answers in its panel", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => ({
-        ...await moveDestination(page, server.url, TO_THE_RESULT, "es"), problems: page.problems(),
-      }), DESKTOP) as { verdict: Seen; editing: Seen; next: Seen; problems: string[] };
-      expect(seen.problems).toEqual([]);
-      expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
-      expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
-      expect(seen.next.state, "Spain asked another question").toBe("results");
-      expect(seen.next.rows, "the panel is not drawn").toBeGreaterThan(0);
-      expect(seen.next.named).toEqual(named(["fr_innovative_employer"]));
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => ({
+      ...await moveDestination(site, TO_THE_RESULT, "es"), problems: site.page.problems(),
+    }), DESKTOP) as { verdict: Seen; editing: Seen; next: Seen; problems: string[] };
+    expect(seen.problems).toEqual([]);
+    expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
+    expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
+    expect(seen.next.state, "Spain asked another question").toBe("results");
+    expect(seen.next.rows, "the panel is not drawn").toBeGreaterThan(0);
+    expect(seen.next.named).toEqual(named(["fr_innovative_employer"]));
   }, 180_000);
 
   it("a change that sets nothing aside draws no set-aside line", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => ({
-        ...await moveDestination(page, server.url, NOTHING_SET_ASIDE, "es"), problems: page.problems(),
-      }), DESKTOP) as { verdict: Seen; editing: Seen; next: Seen; problems: string[] };
-      expect(seen.problems).toEqual([]);
-      expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
-      expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
-      expect(seen.next.state, "the change did not lead to the verdict").toBe("results");
-      expect(seen.next.rows, "the panel is not drawn").toBeGreaterThan(0);
-      expect(seen.next.named).toEqual([]);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => ({
+      ...await moveDestination(site, NOTHING_SET_ASIDE, "es"), problems: site.page.problems(),
+    }), DESKTOP) as { verdict: Seen; editing: Seen; next: Seen; problems: string[] };
+    expect(seen.problems).toEqual([]);
+    expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
+    expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
+    expect(seen.next.state, "the change did not lead to the verdict").toBe("results");
+    expect(seen.next.rows, "the panel is not drawn").toBeGreaterThan(0);
+    expect(seen.next.named).toEqual([]);
   }, 180_000);
 
   it("changing back to France asks the set-aside question again", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const moved = await moveDestination(page, server.url, TO_A_QUESTION, "es");
-        const inSpain = await act(page, TAP("yes"));
-        const editing = await act(page, PENCIL("destination"));
-        const back = await act(page, TAP("fr"));
-        return { moved, inSpain, editing, back, problems: page.problems() };
-      }, DESKTOP) as { moved: { next: Seen }; inSpain: Seen; editing: Seen; back: Seen; problems: string[] };
-      expect(seen.problems).toEqual([]);
-      expect(seen.moved.next.field, "Spain did not ask its own question next").toBe("qualification_recent");
-      expect(seen.inSpain.state, "Spain's answer did not lead to the verdict").toBe("results");
-      expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
-      expect(seen.back.field).toBe("fr_degree");
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const moved = await moveDestination(site, TO_A_QUESTION, "es");
+      const inSpain = await act(page, TAP("yes"));
+      const editing = await act(page, PENCIL("destination"));
+      const back = await act(page, TAP("fr"));
+      return { moved, inSpain, editing, back, problems: page.problems() };
+    }, DESKTOP) as { moved: { next: Seen }; inSpain: Seen; editing: Seen; back: Seen; problems: string[] };
+    expect(seen.problems).toEqual([]);
+    expect(seen.moved.next.field, "Spain did not ask its own question next").toBe("qualification_recent");
+    expect(seen.inSpain.state, "Spain's answer did not lead to the verdict").toBe("results");
+    expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
+    expect(seen.back.field).toBe("fr_degree");
   }, 180_000);
 
   it("the edit line's words come from copy.ts", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => ({
-        ...await moveDestination(page, server.url, NOTHING_SET_ASIDE, "es"), problems: page.problems(),
-      }), DESKTOP) as { editing: Seen; problems: string[] };
-      expect(seen.problems).toEqual([]);
-      expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
-      expect(EDIT_LINE, "copy.ts holds no edit line").toBeTypeOf("string");
-      expect(seen.editing.meta).toBe(EDIT_LINE);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => ({
+      ...await moveDestination(site, NOTHING_SET_ASIDE, "es"), problems: site.page.problems(),
+    }), DESKTOP) as { editing: Seen; problems: string[] };
+    expect(seen.problems).toEqual([]);
+    expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
+    expect(EDIT_LINE, "copy.ts holds no edit line").toBeTypeOf("string");
+    expect(seen.editing.meta).toBe(EDIT_LINE);
   }, 180_000);
 
   it("on a phone, with the panel folded, the summary row names them, the screen after does not, and nothing shifts", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const verdict = await openOnVerdict(page, server.url, TO_A_QUESTION);
-        await page.evaluate(WATCH_SHIFTS);
-        await tapOn(page, "#decl > summary");
-        await settle(300);
-        const editing = await tapToNext(page, '#decl-list [data-field="destination"]');
-        const next = await tapToNext(page, "#main .qcard .opt[data-value='es']");
-        const nextRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
-        const after = await tapToNext(page, "#main .qcard .opt[data-value='yes']");
-        const afterRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
-        const cls = Number(await page.evaluate("window.__cls"));
-        return { verdict, editing, next, nextRow, after, afterRow, cls, problems: page.problems() };
-      }, PHONE) as {
-        verdict: Seen; editing: Seen; next: Seen; nextRow: Summary; after: Seen; afterRow: Summary;
-        cls: number; problems: string[];
-      };
-      expect(seen.problems).toEqual([]);
-      expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
-      expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
-      expect(seen.next.field, "Spain did not ask its own question next").toBe("qualification_recent");
-      expect(seen.nextRow.collapsed, "the panel is open, not folded to its summary row").toBe(true);
-      expect(seen.nextRow.shown).toEqual(
-        ["fr_degree", "fr_innovative_employer"].map((field) => ({ field, inSummary: true })));
-      expect(seen.after.state, "the answer did not lead to the verdict").toBe("results");
-      expect(seen.afterRow.collapsed, "the panel is open, not folded to its summary row").toBe(true);
-      expect(seen.afterRow.shown).toEqual([]);
-      expect(seen.cls, "the summary row's line shifted the page").toBe(0);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const verdict = await openOnVerdict(site, TO_A_QUESTION);
+      await page.evaluate(WATCH_SHIFTS);
+      await tapOn(page, "#decl > summary");
+      await settle(300);
+      const editing = await tapToNext(page, '#decl-list [data-field="destination"]');
+      const next = await tapToNext(page, "#main .qcard .opt[data-value='es']");
+      const nextRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
+      const after = await tapToNext(page, "#main .qcard .opt[data-value='yes']");
+      const afterRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
+      const cls = Number(await page.evaluate("window.__cls"));
+      return { verdict, editing, next, nextRow, after, afterRow, cls, problems: page.problems() };
+    }, PHONE) as {
+      verdict: Seen; editing: Seen; next: Seen; nextRow: Summary; after: Seen; afterRow: Summary;
+      cls: number; problems: string[];
+    };
+    expect(seen.problems).toEqual([]);
+    expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
+    expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
+    expect(seen.next.field, "Spain did not ask its own question next").toBe("qualification_recent");
+    expect(seen.nextRow.collapsed, "the panel is open, not folded to its summary row").toBe(true);
+    expect(seen.nextRow.shown).toEqual(
+      ["fr_degree", "fr_innovative_employer"].map((field) => ({ field, inSummary: true })));
+    expect(seen.after.state, "the answer did not lead to the verdict").toBe("results");
+    expect(seen.afterRow.collapsed, "the panel is open, not folded to its summary row").toBe(true);
+    expect(seen.afterRow.shown).toEqual([]);
+    expect(seen.cls, "the summary row's line shifted the page").toBe(0);
   }, 180_000);
 });

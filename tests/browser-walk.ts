@@ -11,10 +11,10 @@ import { deriveBands, fieldOptions, type Dataset, type Profile } from "permit-ru
 const ds = rawDataset as unknown as Dataset;
 
 /** The built site the walks are served from. */
-export const dist = fileURLToPath(new URL("../dist", import.meta.url));
+const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 const { chromePath } = await import("../scripts/chrome.mjs");
-export const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
 /** Why the browser cannot walk here: no Chrome, or no build. Null when it can. */
 export function skipReason(): string | null {
@@ -45,6 +45,23 @@ export interface BrowserPage {
   type(text: string): Promise<void>;
   back(): Promise<void>;
   problems(): string[];
+}
+
+/** A browser page and the address of the site it is on, which every walk
+ * takes together. */
+export interface PageOnSite { page: BrowserPage; url: (path: string) => string }
+
+interface Screen { viewport: { width: number; height: number }; mobile: boolean }
+
+/** Serves the built site, opens a browser on `screen`, and hands `run` the
+ * page on the site; the browser and the server close after it. */
+export async function withSite<T>(run: (site: PageOnSite) => Promise<T>, screen: Screen): Promise<T> {
+  const server = await serve(dist);
+  try {
+    return await withBrowser((page: BrowserPage) => run({ page, url: server.url }), screen);
+  } finally {
+    server.close();
+  }
 }
 
 /** The desktop, where the declared panel stands open beside the question. */
@@ -123,10 +140,10 @@ async function fieldOnScreen(page: BrowserPage): Promise<string> {
 }
 
 /** The interview's first screen, with nothing on the record. */
-export async function openCold(page: BrowserPage, origin: (p: string) => string): Promise<void> {
-  await page.goto(origin("/404.html"), 300);
+export async function openCold({ page, url }: PageOnSite): Promise<void> {
+  await page.goto(url("/404.html"), 300);
   await page.evaluate("localStorage.clear()");
-  await page.goto(origin("/"), 1200);
+  await page.goto(url("/"), 1200);
 }
 
 /**
@@ -134,8 +151,9 @@ export async function openCold(page: BrowserPage, origin: (p: string) => string)
  * reader's profile until `target` is on the screen, and stops there,
  * unanswered. Hands back the fields answered, in order.
  */
-export async function walkTo(page: BrowserPage, origin: (p: string) => string, reader: Profile, target: string): Promise<string[]> {
-  await openCold(page, origin);
+export async function walkTo(site: PageOnSite, reader: Profile, target: string): Promise<string[]> {
+  const { page } = site;
+  await openCold(site);
   const asked: string[] = [];
   for (let i = 0; i < 30; i++) {
     if ((await page.evaluate(STATE)) === "results") throw new Error(`the verdict came before ${target}; asked ${asked.join(", ")}`);

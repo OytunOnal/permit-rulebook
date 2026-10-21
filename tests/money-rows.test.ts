@@ -3,8 +3,8 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
 import { STORAGE_KEY } from "../src/lib/record.js";
 import {
-  DESK, QLABEL, answer, dist, middleBandOf, serve, settle, skipReason, waitOutTheBeat, walkTo, warnNotWalked,
-  withBrowser, type BrowserPage,
+  DESK, QLABEL, answer, middleBandOf, settle, skipReason, waitOutTheBeat, walkTo, warnNotWalked, withSite,
+  type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 
 /**
@@ -60,9 +60,9 @@ const RECORDED = (field: string) =>
  * screen after it is the one whose panel the case reads. Hands back the
  * fields asked, in order.
  */
-async function walkToUnknown(page: BrowserPage, origin: (p: string) => string, reader: Profile, target: string): Promise<string[]> {
-  const asked = await walkTo(page, origin, reader, target);
-  await answer(page, target, UNKNOWN);
+async function walkToUnknown(site: PageOnSite, reader: Profile, target: string): Promise<string[]> {
+  const asked = await walkTo(site, reader, target);
+  await answer(site.page, target, UNKNOWN);
   return [...asked, target];
 }
 
@@ -121,50 +121,42 @@ const WALKS = [
 describe.skipIf(skipped !== null)("a money row answered with its open unknown is a declaration like any other (#136)", () => {
   for (const { field, destination } of WALKS) {
     it(`${field} answered with its open unknown draws an answered row with its pencil`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await walkToUnknown(page, server.url, readerFor(destination), field);
-          return { recorded: await page.evaluate(RECORDED(field)), row: await rowOf(page, field), problems: page.problems() };
-        }, DESK) as { recorded: string; row: Row | null; problems: string[] };
-        expect(seen.problems).toEqual([]);
-        expect(seen.recorded, `${field} was not recorded as the open unknown`).toBe(UNKNOWN);
-        expectAnsweredWithItsPencil(seen.row, field);
-      } finally {
-        server.close();
-      }
+      const seen = await withSite(async (site) => {
+        const { page } = site;
+        await walkToUnknown(site, readerFor(destination), field);
+        return { recorded: await page.evaluate(RECORDED(field)), row: await rowOf(page, field), problems: page.problems() };
+      }, DESK) as { recorded: string; row: Row | null; problems: string[] };
+      expect(seen.problems).toEqual([]);
+      expect(seen.recorded, `${field} was not recorded as the open unknown`).toBe(UNKNOWN);
+      expectAnsweredWithItsPencil(seen.row, field);
     }, 120_000);
 
     it(`${field}'s pencil reopens its question, and another answer replaces the open unknown`, async () => {
-      const server = await serve(dist);
       const band = middleBandOf(field);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await walkToUnknown(page, server.url, readerFor(destination), field);
-          const before = await rowOf(page, field);
-          // A row with no pencil is no edit point: the case stops on its
-          // state rather than on a click that reopens nothing.
-          if (!before?.pencil) return { before, reopened: "", chosen: "", recorded: "", after: null, problems: page.problems() };
-          const next = await page.evaluate(QLABEL);
-          await page.clickAt(before.at.x, before.at.y);
-          const reopened = await questionAfter(page, next);
-          await waitOutTheBeat(page);
-          const chosen = await page.evaluate(CHOSEN);
-          await answer(page, field, band);
-          return {
-            before, reopened, chosen,
-            recorded: await page.evaluate(RECORDED(field)), after: await rowOf(page, field), problems: page.problems(),
-          };
-        }, DESK) as { before: Row | null; reopened: string; chosen: string; recorded: string; after: Row | null; problems: string[] };
-        expect(seen.problems).toEqual([]);
-        expectAnsweredWithItsPencil(seen.before, field);
-        expect(seen.reopened, "the pencil did not reopen the question").toBe(ds.fields.find((f) => f.id === field)!.label);
-        expect(seen.chosen, "the reopened question does not hold the answer on file").toBe(UNKNOWN);
-        expect(seen.recorded, "another answer did not replace the open unknown").toBe(band);
-        expectAnsweredWithItsPencil(seen.after, field);
-      } finally {
-        server.close();
-      }
+      const seen = await withSite(async (site) => {
+        const { page } = site;
+        await walkToUnknown(site, readerFor(destination), field);
+        const before = await rowOf(page, field);
+        // A row with no pencil is no edit point: the case stops on its
+        // state rather than on a click that reopens nothing.
+        if (!before?.pencil) return { before, reopened: "", chosen: "", recorded: "", after: null, problems: page.problems() };
+        const next = await page.evaluate(QLABEL);
+        await page.clickAt(before.at.x, before.at.y);
+        const reopened = await questionAfter(page, next);
+        await waitOutTheBeat(page);
+        const chosen = await page.evaluate(CHOSEN);
+        await answer(page, field, band);
+        return {
+          before, reopened, chosen,
+          recorded: await page.evaluate(RECORDED(field)), after: await rowOf(page, field), problems: page.problems(),
+        };
+      }, DESK) as { before: Row | null; reopened: string; chosen: string; recorded: string; after: Row | null; problems: string[] };
+      expect(seen.problems).toEqual([]);
+      expectAnsweredWithItsPencil(seen.before, field);
+      expect(seen.reopened, "the pencil did not reopen the question").toBe(ds.fields.find((f) => f.id === field)!.label);
+      expect(seen.chosen, "the reopened question does not hold the answer on file").toBe(UNKNOWN);
+      expect(seen.recorded, "another answer did not replace the open unknown").toBe(band);
+      expectAnsweredWithItsPencil(seen.after, field);
     }, 120_000);
   }
 });

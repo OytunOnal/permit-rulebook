@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import {
-  DESK, PHONE, QLABEL, answer, dist, middleBandOf, serve, settle, skipReason, topBandOf, waitOutTheBeat, walkTo,
-  warnNotWalked, withBrowser, type BrowserPage,
+  DESK, PHONE, QLABEL, answer, middleBandOf, settle, skipReason, topBandOf, waitOutTheBeat, walkTo,
+  warnNotWalked, withSite, type BrowserPage,
 } from "./browser-walk.js";
 
 /**
@@ -94,206 +94,174 @@ const namedRoutes = (line: Line) => line.named.map((n) => [n.route, n.country]);
 describe.skipIf(skipped !== null)("a question says which routes ask it: the asked-for line (#139)", () => {
   for (const field of ["funds_eur_month", "age_band"])
     it(`on a Germany-offer walk, ${field} names the Opportunity Card in Germany`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await walkTo(page, server.url, GERMANY_OFFER, field);
-          return { ...(await screenOf(page)), problems: page.problems() };
-        }, DESK);
-        expect(seen.problems).toEqual([]);
-        expectTheCardWithALine(seen, field);
-        expect(namedRoutes(seen.line)).toEqual([["de-chancenkarte", "DE"]]);
-        expect(seen.line.counted).toEqual([]);
-      } finally {
-        server.close();
-      }
+      const seen = await withSite(async (site) => {
+        const { page } = site;
+        await walkTo(site, GERMANY_OFFER, field);
+        return { ...(await screenOf(page)), problems: page.problems() };
+      }, DESK);
+      expect(seen.problems).toEqual([]);
+      expectTheCardWithALine(seen, field);
+      expect(namedRoutes(seen.line)).toEqual([["de-chancenkarte", "DE"]]);
+      expect(seen.line.counted).toEqual([]);
     }, 120_000);
 
   it("the passport question, which every open route reads, carries no line", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await walkTo(page, server.url, GERMANY_OFFER, "citizenship");
-        const passport = await screenOf(page);
-        // The question after it, which only some of the open routes read.
-        await answer(page, "citizenship", GERMANY_OFFER.citizenship!);
-        return { passport, next: await screenOf(page), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expect(seen.passport.question, "the passport question is not on the screen").toBe(labelOf("citizenship"));
-      expect(seen.passport.line).toBeNull();
-      // A line on the next card, so the passport's has no line of its own
-      // making, not because the page draws none.
-      expectTheCardWithALine(seen.next, "recognition_de");
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await walkTo(site, GERMANY_OFFER, "citizenship");
+      const passport = await screenOf(page);
+      // The question after it, which only some of the open routes read.
+      await answer(page, "citizenship", GERMANY_OFFER.citizenship!);
+      return { passport, next: await screenOf(page), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.passport.question, "the passport question is not on the screen").toBe(labelOf("citizenship"));
+    expect(seen.passport.line).toBeNull();
+    // A line on the next card, so the passport's has no line of its own
+    // making, not because the page draws none.
+    expectTheCardWithALine(seen.next, "recognition_de");
   }, 120_000);
 
   it("on the any-of-four path with the offer in Spain, each Dutch question names its Dutch route", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await walkTo(page, server.url, FOUR_SPAIN, "nl_recent_grad");
-        const graduate = await screenOf(page);
-        await answer(page, "nl_recent_grad", FOUR_SPAIN.nl_recent_grad!);
-        const designated = await screenOf(page);
-        return { graduate, designated, problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expectTheCardWithALine(seen.graduate, "nl_recent_grad");
-      expect(namedRoutes(seen.graduate.line)).toEqual([["nl-orientation-year", "NL"]]);
-      expectTheCardWithALine(seen.designated, "top200_grad");
-      expect(namedRoutes(seen.designated.line)).toEqual([["nl-orientation-year", "NL"]]);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await walkTo(site, FOUR_SPAIN, "nl_recent_grad");
+      const graduate = await screenOf(page);
+      await answer(page, "nl_recent_grad", FOUR_SPAIN.nl_recent_grad!);
+      const designated = await screenOf(page);
+      return { graduate, designated, problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expectTheCardWithALine(seen.graduate, "nl_recent_grad");
+    expect(namedRoutes(seen.graduate.line)).toEqual([["nl-orientation-year", "NL"]]);
+    expectTheCardWithALine(seen.designated, "top200_grad");
+    expect(namedRoutes(seen.designated.line)).toEqual([["nl-orientation-year", "NL"]]);
   }, 120_000);
 
   it("a question asked for more than two routes counts them per country", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await walkTo(page, server.url, FOUR_SPAIN, "situation");
-        return { ...(await screenOf(page)), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expectTheCardWithALine(seen, "situation");
-      // 21 of the 23 open routes read the situation; the Opportunity Card
-      // and the orientation year do not.
-      expect(seen.line.counted).toEqual([
-        { country: "DE", routes: 7 }, { country: "FR", routes: 5 },
-        { country: "ES", routes: 4 }, { country: "NL", routes: 5 },
-      ]);
-      expect(seen.line.named).toEqual([]);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await walkTo(site, FOUR_SPAIN, "situation");
+      return { ...(await screenOf(page)), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expectTheCardWithALine(seen, "situation");
+    // 21 of the 23 open routes read the situation; the Opportunity Card
+    // and the orientation year do not.
+    expect(seen.line.counted).toEqual([
+      { country: "DE", routes: 7 }, { country: "FR", routes: 5 },
+      { country: "ES", routes: 4 }, { country: "NL", routes: 5 },
+    ]);
+    expect(seen.line.named).toEqual([]);
   }, 120_000);
 
   it("a route name in the line reads as its card names it, through the screen's one-time § expansion", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await walkTo(page, server.url, GERMANY_OFFER, "funds_eur_month");
-        const text = await page.evaluate('document.querySelector("#main").innerText');
-        return { ...(await screenOf(page)), text, problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expectTheCardWithALine(seen, "funds_eur_month");
-      const card = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-chancenkarte")!;
-      // The name cites no act, so the expansion leaves it as the card prints
-      // it (amendment 6: the sign itself carries no explainer).
-      expect(seen.line.named.map((n: Line["named"][number]) => n.text)).toEqual([card.name]);
-      // And no act is explained twice on the screen.
-      for (const act of ["AufenthG =", "BeschV ="])
-        expect(seen.text.split(act).length - 1, act).toBeLessThanOrEqual(1);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await walkTo(site, GERMANY_OFFER, "funds_eur_month");
+      const text = await page.evaluate('document.querySelector("#main").innerText');
+      return { ...(await screenOf(page)), text, problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expectTheCardWithALine(seen, "funds_eur_month");
+    const card = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-chancenkarte")!;
+    // The name cites no act, so the expansion leaves it as the card prints
+    // it (amendment 6: the sign itself carries no explainer).
+    expect(seen.line.named.map((n: Line["named"][number]) => n.text)).toEqual([card.name]);
+    // And no act is explained twice on the screen.
+    for (const act of ["AufenthG =", "BeschV ="])
+      expect(seen.text.split(act).length - 1, act).toBeLessThanOrEqual(1);
   }, 120_000);
 
   it("reopened with the pencil, a question's line names the routes it is asked for without its own answer", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await walkTo(page, server.url, GERMANY_OFFER, "funds_eur_month");
-        const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-          const row = document.querySelector('#decl-list [data-field="experience_5y"]');
-          if (!row) return null;
-          row.scrollIntoView({ block: "center" });
-          const box = row.getBoundingClientRect();
-          return { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) };
-        })())`)) as { x: number; y: number } | null;
-        if (!at) throw new Error("no experience_5y row in the declared panel");
-        await page.clickAt(at.x, at.y);
-        await waitOutTheBeat(page);
-        return { ...(await screenOf(page)), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expectTheCardWithALine(seen, "experience_5y");
-      // With its own answer the question decides nothing more and would name
-      // no route; without it, the experienced worker and the Opportunity Card.
-      expect(namedRoutes(seen.line)).toEqual([["de-experienced-worker", "DE"], ["de-chancenkarte", "DE"]]);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await walkTo(site, GERMANY_OFFER, "funds_eur_month");
+      const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
+        const row = document.querySelector('#decl-list [data-field="experience_5y"]');
+        if (!row) return null;
+        row.scrollIntoView({ block: "center" });
+        const box = row.getBoundingClientRect();
+        return { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) };
+      })())`)) as { x: number; y: number } | null;
+      if (!at) throw new Error("no experience_5y row in the declared panel");
+      await page.clickAt(at.x, at.y);
+      await waitOutTheBeat(page);
+      return { ...(await screenOf(page)), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expectTheCardWithALine(seen, "experience_5y");
+    // With its own answer the question decides nothing more and would name
+    // no route; without it, the experienced worker and the Opportunity Card.
+    expect(namedRoutes(seen.line)).toEqual([["de-experienced-worker", "DE"], ["de-chancenkarte", "DE"]]);
   }, 120_000);
 
   it("on Germany, the seven-year question names the Blue Card and the Opportunity Card for an IT reader with no degree", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await walkTo(page, server.url, IT_NO_DEGREE, "experience_7y");
-        return { ...(await screenOf(page)), problems: page.problems() };
-      }, DESK);
-      expect(seen.problems).toEqual([]);
-      expectTheCardWithALine(seen, "experience_7y");
-      expect(namedRoutes(seen.line)).toEqual([["de-blue-card-shortage", "DE"], ["de-chancenkarte", "DE"]]);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await walkTo(site, IT_NO_DEGREE, "experience_7y");
+      return { ...(await screenOf(page)), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expectTheCardWithALine(seen, "experience_7y");
+    expect(namedRoutes(seen.line)).toEqual([["de-blue-card-shortage", "DE"], ["de-chancenkarte", "DE"]]);
   }, 120_000);
 
   it("at 390 px the line wraps inside the card, every option stays on the card, and nothing shifts", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await walkTo(page, server.url, IT_NO_DEGREE, "experience_5y");
-        // What CLS counts from here on: the walk's own scripted answers shifted
-        // the page before, and are not this card's.
-        await page.evaluate(`(() => {
-          window.__cls = 0;
-          new PerformanceObserver((l) => {
-            for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
-          }).observe({ type: "layout-shift" });
-        })()`);
-        // The answer that draws the seven-year card, by a real tap.
-        const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-          const opt = document.querySelector("#main .qcard .opt[data-value='${IT_NO_DEGREE.experience_5y}']");
-          opt.scrollIntoView({ block: "center" });
-          const box = opt.getBoundingClientRect();
-          return { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) };
-        })())`)) as { x: number; y: number };
-        await page.clickAt(at.x, at.y);
-        await waitOutTheBeat(page);
-        await settle(800);
-        const geometry = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-          const card = document.querySelector("#main .qcard").getBoundingClientRect();
-          const el = document.querySelector("#main .qcard [data-asked-for]");
-          if (!el) return null;
-          const line = el.getBoundingClientRect();
-          const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
-          const inside = (b) => b.left >= card.left && b.right <= card.right && b.top >= card.top && b.bottom <= card.bottom;
-          return {
-            lineInside: inside(line),
-            lineOverflows: el.scrollWidth > el.clientWidth,
-            lines: Math.round(line.height / lineHeight),
-            options: [...document.querySelectorAll("#main .qcard .opt")].map((o) => inside(o.getBoundingClientRect())),
-            pageOverflows: document.documentElement.scrollWidth > window.innerWidth,
-          };
-        })())`)) as {
-          lineInside: boolean; lineOverflows: boolean; lines: number; options: boolean[]; pageOverflows: boolean;
-        } | null;
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await walkTo(site, IT_NO_DEGREE, "experience_5y");
+      // What CLS counts from here on: the walk's own scripted answers shifted
+      // the page before, and are not this card's.
+      await page.evaluate(`(() => {
+        window.__cls = 0;
+        new PerformanceObserver((l) => {
+          for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
+        }).observe({ type: "layout-shift" });
+      })()`);
+      // The answer that draws the seven-year card, by a real tap.
+      const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
+        const opt = document.querySelector("#main .qcard .opt[data-value='${IT_NO_DEGREE.experience_5y}']");
+        opt.scrollIntoView({ block: "center" });
+        const box = opt.getBoundingClientRect();
+        return { x: Math.round(box.left + box.width / 2), y: Math.round(box.top + box.height / 2) };
+      })())`)) as { x: number; y: number };
+      await page.clickAt(at.x, at.y);
+      await waitOutTheBeat(page);
+      await settle(800);
+      const geometry = JSON.parse(await page.evaluate(`JSON.stringify((() => {
+        const card = document.querySelector("#main .qcard").getBoundingClientRect();
+        const el = document.querySelector("#main .qcard [data-asked-for]");
+        if (!el) return null;
+        const line = el.getBoundingClientRect();
+        const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
+        const inside = (b) => b.left >= card.left && b.right <= card.right && b.top >= card.top && b.bottom <= card.bottom;
         return {
-          ...(await screenOf(page)), geometry, cls: Number(await page.evaluate("window.__cls")), problems: page.problems(),
+          lineInside: inside(line),
+          lineOverflows: el.scrollWidth > el.clientWidth,
+          lines: Math.round(line.height / lineHeight),
+          options: [...document.querySelectorAll("#main .qcard .opt")].map((o) => inside(o.getBoundingClientRect())),
+          pageOverflows: document.documentElement.scrollWidth > window.innerWidth,
         };
-      }, PHONE);
-      expect(seen.problems).toEqual([]);
-      expectTheCardWithALine(seen, "experience_7y");
-      expect(namedRoutes(seen.line)).toEqual([["de-blue-card-shortage", "DE"], ["de-chancenkarte", "DE"]]);
-      const g = seen.geometry!;
-      expect(g, "the line has no box").not.toBeNull();
-      process.stdout.write(`  asked-for line at 390 px: ${g.lines} lines, CLS ${seen.cls}\n`);
-      expect(g.lines, "the two-route line did not wrap at 390 px").toBeGreaterThan(1);
-      expect(g.lineInside, "the line reaches out of the card").toBe(true);
-      expect(g.lineOverflows, "the line's text overflows its box").toBe(false);
-      expect(g.options.length, "the card does not draw the question's options").toBe(fieldOptions(ds, "experience_7y").length);
-      expect(g.options.every(Boolean), "an option is off the card").toBe(true);
-      expect(g.pageOverflows, "the page scrolls sideways").toBe(false);
-      expect(seen.cls).toBe(0);
-    } finally {
-      server.close();
-    }
+      })())`)) as {
+        lineInside: boolean; lineOverflows: boolean; lines: number; options: boolean[]; pageOverflows: boolean;
+      } | null;
+      return {
+        ...(await screenOf(page)), geometry, cls: Number(await page.evaluate("window.__cls")), problems: page.problems(),
+      };
+    }, PHONE);
+    expect(seen.problems).toEqual([]);
+    expectTheCardWithALine(seen, "experience_7y");
+    expect(namedRoutes(seen.line)).toEqual([["de-blue-card-shortage", "DE"], ["de-chancenkarte", "DE"]]);
+    const g = seen.geometry!;
+    expect(g, "the line has no box").not.toBeNull();
+    process.stdout.write(`  asked-for line at 390 px: ${g.lines} lines, CLS ${seen.cls}\n`);
+    expect(g.lines, "the two-route line did not wrap at 390 px").toBeGreaterThan(1);
+    expect(g.lineInside, "the line reaches out of the card").toBe(true);
+    expect(g.lineOverflows, "the line's text overflows its box").toBe(false);
+    expect(g.options.length, "the card does not draw the question's options").toBe(fieldOptions(ds, "experience_7y").length);
+    expect(g.options.every(Boolean), "an option is off the card").toBe(true);
+    expect(g.pageOverflows, "the page scrolls sideways").toBe(false);
+    expect(seen.cls).toBe(0);
   }, 120_000);
 });
