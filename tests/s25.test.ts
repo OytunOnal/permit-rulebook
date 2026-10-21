@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import {
-  deriveQuestions, evaluate, fieldOptions, remainingQuestions, unlocks, unlockTitleOf,
+  deriveQuestions, evaluate, fieldOptions, fillRouteSlots, remainingQuestions, unlocks, unlockTitleOf,
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION, restore, serialize } from "../src/lib/record.js";
@@ -287,8 +287,9 @@ interface Card { name: string; status: string; tally: string | null; text: strin
 
 /** Answer whatever question is on the screen from the profile, until the verdict. */
 async function walk(page: BrowserPage, profile: Profile): Promise<{ asked: string[]; cards: Card[]; problems: string[] }> {
-  // Each label as its card draws it: the first words on the card, glossed (#156).
-  const byLabel = new Map(ds.fields.map((f) => [glossed(f.label, new Set()), f.id]));
+  // Each label as its card draws it: the first words on the card, glossed
+  // (#156), with any route it names said in full (#159).
+  const byLabel = new Map(ds.fields.map((f) => [glossed(fillRouteSlots(f.label, ds), new Set()), f.id]));
   const asked: string[] = [];
   for (let i = 0; i < 24; i++) {
     if ((await page.evaluate(STATE)) === "results") break;

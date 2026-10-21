@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  countryPhrase, deriveQuestions, joinAnd, optionMeans, reckonAskingRoutes, shortLabelOf,
+  countryPhrase, deriveQuestions, joinAnd, learnLinkOf, optionMeans, reckonAskingRoutes, shortLabelOf,
   type Dataset, type OpenRoute, type Profile, type Question,
 } from "permit-rulebook-data";
 import {
@@ -147,8 +147,8 @@ export function questionCardHtml(screen: QuestionScreen): string {
             // same one the card and the route page show — and its label is
             // glossed like the rest of the card's words (#151, ruling 8),
             // followed by what the page is where it is not the authority's
-            // (#158).
-            const learn = dataset.fields.find((f) => f.id === q.field)?.learn;
+            // (#158). Any route it names is said in full (#159).
+            const learn = learnLinkOf(dataset, q.field);
             return learn
               ? `<p class="qlearn">Not sure? <a href="${escAttr(learn.url)}" target="_blank" rel="noopener">${
                 esc(learnLinkTextOf({ ...learn, label: glossed(learn.label, glossary) }))}</a></p>`
