@@ -78,9 +78,10 @@ _Avoid_: undocumented, unverified, missing source, TODO, "no source found"
 
 **Deciding path**:
 The single path of a disjunction an outcome actually rested on — the one that
-passed, or, where none did, the nearest reachable one the gap was measured to.
-It names the threshold the reader was measured against, and other paths are
-marked as not theirs. **Where nothing has decided, no path is claimed and
+passed, or, where none did, the nearest reachable one the gap was measured to,
+or, where no gap was measured, the Open path with the fewest unmet rules (ties
+go to the order the paths are written in; #133). It names the threshold the
+reader was measured against, and other paths are marked as not theirs. **Where nothing has decided, no path is claimed and
 nothing is marked either way** — a card that has decided nothing marks nothing.
 _Avoid_: matched path, winning branch, chosen path, first path
 
@@ -178,8 +179,19 @@ reader phrase "scored against your answers" / "scored, …", never bare.
 **Still reachable**:
 A criterion result that did not fail, or failed only by a Bounded gap. The
 single predicate behind route status, hard fail and question selection — it was
-once spelled four different ways, and the spellings drifted.
-_Avoid_: alive, open, possible, not-yet-failed
+once spelled four different ways, and the spellings drifted. A disjunction is
+judged path by path on top of it (Open path, below).
+_Avoid_: alive, possible, not-yet-failed; "open" for a criterion (it names a
+path or a route, below)
+
+**Open path / open route** (#133):
+A path of a disjunction, or a route, none of whose rules is a hard fail. It may
+hold rules that failed (a rung short, recognition not yet): open says the
+reader can still get there, not that nothing failed. A disjunction is a hard
+fail only when none of its paths is open, and every open path asks its
+unanswered questions. The open routes are the ones an Asked-for line is
+measured against.
+_Avoid_: alive, reachable path
 
 **Points ladder**:
 A criterion scored across several declared items against a required total
