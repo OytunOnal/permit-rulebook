@@ -10,9 +10,9 @@ import { STORAGE_KEY } from "../src/lib/record.js";
  * `unknown_label`) is a declaration like any other: its row in the declared panel is answered, has
  * its pencil, and the pencil reopens the question (spec #133, decision 8).
  *
- * The open unknown on a money question is not a band, and the panel looked
- * the answer up among the bands alone: it drew the row as unanswered, with no
- * pencil, the one row that could not be reopened.
+ * The open unknown on a money question is one of its options and none of its
+ * bands, so a panel that reads the answer among the bands alone draws the row
+ * as unanswered, with no pencil, the one row that cannot be reopened.
  *
  * Walked from a cold start over the built page, answer by answer, until the
  * money question is answered with its open unknown. Each case asserts the row

@@ -120,10 +120,9 @@ export const resumedLine = (kept: number): string =>
 
 /**
  * The asked-for line's words (#139; GLOSSARY.md, *Asked-for line*): on a
- * question only some of the reader's open routes read, which routes ask it.
- * A reader with a German job offer was asked for living-cost funds that only
- * the Opportunity Card reads, and nothing said so (spec #133). The route and
- * country names are the dataset's; these are the words around them.
+ * question only some of the reader's open routes read, which routes ask it,
+ * so a question one route needs is not read as one every route needs. The
+ * route and country names are the dataset's; these are the words around them.
  *
  * One or two routes are named, each by its card's own name and its country;
  * the two arguments are markup, already escaped, because the name carries its
@@ -141,9 +140,9 @@ export const askedForNextCount = (routes: number, place: string): string => `${r
 export const ASKED_FOR_COUNTS_JOIN = ", ";
 
 /**
- * Over a question reopened with the pencil. It promised "the rest are kept",
- * and a change of country dropped the answers the new country never reads
- * (v1.2.1 gate critique, F6): it now promises only what happens (#137).
+ * Over a question reopened with the pencil. It promises only what happens: a
+ * change keeps the answers the new choice still uses, and sets aside the
+ * ones no route reads any more (#137).
  */
 export const EDIT_LINE = "Your answer — pick another to change it; answers your new choice still uses are kept";
 

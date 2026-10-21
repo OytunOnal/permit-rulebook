@@ -701,10 +701,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * Replay the stored answers through the interview and keep the ones it
      * still asks for. Changing "destination: Netherlands" to "Germany" drops
      * the Dutch-only answers because the flow no longer reaches them; it does
-     * not drop citizenship, age or salary, which it still does. Anything the
-     * interview would not ask is forgotten rather than shown as a stale row
-     * (human catch: editing question 2 re-asked everything after it). Returns
-     * the answers it set aside, for an edit to name.
+     * not drop citizenship, age or salary, which it still does, so an edit
+     * re-asks nothing already answered. Anything the interview would not ask
+     * is forgotten rather than shown as a stale row. Returns the answers it
+     * set aside, for an edit to name.
      */
     function replayAnswers(): string[] {
       const replayed = replayRecord(ds, answers, asked);
