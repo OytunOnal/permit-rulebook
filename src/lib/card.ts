@@ -13,7 +13,7 @@ import { NOT_CHECKED_HEADING, ROUTE_DOOR, askedHeading, readOn } from "./copy.js
 // A symbol a stranger cannot read is explained the first time a screen uses
 // it, on the screen's own memory (2026-09-08).
 // One frame for every quote the product shows (2026-09-08).
-import { noteHtml, quoteFrame } from "./quote.js";
+import { learnLinkTextOf, linkLabelOf, noteHtml, quoteFrame } from "./quote.js";
 
 /**
  * The blocks of a card that state what the dataset itself says: what else is
@@ -508,8 +508,13 @@ export function closedRowHtml(r: RouteResult): string {
     if (c.op !== "not-in") return "";
     return `<p class="why">${esc(c.text)}</p>${srcLine(c.source)}`;
   }).join("")}
-          <div class="foot"><a class="next" href="${escAttr(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
+          <div class="foot">${sourceLinkHtml(r.route.info_url)}</div>
         </article>`;
+}
+
+/** The link at a card's foot to the page behind it, labelled by whose page it is. */
+export function sourceLinkHtml(url: string): string {
+  return `<a class="next" href="${escAttr(url)}" target="_blank" rel="noopener">${esc(linkLabelOf(url))}</a>`;
 }
 
 /**
@@ -524,14 +529,16 @@ export function closedRowHtml(r: RouteResult): string {
  * notice sends the reader to rather than whichever source it leads with (s8).
  */
 export function noticeHtml(n: Notice): string {
-  const next = n.learn ?? { url: n.source.source_url, label: "Official page" };
+  const next = n.learn
+    ? `<a class="next" href="${escAttr(n.learn.url)}" target="_blank" rel="noopener">${esc(learnLinkTextOf(n.learn))}</a>`
+    : sourceLinkHtml(n.source.source_url);
   return `
         <article class="notice ${escAttr(n.kind)}">
           <h3>${esc(n.title)}</h3>
           <p class="why">${esc(n.body)}</p>
           <div class="foot">
             <div class="srcs">${noticeSources(n).map(srcLine).join("")}</div>
-            <a class="next" href="${escAttr(next.url)}" target="_blank" rel="noopener">${esc(next.label)}</a>
+            ${next}
           </div>
         </article>`;
 }
@@ -568,10 +575,12 @@ export function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  * phone the stop wrapped onto a line of its own (v1.1 gate critique, P5).
  * The route page's own box has never carried one.
  *
- * The label is the text of the link and is printed as the data wrote it: a
- * link says what the reader does there, and an explainer inside it was a
- * sentence underlined end to end (the human's walk, 2026-09-17, s28). The
- * dataset's contract keeps the label free of anything that would want one.
+ * The label is the text of the link and is printed as the data wrote it,
+ * never glossed: a link says what the reader does there, and an explainer
+ * inside it was a sentence underlined end to end (the human's walk,
+ * 2026-09-17, s28). The dataset's contract keeps the label free of anything
+ * that would want one. Where the page is a consolidated text, the label is
+ * followed by what the page is (#158).
  */
 export function learnBoxHtml(ds: Dataset, r: RouteResult, answers: Profile): string {
   const links = liveUnknowns(r, answers)
@@ -579,6 +588,6 @@ export function learnBoxHtml(ds: Dataset, r: RouteResult, answers: Profile): str
     .filter((l): l is { label: string; url: string } => !!l);
   if (!links.length) return "";
   return `<div class="learn">You can find out yourself: ${links
-    .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`)
+    .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${esc(learnLinkTextOf(l))}</a>`)
     .join(" · ")}</div>`;
 }

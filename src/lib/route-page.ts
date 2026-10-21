@@ -36,7 +36,7 @@ import { FEEDBACK_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeade
 import { footerFacts, navCountries } from "./country-page.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
-import { noteHtml, quoteFrame } from "./quote.js";
+import { learnLinkTextOf, linkLabelOf, noteHtml, quoteFrame } from "./quote.js";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
@@ -201,7 +201,9 @@ export function noticesOn(dataset: Dataset, route: Route): Notice[] {
  * needs their own fiche, not the Conseil d'État (s8).
  */
 function noticeSection(n: Notice, seen: Glossary): string {
-  const next = n.learn ?? { url: n.source.source_url, label: "Official page" };
+  const next = n.learn
+    ? { url: n.learn.url, label: learnLinkTextOf(n.learn) }
+    : { url: n.source.source_url, label: linkLabelOf(n.source.source_url) };
   return `
   <section class="notice-block ${escAttr(n.kind)}" aria-labelledby="notice-${escAttr(n.id)}">
     <h2 id="notice-${escAttr(n.id)}">${esc(n.title)}</h2>
@@ -264,7 +266,6 @@ interface QuoteOptions {
   amount?: number;
   /** What the value is called on its own line ("standard amount"). */
   label?: string;
-  linkText?: string;
 }
 
 /** A read date as a quote and a headline figure both print it. */
@@ -278,7 +279,7 @@ function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen:
     value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
     noteHtml(note)}</span>
         <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
-    esc(o.linkText ?? "Official page")} &#8599;</a>
+    esc(linkLabelOf(value.source_url))} &#8599;</a>
       </div>`;
 }
 
@@ -420,7 +421,7 @@ function asksBlock(dataset: Dataset, criteria: Criterion[]): string {
         <div class="asks"><b>What the checker asks</b><ul>${
     fields.map((f) => `<li>${esc(f.label)}</li>`).join("")}</ul>${
     learn.map((l) => `<p>You can find this out yourself: <a ${tapInline()} href="${
-      escAttr(l.url)}" target="_blank" rel="noopener">${esc(l.label)} &#8599;</a></p>`).join("")}</div>`;
+      escAttr(l.url)}" target="_blank" rel="noopener">${esc(learnLinkTextOf(l))} &#8599;</a></p>`).join("")}</div>`;
 }
 
 /** A rule with no quote and no figure under it, its paths included. */

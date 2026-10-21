@@ -11,6 +11,7 @@ import {
 import { countryOf } from "./countries.js";
 import { type Glossary, glossSection } from "./gloss.js";
 import { esc, escAttr } from "./reason.js";
+import { learnLinkTextOf } from "./quote.js";
 import { QUERY_MAX_LENGTH } from "./listbox.js";
 // Which situation answers a country's scored routes take, and the quoted
 // route that would have asked otherwise — derived, never typed (s19); keyed
@@ -139,12 +140,13 @@ export function questionCardHtml(screen: QuestionScreen): string {
             // it up belongs at the question, not three screens later on a
             // result card that already assumed an answer (isolated v1-gate
             // critique, 2026-09-08, F13). It is the dataset's own link — the
-            // same one the card and the route page show — and its label is the
-            // link's text as written: a link is not glossed (s28).
+            // same one the card and the route page show — and its text is the
+            // label as written, never glossed (s28), followed by what the page
+            // is where it is not the authority's (#158).
             const learn = dataset.fields.find((f) => f.id === q.field)?.learn;
             return learn
               ? `<p class="qlearn">Not sure? <a href="${escAttr(learn.url)}" target="_blank" rel="noopener">${
-                esc(learn.label)}</a></p>`
+                esc(learnLinkTextOf(learn))}</a></p>`
               : "";
           })()}
           ${longList ? `

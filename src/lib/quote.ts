@@ -1,5 +1,6 @@
 // @level presentation
-import { LANGUAGE_NAMES, formatEUR, quoteLanguage } from "permit-rulebook-data";
+import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage } from "permit-rulebook-data";
+import { OFFICIAL_PAGE, consolidatedTextOn, learnLinkWithKind } from "./copy.js";
 import { esc } from "./reason.js";
 
 /**
@@ -28,6 +29,22 @@ export interface QuoteFrame {
 }
 
 export const hostOf = (url: string): string => new URL(url).hostname.replace(/^www\./, "");
+
+/** The label of a link to a source: whose page it opens, by its host's kind. */
+export function linkLabelOf(url: string): string {
+  return hostKindOf(url) === "consolidated-text" ? consolidatedTextOn(hostOf(url)) : OFFICIAL_PAGE;
+}
+
+/**
+ * A learn link's text. Its own label says what the reader does there; where
+ * the page is not the authority's, the label is followed by what the page is,
+ * unless the label already says so.
+ */
+export function learnLinkTextOf(learn: { label: string; url: string }): string {
+  if (hostKindOf(learn.url) === "authority") return learn.label;
+  const kind = linkLabelOf(learn.url);
+  return learn.label.includes(kind) ? learn.label : learnLinkWithKind(learn.label, kind);
+}
 
 /**
  * Where the source writes a number differently from the way this page writes
