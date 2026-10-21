@@ -121,7 +121,7 @@ const middleBandOf = (seen: Dataset, field: string): string => {
 };
 const germanyOffer = (seen: Dataset): Profile => ({
   destination: "de", citizenship: "IN", situation: "offer", qualification: "degree", qualification_recent: "no",
-  recognition_de: "not_yet", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
+  recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
   occupation_it: "no", salary_eur_year: middleBandOf(seen, "salary_eur_year"), german: "a1", english: "b2",
   age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 });
