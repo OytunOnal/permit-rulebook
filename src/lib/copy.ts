@@ -119,6 +119,21 @@ export const resumedLine = (kept: number): string =>
   `Continuing where you left off — ${kept} answer${kept === 1 ? "" : "s"} kept.`;
 
 /**
+ * Over a question reopened with the pencil. It promised "the rest are kept",
+ * and a change of country dropped the answers the new country never reads
+ * (v1.2.1 gate critique, F6): it now promises only what happens (#137).
+ */
+export const EDIT_LINE = "Your answer — pick another to change it; answers your new choice still uses are kept";
+
+/**
+ * What opens the set-aside line: the answers a change left without a route
+ * that reads them, named after it by their short labels, on the next screen
+ * only (#137).
+ */
+export const setAsideLead = (count: number): string =>
+  `Set aside — after your change, no route uses ${count === 1 ? "this answer" : "these answers"}:`;
+
+/**
  * What a route page adds to it. A page a stranger lands on cold from a search
  * has to say, before it says anything else, that it is describing rules rather
  * than judging the reader.

@@ -1,9 +1,11 @@
 // @level presentation
 import {
-  deriveBands, fieldOptions, optionMeans, shortLabelOf,
+  deriveBands, fieldOptions, joinAnd, optionMeans, shortLabelOf,
   type Dataset, type FieldOption, type Profile, type Question,
 } from "permit-rulebook-data";
-import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, questionCounter, resumedLine } from "./copy.js";
+import {
+  EDIT_LINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, questionCounter, resumedLine, setAsideLead,
+} from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import { QUERY_MAX_LENGTH } from "./listbox.js";
 // Which situation answers a country's scored routes take, and the quoted
@@ -75,7 +77,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
           ${screen.arrival ?? ""}
           ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(dataset, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${
-            editing ? "Your answer — pick another to change it, the rest are kept" : esc(questionCounter(asked.length + 1, total))
+            esc(editing ? EDIT_LINE : questionCounter(asked.length + 1, total))
           }</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
           ${(() => {
@@ -163,6 +165,18 @@ export function declarationHtml(
       ? `<div class="done" data-field="${escAttr(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(dataset, f))}</dt><dd>${esc(opt.label)}&nbsp;<span class="pen" aria-hidden="true">✎</span></dd></div>`
       : `<div><dt>${esc(shortLabelOf(dataset, f))}</dt><dd class="pending">—</dd></div>`;
   }).join("");
+}
+
+/**
+ * The set-aside line: the answers the last edit's replay dropped, each by its
+ * short label, under the panel's rows. Nothing when nothing was set aside.
+ * Each name carries its field, so a reader of the page can tell which answer
+ * it is without reading the words.
+ */
+export function setAsideHtml(dataset: Dataset, setAside: readonly string[]): string {
+  if (!setAside.length) return "";
+  const names = setAside.map((f) => `<b data-set-aside="${escAttr(f)}">${esc(shortLabelOf(dataset, f))}</b>`);
+  return `<p class="set-aside">${esc(setAsideLead(setAside.length))} ${joinAnd(names)}.</p>`;
 }
 
 /** On a phone the ledger collapses to this one line; on a wide screen the
