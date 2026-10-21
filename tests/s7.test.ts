@@ -96,8 +96,8 @@ describe("s7 — a Turkish passport on the Dutch highly skilled migrant route", 
   it("does not count a condition that does not bind this reader among the ones stated", () => {
     const route = routeOf("nl-hsm-30plus");
     const line = scopedHtml(route, turkish, "/netherlands/highly-skilled-migrant-30-or-older/");
-    expect(line).toContain(scopeLine(route, turkish));
-    expect(line).not.toContain(scopeLine(route, {}));
+    expect(line).toContain(scopeLine(route, { reader: "answered", profile: turkish }));
+    expect(line).not.toContain(scopeLine(route, { reader: "answered", profile: {} }));
     // Every card links on to the page that states the rules in full.
     expect(line).toContain(ROUTE_DOOR);
   });

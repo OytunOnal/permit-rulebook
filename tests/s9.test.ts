@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { isScored, scopeLine, routeStatements, type Dataset } from "permit-rulebook-data";
+import { countryPhraseAtStart, isScored, scopeLine, scopeWords, routeStatements, type Dataset } from "permit-rulebook-data";
 import { routePage, routePages } from "../src/lib/route-page.js";
-import { QUOTED_ONLY_HEADING, countryPage, countryAddresses } from "../src/lib/country-page.js";
+import { countryPage, countryAddresses } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { indexedPaths } from "../src/lib/sitemap.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { arrivalFrom, countryArrivalFrom, destinationForCountry } from "../src/lib/scope.js";
-import { NO_FIGURE } from "../src/lib/copy.js";
+import { NO_FIGURE, QUOTED_ONLY_HEADING, countryHeadline } from "../src/lib/copy.js";
 
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds, "2026-09-10");
@@ -50,11 +50,12 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
     ]);
   });
 
-  it("its scope line says quoted and dated, not scored", () => {
+  it("its scope line says quoted and dated, and that the checker does not ask about it", () => {
+    const notAsked = scopeWords("rules-quoted-nothing-asked", { stated: 0, noted: 0 }, { reader: "not-answered" });
     for (const a of unscoredAddresses()) {
       const text = textOf(routePage(ds, a, "2026-09-10").html);
-      expect(scopeLine(a.route), a.route.id).toBe("quoted and dated · not scored");
-      expect(text, a.route.id).toContain("quoted and dated · not scored");
+      expect(scopeLine(a.route, { reader: "not-answered" }), a.route.id).toBe(notAsked);
+      expect(text, a.route.id).toContain(notAsked);
     }
   });
 
@@ -173,8 +174,8 @@ describe("s9 — a country page lists them, below the ones it scores", () => {
       const { page } = pageFor(country.code);
       const h1 = page.html.match(/<h1>([^<]*)/)![1]!;
       const scored = country.routes.filter(isScored).length;
-      const quotedOnly = country.routes.length - scored;
-      expect(h1, country.code).toContain(`${scored} route${scored === 1 ? "" : "s"} scored, ${quotedOnly} quoted`);
+      expect(h1, country.code).toContain(
+        countryHeadline(countryPhraseAtStart(country.code), country.routes.length, scored));
       for (const word of ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"])
         expect(h1.toLowerCase(), `${country.code} spells ${word}`).not.toMatch(new RegExp(`\b${word}\b`));
     }
@@ -195,7 +196,8 @@ describe("s9 — a country page lists them, below the ones it scores", () => {
           .toBeGreaterThan(heading);
       // The line under the heading carries the scope line's own words, so the
       // section and the cards inside it say the same thing.
-      expect(textOf(page.html), country.code).toContain("quoted and dated · not scored");
+      expect(textOf(page.html), country.code).toContain(
+        scopeWords("rules-quoted-nothing-asked", { stated: 0, noted: 0 }, { reader: "not-answered" }));
     }
   });
 

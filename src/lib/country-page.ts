@@ -1,7 +1,7 @@
 // @level presentation
-// A count reads as a word in a sentence — "Germany: eight routes." — and the
-// dataset package spells it, so the site and the data cannot disagree about
-// what eight is called (Standards review, 2026-09-08).
+// A count reads as a word in a sentence — "two routes we hold the rules for"
+// — and the dataset package spells it, so the site and the data cannot
+// disagree about what two is called (Standards review, 2026-09-08).
 import {
   countedWords, countryPhrase, countryPhraseAtStart, datasetMeta, isScored, joinAnd, scopeLine,
   type Country, type Dataset, type Notice, type Route, type UnreadSource,
@@ -12,7 +12,8 @@ import {
   PAGE_CSS, audienceSentence, gist, pageStamp, routeFigure,
 } from "./route-page.js";
 import {
-  DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay, readOn,
+  DISCLAIMER, LISTED_WITH_THE_REASONS, PRODUCT_NAME, QUOTED_ONLY_HEADING, RESULT_NAMES_ASKED_ROUTES, TAGLINE,
+  askedRoutesLabel, countryHeadline, datasetDay, notAskedBelowLine, notAskedLede, notAskedRoutesLabel, readOn,
 } from "./copy.js";
 import {
   DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, OWNER, REPO_DATA, analyticsBeacon,
@@ -130,26 +131,13 @@ function description(country: Country): string {
     `${listed} — each with the authority's own sentence for every value and the day it was read.`;
 }
 
-/**
- * The heading over the routes a country page lists and the product does not
- * score.
- *
- * It promises nothing, and it is written to: "Also here" would offer them
- * alongside the scored ones, and a heading that offers is a heading a reader
- * will click expecting a verdict. These words are the scope line's own —
- * "quoted and dated · not scored" — cut down to what a section heading can
- * carry, so the heading, the card under it and the page it opens all say the
- * same thing (s9).
- */
-export const QUOTED_ONLY_HEADING = "Quoted here, not scored";
-
 /** A composed phrase starting a sentence. `countedWords` spells a number for
  * the middle of one ("one route"), and a heading's line begins with it. */
 const sentenceCase = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
- * One card on a country index. The same card for a route the product scores and
- * one it does not — same name, same gist, same read date — minus the figure,
+ * One card on a country index. The same card for a route the checker asks about
+ * and one it does not — same name, same gist, same read date — minus the figure,
  * which a route with no rule to decide has no honest number for. Leaving the
  * figure's own "no salary threshold" on an unscored card would state as a fact
  * about the route something that is a fact about our dataset (s9).
@@ -160,7 +148,7 @@ function routeCard(dataset: Dataset, country: Country, route: Route, seen: Gloss
       <li><a class="card tap-min" href="${escAttr(url(routePath(country, route)))}"><span class="name">${
     esc(glossSection(route.name, seen))}</span><p class="gist">${esc(gist(route))}</p><p class="meta">${
     figure ? `<span>${esc(figure.label)}${figure.value ? ` <b>${esc(figure.value)}</b>` : ""}</span>` : ""}<span>${
-    esc(scopeLine(route))}</span><span class="read"><time datetime="${
+    esc(scopeLine(route, { reader: "not-answered" }))}</span><span class="read"><time datetime="${
     escAttr(pageStamp(dataset, route))}">${esc(readOn(pageStamp(dataset, route)))}</time></span></p></a></li>`;
 }
 
@@ -169,36 +157,21 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   const title = `Work permits in ${countryPhrase(country.code)} · ${PRODUCT_NAME}`;
   const desc = description(country);
   const read = countryReadDate(dataset, country);
-  const count = country.routes.length;
-  /**
-   * The heading counts the two kinds apart.
-   *
-   * "Germany: nine routes" over a page whose ninth route has no verdict in it
-   * promises nine answers and delivers eight — the same blur the data page
-   * refuses ("a single total would let the second kind pass as the first").
-   * Where a country has none of the second kind the heading is what it always
-   * was (Standards review, 2026-09-10).
-   */
-  // The two lists this page carries. The routes the product scores come first,
-  // in the dataset's own order; the ones it states and does not score come
+  // The two lists this page carries. The routes the checker asks about come
+  // first, in the dataset's own order; the ones it does not ask about come
   // below them under a heading that offers nothing (s9).
   const scored = country.routes.filter(isScored);
   const quotedOnly = country.routes.filter((r) => !isScored(r));
+  /**
+   * The heading counts every route, then the ones the checker asks about: a
+   * single total over a page whose last route has no verdict in it would
+   * promise answers the page does not give. It counts in figures, as every
+   * label on the product does; the ledes below it count in words, because
+   * they are sentences.
+   */
+  const headline = countryHeadline(countryPhraseAtStart(country.code), country.routes.length, scored.length);
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
-  /**
-   * A heading counts in figures, a sentence counts in words.
-   *
-   * The two-number heading read "five routes scored, 1 quoted" — one count
-   * spelled and the other not, in the same breath (human, 2026-09-11). The
-   * ledes below it stay in words, because they are sentences; this is a label,
-   * and every other label on the product counts in figures ("1 open",
-   * "3 not yet", the "(1)" after a section heading).
-   */
-  const counted = (n: number): string => `${n} ${n === 1 ? "route" : "routes"}`;
-  const headingCount = quotedOnly.length
-    ? `${counted(scored.length)} scored, ${quotedOnly.length} quoted`
-    : counted(count);
   const seen: Glossary = new Set();
 
   const head = `<meta charset="utf-8">
@@ -215,11 +188,11 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
 
   <div class="masthead-with-stamps">
     <div>
-      <h1>${esc(countryPhraseAtStart(country.code))}: ${esc(headingCount)}. <em>${esc(TAGLINE)}</em></h1>
+      <h1>${esc(headline)} <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">Every employment route ${esc(countryPhrase(country.code))} publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. ${
     esc(audienceSentence(country))} ${quotedOnly.length
-    ? `Below them, ${esc(countedWords(quotedOnly.length, "route"))} we state and do not score; what is left out altogether is <a class="tap" href="${
-      escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">listed with the reasons</a>.`
+    ? notAskedBelowLine(esc(countedWords(quotedOnly.length, "route")), `<a class="tap" href="${
+      escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">${esc(LISTED_WITH_THE_REASONS)}</a>`)
     : `Routes that turn on an official's discretion are <a class="tap" href="${
       escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">listed with their reasons</a>, not here.`}</p>
     </div>
@@ -227,15 +200,14 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
   </div>
 
   <main>
-    <ul class="routes" aria-label="The routes in ${escAttr(countryPhrase(country.code))} the checker scores">${
+    <ul class="routes" aria-label="${escAttr(askedRoutesLabel(countryPhrase(country.code)))}">${
     scored.map((route) => routeCard(dataset, country, route, seen)).join("")}
     </ul>${quotedOnly.length ? `
 
     <section class="quoted-only" aria-labelledby="quoted-only-h">
       <h2 class="label" id="quoted-only-h">${esc(QUOTED_ONLY_HEADING)}</h2>
-      <p class="lede">${esc(sentenceCase(countedWords(quotedOnly.length, "route")))} we hold the rules for and will not score. Each page states them as the authority does, with the day we read them, and asks you nothing; the checker never offers ${
-    quotedOnly.length === 1 ? "it" : "them"}.</p>
-      <ul class="routes" aria-label="Routes in ${escAttr(countryPhrase(country.code))} the checker does not score">${
+      <p class="lede">${esc(notAskedLede(sentenceCase(countedWords(quotedOnly.length, "route")), quotedOnly.length))}</p>
+      <ul class="routes" aria-label="${escAttr(notAskedRoutesLabel(countryPhrase(country.code)))}">${
     quotedOnly.map((route) => routeCard(dataset, country, route, seen)).join("")}
       </ul>
     </section>` : ""}
@@ -244,7 +216,7 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
       <a class="btn tap-min" href="${escAttr(`${url("/")}?country=${country.code.toLowerCase()}`)}">Check yours — ${
     esc(country.name)}</a>
       <span class="note">Answered on this device only. ${quotedOnly.length
-    ? "The result names which of the scored routes fit; the ones quoted and not scored never appear in it."
+    ? RESULT_NAMES_ASKED_ROUTES
     : "The result names which of these routes fit."}</span>
     </div>
   </main>

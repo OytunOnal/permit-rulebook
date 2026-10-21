@@ -4,7 +4,7 @@ import {
   situationsAsked, type Country, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
-  READ_ITS_RULES, READ_IT_HERE, notScoredLine, notScoredQuotedLine, unscoredHeadline, unscoredNamedRestLine,
+  READ_ITS_RULES, READ_IT_HERE, notCheckedLine, notCheckedQuotedLine, unscoredHeadline, unscoredNamedRestLine,
   unscoredRestLine, unscoredRouteLine, unscoredTallyLine,
 } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
@@ -100,8 +100,8 @@ export function markUnder(ds: Dataset, field: string, value: string, answers: Pr
 /** The mark as the question screen draws it: the copy's line, with the door
  * on the last three words where there is a page to open. */
 export function notScoredMarkHtml(mark: NotScoredMark): string {
-  if (!mark.route) return esc(notScoredLine(mark.country));
-  const line = esc(notScoredQuotedLine(mark.country, mark.route.name));
+  if (!mark.route) return esc(notCheckedLine(mark.country));
+  const line = esc(notCheckedQuotedLine(mark.country, mark.route.name));
   const door = `<a href="${escAttr(url(mark.route.path))}">${esc(READ_IT_HERE)}</a>`;
   return line.replace(esc(READ_IT_HERE), door);
 }

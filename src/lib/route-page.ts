@@ -45,7 +45,8 @@ import {
 } from "./site.js";
 import {
   ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM,
-  ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck, pointsFigure, readOn,
+  NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck,
+  notAskedRouteDescription, pointsFigure, readOn,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -620,7 +621,7 @@ export function gist(route: Route): string {
   // finish (Spec review, 2026-09-08). The summary's first sentence is written
   // to stand alone, so it stands.
   const first = (route.summary ?? "").split(/(?<=\.)\s/)[0] ?? "";
-  return first || scopeLine(route);
+  return first || scopeLine(route, { reader: "not-answered" });
 }
 
 /**
@@ -685,13 +686,11 @@ export interface RoutePage {
 }
 
 function description(dataset: Dataset, country: Country, route: Route): string {
-  // A route the product does not score has no criteria to describe, and the
-  // scored version of this sentence would come out as the country's name, the
+  // A route the checker does not ask about has no criteria to describe, and
+  // the other routes' sentence would come out as the country's name, the
   // route's name and an empty list. What a search result should promise is
   // what the page actually is (s9).
-  if (!isScored(route))
-    return `${countryPossessiveAtStart(country.code)} ${route.name}: the conditions as the authority states them, each with `
-      + "the sentence it came from and the day that page was read. Quoted and dated here; not scored.";
+  if (!isScored(route)) return notAskedRouteDescription(countryPossessiveAtStart(country.code), route.name);
   const bits: string[] = [];
   forEachCriterion(route.criteria, (c) => {
     if (c.op === "gte")
@@ -788,11 +787,11 @@ ${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join(""
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">What the checker asks, and what it does not</b>
     <p>Every number below is quoted from an official page, and ${esc(dailyCheck(missed))}. On this route — <strong>${
-    esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)}</p>
+    esc(scopeLine(route, { reader: "not-answered" }))}</strong>. ${esc(route.scope.reason)}</p>
   </section>` : `
   <section class="scope" aria-labelledby="scope-h">
-    <b id="scope-h">Why this route is not scored here</b>
-    <p><strong>${esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)} Every condition below is quoted from an official page, and ${esc(dailyCheck(missed))}.</p>
+    <b id="scope-h">${esc(NOT_ASKED_SCOPE_HEADING)}</b>
+    <p><strong>${esc(scopeLine(route, { reader: "not-answered" }))}</strong>. ${esc(route.scope.reason)} Every condition below is quoted from an official page, and ${esc(dailyCheck(missed))}.</p>
   </section>`}
 
   <section class="rules" aria-labelledby="rules-h">
