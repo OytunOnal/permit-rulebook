@@ -151,7 +151,7 @@ const READERS: Record<string, Profile> = {
     occupation_it: "no", salary_eur_month: "band_6", age_band: "a30to35", nl_recent_grad: "no", top200_grad: "no",
   },
   everywhere: {
-    destination: "all", citizenship: "US", situation: "none", qualification: "degree", recognition_de: "not_yet",
+    destination: "all", citizenship: "US", situation: "none", qualification: "degree", recognition_de: "not_recognised",
     experience_5y: "2plus", experience_7y: "5plus", occupation_it: "no", occupation_shortage: "unknown",
     nl_recent_grad: "no", top200_grad: "unknown", german: "a2", english: "c1", age_band: "u30",
     de_stay6m: "no", partner_ck: "no", funds_eur_month: "band_1",
