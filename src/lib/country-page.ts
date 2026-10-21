@@ -12,8 +12,10 @@ import {
   PAGE_CSS, audienceSentence, gist, pageStamp, routeFigure,
 } from "./route-page.js";
 import {
-  DISCLAIMER, LISTED_WITH_THE_REASONS, PRODUCT_NAME, QUOTED_ONLY_HEADING, RESULT_NAMES_ASKED_ROUTES, TAGLINE,
-  askedRoutesLabel, countryHeadline, datasetDay, notAskedBelowLine, notAskedLede, notAskedRoutesLabel, readOn,
+  DISCLAIMER, LISTED_WITH_THEIR_REASONS, LISTED_WITH_THE_REASONS, QUOTED_ONLY_HEADING,
+  RESULT_NAMES_ASKED_ROUTES, RESULT_NAMES_FITTING_ROUTES, TAGLINE, askedRoutesLabel, countryHeadline,
+  countryLedeOpen, countryPageDescription, countryPageTitle, datasetDay, discretionLeftOutLine, notAskedBelowLine,
+  notAskedLede, notAskedRoutesLabel, readOn,
 } from "./copy.js";
 import {
   DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, OWNER, REPO_DATA, analyticsBeacon,
@@ -127,8 +129,7 @@ function description(country: Country): string {
   const shown = names.slice(0, 3);
   const rest = names.length - shown.length;
   const listed = rest > 0 ? `${joinAnd(shown)} and ${rest} more` : joinAnd(shown);
-  return `The ${names.length} work-permit routes we hold rules for in ${phraseOf(country.code)}: ` +
-    `${listed} — each with the authority's own sentence for every value and the day it was read.`;
+  return countryPageDescription(names.length, phraseOf(country.code), listed);
 }
 
 /** A composed phrase starting a sentence. `countedWords` spells a number for
@@ -154,7 +155,7 @@ function routeCard(dataset: Dataset, country: Country, route: Route, seen: Gloss
 
 export function countryPage(dataset: Dataset, address: CountryAddress): CountryPage {
   const { country, path } = address;
-  const title = `Work permits in ${phraseOf(country.code)} · ${PRODUCT_NAME}`;
+  const title = countryPageTitle(phraseOf(country.code));
   const desc = description(country);
   const read = countryReadDate(dataset, country);
   // The two lists this page carries. The routes the checker asks about come
@@ -189,12 +190,12 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
   <div class="masthead-with-stamps">
     <div>
       <h1>${esc(headline)} <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">Every employment route ${esc(phraseOf(country.code))} publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. ${
+      <p class="lede">${esc(countryLedeOpen(phraseOf(country.code)))} ${
     esc(audienceSentence(country))} ${quotedOnly.length
     ? notAskedBelowLine(esc(countedWords(quotedOnly.length, "route")), `<a class="tap" href="${
       escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">${esc(LISTED_WITH_THE_REASONS)}</a>`)
-    : `Routes that turn on an official's discretion are <a class="tap" href="${
-      escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">listed with their reasons</a>, not here.`}</p>
+    : discretionLeftOutLine(`<a class="tap" href="${
+      escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">${esc(LISTED_WITH_THEIR_REASONS)}</a>`)}</p>
     </div>
     ${rulesRead(read)}
   </div>
@@ -217,7 +218,7 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
     esc(country.name)}</a>
       <span class="note">Answered on this device only. ${quotedOnly.length
     ? RESULT_NAMES_ASKED_ROUTES
-    : "The result names which of these routes fit."}</span>
+    : RESULT_NAMES_FITTING_ROUTES}</span>
     </div>
   </main>
 

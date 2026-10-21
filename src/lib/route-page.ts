@@ -45,8 +45,8 @@ import {
 } from "./site.js";
 import {
   ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM,
-  NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck,
-  notAskedRouteDescription, pointsFigure, readOn,
+  NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, alsoInHeading,
+  askedRouteDescription, audienceLine, dailyCheck, notAskedRouteDescription, pointsFigure, readOn,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -138,8 +138,7 @@ function gteUnder(c: Criterion): Gte[] {
  * refusal (scenario step 10), and the call to action below leads to the notice
  * that answers her rather than to a rejection.
  */
-export const audienceSentence = (country: Country): string =>
-  `This page is for people who need a permit to work in ${phraseOf(country.code)}.`;
+export const audienceSentence = (country: Country): string => audienceLine(phraseOf(country.code));
 
 /**
  * Every source this page quotes: the pages behind `printedSources`, the same
@@ -663,7 +662,7 @@ function neighbours(country: Country, route: Route, seen: Glossary): string {
   if (!others.length) return "";
   return `
     <nav class="neighbours" aria-labelledby="also-here">
-      <h2 class="label" id="also-here">Also in ${esc(phraseOf(country.code))}</h2>
+      <h2 class="label" id="also-here">${esc(alsoInHeading(phraseOf(country.code)))}</h2>
       <ul>${others.map((r) => `
         <li><a ${tapMin()} href="${escAttr(url(routePath(country, r)))}">${esc(r.name)}<small>${
     esc(glossed(gist(r), seen))}</small></a></li>`).join("")}
@@ -704,8 +703,7 @@ function description(dataset: Dataset, country: Country, route: Route): string {
     if (c.op === "gte" || (("field" in c) && c.field === "citizenship")) continue;
     bits.push(criterionPhrase(dataset, c));
   }
-  return `${possessiveAtStartOf(country.code)} ${route.name}: ${joinAnd(bits)} — every value quoted from its ` +
-    "official page with the date it was read.";
+  return askedRouteDescription(possessiveAtStartOf(country.code), route.name, joinAnd(bits));
 }
 
 /**

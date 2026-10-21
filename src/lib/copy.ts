@@ -100,6 +100,54 @@ export const RESULT_NAMES_ASKED_ROUTES =
   "The result names which of the routes the checker asks about fit; the ones it does not ask about never appear in it.";
 
 /**
+ * The rest of a country page's own words: its title, what a link preview
+ * reads about it, the lede's opening, the line for a country whose routes the
+ * checker asks about all of, and the note under the button there. `country` is
+ * the country's phrase within a sentence; `door` a link, already HTML.
+ */
+export const countryPageTitle = (country: string): string => `Work permits in ${country} · ${PRODUCT_NAME}`;
+/** `listed` names the routes, the first few and how many more. */
+export const countryPageDescription = (count: number, country: string, listed: string): string =>
+  `The ${count} work-permit routes we hold rules for in ${country}: ${listed} — each with the authority's own `
+  + "sentence for every value and the day it was read.";
+export const countryLedeOpen = (country: string): string =>
+  `Every employment route ${country} publishes that a rule can decide, each on its own page with the authority's `
+  + "sentences and the day we read them.";
+export const LISTED_WITH_THEIR_REASONS = "listed with their reasons";
+export const discretionLeftOutLine = (door: string): string => `Routes that turn on an official's discretion are ${door}, not here.`;
+export const RESULT_NAMES_FITTING_ROUTES = "The result names which of these routes fit.";
+
+/** `/data/`'s label for a country's routes as JSON; `country` is its phrase. */
+export const countryAsJsonLabel = (country: string): string => `${country} as JSON`;
+
+/**
+ * A route page's words around its country: who the page is for, the heading
+ * over the country's other routes, and what a search result reads about a
+ * route the checker asks about. `country` is the country's phrase within a
+ * sentence; `countryOpening` its possessive where it opens one ("The
+ * Netherlands'"); `asks` the route's first few conditions, joined.
+ */
+export const audienceLine = (country: string): string => `This page is for people who need a permit to work in ${country}.`;
+export const alsoInHeading = (country: string): string => `Also in ${country}`;
+export const askedRouteDescription = (countryOpening: string, routeName: string, asks: string): string =>
+  `${countryOpening} ${routeName}: ${asks} — every value quoted from its official page with the date it was read.`;
+
+/**
+ * The arrival line's sentences (`lib/scope.ts`): a reader sent from a country's
+ * own page, or from one of its route pages, with the record set to that
+ * country — newly, or moved from another. `placeOpening` is the country's
+ * phrase where it opens a sentence, `place` its phrase within one, `route` the
+ * route's name.
+ */
+export const placeOnRecordLine = (placeOpening: string): string => `${placeOpening} is on the record.`;
+export const placeOnRecordNowLine = (placeOpening: string): string => `${placeOpening} is on the record now.`;
+export const comingFromRouteLine = (route: string, place: string): string => `Coming from ${route} — ${place} is on the record.`;
+export const startingFromRouteLine = (route: string, place: string): string => `Starting from ${route} — ${place} is on the record.`;
+/** The clause that counts the questions still to come; `place` opens it or follows a clause before it. */
+export const placeAsksMoreClause = (place: string, asks: number): string =>
+  `${place} asks ${asks} more question${asks === 1 ? "" : "s"}`;
+
+/**
  * The launch's legal wording, one sentence, everywhere. It is the IRCC-style
  * text that has been on the site since s1, and A1's condition — no advice, no
  * verdict on the person — is satisfied by these words and not by a policy

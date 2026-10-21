@@ -3,6 +3,9 @@ import {
   phraseOf, phraseAtStartOf, isScored, joinAnd, remainingQuestions, shortLabelOf, subjectOf,
 } from "permit-rulebook-data";
 import type { Country, Dataset, Profile, Route } from "permit-rulebook-data";
+import {
+  comingFromRouteLine, placeAsksMoreClause, placeOnRecordLine, placeOnRecordNowLine, startingFromRouteLine,
+} from "./copy.js";
 
 /**
  * Arriving at the interview from a route page.
@@ -223,18 +226,25 @@ export function arrivalSentence(dataset: Dataset, o: {
 }): string {
   const place = phraseOf(o.country);
   const placeOpening = phraseAtStartOf(o.country);
-  // A reader who came from a country's own page is not told they came from
-  // it: the sentence states the place once.
-  const opening = o.route === null
-    ? (o.rescoped ? `${placeOpening} is on the record now.` : `${placeOpening} is on the record.`)
-    : `${o.rescoped ? "Starting" : "Coming"} from ${o.route} — ${place} is on the record.`;
+  const opening = arrivalOpening(o.route, { place, placeOpening }, o.rescoped);
   // A reader who has answered nothing has no answers to account for, and the
   // question counter under this line already says how many are coming.
   if (!o.rescoped) return opening;
   const clauses: string[] = [];
   if (o.kept.length)
     clauses.push(`Your answers about ${joinAnd(o.kept.map((f) => questionPhrase(dataset, f)))} are kept`);
-  if (o.asks > 0)
-    clauses.push(`${clauses.length ? place : placeOpening} asks ${o.asks} more question${o.asks === 1 ? "" : "s"}`);
+  if (o.asks > 0) clauses.push(placeAsksMoreClause(clauses.length ? place : placeOpening, o.asks));
   return clauses.length ? `${opening} ${clauses.join("; ")}.` : opening;
+}
+
+/**
+ * The arrival line's first sentence. A reader who came from a country's own
+ * page (`route` null) is not told they came from it: the sentence states the
+ * place once. One sent from a route page is told which route.
+ */
+function arrivalOpening(
+  route: string | null, names: { place: string; placeOpening: string }, rescoped: boolean,
+): string {
+  if (route === null) return rescoped ? placeOnRecordNowLine(names.placeOpening) : placeOnRecordLine(names.placeOpening);
+  return rescoped ? startingFromRouteLine(route, names.place) : comingFromRouteLine(route, names.place);
 }
