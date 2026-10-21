@@ -437,13 +437,14 @@ describe("s6 — one page per route, generated from the dataset", () => {
     const route = country.routes[0];
     route.name = 'EU Blue Card "general" <b>';
     const gte = route.criteria.find((c) => c.op === "gte");
-    if (gte && gte.op === "gte") gte.threshold.source_url = 'https://example.org/a"b';
+    // On a listed host: a source's host is on a list, or the data gate refuses it (#158).
+    if (gte && gte.op === "gte") gte.threshold.source_url = 'https://www.bamf.de/a"b';
     const page = routePage(hostile, routeAddresses(hostile)[0]);
     // The name reaches the attributes escaped, and no bare quote survives inside one.
     for (const attr of [...page.html.matchAll(/(?:href|content|title|aria-label)="([^"]*)"/g)])
       expect(attr[1], attr[0]).not.toContain("<");
     expect(page.html).toContain("&quot;");
-    expect(page.html).not.toContain('href="https://example.org/a"b"');
+    expect(page.html).not.toContain('href="https://www.bamf.de/a"b"');
     expect(page.html).toContain("&lt;b&gt;");
   });
 

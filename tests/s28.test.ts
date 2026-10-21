@@ -8,6 +8,7 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { routePages } from "../src/lib/route-page.js";
+import { learnLinkTextOf } from "../src/lib/quote.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -25,7 +26,8 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * the absence pinned below is the act's expansion.) The labels are the
  * data's (their own test holds them
  * to the contract); what the site decides is that link text is never glossed
- * and that the three surfaces agree.
+ * and that the three surfaces agree. The link text is the label, followed by
+ * the page's kind where the page is a consolidated text (#158).
  */
 
 /** The shortage field: the one door whose label carried the symbol. */
@@ -65,7 +67,7 @@ describe("2 — link text is never glossed", () => {
     const html = learnBoxHtml(seen, result, UNSURE);
     const [link, ...rest] = anchorsOf(html);
     expect(rest, "the box carries more than the one door").toEqual([]);
-    expect(link.text).toBe(esc(SYMBOL_LABEL));
+    expect(link.text).toBe(esc(learnLinkTextOf(seen.fields.find((f) => f.id === SHORTAGE)!.learn!)));
     expect(html).not.toContain(ACT_EXPANSION);
   });
 
@@ -79,7 +81,7 @@ describe("2 — link text is never glossed", () => {
     expect(line, "no help line under the shortage question").not.toBeNull();
     const [link, ...rest] = anchorsOf(line![1]);
     expect(rest).toEqual([]);
-    expect(link.text).toBe(esc(SYMBOL_LABEL));
+    expect(link.text).toBe(esc(learnLinkTextOf(seen.fields.find((f) => f.id === SHORTAGE)!.learn!)));
     expect(html).not.toContain(ACT_EXPANSION);
   });
 });
@@ -93,7 +95,7 @@ describe("3 — the three surfaces agree", () => {
   });
 
   /** Every "What the checker asks" block on every route page — the block's
-   * own links only: a route's "Official page" may share a door's address, and
+   * own links only: a route's source link may share a door's address, and
    * that link is the route's, not the door's. */
   const asks = pages.flatMap((p) =>
     [...p.html.matchAll(/<div class="asks">([\s\S]*?)<\/div>/g)].map((m) => ({ path: p.path, html: m[1] })));
@@ -103,7 +105,7 @@ describe("3 — the three surfaces agree", () => {
       const question = deriveQuestions(ds).find((q) => q.field === door.field)!;
       const qhtml = questionCardHtml({ dataset: ds, question, answers: {}, asked: [], editing: null, total: 10 });
       const qline = /<p class="qlearn">([\s\S]*?)<\/p>/.exec(qhtml)![1];
-      expect(anchorsOf(qline)).toEqual([{ href: escAttr(door.url), text: esc(door.label) }]);
+      expect(anchorsOf(qline)).toEqual([{ href: escAttr(door.url), text: esc(learnLinkTextOf(door)) }]);
 
       // A route page draws the block only under a rule with no quote to show,
       // so a door reaches this surface only where its rule is unquoted: the
@@ -115,8 +117,8 @@ describe("3 — the three surfaces agree", () => {
       for (const b of asks.filter((b) => b.html.includes(asked))) {
         // The route page draws its own external mark after the label.
         const links = anchorsOf(b.html).map((a) => ({ href: a.href, text: a.text.replace(/\s*&#8599;$/, "") }));
-        expect(links.filter((a) => a.text === esc(door.label) || a.href === escAttr(door.url)), b.path)
-          .toEqual([{ href: escAttr(door.url), text: esc(door.label) }]);
+        expect(links.filter((a) => a.text === esc(learnLinkTextOf(door)) || a.href === escAttr(door.url)), b.path)
+          .toEqual([{ href: escAttr(door.url), text: esc(learnLinkTextOf(door)) }]);
       }
     });
   }
@@ -141,7 +143,7 @@ describe("3 — the three surfaces agree", () => {
       const result = evaluate(ds, profile).find((r) => r.route.id === route)!;
       expect(result.status, `${route} is not on hold`).toBe("hold");
       const door = ds.fields.find((f) => f.id === field)!.learn!;
-      expect(anchorsOf(learnBoxHtml(ds, result, profile))).toEqual([{ href: escAttr(door.url), text: esc(door.label) }]);
+      expect(anchorsOf(learnBoxHtml(ds, result, profile))).toEqual([{ href: escAttr(door.url), text: esc(learnLinkTextOf(door)) }]);
     });
   }
 });
@@ -228,16 +230,16 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
 
       expect(seen.problems).toEqual([]);
       // Under the question: the sentence as one link, no explainer around it.
-      expect(seen.help).toEqual([{ text: door.label, href: door.url }]);
+      expect(seen.help).toEqual([{ text: learnLinkTextOf(door), href: door.url }]);
       expect(seen.helpText).not.toContain(ACT_EXPANSION);
       // The result: one box, on the card the unknown still binds, drawn open.
       expect(seen.state).toBe("results");
       expect(seen.boxes.length).toBe(1);
       expect(seen.boxes[0].open, "the hold row with the open question is not drawn open").toBe(true);
-      expect(seen.boxes[0].links).toEqual([{ text: door.label, href: door.url }]);
+      expect(seen.boxes[0].links).toEqual([{ text: learnLinkTextOf(door), href: door.url }]);
       expect(seen.boxes[0].text).not.toContain(ACT_EXPANSION);
       // The route page: the same sentence, the same address.
-      expect(seen.asks.map((a) => ({ text: a.text.replace(/\s*↗$/, ""), href: a.href }))).toEqual([{ text: door.label, href: door.url }]);
+      expect(seen.asks.map((a) => ({ text: a.text.replace(/\s*↗$/, ""), href: a.href }))).toEqual([{ text: learnLinkTextOf(door), href: door.url }]);
       expect(seen.asksText).toContain("You can find this out yourself");
       expect(seen.asksText).not.toContain(ACT_EXPANSION);
     } finally {

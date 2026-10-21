@@ -207,7 +207,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { leadCountry, leads, namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
     import {
       carveOutHtml, caveatHtml, closedRowHtml, learnBoxHtml, noticeHtml, pointsLineHtml, precondHtml,
-      provenanceHtml, railHtml, readingHtml, scopedHtml,
+      provenanceHtml, railHtml, readingHtml, scopedHtml, sourceLinkHtml,
       measuredCriterionOf,
     } from "../lib/card.js";
     // What the screen does with the engine's unlock rows — their order, which
@@ -1070,7 +1070,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           })() : ""}
           ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Short by ${r.gap_points} point${r.gap_points === 1 ? "" : "s"}.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
           ${learnBoxFor(r)}
-          <div class="foot">${provenanceFor(r)}<a class="next" href="${escAttr(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
+          <div class="foot">${provenanceFor(r)}${sourceLinkHtml(r.route.info_url)}</div>
         </article>`;
     }
 
@@ -1093,7 +1093,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             ${pointsLineHtml(ds, r)}
             ${failDetail(r)}
             ${learnBoxFor(r)}
-            <div class="foot">${provenanceFor(r)}<a class="next" href="${escAttr(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
+            <div class="foot">${provenanceFor(r)}${sourceLinkHtml(r.route.info_url)}</div>
           </div>
         </details>`;
     }

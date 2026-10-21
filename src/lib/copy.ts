@@ -43,6 +43,15 @@ export const ROUTE_TAGLINE = "The rules, quoted and dated:";
 export const ROUTE_DOOR = "Read the rules of this route";
 
 /**
+ * A link to a source says whose page it opens (GLOSSARY, Consolidated text).
+ * The kind is the data package's, read off the host; the words are these.
+ */
+export const OFFICIAL_PAGE = "Official page";
+export const consolidatedTextOn = (host: string): string => `Consolidated text on ${host}`;
+/** A learn link's own label, followed by the kind of page it opens. */
+export const learnLinkWithKind = (label: string, kind: string): string => `${label} — ${kind}`;
+
+/**
  * The one-line promise the README leads with and the social card carries.
  *
  * The two counts are read from the dataset rather than typed here: they were
