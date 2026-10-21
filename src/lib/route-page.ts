@@ -1,7 +1,7 @@
 // @level presentation
 import {
   scopeLine, countryPhrase, countryPossessiveAtStart, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
-  isLocalization, isScored, joinAnd, noticeSources, provenancedValuesOf,
+  fillRouteSlots, isLocalization, isScored, joinAnd, learnLinkOf, noticeSources, provenancedValuesOf,
   referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
   type UnreadSource,
@@ -412,10 +412,11 @@ function asksBlock(dataset: Dataset, criteria: Criterion[], seen: Glossary): str
     .map((id) => dataset.fields.find((f) => f.id === id))
     .filter((f): f is NonNullable<typeof f> => f !== undefined);
   if (!fields.length) return "";
-  const learn = fields.flatMap((f) => (f.learn ? [f.learn] : []));
+  // A question's words with any route they name said in full (#159).
+  const learn = fields.flatMap((f) => learnLinkOf(dataset, f.id) ?? []);
   return `
         <div class="asks"><b>What the checker asks</b><ul>${
-    fields.map((f) => `<li>${esc(glossed(f.label, seen))}</li>`).join("")}</ul>${
+    fields.map((f) => `<li>${esc(glossed(fillRouteSlots(f.label, dataset), seen))}</li>`).join("")}</ul>${
     learn.map((l) => `<p>You can find this out yourself: <a ${tapInline()} href="${
       escAttr(l.url)}" target="_blank" rel="noopener">${
       esc(learnLinkTextOf({ ...l, label: glossed(l.label, seen) }))} &#8599;</a></p>`).join("")}</div>`;

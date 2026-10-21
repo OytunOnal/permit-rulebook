@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { countryPhraseAtStart, deriveBands, evaluate, remainingQuestions } from "permit-rulebook-data";
+import { countryPhraseAtStart, deriveBands, evaluate, fillRouteSlots, remainingQuestions } from "permit-rulebook-data";
 import {
   arrivalFrom, arrivalPlan, arrivalSentence, countryArrivalFrom, destinationFor,
   destinationForCountry, questionPhrase,
@@ -223,7 +223,9 @@ describe("the arrival line says what actually happens next", () => {
     for (const field of ds.fields.map((f) => f.id)) {
       const def = ds.fields.find((f) => f.id === field)!;
       const phrase = questionPhrase(ds, field);
-      expect([def.subject, def.short_label].filter(Boolean), `${field}: "${phrase}" is not declared`)
+      // The subject with any route it names said in full (#159), or the short label.
+      const subject = def.subject && fillRouteSlots(def.subject, ds);
+      expect([subject, def.short_label].filter(Boolean), `${field}: "${phrase}" is not declared`)
         .toContain(phrase);
       expect(phrase, field).not.toBe(field);
       expect(phrase, field).not.toMatch(/_/);

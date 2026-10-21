@@ -2,7 +2,7 @@
 import {
   answerLabel, bindsReader, carveOutFor, closedBy, decidingCriteria, deriveBands, fieldOptions, forEachCriterion,
   formatEUR, formatEURPer,
-  gapCriterionOf, liveUnknowns, noticeSources,
+  gapCriterionOf, learnLinkOf, liveUnknowns, noticeSources,
   resultProvenance,
   routeReadings, routeStatements, scopeLine, shortLabelOf,
   type Band, type Criterion, type Dataset, type Notice, type Profile, type Route, type RouteResult,
@@ -592,11 +592,11 @@ export function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  * (#151, ruling 8); the dataset's contract keeps citations out of it, whose
  * explainer would make a sentence underlined end to end (s28). Where the page
  * is a consolidated text, the glossed label is followed by what the page is
- * (#158).
+ * (#158). Any route the label names is said in full (#159).
  */
 export function learnBoxHtml(ds: Dataset, r: RouteResult, answers: Profile, seen: Glossary = new Set()): string {
   const links = liveUnknowns(r, answers)
-    .map((f) => ds.fields.find((d) => d.id === f)?.learn)
+    .map((f) => learnLinkOf(ds, f))
     .filter((l): l is { label: string; url: string } => !!l);
   if (!links.length) return "";
   return `<div class="learn">You can find out yourself: ${links
