@@ -100,6 +100,15 @@ const EXPLORE_SENTENCE: Record<Explore, string> = {
   "several-countries": " Change an answer to explore — or see each country's reasons below.",
 };
 
+/**
+ * What the results compared, counted in routes — the thing the reader came
+ * for — and in the reader's verb, "checked" (#151). The passive, as the intro
+ * (human, 2026-09-16): the count is the subject, so the verb agrees with it.
+ */
+export const answersCheckedLine = (answered: number, routes: number): string =>
+  `Your ${answered} answer${answered === 1 ? "" : "s"} ${answered === 1 ? "was" : "were"} checked against the `
+  + `published rules of ${routes} route${routes === 1 ? "" : "s"}.`;
+
 const headlineHtml = ({ headline, emphasis }: { headline: string; emphasis?: string }): string =>
   emphasis ? `${esc(headline)} <b>${esc(emphasis)}</b>` : esc(headline);
 
@@ -113,13 +122,6 @@ export function mastheadFor(screen: Screen): Masthead {
         subline: "Nothing to compare: the published rule below answers your situation directly.",
       };
     case "results": {
-      const answers = `${screen.answered} answer${screen.answered === 1 ? "" : "s"}`;
-      // The user-facing wording stays "published rule set" — what the code
-      // calls them is Routes, which is the term the glossary fixes (review S2).
-      const sets = `${screen.routes} published rule set${screen.routes === 1 ? "" : "s"}`;
-      // The passive, as the intro (human, 2026-09-16). The count is the
-      // subject now, so the verb has to agree with it: one answer WAS compared.
-      const were = screen.answered === 1 ? "was" : "were";
       if (screen.unscored) {
         const { subline, door } = screen.unscored;
         // The door is a link only in the HTML form; the text form is the
@@ -129,7 +131,7 @@ export function mastheadFor(screen: Screen): Masthead {
           : esc(subline);
         return { headline: headlineHtml(screen), subline, sublineHtml };
       }
-      let subline = `Your ${answers} ${were} compared against ${sets}. Every value below shows its official ` +
+      let subline = `${answersCheckedLine(screen.answered, screen.routes)} Every value below shows its official ` +
         "quote and the date we read it from the source.";
       if (screen.nearest) subline += ` Nearest: ${screen.nearest}.`;
       if (screen.explore) subline += EXPLORE_SENTENCE[screen.explore];
@@ -203,10 +205,12 @@ export function screenAfter(action: FlowAction, interview: Interview): Screen {
  * "your answers ARE compared" is the promise, in the present — so the shape
  * this looks for is the comparison that has been done: "were compared", "was
  * compared", or the old active "compared your". Preceded by "is" or "are" it
- * is the promise and does not count.
+ * is the promise and does not count. The results say "were checked" (#151),
+ * and that is the same claim.
  */
 export function claimsAComparison(text: string): boolean {
   return /(?<!\b(?:is|are)\s)\bcompared\b/i.test(text) ||
+    /\b(?:was|were)\s+checked\b/i.test(text) ||
     /nothing to compare/i.test(text) ||
     /\bbelow\b/i.test(text) ||
     /\b\d+\s+(?:answers?|routes?|published|rule)/i.test(text);

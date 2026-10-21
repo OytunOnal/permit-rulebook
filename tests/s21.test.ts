@@ -11,7 +11,7 @@ import {
   SITUATION_COUNTRY_FIELD, markUnder, notScoredFor, notScoredMarkHtml, unscoredTally,
 } from "../src/lib/situations.js";
 import {
-  IS_QUOTED_NOT_SCORED, READ_IT_HERE, notScoredQuotedLine, unscoredHeadline, unscoredTallyLine,
+  IS_QUOTED_NOT_CHECKED, READ_IT_HERE, notCheckedQuotedLine, unscoredHeadline, unscoredTallyLine,
 } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 
@@ -88,7 +88,7 @@ describe("s21 — question 3 marks a country the declared situation cannot use",
     const html = countryScreen("research");
     const marks = marksOn(html);
     expect(Object.keys(marks)).toEqual(["fr"]);
-    expect(marks.fr!.replace(/<[^>]+>/g, "")).toBe(notScoredQuotedLine(france.name, researcher.name));
+    expect(marks.fr!.replace(/<[^>]+>/g, "")).toBe(notCheckedQuotedLine(france.name, researcher.name));
     expect(marks.fr).toContain(`<a href="${url("/france/talent-researcher")}">${READ_IT_HERE}</a>`);
     expect(html.match(/<button class="opt"/g)!.length).toBe(4);
     // After its button, never inside it.
@@ -125,24 +125,24 @@ describe("s21 — the four-country result says it in the country's line", () => 
     const line = unscoredTally(ds, france, "research");
     expect(line).not.toBeNull();
     expect(line!.text).toBe(
-      "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
+      "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
     expect(line!.html).toBe(
-      "No scored route in France takes a research hosting agreement — "
-      + `<a href="${url("/france/talent-researcher")}">Talent — researcher (chercheur)</a> ${IS_QUOTED_NOT_SCORED}.`,
+      "No route we check in France takes a research hosting agreement — "
+      + `<a href="${url("/france/talent-researcher")}">Talent — researcher (chercheur)</a> ${IS_QUOTED_NOT_CHECKED}.`,
     );
     expect(line!.html).not.toMatch(/class="[^"]*\bout\b/);
   });
 
   it("is the s19 sentence and the s19 words — one copy, in copy.ts", () => {
     expect(unscoredTallyLine("France", "a research hosting agreement", "Talent — researcher (chercheur)")).toBe(
-      `${unscoredHeadline("France", "a research hosting agreement").replace(/\.$/, "")} — Talent — researcher (chercheur) ${IS_QUOTED_NOT_SCORED}.`,
+      `${unscoredHeadline("France", "a research hosting agreement").replace(/\.$/, "")} — Talent — researcher (chercheur) ${IS_QUOTED_NOT_CHECKED}.`,
     );
     // Without a quoted route the line is the headline alone.
     expect(unscoredTallyLine("France", "a research hosting agreement")).toBe(unscoredHeadline("France", "a research hosting agreement"));
     expect(unscoredTally(ds, { code: "XX", name: "Nowhere", routes: [] }, "research")).toBeNull();
     // The question-2 mark reads the same clause.
-    expect(notScoredQuotedLine("France", "R")).toContain(IS_QUOTED_NOT_SCORED);
+    expect(notCheckedQuotedLine("France", "R")).toContain(IS_QUOTED_NOT_CHECKED);
   });
 
   it("only a country closed to the declared situation: the other three, the other answers and no answer leave the tally alone", () => {
@@ -160,7 +160,7 @@ describe("s21 — the four-country result says it in the country's line", () => 
     const doctored = { ...ds, countries: ds.countries.map(renamed) } as Dataset;
     const line = unscoredTally(doctored, renamed(france), "research");
     expect(line).not.toBeNull();
-    expect(line!.text).toBe("No scored route in France takes a research hosting agreement — <x> is quoted, not scored.");
+    expect(line!.text).toBe("No route we check in France takes a research hosting agreement — <x> is quoted, not checked.");
     expect(line!.html).toContain(">&lt;x&gt;</a>");
     expect(line!.html).not.toContain("<x>");
   });
@@ -296,7 +296,7 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
       expect(q3.marks).toEqual([{
         under: "fr",
         id: q3.marks[0]?.id,
-        text: "Not scored for France yet — Talent — researcher (chercheur) is quoted, not scored: read it here.",
+        text: "Not checked for France yet — Talent — researcher (chercheur) is quoted, not checked: read it here.",
         href: url("/france/talent-researcher"),
         glyph: "none",
       }]);
@@ -318,11 +318,11 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
       // question 3 and led with its section; tests/s26 pins those two, and
       // what this case keeps is s21's own: the mark at question 3, and the
       // sentence with its link on France's line.
-      expect(result.headline).toBe("No scored route in France takes a research hosting agreement.");
+      expect(result.headline).toBe("No route we check in France takes a research hosting agreement.");
       expect(result.lines.map((l) => l.name)).toEqual(["France", "Germany", "Spain", "Netherlands"]);
       const [fr, germany, spain, netherlands] = result.lines;
       expect(fr!.tally).toBe(
-        "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
+        "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
       );
       expect(fr!.link).toEqual({
         text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher"), glyph: "none", out: false,

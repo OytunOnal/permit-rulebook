@@ -95,9 +95,9 @@ describe("s26 — the named country gets the four-country headline", () => {
 
   it("the France researcher, both ways: the same words, the door to the quoted route", () => {
     const four = unscoredVerdict(ds, fourCountry("research", "fr"))!;
-    expect(four.headline).toBe("No scored route in France takes a research hosting agreement.");
+    expect(four.headline).toBe("No route we check in France takes a research hosting agreement.");
     expect(four.subline).toBe(
-      "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not scored: "
+      "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
       + "read its rules. France's routes below need a job offer or an intra-corporate transfer.",
     );
     expect(four.door).toEqual({ text: READ_ITS_RULES, href: url("/france/talent-researcher") });
@@ -142,7 +142,7 @@ describe("s26 — the named country's section leads", () => {
     expect(ds.countries.map((c) => leads(c, lead))).toEqual([false, true, false, false]);
     // Its line keeps s21's sentence and link.
     expect(unscoredTally(ds, france, "research")!.text).toBe(
-      "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
+      "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
   });
 
@@ -297,10 +297,10 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
         expect(nothingOpen.problems).toEqual([]);
         expect(nothingOpen.state).toBe("results");
         // The headline is France's written state — the one s19 writes on the France path.
-        expect(nothingOpen.headline).toBe("No scored route in France takes a research hosting agreement.");
-        expect(nothingOpen.status).toBe("No scored route in France takes a research hosting agreement.");
+        expect(nothingOpen.headline).toBe("No route we check in France takes a research hosting agreement.");
+        expect(nothingOpen.status).toBe("No route we check in France takes a research hosting agreement.");
         expect(nothingOpen.subline).toBe(
-          "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not scored: "
+          "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
           + "read its rules. France's routes below need a job offer or an intra-corporate transfer.",
         );
         expect(nothingOpen.doorText).toBe("read its rules");
@@ -314,7 +314,7 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
         ]);
         const [fr, germany] = nothingOpen.lines;
         expect(fr!.tally).toBe(
-          "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
+          "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
         );
         expect(fr!.link).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
         expect(fr!.heads).toEqual(["Not yet (5)"]);
@@ -325,13 +325,13 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
         expect(opened.problems).toEqual([]);
         expect(opened.state).toBe("results");
         expect(opened.headline).toMatch(/^1 route looks open\./);
-        expect(opened.headline + opened.subline).not.toContain("No scored route");
+        expect(opened.headline + opened.subline).not.toContain("No route we check");
         expect(opened.door).toBeNull();
         expect(opened.lines.map((l) => [l.name, l.open])).toEqual([
           ["Germany", true], ["France", false], ["Spain", false], ["Netherlands", false],
         ]);
         expect(opened.lines[1]!.tally).toBe(
-          "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
+          "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
         );
         expect(opened.lines[1]!.link).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
 
@@ -387,7 +387,7 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
       ]);
       expect(offer.lines.every((l) => l.link === null)).toBe(true);
       // France leads, open, with its sentence; Germany, second, is open on its steps.
-      expect(both.headline).toBe("No scored route in France takes a research hosting agreement.");
+      expect(both.headline).toBe("No route we check in France takes a research hosting agreement.");
       expect(both.lines.map((l) => [l.name, l.open])).toEqual([
         ["France", true], ["Germany", true], ["Spain", false], ["Netherlands", false],
       ]);

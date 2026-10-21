@@ -101,11 +101,11 @@ async function main() {
   // The product's own words and the card's own layout, imported rather than
   // retyped. Node strips the types; the specifiers are `.ts` because Node
   // resolves a `.js` specifier literally and there is no build step here.
-  const { PRODUCT_NAME, TAGLINE } = await import("../src/lib/copy.ts");
+  const { PRODUCT_NAME, TAGLINE, routesCheckerAsksAbout } = await import("../src/lib/copy.ts");
   const { socialCardFacts, socialCardHtml } = await import("../src/lib/social-card.ts");
   const tokens = readFileSync(join(root, "tokens.css"), "utf8");
   const facts = socialCardFacts(dataset, datasetMeta(dataset).newest_retrieved_at, {
-    product: PRODUCT_NAME, tagline: TAGLINE,
+    product: PRODUCT_NAME, tagline: TAGLINE, routes: routesCheckerAsksAbout,
   });
 
   if (check) {
