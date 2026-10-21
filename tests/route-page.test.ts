@@ -537,6 +537,30 @@ describe("s6 — one page per route, generated from the dataset", () => {
   });
 
   /**
+   * A quoted card whose disjunction has an unquoted path lists that path's
+   * question under "What the checker asks": a quote on one path does not
+   * quote the rules of another. The Spanish and Dutch Blue Cards' salary
+   * rules each have a path that asks a question no quote covers.
+   */
+  it("a quoted card lists the unquoted rules of its disjunction's paths: the Spanish and Dutch Blue Cards", () => {
+    const pathQuestions = [
+      { path: "/spain/eu-blue-card", field: "qualification_recent" },
+      { path: "/netherlands/eu-blue-card", field: "qualification" },
+    ];
+    for (const { path, field } of pathQuestions) {
+      const page = pages.find((p) => p.path === path);
+      expect(page, `no page at ${path}`).toBeDefined();
+      const listed = `<li>${esc(ds.fields.find((f) => f.id === field)!.label)}</li>`;
+      const asking = [...page!.html.matchAll(/<article class="rule">([\s\S]*?)<\/article>/g)]
+        .map((m) => m[1])
+        .filter((card) => (/<div class="asks">([\s\S]*?)<\/div>/.exec(card)?.[1] ?? "").includes(listed));
+      expect(asking.length, `${path}: cards that ask ${field}`).toBe(1);
+      // The card that asks it is quoted: the block speaks for its path.
+      expect(asking[0]!.includes("<q") || asking[0]!.includes("rail-list"), path).toBe(true);
+    }
+  });
+
+  /**
    * R11 — one guarded formatter for the dataset's version.
    */
   it("prints the dataset version as a date and the schema version as a version", () => {
@@ -592,7 +616,10 @@ describe("s6 — one page per route, generated from the dataset", () => {
  * cannot.
  */
 describe("a route page dates what it prints", () => {
-  const NEVER_PRINTED = "2026-09-30";
+  // Newer than every read the dataset carries, so only the bent sources can
+  // put it on a stamp: the dataset's newest read is 2026-10-21 since the
+  // German Blue Card's IT path was read (#134), past the 2026-09-30 used before.
+  const NEVER_PRINTED = "2026-11-30";
   const bent = structuredClone(ds);
   const audience = (bent.notices ?? []).find((n) => n.kind === "no-permit-needed");
   for (const value of audience?.sources ?? []) value.retrieved_at = NEVER_PRINTED;

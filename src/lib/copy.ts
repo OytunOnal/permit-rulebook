@@ -119,6 +119,44 @@ export const resumedLine = (kept: number): string =>
   `Continuing where you left off — ${kept} answer${kept === 1 ? "" : "s"} kept.`;
 
 /**
+ * The asked-for line's words (#139; GLOSSARY.md, *Asked-for line*): on a
+ * question only some of the reader's open routes read, which routes ask it,
+ * so a question one route needs is not read as one every route needs. The
+ * route and country names are the dataset's; these are the words around them.
+ *
+ * One or two routes are named, each by its card's own name and its country;
+ * the two arguments are markup, already escaped, because the name carries its
+ * route's mark. The country is held to the name's last word, so a wrap at
+ * 390 px never leaves "· Germany" alone on a line. More routes are counted
+ * per country: "3 routes in Germany, 1 in the Netherlands".
+ */
+export const ASKED_FOR = "Asked for:";
+export const askedForRouteHtml = (routeNameHtml: string, countryHtml: string): string =>
+  `${routeNameHtml}&nbsp;·&nbsp;${countryHtml}`;
+export const askedForFirstCount = (routes: number, place: string): string =>
+  `${routes} route${routes === 1 ? "" : "s"} in ${place}`;
+export const askedForNextCount = (routes: number, place: string): string => `${routes} in ${place}`;
+export const ASKED_FOR_COUNTS_JOIN = ", ";
+
+/**
+ * Over a question reopened with the pencil. It promises only what happens: a
+ * change keeps the answers the new choice still uses, and sets aside the
+ * ones no route reads any more (#137).
+ */
+export const EDIT_LINE = "Your answer — pick another to change it; answers your new choice still uses are kept";
+
+/**
+ * What opens the set-aside line: the answers a change left without a route
+ * that reads them, named after it by their short labels, on the next screen
+ * only (#137).
+ */
+export const setAsideLead = (count: number): string =>
+  `Set aside — after your change, no route uses ${count === 1 ? "this answer" : "these answers"}:`;
+/** The whole line: the lead and the names, both already markup, and its
+ * closing full stop. */
+export const setAsideLineHtml = (leadHtml: string, namesHtml: string): string => `${leadHtml} ${namesHtml}.`;
+
+/**
  * What a route page adds to it. A page a stranger lands on cold from a search
  * has to say, before it says anything else, that it is describing rules rather
  * than judging the reader.

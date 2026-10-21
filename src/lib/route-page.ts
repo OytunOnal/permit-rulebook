@@ -410,8 +410,8 @@ function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
  * condition, the honest thing left to say is what the checker will ask her and
  * where she can go and find the answer out — both of which the dataset holds.
  */
-function asksBlock(dataset: Dataset, c: Criterion): string {
-  const fields = referencedFields(c)
+function asksBlock(dataset: Dataset, criteria: Criterion[]): string {
+  const fields = [...new Set(criteria.flatMap((c) => referencedFields(c)))]
     .map((id) => dataset.fields.find((f) => f.id === id))
     .filter((f): f is NonNullable<typeof f> => f !== undefined);
   if (!fields.length) return "";
@@ -421,6 +421,21 @@ function asksBlock(dataset: Dataset, c: Criterion): string {
     fields.map((f) => `<li>${esc(f.label)}</li>`).join("")}</ul>${
     learn.map((l) => `<p>You can find this out yourself: <a ${tapInline()} href="${
       escAttr(l.url)}" target="_blank" rel="noopener">${esc(l.label)} &#8599;</a></p>`).join("")}</div>`;
+}
+
+/** A rule with no quote and no figure under it, its paths included. */
+const isUnquoted = (c: Criterion): boolean => valuesUnder(c).length === 0 && gteUnder(c).length === 0;
+
+/**
+ * The unquoted rules inside a quoted card's disjunction, which the asks block
+ * lists as it lists an unquoted card's own: a quote on one path (the shortage
+ * Blue Card's IT path) does not quote the rules of another (its degree path,
+ * where the shortage list's door belongs). A disjunction that carries its own
+ * quote speaks for its paths, so nothing under it is unquoted.
+ */
+function unquotedInPaths(c: Criterion): Criterion[] {
+  if (c.op !== "any" || c.source) return [];
+  return c.paths.flatMap((p) => p.criteria.flatMap((pc) => (isUnquoted(pc) ? [pc] : unquotedInPaths(pc))));
 }
 
 /** The quotes one rule card prints. */
@@ -440,8 +455,9 @@ function ruleCard(
   const thresholds = gteUnder(c);
   const year = thresholds.length ? thresholds[0].threshold.retrieved_at.slice(0, 4) : "";
   // A card with no evidence and no scale is one sentence restating its own
-  // heading; it says instead what the interview will ask.
-  const asks = values.length === 0 && thresholds.length === 0 ? asksBlock(dataset, c) : "";
+  // heading; it says instead what the interview will ask. A quoted card says
+  // it for the unquoted rules inside its paths.
+  const asks = asksBlock(dataset, values.length === 0 && thresholds.length === 0 ? [c] : unquotedInPaths(c));
   return `
       <article class="rule">
         <div class="top"><h2>${esc(ruleHeading(dataset, c))}</h2><span class="kind">${

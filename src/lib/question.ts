@@ -1,9 +1,15 @@
 // @level presentation
 import {
-  deriveBands, fieldOptions, optionMeans, shortLabelOf,
-  type Dataset, type FieldOption, type Profile, type Question,
+  countryPhrase, deriveQuestions, joinAnd, optionMeans, reckonAskingRoutes, shortLabelOf,
+  type Dataset, type OpenRoute, type Profile, type Question,
 } from "permit-rulebook-data";
-import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, questionCounter, resumedLine } from "./copy.js";
+import {
+  ASKED_FOR, ASKED_FOR_COUNTS_JOIN, EDIT_LINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
+  RETURNING_LINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, questionCounter, resumedLine,
+  setAsideLead, setAsideLineHtml,
+} from "./copy.js";
+import { countryOf } from "./countries.js";
+import { type Glossary, glossSection } from "./gloss.js";
 import { esc, escAttr } from "./reason.js";
 import { QUERY_MAX_LENGTH } from "./listbox.js";
 // Which situation answers a country's scored routes take, and the quoted
@@ -61,6 +67,55 @@ export interface QuestionScreen {
    * line it draws is the sentence alone — the page moves its own "Start over"
    * in after it, so the control is the ledger's and there is never a second. */
   resumed?: number;
+  /** The screen's memory of what its "§" expansion has already said; the
+   * asked-for line's route names spend from it like every route name on the
+   * page. Absent on the build's first paint, which names no route. */
+  glossary?: Glossary;
+}
+
+/** Up to this many routes the asked-for line names; above it, it counts. */
+const NAMED_UP_TO = 2;
+
+/**
+ * The asked-for line (#139; GLOSSARY.md): the routes the question is asked
+ * for, drawn when they are fewer than the open routes.
+ *
+ * Both lists are the engine's own asking reckoning, so the line can never
+ * name a route that does not read the answer; this only compares them and
+ * draws names or counts. The question is reckoned without its own answer, so
+ * a question reopened with the pencil names what it would be asked for had
+ * it not been answered (spec #133, decision 7).
+ */
+function askedForLineHtml({ dataset, answers, question, glossary }: QuestionScreen): string {
+  const unanswered: Profile = { ...answers };
+  delete unanswered[question.field];
+  const { asked_for: askedFor, open } = reckonAskingRoutes(dataset, unanswered, question.field);
+  if (askedFor.length === 0 || askedFor.length === open.length) return "";
+  const body = askedFor.length <= NAMED_UP_TO
+    ? namedRoutesHtml(dataset, askedFor, glossary ?? new Set())
+    : countedRoutesHtml(askedFor);
+  return `<p class="asked-for" data-asked-for>${esc(ASKED_FOR)} ${body}</p>`;
+}
+
+/** Each route by its card's name, through the screen's "§" expansion, and
+ * its country's name; each name carries its route's mark. */
+function namedRoutesHtml(dataset: Dataset, routes: OpenRoute[], glossary: Glossary): string {
+  return joinAnd(routes.map(({ route, country }) => askedForRouteHtml(
+    `<span data-route="${escAttr(route.id)}" data-country="${escAttr(country)}">${esc(glossSection(route.name, glossary))}</span>`,
+    esc(countryOf(dataset, country).name),
+  )));
+}
+
+/** How many routes per country, in the dataset's order of countries; each
+ * count carries its country's mark. */
+function countedRoutesHtml(routes: OpenRoute[]): string {
+  const perCountry = new Map<string, number>();
+  for (const { country } of routes) perCountry.set(country, (perCountry.get(country) ?? 0) + 1);
+  return [...perCountry].map(([country, count], i) => {
+    const place = countryPhrase(country) ?? country;
+    const words = i === 0 ? askedForFirstCount(count, place) : askedForNextCount(count, place);
+    return `<span data-country="${escAttr(country)}" data-routes="${escAttr(String(count))}">${esc(words)}</span>`;
+  }).join(ASKED_FOR_COUNTS_JOIN);
 }
 
 export function questionCardHtml(screen: QuestionScreen): string {
@@ -75,9 +130,10 @@ export function questionCardHtml(screen: QuestionScreen): string {
           ${screen.arrival ?? ""}
           ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(dataset, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${
-            editing ? "Your answer — pick another to change it, the rest are kept" : esc(questionCounter(asked.length + 1, total))
+            esc(editing ? EDIT_LINE : questionCounter(asked.length + 1, total))
           }</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
+          ${askedForLineHtml(screen)}
           ${(() => {
             // Where the answer is a thing a person can look up, the way to look
             // it up belongs at the question, not three screens later on a
@@ -151,18 +207,35 @@ export function questionCardHtml(screen: QuestionScreen): string {
  * long answer in the desktop sidebar wrapped, and the pen alone went to the
  * second line — "University degree ⏎ ✎" at 1280 (v1.1 gate critique, P8 —
  * s27). Now the last word goes with it or neither moves.
+ *
+ * A row's answer is looked up among the options its question offers, so every
+ * answer a reader can pick draws an answered row with its pencil: a money
+ * question's open unknown is one of its options and none of its bands.
  */
 export function declarationHtml(
   dataset: Dataset, answers: Profile, asked: string[], currentField: string | null,
 ): string {
   const fields = currentField && !asked.includes(currentField) ? [...asked, currentField] : asked;
+  const offered = new Map(deriveQuestions(dataset).map((q) => [q.field, q.options]));
   return fields.map((f) => {
-    const opt = (fieldOptions(dataset, f) as FieldOption[]).find((o) => o.value === answers[f]) ??
-      deriveBands(dataset, f).find((b) => b.id === answers[f]);
+    const opt = offered.get(f)?.find((o) => o.value === answers[f]);
     return opt
       ? `<div class="done" data-field="${escAttr(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(dataset, f))}</dt><dd>${esc(opt.label)}&nbsp;<span class="pen" aria-hidden="true">✎</span></dd></div>`
       : `<div><dt>${esc(shortLabelOf(dataset, f))}</dt><dd class="pending">—</dd></div>`;
   }).join("");
+}
+
+/**
+ * The set-aside line: the answers the last edit's replay dropped, each by its
+ * short label. Nothing when nothing was set aside. Each name carries its
+ * field, so a reader of the page can tell which answer it is without reading
+ * the words. A span, because the folded panel shows it in its summary row,
+ * which holds phrasing only.
+ */
+export function setAsideHtml(dataset: Dataset, setAside: readonly string[]): string {
+  if (!setAside.length) return "";
+  const names = setAside.map((f) => `<b data-set-aside="${escAttr(f)}">${esc(shortLabelOf(dataset, f))}</b>`);
+  return `<span class="set-aside">${setAsideLineHtml(esc(setAsideLead(setAside.length)), joinAnd(names))}</span>`;
 }
 
 /** On a phone the ledger collapses to this one line; on a wide screen the

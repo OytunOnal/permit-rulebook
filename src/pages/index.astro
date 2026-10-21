@@ -129,8 +129,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     -->
     <p class="visually-hidden" id="cstatus" role="status" aria-live="polite"></p>
       <details class="decl" id="decl" open>
-        <summary><span class="decl-title">You declared</span><span class="decl-count" id="decl-count">{declarationCount(0)}</span></summary>
+        <summary><span class="decl-title">You declared</span><span class="decl-count" id="decl-count">{declarationCount(0)}</span><span class="decl-set-aside-folded" id="decl-set-aside-folded"></span></summary>
         <dl id="decl-list" set:html={firstDeclaration}></dl>
+        <div id="decl-set-aside"></div>
         <a class="edit" href="#" id="restart" hidden>Start over</a>
       </details>
     </div>
@@ -188,7 +189,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The question screen and the declaration panel: the same renderer the
     // build drew the first paint with, so the module's first render finds the
     // screen it would have drawn already on the page (s10).
-    import { declarationCount, declarationHtml, hasClasses, isLongList, questionCardHtml } from "../lib/question.js";
+    import { declarationCount, declarationHtml, hasClasses, isLongList, questionCardHtml, setAsideHtml } from "../lib/question.js";
+    import { countryOf } from "../lib/countries.js";
     // The width the ledger stops being a disclosure at, said once, and read
     // here and by the script that runs before the first paint (s10); and the
     // one step that takes the first paint's covers off.
@@ -222,6 +224,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const main = document.getElementById("main")!;
     const decl = document.getElementById("decl") as HTMLDetailsElement;
     const declList = document.getElementById("decl-list")!;
+    const declSetAside = document.getElementById("decl-set-aside")!;
+    const declSetAsideFolded = document.getElementById("decl-set-aside-folded")!;
     const restart = document.getElementById("restart")!;
     const headline = document.getElementById("headline")!;
     const subline = document.getElementById("subline")!;
@@ -344,6 +348,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * whole record was computed for the wrong nationality in silence
      * (product-critique v0.7, B1). */
     let justRecorded: { field: string; label: string } | null = null;
+
+    /** The answers the last edit's replay set aside. The panel names them on
+     * the screen the edit draws, question or verdict, and the render after
+     * takes them away, as the resumed line holds for one screen (#137). */
+    let setAside: string[] = [];
 
     /**
      * The route a reader arrived from, when the call to action on a route page
@@ -665,6 +674,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); } });
         });
       });
+      // One line, in two places: under the rows, and in the summary row for a
+      // phone whose panel is folded, where the rows cannot be seen. The
+      // stylesheet shows the one that can be.
+      const setAsideLine = setAsideHtml(ds, setAside);
+      draw(declSetAside, setAsideLine);
+      draw(declSetAsideFolded, setAsideLine);
+      setAside = [];
       say(declCount, declarationCount(asked.length));
       restart.hidden = currentField !== null;
       // The fact the count states, as a state the stylesheet can read: on a
@@ -686,14 +702,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * Replay the stored answers through the interview and keep the ones it
      * still asks for. Changing "destination: Netherlands" to "Germany" drops
      * the Dutch-only answers because the flow no longer reaches them; it does
-     * not drop citizenship, age or salary, which it still does. Anything the
-     * interview would not ask is silently forgotten rather than shown as a
-     * stale row (human catch: editing question 2 re-asked everything after it).
+     * not drop citizenship, age or salary, which it still does, so an edit
+     * re-asks nothing already answered. Anything the interview would not ask
+     * is forgotten rather than shown as a stale row. Returns the answers it
+     * set aside, for an edit to name.
      */
-    function replayAnswers() {
+    function answersSetAsideByReplay(): string[] {
       const replayed = replayRecord(ds, answers, asked);
       answers = replayed.answers;
       asked = replayed.order;
+      return replayed.setAside;
     }
 
     /** Draw the question screen the gesture lands on. Rendering and advancing
@@ -722,9 +740,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         answers[q.field] = value;
         if (editing) {
           // The edited answer keeps its place in the order; everything after it
-          // survives unless the flow no longer asks it.
+          // survives unless the flow no longer asks it, and what it does not
+          // survive is named on the next screen.
           editing = null;
-          replayAnswers();
+          setAside = answersSetAsideByReplay();
         } else {
           asked.push(q.field);
         }
@@ -744,7 +763,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const resumed = arriving && !arrival && asked.length > 0 ? asked.length : undefined;
       paint(main, questionCardHtml({
         dataset: ds, question: q, answers, asked, editing, total,
-        arrival, justRecorded, resumed,
+        arrival, justRecorded, resumed, glossary,
       }), () => {
         if (longList) {
           const filter = document.getElementById("cfilter") as HTMLInputElement;
@@ -953,8 +972,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * way here and another way there is two facts.
      */
     function scopeFor(r: RouteResult): string {
-      const country = ds.countries.find((c) => c.code === r.country);
-      if (!country) return "";
+      const country = countryOf(ds, r.country);
       // The reader's words, the same ones the country index and the route page
       // print (decision 3 amended by the human, 2026-09-08) — counted over the
       // conditions that bind THIS reader, beside the page so a test can read
@@ -1035,7 +1053,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       return `
         <article class="route"${cameFromMark(r)}>
           <div class="top">
-            <div>${showCountry ? `<span class="country">${esc(ds.countries.find((c) => c.code === r.country)?.name ?? r.country)}</span>` : ""}
+            <div>${showCountry ? `<span class="country">${esc(countryOf(ds, r.country).name)}</span>` : ""}
               <h3>${esc(routeName(r))}</h3></div>
             <span class="st ${unsettled ? "unsettled" : r.status}">${unsettled ? "Rules met" : STATUS_LABEL[r.status]}</span>
           </div>
@@ -1149,7 +1167,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // asked, on a fact they gave us themselves.
       const told = place();
       const elsewhereCountry = elsewhere.length
-        ? (ds.countries.find((c) => c.code === elsewhere[0].country)?.name ?? elsewhere[0].country)
+        ? countryOf(ds, elsewhere[0].country).name
         : "";
       const elsewhereGroup = elsewhere.length >= 2
         ? `<details class="hold-group">
@@ -1590,7 +1608,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       asked = kept.history;
       // The rules may have moved since it was written: replay drops anything
       // this interview would no longer ask.
-      replayAnswers();
+      answersSetAsideByReplay();
     }
 
     restart.addEventListener("click", (e) => {
@@ -1854,6 +1872,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .decl dd.pending{color:var(--color-muted);font-weight:400}
     .decl .edit{display:inline-flex;align-items:center;margin-top:.8rem;font-size:.85rem;min-height:var(--tap-min)}
     .decl .edit[hidden]{display:none}
+    .decl .set-aside{display:block;margin:.7rem 0 0;font:400 .78rem/1.4 var(--font-sans);
+      letter-spacing:0;text-transform:none;text-align:left;color:var(--color-muted)}
+    .decl-set-aside-folded{display:none}
 
     /* Question mode */
     .qcard{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:1.6rem 1.8rem}
@@ -1871,6 +1892,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .resumed{font-size:.8rem;line-height:1.4;color:var(--color-muted);margin-bottom:.6rem}
     .resumed .edit{display:inline-block;padding:.85rem .2rem;margin:-.85rem 0;font-weight:600}
     .qlabel{font:var(--text-route);font-size:1.25rem;margin:.5rem 0 1rem}
+    /* The asked-for line (#139), under the question it explains: the muted
+       voice of the learn line, wrapping inside the card on a phone. */
+    .asked-for{font-size:.85rem;line-height:1.45;color:var(--color-muted);margin:-.6rem 0 .9rem;overflow-wrap:break-word}
     .opts{display:grid;gap:.5rem}
     .opt{font:600 .92rem var(--font-sans);text-align:left;background:var(--color-bg);border:var(--rule-soft);
       padding:.7rem .9rem;min-height:var(--tap-min);cursor:pointer;color:var(--color-ink);display:block}
@@ -2139,6 +2163,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       .decl{order:2;position:static}
       .decl > summary{margin-bottom:0}
       .decl[open] > summary{margin-bottom:.6rem}
+      /* Folded, the summary row is all of the panel a phone shows, so the
+         set-aside line stands in it, on a row of its own (#137). An empty
+         slot takes no row: the row's gap alone moved the page 12 px. */
+      .decl:not([open]) > summary:has(.set-aside){flex-wrap:wrap}
+      .decl:not([open]) .decl-set-aside-folded:not(:empty){display:block;flex-basis:100%}
+      .decl-set-aside-folded .set-aside{margin:0 0 .2rem}
       .qcard{padding:1.1rem 1rem}
       .opt{white-space:normal}
       .copt{flex-wrap:wrap;gap:.15rem}

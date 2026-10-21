@@ -4,10 +4,11 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { escAttr } from "../src/lib/reason.js";
+import { questionCardHtml, setAsideHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
-import type { Dataset } from "permit-rulebook-data";
+import { deriveBands, deriveQuestions, type Dataset, type Profile } from "permit-rulebook-data";
 
 /**
  * A value going into an attribute has to be escaped for an attribute.
@@ -105,6 +106,55 @@ describe("nothing reaches an attribute unescaped", () => {
       for (const attr of html.matchAll(/(?:href|src|content|title|value|aria-label)="([^"]*)"/g))
         expect(attr[1], `${path}: ${attr[0].slice(0, 80)}`).not.toMatch(/<[a-zA-Z/]/);
     }
+  });
+});
+
+/** A tag a dataset value could carry, and what it reads as once escaped. */
+const TAG = "<img src=https://example.org/x>";
+const TAG_AS_TEXT = "&lt;img src=https://example.org/x&gt;";
+
+/** A German job offer that leaves the Opportunity Card open beside the work
+ * routes: its funds question is asked for that one route (asked-for.test.ts). */
+const middleBandOf = (seen: Dataset, field: string): string => {
+  const bands = deriveBands(seen, field);
+  return bands[Math.floor(bands.length / 2)]!.id;
+};
+const germanyOffer = (seen: Dataset): Profile => ({
+  destination: "de", citizenship: "IN", situation: "offer", qualification: "degree", qualification_recent: "no",
+  recognition_de: "not_yet", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
+  occupation_it: "no", salary_eur_year: middleBandOf(seen, "salary_eur_year"), german: "a1", english: "b2",
+  age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
+});
+
+/** The asked-for line on the funds question of that walk, or "" where none is drawn. */
+function askedForLineOf(seen: Dataset): string {
+  const question = deriveQuestions(seen).find((q) => q.field === "funds_eur_month")!;
+  const html = questionCardHtml({
+    dataset: seen, question, answers: germanyOffer(seen), asked: [], editing: null, total: 10, glossary: new Set(),
+  });
+  return /<p class="asked-for"[^>]*>[\s\S]*?<\/p>/.exec(html)?.[0] ?? "";
+}
+
+describe("nothing from the dataset reaches the asked-for line's or the set-aside line's markup", () => {
+  it("a route's name and a country's name with a tag in them are drawn as text in the asked-for line", () => {
+    const wrecked = JSON.parse(JSON.stringify(ds)) as Dataset;
+    const germany = wrecked.countries.find((c) => c.code === "DE")!;
+    germany.name = TAG;
+    germany.routes.find((r) => r.id === "de-chancenkarte")!.name = TAG;
+    const line = askedForLineOf(wrecked);
+    // The line names the route, so both values are in it to be escaped.
+    expect(line, "the walk draws no asked-for line").toContain('data-route="de-chancenkarte"');
+    expect(line).not.toContain("<img");
+    expect(line).toContain(TAG_AS_TEXT);
+  });
+
+  it("a field's short label with a tag in it is drawn as text in the set-aside line", () => {
+    const wrecked = JSON.parse(JSON.stringify(ds)) as Dataset;
+    wrecked.fields.find((f) => f.id === "fr_degree")!.short_label = TAG;
+    const html = setAsideHtml(wrecked, ["fr_degree"]);
+    expect(html, "no set-aside line drawn").toContain('data-set-aside="fr_degree"');
+    expect(html).not.toContain("<img");
+    expect(html).toContain(TAG_AS_TEXT);
   });
 });
 

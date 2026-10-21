@@ -305,8 +305,13 @@ describe("P4 — /data/ drops the zero", () => {
 
 describe("P5 — the Anabin link's stray full stop", () => {
   it("the learn box ends on the link: nothing after it can wrap alone", () => {
-    const result = evaluate(ds, DENIZ).find((r) => r.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml(ds, result, DENIZ);
+    // Deniz works in IT with three years in the last seven, so the shortage
+    // Blue Card's IT path (#134) meets the card without recognition and no
+    // box is left open on it. Out of IT, the degree path's open recognition
+    // is the box this case reads.
+    const outOfIt: Profile = { ...DENIZ, occupation_it: "no" };
+    const result = evaluate(ds, outOfIt).find((r) => r.route.id === "de-blue-card-shortage")!;
+    const html = learnBoxHtml(ds, result, outOfIt);
     expect(html).toContain("anabin");
     expect(html).toMatch(/<\/a><\/div>$/);
     expect(textOf(html)).not.toMatch(/↗ ?\.$/);
