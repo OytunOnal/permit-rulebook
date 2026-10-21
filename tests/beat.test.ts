@@ -104,12 +104,17 @@ const BEAT_MS = `(() => {
   return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
 })()`;
 
-/** Past the beat, with room for a frame or two. A page without the token
- * fails here rather than waiting nothing. */
-async function waitOutTheBeat(page: BrowserPage): Promise<void> {
+/** The beat's length in milliseconds. A page without the token fails here
+ * rather than waiting nothing. */
+async function beatMsOf(page: BrowserPage): Promise<number> {
   const ms = Number(await page.evaluate(BEAT_MS));
   if (!(ms > 0)) throw new Error("the page declares no --motion-beat");
-  await settle(ms + 150);
+  return ms;
+}
+
+/** Past the beat, with room for a frame or two. */
+async function waitOutTheBeat(page: BrowserPage): Promise<void> {
+  await settle((await beatMsOf(page)) + 150);
 }
 
 /** The screen once a gesture has drawn a question other than `before`, read
@@ -161,6 +166,48 @@ function expectTheBeatHeld(seen: { drawn: Where; within: Where; after: Where }):
   expect(seen.after.question, "the guard did not lift after the beat").not.toBe(seen.drawn.question);
 }
 
+/** The centre of every option on the question card, in order. */
+const OPTION_CENTRES = `JSON.stringify([...document.querySelectorAll(${JSON.stringify(FIRST_OPTION)})].map((o) => {
+  const r = o.getBoundingClientRect();
+  return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+}))`;
+
+/** The value of the question card's option under a point, or "" where the
+ * point lands on none. */
+const optionUnder = (at: Point) => `(() => {
+  const el = document.elementFromPoint(${at.x}, ${at.y});
+  const opt = el && el.closest(${JSON.stringify(FIRST_OPTION)});
+  return opt ? opt.dataset.value : "";
+})()`;
+
+interface DoubleClick { cold: Where; drawn: Where; under: string; elapsedMs: number; beatMs: number; after: Where }
+
+/**
+ * Two clicks at one point of a cold card, the second on the card the first
+ * one draws, before its beat is out. The point is the first option's centre
+ * that lands on an option of that card: an asked-for line (#139) can set its
+ * options lower, and a second click on its padding answers nothing with or
+ * without a guard. Null when no option's centre does.
+ */
+async function doubleClickOnAnOption(page: BrowserPage, origin: (p: string) => string): Promise<DoubleClick | null> {
+  for (let i = 0; ; i++) {
+    await coldStart(page, origin);
+    const at = (JSON.parse(await page.evaluate(OPTION_CENTRES)) as Point[])[i];
+    if (!at) return null;
+    const cold = await where(page);
+    const beatMs = await beatMsOf(page);
+    const start = performance.now();
+    await page.clickAt(at.x, at.y);
+    const drawn = await drawnAfter(page, cold.question);
+    const under = await page.evaluate(optionUnder(at));
+    if (!under) continue;
+    await page.clickAt(at.x, at.y);
+    const elapsedMs = performance.now() - start;
+    await waitOutTheBeat(page);
+    return { cold, drawn, under, elapsedMs, beatMs, after: await where(page) };
+  }
+}
+
 /** A layout-shift observer, counting what CLS counts. */
 const WATCH_SHIFTS = `(() => {
   window.__cls = 0;
@@ -174,17 +221,17 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
   it("two clicks at the same point within the beat leave one answer", async () => {
     const server = await serve(dist);
     try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const at = await coldStart(page, server.url);
-        const cold = await where(page);
-        await page.clickAt(at.x, at.y);
-        await page.clickAt(at.x, at.y);
-        await waitOutTheBeat(page);
-        return { cold, after: await where(page), problems: page.problems() };
-      }, DESK);
+      const seen = await withBrowser(async (page: BrowserPage) => ({
+        twice: await doubleClickOnAnOption(page, server.url), problems: page.problems(),
+      }), DESK) as { twice: DoubleClick | null; problems: string[] };
       expect(seen.problems).toEqual([]);
-      expect(seen.after.answers, "the second click answered the question it landed on").toBe(1);
-      expect(seen.after.question).not.toBe(seen.cold.question);
+      expect(seen.twice, "no option's centre lands on an option of the card its click draws").not.toBeNull();
+      const { cold, drawn, under, elapsedMs, beatMs, after } = seen.twice!;
+      expect(drawn.answers, "the first click did not answer").toBe(1);
+      expect(under, "the second click's point is on no option of the drawn card").not.toBe("");
+      expect(elapsedMs, "the second click came after the beat").toBeLessThan(beatMs);
+      expect(after.answers, "the second click answered the question it landed on").toBe(1);
+      expect(after.question).not.toBe(cold.question);
     } finally {
       server.close();
     }
