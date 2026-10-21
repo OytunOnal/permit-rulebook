@@ -1,7 +1,7 @@
 // @level presentation
 import {
   scopeLine, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
-  isLocalization, isScored, joinAnd, joinOr, noticeSources, provenancedValuesOf,
+  isLocalization, isScored, joinAnd, noticeSources, provenancedValuesOf,
   referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
   type UnreadSource,
@@ -44,7 +44,7 @@ import {
   absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
 } from "./site.js";
 import {
-  ANSWER_SOURCED, ANY_OF, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM,
+  ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM,
   ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck, pointsFigure, readOn,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
@@ -357,6 +357,9 @@ function ruleHeading(dataset: Dataset, c: Criterion): string {
   // Named by who it shuts out, said as the answer they gave: "Algeria" is a
   // country and "an Algerian passport" is the thing this rule reads.
   if (c.op === "not-in") return `Not open to ${criterionPhrase(dataset, c)}`;
+  // A choice of paths is named by its own label: the body lists the paths, and
+  // its phrase may be a short_reason written for a verdict line, not a heading.
+  if (c.op === "any") return capitalise(c.label);
   return capitalise(criterionPhrase(dataset, c));
 }
 
@@ -388,10 +391,6 @@ function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
   }
   if (c.op === "points")
     return `This route counts ${c.required.value} points from the official table. Every item below scores, and the table is quoted under it.`;
-  if (c.op === "any")
-    return `${esc(ANY_OF)} ${esc(joinOr(
-      c.paths.map((p) => joinAnd(p.criteria.map((pc) => criterionPhrase(dataset, pc)))),
-    ))}.`;
   if ("field" in c && c.field === "citizenship")
     // The lede has already said who the page is for, three lines above; saying
     // it again word for word at the top of the first rule reads as a stutter.
@@ -399,6 +398,19 @@ function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
     // its words, with its quote below.
     return notice ? esc(notice.body) : `This route asks for ${esc(criterionPhrase(dataset, c))}.`;
   return `This route asks for ${esc(criterionPhrase(dataset, c))}.`;
+}
+
+/**
+ * A rule's plain words under its heading. A choice of paths is a lead-in and
+ * one line per path, opening on the path's label, so a reader sees which
+ * conditions belong together: one line of "and"s and "or"s cannot be grouped.
+ */
+function plainHtml(dataset: Dataset, c: Criterion, notice?: Notice): string {
+  if (c.op !== "any") return `<p class="plain">${rulePlain(dataset, c, notice)}</p>`;
+  const lines = c.paths.map((p) =>
+    `<li>${esc(capitalise(p.label))}: ${esc(joinAnd(p.criteria.map((pc) => criterionPhrase(dataset, pc))))}</li>`);
+  return `<p class="plain">${esc(c.paths.length > 2 ? ANY_PATH : EITHER_PATH)}</p>
+        <ul class="paths">${lines.join("")}</ul>`;
 }
 
 /**
@@ -462,7 +474,7 @@ function ruleCard(
       <article class="rule">
         <div class="top"><h2>${esc(ruleHeading(dataset, c))}</h2><span class="kind">${
     esc(ruleKind(c))}${year ? ` · ${esc(year)}` : ""}</span></div>
-        <p class="plain">${rulePlain(dataset, c, notice)}</p>${
+        ${plainHtml(dataset, c, notice)}${
     thresholds.length ? `
       ${railHtml(dataset, country, route, thresholds[0])}` : ""}${asks}${
     values.map((e) => `
@@ -911,6 +923,7 @@ ${lf(IDENTITY)}
 .rule h2 { font: var(--text-route); margin: 0; }
 .kind { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); white-space: nowrap; }
 .rule p.plain { margin: var(--space-2) 0 0; }
+.rule ul.paths { margin: var(--space-1) 0 0; padding-left: 1.1rem; }
 
 /* Threshold rail. The labels never sit on the track: positioned labels
    overlapped by 51-65 px at every common phone width (critique B1). The ticks

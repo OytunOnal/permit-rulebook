@@ -183,7 +183,7 @@ describe("the source list says which quote applied to this reader", () => {
         return c.op === "any" ? c.paths.flatMap((pa) => pa.criteria.flatMap(flat)) : [c];
       })
       .find((c) => c.op === "gte" && c.field === "funds_eur_month")!;
-    route.criteria.push({ op: "any", label: "living costs", paths: [{ criteria: [funds] }] });
+    route.criteria.push({ op: "any", label: "living costs", paths: [{ label: "the living-costs threshold", criteria: [funds] }] });
 
     const r = evaluate(twoChoices, dutchGraduate).find((x) => x.route.id === "nl-hsm-under30")!;
     const html = provenanceHtml(twoChoices, r, {});

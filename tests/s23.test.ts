@@ -9,7 +9,7 @@ import {
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import {
-  ANY_OF, SEEK_HINT, dailyCheck, orAbove, proseProvenanceCounts, questionCounter,
+  EITHER_PATH, SEEK_HINT, dailyCheck, orAbove, proseProvenanceCounts, questionCounter,
 } from "../src/lib/copy.js";
 import { learnBoxHtml, pointsLineHtml, provenanceHtml } from "../src/lib/card.js";
 import { glossSection, glossed } from "../src/lib/gloss.js";
@@ -277,10 +277,11 @@ describe("P1 — never a stutter; and, since s32's amendment 6, no explainer for
 });
 
 describe("P2 — a rule with limbs is one sentence", () => {
-  it("'Either of these answers this rule:' became 'Any of these:'", () => {
-    expect(ANY_OF).toBe("Any of these:");
+  it("a rule's limbs open on the copy module's lead-in, never 'Either of these answers this rule:'", () => {
+    // The lead-in introduces one line per path: "either" for two paths, and
+    // never for three (paths-named.test.ts).
     const html = routePage(ds, routeAddresses(ds).find((a) => a.route.id === "es-blue-card")!).html;
-    expect(textOf(html)).toContain("Any of these:");
+    expect(textOf(html)).toContain(EITHER_PATH);
     expect(textOf(html)).not.toContain("Either of these");
   });
 });

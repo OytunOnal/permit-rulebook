@@ -700,11 +700,12 @@ export const orAbove = (title: string): string => `${title} or above`;
 // use, in the citation's own bracket.
 
 /**
- * The lead-in to a rule's limbs on a route page (s23, P2). "Either of these
- * answers this rule:" stood before three items on the Spanish Blue Card
- * (v1.1 gate critique, P2); "any" is the word for a list of any length.
+ * The lead-in to a criterion's paths on a route page, each path on a line of
+ * its own under its label. "Either" is said of two; three or more paths take
+ * "any one".
  */
-export const ANY_OF = "Any of these:";
+export const EITHER_PATH = "Either path meets it:";
+export const ANY_PATH = "Any one of these paths meets it:";
 
 /**
  * `/data/`'s prose-provenance counts, after the gate's name (s23, P4).
