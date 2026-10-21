@@ -158,7 +158,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       shortLabelOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
       // What an answer means here, where the label alone leaves two answers
       // hard to tell apart (human walk, 2026-09-08).
-      unlockMeansOf, countryPhrase,
+      unlockMeansOf,
       // The one answer the four-country result reads a country's line against (s21).
       SITUATION_FIELD,
       type Dataset, type FieldOption, type Profile, type RouteResult,
@@ -366,7 +366,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      */
     let scopedRouteId: string | null = null;
     let cameFrom: ScopedArrival | null = null;
-    /** The country an arrival named, when it named one without a route. */
+    /** The code of the country an arrival named, by its own page or by a
+     * route's. */
     let cameFromCountry: string | null = null;
     /** Whether this arrival is what put the destination on the record. */
     let scopeRecorded = false;
@@ -395,10 +396,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         : destinationForCountry(country);
       if (cameFrom) scopedRouteId = cameFrom.route.id;
       if (destination === null || !country) return;
-      // The country's own prose form: a sentence says "the Netherlands", the
-      // button in the nav says "Netherlands" (the same rule `declaredPlace`
-      // follows for every other sentence naming a place).
-      cameFromCountry = countryPhrase(country.code.toUpperCase()) ?? country.name;
+      cameFromCountry = country.code;
       const before = answers["destination"];
       rescopedFrom = before !== undefined && before !== destination ? before : null;
       const plan = arrivalPlan(ds, answers, asked, destination);
@@ -424,18 +422,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * is coming back rather than letting it reappear unexplained.
      */
     function arrivalLine(): string {
-      if (!scopeRecorded || (!cameFrom && !cameFromCountry)) return "";
-      const what = cameFrom ? routeName(cameFrom) : cameFromCountry!;
-      const place = cameFrom
-        ? (countryPhrase(cameFrom.country.code.toUpperCase()) ?? cameFrom.country.name)
-        : cameFromCountry!;
+      if (!scopeRecorded || !cameFromCountry) return "";
       // The words are built where they can be read by a test, over every
       // question that can come back: the label lower-cased here turned "IT
       // work" into "it work" on the live site (human re-read, 2026-09-08).
       return `<p class="recorded" role="status">${
         esc(arrivalSentence(ds, {
-          from: what, place, rescoped: rescopedFrom !== null,
-          kept: arrivalKept, asks: arrivalAsks,
+          route: cameFrom ? routeName(cameFrom) : null, country: cameFromCountry,
+          rescoped: rescopedFrom !== null, kept: arrivalKept, asks: arrivalAsks,
         }))
       }</p>`;
     }
@@ -1163,7 +1157,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         (placedElsewhere(r) ? elsewhere : isStepGated(r) ? gated : individual).push(r);
 
       // Routes that are simply in another country collapse into one line: a
-      // wall of "this route is Spain" answers a question the reader never
+      // wall of "this route is in Spain" answers a question the reader never
       // asked, on a fact they gave us themselves.
       const told = place();
       const elsewhereCountry = elsewhere.length

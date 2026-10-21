@@ -3,13 +3,14 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, evaluate, fieldOptions, isClosed, situationsAsked, type Dataset, type Profile,
+  DESTINATION_FIELD, SITUATION_FIELD, countryPossessiveAtStart, evaluate, fieldOptions, isClosed, situationsAsked,
+  type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import {
   SITUATION_COUNTRY_FIELD, leadCountry, leads, namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict,
 } from "../src/lib/situations.js";
-import { READ_ITS_RULES, possessive, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
+import { READ_ITS_RULES, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 import { expectNothingLeft, type Sent } from "./wire.js";
 
@@ -72,7 +73,7 @@ describe("s26 — the named country gets the four-country headline", () => {
         const d = sentences(one!);
         expect(f.route).toBe(d.route);
         // "The routes below need …" on the direct path; "France's routes below need …" on this one.
-        expect(f.rest).toBe(d.rest.replace(/^The\b/, possessive(country.name)));
+        expect(f.rest).toBe(d.rest.replace(/^The\b/, countryPossessiveAtStart(country.code)));
         expect(f.rest).not.toBe(d.rest);
         // The four-country verdict names the country whose section leads; the direct path has no list to lead.
         expect(four!.lead).toBe(c.value);
@@ -86,10 +87,10 @@ describe("s26 — the named country gets the four-country headline", () => {
   it("the two rest sentences are one sentence, but for the name", () => {
     expect(unscoredRestLine("a job offer or an intra-corporate transfer"))
       .toBe("The routes below need a job offer or an intra-corporate transfer.");
-    expect(unscoredNamedRestLine("France", "a job offer or an intra-corporate transfer"))
+    expect(unscoredNamedRestLine(countryPossessiveAtStart("FR"), "a job offer or an intra-corporate transfer"))
       .toBe("France's routes below need a job offer or an intra-corporate transfer.");
-    // The possessive the route line already uses, for the one country whose name ends in an s.
-    expect(unscoredNamedRestLine("Netherlands", "x")).toBe("Netherlands' routes below need x.");
+    // The data package's possessive at a sentence's start, the article's capital and the apostrophe included.
+    expect(unscoredNamedRestLine(countryPossessiveAtStart("NL"), "x")).toBe("The Netherlands' routes below need x.");
   });
 
   it("the France researcher, both ways: the same words, the door to the quoted route", () => {

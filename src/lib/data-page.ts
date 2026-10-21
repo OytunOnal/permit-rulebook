@@ -1,11 +1,11 @@
 // @level presentation
 import {
-  countryVocabulary, isScored, proseProvenance, routeProvenance, unreadClause,
+  countryPhrase, countryVocabulary, isScored, proseProvenance, routeProvenance, unreadClause,
   type Dataset, type UnreadSource,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
-import { PAGE_CSS, pageStamp, withArticle } from "./route-page.js";
+import { PAGE_CSS, pageStamp } from "./route-page.js";
 import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
 import {
   DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PRODUCT_NAME,
@@ -240,8 +240,8 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
       </nav>
       <p class="lede">Reuse it under ${esc(DATA_LICENCE_FULL)} — credit and link back. Every route is also served on its own, with the day it was read:</p>
       ${dataset.countries.map((country) => `
-      <nav class="jsonlinks" aria-label="${escAttr(`${withArticle(country)} as JSON`)}">
-        <b class="label">${esc(withArticle(country))}</b>${country.routes.map((route) => `
+      <nav class="jsonlinks" aria-label="${escAttr(`${countryPhrase(country.code)} as JSON`)}">
+        <b class="label">${esc(countryPhrase(country.code))}</b>${country.routes.map((route) => `
         <a class="tap-min" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>${
     esc(readOn(pageStamp(dataset, route)))}</small></a>`).join("")}
       </nav>`).join("")}

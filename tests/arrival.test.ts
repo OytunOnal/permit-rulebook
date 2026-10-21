@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { deriveBands, evaluate, remainingQuestions } from "permit-rulebook-data";
+import { countryPhraseAtStart, deriveBands, evaluate, remainingQuestions } from "permit-rulebook-data";
 import {
   arrivalFrom, arrivalPlan, arrivalSentence, countryArrivalFrom, destinationFor,
   destinationForCountry, questionPhrase,
@@ -203,10 +203,10 @@ describe("the arrival line says what actually happens next", () => {
         expect(plan.asks, where).toBe(remainingQuestions(ds, plan.answers).length);
 
         const line = arrivalSentence(ds, {
-          from: to.name, place: to.name, rescoped: true, kept: plan.kept, asks: plan.asks,
+          route: null, country: to.code, rescoped: true, kept: plan.kept, asks: plan.asks,
         });
         // One sentence, in the dataset's own words, with no field id in it.
-        expect(line, where).toMatch(new RegExp(`^${to.name} is on the record now\\.`));
+        expect(line, where).toMatch(new RegExp(`^${countryPhraseAtStart(to.code)} is on the record now\\.`));
         expect(line, where).not.toMatch(/_/);
         expect(line, where).not.toContain("  ");
         for (const field of plan.kept)
@@ -234,24 +234,24 @@ describe("the arrival line says what actually happens next", () => {
 
   it("is built the way the ruling wrote it", () => {
     expect(arrivalSentence(ds, {
-      from: "France", place: "France", rescoped: true, kept: ["citizenship", "german"], asks: 2,
+      route: null, country: "FR", rescoped: true, kept: ["citizenship", "german"], asks: 2,
     })).toBe(
       "France is on the record now."
       + " Your answers about the passport you would apply with and your German level are kept;"
       + " France asks 2 more questions.",
     );
     // One question, singular; nothing kept, no clause about answers.
-    expect(arrivalSentence(ds, { from: "Spain", place: "Spain", rescoped: true, kept: [], asks: 1 }))
+    expect(arrivalSentence(ds, { route: null, country: "ES", rescoped: true, kept: [], asks: 1 }))
       .toBe("Spain is on the record now. Spain asks 1 more question.");
     // A country's own page names the country once, not three times.
     expect(arrivalSentence(ds, {
-      from: "Germany", place: "Germany", rescoped: false, kept: [], asks: 12,
+      route: null, country: "DE", rescoped: false, kept: [], asks: 12,
     })).toBe("Germany is on the record.");
     // A first arrival narrates itself the way the route pages always did, and
     // says no more: the reader has answered nothing, and the question counter
     // under the line already states how many are coming.
     expect(arrivalSentence(ds, {
-      from: "EU Blue Card — general", place: "Germany", rescoped: false, kept: [], asks: 12,
+      route: "EU Blue Card — general", country: "DE", rescoped: false, kept: [], asks: 12,
     })).toBe("Coming from EU Blue Card — general — Germany is on the record.");
   });
 

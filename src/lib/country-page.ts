@@ -3,13 +3,13 @@
 // dataset package spells it, so the site and the data cannot disagree about
 // what eight is called (Standards review, 2026-09-08).
 import {
-  countedWords, datasetMeta, isScored, joinAnd, scopeLine,
+  countedWords, countryPhrase, countryPhraseAtStart, datasetMeta, isScored, joinAnd, scopeLine,
   type Country, type Dataset, type Notice, type Route, type UnreadSource,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
-  PAGE_CSS, audienceSentence, gist, pageStamp, routeFigure, withArticle,
+  PAGE_CSS, audienceSentence, gist, pageStamp, routeFigure,
 } from "./route-page.js";
 import {
   DISCLAIMER, PRODUCT_NAME, TAGLINE, datasetDay, readOn,
@@ -126,7 +126,7 @@ function description(country: Country): string {
   const shown = names.slice(0, 3);
   const rest = names.length - shown.length;
   const listed = rest > 0 ? `${joinAnd(shown)} and ${rest} more` : joinAnd(shown);
-  return `The ${names.length} work-permit routes we hold rules for in ${withArticle(country)}: ` +
+  return `The ${names.length} work-permit routes we hold rules for in ${countryPhrase(country.code)}: ` +
     `${listed} — each with the authority's own sentence for every value and the day it was read.`;
 }
 
@@ -166,7 +166,7 @@ function routeCard(dataset: Dataset, country: Country, route: Route, seen: Gloss
 
 export function countryPage(dataset: Dataset, address: CountryAddress): CountryPage {
   const { country, path } = address;
-  const title = `Work permits in ${withArticle(country)} · ${PRODUCT_NAME}`;
+  const title = `Work permits in ${countryPhrase(country.code)} · ${PRODUCT_NAME}`;
   const desc = description(country);
   const read = countryReadDate(dataset, country);
   const count = country.routes.length;
@@ -215,8 +215,8 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
 
   <div class="masthead-with-stamps">
     <div>
-      <h1>${esc(withArticle(country))}: ${esc(headingCount)}. <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">Every employment route ${esc(withArticle(country))} publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. ${
+      <h1>${esc(countryPhraseAtStart(country.code))}: ${esc(headingCount)}. <em>${esc(TAGLINE)}</em></h1>
+      <p class="lede">Every employment route ${esc(countryPhrase(country.code))} publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. ${
     esc(audienceSentence(country))} ${quotedOnly.length
     ? `Below them, ${esc(countedWords(quotedOnly.length, "route"))} we state and do not score; what is left out altogether is <a class="tap" href="${
       escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">listed with the reasons</a>.`
@@ -227,7 +227,7 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
   </div>
 
   <main>
-    <ul class="routes" aria-label="The routes in ${escAttr(withArticle(country))} the checker scores">${
+    <ul class="routes" aria-label="The routes in ${escAttr(countryPhrase(country.code))} the checker scores">${
     scored.map((route) => routeCard(dataset, country, route, seen)).join("")}
     </ul>${quotedOnly.length ? `
 
@@ -235,7 +235,7 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
       <h2 class="label" id="quoted-only-h">${esc(QUOTED_ONLY_HEADING)}</h2>
       <p class="lede">${esc(sentenceCase(countedWords(quotedOnly.length, "route")))} we hold the rules for and will not score. Each page states them as the authority does, with the day we read them, and asks you nothing; the checker never offers ${
     quotedOnly.length === 1 ? "it" : "them"}.</p>
-      <ul class="routes" aria-label="Routes in ${escAttr(withArticle(country))} the checker does not score">${
+      <ul class="routes" aria-label="Routes in ${escAttr(countryPhrase(country.code))} the checker does not score">${
     quotedOnly.map((route) => routeCard(dataset, country, route, seen)).join("")}
       </ul>
     </section>` : ""}

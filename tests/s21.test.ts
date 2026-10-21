@@ -153,14 +153,14 @@ describe("s21 — the four-country result says it in the country's line", () => 
   });
 
   it("escapes the names it prints", () => {
-    // France and its researcher route, renamed; the rules untouched.
+    // France's researcher route, renamed; the rules untouched. The country is
+    // named by the country list's phrase, not the dataset's name.
     const renamed = (c: Country): Country => c.code !== "FR" ? c
-      : { ...c, name: "A & B", routes: c.routes.map((r) => (r.id === researcher.id ? { ...r, name: "<x>" } : r)) };
+      : { ...c, routes: c.routes.map((r) => (r.id === researcher.id ? { ...r, name: "<x>" } : r)) };
     const doctored = { ...ds, countries: ds.countries.map(renamed) } as Dataset;
     const line = unscoredTally(doctored, renamed(france), "research");
     expect(line).not.toBeNull();
-    expect(line!.text).toBe("No scored route in A & B takes a research hosting agreement — <x> is quoted, not scored.");
-    expect(line!.html).toContain("A &amp; B");
+    expect(line!.text).toBe("No scored route in France takes a research hosting agreement — <x> is quoted, not scored.");
     expect(line!.html).toContain(">&lt;x&gt;</a>");
     expect(line!.html).not.toContain("<x>");
   });

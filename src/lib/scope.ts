@@ -1,5 +1,7 @@
 // @level application presentation
-import { isScored, joinAnd, remainingQuestions, shortLabelOf, subjectOf } from "permit-rulebook-data";
+import {
+  countryPhrase, countryPhraseAtStart, isScored, joinAnd, remainingQuestions, shortLabelOf, subjectOf,
+} from "permit-rulebook-data";
 import type { Country, Dataset, Profile, Route } from "permit-rulebook-data";
 
 /**
@@ -211,21 +213,21 @@ export function arrivalPlan(
  * being moved, and the sentence says so rather than describing a record they
  * did not write. Everything after the opening is read forwards — the answers
  * that survived, and the questions that are actually coming.
+ *
+ * `route` is the name of the route page the reader came from, or null when
+ * they came from the country's own page; `country` is the country's code.
  */
 export function arrivalSentence(dataset: Dataset, o: {
-  from: string; place: string; rescoped: boolean;
+  route: string | null; country: string; rescoped: boolean;
   kept: readonly string[]; asks: number;
 }): string {
-  // A reader who clicked France's own page is not told they came from France
-  // to France: where the origin and the place are the same name, the sentence
-  // states the place once (read live, 2026-09-08 — "Starting from France —
-  // France is on the record. … France asks 1 more question." said France three
-  // times before it said anything).
-  const opening = o.from === o.place
-    ? (o.rescoped ? `${o.place} is on the record now.` : `${o.place} is on the record.`)
-    : o.rescoped
-      ? `Starting from ${o.from} — ${o.place} is on the record.`
-      : `Coming from ${o.from} — ${o.place} is on the record.`;
+  const place = countryPhrase(o.country);
+  const placeOpening = countryPhraseAtStart(o.country);
+  // A reader who came from a country's own page is not told they came from
+  // it: the sentence states the place once.
+  const opening = o.route === null
+    ? (o.rescoped ? `${placeOpening} is on the record now.` : `${placeOpening} is on the record.`)
+    : `${o.rescoped ? "Starting" : "Coming"} from ${o.route} — ${place} is on the record.`;
   // A reader who has answered nothing has no answers to account for, and the
   // question counter under this line already says how many are coming.
   if (!o.rescoped) return opening;
@@ -233,6 +235,6 @@ export function arrivalSentence(dataset: Dataset, o: {
   if (o.kept.length)
     clauses.push(`Your answers about ${joinAnd(o.kept.map((f) => questionPhrase(dataset, f)))} are kept`);
   if (o.asks > 0)
-    clauses.push(`${o.place} asks ${o.asks} more question${o.asks === 1 ? "" : "s"}`);
+    clauses.push(`${clauses.length ? place : placeOpening} asks ${o.asks} more question${o.asks === 1 ? "" : "s"}`);
   return clauses.length ? `${opening} ${clauses.join("; ")}.` : opening;
 }

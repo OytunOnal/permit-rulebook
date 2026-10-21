@@ -591,8 +591,8 @@ export const resultFeedbackLine = (word: string): string => `${RESULT_FEEDBACK_A
  * The mark says so before the answer is picked. The option stays a button: a
  * reader may still want to see what the rest need.
  *
- * Both names are the dataset's — the country's, and the quoted route's own
- * name, because the site has no shorter word for a route than the one the
+ * Both names are the data package's — the country's phrase within a sentence,
+ * and the quoted route's own name, because the site has no shorter word for a route than the one the
  * dataset gives it and a typed "researcher permit" would be a second name to
  * keep in step. The last three words are the link to that route's page; the
  * line without a route is for a situation nothing quoted carries either.
@@ -628,14 +628,14 @@ const unscoredClaim = (country: string, situation: string): string =>
   `No scored route in ${country} takes ${situation}`;
 export const unscoredHeadline = (country: string, situation: string): string => `${unscoredClaim(country, situation)}.`;
 export const READ_ITS_RULES = "read its rules";
-/** The possessive, for the one country whose name ends in an s. */
-export const possessive = (name: string): string => (name.endsWith("s") ? `${name}'` : `${name}'s`);
-export const unscoredRouteLine = (country: string, situation: string, routeName: string): string =>
-  `${possessive(country)} route for ${situation} — ${routeName} — is quoted here but not scored: ${READ_ITS_RULES}.`;
+/** `countryOpening` is the country's possessive where it opens a sentence,
+ * the data package's ("The Netherlands'"). */
+export const unscoredRouteLine = (countryOpening: string, situation: string, routeName: string): string =>
+  `${countryOpening} route for ${situation} — ${routeName} — is quoted here but not scored: ${READ_ITS_RULES}.`;
 const routesBelowNeed = (steps: string): string => `routes below need ${steps}.`;
 export const unscoredRestLine = (steps: string): string => `The ${routesBelowNeed(steps)}`;
-export const unscoredNamedRestLine = (country: string, steps: string): string =>
-  `${possessive(country)} ${routesBelowNeed(steps)}`;
+export const unscoredNamedRestLine = (countryOpening: string, steps: string): string =>
+  `${countryOpening} ${routesBelowNeed(steps)}`;
 
 /**
  * The same state on the four-country result, in the country's own summary
