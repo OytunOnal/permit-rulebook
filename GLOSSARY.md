@@ -228,6 +228,14 @@ An explicit "I don't know" declaration. It is an open gap, not a no: it never
 fails a route, and it points to a learn source.
 _Avoid_: missing answer, null
 
+**Territory** (dataset: `territories[]` in `countries.json`, #160):
+A dependent territory a reader may type into the passport search — Puerto
+Rico, Guam. It is never a row of the passport list, because its people hold
+another country's passport; it carries that passport and the source that says
+so, and the search answers it with the passport's country. A territory with no
+sourced passport is not listed.
+_Avoid_: dependency, overseas country (as a row)
+
 **Learn source**:
 The official place where an open unknown can be resolved by the person
 themselves (e.g. the Anabin database for degree recognition).
