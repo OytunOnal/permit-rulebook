@@ -153,6 +153,10 @@ click on the tracker link. Answers never leave the device.
   the page.
   The headline has one writer, `mastheadFor`: its own markup is one
   emphasis, and every other word, the dataset's included, is escaped (#25).
+  A question card a gesture draws comes with a beat: it fades in, and for
+  `--motion-beat` (`tokens.css`) every commit of an answer, click or Enter, is
+  refused in one place, motion or none. The first paint and the verdict have
+  none (#86).
 - **Record** — localStorage (legacy key migrated) or nothing; a print
   stylesheet for a paper copy. A record longer than any the page writes
   (8 KB) is no record, and is never parsed (#25).
