@@ -2161,9 +2161,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       .decl > summary{margin-bottom:0}
       .decl[open] > summary{margin-bottom:.6rem}
       /* Folded, the summary row is all of the panel a phone shows, so the
-         set-aside line stands in it, on a row of its own (#137). */
-      .decl:not([open]) > summary{flex-wrap:wrap}
-      .decl:not([open]) .decl-set-aside-folded{display:block;flex-basis:100%}
+         set-aside line stands in it, on a row of its own (#137). An empty
+         slot takes no row: the row's gap alone moved the page 12 px. */
+      .decl:not([open]) > summary:has(.set-aside){flex-wrap:wrap}
+      .decl:not([open]) .decl-set-aside-folded:not(:empty){display:block;flex-basis:100%}
       .decl-set-aside-folded .set-aside{margin:0 0 .2rem}
       .qcard{padding:1.1rem 1rem}
       .opt{white-space:normal}
