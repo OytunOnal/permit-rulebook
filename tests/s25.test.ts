@@ -90,8 +90,10 @@ describe("the two questions are asked from the dataset, in order, after recognit
   it("and the interview asks them back to back once recognition is answered", () => {
     // The greedy order agrees with the dataset's here: with recognition not
     // yet, the five-year answer is the next thing that changes a verdict, and
-    // the seven-year answer the thing after it.
-    const asked = ["destination", "situation", "qualification", "citizenship", "recognition_de"];
+    // the seven-year answer the thing after it. Germany asks `occupation_it`
+    // before them since the shortage Blue Card's IT path reads it (#134), so
+    // the reader has answered it too.
+    const asked = ["destination", "situation", "qualification", "citizenship", "recognition_de", "occupation_it"];
     const partial: Profile = Object.fromEntries(asked.map((f) => [f, OFFER[f]!]));
     expect(remainingQuestions(ds, partial)[0]!.field).toBe(FIVE);
     expect(remainingQuestions(ds, { ...partial, [FIVE]: "2plus" })[0]!.field).toBe(SEVEN);
@@ -230,7 +232,13 @@ describe("a record from before this slice loses its experience answers", () => {
     const replayed = replayRecord(ds, kept.answers, kept.history);
     expect(replayed.order).toHaveLength(5);
     expect(resumedLine(replayed.order.length)).toBe("Continuing where you left off — 5 answers kept.");
-    expect(remainingQuestions(ds, replayed.answers)[0]!.field).toBe(FIVE);
+    // Both are asked again. Germany asks `occupation_it` before them since the
+    // shortage Blue Card's IT path reads it (#134): once it is answered, the
+    // five-year question is next.
+    const ahead = remainingQuestions(ds, replayed.answers).map((q) => q.field);
+    expect(ahead).toContain(FIVE);
+    expect(ahead).toContain(SEVEN);
+    expect(remainingQuestions(ds, { ...replayed.answers, occupation_it: OFFER.occupation_it! })[0]!.field).toBe(FIVE);
   });
 });
 
@@ -300,7 +308,12 @@ async function walk(page: BrowserPage, profile: Profile): Promise<{ asked: strin
 }
 
 describe.skipIf(skipped !== null)("s25 — in the browser", () => {
-  const seeded = { destination: "de", situation: "offer", qualification: "vocational", citizenship: "TR", recognition_de: "not_yet" };
+  // `occupation_it` is on the record: Germany asks it before the experience
+  // questions since the shortage Blue Card's IT path reads it (#134).
+  const seeded = {
+    destination: "de", situation: "offer", qualification: "vocational", citizenship: "TR", recognition_de: "not_yet",
+    occupation_it: OFFER.occupation_it!,
+  };
   const cardNamed = (cards: Card[], word: string) => cards.find((c) => c.name.includes(word))!;
   const FIVE_YEAR_QUOTE = (() => {
     const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-experienced-worker")!;
@@ -366,7 +379,7 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
         { resumed: string; first: string; rows: string; problems: string[] };
       expect(seen.problems).toEqual([]);
-      expect(seen.resumed).toContain(resumedLine(5));
+      expect(seen.resumed).toContain(resumedLine(Object.keys(seeded).length));
       expect(seen.first).toBe(ds.fields.find((f) => f.id === FIVE)!.label);
       expect(seen.rows.split(",")).toEqual(Object.keys(seeded));
     } finally {
