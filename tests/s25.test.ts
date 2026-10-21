@@ -10,6 +10,7 @@ import {
 import { RECORD_VERSION, restore, serialize } from "../src/lib/record.js";
 import { orAbove, resumedLine } from "../src/lib/copy.js";
 import { pointsLineHtml } from "../src/lib/card.js";
+import { glossed } from "../src/lib/gloss.js";
 import { declarationHtml, questionCardHtml } from "../src/lib/question.js";
 import { arrangeSteps, isLadder } from "../src/lib/steps.js";
 import { replayRecord } from "../src/lib/scope.js";
@@ -286,7 +287,8 @@ interface Card { name: string; status: string; tally: string | null; text: strin
 
 /** Answer whatever question is on the screen from the profile, until the verdict. */
 async function walk(page: BrowserPage, profile: Profile): Promise<{ asked: string[]; cards: Card[]; problems: string[] }> {
-  const byLabel = new Map(ds.fields.map((f) => [f.label, f.id]));
+  // Each label as its card draws it: the first words on the card, glossed (#156).
+  const byLabel = new Map(ds.fields.map((f) => [glossed(f.label, new Set()), f.id]));
   const asked: string[] = [];
   for (let i = 0; i < 24; i++) {
     if ((await page.evaluate(STATE)) === "results") break;
