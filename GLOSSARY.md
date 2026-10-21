@@ -229,6 +229,13 @@ the open routes read the question, and it is derived from the same reckoning
 that decides to ask, never written per question.
 _Avoid_: why-we-ask line, reason line, context line, hint
 
+**Set aside** (UI: "Set aside — after your change, no route uses …", #137):
+The answers a change of answer leaves no route reading, after the interview is
+replayed in asked order on the new answers. They are named once, in the
+declared panel (its folded summary on a phone), on the screen the change leads
+to, and are not kept: changing back asks them again.
+_Avoid_: dropped, discarded, lost, hidden answers
+
 **Reveal / landing** (the two ways a drawn screen meets the reader):
 A *reveal* (s20) scrolls only when the card's top is off the screen — every
 gesture on a wide screen, where the card sits beside the ledger, and Start
