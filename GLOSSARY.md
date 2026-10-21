@@ -172,7 +172,9 @@ checked against your answers" · "quoted and dated · checked against your
 answers, except N conditions we don't ask about" · "quoted and dated · not
 checked against your answers" — and, where unasked limbs are Route readings
 rather than the source's words, "… except N conditions we don't ask about —
-M of them in our own words, not the authority's" (never "we note") — plus the
+M of them in our own words, not the authority's", or, where every one of them
+is, "… except N conditions we don't ask about, in our own words, not the
+authority's" (never "we note") — plus the
 limbs it does not ask, named. That is the results card, where the reader has
 answered; a page with no answers says what the checker asks instead — "quoted
 and dated · the checker asks about all of it" · "… the checker asks about it,
