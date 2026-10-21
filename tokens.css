@@ -69,6 +69,14 @@
      may go below this value. */
   --tap-min: 44px;
 
+  /* ---- Motion ---- */
+  /* The beat (#86): how long a question card a gesture draws fades in, and how
+     long its options take no click. Long enough to catch a reflex double-click,
+     whose second click comes 100–250 ms after the first; short enough that a
+     reader who has read the new question is never refused. The build's
+     minifier writes it as .3s, so whatever reads it reads either unit. */
+  --motion-beat: 300ms;
+
   /* ---- Signature elements ---- */
   /* The threshold rail: the standard module for every numeric criterion */
   --rail-track: var(--color-hold-soft);

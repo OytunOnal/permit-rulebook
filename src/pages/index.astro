@@ -549,6 +549,40 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * screen in the box at load — the one render that is not a gesture. */
     let arriving = true;
 
+    /**
+     * The beat (#86): a question card a gesture draws fades in, and for the
+     * beat nothing on it commits an answer.
+     *
+     * Every question's options sit in the same spot, so a reflex second click
+     * or Enter lands on a question nobody has read. The guard is time, not
+     * motion: it holds the same under reduced motion, where the fade is off. It
+     * stands in `answer`, the one door every commit goes through, so a click on
+     * an option or a row, Enter on a focused option and the search's Enter are
+     * all refused alike. Its length is the token `--motion-beat` (`tokens.css`
+     * says why either unit is read). A token that is not a positive duration is
+     * logged and runs no beat, never a beat that refuses every click. The first
+     * paint has no beat, and the verdict is not a question card.
+     */
+    const beatMs = readBeatMs();
+    function readBeatMs(): number {
+      const token = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
+      const duration = /^(\d*\.?\d+)(ms|s)$/.exec(token);
+      const ms = duration ? Number(duration[1]) * (duration[2] === "ms" ? 1 : 1000) : NaN;
+      if (Number.isFinite(ms) && ms > 0) return ms;
+      console.error(`--motion-beat is not a positive duration (${JSON.stringify(token)}): the interview runs without a beat`);
+      return 0;
+    }
+    let beatEndsAt = 0;
+    const insideBeat = (): boolean => performance.now() < beatEndsAt;
+    function beginBeat(): void {
+      if (beatMs === 0) return;
+      beatEndsAt = performance.now() + beatMs;
+      // The fade starts again even where the box kept the nodes it had.
+      delete main.dataset.beat;
+      void main.offsetWidth;
+      main.dataset.beat = "";
+    }
+
     /** One masthead, one writer. Every gesture names itself, and only the two
      * that compare something can produce a screen that says so — no path back
      * into the interview ("Start over", an edit, browser Back) can leave a
@@ -678,7 +712,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       announce("");
       renderDeclaration(q.field);
       const total = asked.length + remaining.length;
-      const answer = (value: string) => {
+      /** Puts `value` on the record and draws the next screen, unless the
+       * card is inside its beat. `recordedAs` is the words the next screen
+       * says were recorded, where the control can commit a row that is not
+       * the text in the box. */
+      const answer = (value: string, recordedAs?: string) => {
+        if (insideBeat()) return;
+        if (recordedAs !== undefined) justRecorded = { field: q.field, label: recordedAs };
         answers[q.field] = value;
         if (editing) {
           // The edited answer keeps its place in the order; everything after it
@@ -709,7 +749,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         if (longList) {
           const filter = document.getElementById("cfilter") as HTMLInputElement;
           const list = document.getElementById("clist")!;
-          const recorded = document.getElementById("crecorded")!;
           // The control's selection semantics live in one pure model, and the DOM
           // is only its picture: what Enter commits is decided there, where a
           // property test can hold it (product-critique v0.7, B1).
@@ -755,8 +794,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             list.querySelectorAll<HTMLButtonElement>(".copt").forEach((b) =>
               b.addEventListener("click", () => {
                 const chosen = q.options.find((o) => o.value === b.dataset.value);
-                if (chosen) justRecorded = { field: q.field, label: chosen.label };
-                answer(b.dataset.value!);
+                answer(b.dataset.value!, chosen?.label);
               }));
           };
           filter.addEventListener("input", () => { box = stateFor(filter.value); drawList(); });
@@ -772,12 +810,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             const result = onKey(q.options, box, e.key as ListboxKey);
             box = result.state;
             if (result.commit) {
-              // Say what was recorded, in the question card — the side ledger is
-              // not where a person looks after pressing Enter.
-              recorded.innerHTML = `Recorded: <b>${esc(result.commit.label)}</b>`;
-              recorded.hidden = false;
-              justRecorded = { field: q.field, label: result.commit.label };
-              answer(result.commit.value);
+              // The next screen says what was recorded, in the question card —
+              // the side ledger is not where a person looks after pressing Enter.
+              answer(result.commit.value, result.commit.label);
               return;
             }
             drawList();
@@ -820,10 +855,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         if (line) { line.append(" ", restart); restart.hidden = false; }
       }
       const card = main.querySelector<HTMLElement>(".qcard");
+      /** The card a gesture drew, as opposed to the one the first paint put
+       * in the box. */
+      const gestureCard = arriving ? null : card;
       // A history move to the page's first screen keeps the browser's own
       // restore (the top of the page); every other gesture, the browser's Back
       // included, hands the card to the landing.
-      if (card && !arriving && !(restoring && screens.current === 0)) landOnQuestion(card, action);
+      if (gestureCard && !(restoring && screens.current === 0)) landOnQuestion(gestureCard, action);
       if (longList) {
         // Every render of a search question puts the caret in it, whether or
         // not the box had to be rewritten to get here. A correction starts by
@@ -832,9 +870,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         const search = main.querySelector<HTMLInputElement>("#cfilter")!;
         search.focus({ preventScroll: true });
         search.select();
-      } else if (card && !arriving) {
-        focusFirst(card);
+      } else if (gestureCard) {
+        focusFirst(gestureCard);
       }
+      if (gestureCard) beginBeat();
       // Shown once, on the screen straight after the commit.
       justRecorded = null;
       // The same rule for the line that says where the reader came from.
@@ -1818,6 +1857,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     /* Question mode */
     .qcard{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:1.6rem 1.8rem}
+    /* The beat's fade (#86): opacity alone, so no box moves. */
+    #main[data-beat] .qcard{animation:beat-in var(--motion-beat) ease-out}
+    @keyframes beat-in{from{opacity:0}}
     .qmeta{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted)}
     /* The line a returning reader meets over the question they resume on, and
        the ledger's own "Start over" moved in after it (s20). It is the one

@@ -138,9 +138,20 @@ export const GOTO_SETTLE_MS = 400;
 /**
  * Headless Chrome, attached over CDP, handed to `run` as a small page object:
  *
- *   goto(url)        navigate and settle
- *   evaluate(expr)   run an expression in the page, return its value
- *   problems()       everything the page has thrown or logged as an error
+ *   openTab()          a second tab in the same browser
+ *   front()            bring this tab to the front
+ *   goto(url)          navigate and settle
+ *   evaluate(expr)     run an expression in the page, return its value
+ *   emulateMedia(fs)   set a media feature, such as reduced motion
+ *   clickAt(x, y)      a mouse click at a point of the viewport
+ *   pressEnter()       Enter pressed and released
+ *   type(text)         text typed into the focused field
+ *   back()             the browser's own Back
+ *   screenshot()       the screen as a PNG
+ *   problems()         everything the page has thrown or logged as an error
+ *   allProblems()      the same, the traffic counter's local noise included
+ *   requests()         every request the page made, when asked to watch
+ *   forgetRequests()   empty that list
  */
 /**
  * The two messages a local run always logs about the traffic counter, and
@@ -315,6 +326,34 @@ export async function withBrowser(run, {
        */
       async emulateMedia(features) {
         await send("Emulation.setEmulatedMedia", { features }, sessionId);
+      },
+      /**
+       * A mouse click at a point of the viewport, as the platform delivers one:
+       * whatever is under the point when it lands takes it, which a script's
+       * `.click()` on a chosen element cannot show (#86).
+       */
+      async clickAt(x, y) {
+        for (const type of ["mousePressed", "mouseReleased"])
+          await send("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 }, sessionId);
+      },
+      /** Enter pressed and released, as a keyboard does: on a focused button it
+       * is a click (#86). */
+      async pressEnter() {
+        const enter = { key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 };
+        await send("Input.dispatchKeyEvent", { type: "keyDown", text: "\r", ...enter }, sessionId);
+        await send("Input.dispatchKeyEvent", { type: "keyUp", ...enter }, sessionId);
+      },
+      /** Text typed into the focused field, as a keyboard commits it: the
+       * field's own `input` event fires. */
+      async type(text) {
+        await send("Input.insertText", { text }, sessionId);
+      },
+      /** The browser's own Back, as its toolbar takes it: the entry before
+       * the current one, and the page's `popstate` if it wrote that entry. */
+      async back() {
+        const { currentIndex, entries } = await send("Page.getNavigationHistory", {}, sessionId);
+        if (currentIndex < 1) throw new Error("the browser holds no entry behind this one");
+        await send("Page.navigateToHistoryEntry", { entryId: entries[currentIndex - 1].id }, sessionId);
       },
       /** The screen as a PNG, for a record a reader can look at. */
       async screenshot({ fullPage = false } = {}) {
