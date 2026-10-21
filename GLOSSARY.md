@@ -143,13 +143,14 @@ under 2 years, 2 years or more — the window Germany asks (§ 6 BeschV; the
 Opportunity Card's § 20b Abs. 1 Nr. 7). No option implies another.
 _Avoid_: the experience ladder, y2in5, "2+ within the last 5"
 
-**experience_7y** (UI: "And in the last seven years?"):
+**experience_7y** (UI: "Related skilled work experience in the last seven years?"):
 The other experience question. Three rungs — under 3, 3 to under 5, 5 or
-more — the window the IND asks; Spain and France name no window for their
+more — the window the IND asks, and the German Blue Card's IT path (three
+years in the last seven, no degree; #77); Spain and France name no window for their
 three and five years, so this answer is a floor there (a reading on those
 routes). The Opportunity Card's Nr. 6 reads its top rung; a points item
 that reads both questions pays the best row, never the sum.
-_Avoid_: y3in7, y5in7, "3+ within the last 7", the yes/no question it replaced
+_Avoid_: y3in7, y5in7, "3+ within the last 7", the yes/no question it replaced, "And in the last seven years?" (its wording until #77: the "And" leaned on a question not always asked)
 
 **retired: y3in7 and the implies list.** One question with four rungs and
 `y3in7 ⇒ y2in5` read § 6 BeschV's "two in the last five" as met for a
@@ -207,6 +208,14 @@ _Avoid_: missing answer, null
 The official place where an open unknown can be resolved by the person
 themselves (e.g. the Anabin database for degree recognition).
 _Avoid_: help link, reference link
+
+**Asked-for line** (UI: "Asked for: …", #77):
+The line on a question that names the routes it is being asked for — the open
+routes whose undecided rules read its answer — by name and country when one
+or two, counted per country when more. It appears only when fewer than all
+the open routes read the question, and it is derived from the same reckoning
+that decides to ask, never written per question.
+_Avoid_: why-we-ask line, reason line, context line, hint
 
 **Reveal / landing** (the two ways a drawn screen meets the reader):
 A *reveal* (s20) scrolls only when the card's top is off the screen — every
