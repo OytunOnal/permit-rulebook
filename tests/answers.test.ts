@@ -138,9 +138,12 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
     try {
       const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
         await page.goto(server.url("/"), 300);
+        // `occupation_it` on the record: Germany asks it before the shortage
+        // question since the shortage Blue Card's IT path reads it (#134), and
+        // a reader out of IT is asked the shortage question next.
         await page.evaluate(seed({
           destination: "de", citizenship: "IN", situation: "offer",
-          qualification: "degree", recognition_de: "recognized",
+          qualification: "degree", recognition_de: "recognized", occupation_it: "no",
         }));
         await page.goto(server.url("/"), 1200);
         return page.evaluate(

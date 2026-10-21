@@ -198,7 +198,10 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         await page.goto(server.url("/"), 300);
-        await page.evaluate(seed({ destination: "de", situation: "offer", qualification: "degree" }));
+        // Out of IT, on the record: Germany asks `occupation_it` early since
+        // the shortage Blue Card's IT path reads it (#134), and only a reader
+        // out of IT is asked the shortage question straight after the passport.
+        await page.evaluate(seed({ destination: "de", situation: "offer", qualification: "degree", occupation_it: "no" }));
         await page.goto(server.url("/"), 900);
         await page.evaluate('(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
         await settle(300);
