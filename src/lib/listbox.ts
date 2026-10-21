@@ -1,5 +1,8 @@
 // @level presentation
-import { matchOptions, type FieldOption } from "permit-rulebook-data";
+import {
+  countryPhrase, findTerritory, matchOptions, territoryPhrase, territoryPhraseAtStart, type FieldOption,
+} from "permit-rulebook-data";
+import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "./copy.js";
 
 /**
  * The selection semantics of the country control, as a pure state machine.
@@ -91,6 +94,23 @@ export function onKey(
       return option ? { state, commit: option } : { state };
     }
   }
+}
+
+/**
+ * What the list says when the query matches no row. A dependent territory is
+ * never a row — its people hold another country's passport — so typing one
+ * is answered with that passport, named by the dataset; any other query is
+ * told how to search. The live region reads the territory's line whole, since
+ * it is the answer, and the short form of the other.
+ */
+export function composeNoMatchLine(query: string): { line: string; status: string } {
+  const found = findTerritory(query);
+  if (!found) return { line: NO_COUNTRY_MATCHES, status: NO_COUNTRY_MATCHES_STATUS };
+  const line = territoryLine(
+    { atStart: territoryPhraseAtStart(found.territory), inSentence: territoryPhrase(found.territory) },
+    countryPhrase(found.country.code), found.country.name,
+  );
+  return { line, status: line };
 }
 
 /** The DOM id of a row, for `aria-activedescendant`. */

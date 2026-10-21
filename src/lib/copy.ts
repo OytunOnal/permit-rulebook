@@ -737,3 +737,21 @@ export const proseProvenanceCounts = (sourced: number, ours: number, dated: numb
  * "about" is the honest word for a number that moves.
  */
 export const questionCounter = (n: number, about: number): string => `Question ${n} of about ${about}`;
+
+/**
+ * What the passport search says when what was typed matches no row: how to
+ * search, and the shorter words the live region reads.
+ */
+export const NO_COUNTRY_MATCHES = "No country matches. Try fewer letters, or the country's own name.";
+export const NO_COUNTRY_MATCHES_STATUS = "No country matches";
+
+/**
+ * The same line when what was typed is a dependent territory, which is no row
+ * because its people hold another country's passport (#160). The names are
+ * the dataset's: the territory's phrase where it opens the sentence and inside
+ * it, the passport country's in-sentence phrase, and its row's label.
+ */
+export const territoryLine = (
+  territory: { atStart: string; inSentence: string }, countryPhrase: string, country: string,
+): string =>
+  `${territory.atStart} is not on this list: people from ${territory.inSentence} hold a passport of ${countryPhrase}. Choose ${country}.`;

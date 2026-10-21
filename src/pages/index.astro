@@ -177,7 +177,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // A symbol a stranger cannot read is explained the first time a screen uses
     // it, by the same module the route pages use (human, 2026-09-08).
     import { type Glossary, glossSection } from "../lib/gloss.js";
-    import { activeOption, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
+    import {
+      activeOption, composeNoMatchLine, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState,
+    } from "../lib/listbox.js";
     import {
       backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, mastheadFor, readEntry,
       recordScreen as recordEntry, screenAfter, screenAt, type Explore, type FlowAction,
@@ -780,10 +782,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             }
             const matches = matchOptions(q.options, box.query);
             if (!matches.length) {
-              // An empty box says nothing; this says what to do about it.
-              list.innerHTML = `<p class="cnone">No country matches. Try fewer letters, or the country's own name.</p>`;
+              // An empty box says nothing; this says what to do about it, or,
+              // for a territory, whose passport its people hold (#160).
+              const said = composeNoMatchLine(box.query);
+              list.innerHTML = `<p class="cnone">${esc(said.line)}</p>`;
               filter.removeAttribute("aria-activedescendant");
-              if (status) status.textContent = "No country matches";
+              if (status) status.textContent = said.status;
               return;
             }
             const shown = shownOptions(q.options, box);
