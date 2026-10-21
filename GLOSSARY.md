@@ -228,7 +228,7 @@ _Avoid_: scroll-to, jump, snap, autoscroll
 
 **Beat** (#86):
 The moment after a gesture draws a question card, when the card fades in and
-its options take no click. It is the same length with or without motion;
+nothing on it commits an answer. It is the same length with or without motion;
 under reduced motion only the fade is gone. A beat follows every question
 card a gesture draws: an answer, a correction, Back, Keep this answer, Start
 over, the browser's own Back and Forward. The first paint has none, and the
