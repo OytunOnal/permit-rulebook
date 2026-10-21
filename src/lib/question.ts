@@ -1,7 +1,7 @@
 // @level presentation
 import {
-  deriveBands, fieldOptions, optionMeans, shortLabelOf,
-  type Dataset, type FieldOption, type Profile, type Question,
+  deriveQuestions, optionMeans, shortLabelOf,
+  type Dataset, type Profile, type Question,
 } from "permit-rulebook-data";
 import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, questionCounter, resumedLine } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
@@ -151,14 +151,18 @@ export function questionCardHtml(screen: QuestionScreen): string {
  * long answer in the desktop sidebar wrapped, and the pen alone went to the
  * second line — "University degree ⏎ ✎" at 1280 (v1.1 gate critique, P8 —
  * s27). Now the last word goes with it or neither moves.
+ *
+ * A row's answer is looked up among the options its question offers, so every
+ * answer a reader can pick draws an answered row with its pencil: a money
+ * question's open unknown is one of its options and none of its bands.
  */
 export function declarationHtml(
   dataset: Dataset, answers: Profile, asked: string[], currentField: string | null,
 ): string {
   const fields = currentField && !asked.includes(currentField) ? [...asked, currentField] : asked;
+  const offered = new Map(deriveQuestions(dataset).map((q) => [q.field, q.options]));
   return fields.map((f) => {
-    const opt = (fieldOptions(dataset, f) as FieldOption[]).find((o) => o.value === answers[f]) ??
-      deriveBands(dataset, f).find((b) => b.id === answers[f]);
+    const opt = offered.get(f)?.find((o) => o.value === answers[f]);
     return opt
       ? `<div class="done" data-field="${escAttr(f)}" role="button" tabindex="0" title="Change this answer"><dt>${esc(shortLabelOf(dataset, f))}</dt><dd>${esc(opt.label)}&nbsp;<span class="pen" aria-hidden="true">✎</span></dd></div>`
       : `<div><dt>${esc(shortLabelOf(dataset, f))}</dt><dd class="pending">—</dd></div>`;
