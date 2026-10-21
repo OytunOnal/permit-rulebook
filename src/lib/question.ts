@@ -85,13 +85,13 @@ const NAMED_UP_TO = 2;
  * a question reopened with the pencil names what it would be asked for had
  * it not been answered (spec #133, decision 7).
  */
-function askedForLineHtml(dataset: Dataset, answers: Profile, field: string, glossary: Glossary): string {
+function askedForLineHtml({ dataset, answers, question, glossary }: QuestionScreen): string {
   const unanswered: Profile = { ...answers };
-  delete unanswered[field];
-  const { asked_for: askedFor, open } = reckonAskingRoutes(dataset, unanswered, field);
+  delete unanswered[question.field];
+  const { asked_for: askedFor, open } = reckonAskingRoutes(dataset, unanswered, question.field);
   if (askedFor.length === 0 || askedFor.length === open.length) return "";
   const body = askedFor.length <= NAMED_UP_TO
-    ? namedRoutesHtml(dataset, askedFor, glossary)
+    ? namedRoutesHtml(dataset, askedFor, glossary ?? new Set())
     : countedRoutesHtml(askedFor);
   return `<p class="asked-for" data-asked-for>${esc(ASKED_FOR)} ${body}</p>`;
 }
@@ -132,7 +132,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
             esc(editing ? EDIT_LINE : questionCounter(asked.length + 1, total))
           }</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
-          ${askedForLineHtml(dataset, answers, q.field, screen.glossary ?? new Set())}
+          ${askedForLineHtml(screen)}
           ${(() => {
             // Where the answer is a thing a person can look up, the way to look
             // it up belongs at the question, not three screens later on a
