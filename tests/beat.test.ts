@@ -198,7 +198,9 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
         await page.clickAt(at.x, at.y);
         await waitOutTheBeat(page);
         const first = await where(page);
-        await page.clickAt(at.x, at.y);
+        // On the new card's own first option: an asked-for line (#139) can
+        // draw it lower than the last card's.
+        await clickOn(page, FIRST_OPTION);
         await waitOutTheBeat(page);
         return { first, second: await where(page), problems: page.problems() };
       }, DESK);
@@ -399,7 +401,9 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
         await page.evaluate(WATCH_SHIFTS);
         await page.clickAt(at.x, at.y);
         await waitOutTheBeat(page);
-        await page.clickAt(at.x, at.y);
+        // The new card's own first option: an asked-for line (#139) can draw
+        // it lower than the last card's.
+        await clickOn(page, FIRST_OPTION);
         await waitOutTheBeat(page);
         return { cls: Number(await page.evaluate("window.__cls")), after: await where(page), problems: page.problems() };
       }, DESK);
