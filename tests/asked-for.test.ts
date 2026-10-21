@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
+import { glossSection, type Glossary } from "../src/lib/gloss.js";
 import {
   DESK, PHONE, QLABEL, answer, middleBandOf, settle, skipReason, tapOn, topBandOf, waitOutTheBeat, walkTo,
   warnNotWalked, withSite, type BrowserPage,
@@ -56,6 +57,7 @@ const IT_NO_DEGREE: Profile = {
 };
 
 const labelOf = (field: string): string => ds.fields.find((f) => f.id === field)!.label;
+const cardNameOf = (route: string): string => ds.countries.flatMap((c) => c.routes).find((r) => r.id === route)!.name;
 
 /** What the line on the question card marks: the routes it names, each with
  * its country, and the count per country where it counts. */
@@ -188,18 +190,19 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     const seen = await withSite(async (site) => {
       const { page } = site;
       await walkTo(site, GERMANY_OFFER, "funds_eur_month");
-      const text = await page.evaluate('document.querySelector("#main").innerText');
-      return { ...(await screenOf(page)), text, problems: page.problems() };
+      return { ...(await screenOf(page)), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
     expectTheCardWithALine(seen, "funds_eur_month");
-    const card = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-chancenkarte")!;
-    // The name cites no act, so the expansion leaves it as the card prints
-    // it (amendment 6: the sign itself carries no explainer).
-    expect(seen.line.named.map((n: Line["named"][number]) => n.text)).toEqual([card.name]);
-    // And no act is explained twice on the screen.
-    for (const act of ["AufenthG =", "BeschV ="])
-      expect(seen.text.split(act).length - 1, act).toBeLessThanOrEqual(1);
+    expect(namedRoutes(seen.line)).toEqual([["de-chancenkarte", "DE"]]);
+    // Each name the line marks reads as its card's name through the screen's
+    // one memory of what it has explained, spent in the line's order.
+    const memory: Glossary = new Set();
+    for (const { route, text } of seen.line.named)
+      expect(text, route).toBe(glossSection(cardNameOf(route), memory));
+    // This one cites no act, so the expansion leaves it as the card prints it
+    // (amendment 6: the sign itself carries no explainer).
+    expect(seen.line.named.map((n) => n.text)).toEqual([cardNameOf("de-chancenkarte")]);
   }, 120_000);
 
   it("reopened with the pencil, a question's line names the routes it is asked for without its own answer", async () => {
