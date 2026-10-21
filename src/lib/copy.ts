@@ -133,7 +133,6 @@ export const resumedLine = (kept: number): string =>
 export const ASKED_FOR = "Asked for:";
 export const askedForRouteHtml = (routeNameHtml: string, countryHtml: string): string =>
   `${routeNameHtml}&nbsp;·&nbsp;${countryHtml}`;
-export const ASKED_FOR_ROUTES_JOIN = " and ";
 export const askedForFirstCount = (routes: number, place: string): string =>
   `${routes} route${routes === 1 ? "" : "s"} in ${place}`;
 export const askedForNextCount = (routes: number, place: string): string => `${routes} in ${place}`;
@@ -153,6 +152,9 @@ export const EDIT_LINE = "Your answer — pick another to change it; answers you
  */
 export const setAsideLead = (count: number): string =>
   `Set aside — after your change, no route uses ${count === 1 ? "this answer" : "these answers"}:`;
+/** The whole line: the lead and the names, both already markup, and its
+ * closing full stop. */
+export const setAsideLineHtml = (leadHtml: string, namesHtml: string): string => `${leadHtml} ${namesHtml}.`;
 
 /**
  * What a route page adds to it. A page a stranger lands on cold from a search

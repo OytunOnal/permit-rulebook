@@ -190,6 +190,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // build drew the first paint with, so the module's first render finds the
     // screen it would have drawn already on the page (s10).
     import { declarationCount, declarationHtml, hasClasses, isLongList, questionCardHtml, setAsideHtml } from "../lib/question.js";
+    import { countryOf } from "../lib/countries.js";
     // The width the ledger stops being a disclosure at, said once, and read
     // here and by the script that runs before the first paint (s10); and the
     // one step that takes the first paint's covers off.
@@ -971,8 +972,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * way here and another way there is two facts.
      */
     function scopeFor(r: RouteResult): string {
-      const country = ds.countries.find((c) => c.code === r.country);
-      if (!country) return "";
+      const country = countryOf(ds, r.country);
       // The reader's words, the same ones the country index and the route page
       // print (decision 3 amended by the human, 2026-09-08) — counted over the
       // conditions that bind THIS reader, beside the page so a test can read
@@ -1053,7 +1053,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       return `
         <article class="route"${cameFromMark(r)}>
           <div class="top">
-            <div>${showCountry ? `<span class="country">${esc(ds.countries.find((c) => c.code === r.country)?.name ?? r.country)}</span>` : ""}
+            <div>${showCountry ? `<span class="country">${esc(countryOf(ds, r.country).name)}</span>` : ""}
               <h3>${esc(routeName(r))}</h3></div>
             <span class="st ${unsettled ? "unsettled" : r.status}">${unsettled ? "Rules met" : STATUS_LABEL[r.status]}</span>
           </div>
@@ -1167,7 +1167,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // asked, on a fact they gave us themselves.
       const told = place();
       const elsewhereCountry = elsewhere.length
-        ? (ds.countries.find((c) => c.code === elsewhere[0].country)?.name ?? elsewhere[0].country)
+        ? countryOf(ds, elsewhere[0].country).name
         : "";
       const elsewhereGroup = elsewhere.length >= 2
         ? `<details class="hold-group">

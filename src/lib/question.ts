@@ -4,10 +4,11 @@ import {
   type Dataset, type OpenRoute, type Profile, type Question,
 } from "permit-rulebook-data";
 import {
-  ASKED_FOR, ASKED_FOR_COUNTS_JOIN, ASKED_FOR_ROUTES_JOIN, EDIT_LINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
+  ASKED_FOR, ASKED_FOR_COUNTS_JOIN, EDIT_LINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
   RETURNING_LINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, questionCounter, resumedLine,
-  setAsideLead,
+  setAsideLead, setAsideLineHtml,
 } from "./copy.js";
+import { countryOf } from "./countries.js";
 import { type Glossary, glossSection } from "./gloss.js";
 import { esc, escAttr } from "./reason.js";
 import { QUERY_MAX_LENGTH } from "./listbox.js";
@@ -99,10 +100,10 @@ function askedForLineHtml({ dataset, answers, question, glossary }: QuestionScre
 /** Each route by its card's name, through the screen's "§" expansion, and
  * its country's name; each name carries its route's mark. */
 function namedRoutesHtml(dataset: Dataset, routes: OpenRoute[], glossary: Glossary): string {
-  return routes.map(({ route, country }) => askedForRouteHtml(
+  return joinAnd(routes.map(({ route, country }) => askedForRouteHtml(
     `<span data-route="${escAttr(route.id)}" data-country="${escAttr(country)}">${esc(glossSection(route.name, glossary))}</span>`,
-    esc(dataset.countries.find((c) => c.code === country)?.name ?? country),
-  )).join(ASKED_FOR_ROUTES_JOIN);
+    esc(countryOf(dataset, country).name),
+  )));
 }
 
 /** How many routes per country, in the dataset's order of countries; each
@@ -234,7 +235,7 @@ export function declarationHtml(
 export function setAsideHtml(dataset: Dataset, setAside: readonly string[]): string {
   if (!setAside.length) return "";
   const names = setAside.map((f) => `<b data-set-aside="${escAttr(f)}">${esc(shortLabelOf(dataset, f))}</b>`);
-  return `<span class="set-aside">${esc(setAsideLead(setAside.length))} ${joinAnd(names)}.</span>`;
+  return `<span class="set-aside">${setAsideLineHtml(esc(setAsideLead(setAside.length)), joinAnd(names))}</span>`;
 }
 
 /** On a phone the ledger collapses to this one line; on a wide screen the
