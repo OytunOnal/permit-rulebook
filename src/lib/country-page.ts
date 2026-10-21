@@ -26,7 +26,7 @@ import {
   MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader,
   type FooterFacts, type NavLink,
 } from "./identity.js";
-import { type Glossary, glossSection } from "./gloss.js";
+import { type Glossary, glossSection, glossed } from "./gloss.js";
 
 /**
  * One page per country — the address a route page's crumb climbs to.
@@ -158,7 +158,7 @@ function routeCard(dataset: Dataset, country: Country, route: Route, seen: Gloss
   const figure = isScored(route) ? routeFigure(dataset, route) : undefined;
   return `
       <li><a class="card tap-min" href="${escAttr(url(routePath(country, route)))}"><span class="name">${
-    esc(glossSection(route.name, seen))}</span><p class="gist">${esc(gist(route))}</p><p class="meta">${
+    esc(glossSection(route.name, seen))}</span><p class="gist">${esc(glossed(gist(route), seen))}</p><p class="meta">${
     figure ? `<span>${esc(figure.label)}${figure.value ? ` <b>${esc(figure.value)}</b>` : ""}</span>` : ""}<span>${
     esc(scopeLine(route))}</span><span class="read"><time datetime="${
     escAttr(pageStamp(dataset, route))}">${esc(readOn(pageStamp(dataset, route)))}</time></span></p></a></li>`;

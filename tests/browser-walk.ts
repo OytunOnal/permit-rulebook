@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
+import { glossed } from "../src/lib/gloss.js";
 
 /**
  * The interview walked in headless Chrome over the built page: what the
@@ -131,10 +132,11 @@ export async function answer(page: BrowserPage, field: string, value: string): P
   await waitOutTheBeat(page);
 }
 
-/** The field of the question on the screen, from its label. */
+/** The field of the question on the screen, from its label as the card draws
+ * it: the first words on the card, glossed on the card's own memory (#156). */
 async function fieldOnScreen(page: BrowserPage): Promise<string> {
   const label = await page.evaluate(QLABEL);
-  const field = ds.fields.find((f) => f.label === label)?.id;
+  const field = ds.fields.find((f) => glossed(f.label, new Set()) === label)?.id;
   if (!field) throw new Error(`no field for the question "${label}"`);
   return field;
 }

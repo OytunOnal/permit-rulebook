@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, evaluate, type Dataset, type Profile } from "permit-rulebook-data";
 import { learnBoxHtml } from "../src/lib/card.js";
+import { glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { esc, escAttr } from "../src/lib/reason.js";
@@ -21,21 +22,24 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * glossed it, so the shortage link read "§ 18g AufenthG (§ = section;
  * AufenthG = the Residence Act) lists …" — an explainer inside a link,
  * underlined end to end. (The sign's own words have since gone everywhere,
- * s32 amendment 6; what these cases hold is that a link is never glossed, so
- * the absence pinned below is the act's expansion.) The labels are the
- * data's (their own test holds them
- * to the contract); what the site decides is that link text is never glossed
- * and that the three surfaces agree.
+ * s32 amendment 6.) The labels are the data's, and their own test keeps
+ * citations out of them; since #151's ruling 8 the site glosses link text on
+ * the screen's memory like the rest of our words, which is why a citation in a
+ * label would put its act's explainer inside the link. What the site decides
+ * is that and that the three surfaces agree.
  */
 
 /** The shortage field: the one door whose label carried the symbol. */
 const SHORTAGE = "occupation_shortage";
 
-/** A label that would be glossed if anything still glossed it. */
+/** A label carrying a citation, which the contract keeps out of the data. */
 const SYMBOL_LABEL = "§ 18g AufenthG lists the shortage groups";
-/** What glossing the label would add — the act on first use (the sign's own
+/** What glossing the label adds — the act on first use (the sign's own
  * explainer is gone from every screen since s32's amendment 6). */
 const ACT_EXPANSION = "AufenthG = the Residence Act";
+
+/** A label as a screen that has explained nothing prints it. */
+const firstUse = (label: string): string => glossed(label, new Set());
 
 /** The dataset with one door's label swapped: the decision is about the
  * renderer, not about the words the data ships today. */
@@ -58,18 +62,22 @@ const anchorsOf = (html: string): { href: string; text: string }[] =>
     href: /href="([^"]*)"/.exec(m[1])?.[1] ?? "", text: m[2],
   }));
 
-describe("2 — link text is never glossed", () => {
-  it("the card's box prints a label carrying the symbol verbatim, on a screen that has explained nothing", () => {
+describe("2 — link text is glossed on the screen's memory (#151, ruling 8)", () => {
+  it("the card's box explains the act in a label on a screen that has explained nothing, and not on one that has", () => {
     const seen = withLabel(SHORTAGE, SYMBOL_LABEL);
     const result = evaluate(seen, UNSURE).find((r) => r.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml(seen, result, UNSURE);
+    const html = learnBoxHtml(seen, result, UNSURE, new Set());
     const [link, ...rest] = anchorsOf(html);
     expect(rest, "the box carries more than the one door").toEqual([]);
-    expect(link.text).toBe(esc(SYMBOL_LABEL));
-    expect(html).not.toContain(ACT_EXPANSION);
+    expect(link.text).toBe(esc(firstUse(SYMBOL_LABEL)));
+    expect(html).toContain(ACT_EXPANSION);
+    // A screen whose citation line already named the act prints the label as written.
+    const spent = new Set<string>();
+    glossed("§ 18g AufenthG", spent);
+    expect(anchorsOf(learnBoxHtml(seen, result, UNSURE, spent))[0]!.text).toBe(esc(SYMBOL_LABEL));
   });
 
-  it("the question line prints the same label verbatim", () => {
+  it("the question line prints the same label, explained on the card's first use", () => {
     const seen = withLabel(SHORTAGE, SYMBOL_LABEL);
     const question = deriveQuestions(seen).find((q) => q.field === SHORTAGE)!;
     const html = questionCardHtml({
@@ -79,8 +87,7 @@ describe("2 — link text is never glossed", () => {
     expect(line, "no help line under the shortage question").not.toBeNull();
     const [link, ...rest] = anchorsOf(line![1]);
     expect(rest).toEqual([]);
-    expect(link.text).toBe(esc(SYMBOL_LABEL));
-    expect(html).not.toContain(ACT_EXPANSION);
+    expect(link.text).toBe(esc(firstUse(SYMBOL_LABEL)));
   });
 });
 
@@ -103,7 +110,9 @@ describe("3 — the three surfaces agree", () => {
       const question = deriveQuestions(ds).find((q) => q.field === door.field)!;
       const qhtml = questionCardHtml({ dataset: ds, question, answers: {}, asked: [], editing: null, total: 10 });
       const qline = /<p class="qlearn">([\s\S]*?)<\/p>/.exec(qhtml)![1];
-      expect(anchorsOf(qline)).toEqual([{ href: escAttr(door.url), text: esc(door.label) }]);
+      // Each surface is a screen of its own, and nothing before the door on
+      // any of them uses its shorthand: each prints the label's first use.
+      expect(anchorsOf(qline)).toEqual([{ href: escAttr(door.url), text: esc(firstUse(door.label)) }]);
 
       // A route page draws the block only under a rule with no quote to show,
       // so a door reaches this surface only where its rule is unquoted: the
@@ -115,8 +124,8 @@ describe("3 — the three surfaces agree", () => {
       for (const b of asks.filter((b) => b.html.includes(asked))) {
         // The route page draws its own external mark after the label.
         const links = anchorsOf(b.html).map((a) => ({ href: a.href, text: a.text.replace(/\s*&#8599;$/, "") }));
-        expect(links.filter((a) => a.text === esc(door.label) || a.href === escAttr(door.url)), b.path)
-          .toEqual([{ href: escAttr(door.url), text: esc(door.label) }]);
+        expect(links.filter((a) => a.text === esc(firstUse(door.label)) || a.href === escAttr(door.url)), b.path)
+          .toEqual([{ href: escAttr(door.url), text: esc(firstUse(door.label)) }]);
       }
     });
   }
@@ -141,7 +150,7 @@ describe("3 — the three surfaces agree", () => {
       const result = evaluate(ds, profile).find((r) => r.route.id === route)!;
       expect(result.status, `${route} is not on hold`).toBe("hold");
       const door = ds.fields.find((f) => f.id === field)!.learn!;
-      expect(anchorsOf(learnBoxHtml(ds, result, profile))).toEqual([{ href: escAttr(door.url), text: esc(door.label) }]);
+      expect(anchorsOf(learnBoxHtml(ds, result, profile))).toEqual([{ href: escAttr(door.url), text: esc(firstUse(door.label)) }]);
     });
   }
 });
@@ -227,17 +236,18 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
       }, { viewport: { width: 390, height: 844 }, mobile: true }) as Walk;
 
       expect(seen.problems).toEqual([]);
-      // Under the question: the sentence as one link, no explainer around it.
-      expect(seen.help).toEqual([{ text: door.label, href: door.url }]);
+      // Under the question: the sentence as one link, its shorthand explained
+      // in it, and no act around it.
+      expect(seen.help).toEqual([{ text: firstUse(door.label), href: door.url }]);
       expect(seen.helpText).not.toContain(ACT_EXPANSION);
       // The result: one box, on the card the unknown still binds, drawn open.
       expect(seen.state).toBe("results");
       expect(seen.boxes.length).toBe(1);
       expect(seen.boxes[0].open, "the hold row with the open question is not drawn open").toBe(true);
-      expect(seen.boxes[0].links).toEqual([{ text: door.label, href: door.url }]);
+      expect(seen.boxes[0].links).toEqual([{ text: firstUse(door.label), href: door.url }]);
       expect(seen.boxes[0].text).not.toContain(ACT_EXPANSION);
       // The route page: the same sentence, the same address.
-      expect(seen.asks.map((a) => ({ text: a.text.replace(/\s*↗$/, ""), href: a.href }))).toEqual([{ text: door.label, href: door.url }]);
+      expect(seen.asks.map((a) => ({ text: a.text.replace(/\s*↗$/, ""), href: a.href }))).toEqual([{ text: firstUse(door.label), href: door.url }]);
       expect(seen.asksText).toContain("You can find this out yourself");
       expect(seen.asksText).not.toContain(ACT_EXPANSION);
     } finally {
