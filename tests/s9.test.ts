@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { countryPhraseAtStart, isScored, scopeLine, scopeWords, routeStatements, type Dataset } from "permit-rulebook-data";
+import { phraseAtStartOf, isScored, scopeLine, scopeWords, routeStatements, type Dataset } from "permit-rulebook-data";
 import { routePage, routePages } from "../src/lib/route-page.js";
 import { countryPage, countryAddresses } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
@@ -175,7 +175,7 @@ describe("s9 — a country page lists them, below the ones it scores", () => {
       const h1 = page.html.match(/<h1>([^<]*)/)![1]!;
       const scored = country.routes.filter(isScored).length;
       expect(h1, country.code).toContain(
-        countryHeadline(countryPhraseAtStart(country.code), country.routes.length, scored));
+        countryHeadline(phraseAtStartOf(country.code), country.routes.length, scored));
       for (const word of ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"])
         expect(h1.toLowerCase(), `${country.code} spells ${word}`).not.toMatch(new RegExp(`\b${word}\b`));
     }

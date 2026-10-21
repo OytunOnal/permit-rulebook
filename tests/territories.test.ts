@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  countryPhrase, countryVocabulary, fieldOptions, findTerritory, matchOptions, territoryPhraseAtStart, territoryPhrase,
+  phraseOf, countryVocabulary, fieldOptions, findTerritory, matchOptions, territoryPhraseAtStartOf, territoryPhraseOf,
   type Dataset,
 } from "permit-rulebook-data";
 import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy.js";
@@ -28,8 +28,8 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const expectedTerritoryLine = (typed: string): string => {
   const found = findTerritory(typed)!;
   return territoryLine(
-    { atStart: territoryPhraseAtStart(found.territory), inSentence: territoryPhrase(found.territory) },
-    countryPhrase(found.country.code), found.country.name,
+    { atStart: territoryPhraseAtStartOf(found.territory), inSentence: territoryPhraseOf(found.territory) },
+    phraseOf(found.country.code), found.country.name,
   );
 };
 

@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import {
-  DESTINATION_FIELD, countryPhraseAtStart, evaluate, isClosed, isScored, scopeLine, scopeWords,
+  DESTINATION_FIELD, phraseAtStartOf, evaluate, isClosed, isScored, scopeLine, scopeWords,
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { countryAddresses } from "../src/lib/country-page.js";
@@ -153,7 +153,7 @@ describe.skipIf(noBuild !== null)("every page the build draws", () => {
   it("heads each country page with its routes and how many the checker asks about, from the dataset", () => {
     for (const { country, path } of countryAddresses(ds)) {
       const headline = countryHeadline(
-        countryPhraseAtStart(country.code), country.routes.length, country.routes.filter(isScored).length);
+        phraseAtStartOf(country.code), country.routes.length, country.routes.filter(isScored).length);
       expect(headingsOf(page(`${path}/index.html`).html).some((h) => h.startsWith(headline)), path).toBe(true);
     }
   });

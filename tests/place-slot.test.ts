@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
-import { DESTINATION_FIELD, SITUATION_FIELD, countryPhrase, type Dataset, type Profile } from "permit-rulebook-data";
+import { DESTINATION_FIELD, SITUATION_FIELD, phraseOf, type Dataset, type Profile } from "permit-rulebook-data";
 import { DESK, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { drawnResults, plainTextOf, questionCards } from "./reader-pages.js";
 
@@ -18,7 +18,7 @@ const ds = rawDataset as unknown as Dataset;
 const THERE = /\bthere\b/i;
 
 /** Every country's in-sentence phrase, keyed by its code. */
-const PHRASES = ds.countries.map((c) => ({ code: c.code, phrase: countryPhrase(c.code) }));
+const PHRASES = ds.countries.map((c) => ({ code: c.code, phrase: phraseOf(c.code) }));
 
 /** The country a reader's answers place them in, or undefined on the all-four
  * path: the offer's country where they placed it, else their destination. */
@@ -55,7 +55,7 @@ describe("the situation question's options", () => {
     for (const { where, code, means } of placed) {
       expect(means.length, where).toBeGreaterThan(0);
       for (const m of means) {
-        expect(m, where).toContain(`in ${countryPhrase(code!)}`);
+        expect(m, where).toContain(`in ${phraseOf(code!)}`);
         expect(m, where).not.toMatch(THERE);
       }
     }
@@ -87,6 +87,6 @@ describe.skipIf(notWalked !== null)("an unlock card that fills a place", () => {
     expect(placed.length, "no unlock card fills a place").toBeGreaterThan(0);
     expect(cards.some((c) => headedCode(c.head) !== undefined), "no card forks on a country").toBe(true);
     for (const { where, means } of cards) expect(means, where).not.toMatch(THERE);
-    for (const { where, means, code } of placed) expect(means, where).toContain(`in ${countryPhrase(code!)}`);
+    for (const { where, means, code } of placed) expect(means, where).toContain(`in ${phraseOf(code!)}`);
   }, 600000);
 });

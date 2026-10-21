@@ -3,7 +3,7 @@
 // — and the dataset package spells it, so the site and the data cannot
 // disagree about what two is called (Standards review, 2026-09-08).
 import {
-  countedWords, countryPhrase, countryPhraseAtStart, datasetMeta, isScored, joinAnd, scopeLine,
+  countedWords, phraseOf, phraseAtStartOf, datasetMeta, isScored, joinAnd, scopeLine,
   type Country, type Dataset, type Notice, type Route, type UnreadSource,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
@@ -127,7 +127,7 @@ function description(country: Country): string {
   const shown = names.slice(0, 3);
   const rest = names.length - shown.length;
   const listed = rest > 0 ? `${joinAnd(shown)} and ${rest} more` : joinAnd(shown);
-  return `The ${names.length} work-permit routes we hold rules for in ${countryPhrase(country.code)}: ` +
+  return `The ${names.length} work-permit routes we hold rules for in ${phraseOf(country.code)}: ` +
     `${listed} — each with the authority's own sentence for every value and the day it was read.`;
 }
 
@@ -154,7 +154,7 @@ function routeCard(dataset: Dataset, country: Country, route: Route, seen: Gloss
 
 export function countryPage(dataset: Dataset, address: CountryAddress): CountryPage {
   const { country, path } = address;
-  const title = `Work permits in ${countryPhrase(country.code)} · ${PRODUCT_NAME}`;
+  const title = `Work permits in ${phraseOf(country.code)} · ${PRODUCT_NAME}`;
   const desc = description(country);
   const read = countryReadDate(dataset, country);
   // The two lists this page carries. The routes the checker asks about come
@@ -169,7 +169,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
    * label on the product does; the ledes below it count in words, because
    * they are sentences.
    */
-  const headline = countryHeadline(countryPhraseAtStart(country.code), country.routes.length, scored.length);
+  const headline = countryHeadline(phraseAtStartOf(country.code), country.routes.length, scored.length);
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
   const seen: Glossary = new Set();
@@ -189,7 +189,7 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
   <div class="masthead-with-stamps">
     <div>
       <h1>${esc(headline)} <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">Every employment route ${esc(countryPhrase(country.code))} publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. ${
+      <p class="lede">Every employment route ${esc(phraseOf(country.code))} publishes that a rule can decide, each on its own page with the authority's sentences and the day we read them. ${
     esc(audienceSentence(country))} ${quotedOnly.length
     ? notAskedBelowLine(esc(countedWords(quotedOnly.length, "route")), `<a class="tap" href="${
       escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">${esc(LISTED_WITH_THE_REASONS)}</a>`)
@@ -200,14 +200,14 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
   </div>
 
   <main>
-    <ul class="routes" aria-label="${escAttr(askedRoutesLabel(countryPhrase(country.code)))}">${
+    <ul class="routes" aria-label="${escAttr(askedRoutesLabel(phraseOf(country.code)))}">${
     scored.map((route) => routeCard(dataset, country, route, seen)).join("")}
     </ul>${quotedOnly.length ? `
 
     <section class="quoted-only" aria-labelledby="quoted-only-h">
       <h2 class="label" id="quoted-only-h">${esc(QUOTED_ONLY_HEADING)}</h2>
       <p class="lede">${esc(notAskedLede(sentenceCase(countedWords(quotedOnly.length, "route")), quotedOnly.length))}</p>
-      <ul class="routes" aria-label="${escAttr(notAskedRoutesLabel(countryPhrase(country.code)))}">${
+      <ul class="routes" aria-label="${escAttr(notAskedRoutesLabel(phraseOf(country.code)))}">${
     quotedOnly.map((route) => routeCard(dataset, country, route, seen)).join("")}
       </ul>
     </section>` : ""}

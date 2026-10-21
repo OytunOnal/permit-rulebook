@@ -1,6 +1,6 @@
 // @level application presentation
 import {
-  countryPhrase, countryPhraseAtStart, isScored, joinAnd, remainingQuestions, shortLabelOf, subjectOf,
+  phraseOf, phraseAtStartOf, isScored, joinAnd, remainingQuestions, shortLabelOf, subjectOf,
 } from "permit-rulebook-data";
 import type { Country, Dataset, Profile, Route } from "permit-rulebook-data";
 
@@ -221,8 +221,8 @@ export function arrivalSentence(dataset: Dataset, o: {
   route: string | null; country: string; rescoped: boolean;
   kept: readonly string[]; asks: number;
 }): string {
-  const place = countryPhrase(o.country);
-  const placeOpening = countryPhraseAtStart(o.country);
+  const place = phraseOf(o.country);
+  const placeOpening = phraseAtStartOf(o.country);
   // A reader who came from a country's own page is not told they came from
   // it: the sentence states the place once.
   const opening = o.route === null

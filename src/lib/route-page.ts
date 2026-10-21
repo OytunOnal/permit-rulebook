@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  scopeLine, countryPhrase, countryPossessiveAtStart, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
+  scopeLine, phraseOf, possessiveAtStartOf, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
   fillRouteSlots, isLocalization, isScored, joinAnd, learnLinkOf, noticeSources, provenancedValuesOf,
   referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
@@ -139,7 +139,7 @@ function gteUnder(c: Criterion): Gte[] {
  * that answers her rather than to a rejection.
  */
 export const audienceSentence = (country: Country): string =>
-  `This page is for people who need a permit to work in ${countryPhrase(country.code)}.`;
+  `This page is for people who need a permit to work in ${phraseOf(country.code)}.`;
 
 /**
  * Every source this page quotes: the pages behind `printedSources`, the same
@@ -663,7 +663,7 @@ function neighbours(country: Country, route: Route, seen: Glossary): string {
   if (!others.length) return "";
   return `
     <nav class="neighbours" aria-labelledby="also-here">
-      <h2 class="label" id="also-here">Also in ${esc(countryPhrase(country.code))}</h2>
+      <h2 class="label" id="also-here">Also in ${esc(phraseOf(country.code))}</h2>
       <ul>${others.map((r) => `
         <li><a ${tapMin()} href="${escAttr(url(routePath(country, r)))}">${esc(r.name)}<small>${
     esc(glossed(gist(r), seen))}</small></a></li>`).join("")}
@@ -692,7 +692,7 @@ function description(dataset: Dataset, country: Country, route: Route): string {
   // the other routes' sentence would come out as the country's name, the
   // route's name and an empty list. What a search result should promise is
   // what the page actually is (s9).
-  if (!isScored(route)) return notAskedRouteDescription(countryPossessiveAtStart(country.code), route.name);
+  if (!isScored(route)) return notAskedRouteDescription(possessiveAtStartOf(country.code), route.name);
   const bits: string[] = [];
   forEachCriterion(route.criteria, (c) => {
     if (c.op === "gte")
@@ -704,7 +704,7 @@ function description(dataset: Dataset, country: Country, route: Route): string {
     if (c.op === "gte" || (("field" in c) && c.field === "citizenship")) continue;
     bits.push(criterionPhrase(dataset, c));
   }
-  return `${countryPossessiveAtStart(country.code)} ${route.name}: ${joinAnd(bits)} — every value quoted from its ` +
+  return `${possessiveAtStartOf(country.code)} ${route.name}: ${joinAnd(bits)} — every value quoted from its ` +
     "official page with the date it was read.";
 }
 

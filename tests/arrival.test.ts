@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { countryPhraseAtStart, deriveBands, evaluate, fillRouteSlots, remainingQuestions } from "permit-rulebook-data";
+import { phraseAtStartOf, deriveBands, evaluate, fillRouteSlots, remainingQuestions } from "permit-rulebook-data";
 import {
   arrivalFrom, arrivalPlan, arrivalSentence, countryArrivalFrom, destinationFor,
   destinationForCountry, questionPhrase,
@@ -206,7 +206,7 @@ describe("the arrival line says what actually happens next", () => {
           route: null, country: to.code, rescoped: true, kept: plan.kept, asks: plan.asks,
         });
         // One sentence, in the dataset's own words, with no field id in it.
-        expect(line, where).toMatch(new RegExp(`^${countryPhraseAtStart(to.code)} is on the record now\\.`));
+        expect(line, where).toMatch(new RegExp(`^${phraseAtStartOf(to.code)} is on the record now\\.`));
         expect(line, where).not.toMatch(/_/);
         expect(line, where).not.toContain("  ");
         for (const field of plan.kept)

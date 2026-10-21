@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  countryPhrase, findTerritory, matchOptions, territoryPhrase, territoryPhraseAtStart, type FieldOption,
+  phraseOf, findTerritory, matchOptions, territoryPhraseOf, territoryPhraseAtStartOf, type FieldOption,
 } from "permit-rulebook-data";
 import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "./copy.js";
 
@@ -107,8 +107,8 @@ export function composeNoMatchLine(query: string): { line: string; status: strin
   const found = findTerritory(query);
   if (!found) return { line: NO_COUNTRY_MATCHES, status: NO_COUNTRY_MATCHES_STATUS };
   const line = territoryLine(
-    { atStart: territoryPhraseAtStart(found.territory), inSentence: territoryPhrase(found.territory) },
-    countryPhrase(found.country.code), found.country.name,
+    { atStart: territoryPhraseAtStartOf(found.territory), inSentence: territoryPhraseOf(found.territory) },
+    phraseOf(found.country.code), found.country.name,
   );
   return { line, status: line };
 }

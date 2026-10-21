@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
-import { countryPhrase, countryPhraseAtStart, countryVocabulary, type Dataset } from "permit-rulebook-data";
+import { phraseOf, phraseAtStartOf, countryVocabulary, type Dataset } from "permit-rulebook-data";
 import { countryAddresses } from "../src/lib/country-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { DESK, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
@@ -23,8 +23,8 @@ const ds = rawDataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 const LOWER_OPENINGS = countryVocabulary.countries
-  .filter((c) => countryPhrase(c.code) !== countryPhraseAtStart(c.code))
-  .map((c) => countryPhrase(c.code));
+  .filter((c) => phraseOf(c.code) !== phraseAtStartOf(c.code))
+  .map((c) => phraseOf(c.code));
 
 /** The in-sentence phrase a text opens with, or undefined. */
 const lowerOpening = (text: string): string | undefined =>
@@ -41,7 +41,7 @@ function lowerOpened(pages: ReaderPage[]): string[] {
 
 /** A name that takes an article, standing in a sentence without it. */
 const BARE_NAMES = countryVocabulary.countries
-  .filter((c) => countryPhrase(c.code) !== c.name)
+  .filter((c) => phraseOf(c.code) !== c.name)
   .map((c) => ({ name: c.name, bare: new RegExp(`(?<![Tt]he )\\b${c.name}\\b`, "u") }));
 
 /** Every heading and sentence of the pages that names such a country without
