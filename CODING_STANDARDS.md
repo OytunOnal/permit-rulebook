@@ -94,6 +94,9 @@ pull request.
   `scripts/browser.mjs`.
 - A fixture regenerates only with a recorded reason in its own `source` line.
 - No check that content can silence, and none that demands content.
+- A test decides its pass on a state it writes itself, never on one a
+  scheduled run rewrites (the shipped `watch/state.json`). The quote gate is
+  the exception: it is meant to go red when a page changes.
 
 ## Security
 
