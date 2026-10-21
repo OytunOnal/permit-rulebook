@@ -58,6 +58,7 @@
   "src/lib/card.ts": "presentation",
   "src/lib/clipboard.ts": "presentation",
   "src/lib/copy.ts": "presentation",
+  "src/lib/countries.ts": "presentation",
   "src/lib/country-page.ts": "presentation",
   "src/lib/csp.ts": "presentation",
   "src/lib/data-page.ts": "presentation",
@@ -473,6 +474,16 @@
   },
   {
    "from": "src/lib/question.ts",
+   "to": "src/lib/countries.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/question.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/question.ts",
    "to": "src/lib/listbox.ts",
    "kind": "dependency"
   },
@@ -688,6 +699,11 @@
   },
   {
    "from": "src/pages/index.astro",
+   "to": "src/lib/countries.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
    "to": "src/lib/country-page.ts",
    "kind": "dependency"
   },
@@ -827,6 +843,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/asked-for.test.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/asked-for.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/audit-and-runner.test.ts",
    "to": "tests/workflow-text.ts",
    "kind": "dependency"
@@ -848,17 +874,22 @@
   },
   {
    "from": "tests/beat.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/beat.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/browser-walk.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
   },
   {
-   "from": "tests/beat.test.ts",
+   "from": "tests/browser-walk.ts",
    "to": "scripts/chrome.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/beat.test.ts",
-   "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
@@ -992,6 +1023,11 @@
    "kind": "type-only"
   },
   {
+   "from": "tests/countries.test.ts",
+   "to": "src/lib/countries.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/csp.test.ts",
    "to": "src/lib/clipboard.ts",
    "kind": "dependency"
@@ -1039,6 +1075,11 @@
   {
    "from": "tests/deploy-finding.test.ts",
    "to": "scripts/deploy-finding.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
+   "to": "src/lib/question.ts",
    "kind": "dependency"
   },
   {
@@ -1244,6 +1285,16 @@
   {
    "from": "tests/means.test.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/money-rows.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/money-rows.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -2149,6 +2200,26 @@
   {
    "from": "tests/screen.test.ts",
    "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/set-aside.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/set-aside.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/set-aside.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/set-aside.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -3108,6 +3179,46 @@
     "exported": true
    },
    {
+    "name": "ASKED_FOR",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "askedForRouteHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "askedForFirstCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "askedForNextCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ASKED_FOR_COUNTS_JOIN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "EDIT_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "setAsideLead",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "setAsideLineHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "ROUTE_PAGE_ADDENDUM",
     "kind": "const",
     "exported": true
@@ -3469,6 +3580,13 @@
    },
    {
     "name": "questionCounter",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/countries.ts": [
+   {
+    "name": "countryOf",
     "kind": "fn",
     "exported": true
    }
@@ -3955,12 +4073,37 @@
     "exported": true
    },
    {
+    "name": "NAMED_UP_TO",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "askedForLineHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "namedRoutesHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countedRoutesHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "questionCardHtml",
     "kind": "fn",
     "exported": true
    },
    {
     "name": "declarationHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "setAsideHtml",
     "kind": "fn",
     "exported": true
    },
@@ -4244,6 +4387,16 @@
    },
    {
     "name": "asksBlock",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "isUnquoted",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "unquotedInPaths",
     "kind": "fn",
     "exported": false
    },
@@ -5065,6 +5218,7 @@
   "src/lib/card.ts",
   "src/lib/clipboard.ts",
   "src/lib/copy.ts",
+  "src/lib/countries.ts",
   "src/lib/country-page.ts",
   "src/lib/csp.ts",
   "src/lib/data-page.ts",
@@ -5102,5 +5256,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "3421afc667706566ec2893d4ccece1019cbabaae2cf58a1d3769aa4205b82873"
+ "digest": "1dbd9a76db766a7b5c82ea49df015fa5e3b5d16291115a20da37f071fcc848bb"
 }

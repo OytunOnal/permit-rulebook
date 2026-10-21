@@ -104,7 +104,14 @@ click on the tracker link. Answers never leave the device.
   eq/in/gte/points/any, band edges = thresholds, deciding path,
   still-reachable, points as the best row an answer satisfies, questions by
   information gain, provable single-step unlocks, notices; property tests over
-  thousands of generated profiles.
+  thousands of generated profiles. A disjunction is judged path by path in its
+  own module (`src/disjunction.ts`): it is a hard fail only when no path is
+  open, every open path asks its questions, and when every path failed the
+  deciding path is the nearest gap or else the open path with the fewest unmet
+  rules. `reckonAskingRoutes` names, from the same walk as the asking rule,
+  the routes a question is asked for and the open ones; `questions-do-work`
+  checks, per destination and per rung, that an answer moves some route's
+  decision (#133).
 - **Tokens** — `tokens.css` (the design system) and `identity.css` (the
   identity pair: the tilted PR stamp over the read-date stamp; one source,
   inlined by the route page, linked by the interview).
@@ -157,6 +164,12 @@ click on the tracker link. Answers never leave the device.
   `--motion-beat` (`tokens.css`) every commit of an answer, click or Enter, is
   refused in one place, motion or none. The first paint and the verdict have
   none (#86).
+  A question fewer than all the open routes read carries its asked-for line,
+  drawn from `reckonAskingRoutes`: the routes by name and country, or counted
+  per country past two. A pencil change of answer replays the interview, and
+  the answers no route reads any more are named once as set aside in the
+  declared panel (its folded summary on a phone); a money row answered
+  "Doesn't apply…" keeps its pencil (#133).
 - **Record** — localStorage (legacy key migrated) or nothing; a print
   stylesheet for a paper copy. A record longer than any the page writes
   (8 KB) is no record, and is never parsed (#25).
