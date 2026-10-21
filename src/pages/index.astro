@@ -549,6 +549,37 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * screen in the box at load — the one render that is not a gesture. */
     let arriving = true;
 
+    /**
+     * The beat (#86): a question card a gesture draws fades in, and for the
+     * beat its options take no click.
+     *
+     * Every question's options sit in the same spot, so a fast second click
+     * answered a question nobody had read — offer country France, under three
+     * years — and a second Enter did the same on the option the focus had moved
+     * to (v1.2 gate critique, F4). The guard is time, not motion: it holds the
+     * same under reduced motion, where the fade is off, and it stands where the
+     * click is handled, so Enter on a focused option is caught with it. Its
+     * length is the token `--motion-beat`, read in either unit: the build's
+     * minifier writes the declared 300ms as .3s. The first paint has no beat,
+     * and the verdict is not a question card.
+     */
+    const beatToken = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
+    const beatMs = parseFloat(beatToken) * (beatToken.endsWith("ms") ? 1 : 1000);
+    let beatEndsAt = 0;
+    function beginBeat(): void {
+      beatEndsAt = performance.now() + beatMs;
+      // The fade starts again even where the box kept the nodes it had.
+      delete main.dataset.beat;
+      void main.offsetWidth;
+      main.dataset.beat = "";
+    }
+    main.addEventListener("click", (e) => {
+      if (performance.now() >= beatEndsAt) return;
+      if (!(e.target as Element).closest(".opt, .copt")) return;
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+
     /** One masthead, one writer. Every gesture names itself, and only the two
      * that compare something can produce a screen that says so — no path back
      * into the interview ("Start over", an edit, browser Back) can leave a
@@ -835,6 +866,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       } else if (card && !arriving) {
         focusFirst(card);
       }
+      if (card && !arriving) beginBeat();
       // Shown once, on the screen straight after the commit.
       justRecorded = null;
       // The same rule for the line that says where the reader came from.
@@ -1818,6 +1850,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     /* Question mode */
     .qcard{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:1.6rem 1.8rem}
+    /* The beat's fade (#86): opacity alone, so no box moves. */
+    #main[data-beat] .qcard{animation:beat-in var(--motion-beat) ease-out}
+    @keyframes beat-in{from{opacity:0}}
     .qmeta{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted)}
     /* The line a returning reader meets over the question they resume on, and
        the ledger's own "Start over" moved in after it (s20). It is the one

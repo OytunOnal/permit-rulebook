@@ -847,6 +847,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/beat.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/beat.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/beat.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/card.test.ts",
    "to": "src/lib/card.ts",
    "kind": "dependency"
@@ -5087,5 +5102,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7e19ddbc0dee648703ddb8b77025aefacd24b37c07c6ee7605851c4675273f0c"
+ "digest": "9a82fde3d15acc2616bd9c3cd1f2c606ab9681d5aac5834270cbe97e0da82e5b"
 }

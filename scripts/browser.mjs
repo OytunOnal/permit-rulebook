@@ -316,6 +316,22 @@ export async function withBrowser(run, {
       async emulateMedia(features) {
         await send("Emulation.setEmulatedMedia", { features }, sessionId);
       },
+      /**
+       * A mouse click at a point of the viewport, as the platform delivers one:
+       * whatever is under the point when it lands takes it, which a script's
+       * `.click()` on a chosen element cannot show (#86).
+       */
+      async clickAt(x, y) {
+        for (const type of ["mousePressed", "mouseReleased"])
+          await send("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 }, sessionId);
+      },
+      /** Enter pressed and released, as a keyboard does: on a focused button it
+       * is a click (#86). */
+      async pressEnter() {
+        const enter = { key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 };
+        await send("Input.dispatchKeyEvent", { type: "keyDown", text: "\r", ...enter }, sessionId);
+        await send("Input.dispatchKeyEvent", { type: "keyUp", ...enter }, sessionId);
+      },
       /** The screen as a PNG, for a record a reader can look at. */
       async screenshot({ fullPage = false } = {}) {
         const { data } = await send(
