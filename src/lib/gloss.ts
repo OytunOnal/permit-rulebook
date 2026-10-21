@@ -26,14 +26,18 @@
 /** One page's memory of which abbreviations it has already explained. */
 export type Glossary = Set<string>;
 
-export const ABBREVIATIONS: ReadonlyArray<readonly [token: RegExp, gloss: string]> = [
-  [/\bAufenthG\b/, "AufenthG (the Residence Act)"],
-  [/\bBeschV\b/, "BeschV (the Employment Ordinance)"],
-  [/\bTFEU\b/, "TFEU (the Treaty on the Functioning of the European Union)"],
-  [/\bUGE\b/, "UGE (Spain's large-companies unit)"],
-  [/\bIND\b/, "IND (the Dutch immigration service)"],
-  [/\bCNO-2011\b/, "CNO-2011 (Spain's occupation classification)"],
+/** Each abbreviation, and the words that explain it. */
+export const ABBREVIATIONS: ReadonlyArray<readonly [token: string, words: string]> = [
+  ["AufenthG", "the Residence Act"],
+  ["BeschV", "the Employment Ordinance"],
+  ["TFEU", "the Treaty on the Functioning of the European Union"],
+  ["UGE", "Spain's large-companies unit"],
+  ["IND", "the Dutch immigration service"],
+  ["CNO-2011", "Spain's occupation classification"],
 ];
+
+/** Where an abbreviation stands as a word of its own. */
+const tokenPattern = (token: string): RegExp => new RegExp(`\\b${token}\\b`);
 
 /**
  * A section citation: the symbol, its number, and — where the citation carries
@@ -41,12 +45,6 @@ export const ABBREVIATIONS: ReadonlyArray<readonly [token: RegExp, gloss: string
  * spends one parenthetical instead of two abutting ones.
  */
 const SECTION = /\u00a7[\u00a0\u202f ]?([0-9]+[a-z]?)( (?:AufenthG|BeschV))?/;
-
-/** The acts a section number can belong to, in the words the gloss uses. */
-const ACTS: Readonly<Record<string, string>> = {
-  AufenthG: "the Residence Act",
-  BeschV: "the Employment Ordinance",
-};
 
 /**
  * The citation a reader would copy, and where the gloss may go without breaking
@@ -81,11 +79,10 @@ function bracketRun(text: string, at: number): { open: number; close: number } |
  */
 function actWords(act: string | undefined, seen: Glossary): string | null {
   const name = act?.trim();
-  if (!name || !ACTS[name]) return null;
-  const entry = ABBREVIATIONS.find(([token]) => token.test(name));
-  if (!entry || seen.has(entry[0].source)) return null;
-  seen.add(entry[0].source);
-  return `${name} = ${ACTS[name]}`;
+  const entry = ABBREVIATIONS.find(([token]) => token === name);
+  if (!entry || seen.has(entry[0])) return null;
+  seen.add(entry[0]);
+  return `${entry[0]} = ${entry[1]}`;
 }
 
 /**
@@ -121,11 +118,11 @@ export function glossSection(text: string, seen: Glossary): string {
 /** A citation's act and every abbreviation: our prose, never a name. */
 export function glossed(text: string, seen: Glossary): string {
   let out = glossSection(text, seen);
-  for (const [token, gloss] of ABBREVIATIONS) {
-    const key = token.source;
-    if (seen.has(key) || !token.test(out)) continue;
-    seen.add(key);
-    out = out.replace(token, gloss);
+  for (const [token, words] of ABBREVIATIONS) {
+    const pattern = tokenPattern(token);
+    if (seen.has(token) || !pattern.test(out)) continue;
+    seen.add(token);
+    out = out.replace(pattern, `${token} (${words})`);
   }
   return out;
 }
