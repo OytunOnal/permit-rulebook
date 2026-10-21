@@ -190,12 +190,12 @@ function noticeSection(n: Notice, seen: Glossary): string {
     : { url: n.source.source_url, label: linkLabelOf(n.source.source_url) };
   return `
   <section class="notice-block ${escAttr(n.kind)}" aria-labelledby="notice-${escAttr(n.id)}">
-    <h2 id="notice-${escAttr(n.id)}">${esc(n.title)}</h2>
-    <p class="plain">${esc(n.body)}</p>${
+    <h2 id="notice-${escAttr(n.id)}">${esc(glossed(n.title, seen))}</h2>
+    <p class="plain">${esc(glossed(n.body, seen))}</p>${
     noticeSources(n).map((value) => `
       ${quoteBlock(value, {}, seen)}`).join("")}
     <p class="notice-next"><a ${tapInline()} href="${escAttr(next.url)}" target="_blank" rel="noopener">${
-    esc(next.label)} &#8599;</a></p>
+    esc(glossed(next.label, seen))} &#8599;</a></p>
   </section>`;
 }
 
@@ -407,7 +407,7 @@ function plainHtml(dataset: Dataset, c: Criterion, notice?: Notice): string {
  * condition, the honest thing left to say is what the checker will ask her and
  * where she can go and find the answer out — both of which the dataset holds.
  */
-function asksBlock(dataset: Dataset, criteria: Criterion[]): string {
+function asksBlock(dataset: Dataset, criteria: Criterion[], seen: Glossary): string {
   const fields = [...new Set(criteria.flatMap((c) => referencedFields(c)))]
     .map((id) => dataset.fields.find((f) => f.id === id))
     .filter((f): f is NonNullable<typeof f> => f !== undefined);
@@ -416,9 +416,10 @@ function asksBlock(dataset: Dataset, criteria: Criterion[]): string {
   const learn = fields.flatMap((f) => learnLinkOf(dataset, f.id) ?? []);
   return `
         <div class="asks"><b>What the checker asks</b><ul>${
-    fields.map((f) => `<li>${esc(fillRouteSlots(f.label, dataset))}</li>`).join("")}</ul>${
+    fields.map((f) => `<li>${esc(glossed(fillRouteSlots(f.label, dataset), seen))}</li>`).join("")}</ul>${
     learn.map((l) => `<p>You can find this out yourself: <a ${tapInline()} href="${
-      escAttr(l.url)}" target="_blank" rel="noopener">${esc(learnLinkTextOf(l))} &#8599;</a></p>`).join("")}</div>`;
+      escAttr(l.url)}" target="_blank" rel="noopener">${
+      esc(learnLinkTextOf({ ...l, label: glossed(l.label, seen) }))} &#8599;</a></p>`).join("")}</div>`;
 }
 
 /** A rule with no quote and no figure under it, its paths included. */
@@ -455,7 +456,7 @@ function ruleCard(
   // A card with no evidence and no scale is one sentence restating its own
   // heading; it says instead what the interview will ask. A quoted card says
   // it for the unquoted rules inside its paths.
-  const asks = asksBlock(dataset, values.length === 0 && thresholds.length === 0 ? [c] : unquotedInPaths(c));
+  const asks = asksBlock(dataset, values.length === 0 && thresholds.length === 0 ? [c] : unquotedInPaths(c), seen);
   return `
       <article class="rule">
         <div class="top"><h2>${esc(ruleHeading(dataset, c))}</h2><span class="kind">${
@@ -523,7 +524,7 @@ function carveOutBlock(statement: { except?: StatementException }, seen: Glossar
   const except = statement.except;
   if (!except) return "";
   return `<div class="except"><b>Who this does not bind</b> ${
-    esc(except.text)}${quoteBlock(except.source, {}, seen)}</div>`;
+    esc(glossed(except.text, seen))}${quoteBlock(except.source, {}, seen)}</div>`;
 }
 
 function statedBlocks(route: Route, seen: Glossary): string {
@@ -546,9 +547,9 @@ function statedBlocks(route: Route, seen: Glossary): string {
     // requirements, all of them, none of them checked here (s9).
     block("precond", isScored(route) ? "Also required — not checked here" : "What the authority requires",
       preconditions.map((s) =>
-        esc(s.text) + (s.source ? quoteBlock(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
+        esc(glossed(s.text, seen)) + (s.source ? quoteBlock(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
     block("precond", "The official page also says", caveats.filter((s) => s.source).map((s) =>
-      esc(s.text) + quoteBlock(s.source!, {}, seen) + carveOutBlock(s, seen))),
+      esc(glossed(s.text, seen)) + quoteBlock(s.source!, {}, seen) + carveOutBlock(s, seen))),
     // A caveat we could not find the wording for is still a fact in the
     // reader's favour, so it stays — under a heading that says plainly that no
     // quote covers it, with the declared reason and the day we last looked.
@@ -556,8 +557,8 @@ function statedBlocks(route: Route, seen: Glossary): string {
     // named fewer limbs than it claimed (Standards review, 2026-09-07).
     block("precond", "Worth knowing — we have not found the official wording",
       caveats.filter((s) => !s.source).map((s) =>
-        `${esc(s.text)} <i>${esc(unsourcedSaid(s))}</i>` + carveOutBlock(s, seen))),
-    block("reading", "Our reading, not the authority's words", readings.map((r) => esc(r.text))),
+        `${esc(glossed(s.text, seen))} <i>${esc(unsourcedSaid(s))}</i>` + carveOutBlock(s, seen))),
+    block("reading", "Our reading, not the authority's words", readings.map((r) => esc(glossed(r.text, seen)))),
   ].join("");
 }
 
@@ -656,7 +657,7 @@ function answerBlock(dataset: Dataset, route: Route): string {
   </section>`;
 }
 
-function neighbours(country: Country, route: Route): string {
+function neighbours(country: Country, route: Route, seen: Glossary): string {
   const others = country.routes.filter((r) => r !== route);
   if (!others.length) return "";
   return `
@@ -664,7 +665,7 @@ function neighbours(country: Country, route: Route): string {
       <h2 class="label" id="also-here">Also in ${esc(countryPhrase(country.code))}</h2>
       <ul>${others.map((r) => `
         <li><a ${tapMin()} href="${escAttr(url(routePath(country, r)))}">${esc(r.name)}<small>${
-    esc(gist(r))}</small></a></li>`).join("")}
+    esc(glossed(gist(r), seen))}</small></a></li>`).join("")}
       </ul>
     </nav>`;
 }
@@ -769,7 +770,7 @@ ${headMeta({ title, description: desc, path, kind: "article" })}
     <div>
       <h1>${esc(heading)}</h1>
       <p class="tagline">${esc(ROUTE_TAGLINE)}</p>
-      <p class="lede">${route.summary ? `${esc(route.summary)} ` : ""}Every ${
+      <p class="lede">${route.summary ? `${esc(glossed(route.summary, seen))} ` : ""}Every ${
     scored ? "number" : "condition"} on this page is the authority's own sentence, with the page it came from and the day we read it. ${
     esc(audienceSentence(country))} ${esc(scored ? ROUTE_PAGE_ADDENDUM : ROUTE_PAGE_UNSCORED_ADDENDUM)}</p>
     </div>
@@ -815,7 +816,7 @@ ${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join(""
       <a ${tapMin()} href="${escAttr(url(FEEDBACK_PATH))}">${esc(WRONG_DOOR_LABEL)}</a>
     </nav>
   </section>
-${neighbours(country, route)}
+${neighbours(country, route, seen)}
   </aside>
   </div>
 

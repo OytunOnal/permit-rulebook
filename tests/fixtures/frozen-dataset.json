@@ -1,4 +1,5 @@
 {
+  "source": "A frozen copy of the live dataset that the route-page (root-build.json) and /data/ (data-page-clean.json) fingerprints are rendered over; those two files' source lines carry its history up to s25. Moved by #157 (2026-10-21): recognition_de's option not_yet (\"Not assessed / not recognised\") became the live dataset's two, not_assessed (\"Not assessed yet\") and not_recognised (\"Assessed and not recognised\"), so no fixture names an answer the question no longer offers. Its two routes name only full recognition, whose words did not move, and /data/ prints no option, so neither fingerprint moved.",
   "schema_version": "0.8.1",
   "dataset_version": "2026.01.01",
   "fields": [
@@ -175,9 +176,14 @@
           "short": "a partial recognition decision"
         },
         {
-          "value": "not_yet",
-          "label": "Not assessed / not recognised",
-          "short": "a qualification that is not assessed or not recognised in Germany"
+          "value": "not_assessed",
+          "label": "Not assessed yet",
+          "short": "a qualification not yet assessed in Germany"
+        },
+        {
+          "value": "not_recognised",
+          "label": "Assessed and not recognised",
+          "short": "a qualification Germany assessed and did not recognise"
         },
         {
           "value": "unknown",

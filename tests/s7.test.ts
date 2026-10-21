@@ -7,6 +7,7 @@ import {
 } from "permit-rulebook-data";
 import { carveOutHtml, caveatHtml, precondHtml, provenanceHtml, scopedHtml } from "../src/lib/card.js";
 import { ROUTE_DOOR } from "../src/lib/copy.js";
+import { glossed } from "../src/lib/gloss.js";
 import { routePages } from "../src/lib/route-page.js";
 
 const ds = dataset as unknown as Dataset;
@@ -21,11 +22,13 @@ const resultOf = (answers: Profile, id: string): RouteResult =>
 const pageAt = (address: string): string =>
   routePages(ds).find((p) => p.path.includes(address))!.html;
 
+/** A statement as a block drawn on its own prints it: the first use of its
+ * shorthand explained (#156). */
 const statementText = (route: string, statement: string): string =>
-  routeStatements(routeOf(route)).find((s) => s.id === statement)!.text;
+  glossed(routeStatements(routeOf(route)).find((s) => s.id === statement)!.text, new Set());
 
 const carveOutText = (route: string, statement: string): string =>
-  routeStatements(routeOf(route)).find((s) => s.id === statement)!.except!.text;
+  glossed(routeStatements(routeOf(route)).find((s) => s.id === statement)!.except!.text, new Set());
 
 /**
  * The reader of the scenario: a job offer in the Netherlands, a salary above
@@ -165,7 +168,10 @@ describe("s7 — the other two permits the IND names, and the page that calls th
     const page = routePages(ds).find((p) => p.path.includes("/netherlands/") && p.path.includes("researcher"));
     expect(page, "no Dutch researcher page was built").toBeDefined();
     expect(page!.html).toContain("Who this does not bind");
-    expect(page!.html).toContain(carveOutText("nl-researcher", "mvv-needed"));
-    expect(page!.html).toContain(carveOutText("nl-researcher", "the-institute-must-be-a-recognised-sponsor"));
+    // Its own words, after the condition above it has explained the MVV.
+    const said = (statement: string): string =>
+      routeStatements(routeOf("nl-researcher")).find((s) => s.id === statement)!.except!.text;
+    expect(page!.html).toContain(said("mvv-needed"));
+    expect(page!.html).toContain(said("the-institute-must-be-a-recognised-sponsor"));
   });
 });
