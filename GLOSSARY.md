@@ -103,6 +103,13 @@ is evidence, never the key: a check that keys on a surface feature is passed by
 editing the feature.
 _Avoid_: text type, string class, prose category
 
+**Consolidated text**:
+A page that reproduces the authority's words without being the authority — a
+statute on buzer.de. A quote may come from one when the authority's own page
+cannot be read, and its link says so ("Consolidated text on buzer.de"), never
+"Official page" (#92, 2026-10-21).
+_Avoid_: mirror (in front of a reader), unofficial source
+
 **Prose provenance**:
 The measurement `npm run check` prints for sentences, beside the one it prints
 for numbers: how many carry a covering source, how many are declared ours, how
@@ -161,20 +168,25 @@ critiques, split into the two questions above in s25.
 **Scope statement** (UI: "What the checker asks, and what it does not"):
 A route's declared fact about how much of it the interview decides, in one of
 three values, shown to the reader as what they get — "quoted and dated ·
-scored against your answers" · "quoted and dated · scored, N conditions
-stated but not asked" · "quoted and dated · not scored" — and, where the
-unasked limbs are Route readings rather than the source's words, "… scored,
-N conditions stated but not asked and M in our own reading" ("our own
-reading" is the reader's name for a Route reading; never "we note") (the first wording,
-"some conditions stated, not asked", read as an apology; amended 2026-09-08)
-— plus the limbs it does not ask, named. Authored
-by a person, never derived by a test; schema-required; rendered on the route
+checked against your answers" · "quoted and dated · checked against your
+answers, except N conditions we don't ask about" · "quoted and dated · not
+checked against your answers" — and, where unasked limbs are Route readings
+rather than the source's words, "… except N conditions we don't ask about —
+M of them in our own words, not the authority's" (never "we note") — plus the
+limbs it does not ask, named. That is the results card, where the reader has
+answered; a page with no answers says what the checker asks instead — "quoted
+and dated · the checker asks about all of it" · "… the checker asks about it,
+except N conditions" · "… the checker does not ask about it". "Checked" is the
+reader's verb, as in "Also required — not checked here"; the model's "scored"
+stays in code and on `/data/` (#92, 2026-10-21; earlier wordings "some
+conditions stated, not asked", amended 2026-09-08, and "scored, N conditions
+this interview did not ask"). Authored by a person, never derived by a test; schema-required; rendered on the route
 page and the results card. Called `scope` in the dataset, because "coverage"
 already names the watch's both-way check and sits on Prose provenance's
 avoid-list (Standards review, 2026-09-07).
 _Avoid_: coverage, completeness, fully modelled, modelled, "some conditions
-stated, not asked" (the retired wording). "Scored" is allowed only in the full
-reader phrase "scored against your answers" / "scored, …", never bare.
+stated, not asked", "scored", "this interview" and "rule set" in front of a
+reader.
 
 **Still reachable**:
 A criterion result that did not fail, or failed only by a Bounded gap. The
