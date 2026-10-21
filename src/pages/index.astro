@@ -744,7 +744,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const resumed = arriving && !arrival && asked.length > 0 ? asked.length : undefined;
       paint(main, questionCardHtml({
         dataset: ds, question: q, answers, asked, editing, total,
-        arrival, justRecorded, resumed,
+        arrival, justRecorded, resumed, glossary,
       }), () => {
         if (longList) {
           const filter = document.getElementById("cfilter") as HTMLInputElement;
@@ -1871,6 +1871,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     .resumed{font-size:.8rem;line-height:1.4;color:var(--color-muted);margin-bottom:.6rem}
     .resumed .edit{display:inline-block;padding:.85rem .2rem;margin:-.85rem 0;font-weight:600}
     .qlabel{font:var(--text-route);font-size:1.25rem;margin:.5rem 0 1rem}
+    /* The asked-for line (#139), under the question it explains: the muted
+       voice of the learn line, wrapping inside the card on a phone. */
+    .asked-for{font-size:.85rem;line-height:1.45;color:var(--color-muted);margin:-.6rem 0 .9rem;overflow-wrap:break-word}
     .opts{display:grid;gap:.5rem}
     .opt{font:600 .92rem var(--font-sans);text-align:left;background:var(--color-bg);border:var(--rule-soft);
       padding:.7rem .9rem;min-height:var(--tap-min);cursor:pointer;color:var(--color-ink);display:block}

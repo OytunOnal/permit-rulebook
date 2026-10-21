@@ -119,6 +119,28 @@ export const resumedLine = (kept: number): string =>
   `Continuing where you left off — ${kept} answer${kept === 1 ? "" : "s"} kept.`;
 
 /**
+ * The asked-for line's words (#139; GLOSSARY.md, *Asked-for line*): on a
+ * question only some of the reader's open routes read, which routes ask it.
+ * A reader with a German job offer was asked for living-cost funds that only
+ * the Opportunity Card reads, and nothing said so (spec #133). The route and
+ * country names are the dataset's; these are the words around them.
+ *
+ * One or two routes are named, each by its card's own name and its country;
+ * the two arguments are markup, already escaped, because the name carries its
+ * route's mark. The country is held to the name's last word, so a wrap at
+ * 390 px never leaves "· Germany" alone on a line. More routes are counted
+ * per country: "3 routes in Germany, 1 in the Netherlands".
+ */
+export const ASKED_FOR = "Asked for:";
+export const askedForRouteHtml = (routeNameHtml: string, countryHtml: string): string =>
+  `${routeNameHtml}&nbsp;·&nbsp;${countryHtml}`;
+export const ASKED_FOR_ROUTES_JOIN = " and ";
+export const askedForFirstCount = (routes: number, place: string): string =>
+  `${routes} route${routes === 1 ? "" : "s"} in ${place}`;
+export const askedForNextCount = (routes: number, place: string): string => `${routes} in ${place}`;
+export const ASKED_FOR_COUNTS_JOIN = ", ";
+
+/**
  * What a route page adds to it. A page a stranger lands on cold from a search
  * has to say, before it says anything else, that it is describing rules rather
  * than judging the reader.

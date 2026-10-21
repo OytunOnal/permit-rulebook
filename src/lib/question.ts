@@ -1,9 +1,13 @@
 // @level presentation
 import {
-  deriveQuestions, optionMeans, shortLabelOf,
-  type Dataset, type Profile, type Question,
+  countryPhrase, deriveQuestions, optionMeans, reckonAskingRoutes, shortLabelOf,
+  type Dataset, type OpenRoute, type Profile, type Question,
 } from "permit-rulebook-data";
-import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE, questionCounter, resumedLine } from "./copy.js";
+import {
+  ASKED_FOR, ASKED_FOR_COUNTS_JOIN, ASKED_FOR_ROUTES_JOIN, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE,
+  askedForFirstCount, askedForNextCount, askedForRouteHtml, questionCounter, resumedLine,
+} from "./copy.js";
+import { type Glossary, glossSection } from "./gloss.js";
 import { esc, escAttr } from "./reason.js";
 import { QUERY_MAX_LENGTH } from "./listbox.js";
 // Which situation answers a country's scored routes take, and the quoted
@@ -61,6 +65,55 @@ export interface QuestionScreen {
    * line it draws is the sentence alone — the page moves its own "Start over"
    * in after it, so the control is the ledger's and there is never a second. */
   resumed?: number;
+  /** The screen's memory of what its "§" expansion has already said; the
+   * asked-for line's route names spend from it like every route name on the
+   * page. Absent on the build's first paint, which names no route. */
+  glossary?: Glossary;
+}
+
+/** Up to this many routes the asked-for line names; above it, it counts. */
+const NAMED_UP_TO = 2;
+
+/**
+ * The asked-for line (#139; GLOSSARY.md): the routes the question is asked
+ * for, drawn when they are fewer than the open routes.
+ *
+ * Both lists are the engine's own asking reckoning, so the line can never
+ * name a route that does not read the answer; this only compares them and
+ * draws names or counts. The question is reckoned without its own answer, so
+ * a question reopened with the pencil names what it would be asked for had
+ * it not been answered (spec #133, decision 7).
+ */
+function askedForLineHtml(dataset: Dataset, answers: Profile, field: string, glossary: Glossary): string {
+  const unanswered: Profile = { ...answers };
+  delete unanswered[field];
+  const { asked_for: askedFor, open } = reckonAskingRoutes(dataset, unanswered, field);
+  if (askedFor.length === 0 || askedFor.length === open.length) return "";
+  const body = askedFor.length <= NAMED_UP_TO
+    ? namedRoutesHtml(dataset, askedFor, glossary)
+    : countedRoutesHtml(askedFor);
+  return `<p class="asked-for" data-asked-for>${esc(ASKED_FOR)} ${body}</p>`;
+}
+
+/** Each route by its card's name, through the screen's "§" expansion, and
+ * its country's name; each name carries its route's mark. */
+function namedRoutesHtml(dataset: Dataset, routes: OpenRoute[], glossary: Glossary): string {
+  return routes.map(({ route, country }) => askedForRouteHtml(
+    `<span data-route="${escAttr(route.id)}" data-country="${escAttr(country)}">${esc(glossSection(route.name, glossary))}</span>`,
+    esc(dataset.countries.find((c) => c.code === country)?.name ?? country),
+  )).join(ASKED_FOR_ROUTES_JOIN);
+}
+
+/** How many routes per country, in the dataset's order of countries; each
+ * count carries its country's mark. */
+function countedRoutesHtml(routes: OpenRoute[]): string {
+  const perCountry = new Map<string, number>();
+  for (const { country } of routes) perCountry.set(country, (perCountry.get(country) ?? 0) + 1);
+  return [...perCountry].map(([country, count], i) => {
+    const place = countryPhrase(country) ?? country;
+    const words = i === 0 ? askedForFirstCount(count, place) : askedForNextCount(count, place);
+    return `<span data-country="${escAttr(country)}" data-routes="${escAttr(String(count))}">${esc(words)}</span>`;
+  }).join(ASKED_FOR_COUNTS_JOIN);
 }
 
 export function questionCardHtml(screen: QuestionScreen): string {
@@ -78,6 +131,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
             editing ? "Your answer — pick another to change it, the rest are kept" : esc(questionCounter(asked.length + 1, total))
           }</div>
           <h2 class="qlabel">${esc(q.label)}</h2>
+          ${askedForLineHtml(dataset, answers, q.field, screen.glossary ?? new Set())}
           ${(() => {
             // Where the answer is a thing a person can look up, the way to look
             // it up belongs at the question, not three screens later on a
