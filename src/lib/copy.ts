@@ -10,7 +10,7 @@
  * from one source everywhere; this is that source.
  */
 // A count reads as a word in a sentence, and the dataset package spells it.
-import { countedWords } from "permit-rulebook-data";
+import { countedWords, joinAnd } from "permit-rulebook-data";
 
 export const PRODUCT_NAME = "Permit Rulebook";
 
@@ -959,6 +959,19 @@ export const CLOSED_HEADING = "Not open to your passport";
 export const STEPS_HEADING = "Steps that would unlock more";
 export const STEPS_HEADING_TAIL = "each re-checked against the rules";
 export const STEPS_HERE_HEADING = "Steps that would unlock more here";
+
+/** The offer line: what a job offer would have checked in one country for an
+ * explorer — a check, never a verdict, so never "met" or "within reach". The
+ * offer, the country and the fields' short labels are the dataset's words. */
+export const offerLine = (line: { offer: string; country: string; routes: number; fields: string[] }): string =>
+  `With ${line.offer} in ${line.country}: ${line.routes} more route${line.routes === 1 ? "" : "s"} would be checked`
+  + `${line.fields.length ? ` — on ${joinAnd(line.fields)}` : ""}.`;
+
+/** The arranged line: what an answer someone else arranges would open in one
+ * country, said apart from the steps; "situation" is the question's answer. */
+export const arrangedLine = (line: { country: string; answers: { answer: string; routes: number }[] }): string =>
+  `With a different situation: ${joinAnd(line.answers.map(({ answer, routes }) =>
+    `${answer} would open ${routes} route${routes === 1 ? "" : "s"} in ${line.country}`))}.`;
 
 /** The not-yet group's folds: rows that need only a path answer, named by
  * the answers they ask for, and rows in another country than the one the

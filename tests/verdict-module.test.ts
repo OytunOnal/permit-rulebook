@@ -18,7 +18,7 @@ describe("verdictOf — the one-country layout's groups", () => {
     const verdict = verdictFor(DUTCH_OFFER);
     expect(verdict.layout.kind).toBe("one-country");
     if (verdict.layout.kind !== "one-country") return;
-    const routeGroups = verdict.layout.groups.filter((g) => g.kind !== "steps");
+    const routeGroups = verdict.layout.groups.filter((g) => g.kind !== "steps" && g.kind !== "arranged");
     expect(routeGroups.map((g) => ({ kind: g.kind, routes: cardsIn(g).map((c) => c.route) }))).toEqual([
       { kind: "open", routes: ["nl-orientation-year"] },
       { kind: "within-reach", routes: ["nl-hsm-under30"] },

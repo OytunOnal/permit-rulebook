@@ -1,14 +1,17 @@
 // @level presentation
 import {
-  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, unlockTitleOf,
-  type Dataset, type Profile, type RouteResult, type Unlock,
+  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, phraseOf, routesAnOfferFrees, shortLabelOf, unlockTitleOf,
+  type Dataset, type Profile, type RouteResult, type RoutesFreedByAnOffer, type Unlock,
 } from "permit-rulebook-data";
 import { SEEK_HINT, orAbove } from "../../copy.js";
 import { esc } from "../../reason.js";
+import type { ArrangedLine, OfferLine } from "./types.js";
 
 /**
- * The unlock steps as the results screen offers them: which come first,
- * which are one step, and who is told the job-search sentence (s23, F1, F4).
+ * The unlock steps as the results screen offers them: which rows are steps,
+ * which come first, which are one step, and who is told the job-search
+ * sentence (s23, F1, F4) — and the two lines beside them, the offer line and
+ * the arranged line (#175).
  *
  * The engine's `unlocks` answers "what would each other answer open", in
  * dataset order, one row per answer. Read straight onto the screen that put
@@ -89,10 +92,14 @@ const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
 /**
  * The steps, ordered by what the reader can do, each ladder one step.
  *
+ * Only what the reader can do is a step: a row whose answer the dataset marks
+ * arranged — a transfer, a hosting agreement, which the employer or the host
+ * decides — is left out, and said apart (`arrangedLineIn`; #175).
+ *
  * Order: a step within the reader's own situation — recognition, language,
  * experience, funds: the fields the dataset marks `improvable` — before a
- * step that is a different situation than the one they declared — the
- * fields it marks `path`. Within a group, a step that meets a route beats one
+ * step that is a different situation than the one they declared — a path
+ * answer such as a job offer. Within a group, a step that meets a route beats one
  * that only brings routes within reach, then the one that opens more, then
  * the engine's order — the rank the hero's "Nearest" has always used, so the
  * nearest step is the first card.
@@ -104,9 +111,10 @@ const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
  * the field being a ladder rather than from its type. A higher rung that
  * opens a route the lower one does not keeps its own row.
  */
-export function arrangeSteps(ds: Dataset, ups: Unlock[], answers: Profile): Step[] {
+export function arrangeSteps(ds: Dataset, rows: Unlock[], answers: Profile): Step[] {
   const rungOf = (u: Unlock) => fieldOptions(ds, u.field).findIndex((o) => o.value === u.option.value);
   const ids = (u: Unlock) => new Set(u.routes.map((r) => r.route.id));
+  const ups = rows.filter((u) => !u.option.is_arranged);
   const steps: Step[] = [];
   const folded = new Set<Unlock>();
   for (const u of ups) {
@@ -137,16 +145,62 @@ export function arrangeSteps(ds: Dataset, ups: Unlock[], answers: Profile): Step
 /** The step the hero names: the first one, in the order above. */
 export const nearestStep = (steps: Step[]): Step | undefined => steps[0];
 
+/** The rows of the answers the dataset marks arranged, in the engine's order. */
+export const arrangedRowsOf = (rows: Unlock[]): Unlock[] => rows.filter((u) => u.option.is_arranged);
+
+/**
+ * What one country's arranged line says: each arranged answer that opens a
+ * route there, with how many it opens there, or null where none does. The
+ * engine keeps an explorer's rows apart per country; one answer's rows are
+ * counted together.
+ */
+export function arrangedLineIn(arranged: Unlock[], code: string): ArrangedLine | null {
+  const opened = new Map<string, { answer: string; routes: number }>();
+  for (const u of arranged) {
+    const routes = u.routes.filter((r) => r.country === code).length;
+    if (!routes) continue;
+    const said = opened.get(u.option.value) ?? { answer: u.option.short ?? u.option.label, routes: 0 };
+    opened.set(u.option.value, { ...said, routes: said.routes + routes });
+  }
+  return opened.size ? { country: phraseOf(code), answers: [...opened.values()] } : null;
+}
+
+/** Whether the reader is exploring: their situation answer is the one the
+ * dataset marks as the fallback — no offer, transfer or hosting agreement. */
+function isExploring(ds: Dataset, answers: Profile): boolean {
+  const fallback = fieldOptions(ds, SITUATION_FIELD).find((o) => o.is_fallback)?.value;
+  return fallback !== undefined && answers[SITUATION_FIELD] === fallback;
+}
+
+/** What a job offer would free, per country, from the engine — for an
+ * explorer only: an offer-holder is never told to get what they have. */
+export const routesAnOfferFreesFor = (ds: Dataset, answers: Profile): RoutesFreedByAnOffer[] =>
+  isExploring(ds, answers) ? routesAnOfferFrees(ds, answers) : [];
+
+/**
+ * One country's offer line, or null where an offer frees nothing there. The
+ * job offer is named by the dataset: the situation answer neither arranged,
+ * the fallback nor "I don't know".
+ */
+export function offerLineIn(ds: Dataset, freed: RoutesFreedByAnOffer[], code: string): OfferLine | null {
+  const here = freed.find((f) => f.country === code);
+  if (!here) return null;
+  const offer = fieldOptions(ds, SITUATION_FIELD).find((o) => !o.is_arranged && !o.is_fallback && !o.is_unknown);
+  if (!offer) throw new Error(`"${SITUATION_FIELD}" offers no job offer to name`);
+  return {
+    offer: offer.short ?? offer.label, country: phraseOf(code), routes: here.routes.length,
+    fields: here.fieldsLeftOpen.map((f) => shortLabelOf(ds, f)),
+  };
+}
+
 /**
  * The job-search sentence under the steps, for the reader it is true of
- * (s23, F1a): one with no offer, transfer or hosting agreement — the
- * situation answer the dataset marks as the fallback — and an open
- * job-search permit above. It reached an offer-holder for as long as it was
- * keyed on the card alone (v1.1 gate critique, F1).
+ * (s23, F1a): an explorer with an open job-search permit above. It reached
+ * an offer-holder for as long as it was keyed on the card alone (v1.1 gate
+ * critique, F1).
  */
 export function seekHintHtml(ds: Dataset, results: RouteResult[], answers: Profile): string {
-  const fallback = fieldOptions(ds, SITUATION_FIELD).find((o) => o.is_fallback)?.value;
-  if (fallback === undefined || answers[SITUATION_FIELD] !== fallback) return "";
+  if (!isExploring(ds, answers)) return "";
   if (!results.some((r) => r.route.kind === "seek" && r.status !== "hold")) return "";
   return `<p class="unlock-hint">${esc(SEEK_HINT)}</p>`;
 }

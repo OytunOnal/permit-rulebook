@@ -54,10 +54,11 @@ function elsewhereItems(screen: VerdictScreen, rows: RouteResult[]): (RouteCard 
  * more (one "needs a job offer" row per country was information, sixteen
  * were noise — critique #5); rows placed in another country fold last. The
  * rows are drawn in the order they are listed, so the first to use an
- * abbreviation explains it. `stepsAbove` counts the steps the section offers
- * above the group.
+ * abbreviation explains it. `standingAbove` counts what the section draws
+ * above the group for the fold to point at: its steps, its offer line and
+ * its arranged line.
  */
-export function notYetGroup(screen: VerdictScreen, rows: RouteResult[], stepsAbove: number): VerdictGroup | null {
+export function notYetGroup(screen: VerdictScreen, rows: RouteResult[], standingAbove: number): VerdictGroup | null {
   if (!rows.length) return null;
   const gated: RouteResult[] = [], elsewhere: RouteResult[] = [], individual: RouteResult[] = [];
   for (const r of rows) {
@@ -72,8 +73,9 @@ export function notYetGroup(screen: VerdictScreen, rows: RouteResult[], stepsAbo
     // Open when it is the only thing on screen: a collapsed group was the
     // whole result for the emptiest profile, and every quote and read date
     // the product exists to show was folded away inside it (F7).
-    const alone = individual.length === 0 && elsewhere.length === 0 && stepsAbove === 0;
-    items.push({ kind: "needs-steps", steps, pointsUp: stepsAbove > 0, open: alone, cards: gated.map((r) => cardOf(screen, r)) });
+    const alone = individual.length === 0 && elsewhere.length === 0 && standingAbove === 0;
+    const cards = gated.map((r) => cardOf(screen, r));
+    items.push({ kind: "needs-steps", steps, pointsUp: standingAbove > 0, open: alone, cards });
   }
   items.push(...elsewhereItems(screen, elsewhere));
   return { kind: "not-yet", items, count: rows.length };

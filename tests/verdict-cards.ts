@@ -19,9 +19,10 @@ export const verdictOn = (data: Dataset, answers: Profile, cameFrom: string | nu
 /** The verdict on the shipped dataset, with no route page behind it. */
 export const verdictFor = (answers: Profile): Verdict => verdictOn(ds, answers);
 
-/** The route cards a group lists, in its order, folded rows included. */
+/** The route cards a group lists, in its order, folded rows included; the
+ * steps block and the arranged line list none. */
 export function cardsIn(group: VerdictGroup): RouteCard[] {
-  if (group.kind === "steps") return [];
+  if (group.kind === "steps" || group.kind === "arranged") return [];
   if (group.kind !== "not-yet") return group.cards;
   return group.items.flatMap((item) => ("kind" in item ? item.cards : [item]));
 }

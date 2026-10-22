@@ -13,7 +13,7 @@
 import { contradictionsIn, unlocks, type Dataset, type Notice, type Profile } from "permit-rulebook-data";
 import { noticeHtml } from "./compose/card-blocks.js";
 import { esc } from "../reason.js";
-import { arrangeSteps } from "./compose/steps.js";
+import { arrangeSteps, arrangedRowsOf, routesAnOfferFreesFor } from "./compose/steps.js";
 import type { VerdictScreen } from "./compose/cards.js";
 import { comparedAction } from "./compose/headline.js";
 import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from "./compose/html.js";
@@ -26,8 +26,8 @@ import type { InterviewSoFar, Verdict } from "./compose/types.js";
 import "./verdict.css";
 
 export type {
-  CountrySection, Fold, InterviewSoFar, RouteCard, StepCard, Strip, Tally, Verdict, VerdictAction, VerdictGroup,
-  VerdictLayout,
+  ArrangedLine, CountrySection, Fold, InterviewSoFar, OfferLine, RouteCard, StepCard, Strip, Tally, Verdict,
+  VerdictAction, VerdictGroup, VerdictLayout,
 } from "./compose/types.js";
 
 /**
@@ -68,9 +68,14 @@ export function verdictOf(dataset: Dataset, answers: Profile, interview: Intervi
   // (s5c).
   const outright = reading.notices.filter((n) => n.kind === "no-permit-needed");
   if (outright.length && zeroOpen) return answeredOutright(screen, reading, outright);
-  // Counterfactual leverage: what each other answer would unlock, ordered by
-  // what the reader can do, each ladder one step (s3b, s23).
-  const compared = { reading, whole, zeroOpen, ups: arrangeSteps(dataset, unlocks(dataset, answers), answers) };
+  // Counterfactual leverage: what each other answer would unlock, the steps
+  // ordered by what the reader can do, each ladder one step (s3b, s23); the
+  // arranged answers' rows and what an offer would free, said apart (#175).
+  const rows = unlocks(dataset, answers);
+  const compared = {
+    reading, whole, zeroOpen, ups: arrangeSteps(dataset, rows, answers), arranged: arrangedRowsOf(rows),
+    freed: routesAnOfferFreesFor(dataset, answers),
+  };
   const notices = noticesAbove(screen, reading);
   return { action: comparedAction(screen, compared, interview.answered), notices, layout: layoutOf(screen, compared) };
 }

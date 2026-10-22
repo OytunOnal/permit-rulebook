@@ -39,7 +39,8 @@ export type Fold =
     kind: "needs-steps";
     /** The path answers the folded rows ask for, in the dataset's words. */
     steps: string[];
-    /** Whether a steps group stands above, for the summary to point at. */
+    /** Whether the steps, the offer line or the arranged line stands above,
+     * for the summary to point at. */
     pointsUp: boolean;
     open: boolean;
     cards: RouteCard[];
@@ -54,13 +55,36 @@ export type Fold =
   };
 
 /**
+ * The offer line: for a reader exploring with no offer, what a job offer in
+ * one country would free — routes that would then be checked, never met. In
+ * the dataset's words: the offer's, the country's in-sentence phrase, the
+ * fields' short labels.
+ */
+export interface OfferLine {
+  offer: string;
+  country: string;
+  routes: number;
+  /** What the freed routes would ask next. */
+  fields: string[];
+}
+
+/** The arranged line: what each arranged answer would open in one country,
+ * the answer and the country in the dataset's words. */
+export interface ArrangedLine {
+  country: string;
+  answers: { answer: string; routes: number }[];
+}
+
+/**
  * One group of a section, in the order the screen draws them: open,
- * unsettled, within reach, steps, not yet, not open to your passport. A group
- * the reader has nothing in is not there.
+ * unsettled, within reach, steps (the offer line first), the arranged line,
+ * not yet, not open to your passport. A group the reader has nothing in is
+ * not there.
  */
 export type VerdictGroup =
   | { kind: "open" | "unsettled" | "within-reach" | "closed"; cards: RouteCard[] }
-  | { kind: "steps"; steps: StepCard[]; hint: string }
+  | { kind: "steps"; offer: OfferLine | null; steps: StepCard[]; hint: string }
+  | ({ kind: "arranged" } & ArrangedLine)
   | {
     kind: "not-yet";
     /** Rows and folds in the order they are drawn. */

@@ -22,7 +22,8 @@ function nearNote(screen: VerdictScreen, near: RouteResult[]): string {
  * Nothing open: their rules met under an open question is not "nothing
  * open" — the doubt is the notice's business (human's walk, 2026-09-10);
  * with steps, the steps are the news, and the step worth naming is the first
- * the list offers (s23); with neither, no false hope, and what to do next is
+ * the list offers (s23) — an arranged answer or the offer line is no step, so
+ * neither is counted or named (#175); with neither, no false hope, and what to do next is
  * part of the one line (review J2), pointing at country sections only where
  * there are some (F7).
  */

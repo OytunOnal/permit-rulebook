@@ -2,8 +2,8 @@
 import { joinOr } from "permit-rulebook-data";
 import {
   CLOSED_HEADING, FEEDBACK, NOT_YET_HEADING, OPEN_HEADING, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING,
-  SUMMARY_LABEL, UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, notOpenToPassportCount, notYetCount,
-  notYetWithUnknowns, openCount, resultFeedbackLine, routesInCountryWhereYouToldUs, routesInCountryYouAreNotLookingAt,
+  SUMMARY_LABEL, UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, arrangedLine, notOpenToPassportCount,
+  notYetCount, notYetWithUnknowns, offerLine, openCount, resultFeedbackLine, routesInCountryWhereYouToldUs, routesInCountryYouAreNotLookingAt,
   routesNeed, routesNeedSeeStepsAbove, unlockingSteps, unsettledCount, withinReachCount,
 } from "../../copy.js";
 import { FEEDBACK_PATH } from "../../identity.js";
@@ -51,8 +51,13 @@ function foldHtml(fold: Fold): string {
  * the layout words. */
 function groupHtml(group: VerdictGroup, stepsHeading: string): string {
   switch (group.kind) {
-    case "steps":
-      return stepsHeading + group.steps.map((s) => s.html).join("") + group.hint;
+    case "steps": {
+      const offer = group.offer ? `<p class="offer-line">${esc(offerLine(group.offer))}</p>` : "";
+      return stepsHeading + offer + group.steps.map((s) => s.html).join("") + group.hint;
+    }
+    case "arranged":
+      // A paragraph of its own, not a step card, under no heading.
+      return `<p class="arranged-line">${esc(arrangedLine(group))}</p>`;
     case "not-yet":
       return section(HEAD["not-yet"], group.items.map((i) => ("kind" in i ? foldHtml(i) : i.html)).join(""), group.count);
     case "unsettled":

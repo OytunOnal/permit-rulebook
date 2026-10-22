@@ -1,6 +1,7 @@
 // @level presentation
 import {
   DESTINATION_FIELD, evaluate, isClosed, notices, type Country, type Dataset, type Notice, type Profile, type RouteResult,
+  type RoutesFreedByAnOffer, type Unlock,
 } from "permit-rulebook-data";
 import { scopedFirst } from "../../scope.js";
 import type { Step } from "./steps.js";
@@ -64,11 +65,14 @@ export function partOf(results: RouteResult[], closed: RouteResult[], unsettledI
 }
 
 /** What a comparison is drawn from: the reading, the whole screen's groups,
- * whether nothing is open anywhere, and the steps in the order the screen
- * offers them (s23). */
+ * whether nothing is open anywhere, the steps in the order the screen offers
+ * them (s23), the rows of the arranged answers, and what a job offer would
+ * free for an explorer (#175). */
 export interface Compared {
   reading: Reading;
   whole: Part;
   zeroOpen: boolean;
   ups: Step[];
+  arranged: Unlock[];
+  freed: RoutesFreedByAnOffer[];
 }
