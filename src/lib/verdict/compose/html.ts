@@ -5,10 +5,10 @@ import {
   SUMMARY_LABEL, UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, notOpenToPassportCount, notYetCount,
   notYetWithUnknowns, openCount, resultFeedbackLine, routesInCountryWhereYouToldUs, routesInCountryYouAreNotLookingAt,
   routesNeed, routesNeedSeeStepsAbove, unlockingSteps, unsettledCount, withinReachCount,
-} from "../copy.js";
-import { FEEDBACK_PATH } from "../identity.js";
-import { esc, escAttr } from "../reason.js";
-import { url } from "../site.js";
+} from "../../copy.js";
+import { FEEDBACK_PATH } from "../../identity.js";
+import { esc, escAttr } from "../../reason.js";
+import { url } from "../../site.js";
 import type { CountrySection, Fold, RouteCard, Strip, Tally, VerdictGroup } from "./types.js";
 
 /** A group's heading words and the class its colour is read from. */

@@ -5,17 +5,17 @@ import {
 import {
   carveOutHtml, caveatHtml, learnBoxHtml, measuredCriterionOf, pointsLineHtml, precondHtml, provenanceHtml, railHtml,
   readingHtml, scopedHtml, sourceLinkHtml, type CardScreen,
-} from "../card.js";
+} from "../../card.js";
 import {
   CAME_FROM_LINE, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET,
   WOULD_COME_WITHIN_REACH, onField, pointsMore, shortByPoints, shortByUpTo, withStepHtml,
-} from "../copy.js";
-import { countryOf } from "../countries.js";
-import { type Glossary, glossSection, glossed } from "../gloss.js";
-import { esc, escAttr, failDetailHtml, whyHtml } from "../reason.js";
-import { url } from "../site.js";
-import { routePath } from "../slug.js";
-import type { Step } from "../steps.js";
+} from "../../copy.js";
+import { countryOf } from "../../countries.js";
+import { type Glossary, glossSection, glossed } from "../../gloss.js";
+import { esc, escAttr, failDetailHtml, whyHtml } from "../../reason.js";
+import { url } from "../../site.js";
+import { routePath } from "../../slug.js";
+import type { Step } from "../../steps.js";
 
 /**
  * What every card of one verdict is drawn on: the dataset, the answers, the

@@ -14,17 +14,17 @@ import { noticeHtml } from "../card.js";
 import { noticeHeadline } from "../copy.js";
 import { esc } from "../reason.js";
 import { arrangeSteps } from "../steps.js";
-import type { VerdictScreen } from "./cards.js";
-import { comparedSaying } from "./headline.js";
-import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from "./html.js";
-import { partOf, readingOf, type Reading } from "./reading.js";
-import { layoutOf } from "./sections.js";
-import type { InterviewSoFar, Verdict } from "./types.js";
+import type { VerdictScreen } from "./compose/cards.js";
+import { comparedSaying } from "./compose/headline.js";
+import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from "./compose/html.js";
+import { partOf, readingOf, type Reading } from "./compose/reading.js";
+import { layoutOf } from "./compose/sections.js";
+import type { InterviewSoFar, Verdict } from "./compose/types.js";
 
 export type {
   CountrySection, Fold, InterviewSoFar, RouteCard, StepCard, Strip, Tally, Verdict, VerdictAction, VerdictGroup,
   VerdictLayout,
-} from "./types.js";
+} from "./compose/types.js";
 
 /**
  * The screen no route can produce: this passport needs no permit at all, and

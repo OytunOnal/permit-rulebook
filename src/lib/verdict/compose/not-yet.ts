@@ -2,7 +2,7 @@
 import {
   declaredPlace, fieldOptions, isPlacedElsewhere, isStepGated, type Criterion, type Dataset, type RouteResult,
 } from "permit-rulebook-data";
-import { countryOf } from "../countries.js";
+import { countryOf } from "../../countries.js";
 import { holdRow, type VerdictScreen } from "./cards.js";
 import type { Fold, RouteCard, VerdictGroup } from "./types.js";
 
@@ -72,8 +72,8 @@ export function notYetGroup(screen: VerdictScreen, rows: RouteResult[], stepsAbo
     // Open when it is the only thing on screen: a collapsed group was the
     // whole result for the emptiest profile, and every quote and read date
     // the product exists to show was folded away inside it (F7).
-    const open = individual.length === 0 && elsewhere.length === 0 && stepsAbove === 0;
-    items.push({ kind: "needs-steps", steps, pointsUp: stepsAbove > 0, open, cards: gated.map((r) => cardOf(screen, r)) });
+    const alone = individual.length === 0 && elsewhere.length === 0 && stepsAbove === 0;
+    items.push({ kind: "needs-steps", steps, pointsUp: stepsAbove > 0, open: alone, cards: gated.map((r) => cardOf(screen, r)) });
   }
   items.push(...elsewhereItems(screen, elsewhere));
   return { kind: "not-yet", items, count: rows.length };

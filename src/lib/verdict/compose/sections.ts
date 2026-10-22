@@ -1,8 +1,8 @@
 // @level presentation
 import { SITUATION_FIELD, type Country, type RouteResult } from "permit-rulebook-data";
-import { closedRowHtml } from "../card.js";
-import { leadCountry, leads, namedFirst, unscoredTally } from "../situations.js";
-import { seekHintHtml, type Step } from "../steps.js";
+import { closedRowHtml } from "../../card.js";
+import { leadCountry, leads, namedFirst, unscoredTally } from "../../situations.js";
+import { seekHintHtml, type Step } from "../../steps.js";
 import { fullCard, hasLiveUnknown, unlockCard, type CardLook, type VerdictScreen } from "./cards.js";
 import { notYetGroup } from "./not-yet.js";
 import { partOf, type Compared, type Part } from "./reading.js";

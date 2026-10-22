@@ -1,6 +1,6 @@
 // @level presentation
-import type { FlowAction, Interview } from "../screen.js";
-import type { UnscoredTally } from "../situations.js";
+import type { FlowAction, Interview } from "../../screen.js";
+import type { UnscoredTally } from "../../situations.js";
 
 /**
  * The interview as the verdict reads it: the questions answered so far, and
