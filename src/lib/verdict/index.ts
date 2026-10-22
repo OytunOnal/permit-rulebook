@@ -20,6 +20,9 @@ import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from 
 import { partOf, readingOf, type Reading } from "./compose/reading.js";
 import { layoutOf } from "./compose/sections.js";
 import type { InterviewSoFar, Verdict } from "./compose/types.js";
+// The verdict's look travels with its markup: the page that paints a verdict
+// links this stylesheet in its <head>.
+import "./verdict.css";
 
 export type {
   CountrySection, Fold, InterviewSoFar, RouteCard, StepCard, Strip, Tally, Verdict, VerdictAction, VerdictGroup,

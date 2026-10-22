@@ -166,12 +166,16 @@ describe("the rail's marks do not share a class with anything else", () => {
 
   it("and the screen styles the two apart", async () => {
     const { readFileSync } = await import("node:fs");
-    const page = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8")
-      .split("\r\n").join("\n");
+    const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8").split("\r\n").join("\n");
+    // The page styles the question card's checkmark; the verdict's own
+    // stylesheet styles its rail.
+    const page = read("../src/pages/index.astro");
+    const verdict = read("../src/lib/verdict/verdict.css");
     // The checkmark keeps its margin; the rail's mark is a different selector
     // and has none, so nothing can shift it off its amount.
     expect(page).toContain(".tick{color:var(--color-band);font-weight:700;margin-left:.35rem}");
-    expect(page).toContain(".rail-tick{position:absolute;");
-    expect(/\.rail-tick\{[^}]*margin/.test(page), "the rail's mark must carry no margin").toBe(false);
+    expect(verdict).toContain(".rail-tick{position:absolute;");
+    for (const sheet of [page, verdict])
+      expect(/\.rail-tick\{[^}]*margin/.test(sheet), "the rail's mark must carry no margin").toBe(false);
   });
 });
