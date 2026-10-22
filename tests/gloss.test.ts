@@ -42,10 +42,14 @@ describe("the section sign carries no explainer; the act it names is said once p
 
   it("says the act where the citation names one, in the citation's own bracket, without the sign's words", () => {
     const seen: Glossary = new Set();
-    expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG (AufenthG = the Residence Act)");
+    // Outside a bracket, the act's words follow the citation in one form, the
+    // form any abbreviation takes there: "§ 18g AufenthG (the Residence Act)"
+    // (#151, story 25; the fix round, 2026-10-22).
+    expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG (the Residence Act)");
+    expect(glossed("§ 18g AufenthG", new Set())).toBe(`§ 18g ${glossed("AufenthG", new Set())}`);
     // And does not then explain AufenthG a second time.
     expect(glossed("§ 18g AufenthG", seen)).toBe("§ 18g AufenthG");
-    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (BeschV = the Employment Ordinance)");
+    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (the Employment Ordinance)");
     // Inside a name's own bracket the words follow the citation there.
     expect(glossSection("Card (§ 6 BeschV)", new Set())).toBe("Card (§ 6 BeschV; BeschV = the Employment Ordinance)");
     for (const text of ["§ 18g AufenthG", "§ 6 BeschV", "Card (§ 6 BeschV)"])

@@ -190,8 +190,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
     for (const page of pages) {
       const text = textOf(page.html);
       const route = routeAddresses(ds).find((a) => a.path === page.path)!.route;
-      // The reader's words, counted for this route (decision 3 amended, 2026-09-08).
-      expect(text, page.path).toContain(scopeLine(route));
+      // The reader's words, counted for this route, in the form for a page
+      // with no answers (#151).
+      expect(text, page.path).toContain(scopeLine(route, { reader: "not-answered" }));
       expect(text, page.path).toContain(route.scope.reason);
       // The key never reaches a reader.
       expect(text, page.path).not.toContain(route.scope.value);
@@ -321,11 +322,11 @@ describe("s6 — one page per route, generated from the dataset", () => {
         "Permit Rulebook makes no immigration decision and no authority is bound by these results",
       );
       // Each page carries the addendum written for what it is: the scored
-      // pages say they describe rather than decide, and the five that are not
-      // scored say the checker never rules on them at all (s9).
+      // pages say they describe rather than decide, and the ones the checker
+      // does not ask about say it never rules on them at all (s9).
       expect(text, page.path).toContain(
         unscoredPaths.has(page.path)
-          ? "This route is one the checker does not score"
+          ? "This route is one the checker does not ask about"
           : "This page describes the rules; it does not decide on you.",
       );
     }
@@ -437,13 +438,14 @@ describe("s6 — one page per route, generated from the dataset", () => {
     const route = country.routes[0];
     route.name = 'EU Blue Card "general" <b>';
     const gte = route.criteria.find((c) => c.op === "gte");
-    if (gte && gte.op === "gte") gte.threshold.source_url = 'https://example.org/a"b';
+    // On a listed host: a source's host is on a list, or the data gate refuses it (#158).
+    if (gte && gte.op === "gte") gte.threshold.source_url = 'https://www.bamf.de/a"b';
     const page = routePage(hostile, routeAddresses(hostile)[0]);
     // The name reaches the attributes escaped, and no bare quote survives inside one.
     for (const attr of [...page.html.matchAll(/(?:href|content|title|aria-label)="([^"]*)"/g)])
       expect(attr[1], attr[0]).not.toContain("<");
     expect(page.html).toContain("&quot;");
-    expect(page.html).not.toContain('href="https://example.org/a"b"');
+    expect(page.html).not.toContain('href="https://www.bamf.de/a"b"');
     expect(page.html).toContain("&lt;b&gt;");
   });
 
@@ -488,12 +490,12 @@ describe("s6 — one page per route, generated from the dataset", () => {
   it("expands an abbreviation the first time a page uses it, and not after", () => {
     const de = pages.find((x) => x.path === "/germany/eu-blue-card-general")!;
     const text = textOf(de.html);
-    // Where a section citation names its act, the act is said in the
-    // citation's own bracket, in one form (s23, P1) — and without the sign's
-    // words since s32's amendment 6.
-    expect(text).toContain("§ 18g AufenthG (AufenthG = the Residence Act)");
+    // Where a section citation names its act, the act is said after it, in
+    // the one form an abbreviation takes (s23, P1; #151, story 25) — and
+    // without the sign's words since s32's amendment 6.
+    expect(text).toContain("§ 18g AufenthG (the Residence Act)");
     // Once, not on every citation on the page: the short form stands afterwards.
-    expect(text.split("AufenthG = the Residence Act").length - 1).toBe(1);
+    expect(text.split("AufenthG (the Residence Act)").length - 1).toBe(1);
     expect(text.split("AufenthG").length - 1).toBeGreaterThan(1);
     const beschv = pages.find((x) => x.path === "/germany/experienced-worker")!;
     expect(textOf(beschv.html)).toContain("BeschV (the Employment Ordinance)");

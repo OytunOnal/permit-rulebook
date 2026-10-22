@@ -3,13 +3,14 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, evaluate, fieldOptions, isClosed, situationsAsked, type Dataset, type Profile,
+  DESTINATION_FIELD, SITUATION_FIELD, possessiveAtStartOf, evaluate, fieldOptions, isClosed, situationsAsked,
+  type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import {
   SITUATION_COUNTRY_FIELD, leadCountry, leads, namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict,
 } from "../src/lib/situations.js";
-import { READ_ITS_RULES, possessive, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
+import { READ_ITS_RULES, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 import { expectNothingLeft, type Sent } from "./wire.js";
 
@@ -72,7 +73,7 @@ describe("s26 — the named country gets the four-country headline", () => {
         const d = sentences(one!);
         expect(f.route).toBe(d.route);
         // "The routes below need …" on the direct path; "France's routes below need …" on this one.
-        expect(f.rest).toBe(d.rest.replace(/^The\b/, possessive(country.name)));
+        expect(f.rest).toBe(d.rest.replace(/^The\b/, possessiveAtStartOf(country.code)));
         expect(f.rest).not.toBe(d.rest);
         // The four-country verdict names the country whose section leads; the direct path has no list to lead.
         expect(four!.lead).toBe(c.value);
@@ -86,17 +87,17 @@ describe("s26 — the named country gets the four-country headline", () => {
   it("the two rest sentences are one sentence, but for the name", () => {
     expect(unscoredRestLine("a job offer or an intra-corporate transfer"))
       .toBe("The routes below need a job offer or an intra-corporate transfer.");
-    expect(unscoredNamedRestLine("France", "a job offer or an intra-corporate transfer"))
+    expect(unscoredNamedRestLine(possessiveAtStartOf("FR"), "a job offer or an intra-corporate transfer"))
       .toBe("France's routes below need a job offer or an intra-corporate transfer.");
-    // The possessive the route line already uses, for the one country whose name ends in an s.
-    expect(unscoredNamedRestLine("Netherlands", "x")).toBe("Netherlands' routes below need x.");
+    // The data package's possessive at a sentence's start, the article's capital and the apostrophe included.
+    expect(unscoredNamedRestLine(possessiveAtStartOf("NL"), "x")).toBe("The Netherlands' routes below need x.");
   });
 
   it("the France researcher, both ways: the same words, the door to the quoted route", () => {
     const four = unscoredVerdict(ds, fourCountry("research", "fr"))!;
-    expect(four.headline).toBe("No scored route in France takes a research hosting agreement.");
+    expect(four.headline).toBe("No route we check in France takes a research hosting agreement.");
     expect(four.subline).toBe(
-      "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not scored: "
+      "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
       + "read its rules. France's routes below need a job offer or an intra-corporate transfer.",
     );
     expect(four.door).toEqual({ text: READ_ITS_RULES, href: url("/france/talent-researcher") });
@@ -141,7 +142,7 @@ describe("s26 — the named country's section leads", () => {
     expect(ds.countries.map((c) => leads(c, lead))).toEqual([false, true, false, false]);
     // Its line keeps s21's sentence and link.
     expect(unscoredTally(ds, france, "research")!.text).toBe(
-      "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
+      "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
   });
 
@@ -296,10 +297,10 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
         expect(nothingOpen.problems).toEqual([]);
         expect(nothingOpen.state).toBe("results");
         // The headline is France's written state — the one s19 writes on the France path.
-        expect(nothingOpen.headline).toBe("No scored route in France takes a research hosting agreement.");
-        expect(nothingOpen.status).toBe("No scored route in France takes a research hosting agreement.");
+        expect(nothingOpen.headline).toBe("No route we check in France takes a research hosting agreement.");
+        expect(nothingOpen.status).toBe("No route we check in France takes a research hosting agreement.");
         expect(nothingOpen.subline).toBe(
-          "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not scored: "
+          "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
           + "read its rules. France's routes below need a job offer or an intra-corporate transfer.",
         );
         expect(nothingOpen.doorText).toBe("read its rules");
@@ -313,7 +314,7 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
         ]);
         const [fr, germany] = nothingOpen.lines;
         expect(fr!.tally).toBe(
-          "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
+          "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
         );
         expect(fr!.link).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
         expect(fr!.heads).toEqual(["Not yet (5)"]);
@@ -324,13 +325,13 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
         expect(opened.problems).toEqual([]);
         expect(opened.state).toBe("results");
         expect(opened.headline).toMatch(/^1 route looks open\./);
-        expect(opened.headline + opened.subline).not.toContain("No scored route");
+        expect(opened.headline + opened.subline).not.toContain("No route we check");
         expect(opened.door).toBeNull();
         expect(opened.lines.map((l) => [l.name, l.open])).toEqual([
           ["Germany", true], ["France", false], ["Spain", false], ["Netherlands", false],
         ]);
         expect(opened.lines[1]!.tally).toBe(
-          "No scored route in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not scored.",
+          "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
         );
         expect(opened.lines[1]!.link).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
 
@@ -386,7 +387,7 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
       ]);
       expect(offer.lines.every((l) => l.link === null)).toBe(true);
       // France leads, open, with its sentence; Germany, second, is open on its steps.
-      expect(both.headline).toBe("No scored route in France takes a research hosting agreement.");
+      expect(both.headline).toBe("No route we check in France takes a research hosting agreement.");
       expect(both.lines.map((l) => [l.name, l.open])).toEqual([
         ["France", true], ["Germany", true], ["Spain", false], ["Netherlands", false],
       ]);

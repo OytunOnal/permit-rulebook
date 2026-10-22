@@ -158,7 +158,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       shortLabelOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
       // What an answer means here, where the label alone leaves two answers
       // hard to tell apart (human walk, 2026-09-08).
-      unlockMeansOf, countryPhrase,
+      unlockMeansOf,
       // The one answer the four-country result reads a country's line against (s21).
       SITUATION_FIELD,
       type Dataset, type FieldOption, type Profile, type RouteResult,
@@ -176,8 +176,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     } from "../lib/scope.js";
     // A symbol a stranger cannot read is explained the first time a screen uses
     // it, by the same module the route pages use (human, 2026-09-08).
-    import { type Glossary, glossSection } from "../lib/gloss.js";
-    import { activeOption, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState } from "../lib/listbox.js";
+    import { type Glossary, glossSection, glossed } from "../lib/gloss.js";
+    import {
+      activeOption, composeNoMatchLine, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState,
+    } from "../lib/listbox.js";
     import {
       backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, mastheadFor, readEntry,
       recordScreen as recordEntry, screenAfter, screenAt, type Explore, type FlowAction,
@@ -207,8 +209,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import { leadCountry, leads, namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
     import {
       carveOutHtml, caveatHtml, closedRowHtml, learnBoxHtml, noticeHtml, pointsLineHtml, precondHtml,
-      provenanceHtml, railHtml, readingHtml, scopedHtml,
-      measuredCriterionOf,
+      provenanceHtml, railHtml, readingHtml, scopedHtml, sourceLinkHtml,
+      measuredCriterionOf, type CardScreen,
     } from "../lib/card.js";
     // What the screen does with the engine's unlock rows — their order, which
     // are one step, and who is told the job-search sentence — beside the page
@@ -366,7 +368,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      */
     let scopedRouteId: string | null = null;
     let cameFrom: ScopedArrival | null = null;
-    /** The country an arrival named, when it named one without a route. */
+    /** The code of the country an arrival named, by its own page or by a
+     * route's. */
     let cameFromCountry: string | null = null;
     /** Whether this arrival is what put the destination on the record. */
     let scopeRecorded = false;
@@ -395,10 +398,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         : destinationForCountry(country);
       if (cameFrom) scopedRouteId = cameFrom.route.id;
       if (destination === null || !country) return;
-      // The country's own prose form: a sentence says "the Netherlands", the
-      // button in the nav says "Netherlands" (the same rule `declaredPlace`
-      // follows for every other sentence naming a place).
-      cameFromCountry = countryPhrase(country.code.toUpperCase()) ?? country.name;
+      cameFromCountry = country.code;
       const before = answers["destination"];
       rescopedFrom = before !== undefined && before !== destination ? before : null;
       const plan = arrivalPlan(ds, answers, asked, destination);
@@ -424,18 +424,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * is coming back rather than letting it reappear unexplained.
      */
     function arrivalLine(): string {
-      if (!scopeRecorded || (!cameFrom && !cameFromCountry)) return "";
-      const what = cameFrom ? routeName(cameFrom) : cameFromCountry!;
-      const place = cameFrom
-        ? (countryPhrase(cameFrom.country.code.toUpperCase()) ?? cameFrom.country.name)
-        : cameFromCountry!;
+      if (!scopeRecorded || !cameFromCountry) return "";
       // The words are built where they can be read by a test, over every
       // question that can come back: the label lower-cased here turned "IT
       // work" into "it work" on the live site (human re-read, 2026-09-08).
       return `<p class="recorded" role="status">${
         esc(arrivalSentence(ds, {
-          from: what, place, rescoped: rescopedFrom !== null,
-          kept: arrivalKept, asks: arrivalAsks,
+          route: cameFrom ? routeName(cameFrom) : null, country: cameFromCountry,
+          rescoped: rescopedFrom !== null, kept: arrivalKept, asks: arrivalAsks,
         }))
       }</p>`;
     }
@@ -786,10 +782,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             }
             const matches = matchOptions(q.options, box.query);
             if (!matches.length) {
-              // An empty box says nothing; this says what to do about it.
-              list.innerHTML = `<p class="cnone">No country matches. Try fewer letters, or the country's own name.</p>`;
+              // An empty box says nothing; this says what to do about it, or,
+              // for a territory, whose passport its people hold (#160).
+              const said = composeNoMatchLine(box.query);
+              list.innerHTML = `<p class="cnone">${esc(said.line)}</p>`;
               filter.removeAttribute("aria-activedescendant");
-              if (status) status.textContent = "No country matches";
+              if (status) status.textContent = said.status;
               return;
             }
             const shown = shownOptions(q.options, box);
@@ -919,35 +917,39 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * "Not met: situation" became the verdict on 22 of 23 cards
      * (product-critique v0.7, B3). */
     const whyFor = (r: RouteResult): string => whyHtml(ds, r, answers);
+    /** The screen the card blocks below are drawn on: the dataset, the
+     * answers, and this screen's memory of what it has explained, as they
+     * stand when a block is drawn. */
+    const cardScreen = (): CardScreen => ({ ds, answers, glossary });
     /** Conditions the authority applies that the interview never asked —
      * stated on every card so "criteria met" cannot overpromise. Both blocks
      * are rendered beside the page (lib/card.ts) so a test can read them. */
-    const precondFor = (r: RouteResult): string => precondHtml(ds, r.route, answers);
+    const precondFor = (r: RouteResult): string => precondHtml(cardScreen(), r.route);
     /** What the authority itself says is off this reader, in place of the
      * condition it releases them from. A carve-out carries its own quote and
      * is never printed under a heading that means "you must also do this"
      * (s7). */
-    const carveOutFor = (r: RouteResult): string => carveOutHtml(r.route, answers);
+    const carveOutFor = (r: RouteResult): string => carveOutHtml(cardScreen(), r.route);
     /** What the source says its own answer does not settle. Never a failure —
      * and never under the "Also required" heading, which would turn "you may
      * qualify for less" into one more bar to clear (human catch 2026-09-07). */
-    const caveatFor = (r: RouteResult): string => caveatHtml(r.route, answers);
+    const caveatFor = (r: RouteResult): string => caveatHtml(cardScreen(), r.route);
     /** Our own reading — what we modelled, what we did not, and where a number
      * was read by a person. Never presented as an authority's words, and never
      * in the quote list (s5e). */
-    const readingFor = (r: RouteResult): string => readingHtml(r.route);
+    const readingFor = (r: RouteResult): string => readingHtml(r.route, glossary);
     /** The rail, labelled with the threshold this result was measured
      * against — the path that was met, or the nearest reachable one. */
     const railFor = (r: RouteResult): string => railHtml(ds, r, answers);
     /** Every value the route rests on, quoted, dated, and — where the route
      * states more than one threshold — marked with which one applied. */
-    const provenanceFor = (r: RouteResult): string => provenanceHtml(ds, r, answers);
+    const provenanceFor = (r: RouteResult): string => provenanceHtml(cardScreen(), r);
 
 
     /** s3: "I don't know" answers get an official find-out link — the
      * dataset's field `learn` source, rendered beside the page (lib/card.ts)
      * since the stray full stop after it (s23, P5). */
-    const learnBoxFor = (r: RouteResult): string => learnBoxHtml(ds, r, answers);
+    const learnBoxFor = (r: RouteResult): string => learnBoxHtml(cardScreen(), r);
 
     const periodOf = (field: string) => fieldOf(field)?.period;
 
@@ -1076,7 +1078,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           })() : ""}
           ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Short by ${r.gap_points} point${r.gap_points === 1 ? "" : "s"}.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
           ${learnBoxFor(r)}
-          <div class="foot">${provenanceFor(r)}<a class="next" href="${escAttr(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
+          <div class="foot">${provenanceFor(r)}${sourceLinkHtml(r.route.info_url)}</div>
         </article>`;
     }
 
@@ -1090,7 +1092,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(routeName(r))}</span><span class="hold-why">${short}</span></summary>
           <div class="hold-body">
             ${cameFromNote(r)}
-            ${r.route.summary ? `<p class="why">${esc(r.route.summary)}</p>` : ""}
+            ${r.route.summary ? `<p class="why">${esc(glossed(r.route.summary, glossary))}</p>` : ""}
             ${scopeFor(r)}
             ${precondFor(r)}
             ${carveOutFor(r)}
@@ -1099,7 +1101,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
             ${pointsLineHtml(ds, r)}
             ${failDetail(r)}
             ${learnBoxFor(r)}
-            <div class="foot">${provenanceFor(r)}<a class="next" href="${escAttr(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
+            <div class="foot">${provenanceFor(r)}${sourceLinkHtml(r.route.info_url)}</div>
           </div>
         </details>`;
     }
@@ -1163,13 +1165,15 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         (placedElsewhere(r) ? elsewhere : isStepGated(r) ? gated : individual).push(r);
 
       // Routes that are simply in another country collapse into one line: a
-      // wall of "this route is Spain" answers a question the reader never
+      // wall of "this route is in Spain" answers a question the reader never
       // asked, on a fact they gave us themselves.
       const told = place();
       const elsewhereCountry = elsewhere.length
         ? countryOf(ds, elsewhere[0].country).name
         : "";
-      const elsewhereGroup = elsewhere.length >= 2
+      // Built where it is read, after the rows above it: a screen explains an
+      // abbreviation on its first use, so what renders first must be drawn first.
+      const elsewhereGroup = () => elsewhere.length >= 2
         ? `<details class="hold-group">
             <summary>${elsewhere.length} ${esc(elsewhereCountry)} routes — ${
               told ? `you told us ${esc(told)}` : "not where you are looking"}</summary>
@@ -1178,7 +1182,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         : elsewhere.map(holdRow).join("");
 
       if (gated.length < 3)
-        return individual.map(holdRow).join("") + gated.map(holdRow).join("") + elsewhereGroup;
+        return individual.map(holdRow).join("") + gated.map(holdRow).join("") + elsewhereGroup();
       const steps = joinOr(stepNamesFor(gated));
       // Open when it is the only thing on screen: a collapsed group was the
       // whole result for the emptiest profile, and every quote and read date
@@ -1189,7 +1193,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           <summary>${gated.length} routes need ${esc(steps)}${
             hasUnlocks ? " — see the steps above" : ""}</summary>
           <div class="hold-group-body">${gated.map(holdRow).join("")}</div>
-        </details>` + elsewhereGroup;
+        </details>` + elsewhereGroup();
     }
 
     function unlockCard(step: Step, routes: RouteResult[]): string {
@@ -1292,7 +1296,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         // Any other applicable notice still belongs on the screen — dropping
         // it silenced, say, the Türkiye note (review).
         main.innerHTML = [...replacing, ...applicable.filter((n) => !replacing.includes(n))]
-          .map((n) => noticeHtml(n)).join("");
+          .map((n) => noticeHtml(n, glossary)).join("");
         // The notice screen IS the result for this reader: one entry, like any
         // other screen they can go back from.
         recordScreen(null, true);
@@ -1316,7 +1320,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // dataset's; the screen only stops being quiet about them.
       const clash = contradictionsIn(ds, answers)
         .map((c) => `<p class="clash" role="status">${esc(c.say)}</p>`).join("");
-      const noticeCards = clash + applicable.map((n) => noticeHtml(n)).join("");
+      const noticeCards = clash + applicable.map((n) => noticeHtml(n, glossary)).join("");
 
       // The subtitle states what was compared, and only a comparison can
       // produce it — the count and the tense come from the same place (B4).
@@ -1461,7 +1465,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
        */
       const closedSection = (rows: RouteResult[]) => section(
         "Not open to your passport", "closed",
-        rows.map(closedRowHtml).join(""), rows.length,
+        rows.map((r) => closedRowHtml(r, glossary)).join(""), rows.length,
       );
 
       /** The rules are met; whether the route is theirs at all is the question

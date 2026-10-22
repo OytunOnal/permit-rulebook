@@ -172,7 +172,9 @@ checked against your answers" · "quoted and dated · checked against your
 answers, except N conditions we don't ask about" · "quoted and dated · not
 checked against your answers" — and, where unasked limbs are Route readings
 rather than the source's words, "… except N conditions we don't ask about —
-M of them in our own words, not the authority's" (never "we note") — plus the
+M of them in our own words, not the authority's", or, where every one of them
+is, "… except N conditions we don't ask about, in our own words, not the
+authority's" (never "we note") — plus the
 limbs it does not ask, named. That is the results card, where the reader has
 answered; a page with no answers says what the checker asks instead — "quoted
 and dated · the checker asks about all of it" · "… the checker asks about it,
@@ -227,6 +229,14 @@ _Avoid_: bracket, range
 An explicit "I don't know" declaration. It is an open gap, not a no: it never
 fails a route, and it points to a learn source.
 _Avoid_: missing answer, null
+
+**Territory** (dataset: `territories[]` in `countries.json`, #160):
+A dependent territory a reader may type into the passport search — Puerto
+Rico, Guam. It is never a row of the passport list, because its people hold
+another country's passport; it carries that passport and the source that says
+so, and the search answers it with the passport's country. A territory with no
+sourced passport is not listed.
+_Avoid_: dependency, overseas country (as a row)
 
 **Learn source**:
 The official place where an open unknown can be resolved by the person

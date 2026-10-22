@@ -98,15 +98,15 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
   it("only a result screen states what was compared, and states it exactly", () => {
     const { subline } = mastheadFor({ kind: "results", answered: 13, routes: 23, headline: "x" });
     expect(subline).toContain("13 answers");
-    expect(subline).toContain("23 published rule sets");
+    expect(subline).toContain("the published rules of 23 routes");
     expect(claimsAComparison(subline)).toBe(true);
   });
 
   it("one answer and one route are singular, and the verb agrees with the one answer", () => {
     // The count is the sentence's subject since s17, so the verb follows it:
-    // "Your 1 answer was compared", never "were".
+    // "Your 1 answer was checked", never "were".
     const { subline } = mastheadFor({ kind: "results", answered: 1, routes: 1, headline: "x" });
-    expect(subline).toContain("Your 1 answer was compared against 1 published rule set.");
+    expect(subline).toContain("Your 1 answer was checked against the published rules of 1 route.");
   });
 
   it("the no-permit-needed screen says a comparison did not happen, and is a result", () => {
@@ -149,7 +149,7 @@ describe("the comparison has no subject called \"Code\" (s17)", () => {
   it("the results screen says what was compared, in the passive, with the counts", () => {
     const { subline } = mastheadFor({ kind: "results", answered: 3, routes: 4, headline: "x" });
     expect(subline).toBe(
-      "Your 3 answers were compared against 4 published rule sets. Every value below shows its official " +
+      "Your 3 answers were checked against the published rules of 4 routes. Every value below shows its official " +
         "quote and the date we read it from the source.",
     );
   });
@@ -217,6 +217,8 @@ describe("claimsAComparison tests what it is named for", () => {
       "Your 3 answers were compared against 4 published rule sets.",
       "Your 1 answer was compared against 1 published rule set.",
       "Code compared your answers against the rules.",
+      "Your 3 answers were checked against the published rules of 4 routes.",
+      "Your 1 answer was checked against the published rules of 1 route.",
     ])
       expect(claimsAComparison(claim), claim).toBe(true);
   });

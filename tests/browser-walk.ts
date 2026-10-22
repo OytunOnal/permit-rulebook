@@ -1,7 +1,9 @@
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
-import { deriveBands, fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
+import { deriveBands, fieldOptions, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
+import { glossed } from "../src/lib/gloss.js";
+import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 
 /**
  * The interview walked in headless Chrome over the built page: what the
@@ -131,13 +133,21 @@ export async function answer(page: BrowserPage, field: string, value: string): P
   await waitOutTheBeat(page);
 }
 
-/** The field of the question on the screen, from its label. */
+/** The field of the question on the screen, from its label as the card draws
+ * it: the first words on the card, glossed on the card's own memory (#156),
+ * with any route it names said in full (#159). */
 async function fieldOnScreen(page: BrowserPage): Promise<string> {
   const label = await page.evaluate(QLABEL);
-  const field = ds.fields.find((f) => f.label === label)?.id;
+  const field = ds.fields.find((f) => glossed(fillRouteSlots(f.label, ds), new Set()) === label)?.id;
   if (!field) throw new Error(`no field for the question "${label}"`);
   return field;
 }
+
+/** The script that puts a record of `answers` on the device, asked in the
+ * order `history` gives (the answers' own order by default), as the page
+ * writes one. */
+export const recordSeedScript = (answers: Profile, history: string[] = Object.keys(answers)): string =>
+  `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(answers, history))})`;
 
 /** The interview's first screen, with nothing on the record. */
 export async function openCold({ page, url }: PageOnSite): Promise<void> {

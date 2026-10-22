@@ -67,7 +67,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const route = routeOf(ds, "de-researcher");
     const hosting = statementOf(ds, "de-researcher", "hosting-agreement-with-a-research-facility");
     expect(hosting.field).toBe("situation");
-    const { notChecked, asked } = blocksOf(precondHtml(ds, route, RESEARCHER_DE));
+    const { notChecked, asked } = blocksOf(precondHtml({ ds, answers: RESEARCHER_DE }, route));
     expect(asked).toHaveLength(1);
     expect(asked[0]).toContain(askedHeading(answerLabel(ds, "situation", "research")));
     expect(asked[0]).toContain(hosting.text);
@@ -79,7 +79,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const route = routeOf(ds, "de-ict-card");
     const tenure = statementOf(ds, "de-ict-card", "six-months-with-the-company-before-the-transfer");
     expect(tenure.field).toBeUndefined();
-    const { notChecked, asked } = blocksOf(precondHtml(ds, route, TRANSFEREE_DE));
+    const { notChecked, asked } = blocksOf(precondHtml({ ds, answers: TRANSFEREE_DE }, route));
     expect(asked).toEqual([]);
     expect(notChecked).toContain(tenure.text);
     expect(notChecked).toContain(statementOf(ds, "de-ict-card", "transfer-longer-than-ninety-days").text);
@@ -89,7 +89,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const route = routeOf(ds, "fr-ict");
     const tenure = statementOf(ds, "fr-ict", "six-months-with-the-group-already");
     expect(tenure.field).toBeUndefined();
-    const { notChecked, asked } = blocksOf(precondHtml(ds, route, TRANSFEREE_FR));
+    const { notChecked, asked } = blocksOf(precondHtml({ ds, answers: TRANSFEREE_FR }, route));
     expect(asked).toEqual([]);
     expect(notChecked).toContain(tenure.text);
   });
@@ -99,7 +99,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const reworded = clone();
     const es = statementOf(reworded, "es-researcher", "hosting-agreement-or-contract-with-the-research-body");
     es.source!.quote = "a sentence no criterion quotes";
-    const esHtml = precondHtml(reworded, routeOf(reworded, "es-researcher"), { destination: "es", situation: "research", citizenship: "TR" });
+    const esHtml = precondHtml({ ds: reworded, answers: { destination: "es", situation: "research", citizenship: "TR" } }, routeOf(reworded, "es-researcher"));
     expect(blocksOf(esHtml).asked).toHaveLength(1);
     expect(blocksOf(esHtml).notChecked).toBeNull();
     // The field struck: not asked, though the criterion quotes the very sentence — the old key.
@@ -111,7 +111,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     });
     expect(verbatim).toBe(true);
     delete nl.field;
-    const nlHtml = precondHtml(unfielded, routeOf(unfielded, "nl-blue-card"), { destination: "nl", situation: "offer", citizenship: "TR" });
+    const nlHtml = precondHtml({ ds: unfielded, answers: { destination: "nl", situation: "offer", citizenship: "TR" } }, routeOf(unfielded, "nl-blue-card"));
     expect(blocksOf(nlHtml).asked).toEqual([]);
     expect(blocksOf(nlHtml).notChecked).toContain(nl.text);
   });
@@ -120,7 +120,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const route = routeOf(ds, "de-researcher");
     const hosting = statementOf(ds, "de-researcher", "hosting-agreement-with-a-research-facility");
     for (const answers of [{}, { destination: "de", citizenship: "TR" }] as Profile[]) {
-      const { notChecked, asked } = blocksOf(precondHtml(ds, route, answers));
+      const { notChecked, asked } = blocksOf(precondHtml({ ds, answers }, route));
       expect(asked).toEqual([]);
       expect(notChecked).toContain(hosting.text);
     }
@@ -132,7 +132,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const answers: Profile = { destination: "all", citizenship: "TR", situation: "offer", situation_country: "de" };
     for (const r of evaluate(ds, answers)) {
       const decided = DECIDED.filter((d) => d.route === r.route.id && d.field !== undefined && answers[d.field] !== undefined);
-      const { asked } = blocksOf(precondHtml(ds, r.route, answers));
+      const { asked } = blocksOf(precondHtml({ ds, answers }, r.route));
       expect(asked.length, r.route.id).toBe(new Set(decided.map((d) => d.field)).size);
       for (const d of decided)
         expect(asked.join(" "), `${r.route.id}: ${d.statement}`).toContain(esc(statementOf(ds, d.route, d.statement).text));

@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  countryPhrase, deriveQuestions, joinAnd, optionMeans, reckonAskingRoutes, shortLabelOf,
+  phraseOf, deriveQuestions, joinAnd, learnLinkOf, optionMeans, reckonAskingRoutes, shortLabelOf,
   type Dataset, type OpenRoute, type Profile, type Question,
 } from "permit-rulebook-data";
 import {
@@ -9,8 +9,9 @@ import {
   setAsideLead, setAsideLineHtml,
 } from "./copy.js";
 import { countryOf } from "./countries.js";
-import { type Glossary, glossSection } from "./gloss.js";
+import { type Glossary, glossSection, glossed } from "./gloss.js";
 import { esc, escAttr } from "./reason.js";
+import { glossedLearnLinkText } from "./quote.js";
 import { QUERY_MAX_LENGTH } from "./listbox.js";
 // Which situation answers a country's scored routes take, and the quoted
 // route that would have asked otherwise — derived, never typed (s19); keyed
@@ -67,9 +68,10 @@ export interface QuestionScreen {
    * line it draws is the sentence alone — the page moves its own "Start over"
    * in after it, so the control is the ledger's and there is never a second. */
   resumed?: number;
-  /** The screen's memory of what its "§" expansion has already said; the
-   * asked-for line's route names spend from it like every route name on the
-   * page. Absent on the build's first paint, which names no route. */
+  /** The screen's memory of what it has already explained; the card's words
+   * and the asked-for line's route names spend from it like every route name
+   * on the page. Absent on the build's first paint, where the card starts
+   * one of its own. */
   glossary?: Glossary;
 }
 
@@ -112,7 +114,7 @@ function countedRoutesHtml(routes: OpenRoute[]): string {
   const perCountry = new Map<string, number>();
   for (const { country } of routes) perCountry.set(country, (perCountry.get(country) ?? 0) + 1);
   return [...perCountry].map(([country, count], i) => {
-    const place = countryPhrase(country) ?? country;
+    const place = phraseOf(country);
     const words = i === 0 ? askedForFirstCount(count, place) : askedForNextCount(count, place);
     return `<span data-country="${escAttr(country)}" data-routes="${escAttr(String(count))}">${esc(words)}</span>`;
   }).join(ASKED_FOR_COUNTS_JOIN);
@@ -120,6 +122,9 @@ function countedRoutesHtml(routes: OpenRoute[]): string {
 
 export function questionCardHtml(screen: QuestionScreen): string {
   const { dataset, question: q, answers, asked, editing, total } = screen;
+  // One card, one memory: the label, the asked-for line, the help and every
+  // answer's words spend from it in the order they are drawn.
+  const glossary: Glossary = screen.glossary ?? new Set();
   const longList = isLongList(q);
   const classed = hasClasses(q);
   const declared = q.options.find((o) => o.value === answers[q.field]);
@@ -132,19 +137,21 @@ export function questionCardHtml(screen: QuestionScreen): string {
           <div class="qmeta" role="status" aria-live="polite">${
             esc(editing ? EDIT_LINE : questionCounter(asked.length + 1, total))
           }</div>
-          <h2 class="qlabel">${esc(q.label)}</h2>
-          ${askedForLineHtml(screen)}
+          <h2 class="qlabel">${esc(glossed(q.label, glossary))}</h2>
+          ${askedForLineHtml({ ...screen, glossary })}
           ${(() => {
             // Where the answer is a thing a person can look up, the way to look
             // it up belongs at the question, not three screens later on a
             // result card that already assumed an answer (isolated v1-gate
             // critique, 2026-09-08, F13). It is the dataset's own link — the
-            // same one the card and the route page show — and its label is the
-            // link's text as written: a link is not glossed (s28).
-            const learn = dataset.fields.find((f) => f.id === q.field)?.learn;
+            // same one the card and the route page show — and its label is
+            // glossed like the rest of the card's words (#151, ruling 8),
+            // followed by what the page is where it is not the authority's
+            // (#158). Any route it names is said in full (#159).
+            const learn = learnLinkOf(dataset, q.field);
             return learn
               ? `<p class="qlearn">Not sure? <a href="${escAttr(learn.url)}" target="_blank" rel="noopener">${
-                esc(learn.label)}</a></p>`
+                esc(glossedLearnLinkText(learn, glossary))}</a></p>`
               : "";
           })()}
           ${longList ? `
@@ -182,7 +189,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
               return `<button class="opt${chosen ? " sel" : ""}" data-value="${escAttr(o.value)}"${
                 chosen ? ` aria-pressed="true"` : ""}${mark ? ` aria-describedby="mark-${escAttr(o.value)}"` : ""}><span class="opt-label">${esc(o.label)}${
                 chosen ? `<span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
-                means ? `<small class="opt-means">${esc(means)}</small>` : ""}</button>${
+                means ? `<small class="opt-means">${esc(glossed(means, glossary))}</small>` : ""}</button>${
                 mark ? `<small class="opt-mark" id="mark-${escAttr(o.value)}" data-for="${escAttr(o.value)}">${notScoredMarkHtml(mark)}</small>` : ""}`;
             }).join("")}
           </div>`}

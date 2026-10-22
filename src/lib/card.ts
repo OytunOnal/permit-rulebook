@@ -2,18 +2,21 @@
 import {
   answerLabel, bindsReader, carveOutFor, closedBy, decidingCriteria, deriveBands, fieldOptions, forEachCriterion,
   formatEUR, formatEURPer,
-  gapCriterionOf, liveUnknowns, noticeSources,
+  gapCriterionOf, learnLinkOf, liveUnknowns, noticeSources,
   resultProvenance,
   routeReadings, routeStatements, scopeLine, shortLabelOf,
   type Band, type Criterion, type Dataset, type Notice, type Profile, type Route, type RouteResult,
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
-import { NOT_CHECKED_HEADING, ROUTE_DOOR, askedHeading, readOn } from "./copy.js";
+import { NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading, readOn } from "./copy.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
-// it, on the screen's own memory (2026-09-08).
+// it, on the screen's own memory: the card's citations, statements, readings
+// and learn labels are glossed as the route page's are (#151, ruling 8). Each
+// block takes the screen's memory; one drawn alone is a screen of its own.
+import { type Glossary, glossed } from "./gloss.js";
 // One frame for every quote the product shows (2026-09-08).
-import { noteHtml, quoteFrame } from "./quote.js";
+import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "./quote.js";
 
 /**
  * The blocks of a card that state what the dataset itself says: what else is
@@ -30,6 +33,17 @@ import { noteHtml, quoteFrame } from "./quote.js";
  */
 
 type Gte = Extract<Criterion, { op: "gte" }>;
+
+/**
+ * The screen a card's blocks are drawn on, which every block takes whole: the
+ * dataset, the reader's answers, and the screen's memory of what it has
+ * already explained. A block drawn without a memory is a screen of its own.
+ */
+export interface CardScreen {
+  ds: Dataset;
+  answers: Profile;
+  glossary?: Glossary;
+}
 
 /** Every gte criterion in a route, at any depth. Nested too: NL ICT states its
  * thresholds inside an any-disjunction, and a top-level-only scan drew no rail
@@ -75,7 +89,8 @@ export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profil
  * read back — a coined synonym for Criterion's own Avoid list (review
  * 2026-09-07).
  */
-export function precondHtml(ds: Dataset, route: Route, answers: Profile): string {
+export function precondHtml(screen: CardScreen, route: Route): string {
+  const { ds, answers, glossary: seen = new Set() } = screen;
   const statements = binding(route, answers).filter((s) => s.kind === "precondition");
   // The ones the interview asked, by the field it asked them on, in the order
   // the statements name those fields.
@@ -88,11 +103,11 @@ export function precondHtml(ds: Dataset, route: Route, answers: Profile): string
   }
   return proseBlock(
     "precond", NOT_CHECKED_HEADING,
-    [...(route.preconditions ?? []), ...unasked.map((s) => s.text)].map(esc),
+    [...(route.preconditions ?? []), ...unasked.map((s) => s.text)].map((t) => esc(glossed(t, seen))),
     " · ",
   ) + [...asked].map(([field, ss]) => proseBlock(
     "precond asked", esc(askedHeading(answerLabel(ds, field, answers[field]))),
-    ss.map((s) => esc(s.text)),
+    ss.map((s) => esc(glossed(s.text, seen))),
     " · ",
   )).join("");
 }
@@ -157,12 +172,13 @@ const binding = (route: Route, answers: Profile): RouteStatement[] =>
  * the heading that means "you must also do this" would say the opposite of
  * what the IND says (s7).
  */
-export function carveOutHtml(route: Route, answers: Profile): string {
+export function carveOutHtml(screen: CardScreen, route: Route): string {
+  const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
     "caveat carveout", "Not required for your passport:",
     routeStatements(route).flatMap((s) => {
       const except = carveOutFor(s, answers);
-      return except ? [esc(except.text)] : [];
+      return except ? [esc(glossed(except.text, seen))] : [];
     }),
     " · ",
   );
@@ -181,7 +197,7 @@ export function carveOutHtml(route: Route, answers: Profile): string {
 export function scopedHtml(route: Route, answers: Profile, href: string): string {
   // The scope line stands alone; the door is a line of its own under it, not
   // a third item after a separator (s27, point 8).
-  return `<div class="scoped">${esc(scopeLine(route, answers))}<a class="door" href="${
+  return `<div class="scoped">${esc(scopeLine(route, { reader: "answered", profile: answers }))}<a class="door" href="${
     escAttr(href)}">${esc(ROUTE_DOOR)}</a></div>`;
 }
 
@@ -207,10 +223,11 @@ function proseBlock(cls: string, heading: string, items: string[], join = " "): 
  * are here and not there (human catch 2026-09-07). The quote behind each one
  * is in the card's source list, like every other value.
  */
-export function sourcedCaveatHtml(route: Route, answers: Profile): string {
+export function sourcedCaveatHtml(screen: CardScreen, route: Route): string {
+  const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
-    "caveat", "The official page also says:",
-    binding(route, answers).filter((s) => s.kind === "caveat" && s.source).map((s) => esc(s.text)),
+    "caveat", `${PAGE_ALSO_SAYS}:`,
+    binding(route, answers).filter((s) => s.kind === "caveat" && s.source).map((s) => esc(glossed(s.text, seen))),
   );
 }
 
@@ -234,17 +251,18 @@ function unsourcedSaid(s: RouteStatement): string {
 
 /**
  * The same, for a statement we could not find the official wording of. It
- * cannot claim "the official page says", and dropping it would take a fact in
+ * cannot claim "the page also says", and dropping it would take a fact in
  * the reader's favour off the card — so it says plainly that it carries no
  * quote, and why. Nothing here is ever given a neighbouring quote that does
  * not cover it.
  */
-export function unsourcedCaveatHtml(route: Route, answers: Profile): string {
+export function unsourcedCaveatHtml(screen: CardScreen, route: Route): string {
+  const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
     "caveat nosrc", "Worth knowing — we have not found the official wording:",
     binding(route, answers)
       .filter((s) => s.kind === "caveat" && !s.source)
-      .map((s) => `${esc(s.text)} <i>${esc(unsourcedSaid(s))}</i>`),
+      .map((s) => `${esc(glossed(s.text, seen))} <i>${esc(unsourcedSaid(s))}</i>`),
   );
 }
 
@@ -254,8 +272,10 @@ export function unsourcedCaveatHtml(route: Route, answers: Profile): string {
  * was making it — gluing the two together at the call site, which is exactly
  * what the seam above exists to stop (review 2026-09-07).
  */
-export function caveatHtml(route: Route, answers: Profile): string {
-  return sourcedCaveatHtml(route, answers) + unsourcedCaveatHtml(route, answers);
+export function caveatHtml(screen: CardScreen, route: Route): string {
+  // The two blocks are one screen: they share its memory, or one of their own.
+  const shared: CardScreen = { ...screen, glossary: screen.glossary ?? new Set() };
+  return sourcedCaveatHtml(shared, route) + unsourcedCaveatHtml(shared, route);
 }
 
 /**
@@ -272,10 +292,10 @@ export function caveatHtml(route: Route, answers: Profile): string {
  * repos; readings are their own construct now, so there is one accessor and no
  * predicate to keep in step (review 2026-09-07).
  */
-export function readingHtml(route: Route): string {
+export function readingHtml(route: Route, seen: Glossary = new Set()): string {
   return proseBlock(
     "caveat ours", "Our reading, not the authority's words:",
-    routeReadings(route).map((r) => esc(r.text)),
+    routeReadings(route).map((r) => esc(glossed(r.text, seen))),
   );
 }
 
@@ -385,7 +405,8 @@ export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string 
  * both unmarked left a reader free to take the lower one for theirs when they
  * do not qualify for it (human catch 2026-09-07).
  */
-export function provenanceHtml(ds: Dataset, r: RouteResult, answers: Profile): string {
+export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
+  const { ds, answers, glossary: seen = new Set() } = screen;
   const entries = resultProvenance(r, answers);
   // A lone threshold needs no telling apart from anything, and a losing path
   // that quotes no amount leaves nothing for the reader to mistake for theirs.
@@ -401,7 +422,7 @@ export function provenanceHtml(ds: Dataset, r: RouteResult, answers: Profile): s
     const p = c ? ds.fields.find((f) => f.id === c.field)?.period : undefined;
     return p ? ` · per ${p}` : "";
   };
-  const rendered = entries.map(({ label, value, amount, applied }) => {
+  const render = ({ label, value, amount, applied }: (typeof entries)[number], citation?: string): string => {
     // The same frame the route pages put round a quote: its language, its host,
     // and the note where the source spells the number its own way.
     const { lang, host, note } = quoteFrame(value, amount);
@@ -415,9 +436,9 @@ export function provenanceHtml(ds: Dataset, r: RouteResult, answers: Profile): s
     return `<div class="src${contested && amount !== undefined && applied === false ? " unapplied" : ""}"><i${
       lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
-      value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
+      citation ? ` · ${esc(citation)}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
       noteHtml(note)}</div>`;
-  });
+  };
   // One sentence, one line.
   //
   // This IS a change to what a card shows, and nobody asked for it as a
@@ -432,13 +453,16 @@ export function provenanceHtml(ds: Dataset, r: RouteResult, answers: Profile): s
   // What it does: drops a rendered provenance line that is EXACTLY identical
   // to one already printed. A quote carrying a different label, amount or
   // applies-to-you mark differs in the rendered line and still gets its own
-  // row, so nothing a reader needs is deduplicated away.
-  const seen = new Set<string>();
-  const lines = rendered.filter((line) => {
-    if (seen.has(line)) return false;
-    seen.add(line);
-    return true;
-  });
+  // row, so nothing a reader needs is deduplicated away. Lines are compared
+  // before the citation is glossed, which only the first of two would be.
+  const printed = new Set<string>();
+  const lines: string[] = [];
+  for (const entry of entries) {
+    const line = render(entry, entry.value.legal_basis);
+    if (printed.has(line)) continue;
+    printed.add(line);
+    lines.push(render(entry, entry.value.legal_basis && glossed(entry.value.legal_basis, seen)));
+  }
 
   // The promise on the first screen is that every value shows its quote and
   // its read date. A route that decides nothing on a number has no AMOUNT to
@@ -475,12 +499,14 @@ export function quoteForCard(quote: string): { shown: string; trimmed: boolean }
  * needed it. The frame is the claim of this product, and three copies of it
  * would be three claims that can drift (s8).
  */
-function srcLine(value: { quote: string; source_url: string; retrieved_at: string; legal_basis?: string }): string {
+function srcLine(
+  value: { quote: string; source_url: string; retrieved_at: string; legal_basis?: string }, seen: Glossary,
+): string {
   const { lang, host, note } = quoteFrame(value);
   const { shown, trimmed } = quoteForCard(value.quote);
   return `<div class="src"${trimmed ? ` title="${escAttr(value.quote)}"` : ""}><i${
     lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(shown)}”</i> · ${esc(host)}${
-    value.legal_basis ? ` · ${esc(value.legal_basis)}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
+    value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
     noteHtml(note)}</div>`;
 }
 
@@ -497,7 +523,7 @@ function srcLine(value: { quote: string; source_url: string; retrieved_at: strin
  * cannot be composed from the answers it names, so it carries its own sentence
  * and this prints it (s8).
  */
-export function closedRowHtml(r: RouteResult): string {
+export function closedRowHtml(r: RouteResult, seen: Glossary = new Set()): string {
   const closures = closedBy(r);
   if (!closures.length) return "";
   return `
@@ -506,10 +532,15 @@ export function closedRowHtml(r: RouteResult): string {
           ${closures.map((cr) => {
     const c = cr.criterion;
     if (c.op !== "not-in") return "";
-    return `<p class="why">${esc(c.text)}</p>${srcLine(c.source)}`;
+    return `<p class="why">${esc(glossed(c.text, seen))}</p>${srcLine(c.source, seen)}`;
   }).join("")}
-          <div class="foot"><a class="next" href="${escAttr(r.route.info_url)}" target="_blank" rel="noopener">Official page</a></div>
+          <div class="foot">${sourceLinkHtml(r.route.info_url)}</div>
         </article>`;
+}
+
+/** The link at a card's foot to the page behind it, labelled by whose page it is. */
+export function sourceLinkHtml(url: string): string {
+  return `<a class="next" href="${escAttr(url)}" target="_blank" rel="noopener">${esc(linkLabelOf(url))}</a>`;
 }
 
 /**
@@ -523,15 +554,21 @@ export function closedRowHtml(r: RouteResult): string {
  * quote framed with its own language, and the link at the foot is the page the
  * notice sends the reader to rather than whichever source it leads with (s8).
  */
-export function noticeHtml(n: Notice): string {
-  const next = n.learn ?? { url: n.source.source_url, label: "Official page" };
+export function noticeHtml(n: Notice, seen: Glossary = new Set()): string {
+  const title = esc(glossed(n.title, seen));
+  const body = esc(glossed(n.body, seen));
+  const sources = noticeSources(n).map((value) => srcLine(value, seen)).join("");
+  const next = n.learn
+    ? `<a class="next" href="${escAttr(n.learn.url)}" target="_blank" rel="noopener">${
+      esc(glossedLearnLinkText(n.learn, seen))}</a>`
+    : sourceLinkHtml(n.source.source_url);
   return `
         <article class="notice ${escAttr(n.kind)}">
-          <h3>${esc(n.title)}</h3>
-          <p class="why">${esc(n.body)}</p>
+          <h3>${title}</h3>
+          <p class="why">${body}</p>
           <div class="foot">
-            <div class="srcs">${noticeSources(n).map(srcLine).join("")}</div>
-            <a class="next" href="${escAttr(next.url)}" target="_blank" rel="noopener">${esc(next.label)}</a>
+            <div class="srcs">${sources}</div>
+            ${next}
           </div>
         </article>`;
 }
@@ -568,17 +605,21 @@ export function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  * phone the stop wrapped onto a line of its own (v1.1 gate critique, P5).
  * The route page's own box has never carried one.
  *
- * The label is the text of the link and is printed as the data wrote it: a
- * link says what the reader does there, and an explainer inside it was a
- * sentence underlined end to end (the human's walk, 2026-09-17, s28). The
- * dataset's contract keeps the label free of anything that would want one.
+ * The label is the text of the link: a link says what the reader does there.
+ * It is glossed like the rest of the card's words, on the screen's memory
+ * (#151, ruling 8); the dataset's contract keeps citations out of it, whose
+ * explainer would make a sentence underlined end to end (s28). Where the page
+ * is a consolidated text, the glossed label is followed by what the page is
+ * (#158). Any route the label names is said in full (#159).
  */
-export function learnBoxHtml(ds: Dataset, r: RouteResult, answers: Profile): string {
+export function learnBoxHtml(screen: CardScreen, r: RouteResult): string {
+  const { ds, answers, glossary: seen = new Set() } = screen;
   const links = liveUnknowns(r, answers)
-    .map((f) => ds.fields.find((d) => d.id === f)?.learn)
+    .map((f) => learnLinkOf(ds, f))
     .filter((l): l is { label: string; url: string } => !!l);
   if (!links.length) return "";
   return `<div class="learn">You can find out yourself: ${links
-    .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`)
+    .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${
+      esc(glossedLearnLinkText(l, seen))}</a>`)
     .join(" · ")}</div>`;
 }

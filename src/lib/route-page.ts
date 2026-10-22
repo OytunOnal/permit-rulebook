@@ -1,7 +1,7 @@
 // @level presentation
 import {
-  scopeLine, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
-  isLocalization, isScored, joinAnd, joinOr, noticeSources, provenancedValuesOf,
+  scopeLine, phraseOf, possessiveAtStartOf, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
+  fillRouteSlots, isLocalization, isScored, joinAnd, learnLinkOf, noticeSources, provenancedValuesOf,
   referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
   type UnreadSource,
@@ -36,7 +36,7 @@ import { FEEDBACK_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeade
 import { footerFacts, navCountries } from "./country-page.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
-import { noteHtml, quoteFrame } from "./quote.js";
+import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "./quote.js";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
@@ -44,8 +44,10 @@ import {
   absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
 } from "./site.js";
 import {
-  ANSWER_SOURCED, ANY_OF, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM,
-  ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, dailyCheck, pointsFigure, readOn,
+  ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM,
+  NOT_ASKED_SCOPE_HEADING, PAGE_ALSO_SAYS, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, alsoInHeading,
+  askedRouteDescription, audienceLine, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
+  pointsFigure, readOn,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -132,29 +134,12 @@ function gteUnder(c: Criterion): Gte[] {
 }
 
 /**
- * The Netherlands takes an article and the other three do not. Nothing in the
- * dataset says so — a country carries its name, not its grammar — so the one
- * exception is declared here rather than showing a reader "a permit to work in
- * Netherlands" on six pages.
- *
- * Keyed on the country code, not on the display name: a name is a string that
- * can be re-worded, and re-wording it would silently drop the article. DEBT: a
- * fact about a country belongs in `countries.json` beside its name and its
- * class; it is one word for one country today, and it moves there the second
- * country that needs it (Standards review, 2026-09-07).
- */
-const TAKES_THE = new Set(["NL"]);
-export const withArticle = (country: Country): string =>
-  TAKES_THE.has(country.code) ? `the ${country.name}` : country.name;
-
-/**
  * Who the page is for, said before the first rule. An Irish reader who lands on
  * a German route page from a search is told here, not after seven rules and a
  * refusal (scenario step 10), and the call to action below leads to the notice
  * that answers her rather than to a rejection.
  */
-export const audienceSentence = (country: Country): string =>
-  `This page is for people who need a permit to work in ${withArticle(country)}.`;
+export const audienceSentence = (country: Country): string => audienceLine(phraseOf(country.code));
 
 /**
  * Every source this page quotes: the pages behind `printedSources`, the same
@@ -201,15 +186,18 @@ export function noticesOn(dataset: Dataset, route: Route): Notice[] {
  * needs their own fiche, not the Conseil d'État (s8).
  */
 function noticeSection(n: Notice, seen: Glossary): string {
-  const next = n.learn ?? { url: n.source.source_url, label: "Official page" };
+  const nextUrl = n.learn ? n.learn.url : n.source.source_url;
+  // The link's words are drawn where they are read, after the notice's own:
+  // the page explains a token on its first use.
+  const nextLabel = (): string => (n.learn ? glossedLearnLinkText(n.learn, seen) : linkLabelOf(nextUrl));
   return `
   <section class="notice-block ${escAttr(n.kind)}" aria-labelledby="notice-${escAttr(n.id)}">
-    <h2 id="notice-${escAttr(n.id)}">${esc(n.title)}</h2>
-    <p class="plain">${esc(n.body)}</p>${
+    <h2 id="notice-${escAttr(n.id)}">${esc(glossed(n.title, seen))}</h2>
+    <p class="plain">${esc(glossed(n.body, seen))}</p>${
     noticeSources(n).map((value) => `
       ${quoteBlock(value, {}, seen)}`).join("")}
-    <p class="notice-next"><a ${tapInline()} href="${escAttr(next.url)}" target="_blank" rel="noopener">${
-    esc(next.label)} &#8599;</a></p>
+    <p class="notice-next"><a ${tapInline()} href="${escAttr(nextUrl)}" target="_blank" rel="noopener">${
+    esc(nextLabel())} &#8599;</a></p>
   </section>`;
 }
 
@@ -264,7 +252,6 @@ interface QuoteOptions {
   amount?: number;
   /** What the value is called on its own line ("standard amount"). */
   label?: string;
-  linkText?: string;
 }
 
 /** A read date as a quote and a headline figure both print it. */
@@ -278,7 +265,7 @@ function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen:
     value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
     noteHtml(note)}</span>
         <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
-    esc(o.linkText ?? "Official page")} &#8599;</a>
+    esc(linkLabelOf(value.source_url))} &#8599;</a>
       </div>`;
 }
 
@@ -357,6 +344,9 @@ function ruleHeading(dataset: Dataset, c: Criterion): string {
   // Named by who it shuts out, said as the answer they gave: "Algeria" is a
   // country and "an Algerian passport" is the thing this rule reads.
   if (c.op === "not-in") return `Not open to ${criterionPhrase(dataset, c)}`;
+  // A choice of paths is named by its own label: the body lists the paths, and
+  // its phrase may be a short_reason written for a verdict line, not a heading.
+  if (c.op === "any") return capitalise(c.label);
   return capitalise(criterionPhrase(dataset, c));
 }
 
@@ -388,10 +378,6 @@ function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
   }
   if (c.op === "points")
     return `This route counts ${c.required.value} points from the official table. Every item below scores, and the table is quoted under it.`;
-  if (c.op === "any")
-    return `${esc(ANY_OF)} ${esc(joinOr(
-      c.paths.map((p) => joinAnd(p.criteria.map((pc) => criterionPhrase(dataset, pc)))),
-    ))}.`;
   if ("field" in c && c.field === "citizenship")
     // The lede has already said who the page is for, three lines above; saying
     // it again word for word at the top of the first rule reads as a stutter.
@@ -399,6 +385,19 @@ function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
     // its words, with its quote below.
     return notice ? esc(notice.body) : `This route asks for ${esc(criterionPhrase(dataset, c))}.`;
   return `This route asks for ${esc(criterionPhrase(dataset, c))}.`;
+}
+
+/**
+ * A rule's plain words under its heading. A choice of paths is a lead-in and
+ * one line per path, opening on the path's label, so a reader sees which
+ * conditions belong together: one line of "and"s and "or"s cannot be grouped.
+ */
+function plainHtml(dataset: Dataset, c: Criterion, notice?: Notice): string {
+  if (c.op !== "any") return `<p class="plain">${rulePlain(dataset, c, notice)}</p>`;
+  const lines = c.paths.map((p) =>
+    `<li>${esc(capitalise(p.label))}: ${esc(joinAnd(p.criteria.map((pc) => criterionPhrase(dataset, pc))))}</li>`);
+  return `<p class="plain">${esc(c.paths.length > 2 ? ANY_PATH : EITHER_PATH)}</p>
+        <ul class="paths">${lines.join("")}</ul>`;
 }
 
 /**
@@ -410,17 +409,19 @@ function rulePlain(dataset: Dataset, c: Criterion, notice?: Notice): string {
  * condition, the honest thing left to say is what the checker will ask her and
  * where she can go and find the answer out — both of which the dataset holds.
  */
-function asksBlock(dataset: Dataset, criteria: Criterion[]): string {
+function asksBlock(dataset: Dataset, criteria: Criterion[], seen: Glossary): string {
   const fields = [...new Set(criteria.flatMap((c) => referencedFields(c)))]
     .map((id) => dataset.fields.find((f) => f.id === id))
     .filter((f): f is NonNullable<typeof f> => f !== undefined);
   if (!fields.length) return "";
-  const learn = fields.flatMap((f) => (f.learn ? [f.learn] : []));
+  // A question's words with any route they name said in full (#159).
+  const learn = fields.flatMap((f) => learnLinkOf(dataset, f.id) ?? []);
   return `
         <div class="asks"><b>What the checker asks</b><ul>${
-    fields.map((f) => `<li>${esc(f.label)}</li>`).join("")}</ul>${
+    fields.map((f) => `<li>${esc(glossed(fillRouteSlots(f.label, dataset), seen))}</li>`).join("")}</ul>${
     learn.map((l) => `<p>You can find this out yourself: <a ${tapInline()} href="${
-      escAttr(l.url)}" target="_blank" rel="noopener">${esc(l.label)} &#8599;</a></p>`).join("")}</div>`;
+      escAttr(l.url)}" target="_blank" rel="noopener">${
+      esc(glossedLearnLinkText(l, seen))} &#8599;</a></p>`).join("")}</div>`;
 }
 
 /** A rule with no quote and no figure under it, its paths included. */
@@ -457,12 +458,12 @@ function ruleCard(
   // A card with no evidence and no scale is one sentence restating its own
   // heading; it says instead what the interview will ask. A quoted card says
   // it for the unquoted rules inside its paths.
-  const asks = asksBlock(dataset, values.length === 0 && thresholds.length === 0 ? [c] : unquotedInPaths(c));
+  const asks = asksBlock(dataset, values.length === 0 && thresholds.length === 0 ? [c] : unquotedInPaths(c), seen);
   return `
       <article class="rule">
         <div class="top"><h2>${esc(ruleHeading(dataset, c))}</h2><span class="kind">${
     esc(ruleKind(c))}${year ? ` · ${esc(year)}` : ""}</span></div>
-        <p class="plain">${rulePlain(dataset, c, notice)}</p>${
+        ${plainHtml(dataset, c, notice)}${
     thresholds.length ? `
       ${railHtml(dataset, country, route, thresholds[0])}` : ""}${asks}${
     values.map((e) => `
@@ -525,7 +526,7 @@ function carveOutBlock(statement: { except?: StatementException }, seen: Glossar
   const except = statement.except;
   if (!except) return "";
   return `<div class="except"><b>Who this does not bind</b> ${
-    esc(except.text)}${quoteBlock(except.source, {}, seen)}</div>`;
+    esc(glossed(except.text, seen))}${quoteBlock(except.source, {}, seen)}</div>`;
 }
 
 function statedBlocks(route: Route, seen: Glossary): string {
@@ -548,9 +549,9 @@ function statedBlocks(route: Route, seen: Glossary): string {
     // requirements, all of them, none of them checked here (s9).
     block("precond", isScored(route) ? "Also required — not checked here" : "What the authority requires",
       preconditions.map((s) =>
-        esc(s.text) + (s.source ? quoteBlock(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
-    block("precond", "The official page also says", caveats.filter((s) => s.source).map((s) =>
-      esc(s.text) + quoteBlock(s.source!, {}, seen) + carveOutBlock(s, seen))),
+        esc(glossed(s.text, seen)) + (s.source ? quoteBlock(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
+    block("precond", PAGE_ALSO_SAYS, caveats.filter((s) => s.source).map((s) =>
+      esc(glossed(s.text, seen)) + quoteBlock(s.source!, {}, seen) + carveOutBlock(s, seen))),
     // A caveat we could not find the wording for is still a fact in the
     // reader's favour, so it stays — under a heading that says plainly that no
     // quote covers it, with the declared reason and the day we last looked.
@@ -558,8 +559,8 @@ function statedBlocks(route: Route, seen: Glossary): string {
     // named fewer limbs than it claimed (Standards review, 2026-09-07).
     block("precond", "Worth knowing — we have not found the official wording",
       caveats.filter((s) => !s.source).map((s) =>
-        `${esc(s.text)} <i>${esc(unsourcedSaid(s))}</i>` + carveOutBlock(s, seen))),
-    block("reading", "Our reading, not the authority's words", readings.map((r) => esc(r.text))),
+        `${esc(glossed(s.text, seen))} <i>${esc(unsourcedSaid(s))}</i>` + carveOutBlock(s, seen))),
+    block("reading", "Our reading, not the authority's words", readings.map((r) => esc(glossed(r.text, seen)))),
   ].join("");
 }
 
@@ -623,7 +624,7 @@ export function gist(route: Route): string {
   // finish (Spec review, 2026-09-08). The summary's first sentence is written
   // to stand alone, so it stands.
   const first = (route.summary ?? "").split(/(?<=\.)\s/)[0] ?? "";
-  return first || scopeLine(route);
+  return first || scopeLine(route, { reader: "not-answered" });
 }
 
 /**
@@ -658,15 +659,15 @@ function answerBlock(dataset: Dataset, route: Route): string {
   </section>`;
 }
 
-function neighbours(country: Country, route: Route): string {
+function neighbours(country: Country, route: Route, seen: Glossary): string {
   const others = country.routes.filter((r) => r !== route);
   if (!others.length) return "";
   return `
     <nav class="neighbours" aria-labelledby="also-here">
-      <h2 class="label" id="also-here">Also in ${esc(country.name)}</h2>
+      <h2 class="label" id="also-here">${esc(alsoInHeading(phraseOf(country.code)))}</h2>
       <ul>${others.map((r) => `
         <li><a ${tapMin()} href="${escAttr(url(routePath(country, r)))}">${esc(r.name)}<small>${
-    esc(gist(r))}</small></a></li>`).join("")}
+    esc(glossed(gist(r), seen))}</small></a></li>`).join("")}
       </ul>
     </nav>`;
 }
@@ -688,13 +689,11 @@ export interface RoutePage {
 }
 
 function description(dataset: Dataset, country: Country, route: Route): string {
-  // A route the product does not score has no criteria to describe, and the
-  // scored version of this sentence would come out as the country's name, the
+  // A route the checker does not ask about has no criteria to describe, and
+  // the other routes' sentence would come out as the country's name, the
   // route's name and an empty list. What a search result should promise is
   // what the page actually is (s9).
-  if (!isScored(route))
-    return `${country.name}'s ${route.name}: the conditions as the authority states them, each with `
-      + "the sentence it came from and the day that page was read. Quoted and dated here; not scored.";
+  if (!isScored(route)) return notAskedRouteDescription(possessiveAtStartOf(country.code), route.name);
   const bits: string[] = [];
   forEachCriterion(route.criteria, (c) => {
     if (c.op === "gte")
@@ -706,8 +705,7 @@ function description(dataset: Dataset, country: Country, route: Route): string {
     if (c.op === "gte" || (("field" in c) && c.field === "citizenship")) continue;
     bits.push(criterionPhrase(dataset, c));
   }
-  return `${country.name}'s ${route.name}: ${joinAnd(bits)} — every value quoted from its ` +
-    "official page with the date it was read.";
+  return askedRouteDescription(possessiveAtStartOf(country.code), route.name, joinAnd(bits));
 }
 
 /**
@@ -771,7 +769,7 @@ ${headMeta({ title, description: desc, path, kind: "article" })}
     <div>
       <h1>${esc(heading)}</h1>
       <p class="tagline">${esc(ROUTE_TAGLINE)}</p>
-      <p class="lede">${route.summary ? `${esc(route.summary)} ` : ""}Every ${
+      <p class="lede">${route.summary ? `${esc(glossed(route.summary, seen))} ` : ""}Every ${
     scored ? "number" : "condition"} on this page is the authority's own sentence, with the page it came from and the day we read it. ${
     esc(audienceSentence(country))} ${esc(scored ? ROUTE_PAGE_ADDENDUM : ROUTE_PAGE_UNSCORED_ADDENDUM)}</p>
     </div>
@@ -790,12 +788,12 @@ ${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join(""
 
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">What the checker asks, and what it does not</b>
-    <p>Every number below is quoted from an official page, and ${esc(dailyCheck(missed))}. On this route — <strong>${
-    esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)}</p>
+    <p>${esc(everyNumberQuoted(dailyCheck(missed)))} On this route — <strong>${
+    esc(scopeLine(route, { reader: "not-answered" }))}</strong>. ${esc(route.scope.reason)}</p>
   </section>` : `
   <section class="scope" aria-labelledby="scope-h">
-    <b id="scope-h">Why this route is not scored here</b>
-    <p><strong>${esc(scopeLine(route))}</strong>. ${esc(route.scope.reason)} Every condition below is quoted from an official page, and ${esc(dailyCheck(missed))}.</p>
+    <b id="scope-h">${esc(NOT_ASKED_SCOPE_HEADING)}</b>
+    <p><strong>${esc(scopeLine(route, { reader: "not-answered" }))}</strong>. ${esc(route.scope.reason)} ${esc(everyConditionQuoted(dailyCheck(missed)))}</p>
   </section>`}
 
   <section class="rules" aria-labelledby="rules-h">
@@ -817,7 +815,7 @@ ${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join(""
       <a ${tapMin()} href="${escAttr(url(FEEDBACK_PATH))}">${esc(WRONG_DOOR_LABEL)}</a>
     </nav>
   </section>
-${neighbours(country, route)}
+${neighbours(country, route, seen)}
   </aside>
   </div>
 
@@ -911,6 +909,7 @@ ${lf(IDENTITY)}
 .rule h2 { font: var(--text-route); margin: 0; }
 .kind { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); white-space: nowrap; }
 .rule p.plain { margin: var(--space-2) 0 0; }
+.rule ul.paths { margin: var(--space-1) 0 0; padding-left: 1.1rem; }
 
 /* Threshold rail. The labels never sit on the track: positioned labels
    overlapped by 51-65 px at every common phone width (critique B1). The ticks

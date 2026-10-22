@@ -1,10 +1,10 @@
 // @level presentation
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, isScored, joinOr, situationsAsked,
-  type Country, type Dataset, type Profile,
+  DESTINATION_FIELD, SITUATION_FIELD, phraseOf, possessiveAtStartOf, fieldOptions, isScored, joinOr,
+  situationsAsked, type Country, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
-  READ_ITS_RULES, READ_IT_HERE, notScoredLine, notScoredQuotedLine, unscoredHeadline, unscoredNamedRestLine,
+  READ_ITS_RULES, READ_IT_HERE, notCheckedLine, notCheckedQuotedLine, unscoredHeadline, unscoredNamedRestLine,
   unscoredRestLine, unscoredRouteLine, unscoredTallyLine,
 } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
@@ -37,7 +37,7 @@ import { url } from "./site.js";
  * the same mark is drawn under France there (s21, v1.1 gate critique N1).
  */
 export interface NotScoredMark {
-  /** The country's name, the dataset's. */
+  /** The country's phrase within a sentence, the data package's. */
   country: string;
   /** The quoted route that carries this situation, when one does. */
   route?: { name: string; path: string };
@@ -67,7 +67,7 @@ export function notScoredFor(ds: Dataset, destination: string | undefined, situa
   if (!country) return null;
   const quoted = country.routes.find((r) => !isScored(r) && r.situations?.includes(situation));
   return {
-    country: country.name,
+    country: phraseOf(country.code),
     ...(quoted ? { route: { name: quoted.name, path: routePath(country, quoted) } } : {}),
   };
 }
@@ -100,8 +100,8 @@ export function markUnder(ds: Dataset, field: string, value: string, answers: Pr
 /** The mark as the question screen draws it: the copy's line, with the door
  * on the last three words where there is a page to open. */
 export function notScoredMarkHtml(mark: NotScoredMark): string {
-  if (!mark.route) return esc(notScoredLine(mark.country));
-  const line = esc(notScoredQuotedLine(mark.country, mark.route.name));
+  if (!mark.route) return esc(notCheckedLine(mark.country));
+  const line = esc(notCheckedQuotedLine(mark.country, mark.route.name));
   const door = `<a href="${escAttr(url(mark.route.path))}">${esc(READ_IT_HERE)}</a>`;
   return line.replace(esc(READ_IT_HERE), door);
 }
@@ -187,10 +187,11 @@ export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict 
     .filter((o) => asked.has(o.value) && !o.is_fallback && !o.is_unknown)
     .map((o) => o.short ?? o.label));
   const phrase = situationPhrase(ds, situation);
-  const rest = named ? unscoredNamedRestLine(mark.country, steps) : unscoredRestLine(steps);
+  const opening = possessiveAtStartOf(key.toUpperCase());
+  const rest = named ? unscoredNamedRestLine(opening, steps) : unscoredRestLine(steps);
   return {
     headline: unscoredHeadline(mark.country, phrase),
-    subline: mark.route ? `${unscoredRouteLine(mark.country, phrase, mark.route.name)} ${rest}` : rest,
+    subline: mark.route ? `${unscoredRouteLine(opening, phrase, mark.route.name)} ${rest}` : rest,
     ...(mark.route ? { door: { text: READ_ITS_RULES, href: url(mark.route.path) } } : {}),
     ...(named ? { lead: named } : {}),
   };

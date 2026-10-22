@@ -43,16 +43,124 @@ export const ROUTE_TAGLINE = "The rules, quoted and dated:";
 export const ROUTE_DOOR = "Read the rules of this route";
 
 /**
- * The one-line promise the README leads with and the social card carries.
+ * A link to a source says whose page it opens (GLOSSARY, Consolidated text).
+ * The kind is the data package's, read off the host; the words are these.
+ */
+export const OFFICIAL_PAGE = "Official page";
+export const consolidatedTextOn = (host: string): string => `Consolidated text on ${host}`;
+/** A learn link's own label, followed by the kind of page it opens. */
+export const learnLinkWithKind = (label: string, kind: string): string => `${label} — ${kind}`;
+
+/**
+ * How many routes there are and how many the checker asks about: the social
+ * card's count and the home page's. A page with no answers says what the
+ * checker asks, never what it checked (GLOSSARY, Scope statement).
+ */
+export const routesCheckerAsksAbout = (total: number, asked: number): string =>
+  `${total} routes · the checker asks about ${asked}`;
+
+/**
+ * The one-line promise a link preview of the home page carries.
  *
  * The two counts are read from the dataset rather than typed here: they were
  * typed, and s9 moved one of them the same day it was written (Standards
- * review, 2026-09-10).
+ * review, 2026-09-10). `scored` is the dataset's count of the routes the
+ * checker asks about.
  */
-export const promise = (counts: { scored: number; quotedOnly: number }): string =>
-  `An open, dated, source-quoted work-permit ruleset for four countries — ${counts.scored} routes ` +
-  `scored against your answers and ${counts.quotedOnly} more quoted and dated without being scored, ` +
-  "every value with its official sentence and the day it was read, checked daily.";
+export const promise = (counts: { total: number; scored: number }): string =>
+  `An open, dated, source-quoted work-permit ruleset for four countries — ${
+    routesCheckerAsksAbout(counts.total, counts.scored)} — every value with its official sentence and the day it was read, checked daily.`;
+
+/**
+ * A country page's heading: what the reader can do there, before answering
+ * anything. `country` is the country's phrase where it opens a sentence.
+ */
+export const countryHeadline = (country: string, total: number, asked: number): string =>
+  `${country}: ${total} ${total === 1 ? "route" : "routes"}. The checker asks about ${asked}.`;
+
+/**
+ * The country page's words for the routes the checker does not ask about: the
+ * section heading, the lede's sentences, the lists' labels and the note under
+ * the button. The heading is the scope line's own verb, cut down to what a
+ * heading carries, so the heading, the card under it and the page it opens
+ * say the same thing.
+ */
+export const QUOTED_ONLY_HEADING = "Quoted here, not checked";
+export const LISTED_WITH_THE_REASONS = "listed with the reasons";
+/** `routes` is the count in words ("two routes"); `door` the link, already HTML. */
+export const notAskedBelowLine = (routes: string, door: string): string =>
+  `Below them, ${routes} the checker does not ask about; what is left out altogether is ${door}.`;
+/** `routes` is the count in words, opening the sentence ("Two routes"). */
+export const notAskedLede = (routes: string, count: number): string =>
+  `${routes} we hold the rules for and the checker does not ask about. Each page states them as the authority does, `
+  + `with the day we read them, and asks you nothing; the checker never offers ${count === 1 ? "it" : "them"}.`;
+export const askedRoutesLabel = (country: string): string => `The routes in ${country} the checker asks about`;
+export const notAskedRoutesLabel = (country: string): string => `Routes in ${country} the checker does not ask about`;
+export const RESULT_NAMES_ASKED_ROUTES =
+  "The result names which of the routes the checker asks about fit; the ones it does not ask about never appear in it.";
+
+/**
+ * The rest of a country page's own words: its title, what a link preview
+ * reads about it, the lede's opening, the line for a country whose routes the
+ * checker asks about all of, and the note under the button there. `country` is
+ * the country's phrase within a sentence; `door` a link, already HTML.
+ */
+export const countryPageTitle = (country: string): string => `Work permits in ${country} · ${PRODUCT_NAME}`;
+/** `listed` names the routes, the first few and how many more. */
+export const countryPageDescription = (count: number, country: string, listed: string): string =>
+  `The ${count} work-permit routes we hold rules for in ${country}: ${listed} — each with the authority's own `
+  + "sentence for every value and the day it was read.";
+export const countryLedeOpen = (country: string): string =>
+  `Every employment route ${country} publishes that a rule can decide, each on its own page with the authority's `
+  + "sentences and the day we read them.";
+export const LISTED_WITH_THEIR_REASONS = "listed with their reasons";
+export const discretionLeftOutLine = (door: string): string => `Routes that turn on an official's discretion are ${door}, not here.`;
+export const RESULT_NAMES_FITTING_ROUTES = "The result names which of these routes fit.";
+
+/** `/data/`'s label for a country's routes as JSON; `country` is its phrase. */
+export const countryAsJsonLabel = (country: string): string => `${country} as JSON`;
+
+/**
+ * A route page's words around its country: who the page is for, the heading
+ * over the country's other routes, and what a search result reads about a
+ * route the checker asks about. `country` is the country's phrase within a
+ * sentence; `countryOpening` its possessive where it opens one ("The
+ * Netherlands'"); `asks` the route's first few conditions, joined.
+ */
+export const audienceLine = (country: string): string => `This page is for people who need a permit to work in ${country}.`;
+export const alsoInHeading = (country: string): string => `Also in ${country}`;
+export const askedRouteDescription = (countryOpening: string, routeName: string, asks: string): string =>
+  `${countryOpening} ${routeName}: ${asks} — every value quoted from its official page with the date it was read.`;
+
+/**
+ * Where a route page's quotes come from, said of every source alike: a quote
+ * may stand on a consolidated text, which is not the authority's page, so the
+ * words claim no "official" page (GLOSSARY, Consolidated text; #151's fix
+ * round, ruling 1). `check` is the daily-check clause.
+ */
+export const everyNumberQuoted = (check: string): string =>
+  `Every number below is quoted from the page each rule cites, and ${check}.`;
+export const everyConditionQuoted = (check: string): string =>
+  `Every condition below is quoted from the page each rule cites, and ${check}.`;
+/** The heading over the caveats a source puts on its own answer, on a route
+ * page and a results card: true of an authority's page and a consolidated
+ * text alike. */
+export const PAGE_ALSO_SAYS = "The page also says";
+
+/**
+ * The arrival line's sentences (`lib/scope.ts`): a reader sent from a country's
+ * own page, or from one of its route pages, with the record set to that
+ * country — newly, or moved from another. `placeOpening` is the country's
+ * phrase where it opens a sentence, `place` its phrase within one, `route` the
+ * route's name.
+ */
+export const placeOnRecordLine = (placeOpening: string): string => `${placeOpening} is on the record.`;
+export const placeOnRecordNowLine = (placeOpening: string): string => `${placeOpening} is on the record now.`;
+export const comingFromRouteLine = (route: string, place: string): string => `Coming from ${route} — ${place} is on the record.`;
+export const startingFromRouteLine = (route: string, place: string): string => `Starting from ${route} — ${place} is on the record.`;
+/** The clause that counts the questions still to come; `place` opens it or follows a clause before it. */
+export const placeAsksMoreClause = (place: string, asks: number): string =>
+  `${place} asks ${asks} more question${asks === 1 ? "" : "s"}`;
 
 /**
  * The launch's legal wording, one sentence, everywhere. It is the IRCC-style
@@ -164,16 +272,24 @@ export const setAsideLineHtml = (leadHtml: string, namesHtml: string): string =>
 export const ROUTE_PAGE_ADDENDUM = "This page describes the rules; it does not decide on you.";
 
 /**
- * What a page for a route the product does not score says instead.
+ * What a page for a route the checker does not ask about says instead.
  *
- * The scored version's promise — the rules, not a judgement — is true here too
+ * The other routes' promise — the rules, not a judgement — is true here too
  * and is not the thing a stranger needs first. A reader who arrives on one of
  * these from a search has to be told, in the same breath as the route's name,
  * that the checker will never rule on this one: the sentence under the heading
  * explains why, and this is the half-line that gets them there (s9).
  */
 export const ROUTE_PAGE_UNSCORED_ADDENDUM =
-  "This route is one the checker does not score — the rules are stated here and nothing is asked of you.";
+  "This route is one the checker does not ask about — the rules are stated here, quoted and dated.";
+
+/** The heading over such a route's scope statement. */
+export const NOT_ASKED_SCOPE_HEADING = "Why the checker does not ask about this route";
+/** What a search result says of such a route's page. `countryOpening` is the
+ * country's possessive where it opens a sentence. */
+export const notAskedRouteDescription = (countryOpening: string, routeName: string): string =>
+  `${countryOpening} ${routeName}: the conditions as the authority states them, each with the sentence it came from `
+  + "and the day that page was read. Quoted and dated here; the checker does not ask about it.";
 
 /**
  * The day a page was read, in the one form every read date takes: a quote on
@@ -582,8 +698,8 @@ export const RESULT_FEEDBACK_ASK = "Something to say about this result?";
 export const resultFeedbackLine = (word: string): string => `${RESULT_FEEDBACK_ASK} ${word}.`;
 
 /**
- * The mark under a situation answer no scored route in the chosen country
- * takes (s19).
+ * The mark under a situation answer no route the checker asks about in the
+ * chosen country takes (s19).
  *
  * A researcher with a French hosting agreement was offered the answer, took
  * it, and read "Nothing open on these answers" two taps later — for a route
@@ -591,19 +707,19 @@ export const resultFeedbackLine = (word: string): string => `${RESULT_FEEDBACK_A
  * The mark says so before the answer is picked. The option stays a button: a
  * reader may still want to see what the rest need.
  *
- * Both names are the dataset's — the country's, and the quoted route's own
- * name, because the site has no shorter word for a route than the one the
+ * Both names are the data package's — the country's phrase within a sentence,
+ * and the quoted route's own name, because the site has no shorter word for a route than the one the
  * dataset gives it and a typed "researcher permit" would be a second name to
  * keep in step. The last three words are the link to that route's page; the
  * line without a route is for a situation nothing quoted carries either.
  */
-export const notScoredLine = (country: string): string => `Not scored for ${country} yet.`;
+export const notCheckedLine = (country: string): string => `Not checked for ${country} yet.`;
 export const READ_IT_HERE = "read it here";
 /** What is said of the quoted route, after its name — here and on the
  * four-country result's line (s21): one clause, so the two cannot drift. */
-export const IS_QUOTED_NOT_SCORED = "is quoted, not scored";
-export const notScoredQuotedLine = (country: string, routeName: string): string =>
-  `Not scored for ${country} yet — ${routeName} ${IS_QUOTED_NOT_SCORED}: ${READ_IT_HERE}.`;
+export const IS_QUOTED_NOT_CHECKED = "is quoted, not checked";
+export const notCheckedQuotedLine = (country: string, routeName: string): string =>
+  `Not checked for ${country} yet — ${routeName} ${IS_QUOTED_NOT_CHECKED}: ${READ_IT_HERE}.`;
 
 /**
  * The written state a zero-open result through a marked answer reads, in
@@ -613,7 +729,7 @@ export const notScoredQuotedLine = (country: string, routeName: string): string 
  * words ("a research hosting agreement"); the subline names the quoted route
  * — the situation phrase before it says what it is for, since the dataset
  * carries no other description of a route than its name — with the door on
- * the last three words, and then what the scored routes below do take,
+ * the last three words, and then what the checked routes below do take,
  * derived from the situations they ask and joined the way the hold list
  * joins them. Without a quoted route the subline is the second sentence
  * alone.
@@ -625,17 +741,17 @@ export const notScoredQuotedLine = (country: string, routeName: string): string 
  * same words after the subject.
  */
 const unscoredClaim = (country: string, situation: string): string =>
-  `No scored route in ${country} takes ${situation}`;
+  `No route we check in ${country} takes ${situation}`;
 export const unscoredHeadline = (country: string, situation: string): string => `${unscoredClaim(country, situation)}.`;
 export const READ_ITS_RULES = "read its rules";
-/** The possessive, for the one country whose name ends in an s. */
-export const possessive = (name: string): string => (name.endsWith("s") ? `${name}'` : `${name}'s`);
-export const unscoredRouteLine = (country: string, situation: string, routeName: string): string =>
-  `${possessive(country)} route for ${situation} — ${routeName} — is quoted here but not scored: ${READ_ITS_RULES}.`;
+/** `countryOpening` is the country's possessive where it opens a sentence,
+ * the data package's ("The Netherlands'"). */
+export const unscoredRouteLine = (countryOpening: string, situation: string, routeName: string): string =>
+  `${countryOpening} route for ${situation} — ${routeName} — is quoted here but not checked: ${READ_ITS_RULES}.`;
 const routesBelowNeed = (steps: string): string => `routes below need ${steps}.`;
 export const unscoredRestLine = (steps: string): string => `The ${routesBelowNeed(steps)}`;
-export const unscoredNamedRestLine = (country: string, steps: string): string =>
-  `${possessive(country)} ${routesBelowNeed(steps)}`;
+export const unscoredNamedRestLine = (countryOpening: string, steps: string): string =>
+  `${countryOpening} ${routesBelowNeed(steps)}`;
 
 /**
  * The same state on the four-country result, in the country's own summary
@@ -652,7 +768,7 @@ export const unscoredNamedRestLine = (country: string, steps: string): string =>
  */
 export const unscoredTallyLine = (country: string, situation: string, routeName?: string): string =>
   routeName
-    ? `${unscoredClaim(country, situation)} — ${routeName} ${IS_QUOTED_NOT_SCORED}.`
+    ? `${unscoredClaim(country, situation)} — ${routeName} ${IS_QUOTED_NOT_CHECKED}.`
     : unscoredHeadline(country, situation);
 
 /**
@@ -700,11 +816,12 @@ export const orAbove = (title: string): string => `${title} or above`;
 // use, in the citation's own bracket.
 
 /**
- * The lead-in to a rule's limbs on a route page (s23, P2). "Either of these
- * answers this rule:" stood before three items on the Spanish Blue Card
- * (v1.1 gate critique, P2); "any" is the word for a list of any length.
+ * The lead-in to a criterion's paths on a route page, each path on a line of
+ * its own under its label. "Either" is said of two; three or more paths take
+ * "any one".
  */
-export const ANY_OF = "Any of these:";
+export const EITHER_PATH = "Either path meets it:";
+export const ANY_PATH = "Any one of these paths meets it:";
 
 /**
  * `/data/`'s prose-provenance counts, after the gate's name (s23, P4).
@@ -727,3 +844,21 @@ export const proseProvenanceCounts = (sourced: number, ours: number, dated: numb
  * "about" is the honest word for a number that moves.
  */
 export const questionCounter = (n: number, about: number): string => `Question ${n} of about ${about}`;
+
+/**
+ * What the passport search says when what was typed matches no row: how to
+ * search, and the shorter words the live region reads.
+ */
+export const NO_COUNTRY_MATCHES = "No country matches. Try fewer letters, or the country's own name.";
+export const NO_COUNTRY_MATCHES_STATUS = "No country matches";
+
+/**
+ * The same line when what was typed is a dependent territory, which is no row
+ * because its people hold another country's passport (#160). The names are
+ * the dataset's: the territory's phrase where it opens the sentence and inside
+ * it, the passport country's in-sentence phrase, and its row's label.
+ */
+export const territoryLine = (
+  territory: { atStart: string; inSentence: string }, countryPhrase: string, country: string,
+): string =>
+  `${territory.atStart} is not on this list: people from ${territory.inSentence} hold a passport of ${countryPhrase}. Choose ${country}.`;

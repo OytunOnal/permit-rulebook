@@ -9,7 +9,7 @@ import {
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import {
-  ANY_OF, SEEK_HINT, dailyCheck, orAbove, proseProvenanceCounts, questionCounter,
+  EITHER_PATH, SEEK_HINT, dailyCheck, orAbove, proseProvenanceCounts, questionCounter,
 } from "../src/lib/copy.js";
 import { learnBoxHtml, pointsLineHtml, provenanceHtml } from "../src/lib/card.js";
 import { glossSection, glossed } from "../src/lib/gloss.js";
@@ -257,8 +257,8 @@ describe("P1 — never a stutter; and, since s32's amendment 6, no explainer for
     expect(glossSection("Experienced worker (§ 19c / § 6 BeschV)", new Set()))
       .toBe("Experienced worker (§ 19c / § 6 BeschV)");
     expect(glossSection("§ 18d states it", new Set())).toBe("§ 18d states it");
-    expect(glossed("§ 18g AufenthG", new Set())).toBe("§ 18g AufenthG (AufenthG = the Residence Act)");
-    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (BeschV = the Employment Ordinance)");
+    expect(glossed("§ 18g AufenthG", new Set())).toBe("§ 18g AufenthG (the Residence Act)");
+    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (the Employment Ordinance)");
     // Once per page.
     const seen = new Set<string>();
     glossed("§ 18g AufenthG", seen);
@@ -277,10 +277,11 @@ describe("P1 — never a stutter; and, since s32's amendment 6, no explainer for
 });
 
 describe("P2 — a rule with limbs is one sentence", () => {
-  it("'Either of these answers this rule:' became 'Any of these:'", () => {
-    expect(ANY_OF).toBe("Any of these:");
+  it("a rule's limbs open on the copy module's lead-in, never 'Either of these answers this rule:'", () => {
+    // The lead-in introduces one line per path: "either" for two paths, and
+    // never for three (paths-named.test.ts).
     const html = routePage(ds, routeAddresses(ds).find((a) => a.route.id === "es-blue-card")!).html;
-    expect(textOf(html)).toContain("Any of these:");
+    expect(textOf(html)).toContain(EITHER_PATH);
     expect(textOf(html)).not.toContain("Either of these");
   });
 });
@@ -288,7 +289,7 @@ describe("P2 — a rule with limbs is one sentence", () => {
 describe("P3 — the curator's note stays in the data", () => {
   it("no card and no page carries it", () => {
     const priya = evaluate(ds, PRIYA).find((r) => r.route.id === "de-chancenkarte")!;
-    expect(provenanceHtml(ds, priya, PRIYA)).not.toContain("times out");
+    expect(provenanceHtml({ ds, answers: PRIYA }, priya)).not.toContain("times out");
     for (const { path, text } of builtPages()) expect(text, path).not.toContain("times out");
   });
 });
@@ -311,13 +312,13 @@ describe("P5 — the Anabin link's stray full stop", () => {
     // is the box this case reads.
     const outOfIt: Profile = { ...DENIZ, occupation_it: "no" };
     const result = evaluate(ds, outOfIt).find((r) => r.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml(ds, result, outOfIt);
+    const html = learnBoxHtml({ ds, answers: outOfIt }, result);
     expect(html).toContain("anabin");
     expect(html).toMatch(/<\/a><\/div>$/);
     expect(textOf(html)).not.toMatch(/↗ ?\.$/);
     expect(textOf(html)).not.toMatch(/\.$/);
     // A route with nothing left open has no box.
-    expect(learnBoxHtml(ds, evaluate(ds, DENIZ).find((r) => r.route.id === "de-experienced-worker")!, DENIZ)).toBe("");
+    expect(learnBoxHtml({ ds, answers: DENIZ }, evaluate(ds, DENIZ).find((r) => r.route.id === "de-experienced-worker")!)).toBe("");
   });
 });
 

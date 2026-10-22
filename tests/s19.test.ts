@@ -3,14 +3,17 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  SITUATION_FIELD, deriveBands, evaluate, fieldOptions, isScored, remainingQuestions,
+  SITUATION_FIELD, deriveBands, evaluate, fieldOptions, isScored, phraseAtStartOf, remainingQuestions, scopeWords,
   situationsAsked, type Dataset, type Profile,
 } from "permit-rulebook-data";
+import { esc } from "../src/lib/reason.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { notScoredFor, notScoredMarkHtml, unscoredVerdict } from "../src/lib/situations.js";
 import { precondHtml } from "../src/lib/card.js";
-import { NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, notScoredLine, notScoredQuotedLine } from "../src/lib/copy.js";
+import {
+  NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, countryHeadline, notCheckedLine, notCheckedQuotedLine,
+} from "../src/lib/copy.js";
 import { mastheadFor } from "../src/lib/screen.js";
 import { countryAddresses, countryPage } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
@@ -89,7 +92,7 @@ describe("s19 — the interview knows which situations a destination's scored ro
     expect(Object.keys(marks)).toEqual(["research"]);
     const country = ds.countries.find((c) => c.code === "FR")!;
     const route = country.routes.find((r) => r.id === "fr-talent-chercheur")!;
-    expect(marks.research!.replace(/<[^>]+>/g, "")).toBe(notScoredQuotedLine(country.name, route.name));
+    expect(marks.research!.replace(/<[^>]+>/g, "")).toBe(notCheckedQuotedLine(country.name, route.name));
     expect(marks.research).toContain(`<a href="${url("/france/talent-researcher")}">${READ_IT_HERE}</a>`);
     // The mark sits after its button, never inside it: a link inside a button is not a link.
     expect(html).toMatch(/<button class="opt" data-value="research"[^>]*>[\s\S]*?<\/button><small class="opt-mark"[^>]*data-for="research">/);
@@ -104,10 +107,10 @@ describe("s19 — the interview knows which situations a destination's scored ro
   });
 
   it("the plain line, where no quoted route carries the situation", () => {
-    expect(notScoredLine("France")).toBe("Not scored for France yet.");
-    expect(notScoredMarkHtml({ country: "France" })).toBe("Not scored for France yet.");
-    expect(notScoredQuotedLine("France", "Talent — researcher (chercheur)"))
-      .toBe("Not scored for France yet — Talent — researcher (chercheur) is quoted, not scored: read it here.");
+    expect(notCheckedLine("France")).toBe("Not checked for France yet.");
+    expect(notScoredMarkHtml({ country: "France" })).toBe("Not checked for France yet.");
+    expect(notCheckedQuotedLine("France", "Talent — researcher (chercheur)"))
+      .toBe("Not checked for France yet — Talent — researcher (chercheur) is quoted, not checked: read it here.");
   });
 
   it("escapes the names it prints", () => {
@@ -123,9 +126,9 @@ describe("s19 — the zero-open result through a marked option is a written stat
   it("the headline names the country and the situation, the subline names the route and what the rest need", () => {
     const v = unscoredVerdict(ds, { destination: "fr", situation: "research" });
     expect(v).not.toBeNull();
-    expect(v!.headline).toBe("No scored route in France takes a research hosting agreement.");
+    expect(v!.headline).toBe("No route we check in France takes a research hosting agreement.");
     expect(v!.subline).toBe(
-      "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not scored: "
+      "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
       + "read its rules. The routes below need a job offer or an intra-corporate transfer.",
     );
     expect(v!.door).toEqual({ text: READ_ITS_RULES, href: url("/france/talent-researcher") });
@@ -145,7 +148,7 @@ describe("s19 — the zero-open result through a marked option is a written stat
     expect(m.headline).toBe(v.headline);
     expect(m.subline).toBe(v.subline);
     expect(m.sublineHtml).toBe(
-      `France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not scored: `
+      `France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: `
       + `<a href="${url("/france/talent-researcher")}">read its rules</a>. `
       + "The routes below need a job offer or an intra-corporate transfer.",
     );
@@ -179,7 +182,7 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
     let moved = 0;
     for (const r of evaluate(ds, answers)) {
       if (!isScored(r.route)) continue;
-      const html = precondHtml(ds, r.route, answers);
+      const html = precondHtml({ ds, answers }, r.route);
       const notChecked = html.match(new RegExp(`<div class="precond"><b>${NOT_CHECKED_HEADING}</b>([\\s\\S]*?)</div>`))?.[1] ?? "";
       for (const s of (r.route.statements ?? []).filter((x) => x.kind === "precondition")) {
         if (s.field === undefined || answers[s.field] === undefined) continue;
@@ -194,7 +197,7 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
 
   it("the Spanish researcher card says what was declared, in the s5 words", () => {
     const answers: Profile = { destination: "es", citizenship: "TR", situation: "research", situation_country: "es" };
-    const html = precondHtml(ds, ds.countries.find((c) => c.code === "ES")!.routes.find((r) => r.id === "es-researcher")!, answers);
+    const html = precondHtml({ ds, answers }, ds.countries.find((c) => c.code === "ES")!.routes.find((r) => r.id === "es-researcher")!);
     expect(html).toContain(`Asked in the interview — you declared “I have (or expect) a hosting agreement with a research institution there”:`);
     expect(html).toContain("A hosting agreement — the formal agreement a research institution signs to take you on");
     expect(html).not.toContain(NOT_CHECKED_HEADING);
@@ -202,22 +205,23 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
 
   it("with no reader, and with an unknown answer, nothing is called answered", () => {
     const es = ds.countries.find((c) => c.code === "ES")!.routes.find((r) => r.id === "es-researcher")!;
-    expect(precondHtml(ds, es, {})).toContain(NOT_CHECKED_HEADING);
-    expect(precondHtml(ds, es, {})).not.toContain("you declared");
+    expect(precondHtml({ ds, answers: {} }, es)).toContain(NOT_CHECKED_HEADING);
+    expect(precondHtml({ ds, answers: {} }, es)).not.toContain("you declared");
     // A field answered with the door for "none of these fits" is not declared.
     const nl = ds.countries.find((c) => c.code === "NL")!.routes.find((r) => r.id === "nl-researcher")!;
-    expect(precondHtml(ds, nl, { salary_eur_month: "unknown" })).not.toContain("you declared");
+    expect(precondHtml({ ds, answers: { salary_eur_month: "unknown" } }, nl)).not.toContain("you declared");
   });
 });
 
 describe("s19 — the quoted route, the counts and the data page follow", () => {
-  it("France's page says 5 routes scored, 2 quoted, and the researcher page renders through the quoted path", () => {
+  it("France's page says 7 routes, the checker asks about 5, and the researcher page renders through the quoted path", () => {
     const address = countryAddresses(ds).find((a) => a.country.code === "FR")!;
     const page = countryPage(ds, address);
-    expect(page.html).toMatch(/<h1>[^<]*5 routes scored, 2 quoted/);
+    expect(page.html).toContain(`<h1>${esc(countryHeadline(phraseAtStartOf("FR"), 7, 5))}`);
     const researcher = routePages(ds, "2026-09-16").find((p) => p.path === "/france/talent-researcher");
     expect(researcher).toBeDefined();
-    expect(textOf(researcher!.html)).toContain("quoted and dated · not scored");
+    expect(textOf(researcher!.html))
+      .toContain(scopeWords("rules-quoted-nothing-asked", { stated: 0, noted: 0 }, { reader: "not-answered" }));
     expect(textOf(researcher!.html)).toContain("Avoir une convention d'accueil souscrite");
   });
 
@@ -293,7 +297,7 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
       }
       expect(seen.fr!.marks).toEqual([{
         under: "research",
-        text: "Not scored for France yet — Talent — researcher (chercheur) is quoted, not scored: read it here.",
+        text: "Not checked for France yet — Talent — researcher (chercheur) is quoted, not checked: read it here.",
         href: url("/france/talent-researcher"),
       }]);
       for (const destination of ["de", "es", "nl", "all"]) expect(seen[destination]!.marks, destination).toEqual([]);
@@ -337,14 +341,14 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
       const { france, spain } = seen;
       expect(france!.problems).toEqual([]);
       expect(france!.state).toBe("results");
-      expect(france!.headline).toBe("No scored route in France takes a research hosting agreement.");
+      expect(france!.headline).toBe("No route we check in France takes a research hosting agreement.");
       expect(france!.subline).toBe(
-        "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not scored: "
+        "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
         + "read its rules. The routes below need a job offer or an intra-corporate transfer.",
       );
       expect(france!.doorText).toBe("read its rules");
       expect(france!.door).toBe(url("/france/talent-researcher"));
-      expect(france!.status).toBe("No scored route in France takes a research hosting agreement.");
+      expect(france!.status).toBe("No route we check in France takes a research hosting agreement.");
       expect(france!.headline + france!.subline + france!.main).not.toContain("Nothing open");
       // Then the not-yet list as today.
       expect(france!.heads.some((h) => h.startsWith("Not yet"))).toBe(true);

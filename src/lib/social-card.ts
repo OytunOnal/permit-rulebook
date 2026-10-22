@@ -23,17 +23,16 @@ export interface SocialCardFacts {
   /** The countries the dataset covers, in its own order. */
   countries: string[];
   /**
-   * How many routes it holds, of each kind.
+   * How many routes it holds, and how many of them the checker asks about.
    *
-   * One total let the second kind pass as the first — the card is the first
-   * surface a stranger sees, and "28 routes" under "Which work-permit routes
-   * could fit?" promises twenty-eight answers where five of them are quotes
-   * with no answer in them. `data-page.ts` had already written the rule down;
-   * the card was the one place still breaking it (Standards review,
-   * 2026-09-10).
+   * One total would let the routes the checker does not ask about pass as the
+   * others — the card is the first surface a stranger sees, and "29 routes"
+   * under "Which work-permit routes could fit?" promises twenty-nine answers
+   * where six of them are quotes with no answer in them. The line is the
+   * product's words with the dataset's numbers in it, so the sidecar notices
+   * a change to either.
    */
-  scored: number;
-  quotedOnly: number;
+  routesLine: string;
   /** The newest read date across every value — the stamp's own date. */
   read: string;
   headline: string;
@@ -53,12 +52,13 @@ export const CARD_HEADLINE = "Which work-permit routes could fit?";
  * the site and the suite alike.
  */
 export function socialCardFacts(
-  dataset: Dataset, newestReadDate: string, words: { product: string; tagline: string },
+  dataset: Dataset, newestReadDate: string,
+  words: { product: string; tagline: string; routesLineOf: (total: number, asked: number) => string },
 ): SocialCardFacts {
+  const routes = dataset.countries.flatMap((c) => c.routes);
   return {
     countries: dataset.countries.map((c) => c.name),
-    scored: dataset.countries.flatMap((c) => c.routes).filter(isScored).length,
-    quotedOnly: dataset.countries.flatMap((c) => c.routes).filter((r) => !isScored(r)).length,
+    routesLine: words.routesLineOf(routes.length, routes.filter(isScored).length),
     read: newestReadDate,
     headline: CARD_HEADLINE,
     tagline: words.tagline,
@@ -108,7 +108,8 @@ html, body { margin: 0; padding: 0; }
     <span class="stamps"><span class="mark">PR</span><span class="stamp">Rules read<br>${esc(facts.read)}</span></span>
   </div>
   <div class="foot">
-    <span>${esc(facts.countries.join(" · "))} · ${facts.scored} routes scored${facts.quotedOnly ? ` · ${facts.quotedOnly} quoted` : ""}</span>
+    <span>${esc(facts.countries.join(" · "))}</span>
+    <span>${esc(facts.routesLine)}</span>
     <span>every value with its official sentence · <b>checked daily</b></span>
   </div>
 </div>`;

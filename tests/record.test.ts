@@ -51,6 +51,14 @@ describe("the record survives leaving the page (F2, F10)", () => {
     expect(restore(raw, known)).toEqual({ answers: { destination: "nl" }, history: ["destination"] });
   });
 
+  it("a saved recognition answer that became two options is dropped, so the question is asked again (#157)", () => {
+    // `not_yet` covered both "Not assessed yet" and "Assessed and not
+    // recognised"; a reader who holds it picks again between the two.
+    expect(known.map((q) => q.field)).toContain("recognition_de"); // precondition: the question is still asked
+    const raw = serialize({ destination: "de", recognition_de: "not_yet" }, ["destination", "recognition_de"]);
+    expect(restore(raw, known)).toEqual({ answers: { destination: "de" }, history: ["destination"] });
+  });
+
   it("an answer with no place in the order is dropped too — it could never be shown or edited", () => {
     const raw = JSON.stringify({ version: RECORD_VERSION, answers: { destination: "nl", citizenship: "TR" }, history: ["destination"] });
     expect(restore(raw, known)).toEqual({ answers: { destination: "nl" }, history: ["destination"] });

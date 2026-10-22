@@ -121,7 +121,7 @@ const middleBandOf = (seen: Dataset, field: string): string => {
 };
 const germanyOffer = (seen: Dataset): Profile => ({
   destination: "de", citizenship: "IN", situation: "offer", qualification: "degree", qualification_recent: "no",
-  recognition_de: "not_yet", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
+  recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
   occupation_it: "no", salary_eur_year: middleBandOf(seen, "salary_eur_year"), german: "a1", english: "b2",
   age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 });
@@ -162,7 +162,9 @@ describe("nothing from the dataset reaches the social card's markup (#25)", () =
   it("a country's name with a tag in it is drawn as text", () => {
     const wrecked = JSON.parse(JSON.stringify(ds)) as Dataset;
     wrecked.countries[0]!.name = "<img src=https://example.org/x>";
-    const html = socialCardHtml(socialCardFacts(wrecked, "2026-10-19", { product: "P", tagline: "T" }), "");
+    const html = socialCardHtml(socialCardFacts(wrecked, "2026-10-19", {
+      product: "P", tagline: "T", routesLineOf: (total, asked) => `${total} ${asked}`,
+    }), "");
     expect(html).not.toContain("<img");
     expect(html).toContain("&lt;img");
   });

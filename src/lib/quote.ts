@@ -1,6 +1,8 @@
 // @level presentation
-import { LANGUAGE_NAMES, formatEUR, quoteLanguage } from "permit-rulebook-data";
+import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage } from "permit-rulebook-data";
+import { OFFICIAL_PAGE, consolidatedTextOn, learnLinkWithKind } from "./copy.js";
 import { esc } from "./reason.js";
+import { type Glossary, glossed } from "./gloss.js";
 
 /**
  * How a quote is framed, wherever one is shown.
@@ -28,6 +30,32 @@ export interface QuoteFrame {
 }
 
 export const hostOf = (url: string): string => new URL(url).hostname.replace(/^www\./, "");
+
+/** The label of a link to a source: whose page it opens, by its host's kind. */
+export function linkLabelOf(url: string): string {
+  return hostKindOf(url) === "consolidated-text" ? consolidatedTextOn(hostOf(url)) : OFFICIAL_PAGE;
+}
+
+/**
+ * A learn link's text. Its own label says what the reader does there; where
+ * the page is not the authority's, the label is followed by what the page is,
+ * unless the label already says so.
+ */
+export function learnLinkTextOf(learn: { label: string; url: string }): string {
+  if (hostKindOf(learn.url) === "authority") return learn.label;
+  const kind = linkLabelOf(learn.url);
+  return learn.label.includes(kind) ? learn.label : learnLinkWithKind(learn.label, kind);
+}
+
+/**
+ * A learn link's text on a screen that explains its shorthand once: the label
+ * glossed on the screen's memory (#151, ruling 8), then the page's kind where
+ * it is not the authority's (#158). Every surface that prints a learn link
+ * takes it here, so the two steps run in one order.
+ */
+export function glossedLearnLinkText(learn: { label: string; url: string }, seen: Glossary): string {
+  return learnLinkTextOf({ ...learn, label: glossed(learn.label, seen) });
+}
 
 /**
  * Where the source writes a number differently from the way this page writes
