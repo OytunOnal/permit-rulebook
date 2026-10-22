@@ -9,7 +9,7 @@ import {
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import {
-  EITHER_PATH, SEEK_HINT, WOULD_BE_MET, dailyCheck, orAbove, proseProvenanceCounts, questionCounter,
+  EITHER_PATH, SEEK_HINT, WOULD_BE_MET, dailyCheck, nearestLine, orAbove, proseProvenanceCounts, questionCounter,
 } from "../src/lib/copy.js";
 import { glossSection, glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
@@ -67,10 +67,11 @@ function stepsOffered(answers: Profile): OfferedStep[] {
   });
 }
 
-/** The step the verdict's headline names, where it names one. */
+/** The step the verdict's masthead names, where it names one. */
 function nearestNamed(answers: Profile): string | undefined {
-  const { action } = verdictFor(answers);
-  return action.kind === "compare" ? action.nearest : undefined;
+  const verdict = verdictFor(answers);
+  const { subline } = verdict.action.masthead;
+  return stepsIn(verdict).map((s) => s.title).find((title) => subline.includes(nearestLine(title)));
 }
 
 describe("F1a — the job-search sentence reaches only a reader without an offer", () => {

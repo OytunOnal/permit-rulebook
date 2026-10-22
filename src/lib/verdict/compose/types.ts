@@ -3,16 +3,18 @@ import type { FlowAction, Interview } from "../../screen.js";
 import type { UnscoredTally } from "./unscored.js";
 
 /**
- * The interview as the verdict reads it: the questions answered so far, and
- * the route a route page's link sent the reader from — its id and nothing
- * else of the arrival — or null.
+ * The interview as the verdict reads it: the questions answered so far, which
+ * the subline counts, and the route a route page's link sent the reader
+ * from — its id and nothing else of the arrival — or null.
  */
 export interface InterviewSoFar extends Interview {
   cameFrom: string | null;
 }
 
 /** The two moves of the flow that end on a verdict: a comparison, or a
- * notice that answers the reader outright. */
+ * notice that answers the reader outright. Each carries that screen's whole
+ * masthead — the headline markup, the subline, the subline with its door
+ * where it has one, and the sentence the live region announces. */
 export type VerdictAction = Extract<FlowAction, { kind: "compare" | "answered-outright" }>;
 
 /** A route as its group lists it: its id, and its card's markup. */
@@ -103,10 +105,8 @@ export type VerdictLayout =
 
 /** The whole verdict. */
 export interface Verdict {
-  /** The flow's action: what the masthead says is drawn from it. */
+  /** The flow's action, with the screen's masthead in it. */
   action: VerdictAction;
-  /** The sentence the live region announces. */
-  announced: string;
   /** The clash lines and the notice cards' markup, above everything; on the
    * notice screen, the whole body. */
   notices: string;

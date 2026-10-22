@@ -11,15 +11,16 @@ import { datasetMeta, remainingQuestions } from "permit-rulebook-data";
 // The first question is the same for everyone until an answer is given, so the
 // build draws it — through the very code the module draws every later screen
 // with, never a second copy of the markup (s10, 2026-09-15).
-import { declarationCount, declarationHtml, holdLineHtml, questionCardHtml, renderStandInsOverQuestionOne } from "../lib/question.js";
+// The question screens' masthead is drawn by the same function, server and
+// client alike — a second copy of the intro copy here is how "Start over" left
+// a stale claim on question 1 (product-critique v0.7, B4).
+import {
+  declarationCount, declarationHtml, holdLineHtml, questionCardHtml, questionMastheadOf, renderStandInsOverQuestionOne,
+} from "../lib/question.js";
 // The three things the page must know about the reader before it paints, read
 // in <head>, and the rules that paint the shape the module would have chosen
 // from them (s10, 2026-09-15).
 import { FIRST_PAINT_SCRIPT, FIRST_PAINT_STYLE } from "../lib/first-paint.js";
-// The masthead is one function of which screen is showing, server and client
-// alike — a second copy of the intro copy here is how "Start over" left a
-// stale claim on question 1 (product-critique v0.7, B4).
-import { mastheadFor } from "../lib/screen.js";
 // The seal, the icon links and the pair: one set of elements, four screens
 // (Standards review, 2026-09-08).
 import { MENU_SCRIPT, iconLinks, siteFooter, siteHeader, stamps } from "../lib/identity.js";
@@ -37,7 +38,7 @@ import { analyticsBeacon, headMeta } from "../lib/site.js";
 // Boundary validation: an invalid dataset must kill the build, loudly.
 const dataset = assertValidDataset(rawDataset);
 const meta = datasetMeta(dataset);
-const intro = mastheadFor({ kind: "question", started: false });
+const intro = questionMastheadOf({ kind: "question", started: false });
 /**
  * The masthead's other standing form: the promise shortens once it has been
  * read, and a reader with a record read it last time. Both are painted, and
@@ -45,7 +46,7 @@ const intro = mastheadFor({ kind: "question", started: false });
  * used to swap the text 700 ms in, which pulled the whole interview up under
  * them (s10).
  */
-const started = mastheadFor({ kind: "question", started: true });
+const started = questionMastheadOf({ kind: "question", started: true });
 /**
  * The screen the page paints with, before any script runs: question one, with
  * nothing on the record. Every reader meets it, and the ones whose own screen
@@ -162,7 +163,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       activeOption, composeNoMatchLine, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState,
     } from "../lib/listbox.js";
     import {
-      backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, mastheadFor, readEntry,
+      backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, readEntry,
       recordScreen as recordEntry, screenAfter, screenAt, type FlowAction,
     } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
@@ -170,7 +171,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The question screen and the declaration panel: the same renderer the
     // build drew the first paint with, so the module's first render finds the
     // screen it would have drawn already on the page (s10).
-    import { declarationCount, declarationHtml, hasClasses, isLongList, questionCardHtml, setAsideHtml } from "../lib/question.js";
+    import {
+      declarationCount, declarationHtml, hasClasses, isLongList, questionCardHtml, questionMastheadOf, setAsideHtml,
+    } from "../lib/question.js";
     // The width the ledger stops being a disclosure at, said once, and read
     // here and by the script that runs before the first paint (s10); and the
     // one step that takes the first paint's covers off.
@@ -553,10 +556,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * into the interview ("Start over", an edit, browser Back) can leave a
      * claim about a comparison standing (product-critique v0.7, B4). The
      * transitions themselves live in `screen.ts`, where a property test walks
-     * them in every order (review H1). */
+     * them in every order (review H1). A question screen's masthead is the
+     * question card's; a verdict screen carries the one the verdict composed. */
     function advance(action: FlowAction) {
       const screen = screenAfter(action, { answered: asked.length });
-      const m = mastheadFor(screen);
+      const m = screen.kind === "question" ? questionMastheadOf(screen) : screen.masthead;
       draw(headline, m.headline);
       // The build painted both of the masthead's standing promises and an
       // inline script in <head> seeded which one shows before the first paint,
@@ -573,9 +577,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         return;
       }
       // The one subline that carries a link — the s19 written state's door to
-      // the quoted route — is drawn as the markup the masthead composed; every
-      // other subline is written as text, as it always was.
-      if (m.sublineHtml !== undefined) draw(subline, m.sublineHtml);
+      // the quoted route — is drawn as the markup the verdict composed; every
+      // other subline is written as text.
+      const sublineWithDoor = screen.kind === "question" ? undefined : screen.masthead.sublineHtml;
+      if (sublineWithDoor !== undefined) draw(subline, sublineWithDoor);
       else say(subline, m.subline);
     }
 
@@ -932,14 +937,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // arrival line stands over a comparison only.
       const answeredOutright = verdict.layout.kind === "notice";
       main.innerHTML = (answeredOutright ? "" : arrivalLine()) + verdictHtml(verdict);
-      // The notice screen IS the result for this reader: one entry, like any
-      // other screen they can go back from, written before it is announced.
-      if (answeredOutright) recordScreen(null, true);
-      announce(verdict.announced);
+      announce(verdict.action.masthead.announced);
       landOnVerdict(wasResult);
-      // The several-country verdict writes its entry once it is landed on; the
-      // one-country verdict writes none (#177).
-      if (verdict.layout.kind === "countries") recordScreen(null, true);
+      // Every verdict, a notice that answers outright included, is one entry
+      // on top of the last question's, so Back lands on that question. It is
+      // written last, once the screen is drawn and landed on, as a question
+      // screen's is.
+      recordScreen(null, true);
     }
 
     /**

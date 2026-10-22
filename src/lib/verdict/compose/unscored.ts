@@ -8,7 +8,8 @@ import {
 } from "../../copy.js";
 import { esc, escAttr } from "../../reason.js";
 import { url } from "../../site.js";
-import { SITUATION_COUNTRY_FIELD, notScoredFor, type UnscoredVerdict } from "../../situations.js";
+import type { UnscoredVerdict } from "../../screen.js";
+import { SITUATION_COUNTRY_FIELD, notScoredFor } from "../../situations.js";
 
 /**
  * What the verdict says where the declared situation is one no scored route

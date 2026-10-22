@@ -3,43 +3,12 @@ import type { RouteResult } from "permit-rulebook-data";
 import {
   NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, shortByLine, stepsWouldChangeHeadline, unsettledHeadline,
 } from "../../copy.js";
-import type { Explore } from "../../screen.js";
-import type { UnscoredVerdict } from "../../situations.js";
-import { nearestStep } from "./steps.js";
 import { gapAmount, type VerdictScreen } from "./cards.js";
+import { comparedMasthead, type Explore, type Headline } from "./masthead.js";
 import type { Compared } from "./reading.js";
+import { nearestStep } from "./steps.js";
 import type { VerdictAction } from "./types.js";
 import { unscoredVerdict } from "./unscored.js";
-
-/** What the masthead says of a comparison: the verdict in words, the words
- * after it the headline stresses, and the next step it names. */
-interface Headline {
-  headline: string;
-  emphasis?: string;
-  nearest?: string;
-  explore?: Explore;
-  unscored?: UnscoredVerdict;
-}
-
-/** The flow's action, and the sentence the live region announces. */
-export interface Saying {
-  action: VerdictAction;
-  announced: string;
-}
-
-/**
- * The sentence is written once, in words; the emphasis is markup the
- * masthead lays over it, so the announced line is the sentence itself rather
- * than a strip of its own HTML (Standards review, 2026-09-08). A verdict
- * arriving with no live region told a screen-reader user nothing happened
- * (critique F16).
- */
-function said(routes: number, h: Headline): Saying {
-  return {
-    action: { kind: "compare", routes, ...h },
-    announced: h.emphasis ? `${h.headline} ${h.emphasis}` : h.headline,
-  };
-}
 
 /** How near the nearest route within reach is, or nothing. */
 function nearNote(screen: VerdictScreen, near: RouteResult[]): string {
@@ -82,10 +51,15 @@ function openHeadline(screen: VerdictScreen, c: Compared): Headline {
  * offers is taken by a scored route in some country"); the day that goes
  * red, it needs a written state of its own, here.
  */
-export function comparedSaying(screen: VerdictScreen, c: Compared): Saying {
-  const routes = c.reading.results.length;
+function comparedHeadline(screen: VerdictScreen, c: Compared): Headline {
   const unscored = c.zeroOpen ? unscoredVerdict(screen.ds, screen.answers) : null;
-  if (unscored) return said(routes, { headline: unscored.headline, unscored });
-  if (c.zeroOpen) return said(routes, zeroOpenHeadline(c));
-  return said(routes, openHeadline(screen, c));
+  if (unscored) return { headline: unscored.headline, unscored };
+  if (c.zeroOpen) return zeroOpenHeadline(c);
+  return openHeadline(screen, c);
+}
+
+/** The flow's move to a comparison, carrying its whole masthead: the subline
+ * counts the reader's answers and the routes checked. */
+export function comparedAction(screen: VerdictScreen, c: Compared, answered: number): VerdictAction {
+  return { kind: "compare", masthead: comparedMasthead(comparedHeadline(screen, c), answered, c.reading.results.length) };
 }

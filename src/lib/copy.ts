@@ -864,6 +864,26 @@ export const territoryLine = (
   `${territory.atStart} is not on this list: people from ${territory.inSentence} hold a passport of ${countryPhrase}. Choose ${country}.`;
 
 /**
+ * The question screens' masthead (`lib/question.ts`): the standing tagline and
+ * the promise, before anything has been compared. Present tense throughout,
+ * and in the passive (human, 2026-09-16): the claim — a comparison by code,
+ * not a judgement by a person — without "Code" as a sentence's subject.
+ *
+ * `<em>`, not `<b>`, in the headline: this is the standing tagline, and it is
+ * a line of its own under the question (human, 2026-09-08). `<b>` stays for
+ * the inline emphasis a result headline puts on a number, which must not
+ * break the line.
+ */
+export const INTRO_HEADLINE = "Which work-permit routes could fit? <em>A few quick questions.</em>";
+export const INTRO_SUBLINE =
+  "Your answers are compared against published rules — every value shows its official quote and the " +
+  "date we read it from the source. Your answers stay on this device. At the end: which routes look open, " +
+  "how close the near-misses are, and which single step would unlock more.";
+/** Once the interview is under way the promise has been read; one line is enough. */
+export const SHORT_SUBLINE =
+  "Every value at the end shows its official quote and the date we read it. Your answers stay on this device.";
+
+/**
  * The verdict's words (`lib/verdict/`): the badges, the card's lines, the
  * headlines, the summary line, the section headings, the not-yet folds and
  * the steps. The numbers, names and amounts are the verdict's; these are the
@@ -898,6 +918,23 @@ export const routesOpenHeadline = (open: number, countries: number): string =>
   `${open} route${open === 1 ? "" : "s"} look${open === 1 ? "s" : ""} open${countries > 1 ? ` across ${countries} countries` : ""}.`;
 export const shortByLine = (amount: string): string => `One is short by ${amount}.`;
 export const pointsAwayLine = (points: number): string => `One is ${points} point${points === 1 ? "" : "s"} away.`;
+
+/**
+ * A verdict's subline. What the results compared, counted in routes — the
+ * thing the reader came for — and in the reader's verb, "checked" (#151), in
+ * the passive as the intro is: the count is the subject, so the verb agrees
+ * with it. Then the next step it names, or the nothing-open screen's way
+ * forward, which points at country sections only where there are some (F7).
+ */
+export const answersCheckedLine = (answered: number, routes: number): string =>
+  `Your ${answered} answer${answered === 1 ? "" : "s"} ${answered === 1 ? "was" : "were"} checked against the `
+  + `published rules of ${routes} route${routes === 1 ? "" : "s"}.`;
+export const EVERY_VALUE_BELOW_QUOTED = "Every value below shows its official quote and the date we read it from the source.";
+export const nearestLine = (step: string): string => `Nearest: ${step}.`;
+export const EXPLORE_ONE_COUNTRY = "Change an answer to explore — every route below says what it asks for, and quotes it.";
+export const EXPLORE_SEVERAL_COUNTRIES = "Change an answer to explore — or see each country's reasons below.";
+/** The notice screen's subline. */
+export const NOTHING_TO_COMPARE = "Nothing to compare: the published rule below answers your situation directly.";
 
 /** The summary line under the notices, and a country's summary row. */
 export const SUMMARY_LABEL = "Summary";

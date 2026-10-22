@@ -95,23 +95,3 @@ export function notScoredMarkHtml(mark: NotScoredMark): string {
   const door = `<a href="${escAttr(url(mark.route.path))}">${esc(READ_IT_HERE)}</a>`;
   return line.replace(esc(READ_IT_HERE), door);
 }
-
-/**
- * The written state a zero-open result reads where the declared situation is
- * one no scored route in the declared country takes (s19): its headline, the
- * subline and the door in it, and the country whose section leads. The
- * verdict composes it.
- */
-export interface UnscoredVerdict {
-  headline: string;
-  /** The whole subline, as text — what the live region announces. */
-  subline: string;
-  /** The words of the subline that are the link, and where it goes. */
-  door?: { text: string; href: string };
-  /**
-   * The destination answer of the country the reader named at question 3, on
-   * the four-country path only: the country whose section leads the result,
-   * open (s26). The direct path has no list of countries to lead.
-   */
-  lead?: string;
-}

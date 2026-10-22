@@ -147,6 +147,7 @@ export const GOTO_SETTLE_MS = 400;
  *   pressEnter()       Enter pressed and released
  *   type(text)         text typed into the focused field
  *   back()             the browser's own Back
+ *   forward()          the browser's own Forward
  *   screenshot()       the screen as a PNG
  *   problems()         everything the page has thrown or logged as an error
  *   allProblems()      the same, the traffic counter's local noise included
@@ -354,6 +355,12 @@ export async function withBrowser(run, {
         const { currentIndex, entries } = await send("Page.getNavigationHistory", {}, sessionId);
         if (currentIndex < 1) throw new Error("the browser holds no entry behind this one");
         await send("Page.navigateToHistoryEntry", { entryId: entries[currentIndex - 1].id }, sessionId);
+      },
+      /** The browser's own Forward, the mirror of `back`. */
+      async forward() {
+        const { currentIndex, entries } = await send("Page.getNavigationHistory", {}, sessionId);
+        if (currentIndex >= entries.length - 1) throw new Error("the browser holds no entry ahead of this one");
+        await send("Page.navigateToHistoryEntry", { entryId: entries[currentIndex + 1].id }, sessionId);
       },
       /** The screen as a PNG, for a record a reader can look at. */
       async screenshot({ fullPage = false } = {}) {

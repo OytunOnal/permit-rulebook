@@ -7,7 +7,8 @@ import {
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { SITUATION_COUNTRY_FIELD, type UnscoredVerdict } from "../src/lib/situations.js";
+import { SITUATION_COUNTRY_FIELD } from "../src/lib/situations.js";
+import type { UnscoredVerdict } from "../src/lib/screen.js";
 import { READ_ITS_RULES, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 import { verdictFor } from "./verdict-cards.js";
@@ -23,10 +24,23 @@ const fourCountry = (situation: string, country: string): Profile =>
 const direct = (situation: string, country: string): Profile =>
   ({ [DESTINATION_FIELD]: country, [SITUATION_FIELD]: situation });
 
-/** The written state the verdict for these answers reads, or null where it reads none. */
+/**
+ * The written state the verdict for these answers reads, or null where it
+ * reads none: its masthead is the only one whose subline is drawn in markup,
+ * for the door in it. On the four-country layout the country it is about
+ * leads the sections.
+ */
 function unscoredVerdict(answers: Profile): UnscoredVerdict | null {
-  const { action } = verdictFor(answers);
-  return (action.kind === "compare" ? action.unscored : undefined) ?? null;
+  const { action, layout } = verdictFor(answers);
+  const m = action.masthead;
+  if (m.sublineHtml === undefined) return null;
+  const door = /<a href="([^"]*)">([^<]*)<\/a>/.exec(m.sublineHtml);
+  const first = layout.kind === "countries" ? ds.countries.find((c) => c.name === layout.sections[0]!.name) : undefined;
+  return {
+    headline: m.announced, subline: m.subline,
+    ...(door ? { door: { text: door[2]!, href: door[1]! } } : {}),
+    ...(first ? { lead: first.code.toLowerCase() } : {}),
+  };
 }
 
 /** The subline in its two sentences: the route line, with the door, and the rest. */

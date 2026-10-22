@@ -9,11 +9,12 @@ import {
 import { esc } from "../src/lib/reason.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { notScoredFor, notScoredMarkHtml, type UnscoredVerdict } from "../src/lib/situations.js";
+import { notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
+import type { UnscoredVerdict } from "../src/lib/screen.js";
 import {
   NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, countryHeadline, notCheckedLine, notCheckedQuotedLine,
 } from "../src/lib/copy.js";
-import { mastheadFor } from "../src/lib/screen.js";
+import { verdictOf } from "../src/lib/verdict/index.js";
 import { countryAddresses, countryPage } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { routePages } from "../src/lib/route-page.js";
@@ -27,10 +28,16 @@ const textOf = (html: string): string =>
   html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, "\"")
     .replace(/\s+/g, " ").trim();
 
-/** The written state the verdict for these answers reads, where it reads one. */
-function unscoredOf(answers: Profile): UnscoredVerdict | undefined {
-  const { action } = verdictFor(answers);
-  return action.kind === "compare" ? action.unscored : undefined;
+/**
+ * The written state the verdict for these answers reads, where it reads one:
+ * its masthead is the only one whose subline is drawn in markup, for the door
+ * in it.
+ */
+function unscoredOf(answers: Profile): Pick<UnscoredVerdict, "headline" | "subline" | "door"> | undefined {
+  const m = verdictFor(answers).action.masthead;
+  if (m.sublineHtml === undefined) return undefined;
+  const door = /<a href="([^"]*)">([^<]*)<\/a>/.exec(m.sublineHtml);
+  return { headline: m.announced, subline: m.subline, ...(door ? { door: { text: door[2]!, href: door[1]! } } : {}) };
 }
 
 /** What else a route's card on the verdict for these answers says is required. */
@@ -153,17 +160,23 @@ describe("s19 — the zero-open result through a marked option is a written stat
   });
 
   it("the masthead carries it with the door as the only markup, and announces the words", () => {
-    const v = unscoredOf({ destination: "fr", situation: "research" })!;
-    const m = mastheadFor({ kind: "results", answered: 2, routes: 5, headline: v.headline, unscored: v });
-    expect(m.headline).toBe(v.headline);
-    expect(m.subline).toBe(v.subline);
+    const answers: Profile = { destination: "fr", situation: "research" };
+    const m = verdictOf(ds, answers, { cameFrom: null, answered: 2 }).action.masthead;
+    const headline = "No route we check in France takes a research hosting agreement.";
+    expect(m.headline).toBe(headline);
+    expect(m.subline).toBe(
+      "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
+      + "read its rules. The routes below need a job offer or an intra-corporate transfer.",
+    );
+    expect(m.announced).toBe(headline);
     expect(m.sublineHtml).toBe(
       `France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: `
       + `<a href="${url("/france/talent-researcher")}">read its rules</a>. `
       + "The routes below need a job offer or an intra-corporate transfer.",
     );
     // Without it, the subline is text and text only, as it always was.
-    expect(mastheadFor({ kind: "results", answered: 2, routes: 5, headline: "x" }).sublineHtml).toBeUndefined();
+    const spain: Profile = { destination: "es", situation: "research" };
+    expect(verdictOf(ds, spain, { cameFrom: null, answered: 2 }).action.masthead.sublineHtml).toBeUndefined();
   });
 });
 
