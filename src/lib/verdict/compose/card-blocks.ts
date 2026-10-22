@@ -80,7 +80,7 @@ const bandOf = (ds: Dataset, field: string, answers: Profile) =>
  * here, they disagreed — a reader with a good salary and too little in the bank
  * was told her salary was short (isolated v1-gate critique, 2026-09-08).
  */
-const measuredCriterionOf =(ds: Dataset, r: RouteResult, answers: Profile): Gte | undefined =>
+const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profile): Gte | undefined =>
   gapCriterionOf(ds, r, answers) as Gte | undefined;
 
 /**
