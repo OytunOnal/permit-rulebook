@@ -45,6 +45,7 @@
     "src/lib/verdict/compose/cards.ts",
     "src/lib/verdict/compose/headline.ts",
     "src/lib/verdict/compose/html.ts",
+    "src/lib/verdict/compose/masthead.ts",
     "src/lib/verdict/compose/not-yet.ts",
     "src/lib/verdict/compose/reading.ts",
     "src/lib/verdict/compose/sections.ts",
@@ -94,7 +95,7 @@
   "src/lib/record.ts": "application",
   "src/lib/route-page.ts": "presentation",
   "src/lib/scope.ts": "application presentation",
-  "src/lib/screen.ts": "application presentation",
+  "src/lib/screen.ts": "application",
   "src/lib/site.ts": "presentation",
   "src/lib/sitemap.ts": "presentation",
   "src/lib/situations.ts": "presentation",
@@ -104,6 +105,7 @@
   "src/lib/verdict/compose/cards.ts": "presentation",
   "src/lib/verdict/compose/headline.ts": "presentation",
   "src/lib/verdict/compose/html.ts": "presentation",
+  "src/lib/verdict/compose/masthead.ts": "presentation",
   "src/lib/verdict/compose/not-yet.ts": "presentation",
   "src/lib/verdict/compose/reading.ts": "presentation",
   "src/lib/verdict/compose/sections.ts": "presentation",
@@ -536,6 +538,11 @@
   },
   {
    "from": "src/lib/question.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/question.ts",
    "to": "src/lib/situations.ts",
    "kind": "dependency"
   },
@@ -615,21 +622,6 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/screen.ts",
-   "to": "src/lib/copy.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/screen.ts",
-   "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/screen.ts",
-   "to": "src/lib/situations.ts",
-   "kind": "type-only"
-  },
-  {
    "from": "src/lib/site.ts",
    "to": "src/lib/copy.ts",
    "kind": "dependency"
@@ -673,6 +665,11 @@
    "from": "src/lib/situations.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/situations.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/situations.ts",
@@ -751,11 +748,6 @@
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/screen.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/situations.ts",
    "kind": "dependency"
   },
@@ -767,6 +759,11 @@
   {
    "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/masthead.ts",
    "kind": "dependency"
   },
   {
@@ -802,6 +799,21 @@
   {
    "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/masthead.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/masthead.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/masthead.ts",
+   "to": "src/lib/screen.ts",
    "kind": "type-only"
   },
   {
@@ -886,11 +898,6 @@
   },
   {
    "from": "src/lib/verdict/index.ts",
-   "to": "src/lib/copy.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/index.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -912,6 +919,11 @@
   {
    "from": "src/lib/verdict/index.ts",
    "to": "src/lib/verdict/compose/html.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/masthead.ts",
    "kind": "dependency"
   },
   {
@@ -1327,11 +1339,6 @@
   {
    "from": "tests/checked-words.test.ts",
    "to": "src/lib/data-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/checked-words.test.ts",
-   "to": "src/lib/screen.ts",
    "kind": "dependency"
   },
   {
@@ -2106,7 +2113,7 @@
   },
   {
    "from": "tests/s17.test.ts",
-   "to": "src/lib/screen.ts",
+   "to": "src/lib/copy.ts",
    "kind": "dependency"
   },
   {
@@ -2161,17 +2168,17 @@
   },
   {
    "from": "tests/s19.test.ts",
-   "to": "src/lib/screen.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s19.test.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s19.test.ts",
    "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/verdict/index.ts",
    "kind": "dependency"
   },
   {
@@ -2378,6 +2385,11 @@
    "from": "tests/s26.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/s26.test.ts",
@@ -2726,12 +2738,32 @@
   },
   {
    "from": "tests/screen.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
    "to": "src/lib/screen.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/screen.test.ts",
    "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -4373,6 +4405,21 @@
     "exported": true
    },
    {
+    "name": "INTRO_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "INTRO_SUBLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SHORT_SUBLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "STATUS_LABEL",
     "kind": "const",
     "exported": true
@@ -4465,6 +4512,36 @@
    {
     "name": "pointsAwayLine",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "answersCheckedLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "EVERY_VALUE_BELOW_QUOTED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "nearestLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "EXPLORE_ONE_COUNTRY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "EXPLORE_SEVERAL_COUNTRIES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOTHING_TO_COMPARE",
+    "kind": "const",
     "exported": true
    },
    {
@@ -5052,6 +5129,11 @@
   ],
   "src/lib/question.ts": [
    {
+    "name": "questionMastheadOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "LONG_LIST_ABOVE",
     "kind": "const",
     "exported": true
@@ -5574,48 +5656,18 @@
     "exported": true
    },
    {
-    "name": "Explore",
-    "kind": "type",
-    "exported": true
-   },
-   {
     "name": "Masthead",
     "kind": "type",
     "exported": true
    },
    {
-    "name": "INTRO_SUBLINE",
-    "kind": "const",
+    "name": "VerdictMasthead",
+    "kind": "type",
     "exported": true
    },
    {
-    "name": "SHORT_SUBLINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "INTRO_HEADLINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "EXPLORE_SENTENCE",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "answersCheckedLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "headlineHtml",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "mastheadFor",
-    "kind": "fn",
+    "name": "UnscoredVerdict",
+    "kind": "type",
     "exported": true
    },
    {
@@ -5630,11 +5682,6 @@
    },
    {
     "name": "screenAfter",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "claimsAComparison",
     "kind": "fn",
     "exported": true
    },
@@ -5927,11 +5974,6 @@
    {
     "name": "unscoredTally",
     "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "UnscoredVerdict",
-    "kind": "type",
     "exported": true
    },
    {
@@ -6275,5 +6317,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "c8b4513dca103cc87d369c3d7554440d12621ae03071352582a096f72471ca38"
+ "digest": "4c2b6e038f02aee0c3796ac9c963f0cce6c110c8876a56f36da78399376d95d0"
 }
