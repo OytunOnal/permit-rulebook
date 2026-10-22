@@ -88,7 +88,9 @@ click on the tracker link. Answers never leave the device.
   question whose options are rungs of one amount is marked `ordered`; a
   criterion with paths and each path carry a label; a question names a route
   only through a `{route:<id>}` slot, filled with the route's `what_it_is`
-  (#151). Beside it `data/countries.json` (199 passport issuers, labels,
+  (#151). A path answer someone else arranges (a transfer, a hosting
+  agreement) is marked `is_arranged`, and only the path question may carry
+  the mark (schema 0.8.3, #167). Beside it `data/countries.json` (199 passport issuers, labels,
   aliases, the article a name takes; `classes.eu_eea_ch` is a rule with four
   sourced legs; and 11 territories, none a row, each with the passport its
   people hold and an official sentence that says so) and
@@ -110,7 +112,7 @@ click on the tracker link. Answers never leave the device.
   learn link, on an https host on the authority list or the
   consolidated-text list · labels on paths · words on an ordered range ·
   route names only in slots · each territory's passport on the list with an
-  https source (#151). A failing gate fails the build downstream.
+  https source (#151) · the arranged mark only on the path question (#167). A failing gate fails the build downstream.
   The data repository runs them on every push to master, every pull request
   and after every watch run (`check.yml`); a red check after a watch run keeps
   `check failed on master`, and the next green one closes it (#117).
@@ -128,7 +130,10 @@ click on the tracker link. Answers never leave the device.
   rules. `reckonAskingRoutes` names, from the same walk as the asking rule,
   the routes a question is asked for and the open ones; `questions-do-work`
   checks, per destination and per rung, that an answer moves some route's
-  decision (#133).
+  decision (#133). `isStepGated` decides which routes wait on a step;
+  `routesAnOfferFrees` counts, per country, the routes a job offer would free
+  for a reader with none; a gap is said once, exact and with its period, and a
+  band open at the bottom names the line it is under (#167).
 - **Tokens** — `tokens.css` (the design system) and `identity.css` (the
   identity pair: the tilted PR stamp over the read-date stamp; one source,
   inlined by the route page, linked by the interview).
@@ -167,9 +172,17 @@ click on the tracker link. Answers never leave the device.
   date, and the stamp, the country cards and the liveness line read one set,
   the quotes the page prints. A site-wide page (/data/, /feedback/, the 404,
   the sitemap) dates the whole dataset, as the interview does (#76).
-- **Interview** — questions by information gain, then results: grouped
-  verdicts, the rail, statements, unlock steps, learn links; runs entirely in
-  the browser. Its first paint is one module, `src/lib/first-paint.ts` (#66).
+- **Interview** — questions by information gain, then the verdict; runs
+  entirely in the browser. The verdict is one deep module, `src/lib/verdict/`
+  (#167): `verdictOf` decides everything the results screen says (the
+  headline and masthead, the groups and their order, each card with its rail
+  and gap, the steps, the offer line, the arranged line, the folds) and
+  `verdictHtml` draws it, with its own stylesheet; the page only paints,
+  announces and records one history entry per verdict. Steps are only what
+  the reader can do; what a job offer would open and what someone else
+  arranges are said beside them, never counted as steps.
+  Every word a screen prints lives in `src/lib/copy/`, one file per screen or
+  part, read by name. Its first paint is one module, `src/lib/first-paint.ts` (#66).
   An inline head script reads the record, the link and the width before
   anything paints, and writes a cover and the first-paint seeds on `<html>`.
   The stylesheet it renders hides what each cover hides. The page takes the
