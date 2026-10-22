@@ -51,25 +51,6 @@ export interface VerdictMasthead extends Masthead {
 }
 
 /**
- * The written state a zero-open result reads when the declared situation is
- * marked for the declared destination (s19): its headline, its subline with
- * the one door in it, and the country whose section leads.
- */
-export interface UnscoredVerdict {
-  headline: string;
-  /** The whole subline, as text — what the live region announces. */
-  subline: string;
-  /** The words of the subline that are the link, and where it goes. */
-  door?: { text: string; href: string };
-  /**
-   * The destination answer of the country the reader named at question 3, on
-   * the four-country path only: the country whose section leads the result,
-   * open (s26). The direct path has no list of countries to lead.
-   */
-  lead?: string;
-}
-
-/**
  * Every move the page can make between screens. B4 was a wiring defect rather
  * than a rendering one — "Start over" cleared the answers and left the claim
  * about them standing — so the transitions live here, where a property test

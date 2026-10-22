@@ -8,7 +8,6 @@ import {
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { SITUATION_COUNTRY_FIELD } from "../src/lib/situations.js";
-import type { UnscoredVerdict } from "../src/lib/screen.js";
 import { NOTHING_OPEN_HEADLINE, READ_ITS_RULES, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 import type { CountrySection, Tally, Verdict, VerdictGroup } from "../src/lib/verdict/index.js";
@@ -25,13 +24,23 @@ const fourCountry = (situation: string, country: string): Profile =>
 const direct = (situation: string, country: string): Profile =>
   ({ [DESTINATION_FIELD]: country, [SITUATION_FIELD]: situation });
 
+/** The written state as a reader meets it: the headline, the subline as
+ * text, the words of the subline that are its door, and the country whose
+ * section leads. */
+interface WrittenState {
+  headline: string;
+  subline: string;
+  door?: { text: string; href: string };
+  lead?: string;
+}
+
 /**
  * The written state the verdict for these answers reads, or null where it
  * reads none: its masthead is the only one whose subline is drawn in markup,
  * for the door in it. On the four-country layout the country it is about
  * leads the sections.
  */
-function unscoredVerdict(answers: Profile): UnscoredVerdict | null {
+function unscoredVerdict(answers: Profile): WrittenState | null {
   const { action, layout } = verdictFor(answers);
   const m = action.masthead;
   if (m.sublineHtml === undefined) return null;
@@ -45,7 +54,7 @@ function unscoredVerdict(answers: Profile): UnscoredVerdict | null {
 }
 
 /** The subline in its two sentences: the route line, with the door, and the rest. */
-const sentences = (v: UnscoredVerdict): { route: string; rest: string } => {
+const sentences = (v: WrittenState): { route: string; rest: string } => {
   const cut = v.subline.indexOf(`${READ_ITS_RULES}. `);
   if (cut < 0) return { route: "", rest: v.subline };
   const end = cut + READ_ITS_RULES.length + 1;

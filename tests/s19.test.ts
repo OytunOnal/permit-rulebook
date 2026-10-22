@@ -10,7 +10,6 @@ import { esc } from "../src/lib/reason.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
-import type { UnscoredVerdict } from "../src/lib/screen.js";
 import {
   NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, STATUS_LABEL, countryHeadline, notCheckedLine, notCheckedQuotedLine,
 } from "../src/lib/copy.js";
@@ -30,12 +29,20 @@ const textOf = (html: string): string =>
   html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, "\"")
     .replace(/\s+/g, " ").trim();
 
+/** The written state as a reader meets it: the headline, the subline as
+ * text, and the words of the subline that are its door, with where it goes. */
+interface WrittenState {
+  headline: string;
+  subline: string;
+  door?: { text: string; href: string };
+}
+
 /**
  * The written state the verdict for these answers reads, where it reads one:
  * its masthead is the only one whose subline is drawn in markup, for the door
  * in it.
  */
-function unscoredOf(answers: Profile): Pick<UnscoredVerdict, "headline" | "subline" | "door"> | undefined {
+function unscoredOf(answers: Profile): WrittenState | undefined {
   const m = verdictFor(answers).action.masthead;
   if (m.sublineHtml === undefined) return undefined;
   const door = /<a href="([^"]*)">([^<]*)<\/a>/.exec(m.sublineHtml);

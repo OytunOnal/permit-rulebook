@@ -4,7 +4,8 @@ import {
   nearestLine, noticeHeadline,
 } from "../../copy.js";
 import { esc, escAttr } from "../../reason.js";
-import type { UnscoredVerdict, VerdictMasthead } from "../../screen.js";
+import type { VerdictMasthead } from "../../screen.js";
+import type { UnscoredVerdict } from "./unscored.js";
 
 /** How many countries the results screen is showing. */
 export type Explore = "one-country" | "several-countries";

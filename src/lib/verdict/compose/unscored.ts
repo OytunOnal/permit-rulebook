@@ -8,7 +8,6 @@ import {
 } from "../../copy.js";
 import { esc, escAttr } from "../../reason.js";
 import { url } from "../../site.js";
-import type { UnscoredVerdict } from "../../screen.js";
 import { SITUATION_COUNTRY_FIELD, notScoredFor } from "../../situations.js";
 
 /**
@@ -56,8 +55,26 @@ export function unscoredTally(ds: Dataset, country: Country, situation: string |
 
 /**
  * The written state a zero-open result reads when the declared situation is
- * marked for the declared destination — in place of "Nothing open", never in
- * addition to it (s19, point 3).
+ * marked for the declared destination (s19): its headline, its subline with
+ * the one door in it, and the country whose section leads.
+ */
+export interface UnscoredVerdict {
+  headline: string;
+  /** The whole subline, as text — what the live region announces. */
+  subline: string;
+  /** The words of the subline that are the link, and where it goes. */
+  door?: { text: string; href: string };
+  /**
+   * The destination answer of the country the reader named at question 3, on
+   * the four-country path only: the country whose section leads the result,
+   * open (s26). The direct path has no list of countries to lead.
+   */
+  lead?: string;
+}
+
+/**
+ * The written state itself, in place of "Nothing open", never in addition to
+ * it (s19, point 3).
  *
  * `steps` is what the country's scored routes do take: the situations the
  * engine says they ask, less the fallback, in the option's short words and
