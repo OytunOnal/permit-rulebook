@@ -42,14 +42,18 @@
     }
    ],
    "files": [
+    "src/lib/verdict/compose/card-blocks.ts",
     "src/lib/verdict/compose/cards.ts",
     "src/lib/verdict/compose/headline.ts",
     "src/lib/verdict/compose/html.ts",
     "src/lib/verdict/compose/not-yet.ts",
     "src/lib/verdict/compose/reading.ts",
     "src/lib/verdict/compose/sections.ts",
+    "src/lib/verdict/compose/steps.ts",
     "src/lib/verdict/compose/types.ts",
-    "src/lib/verdict/index.ts"
+    "src/lib/verdict/compose/unscored.ts",
+    "src/lib/verdict/index.ts",
+    "src/lib/verdict/verdict.css"
    ]
   }
  ],
@@ -74,7 +78,6 @@
   "scripts/shot.mjs": "infrastructure main",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure main",
-  "src/lib/card.ts": "presentation",
   "src/lib/clipboard.ts": "presentation",
   "src/lib/copy.ts": "presentation",
   "src/lib/countries.ts": "presentation",
@@ -100,14 +103,16 @@
   "src/lib/situations.ts": "presentation",
   "src/lib/slug.ts": "presentation",
   "src/lib/social-card.ts": "presentation",
-  "src/lib/steps.ts": "presentation",
+  "src/lib/verdict/compose/card-blocks.ts": "presentation",
   "src/lib/verdict/compose/cards.ts": "presentation",
   "src/lib/verdict/compose/headline.ts": "presentation",
   "src/lib/verdict/compose/html.ts": "presentation",
   "src/lib/verdict/compose/not-yet.ts": "presentation",
   "src/lib/verdict/compose/reading.ts": "presentation",
   "src/lib/verdict/compose/sections.ts": "presentation",
+  "src/lib/verdict/compose/steps.ts": "presentation",
   "src/lib/verdict/compose/types.ts": "presentation",
+  "src/lib/verdict/compose/unscored.ts": "presentation",
   "src/lib/verdict/index.ts": "presentation",
   "src/pages/404.astro": "presentation",
   "src/pages/[country]/[route].astro": "presentation",
@@ -252,26 +257,6 @@
   {
    "from": "scripts/smoke.mjs",
    "to": "scripts/site-base.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/card.ts",
-   "to": "src/lib/copy.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/card.ts",
-   "to": "src/lib/gloss.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/card.ts",
-   "to": "src/lib/quote.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/card.ts",
-   "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
@@ -690,24 +675,24 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/steps.ts",
+   "from": "src/lib/verdict/compose/card-blocks.ts",
    "to": "src/lib/copy.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/steps.ts",
+   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card-blocks.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/cards.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/cards.ts",
-   "to": "src/lib/card.ts",
-   "kind": "inheritance"
   },
   {
    "from": "src/lib/verdict/compose/cards.ts",
@@ -741,7 +726,17 @@
   },
   {
    "from": "src/lib/verdict/compose/cards.ts",
-   "to": "src/lib/steps.ts",
+   "to": "src/lib/verdict/compose/card-blocks.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/verdict/compose/card-blocks.ts",
+   "kind": "inheritance"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
    "kind": "type-only"
   },
   {
@@ -757,12 +752,7 @@
   {
    "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/situations.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/steps.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
@@ -776,8 +766,18 @@
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/unscored.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
@@ -826,22 +826,12 @@
   },
   {
    "from": "src/lib/verdict/compose/reading.ts",
-   "to": "src/lib/steps.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
    "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/sections.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/sections.ts",
-   "to": "src/lib/situations.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/sections.ts",
-   "to": "src/lib/steps.ts",
+   "to": "src/lib/verdict/compose/card-blocks.ts",
    "kind": "dependency"
   },
   {
@@ -861,8 +851,28 @@
   },
   {
    "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/unscored.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/types.ts",
@@ -876,12 +886,27 @@
   },
   {
    "from": "src/lib/verdict/compose/types.ts",
-   "to": "src/lib/situations.ts",
+   "to": "src/lib/verdict/compose/unscored.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/verdict/index.ts",
-   "to": "src/lib/card.ts",
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/situations.ts",
    "kind": "dependency"
   },
   {
@@ -896,7 +921,7 @@
   },
   {
    "from": "src/lib/verdict/index.ts",
-   "to": "src/lib/steps.ts",
+   "to": "src/lib/verdict/compose/card-blocks.ts",
    "kind": "dependency"
   },
   {
@@ -926,8 +951,18 @@
   },
   {
    "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.css",
+   "kind": "dependency"
   },
   {
    "from": "src/pages/404.astro",
@@ -1181,12 +1216,12 @@
   },
   {
    "from": "tests/card.test.ts",
-   "to": "src/lib/card.ts",
+   "to": "src/lib/copy.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/card.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1356,11 +1391,6 @@
   },
   {
    "from": "tests/consolidated-text.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/consolidated-text.test.ts",
    "to": "src/lib/copy.ts",
    "kind": "dependency"
   },
@@ -1387,6 +1417,11 @@
   {
    "from": "tests/consolidated-text.test.ts",
    "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/consolidated-text.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1796,7 +1831,7 @@
   },
   {
    "from": "tests/rail.test.ts",
-   "to": "src/lib/card.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1931,11 +1966,6 @@
   },
   {
    "from": "tests/route-slot.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/route-slot.test.ts",
    "to": "src/lib/copy.ts",
    "kind": "dependency"
   },
@@ -1957,6 +1987,11 @@
   {
    "from": "tests/route-slot.test.ts",
    "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-slot.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2121,11 +2156,6 @@
   },
   {
    "from": "tests/s19.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s19.test.ts",
    "to": "src/lib/copy.ts",
    "kind": "dependency"
   },
@@ -2175,6 +2205,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s19.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s20.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -2240,6 +2275,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s21.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s23.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -2247,11 +2292,6 @@
   {
    "from": "tests/s23.test.ts",
    "to": "scripts/chrome.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s23.test.ts",
-   "to": "src/lib/card.ts",
    "kind": "dependency"
   },
   {
@@ -2296,7 +2336,7 @@
   },
   {
    "from": "tests/s23.test.ts",
-   "to": "src/lib/steps.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2326,11 +2366,6 @@
   },
   {
    "from": "tests/s25.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s25.test.ts",
    "to": "src/lib/copy.ts",
    "kind": "dependency"
   },
@@ -2356,7 +2391,7 @@
   },
   {
    "from": "tests/s25.test.ts",
-   "to": "src/lib/steps.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2391,6 +2426,11 @@
   },
   {
    "from": "tests/s26.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
    "to": "tests/wire.ts",
    "kind": "dependency"
   },
@@ -2402,11 +2442,6 @@
   {
    "from": "tests/s27.test.ts",
    "to": "scripts/chrome.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s27.test.ts",
-   "to": "src/lib/card.ts",
    "kind": "dependency"
   },
   {
@@ -2465,6 +2500,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s27.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s28.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -2472,11 +2512,6 @@
   {
    "from": "tests/s28.test.ts",
    "to": "scripts/chrome.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s28.test.ts",
-   "to": "src/lib/card.ts",
    "kind": "dependency"
   },
   {
@@ -2507,6 +2542,16 @@
   {
    "from": "tests/s28.test.ts",
    "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2566,11 +2611,6 @@
   },
   {
    "from": "tests/s32.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s32.test.ts",
    "to": "src/lib/copy.ts",
    "kind": "dependency"
   },
@@ -2582,6 +2622,11 @@
   {
    "from": "tests/s32.test.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2597,16 +2642,6 @@
   {
    "from": "tests/s37.test.ts",
    "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s5e.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s5e.test.ts",
-   "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
@@ -2636,17 +2671,7 @@
   },
   {
    "from": "tests/s7.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s7.test.ts",
    "to": "src/lib/copy.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s7.test.ts",
-   "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
   {
@@ -2657,11 +2682,6 @@
   {
    "from": "tests/s7.test.ts",
    "to": "tests/verdict-cards.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s8.test.ts",
-   "to": "src/lib/card.ts",
    "kind": "dependency"
   },
   {
@@ -2682,7 +2702,7 @@
   {
    "from": "tests/s8.test.ts",
    "to": "src/lib/verdict/index.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "tests/s8.test.ts",
@@ -2731,7 +2751,7 @@
   },
   {
    "from": "tests/screen.test.ts",
-   "to": "src/lib/situations.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2852,6 +2872,16 @@
   {
    "from": "tests/territories.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-cards.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-cards.ts",
+   "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
@@ -3578,158 +3608,6 @@
    },
    {
     "name": "smoke",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "src/lib/card.ts": [
-   {
-    "name": "Gte",
-    "kind": "type",
-    "exported": false
-   },
-   {
-    "name": "CardScreen",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "gteCriteriaOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "decidesOnANumber",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "bandOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "measuredCriterionOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "precondHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "askedFieldOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "isDeclared",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "binding",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "carveOutHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "scopedHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "proseBlock",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "sourcedCaveatHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "REASON_SAID",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "unsourcedSaid",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "unsourcedCaveatHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "caveatHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "readingHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "decidingThresholds",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "bandStandsAt",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "railHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "provenanceHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "quoteForCard",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "srcLine",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "closedRowHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "sourceLinkHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "noticeHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "pointsLineHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "learnBoxHtml",
     "kind": "fn",
     "exported": true
    }
@@ -5890,11 +5768,6 @@
     "exported": true
    },
    {
-    "name": "situationPhrase",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "countryOf",
     "kind": "fn",
     "exported": false
@@ -5920,38 +5793,8 @@
     "exported": true
    },
    {
-    "name": "UnscoredTally",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "unscoredTally",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "UnscoredVerdict",
     "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "unscoredVerdict",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "leadCountry",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "leads",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "namedFirst",
-    "kind": "fn",
     "exported": true
    }
   ],
@@ -6025,38 +5868,6 @@
    },
    {
     "name": "socialCardHtml",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "src/lib/steps.ts": [
-   {
-    "name": "Step",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "isLadder",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "ladderCache",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "arrangeSteps",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "nearestStep",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "seekHintHtml",
     "kind": "fn",
     "exported": true
    }
@@ -6234,7 +6045,6 @@
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
-  "src/lib/card.ts",
   "src/lib/clipboard.ts",
   "src/lib/copy.ts",
   "src/lib/countries.ts",
@@ -6260,7 +6070,6 @@
   "src/lib/situations.ts",
   "src/lib/slug.ts",
   "src/lib/social-card.ts",
-  "src/lib/steps.ts",
   "src/pages/404.astro",
   "src/pages/[country]/[route].astro",
   "src/pages/[country]/[route].json.ts",
@@ -6275,5 +6084,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "c8b4513dca103cc87d369c3d7554440d12621ae03071352582a096f72471ca38"
+ "digest": "32534946e097c776bf08790c5455b2e38772dce5d3684532c74b2b6e2903f2ff"
 }
