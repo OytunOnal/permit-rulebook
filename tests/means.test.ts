@@ -3,7 +3,9 @@ import { RECORD_VERSION } from "../src/lib/record.js";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { optionMeans, type Dataset } from "permit-rulebook-data";
+import { optionMeans, type Dataset, type Profile } from "permit-rulebook-data";
+import { plainTextOf } from "./reader-pages.js";
+import { PAINTED_AS_COMPOSED, paintedAsComposedScript, stepsIn, verdictFor } from "./verdict-cards.js";
 
 /**
  * The human's walk, 2026-09-08.
@@ -55,6 +57,57 @@ describe("the answer and the step both say what they mean", () => {
   });
 });
 
+/** Still deciding where to go: every step forks per country, so each row has a
+ * place of its own that the reader has not declared. A real passport, since
+ * the record keeps only answers a question offers (s25). */
+const EXPLORER = {
+  destination: "all", citizenship: "IN", situation: "none",
+  qualification: "degree", recognition_de: "recognized", occupation_shortage: "yes",
+  experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1",
+  nl_recent_grad: "no", top200_grad: "no",
+};
+
+/** Each step card the verdict for these answers draws: its heading, and the
+ * sentence beside it, or null where it has none. */
+const stepRowsFor = (answers: Profile): { head: string; means: string | null }[] =>
+  stepsIn(verdictFor(answers)).map((s) => {
+    const means = /<p class="unlock-means">([\s\S]*?)<\/p>/.exec(s.html);
+    return { head: plainTextOf(/<h3>([\s\S]*?)<\/h3>/.exec(s.html)![1]!), means: means ? plainTextOf(means[1]!) : null };
+  });
+
+describe("the step says what it means, from the verdict", () => {
+  it("beside the step in the results: the walk's job-offer step says it, and no other step says anything", () => {
+    const rows = stepRowsFor(WALK);
+    const step = rows.find((r) => r.head.includes("job offer"));
+    expect(step, "the walk's leverage row is gone").toBeDefined();
+    expect(step!.head, "the row is still scanned by its short step").toBe("With a job offer");
+    expect(step!.means).toContain("an employer in the Netherlands");
+    // A step with nothing to distinguish stays one line; a hosting agreement
+    // is an arranged answer, no step card at all (#175).
+    expect(rows.filter((r) => r !== step).filter((r) => r.means !== null)).toEqual([]);
+    expect(rows.find((r) => r.head.includes("hosting agreement"))).toBeUndefined();
+  });
+
+  /**
+   * The phone walk of 2026-09-08: a reader still deciding where to go was told
+   * "With a job offer in your offer, transfer or agreement in Germany", and
+   * under it a sentence about "an employer there itself" — the place wrong
+   * once and stated twice, then missing from the sentence entirely.
+   */
+  it("a forked step names its country once, and its sentence says the same one", () => {
+    const rows = stepRowsFor(EXPLORER);
+    const german = rows.find((r) => r.head.includes("job offer") && r.head.includes("Germany"));
+    expect(german, "the German fork of the job-offer step is gone").toBeDefined();
+    expect(german!.head).toBe("With a job offer in Germany");
+    expect(german!.means).toContain("an employer in Germany");
+    for (const r of rows) {
+      expect(r.head, "a heading is carrying a field's subject text").not.toContain(
+        "your offer, transfer or agreement");
+      if (r.means) expect(r.means, r.head).not.toContain(" there ");
+    }
+  });
+});
+
 /** And the page actually shows both, where the reader was standing. */
 const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
@@ -84,16 +137,6 @@ const seed = (answers: Record<string, string>) =>
     version: RECORD_VERSION, answers, history: Object.keys(answers),
   }))})`;
 
-/** Still deciding where to go: every step forks per country, so each row has a
- * place of its own that the reader has not declared. A real passport, since
- * the record keeps only answers a question offers (s25). */
-const EXPLORER = {
-  destination: "all", citizenship: "IN", situation: "none",
-  qualification: "degree", recognition_de: "recognized", occupation_shortage: "yes",
-  experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1",
-  nl_recent_grad: "no", top200_grad: "no",
-};
-
 describe.skipIf(skipped !== null)("the page shows it where the reader was standing", () => {
   it("under the answer in the interview, and beside the step in the results", async () => {
     const server = await serve(dist);
@@ -110,19 +153,16 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
           + ' means: b.querySelector(".opt-means") ? b.querySelector(".opt-means").textContent.trim() : null })))',
         ));
 
-        // 2. The results the walk reached, and the step it offered.
+        // 2. The results the walk reached: the verdict whose step the case
+        // above reads, as painted.
         await page.evaluate(seed(WALK));
         await page.goto(server.url("/"), 1400);
-        const rows = JSON.parse(await page.evaluate(
-          'JSON.stringify([...document.querySelectorAll(".unlock")].map((u) => ({'
-          + ' head: u.querySelector("h3").textContent.trim(),'
-          + ' means: u.querySelector(".unlock-means") ? u.querySelector(".unlock-means").textContent.trim() : null })))',
-        ));
-        return { question, options, rows };
+        const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALK))));
+        return { question, options, painted };
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
         question: string;
         options: { label: string; means: string | null }[];
-        rows: { head: string; means: string | null }[];
+        painted: typeof PAINTED_AS_COMPOSED;
       };
 
       expect(seen.question).toBe("Which best describes your situation?");
@@ -135,49 +175,9 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
       // Only where there is something to settle.
       expect(seen.options.filter((o) => o.means).length).toBe(2);
 
-      const step = seen.rows.find((r) => r.head.includes("job offer"));
-      expect(step, "the walk's leverage row is gone").toBeDefined();
-      expect(step!.head, "the row is still scanned by its short step").toBe("With a job offer");
-      expect(step!.means).toContain("an employer in the Netherlands");
-      // A step with nothing to distinguish stays one line; a hosting agreement
-      // is an arranged answer, no step card at all (#175).
-      expect(seen.rows.filter((r) => r !== step).filter((r) => r.means !== null)).toEqual([]);
-      expect(seen.rows.find((r) => r.head.includes("hosting agreement"))).toBeUndefined();
-    } finally {
-      server.close();
-    }
-  }, 180000);
-
-  /**
-   * The phone walk of 2026-09-08: a reader still deciding where to go was told
-   * "With a job offer in your offer, transfer or agreement in Germany", and
-   * under it a sentence about "an employer there itself" — the place wrong
-   * once and stated twice, then missing from the sentence entirely.
-   */
-  it("a forked step names its country once, and its sentence says the same one", async () => {
-    const server = await serve(dist);
-    try {
-      const rows = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
-        await page.evaluate(seed(EXPLORER));
-        await page.goto(server.url("/"), 1400);
-        return JSON.parse(await page.evaluate(
-          'JSON.stringify([...document.querySelectorAll(".unlock")].map((u) => ({'
-          + ' head: u.querySelector("h3").textContent.trim(),'
-          + ' means: u.querySelector(".unlock-means") ? u.querySelector(".unlock-means").textContent.trim() : null })))',
-        ));
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
-        { head: string; means: string | null }[];
-
-      const german = rows.find((r) => r.head.includes("job offer") && r.head.includes("Germany"));
-      expect(german, "the German fork of the job-offer step is gone").toBeDefined();
-      expect(german!.head).toBe("With a job offer in Germany");
-      expect(german!.means).toContain("an employer in Germany");
-      for (const r of rows) {
-        expect(r.head, "a heading is carrying a field's subject text").not.toContain(
-          "your offer, transfer or agreement");
-        if (r.means) expect(r.means, r.head).not.toContain(" there ");
-      }
+      // Beside the step: what the step says is the verdict's ("the step says
+      // what it means, from the verdict"); the page paints it.
+      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
     } finally {
       server.close();
     }
