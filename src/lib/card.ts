@@ -9,7 +9,7 @@ import {
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
-import { NOT_CHECKED_HEADING, ROUTE_DOOR, askedHeading, readOn } from "./copy.js";
+import { NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading, readOn } from "./copy.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
 // it, on the screen's own memory: the card's citations, statements, readings
 // and learn labels are glossed as the route page's are (#151, ruling 8). Each
@@ -212,7 +212,7 @@ function proseBlock(cls: string, heading: string, items: string[], join = " "): 
  */
 export function sourcedCaveatHtml(route: Route, answers: Profile, seen: Glossary = new Set()): string {
   return proseBlock(
-    "caveat", "The official page also says:",
+    "caveat", `${PAGE_ALSO_SAYS}:`,
     binding(route, answers).filter((s) => s.kind === "caveat" && s.source).map((s) => esc(glossed(s.text, seen))),
   );
 }
@@ -237,7 +237,7 @@ function unsourcedSaid(s: RouteStatement): string {
 
 /**
  * The same, for a statement we could not find the official wording of. It
- * cannot claim "the official page says", and dropping it would take a fact in
+ * cannot claim "the page also says", and dropping it would take a fact in
  * the reader's favour off the card — so it says plainly that it carries no
  * quote, and why. Nothing here is ever given a neighbouring quote that does
  * not cover it.

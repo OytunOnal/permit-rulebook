@@ -125,7 +125,7 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
   it("a reading never renders as an authority's words, in any state", () => {
     for (const { r, html } of generatedCards(9753, 30))
       for (const s of routeReadings(r.route)) {
-        // Not under "Also required", not under "The official page also says",
+        // Not under "Also required", not under "The page also says",
         // and never inside the quote list where every other line is somebody
         // else's sentence.
         expect(precondHtml(ds, r.route, {}), `${r.route.id}:${s.id}`).not.toContain(s.text);

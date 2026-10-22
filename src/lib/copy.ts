@@ -133,6 +133,21 @@ export const askedRouteDescription = (countryOpening: string, routeName: string,
   `${countryOpening} ${routeName}: ${asks} — every value quoted from its official page with the date it was read.`;
 
 /**
+ * Where a route page's quotes come from, said of every source alike: a quote
+ * may stand on a consolidated text, which is not the authority's page, so the
+ * words claim no "official" page (GLOSSARY, Consolidated text; #151's fix
+ * round, ruling 1). `check` is the daily-check clause.
+ */
+export const everyNumberQuoted = (check: string): string =>
+  `Every number below is quoted from the page each rule cites, and ${check}.`;
+export const everyConditionQuoted = (check: string): string =>
+  `Every condition below is quoted from the page each rule cites, and ${check}.`;
+/** The heading over the caveats a source puts on its own answer, on a route
+ * page and a results card: true of an authority's page and a consolidated
+ * text alike. */
+export const PAGE_ALSO_SAYS = "The page also says";
+
+/**
  * The arrival line's sentences (`lib/scope.ts`): a reader sent from a country's
  * own page, or from one of its route pages, with the record set to that
  * country — newly, or moved from another. `placeOpening` is the country's

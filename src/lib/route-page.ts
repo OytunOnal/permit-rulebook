@@ -45,8 +45,9 @@ import {
 } from "./site.js";
 import {
   ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM,
-  NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, alsoInHeading,
-  askedRouteDescription, audienceLine, dailyCheck, notAskedRouteDescription, pointsFigure, readOn,
+  NOT_ASKED_SCOPE_HEADING, PAGE_ALSO_SAYS, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, alsoInHeading,
+  askedRouteDescription, audienceLine, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
+  pointsFigure, readOn,
 } from "./copy.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -548,7 +549,7 @@ function statedBlocks(route: Route, seen: Glossary): string {
     block("precond", isScored(route) ? "Also required — not checked here" : "What the authority requires",
       preconditions.map((s) =>
         esc(glossed(s.text, seen)) + (s.source ? quoteBlock(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
-    block("precond", "The official page also says", caveats.filter((s) => s.source).map((s) =>
+    block("precond", PAGE_ALSO_SAYS, caveats.filter((s) => s.source).map((s) =>
       esc(glossed(s.text, seen)) + quoteBlock(s.source!, {}, seen) + carveOutBlock(s, seen))),
     // A caveat we could not find the wording for is still a fact in the
     // reader's favour, so it stays — under a heading that says plainly that no
@@ -786,12 +787,12 @@ ${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join(""
 
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">What the checker asks, and what it does not</b>
-    <p>Every number below is quoted from an official page, and ${esc(dailyCheck(missed))}. On this route — <strong>${
+    <p>${esc(everyNumberQuoted(dailyCheck(missed)))} On this route — <strong>${
     esc(scopeLine(route, { reader: "not-answered" }))}</strong>. ${esc(route.scope.reason)}</p>
   </section>` : `
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">${esc(NOT_ASKED_SCOPE_HEADING)}</b>
-    <p><strong>${esc(scopeLine(route, { reader: "not-answered" }))}</strong>. ${esc(route.scope.reason)} Every condition below is quoted from an official page, and ${esc(dailyCheck(missed))}.</p>
+    <p><strong>${esc(scopeLine(route, { reader: "not-answered" }))}</strong>. ${esc(route.scope.reason)} ${esc(everyConditionQuoted(dailyCheck(missed)))}</p>
   </section>`}
 
   <section class="rules" aria-labelledby="rules-h">

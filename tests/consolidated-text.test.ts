@@ -3,9 +3,12 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { CONSOLIDATED_TEXT_HOSTS, deriveQuestions, evaluate, type Dataset, type Profile } from "permit-rulebook-data";
+import {
+  CONSOLIDATED_TEXT_HOSTS, deriveQuestions, evaluate, routeStatements, scopeLine,
+  type Dataset, type Profile, type Route,
+} from "permit-rulebook-data";
 import { OFFICIAL_PAGE, consolidatedTextOn } from "../src/lib/copy.js";
-import { closedRowHtml, noticeHtml } from "../src/lib/card.js";
+import { closedRowHtml, noticeHtml, sourcedCaveatHtml } from "../src/lib/card.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { routePage } from "../src/lib/route-page.js";
@@ -133,6 +136,60 @@ describe("a card's foot links the route's page by its kind", () => {
     const html = closedRowHtml(r);
     expect(html, "fr-ict is not closed to this reader").not.toBe("");
     expect(holdsTheLabel(linksIn(html, "fr-ict"))).toBe(1);
+  });
+});
+
+/**
+ * #151's fix round, ruling 1: the words that introduce quotes claim no
+ * "official" page where the quotes stand on a consolidated text (GLOSSARY,
+ * Consolidated text: "never 'Official page'").
+ */
+const CLAIMS_OFFICIAL = /\bofficial\b/i;
+
+/** Each caveat a route quotes from a consolidated text. */
+const consolidatedCaveats = (route: Route) => routeStatements(route)
+  .filter((s) => s.kind === "caveat" && s.source && consolidatedHostOf(s.source.source_url));
+
+describe("no word claims an official page over a consolidated text (#151's fix round, ruling 1)", () => {
+  const pages = routeAddresses(ds).map((address) => ({ address, html: routePage(ds, address).html }));
+  const quotingConsolidated = pages.filter(({ html }) => linksIn(html, "").some((l) => consolidatedHostOf(l.href)));
+
+  it("a route page that quotes a consolidated text says in its scope paragraph where its quotes come from without 'official'", () => {
+    expect(quotingConsolidated.length, "precondition: a route page quotes a consolidated text").toBeGreaterThan(0);
+    for (const { address, html } of quotingConsolidated) {
+      const section = /<section class="scope"[\s\S]*?<\/section>/.exec(html)?.[0] ?? "";
+      expect(section, `${address.path}: no scope paragraph`).not.toBe("");
+      // Our own words in it: without the route's scope line and its authored reason.
+      const ours = section.replace(/<[^>]*>/g, " ")
+        .replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")
+        .split(address.route.scope.reason).join(" ")
+        .split(scopeLine(address.route, { reader: "not-answered" })).join(" ");
+      expect(ours, address.path).not.toMatch(CLAIMS_OFFICIAL);
+    }
+  });
+
+  it("a route page's block of quotes from a consolidated text is headed without 'official'", () => {
+    let held = 0;
+    for (const { address, html } of quotingConsolidated) {
+      const blocks = [...html.matchAll(/<div class="precond"><b>([^<]*)<\/b>/g)];
+      blocks.forEach((m, i) => {
+        const body = html.slice(m.index!, blocks[i + 1]?.index ?? html.length);
+        if (!linksIn(body, "").some((l) => consolidatedHostOf(l.href))) return;
+        held++;
+        expect(m[1], address.path).not.toMatch(CLAIMS_OFFICIAL);
+      });
+    }
+    expect(held, "precondition: a route page heads a block of consolidated-text quotes").toBeGreaterThan(0);
+  });
+
+  it("a results card's caveats quoted from a consolidated text are headed without 'official'", () => {
+    const routes = ds.countries.flatMap((c) => c.routes).filter((r) => consolidatedCaveats(r).length > 0);
+    expect(routes.length, "precondition: a route quotes a caveat from a consolidated text").toBeGreaterThan(0);
+    for (const route of routes) {
+      const heading = /<div class="caveat"><b>([^<]*)<\/b>/.exec(sourcedCaveatHtml(route, {}))?.[1];
+      expect(heading, route.id).toBeDefined();
+      expect(heading, route.id).not.toMatch(CLAIMS_OFFICIAL);
+    }
   });
 });
 

@@ -8,6 +8,7 @@ import {
   caveatHtml, measuredCriterionOf, precondHtml, provenanceHtml, railHtml,
   sourcedCaveatHtml, unsourcedCaveatHtml,
 } from "../src/lib/card.js";
+import { PAGE_ALSO_SAYS } from "../src/lib/copy.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -55,7 +56,7 @@ describe("the orientation year, on the card", () => {
 
   it("passes on the qualification the source puts on its own answer", () => {
     const html = caveatHtml(routeOf("nl-orientation-year"), {});
-    expect(html).toContain("The official page also says");
+    expect(html).toContain(PAGE_ALSO_SAYS);
     expect(html).toMatch(/Turkish passport/);
     // Not invented, and not a bar the reader can fail.
     expect(html).toMatch(/does not say how/i);
@@ -276,7 +277,7 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
         expect(caveatHtml(route, {}), route.id)
           .toBe(sourcedCaveatHtml(route, {}) + unsourcedCaveatHtml(route, {}));
     expect(caveatHtml(unsourcedRoute(), {})).toContain("we have not found the official wording");
-    expect(caveatHtml(routeOf("de-chancenkarte"), {})).toContain("The official page also says:");
+    expect(caveatHtml(routeOf("de-chancenkarte"), {})).toContain(`${PAGE_ALSO_SAYS}:`);
   });
 
   it("the reason there is no quote reaches the card as words, with the day we looked", () => {
