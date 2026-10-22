@@ -144,8 +144,7 @@ export const nearestStep = (steps: Step[]): Step | undefined => steps[0];
  * job-search permit above. It reached an offer-holder for as long as it was
  * keyed on the card alone (v1.1 gate critique, F1).
  */
-export function seekHintHtml(ds: Dataset, results: RouteResult[], answers: Profile, hasUnlocks: boolean): string {
-  if (!hasUnlocks) return "";
+export function seekHintHtml(ds: Dataset, results: RouteResult[], answers: Profile): string {
   const fallback = fieldOptions(ds, SITUATION_FIELD).find((o) => o.is_fallback)?.value;
   if (fallback === undefined || answers[SITUATION_FIELD] !== fallback) return "";
   if (!results.some((r) => r.route.kind === "seek" && r.status !== "hold")) return "";

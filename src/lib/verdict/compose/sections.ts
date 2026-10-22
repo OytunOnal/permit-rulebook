@@ -16,12 +16,12 @@ interface SectionStep {
 
 /** What one section holds: the whole screen on the one-country layout, one
  * country's on the other. `results` are the routes the job-search sentence
- * reads; `showCountry` whether a card names its country. */
+ * reads; `chip` whether its cards carry their country's chip. */
 interface Section {
   part: Part;
   steps: SectionStep[];
   results: RouteResult[];
-  showCountry: boolean;
+  chip: CardLook["chip"];
 }
 
 const cardsOf = (screen: VerdictScreen, rows: RouteResult[], look: CardLook): RouteCard[] =>
@@ -34,8 +34,8 @@ function stepsGroup(screen: VerdictScreen, s: Section): VerdictGroup | null {
   if (!s.steps.length) return null;
   const steps = s.steps.map(({ step, routes }) => ({ title: step.title, html: unlockCard(screen, step, routes) }));
   // The job-search sentence, to the reader it is true of — one with no
-  // offer yet (s23, F1a).
-  return { kind: "steps", steps, hint: seekHintHtml(screen.ds, s.results, screen.answers, true) };
+  // offer yet — and only under steps (s23, F1a).
+  return { kind: "steps", steps, hint: seekHintHtml(screen.ds, s.results, screen.answers) };
 }
 
 /**
@@ -46,10 +46,10 @@ function stepsGroup(screen: VerdictScreen, s: Section): VerdictGroup | null {
  * (human, 2026-09-08).
  */
 function groupsOf(screen: VerdictScreen, s: Section): VerdictGroup[] {
-  const look: CardLook = { showCountry: s.showCountry, unsettled: false };
+  const look: CardLook = { chip: s.chip, badge: "status" };
   const groups = [
     routeGroup("open", cardsOf(screen, s.part.met, look)),
-    routeGroup("unsettled", cardsOf(screen, s.part.unsettled, { ...look, unsettled: true })),
+    routeGroup("unsettled", cardsOf(screen, s.part.unsettled, { ...look, badge: "rules-met" })),
     routeGroup("within-reach", cardsOf(screen, s.part.near, look)),
     stepsGroup(screen, s),
     notYetGroup(screen, s.part.hold, s.steps.length),
@@ -74,7 +74,7 @@ function stripOf(screen: VerdictScreen, c: Compared): Strip {
 /** Single destination: the flat layout, no country chrome. */
 function oneCountry(screen: VerdictScreen, c: Compared): VerdictLayout {
   const steps = c.ups.map((step) => ({ step, routes: step.unlock.routes }));
-  const groups = groupsOf(screen, { part: c.whole, steps, results: c.reading.results, showCountry: true });
+  const groups = groupsOf(screen, { part: c.whole, steps, results: c.reading.results, chip: "country" });
   return { kind: "one-country", strip: stripOf(screen, c), groups };
 }
 
@@ -110,7 +110,7 @@ function countrySection(screen: VerdictScreen, c: Compared, at: SectionPlace): C
   };
   const hopeful = part.met.length + part.unsettled.length + part.near.length > 0;
   const open = hopeful || (c.zeroOpen && at.withSteps.has(code)) || leads(at.country, at.lead);
-  const groups = groupsOf(screen, { part, steps, results: rs, showCountry: false });
+  const groups = groupsOf(screen, { part, steps, results: rs, chip: "none" });
   return { name: at.country.name, open, tally, groups };
 }
 

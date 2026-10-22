@@ -28,11 +28,14 @@ export interface VerdictScreen extends CardScreen {
   cameFrom: string | null;
 }
 
-/** How a full card is drawn: with its country's name or without (a country's
- * own section), and under "unsettled for your passport" or not. */
+/** How a full card is drawn, each value named for what it draws. */
 export interface CardLook {
-  showCountry: boolean;
-  unsettled: boolean;
+  /** The country's chip above the title, or none: a country's own section
+   * names its country once, on its summary row. */
+  chip: "country" | "none";
+  /** The badge: the route's own status, or "Rules met" under "unsettled for
+   * your passport", where an open question hangs over a met route. */
+  badge: "status" | "rules-met";
 }
 
 const routeName = (screen: VerdictScreen, r: RouteResult): string => glossSection(r.route.name, screen.glossary);
@@ -92,13 +95,13 @@ function pointsNoteHtml(r: RouteResult): string {
 /** A route that is open, within reach or unsettled, as a whole card. */
 export function fullCard(screen: VerdictScreen, r: RouteResult, look: CardLook): string {
   const { ds } = screen;
-  const badge = look.unsettled ? RULES_MET : STATUS_LABEL[r.status];
+  const rulesMet = look.badge === "rules-met";
   return `
         <article class="route"${cameFromMark(screen, r)}>
           <div class="top">
-            <div>${look.showCountry ? `<span class="country">${esc(countryOf(ds, r.country).name)}</span>` : ""}
+            <div>${look.chip === "country" ? `<span class="country">${esc(countryOf(ds, r.country).name)}</span>` : ""}
               <h3>${esc(routeName(screen, r))}</h3></div>
-            <span class="st ${look.unsettled ? "unsettled" : r.status}">${esc(badge)}</span>
+            <span class="st ${rulesMet ? "unsettled" : r.status}">${esc(rulesMet ? RULES_MET : STATUS_LABEL[r.status])}</span>
           </div>
           ${cameFromNote(screen, r)}
           <p class="why">${whyHtml(ds, r, screen.answers)}</p>
