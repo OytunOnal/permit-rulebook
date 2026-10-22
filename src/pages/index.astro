@@ -210,7 +210,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import {
       carveOutHtml, caveatHtml, closedRowHtml, learnBoxHtml, noticeHtml, pointsLineHtml, precondHtml,
       provenanceHtml, railHtml, readingHtml, scopedHtml, sourceLinkHtml,
-      measuredCriterionOf,
+      measuredCriterionOf, type CardScreen,
     } from "../lib/card.js";
     // What the screen does with the engine's unlock rows — their order, which
     // are one step, and who is told the job-search sentence — beside the page
@@ -917,19 +917,23 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * "Not met: situation" became the verdict on 22 of 23 cards
      * (product-critique v0.7, B3). */
     const whyFor = (r: RouteResult): string => whyHtml(ds, r, answers);
+    /** The screen the card blocks below are drawn on: the dataset, the
+     * answers, and this screen's memory of what it has explained, as they
+     * stand when a block is drawn. */
+    const cardScreen = (): CardScreen => ({ ds, answers, glossary });
     /** Conditions the authority applies that the interview never asked —
      * stated on every card so "criteria met" cannot overpromise. Both blocks
      * are rendered beside the page (lib/card.ts) so a test can read them. */
-    const precondFor = (r: RouteResult): string => precondHtml(ds, r.route, answers, glossary);
+    const precondFor = (r: RouteResult): string => precondHtml(cardScreen(), r.route);
     /** What the authority itself says is off this reader, in place of the
      * condition it releases them from. A carve-out carries its own quote and
      * is never printed under a heading that means "you must also do this"
      * (s7). */
-    const carveOutFor = (r: RouteResult): string => carveOutHtml(r.route, answers, glossary);
+    const carveOutFor = (r: RouteResult): string => carveOutHtml(cardScreen(), r.route);
     /** What the source says its own answer does not settle. Never a failure —
      * and never under the "Also required" heading, which would turn "you may
      * qualify for less" into one more bar to clear (human catch 2026-09-07). */
-    const caveatFor = (r: RouteResult): string => caveatHtml(r.route, answers, glossary);
+    const caveatFor = (r: RouteResult): string => caveatHtml(cardScreen(), r.route);
     /** Our own reading — what we modelled, what we did not, and where a number
      * was read by a person. Never presented as an authority's words, and never
      * in the quote list (s5e). */
@@ -939,13 +943,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const railFor = (r: RouteResult): string => railHtml(ds, r, answers);
     /** Every value the route rests on, quoted, dated, and — where the route
      * states more than one threshold — marked with which one applied. */
-    const provenanceFor = (r: RouteResult): string => provenanceHtml(ds, r, answers, glossary);
+    const provenanceFor = (r: RouteResult): string => provenanceHtml(cardScreen(), r);
 
 
     /** s3: "I don't know" answers get an official find-out link — the
      * dataset's field `learn` source, rendered beside the page (lib/card.ts)
      * since the stray full stop after it (s23, P5). */
-    const learnBoxFor = (r: RouteResult): string => learnBoxHtml(ds, r, answers, glossary);
+    const learnBoxFor = (r: RouteResult): string => learnBoxHtml(cardScreen(), r);
 
     const periodOf = (field: string) => fieldOf(field)?.period;
 

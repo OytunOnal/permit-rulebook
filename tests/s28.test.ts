@@ -74,7 +74,7 @@ describe("2 — link text is glossed on the screen's memory (#151, ruling 8)", (
   it("the card's box explains the act in a label on a screen that has explained nothing, and not on one that has", () => {
     const seen = withLabel(SHORTAGE, SYMBOL_LABEL);
     const result = evaluate(seen, UNSURE).find((r) => r.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml(seen, result, UNSURE, new Set());
+    const html = learnBoxHtml({ ds: seen, answers: UNSURE, glossary: new Set() }, result);
     const [link, ...rest] = anchorsOf(html);
     expect(rest, "the box carries more than the one door").toEqual([]);
     const door = seen.fields.find((f) => f.id === SHORTAGE)!.learn!;
@@ -83,7 +83,7 @@ describe("2 — link text is glossed on the screen's memory (#151, ruling 8)", (
     // A screen whose citation line already named the act prints the label as written.
     const spent = new Set<string>();
     glossed("§ 18g AufenthG", spent);
-    expect(anchorsOf(learnBoxHtml(seen, result, UNSURE, spent))[0]!.text).toBe(esc(learnLinkTextOf(door)));
+    expect(anchorsOf(learnBoxHtml({ ds: seen, answers: UNSURE, glossary: spent }, result))[0]!.text).toBe(esc(learnLinkTextOf(door)));
   });
 
   it("the question line prints the same label, explained on the card's first use", () => {
@@ -159,7 +159,7 @@ describe("3 — the three surfaces agree", () => {
       const result = evaluate(ds, profile).find((r) => r.route.id === route)!;
       expect(result.status, `${route} is not on hold`).toBe("hold");
       const door = ds.fields.find((f) => f.id === field)!.learn!;
-      expect(anchorsOf(learnBoxHtml(ds, result, profile))).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
+      expect(anchorsOf(learnBoxHtml({ ds, answers: profile }, result))).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
     });
   }
 });

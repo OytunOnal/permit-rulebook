@@ -34,6 +34,17 @@ import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "./quote
 
 type Gte = Extract<Criterion, { op: "gte" }>;
 
+/**
+ * The screen a card's blocks are drawn on, which every block takes whole: the
+ * dataset, the reader's answers, and the screen's memory of what it has
+ * already explained. A block drawn without a memory is a screen of its own.
+ */
+export interface CardScreen {
+  ds: Dataset;
+  answers: Profile;
+  glossary?: Glossary;
+}
+
 /** Every gte criterion in a route, at any depth. Nested too: NL ICT states its
  * thresholds inside an any-disjunction, and a top-level-only scan drew no rail
  * on exactly those cards (review). */
@@ -78,7 +89,8 @@ export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profil
  * read back — a coined synonym for Criterion's own Avoid list (review
  * 2026-09-07).
  */
-export function precondHtml(ds: Dataset, route: Route, answers: Profile, seen: Glossary = new Set()): string {
+export function precondHtml(screen: CardScreen, route: Route): string {
+  const { ds, answers, glossary: seen = new Set() } = screen;
   const statements = binding(route, answers).filter((s) => s.kind === "precondition");
   // The ones the interview asked, by the field it asked them on, in the order
   // the statements name those fields.
@@ -160,7 +172,8 @@ const binding = (route: Route, answers: Profile): RouteStatement[] =>
  * the heading that means "you must also do this" would say the opposite of
  * what the IND says (s7).
  */
-export function carveOutHtml(route: Route, answers: Profile, seen: Glossary = new Set()): string {
+export function carveOutHtml(screen: CardScreen, route: Route): string {
+  const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
     "caveat carveout", "Not required for your passport:",
     routeStatements(route).flatMap((s) => {
@@ -210,7 +223,8 @@ function proseBlock(cls: string, heading: string, items: string[], join = " "): 
  * are here and not there (human catch 2026-09-07). The quote behind each one
  * is in the card's source list, like every other value.
  */
-export function sourcedCaveatHtml(route: Route, answers: Profile, seen: Glossary = new Set()): string {
+export function sourcedCaveatHtml(screen: CardScreen, route: Route): string {
+  const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
     "caveat", `${PAGE_ALSO_SAYS}:`,
     binding(route, answers).filter((s) => s.kind === "caveat" && s.source).map((s) => esc(glossed(s.text, seen))),
@@ -242,7 +256,8 @@ function unsourcedSaid(s: RouteStatement): string {
  * quote, and why. Nothing here is ever given a neighbouring quote that does
  * not cover it.
  */
-export function unsourcedCaveatHtml(route: Route, answers: Profile, seen: Glossary = new Set()): string {
+export function unsourcedCaveatHtml(screen: CardScreen, route: Route): string {
+  const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
     "caveat nosrc", "Worth knowing — we have not found the official wording:",
     binding(route, answers)
@@ -257,8 +272,10 @@ export function unsourcedCaveatHtml(route: Route, answers: Profile, seen: Glossa
  * was making it — gluing the two together at the call site, which is exactly
  * what the seam above exists to stop (review 2026-09-07).
  */
-export function caveatHtml(route: Route, answers: Profile, seen: Glossary = new Set()): string {
-  return sourcedCaveatHtml(route, answers, seen) + unsourcedCaveatHtml(route, answers, seen);
+export function caveatHtml(screen: CardScreen, route: Route): string {
+  // The two blocks are one screen: they share its memory, or one of their own.
+  const shared: CardScreen = { ...screen, glossary: screen.glossary ?? new Set() };
+  return sourcedCaveatHtml(shared, route) + unsourcedCaveatHtml(shared, route);
 }
 
 /**
@@ -388,7 +405,8 @@ export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string 
  * both unmarked left a reader free to take the lower one for theirs when they
  * do not qualify for it (human catch 2026-09-07).
  */
-export function provenanceHtml(ds: Dataset, r: RouteResult, answers: Profile, seen: Glossary = new Set()): string {
+export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
+  const { ds, answers, glossary: seen = new Set() } = screen;
   const entries = resultProvenance(r, answers);
   // A lone threshold needs no telling apart from anything, and a losing path
   // that quotes no amount leaves nothing for the reader to mistake for theirs.
@@ -594,7 +612,8 @@ export function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  * is a consolidated text, the glossed label is followed by what the page is
  * (#158). Any route the label names is said in full (#159).
  */
-export function learnBoxHtml(ds: Dataset, r: RouteResult, answers: Profile, seen: Glossary = new Set()): string {
+export function learnBoxHtml(screen: CardScreen, r: RouteResult): string {
+  const { ds, answers, glossary: seen = new Set() } = screen;
   const links = liveUnknowns(r, answers)
     .map((f) => learnLinkOf(ds, f))
     .filter((l): l is { label: string; url: string } => !!l);

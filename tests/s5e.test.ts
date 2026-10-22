@@ -25,8 +25,8 @@ const cardProse = (r: RouteResult, answers: Profile): string =>
   // sets aside for their passport leaves the card, the carve-out takes its
   // place, and the quote list follows the card. Composing it any other way here
   // would check a card the page does not render.
-  whyHtml(ds, r, answers) + precondHtml(ds, r.route, answers) + carveOutHtml(r.route, answers) +
-  caveatHtml(r.route, answers) + readingHtml(r.route) + provenanceHtml(ds, r, answers);
+  whyHtml(ds, r, answers) + precondHtml({ ds, answers }, r.route) + carveOutHtml({ ds, answers }, r.route) +
+  caveatHtml({ ds, answers }, r.route) + readingHtml(r.route) + provenanceHtml({ ds, answers }, r);
 
 /** The provenance list — the one place an authority's words may appear. */
 const sourceLines = (html: string): string[] =>
@@ -128,8 +128,8 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
         // Not under "Also required", not under "The page also says",
         // and never inside the quote list where every other line is somebody
         // else's sentence.
-        expect(precondHtml(ds, r.route, {}), `${r.route.id}:${s.id}`).not.toContain(s.text);
-        expect(caveatHtml(r.route, {}), `${r.route.id}:${s.id}`).not.toContain(s.text);
+        expect(precondHtml({ ds, answers: {} }, r.route), `${r.route.id}:${s.id}`).not.toContain(s.text);
+        expect(caveatHtml({ ds, answers: {} }, r.route), `${r.route.id}:${s.id}`).not.toContain(s.text);
         for (const line of sourceLines(html))
           expect(line, `${r.route.id}:${s.id}`).not.toContain(s.text);
         expect(readingHtml(r.route), `${r.route.id}:${s.id}`).toContain(s.text);
@@ -176,7 +176,7 @@ describe("s5e — the card's source list grew without burying the verdict", () =
   it("no card shows an empty source block", () => {
     for (const destination of ["de", "fr", "es", "nl", "all"])
       for (const r of evaluate(ds, weak(destination))) {
-        const html = provenanceHtml(ds, r, {});
+        const html = provenanceHtml({ ds, answers: {} }, r);
         expect(html, r.route.id).toContain('class="srcs"');
         expect(html.replace(/<div class="srcs">|<\/div>/g, "").trim().length, r.route.id).toBeGreaterThan(0);
       }
@@ -199,7 +199,7 @@ describe("s5e — the card's source list grew without burying the verdict", () =
       .toContain("Your employment contract is valid for at least 6 months.");
     expect(resultProvenance(blueCard, {}).filter((e) => e.value.quote === "Your employment contract is valid for at least 6 months.").length)
       .toBe(2);
-    expect(sourceLines(provenanceHtml(ds, blueCard, {}))
+    expect(sourceLines(provenanceHtml({ ds, answers: {} }, blueCard))
       .filter((l) => l.includes("valid for at least 6 months")).length).toBe(1);
   });
 
@@ -255,7 +255,7 @@ describe("s5e — the card's source list grew without burying the verdict", () =
     ];
     for (const destination of ["de", "fr", "es", "nl", "all"])
       for (const r of evaluate(ds, weak(destination))) {
-        const html = provenanceHtml(ds, r, {});
+        const html = provenanceHtml({ ds, answers: {} }, r);
         if (NO_THRESHOLD.includes(r.route.id)) expect(html, r.route.id).toMatch(/no dated value to quote|no salary or points threshold/i);
         else expect(html, r.route.id).not.toMatch(/no dated value to quote|no salary or points threshold/i);
       }

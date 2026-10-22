@@ -179,7 +179,7 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
     let moved = 0;
     for (const r of evaluate(ds, answers)) {
       if (!isScored(r.route)) continue;
-      const html = precondHtml(ds, r.route, answers);
+      const html = precondHtml({ ds, answers }, r.route);
       const notChecked = html.match(new RegExp(`<div class="precond"><b>${NOT_CHECKED_HEADING}</b>([\\s\\S]*?)</div>`))?.[1] ?? "";
       for (const s of (r.route.statements ?? []).filter((x) => x.kind === "precondition")) {
         if (s.field === undefined || answers[s.field] === undefined) continue;
@@ -194,7 +194,7 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
 
   it("the Spanish researcher card says what was declared, in the s5 words", () => {
     const answers: Profile = { destination: "es", citizenship: "TR", situation: "research", situation_country: "es" };
-    const html = precondHtml(ds, ds.countries.find((c) => c.code === "ES")!.routes.find((r) => r.id === "es-researcher")!, answers);
+    const html = precondHtml({ ds, answers }, ds.countries.find((c) => c.code === "ES")!.routes.find((r) => r.id === "es-researcher")!);
     expect(html).toContain(`Asked in the interview — you declared “I have (or expect) a hosting agreement with a research institution there”:`);
     expect(html).toContain("A hosting agreement — the formal agreement a research institution signs to take you on");
     expect(html).not.toContain(NOT_CHECKED_HEADING);
@@ -202,11 +202,11 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
 
   it("with no reader, and with an unknown answer, nothing is called answered", () => {
     const es = ds.countries.find((c) => c.code === "ES")!.routes.find((r) => r.id === "es-researcher")!;
-    expect(precondHtml(ds, es, {})).toContain(NOT_CHECKED_HEADING);
-    expect(precondHtml(ds, es, {})).not.toContain("you declared");
+    expect(precondHtml({ ds, answers: {} }, es)).toContain(NOT_CHECKED_HEADING);
+    expect(precondHtml({ ds, answers: {} }, es)).not.toContain("you declared");
     // A field answered with the door for "none of these fits" is not declared.
     const nl = ds.countries.find((c) => c.code === "NL")!.routes.find((r) => r.id === "nl-researcher")!;
-    expect(precondHtml(ds, nl, { salary_eur_month: "unknown" })).not.toContain("you declared");
+    expect(precondHtml({ ds, answers: { salary_eur_month: "unknown" } }, nl)).not.toContain("you declared");
   });
 });
 

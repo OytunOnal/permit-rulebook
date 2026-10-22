@@ -186,7 +186,7 @@ describe("no word claims an official page over a consolidated text (#151's fix r
     const routes = ds.countries.flatMap((c) => c.routes).filter((r) => consolidatedCaveats(r).length > 0);
     expect(routes.length, "precondition: a route quotes a caveat from a consolidated text").toBeGreaterThan(0);
     for (const route of routes) {
-      const heading = /<div class="caveat"><b>([^<]*)<\/b>/.exec(sourcedCaveatHtml(route, {}))?.[1];
+      const heading = /<div class="caveat"><b>([^<]*)<\/b>/.exec(sourcedCaveatHtml({ ds, answers: {} }, route))?.[1];
       expect(heading, route.id).toBeDefined();
       expect(heading, route.id).not.toMatch(CLAIMS_OFFICIAL);
     }

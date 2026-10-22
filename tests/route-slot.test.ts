@@ -108,7 +108,7 @@ describe("a slot in a question's label or help is drawn filled", () => {
   it("in a results card's learn box", () => {
     const seen = written();
     const r = evaluate(seen, UNSURE).find((x) => x.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml(seen, r, UNSURE);
+    const html = learnBoxHtml({ ds: seen, answers: UNSURE }, r);
     expect(html, "the shortage card draws no learn box").not.toBe("");
     expect(html).not.toContain(SLOT_OPENING);
     expect(html).toContain(filled);

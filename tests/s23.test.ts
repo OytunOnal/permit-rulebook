@@ -289,7 +289,7 @@ describe("P2 — a rule with limbs is one sentence", () => {
 describe("P3 — the curator's note stays in the data", () => {
   it("no card and no page carries it", () => {
     const priya = evaluate(ds, PRIYA).find((r) => r.route.id === "de-chancenkarte")!;
-    expect(provenanceHtml(ds, priya, PRIYA)).not.toContain("times out");
+    expect(provenanceHtml({ ds, answers: PRIYA }, priya)).not.toContain("times out");
     for (const { path, text } of builtPages()) expect(text, path).not.toContain("times out");
   });
 });
@@ -312,13 +312,13 @@ describe("P5 — the Anabin link's stray full stop", () => {
     // is the box this case reads.
     const outOfIt: Profile = { ...DENIZ, occupation_it: "no" };
     const result = evaluate(ds, outOfIt).find((r) => r.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml(ds, result, outOfIt);
+    const html = learnBoxHtml({ ds, answers: outOfIt }, result);
     expect(html).toContain("anabin");
     expect(html).toMatch(/<\/a><\/div>$/);
     expect(textOf(html)).not.toMatch(/↗ ?\.$/);
     expect(textOf(html)).not.toMatch(/\.$/);
     // A route with nothing left open has no box.
-    expect(learnBoxHtml(ds, evaluate(ds, DENIZ).find((r) => r.route.id === "de-experienced-worker")!, DENIZ)).toBe("");
+    expect(learnBoxHtml({ ds, answers: DENIZ }, evaluate(ds, DENIZ).find((r) => r.route.id === "de-experienced-worker")!)).toBe("");
   });
 });
 
