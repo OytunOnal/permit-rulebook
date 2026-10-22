@@ -85,9 +85,10 @@ details.route-hold summary::-webkit-details-marker{display:none}
 .faildetail b{color:var(--color-ink)}
 .ghead.unlockh b{color:var(--color-band)}
 .unlock{background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-band);padding:.85rem 1.05rem;margin-bottom:.7rem}
-.unlock h3{font:600 .95rem var(--font-serif);margin-bottom:.35rem}
+/* A step's heading is not a link, so it wears no link colour: ink, the
+   step's name in bold ink (F4). */
+.unlock h3{font:600 .95rem var(--font-serif);color:var(--color-ink);margin-bottom:.35rem}
 .unlock-means{font-size:.82rem;color:var(--color-muted);margin:-.15rem 0 .4rem;max-width:34rem}
-.unlock h3 b{color:var(--color-band)}
 .unlock ul{list-style:none;display:grid;gap:.3rem;font-size:.86rem;color:#54513f}
 .unlock li::before{content:"→ ";color:var(--color-met);font-weight:700}
 .unlock li b{color:var(--color-met)}
