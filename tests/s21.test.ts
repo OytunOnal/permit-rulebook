@@ -7,19 +7,30 @@ import {
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import {
-  SITUATION_COUNTRY_FIELD, markUnder, notScoredFor, notScoredMarkHtml, unscoredTally,
-} from "../src/lib/situations.js";
+import { SITUATION_COUNTRY_FIELD, markUnder, notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
 import {
   IS_QUOTED_NOT_CHECKED, READ_IT_HERE, notCheckedQuotedLine, unscoredHeadline, unscoredTallyLine,
 } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
+import type { Tally } from "../src/lib/verdict/index.js";
+import { verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 const france = ds.countries.find((c) => c.code === "FR")!;
 const researcher = france.routes.find((r) => r.id === "fr-talent-chercheur")!;
+
+/**
+ * Each country's line on the four-country verdict for a declared situation,
+ * by the country's name: the s19 sentence where the line carries one, or null.
+ */
+function tallyLinesFor(situation: string | undefined, data: Dataset = ds): Map<string, Tally["closedTo"]> {
+  const answers = { [DESTINATION_FIELD]: "all", ...(situation === undefined ? {} : { [SITUATION_FIELD]: situation }) };
+  const { layout } = verdictOn(data, answers);
+  if (layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
+  return new Map(layout.sections.map((s) => [s.name, s.tally.closedTo]));
+}
 
 /** The country question, as the four-country path reaches it: third, after the situation. */
 const countryQuestion = () =>
@@ -122,8 +133,8 @@ describe("s21 — question 3 marks a country the declared situation cannot use",
 
 describe("s21 — the four-country result says it in the country's line", () => {
   it("France's line: the s19 headline, then the quoted route as the link", () => {
-    const line = unscoredTally(ds, france, "research");
-    expect(line).not.toBeNull();
+    const line = tallyLinesFor("research").get(france.name);
+    expect(line).toBeTruthy();
     expect(line!.text).toBe(
       "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
@@ -140,16 +151,16 @@ describe("s21 — the four-country result says it in the country's line", () => 
     );
     // Without a quoted route the line is the headline alone.
     expect(unscoredTallyLine("France", "a research hosting agreement")).toBe(unscoredHeadline("France", "a research hosting agreement"));
-    expect(unscoredTally(ds, { code: "XX", name: "Nowhere", routes: [] }, "research")).toBeNull();
     // The question-2 mark reads the same clause.
     expect(notCheckedQuotedLine("France", "R")).toContain(IS_QUOTED_NOT_CHECKED);
   });
 
   it("only a country closed to the declared situation: the other three, the other answers and no answer leave the tally alone", () => {
-    for (const c of ds.countries.filter((c) => c.code !== "FR")) expect(unscoredTally(ds, c, "research"), c.code).toBeNull();
-    expect(unscoredTally(ds, france, "offer")).toBeNull();
-    expect(unscoredTally(ds, france, "none")).toBeNull();
-    expect(unscoredTally(ds, france, undefined)).toBeNull();
+    const research = tallyLinesFor("research");
+    for (const c of ds.countries.filter((c) => c.code !== "FR")) expect(research.get(c.name), c.code).toBeNull();
+    expect(tallyLinesFor("offer").get(france.name)).toBeNull();
+    expect(tallyLinesFor("none").get(france.name)).toBeNull();
+    expect(tallyLinesFor(undefined).get(france.name)).toBeNull();
   });
 
   it("escapes the names it prints", () => {
@@ -158,8 +169,8 @@ describe("s21 — the four-country result says it in the country's line", () => 
     const renamed = (c: Country): Country => c.code !== "FR" ? c
       : { ...c, routes: c.routes.map((r) => (r.id === researcher.id ? { ...r, name: "<x>" } : r)) };
     const doctored = { ...ds, countries: ds.countries.map(renamed) } as Dataset;
-    const line = unscoredTally(doctored, renamed(france), "research");
-    expect(line).not.toBeNull();
+    const line = tallyLinesFor("research", doctored).get(france.name);
+    expect(line).toBeTruthy();
     expect(line!.text).toBe("No route we check in France takes a research hosting agreement — <x> is quoted, not checked.");
     expect(line!.html).toContain(">&lt;x&gt;</a>");
     expect(line!.html).not.toContain("<x>");
@@ -179,7 +190,7 @@ describe("s21 — the four-country result says it in the country's line", () => 
     for (const s of fieldOptions(ds, SITUATION_FIELD)) {
       if (s.is_unknown) continue;
       expect(asked.get("all")!.has(s.value), s.value).toBe(true);
-      expect(ds.countries.some((c) => unscoredTally(ds, c, s.value) === null), s.value).toBe(true);
+      expect([...tallyLinesFor(s.value).values()].some((line) => line === null), s.value).toBe(true);
     }
   });
 });

@@ -3,13 +3,14 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, evaluate, type Dataset, type Profile } from "permit-rulebook-data";
-import { learnBoxHtml } from "../src/lib/card.js";
 import { glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { routePages } from "../src/lib/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
+import { verdictHtml } from "../src/lib/verdict/index.js";
+import { blocksIn, cardOn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -72,18 +73,36 @@ const anchorsOf = (html: string): { href: string; text: string }[] =>
 
 describe("2 — link text is glossed on the screen's memory (#151, ruling 8)", () => {
   it("the card's box explains the act in a label on a screen that has explained nothing, and not on one that has", () => {
-    const seen = withLabel(SHORTAGE, SYMBOL_LABEL);
-    const result = evaluate(seen, UNSURE).find((r) => r.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml({ ds: seen, answers: UNSURE, glossary: new Set() }, result);
-    const [link, ...rest] = anchorsOf(html);
-    expect(rest, "the box carries more than the one door").toEqual([]);
-    const door = seen.fields.find((f) => f.id === SHORTAGE)!.learn!;
-    expect(link.text).toBe(esc(firstUseLink(door)));
-    expect(html).toContain(ACT_EXPANSION);
-    // A screen whose citation line already named the act prints the label as written.
-    const spent = new Set<string>();
-    glossed("§ 18g AufenthG", spent);
-    expect(anchorsOf(learnBoxHtml({ ds: seen, answers: UNSURE, glossary: spent }, result))[0]!.text).toBe(esc(learnLinkTextOf(door)));
+    // Two screens: the shortage card's, whose own title cites the act first,
+    // and a French card's, the same label put on its door, where nothing
+    // before the box cites it.
+    const FRENCH: Profile = {
+      destination: "fr", situation: "offer", qualification: "degree", fr_degree: "yes", citizenship: "TR",
+      fr_innovative_employer: "unknown", salary_eur_year: "band_0",
+    };
+    const branches = new Set<string>();
+    for (const [field, route, answers] of [
+      [SHORTAGE, "de-blue-card-shortage", UNSURE], ["fr_innovative_employer", "fr-talent-innovante", FRENCH],
+    ] as const) {
+      const seen = withLabel(field, SYMBOL_LABEL);
+      const door = seen.fields.find((f) => f.id === field)!.learn!;
+      const verdict = verdictOn(seen, answers);
+      const html = blocksIn(cardOn(verdict, route), "learn");
+      const [link, ...rest] = anchorsOf(html);
+      expect(rest, "the box carries more than the one door").toEqual([]);
+      // Whether anything above the box on this screen has already named the act.
+      const body = verdictHtml(verdict);
+      const spent = body.slice(0, body.indexOf(html)).includes(ACT_EXPANSION.replace("AufenthG ", ""));
+      branches.add(spent ? "spent" : "fresh");
+      if (spent) {
+        // A screen whose citation line already named the act prints the label as written.
+        expect(link.text, route).toBe(esc(learnLinkTextOf(door)));
+      } else {
+        expect(link.text, route).toBe(esc(firstUseLink(door)));
+        expect(html, route).toContain(ACT_EXPANSION);
+      }
+    }
+    expect(branches.size, `only the ${[...branches].join()} screen was reached`).toBe(2);
   });
 
   it("the question line prints the same label, explained on the card's first use", () => {
@@ -159,7 +178,8 @@ describe("3 — the three surfaces agree", () => {
       const result = evaluate(ds, profile).find((r) => r.route.id === route)!;
       expect(result.status, `${route} is not on hold`).toBe("hold");
       const door = ds.fields.find((f) => f.id === field)!.learn!;
-      expect(anchorsOf(learnBoxHtml({ ds, answers: profile }, result))).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
+      const box = blocksIn(cardOn(verdictFor(profile), route), "learn");
+      expect(anchorsOf(box)).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
     });
   }
 });

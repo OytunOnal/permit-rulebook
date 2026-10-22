@@ -5,13 +5,12 @@ import {
   closedBy, deriveBands, evaluate, isClosed, noticeSources, notices,
   type Dataset, type Notice, type Profile, type RouteResult,
 } from "permit-rulebook-data";
-import { closedRowHtml, noticeHtml, quoteForCard } from "../src/lib/card.js";
 import { routePages } from "../src/lib/route-page.js";
 import {
   NOTHING_OPEN_HEADLINE, RULES_MET, STATUS_LABEL, UNSETTLED_SECTION_LINE, unsettledHeadline,
 } from "../src/lib/copy.js";
-import type { Verdict, VerdictGroup } from "../src/lib/verdict/index.js";
-import { cardsIn, groupsIn, placed, verdictFor } from "./verdict-cards.js";
+import { verdictHtml, type Verdict, type VerdictGroup } from "../src/lib/verdict/index.js";
+import { cardOn, cardsIn, groupsIn, placed, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -70,7 +69,7 @@ describe("s8 — a route the authority closes is not a result", () => {
 
   it("says why in the authority's own words, with the sentence and the day it was read", () => {
     const algerian = transferring("DZ");
-    const html = closedRowHtml(resultOf(algerian, "fr-ict"));
+    const html = cardOn(verdictFor(algerian), "fr-ict");
     const closing = closedBy(resultOf(algerian, "fr-ict"))[0].criterion;
     expect(closing.op).toBe("not-in");
     if (closing.op !== "not-in") throw new Error("unreachable");
@@ -88,11 +87,12 @@ describe("s8 — a route the authority closes is not a result", () => {
 
   it("escapes what it prints, like every other block", () => {
     const algerian = transferring("DZ");
-    const r = structuredClone(resultOf(algerian, "fr-ict"));
-    const closing = r.criteria.find((cr) => cr.criterion.op === "not-in")!.criterion;
+    const altered = structuredClone(ds);
+    const route = altered.countries.flatMap((c) => c.routes).find((x) => x.id === "fr-ict")!;
+    const closing = route.criteria.find((c) => c.op === "not-in")!;
     if (closing.op !== "not-in") throw new Error("unreachable");
     closing.text = "a & b <em>c</em>";
-    expect(closedRowHtml(r)).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
+    expect(cardOn(verdictOn(altered, algerian), "fr-ict")).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
   });
 
   it("the results page files them apart from the three verdicts, on both card layouts", () => {
@@ -119,7 +119,12 @@ describe("s8 — a route the authority closes is not a result", () => {
 });
 
 describe("s8 — the notice carries the open question without answering it", () => {
-  const html = () => noticeHtml(OPEN_QUESTION);
+  /** The notice card as the verdict of an Algerian passport draws it. */
+  const html = (): string => {
+    const card = /<article class="notice open-question">[\s\S]*?<\/article>/.exec(verdictFor(withPassport("DZ")).notices);
+    if (!card) throw new Error("the verdict draws no open-question notice");
+    return card[0];
+  };
 
   it("stands for an Algerian passport and for nobody else", () => {
     expect(notices(ds, withPassport("DZ")).map((n) => n.id)).toContain(OPEN_QUESTION.id);
@@ -140,10 +145,12 @@ describe("s8 — the notice carries the open question without answering it", () 
       // element (tracker #5, restored by the Standards review 2026-09-10): the
       // evidence stays complete either way, so the card is read for one or the
       // other and never for neither.
-      const { shown, trimmed } = quoteForCard(source.quote);
-      expect(html(), source.source_url).toContain(esc(shown));
-      if (trimmed) expect(html(), `${source.source_url}: the whole passage is not on the element`)
-        .toContain(escAttr(source.quote));
+      if (!html().includes(esc(source.quote))) {
+        expect(html(), `${source.source_url}: the whole passage is not on the element`)
+          .toContain(`title="${escAttr(source.quote)}"`);
+        expect(html(), `${source.source_url}: the passage is not begun on the card`)
+          .toContain(esc(source.quote.slice(0, 40)));
+      }
       expect(html(), source.source_url).toContain(source.legal_basis!);
     }
     // French from a French court, English from EUR-Lex — one voice per quote.
@@ -160,7 +167,9 @@ describe("s8 — the notice carries the open question without answering it", () 
   });
 
   it("the results page still calls the block that renders it", () => {
-    expect(verdictFor(withPassport("DZ")).notices).toContain(html());
+    const body = verdictHtml(verdictFor(withPassport("DZ")));
+    expect(body).toContain(html());
+    expect(body).toContain('class="notice open-question"');
   });
 });
 

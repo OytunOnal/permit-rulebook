@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { deriveBands, evaluate, type Dataset, type Profile, type RouteResult } from "permit-rulebook-data";
-import { bandStandsAt, decidingThresholds, railHtml } from "../src/lib/card.js";
+import { deriveBands, evaluate, forEachCriterion, type Dataset, type Profile } from "permit-rulebook-data";
+import { blocksIn, everyCardIn, placed, verdictFor } from "./verdict-cards.js";
 
 /**
  * The results card's salary rail, after the human's walk of 2026-09-08.
@@ -22,20 +22,22 @@ const WALK: Profile = {
   nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
 };
 
-const resultOf = (profile: Profile, id: string): RouteResult =>
-  evaluate(ds, profile).find((r) => r.route.id === id)!;
+/** The rail a route's card draws on the verdict these answers read, or "" where
+ * the card draws none. */
+const railFor = (profile: Profile, id: string): string => {
+  const card = placed(verdictFor(profile), id);
+  if (!card) throw new Error(`${id} is not on this verdict`);
+  return blocksIn(card.html, "rail");
+};
 
 const ticksOf = (html: string) => [...html.matchAll(/class="rail-tick" style="left:([^"]+)"/g)].map((m) => m[1]);
 const rowsOf = (html: string) => [...html.matchAll(/<li>([\s\S]*?)<\/li>/g)]
   .map((m) => m[1].replace(/<[^>]*>/g, " ").split(/\s+/).filter(Boolean).join(" "));
+const asksRowsOf = (html: string) => rowsOf(html).filter((row) => row.includes("what this route asks"));
 const bandLeft = (html: string) => /class="you" style="left:([^;]+);width:([^"]+)"/.exec(html);
 
-/** The band whose lower edge is exactly a given amount. */
-const bandAt = (field: string, amount: number) =>
-  deriveBands(ds, field).find((b) => b.min === amount)!;
-
 describe("the rail draws only what it names", () => {
-  const html = railHtml(ds, resultOf(WALK, "nl-ict"), WALK);
+  const html = railFor(WALK, "nl-ict");
 
   it("one tick per amount this route asks — no neighbours, no hover titles", () => {
     // Before this change: 6 ticks, 5 of them other routes' thresholds carrying
@@ -44,7 +46,7 @@ describe("the rail draws only what it names", () => {
     expect(html).not.toContain("title=");
     expect(html).not.toContain("a threshold on another route");
     // The route asks one amount here, and the rail draws one.
-    expect(decidingThresholds(ds, resultOf(WALK, "nl-ict"), WALK).length).toBe(1);
+    expect(asksRowsOf(html).length).toBe(1);
   });
 
   it("one line per drawn mark, in reading order, each with its swatch", () => {
@@ -84,33 +86,42 @@ describe("the rail says where the reader stands", () => {
       qualification: "degree", experience_5y: "2plus", experience_7y: "3to5", nl_recent_grad: "yes", top200_grad: "no",
       age_band: "a30to35",
     };
-    const r = resultOf(profile, "nl-blue-card");
-    const thresholds = decidingThresholds(ds, r, profile);
-    const html = railHtml(ds, r, profile);
-    // However many amounts decide it, that many ticks and that many named rows.
-    expect(ticksOf(html).length).toBe(thresholds.length);
-    expect(rowsOf(html).length).toBe(thresholds.length + 1);
-    for (const t of thresholds)
-      expect(html, `${t.threshold.amount} is drawn but not named`)
-        .toContain(String(t.threshold.amount).replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+    const r = evaluate(ds, profile).find((x) => x.route.id === "nl-blue-card")!;
+    expect(r.status, "a not-yet row draws no rail").not.toBe("hold");
+    // The amounts the route states on the salary it is measured on, from the dataset.
+    const amounts = new Set<number>();
+    forEachCriterion(r.route.criteria, (c) => {
+      if (c.op === "gte" && c.field === "salary_eur_month") amounts.add(c.threshold.amount);
+    });
+    expect(amounts.size).toBeGreaterThan(1);
+    const html = railFor(profile, "nl-blue-card");
+    // However many amounts decide it, that many ticks and that many named rows,
+    // each naming one of the route's own amounts.
+    const asks = asksRowsOf(html);
+    expect(asks.length).toBeGreaterThan(0);
+    expect(ticksOf(html).length).toBe(asks.length);
+    expect(rowsOf(html).length).toBe(asks.length + 1);
+    const named = (amount: number) => `€${String(amount).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}/month`;
+    for (const row of asks)
+      expect([...amounts].some((amount) => row.includes(named(amount))), `${row} names no amount the route asks`).toBe(true);
   });
 
   it("says how the band stands against each amount, in the card's own words", () => {
-    const field = "salary_eur_month";
-    const at5942 = bandAt(field, 5942);
-    expect(bandStandsAt(at5942, 5942)).toBe("above the amount");
+    // The reader who answered the band that starts on the route's amount.
+    expect(deriveBands(ds, "salary_eur_month").find((b) => b.id === WALK.salary_eur_month)!.min).toBe(5942);
+    expect(asksRowsOf(railFor(WALK, "nl-ict"))[0]).toContain("above the amount");
     // A band wholly below says how far short, the way the gap note does.
-    const below = deriveBands(ds, field).find((b) => b.max !== undefined && b.max <= 5942)!;
-    expect(bandStandsAt(below, 5942)).toMatch(/^up to €[\d,.]+ short$/);
-    // And a band that straddles an amount says that, rather than picking a side.
-    const straddles = { id: "x", min: 5000, max: 6500, label: "€5,000 – €6,500" };
-    expect(bandStandsAt(straddles, 5942)).toBe("crosses the amount");
+    const below: Profile = { ...WALK, salary_eur_month: "band_5" };
+    expect(deriveBands(ds, "salary_eur_month").find((b) => b.id === below.salary_eur_month)!.max).toBeLessThanOrEqual(5942);
+    expect(asksRowsOf(railFor(below, "nl-ict"))[0]).toMatch(/ · up to €[\d,.]+ short$/);
+    // A band that straddles one of the route's own amounts would say "crosses
+    // the amount"; through the verdict no answer reaches it, because every
+    // band is cut at every amount the dataset states.
   });
 
   it("a band that crosses an amount is drawn crossing it", () => {
     const profile: Profile = { ...WALK, salary_eur_month: "band_5" };
-    const r = resultOf(profile, "nl-ict");
-    const html = railHtml(ds, r, profile);
+    const html = railFor(profile, "nl-ict");
     const band = bandLeft(html)!;
     const left = Number.parseFloat(band[1]);
     const right = left + Number.parseFloat(band[2]);
@@ -123,18 +134,18 @@ describe("the rail says where the reader stands", () => {
 
   it("never draws a rail it cannot name", () => {
     // Every route, every band: as many ticks as named amounts, always.
+    let drawn = 0;
     for (const country of ds.countries)
-      for (const route of country.routes) {
-        const profile: Profile = { ...WALK, destination: country.code.toLowerCase() };
-        const r = evaluate(ds, profile).find((x) => x.route.id === route.id);
-        if (!r) continue;
-        const html = railHtml(ds, r, profile);
+      for (const card of everyCardIn(verdictFor({ ...WALK, destination: country.code.toLowerCase() }))) {
+        const html = blocksIn(card.html, "rail");
         if (!html) continue;
+        drawn++;
         const ticks = ticksOf(html).length;
-        expect(rowsOf(html).length, `${route.id}: ${ticks} ticks, ${rowsOf(html).length} rows`)
+        expect(rowsOf(html).length, `${card.route}: ${ticks} ticks, ${rowsOf(html).length} rows`)
           .toBe(ticks + 1);
-        expect(html, `${route.id} still hides a mark in a title`).not.toContain("title=");
+        expect(html, `${card.route} still hides a mark in a title`).not.toContain("title=");
       }
+    expect(drawn, "no card on these verdicts draws a rail").toBeGreaterThan(0);
   });
 });
 
@@ -148,7 +159,7 @@ describe("the rail says where the reader stands", () => {
  */
 describe("the rail's marks do not share a class with anything else", () => {
   it("draws rail-tick, never the checkmark's class", () => {
-    const html = railHtml(ds, resultOf(WALK, "nl-ict"), WALK);
+    const html = railFor(WALK, "nl-ict");
     expect(html).toContain('class="rail-tick"');
     expect(html).not.toMatch(/class="tick"/);
   });

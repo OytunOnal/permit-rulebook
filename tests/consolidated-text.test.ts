@@ -3,16 +3,16 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  CONSOLIDATED_TEXT_HOSTS, deriveQuestions, evaluate, routeStatements, scopeLine,
+  CONSOLIDATED_TEXT_HOSTS, deriveQuestions, isScored, routeStatements, scopeLine,
   type Dataset, type Profile, type Route,
 } from "permit-rulebook-data";
 import { OFFICIAL_PAGE, consolidatedTextOn } from "../src/lib/copy.js";
-import { closedRowHtml, noticeHtml, sourcedCaveatHtml } from "../src/lib/card.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { recordSeedScript, skipReason, warnNotWalked, withSite, type PageOnSite } from "./browser-walk.js";
 import { builtPages } from "./reader-pages.js";
+import { blocksIn, cardOn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -92,7 +92,9 @@ describe("a notice that names no page of its own links its source by its kind", 
 
   it("on the results card", () => {
     const { dataset: altered } = datasetWithConsolidatedNotice();
-    const links = altered.notices!.flatMap((n) => linksIn(noticeHtml(n), n.id));
+    // Every notice the dataset carries, on the verdict of a passport it stands for.
+    const links = ["TR", "DZ", "IT"].flatMap((citizenship) =>
+      linksIn(verdictOn(altered, { destination: "all", citizenship }).notices, citizenship));
     expect(checkedConsolidatedLinkCount(links)).toBeGreaterThan(0);
   });
 
@@ -108,9 +110,10 @@ describe("a card's foot links the route's page by its kind", () => {
     // The intra-corporate transfer, closed to an Algerian passport; its page
     // moved, in this written result, to a consolidated-text host.
     const answers: Profile = { destination: "fr", citizenship: "DZ", situation: "ict", situation_country: "fr" };
-    const r = structuredClone(evaluate(ds, answers).find((x) => x.route.id === "fr-ict")!);
-    r.route.info_url = `https://${CONSOLIDATED_TEXT_HOSTS[0]}/21_AufenthG.htm`;
-    const html = closedRowHtml(r);
+    const altered = structuredClone(ds);
+    altered.countries.flatMap((c) => c.routes).find((x) => x.id === "fr-ict")!.info_url =
+      `https://${CONSOLIDATED_TEXT_HOSTS[0]}/21_AufenthG.htm`;
+    const html = cardOn(verdictOn(altered, answers), "fr-ict");
     expect(html, "fr-ict is not closed to this reader").not.toBe("");
     expect(checkedConsolidatedLinkCount(linksIn(html, "fr-ict"))).toBe(1);
   });
@@ -160,10 +163,13 @@ describe("no word claims an official page over a consolidated text (#151's fix r
   });
 
   it("a results card's caveats quoted from a consolidated text are headed without 'official'", () => {
-    const routes = ds.countries.flatMap((c) => c.routes).filter((r) => consolidatedCaveats(r).length > 0);
+    // A route the checker quotes but does not score is never a results card.
+    const routes = ds.countries.flatMap((c) => c.routes).filter((r) => isScored(r) && consolidatedCaveats(r).length > 0);
     expect(routes.length, "precondition: a route quotes a caveat from a consolidated text").toBeGreaterThan(0);
+    // Each card as the verdict of a reader who has answered nothing draws it.
+    const blank = verdictFor({});
     for (const route of routes) {
-      const heading = /<div class="caveat"><b>([^<]*)<\/b>/.exec(sourcedCaveatHtml({ ds, answers: {} }, route))?.[1];
+      const heading = /<div class="caveat"><b>([^<]*)<\/b>/.exec(blocksIn(cardOn(blank, route.id), "caveat"))?.[1];
       expect(heading, route.id).toBeDefined();
       expect(heading, route.id).not.toMatch(CLAIMS_OFFICIAL);
     }

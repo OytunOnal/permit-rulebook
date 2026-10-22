@@ -7,17 +7,14 @@ import {
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import {
-  SITUATION_COUNTRY_FIELD, leadCountry, leads, namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict,
-} from "../src/lib/situations.js";
+import { SITUATION_COUNTRY_FIELD, type UnscoredVerdict } from "../src/lib/situations.js";
 import { READ_ITS_RULES, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
+import { verdictFor } from "./verdict-cards.js";
 import { expectNothingLeft, type Sent } from "./wire.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
-
-const france = ds.countries.find((c) => c.code === "FR")!;
 
 /** The four-country answers for a situation and the country the reader named at question 3. */
 const fourCountry = (situation: string, country: string): Profile =>
@@ -25,6 +22,12 @@ const fourCountry = (situation: string, country: string): Profile =>
 /** The direct answers: that country at question 1, the situation at question 2. */
 const direct = (situation: string, country: string): Profile =>
   ({ [DESTINATION_FIELD]: country, [SITUATION_FIELD]: situation });
+
+/** The written state the verdict for these answers reads, or null where it reads none. */
+function unscoredVerdict(answers: Profile): UnscoredVerdict | null {
+  const { action } = verdictFor(answers);
+  return (action.kind === "compare" ? action.unscored : undefined) ?? null;
+}
 
 /** The subline in its two sentences: the route line, with the door, and the rest. */
 const sentences = (v: UnscoredVerdict): { route: string; rest: string } => {
@@ -54,8 +57,8 @@ describe("s26 — the named country gets the four-country headline", () => {
     const pairs: string[] = [];
     for (const s of fieldOptions(ds, SITUATION_FIELD)) {
       for (const c of fieldOptions(ds, SITUATION_COUNTRY_FIELD)) {
-        const four = unscoredVerdict(ds, fourCountry(s.value, c.value));
-        const one = unscoredVerdict(ds, direct(s.value, c.value));
+        const four = unscoredVerdict(fourCountry(s.value, c.value));
+        const one = unscoredVerdict(direct(s.value, c.value));
         if (s.is_fallback || s.is_unknown || asked.get(c.value)!.has(s.value)) {
           // A situation the country's scored routes take: no written state either way.
           expect(four, `${s.value}:${c.value}`).toBeNull();
@@ -94,7 +97,7 @@ describe("s26 — the named country gets the four-country headline", () => {
   });
 
   it("the France researcher, both ways: the same words, the door to the quoted route", () => {
-    const four = unscoredVerdict(ds, fourCountry("research", "fr"))!;
+    const four = unscoredVerdict(fourCountry("research", "fr"))!;
     expect(four.headline).toBe("No route we check in France takes a research hosting agreement.");
     expect(four.subline).toBe(
       "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
@@ -103,16 +106,16 @@ describe("s26 — the named country gets the four-country headline", () => {
     expect(four.door).toEqual({ text: READ_ITS_RULES, href: url("/france/talent-researcher") });
     expect(four.lead).toBe("fr");
     // The direct path, as s19 left it.
-    expect(unscoredVerdict(ds, direct("research", "fr"))!.subline).toMatch(/ The routes below need /);
+    expect(unscoredVerdict(direct("research", "fr"))!.subline).toMatch(/ The routes below need /);
   });
 
   it("is keyed by the named country only where the destination is all four: no country named, or a country that takes the situation, leaves the verdicts as they were", () => {
-    expect(unscoredVerdict(ds, { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "research" })).toBeNull();
-    expect(unscoredVerdict(ds, fourCountry("research", "de"))).toBeNull();
-    expect(unscoredVerdict(ds, fourCountry("offer", "fr"))).toBeNull();
-    expect(unscoredVerdict(ds, fourCountry("none", "fr"))).toBeNull();
+    expect(unscoredVerdict({ [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "research" })).toBeNull();
+    expect(unscoredVerdict(fourCountry("research", "de"))).toBeNull();
+    expect(unscoredVerdict(fourCountry("offer", "fr"))).toBeNull();
+    expect(unscoredVerdict(fourCountry("none", "fr"))).toBeNull();
     // A stray country answer under a one-country destination is not a key: the direct path never asks it.
-    expect(unscoredVerdict(ds, { ...direct("research", "es"), [SITUATION_COUNTRY_FIELD]: "fr" })).toBeNull();
+    expect(unscoredVerdict({ ...direct("research", "es"), [SITUATION_COUNTRY_FIELD]: "fr" })).toBeNull();
   });
 });
 
@@ -129,19 +132,28 @@ describe("s26 — the named country's section leads", () => {
   /** An explorer: no offer, transfer or agreement, so no country named. */
   const explorer: Profile = { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "none", citizenship: "TR", qualification: "none" };
 
-  /** The order the result draws, from the profile alone, the way the page derives it. */
+  /** The country sections the verdict draws, in order. */
+  const sectionsOf = (answers: Profile) => {
+    const { layout } = verdictFor(answers);
+    if (layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
+    return layout.sections;
+  };
+  /** The order the result draws, by country code. */
   const order = (answers: Profile): string[] =>
-    namedFirst(ds.countries, leadCountry(ds, answers, zeroOpen(answers))).map((c) => c.code);
+    sectionsOf(answers).map((s) => ds.countries.find((c) => c.name === s.name)!.code);
+  /** The country the verdict leads with, where its headline names one. */
+  const leadOf = (answers: Profile): string | undefined => unscoredVerdict(answers)?.lead;
 
   it("first, before the others in dataset order, when nothing is open anywhere", () => {
     expect(zeroOpen(walk)).toBe(true);
-    const lead = leadCountry(ds, walk, zeroOpen(walk));
-    expect(lead).toBe("fr");
+    expect(leadOf(walk)).toBe("fr");
     expect(order(walk)).toEqual(["FR", "DE", "ES", "NL"]);
     // The one predicate: the named country leads, and it is the only one that does.
-    expect(ds.countries.map((c) => leads(c, lead))).toEqual([false, true, false, false]);
+    const first = sectionsOf(walk)[0]!;
+    expect(ds.countries.map((c) => c.name === first.name)).toEqual([false, true, false, false]);
+    expect(first.open).toBe(true);
     // Its line keeps s21's sentence and link.
-    expect(unscoredTally(ds, france, "research")!.text).toBe(
+    expect(first.tally.closedTo!.text).toBe(
       "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
   });
@@ -149,24 +161,22 @@ describe("s26 — the named country's section leads", () => {
   it("dataset order with something open anywhere, and where the named country takes the situation, and with no country named", () => {
     // The headline is the open one; the written state is not drawn, and no country leads.
     expect(zeroOpen(opened)).toBe(false);
-    expect(leadCountry(ds, opened, zeroOpen(opened))).toBeUndefined();
+    expect(leadOf(opened)).toBeUndefined();
     expect(order(opened)).toEqual(["DE", "FR", "ES", "NL"]);
     // Zero open, but no written state for Germany: nothing leads.
     expect(zeroOpen(offer)).toBe(true);
-    expect(unscoredVerdict(ds, offer)).toBeNull();
-    expect(leadCountry(ds, offer, true)).toBeUndefined();
+    expect(unscoredVerdict(offer)).toBeNull();
+    expect(leadOf(offer)).toBeUndefined();
     expect(order(offer)).toEqual(["DE", "FR", "ES", "NL"]);
     // The explorer: nothing named, nothing leads.
     expect(zeroOpen(explorer)).toBe(true);
-    expect(leadCountry(ds, explorer, true)).toBeUndefined();
+    expect(leadOf(explorer)).toBeUndefined();
     expect(order(explorer)).toEqual(["DE", "FR", "ES", "NL"]);
-    // And the walk's own lead is nobody's the moment something is open: the decision is the headline's.
-    expect(leadCountry(ds, walk, false)).toBeUndefined();
-    expect(ds.countries.some((c) => leads(c, undefined))).toBe(false);
-    // The order is stable: nothing else moves, and an unknown lead moves nothing.
-    expect(namedFirst(ds.countries, "nl").map((c) => c.code)).toEqual(["NL", "DE", "FR", "ES"]);
-    expect(namedFirst(ds.countries, "xx").map((c) => c.code)).toEqual(["DE", "FR", "ES", "NL"]);
-    expect(namedFirst(ds.countries, "fr")).not.toBe(ds.countries);
+    // And the walk's own lead is nobody's the moment something is open: the
+    // decision is the headline's — `opened` is the walk with a German route open.
+    expect(leadOf(opened)).toBeUndefined();
+    // The order is stable: with France leading, nothing else moves.
+    expect(order(walk).slice(1)).toEqual(ds.countries.map((c) => c.code).filter((c) => c !== "FR"));
   });
 });
 

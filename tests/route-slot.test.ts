@@ -3,14 +3,14 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  deriveQuestions, evaluate, fillRouteSlots, hostKindOf, type Dataset, type Profile,
+  deriveQuestions, fillRouteSlots, hostKindOf, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { consolidatedTextOn } from "../src/lib/copy.js";
-import { learnBoxHtml } from "../src/lib/card.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { builtPages, headingsOf, questionCards } from "./reader-pages.js";
+import { blocksIn, cardOn, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -107,8 +107,7 @@ describe("a slot in a question's label or help is drawn filled", () => {
 
   it("in a results card's learn box", () => {
     const slotted = datasetWithShortageSlots();
-    const r = evaluate(slotted, UNSURE).find((x) => x.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml({ ds: slotted, answers: UNSURE }, r);
+    const html = blocksIn(cardOn(verdictOn(slotted, UNSURE), "de-blue-card-shortage"), "learn");
     expect(html, "the shortage card draws no learn box").not.toBe("");
     expect(html).not.toContain(SLOT_OPENING);
     expect(html).toContain(filled);

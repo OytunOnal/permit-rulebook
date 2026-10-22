@@ -10,12 +10,12 @@ import { navCountries } from "../src/lib/country-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { declarationHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { scopedHtml } from "../src/lib/card.js";
 import { glossSection } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
+import { blocksIn, cardOn, verdictFor } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -149,7 +149,7 @@ const OPENED: Profile = {
 describe("8 — the card's door is a door", () => {
   it("the scope line stands alone, no separator after it; the door follows as its own element, the copy's words, an internal href", () => {
     const address = routeAddresses(ds).find((a) => a.route.id === "de-chancenkarte")!;
-    const html = scopedHtml(address.route, OPENED, url(address.path));
+    const html = blocksIn(cardOn(verdictFor(OPENED), "de-chancenkarte"), "scoped");
     const m = /^<div class="scoped">([^<]*)<a class="door" href="([^"]+)">([^<]*)<\/a><\/div>$/.exec(html);
     expect(m, html).not.toBeNull();
     const [, scope, href, words] = m!;

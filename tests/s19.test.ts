@@ -9,8 +9,7 @@ import {
 import { esc } from "../src/lib/reason.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { notScoredFor, notScoredMarkHtml, unscoredVerdict } from "../src/lib/situations.js";
-import { precondHtml } from "../src/lib/card.js";
+import { notScoredFor, notScoredMarkHtml, type UnscoredVerdict } from "../src/lib/situations.js";
 import {
   NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, countryHeadline, notCheckedLine, notCheckedQuotedLine,
 } from "../src/lib/copy.js";
@@ -19,6 +18,7 @@ import { countryAddresses, countryPage } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { routePages } from "../src/lib/route-page.js";
 import { url } from "../src/lib/site.js";
+import { blocksIn, cardOn, everyCardIn, verdictFor } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -26,6 +26,16 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const textOf = (html: string): string =>
   html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, "\"")
     .replace(/\s+/g, " ").trim();
+
+/** The written state the verdict for these answers reads, where it reads one. */
+function unscoredOf(answers: Profile): UnscoredVerdict | undefined {
+  const { action } = verdictFor(answers);
+  return action.kind === "compare" ? action.unscored : undefined;
+}
+
+/** What else a route's card on the verdict for these answers says is required. */
+const precondFor = (answers: Profile, route: string): string =>
+  blocksIn(cardOn(verdictFor(answers), route), "precond", "precond asked");
 
 const situationQuestion = () => remainingQuestions(ds, { destination: "fr" }).find((q) => q.field === SITUATION_FIELD)!;
 
@@ -124,8 +134,8 @@ describe("s19 — the interview knows which situations a destination's scored ro
 
 describe("s19 — the zero-open result through a marked option is a written state", () => {
   it("the headline names the country and the situation, the subline names the route and what the rest need", () => {
-    const v = unscoredVerdict(ds, { destination: "fr", situation: "research" });
-    expect(v).not.toBeNull();
+    const v = unscoredOf({ destination: "fr", situation: "research" });
+    expect(v).toBeDefined();
     expect(v!.headline).toBe("No route we check in France takes a research hosting agreement.");
     expect(v!.subline).toBe(
       "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
@@ -135,15 +145,15 @@ describe("s19 — the zero-open result through a marked option is a written stat
   });
 
   it("is only for a marked situation: every other destination and answer leaves the verdicts as they were", () => {
-    expect(unscoredVerdict(ds, { destination: "es", situation: "research" })).toBeNull();
-    expect(unscoredVerdict(ds, { destination: "fr", situation: "offer" })).toBeNull();
-    expect(unscoredVerdict(ds, { destination: "fr", situation: "none" })).toBeNull();
-    expect(unscoredVerdict(ds, { destination: "all", situation: "research" })).toBeNull();
-    expect(unscoredVerdict(ds, { situation: "research" })).toBeNull();
+    expect(unscoredOf({ destination: "es", situation: "research" })).toBeUndefined();
+    expect(unscoredOf({ destination: "fr", situation: "offer" })).toBeUndefined();
+    expect(unscoredOf({ destination: "fr", situation: "none" })).toBeUndefined();
+    expect(unscoredOf({ destination: "all", situation: "research" })).toBeUndefined();
+    expect(unscoredOf({ situation: "research" })).toBeUndefined();
   });
 
   it("the masthead carries it with the door as the only markup, and announces the words", () => {
-    const v = unscoredVerdict(ds, { destination: "fr", situation: "research" })!;
+    const v = unscoredOf({ destination: "fr", situation: "research" })!;
     const m = mastheadFor({ kind: "results", answered: 2, routes: 5, headline: v.headline, unscored: v });
     expect(m.headline).toBe(v.headline);
     expect(m.subline).toBe(v.subline);
@@ -178,11 +188,15 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
   };
 
   it("over every scored route with a full profile", () => {
-    const answers = full();
+    // Every country on the screen, so every scored route has its card.
+    const answers: Profile = { ...full(), destination: "all" };
+    const results = evaluate(ds, answers).filter((r) => isScored(r.route));
+    const cards = everyCardIn(verdictFor(answers));
+    expect(cards.length).toBe(results.length);
     let moved = 0;
-    for (const r of evaluate(ds, answers)) {
-      if (!isScored(r.route)) continue;
-      const html = precondHtml({ ds, answers }, r.route);
+    for (const card of cards) {
+      const r = results.find((x) => x.route.id === card.route)!;
+      const html = blocksIn(card.html, "precond", "precond asked");
       const notChecked = html.match(new RegExp(`<div class="precond"><b>${NOT_CHECKED_HEADING}</b>([\\s\\S]*?)</div>`))?.[1] ?? "";
       for (const s of (r.route.statements ?? []).filter((x) => x.kind === "precondition")) {
         if (s.field === undefined || answers[s.field] === undefined) continue;
@@ -197,19 +211,17 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
 
   it("the Spanish researcher card says what was declared, in the s5 words", () => {
     const answers: Profile = { destination: "es", citizenship: "TR", situation: "research", situation_country: "es" };
-    const html = precondHtml({ ds, answers }, ds.countries.find((c) => c.code === "ES")!.routes.find((r) => r.id === "es-researcher")!);
+    const html = precondFor(answers, "es-researcher");
     expect(html).toContain(`Asked in the interview — you declared “I have (or expect) a hosting agreement with a research institution there”:`);
     expect(html).toContain("A hosting agreement — the formal agreement a research institution signs to take you on");
     expect(html).not.toContain(NOT_CHECKED_HEADING);
   });
 
   it("with no reader, and with an unknown answer, nothing is called answered", () => {
-    const es = ds.countries.find((c) => c.code === "ES")!.routes.find((r) => r.id === "es-researcher")!;
-    expect(precondHtml({ ds, answers: {} }, es)).toContain(NOT_CHECKED_HEADING);
-    expect(precondHtml({ ds, answers: {} }, es)).not.toContain("you declared");
+    expect(precondFor({}, "es-researcher")).toContain(NOT_CHECKED_HEADING);
+    expect(precondFor({}, "es-researcher")).not.toContain("you declared");
     // A field answered with the door for "none of these fits" is not declared.
-    const nl = ds.countries.find((c) => c.code === "NL")!.routes.find((r) => r.id === "nl-researcher")!;
-    expect(precondHtml({ ds, answers: { salary_eur_month: "unknown" } }, nl)).not.toContain("you declared");
+    expect(precondFor({ salary_eur_month: "unknown" }, "nl-researcher")).not.toContain("you declared");
   });
 });
 

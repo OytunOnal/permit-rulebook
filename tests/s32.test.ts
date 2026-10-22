@@ -6,10 +6,10 @@ import {
   answerLabel, evaluate, forEachCriterion, provenancedValuesOf, routeStatements,
   type Dataset, type Profile, type Route, type RouteStatement,
 } from "permit-rulebook-data";
-import { precondHtml } from "../src/lib/card.js";
 import { NOT_CHECKED_HEADING, askedHeading } from "../src/lib/copy.js";
 import { esc } from "../src/lib/reason.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import { cardOn, everyCardIn, verdictOn, withoutGlosses } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -17,6 +17,11 @@ const clone = (): Dataset => JSON.parse(JSON.stringify(dataset)) as Dataset;
 const routeOf = (d: Dataset, id: string): Route => d.countries.flatMap((c) => c.routes).find((r) => r.id === id)!;
 const statementOf = (d: Dataset, route: string, id: string): RouteStatement =>
   routeStatements(routeOf(d, route)).find((s) => s.id === id)!;
+
+/** A route's card on the verdict these answers read, its explainers taken
+ * out: a card explains a shorthand on its first use on the screen. */
+const cardFor = (d: Dataset, answers: Profile, route: string): string =>
+  withoutGlosses(cardOn(verdictOn(d, answers), route));
 
 /** The blocks a card's precondition markup draws: the not-checked list and
  * every asked block, each as its text. */
@@ -67,7 +72,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const route = routeOf(ds, "de-researcher");
     const hosting = statementOf(ds, "de-researcher", "hosting-agreement-with-a-research-facility");
     expect(hosting.field).toBe("situation");
-    const { notChecked, asked } = blocksOf(precondHtml({ ds, answers: RESEARCHER_DE }, route));
+    const { notChecked, asked } = blocksOf(cardFor(ds, RESEARCHER_DE, route.id));
     expect(asked).toHaveLength(1);
     expect(asked[0]).toContain(askedHeading(answerLabel(ds, "situation", "research")));
     expect(asked[0]).toContain(hosting.text);
@@ -79,7 +84,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const route = routeOf(ds, "de-ict-card");
     const tenure = statementOf(ds, "de-ict-card", "six-months-with-the-company-before-the-transfer");
     expect(tenure.field).toBeUndefined();
-    const { notChecked, asked } = blocksOf(precondHtml({ ds, answers: TRANSFEREE_DE }, route));
+    const { notChecked, asked } = blocksOf(cardFor(ds, TRANSFEREE_DE, route.id));
     expect(asked).toEqual([]);
     expect(notChecked).toContain(tenure.text);
     expect(notChecked).toContain(statementOf(ds, "de-ict-card", "transfer-longer-than-ninety-days").text);
@@ -89,7 +94,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const route = routeOf(ds, "fr-ict");
     const tenure = statementOf(ds, "fr-ict", "six-months-with-the-group-already");
     expect(tenure.field).toBeUndefined();
-    const { notChecked, asked } = blocksOf(precondHtml({ ds, answers: TRANSFEREE_FR }, route));
+    const { notChecked, asked } = blocksOf(cardFor(ds, TRANSFEREE_FR, route.id));
     expect(asked).toEqual([]);
     expect(notChecked).toContain(tenure.text);
   });
@@ -99,7 +104,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const reworded = clone();
     const es = statementOf(reworded, "es-researcher", "hosting-agreement-or-contract-with-the-research-body");
     es.source!.quote = "a sentence no criterion quotes";
-    const esHtml = precondHtml({ ds: reworded, answers: { destination: "es", situation: "research", citizenship: "TR" } }, routeOf(reworded, "es-researcher"));
+    const esHtml = cardFor(reworded, { destination: "es", situation: "research", citizenship: "TR" }, "es-researcher");
     expect(blocksOf(esHtml).asked).toHaveLength(1);
     expect(blocksOf(esHtml).notChecked).toBeNull();
     // The field struck: not asked, though the criterion quotes the very sentence — the old key.
@@ -111,7 +116,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     });
     expect(verbatim).toBe(true);
     delete nl.field;
-    const nlHtml = precondHtml({ ds: unfielded, answers: { destination: "nl", situation: "offer", citizenship: "TR" } }, routeOf(unfielded, "nl-blue-card"));
+    const nlHtml = cardFor(unfielded, { destination: "nl", situation: "offer", citizenship: "TR" }, "nl-blue-card");
     expect(blocksOf(nlHtml).asked).toEqual([]);
     expect(blocksOf(nlHtml).notChecked).toContain(nl.text);
   });
@@ -120,7 +125,7 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     const route = routeOf(ds, "de-researcher");
     const hosting = statementOf(ds, "de-researcher", "hosting-agreement-with-a-research-facility");
     for (const answers of [{}, { destination: "de", citizenship: "TR" }] as Profile[]) {
-      const { notChecked, asked } = blocksOf(precondHtml({ ds, answers }, route));
+      const { notChecked, asked } = blocksOf(cardFor(ds, answers, route.id));
       expect(asked).toEqual([]);
       expect(notChecked).toContain(hosting.text);
     }
@@ -130,12 +135,14 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     // Held to the list above, not to the dataset's fields: a reader who has
     // declared a situation, and nothing the employer question could cover.
     const answers: Profile = { destination: "all", citizenship: "TR", situation: "offer", situation_country: "de" };
-    for (const r of evaluate(ds, answers)) {
-      const decided = DECIDED.filter((d) => d.route === r.route.id && d.field !== undefined && answers[d.field] !== undefined);
-      const { asked } = blocksOf(precondHtml({ ds, answers }, r.route));
-      expect(asked.length, r.route.id).toBe(new Set(decided.map((d) => d.field)).size);
+    const cards = everyCardIn(verdictOn(ds, answers));
+    expect(cards.length).toBe(evaluate(ds, answers).length);
+    for (const card of cards) {
+      const decided = DECIDED.filter((d) => d.route === card.route && d.field !== undefined && answers[d.field] !== undefined);
+      const { asked } = blocksOf(withoutGlosses(card.html));
+      expect(asked.length, card.route).toBe(new Set(decided.map((d) => d.field)).size);
       for (const d of decided)
-        expect(asked.join(" "), `${r.route.id}: ${d.statement}`).toContain(esc(statementOf(ds, d.route, d.statement).text));
+        expect(asked.join(" "), `${card.route}: ${d.statement}`).toContain(esc(statementOf(ds, d.route, d.statement).text));
     }
   });
 });

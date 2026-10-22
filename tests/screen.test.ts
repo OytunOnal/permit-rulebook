@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { SITUATION_FIELD, type Dataset } from "permit-rulebook-data";
-import { unscoredVerdict } from "../src/lib/situations.js";
 import {
   INTRO_SUBLINE, SHORT_SUBLINE, claimsAComparison, mastheadFor, screenAfter,
   type FlowAction, type Screen,
 } from "../src/lib/screen.js";
+import { verdictOn } from "./verdict-cards.js";
 
 function lcg(seed: number) {
   let s = seed >>> 0;
@@ -247,7 +247,9 @@ describe("the headline escapes what the dataset says (#25)", () => {
     wrecked.countries.find((c) => c.code === "FR")!.name = HOSTILE;
     const option = wrecked.fields.find((f) => f.id === SITUATION_FIELD)!.options!.find((o) => o.value === "research")!;
     option.short = HOSTILE;
-    const v = unscoredVerdict(wrecked, { destination: "fr", situation: "research" })!;
+    const { action } = verdictOn(wrecked, { destination: "fr", situation: "research" });
+    if (action.kind !== "compare" || !action.unscored) throw new Error("the verdict reads no written state");
+    const v = action.unscored;
     const m = mastheadFor({ kind: "results", answered: 2, routes: 5, headline: v.headline, unscored: v });
     expect(tagIn(m.headline)).toBe(false);
   });
