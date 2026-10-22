@@ -54,8 +54,8 @@ import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddres
 /**
  * One page per route, generated from the dataset and never typed.
  *
- * The whole document is built here, as a string, for the reason `card.ts` and
- * `reason.ts` exist: what ships has to be readable by a test. The invariants
+ * The whole document is built here, as a string, for the reason the verdict
+ * module and `reason.ts` exist: what ships has to be readable by a test. The invariants
  * this slice carries — every amount and quote equals the dataset's, no verdict
  * word or verdict colour anywhere, every interactive element reaches the tap
  * minimum — are properties of the rendered page, not of the template that made
@@ -499,7 +499,7 @@ export function ruleCriteria(dataset: Dataset, route: Route): Criterion[] {
 /**
  * Why we have no quote, said to the reader: the declared reason from the fixed
  * set, plus the day we last looked. The same three sentences the results card
- * uses (`lib/card.ts`), because one absence should not read two ways.
+ * uses (`lib/verdict/compose/card-blocks.ts`), because one absence should not read two ways.
  */
 const REASON_SAID: Record<string, string> = {
   "scanned-image": "The authority publishes it only as a scan, so there is no text to quote.",
