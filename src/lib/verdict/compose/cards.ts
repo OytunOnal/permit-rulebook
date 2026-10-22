@@ -1,14 +1,14 @@
 // @level presentation
 import {
-  formatEURPer, liveUnknowns, shortLabelOf, unlockMeansOf, type RouteResult,
+  liveUnknowns, shortLabelOf, unlockMeansOf, unlockProfile, type Profile, type RouteResult,
 } from "permit-rulebook-data";
 import {
-  carveOutHtml, caveatHtml, learnBoxHtml, measuredCriterionOf, pointsLineHtml, precondHtml, provenanceHtml, railHtml,
+  carveOutHtml, caveatHtml, learnBoxHtml, moneyShortfallOf, pointsLineHtml, precondHtml, provenanceHtml, railHtml,
   readingHtml, scopedHtml, sourceLinkHtml, type CardScreen,
 } from "./card-blocks.js";
 import {
   CAME_FROM_LINE, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET,
-  WOULD_COME_WITHIN_REACH, onField, pointsMore, shortByPoints, shortByUpTo, withStepHtml,
+  WOULD_COME_WITHIN_REACH, asksOrMore, asksOrMoreHtml, onField, pointsMore, shortByPoints, shortByUpTo, withStepHtml,
 } from "../../copy.js";
 import { countryOf } from "../../countries.js";
 import { type Glossary, glossSection, glossed } from "../../gloss.js";
@@ -44,17 +44,6 @@ const routeName = (screen: VerdictScreen, r: RouteResult): string => glossSectio
 export const hasLiveUnknown = (screen: VerdictScreen, r: RouteResult): boolean =>
   liveUnknowns(r, screen.answers).length > 0;
 
-/** The money field a route's bounded gap is measured on — its period is
- * what makes "€1,585" readable as monthly or annual (critique #7). */
-const gapFieldOf = (screen: VerdictScreen, r: RouteResult): string =>
-  measuredCriterionOf(screen.ds, r, screen.answers)?.field ?? "";
-
-/** One gap, one format, everywhere it is printed (card, headline, unlock). */
-export function gapAmount(screen: VerdictScreen, r: RouteResult): string {
-  const period = screen.ds.fields.find((f) => f.id === gapFieldOf(screen, r))?.period;
-  return formatEURPer(Math.round(r.gap_max!), period);
-}
-
 /**
  * The route the reader arrived from, marked and findable: the mark is on the
  * card itself, so whichever group it lands in it is the same card the reader
@@ -76,14 +65,21 @@ function scopeFor(screen: VerdictScreen, r: RouteResult): string {
   return scopedHtml(r.route, screen.answers, url(routePath(countryOf(screen.ds, r.country), r.route)));
 }
 
-/** "Short by up to …" on a route within reach on a bounded gap, with the
- * hint that a lower threshold may already apply where the gap is a salary. */
+/**
+ * What a route within reach on money is short of: "Short by up to …" on a
+ * bounded gap, or, on a band open at the bottom, the line it asks and the
+ * reader's answer. Where the gap is a salary, the hint that a lower threshold
+ * may already apply follows either.
+ */
 function gapNoteHtml(screen: VerdictScreen, r: RouteResult): string {
-  if (r.status !== "near" || !r.gap_max) return "";
-  const field = gapFieldOf(screen, r);
-  const on = field ? ` ${esc(onField(shortLabelOf(screen.ds, field).toLowerCase()))}` : "";
-  const hint = field === "salary_eur_year" ? ` ${esc(LOWER_THRESHOLD_HINT)}` : "";
-  return `<div class="gapnote"><b>${esc(shortByUpTo(gapAmount(screen, r)))}</b>${on}.${hint}</div>`;
+  const money = r.status === "near" ? moneyShortfallOf(screen.ds, r, screen.answers) : undefined;
+  if (!money) return "";
+  const field = esc(shortLabelOf(screen.ds, money.field).toLowerCase());
+  const hint = money.field === "salary_eur_year" ? ` ${esc(LOWER_THRESHOLD_HINT)}` : "";
+  const said = money.kind === "line"
+    ? asksOrMoreHtml(esc(money.line), field, esc(money.band))
+    : `<b>${esc(shortByUpTo(money.gap))}</b> ${onField(field)}.`;
+  return `<div class="gapnote">${said}${hint}</div>`;
 }
 
 /** The same, for a route within reach on points. */
@@ -148,29 +144,32 @@ export function holdRow(screen: VerdictScreen, r: RouteResult): string {
         </details>`;
 }
 
-/** How far a step would bring a route that it brings within reach. */
-function reachAmount(screen: VerdictScreen, r: RouteResult): string {
-  if (r.gap_max) return ` (${gapAmount(screen, r)})`;
+/** How far a step would bring a route that it brings within reach, measured
+ * on the answers as they would stand with the step taken. */
+function reachAmount(screen: VerdictScreen, r: RouteResult, taken: Profile): string {
+  const money = moneyShortfallOf(screen.ds, r, taken);
+  if (money) return ` (${esc(money.kind === "line" ? asksOrMore(money.line) : money.gap)})`;
   if (r.gap_points) return ` (${esc(pointsMore(r.gap_points))})`;
   return "";
 }
 
 /** One route a step opens, and how. */
-function unlockedRouteHtml(screen: VerdictScreen, r: RouteResult): string {
+function unlockedRouteHtml(screen: VerdictScreen, r: RouteResult, taken: Profile): string {
   const how = r.status === "met"
     ? `<b>${esc(WOULD_BE_MET)}</b>`
-    : `<i>${esc(WOULD_COME_WITHIN_REACH)}${reachAmount(screen, r)}</i>`;
+    : `<i>${esc(WOULD_COME_WITHIN_REACH)}${reachAmount(screen, r, taken)}</i>`;
   return `<li>${esc(routeName(screen, r))} — ${how}</li>`;
 }
 
 /** A step, and the routes it opens on this section. */
 export function unlockCard(screen: VerdictScreen, step: Step, routes: RouteResult[]): string {
   const means = unlockMeansOf(screen.ds, step.unlock, screen.answers);
+  const taken = unlockProfile(step.unlock, screen.answers);
   return `
         <article class="unlock">
           <h3>${withStepHtml(esc(step.title))}</h3>
           ${means ? `<p class="unlock-means">${esc(means)}</p>` : ""}
-          <ul>${routes.map((r) => unlockedRouteHtml(screen, r)).join("")}
+          <ul>${routes.map((r) => unlockedRouteHtml(screen, r, taken)).join("")}
           </ul>
         </article>`;
 }

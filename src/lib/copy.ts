@@ -928,7 +928,6 @@ export const stepsWouldChangeHeadline = (steps: number): string =>
 export const NOTHING_OPEN_HEADLINE = "Nothing open on these answers.";
 export const routesOpenHeadline = (open: number, countries: number): string =>
   `${open} route${open === 1 ? "" : "s"} look${open === 1 ? "s" : ""} open${countries > 1 ? ` across ${countries} countries` : ""}.`;
-export const shortByLine = (amount: string): string => `One is short by ${amount}.`;
 /** The headline's emphasis on a bounded gap: "up to", as the card says it. */
 export const shortByUpToLine = (amount: string): string => `One is short by up to ${amount}.`;
 /** The headline's emphasis on a band open at the bottom: the line, not an amount. */

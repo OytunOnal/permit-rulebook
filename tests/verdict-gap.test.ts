@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  deriveBands, evaluate, formatEURPer, gapCriterionOf, shortLabelOf, type Dataset, type Profile,
+  deriveBands, evaluate, formatEURPer, gapCriterionOf, shortLabelOf, unlockProfile, unlocks, type Dataset,
+  type Profile,
 } from "permit-rulebook-data";
 import {
-  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, asksOrMoreHtml, needsOrMoreLine, shortByUpTo, shortByUpToLine, upToShort,
+  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_COME_WITHIN_REACH, asksOrMore, asksOrMoreHtml, needsOrMoreLine,
+  shortByUpTo, shortByUpToLine, upToShort,
 } from "../src/lib/copy.js";
 import { esc } from "../src/lib/reason.js";
-import { blocksIn, cardOn, everyCardIn, verdictFor } from "./verdict-cards.js";
+import { blocksIn, cardOn, everyCardIn, stepsIn, verdictFor } from "./verdict-cards.js";
 
 /**
  * A gap is said one way and drawn on every rail (#174; rulings 2, 3 and 11 on
@@ -51,6 +53,9 @@ function nearOn(answers: Profile) {
   return { route: r.route.id, threshold: gapCriterionOf(ds, r, answers)!.threshold.amount };
 }
 
+/** The line the hostile walk's one route within reach asks. */
+const asked = (): number => nearOn({ ...HOSTILE, [SALARY]: lowest.id }).threshold;
+
 /** The headline's emphasis, as the page draws it. */
 const emphasisOf = (answers: Profile): string => {
   const m = /<b>([\s\S]*)<\/b>/.exec(verdictFor(answers).action.masthead.headline);
@@ -64,8 +69,9 @@ function filledIn(template: (amount: string) => string, text: string): string | 
   const [before, after] = template("\u0000").split("\u0000") as [string, string];
   const start = text.indexOf(before);
   if (start < 0) return undefined;
-  const end = after ? text.indexOf(after, start + before.length) : text.length;
-  return end < 0 ? undefined : text.slice(start + before.length, end);
+  // The last match of what follows: an amount carries a full stop of its own.
+  const end = after ? text.lastIndexOf(after) : text.length;
+  return end < start + before.length ? undefined : text.slice(start + before.length, end);
 }
 
 /** The words a card's note stresses. */
@@ -133,9 +139,6 @@ describe("a bounded band is short by up to one gap, printed one way", () => {
     };
   }
 
-  /** The line the hostile walk's one route within reach asks. */
-  const asked = (): number => nearOn({ ...HOSTILE, [SALARY]: lowest.id }).threshold;
-
   it("the headline says up to, and the headline, the card and the rail print the same gap", () => {
     const band = bands.find((b) => b.min !== undefined && b.max !== undefined && b.max <= asked())!;
     const answers: Profile = { ...HOSTILE, [SALARY]: band.id };
@@ -166,6 +169,53 @@ describe("a bounded band is short by up to one gap, printed one way", () => {
         expect(mark.point, `${band.id} ${id}`).toBeUndefined();
         expect(mark.bar?.width ?? 0, `${band.id} ${id}`).toBeGreaterThan(0);
       }
+    }
+  });
+});
+
+describe("a step prints the gap it leaves the same way", () => {
+  /** A graduate whose degree is not yet assessed, with under two years'
+   * experience: recognition and experience are steps that bring German routes
+   * within reach on salary. */
+  const STEPPER: Profile = {
+    ...QUALIFIED, recognition_de: "not_assessed", experience_5y: "lt2", experience_7y: "lt3", german: "none",
+    funds_eur_month: "band_0",
+  };
+
+  /** The amounts the verdict's steps print after "would come within reach". */
+  const reachedIn = (answers: Profile): string[] =>
+    stepsIn(verdictFor(answers)).flatMap((s) =>
+      [...s.html.matchAll(new RegExp(`${WOULD_COME_WITHIN_REACH} \\(([^)]*)\\)`, "g"))].map((m) => m[1]!));
+
+  /** The routes the engine's steps bring within reach on a money gap, with the
+   * answers as they would stand with each step taken. */
+  const moneyReached = (answers: Profile) =>
+    unlocks(ds, answers).flatMap((u) => u.routes
+      .filter((r) => r.status === "near" && r.gap_max)
+      .map((r) => ({ r, taken: unlockProfile(u, answers) })));
+
+  it("a bounded band's gap, exact, with its cents and its period", () => {
+    const band = bands.find((b) => b.min !== undefined && b.max !== undefined && b.max === asked())!;
+    const answers: Profile = { ...STEPPER, [SALARY]: band.id };
+    const reached = moneyReached(answers);
+    expect(reached.length, "precondition: a step brings a route within reach on money").toBeGreaterThan(0);
+    const printed = reachedIn(answers);
+    for (const { r, taken } of reached) {
+      const measured = gapCriterionOf(ds, r, taken)!;
+      const exact = formatEURPer(measured.threshold.amount - band.min!, period);
+      expect(printed, r.route.id).toContain(esc(exact));
+    }
+    expect(printed.some((p) => /\.\d\d\//.test(p)), "precondition: a gap with cents").toBe(true);
+  });
+
+  it("a band open at the bottom: the line it asks, never an amount short", () => {
+    const answers: Profile = { ...STEPPER, [SALARY]: lowest.id };
+    const reached = moneyReached(answers);
+    expect(reached.length, "precondition: a step brings a route within reach on money").toBeGreaterThan(0);
+    const printed = reachedIn(answers);
+    for (const { r, taken } of reached) {
+      const line = formatEURPer(gapCriterionOf(ds, r, taken)!.threshold.amount, period);
+      expect(printed, r.route.id).toContain(esc(asksOrMore(line)));
     }
   });
 });
