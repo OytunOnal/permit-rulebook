@@ -1,8 +1,8 @@
 /*
  * The verdict's styles: everything the results body draws, beside the module
- * that draws it, imported by its entry. Colours and sizes come from tokens.css
- * where it names them; the page keeps the frame, the question card and the
- * ledger.
+ * that draws it, imported by its entry. Every colour comes from tokens.css, a
+ * size from it where its scale has one; the page keeps the frame, the
+ * question card and the ledger.
  */
 /* What the interview asks of a route, said on the card in the same words
    the route page uses — ink on card, no new colour and no verdict colour. */
@@ -82,7 +82,7 @@ details.route-hold summary::-webkit-details-marker{display:none}
 .hold-name{font:600 .92rem var(--font-serif)}
 .hold-why{color:var(--color-muted);font-size:.8rem;margin-left:auto;text-align:right}
 .hold-body{padding:.6rem 0 .3rem;border-top:var(--rule-dotted);margin-top:.5rem}
-.faildetail{list-style:none;display:grid;gap:.3rem;margin:.5rem 0 .2rem;font-size:.84rem;color:#54513f}
+.faildetail{list-style:none;display:grid;gap:.3rem;margin:.5rem 0 .2rem;font-size:.84rem;color:var(--color-prose)}
 .faildetail li::before{content:"✗ ";color:var(--color-stamp)}
 .faildetail li.unknown::before{content:"? ";color:var(--color-hold);font-weight:700}
 .faildetail b{color:var(--color-ink)}
@@ -92,7 +92,7 @@ details.route-hold summary::-webkit-details-marker{display:none}
    step's name in bold ink (F4). */
 .unlock h3{font:600 .95rem var(--font-serif);color:var(--color-ink);margin-bottom:.35rem}
 .unlock-means{font-size:.82rem;color:var(--color-muted);margin:-.15rem 0 .4rem;max-width:34rem}
-.unlock ul{list-style:none;display:grid;gap:.3rem;font-size:.86rem;color:#54513f}
+.unlock ul{list-style:none;display:grid;gap:.3rem;font-size:.86rem;color:var(--color-prose)}
 .unlock li::before{content:"→ ";color:var(--color-met);font-weight:700}
 .unlock li b{color:var(--color-met)}
 .unlock li i{color:var(--color-near);font-style:normal;font-weight:600}
@@ -103,7 +103,7 @@ details.route-hold summary::-webkit-details-marker{display:none}
 .arranged-line{font-size:.84rem;color:var(--color-muted);margin:.1rem 0 1rem;max-width:38rem}
 /* s5b: conditions the authority applies that the interview never asked —
    the card must not read as a green light on them (critique #2). */
-.precond{font-size:.83rem;color:#54513f;border-left:3px solid var(--color-hold);padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}
+.precond{font-size:.83rem;color:var(--color-prose);border-left:3px solid var(--color-hold);padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}
 .precond b{color:var(--color-hold)}
 /* A condition the interview asked, answered: the band's colour, not the
    hold's — it is not a bar left unchecked (s19, F8). */
@@ -165,7 +165,7 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .st.near{background:var(--color-near-soft);color:var(--color-near)}
 .st.hold{background:var(--color-hold-soft);color:var(--color-hold)}
 .st.unsettled{background:var(--color-hold-soft);color:var(--color-ink)}
-.why{color:#54513f;font-size:.88rem;max-width:var(--max-prose)}
+.why{color:var(--color-prose);font-size:.88rem;max-width:var(--max-prose)}
 
 .rail{margin:.95rem 0 .2rem;max-width:34rem}
 .bar{position:relative;height:var(--rail-h);background:var(--rail-track);border-radius:99px}
@@ -197,7 +197,7 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .sw-asks{background:var(--rail-tick)}
 .sw-you{background:var(--rail-band)}
 .rail-rows li:last-child b{color:var(--color-band)}
-.gapnote{font-size:.85rem;background:var(--color-near-soft);border-left:3px solid var(--color-near);color:#63430f;
+.gapnote{font-size:.85rem;background:var(--color-near-soft);border-left:3px solid var(--color-near);color:var(--color-near-ink);
   padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
 .ptsline{font:500 .8rem var(--font-mono);color:var(--color-ink);margin:.5rem 0 .1rem}
 /* The tally reads in the met colour only where the points are met: the
@@ -232,8 +232,8 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 }
 
 @media print{
-  .route,.unlock,.notice,details.route-hold{page-break-inside:avoid;border:1px solid #999}
-  .src{color:#000;font-size:9pt}
+  .route,.unlock,.notice,details.route-hold{page-break-inside:avoid;border:1px solid var(--print-rule)}
+  .src{color:var(--print-ink);font-size:9pt}
   /* After the page's own print rule for every link's address, which this
      stylesheet follows in the page's <head>. */
   .learn a::after,.next::after{content:none}
