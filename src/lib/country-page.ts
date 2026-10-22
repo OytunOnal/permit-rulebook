@@ -4,7 +4,7 @@
 // disagree about what two is called (Standards review, 2026-09-08).
 import {
   countedWords, phraseOf, phraseAtStartOf, datasetMeta, isScored, joinAnd, scopeLine,
-  type Country, type Dataset, type Notice, type Route, type UnreadSource,
+  type Country, type Dataset, type Route, type UnreadSource,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";

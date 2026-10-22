@@ -5,7 +5,7 @@ import {
   evaluate, routeStatements, scopeLine,
   type Dataset, type Profile, type Route, type RouteResult,
 } from "permit-rulebook-data";
-import { carveOutHtml, caveatHtml, precondHtml, provenanceHtml, scopedHtml } from "../src/lib/card.js";
+import { carveOutHtml, precondHtml, provenanceHtml, scopedHtml } from "../src/lib/card.js";
 import { ROUTE_DOOR } from "../src/lib/copy.js";
 import { glossed } from "../src/lib/gloss.js";
 import { routePages } from "../src/lib/route-page.js";
