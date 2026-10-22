@@ -116,18 +116,20 @@ describe("F1a — the job-search sentence reaches only a reader without an offer
 });
 
 describe("F1b — unlock steps ordered by what the reader can do", () => {
-  it("an offer-holder's steps put a change of situation last", () => {
-    const steps = stepsOffered(DENIZ);
+  it("a change of situation the reader can make comes after the steps within their own situation", () => {
+    // Deniz as a transferee: a job offer is a path step he can take, and it
+    // ranks after the improvable ones (recognition, language) — the key is
+    // the field's own kind. An arranged answer is no step at all (#175).
+    const transferee: Profile = { ...DENIZ, situation: "ict" };
+    const steps = stepsOffered(transferee);
     expect(steps.length).toBeGreaterThan(2);
     const kinds = steps.map((s) => fieldKind(s.field));
-    // The key is the field's own kind: a path step (a transfer, a hosting
-    // agreement) ranks after an improvable one (recognition, funds).
     const firstPath = kinds.indexOf("path");
     expect(firstPath).toBeGreaterThan(0);
     expect(kinds.slice(firstPath).every((k) => k === "path")).toBe(true);
     expect(kinds.slice(0, firstPath).every((k) => k === "improvable")).toBe(true);
-    // Today's first step was the transfer; it is not any more.
-    expect(steps[0]!.field).not.toBe(SITUATION_FIELD);
+    // An offer-holder has no path step left to take.
+    expect(stepsOffered(DENIZ).map((s) => fieldKind(s.field))).not.toContain("path");
   });
 
   it("Nearest names the first step the reader can take — never a situation they did not declare", () => {
@@ -154,17 +156,18 @@ describe("F1b — unlock steps ordered by what the reader can do", () => {
       expect(rank(improvable[i - 1]!)).toBeGreaterThanOrEqual(rank(improvable[i]!));
   });
 
-  it("a reader with situation steps only still gets them, in the engine's order", () => {
+  it("a reader whom only arranged answers would open more for is offered no step", () => {
     // Deniz with everything else answered his way: a transfer and a hosting
-    // agreement are all that would open more.
+    // agreement are all that would open more, and neither is his to take
+    // (#175): they are said apart, never as steps.
     const settled: Profile = {
       ...DENIZ, recognition_de: "recognized", experience_5y: "2plus", experience_7y: "5plus", german: "b2plus",
       salary_eur_year: deriveBands(ds, "salary_eur_year").at(-1)!.id,
     };
     const raw = unlocks(ds, settled);
     expect(raw.length).toBeGreaterThan(0);
-    expect(raw.every((u) => u.field === SITUATION_FIELD)).toBe(true);
-    expect(stepsOffered(settled).map((s) => s.title)).toEqual(raw.map((u) => unlockTitleOf(ds, u, settled)));
+    expect(raw.every((u) => u.field === SITUATION_FIELD && u.option.is_arranged)).toBe(true);
+    expect(stepsOffered(settled)).toEqual([]);
     // A verdict with no step to take names none: France, no offer and no qualification.
     const stuck: Profile = { destination: "fr", citizenship: "TR", situation: "none", qualification: "none" };
     expect(unlocks(ds, stuck)).toEqual([]);
@@ -458,8 +461,8 @@ describe.skipIf(skipped !== null)("the result screen, as drawn", () => {
       expect(seen.steps[0]).not.toMatch(/transfer|hosting agreement/);
       expect(seen.steps.filter((s) => s.includes("German at"))).toHaveLength(1);
       expect(seen.steps.find((s) => s.includes("German at"))).toMatch(/A2 .*or above/);
-      const lastOwn = seen.steps.findIndex((s) => /transfer|hosting agreement/.test(s));
-      expect(seen.steps.slice(lastOwn).every((s) => /transfer|hosting agreement/.test(s))).toBe(true);
+      // An arranged answer is never a step card (#175).
+      expect(seen.steps.filter((s) => /transfer|hosting agreement/.test(s))).toEqual([]);
       expect(seen.hero).not.toMatch(/Nearest: an intra-corporate transfer|Nearest: a research hosting agreement/);
       // No offer, no open job-search permit: no hint either way.
       expect(seen.hint).toBe(false);

@@ -139,8 +139,10 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
       expect(step, "the walk's leverage row is gone").toBeDefined();
       expect(step!.head, "the row is still scanned by its short step").toBe("With a job offer");
       expect(step!.means).toContain("an employer in the Netherlands");
-      // A step with nothing to distinguish stays one line.
-      expect(seen.rows.find((r) => r.head.includes("hosting agreement"))?.means).toBeNull();
+      // A step with nothing to distinguish stays one line; a hosting agreement
+      // is an arranged answer, no step card at all (#175).
+      expect(seen.rows.filter((r) => r !== step).filter((r) => r.means !== null)).toEqual([]);
+      expect(seen.rows.find((r) => r.head.includes("hosting agreement"))).toBeUndefined();
     } finally {
       server.close();
     }

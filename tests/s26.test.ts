@@ -9,7 +9,7 @@ import {
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { SITUATION_COUNTRY_FIELD } from "../src/lib/situations.js";
 import type { UnscoredVerdict } from "../src/lib/screen.js";
-import { READ_ITS_RULES, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
+import { NOTHING_OPEN_HEADLINE, READ_ITS_RULES, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 import { verdictFor } from "./verdict-cards.js";
 import { expectNothingLeft, type Sent } from "./wire.js";
@@ -375,11 +375,11 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => ({
-        // No offer, transfer or agreement: no country named, steps in Germany and Spain.
+        // No offer, transfer or agreement: no country named; only arranged answers would open more.
         explorer: await seeded(page, server.url("/"), {
           destination: "all", situation: "none", citizenship: "TR", qualification: "none", nl_recent_grad: "no", top200_grad: "no",
         }),
-        // An offer in Germany, nothing met: Germany's routes take an offer, so no written state; steps in Germany.
+        // An offer in Germany, nothing met: Germany's routes take an offer, so no written state; no step.
         offer: await seeded(page, server.url("/"), {
           destination: "all", situation: "offer", situation_country: "de", citizenship: "TR", qualification: "none",
           occupation_shortage: "no", experience_5y: "lt2", experience_7y: "lt3", occupation_it: "no", salary_eur_year: "band_0",
@@ -398,14 +398,17 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
         expect(r.state, name).toBe("results");
         expect(r.strip, name).toMatch(/^0 open 0 within reach /);
       }
-      // The explorer: the steps headline, dataset order, the two sections holding a step open (critique #4).
-      expect(explorer.headline).toMatch(/^Nothing open yet — \d+ steps? would change that\./);
+      // The explorer: dataset order. What would open more in Germany and Spain
+      // is a transfer or a hosting agreement — arranged answers, no step (#175)
+      // — so the nothing-open headline; the two sections where one would open
+      // a route open on it (critique #4).
+      expect(explorer.headline).toBe(NOTHING_OPEN_HEADLINE);
       expect(explorer.lines.map((l) => [l.name, l.open])).toEqual([
         ["Germany", true], ["France", false], ["Spain", true], ["Netherlands", false],
       ]);
       expect(explorer.lines.every((l) => l.link === null)).toBe(true);
-      // The offer in Germany: the same headline shape, dataset order, Germany's section open on its steps.
-      expect(offer.headline).toMatch(/^Nothing open yet — \d+ steps? would change that\./);
+      // The offer in Germany: the same headline, dataset order, Germany's section open on its arranged line.
+      expect(offer.headline).toBe(NOTHING_OPEN_HEADLINE);
       expect(offer.lines.map((l) => [l.name, l.open])).toEqual([
         ["Germany", true], ["France", false], ["Spain", false], ["Netherlands", false],
       ]);

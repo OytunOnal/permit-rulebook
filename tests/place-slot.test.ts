@@ -84,8 +84,10 @@ describe.skipIf(notWalked !== null)("an unlock card that fills a place", () => {
     const cards = results.flatMap(({ where, html, walk }) =>
       unlockCardsOf(html).map((card) => ({ where: `${where}: ${card.head}`, ...card, code: headedCode(card.head) ?? declaredCode(walk.answers) })));
     const placed = cards.filter((c) => c.code !== undefined);
+    // No walk here draws a card forked on a country since a transfer and a
+    // hosting agreement left the steps (#175); means.test's explorer still
+    // reads one ("a forked step names its country once").
     expect(placed.length, "no unlock card fills a place").toBeGreaterThan(0);
-    expect(cards.some((c) => headedCode(c.head) !== undefined), "no card forks on a country").toBe(true);
     for (const { where, means } of cards) expect(means, where).not.toMatch(THERE);
     for (const { where, means, code } of placed) expect(means, where).toContain(`in ${phraseOf(code!)}`);
   }, 600000);
