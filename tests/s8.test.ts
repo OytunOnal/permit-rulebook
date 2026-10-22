@@ -260,8 +260,9 @@ describe("both layouts of the results screen partition the same way", () => {
     // Taking the unsettled routes out of "met" made the screen say "Nothing
     // open on these answers." directly above a section holding one, and left
     // them out of every tally on the page.
-    expect(flat.action).toMatchObject({ kind: "compare", headline: unsettledHeadline(2) });
-    expect(flat.announced).not.toBe(NOTHING_OPEN_HEADLINE);
+    expect(flat.action.kind).toBe("compare");
+    expect(flat.action.masthead.announced).toBe(unsettledHeadline(2));
+    expect(flat.action.masthead.announced).not.toBe(NOTHING_OPEN_HEADLINE);
     if (flat.layout.kind !== "one-country") throw new Error("the France reader drew country sections");
     expect(flat.layout.strip.unsettled).toBe(2);
     // A closed route is counted on the summary too, apart from the three verdicts.

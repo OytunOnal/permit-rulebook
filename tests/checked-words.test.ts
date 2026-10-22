@@ -9,11 +9,10 @@ import {
 import { countryAddresses } from "../src/lib/country-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import {
-  PRODUCT_NAME, TAGLINE, countryHeadline, dataLedeOpen, dataMetaDescription, datasetDescription, promise,
-  routesCheckerAsksAbout,
+  PRODUCT_NAME, TAGLINE, answersCheckedLine, countryHeadline, dataLedeOpen, dataMetaDescription, datasetDescription,
+  promise, routesCheckerAsksAbout,
 } from "../src/lib/copy.js";
 import { routeCounts } from "../src/lib/data-page.js";
-import { answersCheckedLine } from "../src/lib/screen.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
 import { DESK, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {

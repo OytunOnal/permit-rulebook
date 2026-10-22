@@ -1,15 +1,90 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { SITUATION_FIELD, type Dataset } from "permit-rulebook-data";
+import { SITUATION_FIELD, evaluate, isClosed, type Dataset, type Profile } from "permit-rulebook-data";
+import { INTRO_SUBLINE, SHORT_SUBLINE, answersCheckedLine, nearestLine } from "../src/lib/copy.js";
+import { questionMastheadOf } from "../src/lib/question.js";
 import { unscoredVerdict } from "../src/lib/situations.js";
-import {
-  INTRO_SUBLINE, SHORT_SUBLINE, claimsAComparison, mastheadFor, screenAfter,
-  type FlowAction, type Screen,
-} from "../src/lib/screen.js";
+import { screenAfter, type FlowAction, type Masthead, type Screen } from "../src/lib/screen.js";
+import { verdictOf, type Verdict } from "../src/lib/verdict/index.js";
+import { groupsIn } from "./verdict-cards.js";
+
+const ds = dataset as unknown as Dataset;
 
 function lcg(seed: number) {
   let s = seed >>> 0;
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+}
+
+/**
+ * Whether a line makes a checkable statement about a comparison that happened.
+ * Used by the test that no question screen ever carries one — the symptom B4
+ * was, rather than the one line that produced it. The four shapes such a
+ * statement takes: the verb, its denial, a pointer at results that may not be
+ * there, and a count of what was compared. (A bare digit is not one of them —
+ * that made the name a description of something else, review S6.)
+ *
+ * The verb is the past one. Since the intro went passive (s17) the word
+ * "compared" also stands in a sentence that claims nothing has happened —
+ * "your answers ARE compared" is the promise, in the present — so the shape
+ * this looks for is the comparison that has been done: "were compared", "was
+ * compared", or the old active "compared your". Preceded by "is" or "are" it
+ * is the promise and does not count. The results say "were checked" (#151),
+ * and that is the same claim.
+ */
+function claimsAComparison(text: string): boolean {
+  return /(?<!\b(?:is|are)\s)\bcompared\b/i.test(text) ||
+    /\b(?:was|were)\s+checked\b/i.test(text) ||
+    /nothing to compare/i.test(text) ||
+    /\bbelow\b/i.test(text) ||
+    /\b\d+\s+(?:answers?|routes?|published|rule)/i.test(text);
+}
+
+/** The masthead a screen shows: the question card's on a question screen,
+ * the one the verdict composed on a verdict screen — as the page draws it. */
+const mastheadOn = (screen: Screen): Masthead => (screen.kind === "question" ? questionMastheadOf(screen) : screen.masthead);
+
+/** A reader of the Netherlands alone, with an offer there: one route open,
+ * one within reach, the rest not yet. */
+const DUTCH_OFFER: Profile = {
+  destination: "nl", citizenship: "IN", situation: "offer", situation_country: "nl", english: "b1", age_band: "u30",
+  qualification: "none", experience_7y: "lt3", occupation_it: "yes", salary_eur_month: "band_0", nl_recent_grad: "yes",
+};
+/** An explorer of all four with no offer: nothing open, and steps that would change that (s23). */
+const PRIYA: Profile = {
+  destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
+  occupation_shortage: "unknown", experience_5y: "2plus", experience_7y: "3to5", german: "none", english: "c1",
+  nl_recent_grad: "no", top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no",
+  partner_ck: "no",
+};
+/** France with no offer: nothing open, and no step that changes it. */
+const FRANCE_NOTHING: Profile = { destination: "fr", situation: "none", citizenship: "IN" };
+/** A passport free movement covers: the notice answers outright. */
+const EU_PASSPORT: Profile = { destination: "de", citizenship: "PL" };
+
+const verdictOn = (data: Dataset, answers: Profile, answered = Object.keys(answers).length): Verdict =>
+  verdictOf(data, answers, { cameFrom: null, answered });
+
+/** The routes the engine leaves on a one-country reader's screen: the
+ * destination's, less the ones their passport is shut out of. */
+const routesChecked = (answers: Profile): number =>
+  evaluate(ds, answers).filter((r) => r.country === answers.destination!.toUpperCase() && !isClosed(r)).length;
+
+/** The dataset with France and a second country that has no routes: two
+ * countries on the screen, and still nothing a step could open. */
+function twoCountriesNothingOpen(): Dataset {
+  const copy = JSON.parse(JSON.stringify(ds)) as Dataset;
+  const france = copy.countries.find((c) => c.code === "FR")!;
+  const empty = { ...copy.countries.find((c) => c.code === "NL")!, routes: [] };
+  copy.countries = [france, empty];
+  return copy;
+}
+
+/** The dataset with one Dutch route only. */
+function oneDutchRoute(): Dataset {
+  const copy = JSON.parse(JSON.stringify(ds)) as Dataset;
+  const nl = copy.countries.find((c) => c.code === "NL")!;
+  nl.routes = nl.routes.filter((r) => r.id === "nl-orientation-year");
+  return copy;
 }
 
 /** The gestures that move the interview, and what each does to the count of
@@ -21,7 +96,7 @@ const GESTURES: Array<{ action: FlowAction; answers: (n: number) => number }> = 
   { action: { kind: "reset" }, answers: () => 0 },
 ];
 
-const COMPARE: FlowAction = { kind: "compare", routes: 23, headline: "3 routes look open." };
+const COMPARE: FlowAction = verdictOn(ds, DUTCH_OFFER).action;
 
 describe("invariant: a screen that has compared nothing claims nothing (B4)", () => {
   it("holds over random walks of the flow, at every point in every walk", () => {
@@ -29,6 +104,7 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
     // answers and left the claim about them standing. So the walk is what is
     // tested — every gesture the page can make, in any order, including the
     // two the scenario names: post-reset and post-edit.
+    expect(COMPARE.kind, "precondition: the walk's comparison is one").toBe("compare");
     const rand = lcg(2718);
     for (let walk = 0; walk < 300; walk++) {
       let answered = 0;
@@ -43,7 +119,7 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
         last = gesture.action;
         trail.push(last.kind);
         const screen = screenAfter(last, { answered });
-        const { headline, subline } = mastheadFor(screen);
+        const { headline, subline } = mastheadOn(screen);
         const where = `after ${trail.join(" → ")} with ${answered} answers: "${subline}"`;
         if (last.kind === "compare") {
           expect(screen.kind, where).toBe("results");
@@ -56,7 +132,7 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
       // And from wherever that walk ended — a result screen included — both
       // ways back into the interview land on a screen that claims nothing.
       for (const back of [{ kind: "reset" }, { kind: "edit" }] as FlowAction[]) {
-        const { headline, subline } = mastheadFor(screenAfter(back, { answered }));
+        const { headline, subline } = mastheadOn(screenAfter(back, { answered }));
         expect(claimsAComparison(subline), `${back.kind} after ${trail.join(" → ")}`).toBe(false);
         expect(claimsAComparison(headline), back.kind).toBe(false);
       }
@@ -67,13 +143,13 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
     // The reset does not take a count on trust: nothing was answered, so the
     // long promise is what a first-time reader gets, every time.
     expect(screenAfter({ kind: "reset" }, { answered: 13 })).toEqual({ kind: "question", started: false });
-    expect(mastheadFor(screenAfter({ kind: "reset" }, { answered: 13 })).subline).toBe(INTRO_SUBLINE);
+    expect(mastheadOn(screenAfter({ kind: "reset" }, { answered: 13 })).subline).toBe(INTRO_SUBLINE);
   });
 
   it("an interview under way keeps the short promise, and an untouched one the long", () => {
     for (const kind of ["answer", "edit", "restore"] as const) {
-      expect(mastheadFor(screenAfter({ kind }, { answered: 4 })).subline).toBe(SHORT_SUBLINE);
-      expect(mastheadFor(screenAfter({ kind }, { answered: 0 })).subline).toBe(INTRO_SUBLINE);
+      expect(mastheadOn(screenAfter({ kind }, { answered: 4 })).subline).toBe(SHORT_SUBLINE);
+      expect(mastheadOn(screenAfter({ kind }, { answered: 0 })).subline).toBe(INTRO_SUBLINE);
     }
   });
 
@@ -96,23 +172,25 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
   });
 
   it("only a result screen states what was compared, and states it exactly", () => {
-    const { subline } = mastheadFor({ kind: "results", answered: 13, routes: 23, headline: "x" });
+    const { subline } = verdictOn(ds, DUTCH_OFFER, 13).action.masthead;
     expect(subline).toContain("13 answers");
-    expect(subline).toContain("the published rules of 23 routes");
+    expect(subline).toContain(`the published rules of ${routesChecked(DUTCH_OFFER)} routes`);
     expect(claimsAComparison(subline)).toBe(true);
   });
 
   it("one answer and one route are singular, and the verb agrees with the one answer", () => {
     // The count is the sentence's subject since s17, so the verb follows it:
     // "Your 1 answer was checked", never "were".
-    const { subline } = mastheadFor({ kind: "results", answered: 1, routes: 1, headline: "x" });
+    const { subline } = verdictOn(oneDutchRoute(), DUTCH_OFFER, 1).action.masthead;
     expect(subline).toContain("Your 1 answer was checked against the published rules of 1 route.");
   });
 
   it("the no-permit-needed screen says a comparison did not happen, and is a result", () => {
-    const { headline, subline } = mastheadFor({ kind: "notice", title: "No work permit needed" });
-    expect(headline).toBe("No work permit needed.");
-    expect(subline).toMatch(/nothing to compare/i);
+    const { action } = verdictOn(ds, EU_PASSPORT);
+    expect(action.kind).toBe("answered-outright");
+    expect(screenAfter(action, { answered: 2 }).kind).toBe("notice");
+    expect(action.masthead.headline).toBe("No work permit needed.");
+    expect(action.masthead.subline).toMatch(/nothing to compare/i);
   });
 });
 
@@ -120,21 +198,24 @@ describe("the masthead has exactly one author", () => {
   it("the nothing-open screen's own next step comes from here, not from a second writer", () => {
     // It used to be appended to the element after the fact — a second hand on
     // the one line the type exists to keep honest (review J2).
-    const base = mastheadFor({ kind: "results", answered: 3, routes: 23, headline: "Nothing open on these answers." });
-    const one = mastheadFor({ kind: "results", answered: 3, routes: 23, headline: "x", explore: "one-country" });
-    const several = mastheadFor({ kind: "results", answered: 3, routes: 23, headline: "x", explore: "several-countries" });
-    expect(one.subline.startsWith(base.subline)).toBe(true);
-    expect(several.subline.startsWith(base.subline)).toBe(true);
+    const one = verdictOn(ds, FRANCE_NOTHING, 3).action.masthead;
+    const several = verdictOn(twoCountriesNothingOpen(), { ...FRANCE_NOTHING, destination: "all" }, 3).action.masthead;
+    expect(one.headline).toBe("Nothing open on these answers.");
+    expect(several.headline).toBe("Nothing open on these answers.");
+    expect(one.subline.startsWith(answersCheckedLine(3, routesChecked(FRANCE_NOTHING)))).toBe(true);
+    expect(several.subline.startsWith(answersCheckedLine(3, routesChecked(FRANCE_NOTHING)))).toBe(true);
     // A single country has no country sections to send anyone to (F7).
     expect(one.subline).toMatch(/every route below says what it asks for/);
     expect(several.subline).toMatch(/each country's reasons below/);
   });
 
   it("a nearest near-miss and an explore hint never fight over the same sentence", () => {
-    const { subline } = mastheadFor({
-      kind: "results", answered: 3, routes: 23, headline: "x", nearest: "A Dutch salary band",
-    });
-    expect(subline).toMatch(/Nearest: A Dutch salary band\.$/);
+    const verdict = verdictOn(ds, PRIYA);
+    const { subline } = verdict.action.masthead;
+    const steps = groupsIn(verdict).flatMap((g) => (g.kind === "steps" ? g.steps.map((s) => s.title) : []));
+    expect(steps.length, "precondition: the explorer is offered steps").toBeGreaterThan(0);
+    expect(steps.some((title) => subline.endsWith(nearestLine(title))), subline).toBe(true);
+    expect(subline).not.toMatch(/Change an answer to explore/);
   });
 });
 
@@ -147,10 +228,10 @@ describe("the comparison has no subject called \"Code\" (s17)", () => {
   // passive: the subject leaves the sentence, the claim (a comparison by code,
   // not a judgement by a person) stays.
   it("the results screen says what was compared, in the passive, with the counts", () => {
-    const { subline } = mastheadFor({ kind: "results", answered: 3, routes: 4, headline: "x" });
+    const { subline } = verdictOn(ds, DUTCH_OFFER, 3).action.masthead;
     expect(subline).toBe(
-      "Your 3 answers were checked against the published rules of 4 routes. Every value below shows its official " +
-        "quote and the date we read it from the source.",
+      `Your 3 answers were checked against the published rules of ${routesChecked(DUTCH_OFFER)} routes. `
+        + "Every value below shows its official quote and the date we read it from the source.",
     );
   });
 
@@ -163,17 +244,17 @@ describe("the comparison has no subject called \"Code\" (s17)", () => {
   });
 
   it("no masthead line, on any screen, has \"Code\" as the subject of the comparison", () => {
-    const screens: Screen[] = [
-      { kind: "question", started: false },
-      { kind: "question", started: true },
-      { kind: "results", answered: 3, routes: 4, headline: "x", nearest: "n", explore: "one-country" },
-      { kind: "results", answered: 1, routes: 1, headline: "x", explore: "several-countries" },
-      { kind: "notice", title: "No work permit needed" },
+    const mastheads: Array<[string, Masthead]> = [
+      ["question, fresh", questionMastheadOf({ kind: "question", started: false })],
+      ["question, started", questionMastheadOf({ kind: "question", started: true })],
+      ["results, open", verdictOn(ds, DUTCH_OFFER).action.masthead],
+      ["results, nearest", verdictOn(ds, PRIYA).action.masthead],
+      ["results, explore", verdictOn(ds, FRANCE_NOTHING).action.masthead],
+      ["notice", verdictOn(ds, EU_PASSPORT).action.masthead],
     ];
-    for (const screen of screens) {
-      const { headline, subline } = mastheadFor(screen);
-      expect(subline, JSON.stringify(screen)).not.toMatch(/\bCode compar/);
-      expect(headline, JSON.stringify(screen)).not.toMatch(/\bCode compar/);
+    for (const [where, { headline, subline }] of mastheads) {
+      expect(subline, where).not.toMatch(/\bCode compar/);
+      expect(headline, where).not.toMatch(/\bCode compar/);
     }
   });
 });
@@ -226,29 +307,40 @@ describe("claimsAComparison tests what it is named for", () => {
 
 describe("the headline escapes what the dataset says (#25)", () => {
   // The headline is drawn as markup, for its one <b>. A notice's title, a
-  // country's name and a situation's label are the dataset's, and a pull
-  // request can put a tag in any of them: a <meta> refresh there sends the
-  // reader off the site, and the CSP does not stop it.
+  // country's name, a situation's label and an amount's period are the
+  // dataset's, and a pull request can put a tag in any of them: a <meta>
+  // refresh there sends the reader off the site, and the CSP does not stop it.
   const HOSTILE = "<meta http-equiv=refresh content=0;url=https://example.org>";
   const tagIn = (html: string) => /<(?!\/?b>)/.test(html);
+  const wrecked = (): Dataset => JSON.parse(JSON.stringify(dataset)) as Dataset;
 
   it("a notice's title", () => {
-    expect(tagIn(mastheadFor({ kind: "notice", title: HOSTILE }).headline)).toBe(false);
+    const data = wrecked();
+    data.notices!.find((n) => n.kind === "no-permit-needed")!.title = HOSTILE;
+    const { action } = verdictOn(data, EU_PASSPORT);
+    expect(action.kind).toBe("answered-outright");
+    expect(tagIn(action.masthead.headline)).toBe(false);
   });
 
   it("the sentence and its emphasis, as the page hands them over", () => {
-    const m = mastheadFor({ kind: "results", answered: 3, routes: 23, headline: HOSTILE, emphasis: HOSTILE });
-    expect(tagIn(m.headline)).toBe(false);
-    expect(m.headline).toContain("<b>");
+    // The emphasis prints the nearest gap with its period, which is the
+    // dataset's word for the field's amount.
+    const data = wrecked();
+    data.fields.find((f) => f.id === "salary_eur_month")!.period = HOSTILE as "month";
+    const { headline } = verdictOn(data, DUTCH_OFFER).action.masthead;
+    expect(headline).toContain("<b>");
+    expect(headline).toContain("&lt;meta");
+    expect(tagIn(headline)).toBe(false);
   });
 
   it("an unscored verdict built from a country's name and a situation's label", () => {
-    const wrecked = JSON.parse(JSON.stringify(dataset)) as Dataset;
-    wrecked.countries.find((c) => c.code === "FR")!.name = HOSTILE;
-    const option = wrecked.fields.find((f) => f.id === SITUATION_FIELD)!.options!.find((o) => o.value === "research")!;
+    const data = wrecked();
+    data.countries.find((c) => c.code === "FR")!.name = HOSTILE;
+    const option = data.fields.find((f) => f.id === SITUATION_FIELD)!.options!.find((o) => o.value === "research")!;
     option.short = HOSTILE;
-    const v = unscoredVerdict(wrecked, { destination: "fr", situation: "research" })!;
-    const m = mastheadFor({ kind: "results", answered: 2, routes: 5, headline: v.headline, unscored: v });
+    const answers: Profile = { destination: "fr", situation: "research" };
+    expect(unscoredVerdict(data, answers), "precondition: the s19 written state").not.toBeNull();
+    const m = verdictOn(data, answers).action.masthead;
     expect(tagIn(m.headline)).toBe(false);
   });
 });

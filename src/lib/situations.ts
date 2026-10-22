@@ -8,6 +8,7 @@ import {
   unscoredRestLine, unscoredRouteLine, unscoredTallyLine,
 } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
+import type { UnscoredVerdict } from "./screen.js";
 import { routePath } from "./slug.js";
 import { url } from "./site.js";
 
@@ -157,20 +158,6 @@ export function unscoredTally(ds: Dataset, country: Country, situation: string |
  * says which country it is about, so the result can lead with that
  * country's section.
  */
-export interface UnscoredVerdict {
-  headline: string;
-  /** The whole subline, as text — what the live region announces. */
-  subline: string;
-  /** The words of the subline that are the link, and where it goes. */
-  door?: { text: string; href: string };
-  /**
-   * The destination answer of the country the reader named at question 3, on
-   * the four-country path only: the country whose section leads the result,
-   * open (s26). The direct path has no list of countries to lead.
-   */
-  lead?: string;
-}
-
 export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict | null {
   const destination = answers[DESTINATION_FIELD];
   const situation = answers[SITUATION_FIELD];

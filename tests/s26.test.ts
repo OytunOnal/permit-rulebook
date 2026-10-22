@@ -8,8 +8,9 @@ import {
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import {
-  SITUATION_COUNTRY_FIELD, leadCountry, leads, namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict,
+  SITUATION_COUNTRY_FIELD, leadCountry, leads, namedFirst, unscoredTally, unscoredVerdict,
 } from "../src/lib/situations.js";
+import type { UnscoredVerdict } from "../src/lib/screen.js";
 import { READ_ITS_RULES, unscoredNamedRestLine, unscoredRestLine } from "../src/lib/copy.js";
 import { url } from "../src/lib/site.js";
 import { expectNothingLeft, type Sent } from "./wire.js";

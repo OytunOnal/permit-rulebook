@@ -6,17 +6,18 @@
  * The page keeps what has a side effect — painting, the arrival line, the
  * announcement, the landing and the focus, recording the screen — and asks
  * this module everything a verdict decides: which screen it is (the flow's
- * action), the sentence the live region announces, and the layout, each
- * group's routes in order with each card's markup.
+ * action), that screen's whole masthead with the sentence the live region
+ * announces, and the layout, each group's routes in order with each card's
+ * markup.
  */
 import { contradictionsIn, unlocks, type Dataset, type Notice, type Profile } from "permit-rulebook-data";
 import { noticeHtml } from "../card.js";
-import { noticeHeadline } from "../copy.js";
 import { esc } from "../reason.js";
 import { arrangeSteps } from "../steps.js";
 import type { VerdictScreen } from "./compose/cards.js";
-import { comparedSaying } from "./compose/headline.js";
+import { comparedAction } from "./compose/headline.js";
 import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from "./compose/html.js";
+import { noticeMasthead } from "./compose/masthead.js";
 import { partOf, readingOf, type Reading } from "./compose/reading.js";
 import { layoutOf } from "./compose/sections.js";
 import type { InterviewSoFar, Verdict } from "./compose/types.js";
@@ -34,10 +35,8 @@ export type {
  */
 function answeredOutright(screen: VerdictScreen, reading: Reading, outright: Notice[]): Verdict {
   const others = reading.notices.filter((n) => !outright.includes(n));
-  const title = outright[0].title;
   return {
-    action: { kind: "answered-outright", title },
-    announced: noticeHeadline(title),
+    action: { kind: "answered-outright", masthead: noticeMasthead(outright[0].title) },
     notices: [...outright, ...others].map((n) => noticeHtml(n, screen.glossary)).join(""),
     layout: { kind: "notice" },
   };
@@ -70,7 +69,7 @@ export function verdictOf(dataset: Dataset, answers: Profile, interview: Intervi
   // what the reader can do, each ladder one step (s3b, s23).
   const compared = { reading, whole, zeroOpen, ups: arrangeSteps(dataset, unlocks(dataset, answers), answers) };
   const notices = noticesAbove(screen, reading);
-  return { ...comparedSaying(screen, compared), notices, layout: layoutOf(screen, compared) };
+  return { action: comparedAction(screen, compared, interview.answered), notices, layout: layoutOf(screen, compared) };
 }
 
 /** The body the page paints for a verdict, under its arrival line. */

@@ -14,7 +14,7 @@ import { precondHtml } from "../src/lib/card.js";
 import {
   NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, countryHeadline, notCheckedLine, notCheckedQuotedLine,
 } from "../src/lib/copy.js";
-import { mastheadFor } from "../src/lib/screen.js";
+import { verdictOf } from "../src/lib/verdict/index.js";
 import { countryAddresses, countryPage } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { routePages } from "../src/lib/route-page.js";
@@ -143,17 +143,20 @@ describe("s19 — the zero-open result through a marked option is a written stat
   });
 
   it("the masthead carries it with the door as the only markup, and announces the words", () => {
-    const v = unscoredVerdict(ds, { destination: "fr", situation: "research" })!;
-    const m = mastheadFor({ kind: "results", answered: 2, routes: 5, headline: v.headline, unscored: v });
+    const answers: Profile = { destination: "fr", situation: "research" };
+    const v = unscoredVerdict(ds, answers)!;
+    const m = verdictOf(ds, answers, { cameFrom: null, answered: 2 }).action.masthead;
     expect(m.headline).toBe(v.headline);
     expect(m.subline).toBe(v.subline);
+    expect(m.announced).toBe(v.headline);
     expect(m.sublineHtml).toBe(
       `France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: `
       + `<a href="${url("/france/talent-researcher")}">read its rules</a>. `
       + "The routes below need a job offer or an intra-corporate transfer.",
     );
     // Without it, the subline is text and text only, as it always was.
-    expect(mastheadFor({ kind: "results", answered: 2, routes: 5, headline: "x" }).sublineHtml).toBeUndefined();
+    const spain: Profile = { destination: "es", situation: "research" };
+    expect(verdictOf(ds, spain, { cameFrom: null, answered: 2 }).action.masthead.sublineHtml).toBeUndefined();
   });
 });
 

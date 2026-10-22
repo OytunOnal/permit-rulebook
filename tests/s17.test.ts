@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/screen.js";
+import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/copy.js";
 
 /**
  * s17 — the comparison has no subject called "Code".
@@ -17,8 +17,8 @@ import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/screen.js";
  * subject leaves the sentence, the claim (a comparison by code, not a
  * judgement by a person) stays.
  *
- * The sentences themselves are asserted beside `mastheadFor` in
- * `screen.test.ts`. What is asserted here is that the old subject is gone from
+ * The sentences themselves are asserted beside `questionMastheadOf` and
+ * `verdictOf` in `screen.test.ts`. What is asserted here is that the old subject is gone from
  * everything a reader meets — the built site — and from everything that
  * writes it, so it cannot come back through a page this slice did not read.
  */

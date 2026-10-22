@@ -4,8 +4,8 @@ import {
   type Dataset, type OpenRoute, type Profile, type Question,
 } from "permit-rulebook-data";
 import {
-  ASKED_FOR, ASKED_FOR_COUNTS_JOIN, EDIT_LINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
-  RETURNING_LINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, questionCounter, resumedLine,
+  ASKED_FOR, ASKED_FOR_COUNTS_JOIN, EDIT_LINE, INTRO_HEADLINE, INTRO_SUBLINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
+  RETURNING_LINE, SHORT_SUBLINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, questionCounter, resumedLine,
   setAsideLead, setAsideLineHtml,
 } from "./copy.js";
 import { countryOf } from "./countries.js";
@@ -13,6 +13,7 @@ import { type Glossary, glossSection, glossed } from "./gloss.js";
 import { esc, escAttr } from "./reason.js";
 import { glossedLearnLinkText } from "./quote.js";
 import { QUERY_MAX_LENGTH } from "./listbox.js";
+import type { Masthead, Screen } from "./screen.js";
 // Which situation answers a country's scored routes take, and the quoted
 // route that would have asked otherwise — derived, never typed (s19); keyed
 // by the situation under a declared country, or by the country under a
@@ -37,6 +38,14 @@ import { markUnder, notScoredMarkHtml } from "./situations.js";
 
 /** s5c: above a dozen options the question becomes a filter over a list
  * instead of a wall of buttons; at or below a dozen, nothing changes. */
+/**
+ * A question screen's masthead: the standing tagline, and the promise — the
+ * long form until the interview is under way, the short one after. It claims
+ * no comparison: nothing has been compared yet (B4).
+ */
+export const questionMastheadOf = (screen: Extract<Screen, { kind: "question" }>): Masthead =>
+  ({ headline: INTRO_HEADLINE, subline: screen.started ? SHORT_SUBLINE : INTRO_SUBLINE });
+
 export const LONG_LIST_ABOVE = 12;
 
 /** Whether this question is asked as a search rather than as buttons. */

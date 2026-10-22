@@ -175,8 +175,12 @@ click on the tracker link. Answers never leave the device.
   The stylesheet it renders hides what each cover hides. The page takes the
   covers off once, as it draws the reader's first screen, so no arrival moves
   the page.
-  The headline has one writer, `mastheadFor`: its own markup is one
-  emphasis, and every other word, the dataset's included, is escaped (#25).
+  The masthead has one writer per screen: a question screen's is
+  `questionMastheadOf`, beside the question card; a results or notice
+  screen's is composed inside the verdict module and carried by the screen
+  as data, so no question screen can carry a claim about a comparison (#172).
+  Its own markup is one emphasis, and every other word, the dataset's
+  included, is escaped (#25).
   A question card a gesture draws comes with a beat: it fades in, and for
   `--motion-beat` (`tokens.css`) every commit of an answer, click or Enter, is
   refused in one place, motion or none. The first paint and the verdict have
