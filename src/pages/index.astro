@@ -145,83 +145,44 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <script>
     import dataset from "permit-rulebook-data/data/dataset.json";
     import {
-      deriveQuestions, remainingQuestions, evaluate, formatEURPer,
-      unlocks, notices, fieldOptions, matchOptions, referencedFields,
-      // A route the authority closes to this reader's passport is not a
-      // verdict the rules computed — one predicate, read by both repositories,
-      // so a screen can never file it under a heading that promises it later.
-      isClosed,
-      countryClasses, datasetMeta, contradictionsIn,
-      // s5d: every word a verdict says comes from here, beside the rules — the
-      // page holds no field-id-to-label table of its own to fall through
-      // (product-critique v0.7, B3).
-      shortLabelOf, declaredPlace, liveUnknowns, isPlacedElsewhere, mootWith, joinOr,
-      // What an answer means here, where the label alone leaves two answers
-      // hard to tell apart (human walk, 2026-09-08).
-      unlockMeansOf,
-      // The one answer the four-country result reads a country's line against (s21).
-      SITUATION_FIELD,
-      type Dataset, type FieldOption, type Profile, type RouteResult,
+      deriveQuestions, remainingQuestions, notices, matchOptions, countryClasses, datasetMeta,
+      type Dataset, type FieldOption, type Profile,
     } from "permit-rulebook-data";
-    import { routePath } from "../lib/slug.js";
-    // Every internal URL the client writes goes through the same helper the
-    // server side uses, or the site breaks under a subpath (2026-09-08).
-    import { url } from "../lib/site.js";
     // Arriving from a route page's call to action: what goes on the record and
     // what sorts first, beside the page rather than inside it (step 10).
     import {
       arrivalFrom, arrivalPlan, arrivalSentence, countryArrivalFrom, destinationFor,
-      destinationForCountry, replayRecord, scopedFirst,
+      destinationForCountry, replayRecord,
       type ScopedArrival,
     } from "../lib/scope.js";
     // A symbol a stranger cannot read is explained the first time a screen uses
     // it, by the same module the route pages use (human, 2026-09-08).
-    import { type Glossary, glossSection, glossed } from "../lib/gloss.js";
+    import { type Glossary, glossSection } from "../lib/gloss.js";
     import {
       activeOption, composeNoMatchLine, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState,
     } from "../lib/listbox.js";
     import {
       backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, mastheadFor, readEntry,
-      recordScreen as recordEntry, screenAfter, screenAt, type Explore, type FlowAction,
+      recordScreen as recordEntry, screenAfter, screenAt, type FlowAction,
     } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
-    // The reason column's markup, beside the page rather than in it, so what
-    // it renders can be read by a test (review S4).
-    import { esc, escAttr, failDetailHtml, whyHtml } from "../lib/reason.js";
+    import { esc, escAttr } from "../lib/reason.js";
     // The question screen and the declaration panel: the same renderer the
     // build drew the first paint with, so the module's first render finds the
     // screen it would have drawn already on the page (s10).
     import { declarationCount, declarationHtml, hasClasses, isLongList, questionCardHtml, setAsideHtml } from "../lib/question.js";
-    import { countryOf } from "../lib/countries.js";
     // The width the ledger stops being a disclosure at, said once, and read
     // here and by the script that runs before the first paint (s10); and the
     // one step that takes the first paint's covers off.
     import { WIDE_QUERY, takeCoversOff } from "../lib/first-paint.js";
-    // One date format, everywhere a date prints (decision 12); and the line
-    // under the verdict, in the words copy.ts holds (s13).
-    import { FEEDBACK, isoDay, resultFeedbackLine } from "../lib/copy.js";
-    import { FEEDBACK_PATH } from "../lib/identity.js";
-    // The written state for a situation no scored route in the declared
-    // country takes — derived from the dataset, in place of "Nothing open"
-    // (s19); the same state in one country's line of the four-country
-    // result, in place of its "N not yet" (s21); and, on that result, the
-    // order that leads with the country the reader named (s26).
-    import { leadCountry, leads, namedFirst, unscoredTally, unscoredVerdict, type UnscoredVerdict } from "../lib/situations.js";
-    import {
-      carveOutHtml, caveatHtml, closedRowHtml, learnBoxHtml, noticeHtml, pointsLineHtml, precondHtml,
-      provenanceHtml, railHtml, readingHtml, scopedHtml, sourceLinkHtml,
-      measuredCriterionOf, type CardScreen,
-    } from "../lib/card.js";
-    // What the screen does with the engine's unlock rows — their order, which
-    // are one step, and who is told the job-search sentence — beside the page
-    // so a test can read it (s23).
-    import { arrangeSteps, nearestStep, seekHintHtml, type Step } from "../lib/steps.js";
+    // One date format, everywhere a date prints (decision 12).
+    import { isoDay } from "../lib/copy.js";
+    // The whole verdict — which screen it is, what is announced, and the body
+    // — from one call, so its grouping, order and cards are read by a test in
+    // Node (#170).
+    import { verdictHtml, verdictOf } from "../lib/verdict/index.js";
 
     const ds = dataset as unknown as Dataset;
-    // One field-lookup idiom for the whole page: the dataset never changes
-    // after load, and six copies of the same scan drift (review).
-    const fieldById = new Map(ds.fields.map((f) => [f.id, f]));
-    const fieldOf = (id: string) => fieldById.get(id);
     const questions = deriveQuestions(ds);
     const main = document.getElementById("main")!;
     const decl = document.getElementById("decl") as HTMLDetailsElement;
@@ -334,7 +295,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // time, not UTC: the stamp is the day the person in front of it is having.
     setStamp("rules-read");
 
-    const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
     const declCount = document.getElementById("decl-count")!;
 
     let answers: Profile = {};
@@ -619,12 +579,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       else say(subline, m.subline);
     }
 
-    /** A field's answer set. Some fields declare their options by reference
-     * (the country list lives in its own file), so the engine's own accessor is
-     * the single place the page reads them — the derived question would hand
-     * back band pseudo-options for money fields (review). */
-    const optionsOf = (field: string): FieldOption[] => fieldOptions(ds, field);
-
     /** What an option's class reads as beside it. Derived from the dataset —
      * the class the option implies, or the fact that a notice would fire on
      * this answer — never a string keyed to one country. */
@@ -645,7 +599,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * One screen, one memory of which abbreviations it has already expanded —
      * the route page's rule, on a page that repaints instead of reloading. A
      * route's name is where most readers meet "§": it is in the name of every
-     * German route (human walk, 2026-09-08).
+     * German route (human walk, 2026-09-08). This one is the question
+     * screens' and the arrival line's; the verdict's cards keep their own,
+     * inside `verdictOf`.
      */
     let glossary: Glossary = new Set();
     const routeName = (r: { route: { name: string } }): string => glossSection(r.route.name, glossary);
@@ -902,86 +858,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       recordScreen(q.field, action.kind === "answer");
     }
 
-
-    type CritResult = RouteResult["criteria"][number];
-
-    /** Unknowns the user can still act on. Every consumer (verdict line, strip
-     * count, auto-open, learn box) reads this one list, or they contradict each
-     * other on the same row (review). */
-    const openUnknownsOf = (r: RouteResult) => liveUnknowns(r, answers);
-    const hasLiveUnknown = (r: RouteResult) => openUnknownsOf(r).length > 0;
-
-
-    /** Why this route reads the way it does — a sentence, from the engine.
-     * The page used to compose this itself out of field names, which is how
-     * "Not met: situation" became the verdict on 22 of 23 cards
-     * (product-critique v0.7, B3). */
-    const whyFor = (r: RouteResult): string => whyHtml(ds, r, answers);
-    /** The screen the card blocks below are drawn on: the dataset, the
-     * answers, and this screen's memory of what it has explained, as they
-     * stand when a block is drawn. */
-    const cardScreen = (): CardScreen => ({ ds, answers, glossary });
-    /** Conditions the authority applies that the interview never asked —
-     * stated on every card so "criteria met" cannot overpromise. Both blocks
-     * are rendered beside the page (lib/card.ts) so a test can read them. */
-    const precondFor = (r: RouteResult): string => precondHtml(cardScreen(), r.route);
-    /** What the authority itself says is off this reader, in place of the
-     * condition it releases them from. A carve-out carries its own quote and
-     * is never printed under a heading that means "you must also do this"
-     * (s7). */
-    const carveOutFor = (r: RouteResult): string => carveOutHtml(cardScreen(), r.route);
-    /** What the source says its own answer does not settle. Never a failure —
-     * and never under the "Also required" heading, which would turn "you may
-     * qualify for less" into one more bar to clear (human catch 2026-09-07). */
-    const caveatFor = (r: RouteResult): string => caveatHtml(cardScreen(), r.route);
-    /** Our own reading — what we modelled, what we did not, and where a number
-     * was read by a person. Never presented as an authority's words, and never
-     * in the quote list (s5e). */
-    const readingFor = (r: RouteResult): string => readingHtml(r.route, glossary);
-    /** The rail, labelled with the threshold this result was measured
-     * against — the path that was met, or the nearest reachable one. */
-    const railFor = (r: RouteResult): string => railHtml(ds, r, answers);
-    /** Every value the route rests on, quoted, dated, and — where the route
-     * states more than one threshold — marked with which one applied. */
-    const provenanceFor = (r: RouteResult): string => provenanceHtml(cardScreen(), r);
-
-
-    /** s3: "I don't know" answers get an official find-out link — the
-     * dataset's field `learn` source, rendered beside the page (lib/card.ts)
-     * since the stray full stop after it (s23, P5). */
-    const learnBoxFor = (r: RouteResult): string => learnBoxHtml(cardScreen(), r);
-
-    const periodOf = (field: string) => fieldOf(field)?.period;
-
-    /** The money field a route's bounded gap is measured on — its period is
-     * what makes "€1,585" readable as monthly or annual (critique #7). */
-    const gapFieldOf = (r: RouteResult) => measuredCriterionOf(ds, r, answers)?.field ?? "";
-
-    /** One gap, one format, everywhere it is printed (card, headline, unlock). */
-    const gapAmount = (r: RouteResult) =>
-      formatEURPer(Math.round(r.gap_max!), periodOf(gapFieldOf(r)));
-
-    // Expanded hold rows: one sentence per failing criterion, so a one-line
-    // reason always unfolds into something concrete. The sentences come from
-    // the engine — the page no longer names fields (B3).
-    const failDetail = (r: RouteResult): string => failDetailHtml(ds, r, answers);
-
-    /**
-     * What the interview asks of this route, in the plain words the route page
-     * shows, and the door to the page itself. It is the same declared fact in
-     * both places: "fully modelled" was a badge that overclaimed and retracted
-     * itself two sentences later (route-page critique B3), and a value said one
-     * way here and another way there is two facts.
-     */
-    function scopeFor(r: RouteResult): string {
-      const country = countryOf(ds, r.country);
-      // The reader's words, the same ones the country index and the route page
-      // print (decision 3 amended by the human, 2026-09-08) — counted over the
-      // conditions that bind THIS reader, beside the page so a test can read
-      // the line (s7).
-      return scopedHtml(r.route, answers, url(routePath(country, r.route)));
-    }
-
     /**
      * Bring the marked card into view, opening whatever it is folded inside.
      *
@@ -1033,184 +909,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       headline.focus({ preventScroll: true });
     }
 
-    /**
-     * The route the reader arrived from, marked and findable.
-     *
-     * "Check yours" from a route page landed on the whole results page with
-     * that route buried inside a collapsed group and nothing scrolled to
-     * (isolated v1-gate critique, 2026-09-08, B2). The mark is on the card
-     * itself, so whichever group it lands in — open, within reach or not yet
-     * — it is the same card the reader was reading a moment ago.
-     */
-    const cameFromMark = (r: RouteResult): string =>
-      r.route.id === scopedRouteId ? ` data-came-from="${escAttr(r.route.id)}"` : "";
-
-    /** The line inside the marked card, in the reader's own trail of thought. */
-    const cameFromNote = (r: RouteResult): string =>
-      r.route.id === scopedRouteId
-        ? `<p class="from-here">The route you came from.</p>`
-        : "";
-
-    function fullCard(r: RouteResult, showCountry = true, unsettled = false): string {
-      return `
-        <article class="route"${cameFromMark(r)}>
-          <div class="top">
-            <div>${showCountry ? `<span class="country">${esc(countryOf(ds, r.country).name)}</span>` : ""}
-              <h3>${esc(routeName(r))}</h3></div>
-            <span class="st ${unsettled ? "unsettled" : r.status}">${unsettled ? "Rules met" : STATUS_LABEL[r.status]}</span>
-          </div>
-          ${cameFromNote(r)}
-          <p class="why">${whyFor(r)}</p>
-          ${scopeFor(r)}
-          ${precondFor(r)}
-          ${carveOutFor(r)}
-          ${caveatFor(r)}
-          ${readingFor(r)}
-          ${pointsLineHtml(ds, r)}
-          ${r.status !== "hold" ? railFor(r) : ""}
-          ${r.status === "near" && r.gap_max ? (() => {
-            const gapField = gapFieldOf(r);
-            const hint = gapField === "salary_eur_year"
-              ? " A route with a lower threshold may already apply — check the other cards."
-              : "";
-            const label = gapField ? ` on ${esc(shortLabelOf(ds, gapField).toLowerCase())}` : "";
-            return `<div class="gapnote"><b>Short by up to ${gapAmount(r)}</b>${label}.${hint}</div>`;
-          })() : ""}
-          ${r.status === "near" && r.gap_points ? `<div class="gapnote"><b>Short by ${r.gap_points} point${r.gap_points === 1 ? "" : "s"}.</b> The sourced points table shows where more can come from — language level, experience and age all score.</div>` : ""}
-          ${learnBoxFor(r)}
-          <div class="foot">${provenanceFor(r)}${sourceLinkHtml(r.route.info_url)}</div>
-        </article>`;
-    }
-
-    function holdRow(r: RouteResult): string {
-      const why = whyFor(r);
-      const short = why.split(". ")[0].replace(/\.$/, "");
-      // Auto-open only where the unknown still binds — a row opened on a dead
-      // route promises an answer that cannot change it (critique #4).
-      return `
-        <details class="route-hold"${cameFromMark(r)}${hasLiveUnknown(r) || r.route.id === scopedRouteId ? " open" : ""}>
-          <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(routeName(r))}</span><span class="hold-why">${short}</span></summary>
-          <div class="hold-body">
-            ${cameFromNote(r)}
-            ${r.route.summary ? `<p class="why">${esc(glossed(r.route.summary, glossary))}</p>` : ""}
-            ${scopeFor(r)}
-            ${precondFor(r)}
-            ${carveOutFor(r)}
-            ${caveatFor(r)}
-            ${readingFor(r)}
-            ${pointsLineHtml(ds, r)}
-            ${failDetail(r)}
-            ${learnBoxFor(r)}
-            <div class="foot">${provenanceFor(r)}${sourceLinkHtml(r.route.info_url)}</div>
-          </div>
-        </details>`;
-    }
-
-    /** Every failing criterion of this row sits on a step the user hasn't
-     * taken (an offer, a transfer, a hosting agreement) and nothing else is
-     * open on it — the row says only what the step above already says. */
-    /** Which rows a hold list collapses. `isLocalization`, `declaredPlace` and
-     * `isPlacedElsewhere` are the engine's — one definition, so a row's reason
-     * and its grouping can never disagree. */
-    const placedElsewhere = (r: RouteResult) => isPlacedElsewhere(r, answers);
-    const place = () => declaredPlace(ds, answers);
-
-    /** A moot criterion: the route wants the "none of these" answer and the
-     * person declared a real step, so they "failed" it by having MORE. The
-     * shape is the engine's — the page re-derived it, and a second definition
-     * of the same thing can disagree with the reason it prints (review S5). */
-    const isMoot = (cr: CritResult): boolean => mootWith(ds, cr, answers) !== null;
-
-    function isStepGated(r: RouteResult): boolean {
-      const fails = r.criteria.filter((c) => c.outcome === "fail");
-      if (!fails.length || hasLiveUnknown(r)) return false;
-      // "Not needed with a job offer" is the opposite story — never file a
-      // route whose criterion is moot under "needs a job offer".
-      if (fails.some(isMoot)) return false;
-      return fails.every((cr) => {
-        const fields = referencedFields(cr.criterion);
-        // A criterion referencing no field is not "path-gated" — engine parity.
-        return fields.length > 0 && fields.every((f) => fieldOf(f)?.kind === "path");
-      });
-    }
-
-    /** The steps a set of gated rows actually asks for, named by the dataset.
-     * Fixed copy ("a job offer, transfer or hosting agreement") told a user who
-     * had declared a transfer that they needed one (review). */
-    function stepNamesFor(rows: RouteResult[]): string[] {
-      const names = new Set<string>();
-      for (const r of rows)
-        for (const cr of r.criteria.filter((c) => c.outcome === "fail")) {
-          const c = cr.criterion;
-          if (!("field" in c)) continue;
-          const def = fieldOf(c.field);
-          if (def?.kind !== "path") continue;
-          const wanted = c.op === "eq" ? [c.value] : c.op === "in" ? c.values : [];
-          for (const v of wanted) {
-            const opt = optionsOf(c.field).find((o) => o.value === v);
-            if (opt && !opt.is_fallback) names.add(opt.short ?? opt.label);
-          }
-        }
-      return [...names];
-    }
-
-    /**
-     * One "needs a job offer" row per country was information; sixteen were
-     * noise (critique #5). Rows gated on the step alone collapse into one
-     * group; anything with its own reason keeps its own row.
-     */
-    function holdList(rows: RouteResult[], hasUnlocks: boolean): string {
-      const gated: RouteResult[] = [], elsewhere: RouteResult[] = [], individual: RouteResult[] = [];
-      for (const r of rows)
-        (placedElsewhere(r) ? elsewhere : isStepGated(r) ? gated : individual).push(r);
-
-      // Routes that are simply in another country collapse into one line: a
-      // wall of "this route is in Spain" answers a question the reader never
-      // asked, on a fact they gave us themselves.
-      const told = place();
-      const elsewhereCountry = elsewhere.length
-        ? countryOf(ds, elsewhere[0].country).name
-        : "";
-      // Built where it is read, after the rows above it: a screen explains an
-      // abbreviation on its first use, so what renders first must be drawn first.
-      const elsewhereGroup = () => elsewhere.length >= 2
-        ? `<details class="hold-group">
-            <summary>${elsewhere.length} ${esc(elsewhereCountry)} routes — ${
-              told ? `you told us ${esc(told)}` : "not where you are looking"}</summary>
-            <div class="hold-group-body">${elsewhere.map(holdRow).join("")}</div>
-          </details>`
-        : elsewhere.map(holdRow).join("");
-
-      if (gated.length < 3)
-        return individual.map(holdRow).join("") + gated.map(holdRow).join("") + elsewhereGroup();
-      const steps = joinOr(stepNamesFor(gated));
-      // Open when it is the only thing on screen: a collapsed group was the
-      // whole result for the emptiest profile, and every quote and read date
-      // the product exists to show was folded away inside it (F7).
-      const alone = individual.length === 0 && elsewhere.length === 0 && !hasUnlocks;
-      return individual.map(holdRow).join("") +
-        `<details class="hold-group"${alone ? " open" : ""}>
-          <summary>${gated.length} routes need ${esc(steps)}${
-            hasUnlocks ? " — see the steps above" : ""}</summary>
-          <div class="hold-group-body">${gated.map(holdRow).join("")}</div>
-        </details>` + elsewhereGroup();
-    }
-
-    function unlockCard(step: Step, routes: RouteResult[]): string {
-      const u = step.unlock;
-      return `
-        <article class="unlock">
-          <h3>With <b>${esc(step.title)}</b></h3>
-          ${(() => { const means = unlockMeansOf(ds, u, answers);
-            return means ? `<p class="unlock-means">${esc(means)}</p>` : ""; })()}
-          <ul>${routes.map((r) =>
-            `<li>${esc(routeName(r))} — ${r.status === "met"
-              ? `<b>would be met</b>`
-              : `<i>would come within reach${r.gap_max ? ` (${gapAmount(r)})` : r.gap_points ? ` (${r.gap_points} pt${r.gap_points === 1 ? "" : "s"} more)` : ""}</i>`}</li>`).join("")}
-          </ul>
-        </article>`;
-    }
-
     function renderResults() {
       glossary = new Set();
       // Whether the reader was already on a result: a verdict that replaces a
@@ -1225,361 +923,23 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // The commit banner belongs to the screen after the commit, and the
       // verdict is not it.
       justRecorded = null;
-      // s5: countries the destination answer rules out disappear entirely —
-      // their routes fail on a fact the user chose, which is not information.
-      const dest = answers["destination"];
-      const visible = ds.countries.filter((c) =>
-        dest === undefined || dest === "all" || c.code.toLowerCase() === dest);
-      const visibleCodes = new Set(visible.map((c) => c.code));
-      // A reader who came from a route page is here about that route: it goes
-      // first in whatever group it lands in, and everything else keeps the
-      // order the engine gave it (scenario step 10).
-      const scored = scopedFirst(
-        evaluate(ds, answers).filter((r) => visibleCodes.has(r.country)),
-        scopedRouteId,
-      );
-      // A route this reader's own passport is shut out of is not a result. It
-      // is not open, it is not within reach, and above all it is not "not yet"
-      // — that heading invites them back with a better salary on a permit that
-      // will never be theirs. It leaves the three verdicts, the counts and the
-      // headline, and stands in its own section with the authority's sentence
-      // under it (s8).
-      const closedRoutes = scored.filter(isClosed);
-      const results = scored.filter((r) => !isClosed(r));
-
-      const applicable = notices(ds, answers);
-
-      /**
-       * A route an open question hangs over is not "criteria met".
-       *
-       * s8 decided not to decide: where the sources conflict about whether a
-       * permit is open to a passport at all, the routes stay scored and a
-       * notice carries the doubt. The human walked it and found the hole —
-       * the notice was above the cards and the card said "criteria met",
-       * and only one of those survives being skimmed (2026-09-10). The rules,
-       * the quotes and the dates stay exactly as they are; what changes is the
-       * heading over them, which stops claiming more than anyone knows.
-       */
-      const unsettledIds = new Set(
-        applicable.filter((n) => n.kind === "open-question").flatMap((n) => n.routes ?? []),
-      );
-      const unsettled = results.filter((r) => r.status === "met" && unsettledIds.has(r.route.id));
-      const settled = results.filter((r) => !unsettled.includes(r));
-
-      const byStatus = {
-        met: settled.filter((r) => r.status === "met"),
-        near: settled.filter((r) => r.status === "near"),
-        hold: settled.filter((r) => r.status === "hold"),
-      };
-      const met = byStatus.met.length;
-      const near = byStatus.near;
-      const metCountries = new Set(byStatus.met.map((r) => r.country));
-
       renderDeclaration(null);
       app.dataset.state = "results";
       setStamp("record");
-
-      const zeroOpen = met + near.length === 0;
-
-      // The screen no route can produce: this passport needs no permit at all.
-      // "0 routes look open" is the worst news for the best-placed user and it
-      // isn't even true (critique #1) — here the notice IS the result.
-      // Only a notice that ANSWERS instead of the routes may take the screen:
-      // "you need no permit at all" is the whole story. An extra-rights notice
-      // adds to a verdict the rules computed, so it never suppresses one — the
-      // zero-open screen keeps its headline and its unlocking steps (s5c).
-      const replacing = applicable.filter((n) => n.kind === "no-permit-needed");
-      if (replacing.length && zeroOpen) {
-        // The headline is the notice's own title: a second copy of it here
-        // would drift the moment the dataset states a different notice.
-        advance({ kind: "answered-outright", title: replacing[0].title });
-        // Any other applicable notice still belongs on the screen — dropping
-        // it silenced, say, the Türkiye note (review).
-        main.innerHTML = [...replacing, ...applicable.filter((n) => !replacing.includes(n))]
-          .map((n) => noticeHtml(n, glossary)).join("");
-        // The notice screen IS the result for this reader: one entry, like any
-        // other screen they can go back from.
-        recordScreen(null, true);
-        // Its headline is the notice's title, and it is announced and brought
-        // to the screen like any verdict's (s20).
-        announce(headline.textContent ?? "");
-        landOnVerdict(wasResult);
-        return;
-      }
-
-      // s3b: counterfactual leverage — what each alternative step would unlock;
-      // ordered by what the reader can do, each ladder one step (s23).
-      const ups = arrangeSteps(ds, unlocks(ds, answers), answers);
-      // Notices ride above the normal layout, with the results intact.
-      //
-      // Two answers that cannot both be true ride at the very top of them: the
-      // engine takes the more specific one and evaluates on, which is
-      // defensible, but a met verdict resting on an answer the reader
-      // contradicted two questions ago must never arrive silently (isolated
-      // v1-gate critique, 2026-09-08, F7). The pairs and their wording are the
-      // dataset's; the screen only stops being quiet about them.
-      const clash = contradictionsIn(ds, answers)
-        .map((c) => `<p class="clash" role="status">${esc(c.say)}</p>`).join("");
-      const noticeCards = clash + applicable.map((n) => noticeHtml(n, glossary)).join("");
-
-      // The subtitle states what was compared, and only a comparison can
-      // produce it — the count and the tense come from the same place (B4).
-      // What the masthead just said, in plain words, so the screen can announce
-      // it: the verdict arrives with no live region at all, and a reader using
-      // one is told nothing happened (critique F16). The sentence is written
-      // once, in words; the emphasis is markup laid over it, so the announced
-      // line is the sentence itself rather than a strip of its own HTML
-      // (Standards review, 2026-09-08).
-      let verdictText = "";
-      const said = (
-        sentence: string, emphasis = "", rest: { nearest?: string; explore?: Explore; unscored?: UnscoredVerdict } = {},
-      ) => {
-        verdictText = emphasis ? `${sentence} ${emphasis}` : sentence;
-        advance({
-          kind: "compare", routes: results.length,
-          headline: sentence, ...(emphasis ? { emphasis } : {}),
-          ...rest,
-        });
-      };
-      /** The verdict, announced after the screen it belongs to is drawn. */
-      const sayVerdict = () => { announce(verdictText); };
-
-      /**
-       * A situation no scored route in the declared country takes (s19).
-       *
-       * A researcher with a French hosting agreement chose France, then the
-       * research answer, and read "Nothing open on these answers" — 0 open, 5
-       * not yet — for a route that was merely absent, with the reason on
-       * GitHub and nowhere on the screen (v1.1 gate critique B1). The result
-       * is not "nothing open"; it is that no scored route here takes what
-       * they have, that the route which would is quoted and where it is read,
-       * and what the routes below do take. It takes precedence over the two
-       * zero-open headlines for exactly this case and no other: a step-
-       * unlocked or unsettled zero-open result on any other answer reads as
-       * it did.
-       */
-      //
-      // On the four-country path it is keyed by the country the reader named
-      // at question 3 (s26): the same researcher read this state on the
-      // France path and "Nothing open on these answers" here, the sentence
-      // that explained it third, in France's line under Germany's (s21 put
-      // it there; the product knew which country their agreement was in).
-      // With no country named, or one whose scored routes take the
-      // situation, it stays null and the headline is one of the three below.
-      // The other branch — every visible country closed to the situation —
-      // is not drawn, because on this dataset it cannot occur: the "all" set
-      // is the union of the four and every offered situation is taken by a
-      // scored route somewhere (tests/s21: "every situation the interview
-      // offers is taken by a scored route in some country"). The day that
-      // assertion goes red, that branch needs a written state of its own,
-      // and this is where it goes.
-      const unscored = zeroOpen ? unscoredVerdict(ds, answers) : null;
-      if (unscored) {
-        said(unscored.headline, "", { unscored });
-      } else if (zeroOpen && unsettled.length) {
-        // Not "nothing open": their rules are met and the doubt is about the
-        // passport, which is the notice's business and not the rules'. Saying
-        // nothing is open here would contradict the section right below it
-        // (human's walk, 2026-09-10).
-        const n = unsettled.length;
-        said(
-          `${n} route${n === 1 ? "" : "s"} meet${n === 1 ? "s" : ""} the rules — whether your passport `
-          + `can use ${n === 1 ? "it" : "them"} is unsettled.`,
-          "",
-        );
-      } else if (zeroOpen && ups.length) {
-        // The step worth naming is the first one the list offers: the order
-        // is the rank — a step the reader can take before a situation they
-        // did not declare, one that meets a route before one that only brings
-        // routes within reach, then breadth, then the engine's order (s23).
-        const bestUp = nearestStep(ups)!;
-        // Zero open is a starting point, not a dead end — the steps are the news.
-        said(`Nothing open yet — ${ups.length} step${ups.length === 1 ? "" : "s"} would change that.`,
-          "", { nearest: bestUp.title });
-      } else if (zeroOpen) {
-        // Nothing open and no single step would open one: no false hope. The
-        // single-country result has no country sections to send anyone to, so
-        // it does not pretend otherwise (F7).
-        // What to do next is part of the one line, not a second sentence
-        // appended to the element afterwards (review J2).
-        said("Nothing open on these answers.", "", {
-          explore: visible.length === 1 ? "one-country" : "several-countries",
-        });
-      } else {
-        const nearNote = near.length
-          ? near[0].gap_max
-            ? `One is short by ${gapAmount(near[0])}.`
-            : near[0].gap_points
-              ? `One is ${near[0].gap_points} point${near[0].gap_points === 1 ? "" : "s"} away.`
-              : ""
-          : "";
-        const across = metCountries.size > 1 ? ` across ${metCountries.size} countries` : "";
-        said(`${met} route${met === 1 ? "" : "s"} look${met === 1 ? "s" : ""} open${across}.`, nearNote);
-      }
-
-      // Counted the way the rows read: an unknown on a hard-failed route is
-      // moot, and no learn box offers to resolve it (critique #4).
-      const openUnknownCount = (rs: RouteResult[]) => rs.filter(hasLiveUnknown).length;
-      const openUnknowns = openUnknownCount(results);
-
-      const strip = `<div class="strip" aria-label="Summary">
-          <span class="s-met">${byStatus.met.length} open</span>
-          <span class="s-near">${byStatus.near.length} within reach</span>
-          ${unsettled.length ? `<span class="s-unsettled">${unsettled.length} unsettled for your passport</span>` : ""}
-          ${closedRoutes.length ? `<span class="s-closed">${closedRoutes.length} not open to your passport</span>` : ""}
-          <span class="s-hold">${byStatus.hold.length} not yet${openUnknowns ? ` — ${openUnknowns} ${openUnknowns === 1 ? "has" : "have"} an open unknown` : ""}</span>
-        </div>`;
-
-      /**
-       * The offer, at the end of the body: a reader with something to say has
-       * one word to say it by, after the last section and before the footer —
-       * quieter than a card, louder than the footer, and never between the
-       * reader and what they came for (the human's walk, 2026-09-16; it sat
-       * under the strip for a day).
-       *
-       * It is a link to `/feedback/` and it carries nothing at all — not the
-       * record, not the query string, not the screen. The mail's own subject
-       * and headings are written on that page, from constants; this line is the
-       * door to them and is built here only because a results screen is drawn
-       * by the module rather than by the build. The sentence and its full stop
-       * are the copy's; the template supplies the link and nothing else.
-       *
-       * It exists in this block and nowhere else, which is what keeps it off
-       * every question screen: the sections and this line are drawn together,
-       * and the sections are the results screen's own.
-       */
-      const sayLine = `<p class="say">${resultFeedbackLine(
-        `<a href="${escAttr(url(FEEDBACK_PATH))}">${esc(FEEDBACK)}</a>`)}</p>`;
-
-      // A heading, not a styled div: the results page had no heading above H3,
-      // so "OPEN — CRITERIA MET (5)" was not a heading at all and no reader
-      // using headings to move could find a section (critique F16).
-      const section = (title: string, cls: string, inner: string, count: number) =>
-        count ? `<h2 class="ghead ${cls}"><b>${title}</b> (${count})</h2><div class="stack">${inner}</div>` : "";
-
-      /**
-       * The routes this reader's passport is shut out of, said once and said
-       * plainly. It goes last, under a heading that closes rather than defers:
-       * these are not steps away, and the section that means "come back with
-       * more" is the one place they must never be filed.
-       */
-      const closedSection = (rows: RouteResult[]) => section(
-        "Not open to your passport", "closed",
-        rows.map((r) => closedRowHtml(r, glossary)).join(""), rows.length,
-      );
-
-      /** The rules are met; whether the route is theirs at all is the question
-       * in the notice above, and the heading says so rather than the card.
-       *
-       * The line names no country and no passport. It said "Whether France
-       * opens this permit to an Algerian passport" — true of the only notice
-       * that exists today, and wrong the first time a second one marks a route
-       * anywhere else (2026-09-10). */
-      const unsettledSection = (rows: RouteResult[], withCountry = true) => rows.length
-        ? section(
-          "Open on the rules — unsettled for your passport", "unsettled",
-          `<p class="why">` + esc("The rules below are met by what you declared. Whether this permit "
-            + "is open to your passport at all is the question in the note above.")
-          + `</p>` + rows.map((r) => fullCard(r, withCountry, true)).join(""),
-          rows.length,
-        )
-        : "";
-
-      // The job-search sentence, to the reader it is true of — one with no
-      // offer yet (s23, F1a).
-      const seekHint = (rs: RouteResult[], hasUnlocks: boolean) => seekHintHtml(ds, rs, answers, hasUnlocks);
-
-      if (visible.length === 1) {
-        // Single destination: the flat s3 layout, no country chrome.
-        // Built where it is read, not before it: a screen explains an
-        // abbreviation on its FIRST use, so what a section renders first must
-        // also be what it renders first (human, 2026-09-08).
-        const unlockSection = () => ups.length
-          ? `<h2 class="ghead unlockh"><b>Steps that would unlock more</b> — each re-checked against the rules</h2>` +
-            ups.map((u) => unlockCard(u, u.unlock.routes)).join("") +
-            seekHint(results, true)
-          : "";
-        main.innerHTML = arrivalLine() + noticeCards + strip +
-          section("Open — criteria met", "", byStatus.met.map((r) => fullCard(r)).join(""), byStatus.met.length) +
-          unsettledSection(unsettled) +
-          section("Within reach", "near", byStatus.near.map((r) => fullCard(r)).join(""), byStatus.near.length) +
-          unlockSection() +
-          section("Not yet", "hold", holdList(byStatus.hold, ups.length > 0), byStatus.hold.length) +
-          closedSection(closedRoutes) +
-          sayLine;
-        sayVerdict();
-        landOnVerdict(wasResult);
-        return;
-      }
-
-      // Multi destination: collapsible country sections; hopeful countries open,
-      // all-hold ones collapsed with the tally (and any unlocking steps) visible.
-      // With nothing open anywhere, the first country that has steps opens
-      // instead — the hope is the point, and it was hidden in 10px tally text.
-      const withUps = new Set(ups.flatMap((u) => u.unlock.routes.map((r) => r.country)));
-      // The country the headline is about leads the list, open: a reader who
-      // named France at question 3 and read France's written state above
-      // found France's section third, collapsed, under Germany's (s26). The
-      // others follow in the dataset's order, with the rule above.
-      const lead = leadCountry(ds, answers, zeroOpen);
-      main.innerHTML = arrivalLine() + noticeCards + strip + namedFirst(visible, lead).map((c) => {
-        const rs = results.filter((r) => r.country === c.code);
-        const cUnsettled = rs.filter((r) => r.status === "met" && unsettledIds.has(r.route.id));
-        const g = {
-          met: rs.filter((r) => r.status === "met" && !unsettledIds.has(r.route.id)),
-          near: rs.filter((r) => r.status === "near"),
-          hold: rs.filter((r) => r.status === "hold"),
-        };
-        // Country-scoped unlock rows: each row's routes narrowed to this country.
-        const cUps = ups
-          .map((u) => ({ u, routes: u.unlock.routes.filter((r) => r.country === c.code) }))
-          .filter((x) => x.routes.length);
-        const unknowns = openUnknownCount(rs);
-        // A country's own closed routes are counted in its tally: the section
-        // that holds them is collapsed when nothing is open, and a count no
-        // summary names is a route the reader never learns exists (s8).
-        const cClosed = closedRoutes.filter((r) => r.country === c.code);
-        // A country whose scored routes do not take the declared situation
-        // has every one of them on hold, and "5 not yet" was all its line
-        // said to the researcher the critique walked — for a route that was
-        // merely absent, sixteen answers in (v1.1 gate critique N1, s21). The
-        // s19 sentence stands where the not-yet count stood; the count's
-        // company on the line (a passport closure, an unlocking step) and the
-        // not-yet cards in the body are what they were.
-        const closedTo = unscoredTally(ds, c, answers[SITUATION_FIELD]);
-        const tallyParts = [
-          g.met.length ? `${g.met.length} open` : "",
-          cUnsettled.length ? `${cUnsettled.length} unsettled for your passport` : "",
-          g.near.length ? `${g.near.length} within reach` : "",
-          closedTo
-            ? closedTo.html
-            : g.hold.length ? `${g.hold.length} not yet${unknowns ? ` — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown` : ""}` : "",
-          cClosed.length ? `${cClosed.length} not open to your passport` : "",
-          cUps.length ? `<i>${cUps.length} unlocking step${cUps.length === 1 ? "" : "s"}</i>` : "",
-        ].filter(Boolean).join(" · ");
-        // With nothing open, the steps ARE the news: every section holding one
-        // opens. Announcing "6 steps" and hiding two inside collapsed sections
-        // is the withholding the headline exists to end (critique #4).
-        const open = g.met.length + cUnsettled.length + g.near.length > 0 || (zeroOpen && withUps.has(c.code)) || leads(c, lead);
-        const inner =
-          section("Open — criteria met", "", g.met.map((r) => fullCard(r, false)).join(""), g.met.length) +
-          unsettledSection(cUnsettled, false) +
-          section("Within reach", "near", g.near.map((r) => fullCard(r, false)).join(""), g.near.length) +
-          (cUps.length
-            ? `<h2 class="ghead unlockh"><b>Steps that would unlock more here</b></h2>` +
-              cUps.map((x) => unlockCard(x.u, x.routes)).join("") +
-              seekHint(rs, true)
-            : "") +
-          section("Not yet", "hold", holdList(g.hold, cUps.length > 0), g.hold.length) +
-          closedSection(cClosed);
-        return `<details class="country-sec"${open ? " open" : ""}>
-            <summary${closedTo ? ` class="said"` : ""}><span class="cname">${esc(c.name)}</span> <span class="tally${closedTo ? " said" : ""}">${tallyParts}</span></summary>
-            <div class="cbody">${inner}</div>
-          </details>`;
-      }).join("") + sayLine;
-      sayVerdict();
+      const verdict = verdictOf(ds, answers, { cameFrom: scopedRouteId, answered: asked.length });
+      advance(verdict.action);
+      // A notice that answers the reader outright is the whole body: the
+      // arrival line stands over a comparison only.
+      const answeredOutright = verdict.layout.kind === "notice";
+      main.innerHTML = (answeredOutright ? "" : arrivalLine()) + verdictHtml(verdict);
+      // The notice screen IS the result for this reader: one entry, like any
+      // other screen they can go back from, written before it is announced.
+      if (answeredOutright) recordScreen(null, true);
+      announce(verdict.announced);
       landOnVerdict(wasResult);
-      recordScreen(null, true);
+      // The several-country verdict writes its entry once it is landed on; the
+      // one-country verdict writes none (#177).
+      if (verdict.layout.kind === "countries") recordScreen(null, true);
     }
 
     /**

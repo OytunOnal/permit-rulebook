@@ -32,6 +32,25 @@
     "scripts/carry-assets/live-site-over-http.mjs",
     "scripts/carry-assets/log-wording.mjs"
    ]
+  },
+  {
+   "path": "src/lib/verdict",
+   "entries": [
+    {
+     "file": "src/lib/verdict/index.ts",
+     "level": "presentation"
+    }
+   ],
+   "files": [
+    "src/lib/verdict/compose/cards.ts",
+    "src/lib/verdict/compose/headline.ts",
+    "src/lib/verdict/compose/html.ts",
+    "src/lib/verdict/compose/not-yet.ts",
+    "src/lib/verdict/compose/reading.ts",
+    "src/lib/verdict/compose/sections.ts",
+    "src/lib/verdict/compose/types.ts",
+    "src/lib/verdict/index.ts"
+   ]
   }
  ],
  "levels": {
@@ -82,6 +101,14 @@
   "src/lib/slug.ts": "presentation",
   "src/lib/social-card.ts": "presentation",
   "src/lib/steps.ts": "presentation",
+  "src/lib/verdict/compose/cards.ts": "presentation",
+  "src/lib/verdict/compose/headline.ts": "presentation",
+  "src/lib/verdict/compose/html.ts": "presentation",
+  "src/lib/verdict/compose/not-yet.ts": "presentation",
+  "src/lib/verdict/compose/reading.ts": "presentation",
+  "src/lib/verdict/compose/sections.ts": "presentation",
+  "src/lib/verdict/compose/types.ts": "presentation",
+  "src/lib/verdict/index.ts": "presentation",
   "src/pages/404.astro": "presentation",
   "src/pages/[country]/[route].astro": "presentation",
   "src/pages/[country]/[route].json.ts": "presentation",
@@ -589,6 +616,11 @@
   },
   {
    "from": "src/lib/screen.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/screen.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -668,6 +700,236 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/card.ts",
+   "kind": "inheritance"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/countries.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/steps.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/reading.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/not-yet.ts",
+   "to": "src/lib/countries.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/not-yet.ts",
+   "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/not-yet.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/reading.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/reading.ts",
+   "to": "src/lib/steps.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/not-yet.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/reading.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/types.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "inheritance"
+  },
+  {
+   "from": "src/lib/verdict/compose/types.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/types.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/headline.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/html.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/reading.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/sections.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/pages/404.astro",
    "to": "src/lib/not-found.ts",
    "kind": "dependency"
@@ -719,17 +981,7 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
    "to": "src/lib/copy.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/countries.ts",
    "kind": "dependency"
   },
   {
@@ -799,17 +1051,7 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/situations.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/slug.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/steps.ts",
+   "to": "src/lib/verdict/index.ts",
    "kind": "dependency"
   },
   {
@@ -1809,6 +2051,11 @@
   },
   {
    "from": "tests/s13.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
@@ -1820,6 +2067,16 @@
   {
    "from": "tests/s13.test.ts",
    "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2353,6 +2610,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s5e.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s6-edges.test.ts",
    "to": "src/lib/copy.ts",
    "kind": "dependency"
@@ -2393,8 +2655,18 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s7.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s8.test.ts",
    "to": "src/lib/card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s8.test.ts",
+   "to": "src/lib/copy.ts",
    "kind": "dependency"
   },
   {
@@ -2405,6 +2677,16 @@
   {
    "from": "tests/s8.test.ts",
    "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s8.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s8.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2570,6 +2852,16 @@
   {
    "from": "tests/territories.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-cards.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-module.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   }
  ],
@@ -2785,6 +3077,28 @@
    },
    {
     "name": "sentenceOfError",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/verdict/index.ts": [
+   {
+    "name": "answeredOutright",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "noticesAbove",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "verdictOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "verdictHtml",
     "kind": "fn",
     "exported": true
    }
@@ -4055,6 +4369,206 @@
    },
    {
     "name": "territoryLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "STATUS_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RULES_MET",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CAME_FROM_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "shortByUpTo",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "onField",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "LOWER_THRESHOLD_HINT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "shortByPoints",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "POINTS_TABLE_HINT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "withStepHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "WOULD_BE_MET",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WOULD_COME_WITHIN_REACH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "pointsMore",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "noticeHeadline",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "unsettledHeadline",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "stepsWouldChangeHeadline",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "NOTHING_OPEN_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "routesOpenHeadline",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "shortByLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pointsAwayLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SUMMARY_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "openCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "withinReachCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "unsettledCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "notOpenToPassportCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "notYetCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "notYetWithUnknowns",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "unlockingSteps",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "OPEN_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "UNSETTLED_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "UNSETTLED_SECTION_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WITHIN_REACH_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_YET_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CLOSED_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "STEPS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "STEPS_HEADING_TAIL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "STEPS_HERE_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "routesNeed",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routesNeedSeeStepsAbove",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routesInCountryWhereYouToldUs",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routesInCountryYouAreNotLookingAt",
     "kind": "fn",
     "exported": true
    }
@@ -5761,5 +6275,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8472596746b9ade15119dd278eb32e8c1e5da5604d28ea098480cc761ed15589"
+ "digest": "c8b4513dca103cc87d369c3d7554440d12621ae03071352582a096f72471ca38"
 }

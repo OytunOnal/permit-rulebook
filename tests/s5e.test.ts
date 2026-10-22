@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   deriveBands, evaluate, fieldOptions, hasUnbalancedQuotationMark, quotedSpans, resultProvenance,
@@ -8,6 +7,7 @@ import {
 } from "permit-rulebook-data";
 import { carveOutHtml, caveatHtml, precondHtml, provenanceHtml, readingHtml } from "../src/lib/card.js";
 import { whyHtml } from "../src/lib/reason.js";
+import { placed, verdictFor } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const routes = (): Route[] => ds.countries.flatMap((c) => c.routes);
@@ -154,10 +154,21 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
   });
 
   it("the page renders the block — on the full card and on a collapsed row alike", () => {
-    // The seam exists so a rendering decision does not sit in the page; a
-    // block the page forgets to call is a block that does not exist.
-    const page = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
-    expect(page.match(/\$\{readingFor\(r\)\}/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    // A block the verdict forgets to draw is a block that does not exist. A
+    // qualified offer in France: the talent permit is open and carries our
+    // reading on its card; the transfer permit is not yet, and carries its own
+    // on its row.
+    const answers: Profile = {
+      destination: "fr", citizenship: "TR", situation: "offer", situation_country: "fr", qualification: "degree",
+      fr_degree: "yes", fr_innovative_employer: "no", fr_local_contract: "no", experience_5y: "2plus",
+      experience_7y: "5plus", salary_eur_year: deriveBands(ds, "salary_eur_year").at(-1)!.id,
+    };
+    const verdict = verdictFor(answers);
+    const card = placed(verdict, "fr-talent-qualifie");
+    const row = placed(verdict, "fr-ict");
+    expect(card?.kind).toBe("open");
+    expect(row?.kind).toBe("not-yet");
+    for (const { html } of [card!, row!]) expect(html).toContain('<div class="caveat ours">');
   });
 });
 

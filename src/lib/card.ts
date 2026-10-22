@@ -191,8 +191,8 @@ export function carveOutHtml(screen: CardScreen, route: Route): string {
  * It lives here rather than in the template for the reason the blocks above
  * do: the count is the reader's, and a line that still counted a condition
  * this reader is exempt from would be counting a sentence the card no longer
- * shows (s7). `href` comes from the page, which is where a route's address is
- * built.
+ * shows (s7). `href` comes from the caller, which builds the route's address
+ * for the site's base.
  */
 export function scopedHtml(route: Route, answers: Profile, href: string): string {
   // The scope line stands alone; the door is a line of its own under it, not

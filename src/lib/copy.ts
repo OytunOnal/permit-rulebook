@@ -862,3 +862,73 @@ export const territoryLine = (
   territory: { atStart: string; inSentence: string }, countryPhrase: string, country: string,
 ): string =>
   `${territory.atStart} is not on this list: people from ${territory.inSentence} hold a passport of ${countryPhrase}. Choose ${country}.`;
+
+/**
+ * The verdict's words (`lib/verdict/`): the badges, the card's lines, the
+ * headlines, the summary line, the section headings, the not-yet folds and
+ * the steps. The numbers, names and amounts are the verdict's; these are the
+ * words around them.
+ */
+export const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
+/** The badge under "unsettled for your passport": the rules are met, and
+ * whether the route is the reader's at all is the notice's question (s8). */
+export const RULES_MET = "Rules met";
+export const CAME_FROM_LINE = "The route you came from.";
+export const shortByUpTo = (amount: string): string => `Short by up to ${amount}`;
+export const onField = (field: string): string => `on ${field}`;
+export const LOWER_THRESHOLD_HINT = "A route with a lower threshold may already apply — check the other cards.";
+export const shortByPoints = (points: number): string => `Short by ${points} point${points === 1 ? "" : "s"}.`;
+export const POINTS_TABLE_HINT =
+  "The sourced points table shows where more can come from — language level, experience and age all score.";
+/** A step's heading; `titleHtml` is the step's title, already markup. */
+export const withStepHtml = (titleHtml: string): string => `With <b>${titleHtml}</b>`;
+export const WOULD_BE_MET = "would be met";
+export const WOULD_COME_WITHIN_REACH = "would come within reach";
+export const pointsMore = (points: number): string => `${points} pt${points === 1 ? "" : "s"} more`;
+
+/** The notice screen's headline: the notice's own title, closed. */
+export const noticeHeadline = (title: string): string => `${title}.`;
+export const unsettledHeadline = (n: number): string =>
+  `${n} route${n === 1 ? "" : "s"} meet${n === 1 ? "s" : ""} the rules — whether your passport `
+  + `can use ${n === 1 ? "it" : "them"} is unsettled.`;
+export const stepsWouldChangeHeadline = (steps: number): string =>
+  `Nothing open yet — ${steps} step${steps === 1 ? "" : "s"} would change that.`;
+export const NOTHING_OPEN_HEADLINE = "Nothing open on these answers.";
+export const routesOpenHeadline = (open: number, countries: number): string =>
+  `${open} route${open === 1 ? "" : "s"} look${open === 1 ? "s" : ""} open${countries > 1 ? ` across ${countries} countries` : ""}.`;
+export const shortByLine = (amount: string): string => `One is short by ${amount}.`;
+export const pointsAwayLine = (points: number): string => `One is ${points} point${points === 1 ? "" : "s"} away.`;
+
+/** The summary line under the notices, and a country's summary row. */
+export const SUMMARY_LABEL = "Summary";
+export const openCount = (n: number): string => `${n} open`;
+export const withinReachCount = (n: number): string => `${n} within reach`;
+export const unsettledCount = (n: number): string => `${n} unsettled for your passport`;
+export const notOpenToPassportCount = (n: number): string => `${n} not open to your passport`;
+export const notYetCount = (n: number): string => `${n} not yet`;
+export const notYetWithUnknowns = (n: number, unknowns: number): string =>
+  `${notYetCount(n)} — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown`;
+export const unlockingSteps = (n: number): string => `${n} unlocking step${n === 1 ? "" : "s"}`;
+
+/** The section headings, and the unsettled section's line, which names no
+ * country and no passport: the notice above it does. */
+export const OPEN_HEADING = "Open — criteria met";
+export const UNSETTLED_HEADING = "Open on the rules — unsettled for your passport";
+export const UNSETTLED_SECTION_LINE = "The rules below are met by what you declared. Whether this permit "
+  + "is open to your passport at all is the question in the note above.";
+export const WITHIN_REACH_HEADING = "Within reach";
+export const NOT_YET_HEADING = "Not yet";
+export const CLOSED_HEADING = "Not open to your passport";
+export const STEPS_HEADING = "Steps that would unlock more";
+export const STEPS_HEADING_TAIL = "each re-checked against the rules";
+export const STEPS_HERE_HEADING = "Steps that would unlock more here";
+
+/** The not-yet group's folds: rows that need only a path answer, named by
+ * the answers they ask for, and rows in another country than the one the
+ * reader is looking at. */
+export const routesNeed = (n: number, steps: string): string => `${n} routes need ${steps}`;
+export const routesNeedSeeStepsAbove = (n: number, steps: string): string => `${routesNeed(n, steps)} — see the steps above`;
+export const routesInCountryWhereYouToldUs = (n: number, country: string, told: string): string =>
+  `${n} ${country} routes — you told us ${told}`;
+export const routesInCountryYouAreNotLookingAt = (n: number, country: string): string =>
+  `${n} ${country} routes — not where you are looking`;

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   evaluate, routeStatements, scopeLine,
@@ -9,6 +8,7 @@ import { carveOutHtml, precondHtml, provenanceHtml, scopedHtml } from "../src/li
 import { ROUTE_DOOR } from "../src/lib/copy.js";
 import { glossed } from "../src/lib/gloss.js";
 import { routePages } from "../src/lib/route-page.js";
+import { placed, verdictFor } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -160,8 +160,14 @@ describe("s7 — the other two permits the IND names, and the page that calls th
     });
 
   it("the results page calls the carve-out block on both card layouts", () => {
-    const page = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
-    expect(page.match(/\$\{carveOutFor\(r\)\}/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    // The Turkish reader's open card for 30 or older and not-yet row for
+    // under 30 both say what the IND releases them from.
+    const verdict = verdictFor(turkish);
+    const card = placed(verdict, "nl-hsm-30plus");
+    const row = placed(verdict, "nl-hsm-under30");
+    expect(card?.kind).toBe("open");
+    expect(row?.kind).toBe("not-yet");
+    for (const { html } of [card!, row!]) expect(html).toContain('<div class="caveat carveout">');
   });
 
   it("a route page shows who the provisional residence permit does not bind", () => {

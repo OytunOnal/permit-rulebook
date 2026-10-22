@@ -3,6 +3,7 @@
 ## Modules
 <!-- a deep module's folder per line, or none; `folder/*` declares every folder directly under it -->
 - `scripts/carry-assets`
+- `src/lib/verdict`
 
 ## Levels
 <!-- innermost first; changing them takes an ADR -->

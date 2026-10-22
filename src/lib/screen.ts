@@ -1,4 +1,5 @@
 // @level application presentation
+import { noticeHeadline } from "./copy.js";
 import { esc, escAttr } from "./reason.js";
 import type { UnscoredVerdict } from "./situations.js";
 
@@ -118,7 +119,7 @@ export function mastheadFor(screen: Screen): Masthead {
       return { headline: INTRO_HEADLINE, subline: screen.started ? SHORT_SUBLINE : INTRO_SUBLINE };
     case "notice":
       return {
-        headline: `${esc(screen.title)}.`,
+        headline: esc(noticeHeadline(screen.title)),
         subline: "Nothing to compare: the published rule below answers your situation directly.",
       };
     case "results": {
