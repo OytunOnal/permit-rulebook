@@ -907,7 +907,6 @@ export const asksOrMore = (threshold: string): string => `asks ${threshold} or m
 export const upToShort = (amount: string): string => `up to ${amount} short`;
 export const ABOVE_THE_AMOUNT = "above the amount";
 export const BELOW_THE_AMOUNT = "below the amount";
-export const CROSSES_THE_AMOUNT = "crosses the amount";
 export const LOWER_THRESHOLD_HINT = "A route with a lower threshold may already apply — check the other cards.";
 export const shortByPoints = (points: number): string => `Short by ${points} point${points === 1 ? "" : "s"}.`;
 export const POINTS_TABLE_HINT =

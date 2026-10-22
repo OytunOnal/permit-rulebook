@@ -123,9 +123,8 @@ describe("the rail says where the reader stands", () => {
     const below: Profile = { ...WALK, salary_eur_month: "band_5" };
     expect(deriveBands(ds, "salary_eur_month").find((b) => b.id === below.salary_eur_month)!.max).toBeLessThanOrEqual(5942);
     expect(asksRowsOf(railFor(below, "nl-ict"))[0]).toMatch(/ · up to €[\d,.]+\/month short$/);
-    // A band that straddles one of the route's own amounts would say "crosses
-    // the amount"; through the verdict no answer reaches it, because every
-    // band is cut at every amount the dataset states.
+    // No band straddles one of the route's own amounts: every band is cut at
+    // every amount the dataset states.
   });
 
   it("a band that crosses an amount is drawn crossing it", () => {

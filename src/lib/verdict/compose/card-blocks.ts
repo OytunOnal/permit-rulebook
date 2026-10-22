@@ -10,7 +10,7 @@ import {
 } from "permit-rulebook-data";
 import { esc, escAttr } from "../../reason.js";
 import {
-  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, CROSSES_THE_AMOUNT, NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading,
+  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading,
   readOn, upToShort,
 } from "../../copy.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
@@ -362,13 +362,12 @@ export function moneyShortfallOf(ds: Dataset, r: RouteResult, answers: Profile):
 /**
  * Where the reader's band stands against one amount, in the words the card
  * already uses elsewhere: a band open at the bottom is below it, with no gap
- * to name.
+ * to name. No band straddles an amount: the dataset's bands are cut at every
+ * amount it states, so a band not above an amount is below it.
  */
 function bandStandsAt(band: Band, amount: number, gapSaid: (gap: number) => string): string {
-  if (band.max !== undefined && band.max <= amount)
-    return band.min === undefined ? BELOW_THE_AMOUNT : upToShort(gapSaid(amount - band.min));
   if (band.min !== undefined && band.min >= amount) return ABOVE_THE_AMOUNT;
-  return CROSSES_THE_AMOUNT;
+  return band.min === undefined ? BELOW_THE_AMOUNT : upToShort(gapSaid(amount - band.min));
 }
 
 /** One scale and one rounding for everything on the bar. */
