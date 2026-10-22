@@ -15,14 +15,17 @@
 /* Two answers that cannot both be true, said before the verdicts. */
 .clash{font-size:.9rem;color:var(--color-ink);background:var(--color-near-soft);border-left:3px solid var(--color-near);padding:.6rem .8rem;margin:0 0 .8rem}
 
-/* Result summary + groups (s3) */
+/* Result summary + groups (s3). The counters are one plain line, with no
+   pill, border or ground: bordered, they read as tabs and did nothing when
+   pressed (F4). Each count keeps its status colour. */
 .strip{display:flex;gap:.6rem;margin:0 0 .4rem;flex-wrap:wrap}
-.strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase;padding:.45rem .8rem;border:var(--rule-soft);background:var(--color-card)}
-.strip .s-met{border-left:3px solid var(--color-met);color:var(--color-met)}
-.strip .s-near{border-left:3px solid var(--color-near);color:var(--color-near)}
-.strip .s-hold{border-left:3px solid var(--color-hold);color:var(--color-hold)}
-.strip .s-unsettled{border-left:3px solid var(--color-ink);color:var(--color-ink)}
-.strip .s-closed{border-left:3px solid var(--color-hold);color:var(--color-hold)}
+.strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase}
+.strip span + span::before{content:"·";margin-right:.6rem;color:var(--color-muted)}
+.strip .s-met{color:var(--color-met)}
+.strip .s-near{color:var(--color-near)}
+.strip .s-hold{color:var(--color-hold)}
+.strip .s-unsettled{color:var(--color-ink)}
+.strip .s-closed{color:var(--color-hold)}
 /* The line at the end of the results body: a closing line under a rule,
    quieter than a card and louder than the footer, in the voice of the
    sub-line rather than a verdict colour. Its one word is a link and a tap

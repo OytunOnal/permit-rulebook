@@ -132,5 +132,12 @@ describe.skipIf(skipped !== null)("verdict look — in the browser", () => {
         expect(step.name).toBe(look!.ink);
       }
     }, 120_000);
+
+    it(`${name}: the strip's counters have no border`, async () => {
+      const [look] = await looksAt(viewport, mobile, [SPAIN_OFFER]);
+      expect(look!.state).toBe("results");
+      expect(look!.counters.length).toBeGreaterThan(0);
+      for (const widths of look!.counters) expect(widths).toEqual([0, 0, 0, 0]);
+    }, 120_000);
   }
 });
