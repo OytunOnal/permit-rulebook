@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { DESTINATION_FIELD, SITUATION_FIELD, phraseOf, type Dataset, type Profile } from "permit-rulebook-data";
-import { DESK, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
-import { drawnResults, plainTextOf, questionCards } from "./reader-pages.js";
+import { verdictHtml } from "../src/lib/verdict/index.js";
+import { plainTextOf, questionCards, walks } from "./reader-pages.js";
+import { verdictFor } from "./verdict-cards.js";
 
 /**
  * A phrase built for a place is never handed "there" (#154; #151, ruling 7).
@@ -75,14 +76,14 @@ function unlockCardsOf(html: string): { head: string; means: string }[] {
 const headedCode = (head: string): string | undefined =>
   PHRASES.find(({ phrase }) => head.endsWith(` in ${phrase}`))?.code;
 
-const notWalked = skipReason();
-if (notWalked) warnNotWalked("the unlock cards that fill a place", notWalked);
-
-describe.skipIf(notWalked !== null)("an unlock card that fills a place", () => {
-  it("carries the country's phrase the card or the walk declares, and never 'there'", async () => {
-    const results = await withSite(drawnResults, DESK);
-    const cards = results.flatMap(({ where, html, walk }) =>
-      unlockCardsOf(html).map((card) => ({ where: `${where}: ${card.head}`, ...card, code: headedCode(card.head) ?? declaredCode(walk.answers) })));
+describe("an unlock card that fills a place", () => {
+  it("carries the country's phrase the card or the walk declares, and never 'there'", () => {
+    // The results body each walk ends on, as the verdict composes it.
+    const cards = walks().flatMap((walk) =>
+      unlockCardsOf(verdictHtml(verdictFor(walk.answers))).map((card) => ({
+        where: `results for ${JSON.stringify(walk.answers)}: ${card.head}`, ...card,
+        code: headedCode(card.head) ?? declaredCode(walk.answers),
+      })));
     const placed = cards.filter((c) => c.code !== undefined);
     // No walk here draws a card forked on a country since a transfer and a
     // hosting agreement left the steps (#175); means.test's explorer still
@@ -90,5 +91,5 @@ describe.skipIf(notWalked !== null)("an unlock card that fills a place", () => {
     expect(placed.length, "no unlock card fills a place").toBeGreaterThan(0);
     for (const { where, means } of cards) expect(means, where).not.toMatch(THERE);
     for (const { where, means, code } of placed) expect(means, where).toContain(`in ${phraseOf(code!)}`);
-  }, 600000);
+  });
 });
