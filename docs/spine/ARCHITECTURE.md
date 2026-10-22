@@ -80,20 +80,37 @@ click on the tracker link. Answers never leave the device.
   block so nothing in it acts on the issue, and every line around it ours
   (#72); walked by a person, who edits the dataset or records what was found,
   within two days.
-- **Dataset** — `data/dataset.json` (schema 0.5.0): 23 routes, 4 countries;
-  every numeric value with its source URL, verbatim quote, retrieval date and
-  append-only history; per route its statements (preconditions and caveats in
-  the source's words), its readings (ours, declared) and a scope value with
-  the limbs it does not ask; the experience ladder is ordinal. Beside it
-  `data/countries.json` (199 passport issuers, labels, aliases, articles;
-  `classes.eu_eea_ch` is a rule with four sourced legs) and
+- **Dataset** — `data/dataset.json`: 29 routes in 4 countries, 23 of them
+  asked about and 6 quoted only; every numeric value with its source URL,
+  verbatim quote, retrieval date and append-only history; per route its
+  statements (preconditions and caveats in the source's words), its readings
+  (ours, declared) and a scope value with the limbs it does not ask. A
+  question whose options are rungs of one amount is marked `ordered`; a
+  criterion with paths and each path carry a label; a question names a route
+  only through a `{route:<id>}` slot, filled with the route's `what_it_is`
+  (#151). Beside it `data/countries.json` (199 passport issuers, labels,
+  aliases, the article a name takes; `classes.eu_eea_ch` is a rule with four
+  sourced legs; and 11 territories, none a row, each with the passport its
+  people hold and an official sentence that says so) and
   `schema/ruleset.schema.json`, the public contract.
+- **Reader's words from the data** — the data package composes the words the
+  site prints from the dataset: a country's name with its article, at a
+  sentence's start and as a possessive; the scope line in two forms (where
+  the reader has answered, "checked against your answers"; where not, "the
+  checker asks about it"); a `{place}` filled "in <country>" or "in the
+  country you move to"; and which kind of host a source is on, authority or
+  consolidated text (#151). The site holds the labels; the package holds the
+  facts.
 - **Exclusions** — `data/exclusions.md`: what was researched and left out, by
   route, as prose plus a fenced machine twin.
 - **Gates** — `npm run check`: schema and semantic validation · watch coverage
   both ways · quote fidelity (every shipped quote found in its snapshot) ·
   prose provenance (every renderable sentence is authority, ours or label,
-  keyed on the declared kind). A failing gate fails the build downstream.
+  keyed on the declared kind) · every route and notice source, and every
+  learn link, on an https host on the authority list or the
+  consolidated-text list · labels on paths · words on an ordered range ·
+  route names only in slots · each territory's passport on the list with an
+  https source (#151). A failing gate fails the build downstream.
   The data repository runs them on every push to master, every pull request
   and after every watch run (`check.yml`); a red check after a watch run keeps
   `check failed on master`, and the next green one closes it (#117).
@@ -170,6 +187,14 @@ click on the tracker link. Answers never leave the device.
   the answers no route reads any more are named once as set aside in the
   declared panel (its folded summary on a phone); a money row answered
   "Doesn't apply…" keeps its pencil (#133).
+  Every screen but `/data/` speaks the reader's words, not the model's: no
+  "scored", "rule set" or "this interview" (GLOSSARY, Scope statement). A
+  link to a source says whose page it is ("Official page", or "Consolidated
+  text on buzer.de"); an abbreviation is explained the first time each page
+  uses it (`src/lib/gloss.ts`, results cards included); a criterion with
+  paths is headed by its label with one line per path; the passport search
+  answers a territory with the passport its people hold. One walk over every
+  page the build draws (`tests/reader-pages.ts`) holds these (#151).
 - **Record** — localStorage (legacy key migrated) or nothing; a print
   stylesheet for a paper copy. A record longer than any the page writes
   (8 KB) is no record, and is never parsed (#25).
