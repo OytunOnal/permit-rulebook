@@ -2892,6 +2892,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/verdict-history.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/verdict-module.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
@@ -6317,5 +6322,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "4c2b6e038f02aee0c3796ac9c963f0cce6c110c8876a56f36da78399376d95d0"
+ "digest": "140361b652ceaa60a417c062abdd102f6632d3b7e61139d88eb8872977b4df38"
 }

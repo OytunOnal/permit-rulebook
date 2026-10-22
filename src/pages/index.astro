@@ -937,14 +937,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // arrival line stands over a comparison only.
       const answeredOutright = verdict.layout.kind === "notice";
       main.innerHTML = (answeredOutright ? "" : arrivalLine()) + verdictHtml(verdict);
-      // The notice screen IS the result for this reader: one entry, like any
-      // other screen they can go back from, written before it is announced.
-      if (answeredOutright) recordScreen(null, true);
       announce(verdict.action.masthead.announced);
       landOnVerdict(wasResult);
-      // The several-country verdict writes its entry once it is landed on; the
-      // one-country verdict writes none (#177).
-      if (verdict.layout.kind === "countries") recordScreen(null, true);
+      // Every verdict, a notice that answers outright included, is one entry
+      // on top of the last question's, so Back lands on that question. It is
+      // written last, once the screen is drawn and landed on, as a question
+      // screen's is.
+      recordScreen(null, true);
     }
 
     /**
