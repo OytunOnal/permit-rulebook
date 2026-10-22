@@ -19,6 +19,9 @@ import { feedbackGmail, feedbackMailto, feedbackPage } from "../src/lib/feedback
 import { countryLinks, footerFacts, navCountries } from "../src/lib/country-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { serialize } from "../src/lib/record.js";
+import { esc, escAttr } from "../src/lib/reason.js";
+import { verdictHtml } from "../src/lib/verdict/index.js";
+import { verdictFor } from "./verdict-cards.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
 /**
@@ -378,10 +381,12 @@ describe("the map and the sitemap", () => {
 /** The line under the verdict, and where it may never appear. */
 describe("the results line", () => {
   it("is built from copy.ts", () => {
-    // The one source assertion this suite makes: the words live in copy.ts and
-    // the template takes them from there. Where the line sits, and what it
-    // says, the browser cases below read off the screen.
-    expect(read("src/pages/index.astro")).toContain("resultFeedbackLine(");
+    // The words live in copy.ts and the verdict takes them from there, on both
+    // layouts, with the one link and nothing else. Where the line sits, and
+    // what it says, the browser cases below read off the screen.
+    const line = resultFeedbackLine(`<a href="${escAttr(url(FEEDBACK_PATH))}">${esc(FEEDBACK)}</a>`);
+    for (const record of [frRecord, allRecord])
+      expect(verdictHtml(verdictFor(record))).toContain(line);
   });
 
   it("is nowhere in the built first paint: a cold / is a question, not a result", () => {

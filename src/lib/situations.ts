@@ -204,7 +204,7 @@ export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict 
  * headline's: the written state is drawn only on a zero-open result, and the
  * country it names is the country that leads; with something open anywhere,
  * or a written state for nobody, the sections keep the dataset's order. One
- * function, so the page and the test cannot decide it two ways.
+ * function, so the verdict and the test cannot decide it two ways.
  */
 export function leadCountry(ds: Dataset, answers: Profile, zeroOpen: boolean): string | undefined {
   return zeroOpen ? unscoredVerdict(ds, answers)?.lead : undefined;

@@ -1,16 +1,6 @@
 import { describe, expect, it } from "vitest";
-import dataset from "permit-rulebook-data/data/dataset.json";
-import type { Dataset, Profile } from "permit-rulebook-data";
-import { verdictOf, type VerdictGroup } from "../src/lib/verdict/index.js";
-
-const ds = dataset as unknown as Dataset;
-
-/** The routes a group lists, in its order, folded rows included. */
-const routesOf = (group: VerdictGroup): string[] => {
-  if (group.kind === "steps") return [];
-  if (group.kind !== "not-yet") return group.cards.map((c) => c.route);
-  return group.items.flatMap((i) => ("kind" in i ? i.cards.map((c) => c.route) : [i.route]));
-};
+import type { Profile } from "permit-rulebook-data";
+import { cardsIn, verdictFor } from "./verdict-cards.js";
 
 /**
  * A reader of the Netherlands alone, with an offer there: the orientation
@@ -25,11 +15,11 @@ const DUTCH_OFFER: Profile = {
 
 describe("verdictOf — the one-country layout's groups", () => {
   it("a one-country reader's groups come in the order open, within reach, not yet, each listing its routes", () => {
-    const verdict = verdictOf(ds, DUTCH_OFFER, { cameFrom: null, answered: Object.keys(DUTCH_OFFER).length });
+    const verdict = verdictFor(DUTCH_OFFER);
     expect(verdict.layout.kind).toBe("one-country");
     if (verdict.layout.kind !== "one-country") return;
     const routeGroups = verdict.layout.groups.filter((g) => g.kind !== "steps");
-    expect(routeGroups.map((g) => ({ kind: g.kind, routes: routesOf(g) }))).toEqual([
+    expect(routeGroups.map((g) => ({ kind: g.kind, routes: cardsIn(g).map((c) => c.route) }))).toEqual([
       { kind: "open", routes: ["nl-orientation-year"] },
       { kind: "within-reach", routes: ["nl-hsm-under30"] },
       { kind: "not-yet", routes: ["nl-hsm-30plus", "nl-blue-card", "nl-ict", "nl-researcher"] },
