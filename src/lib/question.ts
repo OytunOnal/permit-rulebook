@@ -11,7 +11,7 @@ import {
 import { countryOf } from "./countries.js";
 import { type Glossary, glossSection, glossed } from "./gloss.js";
 import { esc, escAttr } from "./reason.js";
-import { learnLinkTextOf } from "./quote.js";
+import { glossedLearnLinkText } from "./quote.js";
 import { QUERY_MAX_LENGTH } from "./listbox.js";
 // Which situation answers a country's scored routes take, and the quoted
 // route that would have asked otherwise — derived, never typed (s19); keyed
@@ -151,7 +151,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
             const learn = learnLinkOf(dataset, q.field);
             return learn
               ? `<p class="qlearn">Not sure? <a href="${escAttr(learn.url)}" target="_blank" rel="noopener">${
-                esc(learnLinkTextOf({ ...learn, label: glossed(learn.label, glossary) }))}</a></p>`
+                esc(glossedLearnLinkText(learn, glossary))}</a></p>`
               : "";
           })()}
           ${longList ? `

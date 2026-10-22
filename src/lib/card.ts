@@ -16,7 +16,7 @@ import { NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading, readOn }
 // block takes the screen's memory; one drawn alone is a screen of its own.
 import { type Glossary, glossed } from "./gloss.js";
 // One frame for every quote the product shows (2026-09-08).
-import { learnLinkTextOf, linkLabelOf, noteHtml, quoteFrame } from "./quote.js";
+import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "./quote.js";
 
 /**
  * The blocks of a card that state what the dataset itself says: what else is
@@ -542,7 +542,7 @@ export function noticeHtml(n: Notice, seen: Glossary = new Set()): string {
   const sources = noticeSources(n).map((value) => srcLine(value, seen)).join("");
   const next = n.learn
     ? `<a class="next" href="${escAttr(n.learn.url)}" target="_blank" rel="noopener">${
-      esc(learnLinkTextOf({ ...n.learn, label: glossed(n.learn.label, seen) }))}</a>`
+      esc(glossedLearnLinkText(n.learn, seen))}</a>`
     : sourceLinkHtml(n.source.source_url);
   return `
         <article class="notice ${escAttr(n.kind)}">
@@ -601,6 +601,6 @@ export function learnBoxHtml(ds: Dataset, r: RouteResult, answers: Profile, seen
   if (!links.length) return "";
   return `<div class="learn">You can find out yourself: ${links
     .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${
-      esc(learnLinkTextOf({ ...l, label: glossed(l.label, seen) }))}</a>`)
+      esc(glossedLearnLinkText(l, seen))}</a>`)
     .join(" · ")}</div>`;
 }

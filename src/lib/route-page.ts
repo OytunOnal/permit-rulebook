@@ -36,7 +36,7 @@ import { FEEDBACK_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeade
 import { footerFacts, navCountries } from "./country-page.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
-import { learnLinkTextOf, linkLabelOf, noteHtml, quoteFrame } from "./quote.js";
+import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "./quote.js";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
@@ -186,17 +186,18 @@ export function noticesOn(dataset: Dataset, route: Route): Notice[] {
  * needs their own fiche, not the Conseil d'État (s8).
  */
 function noticeSection(n: Notice, seen: Glossary): string {
-  const next = n.learn
-    ? { url: n.learn.url, label: learnLinkTextOf(n.learn) }
-    : { url: n.source.source_url, label: linkLabelOf(n.source.source_url) };
+  const nextUrl = n.learn ? n.learn.url : n.source.source_url;
+  // The link's words are drawn where they are read, after the notice's own:
+  // the page explains a token on its first use.
+  const nextLabel = (): string => (n.learn ? glossedLearnLinkText(n.learn, seen) : linkLabelOf(nextUrl));
   return `
   <section class="notice-block ${escAttr(n.kind)}" aria-labelledby="notice-${escAttr(n.id)}">
     <h2 id="notice-${escAttr(n.id)}">${esc(glossed(n.title, seen))}</h2>
     <p class="plain">${esc(glossed(n.body, seen))}</p>${
     noticeSources(n).map((value) => `
       ${quoteBlock(value, {}, seen)}`).join("")}
-    <p class="notice-next"><a ${tapInline()} href="${escAttr(next.url)}" target="_blank" rel="noopener">${
-    esc(glossed(next.label, seen))} &#8599;</a></p>
+    <p class="notice-next"><a ${tapInline()} href="${escAttr(nextUrl)}" target="_blank" rel="noopener">${
+    esc(nextLabel())} &#8599;</a></p>
   </section>`;
 }
 
@@ -420,7 +421,7 @@ function asksBlock(dataset: Dataset, criteria: Criterion[], seen: Glossary): str
     fields.map((f) => `<li>${esc(glossed(fillRouteSlots(f.label, dataset), seen))}</li>`).join("")}</ul>${
     learn.map((l) => `<p>You can find this out yourself: <a ${tapInline()} href="${
       escAttr(l.url)}" target="_blank" rel="noopener">${
-      esc(learnLinkTextOf({ ...l, label: glossed(l.label, seen) }))} &#8599;</a></p>`).join("")}</div>`;
+      esc(glossedLearnLinkText(l, seen))} &#8599;</a></p>`).join("")}</div>`;
 }
 
 /** A rule with no quote and no figure under it, its paths included. */

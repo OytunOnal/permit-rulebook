@@ -2,6 +2,7 @@
 import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage } from "permit-rulebook-data";
 import { OFFICIAL_PAGE, consolidatedTextOn, learnLinkWithKind } from "./copy.js";
 import { esc } from "./reason.js";
+import { type Glossary, glossed } from "./gloss.js";
 
 /**
  * How a quote is framed, wherever one is shown.
@@ -44,6 +45,16 @@ export function learnLinkTextOf(learn: { label: string; url: string }): string {
   if (hostKindOf(learn.url) === "authority") return learn.label;
   const kind = linkLabelOf(learn.url);
   return learn.label.includes(kind) ? learn.label : learnLinkWithKind(learn.label, kind);
+}
+
+/**
+ * A learn link's text on a screen that explains its shorthand once: the label
+ * glossed on the screen's memory (#151, ruling 8), then the page's kind where
+ * it is not the authority's (#158). Every surface that prints a learn link
+ * takes it here, so the two steps run in one order.
+ */
+export function glossedLearnLinkText(learn: { label: string; url: string }, seen: Glossary): string {
+  return learnLinkTextOf({ ...learn, label: glossed(learn.label, seen) });
 }
 
 /**
