@@ -20,22 +20,23 @@ const HEAD: Record<"open" | "unsettled" | "within-reach" | "not-yet" | "closed",
   "closed": { title: CLOSED_HEADING, cls: "closed" },
 };
 
-/** A heading, not a styled div: a reader using headings to move could find
- * no section while the results had none above H3 (critique F16). */
-const section = (head: { title: string; cls: string }, inner: string, count: number): string =>
+/** A group under its heading. A heading, not a styled div: a reader using
+ * headings to move could find no section while the results had none above
+ * H3 (critique F16). */
+const headedGroupHtml = (head: { title: string; cls: string }, inner: string, count: number): string =>
   `<h2 class="ghead ${head.cls}"><b>${esc(head.title)}</b> (${count})</h2><div class="stack">${inner}</div>`;
 
 const cardsHtml = (cards: RouteCard[]): string => cards.map((c) => c.html).join("");
 
-function needsStepsSummary(fold: Extract<Fold, { kind: "needs-steps" }>): string {
-  const steps = joinOr(fold.steps);
-  return fold.pointsUp ? routesNeedSeeStepsAbove(fold.cards.length, steps) : routesNeed(fold.cards.length, steps);
+function needsPathAnswersSummary(fold: Extract<Fold, { kind: "needs-path-answers" }>): string {
+  const pathAnswers = joinOr(fold.pathAnswers);
+  return fold.pointsUp ? routesNeedSeeStepsAbove(fold.cards.length, pathAnswers) : routesNeed(fold.cards.length, pathAnswers);
 }
 
 function foldHtml(fold: Fold): string {
-  if (fold.kind === "needs-steps")
+  if (fold.kind === "needs-path-answers")
     return `<details class="hold-group"${fold.open ? " open" : ""}>
-          <summary>${esc(needsStepsSummary(fold))}</summary>
+          <summary>${esc(needsPathAnswersSummary(fold))}</summary>
           <div class="hold-group-body">${cardsHtml(fold.cards)}</div>
         </details>`;
   const summary = fold.told
@@ -59,12 +60,12 @@ function groupHtml(group: VerdictGroup, stepsHeading: string): string {
       // A paragraph of its own, not a step card, under no heading.
       return `<p class="arranged-line">${esc(arrangedLine(group))}</p>`;
     case "not-yet":
-      return section(HEAD["not-yet"], group.items.map((i) => ("kind" in i ? foldHtml(i) : i.html)).join(""), group.count);
+      return headedGroupHtml(HEAD["not-yet"], group.items.map((i) => ("kind" in i ? foldHtml(i) : i.html)).join(""), group.count);
     case "unsettled":
       // The line names no country and no passport: the notice above does.
-      return section(HEAD.unsettled, `<p class="why">${esc(UNSETTLED_SECTION_LINE)}</p>${cardsHtml(group.cards)}`, group.cards.length);
+      return headedGroupHtml(HEAD.unsettled, `<p class="why">${esc(UNSETTLED_SECTION_LINE)}</p>${cardsHtml(group.cards)}`, group.cards.length);
     default:
-      return section(HEAD[group.kind], cardsHtml(group.cards), group.cards.length);
+      return headedGroupHtml(HEAD[group.kind], cardsHtml(group.cards), group.cards.length);
   }
 }
 

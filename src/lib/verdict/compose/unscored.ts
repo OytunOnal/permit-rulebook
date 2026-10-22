@@ -10,7 +10,7 @@ import { esc, sentenceWithLinkHtml } from "../../reason.js";
 import { url } from "../../site.js";
 import { SITUATION_COUNTRY_FIELD, notScoredFor } from "../../situations.js";
 import { phraseOfAnswer } from "./answer-phrase.js";
-import { EVERY_COUNTRY_ANSWER } from "./reading.js";
+import { EVERY_COUNTRY_ANSWER } from "./in-view.js";
 
 /**
  * What the verdict says where the declared situation is one no scored route

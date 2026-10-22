@@ -51,7 +51,7 @@ function unscoredMasthead(h: Headline, unscored: UnscoredVerdict): VerdictMasthe
 /** A comparison's masthead: its headline, and a subline counting what was
  * compared — the reader's answers, the routes checked — then the step it names
  * or its way forward. */
-export function comparedMasthead(h: Headline, answered: number, routes: number): VerdictMasthead {
+export function comparedMastheadOf(h: Headline, answered: number, routes: number): VerdictMasthead {
   if (h.unscored) return unscoredMasthead(h, h.unscored);
   const subline = [
     answersCheckedLine(answered, routes), EVERY_VALUE_BELOW_QUOTED,
@@ -63,7 +63,7 @@ export function comparedMasthead(h: Headline, answered: number, routes: number):
 
 /** The notice screen's masthead: the notice's own title, and that nothing was
  * compared. */
-export function noticeMasthead(title: string): VerdictMasthead {
+export function noticeMastheadOf(title: string): VerdictMasthead {
   const headline = noticeHeadline(title);
   return { headline: esc(headline), subline: NOTHING_TO_COMPARE, announced: headline };
 }

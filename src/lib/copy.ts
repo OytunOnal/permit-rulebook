@@ -990,8 +990,9 @@ export const arrangedLine = (line: { country: string; answers: { answer: string;
 /** The not-yet group's folds: rows that need only a path answer, named by
  * the answers they ask for, and rows in another country than the one the
  * reader is looking at. */
-export const routesNeed = (n: number, steps: string): string => `${n} routes need ${steps}`;
-export const routesNeedSeeStepsAbove = (n: number, steps: string): string => `${routesNeed(n, steps)} — see the steps above`;
+export const routesNeed = (n: number, pathAnswers: string): string => `${n} routes need ${pathAnswers}`;
+export const routesNeedSeeStepsAbove = (n: number, pathAnswers: string): string =>
+  `${routesNeed(n, pathAnswers)} — see the steps above`;
 export const routesInCountryWhereYouToldUs = (n: number, country: string, told: string): string =>
   `${n} ${country} routes — you told us ${told}`;
 export const routesInCountryYouAreNotLookingAt = (n: number, country: string): string =>

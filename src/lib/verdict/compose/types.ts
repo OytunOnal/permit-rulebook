@@ -36,9 +36,10 @@ export interface StepCard {
  */
 export type Fold =
   | {
-    kind: "needs-steps";
-    /** The path answers the folded rows ask for, in the dataset's words. */
-    steps: string[];
+    kind: "needs-path-answers";
+    /** The path answers the folded rows ask for, arranged ones included, in
+     * the dataset's words. */
+    pathAnswers: string[];
     /** Whether the steps, the offer line or the arranged line stands above,
      * for the summary to point at. */
     pointsUp: boolean;

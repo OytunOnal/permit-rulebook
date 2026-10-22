@@ -15,10 +15,10 @@ import { noticeHtml } from "./compose/card-blocks.js";
 import { esc } from "../reason.js";
 import { arrangeSteps, arrangedRowsOf, routesAnOfferFreesFor } from "./compose/steps.js";
 import type { VerdictScreen } from "./compose/cards.js";
-import { comparedAction } from "./compose/headline.js";
+import { comparedActionOf } from "./compose/headline.js";
 import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from "./compose/html.js";
-import { noticeMasthead } from "./compose/masthead.js";
-import { partOf, readingOf, type Reading } from "./compose/reading.js";
+import { noticeMastheadOf } from "./compose/masthead.js";
+import { groupedRoutesOf, resultsInViewOf, type ResultsInView } from "./compose/in-view.js";
 import { layoutOf } from "./compose/sections.js";
 import type { InterviewSoFar, Verdict } from "./compose/types.js";
 // The verdict's look travels with its markup: the page that paints a verdict
@@ -36,10 +36,10 @@ export type {
  * of the routes takes the screen; any other notice still stands on it, after
  * (review).
  */
-function answeredOutright(screen: VerdictScreen, reading: Reading, outright: Notice[]): Verdict {
-  const others = reading.notices.filter((n) => !outright.includes(n));
+function answeredOutright(screen: VerdictScreen, inView: ResultsInView, outright: Notice[]): Verdict {
+  const others = inView.notices.filter((n) => !outright.includes(n));
   return {
-    action: { kind: "answered-outright", masthead: noticeMasthead(outright[0].title) },
+    action: { kind: "answered-outright", masthead: noticeMastheadOf(outright[0].title) },
     notices: [...outright, ...others].map((n) => noticeHtml(n, screen.glossary)).join(""),
     layout: { kind: "notice" },
   };
@@ -52,32 +52,32 @@ function answeredOutright(screen: VerdictScreen, reading: Reading, outright: Not
  * v1-gate critique, 2026-09-08, F7). The pairs and their wording are the
  * dataset's.
  */
-function noticesAbove(screen: VerdictScreen, reading: Reading): string {
+function noticesAbove(screen: VerdictScreen, inView: ResultsInView): string {
   const clash = contradictionsIn(screen.ds, screen.answers)
     .map((c) => `<p class="clash" role="status">${esc(c.say)}</p>`).join("");
-  return clash + reading.notices.map((n) => noticeHtml(n, screen.glossary)).join("");
+  return clash + inView.notices.map((n) => noticeHtml(n, screen.glossary)).join("");
 }
 
 export function verdictOf(dataset: Dataset, answers: Profile, interview: InterviewSoFar): Verdict {
   const screen: VerdictScreen = { ds: dataset, answers, glossary: new Set(), cameFrom: interview.cameFrom };
-  const reading = readingOf(dataset, answers, interview.cameFrom);
-  const whole = partOf(reading.results, reading.closed, reading.unsettledIds);
+  const inView = resultsInViewOf(dataset, answers, interview.cameFrom);
+  const whole = groupedRoutesOf(inView.results, inView.closed, inView.unsettledIds);
   const zeroOpen = whole.met.length + whole.near.length === 0;
   // An extra-rights notice adds to a verdict the rules computed, so it never
   // takes the screen; the zero-open screen keeps its headline and its steps
   // (s5c).
-  const outright = reading.notices.filter((n) => n.kind === "no-permit-needed");
-  if (outright.length && zeroOpen) return answeredOutright(screen, reading, outright);
+  const outright = inView.notices.filter((n) => n.kind === "no-permit-needed");
+  if (outright.length && zeroOpen) return answeredOutright(screen, inView, outright);
   // Counterfactual leverage: what each other answer would unlock, the steps
   // ordered by what the reader can do, each ladder one step (s3b, s23); the
   // arranged answers' rows and what an offer would free, said apart (#175).
   const rows = unlocks(dataset, answers);
   const compared = {
-    reading, whole, zeroOpen, ups: arrangeSteps(dataset, rows, answers), arranged: arrangedRowsOf(rows),
+    inView, whole, zeroOpen, steps: arrangeSteps(dataset, rows, answers), arranged: arrangedRowsOf(rows),
     freed: routesAnOfferFreesFor(dataset, answers),
   };
-  const notices = noticesAbove(screen, reading);
-  return { action: comparedAction(screen, compared, interview.answered), notices, layout: layoutOf(screen, compared) };
+  const notices = noticesAbove(screen, inView);
+  return { action: comparedActionOf(screen, compared, interview.answered), notices, layout: layoutOf(screen, compared) };
 }
 
 /** The body the page paints for a verdict, under its arrival line. */

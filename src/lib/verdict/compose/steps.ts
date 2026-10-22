@@ -115,15 +115,15 @@ const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
 export function arrangeSteps(ds: Dataset, rows: Unlock[], answers: Profile): Step[] {
   const rungOf = (u: Unlock) => fieldOptions(ds, u.field).findIndex((o) => o.value === u.option.value);
   const ids = (u: Unlock) => new Set(u.routes.map((r) => r.route.id));
-  const ups = rows.filter((u) => !u.option.is_arranged);
+  const stepRows = rows.filter((u) => !u.option.is_arranged);
   const steps: Step[] = [];
   const folded = new Set<Unlock>();
-  for (const u of ups) {
+  for (const u of stepRows) {
     if (folded.has(u)) continue;
     const step: Step = { unlock: u, title: unlockTitleOf(ds, u, answers), folded: [] };
     if (!u.qualifier && isLadder(ds, u.field)) {
       const opened = ids(u);
-      for (const above of ups) {
+      for (const above of stepRows) {
         if (above === u || above.field !== u.field || above.qualifier || rungOf(above) <= rungOf(u)) continue;
         if ([...ids(above)].every((id) => opened.has(id))) { step.folded.push(above); folded.add(above); }
       }

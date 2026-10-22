@@ -4,7 +4,7 @@ import {
 } from "permit-rulebook-data";
 import { countryOf } from "../../countries.js";
 import { phraseOfAnswer } from "./answer-phrase.js";
-import { holdRow, type VerdictScreen } from "./cards.js";
+import { holdRowHtml, type VerdictScreen } from "./cards.js";
 import type { Fold, RouteCard, VerdictGroup } from "./types.js";
 
 /** The answers a criterion asks for, where it asks for named ones. */
@@ -25,17 +25,18 @@ function pathAnswersAskedBy(ds: Dataset, c: Criterion): string[] {
   });
 }
 
-/** The steps a set of gated rows actually asks for, named by the dataset.
- * Fixed copy ("a job offer, transfer or hosting agreement") told a user who
- * had declared a transfer that they needed one (review). */
-function stepNamesFor(ds: Dataset, rows: RouteResult[]): string[] {
+/** The path answers a set of gated rows actually asks for, arranged ones
+ * included, named by the dataset. Fixed copy ("a job offer, transfer or
+ * hosting agreement") told a user who had declared a transfer that they
+ * needed one (review). */
+function pathAnswersNamedFor(ds: Dataset, rows: RouteResult[]): string[] {
   const names = new Set<string>();
   for (const cr of rows.flatMap((r) => r.criteria.filter((c) => c.outcome === "fail")))
     for (const name of pathAnswersAskedBy(ds, cr.criterion)) names.add(name);
   return [...names];
 }
 
-const cardOf = (screen: VerdictScreen, r: RouteResult): RouteCard => ({ route: r.route.id, html: holdRow(screen, r) });
+const cardOf = (screen: VerdictScreen, r: RouteResult): RouteCard => ({ route: r.route.id, html: holdRowHtml(screen, r) });
 
 /**
  * Routes that are simply in another country collapse into one line: a wall
@@ -59,7 +60,7 @@ function elsewhereItems(screen: VerdictScreen, rows: RouteResult[]): (RouteCard 
  * above the group for the fold to point at: its steps, its offer line and
  * its arranged line.
  */
-export function notYetGroup(screen: VerdictScreen, rows: RouteResult[], standingAbove: number): VerdictGroup | null {
+export function notYetGroupOf(screen: VerdictScreen, rows: RouteResult[], standingAbove: number): VerdictGroup | null {
   if (!rows.length) return null;
   const gated: RouteResult[] = [], elsewhere: RouteResult[] = [], individual: RouteResult[] = [];
   for (const r of rows) {
@@ -70,13 +71,13 @@ export function notYetGroup(screen: VerdictScreen, rows: RouteResult[], standing
   const items: (RouteCard | Fold)[] = individual.map((r) => cardOf(screen, r));
   if (gated.length < 3) items.push(...gated.map((r) => cardOf(screen, r)));
   else {
-    const steps = stepNamesFor(screen.ds, gated);
+    const pathAnswers = pathAnswersNamedFor(screen.ds, gated);
     // Open when it is the only thing on screen: a collapsed group was the
     // whole result for the emptiest profile, and every quote and read date
     // the product exists to show was folded away inside it (F7).
     const alone = individual.length === 0 && elsewhere.length === 0 && standingAbove === 0;
     const cards = gated.map((r) => cardOf(screen, r));
-    items.push({ kind: "needs-steps", steps, pointsUp: standingAbove > 0, open: alone, cards });
+    items.push({ kind: "needs-path-answers", pathAnswers, pointsUp: standingAbove > 0, open: alone, cards });
   }
   items.push(...elsewhereItems(screen, elsewhere));
   return { kind: "not-yet", items, count: rows.length };

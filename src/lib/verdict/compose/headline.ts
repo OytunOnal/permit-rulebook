@@ -5,8 +5,8 @@ import {
 } from "../../copy.js";
 import { moneyShortfallOf } from "./card-blocks.js";
 import type { VerdictScreen } from "./cards.js";
-import { comparedMasthead, type Explore, type Headline } from "./masthead.js";
-import type { Compared } from "./reading.js";
+import { comparedMastheadOf, type Explore, type Headline } from "./masthead.js";
+import type { Compared } from "./in-view.js";
 import { nearestStep } from "./steps.js";
 import type { VerdictAction } from "./types.js";
 import { unscoredVerdict } from "./unscored.js";
@@ -37,9 +37,9 @@ function nearNote(screen: VerdictScreen, near: RouteResult[]): string {
 function zeroOpenHeadline(c: Compared): Headline {
   const unsettled = c.whole.unsettled.length;
   if (unsettled) return { headline: unsettledHeadline(unsettled) };
-  const nearest = nearestStep(c.ups);
-  if (nearest) return { headline: stepsWouldChangeHeadline(c.ups.length), nearest: nearest.title };
-  const explore: Explore = c.reading.visible.length === 1 ? "one-country" : "several-countries";
+  const nearest = nearestStep(c.steps);
+  if (nearest) return { headline: stepsWouldChangeHeadline(c.steps.length), nearest: nearest.title };
+  const explore: Explore = c.inView.visible.length === 1 ? "one-country" : "several-countries";
   return { headline: NOTHING_OPEN_HEADLINE, explore };
 }
 
@@ -68,6 +68,6 @@ function comparedHeadline(screen: VerdictScreen, c: Compared): Headline {
 
 /** The flow's move to a comparison, carrying its whole masthead: the subline
  * counts the reader's answers and the routes checked. */
-export function comparedAction(screen: VerdictScreen, c: Compared, answered: number): VerdictAction {
-  return { kind: "compare", masthead: comparedMasthead(comparedHeadline(screen, c), answered, c.reading.results.length) };
+export function comparedActionOf(screen: VerdictScreen, c: Compared, answered: number): VerdictAction {
+  return { kind: "compare", masthead: comparedMastheadOf(comparedHeadline(screen, c), answered, c.inView.results.length) };
 }

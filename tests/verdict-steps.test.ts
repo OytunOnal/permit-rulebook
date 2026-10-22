@@ -239,8 +239,8 @@ describe("#175 — the not-yet fold points up only at something above it", () =>
     for (const answers of PROFILES)
       for (const [code, groups] of sectionGroups(verdictFor(answers), answers)) {
         const notYet = groupOf(groups, "not-yet");
-        const fold = notYet?.items.find((i) => "kind" in i && i.kind === "needs-steps");
-        if (!fold || !("kind" in fold) || fold.kind !== "needs-steps") continue;
+        const fold = notYet?.items.find((i) => "kind" in i && i.kind === "needs-path-answers");
+        if (!fold || !("kind" in fold) || fold.kind !== "needs-path-answers") continue;
         const above = standsAbove(answers, code);
         expect(fold.pointsUp, `${code} ${JSON.stringify(answers)}`).toBe(above);
         seen.add(above);

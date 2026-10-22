@@ -90,7 +90,7 @@ function pointsNoteHtml(r: RouteResult): string {
  * line is the country's chip and the badge, or the badge alone, above the
  * title: one home for the badge at every width and every title length (#95).
  */
-export function fullCard(screen: VerdictScreen, r: RouteResult, look: CardLook): string {
+export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLook): string {
   const { ds } = screen;
   const rulesMet = look.badge === "rules-met";
   return `
@@ -121,7 +121,7 @@ export function fullCard(screen: VerdictScreen, r: RouteResult, look: CardLook):
  * cannot change it (critique #4) — or where it is the route the reader came
  * from.
  */
-export function holdRow(screen: VerdictScreen, r: RouteResult): string {
+export function holdRowHtml(screen: VerdictScreen, r: RouteResult): string {
   const { ds, answers, glossary } = screen;
   const short = whyHtml(ds, r, answers).split(". ")[0].replace(/\.$/, "");
   const open = hasLiveUnknown(screen, r) || r.route.id === screen.cameFrom;
@@ -162,7 +162,7 @@ function unlockedRouteHtml(screen: VerdictScreen, r: RouteResult, taken: Profile
 }
 
 /** A step, and the routes it opens on this section. */
-export function unlockCard(screen: VerdictScreen, step: Step, routes: RouteResult[]): string {
+export function unlockCardHtml(screen: VerdictScreen, step: Step, routes: RouteResult[]): string {
   const means = unlockMeansOf(screen.ds, step.unlock, screen.answers);
   const taken = unlockProfile(step.unlock, screen.answers);
   return `
