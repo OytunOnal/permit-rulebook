@@ -8,7 +8,7 @@ import {
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION, restore, serialize } from "../src/lib/record.js";
-import { STATUS_LABEL, orAbove } from "../src/lib/copy/verdict.js";
+import { STATUS_LABEL, orAbove, pointsOfNeeded } from "../src/lib/copy/verdict.js";
 import { resumedLine } from "../src/lib/copy/interview.js";
 import { glossed } from "../src/lib/gloss.js";
 import { declarationHtml, questionCardHtml } from "../src/lib/question.js";
@@ -226,7 +226,7 @@ describe("the Opportunity Card's tally names the winning row's field", () => {
     const profile = withExperience("2plus", "3to5");
     expect(resultOf(profile, "de-experienced-worker").status).toBe("met");
     const line = textOf(tallyFor(profile));
-    expect(line).toContain("5 points — 6 needed");
+    expect(line).toContain(pointsOfNeeded(5, 6));
     expect(line).toContain("Experience (last 5 years) +2");
     expect(line).not.toContain("last 7 years");
   });
@@ -235,7 +235,7 @@ describe("the Opportunity Card's tally names the winning row's field", () => {
     const profile = withExperience("lt2", "3to5");
     expect(resultOf(profile, "de-experienced-worker").status).toBe("hold");
     const line = textOf(tallyFor(profile));
-    expect(line).toContain("3 points — 6 needed");
+    expect(line).toContain(pointsOfNeeded(3, 6));
     expect(line).not.toContain("Experience");
   });
 
@@ -243,7 +243,7 @@ describe("the Opportunity Card's tally names the winning row's field", () => {
     const profile = withExperience("2plus", "5plus");
     expect(resultOf(profile, "de-experienced-worker").status).toBe("met");
     const line = textOf(tallyFor(profile));
-    expect(line).toContain("6 points — 6 needed");
+    expect(line).toContain(pointsOfNeeded(6, 6));
     expect(line).toContain("Experience (last 7 years) +3");
     expect(line).not.toContain("last 5 years");
   });

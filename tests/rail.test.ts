@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { deriveBands, evaluate, forEachCriterion, type Dataset, type Profile } from "permit-rulebook-data";
+import { deriveBands, evaluate, forEachCriterion, formatEURPer, type Dataset, type Profile } from "permit-rulebook-data";
+import { ABOVE_THE_AMOUNT, WHAT_THIS_ROUTE_ASKS, YOUR_ANSWER, upToShort } from "../src/lib/copy/verdict.js";
 import { blocksIn, everyCardIn, placed, verdictFor } from "./verdict-cards.js";
 
 /**
@@ -33,7 +34,7 @@ const railFor = (profile: Profile, id: string): string => {
 const ticksOf = (html: string) => [...html.matchAll(/class="rail-tick" style="left:([^"]+)"/g)].map((m) => m[1]);
 const rowsOf = (html: string) => [...html.matchAll(/<li>([\s\S]*?)<\/li>/g)]
   .map((m) => m[1].replace(/<[^>]*>/g, " ").split(/\s+/).filter(Boolean).join(" "));
-const asksRowsOf = (html: string) => rowsOf(html).filter((row) => row.includes("what this route asks"));
+const asksRowsOf = (html: string) => rowsOf(html).filter((row) => row.includes(WHAT_THIS_ROUTE_ASKS));
 const bandLeft = (html: string) => /class="you" style="left:([^;]+);width:([^"]+)"/.exec(html);
 
 describe("the rail draws only what it names", () => {
@@ -53,9 +54,9 @@ describe("the rail draws only what it names", () => {
     const rows = rowsOf(html);
     expect(rows.length).toBe(2);
     expect(rows[0]).toContain("€5,942/month");
-    expect(rows[0]).toContain("what this route asks");
+    expect(rows[0]).toContain(WHAT_THIS_ROUTE_ASKS);
     expect(rows[0]).toContain("30 or older, 2026");
-    expect(rows[1]).toContain("your answer");
+    expect(rows[1]).toContain(YOUR_ANSWER);
     expect(rows[1]).toContain("€5,942 or more");
     // A swatch per row, matching the bar's own colours.
     expect((html.match(/class="sw sw-asks"/g) ?? []).length).toBe(ticksOf(html).length);
@@ -118,17 +119,19 @@ describe("the rail says where the reader stands", () => {
   it("says how the band stands against each amount, in the card's own words", () => {
     // The reader who answered the band that starts on the route's amount.
     expect(deriveBands(ds, "salary_eur_month").find((b) => b.id === WALK.salary_eur_month)!.min).toBe(5942);
-    expect(asksRowsOf(railFor(WALK, "nl-ict"))[0]).toContain("above the amount");
+    expect(asksRowsOf(railFor(WALK, "nl-ict"))[0]).toContain(ABOVE_THE_AMOUNT);
     // A band wholly below says how far short, the way the gap note does.
     const below: Profile = { ...WALK, salary_eur_month: "band_5" };
-    expect(deriveBands(ds, "salary_eur_month").find((b) => b.id === below.salary_eur_month)!.max).toBeLessThanOrEqual(5942);
-    expect(asksRowsOf(railFor(below, "nl-ict"))[0]).toMatch(/ · up to €[\d,.]+\/month short$/);
+    const band = deriveBands(ds, "salary_eur_month").find((b) => b.id === below.salary_eur_month)!;
+    expect(band.max).toBeLessThanOrEqual(5942);
+    expect(asksRowsOf(railFor(below, "nl-ict"))[0]).toContain(` · ${upToShort(formatEURPer(5942 - band.min!, "month"))}`);
     // No band straddles one of the route's own amounts: every band is cut at
     // every amount the dataset states.
   });
 
   it("a band that crosses an amount is drawn crossing it", () => {
     const profile: Profile = { ...WALK, salary_eur_month: "band_5" };
+    const declared = deriveBands(ds, "salary_eur_month").find((b) => b.id === profile.salary_eur_month)!;
     const html = railFor(profile, "nl-ict");
     const band = bandLeft(html)!;
     const left = Number.parseFloat(band[1]);
@@ -137,7 +140,7 @@ describe("the rail says where the reader stands", () => {
     // The reader's band ends where the amount begins: the picture and the
     // words agree, and the words come from the same helper.
     expect(right).toBeLessThanOrEqual(tick + 0.01);
-    expect(rowsOf(html)[0]).toMatch(/up to €[\d,.]+\/month short/);
+    expect(rowsOf(html)[0]).toContain(upToShort(formatEURPer(5942 - declared.min!, "month")));
   });
 
   it("never draws a rail it cannot name", () => {

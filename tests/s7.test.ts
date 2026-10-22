@@ -4,7 +4,7 @@ import {
   evaluate, routeStatements, scopeLine,
   type Dataset, type Profile, type Route, type RouteResult,
 } from "permit-rulebook-data";
-import { ROUTE_DOOR } from "../src/lib/copy/verdict.js";
+import { NOT_CHECKED_HEADING, NOT_REQUIRED_FOR_YOUR_PASSPORT, ROUTE_DOOR } from "../src/lib/copy/verdict.js";
 import { routePages } from "../src/lib/route-page.js";
 import { blocksIn, cardOn, placed, verdictFor, verdictOn, withoutGlosses } from "./verdict-cards.js";
 
@@ -73,13 +73,13 @@ describe("s7 — a Turkish passport on the Dutch highly skilled migrant route", 
     expect(html).not.toContain(SPONSOR);
     // The conditions that DO bind are untouched: a carve-out releases one
     // sentence, never the block it sits in.
-    expect(html).toContain("Also required — not checked here");
+    expect(html).toContain(NOT_CHECKED_HEADING);
     expect(html).toMatch(/match what the job normally pays/);
   });
 
   it("puts the carve-out in its place, with the IND's own sentence and the day it was read", () => {
     const html = carveOutOf(turkish, "nl-hsm-30plus");
-    expect(html).toContain("Not required for your passport");
+    expect(html).toContain(NOT_REQUIRED_FOR_YOUR_PASSPORT);
     expect(html).toContain(carveOutText("nl-hsm-30plus", "employer-must-be-a-recognised-sponsor"));
     // The quote itself goes where every quote on a card goes.
     const quotes = blocksIn(cardFor(turkish, "nl-hsm-30plus"), "srcs");

@@ -4,7 +4,10 @@ import {
   deriveBands, evaluate,
   type Criterion, type Dataset, type Profile, type Route,
 } from "permit-rulebook-data";
-import { PAGE_ALSO_SAYS } from "../src/lib/copy/quotes.js";
+import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn } from "../src/lib/copy/quotes.js";
+import {
+  APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_OFFICIAL_WORDING_HEADING, WHAT_THIS_ROUTE_ASKS,
+} from "../src/lib/copy/verdict.js";
 import { blocksIn, cardOn, everyCardIn, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -126,7 +129,7 @@ describe("the rail names the threshold the reader was measured against", () => {
 
   it("the caption under the number is the deciding path's own label", () => {
     expect(railOf(cardFor(dutchGraduate, "nl-hsm-under30")))
-      .toContain("what this route asks — lower amount for a recent graduate, 2026 · ");
+      .toContain(`${WHAT_THIS_ROUTE_ASKS} — lower amount for a recent graduate, 2026 · `);
   });
 
   it("not met, with the reduced path out of reach: the rail says €4,357", () => {
@@ -164,9 +167,9 @@ describe("the source list says which quote applied to this reader", () => {
     const html = sourcesOf(cardFor(dutchGraduate, "nl-hsm-under30"));
     const reduced = html.slice(html.indexOf("€ 3,122.00"), html.indexOf("€ 3,122.00") + 400);
     const full = html.slice(html.indexOf("€ 4,357.00"), html.indexOf("€ 4,357.00") + 400);
-    expect(reduced).toContain("applies to you");
-    expect(reduced).not.toContain("does not apply to you");
-    expect(full).toContain("does not apply to you");
+    expect(reduced).toContain(APPLIES_TO_YOU);
+    expect(reduced).not.toContain(DOES_NOT_APPLY_TO_YOU);
+    expect(full).toContain(DOES_NOT_APPLY_TO_YOU);
   });
 
   it("an undecided route marks nothing — it has ruled the reader out of nothing", () => {
@@ -184,8 +187,8 @@ describe("the source list says which quote applied to this reader", () => {
     // Both quotes still render: the reader may want to know they exist.
     expect(html).toContain("€ 3,122.00");
     expect(html).toContain("€ 4,357.00");
-    expect(html).not.toContain("does not apply to you");
-    expect(html).not.toContain("applies to you");
+    expect(html).not.toContain(DOES_NOT_APPLY_TO_YOU);
+    expect(html).not.toContain(APPLIES_TO_YOU);
   });
 
   it("one settled choice on a card never marks a second one nobody has decided", () => {
@@ -207,15 +210,16 @@ describe("the source list says which quote applied to this reader", () => {
     const html = sourcesOf(cardFor(dutchGraduate, "nl-hsm-under30", twoChoices));
     const near = (needle: string) => html.slice(html.indexOf(needle), html.indexOf(needle) + 400);
     // The settled choice is still marked, both ways.
-    expect(near("€ 3,122.00")).toContain("applies to you");
-    expect(near("€ 4,357.00")).toContain("does not apply to you");
+    expect(near("€ 3,122.00")).toContain(APPLIES_TO_YOU);
+    expect(near("€ 4,357.00")).toContain(DOES_NOT_APPLY_TO_YOU);
     // The unsettled one is not marked at all — neither in words, nor by the
     // dimming that says "this one is not yours" without saying it.
     const fundsQuote = funds.op === "gte" ? funds.threshold.quote.slice(0, 30) : "";
     const rows = html.split(`<div class="src`).slice(1);
     const fundsRow = rows.find((row) => row.includes(fundsQuote))!;
     expect(fundsRow).toBeDefined();
-    expect(fundsRow).not.toContain("apply to you");
+    expect(fundsRow).not.toContain(APPLIES_TO_YOU);
+    expect(fundsRow).not.toContain(DOES_NOT_APPLY_TO_YOU);
     expect(fundsRow.startsWith(`"`), "an undecided row must not be dimmed as ruled out").toBe(true);
     // And the row that WAS ruled out still is, so the check above is not
     // passing because nothing is ever dimmed.
@@ -228,7 +232,7 @@ describe("the source list says which quote applied to this reader", () => {
       recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "2plus", experience_7y: "3to5",
       salary_eur_year: bandFor("salary_eur_year", 48000),
     };
-    expect(sourcesOf(cardFor(profile, "de-experienced-worker"))).not.toContain("applies to you");
+    expect(sourcesOf(cardFor(profile, "de-experienced-worker"))).not.toContain(APPLIES_TO_YOU);
   });
 });
 
@@ -299,7 +303,7 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
     // unsourced ones straight after them.
     for (const card of everyCardIn((blankVerdict ??= verdictOn(ds, {}))))
       expect(caveatsOf(card.html), card.route).toBe(sourcedCaveatOf(card.html) + unsourcedCaveatOf(card.html));
-    expect(caveatsOf(unsourcedCard())).toContain("we have not found the official wording");
+    expect(caveatsOf(unsourcedCard())).toContain(NO_OFFICIAL_WORDING_HEADING);
     expect(caveatsOf(blankCard("de-chancenkarte"))).toContain(`${PAGE_ALSO_SAYS}:`);
   });
 
@@ -308,13 +312,13 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
     // card can now say WHY in its own voice and print a date a reader can age,
     // instead of reprinting whatever prose the dataset happened to carry.
     const html = unsourcedCaveatOf(unsourcedCard());
-    expect(html).toContain("only as a scan");
-    expect(html).toContain("Last checked 2026-09-07");
+    expect(html).toContain(UNSOURCED_REASON_SAID["scanned-image"]);
+    expect(html).toContain(lastCheckedOn("2026-09-07"));
   });
 
   it("the one with no quote says so, in the open, and says why", () => {
     const html = unsourcedCaveatOf(unsourcedCard());
-    expect(html).toContain("we have not found the official wording");
+    expect(html).toContain(NO_OFFICIAL_WORDING_HEADING);
     expect(html).toMatch(/shortage occupations/);
     expect(html).toMatch(/Orden PJC\/44\/2026/);
     // And it is not passed off as something the official page says.

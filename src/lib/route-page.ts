@@ -5,7 +5,7 @@ import {
   referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
   type UnreadSource,
-  type StatementException,
+  type StatementException, type UnsourcedReason,
 } from "permit-rulebook-data";
 // The token set itself, not a copy of it. It was pasted in — forty values
 // retyped from `tokens.css` — which is the one thing the token file exists to
@@ -43,9 +43,13 @@ import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, REPO_DATA, analyticsBeacon,
   absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
 } from "./site.js";
-import { ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, ROUTE_PAGE_ADDENDUM, NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription, audienceLine, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription, pointsFigure } from "./copy/route-page.js";
+import {
+  ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, ROUTE_PAGE_ADDENDUM,
+  NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription,
+  audienceLine, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription, pointsFigure,
+} from "./copy/route-page.js";
 import { PRODUCT_NAME } from "./copy/frame.js";
-import { PAGE_ALSO_SAYS, readOn } from "./copy/quotes.js";
+import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn, readOn } from "./copy/quotes.js";
 import { WRONG_DOOR_LABEL } from "./copy/feedback.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
@@ -495,20 +499,15 @@ export function ruleCriteria(dataset: Dataset, route: Route): Criterion[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Why we have no quote, said to the reader: the declared reason from the fixed
- * set, plus the day we last looked. The same three sentences the results card
- * uses (`lib/verdict/compose/card-blocks.ts`), because one absence should not read two ways.
+ * Why we have no quote, said to the reader: the declared reason's sentence
+ * from the fixed set, the dataset's own note, and the day we last looked —
+ * the words the results card reads too, because one absence should not read
+ * two ways.
  */
-const REASON_SAID: Record<string, string> = {
-  "scanned-image": "The authority publishes it only as a scan, so there is no text to quote.",
-  "not-published-in-words": "The authority states it as a list or a table, never in a sentence to quote.",
-  "unreachable": "We cannot reach the source from here.",
-};
-
-function unsourcedSaid(s: { unsourced?: { reason: string; checked_at: string; note?: string } }): string {
+function unsourcedSaid(s: { unsourced?: UnsourcedReason }): string {
   const why = s.unsourced;
   if (!why) return "";
-  return `${REASON_SAID[why.reason] ?? ""}${why.note ? ` ${why.note}` : ""} Last checked ${why.checked_at}.`;
+  return `${UNSOURCED_REASON_SAID[why.reason]}${why.note ? ` ${why.note}` : ""} ${lastCheckedOn(why.checked_at)}`;
 }
 
 /**

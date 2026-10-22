@@ -160,6 +160,35 @@ export const WOULD_BE_MET = "would be met";
 export const WOULD_COME_WITHIN_REACH = "would come within reach";
 export const pointsMore = (points: number): string => `${points} pt${points === 1 ? "" : "s"} more`;
 
+/** The rail's rows: what each amount is, what the reader's own row is, and
+ * the list's name for a screen reader. */
+export const WHAT_THIS_ROUTE_ASKS = "what this route asks";
+export const YOUR_ANSWER = "your answer";
+export const RAIL_ROWS_LABEL = "What this route asks, and what you answered";
+
+/** The headings over what a card says beside the verdict that is not a
+ * requirement: what the authority sets aside for this passport, a caveat we
+ * found no official wording for, and our own reading. */
+export const NOT_REQUIRED_FOR_YOUR_PASSPORT = "Not required for your passport:";
+export const NO_OFFICIAL_WORDING_HEADING = "Worth knowing — we have not found the official wording:";
+export const OUR_READING_HEADING = "Our reading, not the authority's words:";
+
+/** A card's source list: the period an amount is stated per, which of two
+ * thresholds applies to the reader, and what a route with no number says in
+ * place of one. */
+export const perPeriod = (period: string): string => `per ${period}`;
+export const APPLIES_TO_YOU = "applies to you";
+export const DOES_NOT_APPLY_TO_YOU = "does not apply to you";
+export const NO_THRESHOLD_ON_ROUTE = "No salary or points threshold on this route — nothing here to fall short of. "
+  + "What it asks for is in the conditions above, each with the official wording behind it.";
+
+/** A points route's tally, before the items that scored. */
+export const pointsOfNeeded = (scored: number, required: number): string =>
+  `${scored} point${scored === 1 ? "" : "s"} — ${required} needed`;
+
+/** The lead of the box that links where an open unknown can be looked up. */
+export const FIND_OUT_YOURSELF = "You can find out yourself:";
+
 /** The notice screen's headline: the notice's own title, closed. */
 export const noticeHeadline = (title: string): string => `${title}.`;
 export const unsettledHeadline = (n: number): string =>

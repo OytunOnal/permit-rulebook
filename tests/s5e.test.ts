@@ -8,6 +8,7 @@ import {
 import {
   blocksIn, cardOn, cardsIn, everyCardIn, groupsIn, placed, verdictFor, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
+import { OUR_READING_HEADING } from "../src/lib/copy/verdict.js";
 
 const ds = dataset as unknown as Dataset;
 const routes = (): Route[] => ds.countries.flatMap((c) => c.routes);
@@ -126,7 +127,7 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
     // vocabulary does not: a stranger owes `modelling`, `readings` and
     // `statement` nothing, and they were all names for this block at some
     // point in two days.
-    expect(html).toMatch(/Our reading, not the authority's words/i);
+    expect(html).toContain(OUR_READING_HEADING);
     expect(html).not.toMatch(/\bmodelling\b|\breadings\b|\bstatements?\b/i);
   });
 

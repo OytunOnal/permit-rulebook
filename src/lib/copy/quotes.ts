@@ -6,6 +6,7 @@
  * Every word a reader reads lives in this folder, one file per screen or
  * part (CODING_STANDARDS.md, Rules).
  */
+import type { UnsourcedReasonWord } from "permit-rulebook-data";
 
 /**
  * A link to a source says whose page it opens (GLOSSARY, Consolidated text).
@@ -28,3 +29,18 @@ export const PAGE_ALSO_SAYS = "The page also says";
  * its quote cannot differ.
  */
 export const readOn = (day: string): string => `read ${day}`;
+
+/**
+ * Why we have no quote, said to the reader: the dataset carries the decision
+ * — a reason from a fixed set and the day we last looked — and these are its
+ * sentences, on a route page and a results card alike, so one absence never
+ * reads two ways. The free prose beside them (which document, what was tried)
+ * is an addition, never the whole answer (review 2026-09-07).
+ */
+export const UNSOURCED_REASON_SAID: Record<UnsourcedReasonWord, string> = {
+  "scanned-image": "The authority publishes it only as a scan, so there is no text to quote.",
+  "not-published-in-words": "The authority states it as a list or a table, never in a sentence to quote.",
+  "unreachable": "We cannot reach the source from here.",
+};
+/** The day we last went looking for the wording, closing that sentence. */
+export const lastCheckedOn = (day: string): string => `Last checked ${day}.`;

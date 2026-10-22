@@ -9,7 +9,7 @@ import {
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { EITHER_PATH, dailyCheck } from "../src/lib/copy/route-page.js";
-import { SEEK_HINT, WOULD_BE_MET, nearestLine, orAbove } from "../src/lib/copy/verdict.js";
+import { SEEK_HINT, WOULD_BE_MET, nearestLine, orAbove, pointsOfNeeded } from "../src/lib/copy/verdict.js";
 import { proseProvenanceCounts } from "../src/lib/copy/data-page.js";
 import { questionCounter } from "../src/lib/copy/interview.js";
 import { glossSection, glossed } from "../src/lib/gloss.js";
@@ -186,14 +186,15 @@ describe("F4 — the not-yet Opportunity Card prints its tally, and the CEFR run
 
   it("the not-yet card carries the same tally line the open card does, from the same scorer", () => {
     expect(evaluate(ds, PRIYA).find((r) => r.route.id === "de-chancenkarte")!.status).toBe("hold");
-    expect(textOf(tallyFor(PRIYA))).toContain("5 points — 6 needed");
+    expect(textOf(tallyFor(PRIYA))).toContain(pointsOfNeeded(5, 6));
     // A count, not a verdict: the not-yet tally never wears the met colour.
     expect(tallyFor(PRIYA)).toContain('class="ptsline short"');
     // Open through the points path: a partial recognition scores, where a
     // full one takes the direct path and counts nothing.
     const partial: Profile = { ...PRIYA, recognition_de: "partial", occupation_shortage: "yes" };
-    expect(evaluate(ds, partial).find((r) => r.route.id === "de-chancenkarte")!.status).toBe("met");
-    expect(textOf(tallyFor(partial))).toMatch(/^\d+ points — 6 needed · /);
+    const card = evaluate(ds, partial).find((r) => r.route.id === "de-chancenkarte")!;
+    expect(card.status).toBe("met");
+    expect(textOf(tallyFor(partial)).startsWith(`${pointsOfNeeded(card.points!.scored, 6)} · `)).toBe(true);
     expect(tallyFor(partial)).toContain('class="ptsline met"');
     // A route that scores no points has no line.
     expect(blocksIn(cardOn(verdictFor(DENIZ), "de-experienced-worker"), "ptsline met", "ptsline short")).toBe("");
@@ -418,7 +419,7 @@ describe("the result screen, decided by the verdict", () => {
     const verdict = verdictFor(PRIYA);
     const ck = placed(verdict, "de-chancenkarte");
     expect(ck?.kind, "the not-yet Opportunity Card").toBe("not-yet");
-    expect(textOf(ck!.html)).toContain("5 points — 6 needed");
+    expect(textOf(ck!.html)).toContain(pointsOfNeeded(5, 6));
     const steps = stepsIn(verdict).map((s) => s.title);
     expect(steps.length).toBeGreaterThan(3);
     expect(steps[0]).not.toMatch(/transfer|hosting agreement/);
