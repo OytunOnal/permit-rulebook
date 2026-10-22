@@ -110,9 +110,9 @@ interface SectionPlace {
  * would open a route opens — announcing "6 steps" and hiding two inside
  * folded sections is the withholding the headline exists to end (critique
  * #4); the offer line, which opens nothing, opens no section — and the
- * country the headline is about leads, open (s26). A country's own closed routes are counted in its
- * tally: a count no summary names is a route the reader never learns exists
- * (s8).
+ * country the headline is about leads, open (s26). A country's own closed
+ * routes are counted in its tally: a count no summary names is a route the
+ * reader never learns exists (s8).
  */
 function countrySection(screen: VerdictScreen, c: Compared, at: SectionPlace): CountrySection {
   const code = at.country.code;

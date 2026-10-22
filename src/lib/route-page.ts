@@ -57,11 +57,12 @@ import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddres
  * One page per route, generated from the dataset and never typed.
  *
  * The whole document is built here, as a string, for the reason the verdict
- * module and `reason.ts` exist: what ships has to be readable by a test. The invariants
- * this slice carries — every amount and quote equals the dataset's, no verdict
- * word or verdict colour anywhere, every interactive element reaches the tap
- * minimum — are properties of the rendered page, not of the template that made
- * it, and a check that reads the template is passed by moving a string.
+ * module and `reason.ts` exist: what ships has to be readable by a test. The
+ * invariants this slice carries — every amount and quote equals the
+ * dataset's, no verdict word or verdict colour anywhere, every interactive
+ * element reaches the tap minimum — are properties of the rendered page, not
+ * of the template that made it, and a check that reads the template is
+ * passed by moving a string.
  *
  * The page it renders is `docs/spine/design/s6-route-page.html`, approved with
  * the scenario and revised after its isolated critique: the rail's labels are a

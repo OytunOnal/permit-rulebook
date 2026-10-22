@@ -36,8 +36,6 @@ import { markUnder, notScoredMarkHtml } from "./situations.js";
  * would have drawn already on the page and leaves it alone (s10, 2026-09-15).
  */
 
-/** s5c: above a dozen options the question becomes a filter over a list
- * instead of a wall of buttons; at or below a dozen, nothing changes. */
 /**
  * A question screen's masthead: the standing tagline, and the promise — the
  * long form until the interview is under way, the short one after. It claims
@@ -46,6 +44,8 @@ import { markUnder, notScoredMarkHtml } from "./situations.js";
 export const questionMastheadOf = (screen: Extract<Screen, { kind: "question" }>): Masthead =>
   ({ headline: INTRO_HEADLINE, subline: screen.started ? SHORT_SUBLINE : INTRO_SUBLINE });
 
+/** s5c: above a dozen options the question becomes a filter over a list
+ * instead of a wall of buttons; at or below a dozen, nothing changes. */
 export const LONG_LIST_ABOVE = 12;
 
 /** Whether this question is asked as a search rather than as buttons. */

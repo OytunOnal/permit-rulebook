@@ -110,9 +110,9 @@ export const askedHeading = (declared: string): string =>
  * It was typed into the results template and rendered to anyone with an open
  * job-search route and a step to take — including a reader who had just
  * declared "I have (or am about to get) a job offer there" (v1.1 gate
- * critique, F1). Who sees it is decided inside the verdict module, in its steps, from
- * the situation answer the dataset marks as the fallback; these are only the
- * words.
+ * critique, F1). Who sees it is decided inside the verdict module, in its
+ * steps, from the situation answer the dataset marks as the fallback; these
+ * are only the words.
  */
 export const SEEK_HINT =
   "Your job-search permit above is exactly for this — lawful time in the country to land that offer.";

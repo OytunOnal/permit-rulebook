@@ -30,8 +30,9 @@ const situationPhrase = (ds: Dataset, value: string): string => {
  * One country's summary line on the four-country result, when the declared
  * situation is one its scored routes do not take (s21).
  *
- * The country's own line, which used to count its routes as "5 not yet",
- * carries the s19 sentence instead: the headline s19 would have written for
+ * The country's own line carries the s19 sentence in place of a not-yet
+ * count, which would say "5 not yet" of routes that cannot take the reader's
+ * situation at all: the headline s19 would have written for
  * that country alone, then the quoted route, whose name is the link. The
  * text form is what the line reads as; the HTML form is the same words with
  * the door on the route's name. It is the line whatever the headline is:

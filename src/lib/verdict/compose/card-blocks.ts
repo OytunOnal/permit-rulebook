@@ -91,9 +91,8 @@ const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profile): Gte
  * on every card so "criteria met" cannot overpromise. A precondition statement
  * is a Precondition that carries its quote, and it belongs in exactly the same
  * sentence: the reader is being told what else they must satisfy, not where
- * the dataset keeps it. The kind was called `condition` until the glossary was
- * read back — a coined synonym for Criterion's own Avoid list (review
- * 2026-09-07).
+ * the dataset keeps it. The kind is `precondition`, the glossary's word;
+ * "condition" is on Criterion's Avoid list (review 2026-09-07).
  */
 export function precondHtml(screen: CardScreen, route: Route): string {
   const { ds, answers, glossary: seen = new Set() } = screen;
@@ -123,15 +122,14 @@ export function precondHtml(screen: CardScreen, route: Route): string {
  * none (s19, F8; the key since s32).
  *
  * A precondition statement names the question whose answer covers it —
- * `field`, a curator's decision typed in the dataset. It was derived here
- * until s32, from the authority's sentence: a precondition was "asked" when
- * a criterion of this route quoted the same sentence verbatim. Three more
- * shared a sentence by containment and the sentence would have decided two
- * of them wrongly — the German ICT card's six months with the company wraps
- * the situation gate's own quote, and a tenure is not what the situation
- * question asks — so the sentence is no longer read here at all. The Spanish
- * researcher card's hosting agreement is still the case: its field is the
- * situation, and the reader's research answer IS the declaration.
+ * `field`, a curator's decision typed in the dataset — and the authority's
+ * sentence is never read for it: two statements share a sentence with a
+ * criterion by containment and would be decided wrongly by it — the German
+ * ICT card's six months with the company wraps the situation gate's own
+ * quote, and a tenure is not what the situation question asks (s32). The
+ * Spanish researcher card's hosting agreement is the case it serves: its
+ * field is the situation, and the reader's research answer IS the
+ * declaration.
  *
  * Declared means answered with a real answer: an "I don't know", or the door
  * for a salary no band fits, leaves the condition unchecked, and the heading
@@ -283,10 +281,9 @@ export function caveatHtml(screen: CardScreen, route: Route): string {
  * It is the only text on a card that may carry quotation marks with no source
  * beside it, because being a reading IS the attribution — which is exactly why
  * it may never appear in the quote list or under a heading that says an
- * authority spoke (s5e). It read `routeStatements(route).filter(s => s.kind
- * === "modelling")` until this review, one of nine such filters across two
- * repos; readings are their own construct now, so there is one accessor and no
- * predicate to keep in step (review 2026-09-07).
+ * authority spoke (s5e). Readings are their own construct, read through
+ * `routeReadings`, so there is one accessor and no filter over statements to
+ * keep in step across two repositories (review 2026-09-07).
  */
 export function readingHtml(route: Route, seen: Glossary = new Set()): string {
   return proseBlock(
@@ -546,11 +543,9 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
 /**
  * A quote long enough to bury the card is shown to its first sentence, with
  * the whole passage on the element and its source a click away — the evidence
- * stays complete, the card stays readable (tracker #5).
- *
- * It lived in the interview's own script until s8 moved the notice out of it,
- * and for one commit the rule applied to nothing: the Türkiye notice's
- * 640-character quote printed whole (Standards review, 2026-09-10).
+ * stays complete, the card stays readable (tracker #5). The notice's quotes
+ * go through it as the cards' do: the Türkiye notice's runs to 640
+ * characters (Standards review, 2026-09-10).
  */
 function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
   if (quote.length <= 200) return { shown: quote, trimmed: false };
@@ -563,9 +558,9 @@ function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
  * One quote, framed the way every quote on a results screen is framed: its
  * language, its host, whatever citation it carries, and the day it was read.
  *
- * Pulled out of `provenanceHtml` when the closed-route row and the notice both
- * needed it. The frame is the claim of this product, and three copies of it
- * would be three claims that can drift (s8).
+ * The closed-route row and the notice both draw it. The frame is the claim of
+ * this product, and three copies of it would be three claims that can drift
+ * (s8).
  */
 function srcLine(
   value: { quote: string; source_url: string; retrieved_at: string; legal_basis?: string }, seen: Glossary,
@@ -614,9 +609,9 @@ export function sourceLinkHtml(url: string): string {
 /**
  * A notice, on the results screen.
  *
- * It moved here from inside the page for the reason every other block did: the
- * page's own markup cannot be read by a test, and this one now has more to get
- * wrong than a title and a body. A notice may stand on several authorities —
+ * It is drawn here for the reason every other block is: a test reads the
+ * markup, and a notice has more to get wrong than a title and a body. A
+ * notice may stand on several authorities —
  * the Algerian talent question reports two of them disagreeing and a third
  * page saying what the reader gets instead — so every side is printed, each
  * quote framed with its own language, and the link at the foot is the page the
@@ -669,10 +664,10 @@ export function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  *
  * Only where the unknown still binds: on a hard-failed route finding out
  * changes nothing, and the link sends the reader down a path that cannot open
- * (critique #4). The box ends on the link. It used to end on a full stop after
- * it, and the link is a tap-height box a line cannot break inside, so on a
- * phone the stop wrapped onto a line of its own (v1.1 gate critique, P5).
- * The route page's own box has never carried one.
+ * (critique #4). The box ends on the link, with no full stop after it: the
+ * link is a tap-height box a line cannot break inside, so on a phone a stop
+ * after it wraps onto a line of its own (v1.1 gate critique, P5), as the
+ * route page's own box has it.
  *
  * The label is the text of the link: a link says what the reader does there.
  * It is glossed like the rest of the card's words, on the screen's memory

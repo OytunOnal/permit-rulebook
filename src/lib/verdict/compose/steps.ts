@@ -100,10 +100,10 @@ const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
  * Order: a step within the reader's own situation — recognition, language,
  * experience, funds: the fields the dataset marks `improvable` — before a
  * step that is a different situation than the one they declared — a path
- * answer such as a job offer. Within a group, a step that meets a route beats one
- * that only brings routes within reach, then the one that opens more, then
- * the engine's order — the rank the hero's "Nearest" has always used, so the
- * nearest step is the first card.
+ * answer such as a job offer. Within a group, a step that meets a route beats
+ * one that only brings routes within reach, then the one that opens more,
+ * then the engine's order — the rank the hero's "Nearest" has always used, so
+ * the nearest step is the first card.
  *
  * A ladder: of the rows on one ladder field, the lowest rung that changes a
  * verdict is the step, titled "… or above", and every rung above it that
