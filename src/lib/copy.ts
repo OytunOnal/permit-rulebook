@@ -896,6 +896,18 @@ export const RULES_MET = "Rules met";
 export const CAME_FROM_LINE = "The route you came from.";
 export const shortByUpTo = (amount: string): string => `Short by up to ${amount}`;
 export const onField = (field: string): string => `on ${field}`;
+/** The card on a band open at the bottom: the line the route asks and the
+ * reader's answer, never an amount short — the band has no lower edge to
+ * measure from. Each argument is already markup. */
+export const asksOrMoreHtml = (thresholdHtml: string, fieldHtml: string, bandHtml: string): string =>
+  `<b>Asks ${thresholdHtml} or more</b> on ${fieldHtml} — your answer is ${bandHtml}.`;
+/** The same line where a step brings such a route within reach. */
+export const asksOrMore = (threshold: string): string => `asks ${threshold} or more`;
+/** Where the reader's band stands against one amount, on the rail's row. */
+export const upToShort = (amount: string): string => `up to ${amount} short`;
+export const ABOVE_THE_AMOUNT = "above the amount";
+export const BELOW_THE_AMOUNT = "below the amount";
+export const CROSSES_THE_AMOUNT = "crosses the amount";
 export const LOWER_THRESHOLD_HINT = "A route with a lower threshold may already apply — check the other cards.";
 export const shortByPoints = (points: number): string => `Short by ${points} point${points === 1 ? "" : "s"}.`;
 export const POINTS_TABLE_HINT =
@@ -917,6 +929,10 @@ export const NOTHING_OPEN_HEADLINE = "Nothing open on these answers.";
 export const routesOpenHeadline = (open: number, countries: number): string =>
   `${open} route${open === 1 ? "" : "s"} look${open === 1 ? "s" : ""} open${countries > 1 ? ` across ${countries} countries` : ""}.`;
 export const shortByLine = (amount: string): string => `One is short by ${amount}.`;
+/** The headline's emphasis on a bounded gap: "up to", as the card says it. */
+export const shortByUpToLine = (amount: string): string => `One is short by up to ${amount}.`;
+/** The headline's emphasis on a band open at the bottom: the line, not an amount. */
+export const needsOrMoreLine = (threshold: string): string => `One needs ${threshold} or more.`;
 export const pointsAwayLine = (points: number): string => `One is ${points} point${points === 1 ? "" : "s"} away.`;
 
 /**

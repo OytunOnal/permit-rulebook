@@ -159,6 +159,12 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .rail{margin:.95rem 0 .2rem;max-width:34rem}
 .bar{position:relative;height:var(--rail-h);background:var(--rail-track);border-radius:99px}
 .you{position:absolute;top:0;bottom:0;background:var(--rail-band);border-radius:99px}
+/* A band open at one end has no edge to draw a bar to: it is a point at the
+   rail's edge on its open side, in the band's colour, and its row's caption
+   says which way it runs. */
+.you-point{position:absolute;top:-3px;width:13px;height:13px;border-radius:50%;background:var(--rail-band)}
+.you-point.at-left{left:0}
+.you-point.at-right{right:0}
 /* NB: named .rail-tick — .tick is the chosen-answer checkmark on the
    question card, styled by the page, and its margin-left was pushing every
    line on this bar off the amount it marks. */
