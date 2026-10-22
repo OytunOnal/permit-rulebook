@@ -15,14 +15,17 @@
 /* Two answers that cannot both be true, said before the verdicts. */
 .clash{font-size:.9rem;color:var(--color-ink);background:var(--color-near-soft);border-left:3px solid var(--color-near);padding:.6rem .8rem;margin:0 0 .8rem}
 
-/* Result summary + groups (s3) */
+/* Result summary + groups (s3). The counters are one plain line, with no
+   pill, border or ground: bordered, they read as tabs and did nothing when
+   pressed (F4). Each count keeps its status colour. */
 .strip{display:flex;gap:.6rem;margin:0 0 .4rem;flex-wrap:wrap}
-.strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase;padding:.45rem .8rem;border:var(--rule-soft);background:var(--color-card)}
-.strip .s-met{border-left:3px solid var(--color-met);color:var(--color-met)}
-.strip .s-near{border-left:3px solid var(--color-near);color:var(--color-near)}
-.strip .s-hold{border-left:3px solid var(--color-hold);color:var(--color-hold)}
-.strip .s-unsettled{border-left:3px solid var(--color-ink);color:var(--color-ink)}
-.strip .s-closed{border-left:3px solid var(--color-hold);color:var(--color-hold)}
+.strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase}
+.strip span + span::before{content:"·";margin-right:.6rem;color:var(--color-muted)}
+.strip .s-met{color:var(--color-met)}
+.strip .s-near{color:var(--color-near)}
+.strip .s-hold{color:var(--color-hold)}
+.strip .s-unsettled{color:var(--color-ink)}
+.strip .s-closed{color:var(--color-hold)}
 /* The line at the end of the results body: a closing line under a rule,
    quieter than a card and louder than the footer, in the voice of the
    sub-line rather than a verdict colour. Its one word is a link and a tap
@@ -85,9 +88,10 @@ details.route-hold summary::-webkit-details-marker{display:none}
 .faildetail b{color:var(--color-ink)}
 .ghead.unlockh b{color:var(--color-band)}
 .unlock{background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-band);padding:.85rem 1.05rem;margin-bottom:.7rem}
-.unlock h3{font:600 .95rem var(--font-serif);margin-bottom:.35rem}
+/* A step's heading is not a link, so it wears no link colour: ink, the
+   step's name in bold ink (F4). */
+.unlock h3{font:600 .95rem var(--font-serif);color:var(--color-ink);margin-bottom:.35rem}
 .unlock-means{font-size:.82rem;color:var(--color-muted);margin:-.15rem 0 .4rem;max-width:34rem}
-.unlock h3 b{color:var(--color-band)}
 .unlock ul{list-style:none;display:grid;gap:.3rem;font-size:.86rem;color:#54513f}
 .unlock li::before{content:"→ ";color:var(--color-met);font-weight:700}
 .unlock li b{color:var(--color-met)}
@@ -150,7 +154,10 @@ details.hold-group[open] > summary::before{content:"▾ "}
 /* Result cards */
 .stack{display:grid;gap:var(--gap-cards)}
 .route{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:var(--pad-card)}
-.top{display:flex;justify-content:space-between;gap:1rem;align-items:baseline}
+/* The card's first line: the country's chip and the badge beside it, or the
+   badge alone, above the title. Both are short and never wrap, so the line
+   is the same at every width and for every title (#95). */
+.top{display:flex;gap:.6rem;align-items:center;margin-bottom:.3rem}
 .country{font:700 .68rem var(--font-sans);letter-spacing:.22em;text-transform:uppercase;color:var(--color-muted)}
 h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .st{font:700 .66rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;padding:.3rem .65rem;white-space:nowrap}
@@ -210,7 +217,6 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .next::after{content:" ↗"}
 
 @media (max-width:760px){
-  .top{flex-wrap:wrap}
   details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
   /* The sentence takes a row of its own under the name; the name stays
      where every other country's is, at the marker (s21). */

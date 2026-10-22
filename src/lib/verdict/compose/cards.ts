@@ -92,17 +92,20 @@ function pointsNoteHtml(r: RouteResult): string {
   return `<div class="gapnote"><b>${esc(shortByPoints(r.gap_points))}</b> ${esc(POINTS_TABLE_HINT)}</div>`;
 }
 
-/** A route that is open, within reach or unsettled, as a whole card. */
+/**
+ * A route that is open, within reach or unsettled, as a whole card. Its first
+ * line is the country's chip and the badge, or the badge alone, above the
+ * title: one home for the badge at every width and every title length (#95).
+ */
 export function fullCard(screen: VerdictScreen, r: RouteResult, look: CardLook): string {
   const { ds } = screen;
   const rulesMet = look.badge === "rules-met";
   return `
         <article class="route"${cameFromMark(screen, r)}>
-          <div class="top">
-            <div>${look.chip === "country" ? `<span class="country">${esc(countryOf(ds, r.country).name)}</span>` : ""}
-              <h3>${esc(routeName(screen, r))}</h3></div>
+          <div class="top">${look.chip === "country" ? `<span class="country">${esc(countryOf(ds, r.country).name)}</span>` : ""}
             <span class="st ${rulesMet ? "unsettled" : r.status}">${esc(rulesMet ? RULES_MET : STATUS_LABEL[r.status])}</span>
           </div>
+          <h3>${esc(routeName(screen, r))}</h3>
           ${cameFromNote(screen, r)}
           <p class="why">${whyHtml(ds, r, screen.answers)}</p>
           ${scopeFor(screen, r)}
