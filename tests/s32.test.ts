@@ -6,10 +6,12 @@ import {
   answerLabel, evaluate, forEachCriterion, provenancedValuesOf, routeStatements,
   type Dataset, type Profile, type Route, type RouteStatement,
 } from "permit-rulebook-data";
-import { NOT_CHECKED_HEADING, askedHeading } from "../src/lib/copy.js";
+import { NOT_CHECKED_HEADING, STATUS_LABEL, askedHeading } from "../src/lib/copy.js";
 import { esc } from "../src/lib/reason.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { cardOn, everyCardIn, verdictOn, withoutGlosses } from "./verdict-cards.js";
+import {
+  PAINTED_AS_COMPOSED, cardOn, everyCardIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
+} from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -147,9 +149,29 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
   });
 });
 
+/** A transferee in Germany, every question the interview puts to them
+ * answered, so the record restores straight to the verdict (s22). */
+const transferee: Profile = { ...TRANSFEREE_DE, qualification: "none" };
+
+describe("s32 — the transferee's ICT card, from the verdict", () => {
+  it("a transferee in Germany reads the tenure under not checked here on the ICT card, the card met", () => {
+    const verdict = verdictOn(ds, transferee);
+    const ict = placed(verdict, "de-ict-card");
+    expect(ict?.kind).toBe("open");
+    expect(ict!.html).toContain(`<span class="st met">${STATUS_LABEL.met}</span>`);
+    const card = withoutGlosses(ict!.html);
+    const tenure = statementOf(ds, "de-ict-card", "six-months-with-the-company-before-the-transfer").text;
+    expect(card.match(/<div class="precond">/g) ?? []).toHaveLength(1);
+    const { notChecked, asked } = blocksOf(card);
+    expect(notChecked).toContain(tenure);
+    expect(asked).toEqual([]);
+  });
+});
+
 /**
  * The browser: a transferee in Germany reads the ICT card at 390×844 with the
- * tenure under "not checked here", and nothing on the card called answered.
+ * tenure under "not checked here", and nothing on the card called answered —
+ * the card the case above reads, as the phone paints it.
  */
 const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
@@ -169,24 +191,8 @@ interface BrowserPage {
   problems(): string[];
 }
 
-/** A transferee in Germany, every question the interview puts to them
- * answered, so the record restores straight to the verdict (s22). */
-const transferee: Record<string, string> = { ...TRANSFEREE_DE, qualification: "none" } as Record<string, string>;
 const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
   JSON.stringify(serialize(transferee, Object.keys(transferee), true))})`;
-
-/** The ICT card as the reader sees it: its status, and the text of each
- * precondition block on it. The card is found by its official-page door,
- * which is the route's own URL — the heading is glossed on the way in. */
-const ICT_CARD = `JSON.stringify((() => {
-  const card = [...document.querySelectorAll("article.route")].find((a) => a.querySelector("a.next").getAttribute("href") === ${JSON.stringify(routeOf(ds, "de-ict-card").info_url)});
-  if (!card) return null;
-  return {
-    status: card.querySelector(".st").textContent.trim(),
-    notChecked: [...card.querySelectorAll(".precond:not(.asked)")].map((b) => b.textContent.trim()),
-    asked: [...card.querySelectorAll(".precond.asked")].map((b) => b.textContent.trim()),
-  };
-})())`;
 
 describe.skipIf(skipped !== null)("s32 — in the browser", () => {
   it("a transferee in Germany reads the tenure under not checked here on the ICT card at 390×844", async () => {
@@ -198,21 +204,15 @@ describe.skipIf(skipped !== null)("s32 — in the browser", () => {
         await page.goto(server.url("/"), 1600);
         return {
           state: await page.evaluate('document.getElementById("app").dataset.state'),
-          card: JSON.parse(await page.evaluate(ICT_CARD)),
+          painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, transferee)))),
           problems: page.problems(),
         };
       }, { viewport: { width: 390, height: 844 }, mobile: true }) as {
-        state: string; card: { status: string; notChecked: string[]; asked: string[] } | null; problems: string[];
+        state: string; painted: typeof PAINTED_AS_COMPOSED; problems: string[];
       };
       expect(seen.problems).toEqual([]);
       expect(seen.state).toBe("results");
-      expect(seen.card).not.toBeNull();
-      expect(seen.card!.status).toBe("Criteria met");
-      const tenure = statementOf(ds, "de-ict-card", "six-months-with-the-company-before-the-transfer").text;
-      expect(seen.card!.notChecked).toHaveLength(1);
-      expect(seen.card!.notChecked[0]).toContain(NOT_CHECKED_HEADING);
-      expect(seen.card!.notChecked[0]).toContain(tenure);
-      expect(seen.card!.asked).toEqual([]);
+      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
     } finally { server.close(); }
   }, 120_000);
 });
