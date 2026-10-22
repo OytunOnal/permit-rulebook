@@ -196,8 +196,10 @@ describe("#175 — the offer line", () => {
   it("a freed route's open field with no subject is refused, not named by its id", () => {
     const [first] = routesAnOfferFrees(ds, PRIYA);
     const field = first!.fieldsLeftOpen[0]!;
-    const unnamed = structuredClone(dataset) as unknown as Dataset;
-    delete unnamed.fields.find((f) => f.id === field)!.subject;
+    // A dataset that breaks the contract: the field written without its subject.
+    const withoutSubject = (f: Dataset["fields"][number]) =>
+      f.id === field ? Object.fromEntries(Object.entries(f).filter(([key]) => key !== "subject")) : f;
+    const unnamed = { ...ds, fields: ds.fields.map(withoutSubject) } as unknown as Dataset;
     expect(() => verdictOn(unnamed, PRIYA)).toThrow(field);
   });
 
