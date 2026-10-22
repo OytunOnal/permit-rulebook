@@ -10,10 +10,10 @@
  * group's routes in order with each card's markup.
  */
 import { contradictionsIn, unlocks, type Dataset, type Notice, type Profile } from "permit-rulebook-data";
-import { noticeHtml } from "../card.js";
+import { noticeHtml } from "./compose/card-blocks.js";
 import { noticeHeadline } from "../copy.js";
 import { esc } from "../reason.js";
-import { arrangeSteps } from "../steps.js";
+import { arrangeSteps } from "./compose/steps.js";
 import type { VerdictScreen } from "./compose/cards.js";
 import { comparedSaying } from "./compose/headline.js";
 import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from "./compose/html.js";

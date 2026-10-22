@@ -3,8 +3,8 @@ import {
   SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, unlockTitleOf,
   type Dataset, type Profile, type RouteResult, type Unlock,
 } from "permit-rulebook-data";
-import { SEEK_HINT, orAbove } from "./copy.js";
-import { esc } from "./reason.js";
+import { SEEK_HINT, orAbove } from "../../copy.js";
+import { esc } from "../../reason.js";
 
 /**
  * The unlock steps as the results screen offers them: which come first,
@@ -16,8 +16,9 @@ import { esc } from "./reason.js";
  * could actually take, named a transfer as the nearest step to a reader with
  * no employer, and offered three German levels as three steps to the same
  * card (v1.1 gate critique, F1, F4). What the screen does with the rows is
- * decided here, beside the page, so a test can read it — and derived from the
- * dataset's own shape, never from a list of fields.
+ * decided here, inside the verdict, so a test reads it through the verdict's
+ * entry — and derived from the dataset's own shape, never from a list of
+ * fields.
  */
 
 /** One step as the screen offers it: the row, its title, and the rungs above it folded into it. */
@@ -45,7 +46,7 @@ export interface Step {
  * five and three for five in the last seven (schema 0.8.1, s25). Only the
  * rows on THIS field say whether the table climbs it.
  */
-export function isLadder(ds: Dataset, field: string): boolean {
+function isLadder(ds: Dataset, field: string): boolean {
   let cached = ladderCache.get(ds);
   if (!cached) ladderCache.set(ds, (cached = new Map()));
   const known = cached.get(field);

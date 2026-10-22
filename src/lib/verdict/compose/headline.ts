@@ -4,11 +4,12 @@ import {
   NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, shortByLine, stepsWouldChangeHeadline, unsettledHeadline,
 } from "../../copy.js";
 import type { Explore } from "../../screen.js";
-import { unscoredVerdict, type UnscoredVerdict } from "../../situations.js";
-import { nearestStep } from "../../steps.js";
+import type { UnscoredVerdict } from "../../situations.js";
+import { nearestStep } from "./steps.js";
 import { gapAmount, type VerdictScreen } from "./cards.js";
 import type { Compared } from "./reading.js";
 import type { VerdictAction } from "./types.js";
+import { unscoredVerdict } from "./unscored.js";
 
 /** What the masthead says of a comparison: the verdict in words, the words
  * after it the headline stresses, and the next step it names. */

@@ -8,15 +8,15 @@ import {
   type Band, type Criterion, type Dataset, type Notice, type Profile, type Route, type RouteResult,
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
-import { esc, escAttr } from "./reason.js";
-import { NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading, readOn } from "./copy.js";
+import { esc, escAttr } from "../../reason.js";
+import { NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading, readOn } from "../../copy.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
 // it, on the screen's own memory: the card's citations, statements, readings
 // and learn labels are glossed as the route page's are (#151, ruling 8). Each
 // block takes the screen's memory; one drawn alone is a screen of its own.
-import { type Glossary, glossed } from "./gloss.js";
+import { type Glossary, glossed } from "../../gloss.js";
 // One frame for every quote the product shows (2026-09-08).
-import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "./quote.js";
+import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "../../quote.js";
 
 /**
  * The blocks of a card that state what the dataset itself says: what else is
@@ -48,7 +48,7 @@ export interface CardScreen {
 /** Every gte criterion in a route, at any depth. Nested too: NL ICT states its
  * thresholds inside an any-disjunction, and a top-level-only scan drew no rail
  * on exactly those cards (review). */
-export function gteCriteriaOf(route: Route): Gte[] {
+function gteCriteriaOf(route: Route): Gte[] {
   const out: Gte[] = [];
   forEachCriterion(route.criteria, (c) => { if (c.op === "gte") out.push(c); });
   return out;
@@ -223,7 +223,7 @@ function proseBlock(cls: string, heading: string, items: string[], join = " "): 
  * are here and not there (human catch 2026-09-07). The quote behind each one
  * is in the card's source list, like every other value.
  */
-export function sourcedCaveatHtml(screen: CardScreen, route: Route): string {
+function sourcedCaveatHtml(screen: CardScreen, route: Route): string {
   const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
     "caveat", `${PAGE_ALSO_SAYS}:`,
@@ -256,7 +256,7 @@ function unsourcedSaid(s: RouteStatement): string {
  * quote, and why. Nothing here is ever given a neighbouring quote that does
  * not cover it.
  */
-export function unsourcedCaveatHtml(screen: CardScreen, route: Route): string {
+function unsourcedCaveatHtml(screen: CardScreen, route: Route): string {
   const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
     "caveat nosrc", "Worth knowing — we have not found the official wording:",
@@ -309,7 +309,7 @@ export function readingHtml(route: Route, seen: Glossary = new Set()): string {
  * (human walk, 2026-09-08). Neighbouring amounts are context, and the route
  * page's own rail is where context belongs.
  */
-export function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile): Gte[] {
+function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile): Gte[] {
   const measured = measuredCriterionOf(ds, r, answers);
   if (!measured) return [];
   const decided = decidingCriteria(r.criteria)
@@ -326,7 +326,7 @@ export function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile
  * Where the reader's band stands against one amount, in the words the card
  * already uses elsewhere.
  */
-export function bandStandsAt(band: Band, amount: number): string {
+function bandStandsAt(band: Band, amount: number): string {
   if (band.max !== undefined && band.max <= amount)
     return `up to ${formatEUR(amount - (band.min ?? 0))} short`;
   if (band.min !== undefined && band.min >= amount) return "above the amount";
@@ -484,7 +484,7 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
  * and for one commit the rule applied to nothing: the Türkiye notice's
  * 640-character quote printed whole (Standards review, 2026-09-10).
  */
-export function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
+function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
   if (quote.length <= 200) return { shown: quote, trimmed: false };
   const end = quote.indexOf(". ");
   if (end < 0 || end > 200) return { shown: quote.slice(0, 200).trimEnd() + "…", trimmed: true };
