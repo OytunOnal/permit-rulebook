@@ -420,24 +420,41 @@ offer", never as a miss.
 _Avoid_: irrelevant, N/A
 
 **Step-gated row**:
-A not-yet route whose only genuine failure is a path step. These collapse
-into one group naming the steps the group actually asks for.
+A not-yet route whose only genuine failure is a path answer. These collapse
+into one group naming the path answers the group actually asks for.
 
 ### Change and leverage
 
 **Field kind — attribute / path / improvable**:
 attribute: a fixed fact (age, citizenship) — never counterfactualed.
-path: a step one takes (job offer, transfer, hosting agreement).
+path: the arrangement a route is built on (a job offer, a transfer, a hosting
+agreement). Each answer is either a step or an Arranged answer (below).
 improvable: closable through effort or time (language, funds, experience,
 recognition).
 _Avoid_: mutable/immutable, editable
 
+**Arranged answer** (#55):
+A path answer someone else arranges for the reader: an intra-corporate
+transfer is the employer's decision, a research hosting agreement the host's.
+It is never offered as a step or named as the nearest one; what it would open
+is said apart from the steps, as "a different situation". A job offer is not
+one: the reader can go and get it.
+_Avoid_: step (for a transfer or a hosting agreement); "situation" for these
+alone — the situation question's answers include the job offer
+
 **Leverage step** (UI: "steps that would unlock more"):
 A provable single-step counterfactual: re-evaluating the declarations with
-one path/improvable answer changed, and reporting only routes that verifiably
-turn met or within reach. Nothing resting on unanswered questions is ever
-promised.
+one improvable answer, or one path answer that is not an Arranged answer, changed,
+and reporting only routes that verifiably turn met or within reach. Nothing
+resting on unanswered questions is ever promised.
 _Avoid_: suggestion, tip, recommendation (unqualified)
+
+**Offer line** (UI: "With a job offer in Germany: 6 more routes would be
+checked — on …", #55):
+What a job offer would do for a reader who has none: how many routes it frees
+from their only hard fail, and what those routes would ask next. Never a
+Leverage step — it promises a check, not a verdict.
+_Avoid_: "would be met", step (for this line)
 
 ### Source watch
 
