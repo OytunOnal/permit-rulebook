@@ -1,6 +1,8 @@
 // @level presentation
 import type { RouteResult } from "permit-rulebook-data";
-import { NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, stepsWouldChangeHeadline, unsettledHeadline } from "../../copy/verdict.js";
+import {
+  NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, stepsWouldChangeHeadline, unsettledHeadline,
+} from "../../copy/verdict.js";
 import { moneyShortfallOf } from "./card-blocks.js";
 import type { VerdictScreen } from "./cards.js";
 import { comparedMastheadOf, type Explore, type Headline } from "./masthead.js";

@@ -3,7 +3,9 @@ import {
   DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, joinOr, possessiveAtStartOf, situationsAsked,
   type Country, type Dataset, type Profile,
 } from "permit-rulebook-data";
-import { READ_ITS_RULES, unscoredHeadline, unscoredNamedRestLine, unscoredRestLine, unscoredRouteLine, unscoredTallyLine } from "../../copy/verdict.js";
+import {
+  READ_ITS_RULES, unscoredHeadline, unscoredNamedRestLine, unscoredRestLine, unscoredRouteLine, unscoredTallyLine,
+} from "../../copy/verdict.js";
 import { esc, sentenceWithLinkHtml } from "../../reason.js";
 import { url } from "../../site.js";
 import { SITUATION_COUNTRY_FIELD, notScoredFor } from "../../situations.js";

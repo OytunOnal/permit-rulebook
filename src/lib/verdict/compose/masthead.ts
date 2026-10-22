@@ -1,5 +1,8 @@
 // @level presentation
-import { EVERY_VALUE_BELOW_QUOTED, EXPLORE_ONE_COUNTRY, EXPLORE_SEVERAL_COUNTRIES, NOTHING_TO_COMPARE, answersCheckedLine, nearestLine, noticeHeadline } from "../../copy/verdict.js";
+import {
+  EVERY_VALUE_BELOW_QUOTED, EXPLORE_ONE_COUNTRY, EXPLORE_SEVERAL_COUNTRIES, NOTHING_TO_COMPARE, answersCheckedLine,
+  nearestLine, noticeHeadline,
+} from "../../copy/verdict.js";
 import { esc, sentenceWithLinkHtml } from "../../reason.js";
 import type { VerdictMasthead } from "../../screen.js";
 import type { UnscoredVerdict } from "./unscored.js";

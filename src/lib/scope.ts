@@ -3,7 +3,9 @@ import {
   phraseOf, phraseAtStartOf, isScored, joinAnd, remainingQuestions, shortLabelOf, subjectOf,
 } from "permit-rulebook-data";
 import type { Country, Dataset, Profile, Route } from "permit-rulebook-data";
-import { comingFromRouteLine, placeAsksMoreClause, placeOnRecordLine, placeOnRecordNowLine, startingFromRouteLine } from "./copy/interview.js";
+import {
+  comingFromRouteLine, placeAsksMoreClause, placeOnRecordLine, placeOnRecordNowLine, startingFromRouteLine,
+} from "./copy/interview.js";
 
 /**
  * Arriving at the interview from a route page.

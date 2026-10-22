@@ -6,7 +6,10 @@ import {
   carveOutHtml, caveatHtml, learnBoxHtml, moneyShortfallOf, pointsLineHtml, precondHtml, provenanceHtml, railHtml,
   readingHtml, scopedHtml, sourceLinkHtml, type CardScreen,
 } from "./card-blocks.js";
-import { CAME_FROM_LINE, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET, WOULD_COME_WITHIN_REACH, pointsMore, shortByPoints, withStepHtml } from "../../copy/verdict.js";
+import {
+  CAME_FROM_LINE, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET,
+  WOULD_COME_WITHIN_REACH, pointsMore, shortByPoints, withStepHtml,
+} from "../../copy/verdict.js";
 import { countryOf } from "../../countries.js";
 import { type Glossary, glossSection, glossed } from "../../gloss.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../reason.js";
