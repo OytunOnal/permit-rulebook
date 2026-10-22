@@ -17,7 +17,9 @@ import { routePage, routePages, routeSourceUrls } from "../src/lib/route-page.js
 import { dataPage } from "../src/lib/data-page.js";
 import { lastWatchRun, watchState } from "../src/lib/site.js";
 import { routeAddresses } from "../src/lib/slug.js";
-import { blocksIn, cardOn, hintsIn, stepsIn, verdictFor } from "./verdict-cards.js";
+import {
+  PAINTED_AS_COMPOSED, blocksIn, cardOn, hintsIn, paintedAsComposedScript, placed, stepsIn, verdictFor,
+} from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -410,7 +412,26 @@ function builtPages(): { path: string; text: string }[] {
   return out;
 }
 
-/** And the screen itself: Priya's result, as the browser draws it. */
+describe("the result screen, decided by the verdict", () => {
+  it("Priya's not-yet Opportunity Card shows its tally; her steps start with one she can take; the German rungs are one", () => {
+    const verdict = verdictFor(PRIYA);
+    const ck = placed(verdict, "de-chancenkarte");
+    expect(ck?.kind, "the not-yet Opportunity Card").toBe("not-yet");
+    expect(textOf(ck!.html)).toContain("5 points — 6 needed");
+    const steps = stepsIn(verdict).map((s) => s.title);
+    expect(steps.length).toBeGreaterThan(3);
+    expect(steps[0]).not.toMatch(/transfer|hosting agreement/);
+    expect(steps.filter((s) => s.includes("German at"))).toHaveLength(1);
+    expect(steps.find((s) => s.includes("German at"))).toMatch(/A2 .*or above/);
+    // An arranged answer is never a step card (#175).
+    expect(steps.filter((s) => /transfer|hosting agreement/.test(s))).toEqual([]);
+    expect(verdict.action.masthead.subline).not.toMatch(/Nearest: an intra-corporate transfer|Nearest: a research hosting agreement/);
+    // No offer, no open job-search permit: no hint either way.
+    expect(hintsIn(verdict)).toBe("");
+  });
+});
+
+/** And the screen itself: Priya's result, as the browser paints it. */
 const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
@@ -438,34 +459,21 @@ describe.skipIf(skipped !== null)("the result screen, as drawn", () => {
   it("Priya's not-yet Opportunity Card shows its tally; her steps start with one she can take; the German rungs are one", async () => {
     const server = await serve(dist);
     try {
-      const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
+      const seen = await withBrowser(async (page: BrowserPage) => {
         await page.goto(server.url("/"), 300);
         await page.evaluate(seed(PRIYA as Record<string, string>));
         await page.goto(server.url("/"), 1600);
-        return page.evaluate(
-          'JSON.stringify({'
-          + ' state: document.querySelector("#app").dataset.state,'
-          + ' hold: [...document.querySelectorAll("details.route-hold")].map((d) => d.innerText),'
-          + ' steps: [...document.querySelectorAll("article.unlock h3")].map((h) => h.textContent.trim()),'
-          + ' hero: document.querySelector("#subline").textContent,'
-          + ' hint: !!document.querySelector(".unlock-hint") })',
-        );
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as string) as
-        { state: string; hold: string[]; steps: string[]; hero: string; hint: boolean };
+        return {
+          state: await page.evaluate('document.querySelector("#app").dataset.state'),
+          painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(PRIYA)))),
+        };
+      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
+        { state: string; painted: typeof PAINTED_AS_COMPOSED };
 
+      // What the screen says is the verdict's ("the result screen, decided by
+      // the verdict"); the page paints it.
       expect(seen.state).toBe("results");
-      const ck = seen.hold.find((t) => t.includes("Opportunity Card"))!;
-      expect(ck, "the not-yet Opportunity Card").toBeTruthy();
-      expect(ck).toContain("5 points — 6 needed");
-      expect(seen.steps.length).toBeGreaterThan(3);
-      expect(seen.steps[0]).not.toMatch(/transfer|hosting agreement/);
-      expect(seen.steps.filter((s) => s.includes("German at"))).toHaveLength(1);
-      expect(seen.steps.find((s) => s.includes("German at"))).toMatch(/A2 .*or above/);
-      // An arranged answer is never a step card (#175).
-      expect(seen.steps.filter((s) => /transfer|hosting agreement/.test(s))).toEqual([]);
-      expect(seen.hero).not.toMatch(/Nearest: an intra-corporate transfer|Nearest: a research hosting agreement/);
-      // No offer, no open job-search permit: no hint either way.
-      expect(seen.hint).toBe(false);
+      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
     } finally {
       server.close();
     }
