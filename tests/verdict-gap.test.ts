@@ -6,7 +6,7 @@ import {
 } from "permit-rulebook-data";
 import {
   ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_COME_WITHIN_REACH, asksOrMore, asksOrMoreHtml, needsOrMoreLine,
-  shortByUpTo, shortByUpToLine, upToShort,
+  pointsAwayLine, shortByUpTo, shortByUpToLine, upToShort,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
 import { blocksIn, cardOn, everyCardIn, stepsIn, verdictFor } from "./verdict-cards.js";
@@ -217,6 +217,27 @@ describe("a step prints the gap it leaves the same way", () => {
       const line = formatEURPer(gapCriterionOf(ds, r, taken)!.threshold.amount, period);
       expect(printed, r.route.id).toContain(esc(asksOrMore(line)));
     }
+  });
+});
+
+describe("a route within reach on points is said in points (#174)", () => {
+  /** A vocational qualification in Germany with an offer and a partner: one
+   * route open, and one within reach on its points alone. */
+  const POINTS_SHORT: Profile = {
+    destination: "de", citizenship: "IN", situation: "offer", qualification: "vocational", occupation_it: "yes",
+    recognition_de: "not_recognised", experience_5y: "lt2", experience_7y: "3to5", occupation_shortage: "no",
+    salary_eur_year: "band_6", german: "b1", english: "none", age_band: "a35to40", de_stay6m: "no", partner_ck: "yes",
+    funds_eur_month: "band_1",
+  };
+
+  it("the headline says how many points away the route within reach is", () => {
+    const results = evaluate(ds, POINTS_SHORT);
+    const near = results.filter((r) => r.status === "near");
+    expect(results.some((r) => r.status === "met"), "precondition: a route is open").toBe(true);
+    expect(near.length, "precondition: one route within reach").toBe(1);
+    expect(near[0]!.gap_max, "precondition: no money gap").toBeUndefined();
+    expect(near[0]!.gap_points, "precondition: a points gap").toBeGreaterThan(0);
+    expect(emphasisOf(POINTS_SHORT)).toBe(esc(pointsAwayLine(near[0]!.gap_points!)));
   });
 });
 
