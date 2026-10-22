@@ -877,6 +877,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/verdict/compose/steps.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/verdict/compose/types.ts",
    "to": "src/lib/screen.ts",
    "kind": "inheritance"
@@ -2925,6 +2930,26 @@
    "from": "tests/verdict-module.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
   }
  ],
  "declarations": {
@@ -4505,6 +4530,16 @@
    {
     "name": "STEPS_HERE_HEADING",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "offerLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "arrangedLine",
+    "kind": "fn",
     "exported": true
    },
    {
@@ -6126,5 +6161,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "b8f9de246442d5c7a1ec7d1f8ce0d98939f8d30b4e5049310470f467cfbb7f04"
+ "digest": "e43098b8566d7c69b4ebdac3a2c56b941f73cc38e17f586975acc2fd8376b9b3"
 }
