@@ -8,7 +8,10 @@ import {
   destinationForCountry, questionPhrase,
 } from "../src/lib/scope.js";
 import { RECORD_VERSION, serialize } from "../src/lib/record.js";
+import { CAME_FROM_LINE } from "../src/lib/copy.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
+import { plainTextOf } from "./reader-pages.js";
+import { everyCardIn, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -71,6 +74,19 @@ describe("an arrival that names a country re-scopes the record", () => {
     // names the amounts it named. Seeded from the module's own constant, so a
     // future format change cannot leave these tests reading a dead contract.
     expect(JSON.parse(serialize({ destination: "de" }, ["destination"])).version).toBe(RECORD_VERSION);
+  });
+});
+
+describe("a route arrival, from the verdict", () => {
+  it("the card of the route the reader came from is the one marked, and says so", () => {
+    // The German record arriving from Germany's researcher page: the record
+    // stands where it is, and the route the link names is the one marked.
+    const verdict = verdictOn(ds, germanRecord, "de-researcher");
+    const marked = everyCardIn(verdict).filter((c) => c.html.includes("data-came-from="));
+    expect(marked.map((c) => c.route), "no card is marked as the one the reader came from").toEqual(["de-researcher"]);
+    expect(marked[0]!.html).toContain(`data-came-from="de-researcher"`);
+    expect(plainTextOf(marked[0]!.html)).toContain("Researcher");
+    expect(marked[0]!.html).toContain(CAME_FROM_LINE);
   });
 });
 
@@ -141,19 +157,18 @@ describe.skipIf(skipped !== null)("the walk the critique took, with a record in 
           + ' const r = el ? el.getBoundingClientRect() : null;'
           + ' const open = el ? [...document.querySelectorAll("details")]'
           + '   .filter((d) => d.contains(el)).every((d) => d.open) : false;'
-          + ' return JSON.stringify({ found: !!el,'
-          + '   name: el ? (el.textContent || "").split(/\\s+/).join(" ").slice(0, 80) : "",'
-          + '   inView: r ? r.top > -240 && r.top < window.innerHeight : false, open,'
-          + '   marked: el ? (el.textContent || "").includes("came from") : false }); })()',
+          + ' return JSON.stringify({ found: el ? el.dataset.cameFrom : null,'
+          + '   inView: r ? r.top > -240 && r.top < window.innerHeight : false, open }); })()',
         );
       }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
-        { found: boolean; name: string; inView: boolean; open: boolean; marked: boolean };
+        { found: string | null; inView: boolean; open: boolean };
 
-      expect(seen.found, "no card is marked as the one the reader came from").toBe(true);
-      expect(seen.name).toContain("Researcher");
+      // Which card is marked, and what it says, is the verdict's ("a route
+      // arrival, from the verdict"); the page lands on it: every fold around
+      // it opened, and the card in view.
+      expect(seen.found, "no card is marked as the one the reader came from").toBe("de-researcher");
       expect(seen.open, "the group holding it is still collapsed").toBe(true);
-      expect(seen.inView, `the card is out of view: ${seen.name}`).toBe(true);
-      expect(seen.marked, seen.name).toBe(true);
+      expect(seen.inView, "the card is out of view").toBe(true);
     } finally {
       server.close();
     }
