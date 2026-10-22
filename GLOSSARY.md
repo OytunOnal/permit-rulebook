@@ -449,7 +449,7 @@ and reporting only routes that verifiably turn met or within reach. Nothing
 resting on unanswered questions is ever promised.
 _Avoid_: suggestion, tip, recommendation (unqualified)
 
-**Offer line** (UI: "With a job offer in Germany: 6 more routes would be
+**Offer line** (UI: "With a job offer in Germany: 4 more routes would be
 checked — on …", #55):
 What a job offer would do for a reader who has none: how many routes it frees
 from their only hard fail, and what those routes would ask next. Never a
