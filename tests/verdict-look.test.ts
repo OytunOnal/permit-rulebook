@@ -36,7 +36,7 @@ interface BrowserPage {
 }
 
 /** An offer in Spain, a recognised degree, the middle bands: Spain's two
- * open routes, one titled on one line at 390 and one on two, and steps. */
+ * open routes, one titled on one line at 390 and one on two. */
 const SPAIN_OFFER: Profile = {
   destination: "es", citizenship: "IN", situation: "offer", qualification: "degree", qualification_recent: "no",
   recognition_de: "recognized", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
@@ -49,6 +49,16 @@ const SPAIN_OFFER: Profile = {
 const FOUR_SPAIN_OFFER: Profile = {
   ...SPAIN_OFFER, destination: "all", situation_country: "es", fr_degree: "no", fr_innovative_employer: "no",
   fr_local_contract: "no", nl_recent_grad: "no", top200_grad: "no", de_stay6m: "no", partner_ck: "no",
+};
+
+/** An offer in Berlin (persona P1, s23): steps the reader can take —
+ * recognition, experience, German. Spain's reader above has none: what would
+ * open more there is a hosting agreement, an arranged answer (#175). */
+const GERMANY_OFFER: Profile = {
+  destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
+  recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2", experience_7y: "3to5", german: "a1",
+  english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5", age_band: "a30to35", de_stay6m: "no",
+  partner_ck: "no",
 };
 
 /** A finished record, so the page draws its verdict on arrival. */
@@ -151,7 +161,7 @@ describe.skipIf(skipped !== null)("verdict look — in the browser", () => {
     }, 120_000);
 
     it(`${name}: a step heading and its step's name are ink, not the link's colour`, async () => {
-      const [look] = await looksAt(viewport, mobile, [SPAIN_OFFER]);
+      const [look] = await looksAt(viewport, mobile, [GERMANY_OFFER]);
       expect(look!.state).toBe("results");
       // The precondition: steps on the screen, and a link whose colour is not ink.
       expect(look!.steps.length).toBeGreaterThan(0);
