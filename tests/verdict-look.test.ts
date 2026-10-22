@@ -36,12 +36,19 @@ interface BrowserPage {
 }
 
 /** An offer in Spain, a recognised degree, the middle bands: Spain's two
- * open routes, and steps. */
+ * open routes, one titled on one line at 390 and one on two, and steps. */
 const SPAIN_OFFER: Profile = {
   destination: "es", citizenship: "IN", situation: "offer", qualification: "degree", qualification_recent: "no",
   recognition_de: "recognized", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
   occupation_it: "no", salary_eur_year: "band_5", salary_eur_month: "band_3", german: "a1", english: "b2",
   age_band: "a30to35", funds_eur_month: "band_1",
+};
+
+/** The same reader asking about all four, the offer in Spain: the cards sit in
+ * their country's section, which names the country once, on its summary row. */
+const FOUR_SPAIN_OFFER: Profile = {
+  ...SPAIN_OFFER, destination: "all", situation_country: "es", fr_degree: "no", fr_innovative_employer: "no",
+  fr_local_contract: "no", nl_recent_grad: "no", top200_grad: "no", de_stay6m: "no", partner_ck: "no",
 };
 
 /** A finished record, so the page draws its verdict on arrival. */
@@ -115,11 +122,34 @@ async function looksAt(viewport: { width: number; height: number }, mobile: bool
   } finally { server.close(); }
 }
 
+/** Where a box's vertical centre is. */
+const centreOf = (b: Box): number => (b.top + b.bottom) / 2;
+
 describe.skipIf(skipped !== null)("verdict look — in the browser", () => {
   for (const [name, viewport, mobile] of [
     ["390x844", { width: 390, height: 844 }, true],
     ["1280x900", { width: 1280, height: 900 }, false],
   ] as const) {
+    it(`${name}: the badge is on the card's first line, above the title — on the country's name's line where the card carries it, alone above the title where it does not`, async () => {
+      const [flat, sections] = await looksAt(viewport, mobile, [SPAIN_OFFER, FOUR_SPAIN_OFFER]);
+      for (const look of [flat!, sections!]) expect(look.state).toBe("results");
+      // The precondition: cards with the chip, cards without, and at 390 a
+      // one-line and a two-line title among the cards with it.
+      const withChip = flat!.cards.filter((c) => c.chip !== null);
+      const withoutChip = sections!.cards.filter((c) => c.chip === null);
+      expect(withChip.length).toBeGreaterThan(0);
+      expect(withoutChip.length).toBeGreaterThan(0);
+      if (viewport.width === 390) expect(new Set(withChip.map((c) => Math.min(c.titleLines, 2)))).toEqual(new Set([1, 2]));
+
+      for (const card of [...withChip, ...withoutChip]) {
+        expect(card.badge.bottom, "the badge is not above the title").toBeLessThanOrEqual(card.title.top + 0.5);
+        if (!card.chip) continue;
+        const centre = centreOf(card.badge);
+        expect(centre, "the badge's centre is above the country's name's line").toBeGreaterThanOrEqual(card.chip.top);
+        expect(centre, "the badge's centre is below the country's name's line").toBeLessThanOrEqual(card.chip.bottom);
+      }
+    }, 120_000);
+
     it(`${name}: a step heading and its step's name are ink, not the link's colour`, async () => {
       const [look] = await looksAt(viewport, mobile, [SPAIN_OFFER]);
       expect(look!.state).toBe("results");
