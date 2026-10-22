@@ -1,20 +1,28 @@
 // @level presentation
 import type { RouteResult } from "permit-rulebook-data";
 import {
-  NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, shortByLine, stepsWouldChangeHeadline, unsettledHeadline,
+  NOTHING_OPEN_HEADLINE, needsOrMoreLine, pointsAwayLine, routesOpenHeadline, shortByUpToLine, stepsWouldChangeHeadline,
+  unsettledHeadline,
 } from "../../copy.js";
-import { gapAmount, type VerdictScreen } from "./cards.js";
+import { moneyShortfallOf } from "./card-blocks.js";
+import type { VerdictScreen } from "./cards.js";
 import { comparedMasthead, type Explore, type Headline } from "./masthead.js";
 import type { Compared } from "./reading.js";
 import { nearestStep } from "./steps.js";
 import type { VerdictAction } from "./types.js";
 import { unscoredVerdict } from "./unscored.js";
 
-/** How near the nearest route within reach is, or nothing. */
+/**
+ * How near the nearest route within reach is, or nothing: "up to" its gap on
+ * a bounded band, as the card says it; on a band open at the bottom, the line
+ * it asks, never that line as the reader's shortfall; or its points.
+ */
 function nearNote(screen: VerdictScreen, near: RouteResult[]): string {
   const first = near[0];
-  if (first?.gap_max) return shortByLine(gapAmount(screen, first));
-  if (first?.gap_points) return pointsAwayLine(first.gap_points);
+  if (!first) return "";
+  const money = moneyShortfallOf(screen.ds, first, screen.answers);
+  if (money) return money.kind === "line" ? needsOrMoreLine(money.line) : shortByUpToLine(money.gap);
+  if (first.gap_points) return pointsAwayLine(first.gap_points);
   return "";
 }
 

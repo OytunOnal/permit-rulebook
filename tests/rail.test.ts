@@ -66,15 +66,24 @@ describe("the rail draws only what it names", () => {
   });
 
   it("one scale and one rounding: a band starting on an amount starts on its tick", () => {
-    const band = bandBandMatch(html);
-    expect(band, "the band is not drawn").not.toBeNull();
-    // The reader answered "€5,942 or more" and the route asks €5,942: the band's
-    // left edge and the tick are the same string, not two roundings of one number.
-    expect(band![1]).toBe(ticksOf(html)[0]);
-    expect(band![1]).toMatch(/^\d+\.\d{2}%$/);
+    // A band with two edges is drawn as a bar; this one starts on the one
+    // amount the German experienced worker's route asks of this reader.
+    const answers: Profile = {
+      destination: "de", citizenship: "NG", situation: "offer", situation_country: "de", qualification: "none",
+      occupation_it: "yes", experience_5y: "2plus", salary_eur_year: "band_4",
+    };
+    const band = deriveBands(ds, "salary_eur_year").find((b) => b.id === answers.salary_eur_year)!;
+    expect(band.max, "precondition: a band with two edges").toBeDefined();
+    const rail = railFor(answers, "de-experienced-worker");
+    const drawn = bandLeft(rail);
+    expect(drawn, "the band is not drawn").not.toBeNull();
+    expect(ticksOf(rail).length, "precondition: the route asks one amount").toBe(1);
+    expect(rail).toContain(`€${band.min!.toLocaleString("en-US")}/year`);
+    // The band's left edge and the tick are the same string, not two roundings
+    // of one number.
+    expect(drawn![1]).toBe(ticksOf(rail)[0]);
+    expect(drawn![1]).toMatch(/^\d+\.\d{2}%$/);
   });
-
-  function bandBandMatch(h: string) { return bandLeft(h); }
 });
 
 describe("the rail says where the reader stands", () => {
@@ -113,7 +122,7 @@ describe("the rail says where the reader stands", () => {
     // A band wholly below says how far short, the way the gap note does.
     const below: Profile = { ...WALK, salary_eur_month: "band_5" };
     expect(deriveBands(ds, "salary_eur_month").find((b) => b.id === below.salary_eur_month)!.max).toBeLessThanOrEqual(5942);
-    expect(asksRowsOf(railFor(below, "nl-ict"))[0]).toMatch(/ · up to €[\d,.]+ short$/);
+    expect(asksRowsOf(railFor(below, "nl-ict"))[0]).toMatch(/ · up to €[\d,.]+\/month short$/);
     // A band that straddles one of the route's own amounts would say "crosses
     // the amount"; through the verdict no answer reaches it, because every
     // band is cut at every amount the dataset states.
@@ -129,7 +138,7 @@ describe("the rail says where the reader stands", () => {
     // The reader's band ends where the amount begins: the picture and the
     // words agree, and the words come from the same helper.
     expect(right).toBeLessThanOrEqual(tick + 0.01);
-    expect(rowsOf(html)[0]).toMatch(/up to €[\d,.]+ short/);
+    expect(rowsOf(html)[0]).toMatch(/up to €[\d,.]+\/month short/);
   });
 
   it("never draws a rail it cannot name", () => {

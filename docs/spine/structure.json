@@ -738,8 +738,13 @@
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/verdict/compose/card-blocks.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
@@ -2922,6 +2927,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/verdict-gap.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-gap.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-gap.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/verdict-history.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
@@ -4363,6 +4383,36 @@
     "exported": true
    },
    {
+    "name": "asksOrMoreHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "asksOrMore",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "upToShort",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ABOVE_THE_AMOUNT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "BELOW_THE_AMOUNT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CROSSES_THE_AMOUNT",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "LOWER_THRESHOLD_HINT",
     "kind": "const",
     "exported": true
@@ -4423,7 +4473,12 @@
     "exported": true
    },
    {
-    "name": "shortByLine",
+    "name": "shortByUpToLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "needsOrMoreLine",
     "kind": "fn",
     "exported": true
    },
@@ -6176,5 +6231,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "e60b22015b78afaf01d3842244241192c53b468b5699f0b6c355600acd5413c3"
+ "digest": "b57569f6870150072bdc7a23805fa194b9a2e874c7f4eb93673b23fa0a9f83a3"
 }
