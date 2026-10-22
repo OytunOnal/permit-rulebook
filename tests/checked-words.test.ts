@@ -8,11 +8,17 @@ import {
 } from "permit-rulebook-data";
 import { countryAddresses } from "../src/lib/country-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
-import { PRODUCT_NAME, TAGLINE, countryHeadline, promise, routesCheckerAsksAbout } from "../src/lib/copy.js";
+import {
+  PRODUCT_NAME, TAGLINE, countryHeadline, dataLedeOpen, dataMetaDescription, datasetDescription, promise,
+  routesCheckerAsksAbout,
+} from "../src/lib/copy.js";
+import { routeCounts } from "../src/lib/data-page.js";
 import { answersCheckedLine } from "../src/lib/screen.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
 import { DESK, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
-import { builtPages, drawnScreens, headingsOf, questionCards, walks, type ReaderPage } from "./reader-pages.js";
+import {
+  builtPages, drawnScreens, headingsOf, plainTextOf, questionCards, walks, type ReaderPage,
+} from "./reader-pages.js";
 
 /**
  * "Checked", not "scored" (#153; #151, rulings 2–5 and 17 of #92).
@@ -28,12 +34,6 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const routes = ds.countries.flatMap((c) => c.routes);
 const DATA_PAGE = "/data/index.html";
 
-const decode = (text: string): string => text
-  .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number(n)))
-  .replace(/&#x([0-9a-f]+);/gi, (_, n: string) => String.fromCodePoint(parseInt(n, 16)))
-  .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-  .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&");
-
 /**
  * Everything on a page a reader can read: its text, the words a screen reader
  * or a search result reads from attributes, and its structured data. Not its
@@ -44,8 +44,7 @@ function readerTextOf(html: string): string {
   const page = html.replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, " ");
   const attributes = [...page.matchAll(/\s(?:aria-label|alt|title|placeholder|content|data-[\w-]+)="([^"]*)"/gi)]
     .map((m) => m[1]!);
-  const text = page.replace(/<[^>]+>/g, " ");
-  return decode([...ld, ...attributes, text].join("\n")).split(/\s+/).join(" ").toLowerCase();
+  return plainTextOf([...ld, ...attributes, page].join("\n")).toLowerCase();
 }
 
 const avoidListWordsIn = (text: string): string[] =>
@@ -74,7 +73,7 @@ const answeredLinesOn = (pages: ReaderPage[]): string[] =>
 
 /** The scope line on each results card, as the card prints it. */
 const scopedLinesOf = (html: string): string[] =>
-  [...html.matchAll(/<div class="scoped">([^<]*)</g)].map((m) => decode(m[1]!));
+  [...html.matchAll(/<div class="scoped">([^<]*)</g)].map((m) => plainTextOf(m[1]!));
 /** A screen without its results cards' scope lines. */
 const withoutScopedLines = (html: string): string => html.replace(/<div class="scoped">[^<]*</g, "<");
 
@@ -91,11 +90,11 @@ describe("the walk's own precondition", () => {
 
 describe("the social card counts routes as the checker does", () => {
   const facts = socialCardFacts(ds, "2026-10-21", {
-    product: PRODUCT_NAME, tagline: TAGLINE, routes: routesCheckerAsksAbout,
+    product: PRODUCT_NAME, tagline: TAGLINE, routesLineOf: routesCheckerAsksAbout,
   });
 
   it("says how many routes there are and how many the checker asks about, from the dataset", () => {
-    expect(facts.routes).toBe(routesCheckerAsksAbout(routes.length, asked));
+    expect(facts.routesLine).toBe(routesCheckerAsksAbout(routes.length, asked));
     expect(socialCardHtml(facts, "")).toContain(routesCheckerAsksAbout(routes.length, asked));
   });
 
@@ -136,6 +135,15 @@ describe.skipIf(noBuild !== null)("every page the build draws", () => {
       expect(text, place).toBeDefined();
       expect(avoidListWordsIn(readerTextOf(text!)), place).not.toEqual([]);
     }
+    // Unchanged: each place reads what /data/'s own words compose from the
+    // dataset's counts, in the model's terms, which #151 leaves as they were.
+    const { scored, quotedOnly, total } = routeCounts(ds);
+    const countries = ds.countries.length;
+    expect(plainTextOf(places.lede!)).toContain(dataLedeOpen(scored, quotedOnly, countries));
+    expect(plainTextOf(places.meta!)).toBe(dataMetaDescription(scored, quotedOnly, countries));
+    expect((JSON.parse(places.ld!) as { description: string }).description)
+      .toBe(datasetDescription(total, scored, quotedOnly, countries));
+    expect(plainTextOf(places.routes!)).toMatch(new RegExp(`^${scored} scored, ${quotedOnly} quoted\\b`));
   });
 
   it("says the checked-against-your-answers form on no page: country and route pages carry the asks form", () => {
@@ -199,7 +207,7 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     let counted = 0;
     for (const screen of screens.filter((s) => results.has(s.where))) {
       const walk = results.get(screen.where)!;
-      const count = decode(screen.html.replace(/<[^>]+>/g, " ")).split(/\s+/).join(" ").match(countSentence());
+      const count = plainTextOf(screen.html).match(countSentence());
       if (!count) continue;
       counted++;
       expect([Number(count[1]), Number(count[2])], screen.where)

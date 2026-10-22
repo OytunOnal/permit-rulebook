@@ -163,7 +163,7 @@ describe("nothing from the dataset reaches the social card's markup (#25)", () =
     const wrecked = JSON.parse(JSON.stringify(ds)) as Dataset;
     wrecked.countries[0]!.name = "<img src=https://example.org/x>";
     const html = socialCardHtml(socialCardFacts(wrecked, "2026-10-19", {
-      product: "P", tagline: "T", routes: (total, asked) => `${total} ${asked}`,
+      product: "P", tagline: "T", routesLineOf: (total, asked) => `${total} ${asked}`,
     }), "");
     expect(html).not.toContain("<img");
     expect(html).toContain("&lt;img");

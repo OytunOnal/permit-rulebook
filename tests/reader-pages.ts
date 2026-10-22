@@ -3,7 +3,7 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, remainingQuestions, type Dataset, type Profile,
+  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, remainingQuestions, type Dataset, type Profile, type Question,
 } from "permit-rulebook-data";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
@@ -57,6 +57,24 @@ export interface Walk {
   order: string[];
 }
 
+/**
+ * The interview from `start` to its end: each question it still asks, in the
+ * order it asks them, answered by `answerOf`. Hands back every answer, and the
+ * fields answered after `start` in order. Throws where the interview does not
+ * end, so a walk never stops short of the verdict unnoticed.
+ */
+export function walkFrom(start: Profile, answerOf: (question: Question) => string): Walk {
+  const answers: Profile = { ...start };
+  const order: string[] = [];
+  for (let i = 0; i < 40; i++) {
+    const next = remainingQuestions(ds, answers)[0];
+    if (!next) return { answers, order };
+    answers[next.field] = answerOf(next);
+    order.push(next.field);
+  }
+  throw new Error(`precondition: the interview ends for ${JSON.stringify(start)}`);
+}
+
 /** A whole interview for every destination answer under every situation a
  * reader can hold: each question card and each results screen the dataset
  * can draw for them. */
@@ -65,15 +83,9 @@ export function walks(): Walk[] {
   const situations = fieldOptions(ds, SITUATION_FIELD).filter((o) => !o.is_unknown);
   for (const destination of fieldOptions(ds, DESTINATION_FIELD))
     for (const situation of situations) {
-      const answers: Profile = { [DESTINATION_FIELD]: destination.value, [SITUATION_FIELD]: situation.value };
-      const order = [DESTINATION_FIELD, SITUATION_FIELD];
-      for (let i = 0; i < 40; i++) {
-        const next = remainingQuestions(ds, answers)[0];
-        if (!next) break;
-        answers[next.field] = answerFor(next.field, next.options);
-        order.push(next.field);
-      }
-      out.push({ answers, order });
+      const start: Profile = { [DESTINATION_FIELD]: destination.value, [SITUATION_FIELD]: situation.value };
+      const rest = walkFrom(start, (q) => answerFor(q.field, q.options));
+      out.push({ answers: rest.answers, order: [DESTINATION_FIELD, SITUATION_FIELD, ...rest.order] });
     }
   return out;
 }
@@ -111,7 +123,7 @@ const DRAWN = 'JSON.stringify({ html: [".masthead-with-stamps", "#main"]'
 const seed = (walk: Walk) =>
   `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(walk.answers, walk.order, true))})`;
 
-async function drawn(site: PageOnSite, path: string, record: Walk | null): Promise<string> {
+async function screenHtmlOf(site: PageOnSite, path: string, record: Walk | null): Promise<string> {
   const { page, url } = site;
   await page.goto(url("/404.html"), 300);
   await page.evaluate(record ? seed(record) : "localStorage.clear()");
@@ -128,7 +140,7 @@ export interface DrawnResult extends ReaderPage {
 export async function drawnResults(site: PageOnSite): Promise<DrawnResult[]> {
   const results: DrawnResult[] = [];
   for (const walk of walks())
-    results.push({ where: `results for ${JSON.stringify(walk.answers)}`, html: await drawn(site, "/", walk), walk });
+    results.push({ where: `results for ${JSON.stringify(walk.answers)}`, html: await screenHtmlOf(site, "/", walk), walk });
   return results;
 }
 
@@ -146,9 +158,9 @@ export async function drawnScreens(site: PageOnSite): Promise<ReaderPage[]> {
     const elsewhere = all.find((w) => w.answers[DESTINATION_FIELD] !== code && w.answers[DESTINATION_FIELD] !== "all")!;
     for (const record of [null, elsewhere]) {
       const recorded = record ? "with another country's record" : "with no record";
-      screens.push({ where: `/?country=${code} ${recorded}`, html: await drawn(site, `/?country=${code}`, record) });
+      screens.push({ where: `/?country=${code} ${recorded}`, html: await screenHtmlOf(site, `/?country=${code}`, record) });
       const route = country.routes[0]!.id;
-      screens.push({ where: `/?route=${route} ${recorded}`, html: await drawn(site, `/?route=${route}`, record) });
+      screens.push({ where: `/?route=${route} ${recorded}`, html: await screenHtmlOf(site, `/?route=${route}`, record) });
     }
   }
   return screens;
@@ -170,12 +182,12 @@ export function plainTextOf(fragment: string): string {
 
 /** Our own words on a page: without the markup a reader never reads as text,
  * and without the authority's quotes, which are its words and never ours. */
-const unread = (html: string): string =>
+const ourWordsOf = (html: string): string =>
   html.replace(/<(script|style|svg|noscript|q|blockquote)\b[\s\S]*?<\/\1>/gi, " ");
 
 /** Every heading of a page — its title and each h1 to h6 — as text. */
 export function headingsOf(html: string): string[] {
-  return [...unread(html).matchAll(/<(title|h[1-6])\b[^>]*>([\s\S]*?)<\/\1>/gi)]
+  return [...ourWordsOf(html).matchAll(/<(title|h[1-6])\b[^>]*>([\s\S]*?)<\/\1>/gi)]
     .map((m) => squeeze(decode(m[2]!.replace(/<[^>]+>/g, ""))))
     .filter((h) => h !== "");
 }
@@ -194,7 +206,7 @@ const DESCRIPTION = /<meta\s+(?:name|property)="(?:description|og:description|tw
  */
 export function sentencesOf(html: string): string[] {
   const descriptions = [...html.matchAll(DESCRIPTION)].map((m) => m[1]!);
-  const blocks = unread(html).replace(BLOCK, "\n").replace(/<[^>]+>/g, "").split("\n");
+  const blocks = ourWordsOf(html).replace(BLOCK, "\n").replace(/<[^>]+>/g, "").split("\n");
   return [...descriptions, ...blocks]
     .map((block) => squeeze(decode(block)))
     .flatMap((block) => block.split(/(?<=[.!?][”"’)]?)\s+(?=\S)/))

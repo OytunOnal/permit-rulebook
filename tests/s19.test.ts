@@ -3,14 +3,17 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  SITUATION_FIELD, deriveBands, evaluate, fieldOptions, isScored, remainingQuestions,
+  SITUATION_FIELD, deriveBands, evaluate, fieldOptions, isScored, phraseAtStartOf, remainingQuestions, scopeWords,
   situationsAsked, type Dataset, type Profile,
 } from "permit-rulebook-data";
+import { esc } from "../src/lib/reason.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { notScoredFor, notScoredMarkHtml, unscoredVerdict } from "../src/lib/situations.js";
 import { precondHtml } from "../src/lib/card.js";
-import { NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "../src/lib/copy.js";
+import {
+  NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, countryHeadline, notCheckedLine, notCheckedQuotedLine,
+} from "../src/lib/copy.js";
 import { mastheadFor } from "../src/lib/screen.js";
 import { countryAddresses, countryPage } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
@@ -214,10 +217,11 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
   it("France's page says 7 routes, the checker asks about 5, and the researcher page renders through the quoted path", () => {
     const address = countryAddresses(ds).find((a) => a.country.code === "FR")!;
     const page = countryPage(ds, address);
-    expect(page.html).toMatch(/<h1>[^<]*France: 7 routes\. The checker asks about 5\./);
+    expect(page.html).toContain(`<h1>${esc(countryHeadline(phraseAtStartOf("FR"), 7, 5))}`);
     const researcher = routePages(ds, "2026-09-16").find((p) => p.path === "/france/talent-researcher");
     expect(researcher).toBeDefined();
-    expect(textOf(researcher!.html)).toContain("quoted and dated · the checker does not ask about it");
+    expect(textOf(researcher!.html))
+      .toContain(scopeWords("rules-quoted-nothing-asked", { stated: 0, noted: 0 }, { reader: "not-answered" }));
     expect(textOf(researcher!.html)).toContain("Avoir une convention d'accueil souscrite");
   });
 

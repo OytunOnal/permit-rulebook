@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
+import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 
 /**
  * The interview walked in headless Chrome over the built page: what the
@@ -141,6 +142,12 @@ async function fieldOnScreen(page: BrowserPage): Promise<string> {
   if (!field) throw new Error(`no field for the question "${label}"`);
   return field;
 }
+
+/** The script that puts a record of `answers` on the device, asked in the
+ * order `history` gives (the answers' own order by default), as the page
+ * writes one. */
+export const recordSeedScript = (answers: Profile, history: string[] = Object.keys(answers)): string =>
+  `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(answers, history))})`;
 
 /** The interview's first screen, with nothing on the record. */
 export async function openCold({ page, url }: PageOnSite): Promise<void> {

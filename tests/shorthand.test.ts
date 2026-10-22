@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, type Dataset, type Profile } from "permit-rulebook-data";
 import { countryPages } from "../src/lib/country-page.js";
 import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import { routePages } from "../src/lib/route-page.js";
+import { recordSeedScript, skipReason, warnNotWalked, withSite, type PageOnSite } from "./browser-walk.js";
 
 /**
  * #156 (#151, ruling 8): shorthand is explained the first time each page uses
@@ -24,7 +22,6 @@ import { routePages } from "../src/lib/route-page.js";
  */
 
 const ds = dataset as unknown as Dataset;
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 /** One page as a reader reads it: our prose, and the quotes it shows. */
 interface Page { name: string; prose: string; quotes: string[] }
@@ -120,22 +117,8 @@ describe("shorthand is explained on first use, on every page (#156)", () => {
 });
 
 /** The results screen is drawn in the browser, from a record on the device. */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write(`\n  !! THE RESULTS SCREEN'S SHORTHAND WAS NOT READ: ${skipped}.\n     Run: npm run build && npm test\n\n`);
-
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
+const skipped = skipReason();
+if (skipped) warnNotWalked("the results screen's shorthand", skipped);
 
 /** Three readers whose results carry the list's tokens: German citations and
  * the shortage door, the Dutch statements, and all four countries at once. */
@@ -158,11 +141,6 @@ const READERS: Record<string, Profile> = {
   },
 };
 
-const seed = (answers: Profile): string =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-
 /** The results screen's text, every block apart and the quotes taken out. */
 const READ_RESULTS = `(() => {
   const root = document.getElementById("main").cloneNode(true);
@@ -173,29 +151,24 @@ const READ_RESULTS = `(() => {
 
 describe.skipIf(skipped !== null)("the results screen explains its shorthand the same way (#156)", () => {
   it("each reader's results explain each token on the list at first use, a citation as the route page does; no quote is glossed", async () => {
-    const server = await serve(dist);
-    try {
-      const read = await withBrowser(async (page: BrowserPage) => {
-        const out: Record<string, { state: string; prose: string; quotes: string[] }> = {};
-        for (const [name, answers] of Object.entries(READERS)) {
-          await page.goto(server.url("/"), 300);
-          await page.evaluate(seed(answers));
-          await page.goto(server.url("/"), 1400);
-          out[name] = JSON.parse(await page.evaluate(READ_RESULTS));
-          await page.evaluate("localStorage.clear()");
-        }
-        return out;
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, { state: string; prose: string; quotes: string[] }>;
+    const read = await withSite(async ({ page, url }: PageOnSite) => {
+      const out: Record<string, { state: string; prose: string; quotes: string[] }> = {};
+      for (const [name, answers] of Object.entries(READERS)) {
+        await page.goto(url("/"), 300);
+        await page.evaluate(recordSeedScript(answers));
+        await page.goto(url("/"), 1400);
+        out[name] = JSON.parse(await page.evaluate(READ_RESULTS));
+        await page.evaluate("localStorage.clear()");
+      }
+      return out;
+    }, { viewport: { width: 1100, height: 1200 }, mobile: false });
 
-      for (const [name, r] of Object.entries(read)) expect(r.state, `${name} did not reach a result`).toBe("results");
-      const pages = Object.entries(read).map(([name, r]) => pageOf(`results: ${name}`, r.prose, r.quotes));
-      // The German reader's cards cite the Residence Act, and the shortage door is open on one.
-      const act = ABBREVIATIONS.find(([token]) => token === "AufenthG")!;
-      expect(pages[0]!.prose).toMatch(addedPattern(...act));
-      expect(pages[0]!.prose).toMatch(/\bISCO-08\b/);
-      expect(pages.flatMap(findingsOn)).toEqual([]);
-    } finally {
-      server.close();
-    }
+    for (const [name, r] of Object.entries(read)) expect(r.state, `${name} did not reach a result`).toBe("results");
+    const pages = Object.entries(read).map(([name, r]) => pageOf(`results: ${name}`, r.prose, r.quotes));
+    // The German reader's cards cite the Residence Act, and the shortage door is open on one.
+    const act = ABBREVIATIONS.find(([token]) => token === "AufenthG")!;
+    expect(pages[0]!.prose).toMatch(addedPattern(...act));
+    expect(pages[0]!.prose).toMatch(/\bISCO-08\b/);
+    expect(pages.flatMap(findingsOn)).toEqual([]);
   }, 240000);
 });

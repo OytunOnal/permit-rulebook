@@ -78,12 +78,12 @@ describe("no reader sees a route slot", () => {
 const SHORTAGE = "occupation_shortage";
 const SLOT = `${SLOT_OPENING}de-chancenkarte}`;
 
-function written(): Dataset {
-  const seen = JSON.parse(JSON.stringify(ds)) as Dataset;
-  const field = seen.fields.find((f) => f.id === SHORTAGE)!;
+function datasetWithShortageSlots(): Dataset {
+  const slotted = JSON.parse(JSON.stringify(ds)) as Dataset;
+  const field = slotted.fields.find((f) => f.id === SHORTAGE)!;
   field.label = `Is your occupation on the shortage list, which ${SLOT} does not read?`;
   field.learn!.label = `Check the shortage groups, which ${SLOT} does not read`;
-  return seen;
+  return slotted;
 }
 
 /** Deniz, unsure whether his occupation is on Germany's shortage list. */
@@ -98,26 +98,26 @@ describe("a slot in a question's label or help is drawn filled", () => {
   const filled = fillRouteSlots(SLOT, ds);
 
   it("on its question card", () => {
-    const seen = written();
-    const question = deriveQuestions(seen).find((q) => q.field === SHORTAGE)!;
-    const html = questionCardHtml({ dataset: seen, question, answers: {}, asked: [], editing: null, total: 10 });
+    const slotted = datasetWithShortageSlots();
+    const question = deriveQuestions(slotted).find((q) => q.field === SHORTAGE)!;
+    const html = questionCardHtml({ dataset: slotted, question, answers: {}, asked: [], editing: null, total: 10 });
     expect(html).not.toContain(SLOT_OPENING);
     expect(html.split(filled).length - 1, "the label and the help, each filled").toBe(2);
   });
 
   it("in a results card's learn box", () => {
-    const seen = written();
-    const r = evaluate(seen, UNSURE).find((x) => x.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml({ ds: seen, answers: UNSURE }, r);
+    const slotted = datasetWithShortageSlots();
+    const r = evaluate(slotted, UNSURE).find((x) => x.route.id === "de-blue-card-shortage")!;
+    const html = learnBoxHtml({ ds: slotted, answers: UNSURE }, r);
     expect(html, "the shortage card draws no learn box").not.toBe("");
     expect(html).not.toContain(SLOT_OPENING);
     expect(html).toContain(filled);
   });
 
   it("on the route page's asks block", () => {
-    const seen = written();
-    const address = routeAddresses(seen).find((a) => a.route.id === "de-blue-card-shortage")!;
-    const { html } = routePage(seen, address);
+    const slotted = datasetWithShortageSlots();
+    const address = routeAddresses(slotted).find((a) => a.route.id === "de-blue-card-shortage")!;
+    const { html } = routePage(slotted, address);
     expect(html).not.toContain(SLOT_OPENING);
     expect(html).toContain(filled);
   });

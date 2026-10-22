@@ -32,7 +32,7 @@ export interface SocialCardFacts {
    * product's words with the dataset's numbers in it, so the sidecar notices
    * a change to either.
    */
-  routes: string;
+  routesLine: string;
   /** The newest read date across every value — the stamp's own date. */
   read: string;
   headline: string;
@@ -53,12 +53,12 @@ export const CARD_HEADLINE = "Which work-permit routes could fit?";
  */
 export function socialCardFacts(
   dataset: Dataset, newestReadDate: string,
-  words: { product: string; tagline: string; routes: (total: number, asked: number) => string },
+  words: { product: string; tagline: string; routesLineOf: (total: number, asked: number) => string },
 ): SocialCardFacts {
   const routes = dataset.countries.flatMap((c) => c.routes);
   return {
     countries: dataset.countries.map((c) => c.name),
-    routes: words.routes(routes.length, routes.filter(isScored).length),
+    routesLine: words.routesLineOf(routes.length, routes.filter(isScored).length),
     read: newestReadDate,
     headline: CARD_HEADLINE,
     tagline: words.tagline,
@@ -109,7 +109,7 @@ html, body { margin: 0; padding: 0; }
   </div>
   <div class="foot">
     <span>${esc(facts.countries.join(" · "))}</span>
-    <span>${esc(facts.routes)}</span>
+    <span>${esc(facts.routesLine)}</span>
     <span>every value with its official sentence · <b>checked daily</b></span>
   </div>
 </div>`;

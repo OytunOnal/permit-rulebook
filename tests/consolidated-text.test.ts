@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
@@ -10,9 +9,10 @@ import {
 import { OFFICIAL_PAGE, consolidatedTextOn } from "../src/lib/copy.js";
 import { closedRowHtml, noticeHtml, sourcedCaveatHtml } from "../src/lib/card.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { RECORD_VERSION } from "../src/lib/record.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
+import { recordSeedScript, skipReason, warnNotWalked, withSite, type PageOnSite } from "./browser-walk.js";
+import { builtPages } from "./reader-pages.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -44,7 +44,7 @@ const linksIn = (html: string, where: string): Link[] =>
 
 /** The decision, over every link given: the ones to a consolidated text, each
  * carrying its label and not the authority's. Hands back how many it held. */
-function holdsTheLabel(links: Link[]): number {
+function checkedConsolidatedLinkCount(links: Link[]): number {
   const held = links.flatMap((l) => {
     const host = consolidatedHostOf(l.href);
     return host ? [{ ...l, host }] : [];
@@ -56,37 +56,14 @@ function holdsTheLabel(links: Link[]): number {
   return held.length;
 }
 
-/** Every page the build wrote. */
-function builtPages(): { path: string; html: string }[] {
-  const out: { path: string; html: string }[] = [];
-  const walk = (dir: string) => {
-    for (const name of readdirSync(dir)) {
-      const full = join(dir, name);
-      if (statSync(full).isDirectory()) walk(full);
-      else if (name.endsWith(".html")) out.push({ path: full.slice(dist.length), html: readFileSync(full, "utf8") });
-    }
-  };
-  walk(dist);
-  return out;
-}
-
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write(`\n  !! #158's pages were not walked: ${skipped}.\n     Run: npm run build && npm test\n\n`);
+const skipped = skipReason();
+if (skipped) warnNotWalked("#158's pages", skipped);
 
 describe.skipIf(!existsSync(dist))("every page the build draws", () => {
   it("every link to a consolidated text carries that label, and none the authority's", () => {
     const pages = builtPages();
     expect(pages.length, "no built page").toBeGreaterThan(0);
-    const held = holdsTheLabel(pages.flatMap((p) => linksIn(p.html, p.path)));
+    const held = checkedConsolidatedLinkCount(pages.flatMap((p) => linksIn(p.html, p.where)));
     // The German statutes are read at buzer.de, so the route pages link there.
     expect(held, "no built page links to a consolidated text").toBeGreaterThan(0);
   });
@@ -98,31 +75,31 @@ describe("every question card", () => {
       dataset: ds, question, answers: {}, asked: [], editing: null, total: 10,
     }), question.field));
     // The shortage question's learn link opens the statute at buzer.de.
-    expect(holdsTheLabel(links), "no question card links to a consolidated text").toBeGreaterThan(0);
+    expect(checkedConsolidatedLinkCount(links), "no question card links to a consolidated text").toBeGreaterThan(0);
   });
 });
 
 describe("a notice that names no page of its own links its source by its kind", () => {
   /** The shipped dataset with one route's notice quoted from a consolidated
    * text and given no learn link: the label must come from the source's host. */
-  const written = (): { seen: Dataset; route: string } => {
-    const seen = JSON.parse(JSON.stringify(ds)) as Dataset;
-    const notice = seen.notices!.find((n) => (n.routes ?? []).length > 0)!;
+  const datasetWithConsolidatedNotice = (): { dataset: Dataset; route: string } => {
+    const altered = JSON.parse(JSON.stringify(ds)) as Dataset;
+    const notice = altered.notices!.find((n) => (n.routes ?? []).length > 0)!;
     notice.source.source_url = `https://${CONSOLIDATED_TEXT_HOSTS[0]}/18g_AufenthG.htm`;
     delete notice.learn;
-    return { seen, route: notice.routes![0]! };
+    return { dataset: altered, route: notice.routes![0]! };
   };
 
   it("on the results card", () => {
-    const { seen } = written();
-    const links = seen.notices!.flatMap((n) => linksIn(noticeHtml(n), n.id));
-    expect(holdsTheLabel(links)).toBeGreaterThan(0);
+    const { dataset: altered } = datasetWithConsolidatedNotice();
+    const links = altered.notices!.flatMap((n) => linksIn(noticeHtml(n), n.id));
+    expect(checkedConsolidatedLinkCount(links)).toBeGreaterThan(0);
   });
 
   it("on the route page it stands on", () => {
-    const { seen, route } = written();
-    const address = routeAddresses(seen).find((a) => a.route.id === route)!;
-    expect(holdsTheLabel(linksIn(routePage(seen, address).html, route))).toBeGreaterThan(0);
+    const { dataset: altered, route } = datasetWithConsolidatedNotice();
+    const address = routeAddresses(altered).find((a) => a.route.id === route)!;
+    expect(checkedConsolidatedLinkCount(linksIn(routePage(altered, address).html, route))).toBeGreaterThan(0);
   });
 });
 
@@ -135,7 +112,7 @@ describe("a card's foot links the route's page by its kind", () => {
     r.route.info_url = `https://${CONSOLIDATED_TEXT_HOSTS[0]}/21_AufenthG.htm`;
     const html = closedRowHtml(r);
     expect(html, "fr-ict is not closed to this reader").not.toBe("");
-    expect(holdsTheLabel(linksIn(html, "fr-ict"))).toBe(1);
+    expect(checkedConsolidatedLinkCount(linksIn(html, "fr-ict"))).toBe(1);
   });
 });
 
@@ -193,12 +170,6 @@ describe("no word claims an official page over a consolidated text (#151's fix r
   });
 });
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
-
 /** Deniz, unsure whether his occupation is on Germany's shortage list: his
  * shortage Blue Card is on hold with the learn link to the statute open. */
 const UNSURE: Profile = {
@@ -208,34 +179,24 @@ const UNSURE: Profile = {
   age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 };
 
-const seed = (answers: Record<string, string>) =>
-  `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
-    version: RECORD_VERSION, answers, history: Object.keys(answers),
-  }))})`;
-
 const RESULT_LINKS = 'JSON.stringify([...document.querySelectorAll("#main a")].map((a) => ({'
   + ' href: a.getAttribute("href"), text: a.textContent })))';
 
 describe.skipIf(skipped !== null)("the results screen, as drawn", () => {
   it("every link to a consolidated text carries that label, and none the authority's", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
-        await page.evaluate(seed(UNSURE as Record<string, string>));
-        await page.goto(server.url("/"), 1600);
-        return {
-          state: await page.evaluate('document.getElementById("app").dataset.state'),
-          links: (JSON.parse(await page.evaluate(RESULT_LINKS)) as Link[]).map((l) => ({ ...l, where: "results" })),
-          problems: page.problems(),
-        };
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as { state: string; links: Link[]; problems: string[] };
+    const seen = await withSite(async ({ page, url }: PageOnSite) => {
+      await page.goto(url("/"), 300);
+      await page.evaluate(recordSeedScript(UNSURE));
+      await page.goto(url("/"), 1600);
+      return {
+        state: await page.evaluate('document.getElementById("app").dataset.state'),
+        links: (JSON.parse(await page.evaluate(RESULT_LINKS)) as Link[]).map((l) => ({ ...l, where: "results" })),
+        problems: page.problems(),
+      };
+    }, { viewport: { width: 1100, height: 1200 }, mobile: false });
 
-      expect(seen.problems).toEqual([]);
-      expect(seen.state).toBe("results");
-      expect(holdsTheLabel(seen.links), "the results screen links to no consolidated text").toBeGreaterThan(0);
-    } finally {
-      server.close();
-    }
+    expect(seen.problems).toEqual([]);
+    expect(seen.state).toBe("results");
+    expect(checkedConsolidatedLinkCount(seen.links), "the results screen links to no consolidated text").toBeGreaterThan(0);
   }, 180000);
 });
