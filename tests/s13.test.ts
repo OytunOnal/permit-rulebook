@@ -3,12 +3,12 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  COPIED, COPY_ADDRESS_LABEL, COUNTRIES, FEEDBACK, FEEDBACK_DOORS, FEEDBACK_EYEBROW, FEEDBACK_FOOTER_ROW,
-  FEEDBACK_GITHUB_HEADING, FEEDBACK_GITHUB_LINE, FEEDBACK_LEDE, FEEDBACK_NOTE, FEEDBACK_OWN_APP,
-  FEEDBACK_OWN_APP_LEAD,
-  RESULT_FEEDBACK_ASK, TRACKER_NEW_NEED, TRACKER_WRONG_VALUE,
-  feedbackTemplateLine, resultFeedbackLine,
-} from "../src/lib/copy.js";
+  COPIED, COPY_ADDRESS_LABEL, FEEDBACK_DOORS, FEEDBACK_EYEBROW, FEEDBACK_GITHUB_HEADING, FEEDBACK_GITHUB_LINE,
+  FEEDBACK_LEDE, FEEDBACK_NOTE, FEEDBACK_OWN_APP, FEEDBACK_OWN_APP_LEAD, TRACKER_NEW_NEED, TRACKER_WRONG_VALUE,
+  feedbackTemplateLine,
+} from "../src/lib/copy/feedback.js";
+import { COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW } from "../src/lib/copy/frame.js";
+import { RESULT_FEEDBACK_ASK, resultFeedbackLine } from "../src/lib/copy/verdict.js";
 import {
   FEEDBACK_ADDRESS, GMAIL_COMPOSE_URL, NEW_NEED_URL, SPONSOR_URL, TRACKER_URL, absolute, url,
 } from "../src/lib/site.js";
@@ -19,6 +19,10 @@ import { feedbackGmail, feedbackMailto, feedbackPage } from "../src/lib/feedback
 import { countryLinks, footerFacts, navCountries } from "../src/lib/country-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { serialize } from "../src/lib/record.js";
+import { replayRecord } from "../src/lib/scope.js";
+import { esc, escAttr } from "../src/lib/reason.js";
+import { verdictHtml } from "../src/lib/verdict/index.js";
+import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
 /**
@@ -54,7 +58,7 @@ const gmails = (html: string): string[] =>
   [...html.matchAll(/href="(https:\/\/mail\.google\.com\/[^"]*)"/g)].map((m) => m[1]!.split("&amp;").join("&"));
 
 describe("the page, and the three doors on it", () => {
-  it("is a built page at /feedback/, in the words copy.ts holds", () => {
+  it("is a built page at /feedback/, in the words the copy module holds", () => {
     expect(page.path).toBe(FEEDBACK_PATH);
     // Each of the page's own sentences is the copy's, to the character: the
     // eyebrow, the h1, the lede and the note are read back from the markup
@@ -377,11 +381,14 @@ describe("the map and the sitemap", () => {
 
 /** The line under the verdict, and where it may never appear. */
 describe("the results line", () => {
-  it("is built from copy.ts", () => {
-    // The one source assertion this suite makes: the words live in copy.ts and
-    // the template takes them from there. Where the line sits, and what it
-    // says, the browser cases below read off the screen.
-    expect(read("src/pages/index.astro")).toContain("resultFeedbackLine(");
+  it("is built from the copy module", () => {
+    // The words live in the copy module and the verdict takes them from
+    // there, on both layouts, with the one link and nothing else. Where the
+    // line sits, and what it says, the browser cases below read off the
+    // screen.
+    const line = resultFeedbackLine(`<a href="${escAttr(url(FEEDBACK_PATH))}">${esc(FEEDBACK)}</a>`);
+    for (const record of [frRecord, allRecord])
+      expect(verdictHtml(verdictFor(record))).toContain(line);
   });
 
   it("is nowhere in the built first paint: a cold / is a question, not a result", () => {
@@ -419,6 +426,31 @@ const seed = (profile: Profile): string =>
   `localStorage.setItem("permit-rulebook.record.v1", ${
     JSON.stringify(serialize(profile, Object.keys(profile)))})`;
 
+/** The two layouts the walks below read: the flat one, with no country
+ * sections, and the four-country one, a section per country. */
+const LAYOUTS = [["one country", frRecord, "/?country=fr", 0], ["four countries", allRecord, "/", 4]] as const;
+
+describe("the results line, from the verdict", () => {
+  for (const [name, profile, , sections] of LAYOUTS)
+    it(`the line is under the strip on the ${name} layout, and its link is the page`, () => {
+      const verdict = verdictFor(profile);
+      // The layout this case is named for is the one the verdict composes.
+      const drawn = verdict.layout.kind === "countries" ? verdict.layout.sections.length : 0;
+      expect(drawn, `${name}: ${drawn} country sections`).toBe(sections);
+      // The line is the last thing in the body, after the last section and
+      // after the last country's details; the sentence is the copy's, whole,
+      // full stop included: the question and the one word that answers it,
+      // the word a link to the page.
+      const body = verdictHtml(verdict);
+      const link = `<a href="${escAttr(url(FEEDBACK_PATH))}">${esc(FEEDBACK)}</a>`;
+      expect(body.trimEnd().endsWith(`<p class="say">${resultFeedbackLine(link)}</p>`), "the line is not the last thing in the results body")
+        .toBe(true);
+      expect(resultFeedbackLine(FEEDBACK)).toBe(`${RESULT_FEEDBACK_ASK} ${FEEDBACK}.`);
+      // No mailto: inside the results body: the door in it is a link to a page.
+      expect(body, "a mailto: inside the results body").not.toContain("mailto:");
+    });
+});
+
 const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
@@ -448,54 +480,45 @@ const SAY = 'JSON.stringify((() => {'
   + ' const say = main.querySelector(".say");'
   + ' const link = say && say.querySelector("a");'
   + ' return { present: !!say,'
-  // The end of the body: both layouts write it last into main, after the
-  // last section and after the last country's details.
-  + '   isLast: !!(say && main.lastElementChild === say),'
-  + '   text: say ? say.textContent.split(/\\s+/).join(" ").trim() : "",'
-  + '   href: link ? link.getAttribute("href") : "",'
   + '   height: link ? Math.round(link.getBoundingClientRect().height) : 0,'
-  + '   sections: main.querySelectorAll(".country-sec").length,'
-  + '   mailtos: [...document.querySelectorAll("a[href^=\'mailto:\']")].map((a) => a.getAttribute("href")),'
-  + '   mainMailtos: [...main.querySelectorAll("a[href^=\'mailto:\']")].map((a) => a.getAttribute("href")) };'
+  + '   mailtos: [...document.querySelectorAll("a[href^=\'mailto:\']")].map((a) => a.getAttribute("href")) };'
   + '})())';
 
 describe.skipIf(skipped !== null)("the walk: a record, a results screen, the line", () => {
-  for (const [name, profile, arrival, sections] of [
-    // A saved record and an arrival that names the country it is already for:
-    // the flat, one-country layout, which has no country sections at all.
-    ["one country", frRecord, "/?country=fr", 0],
-    // And the multi-country layout, which an arrival cannot produce: one
-    // <details class="country-sec"> per country shown.
-    ["four countries", allRecord, "/", 4],
-  ] as const)
+  // A saved record and an arrival that names the country it is already for:
+  // the flat, one-country layout, which has no country sections at all. And
+  // the multi-country layout, which an arrival cannot produce: one
+  // <details class="country-sec"> per country shown.
+  for (const [name, profile, arrival] of LAYOUTS)
     it(`the line is under the strip on the ${name} layout, and its link is the page`, async () => {
       const server = await serve(dist);
       try {
-        const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
+        const seen = await withBrowser(async (page_: BrowserPage) => {
           await page_.goto(server.url("/"), 500);
           await page_.evaluate(seed(profile));
           await page_.goto(server.url(arrival), 1600);
-          return page_.evaluate(SAY);
-        }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as {
-          present: boolean; isLast: boolean; text: string; href: string;
-          height: number; sections: number; mailtos: string[]; mainMailtos: string[];
+          return {
+            say: JSON.parse(await page_.evaluate(SAY)),
+            // The record as the page restores it: replayed through the
+            // interview, which drops what it would not ask (France never
+            // asks the five-year question).
+            painted: JSON.parse(await page_.evaluate(paintedAsComposedScript(
+              verdictFor(replayRecord(ds, profile, Object.keys(profile)).answers),
+            ))),
+          };
+        }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as {
+          say: { height: number; mailtos: string[] }; painted: typeof PAINTED_AS_COMPOSED;
         };
 
-        // The layout this case is named for is the one that rendered.
-        expect(seen.sections, `${name}: ${seen.sections} country sections`).toBe(sections);
-        expect(seen.present, "no feedback line on the results screen").toBe(true);
-        expect(seen.isLast, "the line is not the last thing in the results body").toBe(true);
-        // The sentence is the copy's, whole, full stop included: the question
-        // and the one word that answers it.
-        expect(seen.text).toBe(resultFeedbackLine(FEEDBACK));
-        expect(seen.text).toBe(`${RESULT_FEEDBACK_ASK} ${FEEDBACK}.`);
-        expect(seen.href).toBe(url(FEEDBACK_PATH));
-        expect(seen.height, `the link is ${seen.height} px`).toBeGreaterThanOrEqual(44);
+        // The layout, where the line sits, its words and its link are the
+        // verdict's ("the results line, from the verdict"); the page paints
+        // that verdict, and the link is a tap target.
+        expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
+        expect(seen.say.height, `the link is ${seen.say.height} px`).toBeGreaterThanOrEqual(44);
         // No mailto: anywhere on a results screen: the door in the body is a
         // link to a page, and the footer stopped carrying the address on the
         // s13 walk. Nothing here could carry the record into a mail.
-        expect(seen.mailtos, "a mailto: on the results screen").toEqual([]);
-        expect(seen.mainMailtos, "a mailto: inside the results body").toEqual([]);
+        expect(seen.say.mailtos, "a mailto: on the results screen").toEqual([]);
       } finally {
         server.close();
       }

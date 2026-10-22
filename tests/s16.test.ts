@@ -4,9 +4,9 @@ import { proseProvenance, type Dataset } from "permit-rulebook-data";
 import { dataPage, routeCounts } from "../src/lib/data-page.js";
 import { routePages } from "../src/lib/route-page.js";
 import {
-  DATA_LEDE_CLOSE_TAIL, DATA_LEDE_OPEN, FEEDBACK_DOORS, FRESHNESS_HUMAN_HAND, PROSE_OURS_TAIL, WRONG_DOOR_LABEL,
-  dataLedeClose, dataMetaDescription,
-} from "../src/lib/copy.js";
+  DATA_LEDE_CLOSE_TAIL, DATA_LEDE_OPEN, FRESHNESS_HUMAN_HAND, PROSE_OURS_TAIL, dataLedeClose, dataMetaDescription,
+} from "../src/lib/copy/data-page.js";
+import { FEEDBACK_DOORS, WRONG_DOOR_LABEL } from "../src/lib/copy/feedback.js";
 import { REPO_DATA, TRACKER_URL, url } from "../src/lib/site.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 
@@ -127,8 +127,8 @@ describe("/data/ in the reader's words", () => {
    * (2026-09-16); and once the door was there, the human's read found the
    * sentence presupposed a wrong ("1" of three, the same day). So it ends
    * "Take it, check it, and if something is wrong, tell us." with the door on
-   * the last two words. Composed in copy.ts the way the results line is: the
-   * words arrive already wrapped, and the copy closes the sentence.
+   * the last two words. Composed in the copy module the way the results line
+   * is: the words arrive already wrapped, and the copy closes the sentence.
    */
   it("the lede's last sentence does not presuppose a wrong, and its last words are the door", () => {
     const lede = /<p class="lede">([\s\S]*?)<\/p>/.exec(html)![1]!;

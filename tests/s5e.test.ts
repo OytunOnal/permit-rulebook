@@ -1,16 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   deriveBands, evaluate, fieldOptions, hasUnbalancedQuotationMark, quotedSpans, resultProvenance,
   routeReadings, routeStatements,
   type Dataset, type FieldDef, type Profile, type Route, type RouteResult,
 } from "permit-rulebook-data";
-import { carveOutHtml, caveatHtml, precondHtml, provenanceHtml, readingHtml } from "../src/lib/card.js";
-import { whyHtml } from "../src/lib/reason.js";
+import {
+  blocksIn, cardOn, cardsIn, everyCardIn, groupsIn, placed, verdictFor, verdictOn, withoutGlosses,
+} from "./verdict-cards.js";
+import { OUR_READING_HEADING } from "../src/lib/copy/verdict.js";
 
 const ds = dataset as unknown as Dataset;
 const routes = (): Route[] => ds.countries.flatMap((c) => c.routes);
+let blankVerdict: ReturnType<typeof verdictFor> | undefined;
+/** A route's card on the verdict of a reader who has answered nothing. */
+const blankCard = (id: string): string => cardOn((blankVerdict ??= verdictFor({})), id);
 const routeOf = (id: string): Route => routes().find((r) => r.id === id)!;
 
 /**
@@ -20,13 +24,22 @@ const routeOf = (id: string): Route => routes().find((r) => r.id === id)!;
  * these, not over the fields they read — "the field is present" is what the
  * dataset's own note field satisfied for 39 quotes nobody could check (s5e).
  */
-const cardProse = (r: RouteResult, answers: Profile): string =>
-  // Every block reads the reader's answers since s7: a condition the authority
-  // sets aside for their passport leaves the card, the carve-out takes its
-  // place, and the quote list follows the card. Composing it any other way here
-  // would check a card the page does not render.
-  whyHtml(ds, r, answers) + precondHtml({ ds, answers }, r.route) + carveOutHtml({ ds, answers }, r.route) +
-  caveatHtml({ ds, answers }, r.route) + readingHtml(r.route) + provenanceHtml({ ds, answers }, r);
+/** Every card the verdict draws for these answers, with the result it was
+ * drawn from: every block reads the reader's answers since s7 — a condition
+ * the authority sets aside for their passport leaves the card, the carve-out
+ * takes its place, and the quote list follows the card — so the cards are
+ * read as the verdict draws them, never composed here. */
+function* cardsFor(answers: Profile): Generator<{ r: RouteResult; answers: Profile; html: string }> {
+  const results = evaluate(ds, answers);
+  for (const card of everyCardIn(verdictFor(answers)))
+    yield { r: results.find((x) => x.route.id === card.route)!, answers, html: card.html };
+}
+
+/** The card blocks by the piece that draws them. */
+const precondOf = (card: string): string => blocksIn(card, "precond", "precond asked");
+const caveatsOf = (card: string): string => blocksIn(card, "caveat", "caveat nosrc");
+const readingOf = (card: string): string => blocksIn(card, "caveat ours");
+const sourcesOf = (card: string): string => blocksIn(card, "srcs");
 
 /** The provenance list — the one place an authority's words may appear. */
 const sourceLines = (html: string): string[] =>
@@ -66,7 +79,7 @@ function* generatedCards(seed: number, runs: number, answerProb = 0.7) {
         const vals = optionValues(def);
         p[def.id] = vals[Math.floor(rand() * vals.length)];
       }
-    for (const r of evaluate(ds, p)) yield { r, answers: p, html: cardProse(r, p) };
+    yield* cardsFor(p);
   }
 }
 
@@ -109,17 +122,17 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
 
   it("some routes carry our own reading, and it renders under its own heading", () => {
     expect(withReadings().length).toBeGreaterThan(0);
-    const html = readingHtml(withReadings()[0]);
+    const html = readingOf(blankCard(withReadings()[0].id));
     // "Our reading" is the reader's phrase and belongs here. The dataset's own
     // vocabulary does not: a stranger owes `modelling`, `readings` and
     // `statement` nothing, and they were all names for this block at some
     // point in two days.
-    expect(html).toMatch(/Our reading, not the authority's words/i);
+    expect(html).toContain(OUR_READING_HEADING);
     expect(html).not.toMatch(/\bmodelling\b|\breadings\b|\bstatements?\b/i);
   });
 
   it("a route that offers no reading renders nothing at all", () => {
-    expect(readingHtml(routeOf("de-blue-card-general"))).toBe("");
+    expect(readingOf(blankCard("de-blue-card-general"))).toBe("");
   });
 
   it("a reading never renders as an authority's words, in any state", () => {
@@ -128,11 +141,11 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
         // Not under "Also required", not under "The page also says",
         // and never inside the quote list where every other line is somebody
         // else's sentence.
-        expect(precondHtml({ ds, answers: {} }, r.route), `${r.route.id}:${s.id}`).not.toContain(s.text);
-        expect(caveatHtml({ ds, answers: {} }, r.route), `${r.route.id}:${s.id}`).not.toContain(s.text);
+        expect(precondOf(html), `${r.route.id}:${s.id}`).not.toContain(s.text);
+        expect(caveatsOf(html), `${r.route.id}:${s.id}`).not.toContain(s.text);
         for (const line of sourceLines(html))
           expect(line, `${r.route.id}:${s.id}`).not.toContain(s.text);
-        expect(readingHtml(r.route), `${r.route.id}:${s.id}`).toContain(s.text);
+        expect(withoutGlosses(readingOf(html)), `${r.route.id}:${s.id}`).toContain(s.text);
       }
   });
 
@@ -150,14 +163,28 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
       ...routeOf("de-blue-card-general"),
       readings: [{ id: "x", text: "a & b <em>c</em>" }],
     };
-    expect(readingHtml(route)).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
+    const altered = structuredClone(ds);
+    for (const country of altered.countries)
+      country.routes = country.routes.map((r) => (r.id === route.id ? route : r));
+    expect(readingOf(cardOn(verdictOn(altered, {}), route.id))).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
   });
 
   it("the page renders the block — on the full card and on a collapsed row alike", () => {
-    // The seam exists so a rendering decision does not sit in the page; a
-    // block the page forgets to call is a block that does not exist.
-    const page = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
-    expect(page.match(/\$\{readingFor\(r\)\}/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    // A block the verdict forgets to draw is a block that does not exist. A
+    // qualified offer in France: the talent permit is open and carries our
+    // reading on its card; the transfer permit is not yet, and carries its own
+    // on its row.
+    const answers: Profile = {
+      destination: "fr", citizenship: "TR", situation: "offer", situation_country: "fr", qualification: "degree",
+      fr_degree: "yes", fr_innovative_employer: "no", fr_local_contract: "no", experience_5y: "2plus",
+      experience_7y: "5plus", salary_eur_year: deriveBands(ds, "salary_eur_year").at(-1)!.id,
+    };
+    const verdict = verdictFor(answers);
+    const card = placed(verdict, "fr-talent-qualifie");
+    const row = placed(verdict, "fr-ict");
+    expect(card?.kind).toBe("open");
+    expect(row?.kind).toBe("not-yet");
+    for (const { html } of [card!, row!]) expect(html).toContain('<div class="caveat ours">');
   });
 });
 
@@ -172,13 +199,18 @@ describe("s5e — the card's source list grew without burying the verdict", () =
     }
     return p;
   };
+  /** The cards of the routes the rules scored for these answers: every group
+   * but the routes the authority closes to the passport, which carry their
+   * closing sentence and no source list. */
+  const scoredCardsOf = (answers: Profile) =>
+    groupsIn(verdictFor(answers)).filter((g) => g.kind !== "closed").flatMap(cardsIn);
 
   it("no card shows an empty source block", () => {
     for (const destination of ["de", "fr", "es", "nl", "all"])
-      for (const r of evaluate(ds, weak(destination))) {
-        const html = provenanceHtml({ ds, answers: {} }, r);
-        expect(html, r.route.id).toContain('class="srcs"');
-        expect(html.replace(/<div class="srcs">|<\/div>/g, "").trim().length, r.route.id).toBeGreaterThan(0);
+      for (const card of scoredCardsOf(weak(destination))) {
+        const html = sourcesOf(card.html);
+        expect(html, card.route).toContain('class="srcs"');
+        expect(html.replace(/<div class="srcs">|<\/div>/g, "").trim().length, card.route).toBeGreaterThan(0);
       }
   });
 
@@ -199,7 +231,7 @@ describe("s5e — the card's source list grew without burying the verdict", () =
       .toContain("Your employment contract is valid for at least 6 months.");
     expect(resultProvenance(blueCard, {}).filter((e) => e.value.quote === "Your employment contract is valid for at least 6 months.").length)
       .toBe(2);
-    expect(sourceLines(provenanceHtml({ ds, answers: {} }, blueCard))
+    expect(sourceLines(sourcesOf(cardOn(verdictFor({ destination: "nl", citizenship: "TR", situation: "offer" }), "nl-blue-card")))
       .filter((l) => l.includes("valid for at least 6 months")).length).toBe(1);
   });
 
@@ -254,10 +286,10 @@ describe("s5e — the card's source list grew without burying the verdict", () =
       "es-ict", "es-researcher", "nl-orientation-year",
     ];
     for (const destination of ["de", "fr", "es", "nl", "all"])
-      for (const r of evaluate(ds, weak(destination))) {
-        const html = provenanceHtml({ ds, answers: {} }, r);
-        if (NO_THRESHOLD.includes(r.route.id)) expect(html, r.route.id).toMatch(/no dated value to quote|no salary or points threshold/i);
-        else expect(html, r.route.id).not.toMatch(/no dated value to quote|no salary or points threshold/i);
+      for (const card of scoredCardsOf(weak(destination))) {
+        const html = sourcesOf(card.html);
+        if (NO_THRESHOLD.includes(card.route)) expect(html, card.route).toMatch(/no dated value to quote|no salary or points threshold/i);
+        else expect(html, card.route).not.toMatch(/no dated value to quote|no salary or points threshold/i);
       }
   });
 

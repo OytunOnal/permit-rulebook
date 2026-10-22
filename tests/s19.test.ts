@@ -9,16 +9,18 @@ import {
 import { esc } from "../src/lib/reason.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { notScoredFor, notScoredMarkHtml, unscoredVerdict } from "../src/lib/situations.js";
-import { precondHtml } from "../src/lib/card.js";
-import {
-  NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, countryHeadline, notCheckedLine, notCheckedQuotedLine,
-} from "../src/lib/copy.js";
-import { mastheadFor } from "../src/lib/screen.js";
+import { notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
+import { NOT_CHECKED_HEADING, READ_ITS_RULES, STATUS_LABEL } from "../src/lib/copy/verdict.js";
+import { READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
+import { countryHeadline } from "../src/lib/copy/country-page.js";
+import { verdictHtml, verdictOf } from "../src/lib/verdict/index.js";
 import { countryAddresses, countryPage } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { routePages } from "../src/lib/route-page.js";
 import { url } from "../src/lib/site.js";
+import {
+  PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
+} from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -26,6 +28,30 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const textOf = (html: string): string =>
   html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, "\"")
     .replace(/\s+/g, " ").trim();
+
+/** The written state as a reader meets it: the headline, the subline as
+ * text, and the words of the subline that are its door, with where it goes. */
+interface WrittenState {
+  headline: string;
+  subline: string;
+  door?: { text: string; href: string };
+}
+
+/**
+ * The written state the verdict for these answers reads, where it reads one:
+ * its masthead is the only one whose subline is drawn in markup, for the door
+ * in it.
+ */
+function unscoredOf(answers: Profile): WrittenState | undefined {
+  const m = verdictFor(answers).action.masthead;
+  if (m.sublineHtml === undefined) return undefined;
+  const door = /<a href="([^"]*)">([^<]*)<\/a>/.exec(m.sublineHtml);
+  return { headline: m.announced, subline: m.subline, ...(door ? { door: { text: door[2]!, href: door[1]! } } : {}) };
+}
+
+/** What else a route's card on the verdict for these answers says is required. */
+const precondFor = (answers: Profile, route: string): string =>
+  blocksIn(cardOn(verdictFor(answers), route), "precond", "precond asked");
 
 const situationQuestion = () => remainingQuestions(ds, { destination: "fr" }).find((q) => q.field === SITUATION_FIELD)!;
 
@@ -124,8 +150,8 @@ describe("s19 — the interview knows which situations a destination's scored ro
 
 describe("s19 — the zero-open result through a marked option is a written state", () => {
   it("the headline names the country and the situation, the subline names the route and what the rest need", () => {
-    const v = unscoredVerdict(ds, { destination: "fr", situation: "research" });
-    expect(v).not.toBeNull();
+    const v = unscoredOf({ destination: "fr", situation: "research" });
+    expect(v).toBeDefined();
     expect(v!.headline).toBe("No route we check in France takes a research hosting agreement.");
     expect(v!.subline).toBe(
       "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
@@ -135,25 +161,65 @@ describe("s19 — the zero-open result through a marked option is a written stat
   });
 
   it("is only for a marked situation: every other destination and answer leaves the verdicts as they were", () => {
-    expect(unscoredVerdict(ds, { destination: "es", situation: "research" })).toBeNull();
-    expect(unscoredVerdict(ds, { destination: "fr", situation: "offer" })).toBeNull();
-    expect(unscoredVerdict(ds, { destination: "fr", situation: "none" })).toBeNull();
-    expect(unscoredVerdict(ds, { destination: "all", situation: "research" })).toBeNull();
-    expect(unscoredVerdict(ds, { situation: "research" })).toBeNull();
+    expect(unscoredOf({ destination: "es", situation: "research" })).toBeUndefined();
+    expect(unscoredOf({ destination: "fr", situation: "offer" })).toBeUndefined();
+    expect(unscoredOf({ destination: "fr", situation: "none" })).toBeUndefined();
+    expect(unscoredOf({ destination: "all", situation: "research" })).toBeUndefined();
+    expect(unscoredOf({ situation: "research" })).toBeUndefined();
   });
 
   it("the masthead carries it with the door as the only markup, and announces the words", () => {
-    const v = unscoredVerdict(ds, { destination: "fr", situation: "research" })!;
-    const m = mastheadFor({ kind: "results", answered: 2, routes: 5, headline: v.headline, unscored: v });
-    expect(m.headline).toBe(v.headline);
-    expect(m.subline).toBe(v.subline);
+    const answers: Profile = { destination: "fr", situation: "research" };
+    const m = verdictOf(ds, answers, { cameFrom: null, answered: 2 }).action.masthead;
+    const headline = "No route we check in France takes a research hosting agreement.";
+    expect(m.headline).toBe(headline);
+    expect(m.subline).toBe(
+      "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
+      + "read its rules. The routes below need a job offer or an intra-corporate transfer.",
+    );
+    expect(m.announced).toBe(headline);
     expect(m.sublineHtml).toBe(
       `France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: `
       + `<a href="${url("/france/talent-researcher")}">read its rules</a>. `
       + "The routes below need a job offer or an intra-corporate transfer.",
     );
     // Without it, the subline is text and text only, as it always was.
-    expect(mastheadFor({ kind: "results", answered: 2, routes: 5, headline: "x" }).sublineHtml).toBeUndefined();
+    const spain: Profile = { destination: "es", situation: "research" };
+    expect(verdictOf(ds, spain, { cameFrom: null, answered: 2 }).action.masthead.sublineHtml).toBeUndefined();
+  });
+});
+
+/** The two walks the browser takes below: France, then the marked answer; and
+ * Spain, the same answer and a Turkish passport. */
+const FRANCE_RESEARCH: Profile = { destination: "fr", situation: "research" };
+const SPAIN_RESEARCH: Profile = { destination: "es", situation: "research", citizenship: "TR" };
+
+describe("s19 — the two walks' results, from the verdict", () => {
+  it("France → research is the written state with its door, over the not-yet rows as today", () => {
+    const verdict = verdictFor(FRANCE_RESEARCH);
+    const m = verdict.action.masthead;
+    expect(m.announced).toBe("No route we check in France takes a research hosting agreement.");
+    expect(m.subline).toBe(
+      "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
+      + "read its rules. The routes below need a job offer or an intra-corporate transfer.",
+    );
+    expect(/<a href="([^"]*)">([^<]*)<\/a>/.exec(m.sublineHtml ?? "")?.slice(1)).toEqual([url("/france/talent-researcher"), "read its rules"]);
+    const body = textOf(verdictHtml(verdict));
+    expect(m.announced + m.subline + body).not.toContain("Nothing open");
+    // Then the not-yet list as today.
+    expect(groupsIn(verdict).some((g) => g.kind === "not-yet")).toBe(true);
+    expect(body).toContain("5 routes need a job offer or an intra-corporate transfer");
+  });
+
+  it("Spain → research is met, as before: open first, its badge Criteria met, the hosting agreement declared", () => {
+    const verdict = verdictFor(SPAIN_RESEARCH);
+    expect(verdict.action.masthead.announced).toMatch(/^1 route looks open\./);
+    expect(groupsIn(verdict)[0]!.kind).toBe("open");
+    expect(placed(verdict, "es-researcher")?.kind).toBe("open");
+    expect(cardOn(verdict, "es-researcher")).toContain(`<span class="st met">${STATUS_LABEL.met}</span>`);
+    const body = textOf(verdictHtml(verdict));
+    expect(body).not.toContain("not checked here: A hosting agreement");
+    expect(body).toContain("you declared “I have (or expect) a hosting agreement with a research institution there”");
   });
 });
 
@@ -178,11 +244,15 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
   };
 
   it("over every scored route with a full profile", () => {
-    const answers = full();
+    // Every country on the screen, so every scored route has its card.
+    const answers: Profile = { ...full(), destination: "all" };
+    const results = evaluate(ds, answers).filter((r) => isScored(r.route));
+    const cards = everyCardIn(verdictFor(answers));
+    expect(cards.length).toBe(results.length);
     let moved = 0;
-    for (const r of evaluate(ds, answers)) {
-      if (!isScored(r.route)) continue;
-      const html = precondHtml({ ds, answers }, r.route);
+    for (const card of cards) {
+      const r = results.find((x) => x.route.id === card.route)!;
+      const html = blocksIn(card.html, "precond", "precond asked");
       const notChecked = html.match(new RegExp(`<div class="precond"><b>${NOT_CHECKED_HEADING}</b>([\\s\\S]*?)</div>`))?.[1] ?? "";
       for (const s of (r.route.statements ?? []).filter((x) => x.kind === "precondition")) {
         if (s.field === undefined || answers[s.field] === undefined) continue;
@@ -197,19 +267,17 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
 
   it("the Spanish researcher card says what was declared, in the s5 words", () => {
     const answers: Profile = { destination: "es", citizenship: "TR", situation: "research", situation_country: "es" };
-    const html = precondHtml({ ds, answers }, ds.countries.find((c) => c.code === "ES")!.routes.find((r) => r.id === "es-researcher")!);
+    const html = precondFor(answers, "es-researcher");
     expect(html).toContain(`Asked in the interview — you declared “I have (or expect) a hosting agreement with a research institution there”:`);
     expect(html).toContain("A hosting agreement — the formal agreement a research institution signs to take you on");
     expect(html).not.toContain(NOT_CHECKED_HEADING);
   });
 
   it("with no reader, and with an unknown answer, nothing is called answered", () => {
-    const es = ds.countries.find((c) => c.code === "ES")!.routes.find((r) => r.id === "es-researcher")!;
-    expect(precondHtml({ ds, answers: {} }, es)).toContain(NOT_CHECKED_HEADING);
-    expect(precondHtml({ ds, answers: {} }, es)).not.toContain("you declared");
+    expect(precondFor({}, "es-researcher")).toContain(NOT_CHECKED_HEADING);
+    expect(precondFor({}, "es-researcher")).not.toContain("you declared");
     // A field answered with the door for "none of these fits" is not declared.
-    const nl = ds.countries.find((c) => c.code === "NL")!.routes.find((r) => r.id === "nl-researcher")!;
-    expect(precondHtml({ ds, answers: { salary_eur_month: "unknown" } }, nl)).not.toContain("you declared");
+    expect(precondFor({ salary_eur_month: "unknown" }, "nl-researcher")).not.toContain("you declared");
   });
 });
 
@@ -225,11 +293,12 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
     expect(textOf(researcher!.html)).toContain("Avoir une convention d'accueil souscrite");
   });
 
-  it("/data/ says schema 0.8.2, and counts 23 scored and 6 quoted", () => {
+  it("/data/ says schema 0.8.3, and counts 23 scored and 6 quoted", () => {
     // 0.8.0 was s19's (`not_asked`); 0.8.1 is s25's, the points item with
-    // rows on two fields; 0.8.2 is s32's, a statement naming its question.
+    // rows on two fields; 0.8.2 is s32's, a statement naming its question;
+    // 0.8.3 is #169's, an option marked an arranged answer (`is_arranged`).
     const text = textOf(dataPage(ds).html);
-    expect(text).toContain("0.8.2");
+    expect(text).toContain("0.8.3");
     expect(text).toContain("2026-09-16");
     expect(text).toContain("23 routes scored against your answers");
     expect(text).toContain("6 more quoted and dated but not scored");
@@ -308,15 +377,9 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        const read = async () => ({
-          headline: await page.evaluate('document.getElementById("headline").textContent.trim()'),
-          subline: await page.evaluate('document.getElementById("subline").textContent.trim()'),
-          door: await page.evaluate('(document.querySelector("#subline a") || {}).getAttribute ? document.querySelector("#subline a").getAttribute("href") : null'),
-          doorText: await page.evaluate('document.querySelector("#subline a") ? document.querySelector("#subline a").textContent : null'),
+        const read = async (answers: Profile) => ({
           status: await page.evaluate('document.getElementById("cstatus").textContent'),
-          main: await page.evaluate('document.getElementById("main").textContent'),
-          heads: JSON.parse(await page.evaluate('JSON.stringify([...document.querySelectorAll(".ghead")].map((h) => h.textContent.trim()))')),
-          badges: JSON.parse(await page.evaluate('JSON.stringify([...document.querySelectorAll(".route .st")].map((s) => s.textContent.trim()))')),
+          painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
           state: await page.evaluate('document.getElementById("app").dataset.state'),
           problems: page.problems(),
         });
@@ -326,40 +389,27 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
         await page.goto(server.url("/"), 900);
         await page.evaluate('document.querySelector(".opt[data-value=research]").click()');
         await new Promise((r) => setTimeout(r, 900));
-        const france = await read();
+        const france = await read(FRANCE_RESEARCH);
         // Spain, the same two answers — and the passport, which is Spain's third
         // tap (the scenario: CRITERIA MET in three).
-        await page.evaluate(seed({ destination: "es", situation: "research", citizenship: "TR" }));
+        await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
         await page.goto(server.url("/"), 1400);
-        const spain = await read();
+        const spain = await read(SPAIN_RESEARCH);
         return { france, spain };
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, {
-        headline: string; subline: string; door: string | null; doorText: string | null; status: string; main: string;
-        heads: string[]; badges: string[]; state: string; problems: string[];
+        status: string; painted: typeof PAINTED_AS_COMPOSED; state: string; problems: string[];
       }>;
 
+      // What each screen says is the verdict's ("s19 — the two walks' results,
+      // from the verdict"); the page paints it, and says France's written state.
       const { france, spain } = seen;
       expect(france!.problems).toEqual([]);
       expect(france!.state).toBe("results");
-      expect(france!.headline).toBe("No route we check in France takes a research hosting agreement.");
-      expect(france!.subline).toBe(
-        "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
-        + "read its rules. The routes below need a job offer or an intra-corporate transfer.",
-      );
-      expect(france!.doorText).toBe("read its rules");
-      expect(france!.door).toBe(url("/france/talent-researcher"));
       expect(france!.status).toBe("No route we check in France takes a research hosting agreement.");
-      expect(france!.headline + france!.subline + france!.main).not.toContain("Nothing open");
-      // Then the not-yet list as today.
-      expect(france!.heads.some((h) => h.startsWith("Not yet"))).toBe(true);
-      expect(france!.main).toContain("5 routes need a job offer or an intra-corporate transfer");
+      expect(france!.painted).toEqual(PAINTED_AS_COMPOSED);
 
       expect(spain!.problems).toEqual([]);
-      expect(spain!.headline).toMatch(/^1 route looks open\./);
-      expect(spain!.heads[0]).toMatch(/^Open — criteria met/);
-      expect(spain!.badges).toContain("Criteria met");
-      expect(spain!.main).not.toContain("not checked here: A hosting agreement");
-      expect(spain!.main).toContain("you declared “I have (or expect) a hosting agreement with a research institution there”");
+      expect(spain!.painted).toEqual(PAINTED_AS_COMPOSED);
     } finally { server.close(); }
   }, 120_000);
 });

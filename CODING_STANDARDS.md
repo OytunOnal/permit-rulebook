@@ -56,8 +56,12 @@ pull request.
   hand-edited.
 - The deploy triggers on product paths, never on docs (`pages.yml`,
   `paths-ignore`).
-- Every user-facing string lives in `src/lib/copy.ts` (site) or in the dataset
-  (data). None is typed into a template, a page, a test or an inline script; a
+- Every user-facing string lives in the copy module (site) or in the dataset
+  (data). The copy module is `src/lib/copy/`, one file per screen or part:
+  `frame.ts` for the frame every page shares, `quotes.ts` for the words around
+  a quote, and one file each for the interview, the verdict, a route page, a
+  country page, `/data/`, `/feedback/` and the 404. None is typed into a
+  template, a page, a test or an inline script; a
   script reads its words from `data-` attributes the template renders. No
   country name, route name or dataset value inside an inline script.
 - Naming: files and ids are kebab-case; exported functions are verbs

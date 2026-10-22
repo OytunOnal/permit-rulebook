@@ -5,7 +5,7 @@ import {
 import type { Country, Dataset, Profile, Route } from "permit-rulebook-data";
 import {
   comingFromRouteLine, placeAsksMoreClause, placeOnRecordLine, placeOnRecordNowLine, startingFromRouteLine,
-} from "./copy.js";
+} from "./copy/interview.js";
 
 /**
  * Arriving at the interview from a route page.

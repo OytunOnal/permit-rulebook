@@ -1,16 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { esc, escAttr } from "../src/lib/reason.js";
-import { readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   closedBy, deriveBands, evaluate, isClosed, noticeSources, notices,
   type Dataset, type Notice, type Profile, type RouteResult,
 } from "permit-rulebook-data";
-import { closedRowHtml, noticeHtml, quoteForCard } from "../src/lib/card.js";
 import { routePages } from "../src/lib/route-page.js";
+import {
+  NOTHING_OPEN_HEADLINE, RULES_MET, STATUS_LABEL, UNSETTLED_SECTION_LINE, unsettledHeadline,
+} from "../src/lib/copy/verdict.js";
+import { verdictHtml, type Verdict, type VerdictGroup } from "../src/lib/verdict/index.js";
+import { cardOn, cardsIn, groupsIn, placed, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
-const page = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
 
 const noticeOf = (id: string): Notice => ds.notices!.find((n) => n.id === id)!;
 const OPEN_QUESTION = noticeOf("fr-dz-talent-open-question");
@@ -67,7 +69,7 @@ describe("s8 — a route the authority closes is not a result", () => {
 
   it("says why in the authority's own words, with the sentence and the day it was read", () => {
     const algerian = transferring("DZ");
-    const html = closedRowHtml(resultOf(algerian, "fr-ict"));
+    const html = cardOn(verdictFor(algerian), "fr-ict");
     const closing = closedBy(resultOf(algerian, "fr-ict"))[0].criterion;
     expect(closing.op).toBe("not-in");
     if (closing.op !== "not-in") throw new Error("unreachable");
@@ -85,21 +87,25 @@ describe("s8 — a route the authority closes is not a result", () => {
 
   it("escapes what it prints, like every other block", () => {
     const algerian = transferring("DZ");
-    const r = structuredClone(resultOf(algerian, "fr-ict"));
-    const closing = r.criteria.find((cr) => cr.criterion.op === "not-in")!.criterion;
+    const altered = structuredClone(ds);
+    const route = altered.countries.flatMap((c) => c.routes).find((x) => x.id === "fr-ict")!;
+    const closing = route.criteria.find((c) => c.op === "not-in")!;
     if (closing.op !== "not-in") throw new Error("unreachable");
     closing.text = "a & b <em>c</em>";
-    expect(closedRowHtml(r)).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
+    expect(cardOn(verdictOn(altered, algerian), "fr-ict")).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
   });
 
   it("the results page files them apart from the three verdicts, on both card layouts", () => {
-    // A block the page forgets to call is a block that does not exist.
-    // Both layouts call it — a block the page forgets to call is a block that
-    // does not exist (s5e) — and, the part identifiers cannot show: the route
-    // is filed once, under the heading that tells the truth about it, and
-    // never also under one that invites the reader back (Standards review,
-    // 2026-09-10).
-    expect(page.match(/closedSection\(/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
+    // Both layouts draw it — a block the verdict forgets to draw is a block
+    // that does not exist (s5e) — and the route is filed once, under the
+    // heading that tells the truth about it, and never also under one that
+    // invites the reader back (Standards review, 2026-09-10).
+    for (const answers of [transferring("DZ"), { ...transferring("DZ"), destination: "all" }]) {
+      const verdict = verdictFor(answers);
+      expect(placed(verdict, "fr-ict")?.kind, answers.destination).toBe("closed");
+      const filings = groupsIn(verdict).filter((g) => cardsIn(g).some((c) => c.route === "fr-ict"));
+      expect(filings.length, answers.destination).toBe(1);
+    }
     const results = evaluate(ds, transferring("DZ"));
     const closed = results.filter(isClosed).map((x) => x.route.id);
     expect(closed, "the transfer card is not filed as closed").toContain("fr-ict");
@@ -113,7 +119,12 @@ describe("s8 — a route the authority closes is not a result", () => {
 });
 
 describe("s8 — the notice carries the open question without answering it", () => {
-  const html = () => noticeHtml(OPEN_QUESTION);
+  /** The notice card as the verdict of an Algerian passport draws it. */
+  const html = (): string => {
+    const card = /<article class="notice open-question">[\s\S]*?<\/article>/.exec(verdictFor(withPassport("DZ")).notices);
+    if (!card) throw new Error("the verdict draws no open-question notice");
+    return card[0];
+  };
 
   it("stands for an Algerian passport and for nobody else", () => {
     expect(notices(ds, withPassport("DZ")).map((n) => n.id)).toContain(OPEN_QUESTION.id);
@@ -134,10 +145,12 @@ describe("s8 — the notice carries the open question without answering it", () 
       // element (tracker #5, restored by the Standards review 2026-09-10): the
       // evidence stays complete either way, so the card is read for one or the
       // other and never for neither.
-      const { shown, trimmed } = quoteForCard(source.quote);
-      expect(html(), source.source_url).toContain(esc(shown));
-      if (trimmed) expect(html(), `${source.source_url}: the whole passage is not on the element`)
-        .toContain(escAttr(source.quote));
+      if (!html().includes(esc(source.quote))) {
+        expect(html(), `${source.source_url}: the whole passage is not on the element`)
+          .toContain(`title="${escAttr(source.quote)}"`);
+        expect(html(), `${source.source_url}: the passage is not begun on the card`)
+          .toContain(esc(source.quote.slice(0, 40)));
+      }
       expect(html(), source.source_url).toContain(source.legal_basis!);
     }
     // French from a French court, English from EUR-Lex — one voice per quote.
@@ -154,7 +167,9 @@ describe("s8 — the notice carries the open question without answering it", () 
   });
 
   it("the results page still calls the block that renders it", () => {
-    expect(page).toContain("noticeHtml(");
+    const body = verdictHtml(verdictFor(withPassport("DZ")));
+    expect(body).toContain(html());
+    expect(body).toContain('class="notice open-question"');
   });
 });
 
@@ -208,49 +223,64 @@ describe("s8 — a page is never quieter than a card", () => {
  * screen the partition exists to stop (human's walk, 2026-09-10).
  */
 describe("both layouts of the results screen partition the same way", () => {
-  const times = (needle: string) => page.split(needle).length - 1;
+  /** The Algerian reader with a qualified offer: France alone, and all four. */
+  const flat = verdictFor(withPassport("DZ"));
+  const several = verdictFor({ ...withPassport("DZ"), destination: "all" });
+  const layouts = [["one country", flat], ["four countries", several]] as const;
+  const UNSETTLED = ["fr-talent-qualifie", "fr-talent-blue-card"];
+  /** The groups France's routes are drawn in, on either layout. */
+  const franceGroups = (verdict: Verdict): VerdictGroup[] =>
+    verdict.layout.kind === "countries"
+      ? verdict.layout.sections.find((s) => s.name === "France")!.groups
+      : groupsIn(verdict);
 
   it("every met section is followed by the unsettled one", () => {
-    const met = times('section("Open — criteria met"');
-    expect(met).toBeGreaterThan(1); // the single layout and the grouped one
-    expect(times("unsettledSection(")).toBe(met); // one call per layout
+    const ORDER = ["open", "unsettled", "within-reach", "steps", "not-yet", "closed"];
+    for (const [name, verdict] of layouts) {
+      const kinds = franceGroups(verdict).map((g) => g.kind);
+      expect(kinds, name).toContain("unsettled");
+      expect(kinds, name).toEqual([...kinds].sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b)));
+      for (const id of UNSETTLED) expect(placed(verdict, id)?.kind, `${name}: ${id}`).toBe("unsettled");
+    }
   });
 
   it("neither layout counts an unsettled route as open", () => {
-    // Each layout builds its "met" group its own way — one filters a list the
-    // unsettled were already taken out of, the other filters the ids directly.
-    // Either is fine; a group that mentions neither is the bug.
-    const groups = page.split(String.fromCharCode(10))
-      .filter((l) => l.includes("met:") && l.includes('r.status === "met"'));
-    expect(groups.length).toBeGreaterThan(1);
-    for (const line of groups)
-      expect(line.includes("unsettledIds") || line.includes("settled."), line.trim()).toBe(true);
+    for (const [name, verdict] of layouts) {
+      for (const group of groupsIn(verdict).filter((g) => g.kind === "open"))
+        for (const id of UNSETTLED) expect(cardsIn(group).map((c) => c.route), `${name}: ${id}`).not.toContain(id);
+      if (verdict.layout.kind === "one-country") expect(verdict.layout.strip).toMatchObject({ open: 0, unsettled: 2 });
+    }
+    if (several.layout.kind !== "countries") throw new Error("the four-country reader drew no country sections");
+    expect(several.layout.sections.find((s) => s.name === "France")!.tally).toMatchObject({ open: 0, unsettled: 2 });
   });
 
   it("the card in that section does not wear the met badge", () => {
     // The heading stopped saying "criteria met" and the card went on saying
     // it in a green pill — which is the sentence a reader acts on. Walked and
     // found by the human, an hour after the heading was fixed.
-    const at = page.indexOf("function fullCard(");
-    const badge = page.slice(at, page.indexOf("</article>", at));
-    expect(badge).toContain('unsettled ? "Rules met"');
-    expect(page).toContain('class="st ${unsettled ? "unsettled" : r.status}"');
+    for (const [name, verdict] of layouts) {
+      const html = placed(verdict, UNSETTLED[0])!.html;
+      expect(html, name).toContain(`<span class="st unsettled">${RULES_MET}</span>`);
+      expect(html, name).not.toContain(STATUS_LABEL.met);
+    }
   });
 
   it("neither the summary nor the headline says nothing is open when one is unsettled", () => {
     // Taking the unsettled routes out of "met" made the screen say "Nothing
     // open on these answers." directly above a section holding one, and left
     // them out of every tally on the page.
-    const strip = page.slice(page.indexOf('<div class="strip"'), page.indexOf('</div>`;', page.indexOf('<div class="strip"')));
-    expect(strip).toContain("unsettled.length");
-    expect(strip).toContain("closedRoutes.length");
-    expect(page.indexOf("zeroOpen && unsettled.length"))
-      .toBeLessThan(page.indexOf("zeroOpen && ups.length"));
+    expect(flat.action.kind).toBe("compare");
+    expect(flat.action.masthead.announced).toBe(unsettledHeadline(2));
+    expect(flat.action.masthead.announced).not.toBe(NOTHING_OPEN_HEADLINE);
+    if (flat.layout.kind !== "one-country") throw new Error("the France reader drew country sections");
+    expect(flat.layout.strip.unsettled).toBe(2);
+    // A closed route is counted on the summary too, apart from the three verdicts.
+    const closing = verdictFor(transferring("DZ"));
+    if (closing.layout.kind !== "one-country") throw new Error("the France reader drew country sections");
+    expect(closing.layout.strip.closed).toBe(1);
   });
   it("the section's own line names no country and no passport", () => {
-    const at = page.indexOf("const unsettledSection");
-    const body = page.slice(at, page.indexOf("const seekHint", at));
     for (const word of ["France", "Algeria", "Algerian", "French"])
-      expect(body, word).not.toContain(word);
+      expect(UNSETTLED_SECTION_LINE, word).not.toContain(word);
   });
 });

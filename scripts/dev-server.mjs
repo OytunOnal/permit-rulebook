@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { createServer } from "node:net";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PRODUCT_NAME } from "../src/lib/copy.ts";
+import { PRODUCT_NAME } from "../src/lib/copy/frame.ts";
 import { childEnv } from "./child-env.mjs";
 import { at, siteBase } from "./site-base.mjs";
 

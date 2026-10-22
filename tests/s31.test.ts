@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { RETURNING_LINE } from "../src/lib/copy.js";
+import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 

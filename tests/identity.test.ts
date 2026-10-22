@@ -105,7 +105,7 @@ describe("the identity pair has one definition", () => {
       }
       return css.slice(0, at);
     };
-    for (const file of ["tokens.css", "src/pages/index.astro", "src/lib/route-page.ts"]) {
+    for (const file of ["tokens.css", "src/pages/index.astro", "src/lib/route-page.ts", "src/lib/verdict/verdict.css"]) {
       const own = withoutPrint(read(file).split("${IDENTITY}").join(" "));
       expect(own, `${file} draws the mark`).not.toMatch(/\.stamps\s+\.mark\s*\{/);
       // And states nothing the pair is made of, only where it goes.

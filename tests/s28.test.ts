@@ -3,13 +3,17 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, evaluate, type Dataset, type Profile } from "permit-rulebook-data";
-import { learnBoxHtml } from "../src/lib/card.js";
 import { glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { routePages } from "../src/lib/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
+import { verdictHtml } from "../src/lib/verdict/index.js";
+import { plainTextOf, walkFrom } from "./reader-pages.js";
+import {
+  PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor, verdictOn,
+} from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -72,18 +76,36 @@ const anchorsOf = (html: string): { href: string; text: string }[] =>
 
 describe("2 — link text is glossed on the screen's memory (#151, ruling 8)", () => {
   it("the card's box explains the act in a label on a screen that has explained nothing, and not on one that has", () => {
-    const seen = withLabel(SHORTAGE, SYMBOL_LABEL);
-    const result = evaluate(seen, UNSURE).find((r) => r.route.id === "de-blue-card-shortage")!;
-    const html = learnBoxHtml({ ds: seen, answers: UNSURE, glossary: new Set() }, result);
-    const [link, ...rest] = anchorsOf(html);
-    expect(rest, "the box carries more than the one door").toEqual([]);
-    const door = seen.fields.find((f) => f.id === SHORTAGE)!.learn!;
-    expect(link.text).toBe(esc(firstUseLink(door)));
-    expect(html).toContain(ACT_EXPANSION);
-    // A screen whose citation line already named the act prints the label as written.
-    const spent = new Set<string>();
-    glossed("§ 18g AufenthG", spent);
-    expect(anchorsOf(learnBoxHtml({ ds: seen, answers: UNSURE, glossary: spent }, result))[0]!.text).toBe(esc(learnLinkTextOf(door)));
+    // Two screens: the shortage card's, whose own title cites the act first,
+    // and a French card's, the same label put on its door, where nothing
+    // before the box cites it.
+    const FRENCH: Profile = {
+      destination: "fr", situation: "offer", qualification: "degree", fr_degree: "yes", citizenship: "TR",
+      fr_innovative_employer: "unknown", salary_eur_year: "band_0",
+    };
+    const branches = new Set<string>();
+    for (const [field, route, answers] of [
+      [SHORTAGE, "de-blue-card-shortage", UNSURE], ["fr_innovative_employer", "fr-talent-innovante", FRENCH],
+    ] as const) {
+      const seen = withLabel(field, SYMBOL_LABEL);
+      const door = seen.fields.find((f) => f.id === field)!.learn!;
+      const verdict = verdictOn(seen, answers);
+      const html = blocksIn(cardOn(verdict, route), "learn");
+      const [link, ...rest] = anchorsOf(html);
+      expect(rest, "the box carries more than the one door").toEqual([]);
+      // Whether anything above the box on this screen has already named the act.
+      const body = verdictHtml(verdict);
+      const spent = body.slice(0, body.indexOf(html)).includes(ACT_EXPANSION.replace("AufenthG ", ""));
+      branches.add(spent ? "spent" : "fresh");
+      if (spent) {
+        // A screen whose citation line already named the act prints the label as written.
+        expect(link.text, route).toBe(esc(learnLinkTextOf(door)));
+      } else {
+        expect(link.text, route).toBe(esc(firstUseLink(door)));
+        expect(html, route).toContain(ACT_EXPANSION);
+      }
+    }
+    expect(branches.size, `only the ${[...branches].join()} screen was reached`).toBe(2);
   });
 
   it("the question line prints the same label, explained on the card's first use", () => {
@@ -159,9 +181,39 @@ describe("3 — the three surfaces agree", () => {
       const result = evaluate(ds, profile).find((r) => r.route.id === route)!;
       expect(result.status, `${route} is not on hold`).toBe("hold");
       const door = ds.fields.find((f) => f.id === field)!.learn!;
-      expect(anchorsOf(learnBoxHtml({ ds, answers: profile }, result))).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
+      const box = blocksIn(cardOn(verdictFor(profile), route), "learn");
+      expect(anchorsOf(box)).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
     });
   }
+});
+
+/** The record the walk below starts from — out of IT: Germany asks
+ * `occupation_it` early since the shortage Blue Card's IT path reads it
+ * (#134), and only a reader out of IT is asked the shortage question straight
+ * after the passport — and the answers it taps from there, in order. */
+const WALK_START: Profile = { destination: "de", situation: "offer", qualification: "degree", occupation_it: "no" };
+const WALK_TAPS = ["unknown", "recognized", "lt2", "band_0", "none", "none", "band_0"];
+
+/** The answers the walk ends on: a Turkish passport, then the taps, one per
+ * question as the interview asks them. */
+function walked(): Profile {
+  const taps = [...WALK_TAPS];
+  return walkFrom(WALK_START, (q) => (q.field === "citizenship" ? "TR" : taps.shift()!)).answers;
+}
+
+describe("4 — the walk's result, from the verdict", () => {
+  it("one box, on the card the unknown still binds, drawn open: the sentence as one link, no act around it", () => {
+    const door = ds.fields.find((f) => f.id === SHORTAGE)!.learn!;
+    const answers = walked();
+    expect(answers[SHORTAGE], "the walk did not answer the shortage question unsure").toBe("unknown");
+    const boxed = everyCardIn(verdictFor(answers)).filter((c) => blocksIn(c.html, "learn") !== "");
+    expect(boxed.map((c) => c.route)).toEqual(["de-blue-card-shortage"]);
+    // The hold row with the open question is drawn open.
+    expect(boxed[0]!.html).toMatch(/^\s*<details class="route-hold"[^>]* open>/);
+    const box = blocksIn(boxed[0]!.html, "learn");
+    expect(anchorsOf(box)).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
+    expect(plainTextOf(box)).not.toContain(ACT_EXPANSION);
+  });
 });
 
 /**
@@ -199,13 +251,8 @@ const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 interface Link { text: string; href: string }
 const LINKS = (selector: string) =>
   `JSON.stringify([...document.querySelectorAll(${JSON.stringify(selector)})].map((a) => ({ text: a.textContent.trim(), href: a.getAttribute("href") })))`;
-const BOXES = 'JSON.stringify([...document.querySelectorAll(".learn")].map((d) => ({'
-  + ' text: d.textContent.trim(),'
-  + ' links: [...d.querySelectorAll("a")].map((a) => ({ text: a.textContent.trim(), href: a.getAttribute("href") })),'
-  + ' open: !!d.closest("details") && d.closest("details").open })))';
-
 interface Walk {
-  help: Link[]; helpText: string; state: string; boxes: { text: string; links: Link[]; open: boolean }[];
+  help: Link[]; helpText: string; state: string; painted: typeof PAINTED_AS_COMPOSED;
   asks: Link[]; asksText: string; problems: string[];
 }
 
@@ -216,10 +263,7 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         await page.goto(server.url("/"), 300);
-        // Out of IT, on the record: Germany asks `occupation_it` early since
-        // the shortage Blue Card's IT path reads it (#134), and only a reader
-        // out of IT is asked the shortage question straight after the passport.
-        await page.evaluate(seed({ destination: "de", situation: "offer", qualification: "degree", occupation_it: "no" }));
+        await page.evaluate(seed(WALK_START as Record<string, string>));
         await page.goto(server.url("/"), 900);
         await page.evaluate('(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
         await settle(300);
@@ -228,20 +272,20 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
         // The shortage question is next; its help line is the door.
         const help = JSON.parse(await page.evaluate(LINKS(".qlearn a"))) as Link[];
         const helpText = await page.evaluate('document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : ""');
-        for (const value of ["unknown", "recognized", "lt2", "band_0", "none", "none", "band_0"]) {
+        for (const value of WALK_TAPS) {
           await page.evaluate(tap(value));
           await settle(400);
         }
         await settle(900);
         const state = await page.evaluate('document.getElementById("app").dataset.state');
-        const boxes = JSON.parse(await page.evaluate(BOXES)) as Walk["boxes"];
+        const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(walked()))));
         await page.goto(server.url("/germany/eu-blue-card-shortage-occupation/"), 600);
         const asks = JSON.parse(await page.evaluate(LINKS(`.asks a[href="${door.url}"]`))) as Link[];
         // The block that carries the door — the page draws one per unquoted rule.
         const asksText = await page.evaluate(
           `(() => { const a = document.querySelector(${JSON.stringify(`.asks a[href="${door.url}"]`)}); return a ? a.closest(".asks").textContent.replace(/\\s+/g, " ").trim() : ""; })()`,
         );
-        return { help, helpText, state, boxes, asks, asksText, problems: page.problems() };
+        return { help, helpText, state, painted, asks, asksText, problems: page.problems() };
       }, { viewport: { width: 390, height: 844 }, mobile: true }) as Walk;
 
       expect(seen.problems).toEqual([]);
@@ -249,12 +293,10 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
       // in it, and no act around it.
       expect(seen.help).toEqual([{ text: firstUseLink(door), href: door.url }]);
       expect(seen.helpText).not.toContain(ACT_EXPANSION);
-      // The result: one box, on the card the unknown still binds, drawn open.
+      // The result: one box, on the card the unknown still binds, drawn open
+      // ("4 — the walk's result, from the verdict" reads it), as painted.
       expect(seen.state).toBe("results");
-      expect(seen.boxes.length).toBe(1);
-      expect(seen.boxes[0].open, "the hold row with the open question is not drawn open").toBe(true);
-      expect(seen.boxes[0].links).toEqual([{ text: firstUseLink(door), href: door.url }]);
-      expect(seen.boxes[0].text).not.toContain(ACT_EXPANSION);
+      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
       // The route page: the same sentence, the same address.
       expect(seen.asks.map((a) => ({ text: a.text.replace(/\s*↗$/, ""), href: a.href }))).toEqual([{ text: firstUseLink(door), href: door.url }]);
       expect(seen.asksText).toContain("You can find this out yourself");

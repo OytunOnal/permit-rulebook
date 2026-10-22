@@ -3,7 +3,8 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { escAttr } from "../src/lib/reason.js";
+import { esc, escAttr } from "../src/lib/reason.js";
+import { verdictHtml, verdictOf } from "../src/lib/verdict/index.js";
 import { questionCardHtml, setAsideHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
@@ -155,6 +156,71 @@ describe("nothing from the dataset reaches the asked-for line's or the set-aside
     expect(html, "no set-aside line drawn").toContain('data-set-aside="fr_degree"');
     expect(html).not.toContain("<img");
     expect(html).toContain(TAG_AS_TEXT);
+  });
+});
+
+/**
+ * The dataset with a tag in every display string the verdict draws from it:
+ * each route's and country's name, each field's subject and short label, and
+ * each answer's label and short phrase — the offer line names the offer and
+ * the fields' subjects, the arranged line the arranged answers.
+ */
+function wreckedForTheVerdict(): Dataset {
+  const wrecked = JSON.parse(JSON.stringify(ds)) as Dataset;
+  for (const country of wrecked.countries) {
+    country.name = `${country.name} ${TAG}`;
+    for (const route of country.routes) route.name = `${route.name} ${TAG}`;
+  }
+  for (const field of wrecked.fields) {
+    field.subject = `${field.subject} ${TAG}`;
+    if (field.short_label) field.short_label = `${field.short_label} ${TAG}`;
+    for (const option of field.options ?? []) {
+      option.label = `${option.label} ${TAG}`;
+      if (option.short) option.short = `${option.short} ${TAG}`;
+    }
+  }
+  return wrecked;
+}
+
+/** The explorer of s23: all four countries, no offer — the offer line's reader. */
+const EXPLORER: Profile = {
+  destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
+  occupation_shortage: "unknown", experience_5y: "2plus", experience_7y: "3to5", german: "none", english: "c1",
+  nl_recent_grad: "no", top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no",
+  partner_ck: "no",
+};
+/** An offer in Berlin: steps to take, and the arranged line after them. */
+const BERLIN_OFFER: Profile = {
+  destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
+  recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2",
+  experience_7y: "3to5", german: "a1", english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5",
+  age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
+};
+
+describe("nothing from the dataset reaches the verdict's markup unescaped (#167)", () => {
+  /** Everything a verdict paints from these answers: its masthead and its body. */
+  const paintedOf = (seen: Dataset, answers: Profile): string => {
+    const verdict = verdictOf(seen, answers, { cameFrom: null, answered: Object.keys(answers).length });
+    const m = verdict.action.masthead;
+    return [m.headline, m.sublineHtml ?? esc(m.subline), verdictHtml(verdict)].join("");
+  };
+  const lineOf = (html: string, cls: string): string =>
+    [...html.matchAll(new RegExp(`<p class="${cls}">[\\s\\S]*?</p>`, "g"))].map((m) => m[0]).join("");
+
+  it("the offer line draws the offer and the fields it names as text", () => {
+    const html = paintedOf(wreckedForTheVerdict(), EXPLORER);
+    const offer = lineOf(html, "offer-line");
+    expect(offer, "precondition: the explorer reads an offer line").not.toBe("");
+    expect(offer).toContain(TAG_AS_TEXT);
+    expect(html).not.toContain("<img");
+  });
+
+  it("the arranged line draws the arranged answers as text", () => {
+    const html = paintedOf(wreckedForTheVerdict(), BERLIN_OFFER);
+    const arranged = lineOf(html, "arranged-line");
+    expect(arranged, "precondition: the offer-holder reads an arranged line").not.toBe("");
+    expect(arranged).toContain(TAG_AS_TEXT);
+    expect(html).not.toContain("<img");
   });
 });
 

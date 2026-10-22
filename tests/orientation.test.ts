@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { countryLinks, countryPages, navCountries } from "../src/lib/country-page.js";
 import { dataPage, statusAlias } from "../src/lib/data-page.js";
-import { TRANSLATION_POLICY } from "../src/lib/copy.js";
+import { TRANSLATION_POLICY } from "../src/lib/copy/data-page.js";
 import { hasUnbalancedQuotationMark, quotedSpans, routeProvenance } from "permit-rulebook-data";
 import { DATA_PATH, FEEDBACK_PATH, siteHeader } from "../src/lib/identity.js";
 import { notFoundPage } from "../src/lib/not-found.js";

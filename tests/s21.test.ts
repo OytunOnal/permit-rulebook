@@ -3,23 +3,34 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, remainingQuestions, situationsAsked, type Country, type Dataset,
+  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, joinOr, remainingQuestions, situationsAsked, type Country, type Dataset,
+  type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import {
-  SITUATION_COUNTRY_FIELD, markUnder, notScoredFor, notScoredMarkHtml, unscoredTally,
-} from "../src/lib/situations.js";
-import {
-  IS_QUOTED_NOT_CHECKED, READ_IT_HERE, notCheckedQuotedLine, unscoredHeadline, unscoredTallyLine,
-} from "../src/lib/copy.js";
+import { SITUATION_COUNTRY_FIELD, markUnder, notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
+import { IS_QUOTED_NOT_CHECKED, READ_IT_HERE, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
+import { routesNeed, unscoredHeadline, unscoredTallyLine } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
+import { verdictHtml, type Tally } from "../src/lib/verdict/index.js";
+import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 const france = ds.countries.find((c) => c.code === "FR")!;
 const researcher = france.routes.find((r) => r.id === "fr-talent-chercheur")!;
+
+/**
+ * Each country's line on the four-country verdict for a declared situation,
+ * by the country's name: the s19 sentence where the line carries one, or null.
+ */
+function tallyLinesFor(situation: string | undefined, data: Dataset = ds): Map<string, Tally["closedTo"]> {
+  const answers = { [DESTINATION_FIELD]: "all", ...(situation === undefined ? {} : { [SITUATION_FIELD]: situation }) };
+  const { layout } = verdictOn(data, answers);
+  if (layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
+  return new Map(layout.sections.map((s) => [s.name, s.tally.closedTo]));
+}
 
 /** The country question, as the four-country path reaches it: third, after the situation. */
 const countryQuestion = () =>
@@ -122,8 +133,8 @@ describe("s21 — question 3 marks a country the declared situation cannot use",
 
 describe("s21 — the four-country result says it in the country's line", () => {
   it("France's line: the s19 headline, then the quoted route as the link", () => {
-    const line = unscoredTally(ds, france, "research");
-    expect(line).not.toBeNull();
+    const line = tallyLinesFor("research").get(france.name);
+    expect(line).toBeTruthy();
     expect(line!.text).toBe(
       "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
@@ -134,22 +145,22 @@ describe("s21 — the four-country result says it in the country's line", () => 
     expect(line!.html).not.toMatch(/class="[^"]*\bout\b/);
   });
 
-  it("is the s19 sentence and the s19 words — one copy, in copy.ts", () => {
+  it("is the s19 sentence and the s19 words — one copy, in the copy module", () => {
     expect(unscoredTallyLine("France", "a research hosting agreement", "Talent — researcher (chercheur)")).toBe(
       `${unscoredHeadline("France", "a research hosting agreement").replace(/\.$/, "")} — Talent — researcher (chercheur) ${IS_QUOTED_NOT_CHECKED}.`,
     );
     // Without a quoted route the line is the headline alone.
     expect(unscoredTallyLine("France", "a research hosting agreement")).toBe(unscoredHeadline("France", "a research hosting agreement"));
-    expect(unscoredTally(ds, { code: "XX", name: "Nowhere", routes: [] }, "research")).toBeNull();
     // The question-2 mark reads the same clause.
     expect(notCheckedQuotedLine("France", "R")).toContain(IS_QUOTED_NOT_CHECKED);
   });
 
   it("only a country closed to the declared situation: the other three, the other answers and no answer leave the tally alone", () => {
-    for (const c of ds.countries.filter((c) => c.code !== "FR")) expect(unscoredTally(ds, c, "research"), c.code).toBeNull();
-    expect(unscoredTally(ds, france, "offer")).toBeNull();
-    expect(unscoredTally(ds, france, "none")).toBeNull();
-    expect(unscoredTally(ds, france, undefined)).toBeNull();
+    const research = tallyLinesFor("research");
+    for (const c of ds.countries.filter((c) => c.code !== "FR")) expect(research.get(c.name), c.code).toBeNull();
+    expect(tallyLinesFor("offer").get(france.name)).toBeNull();
+    expect(tallyLinesFor("none").get(france.name)).toBeNull();
+    expect(tallyLinesFor(undefined).get(france.name)).toBeNull();
   });
 
   it("escapes the names it prints", () => {
@@ -158,8 +169,8 @@ describe("s21 — the four-country result says it in the country's line", () => 
     const renamed = (c: Country): Country => c.code !== "FR" ? c
       : { ...c, routes: c.routes.map((r) => (r.id === researcher.id ? { ...r, name: "<x>" } : r)) };
     const doctored = { ...ds, countries: ds.countries.map(renamed) } as Dataset;
-    const line = unscoredTally(doctored, renamed(france), "research");
-    expect(line).not.toBeNull();
+    const line = tallyLinesFor("research", doctored).get(france.name);
+    expect(line).toBeTruthy();
     expect(line!.text).toBe("No route we check in France takes a research hosting agreement — <x> is quoted, not checked.");
     expect(line!.html).toContain(">&lt;x&gt;</a>");
     expect(line!.html).not.toContain("<x>");
@@ -179,8 +190,61 @@ describe("s21 — the four-country result says it in the country's line", () => 
     for (const s of fieldOptions(ds, SITUATION_FIELD)) {
       if (s.is_unknown) continue;
       expect(asked.get("all")!.has(s.value), s.value).toBe(true);
-      expect(ds.countries.some((c) => unscoredTally(ds, c, s.value) === null), s.value).toBe(true);
+      expect([...tallyLinesFor(s.value).values()].some((line) => line === null), s.value).toBe(true);
     }
+  });
+});
+
+/** The critique's walk: all four, research, France at question 3, then the
+ * quickest profile to a result that contradicts nothing — no qualification, a
+ * Turkish passport, no Dutch graduation, no top-200 degree. */
+const WALKED: Profile = {
+  [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "research", [SITUATION_COUNTRY_FIELD]: "fr", qualification: "none",
+  citizenship: "TR", nl_recent_grad: "no", top200_grad: "no",
+};
+
+describe("s21 — the walk's result, from the verdict", () => {
+  it("France's written state heads it; France's line says the sentence with its link, over the not-yet rows as before; the other three lines are their counts", () => {
+    const verdict = verdictOn(ds, WALKED);
+    expect(verdict.notices).not.toContain("Both cannot be true");
+    // The headline this walk ended on was "Nothing open on these answers."
+    // when s21 built it — the France line did the saying, third in the
+    // list. s26 gave the headline to the country the reader named at
+    // question 3 and led with its section; tests/s26 pins those two, and
+    // what this case keeps is s21's own: the sentence with its link on
+    // France's line.
+    expect(verdict.action.masthead.announced).toBe("No route we check in France takes a research hosting agreement.");
+    if (verdict.layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
+    const sections = verdict.layout.sections;
+    expect(sections.map((s) => s.name)).toEqual(["France", "Germany", "Spain", "Netherlands"]);
+    const [fr, germany, spain, netherlands] = sections;
+    expect(fr!.tally.closedTo!.text).toBe(
+      "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
+    );
+    const link = /<a ([^>]*)href="([^"]*)">([^<]*)<\/a>/.exec(fr!.tally.closedTo!.html);
+    expect({ text: link?.[3], href: link?.[2] }).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
+    expect(link?.[1]).not.toMatch(/class="[^"]*\bout\b/);
+    // The body stays: the not-yet rows, as before. One of the five also lacks
+    // the degree and is listed on its own; the other four fold.
+    expect(fr!.groups.filter((g) => g.kind !== "arranged").map((g) => g.kind)).toEqual(["not-yet"]);
+    const notYet = fr!.groups.find((g) => g.kind === "not-yet");
+    if (notYet?.kind !== "not-yet") throw new Error("France draws no not-yet group");
+    expect(notYet.count).toBe(5);
+    const fold = notYet.items.flatMap((i) => ("kind" in i && i.kind === "needs-path-answers" ? [i] : []))[0];
+    if (!fold) throw new Error("France's rows gated on a path answer do not fold");
+    expect(routesNeed(fold.cards.length, joinOr(fold.pathAnswers))).toBe("4 routes need a job offer or an intra-corporate transfer");
+    const ownRows = notYet.items.flatMap((i) => ("kind" in i ? [] : [i.html]));
+    expect(ownRows.join("")).toContain("Needs a job offer and a university degree");
+    // The other three lines, unchanged: each its not-yet count and nothing else.
+    const countOnly = (notYetCount: number): Tally => ({
+      open: 0, withinReach: 0, unsettled: 0, closed: 0, notYet: notYetCount, openUnknowns: 0, steps: 0, closedTo: null,
+    });
+    expect(germany!.tally).toEqual(countOnly(8));
+    expect(spain!.tally).toEqual(countOnly(4));
+    expect(netherlands!.tally).toEqual(countOnly(6));
+    // The critique's four strings, absent from the whole page then, present now.
+    for (const word of ["chercheur", "researcher", "talent-researcher", "research hosting"])
+      expect(verdictHtml(verdict) + link?.[2], word).toContain(word);
   });
 });
 
@@ -218,13 +282,10 @@ const MARKS = 'JSON.stringify([...document.querySelectorAll(".qcard .opt-mark")]
 const DESCRIBED = 'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
   + ' value: b.dataset.value, by: b.getAttribute("aria-describedby"),'
   + ' resolves: b.getAttribute("aria-describedby") ? !!document.getElementById(b.getAttribute("aria-describedby")) : null })))';
-const LINES = 'JSON.stringify([...document.querySelectorAll(".country-sec")].map((d) => ({'
-  + ' name: d.querySelector("summary").firstChild.textContent.trim(),'
-  + ' tally: d.querySelector(".tally").textContent.trim(),'
-  + ' link: d.querySelector(".tally a") ? { text: d.querySelector(".tally a").textContent, href: d.querySelector(".tally a").getAttribute("href"),'
-  + '   glyph: getComputedStyle(d.querySelector(".tally a"), "::after").content, out: d.querySelector(".tally a").classList.contains("out") } : null,'
-  + ' heads: [...d.querySelectorAll(".cbody .ghead")].map((h) => h.textContent.trim()),'
-  + ' body: d.querySelector(".cbody").textContent })))';
+/** The mark the stylesheet draws after the link in each country's line that
+ * carries one. */
+const LINK_GLYPHS = 'JSON.stringify([...document.querySelectorAll(".country-sec .tally a")]'
+  + '.map((a) => getComputedStyle(a, "::after").content))';
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
 const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -268,11 +329,8 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
         await settle(900);
         const result = {
           state: await page.evaluate('document.getElementById("app").dataset.state'),
-          headline: await page.evaluate('document.getElementById("headline").textContent.trim()'),
-          subline: await page.evaluate('document.getElementById("subline").textContent.trim()'),
-          status: await page.evaluate('document.getElementById("cstatus").textContent'),
-          lines: JSON.parse(await page.evaluate(LINES)),
-          main: await page.evaluate('document.getElementById("main").textContent'),
+          glyphs: JSON.parse(await page.evaluate(LINK_GLYPHS)),
+          painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, WALKED)))),
           problems: page.problems(),
         };
         return { q3, q4, result };
@@ -283,11 +341,7 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
           described: { value: string; by: string | null; resolves: boolean | null }[];
         };
         q4: string;
-        result: {
-          state: string; headline: string; subline: string; status: string; main: string; problems: string[];
-          lines: { name: string; tally: string; heads: string[]; body: string;
-            link: { text: string; href: string; glyph: string; out: boolean } | null }[];
-        };
+        result: { state: string; glyphs: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] };
       };
 
       const { q3, q4, result } = seen;
@@ -311,35 +365,12 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
 
       expect(result.problems).toEqual([]);
       expect(result.state).toBe("results");
-      expect(result.main).not.toContain("Both cannot be true");
-      // The headline this walk ended on was "Nothing open on these answers."
-      // when s21 built it — the France line did the saying, third in the
-      // list. s26 gave the headline to the country the reader named at
-      // question 3 and led with its section; tests/s26 pins those two, and
-      // what this case keeps is s21's own: the mark at question 3, and the
-      // sentence with its link on France's line.
-      expect(result.headline).toBe("No route we check in France takes a research hosting agreement.");
-      expect(result.lines.map((l) => l.name)).toEqual(["France", "Germany", "Spain", "Netherlands"]);
-      const [fr, germany, spain, netherlands] = result.lines;
-      expect(fr!.tally).toBe(
-        "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
-      );
-      expect(fr!.link).toEqual({
-        text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher"), glyph: "none", out: false,
-      });
-      // The body stays: the not-yet cards, as before.
-      expect(fr!.heads).toEqual(["Not yet (5)"]);
-      // (One of the five also lacks the degree and is listed on its own; the other four group.)
-      expect(fr!.body).toContain("4 routes need a job offer or an intra-corporate transfer");
-      expect(fr!.body).toContain("Needs a job offer and a university degree");
-      // The other three lines, unchanged.
-      expect(germany!.tally).toBe("8 not yet");
-      expect(germany!.link).toBeNull();
-      expect(spain!.tally).toBe("4 not yet");
-      expect(netherlands!.tally).toBe("6 not yet");
-      // The critique's four strings, absent from the whole page then, present now.
-      for (const word of ["chercheur", "researcher", "talent-researcher", "research hosting"])
-        expect(result.main + fr!.link!.href, word).toContain(word);
+      // The walk ends on the verdict its answers compose — France's written
+      // state, the sentence with its link on France's line ("s21 — the walk's
+      // result, from the verdict" reads it) — and France's link, the only one
+      // in a line, is drawn with no outbound mark.
+      expect(result.painted).toEqual(PAINTED_AS_COMPOSED);
+      expect(result.glyphs).toEqual(["none"]);
     } finally { server.close(); }
   }, 120_000);
 });

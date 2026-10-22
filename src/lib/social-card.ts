@@ -9,7 +9,8 @@ import { esc } from "./reason.ts";
  * `route-page.ts` does: the script was retyping the tagline, the headline and
  * every colour it drew with, so the card could disagree with the product about
  * what the product says (Standards review, 2026-09-07). The words come from
- * `copy.ts`, the palette from `tokens.css`, and the numbers from the dataset.
+ * the copy module (`lib/copy/`), the palette from `tokens.css`, and the
+ * numbers from the dataset.
  *
  * `docs/spine/design/s6-identity-a.html`, panel 3, at full size. The card
  * carries no wordmark (human, 2026-09-07): the mark is the name. Two stamps in
@@ -47,9 +48,9 @@ export const CARD_HEADLINE = "Which work-permit routes could fit?";
  *
  * The render script is plain Node with no build step, and Node resolves a
  * specifier literally, so this module keeps its imports few: the words are
- * passed in rather than imported from `copy.ts`, and its one relative import,
- * `esc`, is named by its `.ts` specifier. That keeps it readable by the script,
- * the site and the suite alike.
+ * passed in rather than imported from the copy module (`lib/copy/`), and its
+ * one relative import, `esc`, is named by its `.ts` specifier. That keeps it
+ * readable by the script, the site and the suite alike.
  */
 export function socialCardFacts(
   dataset: Dataset, newestReadDate: string,

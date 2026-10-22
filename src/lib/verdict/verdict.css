@@ -1,0 +1,242 @@
+/*
+ * The verdict's styles: everything the results body draws, beside the module
+ * that draws it, imported by its entry. Every colour comes from tokens.css, a
+ * size from it where its scale has one; the page keeps the frame, the
+ * question card and the ledger.
+ */
+/* What the interview asks of a route, said on the card in the same words
+   the route page uses — ink on card, no new colour and no verdict colour. */
+.scoped{font:var(--text-source);color:var(--color-muted);margin:.35rem 0 .1rem}
+/* The door under the scope line: a standalone internal link, so the two
+   signals the site already gives one — the underline and the prose-link
+   colour (.sub a) — together, on a line of its own, at the tap size (s27). */
+.scoped .door{display:flex;width:fit-content;align-items:center;min-height:var(--tap-min);color:var(--color-band);
+  text-decoration:underline;text-decoration-color:var(--color-line);text-underline-offset:.2em}
+/* Two answers that cannot both be true, said before the verdicts. */
+.clash{font-size:.9rem;color:var(--color-ink);background:var(--color-near-soft);border-left:3px solid var(--color-near);padding:.6rem .8rem;margin:0 0 .8rem}
+
+/* Result summary + groups (s3). The counters are one plain line, with no
+   pill, border or ground: bordered, they read as tabs and did nothing when
+   pressed (F4). Each count keeps its status colour. */
+.strip{display:flex;gap:.6rem;margin:0 0 .4rem;flex-wrap:wrap}
+.strip span{font:600 .78rem var(--font-sans);letter-spacing:.08em;text-transform:uppercase}
+.strip span + span::before{content:"·";margin-right:.6rem;color:var(--color-muted)}
+.strip .s-met{color:var(--color-met)}
+.strip .s-near{color:var(--color-near)}
+.strip .s-hold{color:var(--color-hold)}
+.strip .s-unsettled{color:var(--color-ink)}
+.strip .s-closed{color:var(--color-hold)}
+/* The line at the end of the results body: a closing line under a rule,
+   quieter than a card and louder than the footer, in the voice of the
+   sub-line rather than a verdict colour. Its one word is a link and a tap
+   target in its own right (s13; moved here from under the strip on the
+   human's walk, 2026-09-16). */
+.say{margin:var(--space-5) 0 0;padding-top:var(--space-3);border-top:var(--rule-soft);font-size:.88rem;color:var(--color-muted);line-height:1.6}
+/* The word reaches the tap floor the way the route page's inline links do
+   (PAGE_CSS a.tap): padding out, margin back, so the line box the sentence
+   wraps in does not grow with it. */
+.say a{color:var(--color-ink);display:inline-block;padding:calc((var(--tap-min) - 1.6em) / 2) 0;margin:calc((1.6em - var(--tap-min)) / 2) 0}
+/* A heading element, sized as the section label it always looked like. */
+h2.ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);
+  border-bottom:var(--rule-soft);padding-bottom:.35rem;margin:1.4rem 0 .8rem}
+/* The card the reader came from, marked where they left off. */
+.route[data-came-from],details.route-hold[data-came-from]{border-left:3px solid var(--color-band)}
+.from-here{font:600 .74rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--color-band);margin-bottom:.35rem}
+
+/* s5: collapsible country sections (multi-destination results).
+   NB: named .country-sec — .country is the small chip on cards, and the
+   chip's uppercase/letter-spacing would inherit into the whole section. */
+details.country-sec > summary{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;cursor:pointer;list-style:none;
+  font:700 .8rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-ink);
+  border-bottom:2px solid var(--color-ink);padding-bottom:.4rem;margin:1.8rem 0 .4rem}
+details.country-sec > summary::-webkit-details-marker{display:none}
+/* The mark is drawn on the name, not on the summary: as the summary's own
+   ::before it was a third flex item, and space-between put it at the far
+   left with the name in the middle (v1.1 gate critique, P8 — s27). An
+   inline block with no tracking of its own, so the space to the name is
+   the one margin and not the summary's .3em letter-spacing paid twice.
+   One line, always: beside the s21 sentence the name is the flex item
+   that gives way, and squeezed to its widest word it put the mark on a
+   line above the name (measured at 1280). */
+details.country-sec > summary > .cname{white-space:nowrap}
+details.country-sec > summary > .cname::before{content:"▸";display:inline-block;letter-spacing:0;margin-right:.35em;color:var(--color-muted)}
+details.country-sec[open] > summary > .cname::before{content:"▾"}
+.tally{font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none;text-align:right}
+/* The steps count is not a link, so it wears no link colour: ink, like the
+   step headings (ruling 9 on #55; the human's ruling on #178). */
+.tally i{font-style:normal;color:var(--color-ink)}
+/* A line that is the s19 sentence rather than a count (s21): a sentence
+   is read, not tallied, so it takes the mark's voice — the sans, the
+   muted ink — and its one door is the quoted route's page, internal, so
+   no ↗ (same as .sub a). */
+.tally.said{font:400 .8rem var(--font-sans);letter-spacing:0;line-height:1.45;max-width:34rem}
+.tally a{color:var(--color-band);font-weight:600;text-decoration:none}
+.cbody{padding-bottom:.4rem}
+.cbody .ghead{margin:1rem 0 .6rem}
+.ghead b{color:var(--color-met)} .ghead.near b{color:var(--color-near)} .ghead.hold b{color:var(--color-hold)}
+.ghead.unsettled b{color:var(--color-ink)}
+.ghead.closed b{color:var(--color-hold)}
+details.route-hold{background:var(--color-card);border:var(--rule-soft);padding:.55rem .9rem}
+details.route-hold summary{cursor:pointer;display:flex;gap:.8rem;align-items:baseline;list-style:none;font-size:.88rem;
+  min-height:var(--tap-min);padding:.35rem 0}
+details.route-hold summary::-webkit-details-marker{display:none}
+.hold-name{font:600 .92rem var(--font-serif)}
+.hold-why{color:var(--color-muted);font-size:.8rem;margin-left:auto;text-align:right}
+.hold-body{padding:.6rem 0 .3rem;border-top:var(--rule-dotted);margin-top:.5rem}
+.faildetail{list-style:none;display:grid;gap:.3rem;margin:.5rem 0 .2rem;font-size:.84rem;color:var(--color-prose)}
+.faildetail li::before{content:"✗ ";color:var(--color-stamp)}
+.faildetail li.unknown::before{content:"? ";color:var(--color-hold);font-weight:700}
+.faildetail b{color:var(--color-ink)}
+.ghead.unlockh b{color:var(--color-band)}
+.unlock{background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-band);padding:.85rem 1.05rem;margin-bottom:.7rem}
+/* A step's heading is not a link, so it wears no link colour: ink, the
+   step's name in bold ink (F4). */
+.unlock h3{font:600 .95rem var(--font-serif);color:var(--color-ink);margin-bottom:.35rem}
+.unlock-means{font-size:.82rem;color:var(--color-muted);margin:-.15rem 0 .4rem;max-width:34rem}
+.unlock ul{list-style:none;display:grid;gap:.3rem;font-size:.86rem;color:var(--color-prose)}
+.unlock li::before{content:"→ ";color:var(--color-met);font-weight:700}
+.unlock li b{color:var(--color-met)}
+.unlock li i{color:var(--color-near);font-style:normal;font-weight:600}
+.unlock-hint{font-size:.8rem;color:var(--color-muted);margin:-.2rem 0 .4rem;max-width:38rem}
+/* #175: the offer line opens the steps block, plain text in ink, not a card;
+   the arranged line follows it in the muted text a hint is set in. */
+.offer-line{font-size:.88rem;color:var(--color-ink);margin:0 0 .7rem;max-width:38rem}
+.arranged-line{font-size:.84rem;color:var(--color-muted);margin:.1rem 0 1rem;max-width:38rem}
+/* s5b: conditions the authority applies that the interview never asked —
+   the card must not read as a green light on them (critique #2). */
+.precond{font-size:.83rem;color:var(--color-prose);border-left:3px solid var(--color-hold);padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}
+.precond b{color:var(--color-hold)}
+/* A condition the interview asked, answered: the band's colour, not the
+   hold's — it is not a bar left unchecked (s19, F8). */
+.precond.asked{border-left-color:var(--color-band)}
+.precond.asked b{color:var(--color-band)}
+/* A caveat is not a hurdle — it reads as an aside, not as one more bar. */
+.caveat{font-size:.83rem;color:var(--color-muted);border-left:3px solid var(--color-muted);
+  padding:.45rem .75rem;margin-top:.55rem;max-width:34rem}
+.caveat b{color:var(--color-ink)}
+/* A caveat we could not find the wording for says so in its own voice,
+   and says why (human catch 2026-09-07). */
+.caveat.nosrc i{font-style:italic;opacity:.85}
+.caveat.ours{border-left-style:dashed}
+/* s7: a condition the authority itself does not apply to this passport.
+   It is news in the reader's favour, so it wears the met colour rather
+   than the muted rule a caveat wears. */
+.caveat.carveout{border-left-color:var(--color-met);color:var(--color-ink)}
+.caveat.carveout b{color:var(--color-met)}
+/* s5b: the situation-gated rows, said once (critique #5b). */
+details.hold-group{margin-top:.1rem}
+details.hold-group > summary{cursor:pointer;list-style:none;font:600 .82rem var(--font-sans);color:var(--color-muted);
+  background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-hold);padding:.55rem .9rem}
+details.hold-group > summary::-webkit-details-marker{display:none}
+details.hold-group > summary::before{content:"▸ ";color:var(--color-muted)}
+details.hold-group[open] > summary::before{content:"▾ "}
+.hold-group-body{display:grid;gap:var(--gap-cards);padding:.5rem 0 .2rem .9rem}
+/* s5b: the passport that needs no permit (critique #1). */
+.notice{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);border-left:3px solid var(--color-met);
+  padding:var(--pad-card);margin-bottom:var(--gap-cards)}
+.notice h3{font:var(--text-route);color:var(--color-met);margin-bottom:.35rem}
+/* s5c: an extra-rights notice sits BESIDE a computed verdict — the met
+   green would read as a route the rules opened, which it is not. */
+.notice.extra-rights,.notice.open-question{border-left-color:var(--color-band)}
+.notice.extra-rights h3,.notice.open-question h3{color:var(--color-ink)}
+/* s8: a route the authority closes to this reader's passport. It wears the
+   hold grey and not the met green, and it is deliberately not the hold
+   card: nothing about it is "not yet". */
+.closed{background:var(--color-card);border:var(--rule-soft);border-left:3px solid var(--color-hold);padding:var(--pad-card)}
+.closed h3{font:var(--text-route);margin-bottom:.35rem}
+.closed .why{margin-bottom:.5rem}
+.faildetail li.moot::before,.faildetail li.where::before{content:"— ";color:var(--color-muted)}
+.faildetail li.moot{color:var(--color-met)}
+.learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
+.learn a{color:var(--color-band);font-weight:600;text-decoration:none;
+  display:inline-flex;align-items:center;min-height:var(--tap-min)}
+.learn a::after{content:" ↗"}
+
+/* Result cards */
+.stack{display:grid;gap:var(--gap-cards)}
+.route{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:var(--pad-card)}
+/* The card's first line: the country's chip and the badge beside it, or the
+   badge alone, above the title. Both are short and never wrap, so the line
+   is the same at every width and for every title (#95). */
+.top{display:flex;gap:.6rem;align-items:center;margin-bottom:.3rem}
+.country{font:700 .68rem var(--font-sans);letter-spacing:.22em;text-transform:uppercase;color:var(--color-muted)}
+h3{font:var(--text-route);margin:.15rem 0 .25rem}
+.st{font:700 .66rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;padding:.3rem .65rem;white-space:nowrap}
+.st.met{background:var(--color-met-soft);color:var(--color-met)}
+.st.near{background:var(--color-near-soft);color:var(--color-near)}
+.st.hold{background:var(--color-hold-soft);color:var(--color-hold)}
+.st.unsettled{background:var(--color-hold-soft);color:var(--color-ink)}
+.why{color:var(--color-prose);font-size:.88rem;max-width:var(--max-prose)}
+
+.rail{margin:.95rem 0 .2rem;max-width:34rem}
+.bar{position:relative;height:var(--rail-h);background:var(--rail-track);border-radius:99px}
+.you{position:absolute;top:0;bottom:0;background:var(--rail-band);border-radius:99px}
+/* A band open at one end has no edge to draw a bar to: it is a point at the
+   rail's edge on its open side, in the band's colour, and its row's caption
+   says which way it runs. */
+.you-point{position:absolute;top:-3px;width:13px;height:13px;border-radius:50%;background:var(--rail-band)}
+.you-point.at-left{left:0}
+.you-point.at-right{right:0}
+/* NB: named .rail-tick — .tick is the chosen-answer checkmark on the
+   question card, styled by the page, and its margin-left was pushing every
+   line on this bar off the amount it marks. */
+.rail-tick{position:absolute;top:-5px;width:2px;height:17px;background:var(--rail-tick)}
+/* One line per mark on the bar, in reading order, each with the swatch of
+   the thing it names. The labels used to be positioned over the bar and
+   wrapped into a three-line stack at the right edge; a list cannot collide
+   at any width, which is the same conclusion the route page's rail reached
+   (critique B1, human walk 2026-09-08). */
+.rail-rows{list-style:none;margin:.55rem 0 0;padding:0;display:grid;gap:.15rem;
+  font:500 .72rem var(--font-mono)}
+.rail-rows li{display:flex;align-items:baseline;gap:.5rem;padding:.12rem 0;
+  border-bottom:var(--rule-dotted)}
+.rail-rows li:last-child{border-bottom:none}
+.rail-rows b{color:var(--color-ink);font-weight:600;white-space:nowrap}
+.rail-rows li > span:last-child{color:var(--color-muted);text-align:right;margin-left:auto;
+  white-space:normal;line-height:1.35}
+.sw{flex:none;width:.62rem;height:.62rem;border-radius:2px;align-self:center}
+.sw-asks{background:var(--rail-tick)}
+.sw-you{background:var(--rail-band)}
+.rail-rows li:last-child b{color:var(--color-band)}
+.gapnote{font-size:.85rem;background:var(--color-near-soft);border-left:3px solid var(--color-near);color:var(--color-near-ink);
+  padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
+.ptsline{font:500 .8rem var(--font-mono);color:var(--color-ink);margin:.5rem 0 .1rem}
+/* The tally reads in the met colour only where the points are met: the
+   same line on a not-yet card is a count, not a verdict (s23, F4). */
+.ptsline.met b{color:var(--color-met)}
+
+.foot{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;border-top:var(--rule-dotted);
+  margin-top:.85rem;padding-top:.6rem;flex-wrap:wrap}
+.srcs{display:grid;gap:.3rem;flex:1;min-width:16rem}
+.src{font:var(--text-source);color:var(--color-muted)}
+.src b{color:var(--color-met);font-weight:500}
+.src.nosrc{font-style:italic}
+/* Where a route states two thresholds, both quotes stay — the reader may
+   want to know the other exists — but only one of them is theirs. */
+.src .applies{color:var(--color-met)}
+.src.unapplied{opacity:.72}
+.src .applies-not{font-style:italic}
+/* The link that proves the quote was the hardest thing on the page to tap:
+   84×16 px against a floor of 44 (isolated v1-gate critique, 2026-09-08,
+   F6). Its box is the floor now, and the tail keeps its own line height. */
+.next{font:600 .78rem var(--font-sans);text-decoration:none;white-space:nowrap;
+  display:inline-flex;align-items:center;min-height:var(--tap-min)}
+.next::after{content:" ↗"}
+
+@media (max-width:760px){
+  details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
+  /* The sentence takes a row of its own under the name; the name stays
+     where every other country's is, at the marker (s21). */
+  details.country-sec > summary.said{justify-content:flex-start}
+  .tally.said{flex-basis:100%;max-width:none}
+  .tally{text-align:left}
+}
+
+@media print{
+  .route,.unlock,.notice,details.route-hold{page-break-inside:avoid;border:1px solid var(--print-rule)}
+  .src{color:var(--print-ink);font-size:9pt}
+  /* After the page's own print rule for every link's address, which this
+     stylesheet follows in the page's <head>. */
+  .learn a::after,.next::after{content:none}
+}

@@ -28,6 +28,12 @@
   --color-hold-soft: #edeadf;
   --color-band: #31519a;        /* the "your band" blue — the user's own declaration */
   --color-band-soft: #e2e8f6;
+  /* A card's own prose — its reason, its unlock list, its preconditions, its
+     failed rules — a step darker than the muted labels around it. */
+  --color-prose: #54513f;
+  /* The gap note's text on --color-near-soft: the near colour taken down
+     until it reads as body text on its own ground. */
+  --color-near-ink: #63430f;
 
   /* ---- Typography ---- */
   --font-serif: Cambria, Georgia, serif;            /* verdict headings, route names */
@@ -104,6 +110,12 @@
      on it. A rung of its own, because a raw rgba() in a stylesheet is exactly
      the greppable deviation this file exists to prevent. */
   --shadow-pop: 0 6px 18px rgba(43, 42, 34, .12);
+
+  /* ---- Print ---- */
+  /* Paper is black on white: a printed card's frame in a mid grey, and the
+     quotes under it in black. */
+  --print-rule: #999;
+  --print-ink: #000;
 }
 
 /**

@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset, type Profile } from "permit-rulebook-data";
-import { resumedLine } from "../src/lib/copy.js";
+import { resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
@@ -46,7 +46,7 @@ const seed = (profile: Profile | null): string =>
     : "localStorage.clear()";
 
 describe("the resumed line, as copy and as markup", () => {
-  it("counts the answers kept, in copy.ts", () => {
+  it("counts the answers kept, in the copy module", () => {
     expect(resumedLine(1)).toBe("Continuing where you left off — 1 answer kept.");
     expect(resumedLine(4)).toBe("Continuing where you left off — 4 answers kept.");
   });

@@ -1,18 +1,14 @@
-// @level application presentation
-import { esc, escAttr } from "./reason.js";
-import type { UnscoredVerdict } from "./situations.js";
-
+// @level application
 /**
- * The masthead — headline and subtitle — as a pure function of which screen is
- * showing.
+ * The interview's flow and its history: which screen a gesture lands on, and
+ * what the browser's history does about it. No words: a question screen's
+ * masthead is written beside the question card (`question.ts`), a verdict's
+ * inside the verdict (`verdict/`).
  *
- * It was not one before: "Start over" reset the answers but not the subtitle,
- * so question 1 of a brand-new interview read "…compared your 13 answers
- * against 23 published rule sets… every value below shows its official quote"
- * — past tense, a count of answers nobody had given, and "below" pointing at an
- * empty page (product-critique v0.7, blocker B4). A claim about a comparison
- * can only be produced from a screen that HAS one, which is what the type below
- * enforces.
+ * A claim about a comparison can only stand on a screen that has one. The
+ * type says so: only the results and notice screens carry a masthead, and
+ * only the two moves that end on a verdict produce one (product-critique
+ * v0.7, blocker B4).
  */
 export type Screen =
   /**
@@ -22,30 +18,10 @@ export type Screen =
    * phone (product-critique v0.7, F8).
    */
   | { kind: "question"; started: boolean }
-  /**
-   * The verdict, with what was actually compared. `explore` is the nothing-
-   * open screen's own next step: with no single step to name, it still has to
-   * say what to do next, and what it can point at depends on whether there
-   * are country sections below to send anyone to (product-critique v0.7, F7).
-   */
-  | {
-    kind: "results"; answered: number; routes: number;
-    /** The verdict in words, and the words after it the headline stresses. */
-    headline: string; emphasis?: string;
-    nearest?: string; explore?: Explore;
-    /**
-     * The written state for a situation no scored route in the declared
-     * country takes: the whole subline, in place of the count of what was
-     * compared, with one door in it (s19). The verdict is not "nothing open";
-     * it is that the route is absent, and where its rules are read.
-     */
-    unscored?: UnscoredVerdict;
-  }
+  /** The verdict, with the masthead the comparison composed. */
+  | { kind: "results"; masthead: VerdictMasthead }
   /** A published rule answers the person directly; no routes were compared. */
-  | { kind: "notice"; title: string };
-
-/** How many countries the results screen is showing. */
-export type Explore = "one-country" | "several-countries";
+  | { kind: "notice"; masthead: VerdictMasthead };
 
 export interface Masthead {
   /**
@@ -57,94 +33,28 @@ export interface Masthead {
   headline: string;
   /** textContent — never markup, so nothing can be smuggled into it. */
   subline: string;
-  /**
-   * The same words with the one link the s19 written state carries, composed
-   * here from escaped parts and present only on that screen: the page draws it
-   * where it exists and writes `subline` as text everywhere else. The text form
-   * stays the one that is announced and the one every test reads.
-   */
-  sublineHtml?: string;
 }
 
-/**
- * The promise, before anything has been compared. Present tense throughout.
- *
- * In the passive, on the human's choice (2026-09-16): the sentence used to
- * have "Code" as its subject, and a sentence whose subject is "Code" read
- * oddly to them on two walks. The subject leaves the sentence; the claim — a
- * comparison by code, not a judgement by a person — stays. The results
- * sentence below went the same way.
- */
-export const INTRO_SUBLINE =
-  "Your answers are compared against published rules — every value shows its official quote and the " +
-  "date we read it from the source. Your answers stay on this device. At the end: which routes look open, " +
-  "how close the near-misses are, and which single step would unlock more.";
-
-/** Once the interview is under way the promise has been read; one line is enough. */
-export const SHORT_SUBLINE =
-  "Every value at the end shows its official quote and the date we read it. Your answers stay on this device.";
-
-/**
- * `<em>`, not `<b>`: this is the standing tagline, and it is a line of its own
- * under the question (human, 2026-09-08). `<b>` stays for the inline emphasis
- * a result headline puts on a number, which must not break the line.
- */
-export const INTRO_HEADLINE = "Which work-permit routes could fit? <em>A few quick questions.</em>";
-
-/** The only two ways the nothing-open screen can offer a way forward. Written
- * here, with the rest of the masthead copy: appending a sentence to the
- * element afterwards made a second author of the one line the type exists to
- * keep honest (review J2). */
-const EXPLORE_SENTENCE: Record<Explore, string> = {
-  "one-country": " Change an answer to explore — every route below says what it asks for, and quotes it.",
-  "several-countries": " Change an answer to explore — or see each country's reasons below.",
-};
-
-/**
- * What the results compared, counted in routes — the thing the reader came
- * for — and in the reader's verb, "checked" (#151). The passive, as the intro
- * (human, 2026-09-16): the count is the subject, so the verb agrees with it.
- */
-export const answersCheckedLine = (answered: number, routes: number): string =>
-  `Your ${answered} answer${answered === 1 ? "" : "s"} ${answered === 1 ? "was" : "were"} checked against the `
-  + `published rules of ${routes} route${routes === 1 ? "" : "s"}.`;
-
-const headlineHtml = ({ headline, emphasis }: { headline: string; emphasis?: string }): string =>
-  emphasis ? `${esc(headline)} <b>${esc(emphasis)}</b>` : esc(headline);
-
-export function mastheadFor(screen: Screen): Masthead {
-  switch (screen.kind) {
-    case "question":
-      return { headline: INTRO_HEADLINE, subline: screen.started ? SHORT_SUBLINE : INTRO_SUBLINE };
-    case "notice":
-      return {
-        headline: `${esc(screen.title)}.`,
-        subline: "Nothing to compare: the published rule below answers your situation directly.",
-      };
-    case "results": {
-      if (screen.unscored) {
-        const { subline, door } = screen.unscored;
-        // The door is a link only in the HTML form; the text form is the
-        // sentence itself, so what is announced is what is read.
-        const sublineHtml = door
-          ? esc(subline).replace(esc(door.text), `<a href="${escAttr(door.href)}">${esc(door.text)}</a>`)
-          : esc(subline);
-        return { headline: headlineHtml(screen), subline, sublineHtml };
-      }
-      let subline = `${answersCheckedLine(screen.answered, screen.routes)} Every value below shows its official ` +
-        "quote and the date we read it from the source.";
-      if (screen.nearest) subline += ` Nearest: ${screen.nearest}.`;
-      if (screen.explore) subline += EXPLORE_SENTENCE[screen.explore];
-      return { headline: headlineHtml(screen), subline };
-    }
-  }
+/** A verdict screen's masthead, as the verdict composed it. */
+export interface VerdictMasthead extends Masthead {
+  /**
+   * The same words as `subline` with the one link the s19 written state
+   * carries, composed from escaped parts and present only on that screen: the
+   * page draws it where it exists and writes `subline` as text everywhere
+   * else. The text form stays the one that is announced and the one every test
+   * reads.
+   */
+  sublineHtml?: string;
+  /** The sentence the live region announces: the headline's words, without
+   * its markup. */
+  announced: string;
 }
 
 /**
  * Every move the page can make between screens. B4 was a wiring defect rather
  * than a rendering one — "Start over" cleared the answers and left the claim
- * about them standing — so the transitions live here beside the renderer,
- * where a property test can walk them in any order.
+ * about them standing — so the transitions live here, where a property test
+ * can walk them in any order.
  */
 export type FlowAction =
   /** An answer recorded, or an edit finished. */
@@ -156,14 +66,11 @@ export type FlowAction =
   /** "Start over". */
   | { kind: "reset" }
   /** The interview ended and the routes were compared. */
-  | {
-    kind: "compare"; routes: number; headline: string; emphasis?: string;
-    nearest?: string; explore?: Explore; unscored?: UnscoredVerdict;
-  }
+  | { kind: "compare"; masthead: VerdictMasthead }
   /** A published notice answers the person outright, so nothing was compared. */
-  | { kind: "answered-outright"; title: string };
+  | { kind: "answered-outright"; masthead: VerdictMasthead };
 
-/** What the masthead needs to know about the interview so far. */
+/** What the flow needs to know about the interview so far. */
 export interface Interview {
   /** Questions answered and on file — the page's `asked`. */
   answered: number;
@@ -183,37 +90,10 @@ export function screenAfter(action: FlowAction, interview: Interview): Screen {
     case "restore":
       return { kind: "question", started: interview.answered > 0 };
     case "compare":
-      return {
-        kind: "results", answered: interview.answered, routes: action.routes,
-        headline: action.headline, emphasis: action.emphasis, nearest: action.nearest, explore: action.explore, unscored: action.unscored,
-      };
+      return { kind: "results", masthead: action.masthead };
     case "answered-outright":
-      return { kind: "notice", title: action.title };
+      return { kind: "notice", masthead: action.masthead };
   }
-}
-
-/**
- * Whether a line makes a checkable statement about a comparison that happened.
- * Used by the test that no question screen ever carries one — the symptom B4
- * was, rather than the one line that produced it. The four shapes such a
- * statement takes: the verb, its denial, a pointer at results that may not be
- * there, and a count of what was compared. (A bare digit is not one of them —
- * that made the name a description of something else, review S6.)
- *
- * The verb is the past one. Since the intro went passive (s17) the word
- * "compared" also stands in a sentence that claims nothing has happened —
- * "your answers ARE compared" is the promise, in the present — so the shape
- * this looks for is the comparison that has been done: "were compared", "was
- * compared", or the old active "compared your". Preceded by "is" or "are" it
- * is the promise and does not count. The results say "were checked" (#151),
- * and that is the same claim.
- */
-export function claimsAComparison(text: string): boolean {
-  return /(?<!\b(?:is|are)\s)\bcompared\b/i.test(text) ||
-    /\b(?:was|were)\s+checked\b/i.test(text) ||
-    /nothing to compare/i.test(text) ||
-    /\bbelow\b/i.test(text) ||
-    /\b\d+\s+(?:answers?|routes?|published|rule)/i.test(text);
 }
 
 /**

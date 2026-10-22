@@ -2,7 +2,7 @@
 import {
   phraseOf, findTerritory, matchOptions, territoryPhraseOf, territoryPhraseAtStartOf, type FieldOption,
 } from "permit-rulebook-data";
-import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "./copy.js";
+import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "./copy/interview.js";
 
 /**
  * The selection semantics of the country control, as a pure state machine.

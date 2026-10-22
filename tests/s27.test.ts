@@ -4,18 +4,23 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, evaluate, fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
-import { MENU, MENU_CLOSE, NOT_FOUND_START, NOT_FOUND_START_NOTE, PRODUCT_NAME, ROUTE_DOOR, ROUTE_TAGLINE } from "../src/lib/copy.js";
+import { MENU, MENU_CLOSE, PRODUCT_NAME } from "../src/lib/copy/frame.js";
+import { NOT_FOUND_START, NOT_FOUND_START_NOTE } from "../src/lib/copy/not-found.js";
+import { ROUTE_DOOR } from "../src/lib/copy/verdict.js";
+import { ROUTE_TAGLINE } from "../src/lib/copy/route-page.js";
 import { MENU_SCRIPT, siteHeader } from "../src/lib/identity.js";
 import { navCountries } from "../src/lib/country-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { declarationHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { scopedHtml } from "../src/lib/card.js";
 import { glossSection } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
+import {
+  PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor,
+} from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -42,7 +47,7 @@ const mastheadOf = (html: string): string => {
  */
 
 describe("1 — the menu button says what it does", () => {
-  it("the two words live in copy.ts and reach the button as attributes; the script carries neither", () => {
+  it("the two words live in the copy module and reach the button as attributes; the script carries neither", () => {
     expect(MENU).toBe("Menu");
     expect(MENU_CLOSE).toBe("Close");
     const header = siteHeader(navCountries(ds));
@@ -54,7 +59,7 @@ describe("1 — the menu button says what it does", () => {
     expect(button![1]).toContain(`data-word-closed="${MENU}"`);
     expect(button![1]).toContain(`data-word-open="${MENU_CLOSE}"`);
     // The script reads the words off the button: no user-facing string is
-    // typed into it, so a change of word is one edit in copy.ts.
+    // typed into it, so a change of word is one edit in the copy module.
     expect(MENU_SCRIPT).toContain("dataset.wordOpen");
     expect(MENU_SCRIPT).toContain("dataset.wordClosed");
     for (const word of [MENU, MENU_CLOSE])
@@ -149,7 +154,7 @@ const OPENED: Profile = {
 describe("8 — the card's door is a door", () => {
   it("the scope line stands alone, no separator after it; the door follows as its own element, the copy's words, an internal href", () => {
     const address = routeAddresses(ds).find((a) => a.route.id === "de-chancenkarte")!;
-    const html = scopedHtml(address.route, OPENED, url(address.path));
+    const html = blocksIn(cardOn(verdictFor(OPENED), "de-chancenkarte"), "scoped");
     const m = /^<div class="scoped">([^<]*)<a class="door" href="([^"]+)">([^<]*)<\/a><\/div>$/.exec(html);
     expect(m, html).not.toBeNull();
     const [, scope, href, words] = m!;
@@ -159,8 +164,26 @@ describe("8 — the card's door is a door", () => {
     expect(href).toBe(url(address.path));
     expect(href!.startsWith("/")).toBe(true);
     expect(html).not.toContain(" · <a");
-    // And that card is one the walk below draws.
+    // And that card is one the walk below draws: the first whole card on its screen.
     expect(evaluate(ds, OPENED).find((r) => r.route.id === "de-chancenkarte")!.status).toBe("met");
+    expect(everyCardIn(verdictFor(OPENED)).find((c) => c.html.includes('<article class="route"'))?.route).toBe("de-chancenkarte");
+  });
+});
+
+/** The four-country walk s26 takes, to the result where every section is
+ * drawn: all four, research, France at question 3, no qualification, a
+ * Turkish passport, no Dutch graduation, no top-200 degree. */
+const WALKED_TO_FOUR: Profile = {
+  destination: "all", situation: "research", situation_country: "fr", qualification: "none", citizenship: "TR",
+  nl_recent_grad: "no", top200_grad: "no",
+};
+
+describe("2 — the four-country result's sections, from the verdict", () => {
+  it("France leads, then the others in the dataset's order; France's line is the one that says the s21 sentence", () => {
+    const { layout } = verdictFor(WALKED_TO_FOUR);
+    if (layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
+    expect(layout.sections.map((s) => s.name)).toEqual(["France", "Germany", "Spain", "Netherlands"]);
+    expect(layout.sections.filter((s) => s.tally.closedTo !== null).map((s) => s.name)).toEqual(["France"]);
   });
 });
 
@@ -341,14 +364,21 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
           await walkToFour(page, server.url("/"));
+          const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALKED_TO_FOUR))));
           const asDrawn = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
           await page.evaluate('document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
           await settle(200);
           const toggled = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
-          return { asDrawn, toggled, problems: page.problems() };
-        }, { viewport, mobile }) as { asDrawn: Section[]; toggled: Section[]; problems: string[] };
+          return { painted, asDrawn, toggled, problems: page.problems() };
+        }, { viewport, mobile }) as {
+          painted: typeof PAINTED_AS_COMPOSED; asDrawn: Section[]; toggled: Section[]; problems: string[];
+        };
         expect(seen.problems).toEqual([]);
-        expect(seen.asDrawn.map((s) => s.name)).toEqual(["France", "Germany", "Spain", "Netherlands"]);
+        // The sections, their order and which line says the sentence are the
+        // verdict's ("2 — the four-country result's sections, from the
+        // verdict"); the walk ends on that verdict, painted.
+        expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
+        expect(seen.asDrawn).toHaveLength(4);
         // Both states of every section: the one it was drawn in, and the other.
         expect(seen.toggled.map((s) => s.open)).toEqual(seen.asDrawn.map((s) => !s.open));
         for (const s of [...seen.asDrawn, ...seen.toggled]) {
@@ -371,7 +401,6 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         }
         // The s21 sentence keeps its own row on the phone.
         const said = seen.asDrawn.find((s) => s.said)!;
-        expect(said.name).toBe("France");
         if (viewport.width === 390) expect(said.tallyTop).toBeGreaterThanOrEqual(said.nameBottom);
       } finally { server.close(); }
     }, 180_000);
@@ -471,22 +500,22 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
             range.setEndBefore(door);
             const line = [...range.getClientRects()].filter((r) => r.width > 0).pop();
             const box = door.getBoundingClientRect();
-            return { text: door.textContent.trim(), href: door.getAttribute("href"), decoration: s.textDecorationLine, color: s.color,
+            return { decoration: s.textDecorationLine, color: s.color,
               band: getComputedStyle(document.documentElement).getPropertyValue("--color-band").trim(),
               beneath: line && box.top >= line.bottom - 1, left: Math.round(box.left - scoped.getBoundingClientRect().left),
               height: box.height, tapMin: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tap-min")) };
           })())`)) as {
-            text: string; href: string; decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
+            decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
           };
           return { door, problems: page.problems() };
         }, { viewport, mobile }) as {
-          door: { text: string; href: string; decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number };
+          door: { decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number };
           problems: string[];
         };
         expect(seen.problems).toEqual([]);
+        // The door's words and its internal href are the verdict's ("8 — the
+        // card's door is a door"); here, how it is drawn.
         const { door } = seen;
-        expect(door.text).toBe(ROUTE_DOOR);
-        expect(door.href).toMatch(/^\/[a-z-]+\/[a-z0-9-]+\/$/);
         expect(door.decoration).toBe("underline");
         // The band colour, read back as the browser states it.
         const [r, g, b] = [1, 3, 5].map((i) => parseInt(door.band.slice(i, i + 2), 16));

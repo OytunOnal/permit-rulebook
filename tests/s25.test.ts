@@ -8,12 +8,15 @@ import {
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION, restore, serialize } from "../src/lib/record.js";
-import { orAbove, resumedLine } from "../src/lib/copy.js";
-import { pointsLineHtml } from "../src/lib/card.js";
+import { STATUS_LABEL, orAbove, pointsOfNeeded } from "../src/lib/copy/verdict.js";
+import { resumedLine } from "../src/lib/copy/interview.js";
 import { glossed } from "../src/lib/gloss.js";
 import { declarationHtml, questionCardHtml } from "../src/lib/question.js";
-import { arrangeSteps, isLadder } from "../src/lib/steps.js";
 import { replayRecord } from "../src/lib/scope.js";
+import { plainTextOf, walkFrom } from "./reader-pages.js";
+import {
+  PAINTED_AS_COMPOSED, blocksIn, cardOn, paintedAsComposedScript, placed, stepsIn, verdictFor, verdictOn,
+} from "./verdict-cards.js";
 
 const ds = rawDataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -50,6 +53,11 @@ const OFFER: Profile = {
 };
 const withExperience = (five: string, seven: string): Profile => ({ ...OFFER, [FIVE]: five, [SEVEN]: seven });
 const resultOf = (profile: Profile, id: string) => evaluate(ds, profile).find((r) => r.route.id === id)!;
+/** The points tally on the Opportunity Card the verdict for these answers draws. */
+const tallyFor = (profile: Profile): string =>
+  blocksIn(cardOn(verdictFor(profile), "de-chancenkarte"), "ptsline met", "ptsline short");
+/** The titles of the steps the verdict for these answers offers. */
+const stepTitles = (data: Dataset, answers: Profile): string[] => stepsIn(verdictOn(data, answers)).map((s) => s.title);
 
 describe("no literal of the old ladder survives in the site", () => {
   const files: string[] = [];
@@ -123,19 +131,50 @@ describe("the two questions are asked from the dataset, in order, after recognit
 });
 
 describe("the ladder fold reads a two-field points item through its rows", () => {
+  /** Spain, no qualification: three years in seven opens the highly-qualified
+   * permit; five opens the Blue Card as well. */
+  const spain: Profile = {
+    destination: "es", situation: "offer", situation_country: "es", citizenship: "TR", qualification: "none",
+    [FIVE]: "lt2", [SEVEN]: "lt3", salary_eur_year: "band_7", salary_eur_month: "band_7", age_band: "a30to35",
+    occupation_it: "no",
+  };
+  /** An explorer of all four, one point short of the Opportunity Card, with no German. */
+  const explorer: Profile = {
+    destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
+    occupation_shortage: "unknown", [FIVE]: "2plus", [SEVEN]: "3to5", german: "none", english: "c1", nl_recent_grad: "no",
+    top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no", partner_ck: "no",
+  };
+
   it("both experience fields are ladders now: every rule reads a tail, the table climbs", () => {
-    expect(isLadder(ds, FIVE)).toBe(true);
-    expect(isLadder(ds, SEVEN)).toBe(true);
-    // The fields the fold knew before still read the same.
-    expect(isLadder(ds, "german")).toBe(true);
-    expect(isLadder(ds, "recognition_de")).toBe(false);
+    // Read where the verdict shows it: the rungs of a ladder above the lowest
+    // one that changes a verdict fold into it, titled "… or above". On the
+    // shipped dataset no answer makes two rungs of either experience field
+    // open the same routes — the five-year field has one rung above "under 2
+    // years", and five years in seven opens the Spanish Blue Card where three
+    // does not — so the verdict shows the two fields' fold nowhere; the rows
+    // form's reading is held by the case below.
+    // The fields the fold knew before still read the same: the German rungs
+    // fold into one step, and the two recognition answers stay two.
+    const raw = unlocks(ds, explorer);
+    const steps = stepTitles(ds, explorer);
+    const german = raw.filter((u) => u.field === "german");
+    expect(german.length).toBeGreaterThan(1);
+    expect(steps).toContain(orAbove(unlockTitleOf(ds, german[0]!, explorer)));
+    const recognition = raw.filter((u) => u.field === "recognition_de");
+    expect(recognition).toHaveLength(2);
+    for (const u of recognition) expect(steps).toContain(unlockTitleOf(ds, u, explorer));
   });
 
   it("a rows item whose rows do not climb the field breaks the ladder — the rows are read, not skipped", () => {
     // A field two rules read as a tail, and a points item written in the rows
     // form that pays the bottom rung more than the top: not a ladder. The
     // one-field form of the same table already said so; the rows form must
-    // say the same, or a two-field item hides a descending table.
+    // say the same, or a two-field item hides a descending table. Read where
+    // the verdict shows it: a reader on the bottom rung with the other row's
+    // point is offered both rungs above as steps of their own, and on a
+    // climbing table as one step, "… or above".
+    // A page on a host the product lists: the card links its route's page.
+    const page = ds.countries[0]!.routes[0]!.info_url;
     const synthetic = {
       schema_version: "0.8.1", dataset_version: "2026.01.01", notices: [], contradictions: [],
       fields: [{
@@ -144,11 +183,12 @@ describe("the ladder fold reads a two-field points item through its rows", () =>
       }],
       countries: [{
         code: "ZZ", name: "Nowhere", routes: [{
-          id: "zz-one", name: "One", kind: "work", info_url: "https://example.invalid/", criteria: [
+          id: "zz-one", name: "One", kind: "work", info_url: page,
+          scope: { value: "every-deciding-rule-asked", reason: "r" }, criteria: [
             { field: "x", op: "in", values: ["b", "c"] },
             {
-              op: "points", required: { value: 1, unit: "points", source_url: "https://example.invalid/", quote: "q", retrieved_at: "2026-01-01" },
-              table: { source_url: "https://example.invalid/", quote: "q", retrieved_at: "2026-01-01", items: [
+              op: "points", required: { value: 1, unit: "points", source_url: page, quote: "q", retrieved_at: "2026-01-01" },
+              table: { source_url: page, quote: "q", retrieved_at: "2026-01-01", items: [
                 { rows: [{ field: "x", value: "a", points: 3 }, { field: "y", value: "n", points: 1 }, { field: "x", value: "c", points: 1 }] },
               ] },
             },
@@ -156,31 +196,27 @@ describe("the ladder fold reads a two-field points item through its rows", () =>
         }],
       }],
     } as unknown as Dataset;
-    expect(isLadder(synthetic, "x")).toBe(false);
+    const reader: Profile = { x: "a", y: "n" };
+    const rungsOf = (d: Dataset) => unlocks(d, reader).filter((u) => u.field === "x");
+    expect(rungsOf(synthetic).map((u) => u.option.value)).toEqual(["b", "c"]);
+    expect(stepTitles(synthetic, reader)).toEqual(rungsOf(synthetic).map((u) => unlockTitleOf(synthetic, u, reader)));
     // The same rows, climbing: a ladder.
     const climbing = JSON.parse(JSON.stringify(synthetic)) as Dataset;
     const item = climbing.countries[0]!.routes[0]!.criteria[1] as { table: { items: { rows: { points: number }[] }[] } };
     item.table.items[0]!.rows[0]!.points = 1;
     item.table.items[0]!.rows[2]!.points = 3;
-    expect(isLadder(climbing, "x")).toBe(true);
+    expect(stepTitles(climbing, reader)).toEqual([orAbove(unlockTitleOf(climbing, rungsOf(climbing)[0]!, reader))]);
   });
 
   it("a higher rung that opens a route the lower one does not keeps its own step", () => {
     // Spain, no qualification: three years opens the highly-qualified permit;
     // five opens the Blue Card as well — two steps, neither titled "or above".
-    const spain: Profile = {
-      destination: "es", situation: "offer", situation_country: "es", citizenship: "TR", qualification: "none",
-      [FIVE]: "lt2", [SEVEN]: "lt3", salary_eur_year: "band_7", salary_eur_month: "band_7", age_band: "a30to35",
-      occupation_it: "no",
-    };
     const raw = unlocks(ds, spain);
     expect(raw.filter((u) => u.field === SEVEN).map((u) => u.option.value)).toEqual(["3to5", "5plus"]);
-    const steps = arrangeSteps(ds, raw, spain).filter((s) => s.unlock.field === SEVEN);
-    expect(steps).toHaveLength(2);
-    for (const s of steps) {
-      expect(s.folded).toEqual([]);
-      expect(s.title).toBe(unlockTitleOf(ds, s.unlock, spain));
-      expect(s.title).not.toBe(orAbove(unlockTitleOf(ds, s.unlock, spain)));
+    const titles = stepTitles(ds, spain);
+    for (const u of raw.filter((x) => x.field === SEVEN)) {
+      expect(titles).toContain(unlockTitleOf(ds, u, spain));
+      expect(titles).not.toContain(orAbove(unlockTitleOf(ds, u, spain)));
     }
   });
 });
@@ -189,8 +225,8 @@ describe("the Opportunity Card's tally names the winning row's field", () => {
   it("2 years or more / 3 to under 5: experienced worker met, +2 for the five-year row", () => {
     const profile = withExperience("2plus", "3to5");
     expect(resultOf(profile, "de-experienced-worker").status).toBe("met");
-    const line = textOf(pointsLineHtml(ds, resultOf(profile, "de-chancenkarte")));
-    expect(line).toContain("5 points — 6 needed");
+    const line = textOf(tallyFor(profile));
+    expect(line).toContain(pointsOfNeeded(5, 6));
     expect(line).toContain("Experience (last 5 years) +2");
     expect(line).not.toContain("last 7 years");
   });
@@ -198,16 +234,16 @@ describe("the Opportunity Card's tally names the winning row's field", () => {
   it("under 2 years / 3 to under 5: experienced worker not yet, no experience in the tally", () => {
     const profile = withExperience("lt2", "3to5");
     expect(resultOf(profile, "de-experienced-worker").status).toBe("hold");
-    const line = textOf(pointsLineHtml(ds, resultOf(profile, "de-chancenkarte")));
-    expect(line).toContain("3 points — 6 needed");
+    const line = textOf(tallyFor(profile));
+    expect(line).toContain(pointsOfNeeded(3, 6));
     expect(line).not.toContain("Experience");
   });
 
   it("2 years or more / 5 years or more: +3 for the seven-year row, never 2 + 3", () => {
     const profile = withExperience("2plus", "5plus");
     expect(resultOf(profile, "de-experienced-worker").status).toBe("met");
-    const line = textOf(pointsLineHtml(ds, resultOf(profile, "de-chancenkarte")));
-    expect(line).toContain("6 points — 6 needed");
+    const line = textOf(tallyFor(profile));
+    expect(line).toContain(pointsOfNeeded(6, 6));
     expect(line).toContain("Experience (last 7 years) +3");
     expect(line).not.toContain("last 5 years");
   });
@@ -243,8 +279,59 @@ describe("a record from before this slice loses its experience answers", () => {
   });
 });
 
+/** The record the browser walks below start from: `occupation_it` is on it,
+ * since Germany asks it before the experience questions now that the shortage
+ * Blue Card's IT path reads it (#134). */
+const SEEDED: Profile = {
+  destination: "de", situation: "offer", qualification: "vocational", citizenship: "TR", recognition_de: "not_assessed",
+  occupation_it: OFFER.occupation_it!,
+};
+
+/** The three ways the two questions are answered, and what each reads. */
+const WAYS = [
+  ["2plus", "3to5", { worker: "Criteria met", tally: "Experience (last 5 years) +2" }],
+  ["lt2", "3to5", { worker: "Not yet", tally: null }],
+  ["2plus", "5plus", { worker: "Criteria met", tally: "Experience (last 7 years) +3" }],
+] as const;
+
+/** The answers the interview ends on, from the seeded record, answering each
+ * question it asks from the reader's profile. */
+const walkedTo = (five: string, seven: string): Profile =>
+  walkFrom(SEEDED, (q) => withExperience(five, seven)[q.field]!).answers;
+
+/** The § 6 BeschV sentence the five-year rule quotes. */
+const FIVE_YEAR_QUOTE = (() => {
+  const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-experienced-worker")!;
+  const rule = route.criteria.find((c) => "field" in c && c.field === FIVE) as { source?: { quote: string } };
+  return rule.source!.quote;
+})();
+
+describe("s25 — the walked results, from the verdict", () => {
+  for (const [five, seven, expected] of WAYS)
+    it(`${five} / ${seven}: the experienced worker is placed as ${expected.worker}, the Opportunity Card's tally ${expected.tally ?? "names no experience"}`, () => {
+      const verdict = verdictFor(walkedTo(five, seven));
+      const worker = placed(verdict, "de-experienced-worker");
+      if (expected.worker === "Criteria met") {
+        expect(worker?.kind).toBe("open");
+        expect(worker!.html).toContain(`<span class="st met">${STATUS_LABEL.met}</span>`);
+        // The § 6 BeschV sentence the rule quotes — "innerhalb der letzten fünf
+        // Jahren … mindestens zweijährige einschlägige Berufserfahrung" — on
+        // the met card, verbatim from the dataset.
+        expect(plainTextOf(worker!.html)).toContain("Innerhalb der letzten fünf Jahren");
+        expect(plainTextOf(worker!.html)).toContain(FIVE_YEAR_QUOTE);
+      } else {
+        expect(worker?.kind).toBe("not-yet");
+      }
+      const tally = textOf(blocksIn(cardOn(verdict, "de-chancenkarte"), "ptsline met", "ptsline short"));
+      expect(tally, "the Opportunity Card has no tally").not.toBe("");
+      if (expected.tally) expect(tally).toContain(expected.tally);
+      else expect(tally).not.toContain("Experience");
+    });
+});
+
 /**
- * The browser: the two questions answered three ways, and what each way reads.
+ * The browser: the two questions answered three ways, by the buttons, to the
+ * verdict the cases above read, as painted.
  */
 const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
@@ -273,20 +360,11 @@ const QLABEL = '(() => { const h = document.querySelector(".qcard .qlabel"); ret
 const STATE = 'document.getElementById("app").dataset.state';
 // Quoted: a rung like 2plus is not a bare CSS identifier.
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value='${value}']").click()`;
-// A card wears its verdict as a badge; a not-yet row stands under the heading
-// that says so, so its status is the last group heading above it.
-const CARDS = 'JSON.stringify([...document.querySelectorAll("#main .route, #main .route-hold")].map((el) => ({'
-  + ' name: el.querySelector("h3, .hold-name").textContent.trim(),'
-  + ' status: el.querySelector(".st") ? el.querySelector(".st").textContent.trim()'
-  + '   : [...document.querySelectorAll("#main .ghead")].filter((h) => h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING).pop().textContent.trim(),'
-  + ' tally: el.querySelector(".ptsline") ? el.querySelector(".ptsline").textContent.trim() : null,'
-  + ' text: el.textContent })))';
 const RESUMED = '(() => { const p = document.querySelector("#main .resumed"); return p ? p.textContent.trim() : ""; })()';
 
-interface Card { name: string; status: string; tally: string | null; text: string }
-
-/** Answer whatever question is on the screen from the profile, until the verdict. */
-async function walk(page: BrowserPage, profile: Profile): Promise<{ asked: string[]; cards: Card[]; problems: string[] }> {
+/** Answer whatever question is on the screen from the profile, until the
+ * verdict; then whether the page painted the verdict `painted` reads. */
+async function walk(page: BrowserPage, profile: Profile, painted: string): Promise<{ asked: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] }> {
   // Each label as its card draws it: the first words on the card, glossed
   // (#156), with any route it names said in full (#159).
   const byLabel = new Map(ds.fields.map((f) => [glossed(fillRouteSlots(f.label, ds), new Set()), f.id]));
@@ -307,60 +385,32 @@ async function walk(page: BrowserPage, profile: Profile): Promise<{ asked: strin
     }
   }
   await settle(600);
-  return { asked, cards: JSON.parse(await page.evaluate(CARDS)) as Card[], problems: page.problems() };
+  return { asked, painted: JSON.parse(await page.evaluate(painted)), problems: page.problems() };
 }
 
 describe.skipIf(skipped !== null)("s25 — in the browser", () => {
-  // `occupation_it` is on the record: Germany asks it before the experience
-  // questions since the shortage Blue Card's IT path reads it (#134).
-  const seeded = {
-    destination: "de", situation: "offer", qualification: "vocational", citizenship: "TR", recognition_de: "not_assessed",
-    occupation_it: OFFER.occupation_it!,
-  };
-  const cardNamed = (cards: Card[], word: string) => cards.find((c) => c.name.includes(word))!;
-  const FIVE_YEAR_QUOTE = (() => {
-    const route = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-experienced-worker")!;
-    const rule = route.criteria.find((c) => "field" in c && c.field === FIVE) as { source?: { quote: string } };
-    return rule.source!.quote;
-  })();
-
-  for (const [five, seven, expected] of [
-    ["2plus", "3to5", { worker: "Criteria met", tally: "Experience (last 5 years) +2" }],
-    ["lt2", "3to5", { worker: "Not yet", tally: null }],
-    ["2plus", "5plus", { worker: "Criteria met", tally: "Experience (last 7 years) +3" }],
-  ] as const)
+  for (const [five, seven, expected] of WAYS)
     it(`${five} / ${seven}: the experienced worker reads ${expected.worker}, the card's tally ${expected.tally ?? "names no experience"}`, async () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
           await page.goto(server.url("/"), 300);
-          await page.evaluate(seed(seeded));
+          await page.evaluate(seed(SEEDED as Record<string, string>));
           await page.goto(server.url("/"), 900);
           const resumed = await page.evaluate(RESUMED);
           const first = await page.evaluate(QLABEL);
-          const walked = await walk(page, withExperience(five, seven));
+          const walked = await walk(page, withExperience(five, seven), paintedAsComposedScript(verdictFor(walkedTo(five, seven))));
           return { resumed, first, ...walked };
         }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
-          { resumed: string; first: string; asked: string[]; cards: Card[]; problems: string[] };
+          { resumed: string; first: string; asked: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] };
         expect(seen.problems).toEqual([]);
-        expect(seen.resumed).toContain(resumedLine(Object.keys(seeded).length));
+        expect(seen.resumed).toContain(resumedLine(Object.keys(SEEDED).length));
         expect(seen.first).toBe(ds.fields.find((f) => f.id === FIVE)!.label);
         expect(seen.asked.slice(0, 2)).toEqual([FIVE, SEVEN]);
-
-        const worker = cardNamed(seen.cards, "Experienced worker");
-        expect(worker.status).toContain(expected.worker);
-        // The § 6 BeschV sentence the rule quotes — "innerhalb der letzten fünf
-        // Jahren … mindestens zweijährige einschlägige Berufserfahrung" — on
-        // the met card, verbatim from the dataset.
-        if (expected.worker === "Criteria met") {
-          expect(worker.text).toContain("Innerhalb der letzten fünf Jahren");
-          expect(worker.text).toContain(FIVE_YEAR_QUOTE);
-        }
-
-        const card = cardNamed(seen.cards, "Opportunity Card");
-        expect(card.tally, "the Opportunity Card has no tally").not.toBeNull();
-        if (expected.tally) expect(card.tally).toContain(expected.tally);
-        else expect(card.tally).not.toContain("Experience");
+        // Where the experienced worker stands, its quote and the Opportunity
+        // Card's tally are the verdict's ("s25 — the walked results, from the
+        // verdict"); the walk ends on that verdict, painted.
+        expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
       } finally {
         server.close();
       }
@@ -371,7 +421,7 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         await page.goto(server.url("/"), 300);
-        await page.evaluate(seed({ ...seeded, experience: "y3in7", experience_7y: "yes" }));
+        await page.evaluate(seed({ ...SEEDED as Record<string, string>, experience: "y3in7", experience_7y: "yes" }));
         await page.goto(server.url("/"), 900);
         return {
           resumed: await page.evaluate(RESUMED),
@@ -382,9 +432,9 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
         { resumed: string; first: string; rows: string; problems: string[] };
       expect(seen.problems).toEqual([]);
-      expect(seen.resumed).toContain(resumedLine(Object.keys(seeded).length));
+      expect(seen.resumed).toContain(resumedLine(Object.keys(SEEDED).length));
       expect(seen.first).toBe(ds.fields.find((f) => f.id === FIVE)!.label);
-      expect(seen.rows.split(",")).toEqual(Object.keys(seeded));
+      expect(seen.rows.split(",")).toEqual(Object.keys(SEEDED));
     } finally {
       server.close();
     }

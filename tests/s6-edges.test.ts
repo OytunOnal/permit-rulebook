@@ -5,7 +5,7 @@ import { evaluate, notices, type Dataset, type Profile } from "permit-rulebook-d
 import { arrivalFrom, arrivalPlan, destinationFor, scopedFirst } from "../src/lib/scope.js";
 import { audienceNotice, routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
-import { datasetDay, isoDay } from "../src/lib/copy.js";
+import { datasetDay, isoDay } from "../src/lib/copy/frame.js";
 
 const ds = dataset as unknown as Dataset;
 

@@ -7,7 +7,8 @@ import { dataPage } from "../src/lib/data-page.js";
 import { indexedPaths } from "../src/lib/sitemap.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { arrivalFrom, countryArrivalFrom, destinationForCountry } from "../src/lib/scope.js";
-import { NO_FIGURE, QUOTED_ONLY_HEADING, countryHeadline } from "../src/lib/copy.js";
+import { NO_FIGURE } from "../src/lib/copy/route-page.js";
+import { QUOTED_ONLY_HEADING, countryHeadline } from "../src/lib/copy/country-page.js";
 
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds, "2026-09-10");

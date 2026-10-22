@@ -3,7 +3,8 @@ import type { Dataset } from "permit-rulebook-data";
 import { siteReadDate } from "./country-page.js";
 import { routeCounts } from "./data-page.js";
 import { DATA_LICENCE_NAME, OWNER, REPO_DATA, absolute } from "./site.js";
-import { PRODUCT_NAME, datasetDescription } from "./copy.js";
+import { PRODUCT_NAME } from "./copy/frame.js";
+import { datasetDescription } from "./copy/data-page.js";
 
 /**
  * The data page's structured description of the dataset, for the machines that
@@ -39,8 +40,9 @@ export function datasetLd(dataset: Dataset, path: string): string {
     "@context": "https://schema.org",
     "@type": "Dataset",
     name: `${PRODUCT_NAME} — work-permit routes for ${countries.join(", ")}`,
-    // Words, so copy.ts's: a person reads them in the index's result, and the
-    // last sentence is the page's own promise of when a flag is read (#62).
+    // Words, so the copy module's: a person reads them in the index's result,
+    // and the last sentence is the page's own promise of when a flag is read
+    // (#62).
     description: datasetDescription(counts.total, counts.scored, counts.quotedOnly, countries.length),
     url: absolute(path),
     sameAs: REPO_DATA,

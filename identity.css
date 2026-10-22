@@ -80,8 +80,8 @@
  * whole point of stating it here rather than trusting a line break.
  *
  * `<em>` is the standing tagline. `<b>` stays inline emphasis for the number
- * a result turns on ("One is short by EUR 4,766"), which must NOT become its
- * own line — two jobs, two elements, one rule each.
+ * a result turns on ("One is short by up to €4,273.64/year."), which must
+ * NOT become its own line — two jobs, two elements, one rule each.
  *
  * On a route page the tagline is not in the H1 at all: the heading is the
  * route's name, which ends in a bracket, and a full stop and a sentence after

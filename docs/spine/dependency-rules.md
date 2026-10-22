@@ -3,6 +3,7 @@
 ## Modules
 <!-- a deep module's folder per line, or none; `folder/*` declares every folder directly under it -->
 - `scripts/carry-assets`
+- `src/lib/verdict`
 
 ## Levels
 <!-- innermost first; changing them takes an ADR -->
@@ -25,7 +26,7 @@
 - `scripts/carry-assets/asset-names.mjs` → `scripts/carry-assets/log-wording.mjs` — the carry's rules shape their own log text; the wording moves to the caller that prints (v1.2.3)
 - `scripts/carry-assets/carry.mjs` → `scripts/carry-assets/log-wording.mjs` — the flow writes its own log lines; the printing goes outward with it (v1.2.3)
 - `scripts/carry-assets/live-site-over-http.mjs` → `scripts/carry-assets/log-wording.mjs` — the HTTP adapter words its own errors, same ring (v1.2.3)
-- `scripts/dev-server.mjs` → `src/lib/copy.ts` — the dev server knows itself by the page's name, a screen word (v1.2.5)
+- `scripts/dev-server.mjs` → `src/lib/copy/frame.ts` — the dev server knows itself by the page's name, a screen word (v1.2.5)
 - `scripts/carry-assets/carry.mjs` — the flow reads and writes `dist/` and the clock itself, beside the use case (v1.2.3)
 - `scripts/check-base.mjs` — a command that builds and scans in its own body, beside its wiring (v1.2.5)
 - `scripts/data-pin.mjs` — a command that runs git and writes `data.lock` in its own body (v1.2.5)
@@ -34,7 +35,6 @@
 - `scripts/shot.mjs` — a command that drives Chrome and writes `docs/media/` in its own body (v1.2.5)
 - `scripts/smoke.mjs` — a command that walks the browser and the dev server in its own body (v1.2.5)
 - `src/lib/scope.ts` — the arrival use case beside the sentences the screen prints (v1.2.4)
-- `src/lib/screen.ts` — the interview's flow and history beside the masthead's words and markup (v1.2.2)
 - `src/pages/index.astro` — the page, the history API and the wiring of the record's store in one file (v1.2.4)
 
 ## Tests

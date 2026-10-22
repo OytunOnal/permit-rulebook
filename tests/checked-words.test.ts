@@ -8,12 +8,11 @@ import {
 } from "permit-rulebook-data";
 import { countryAddresses } from "../src/lib/country-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
-import {
-  PRODUCT_NAME, TAGLINE, countryHeadline, dataLedeOpen, dataMetaDescription, datasetDescription, promise,
-  routesCheckerAsksAbout,
-} from "../src/lib/copy.js";
+import { PRODUCT_NAME, TAGLINE, promise, routesCheckerAsksAbout } from "../src/lib/copy/frame.js";
+import { answersCheckedLine } from "../src/lib/copy/verdict.js";
+import { countryHeadline } from "../src/lib/copy/country-page.js";
+import { dataLedeOpen, dataMetaDescription, datasetDescription } from "../src/lib/copy/data-page.js";
 import { routeCounts } from "../src/lib/data-page.js";
-import { answersCheckedLine } from "../src/lib/screen.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
 import { DESK, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {

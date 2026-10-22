@@ -2,7 +2,16 @@ import { describe, expect, it } from "vitest";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import dataset from "permit-rulebook-data/data/dataset.json";
+import type { Dataset, Profile } from "permit-rulebook-data";
 import { type Glossary, glossSection, glossed } from "../src/lib/gloss.js";
+import { declarationHtml } from "../src/lib/question.js";
+import { replayRecord } from "../src/lib/scope.js";
+import { verdictHtml } from "../src/lib/verdict/index.js";
+import { plainTextOf } from "./reader-pages.js";
+import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
+
+const ds = dataset as unknown as Dataset;
 
 /**
  * A reader on a phone asked what "§" means (human walk, 2026-09-08).
@@ -79,7 +88,30 @@ describe("the section sign carries no explainer; the act it names is said once p
   });
 });
 
-/** And the results card carries the sign bare, in the route names that cite it. */
+/** A German profile that opens German routes, so the cards carry § names.
+ * A real passport: the record keeps only answers a question offers (s25), and
+ * the class the rules reason with was never one (Spec review, 2026-09-08). */
+const GERMAN: Profile = {
+  destination: "de", citizenship: "IN", situation: "offer",
+  qualification: "degree", recognition_de: "recognized", occupation_shortage: "yes",
+  experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
+};
+
+describe("the results card carries the sign without an explainer, from the verdict", () => {
+  it("prints the § names bare — no explainer, no number restated (amendment 6)", () => {
+    // The results screen's box and its ledger, as the verdict and the
+    // declaration renderer compose them for the reader's record.
+    const text = plainTextOf(verdictHtml(verdictFor(GERMAN)) + declarationHtml(ds, GERMAN, Object.keys(GERMAN), null));
+    expect(text, "no German route name reached the card").toContain("§ 18");
+    // The explainer read once per screen from s23 to s32's amendment 6;
+    // the sign is read as a reader reads it now.
+    expect(text).not.toContain(RETIRED_EXPLAINER);
+    expect(text).not.toMatch(/section [0-9]/);
+    expect(text).not.toMatch(/\(§ [0-9]+[a-z]? \(section/);
+  });
+});
+
+/** And the results card carries the sign bare, in the route names that cite it, as painted. */
 const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
@@ -103,35 +135,24 @@ interface BrowserPage {
   evaluate(expression: string): Promise<string>;
 }
 
-/** A German profile that opens German routes, so the cards carry § names.
- * A real passport: the record keeps only answers a question offers (s25), and
- * the class the rules reason with was never one (Spec review, 2026-09-08). */
-const GERMAN = {
-  destination: "de", citizenship: "IN", situation: "offer",
-  qualification: "degree", recognition_de: "recognized", occupation_shortage: "yes",
-  experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
-};
-
 describe.skipIf(skipped !== null)("the results card carries the sign without an explainer", () => {
   it("prints the § names bare — no explainer, no number restated (amendment 6)", async () => {
     const server = await serve(dist);
     try {
-      const text = await withBrowser(async (page: BrowserPage) => {
+      // What the card says is the verdict's (the case above); the page paints
+      // the verdict the record, as it restores, composes.
+      const painted = await withBrowser(async (page: BrowserPage) => {
         await page.goto(server.url("/"), 300);
         await page.evaluate(`localStorage.setItem("permit-rulebook.record.v1", ${
           JSON.stringify(JSON.stringify({
             version: RECORD_VERSION, answers: GERMAN, history: Object.keys(GERMAN),
           }))})`);
         await page.goto(server.url("/"), 1400);
-        return page.evaluate('document.querySelector("#app").innerText');
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as string;
+        const restored = replayRecord(ds, GERMAN, Object.keys(GERMAN)).answers;
+        return JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(restored))));
+      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as typeof PAINTED_AS_COMPOSED;
 
-      expect(text, "no German route name reached the card").toContain("§ 18");
-      // The explainer read once per screen from s23 to s32's amendment 6;
-      // the sign is read as a reader reads it now.
-      expect(text).not.toContain(RETIRED_EXPLAINER);
-      expect(text).not.toMatch(/section [0-9]/);
-      expect(text).not.toMatch(/\(§ [0-9]+[a-z]? \(section/);
+      expect(painted).toEqual(PAINTED_AS_COMPOSED);
     } finally {
       server.close();
     }

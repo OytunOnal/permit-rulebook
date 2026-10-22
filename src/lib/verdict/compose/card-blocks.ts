@@ -1,22 +1,28 @@
 // @level presentation
 import {
   answerLabel, bindsReader, carveOutFor, closedBy, decidingCriteria, deriveBands, fieldOptions, forEachCriterion,
-  formatEUR, formatEURPer,
+  formatEURPer,
   gapCriterionOf, learnLinkOf, liveUnknowns, noticeSources,
   resultProvenance,
   routeReadings, routeStatements, scopeLine, shortLabelOf,
   type Band, type Criterion, type Dataset, type Notice, type Profile, type Route, type RouteResult,
-  type RouteStatement, type UnsourcedReason,
+  type RouteStatement,
 } from "permit-rulebook-data";
-import { esc, escAttr } from "./reason.js";
-import { NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading, readOn } from "./copy.js";
+import { esc, escAttr } from "../../reason.js";
+import {
+  ABOVE_THE_AMOUNT, APPLIES_TO_YOU, BELOW_THE_AMOUNT, DOES_NOT_APPLY_TO_YOU, FIND_OUT_YOURSELF, NOT_CHECKED_HEADING,
+  NOT_REQUIRED_FOR_YOUR_PASSPORT, NO_OFFICIAL_WORDING_HEADING, NO_THRESHOLD_ON_ROUTE, OUR_READING_HEADING, RAIL_ROWS_LABEL,
+  ROUTE_DOOR, WHAT_THIS_ROUTE_ASKS, YOUR_ANSWER, askedHeading, asksOrMore, asksOrMoreHtml, needsOrMoreLine, onField,
+  perPeriod, pointsOfNeeded, shortByUpTo, shortByUpToLine, upToShort,
+} from "../../copy/verdict.js";
+import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn, readOn } from "../../copy/quotes.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
 // it, on the screen's own memory: the card's citations, statements, readings
 // and learn labels are glossed as the route page's are (#151, ruling 8). Each
 // block takes the screen's memory; one drawn alone is a screen of its own.
-import { type Glossary, glossed } from "./gloss.js";
+import { type Glossary, glossed } from "../../gloss.js";
 // One frame for every quote the product shows (2026-09-08).
-import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "./quote.js";
+import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "../../quote.js";
 
 /**
  * The blocks of a card that state what the dataset itself says: what else is
@@ -48,7 +54,7 @@ export interface CardScreen {
 /** Every gte criterion in a route, at any depth. Nested too: NL ICT states its
  * thresholds inside an any-disjunction, and a top-level-only scan drew no rail
  * on exactly those cards (review). */
-export function gteCriteriaOf(route: Route): Gte[] {
+function gteCriteriaOf(route: Route): Gte[] {
   const out: Gte[] = [];
   forEachCriterion(route.criteria, (c) => { if (c.op === "gte") out.push(c); });
   return out;
@@ -77,7 +83,7 @@ const bandOf = (ds: Dataset, field: string, answers: Profile) =>
  * here, they disagreed — a reader with a good salary and too little in the bank
  * was told her salary was short (isolated v1-gate critique, 2026-09-08).
  */
-export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profile): Gte | undefined =>
+const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profile): Gte | undefined =>
   gapCriterionOf(ds, r, answers) as Gte | undefined;
 
 /**
@@ -85,9 +91,8 @@ export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profil
  * on every card so "criteria met" cannot overpromise. A precondition statement
  * is a Precondition that carries its quote, and it belongs in exactly the same
  * sentence: the reader is being told what else they must satisfy, not where
- * the dataset keeps it. The kind was called `condition` until the glossary was
- * read back — a coined synonym for Criterion's own Avoid list (review
- * 2026-09-07).
+ * the dataset keeps it. The kind is `precondition`, the glossary's word;
+ * "condition" is on Criterion's Avoid list (review 2026-09-07).
  */
 export function precondHtml(screen: CardScreen, route: Route): string {
   const { ds, answers, glossary: seen = new Set() } = screen;
@@ -117,15 +122,14 @@ export function precondHtml(screen: CardScreen, route: Route): string {
  * none (s19, F8; the key since s32).
  *
  * A precondition statement names the question whose answer covers it —
- * `field`, a curator's decision typed in the dataset. It was derived here
- * until s32, from the authority's sentence: a precondition was "asked" when
- * a criterion of this route quoted the same sentence verbatim. Three more
- * shared a sentence by containment and the sentence would have decided two
- * of them wrongly — the German ICT card's six months with the company wraps
- * the situation gate's own quote, and a tenure is not what the situation
- * question asks — so the sentence is no longer read here at all. The Spanish
- * researcher card's hosting agreement is still the case: its field is the
- * situation, and the reader's research answer IS the declaration.
+ * `field`, a curator's decision typed in the dataset — and the authority's
+ * sentence is never read for it: two statements share a sentence with a
+ * criterion by containment and would be decided wrongly by it — the German
+ * ICT card's six months with the company wraps the situation gate's own
+ * quote, and a tenure is not what the situation question asks (s32). The
+ * Spanish researcher card's hosting agreement is the case it serves: its
+ * field is the situation, and the reader's research answer IS the
+ * declaration.
  *
  * Declared means answered with a real answer: an "I don't know", or the door
  * for a salary no band fits, leaves the condition unchecked, and the heading
@@ -175,7 +179,7 @@ const binding = (route: Route, answers: Profile): RouteStatement[] =>
 export function carveOutHtml(screen: CardScreen, route: Route): string {
   const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
-    "caveat carveout", "Not required for your passport:",
+    "caveat carveout", NOT_REQUIRED_FOR_YOUR_PASSPORT,
     routeStatements(route).flatMap((s) => {
       const except = carveOutFor(s, answers);
       return except ? [esc(glossed(except.text, seen))] : [];
@@ -191,8 +195,8 @@ export function carveOutHtml(screen: CardScreen, route: Route): string {
  * It lives here rather than in the template for the reason the blocks above
  * do: the count is the reader's, and a line that still counted a condition
  * this reader is exempt from would be counting a sentence the card no longer
- * shows (s7). `href` comes from the page, which is where a route's address is
- * built.
+ * shows (s7). `href` comes from the caller, which builds the route's address
+ * for the site's base.
  */
 export function scopedHtml(route: Route, answers: Profile, href: string): string {
   // The scope line stands alone; the door is a line of its own under it, not
@@ -223,7 +227,7 @@ function proseBlock(cls: string, heading: string, items: string[], join = " "): 
  * are here and not there (human catch 2026-09-07). The quote behind each one
  * is in the card's source list, like every other value.
  */
-export function sourcedCaveatHtml(screen: CardScreen, route: Route): string {
+function sourcedCaveatHtml(screen: CardScreen, route: Route): string {
   const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
     "caveat", `${PAGE_ALSO_SAYS}:`,
@@ -231,22 +235,12 @@ export function sourcedCaveatHtml(screen: CardScreen, route: Route): string {
   );
 }
 
-/**
- * Why we have no quote, said to the reader. The dataset carries the decision —
- * a reason from a fixed set and the day we last looked — and this is where it
- * becomes a sentence; the free prose beside it (which document, what was
- * tried) is an addition, never the whole answer (review 2026-09-07).
- */
-const REASON_SAID: Record<UnsourcedReason["reason"], string> = {
-  "scanned-image": "The authority publishes it only as a scan, so there is no text to quote.",
-  "not-published-in-words": "The authority states it as a list or a table, never in a sentence to quote.",
-  "unreachable": "We cannot reach the source from here.",
-};
-
+/** Why we have no quote, said to the reader: the declared reason's sentence,
+ * the dataset's own note on it, and the day we last looked. */
 function unsourcedSaid(s: RouteStatement): string {
   const why = s.unsourced;
   if (!why) return "";
-  return `${REASON_SAID[why.reason]}${why.note ? ` ${why.note}` : ""} Last checked ${why.checked_at}.`;
+  return `${UNSOURCED_REASON_SAID[why.reason]}${why.note ? ` ${why.note}` : ""} ${lastCheckedOn(why.checked_at)}`;
 }
 
 /**
@@ -256,10 +250,10 @@ function unsourcedSaid(s: RouteStatement): string {
  * quote, and why. Nothing here is ever given a neighbouring quote that does
  * not cover it.
  */
-export function unsourcedCaveatHtml(screen: CardScreen, route: Route): string {
+function unsourcedCaveatHtml(screen: CardScreen, route: Route): string {
   const { answers, glossary: seen = new Set() } = screen;
   return proseBlock(
-    "caveat nosrc", "Worth knowing — we have not found the official wording:",
+    "caveat nosrc", NO_OFFICIAL_WORDING_HEADING,
     binding(route, answers)
       .filter((s) => s.kind === "caveat" && !s.source)
       .map((s) => `${esc(glossed(s.text, seen))} <i>${esc(unsourcedSaid(s))}</i>`),
@@ -287,14 +281,13 @@ export function caveatHtml(screen: CardScreen, route: Route): string {
  * It is the only text on a card that may carry quotation marks with no source
  * beside it, because being a reading IS the attribution — which is exactly why
  * it may never appear in the quote list or under a heading that says an
- * authority spoke (s5e). It read `routeStatements(route).filter(s => s.kind
- * === "modelling")` until this review, one of nine such filters across two
- * repos; readings are their own construct now, so there is one accessor and no
- * predicate to keep in step (review 2026-09-07).
+ * authority spoke (s5e). Readings are their own construct, read through
+ * `routeReadings`, so there is one accessor and no filter over statements to
+ * keep in step across two repositories (review 2026-09-07).
  */
 export function readingHtml(route: Route, seen: Glossary = new Set()): string {
   return proseBlock(
-    "caveat ours", "Our reading, not the authority's words:",
+    "caveat ours", OUR_READING_HEADING,
     routeReadings(route).map((r) => esc(glossed(r.text, seen))),
   );
 }
@@ -309,7 +302,7 @@ export function readingHtml(route: Route, seen: Glossary = new Set()): string {
  * (human walk, 2026-09-08). Neighbouring amounts are context, and the route
  * page's own rail is where context belongs.
  */
-export function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile): Gte[] {
+function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile): Gte[] {
   const measured = measuredCriterionOf(ds, r, answers);
   if (!measured) return [];
   const decided = decidingCriteria(r.criteria)
@@ -322,15 +315,103 @@ export function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile
     .sort((a, b) => a.threshold.amount - b.threshold.amount);
 }
 
+/** The period a money field's amounts are stated per. */
+const periodOf = (ds: Dataset, field: string) => ds.fields.find((f) => f.id === field)?.period;
+
+/**
+ * A gap as the verdict prints it, in the headline, the card's note, the rail
+ * and a step alike: the exact amount, cents only where it has them, with the
+ * period of the field it is measured on. Never rounded — rounded down, "up
+ * to" would understate it.
+ */
+const gapAsPrinted = (ds: Dataset, field: string, gap: number): string => formatEURPer(gap, periodOf(ds, field));
+
+/**
+ * What a route within reach on money is short of, in each form a place
+ * prints it. Where the reader's band has a lower edge, the band's widest gap;
+ * where it is open at the bottom there is no edge to measure a gap from, and
+ * the route's line is said instead, with the band. Read from the band, never
+ * from a list of fields; decided once, in `moneyShortfallOf`.
+ */
+export interface MoneyShortfall {
+  /** The field the shortfall is measured on. */
+  field: string;
+  /** The card's note, given the field's name as markup. */
+  noteHtml(fieldHtml: string): string;
+  /** How near a step would bring the route, as its parenthesis says it. */
+  reach: string;
+  /** The headline's emphasis. */
+  headline: string;
+}
+
+/** The money shortfall of a result on the answers it was evaluated on, or
+ * undefined where it has no money gap. */
+export function moneyShortfallOf(ds: Dataset, r: RouteResult, answers: Profile): MoneyShortfall | undefined {
+  const measured = measuredCriterionOf(ds, r, answers);
+  if (!r.gap_max || !measured) return undefined;
+  const { field } = measured;
+  const band = bandOf(ds, field, answers);
+  if (band && band.min === undefined) {
+    const line = formatEURPer(measured.threshold.amount, periodOf(ds, field));
+    return {
+      field, noteHtml: (fieldHtml) => asksOrMoreHtml(esc(line), fieldHtml, esc(band.label)),
+      reach: asksOrMore(line), headline: needsOrMoreLine(line),
+    };
+  }
+  const gap = gapAsPrinted(ds, field, r.gap_max);
+  return {
+    field, noteHtml: (fieldHtml) => `<b>${esc(shortByUpTo(gap))}</b> ${onField(fieldHtml)}.`,
+    reach: gap, headline: shortByUpToLine(gap),
+  };
+}
+
 /**
  * Where the reader's band stands against one amount, in the words the card
- * already uses elsewhere.
+ * already uses elsewhere: a band open at the bottom is below it, with no gap
+ * to name. No band straddles an amount: the dataset's bands are cut at every
+ * amount it states, so a band not above an amount is below it.
  */
-export function bandStandsAt(band: Band, amount: number): string {
-  if (band.max !== undefined && band.max <= amount)
-    return `up to ${formatEUR(amount - (band.min ?? 0))} short`;
-  if (band.min !== undefined && band.min >= amount) return "above the amount";
-  return "crosses the amount";
+function bandStandsAt(band: Band, amount: number, gapSaid: (gap: number) => string): string {
+  if (band.min !== undefined && band.min >= amount) return ABOVE_THE_AMOUNT;
+  return band.min === undefined ? BELOW_THE_AMOUNT : upToShort(gapSaid(amount - band.min));
+}
+
+/** One scale and one rounding for everything on the bar. */
+interface RailScale {
+  /** Where an amount sits, as a left offset. */
+  at(v: number): string;
+  /** How wide the stretch between two amounts is. */
+  span(from: number, to: number): string;
+}
+
+/**
+ * The bar's scale: the route's amounts and the band's edges where it has both.
+ * An open end is drawn at the rail's edge, never at an invented amount — one
+ * was 80% of the lowest amount or 130% of the highest, and where the band's
+ * real edge lay past it the bar had negative width and drew nothing. The
+ * band's left edge and a tick at the same amount are the same string, or a
+ * reader sees the band miss the line it starts on.
+ */
+function railScale(amounts: number[], band: Band): RailScale {
+  const edges = band.min !== undefined && band.max !== undefined ? [band.min, band.max] : [];
+  const lo = Math.min(...amounts, ...edges) * 0.94;
+  const hi = Math.max(...amounts, ...edges) * 1.04;
+  const at = (v: number): string => `${Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100)).toFixed(2)}%`;
+  const span = (from: number, to: number): string =>
+    `${(Number.parseFloat(at(to)) - Number.parseFloat(at(from))).toFixed(2)}%`;
+  return { at, span };
+}
+
+/**
+ * The reader's answer on the bar, drawn whatever it is: a band with two edges
+ * as a bar between them; a band open at one end as a point at the rail's edge
+ * on that side, its row's caption saying which way it runs. A tick on an empty
+ * track never stands for an answer.
+ */
+function answerMarkHtml(band: Band, scale: RailScale): string {
+  if (band.min === undefined) return `<span class="you-point at-left"></span>`;
+  if (band.max === undefined) return `<span class="you-point at-right"></span>`;
+  return `<span class="you" style="left:${scale.at(band.min)};width:${scale.span(band.min, band.max)}"></span>`;
 }
 
 /**
@@ -351,25 +432,8 @@ export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string 
   const field = thresholds[0].field;
   const band = bandOf(ds, field, answers);
   if (!band) return "";
-  const period = ds.fields.find((f) => f.id === field)?.period;
   const amounts = thresholds.map((c) => c.threshold.amount);
-
-  // The band's own edges, where it has none: a band open below starts under the
-  // lowest amount, one open above runs past the highest.
-  const bandLo = band.min ?? Math.min(...amounts) * 0.8;
-  const bandHi = band.max ?? Math.max(...amounts) * 1.3;
-  const lo = Math.min(...amounts, bandLo) * 0.94;
-  const hi = Math.max(...amounts, bandHi) * 1.04;
-
-  /**
-   * One scale and one rounding for everything on the bar. The band's left edge
-   * and a tick at the same amount have to be the same string, or a reader sees
-   * the band miss the line it starts on.
-   */
-  const at = (v: number): string =>
-    `${Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100)).toFixed(2)}%`;
-  const span = (from: number, to: number): string =>
-    `${(Number.parseFloat(at(to)) - Number.parseFloat(at(from))).toFixed(2)}%`;
+  const scale = railScale(amounts, band);
 
   // `rail-tick`, not `tick`: the results screen already used `.tick` for the
   // chosen-answer checkmark, whose `margin-left:.35rem` was silently shifting
@@ -378,23 +442,24 @@ export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string 
   // not a rounding error, and the same shape as the `.country` one this
   // codebase has met before (human walk, 2026-09-08).
   const ticks = amounts
-    .map((a) => `<span class="rail-tick" style="left:${at(a)}"></span>`)
+    .map((a) => `<span class="rail-tick" style="left:${scale.at(a)}"></span>`)
     .join("");
 
+  const period = periodOf(ds, field);
+  const gapSaid = (gap: number): string => gapAsPrinted(ds, field, gap);
   const rows = [
     ...thresholds.map((c) => {
       const label = c.threshold_label ? ` — ${esc(c.threshold_label)}` : "";
       return `<li><span class="sw sw-asks"></span><b>${esc(formatEURPer(c.threshold.amount, period))}</b>` +
-        `<span>what this route asks${label} · ${esc(bandStandsAt(band, c.threshold.amount))}</span></li>`;
+        `<span>${esc(WHAT_THIS_ROUTE_ASKS)}${label} · ${esc(bandStandsAt(band, c.threshold.amount, gapSaid))}</span></li>`;
     }),
-    `<li><span class="sw sw-you"></span><b>${esc(band.label)}</b><span>your answer</span></li>`,
+    `<li><span class="sw sw-you"></span><b>${esc(band.label)}</b><span>${esc(YOUR_ANSWER)}</span></li>`,
   ].join("");
 
   return `
         <div class="rail">
-          <div class="bar" aria-hidden="true"><span class="you" style="left:${at(bandLo)};width:${
-    span(bandLo, bandHi)}"></span>${ticks}</div>
-          <ul class="rail-rows" aria-label="What this route asks, and what you answered">${rows}</ul>
+          <div class="bar" aria-hidden="true">${answerMarkHtml(band, scale)}${ticks}</div>
+          <ul class="rail-rows" aria-label="${escAttr(RAIL_ROWS_LABEL)}">${rows}</ul>
         </div>`;
 }
 
@@ -420,7 +485,7 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
     if (amount === undefined) return "";
     const c = gteCriteriaOf(r.route).find((x) => x.threshold.amount === amount);
     const p = c ? ds.fields.find((f) => f.id === c.field)?.period : undefined;
-    return p ? ` · per ${p}` : "";
+    return p ? ` · ${esc(perPeriod(p))}` : "";
   };
   const render = ({ label, value, amount, applied }: (typeof entries)[number], citation?: string): string => {
     // The same frame the route pages put round a quote: its language, its host,
@@ -431,8 +496,8 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
     const mark = !contested || amount === undefined || applied === undefined
       ? ""
       : applied
-        ? ` · <b class="applies">applies to you</b>`
-        : ` · <span class="applies-not">does not apply to you</span>`;
+        ? ` · <b class="applies">${esc(APPLIES_TO_YOU)}</b>`
+        : ` · <span class="applies-not">${esc(DOES_NOT_APPLY_TO_YOU)}</span>`;
     return `<div class="src${contested && amount !== undefined && applied === false ? " unapplied" : ""}"><i${
       lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
@@ -471,20 +536,18 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
   // longer a substitute for an empty list — it says the one thing the list
   // cannot: there is no threshold here to be short of.
   if (!decidesOnANumber(r.route))
-    lines.push(`<div class="src nosrc">No salary or points threshold on this route — nothing here to fall short of. What it asks for is in the conditions above, each with the official wording behind it.</div>`);
+    lines.push(`<div class="src nosrc">${esc(NO_THRESHOLD_ON_ROUTE)}</div>`);
   return `<div class="srcs">${lines.join("")}</div>`;
 }
 
 /**
  * A quote long enough to bury the card is shown to its first sentence, with
  * the whole passage on the element and its source a click away — the evidence
- * stays complete, the card stays readable (tracker #5).
- *
- * It lived in the interview's own script until s8 moved the notice out of it,
- * and for one commit the rule applied to nothing: the Türkiye notice's
- * 640-character quote printed whole (Standards review, 2026-09-10).
+ * stays complete, the card stays readable (tracker #5). The notice's quotes
+ * go through it as the cards' do: the Türkiye notice's runs to 640
+ * characters (Standards review, 2026-09-10).
  */
-export function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
+function quoteForCard(quote: string): { shown: string; trimmed: boolean } {
   if (quote.length <= 200) return { shown: quote, trimmed: false };
   const end = quote.indexOf(". ");
   if (end < 0 || end > 200) return { shown: quote.slice(0, 200).trimEnd() + "…", trimmed: true };
@@ -495,9 +558,9 @@ export function quoteForCard(quote: string): { shown: string; trimmed: boolean }
  * One quote, framed the way every quote on a results screen is framed: its
  * language, its host, whatever citation it carries, and the day it was read.
  *
- * Pulled out of `provenanceHtml` when the closed-route row and the notice both
- * needed it. The frame is the claim of this product, and three copies of it
- * would be three claims that can drift (s8).
+ * The closed-route row and the notice both draw it. The frame is the claim of
+ * this product, and three copies of it would be three claims that can drift
+ * (s8).
  */
 function srcLine(
   value: { quote: string; source_url: string; retrieved_at: string; legal_basis?: string }, seen: Glossary,
@@ -546,9 +609,9 @@ export function sourceLinkHtml(url: string): string {
 /**
  * A notice, on the results screen.
  *
- * It moved here from inside the page for the reason every other block did: the
- * page's own markup cannot be read by a test, and this one now has more to get
- * wrong than a title and a body. A notice may stand on several authorities —
+ * It is drawn here for the reason every other block is: a test reads the
+ * markup, and a notice has more to get wrong than a title and a body. A
+ * notice may stand on several authorities —
  * the Algerian talent question reports two of them disagreeing and a third
  * page saying what the reader gets instead — so every side is printed, each
  * quote framed with its own language, and the link at the foot is the page the
@@ -591,7 +654,8 @@ export function pointsLineHtml(ds: Dataset, r: RouteResult): string {
     : "";
   // The met colour only where the points are met: on a not-yet card the
   // tally is a count, and the verdict colour would say otherwise.
-  return `<div class="ptsline ${p.scored >= p.required ? "met" : "short"}"><b>${p.scored} point${p.scored === 1 ? "" : "s"} — ${p.required} needed</b>${items}</div>`;
+  return `<div class="ptsline ${p.scored >= p.required ? "met" : "short"}"><b>${
+    esc(pointsOfNeeded(p.scored, p.required))}</b>${items}</div>`;
 }
 
 /**
@@ -600,10 +664,10 @@ export function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  *
  * Only where the unknown still binds: on a hard-failed route finding out
  * changes nothing, and the link sends the reader down a path that cannot open
- * (critique #4). The box ends on the link. It used to end on a full stop after
- * it, and the link is a tap-height box a line cannot break inside, so on a
- * phone the stop wrapped onto a line of its own (v1.1 gate critique, P5).
- * The route page's own box has never carried one.
+ * (critique #4). The box ends on the link, with no full stop after it: the
+ * link is a tap-height box a line cannot break inside, so on a phone a stop
+ * after it wraps onto a line of its own (v1.1 gate critique, P5), as the
+ * route page's own box has it.
  *
  * The label is the text of the link: a link says what the reader does there.
  * It is glossed like the rest of the card's words, on the screen's memory
@@ -618,7 +682,7 @@ export function learnBoxHtml(screen: CardScreen, r: RouteResult): string {
     .map((f) => learnLinkOf(ds, f))
     .filter((l): l is { label: string; url: string } => !!l);
   if (!links.length) return "";
-  return `<div class="learn">You can find out yourself: ${links
+  return `<div class="learn">${esc(FIND_OUT_YOURSELF)} ${links
     .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${
       esc(glossedLearnLinkText(l, seen))}</a>`)
     .join(" · ")}</div>`;

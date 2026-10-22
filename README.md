@@ -85,7 +85,8 @@ it: [docs/spine/ARCHITECTURE.md](docs/spine/ARCHITECTURE.md).
 - `src/pages/[country]/[route].astro` — one page per route, generated
 - `src/lib/route-page.ts` — the whole route page, built as a string so a test
   can read exactly what ships
-- `src/lib/copy.ts` — the name, the tagline and the disclaimer, in one place
+- `src/lib/copy/` — every word a reader reads, one file per screen or part;
+  the name, the tagline and the disclaimer in `frame.ts`
 - `tokens.css` — the design tokens every screen is built inside
 
 The rest of the commands, and what each is for:

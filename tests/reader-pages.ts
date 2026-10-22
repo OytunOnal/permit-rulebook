@@ -131,16 +131,11 @@ async function screenHtmlOf(site: PageOnSite, path: string, record: Walk | null)
   return (JSON.parse(await page.evaluate(DRAWN)) as { html: string }).html;
 }
 
-/** A results screen the module drew, with the walk that reached it. */
-export interface DrawnResult extends ReaderPage {
-  walk: Walk;
-}
-
 /** The results — masthead and cards — the module draws at the end of every walk. */
-export async function drawnResults(site: PageOnSite): Promise<DrawnResult[]> {
-  const results: DrawnResult[] = [];
+async function drawnResults(site: PageOnSite): Promise<ReaderPage[]> {
+  const results: ReaderPage[] = [];
   for (const walk of walks())
-    results.push({ where: `results for ${JSON.stringify(walk.answers)}`, html: await screenHtmlOf(site, "/", walk), walk });
+    results.push({ where: `results for ${JSON.stringify(walk.answers)}`, html: await screenHtmlOf(site, "/", walk) });
   return results;
 }
 

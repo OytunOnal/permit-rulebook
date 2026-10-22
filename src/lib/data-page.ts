@@ -8,10 +8,12 @@ import { contentSecurityPolicy } from "./csp.js";
 import { PAGE_CSS, pageStamp } from "./route-page.js";
 import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
 import {
-  DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PRODUCT_NAME,
-  PROSE_OURS_TAIL, TAGLINE, TRANSLATION_POLICY, WRONG_DOOR_LABEL, countryAsJsonLabel, dataLedeClose, dataLedeOpen,
-  dataMetaDescription, datasetDay, proseProvenanceCounts, readOn,
-} from "./copy.js";
+  DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PROSE_OURS_TAIL,
+  TRANSLATION_POLICY, countryAsJsonLabel, dataLedeClose, dataLedeOpen, dataMetaDescription, proseProvenanceCounts,
+} from "./copy/data-page.js";
+import { PRODUCT_NAME, TAGLINE, datasetDay } from "./copy/frame.js";
+import { WRONG_DOOR_LABEL } from "./copy/feedback.js";
+import { readOn } from "./copy/quotes.js";
 import {
   DATA_LICENCE_FULL, REPO_DATA, absolute, analyticsBeacon, headMeta, lastWatchRun, readRange, unreadSourcesAt,
   url,

@@ -32,6 +32,31 @@
     "scripts/carry-assets/live-site-over-http.mjs",
     "scripts/carry-assets/log-wording.mjs"
    ]
+  },
+  {
+   "path": "src/lib/verdict",
+   "entries": [
+    {
+     "file": "src/lib/verdict/index.ts",
+     "level": "presentation"
+    }
+   ],
+   "files": [
+    "src/lib/verdict/compose/answer-phrase.ts",
+    "src/lib/verdict/compose/card-blocks.ts",
+    "src/lib/verdict/compose/cards.ts",
+    "src/lib/verdict/compose/headline.ts",
+    "src/lib/verdict/compose/html.ts",
+    "src/lib/verdict/compose/in-view.ts",
+    "src/lib/verdict/compose/masthead.ts",
+    "src/lib/verdict/compose/not-yet.ts",
+    "src/lib/verdict/compose/sections.ts",
+    "src/lib/verdict/compose/steps.ts",
+    "src/lib/verdict/compose/types.ts",
+    "src/lib/verdict/compose/unscored.ts",
+    "src/lib/verdict/index.ts",
+    "src/lib/verdict/verdict.css"
+   ]
   }
  ],
  "levels": {
@@ -55,9 +80,16 @@
   "scripts/shot.mjs": "infrastructure main",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure main",
-  "src/lib/card.ts": "presentation",
   "src/lib/clipboard.ts": "presentation",
-  "src/lib/copy.ts": "presentation",
+  "src/lib/copy/country-page.ts": "presentation",
+  "src/lib/copy/data-page.ts": "presentation",
+  "src/lib/copy/feedback.ts": "presentation",
+  "src/lib/copy/frame.ts": "presentation",
+  "src/lib/copy/interview.ts": "presentation",
+  "src/lib/copy/not-found.ts": "presentation",
+  "src/lib/copy/quotes.ts": "presentation",
+  "src/lib/copy/route-page.ts": "presentation",
+  "src/lib/copy/verdict.ts": "presentation",
   "src/lib/countries.ts": "presentation",
   "src/lib/country-page.ts": "presentation",
   "src/lib/csp.ts": "presentation",
@@ -75,13 +107,25 @@
   "src/lib/record.ts": "application",
   "src/lib/route-page.ts": "presentation",
   "src/lib/scope.ts": "application presentation",
-  "src/lib/screen.ts": "application presentation",
+  "src/lib/screen.ts": "application",
   "src/lib/site.ts": "presentation",
   "src/lib/sitemap.ts": "presentation",
   "src/lib/situations.ts": "presentation",
   "src/lib/slug.ts": "presentation",
   "src/lib/social-card.ts": "presentation",
-  "src/lib/steps.ts": "presentation",
+  "src/lib/verdict/compose/answer-phrase.ts": "presentation",
+  "src/lib/verdict/compose/card-blocks.ts": "presentation",
+  "src/lib/verdict/compose/cards.ts": "presentation",
+  "src/lib/verdict/compose/headline.ts": "presentation",
+  "src/lib/verdict/compose/html.ts": "presentation",
+  "src/lib/verdict/compose/in-view.ts": "presentation",
+  "src/lib/verdict/compose/masthead.ts": "presentation",
+  "src/lib/verdict/compose/not-yet.ts": "presentation",
+  "src/lib/verdict/compose/sections.ts": "presentation",
+  "src/lib/verdict/compose/steps.ts": "presentation",
+  "src/lib/verdict/compose/types.ts": "presentation",
+  "src/lib/verdict/compose/unscored.ts": "presentation",
+  "src/lib/verdict/index.ts": "presentation",
   "src/pages/404.astro": "presentation",
   "src/pages/[country]/[route].astro": "presentation",
   "src/pages/[country]/[route].json.ts": "presentation",
@@ -174,7 +218,7 @@
   },
   {
    "from": "scripts/dev-server.mjs",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -194,7 +238,7 @@
   },
   {
    "from": "scripts/render-assets.mjs",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -228,28 +272,33 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/card.ts",
-   "to": "src/lib/copy.ts",
+   "from": "src/lib/copy/country-page.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/card.ts",
-   "to": "src/lib/gloss.ts",
+   "from": "src/lib/copy/data-page.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/card.ts",
-   "to": "src/lib/quote.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/card.ts",
-   "to": "src/lib/reason.ts",
+   "from": "src/lib/copy/verdict.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/country-page.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
@@ -314,7 +363,22 @@
   },
   {
    "from": "src/lib/data-page.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
@@ -359,7 +423,12 @@
   },
   {
    "from": "src/lib/dataset-ld.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/dataset-ld.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -384,7 +453,12 @@
   },
   {
    "from": "src/lib/feedback-page.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -424,7 +498,7 @@
   },
   {
    "from": "src/lib/identity.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -439,12 +513,17 @@
   },
   {
    "from": "src/lib/listbox.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/not-found.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
+   "to": "src/lib/copy/not-found.ts",
    "kind": "dependency"
   },
   {
@@ -479,7 +558,7 @@
   },
   {
    "from": "src/lib/question.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
@@ -509,12 +588,17 @@
   },
   {
    "from": "src/lib/question.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/question.ts",
    "to": "src/lib/situations.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/quote.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
@@ -534,7 +618,22 @@
   },
   {
    "from": "src/lib/route-page.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/copy/quotes.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -584,22 +683,12 @@
   },
   {
    "from": "src/lib/scope.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
-  },
-  {
-   "from": "src/lib/screen.ts",
-   "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/screen.ts",
-   "to": "src/lib/situations.ts",
-   "kind": "type-only"
   },
   {
    "from": "src/lib/site.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -634,7 +723,7 @@
   },
   {
    "from": "src/lib/situations.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
@@ -658,13 +747,348 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/steps.ts",
-   "to": "src/lib/copy.ts",
+   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/steps.ts",
+   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card-blocks.ts",
    "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/countries.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/verdict/compose/card-blocks.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/verdict/compose/card-blocks.ts",
+   "kind": "inheritance"
+  },
+  {
+   "from": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/card-blocks.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/in-view.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/unscored.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/in-view.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/in-view.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/masthead.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/masthead.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/masthead.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/masthead.ts",
+   "to": "src/lib/verdict/compose/unscored.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/not-yet.ts",
+   "to": "src/lib/countries.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/not-yet.ts",
+   "to": "src/lib/verdict/compose/answer-phrase.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/not-yet.ts",
+   "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/not-yet.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/card-blocks.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/in-view.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/not-yet.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/unscored.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps.ts",
+   "to": "src/lib/verdict/compose/answer-phrase.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/steps.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/types.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "inheritance"
+  },
+  {
+   "from": "src/lib/verdict/compose/types.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/types.ts",
+   "to": "src/lib/verdict/compose/unscored.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/verdict/compose/answer-phrase.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/verdict/compose/in-view.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/card-blocks.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/headline.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/html.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/in-view.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/sections.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.css",
    "kind": "dependency"
   },
   {
@@ -719,17 +1143,7 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/copy.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/countries.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -799,17 +1213,7 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/situations.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/slug.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/steps.ts",
+   "to": "src/lib/verdict/index.ts",
    "kind": "dependency"
   },
   {
@@ -858,6 +1262,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/answers.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/answers.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/answers.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/arrival.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -869,12 +1288,27 @@
   },
   {
    "from": "tests/arrival.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/arrival.test.ts",
    "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -939,12 +1373,17 @@
   },
   {
    "from": "tests/card.test.ts",
-   "to": "src/lib/card.ts",
+   "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/card.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/card.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1074,7 +1513,22 @@
   },
   {
    "from": "tests/checked-words.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/checked-words.test.ts",
+   "to": "src/lib/copy/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/checked-words.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/checked-words.test.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -1085,11 +1539,6 @@
   {
    "from": "tests/checked-words.test.ts",
    "to": "src/lib/data-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/checked-words.test.ts",
-   "to": "src/lib/screen.ts",
    "kind": "dependency"
   },
   {
@@ -1114,12 +1563,7 @@
   },
   {
    "from": "tests/consolidated-text.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/consolidated-text.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
@@ -1145,6 +1589,11 @@
   {
    "from": "tests/consolidated-text.test.ts",
    "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/consolidated-text.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1179,7 +1628,7 @@
   },
   {
    "from": "tests/dataset-ld.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
   },
   {
@@ -1228,6 +1677,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/escaping.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/first-paint.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -1239,7 +1693,7 @@
   },
   {
    "from": "tests/first-paint.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
@@ -1304,7 +1758,7 @@
   },
   {
    "from": "tests/footer.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -1349,7 +1803,32 @@
   },
   {
    "from": "tests/gloss.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1413,6 +1892,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/means.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/means.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/money-rows.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
@@ -1424,7 +1913,7 @@
   },
   {
    "from": "tests/name-sweep.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -1464,7 +1953,7 @@
   },
   {
    "from": "tests/orientation.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
   },
   {
@@ -1504,7 +1993,7 @@
   },
   {
    "from": "tests/paths-named.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -1528,6 +2017,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/paths-named.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/pipeline.test.ts",
    "to": "scripts/carry-assets/asset-names.mjs",
    "kind": "dependency"
@@ -1544,7 +2038,7 @@
   },
   {
    "from": "tests/place-slot.test.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "src/lib/verdict/index.ts",
    "kind": "dependency"
   },
   {
@@ -1553,8 +2047,18 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/place-slot.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/rail.test.ts",
-   "to": "src/lib/card.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/rail.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1624,7 +2128,17 @@
   },
   {
    "from": "tests/route-page.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -1689,12 +2203,7 @@
   },
   {
    "from": "tests/route-slot.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/route-slot.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
@@ -1718,8 +2227,23 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/route-slot.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s11.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -1749,7 +2273,12 @@
   },
   {
    "from": "tests/s12.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -1784,7 +2313,17 @@
   },
   {
    "from": "tests/s13.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -1809,7 +2348,17 @@
   },
   {
    "from": "tests/s13.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/scope.ts",
    "kind": "dependency"
   },
   {
@@ -1823,8 +2372,23 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s16.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s16.test.ts",
+   "to": "src/lib/copy/feedback.ts",
    "kind": "dependency"
   },
   {
@@ -1849,7 +2413,7 @@
   },
   {
    "from": "tests/s17.test.ts",
-   "to": "src/lib/screen.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
@@ -1864,12 +2428,17 @@
   },
   {
    "from": "tests/s19.test.ts",
-   "to": "src/lib/card.ts",
+   "to": "src/lib/copy/country-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s19.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -1904,17 +2473,22 @@
   },
   {
    "from": "tests/s19.test.ts",
-   "to": "src/lib/screen.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s19.test.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s19.test.ts",
    "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1929,7 +2503,7 @@
   },
   {
    "from": "tests/s20.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
@@ -1959,7 +2533,12 @@
   },
   {
    "from": "tests/s21.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -1983,6 +2562,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s21.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s23.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -1994,12 +2583,22 @@
   },
   {
    "from": "tests/s23.test.ts",
-   "to": "src/lib/card.ts",
+   "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s23.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -2039,7 +2638,7 @@
   },
   {
    "from": "tests/s23.test.ts",
-   "to": "src/lib/steps.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2069,12 +2668,12 @@
   },
   {
    "from": "tests/s25.test.ts",
-   "to": "src/lib/card.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s25.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -2099,7 +2698,12 @@
   },
   {
    "from": "tests/s25.test.ts",
-   "to": "src/lib/steps.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2114,7 +2718,7 @@
   },
   {
    "from": "tests/s26.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -2134,6 +2738,16 @@
   },
   {
    "from": "tests/s26.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
    "to": "tests/wire.ts",
    "kind": "dependency"
   },
@@ -2149,12 +2763,22 @@
   },
   {
    "from": "tests/s27.test.ts",
-   "to": "src/lib/card.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s27.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -2208,6 +2832,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s27.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s28.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -2215,11 +2844,6 @@
   {
    "from": "tests/s28.test.ts",
    "to": "scripts/chrome.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s28.test.ts",
-   "to": "src/lib/card.ts",
    "kind": "dependency"
   },
   {
@@ -2250,6 +2874,21 @@
   {
    "from": "tests/s28.test.ts",
    "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2284,7 +2923,7 @@
   },
   {
    "from": "tests/s31.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
@@ -2309,12 +2948,7 @@
   },
   {
    "from": "tests/s32.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s32.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -2325,6 +2959,11 @@
   {
    "from": "tests/s32.test.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2344,17 +2983,17 @@
   },
   {
    "from": "tests/s5e.test.ts",
-   "to": "src/lib/card.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s5e.test.ts",
-   "to": "src/lib/reason.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s6-edges.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
@@ -2374,17 +3013,7 @@
   },
   {
    "from": "tests/s7.test.ts",
-   "to": "src/lib/card.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s7.test.ts",
-   "to": "src/lib/copy.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s7.test.ts",
-   "to": "src/lib/gloss.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -2393,8 +3022,13 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s7.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s8.test.ts",
-   "to": "src/lib/card.ts",
+   "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -2408,8 +3042,23 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s8.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s8.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s9.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s9.test.ts",
+   "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -2444,17 +3093,37 @@
   },
   {
    "from": "tests/screen.test.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
    "to": "src/lib/screen.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/screen.test.ts",
-   "to": "src/lib/situations.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/set-aside.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
@@ -2559,7 +3228,7 @@
   },
   {
    "from": "tests/territories.test.ts",
-   "to": "src/lib/copy.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
@@ -2570,6 +3239,81 @@
   {
    "from": "tests/territories.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-cards.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-cards.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-cards.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-gap.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-gap.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-gap.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-history.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-look.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-look.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-look.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-module.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-steps.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   }
  ],
@@ -2785,6 +3529,28 @@
    },
    {
     "name": "sentenceOfError",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/verdict/index.ts": [
+   {
+    "name": "answeredOutright",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "noticesAbove",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "verdictOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "verdictHtml",
     "kind": "fn",
     "exported": true
    }
@@ -3268,158 +4034,6 @@
     "exported": true
    }
   ],
-  "src/lib/card.ts": [
-   {
-    "name": "Gte",
-    "kind": "type",
-    "exported": false
-   },
-   {
-    "name": "CardScreen",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "gteCriteriaOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "decidesOnANumber",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "bandOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "measuredCriterionOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "precondHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "askedFieldOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "isDeclared",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "binding",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "carveOutHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "scopedHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "proseBlock",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "sourcedCaveatHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "REASON_SAID",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "unsourcedSaid",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "unsourcedCaveatHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "caveatHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "readingHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "decidingThresholds",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "bandStandsAt",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "railHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "provenanceHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "quoteForCard",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "srcLine",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "closedRowHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "sourceLinkHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "noticeHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "pointsLineHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "learnBoxHtml",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
   "src/lib/clipboard.ts": [
    {
     "name": "COPY_SCRIPT",
@@ -3427,52 +4041,7 @@
     "exported": true
    }
   ],
-  "src/lib/copy.ts": [
-   {
-    "name": "PRODUCT_NAME",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "TAGLINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "ROUTE_TAGLINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "ROUTE_DOOR",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "OFFICIAL_PAGE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "consolidatedTextOn",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "learnLinkWithKind",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "routesCheckerAsksAbout",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "promise",
-    "kind": "fn",
-    "exported": true
-   },
+  "src/lib/copy/country-page.ts": [
    {
     "name": "countryHeadline",
     "kind": "fn",
@@ -3542,220 +4111,17 @@
     "name": "RESULT_NAMES_FITTING_ROUTES",
     "kind": "const",
     "exported": true
-   },
+   }
+  ],
+  "src/lib/copy/data-page.ts": [
    {
     "name": "countryAsJsonLabel",
     "kind": "fn",
     "exported": true
    },
    {
-    "name": "audienceLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "alsoInHeading",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "askedRouteDescription",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "everyNumberQuoted",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "everyConditionQuoted",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "PAGE_ALSO_SAYS",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "placeOnRecordLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "placeOnRecordNowLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "comingFromRouteLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "startingFromRouteLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "placeAsksMoreClause",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "DISCLAIMER",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "NO_SCRIPT_LINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "RETURNING_LINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "LINK_ARRIVAL_LINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "resumedLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "ASKED_FOR",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "askedForRouteHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "askedForFirstCount",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "askedForNextCount",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "ASKED_FOR_COUNTS_JOIN",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "EDIT_LINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "setAsideLead",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "setAsideLineHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "ROUTE_PAGE_ADDENDUM",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "ROUTE_PAGE_UNSCORED_ADDENDUM",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "NOT_ASKED_SCOPE_HEADING",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "notAskedRouteDescription",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "readOn",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "ANSWER_SOURCED",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "pointsFigure",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "POINTS_FIGURE_LABEL",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "NO_FIGURE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "NO_FIGURE_LABEL",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "DAILY_CHECK",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "dailyCheck",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "DAILY_CHECK_CLAIM",
     "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "unreadLabel",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "freshnessNote",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "SEAL_LETTERS",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "isoDay",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "datasetDay",
-    "kind": "fn",
     "exported": true
    },
    {
@@ -3819,35 +4185,12 @@
     "exported": true
    },
    {
-    "name": "FEEDBACK",
-    "kind": "const",
+    "name": "proseProvenanceCounts",
+    "kind": "fn",
     "exported": true
-   },
-   {
-    "name": "COUNTRIES",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "MENU",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "MENU_CLOSE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "NOT_FOUND_START",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "NOT_FOUND_START_NOTE",
-    "kind": "const",
-    "exported": true
-   },
+   }
+  ],
+  "src/lib/copy/feedback.ts": [
    {
     "name": "FEEDBACK_EYEBROW",
     "kind": "const",
@@ -3927,19 +4270,163 @@
     "name": "TRACKER_NEW_NEED",
     "kind": "const",
     "exported": true
+   }
+  ],
+  "src/lib/copy/frame.ts": [
+   {
+    "name": "PRODUCT_NAME",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "TAGLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "routesCheckerAsksAbout",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "promise",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "DISCLAIMER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "unreadLabel",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SEAL_LETTERS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "isoDay",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "datasetDay",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "COUNTRIES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "MENU",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "MENU_CLOSE",
+    "kind": "const",
+    "exported": true
    },
    {
     "name": "FEEDBACK_FOOTER_ROW",
     "kind": "const",
     "exported": true
+   }
+  ],
+  "src/lib/copy/interview.ts": [
+   {
+    "name": "placeOnRecordLine",
+    "kind": "fn",
+    "exported": true
    },
    {
-    "name": "RESULT_FEEDBACK_ASK",
+    "name": "placeOnRecordNowLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "comingFromRouteLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "startingFromRouteLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "placeAsksMoreClause",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "NO_SCRIPT_LINE",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "resultFeedbackLine",
+    "name": "RETURNING_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "LINK_ARRIVAL_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "resumedLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ASKED_FOR",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "askedForRouteHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "askedForFirstCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "askedForNextCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ASKED_FOR_COUNTS_JOIN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "EDIT_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "setAsideLead",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "setAsideLineHtml",
     "kind": "fn",
     "exported": true
    },
@@ -3960,6 +4447,209 @@
    },
    {
     "name": "notCheckedQuotedLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "questionCounter",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "NO_COUNTRY_MATCHES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NO_COUNTRY_MATCHES_STATUS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "territoryLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "INTRO_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "INTRO_SUBLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SHORT_SUBLINE",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "src/lib/copy/not-found.ts": [
+   {
+    "name": "NOT_FOUND_START",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_FOUND_START_NOTE",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "src/lib/copy/quotes.ts": [
+   {
+    "name": "OFFICIAL_PAGE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "consolidatedTextOn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "learnLinkWithKind",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "PAGE_ALSO_SAYS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "readOn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "UNSOURCED_REASON_SAID",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "lastCheckedOn",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "src/lib/copy/route-page.ts": [
+   {
+    "name": "ROUTE_TAGLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "audienceLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "alsoInHeading",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "askedRouteDescription",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "everyNumberQuoted",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "everyConditionQuoted",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ROUTE_PAGE_ADDENDUM",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ROUTE_PAGE_UNSCORED_ADDENDUM",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_ASKED_SCOPE_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "notAskedRouteDescription",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ANSWER_SOURCED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "pointsFigure",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "POINTS_FIGURE_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NO_FIGURE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NO_FIGURE_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DAILY_CHECK",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "dailyCheck",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "freshnessNote",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "EITHER_PATH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ANY_PATH",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "src/lib/copy/verdict.ts": [
+   {
+    "name": "ROUTE_DOOR",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RESULT_FEEDBACK_ASK",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "resultFeedbackLine",
     "kind": "fn",
     "exported": true
    },
@@ -4024,37 +4714,332 @@
     "exported": true
    },
    {
-    "name": "EITHER_PATH",
+    "name": "STATUS_LABEL",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "ANY_PATH",
+    "name": "RULES_MET",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "proseProvenanceCounts",
+    "name": "CAME_FROM_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "shortByUpTo",
     "kind": "fn",
     "exported": true
    },
    {
-    "name": "questionCounter",
+    "name": "onField",
     "kind": "fn",
     "exported": true
    },
    {
-    "name": "NO_COUNTRY_MATCHES",
+    "name": "asksOrMoreHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "asksOrMore",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "upToShort",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "ABOVE_THE_AMOUNT",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "NO_COUNTRY_MATCHES_STATUS",
+    "name": "BELOW_THE_AMOUNT",
     "kind": "const",
     "exported": true
    },
    {
-    "name": "territoryLine",
+    "name": "LOWER_THRESHOLD_HINT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "shortByPoints",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "POINTS_TABLE_HINT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "withStepHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "WOULD_BE_MET",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WOULD_COME_WITHIN_REACH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "pointsMore",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "WHAT_THIS_ROUTE_ASKS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "YOUR_ANSWER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RAIL_ROWS_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_REQUIRED_FOR_YOUR_PASSPORT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NO_OFFICIAL_WORDING_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "OUR_READING_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "perPeriod",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "APPLIES_TO_YOU",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DOES_NOT_APPLY_TO_YOU",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NO_THRESHOLD_ON_ROUTE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "pointsOfNeeded",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "FIND_OUT_YOURSELF",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "noticeHeadline",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "unsettledHeadline",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "stepsWouldChangeHeadline",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "NOTHING_OPEN_HEADLINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "routesOpenHeadline",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "shortByUpToLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "needsOrMoreLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pointsAwayLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "answersCheckedLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "EVERY_VALUE_BELOW_QUOTED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "nearestLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "EXPLORE_ONE_COUNTRY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "EXPLORE_SEVERAL_COUNTRIES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOTHING_TO_COMPARE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SUMMARY_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "openCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "withinReachCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "unsettledCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "notOpenToPassportCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "notYetCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "notYetWithUnknowns",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "unlockingSteps",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "OPEN_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "UNSETTLED_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "UNSETTLED_SECTION_LINE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "WITHIN_REACH_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOT_YET_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CLOSED_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "STEPS_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "STEPS_HEADING_TAIL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "STEPS_HERE_HEADING",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "offerLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "arrangedLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routesNeed",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routesNeedSeeStepsAbove",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routesInCountryWhereYouToldUs",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routesInCountryYouAreNotLookingAt",
     "kind": "fn",
     "exported": true
    }
@@ -4538,6 +5523,11 @@
   ],
   "src/lib/question.ts": [
    {
+    "name": "questionMastheadOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "LONG_LIST_ABOVE",
     "kind": "const",
     "exported": true
@@ -4663,6 +5653,11 @@
    },
    {
     "name": "escAttr",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "sentenceWithLinkHtml",
     "kind": "fn",
     "exported": true
    },
@@ -4911,11 +5906,6 @@
     "exported": true
    },
    {
-    "name": "REASON_SAID",
-    "kind": "const",
-    "exported": false
-   },
-   {
     "name": "unsourcedSaid",
     "kind": "fn",
     "exported": false
@@ -5060,48 +6050,13 @@
     "exported": true
    },
    {
-    "name": "Explore",
-    "kind": "type",
-    "exported": true
-   },
-   {
     "name": "Masthead",
     "kind": "type",
     "exported": true
    },
    {
-    "name": "INTRO_SUBLINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "SHORT_SUBLINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "INTRO_HEADLINE",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "EXPLORE_SENTENCE",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "answersCheckedLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "headlineHtml",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "mastheadFor",
-    "kind": "fn",
+    "name": "VerdictMasthead",
+    "kind": "type",
     "exported": true
    },
    {
@@ -5116,11 +6071,6 @@
    },
    {
     "name": "screenAfter",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "claimsAComparison",
     "kind": "fn",
     "exported": true
    },
@@ -5376,11 +6326,6 @@
     "exported": true
    },
    {
-    "name": "situationPhrase",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "countryOf",
     "kind": "fn",
     "exported": false
@@ -5402,41 +6347,6 @@
    },
    {
     "name": "notScoredMarkHtml",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "UnscoredTally",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "unscoredTally",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "UnscoredVerdict",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "unscoredVerdict",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "leadCountry",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "leads",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "namedFirst",
     "kind": "fn",
     "exported": true
    }
@@ -5511,38 +6421,6 @@
    },
    {
     "name": "socialCardHtml",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "src/lib/steps.ts": [
-   {
-    "name": "Step",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "isLadder",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "ladderCache",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "arrangeSteps",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "nearestStep",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "seekHintHtml",
     "kind": "fn",
     "exported": true
    }
@@ -5720,9 +6598,16 @@
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
-  "src/lib/card.ts",
   "src/lib/clipboard.ts",
-  "src/lib/copy.ts",
+  "src/lib/copy/country-page.ts",
+  "src/lib/copy/data-page.ts",
+  "src/lib/copy/feedback.ts",
+  "src/lib/copy/frame.ts",
+  "src/lib/copy/interview.ts",
+  "src/lib/copy/not-found.ts",
+  "src/lib/copy/quotes.ts",
+  "src/lib/copy/route-page.ts",
+  "src/lib/copy/verdict.ts",
   "src/lib/countries.ts",
   "src/lib/country-page.ts",
   "src/lib/csp.ts",
@@ -5746,7 +6631,6 @@
   "src/lib/situations.ts",
   "src/lib/slug.ts",
   "src/lib/social-card.ts",
-  "src/lib/steps.ts",
   "src/pages/404.astro",
   "src/pages/[country]/[route].astro",
   "src/pages/[country]/[route].json.ts",
@@ -5761,5 +6645,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8472596746b9ade15119dd278eb32e8c1e5da5604d28ea098480cc761ed15589"
+ "digest": "edec0cb4cd933c41cb451df2b7cc417dfa9d85c20a7effcd8910203a1108c8b9"
 }

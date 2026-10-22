@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, type Dataset } from "permit-rulebook-data";
-import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy.js";
+import { LINK_ARRIVAL_LINE, NO_SCRIPT_LINE, RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { COVERS, FIRST_PAINT_SCRIPT, WIDE_FROM_PX, takeCoversOff } from "../src/lib/first-paint.js";
 import { RECORD_MAX_LENGTH, STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/question.js";
@@ -717,7 +717,7 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
     expect(words.length, `too short to be a sentence: ${JSON.stringify(words)}`).toBeGreaterThan(20);
     expect(words, "it does not say what is missing").toMatch(/JavaScript/);
     expect(words, "not a sentence").toMatch(/\.$/);
-    // And it is the product's one wording for it, said in copy.ts.
+    // And it is the product's one wording for it, said in the copy module.
     expect(words).toBe(NO_SCRIPT_LINE);
   });
 
