@@ -63,7 +63,9 @@ details.country-sec > summary > .cname{white-space:nowrap}
 details.country-sec > summary > .cname::before{content:"▸";display:inline-block;letter-spacing:0;margin-right:.35em;color:var(--color-muted)}
 details.country-sec[open] > summary > .cname::before{content:"▾"}
 .tally{font:600 .68rem var(--font-mono);letter-spacing:.06em;color:var(--color-muted);text-transform:none;text-align:right}
-.tally i{font-style:normal;color:var(--color-band)}
+/* The steps count is not a link, so it wears no link colour: ink, like the
+   step headings (ruling 9 on #55; the human's ruling on #178). */
+.tally i{font-style:normal;color:var(--color-ink)}
 /* A line that is the s19 sentence rather than a count (s21): a sentence
    is read, not tallied, so it takes the mark's voice — the sans, the
    muted ink — and its one door is the quoted route's page, internal, so

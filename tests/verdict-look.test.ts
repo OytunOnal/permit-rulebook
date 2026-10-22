@@ -12,7 +12,9 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * geometry and computed style.
  *
  * A step heading is ink, its step's name bold ink, never the colour of the
- * card's own link; the strip's counters are a plain line, with no border. The
+ * card's own link, and so is a country tally's count of its steps (the
+ * human's ruling on #178); the strip's counters are a plain line, with no
+ * border; a rail's tick carries no margin, so it sits on its amount. The
  * badge is on the card's first line, above the title, at every width and for
  * every title length: beside the country's name where the card carries it,
  * alone on that line where it does not.
@@ -61,6 +63,10 @@ const GERMANY_OFFER: Profile = {
   partner_ck: "no",
 };
 
+/** The same Berlin offer asking about all four: Germany's section counts its
+ * steps on its summary row. */
+const FOUR_GERMANY_OFFER: Profile = { ...GERMANY_OFFER, destination: "all", nl_recent_grad: "no", top200_grad: "no" };
+
 /** A finished record, so the page draws its verdict on arrival. */
 const seed = (answers: Profile): string =>
   `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(answers, Object.keys(answers), true))})`;
@@ -81,6 +87,11 @@ interface Look {
   link: string;
   /** Each counter's four border widths, in px. */
   counters: number[][];
+  /** The colour of each country tally's unlocking-steps count. */
+  tallySteps: string[];
+  /** Each rail tick: its left margin, and where it sits on its bar against
+   * where its own offset puts it, in px from the bar's left edge. */
+  railTicks: { margin: number; at: number; placed: number }[];
 }
 
 const READ_LOOK = `JSON.stringify((() => {
@@ -110,6 +121,15 @@ const READ_LOOK = `JSON.stringify((() => {
     counters: [...document.querySelectorAll("#app .strip > span")].map((s) => {
       const c = getComputedStyle(s);
       return [c.borderTopWidth, c.borderRightWidth, c.borderBottomWidth, c.borderLeftWidth].map(parseFloat);
+    }),
+    tallySteps: [...document.querySelectorAll("#app .tally i")].map((i) => getComputedStyle(i).color),
+    railTicks: [...document.querySelectorAll("#app article.route .bar")].flatMap((bar) => {
+      const edge = bar.getBoundingClientRect();
+      return [...bar.querySelectorAll(".rail-tick")].map((tick) => ({
+        margin: parseFloat(getComputedStyle(tick).marginLeft),
+        at: tick.getBoundingClientRect().left - edge.left,
+        placed: (parseFloat(tick.style.left) / 100) * edge.width,
+      }));
     }),
   };
 })())`;
@@ -178,6 +198,26 @@ describe.skipIf(skipped !== null)("verdict look — in the browser", () => {
       expect(look!.state).toBe("results");
       expect(look!.counters.length).toBeGreaterThan(0);
       for (const widths of look!.counters) expect(widths).toEqual([0, 0, 0, 0]);
+    }, 120_000);
+
+    it(`${name}: a country's tally draws its unlocking-steps count in ink, not the link's colour`, async () => {
+      const [look] = await looksAt(viewport, mobile, [FOUR_GERMANY_OFFER]);
+      expect(look!.state).toBe("results");
+      // The precondition: a tally that counts steps, and a link whose colour is not ink.
+      expect(look!.tallySteps.length).toBeGreaterThan(0);
+      expect(look!.link).not.toBe(look!.ink);
+      for (const colour of look!.tallySteps) expect(colour).toBe(look!.ink);
+    }, 120_000);
+
+    it(`${name}: a rail's tick carries no margin, so it sits on the amount it marks`, async () => {
+      const [look] = await looksAt(viewport, mobile, [GERMANY_OFFER]);
+      expect(look!.state).toBe("results");
+      expect(look!.railTicks.length, "precondition: a card draws a rail").toBeGreaterThan(0);
+      for (const tick of look!.railTicks) {
+        expect(tick.margin).toBe(0);
+        expect(Math.abs(tick.at - tick.placed), `the tick sits ${tick.at}px in, its amount at ${tick.placed}px`)
+          .toBeLessThanOrEqual(0.5);
+      }
     }, 120_000);
   }
 });

@@ -164,27 +164,14 @@ describe("the rail says where the reader stands", () => {
  * It was never a rounding error. `.tick` already meant the chosen-answer
  * checkmark on the results screen, and its `margin-left:.35rem` moved every
  * line on the bar six pixels off the amount it marks — the same class collision
- * this codebase met with `.country` and wrote a note about.
+ * this codebase met with `.country` and wrote a note about. That the drawn
+ * tick carries no margin and sits on its amount is measured in Chrome
+ * (verdict-look.test.ts).
  */
 describe("the rail's marks do not share a class with anything else", () => {
   it("draws rail-tick, never the checkmark's class", () => {
     const html = railFor(WALK, "nl-ict");
     expect(html).toContain('class="rail-tick"');
     expect(html).not.toMatch(/class="tick"/);
-  });
-
-  it("and the screen styles the two apart", async () => {
-    const { readFileSync } = await import("node:fs");
-    const read = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8").split("\r\n").join("\n");
-    // The page styles the question card's checkmark; the verdict's own
-    // stylesheet styles its rail.
-    const page = read("../src/pages/index.astro");
-    const verdict = read("../src/lib/verdict/verdict.css");
-    // The checkmark keeps its margin; the rail's mark is a different selector
-    // and has none, so nothing can shift it off its amount.
-    expect(page).toContain(".tick{color:var(--color-band);font-weight:700;margin-left:.35rem}");
-    expect(verdict).toContain(".rail-tick{position:absolute;");
-    for (const sheet of [page, verdict])
-      expect(/\.rail-tick\{[^}]*margin/.test(sheet), "the rail's mark must carry no margin").toBe(false);
   });
 });
