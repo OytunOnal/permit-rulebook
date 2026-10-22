@@ -12,14 +12,16 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
 import type { UnscoredVerdict } from "../src/lib/screen.js";
 import {
-  NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, countryHeadline, notCheckedLine, notCheckedQuotedLine,
+  NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, STATUS_LABEL, countryHeadline, notCheckedLine, notCheckedQuotedLine,
 } from "../src/lib/copy.js";
-import { verdictOf } from "../src/lib/verdict/index.js";
+import { verdictHtml, verdictOf } from "../src/lib/verdict/index.js";
 import { countryAddresses, countryPage } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { routePages } from "../src/lib/route-page.js";
 import { url } from "../src/lib/site.js";
-import { blocksIn, cardOn, everyCardIn, verdictFor } from "./verdict-cards.js";
+import {
+  PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
+} from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -180,6 +182,40 @@ describe("s19 — the zero-open result through a marked option is a written stat
   });
 });
 
+/** The two walks the browser takes below: France, then the marked answer; and
+ * Spain, the same answer and a Turkish passport. */
+const FRANCE_RESEARCH: Profile = { destination: "fr", situation: "research" };
+const SPAIN_RESEARCH: Profile = { destination: "es", situation: "research", citizenship: "TR" };
+
+describe("s19 — the two walks' results, from the verdict", () => {
+  it("France → research is the written state with its door, over the not-yet rows as today", () => {
+    const verdict = verdictFor(FRANCE_RESEARCH);
+    const m = verdict.action.masthead;
+    expect(m.announced).toBe("No route we check in France takes a research hosting agreement.");
+    expect(m.subline).toBe(
+      "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
+      + "read its rules. The routes below need a job offer or an intra-corporate transfer.",
+    );
+    expect(/<a href="([^"]*)">([^<]*)<\/a>/.exec(m.sublineHtml ?? "")?.slice(1)).toEqual([url("/france/talent-researcher"), "read its rules"]);
+    const body = textOf(verdictHtml(verdict));
+    expect(m.announced + m.subline + body).not.toContain("Nothing open");
+    // Then the not-yet list as today.
+    expect(groupsIn(verdict).some((g) => g.kind === "not-yet")).toBe(true);
+    expect(body).toContain("5 routes need a job offer or an intra-corporate transfer");
+  });
+
+  it("Spain → research is met, as before: open first, its badge Criteria met, the hosting agreement declared", () => {
+    const verdict = verdictFor(SPAIN_RESEARCH);
+    expect(verdict.action.masthead.announced).toMatch(/^1 route looks open\./);
+    expect(groupsIn(verdict)[0]!.kind).toBe("open");
+    expect(placed(verdict, "es-researcher")?.kind).toBe("open");
+    expect(cardOn(verdict, "es-researcher")).toContain(`<span class="st met">${STATUS_LABEL.met}</span>`);
+    const body = textOf(verdictHtml(verdict));
+    expect(body).not.toContain("not checked here: A hosting agreement");
+    expect(body).toContain("you declared “I have (or expect) a hosting agreement with a research institution there”");
+  });
+});
+
 /**
  * F8: the Spanish researcher card listed "A hosting agreement …" under "Also
  * required — not checked here" to a reader who had just declared one. A
@@ -334,15 +370,9 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        const read = async () => ({
-          headline: await page.evaluate('document.getElementById("headline").textContent.trim()'),
-          subline: await page.evaluate('document.getElementById("subline").textContent.trim()'),
-          door: await page.evaluate('(document.querySelector("#subline a") || {}).getAttribute ? document.querySelector("#subline a").getAttribute("href") : null'),
-          doorText: await page.evaluate('document.querySelector("#subline a") ? document.querySelector("#subline a").textContent : null'),
+        const read = async (answers: Profile) => ({
           status: await page.evaluate('document.getElementById("cstatus").textContent'),
-          main: await page.evaluate('document.getElementById("main").textContent'),
-          heads: JSON.parse(await page.evaluate('JSON.stringify([...document.querySelectorAll(".ghead")].map((h) => h.textContent.trim()))')),
-          badges: JSON.parse(await page.evaluate('JSON.stringify([...document.querySelectorAll(".route .st")].map((s) => s.textContent.trim()))')),
+          painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
           state: await page.evaluate('document.getElementById("app").dataset.state'),
           problems: page.problems(),
         });
@@ -352,40 +382,27 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
         await page.goto(server.url("/"), 900);
         await page.evaluate('document.querySelector(".opt[data-value=research]").click()');
         await new Promise((r) => setTimeout(r, 900));
-        const france = await read();
+        const france = await read(FRANCE_RESEARCH);
         // Spain, the same two answers — and the passport, which is Spain's third
         // tap (the scenario: CRITERIA MET in three).
-        await page.evaluate(seed({ destination: "es", situation: "research", citizenship: "TR" }));
+        await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
         await page.goto(server.url("/"), 1400);
-        const spain = await read();
+        const spain = await read(SPAIN_RESEARCH);
         return { france, spain };
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, {
-        headline: string; subline: string; door: string | null; doorText: string | null; status: string; main: string;
-        heads: string[]; badges: string[]; state: string; problems: string[];
+        status: string; painted: typeof PAINTED_AS_COMPOSED; state: string; problems: string[];
       }>;
 
+      // What each screen says is the verdict's ("s19 — the two walks' results,
+      // from the verdict"); the page paints it, and says France's written state.
       const { france, spain } = seen;
       expect(france!.problems).toEqual([]);
       expect(france!.state).toBe("results");
-      expect(france!.headline).toBe("No route we check in France takes a research hosting agreement.");
-      expect(france!.subline).toBe(
-        "France's route for a research hosting agreement — Talent — researcher (chercheur) — is quoted here but not checked: "
-        + "read its rules. The routes below need a job offer or an intra-corporate transfer.",
-      );
-      expect(france!.doorText).toBe("read its rules");
-      expect(france!.door).toBe(url("/france/talent-researcher"));
       expect(france!.status).toBe("No route we check in France takes a research hosting agreement.");
-      expect(france!.headline + france!.subline + france!.main).not.toContain("Nothing open");
-      // Then the not-yet list as today.
-      expect(france!.heads.some((h) => h.startsWith("Not yet"))).toBe(true);
-      expect(france!.main).toContain("5 routes need a job offer or an intra-corporate transfer");
+      expect(france!.painted).toEqual(PAINTED_AS_COMPOSED);
 
       expect(spain!.problems).toEqual([]);
-      expect(spain!.headline).toMatch(/^1 route looks open\./);
-      expect(spain!.heads[0]).toMatch(/^Open — criteria met/);
-      expect(spain!.badges).toContain("Criteria met");
-      expect(spain!.main).not.toContain("not checked here: A hosting agreement");
-      expect(spain!.main).toContain("you declared “I have (or expect) a hosting agreement with a research institution there”");
+      expect(spain!.painted).toEqual(PAINTED_AS_COMPOSED);
     } finally { server.close(); }
   }, 120_000);
 });
