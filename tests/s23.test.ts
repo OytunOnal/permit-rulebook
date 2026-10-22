@@ -257,8 +257,8 @@ describe("P1 — never a stutter; and, since s32's amendment 6, no explainer for
     expect(glossSection("Experienced worker (§ 19c / § 6 BeschV)", new Set()))
       .toBe("Experienced worker (§ 19c / § 6 BeschV)");
     expect(glossSection("§ 18d states it", new Set())).toBe("§ 18d states it");
-    expect(glossed("§ 18g AufenthG", new Set())).toBe("§ 18g AufenthG (AufenthG = the Residence Act)");
-    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (BeschV = the Employment Ordinance)");
+    expect(glossed("§ 18g AufenthG", new Set())).toBe("§ 18g AufenthG (the Residence Act)");
+    expect(glossed("§ 6 BeschV", new Set())).toBe("§ 6 BeschV (the Employment Ordinance)");
     // Once per page.
     const seen = new Set<string>();
     glossed("§ 18g AufenthG", seen);

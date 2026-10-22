@@ -490,12 +490,12 @@ describe("s6 — one page per route, generated from the dataset", () => {
   it("expands an abbreviation the first time a page uses it, and not after", () => {
     const de = pages.find((x) => x.path === "/germany/eu-blue-card-general")!;
     const text = textOf(de.html);
-    // Where a section citation names its act, the act is said in the
-    // citation's own bracket, in one form (s23, P1) — and without the sign's
-    // words since s32's amendment 6.
-    expect(text).toContain("§ 18g AufenthG (AufenthG = the Residence Act)");
+    // Where a section citation names its act, the act is said after it, in
+    // the one form an abbreviation takes (s23, P1; #151, story 25) — and
+    // without the sign's words since s32's amendment 6.
+    expect(text).toContain("§ 18g AufenthG (the Residence Act)");
     // Once, not on every citation on the page: the short form stands afterwards.
-    expect(text.split("AufenthG = the Residence Act").length - 1).toBe(1);
+    expect(text.split("AufenthG (the Residence Act)").length - 1).toBe(1);
     expect(text.split("AufenthG").length - 1).toBeGreaterThan(1);
     const beschv = pages.find((x) => x.path === "/germany/experienced-worker")!;
     expect(textOf(beschv.html)).toContain("BeschV (the Employment Ordinance)");

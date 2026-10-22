@@ -11,8 +11,9 @@
  * what "§" means) until s32's amendment 6 (the human's walk, 2026-09-18: "§ =
  * section yazmaya gerek yok"): the sign is read as a reader reads it, and the
  * words are gone from every screen. What a citation still explains on first
- * use is the act it names — "BeschV = the Employment Ordinance" — in the
- * bracket the citation already has.
+ * use is the act it names: "§ 6 BeschV (the Employment Ordinance)", or, in
+ * the bracket a citation already stands in, "(§ 6 BeschV; BeschV = the
+ * Employment Ordinance)".
  *
  * The gloss is appended, never substituted into the citation: "§ 18g AufenthG"
  * stays the citation a reader can search for, and gains the words after it. It
@@ -72,9 +73,8 @@ function bracketRun(text: string, at: number): { open: number; close: number } |
 }
 
 /**
- * What the act a citation names is, in the citation's own form — "BeschV = the
- * Employment Ordinance" — the first time the page names it, and nothing after.
- * Spent against the abbreviation's own key, or `glossed` would explain the
+ * The act a citation names and the words that explain it, the first time the
+ * page names it, and nothing after. Spent against the abbreviation's own key, or `glossed` would explain the
  * same act twice in one breath.
  *
  * The words used to open with the sign — "§ = section; BeschV = …" — and
@@ -82,12 +82,12 @@ function bracketRun(text: string, at: number): { open: number; close: number } |
  * whichever heading it landed on (v1.1 gate critique, P1; s23). The sign's
  * words went in s32's amendment 6: the human reads § as a reader does.
  */
-function actWords(act: string | undefined, seen: Glossary): string | null {
+function actEntry(act: string | undefined, seen: Glossary): readonly [token: string, words: string] | null {
   const name = act?.trim();
   const entry = ABBREVIATIONS.find(([token]) => token === name);
   if (!entry || seen.has(entry[0])) return null;
   seen.add(entry[0]);
-  return `${entry[0]} = ${entry[1]}`;
+  return entry;
 }
 
 /**
@@ -105,9 +105,12 @@ export function glossSection(text: string, seen: Glossary): string {
   const at = first.index;
   const run = bracketRun(text, at);
   if (!run) {
-    const words = actWords(first[2], seen);
-    return words
-      ? `${text.slice(0, at)}${first[0]} (${words})${text.slice(at + first[0].length)}`
+    // Outside a bracket the act's words follow the citation in a bracket of
+    // their own, the form any abbreviation takes there: "§ 18g AufenthG (the
+    // Residence Act)" (#151, story 25).
+    const entry = actEntry(first[2], seen);
+    return entry
+      ? `${text.slice(0, at)}${first[0]} (${entry[1]})${text.slice(at + first[0].length)}`
       : text;
   }
 
@@ -116,8 +119,8 @@ export function glossSection(text: string, seen: Glossary): string {
   // BeschV") is left as it is, and the prose that follows explains the act.
   const inside = text.slice(run.open, run.close);
   const cited = [...inside.matchAll(new RegExp(SECTION.source, "g"))];
-  const words = cited.length === 1 ? actWords(cited[0]![2], seen) : null;
-  return words ? `${text.slice(0, run.close)}; ${words}${text.slice(run.close)}` : text;
+  const entry = cited.length === 1 ? actEntry(cited[0]![2], seen) : null;
+  return entry ? `${text.slice(0, run.close)}; ${entry[0]} = ${entry[1]}${text.slice(run.close)}` : text;
 }
 
 /**

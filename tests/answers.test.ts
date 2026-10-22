@@ -165,7 +165,7 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
       // And no act was explained into it: no citation, no symbol to explain
       // (and the sign's own explainer is gone from every screen since s32's
       // amendment 6).
-      expect(seen.help!).not.toContain("= the Residence Act");
+      expect(seen.help!).not.toContain(glossed("AufenthG", new Set()));
       expect(seen.help!).not.toContain("§");
     } finally {
       server.close();

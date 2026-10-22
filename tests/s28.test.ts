@@ -39,7 +39,7 @@ const SHORTAGE = "occupation_shortage";
 const SYMBOL_LABEL = "§ 18g AufenthG lists the shortage groups";
 /** What glossing the label adds — the act on first use (the sign's own
  * explainer is gone from every screen since s32's amendment 6). */
-const ACT_EXPANSION = "AufenthG = the Residence Act";
+const ACT_EXPANSION = glossed("AufenthG", new Set());
 
 /** A label as a screen that has explained nothing prints it. */
 const firstUse = (label: string): string => glossed(label, new Set());
