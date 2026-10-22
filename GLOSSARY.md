@@ -362,6 +362,12 @@ the browser's history)
 
 ### Verdicts
 
+**Verdict** (UI: the results screen):
+The whole answer to one reader's answers: compared, or answered outright by a
+Notice; its headline and subline; and every route placed in a group, in order.
+Said once, from the dataset, the answers and the route the reader came from.
+_Avoid_: decision, ruling (no authority is deciding anything)
+
 **Met** (UI: "criteria met"):
 Every criterion of the route passes on the declarations given.
 
@@ -373,6 +379,20 @@ _Avoid_: almost, partial match
 **Not yet**:
 The route has a hard fail or an open unknown.
 _Avoid_: rejected, ineligible, closed
+
+**Unsettled** (UI: "unsettled for your passport"):
+A route whose rules the reader meets while a Notice leaves open whether the
+permit is open to their passport at all. Never counted as open; its badge
+reads "Rules met".
+_Avoid_: pending, maybe, open (for these)
+
+**Written state** (s19; UI: "No route we check in France takes a research
+hosting agreement."):
+What a verdict with nothing open says when the reader's situation is one no
+checked route in their country takes: the country and the situation, the
+quoted route that would take it, and what the checked routes take instead.
+In place of "Nothing open", never beside it.
+_Avoid_: empty state, error
 
 **Bounded gap**:
 A shortfall with a known ceiling (adjacent band below a threshold, points
@@ -423,6 +443,25 @@ _Avoid_: irrelevant, N/A
 A not-yet route whose only genuine failure is a path answer. These collapse
 into one group naming the path answers the group actually asks for.
 
+**Fold** (UI: "4 routes need a job offer or an intra-corporate transfer"):
+Not-yet rows gathered under one summary line the reader opens: three or more
+Step-gated rows, named by the path answers they ask for, or the rows in a
+country the reader is not looking at.
+_Avoid_: group (a fold sits inside the not-yet group)
+
+**Strip** (UI: "1 open · 0 within reach · 7 not yet"):
+The plain line under the notices counting a verdict's routes by group. It
+reads as a summary, never as a control.
+_Avoid_: tabs, pills, counters
+
+**Tally** (UI: a country's summary row, "2 open · 3 not yet · 2 unlocking
+steps"):
+One country's count on the several-country verdict, beside its name: its
+groups, and its Leverage steps alone. Where the country's checked routes do
+not take the reader's situation, the Written state's sentence stands in for
+its not-yet count.
+_Avoid_: score
+
 ### Change and leverage
 
 **Field kind — attribute / path / improvable**:
@@ -442,6 +481,13 @@ one: the reader can go and get it.
 _Avoid_: step (for a transfer or a hosting agreement); "situation" for these
 alone — the situation question's answers include the job offer
 
+**Arranged line** (UI: "With a different situation: an intra-corporate
+transfer would open 1 route in Germany"):
+The one line after the steps saying what each Arranged answer would open in a
+country. Never a Leverage step: not counted in the headline or a Tally, never
+named as the nearest.
+_Avoid_: step card
+
 **Leverage step** (UI: "steps that would unlock more"):
 A provable single-step counterfactual: re-evaluating the declarations with
 one improvable answer, or one path answer that is not an Arranged answer, changed,
@@ -449,7 +495,7 @@ and reporting only routes that verifiably turn met or within reach. Nothing
 resting on unanswered questions is ever promised.
 _Avoid_: suggestion, tip, recommendation (unqualified)
 
-**Offer line** (UI: "With a job offer in Germany: 6 more routes would be
+**Offer line** (UI: "With a job offer in Germany: 4 more routes would be
 checked — on …", #55):
 What a job offer would do for a reader who has none: how many routes it frees
 from their only hard fail, and what those routes would ask next. Never a
