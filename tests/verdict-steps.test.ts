@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  SITUATION_FIELD, fieldOptions, phraseOf, routesAnOfferFrees, shortLabelOf, unlockTitleOf, unlocks,
+  SITUATION_FIELD, fieldOptions, phraseOf, routesAnOfferFrees, subjectOf, unlockTitleOf, unlocks,
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
@@ -10,7 +10,7 @@ import {
 } from "../src/lib/copy.js";
 import { esc } from "../src/lib/reason.js";
 import { verdictHtml, type CountrySection, type Verdict, type VerdictGroup } from "../src/lib/verdict/index.js";
-import { groupsIn, stepsIn, verdictFor } from "./verdict-cards.js";
+import { groupsIn, stepsIn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -154,7 +154,8 @@ describe("#175 — the offer line", () => {
       if (!here) { expect(block?.offer ?? null, section.name).toBeNull(); continue; }
       expect(block?.offer, section.name).toEqual({
         offer: offer.short ?? offer.label, country: phraseOf(here.country), routes: here.routes.length,
-        fields: here.fieldsLeftOpen.map((f) => shortLabelOf(ds, f)),
+        // Each open field by its subject, the dataset's phrase for running text.
+        fields: here.fieldsLeftOpen.map((f) => subjectOf(ds, f)),
       });
       // The line is drawn, and before any step card of its block.
       const line = esc(offerLine(block!.offer!));
@@ -190,6 +191,14 @@ describe("#175 — the offer line", () => {
     const html = verdictHtml(verdict);
     expect(html.indexOf(esc(STEPS_HEADING))).toBeGreaterThan(-1);
     expect(html.indexOf(esc(STEPS_HEADING))).toBeLessThan(html.indexOf(esc(offerLine(block!.offer!))));
+  });
+
+  it("a freed route's open field with no subject is refused, not named by its id", () => {
+    const [first] = routesAnOfferFrees(ds, PRIYA);
+    const field = first!.fieldsLeftOpen[0]!;
+    const unnamed = structuredClone(dataset) as unknown as Dataset;
+    delete unnamed.fields.find((f) => f.id === field)!.subject;
+    expect(() => verdictOn(unnamed, PRIYA)).toThrow(field);
   });
 
   it("an offer-holder never gets it", () => {

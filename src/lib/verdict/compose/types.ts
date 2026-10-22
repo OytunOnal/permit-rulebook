@@ -58,13 +58,13 @@ export type Fold =
  * The offer line: for a reader exploring with no offer, what a job offer in
  * one country would free — routes that would then be checked, never met. In
  * the dataset's words: the offer's, the country's in-sentence phrase, the
- * fields' short labels.
+ * fields' subjects.
  */
 export interface OfferLine {
   offer: string;
   country: string;
   routes: number;
-  /** What the freed routes would ask next. */
+  /** What the freed routes would ask next, each field by its subject. */
   fields: string[];
 }
 

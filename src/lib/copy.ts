@@ -962,7 +962,7 @@ export const STEPS_HERE_HEADING = "Steps that would unlock more here";
 
 /** The offer line: what a job offer would have checked in one country for an
  * explorer — a check, never a verdict, so never "met" or "within reach". The
- * offer, the country and the fields' short labels are the dataset's words. */
+ * offer, the country and the fields' subjects are the dataset's words. */
 export const offerLine = (line: { offer: string; country: string; routes: number; fields: string[] }): string =>
   `With ${line.offer} in ${line.country}: ${line.routes} more route${line.routes === 1 ? "" : "s"} would be checked`
   + `${line.fields.length ? ` — on ${joinAnd(line.fields)}` : ""}.`;

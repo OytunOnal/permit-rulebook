@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, phraseOf, routesAnOfferFrees, shortLabelOf, unlockTitleOf,
+  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, phraseOf, routesAnOfferFrees, subjectOf, unlockTitleOf,
   type Dataset, type Profile, type RouteResult, type RoutesFreedByAnOffer, type Unlock,
 } from "permit-rulebook-data";
 import { SEEK_HINT, orAbove } from "../../copy.js";
@@ -177,10 +177,19 @@ function isExploring(ds: Dataset, answers: Profile): boolean {
 export const routesAnOfferFreesFor = (ds: Dataset, answers: Profile): RoutesFreedByAnOffer[] =>
   isExploring(ds, answers) ? routesAnOfferFrees(ds, answers) : [];
 
+/** A field as running text names it: its `subject`. A field with none is
+ * refused rather than named by its id. */
+function subjectNamed(ds: Dataset, field: string): string {
+  if (ds.fields.find((f) => f.id === field)?.subject === undefined)
+    throw new Error(`"${field}" has no subject for the offer line to name it by`);
+  return subjectOf(ds, field);
+}
+
 /**
  * One country's offer line, or null where an offer frees nothing there. The
  * job offer is named by the dataset: the situation answer neither arranged,
- * the fallback nor "I don't know".
+ * the fallback nor "I don't know"; the questions the freed routes would ask
+ * next, by their subjects.
  */
 export function offerLineIn(ds: Dataset, freed: RoutesFreedByAnOffer[], code: string): OfferLine | null {
   const here = freed.find((f) => f.country === code);
@@ -189,7 +198,7 @@ export function offerLineIn(ds: Dataset, freed: RoutesFreedByAnOffer[], code: st
   if (!offer) throw new Error(`"${SITUATION_FIELD}" offers no job offer to name`);
   return {
     offer: offer.short ?? offer.label, country: phraseOf(code), routes: here.routes.length,
-    fields: here.fieldsLeftOpen.map((f) => shortLabelOf(ds, f)),
+    fields: here.fieldsLeftOpen.map((f) => subjectNamed(ds, f)),
   };
 }
 
