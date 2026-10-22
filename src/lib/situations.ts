@@ -3,7 +3,7 @@ import {
   DESTINATION_FIELD, SITUATION_FIELD, phraseOf, fieldOptions, isScored, situationsAsked, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "./copy.js";
-import { esc, escAttr } from "./reason.js";
+import { esc, sentenceWithLinkHtml } from "./reason.js";
 import { routePath } from "./slug.js";
 import { url } from "./site.js";
 
@@ -91,7 +91,5 @@ export function markUnder(ds: Dataset, field: string, value: string, answers: Pr
  * on the last three words where there is a page to open. */
 export function notScoredMarkHtml(mark: NotScoredMark): string {
   if (!mark.route) return esc(notCheckedLine(mark.country));
-  const line = esc(notCheckedQuotedLine(mark.country, mark.route.name));
-  const door = `<a href="${escAttr(url(mark.route.path))}">${esc(READ_IT_HERE)}</a>`;
-  return line.replace(esc(READ_IT_HERE), door);
+  return sentenceWithLinkHtml(notCheckedQuotedLine(mark.country, mark.route.name), READ_IT_HERE, url(mark.route.path));
 }

@@ -5,6 +5,7 @@ import {
 } from "permit-rulebook-data";
 import { SEEK_HINT, orAbove } from "../../copy.js";
 import { esc } from "../../reason.js";
+import { phraseOfAnswer } from "./answer-phrase.js";
 import type { ArrangedLine, OfferLine } from "./types.js";
 
 /**
@@ -159,7 +160,7 @@ export function arrangedLineIn(arranged: Unlock[], code: string): ArrangedLine |
   for (const u of arranged) {
     const routes = u.routes.filter((r) => r.country === code).length;
     if (!routes) continue;
-    const said = opened.get(u.option.value) ?? { answer: u.option.short ?? u.option.label, routes: 0 };
+    const said = opened.get(u.option.value) ?? { answer: phraseOfAnswer(u.option), routes: 0 };
     opened.set(u.option.value, { ...said, routes: said.routes + routes });
   }
   return opened.size ? { country: phraseOf(code), answers: [...opened.values()] } : null;
@@ -197,7 +198,7 @@ export function offerLineIn(ds: Dataset, freed: RoutesFreedByAnOffer[], code: st
   const offer = fieldOptions(ds, SITUATION_FIELD).find((o) => !o.is_arranged && !o.is_fallback && !o.is_unknown);
   if (!offer) throw new Error(`"${SITUATION_FIELD}" offers no job offer to name`);
   return {
-    offer: offer.short ?? offer.label, country: phraseOf(code), routes: here.routes.length,
+    offer: phraseOfAnswer(offer), country: phraseOf(code), routes: here.routes.length,
     fields: here.fieldsLeftOpen.map((f) => subjectNamed(ds, f)),
   };
 }

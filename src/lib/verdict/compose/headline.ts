@@ -1,8 +1,7 @@
 // @level presentation
 import type { RouteResult } from "permit-rulebook-data";
 import {
-  NOTHING_OPEN_HEADLINE, needsOrMoreLine, pointsAwayLine, routesOpenHeadline, shortByUpToLine, stepsWouldChangeHeadline,
-  unsettledHeadline,
+  NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, stepsWouldChangeHeadline, unsettledHeadline,
 } from "../../copy.js";
 import { moneyShortfallOf } from "./card-blocks.js";
 import type { VerdictScreen } from "./cards.js";
@@ -21,7 +20,7 @@ function nearNote(screen: VerdictScreen, near: RouteResult[]): string {
   const first = near[0];
   if (!first) return "";
   const money = moneyShortfallOf(screen.ds, first, screen.answers);
-  if (money) return money.kind === "line" ? needsOrMoreLine(money.line) : shortByUpToLine(money.gap);
+  if (money) return money.headline;
   if (first.gap_points) return pointsAwayLine(first.gap_points);
   return "";
 }

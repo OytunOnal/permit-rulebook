@@ -25,9 +25,12 @@ export interface Reading {
   notices: Notice[];
 }
 
+/** The destination answer that asks about every country at once. */
+export const EVERY_COUNTRY_ANSWER = "all";
+
 export function readingOf(ds: Dataset, answers: Profile, cameFrom: string | null): Reading {
   const dest = answers[DESTINATION_FIELD];
-  const everyCountry = dest === undefined || dest === "all";
+  const everyCountry = dest === undefined || dest === EVERY_COUNTRY_ANSWER;
   const visible = everyCountry ? ds.countries : ds.countries.filter((c) => c.code.toLowerCase() === dest);
   const codes = new Set(visible.map((c) => c.code));
   const scored = scopedFirst(evaluate(ds, answers).filter((r) => codes.has(r.country)), cameFrom);

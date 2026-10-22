@@ -8,7 +8,7 @@ import {
 } from "./card-blocks.js";
 import {
   CAME_FROM_LINE, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET,
-  WOULD_COME_WITHIN_REACH, asksOrMore, asksOrMoreHtml, onField, pointsMore, shortByPoints, shortByUpTo, withStepHtml,
+  WOULD_COME_WITHIN_REACH, pointsMore, shortByPoints, withStepHtml,
 } from "../../copy.js";
 import { countryOf } from "../../countries.js";
 import { type Glossary, glossSection, glossed } from "../../gloss.js";
@@ -76,10 +76,7 @@ function gapNoteHtml(screen: VerdictScreen, r: RouteResult): string {
   if (!money) return "";
   const field = esc(shortLabelOf(screen.ds, money.field).toLowerCase());
   const hint = money.field === "salary_eur_year" ? ` ${esc(LOWER_THRESHOLD_HINT)}` : "";
-  const said = money.kind === "line"
-    ? asksOrMoreHtml(esc(money.line), field, esc(money.band))
-    : `<b>${esc(shortByUpTo(money.gap))}</b> ${onField(field)}.`;
-  return `<div class="gapnote">${said}${hint}</div>`;
+  return `<div class="gapnote">${money.noteHtml(field)}${hint}</div>`;
 }
 
 /** The same, for a route within reach on points. */
@@ -151,7 +148,7 @@ export function holdRow(screen: VerdictScreen, r: RouteResult): string {
  * on the answers as they would stand with the step taken. */
 function reachAmount(screen: VerdictScreen, r: RouteResult, taken: Profile): string {
   const money = moneyShortfallOf(screen.ds, r, taken);
-  if (money) return ` (${esc(money.kind === "line" ? asksOrMore(money.line) : money.gap)})`;
+  if (money) return ` (${esc(money.reach)})`;
   if (r.gap_points) return ` (${esc(pointsMore(r.gap_points))})`;
   return "";
 }

@@ -6,9 +6,11 @@ import {
 import {
   READ_ITS_RULES, unscoredHeadline, unscoredNamedRestLine, unscoredRestLine, unscoredRouteLine, unscoredTallyLine,
 } from "../../copy.js";
-import { esc, escAttr } from "../../reason.js";
+import { esc, sentenceWithLinkHtml } from "../../reason.js";
 import { url } from "../../site.js";
 import { SITUATION_COUNTRY_FIELD, notScoredFor } from "../../situations.js";
+import { phraseOfAnswer } from "./answer-phrase.js";
+import { EVERY_COUNTRY_ANSWER } from "./reading.js";
 
 /**
  * What the verdict says where the declared situation is one no scored route
@@ -21,7 +23,7 @@ import { SITUATION_COUNTRY_FIELD, notScoredFor } from "../../situations.js";
 /** The situation option's `short`, the words a sentence reads it in. */
 const situationPhrase = (ds: Dataset, value: string): string => {
   const o = fieldOptions(ds, SITUATION_FIELD).find((x) => x.value === value);
-  return o?.short ?? o?.label ?? value;
+  return o ? phraseOfAnswer(o) : value;
 };
 
 /**
@@ -47,9 +49,7 @@ export function unscoredTally(ds: Dataset, country: Country, situation: string |
   const mark = notScoredFor(ds, country.code.toLowerCase(), situation);
   if (!mark) return null;
   const text = unscoredTallyLine(mark.country, situationPhrase(ds, situation), mark.route?.name);
-  const html = mark.route
-    ? esc(text).replace(esc(mark.route.name), `<a href="${escAttr(url(mark.route.path))}">${esc(mark.route.name)}</a>`)
-    : esc(text);
+  const html = mark.route ? sentenceWithLinkHtml(text, mark.route.name, url(mark.route.path)) : esc(text);
   return { text, html };
 }
 
@@ -100,14 +100,14 @@ export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict 
   // Keyed by the named country where the destination is all four, and by the
   // destination itself everywhere else — the direct path never asks question
   // 3, so a country answer under a one-country destination is not a key.
-  const named = destination === "all" ? answers[SITUATION_COUNTRY_FIELD] : undefined;
+  const named = destination === EVERY_COUNTRY_ANSWER ? answers[SITUATION_COUNTRY_FIELD] : undefined;
   const key = named ?? destination;
   const mark = notScoredFor(ds, key, situation);
   if (!mark) return null;
   const asked = situationsAsked(ds).get(key) ?? new Set<string>();
   const steps = joinOr(fieldOptions(ds, SITUATION_FIELD)
     .filter((o) => asked.has(o.value) && !o.is_fallback && !o.is_unknown)
-    .map((o) => o.short ?? o.label));
+    .map(phraseOfAnswer));
   const phrase = situationPhrase(ds, situation);
   const opening = possessiveAtStartOf(key.toUpperCase());
   const rest = named ? unscoredNamedRestLine(opening, steps) : unscoredRestLine(steps);

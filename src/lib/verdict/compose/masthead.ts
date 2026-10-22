@@ -3,7 +3,7 @@ import {
   EVERY_VALUE_BELOW_QUOTED, EXPLORE_ONE_COUNTRY, EXPLORE_SEVERAL_COUNTRIES, NOTHING_TO_COMPARE, answersCheckedLine,
   nearestLine, noticeHeadline,
 } from "../../copy.js";
-import { esc, escAttr } from "../../reason.js";
+import { esc, sentenceWithLinkHtml } from "../../reason.js";
 import type { VerdictMasthead } from "../../screen.js";
 import type { UnscoredVerdict } from "./unscored.js";
 
@@ -44,9 +44,7 @@ const announcedOf = ({ headline, emphasis }: Headline): string => (emphasis ? `$
  * a link only in the HTML form, so what is announced is what is read. */
 function unscoredMasthead(h: Headline, unscored: UnscoredVerdict): VerdictMasthead {
   const { subline, door } = unscored;
-  const sublineHtml = door
-    ? esc(subline).replace(esc(door.text), `<a href="${escAttr(door.href)}">${esc(door.text)}</a>`)
-    : esc(subline);
+  const sublineHtml = door ? sentenceWithLinkHtml(subline, door.text, door.href) : esc(subline);
   return { headline: headlineHtml(h), subline, sublineHtml, announced: announcedOf(h) };
 }
 

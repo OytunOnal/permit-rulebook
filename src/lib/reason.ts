@@ -32,6 +32,17 @@ export function escAttr(s: string): string {
   return esc(s).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
+/**
+ * A sentence drawn as text with one run of its words made a link: the
+ * sentence and the words escaped, the address escaped for its attribute. The
+ * anchor goes in through a function, so a `$` in the words or the address is
+ * never read as a replacement pattern.
+ */
+export function sentenceWithLinkHtml(sentence: string, linked: string, href: string): string {
+  const anchor = `<a href="${escAttr(href)}">${esc(linked)}</a>`;
+  return esc(sentence).replace(esc(linked), () => anchor);
+}
+
 /** The one line a card leads with. */
 export function whyHtml(dataset: Dataset, r: RouteResult, profile: Profile): string {
   return esc(reasonFor(dataset, r, profile).line);

@@ -3,6 +3,7 @@ import {
   declaredPlace, fieldOptions, isPlacedElsewhere, isStepGated, type Criterion, type Dataset, type RouteResult,
 } from "permit-rulebook-data";
 import { countryOf } from "../../countries.js";
+import { phraseOfAnswer } from "./answer-phrase.js";
 import { holdRow, type VerdictScreen } from "./cards.js";
 import type { Fold, RouteCard, VerdictGroup } from "./types.js";
 
@@ -20,7 +21,7 @@ function pathAnswersAskedBy(ds: Dataset, c: Criterion): string[] {
   const options = fieldOptions(ds, c.field);
   return wantedValues(c).flatMap((v) => {
     const option = options.find((o) => o.value === v);
-    return option && !option.is_fallback ? [option.short ?? option.label] : [];
+    return option && !option.is_fallback ? [phraseOfAnswer(option)] : [];
   });
 }
 

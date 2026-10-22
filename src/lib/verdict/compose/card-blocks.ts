@@ -10,8 +10,8 @@ import {
 } from "permit-rulebook-data";
 import { esc, escAttr } from "../../reason.js";
 import {
-  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading,
-  readOn, upToShort,
+  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading, asksOrMore,
+  asksOrMoreHtml, needsOrMoreLine, onField, readOn, shortByUpTo, shortByUpToLine, upToShort,
 } from "../../copy.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
 // it, on the screen's own memory: the card's citations, statements, readings
@@ -337,15 +337,22 @@ const periodOf = (ds: Dataset, field: string) => ds.fields.find((f) => f.id === 
 const gapAsPrinted = (ds: Dataset, field: string, gap: number): string => formatEURPer(gap, periodOf(ds, field));
 
 /**
- * What a route within reach on money is short of, as every place prints it.
- * Where the reader's band has a lower edge, the band's widest gap; where it is
- * open at the bottom there is no edge to measure a gap from, and the route's
- * line is said instead, with the band. Read from the band, never from a list
- * of fields.
+ * What a route within reach on money is short of, in each form a place
+ * prints it. Where the reader's band has a lower edge, the band's widest gap;
+ * where it is open at the bottom there is no edge to measure a gap from, and
+ * the route's line is said instead, with the band. Read from the band, never
+ * from a list of fields; decided once, in `moneyShortfallOf`.
  */
-export type MoneyShortfall =
-  | { kind: "gap"; field: string; gap: string }
-  | { kind: "line"; field: string; line: string; band: string };
+export interface MoneyShortfall {
+  /** The field the shortfall is measured on. */
+  field: string;
+  /** The card's note, given the field's name as markup. */
+  noteHtml(fieldHtml: string): string;
+  /** How near a step would bring the route, as its parenthesis says it. */
+  reach: string;
+  /** The headline's emphasis. */
+  headline: string;
+}
 
 /** The money shortfall of a result on the answers it was evaluated on, or
  * undefined where it has no money gap. */
@@ -354,9 +361,18 @@ export function moneyShortfallOf(ds: Dataset, r: RouteResult, answers: Profile):
   if (!r.gap_max || !measured) return undefined;
   const { field } = measured;
   const band = bandOf(ds, field, answers);
-  if (band && band.min === undefined)
-    return { kind: "line", field, line: formatEURPer(measured.threshold.amount, periodOf(ds, field)), band: band.label };
-  return { kind: "gap", field, gap: gapAsPrinted(ds, field, r.gap_max) };
+  if (band && band.min === undefined) {
+    const line = formatEURPer(measured.threshold.amount, periodOf(ds, field));
+    return {
+      field, noteHtml: (fieldHtml) => asksOrMoreHtml(esc(line), fieldHtml, esc(band.label)),
+      reach: asksOrMore(line), headline: needsOrMoreLine(line),
+    };
+  }
+  const gap = gapAsPrinted(ds, field, r.gap_max);
+  return {
+    field, noteHtml: (fieldHtml) => `<b>${esc(shortByUpTo(gap))}</b> ${onField(fieldHtml)}.`,
+    reach: gap, headline: shortByUpToLine(gap),
+  };
 }
 
 /**
