@@ -7,7 +7,7 @@ import {
 // moves without a person (devils-advocate, 2026-09-08).
 import watchStateJson from "permit-rulebook-data/watch/state.json";
 import { escAttr } from "./reason.js";
-import { PRODUCT_NAME, TAGLINE } from "./copy.js";
+import { PRODUCT_NAME, TAGLINE } from "./copy/frame.js";
 /**
  * Where this build believes it lives, and where the data behind it lives.
  *

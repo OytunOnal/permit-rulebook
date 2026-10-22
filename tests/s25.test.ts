@@ -8,7 +8,8 @@ import {
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION, restore, serialize } from "../src/lib/record.js";
-import { STATUS_LABEL, orAbove, resumedLine } from "../src/lib/copy.js";
+import { STATUS_LABEL, orAbove } from "../src/lib/copy/verdict.js";
+import { resumedLine } from "../src/lib/copy/interview.js";
 import { glossed } from "../src/lib/gloss.js";
 import { declarationHtml, questionCardHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";

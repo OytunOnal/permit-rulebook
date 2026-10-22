@@ -9,10 +9,8 @@ import {
   type RouteStatement, type UnsourcedReason,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "../../reason.js";
-import {
-  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, NOT_CHECKED_HEADING, PAGE_ALSO_SAYS, ROUTE_DOOR, askedHeading, asksOrMore,
-  asksOrMoreHtml, needsOrMoreLine, onField, readOn, shortByUpTo, shortByUpToLine, upToShort,
-} from "../../copy.js";
+import { ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, NOT_CHECKED_HEADING, ROUTE_DOOR, askedHeading, asksOrMore, asksOrMoreHtml, needsOrMoreLine, onField, shortByUpTo, shortByUpToLine, upToShort } from "../../copy/verdict.js";
+import { PAGE_ALSO_SAYS, readOn } from "../../copy/quotes.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
 // it, on the screen's own memory: the card's citations, statements, readings
 // and learn labels are glossed as the route page's are (#151, ruling 8). Each

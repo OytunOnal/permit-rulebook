@@ -6,7 +6,7 @@ import type { Dataset } from "permit-rulebook-data";
 import { datasetLd } from "../src/lib/dataset-ld.js";
 import { siteReadDate } from "../src/lib/country-page.js";
 import { DATA_PATH } from "../src/lib/identity.js";
-import { FLAG_READ_WITHIN, FRESHNESS_HUMAN_HAND } from "../src/lib/copy.js";
+import { FLAG_READ_WITHIN, FRESHNESS_HUMAN_HAND } from "../src/lib/copy/data-page.js";
 
 /**
  * The data page tells a dataset index what it is holding.

@@ -6,7 +6,7 @@ import {
   CONSOLIDATED_TEXT_HOSTS, deriveQuestions, isScored, routeStatements, scopeLine,
   type Dataset, type Profile, type Route,
 } from "permit-rulebook-data";
-import { OFFICIAL_PAGE, consolidatedTextOn } from "../src/lib/copy.js";
+import { OFFICIAL_PAGE, consolidatedTextOn } from "../src/lib/copy/quotes.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";

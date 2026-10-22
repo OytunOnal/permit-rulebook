@@ -8,9 +8,10 @@ import {
   type Dataset, type Profile, type UnreadSource,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import {
-  EITHER_PATH, SEEK_HINT, WOULD_BE_MET, dailyCheck, nearestLine, orAbove, proseProvenanceCounts, questionCounter,
-} from "../src/lib/copy.js";
+import { EITHER_PATH, dailyCheck } from "../src/lib/copy/route-page.js";
+import { SEEK_HINT, WOULD_BE_MET, nearestLine, orAbove } from "../src/lib/copy/verdict.js";
+import { proseProvenanceCounts } from "../src/lib/copy/data-page.js";
+import { questionCounter } from "../src/lib/copy/interview.js";
 import { glossSection, glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePage, routePages, routeSourceUrls } from "../src/lib/route-page.js";

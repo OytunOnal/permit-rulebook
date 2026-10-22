@@ -4,7 +4,7 @@ import {
   phraseOf, countryVocabulary, fieldOptions, findTerritory, matchOptions, territoryPhraseAtStartOf, territoryPhraseOf,
   type Dataset,
 } from "permit-rulebook-data";
-import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy.js";
+import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy/interview.js";
 import { composeNoMatchLine } from "../src/lib/listbox.js";
 import {
   PHONE, recordSeedScript, settle, skipReason, warnNotWalked, withSite, type BrowserPage, type PageOnSite,

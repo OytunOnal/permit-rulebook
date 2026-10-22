@@ -8,7 +8,7 @@ import {
   destinationForCountry, questionPhrase,
 } from "../src/lib/scope.js";
 import { RECORD_VERSION, serialize } from "../src/lib/record.js";
-import { CAME_FROM_LINE } from "../src/lib/copy.js";
+import { CAME_FROM_LINE } from "../src/lib/copy/verdict.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { everyCardIn, verdictOn } from "./verdict-cards.js";

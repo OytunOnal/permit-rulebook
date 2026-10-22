@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { DISCLAIMER, unreadLabel } from "../src/lib/copy.js";
+import { DISCLAIMER, unreadLabel } from "../src/lib/copy/frame.js";
 import { countryLinks, footerFacts, navCountries } from "../src/lib/country-page.js";
 import { DATA_PATH, FEEDBACK_PATH, siteFooter } from "../src/lib/identity.js";
 import { routePages } from "../src/lib/route-page.js";
@@ -115,7 +115,7 @@ describe("one footer, every page", () => {
       expect(footerOf(page.html), `${page.path} offers a route's JSON`).not.toContain("This route as JSON");
   });
 
-  it("the disclaimer is said once per page, in the words copy.ts holds", () => {
+  it("the disclaimer is said once per page, in the words the copy module holds", () => {
     for (const page of pages) {
       const text = page.html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ");
       const said = text.split(DISCLAIMER).length - 1;

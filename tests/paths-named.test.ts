@@ -4,7 +4,7 @@ import {
   criterionPhrase, evaluate, isLocalization,
   type Criterion, type Dataset, type Profile, type Route,
 } from "permit-rulebook-data";
-import { ANY_PATH, EITHER_PATH } from "../src/lib/copy.js";
+import { ANY_PATH, EITHER_PATH } from "../src/lib/copy/route-page.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { recordSeedScript, skipReason, warnNotWalked, withSite, DESK, type BrowserPage } from "./browser-walk.js";

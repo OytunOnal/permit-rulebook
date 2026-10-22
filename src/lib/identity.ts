@@ -1,7 +1,5 @@
 // @level presentation
-import {
-  COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW, MENU, MENU_CLOSE, PRODUCT_NAME, SEAL_LETTERS, unreadLabel,
-} from "./copy.js";
+import { COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW, MENU, MENU_CLOSE, PRODUCT_NAME, SEAL_LETTERS, unreadLabel } from "./copy/frame.js";
 import { esc, escAttr } from "./reason.js";
 import { url } from "./site.js";
 

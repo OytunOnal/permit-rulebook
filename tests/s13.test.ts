@@ -2,13 +2,9 @@ import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import {
-  COPIED, COPY_ADDRESS_LABEL, COUNTRIES, FEEDBACK, FEEDBACK_DOORS, FEEDBACK_EYEBROW, FEEDBACK_FOOTER_ROW,
-  FEEDBACK_GITHUB_HEADING, FEEDBACK_GITHUB_LINE, FEEDBACK_LEDE, FEEDBACK_NOTE, FEEDBACK_OWN_APP,
-  FEEDBACK_OWN_APP_LEAD,
-  RESULT_FEEDBACK_ASK, TRACKER_NEW_NEED, TRACKER_WRONG_VALUE,
-  feedbackTemplateLine, resultFeedbackLine,
-} from "../src/lib/copy.js";
+import { COPIED, COPY_ADDRESS_LABEL, FEEDBACK_DOORS, FEEDBACK_EYEBROW, FEEDBACK_GITHUB_HEADING, FEEDBACK_GITHUB_LINE, FEEDBACK_LEDE, FEEDBACK_NOTE, FEEDBACK_OWN_APP, FEEDBACK_OWN_APP_LEAD, TRACKER_NEW_NEED, TRACKER_WRONG_VALUE, feedbackTemplateLine } from "../src/lib/copy/feedback.js";
+import { COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW } from "../src/lib/copy/frame.js";
+import { RESULT_FEEDBACK_ASK, resultFeedbackLine } from "../src/lib/copy/verdict.js";
 import {
   FEEDBACK_ADDRESS, GMAIL_COMPOSE_URL, NEW_NEED_URL, SPONSOR_URL, TRACKER_URL, absolute, url,
 } from "../src/lib/site.js";
@@ -58,7 +54,7 @@ const gmails = (html: string): string[] =>
   [...html.matchAll(/href="(https:\/\/mail\.google\.com\/[^"]*)"/g)].map((m) => m[1]!.split("&amp;").join("&"));
 
 describe("the page, and the three doors on it", () => {
-  it("is a built page at /feedback/, in the words copy.ts holds", () => {
+  it("is a built page at /feedback/, in the words the copy module holds", () => {
     expect(page.path).toBe(FEEDBACK_PATH);
     // Each of the page's own sentences is the copy's, to the character: the
     // eyebrow, the h1, the lede and the note are read back from the markup
@@ -381,10 +377,11 @@ describe("the map and the sitemap", () => {
 
 /** The line under the verdict, and where it may never appear. */
 describe("the results line", () => {
-  it("is built from copy.ts", () => {
-    // The words live in copy.ts and the verdict takes them from there, on both
-    // layouts, with the one link and nothing else. Where the line sits, and
-    // what it says, the browser cases below read off the screen.
+  it("is built from the copy module", () => {
+    // The words live in the copy module and the verdict takes them from
+    // there, on both layouts, with the one link and nothing else. Where the
+    // line sits, and what it says, the browser cases below read off the
+    // screen.
     const line = resultFeedbackLine(`<a href="${escAttr(url(FEEDBACK_PATH))}">${esc(FEEDBACK)}</a>`);
     for (const record of [frRecord, allRecord])
       expect(verdictHtml(verdictFor(record))).toContain(line);

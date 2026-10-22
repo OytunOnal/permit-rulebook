@@ -5,7 +5,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   deriveQuestions, fillRouteSlots, hostKindOf, type Dataset, type Profile,
 } from "permit-rulebook-data";
-import { consolidatedTextOn } from "../src/lib/copy.js";
+import { consolidatedTextOn } from "../src/lib/copy/quotes.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";

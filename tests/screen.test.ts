@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { SITUATION_FIELD, evaluate, isClosed, type Dataset, type Profile } from "permit-rulebook-data";
-import { INTRO_SUBLINE, SHORT_SUBLINE, answersCheckedLine, nearestLine } from "../src/lib/copy.js";
+import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/copy/interview.js";
+import { answersCheckedLine, nearestLine } from "../src/lib/copy/verdict.js";
 import { questionMastheadOf } from "../src/lib/question.js";
 import { screenAfter, type FlowAction, type Masthead, type Screen } from "../src/lib/screen.js";
 import { verdictOf, type Verdict } from "../src/lib/verdict/index.js";

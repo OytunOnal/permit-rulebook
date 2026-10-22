@@ -31,7 +31,7 @@ import { contentSecurityPolicy } from "../lib/csp.js";
 import { footerFacts, navCountries } from "../lib/country-page.js";
 // The product's own words, in one place: the name, the tagline and the
 // disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
-import { PRODUCT_NAME, promise, TAGLINE } from "../lib/copy.js";
+import { PRODUCT_NAME, promise, TAGLINE } from "../lib/copy/frame.js";
 import { routeCounts } from "../lib/data-page.js";
 import { analyticsBeacon, headMeta } from "../lib/site.js";
 
@@ -179,7 +179,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // one step that takes the first paint's covers off.
     import { WIDE_QUERY, takeCoversOff } from "../lib/first-paint.js";
     // One date format, everywhere a date prints (decision 12).
-    import { isoDay } from "../lib/copy.js";
+    import { isoDay } from "../lib/copy/frame.js";
     // The whole verdict — which screen it is, what is announced, and the body
     // — from one call, so its grouping, order and cards are read by a test in
     // Node (#170).

@@ -10,9 +10,9 @@ import { esc } from "../src/lib/reason.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
-import {
-  NOT_CHECKED_HEADING, READ_ITS_RULES, READ_IT_HERE, STATUS_LABEL, countryHeadline, notCheckedLine, notCheckedQuotedLine,
-} from "../src/lib/copy.js";
+import { NOT_CHECKED_HEADING, READ_ITS_RULES, STATUS_LABEL } from "../src/lib/copy/verdict.js";
+import { READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
+import { countryHeadline } from "../src/lib/copy/country-page.js";
 import { verdictHtml, verdictOf } from "../src/lib/verdict/index.js";
 import { countryAddresses, countryPage } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";

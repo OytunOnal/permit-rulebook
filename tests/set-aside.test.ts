@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { remainingQuestions, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
-import { EDIT_LINE } from "../src/lib/copy.js";
+import { EDIT_LINE } from "../src/lib/copy/interview.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import {
@@ -233,13 +233,13 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
     expect(seen.back.field).toBe("fr_degree");
   }, 180_000);
 
-  it("the edit line's words come from copy.ts", async () => {
+  it("the edit line's words come from the copy module", async () => {
     const seen = await withSite(async (site) => ({
       ...await moveDestination(site, NOTHING_SET_ASIDE, "es"), problems: site.page.problems(),
     }), DESKTOP) as { editing: Seen; problems: string[] };
     expect(seen.problems).toEqual([]);
     expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
-    expect(EDIT_LINE, "copy.ts holds no edit line").toBeTypeOf("string");
+    expect(EDIT_LINE, "the copy module holds no edit line").toBeTypeOf("string");
     expect(seen.editing.meta).toBe(EDIT_LINE);
   }, 180_000);
 

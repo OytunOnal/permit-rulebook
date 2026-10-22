@@ -1,11 +1,7 @@
 // @level presentation
 import { joinOr } from "permit-rulebook-data";
-import {
-  CLOSED_HEADING, FEEDBACK, NOT_YET_HEADING, OPEN_HEADING, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING,
-  SUMMARY_LABEL, UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, arrangedLine, notOpenToPassportCount,
-  notYetCount, notYetWithUnknowns, offerLine, openCount, resultFeedbackLine, routesInCountryWhereYouToldUs, routesInCountryYouAreNotLookingAt,
-  routesNeed, routesNeedSeeStepsAbove, unlockingSteps, unsettledCount, withinReachCount,
-} from "../../copy.js";
+import { CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING, SUMMARY_LABEL, UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, arrangedLine, notOpenToPassportCount, notYetCount, notYetWithUnknowns, offerLine, openCount, resultFeedbackLine, routesInCountryWhereYouToldUs, routesInCountryYouAreNotLookingAt, routesNeed, routesNeedSeeStepsAbove, unlockingSteps, unsettledCount, withinReachCount } from "../../copy/verdict.js";
+import { FEEDBACK } from "../../copy/frame.js";
 import { FEEDBACK_PATH } from "../../identity.js";
 import { esc, escAttr } from "../../reason.js";
 import { url } from "../../site.js";

@@ -3,7 +3,7 @@ import {
   SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, phraseOf, routesAnOfferFrees, subjectOf, unlockTitleOf,
   type Dataset, type Profile, type RouteResult, type RoutesFreedByAnOffer, type Unlock,
 } from "permit-rulebook-data";
-import { SEEK_HINT, orAbove } from "../../copy.js";
+import { SEEK_HINT, orAbove } from "../../copy/verdict.js";
 import { esc } from "../../reason.js";
 import { phraseOfAnswer } from "./answer-phrase.js";
 import type { ArrangedLine, OfferLine } from "./types.js";

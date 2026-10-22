@@ -1,6 +1,6 @@
 // @level presentation
 import { LANGUAGE_NAMES, formatEUR, hostKindOf, quoteLanguage } from "permit-rulebook-data";
-import { OFFICIAL_PAGE, consolidatedTextOn, learnLinkWithKind } from "./copy.js";
+import { OFFICIAL_PAGE, consolidatedTextOn, learnLinkWithKind } from "./copy/quotes.js";
 import { esc } from "./reason.js";
 import { type Glossary, glossed } from "./gloss.js";
 

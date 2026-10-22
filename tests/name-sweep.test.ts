@@ -6,7 +6,7 @@ import type { Dataset } from "permit-rulebook-data";
 import { routePages } from "../src/lib/route-page.js";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "../src/lib/copy.js";
+import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "../src/lib/copy/frame.js";
 
 /**
  * s6 decision 1 — the name changed in one sweep, and nothing user-facing may

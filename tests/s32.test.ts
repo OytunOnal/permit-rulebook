@@ -6,7 +6,7 @@ import {
   answerLabel, evaluate, forEachCriterion, provenancedValuesOf, routeStatements,
   type Dataset, type Profile, type Route, type RouteStatement,
 } from "permit-rulebook-data";
-import { NOT_CHECKED_HEADING, STATUS_LABEL, askedHeading } from "../src/lib/copy.js";
+import { NOT_CHECKED_HEADING, STATUS_LABEL, askedHeading } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import {

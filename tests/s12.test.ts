@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset, UnreadSource } from "permit-rulebook-data";
 import { dataPage, routeCounts } from "../src/lib/data-page.js";
-import { LAST_CHECKED, NEWEST_VALUE_CHANGED, datasetDay } from "../src/lib/copy.js";
+import { LAST_CHECKED, NEWEST_VALUE_CHANGED } from "../src/lib/copy/data-page.js";
+import { datasetDay } from "../src/lib/copy/frame.js";
 import { lastWatchRun, readRange } from "../src/lib/site.js";
 import { siteReadDate } from "../src/lib/country-page.js";
 
@@ -168,11 +169,11 @@ describe("how the two rows are built", () => {
   });
 
   /**
-   * The words live in copy.ts, like every other label on this site: each label
-   * is on the page once, and it is the constant's own text — which is what a
-   * second copy typed into the template would break.
+   * The words live in the copy module, like every other label on this site:
+   * each label is on the page once, and it is the constant's own text — which
+   * is what a second copy typed into the template would break.
    */
-  it("says each label once, in the words copy.ts holds", () => {
+  it("says each label once, in the words the copy module holds", () => {
     const html = dataPage(ds, "2026-09-15", []).html;
     for (const label of [NEWEST_VALUE_CHANGED, LAST_CHECKED])
       expect(html.split(label).length - 1, label).toBe(1);

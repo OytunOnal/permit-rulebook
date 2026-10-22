@@ -4,10 +4,7 @@ import {
   deriveBands, evaluate, formatEURPer, gapCriterionOf, shortLabelOf, unlockProfile, unlocks, type Dataset,
   type Profile,
 } from "permit-rulebook-data";
-import {
-  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_COME_WITHIN_REACH, asksOrMore, asksOrMoreHtml, needsOrMoreLine,
-  shortByUpTo, shortByUpToLine, upToShort,
-} from "../src/lib/copy.js";
+import { ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_COME_WITHIN_REACH, asksOrMore, asksOrMoreHtml, needsOrMoreLine, shortByUpTo, shortByUpToLine, upToShort } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
 import { blocksIn, cardOn, everyCardIn, stepsIn, verdictFor } from "./verdict-cards.js";
 

@@ -26,7 +26,7 @@
 - `scripts/carry-assets/asset-names.mjs` → `scripts/carry-assets/log-wording.mjs` — the carry's rules shape their own log text; the wording moves to the caller that prints (v1.2.3)
 - `scripts/carry-assets/carry.mjs` → `scripts/carry-assets/log-wording.mjs` — the flow writes its own log lines; the printing goes outward with it (v1.2.3)
 - `scripts/carry-assets/live-site-over-http.mjs` → `scripts/carry-assets/log-wording.mjs` — the HTTP adapter words its own errors, same ring (v1.2.3)
-- `scripts/dev-server.mjs` → `src/lib/copy.ts` — the dev server knows itself by the page's name, a screen word (v1.2.5)
+- `scripts/dev-server.mjs` → `src/lib/copy/frame.ts` — the dev server knows itself by the page's name, a screen word (v1.2.5)
 - `scripts/carry-assets/carry.mjs` — the flow reads and writes `dist/` and the clock itself, beside the use case (v1.2.3)
 - `scripts/check-base.mjs` — a command that builds and scans in its own body, beside its wiring (v1.2.5)
 - `scripts/data-pin.mjs` — a command that runs git and writes `data.lock` in its own body (v1.2.5)

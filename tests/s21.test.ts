@@ -9,9 +9,8 @@ import {
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { SITUATION_COUNTRY_FIELD, markUnder, notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
-import {
-  IS_QUOTED_NOT_CHECKED, READ_IT_HERE, notCheckedQuotedLine, routesNeed, unscoredHeadline, unscoredTallyLine,
-} from "../src/lib/copy.js";
+import { IS_QUOTED_NOT_CHECKED, READ_IT_HERE, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
+import { routesNeed, unscoredHeadline, unscoredTallyLine } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
 import { verdictHtml, type Tally } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictOn } from "./verdict-cards.js";
@@ -146,7 +145,7 @@ describe("s21 — the four-country result says it in the country's line", () => 
     expect(line!.html).not.toMatch(/class="[^"]*\bout\b/);
   });
 
-  it("is the s19 sentence and the s19 words — one copy, in copy.ts", () => {
+  it("is the s19 sentence and the s19 words — one copy, in the copy module", () => {
     expect(unscoredTallyLine("France", "a research hosting agreement", "Talent — researcher (chercheur)")).toBe(
       `${unscoredHeadline("France", "a research hosting agreement").replace(/\.$/, "")} — Talent — researcher (chercheur) ${IS_QUOTED_NOT_CHECKED}.`,
     );

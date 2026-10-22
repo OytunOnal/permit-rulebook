@@ -2,7 +2,7 @@
 import {
   DESTINATION_FIELD, SITUATION_FIELD, phraseOf, fieldOptions, isScored, situationsAsked, type Dataset, type Profile,
 } from "permit-rulebook-data";
-import { READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "./copy.js";
+import { READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "./copy/interview.js";
 import { esc, sentenceWithLinkHtml } from "./reason.js";
 import { routePath } from "./slug.js";
 import { url } from "./site.js";

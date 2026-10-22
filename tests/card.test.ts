@@ -4,7 +4,7 @@ import {
   deriveBands, evaluate,
   type Criterion, type Dataset, type Profile, type Route,
 } from "permit-rulebook-data";
-import { PAGE_ALSO_SAYS } from "../src/lib/copy.js";
+import { PAGE_ALSO_SAYS } from "../src/lib/copy/quotes.js";
 import { blocksIn, cardOn, everyCardIn, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;

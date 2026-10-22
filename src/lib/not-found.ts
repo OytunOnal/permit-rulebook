@@ -4,7 +4,8 @@ import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import { PAGE_CSS } from "./route-page.js";
 import { countryLinks, footerFacts, navCountries, siteReadDate } from "./country-page.js";
-import { NOT_FOUND_START, NOT_FOUND_START_NOTE, PRODUCT_NAME, TAGLINE } from "./copy.js";
+import { NOT_FOUND_START, NOT_FOUND_START_NOTE } from "./copy/not-found.js";
+import { PRODUCT_NAME, TAGLINE } from "./copy/frame.js";
 import { analyticsBeacon, url } from "./site.js";
 // One set of elements for the identity the shared CSS places (2026-09-08).
 import { MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";

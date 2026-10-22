@@ -43,12 +43,10 @@ import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, REPO_DATA, analyticsBeacon,
   absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
 } from "./site.js";
-import {
-  ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, PRODUCT_NAME, ROUTE_PAGE_ADDENDUM,
-  NOT_ASKED_SCOPE_HEADING, PAGE_ALSO_SAYS, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, WRONG_DOOR_LABEL, alsoInHeading,
-  askedRouteDescription, audienceLine, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription,
-  pointsFigure, readOn,
-} from "./copy.js";
+import { ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, ROUTE_PAGE_ADDENDUM, NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription, audienceLine, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription, pointsFigure } from "./copy/route-page.js";
+import { PRODUCT_NAME } from "./copy/frame.js";
+import { PAGE_ALSO_SAYS, readOn } from "./copy/quotes.js";
+import { WRONG_DOOR_LABEL } from "./copy/feedback.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
 
 /**

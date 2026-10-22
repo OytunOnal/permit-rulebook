@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/copy.js";
+import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/copy/interview.js";
 
 /**
  * s17 — the comparison has no subject called "Code".

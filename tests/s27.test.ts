@@ -4,7 +4,10 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, evaluate, fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
-import { MENU, MENU_CLOSE, NOT_FOUND_START, NOT_FOUND_START_NOTE, PRODUCT_NAME, ROUTE_DOOR, ROUTE_TAGLINE } from "../src/lib/copy.js";
+import { MENU, MENU_CLOSE, PRODUCT_NAME } from "../src/lib/copy/frame.js";
+import { NOT_FOUND_START, NOT_FOUND_START_NOTE } from "../src/lib/copy/not-found.js";
+import { ROUTE_DOOR } from "../src/lib/copy/verdict.js";
+import { ROUTE_TAGLINE } from "../src/lib/copy/route-page.js";
 import { MENU_SCRIPT, siteHeader } from "../src/lib/identity.js";
 import { navCountries } from "../src/lib/country-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
@@ -44,7 +47,7 @@ const mastheadOf = (html: string): string => {
  */
 
 describe("1 — the menu button says what it does", () => {
-  it("the two words live in copy.ts and reach the button as attributes; the script carries neither", () => {
+  it("the two words live in the copy module and reach the button as attributes; the script carries neither", () => {
     expect(MENU).toBe("Menu");
     expect(MENU_CLOSE).toBe("Close");
     const header = siteHeader(navCountries(ds));
@@ -56,7 +59,7 @@ describe("1 — the menu button says what it does", () => {
     expect(button![1]).toContain(`data-word-closed="${MENU}"`);
     expect(button![1]).toContain(`data-word-open="${MENU_CLOSE}"`);
     // The script reads the words off the button: no user-facing string is
-    // typed into it, so a change of word is one edit in copy.ts.
+    // typed into it, so a change of word is one edit in the copy module.
     expect(MENU_SCRIPT).toContain("dataset.wordOpen");
     expect(MENU_SCRIPT).toContain("dataset.wordClosed");
     for (const word of [MENU, MENU_CLOSE])

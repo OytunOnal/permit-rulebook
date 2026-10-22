@@ -4,7 +4,7 @@ import {
   evaluate, routeStatements, scopeLine,
   type Dataset, type Profile, type Route, type RouteResult,
 } from "permit-rulebook-data";
-import { ROUTE_DOOR } from "../src/lib/copy.js";
+import { ROUTE_DOOR } from "../src/lib/copy/verdict.js";
 import { routePages } from "../src/lib/route-page.js";
 import { blocksIn, cardOn, placed, verdictFor, verdictOn, withoutGlosses } from "./verdict-cards.js";
 
