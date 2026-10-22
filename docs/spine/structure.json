@@ -1152,6 +1152,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/answers.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/answers.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/answers.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/arrival.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -1163,12 +1178,27 @@
   },
   {
    "from": "tests/arrival.test.ts",
+   "to": "src/lib/copy.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/arrival.test.ts",
    "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1638,7 +1668,32 @@
   },
   {
    "from": "tests/gloss.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1699,6 +1754,16 @@
   {
    "from": "tests/means.test.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/means.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/means.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -1817,6 +1882,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/paths-named.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/pipeline.test.ts",
    "to": "scripts/carry-assets/asset-names.mjs",
    "kind": "dependency"
@@ -1833,12 +1903,17 @@
   },
   {
    "from": "tests/place-slot.test.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "src/lib/verdict/index.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/place-slot.test.ts",
    "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/place-slot.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2108,6 +2183,11 @@
   },
   {
    "from": "tests/s13.test.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
@@ -2294,7 +2374,7 @@
   {
    "from": "tests/s21.test.ts",
    "to": "src/lib/verdict/index.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "tests/s21.test.ts",
@@ -2408,6 +2488,11 @@
   },
   {
    "from": "tests/s25.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -2445,6 +2530,11 @@
    "from": "tests/s26.test.ts",
    "to": "src/lib/situations.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/s26.test.ts",
@@ -2569,6 +2659,11 @@
   {
    "from": "tests/s28.test.ts",
    "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "tests/reader-pages.ts",
    "kind": "dependency"
   },
   {
