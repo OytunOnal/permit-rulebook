@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   phraseOf, countryVocabulary, fieldOptions, findTerritory, matchOptions, territoryPhraseAtStartOf, territoryPhraseOf,
@@ -8,11 +6,12 @@ import {
 } from "permit-rulebook-data";
 import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy.js";
 import { composeNoMatchLine } from "../src/lib/listbox.js";
-import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import {
+  PHONE, recordSeedScript, settle, skipReason, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+} from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const passports = fieldOptions(ds, "citizenship");
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 /**
  * #160 — a territory typed in the passport search names its passport.
@@ -72,55 +71,44 @@ describe("the passport search's no-match decision", () => {
  * The browser: a reader at the passport question types "Puerto Rico" with
  * the keyboard and reads the territory's line, with no row under it.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
-
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write(`\n  !! THE TERRITORY LINE WAS NOT READ IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
-
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  type(text: string): Promise<void>;
-  problems(): string[];
-}
+const skipped = skipReason();
+if (skipped) warnNotWalked("the territory line in a browser", skipped);
 
 /** Answers that bring the passport question next. */
 const BEFORE_PASSPORT = { destination: "de", situation: "offer", qualification: "degree", occupation_it: "no" };
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const LIST = `JSON.stringify({
+  query: document.getElementById("cfilter")?.value ?? "",
   rows: document.querySelectorAll("#clist [role=option]").length,
   line: (document.querySelector("#clist .cnone")?.textContent || "").trim(),
   status: (document.getElementById("cstatus")?.textContent || "").trim(),
 })`;
+interface Listed { query: string; rows: number; line: string; status: string }
+
+/** The list once the search has drawn its line for `typed`, read every 50 ms
+ * for up to five seconds rather than after a fixed wait. */
+async function listFor(page: BrowserPage, typed: string): Promise<Listed> {
+  for (let i = 0; i < 100; i++) {
+    const listed = JSON.parse(await page.evaluate(LIST)) as Listed;
+    if (listed.query === typed && listed.line) return listed;
+    await settle(50);
+  }
+  throw new Error(`the search drew no line for "${typed}" within five seconds`);
+}
 
 describe.skipIf(skipped !== null)("#160 — in the browser at 390×844", () => {
   it("typing \"Puerto Rico\" into the passport search shows the territory line and no row", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
-        await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(
-          serialize(BEFORE_PASSPORT, Object.keys(BEFORE_PASSPORT)))})`);
-        await page.goto(server.url("/"), 900);
-        await page.evaluate('document.getElementById("cfilter").focus()');
-        await page.type("Puerto Rico");
-        await settle(300);
-        return { ...JSON.parse(await page.evaluate(LIST)), problems: page.problems() };
-      }, { viewport: { width: 390, height: 844 }, mobile: true }) as { rows: number; line: string; status: string; problems: string[] };
+    const seen = await withSite(async ({ page, url }: PageOnSite) => {
+      await page.goto(url("/"), 300);
+      await page.evaluate(recordSeedScript(BEFORE_PASSPORT));
+      await page.goto(url("/"), 900);
+      await page.evaluate('document.getElementById("cfilter").focus()');
+      await page.type("Puerto Rico");
+      return { ...(await listFor(page, "Puerto Rico")), problems: page.problems() };
+    }, PHONE);
 
-      expect(seen.problems).toEqual([]);
-      expect(seen.rows).toBe(0);
-      expect(seen.line).toBe(expectedTerritoryLine("Puerto Rico"));
-      expect(seen.status).toBe(seen.line);
-    } finally {
-      server.close();
-    }
+    expect(seen.problems).toEqual([]);
+    expect(seen.rows).toBe(0);
+    expect(seen.line).toBe(expectedTerritoryLine("Puerto Rico"));
+    expect(seen.status).toBe(seen.line);
   }, 120000);
 });
