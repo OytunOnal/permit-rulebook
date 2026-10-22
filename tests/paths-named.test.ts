@@ -9,6 +9,7 @@ import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { recordSeedScript, skipReason, warnNotWalked, withSite, DESK, type BrowserPage } from "./browser-walk.js";
 import { walkFrom } from "./reader-pages.js";
+import { PAINTED_AS_COMPOSED, everyCardIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 
 /**
  * #155 (rulings 12–13 of #92): a criterion with paths is named by its own
@@ -107,11 +108,8 @@ function readerFailingEveryPath(): Profile {
   return walkFrom(start, (q) => q.options[0]!.value).answers;
 }
 
-const skipped = skipReason();
-if (skipped) warnNotWalked("#155's results card", skipped);
-
-describe.skipIf(skipped !== null)("#155 a results card names a failed criterion with paths by its label", () => {
-  it("the shortage card's verdict line, for a reader no path is open to, says the criterion's label", async () => {
+describe("#155 a results card names a failed criterion with paths by its label, from the verdict", () => {
+  it("the shortage card's verdict line, for a reader no path is open to, says the criterion's label", () => {
     const reader = readerFailingEveryPath();
     const result = evaluate(ds, reader).find((r) => r.route.id === SHORTAGE)!;
     const choice = result.criteria.find((cr) => cr.criterion.op === "any" && !isLocalization(cr.criterion))!;
@@ -120,20 +118,35 @@ describe.skipIf(skipped !== null)("#155 a results card names a failed criterion 
     const label = (choice.criterion as Disjunction).label;
     const name = result.route.name.split(" (")[0]!;
 
-    const seen = JSON.parse(await withSite(async ({ page, url }: { page: BrowserPage; url: (p: string) => string }) => {
+    // Each card the verdict draws whose title names the route, and its
+    // verdict line: a row's reason, or a card's sentence under its title.
+    const lines = everyCardIn(verdictFor(reader))
+      .filter((c) => unescaped(/<(?:h3|span class="hold-name")>([\s\S]*?)<\/(?:h3|span)>/.exec(c.html)?.[1] ?? "").includes(name))
+      .map((c) => unescaped(/<(?:span class="hold-why"|p class="why")>([\s\S]*?)<\/(?:span|p)>/.exec(c.html)?.[1] ?? ""));
+    expect(lines, "the shortage card is not on the results").toHaveLength(1);
+    expect(lines[0]).toContain(label);
+  });
+});
+
+const skipped = skipReason();
+if (skipped) warnNotWalked("#155's results card", skipped);
+
+describe.skipIf(skipped !== null)("#155 a results card names a failed criterion with paths by its label", () => {
+  it("the shortage card's verdict line, for a reader no path is open to, says the criterion's label", async () => {
+    // The card and its line are the verdict's (the case above); the page
+    // paints the verdict the reader's record composes.
+    const reader = readerFailingEveryPath();
+    const seen = await withSite(async ({ page, url }: { page: BrowserPage; url: (p: string) => string }) => {
       await page.goto(url("/404.html"), 300);
       await page.evaluate(recordSeedScript(reader));
       await page.goto(url("/"), 1600);
-      return page.evaluate(`JSON.stringify({
-        state: document.getElementById("app").dataset.state,
-        lines: [...document.querySelectorAll("#main .route, #main .route-hold")]
-          .filter((el) => (el.querySelector("h3, .hold-name") || {}).textContent?.includes(${JSON.stringify(name)}))
-          .map((el) => (el.querySelector(".hold-why, .why") || {}).textContent || ""),
-      })`);
-    }, DESK)) as { state: string; lines: string[] };
+      return {
+        state: await page.evaluate('document.getElementById("app").dataset.state'),
+        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(reader)))),
+      };
+    }, DESK) as { state: string; painted: typeof PAINTED_AS_COMPOSED };
 
     expect(seen.state).toBe("results");
-    expect(seen.lines, "the shortage card is not on the results").toHaveLength(1);
-    expect(seen.lines[0]).toContain(label);
+    expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
   }, 120000);
 });
