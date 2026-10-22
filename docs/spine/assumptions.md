@@ -74,6 +74,10 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   fast script for the inner loop, and per-file counts written by the green
   cut a slice's test time by more than half without losing a case (#116,
   retros of #49, #104 and #110). — `untested`
+- **A22 — a verdict with nothing open reads best in words.** A reader takes
+  in "No open routes" at a glance, while "0 routes look open" reads as a
+  figure to parse and sounds unsure (the human, real use of #167, 2026-10-23;
+  issue #181). — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
