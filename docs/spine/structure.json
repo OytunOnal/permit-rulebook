@@ -48,9 +48,9 @@
    "files": [
     "src/lib/interview/draw/beat.ts",
     "src/lib/interview/draw/drawing.ts",
-    "src/lib/interview/draw/landing.ts",
     "src/lib/interview/draw/ledger.ts",
     "src/lib/interview/draw/masthead.ts",
+    "src/lib/interview/draw/meeting.ts",
     "src/lib/interview/draw/page.ts",
     "src/lib/interview/draw/paint.ts",
     "src/lib/interview/draw/question-screen.ts",
@@ -160,9 +160,9 @@
   "src/lib/interview-history/list/screen-list.ts": "domain",
   "src/lib/interview/draw/beat.ts": "presentation",
   "src/lib/interview/draw/drawing.ts": "presentation",
-  "src/lib/interview/draw/landing.ts": "presentation",
   "src/lib/interview/draw/ledger.ts": "presentation",
   "src/lib/interview/draw/masthead.ts": "presentation",
+  "src/lib/interview/draw/meeting.ts": "presentation",
   "src/lib/interview/draw/page.ts": "presentation",
   "src/lib/interview/draw/paint.ts": "presentation",
   "src/lib/interview/draw/question-screen.ts": "presentation",
@@ -806,16 +806,6 @@
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/draw/landing.ts",
-   "to": "src/lib/interview/draw/page.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/interview/draw/landing.ts",
-   "to": "src/lib/interview/flow/interview-after.ts",
-   "kind": "type-only"
-  },
-  {
    "from": "src/lib/interview/draw/ledger.ts",
    "to": "src/lib/interview/draw/page.ts",
    "kind": "type-only"
@@ -856,6 +846,16 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/interview/draw/meeting.ts",
+   "to": "src/lib/interview/draw/page.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/meeting.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/interview/draw/page.ts",
    "to": "src/lib/first-paint.ts",
    "kind": "dependency"
@@ -887,17 +887,17 @@
   },
   {
    "from": "src/lib/interview/draw/question-screen.ts",
-   "to": "src/lib/interview/draw/landing.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/question-screen.ts",
    "to": "src/lib/interview/draw/ledger.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/interview/draw/question-screen.ts",
    "to": "src/lib/interview/draw/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/interview/draw/meeting.ts",
    "kind": "dependency"
   },
   {
@@ -932,17 +932,17 @@
   },
   {
    "from": "src/lib/interview/draw/verdict-screen.ts",
-   "to": "src/lib/interview/draw/landing.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
    "to": "src/lib/interview/draw/ledger.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/interview/draw/verdict-screen.ts",
    "to": "src/lib/interview/draw/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/interview/draw/meeting.ts",
    "kind": "dependency"
   },
   {
@@ -2507,6 +2507,11 @@
   },
   {
    "from": "tests/listbox.test.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/listbox.test.ts",
    "to": "src/lib/country-search/index.ts",
    "kind": "dependency"
   },
@@ -4027,7 +4032,7 @@
     "exported": true
    },
    {
-    "name": "tell",
+    "name": "applyHistoryCall",
     "kind": "fn",
     "exported": false
    },
@@ -4049,6 +4054,11 @@
     "exported": true
    },
    {
+    "name": "AnsweredSoFar",
+    "kind": "type",
+    "exported": true
+   },
+   {
     "name": "BackMove",
     "kind": "type",
     "exported": true
@@ -4064,7 +4074,7 @@
     "exported": true
    },
    {
-    "name": "Kept",
+    "name": "HistoryMemory",
     "kind": "type",
     "exported": false
    },
@@ -4089,7 +4099,7 @@
     "exported": false
    },
    {
-    "name": "browserMoved",
+    "name": "showBrowserMove",
     "kind": "fn",
     "exported": false
    }
@@ -5240,6 +5250,11 @@
    },
    {
     "name": "setAsideLineHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "justRecordedLineHtml",
     "kind": "fn",
     "exported": true
    },
@@ -7426,5 +7441,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "88e69bdf6c87be6c7baf79c21a6bc0e2b4a31dafbe68ff72d58288eff3563621"
+ "digest": "3268fd50e8f279888034267fb9478be9b47a09fe644ba4fbd9ebd2e89276b4bd"
 }
