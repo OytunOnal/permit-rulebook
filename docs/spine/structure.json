@@ -21,6 +21,23 @@
    ]
   },
   {
+   "path": "src/lib/country-search",
+   "entries": [
+    {
+     "file": "src/lib/country-search/index.ts",
+     "level": "presentation"
+    }
+   ],
+   "files": [
+    "src/lib/country-search/control/controller.ts",
+    "src/lib/country-search/control/listbox.ts",
+    "src/lib/country-search/control/markup.ts",
+    "src/lib/country-search/control/mount.ts",
+    "src/lib/country-search/control/view.ts",
+    "src/lib/country-search/index.ts"
+   ]
+  },
+  {
    "path": "src/lib/verdict",
    "entries": [
     {
@@ -86,6 +103,12 @@
   "src/lib/copy/verdict.ts": "presentation",
   "src/lib/countries.ts": "presentation",
   "src/lib/country-page.ts": "presentation",
+  "src/lib/country-search/control/controller.ts": "presentation",
+  "src/lib/country-search/control/listbox.ts": "presentation",
+  "src/lib/country-search/control/markup.ts": "presentation",
+  "src/lib/country-search/control/mount.ts": "presentation",
+  "src/lib/country-search/control/view.ts": "presentation",
+  "src/lib/country-search/index.ts": "presentation",
   "src/lib/csp.ts": "presentation",
   "src/lib/data-page.ts": "presentation",
   "src/lib/dataset-ld.ts": "presentation",
@@ -93,7 +116,6 @@
   "src/lib/first-paint.ts": "presentation",
   "src/lib/gloss.ts": "presentation",
   "src/lib/identity.ts": "presentation",
-  "src/lib/listbox.ts": "presentation",
   "src/lib/not-found.ts": "presentation",
   "src/lib/question.ts": "presentation",
   "src/lib/quote.ts": "presentation",
@@ -401,6 +423,86 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/country-search/control/controller.ts",
+   "to": "src/lib/country-search/control/listbox.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/control/controller.ts",
+   "to": "src/lib/country-search/control/view.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/control/listbox.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/control/markup.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/control/markup.ts",
+   "to": "src/lib/country-search/control/listbox.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/control/markup.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/control/mount.ts",
+   "to": "src/lib/country-search/control/controller.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/country-search/control/mount.ts",
+   "to": "src/lib/country-search/control/view.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/country-search/control/view.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/control/view.ts",
+   "to": "src/lib/country-search/control/listbox.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/control/view.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/control/controller.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/control/listbox.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/control/markup.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/control/mount.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/control/view.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/csp.ts",
    "to": "src/lib/clipboard.ts",
    "kind": "dependency"
@@ -576,11 +678,6 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/listbox.ts",
-   "to": "src/lib/copy/interview.ts",
-   "kind": "dependency"
-  },
-  {
    "from": "src/lib/not-found.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -632,12 +729,12 @@
   },
   {
    "from": "src/lib/question.ts",
-   "to": "src/lib/gloss.ts",
+   "to": "src/lib/country-search/index.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/question.ts",
-   "to": "src/lib/listbox.ts",
+   "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
   {
@@ -1217,6 +1314,11 @@
   },
   {
    "from": "src/pages/index.astro",
+   "to": "src/lib/country-search/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
    "to": "src/lib/csp.ts",
    "kind": "dependency"
   },
@@ -1238,11 +1340,6 @@
   {
    "from": "src/pages/index.astro",
    "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/listbox.ts",
    "kind": "dependency"
   },
   {
@@ -2037,7 +2134,7 @@
   },
   {
    "from": "tests/listbox.test.ts",
-   "to": "src/lib/listbox.ts",
+   "to": "src/lib/country-search/index.ts",
    "kind": "dependency"
   },
   {
@@ -3402,7 +3499,7 @@
   },
   {
    "from": "tests/territories.test.ts",
-   "to": "src/lib/listbox.ts",
+   "to": "src/lib/country-search/index.ts",
    "kind": "dependency"
   },
   {
@@ -3534,6 +3631,7 @@
     "exported": false
    }
   ],
+  "src/lib/country-search/index.ts": [],
   "src/lib/verdict/index.ts": [
    {
     "name": "answeredOutright",
@@ -4635,6 +4733,46 @@
     "exported": true
    },
    {
+    "name": "countriesToSearchLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "matchesHighlightedLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "moreMatchesLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SEARCH_BOX_LABEL",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SEARCH_BOX_PLACEHOLDER",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ANSWER_ON_FILE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "PASSPORT_CLASSES_HINT",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NOTE_APPLIES_HINT",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "INTRO_HEADLINE",
     "kind": "const",
     "exported": true
@@ -5626,63 +5764,6 @@
     "exported": true
    }
   ],
-  "src/lib/listbox.ts": [
-   {
-    "name": "ListboxState",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "ListboxKey",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "SHOWN_LIMIT",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "QUERY_MAX_LENGTH",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "stateFor",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "shownOptions",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "activeOption",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "KeyResult",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "onKey",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "composeNoMatchLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "rowId",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
   "src/lib/not-found.ts": [
    {
     "name": "NotFoundPage",
@@ -5712,11 +5793,6 @@
     "exported": true
    },
    {
-    "name": "hasClasses",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "QuestionScreen",
     "kind": "type",
     "exported": true
@@ -5742,9 +5818,24 @@
     "exported": false
    },
    {
+    "name": "linesAboveQuestionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "exitsHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "questionCardHtml",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "optionsHtml",
+    "kind": "fn",
+    "exported": false
    },
    {
     "name": "InterviewProgress",
@@ -6835,7 +6926,6 @@
   "src/lib/first-paint.ts",
   "src/lib/gloss.ts",
   "src/lib/identity.ts",
-  "src/lib/listbox.ts",
   "src/lib/not-found.ts",
   "src/lib/question.ts",
   "src/lib/quote.ts",
@@ -6863,5 +6953,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "636e04a5b58c709711a39e5757adc2b675dc664d514149775290e3064446fe81"
+ "digest": "6a27c068d7dee8b3d76d7e190fd32f8dfd8882c6188ebf26ba229f2cd9483649"
 }
