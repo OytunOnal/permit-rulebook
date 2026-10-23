@@ -108,6 +108,10 @@ function oneDutchRoute(): Dataset {
 /** Each question's answers, to answer it with one of them. */
 const OPTIONS = new Map(deriveQuestions(ds).map((q) => [q.field, q.options.map((o) => o.value)]));
 
+/** The addresses Start over can be pressed on: a plain `/`, a country's arrival and a route's,
+ * each of which arrives again. */
+const START_OVER_ON = ["", "?country=de", "?route=de-blue-card-general"];
+
 /** One of `items`, chosen by `rand`. */
 const pick = <T>(rand: () => number, items: readonly T[]): T => items[Math.floor(rand() * items.length)];
 
@@ -118,7 +122,9 @@ const pick = <T>(rand: () => number, items: readonly T[]): T => items[Math.floor
  */
 function gestureOn(rand: () => number, step: InterviewStep): Gesture {
   const { asked, editing } = step.state;
-  const anywhere: Gesture[] = [{ kind: "restarted", search: "" }, { kind: "browserMoved", field: null, ontoFirstScreen: false }];
+  const anywhere: Gesture[] = [
+    { kind: "restarted", search: pick(rand, START_OVER_ON) }, { kind: "browserMoved", field: null, ontoFirstScreen: false },
+  ];
   if (asked.length > 0) {
     anywhere.push({ kind: "editedRow", field: pick(rand, asked) });
     anywhere.push({ kind: "browserMoved", field: pick(rand, asked), ontoFirstScreen: rand() < 0.3 });
@@ -143,12 +149,14 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
     // tested — every gesture the page can make, in any order, including the
     // two B4 was found on: post-reset and post-edit.
     const rand = lcg(2718);
+    const trails: string[][] = [];
     for (let walk = 0; walk < 300; walk++) {
       let step = openOnto({});
       const trail: string[] = [];
+      trails.push(trail);
       for (let move = 0; move < 12; move++) {
         const gesture = gestureOn(rand, step);
-        trail.push(gesture.kind);
+        trail.push(gesture.kind === "restarted" ? `restarted on "${gesture.search}"` : gesture.kind);
         step = interviewAfter(ds, step.state, gesture) ?? step;
         // Only the verdict states what was compared.
         if (step.screen.kind === "verdict") continue;
@@ -156,12 +164,14 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
         expect(claims, `after ${trail.join(" → ")}: "${where}"`).toBe(false);
       }
       // And from wherever that walk ended — the verdict included — both ways
-      // back into the interview land on a screen that claims nothing.
-      const backs: Gesture[] = [{ kind: "restarted", search: "" }];
+      // back into the interview, Start over on every address, land on a screen that claims nothing.
+      const backs: Gesture[] = START_OVER_ON.map((search) => ({ kind: "restarted", search }));
       if (step.state.asked.length > 0) backs.push({ kind: "editedRow", field: step.state.asked[0] });
       for (const back of backs)
         expect(claimOn(after(step.state, back)).claims, `${back.kind} after ${trail.join(" → ")}`).toBe(false);
     }
+    for (const search of START_OVER_ON)
+      expect(trails.flat(), `precondition: Start over on "${search}" was walked`).toContain(`restarted on "${search}"`);
   });
 
   it("\"Start over\" starts over regardless of what the caller believes", () => {
