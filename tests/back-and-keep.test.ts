@@ -84,7 +84,7 @@ describe("Back's target, through the interview's history", () => {
 });
 
 /** One step's call on the history, as the interview's entry makes it. */
-function tell(history: InterviewHistory, call: HistoryCall): void {
+function applyHistoryCall(history: InterviewHistory, call: HistoryCall): void {
   if (call.call === "startOver") history.startOver();
   else if (call.call === "pushScreen") history.pushScreen(call.field);
   else history.replaceScreen(call.field);
@@ -115,7 +115,7 @@ class WiredInterview {
     this.state = step.state;
     this.showing = step.screen.kind === "question" ? step.screen.field : null;
     this.history ??= this.openedOn(step);
-    for (const call of step.history) tell(this.history, call);
+    for (const call of step.history) applyHistoryCall(this.history, call);
   }
 
   /** The question the screen's Back is labelled with. */

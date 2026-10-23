@@ -1,7 +1,7 @@
 // @level presentation
 /**
  * The masthead and the stamp beside it. One masthead, one writer: which
- * screen a gesture lands on is `interviewAfter`'s, where a property test walks
+ * screen a gesture leads to is `interviewAfter`'s, where a property test walks
  * every gesture in every order, so no path back into the interview can leave a
  * claim about a comparison standing (product-critique v0.7, B4).
  */
@@ -30,7 +30,7 @@ export function setStamp(page: InterviewPage, kind: "rules-read" | "record"): vo
  * with the standing promise its screen says; a verdict carries the one the
  * verdict composed, and no standing promise (`standing` null).
  */
-export function advance(
+export function writeMasthead(
   page: InterviewPage, m: Masthead & Pick<VerdictMasthead, "sublineHtml">, standing: "started" | "fresh" | null,
 ): void {
   const { headline, subline, root } = page.els;

@@ -28,7 +28,7 @@ import {
 
 export { EMPTY_INTERVIEW, interviewAfter } from "./flow/interview-after.js";
 export type {
-  Gesture, HistoryCall, InterviewLines, InterviewScreen, InterviewState, InterviewStep, KeepTarget, KeptRecord, Landing,
+  Gesture, HistoryCall, InterviewLines, InterviewScreen, InterviewState, InterviewStep, KeepTarget, KeptRecord, Meeting,
 } from "./flow/interview-after.js";
 
 /** What the page hands the interview: the browser's history, and the record's store, null where site data is blocked. */
@@ -38,7 +38,7 @@ export interface InterviewPorts {
 }
 
 /** One call on the interview's history, as the step named it. */
-function tell(history: InterviewHistory, call: HistoryCall): void {
+function applyHistoryCall(history: InterviewHistory, call: HistoryCall): void {
   if (call.call === "startOver") history.startOver();
   else if (call.call === "pushScreen") history.pushScreen(call.field);
   else history.replaceScreen(call.field);
@@ -64,7 +64,7 @@ export function startInterview({ browserHistory, store }: InterviewPorts): void 
     if (step.save === "clear") clearRecord(store);
     else if (step.save) saveRecord(store, step.save);
     history ??= openHistoryOn(step);
-    for (const call of step.history) tell(history, call);
+    for (const call of step.history) applyHistoryCall(history, call);
     drawing.drawStep(step, history.backTarget(step.state.asked, step.state.editing));
   };
   /** Opens the history onto the first step's screen; the browser's moves are gestures from then on. */

@@ -1,17 +1,17 @@
 // @level presentation
 /**
- * The verdict a step lands on: the whole verdict from one call (`verdict/`),
+ * The verdict a step leads to: the whole verdict from one call (`verdict/`),
  * painted under the resumed or the arrival line the step says, announced, and
- * landed on.
+ * met as the step asks.
  */
 import { arrivalLineHtml } from "../../arrival-line.js";
 import type { Glossary } from "../../gloss.js";
 import { resumedLineHtml } from "../../question.js";
 import { verdictHtml, verdictOf, type Verdict } from "../../verdict/index.js";
 import type { InterviewStep } from "../flow/interview-after.js";
-import { landOnVerdict } from "./landing.js";
+import { meetVerdict } from "./meeting.js";
 import { lendRestartToResumedLine, renderDeclaration } from "./ledger.js";
-import { advance, setStamp } from "./masthead.js";
+import { setStamp, writeMasthead } from "./masthead.js";
 import type { InterviewPage } from "./page.js";
 import { announce, unwire } from "./paint.js";
 
@@ -44,9 +44,9 @@ export function renderResults(page: InterviewPage, step: InterviewStep): void {
   setStamp(page, "record");
   const { answers, asked, scopedRouteId } = step.state;
   const verdict = verdictOf(page.ds, answers, { cameFrom: scopedRouteId, answered: asked.length });
-  advance(page, verdict.action.masthead, null);
+  writeMasthead(page, verdict.action.masthead, null);
   main.innerHTML = lineAboveVerdictHtml(page, step, verdict) + verdictHtml(verdict);
   if (step.lines.resumed) lendRestartToResumedLine(page);
   announce(verdict.action.masthead.announced);
-  landOnVerdict(page, wasResult, step.land);
+  meetVerdict(page, wasResult, step.meeting);
 }

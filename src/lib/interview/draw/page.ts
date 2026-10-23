@@ -32,7 +32,7 @@ export interface PageElements {
   headline: HTMLElement;
   subline: HTMLElement;
   masthead: HTMLElement;
-  /** The site header, whose height a narrow landing lands under. */
+  /** The site header, whose height a narrow landing goes under. */
   head: HTMLElement | null;
   stampLabel: HTMLElement;
   stampDate: HTMLElement;

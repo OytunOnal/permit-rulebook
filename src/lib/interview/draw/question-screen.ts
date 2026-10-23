@@ -1,8 +1,8 @@
 // @level presentation
 /**
- * The question screen a step lands on: its masthead, its ledger, its card
+ * The question screen a step leads to: its masthead, its ledger, its card
  * with the lines the step says, the card's listeners, and meeting the reader
- * there with the landing, the focus and the beat.
+ * there with the scroll the step asks for, the focus and the beat.
  */
 import { remainingQuestions, type Question } from "permit-rulebook-data";
 import { arrivalLineHtml } from "../../arrival-line.js";
@@ -10,9 +10,9 @@ import { countrySearchOf, hasClasses, mountCountrySearch } from "../../country-s
 import type { Glossary } from "../../gloss.js";
 import { isLongList, questionCardHtml, questionMastheadOf } from "../../question.js";
 import type { InterviewScreen, InterviewStep } from "../flow/interview-after.js";
-import { focusFirst, landOnQuestion } from "./landing.js";
+import { focusFirst, scrollToQuestion } from "./meeting.js";
 import { lendRestartToResumedLine, renderDeclaration } from "./ledger.js";
-import { advance, setStamp } from "./masthead.js";
+import { setStamp, writeMasthead } from "./masthead.js";
 import type { InterviewPage } from "./page.js";
 import { announce, paint } from "./paint.js";
 
@@ -42,14 +42,14 @@ function wireQuestion(page: InterviewPage, q: Question, chosen: string | undefin
   main.querySelector<HTMLElement>("#back")?.addEventListener("click", () => hands.pressBack());
 }
 
-/** Meets the reader at the question card just drawn: the landing the step
+/** Meets the reader at the question card just drawn: the scroll the step
  * asks for, the focus, and the beat. */
 function meetQuestion(page: InterviewPage, step: InterviewStep, longList: boolean): void {
   const { main } = page.els;
   const card = main.querySelector<HTMLElement>(".qcard");
   /** The card a gesture drew, as opposed to the one the first paint put in the box. */
-  const gestureCard = step.land === "first-paint" ? null : card;
-  if (gestureCard) landOnQuestion(page, gestureCard, step.land);
+  const gestureCard = step.meeting === "untouched" ? null : card;
+  if (gestureCard) scrollToQuestion(page, gestureCard, step.meeting);
   if (longList) {
     // Every render of a search question puts the caret in it with its text
     // selected, so a correction starts by replacing, not by prepending
@@ -64,7 +64,7 @@ function meetQuestion(page: InterviewPage, step: InterviewStep, longList: boolea
 }
 
 /** The card's markup, with the lines the step says above the question and
- * its exits: Back to `backTo`, and Keep where the step says it lands. */
+ * its exits: Back to `backTo`, and Keep where the step says it goes. */
 function cardHtml(page: InterviewPage, step: InterviewStep, { q, backTo }: { q: Question; backTo: string | null }): string {
   const { state, lines } = step;
   // A symbol a stranger cannot read is explained the first time a screen
@@ -75,11 +75,11 @@ function cardHtml(page: InterviewPage, step: InterviewStep, { q, backTo }: { q: 
   return questionCardHtml({
     dataset: page.ds, question: q, answers: state.answers, asked: state.asked, editing: state.editing,
     total: state.asked.length + remaining.length, arrival, justRecorded: lines.justRecorded,
-    resumed: lines.resumed ?? undefined, glossary, exits: { backTo, keepTo: step.keepLandsOn },
+    resumed: lines.resumed ?? undefined, glossary, exits: { backTo, keepTo: step.keepGoesTo },
   });
 }
 
-/** Draws the question screen a step lands on, then meets the reader there.
+/** Draws the question screen a step leads to, then meets the reader there.
  * `backTo` is the question the history says the screen's Back goes to. */
 export function renderQuestion(
   page: InterviewPage, step: InterviewStep, { screen, backTo }: { screen: QuestionScreen; backTo: string | null },
@@ -94,7 +94,7 @@ export function renderQuestion(
     setStamp(page, "rules-read");
     app.dataset.state = "questions";
   }
-  advance(page, questionMastheadOf(screen), screen.started ? "started" : "fresh");
+  writeMasthead(page, questionMastheadOf(screen), screen.started ? "started" : "fresh");
   announce("");
   renderDeclaration(page, step, q.field);
   paint(main, cardHtml(page, step, { q, backTo }), () => wireQuestion(page, q, answers[q.field]));

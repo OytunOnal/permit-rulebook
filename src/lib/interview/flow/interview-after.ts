@@ -2,8 +2,8 @@
 /**
  * The interview's decisions: from the state it stands in and one gesture of
  * the reader's, the next state and everything the interview does about it —
- * the screen, the lines above it, the landing, the beat, the save and the
- * history move. Pure, so every decision is tested in Node; the entry and the
+ * the screen, the lines above it, how the screen meets the reader, the beat,
+ * the save and the history move. Pure, so every decision is tested in Node; the entry and the
  * drawing parts apply the result, and the drawing reads what is runtime (the
  * screen's width, reduced motion, the DOM) itself.
  *
@@ -54,7 +54,7 @@ export type Gesture =
   /** The browser moved onto one of the interview's entries. */
   | ({ kind: "browserMoved" } & BrowserMove);
 
-/** The screen a gesture lands on: a question, or the verdict. `started` says
+/** The screen a gesture leads to: a question, or the verdict. `started` says
  * which standing promise a question screen's masthead carries. */
 export type InterviewScreen = { kind: "question"; field: string; started: boolean } | { kind: "verdict" };
 
@@ -71,27 +71,27 @@ export interface InterviewLines {
 }
 
 /**
- * Where a drawn screen meets the reader (GLOSSARY: Reveal / landing). Each
- * names the landing the gesture asks for; the drawing turns it into a scroll
- * with the width it reads.
+ * How a drawn screen meets the reader: a reveal or a landing (GLOSSARY:
+ * Reveal / landing), or neither. Each names what the gesture asks for; the
+ * drawing turns it into a scroll with the width it reads.
  */
-export type Landing =
+export type Meeting =
   /** The first paint: the browser's own scroll, and no focus taken. */
-  | "first-paint"
+  | "untouched"
   /** A browser move onto the page's first screen, or onto the verdict: the scroll the browser restores. */
-  | "browser-scroll"
-  /** A browser move onto a later question: on a narrow screen, the card under the header once the browser has restored its scroll. */
-  | "card-under-header-after-restore"
-  /** An answer, or Keep: on a narrow screen the card under the header; on a wide one, the card into view. */
-  | "card-under-header"
-  /** An edit, from a ledger row or Back in place: the ledger folds and the card lands as an answer's does. */
-  | "card-under-folded-ledger"
+  | "browser-restored"
+  /** A browser move onto a later question: on a narrow screen, the landing once the browser has restored its scroll. */
+  | "land-after-restore"
+  /** An answer, or Keep: on a narrow screen the landing; on a wide one, the reveal. */
+  | "land-or-reveal"
+  /** An edit, from a ledger row or Back in place: the ledger folds, then an answer's landing or reveal. */
+  | "fold-ledger-land-or-reveal"
   /** Start over: the page's top, as a cold load opens it, on every width. */
   | "page-top"
-  /** A verdict a gesture drew: its masthead into view and the focus on its headline. */
-  | "verdict-masthead";
+  /** A verdict a gesture drew: s20's reveal of its masthead, and the focus on its headline. */
+  | "reveal-masthead";
 
-/** Where "Keep this answer" lands: the first question still asked, or the verdict. */
+/** Where "Keep this answer" goes: the first question still asked, or the verdict. */
 export type KeepTarget = { kind: "question"; field: string } | { kind: "verdict" };
 
 /** One call on the interview's history, in the order the entry makes them. */
@@ -104,10 +104,10 @@ export type HistoryCall =
 export interface InterviewStep {
   state: InterviewState;
   screen: InterviewScreen;
-  /** Where the screen's "Keep this answer" lands, on an edit screen; null on any other screen, which has no Keep. */
-  keepLandsOn: KeepTarget | null;
+  /** Where the screen's "Keep this answer" goes, on an edit screen; null on any other screen, which has no Keep. */
+  keepGoesTo: KeepTarget | null;
   lines: InterviewLines;
-  land: Landing;
+  meeting: Meeting;
   /** Whether the question card it draws takes the beat (#86). */
   beat: boolean;
   /** The record to keep, which replaces the stored one whole; "clear" on Start over, which
@@ -118,45 +118,45 @@ export interface InterviewStep {
 
 const NO_LINES: InterviewLines = { arrival: null, resumed: null, setAside: [], justRecorded: null };
 
-/** How a screen was reached: what its landing, its beat and its history move follow from. */
+/** How a screen was reached: what its meeting, its beat and its history move follow from. */
 interface Reach {
-  questionLand: Landing;
-  verdictLand: Landing;
+  questionMeeting: Meeting;
+  verdictMeeting: Meeting;
   /** Whether a question card drawn this way takes the beat: every gesture's
    * but Start over's, which opens the interview as a cold load does. */
   beat: boolean;
   /** The call a question screen makes on the history; none while the browser moves or before it opens. */
   questionCall: "pushScreen" | "replaceScreen" | null;
-  /** The call a verdict makes: one entry on top of the last question's, so Back lands on that question. */
+  /** The call a verdict makes: one entry on top of the last question's, so Back goes to that question. */
   verdictCall: "pushScreen" | null;
 }
 
 const FIRST_PAINT: Reach = {
-  questionLand: "first-paint", verdictLand: "first-paint", beat: false, questionCall: null, verdictCall: null,
+  questionMeeting: "untouched", verdictMeeting: "untouched", beat: false, questionCall: null, verdictCall: null,
 };
 /** An answer, or Keep: one entry per question screen, and answering moves forward. */
 const BY_ANSWER: Reach = {
-  questionLand: "card-under-header", verdictLand: "verdict-masthead", beat: true,
+  questionMeeting: "land-or-reveal", verdictMeeting: "reveal-masthead", beat: true,
   questionCall: "pushScreen", verdictCall: "pushScreen",
 };
 /** A ledger row's ✎, or Back in place: the question stands on the entry it replaces. */
 const BY_EDIT: Reach = {
-  questionLand: "card-under-folded-ledger", verdictLand: "verdict-masthead", beat: true,
+  questionMeeting: "fold-ledger-land-or-reveal", verdictMeeting: "reveal-masthead", beat: true,
   questionCall: "replaceScreen", verdictCall: "pushScreen",
 };
 /** Start over: the first question stands on the entry it replaces, at the page's top, and takes no
  * beat, since nothing on a screen the reader did not reach by answering refuses their first click. */
 const BY_RESTART: Reach = {
-  questionLand: "page-top", verdictLand: "verdict-masthead", beat: false,
+  questionMeeting: "page-top", verdictMeeting: "reveal-masthead", beat: false,
   questionCall: "replaceScreen", verdictCall: "pushScreen",
 };
-/** The browser's Back or Forward onto a later screen: the browser restores the scroll, then the card lands. */
+/** The browser's Back or Forward onto a later screen: the browser restores the scroll, then the landing. */
 const BY_BROWSER: Reach = {
-  questionLand: "card-under-header-after-restore", verdictLand: "browser-scroll", beat: true,
+  questionMeeting: "land-after-restore", verdictMeeting: "browser-restored", beat: true,
   questionCall: null, verdictCall: null,
 };
 /** The browser's move onto the page's first screen, which keeps the top of the page as a cold load does. */
-const BY_BROWSER_ONTO_FIRST: Reach = { ...BY_BROWSER, questionLand: "browser-scroll" };
+const BY_BROWSER_ONTO_FIRST: Reach = { ...BY_BROWSER, questionMeeting: "browser-restored" };
 
 /**
  * The step a gesture leads to. Null where it changes nothing: a ledger row
@@ -278,14 +278,14 @@ function stepOnto(dataset: Dataset, reach: Reach, { state, lines = NO_LINES }: O
   if (!state.editing && remaining.length === 0) return verdictStep(reach, { state, lines });
   const field = state.editing ?? remaining[0].field;
   return {
-    state, lines, land: reach.questionLand, beat: reach.beat, save: null,
+    state, lines, meeting: reach.questionMeeting, beat: reach.beat, save: null,
     screen: { kind: "question", field, started: state.asked.length > 0 },
-    keepLandsOn: state.editing ? keepTargetOf(remaining) : null,
+    keepGoesTo: state.editing ? keepTargetOf(remaining) : null,
     history: reach.questionCall ? [{ call: reach.questionCall, field }] : [],
   };
 }
 
-/** Where Keep lands from an edit: what `kept` puts on screen once the edit is
+/** Where Keep goes from an edit: what `kept` puts on screen once the edit is
  * let go, with the same answers and so the same questions left. */
 function keepTargetOf(remaining: readonly Question[]): KeepTarget {
   return remaining.length ? { kind: "question", field: remaining[0].field } : { kind: "verdict" };
@@ -295,8 +295,8 @@ function keepTargetOf(remaining: readonly Question[]): KeepTarget {
  * and the verdict is not it. */
 function verdictStep(reach: Reach, { state, lines = NO_LINES }: Onto): InterviewStep {
   return {
-    state, lines: { ...lines, justRecorded: null }, land: reach.verdictLand, beat: false, save: null,
-    screen: { kind: "verdict" }, keepLandsOn: null,
+    state, lines: { ...lines, justRecorded: null }, meeting: reach.verdictMeeting, beat: false, save: null,
+    screen: { kind: "verdict" }, keepGoesTo: null,
     history: reach.verdictCall ? [{ call: reach.verdictCall, field: null }] : [],
   };
 }

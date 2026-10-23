@@ -15,7 +15,7 @@ import { renderResults } from "./verdict-screen.js";
 export interface Drawing {
   /** Takes the first paint's covers off, in the task that draws the first screen. */
   uncover(): void;
-  /** Draws the screen a step lands on. `backTo` is the question the
+  /** Draws the screen a step leads to. `backTo` is the question the
    * history says the screen's Back goes to, null where none is behind. */
   drawStep(step: InterviewStep, backTo: string | null): void;
 }

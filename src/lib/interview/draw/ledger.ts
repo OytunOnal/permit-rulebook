@@ -46,7 +46,7 @@ export function renderDeclaration(page: InterviewPage, step: InterviewStep, curr
   // moving the line after the module lands is the shift s10 forbids. A
   // gesture (Start over) takes it down.
   if (asked.length > 0) root.dataset.answered = "";
-  else if (step.land !== "first-paint") delete root.dataset.answered;
+  else if (step.meeting !== "untouched") delete root.dataset.answered;
 }
 
 /**

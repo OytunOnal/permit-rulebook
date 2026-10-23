@@ -83,10 +83,9 @@ function countryArrivalFrom(dataset: Dataset, search: string): Country | null {
     return dataset.countries.find((c) => c.code.toLowerCase() === code.toLowerCase()) ?? null;
   // A route this product does not score still stands in a country, and the
   // reader pressed the button on its page. `arrivalFrom` refuses it — rightly,
-  // because there is no verdict to scope to — and until this branch that
-  // refusal threw the country away with it, landing a reader who came from a
-  // French permit's page on an interview about nowhere (Spec review,
-  // 2026-09-10).
+  // because there is no verdict to scope to — and without this branch the
+  // refusal would throw the country away with it, sending a reader who came
+  // from a French permit's page to an interview about nowhere.
   const id = params.get("route");
   if (!id) return null;
   for (const country of dataset.countries)
@@ -211,7 +210,8 @@ export interface Arrival {
 }
 
 /**
- * Land the reader where the address says they are (`location.search`).
+ * The arrival the address makes (`location.search`): the reader is put where
+ * the address says they are.
  *
  * The country it names replaces the destination on the record and everything
  * else the reader told us is kept while the new country still asks it,

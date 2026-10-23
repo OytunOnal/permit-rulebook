@@ -39,7 +39,7 @@ describe("interviewAfter: loaded", () => {
     const step = openOnto(NO_RECORD, "");
     expect(step.screen).toEqual({ kind: "question", field: FIRST_FIELD, started: false });
     expect(step.lines).toEqual(NO_LINES);
-    expect([step.land, step.beat, step.save, step.history]).toEqual(["first-paint", false, null, []]);
+    expect([step.meeting, step.beat, step.save, step.history]).toEqual(["untouched", false, null, []]);
   });
 
   it("loaded onto a kept record: the question it resumes on, with the resumed line counting the answers kept", () => {
@@ -47,7 +47,7 @@ describe("interviewAfter: loaded", () => {
     expect(step.screen).toEqual({ kind: "question", field: "qualification", started: true });
     expect(step.lines).toEqual({ arrival: null, resumed: 3, setAside: [], justRecorded: null });
     expect(step.state.asked).toEqual(GERMAN_THREE.history);
-    expect([step.land, step.beat, step.save, step.history]).toEqual(["first-paint", false, null, []]);
+    expect([step.meeting, step.beat, step.save, step.history]).toEqual(["untouched", false, null, []]);
   });
 
   it("loaded onto a kept record with an arrival: the arrival line alone, and the moved record saved once", () => {
@@ -76,7 +76,7 @@ describe("interviewAfter: loaded", () => {
     const step = openOnto(EU_PASSPORT, "");
     expect(step.screen).toEqual({ kind: "verdict" });
     expect(step.lines).toEqual({ arrival: null, resumed: 2, setAside: [], justRecorded: null });
-    expect([step.land, step.beat, step.save, step.history]).toEqual(["first-paint", false, null, []]);
+    expect([step.meeting, step.beat, step.save, step.history]).toEqual(["untouched", false, null, []]);
   });
 
   it("loaded onto a finished record with an arrival that moved it: the verdict with the arrival line alone", () => {
@@ -98,7 +98,7 @@ describe("interviewAfter: answered", () => {
     const step = after(openOnto(GERMAN_THREE, "").state, { kind: "answered", value: "degree" });
     expect(step.screen).toEqual({ kind: "question", field: "recognition_de", started: true });
     expect(step.lines).toEqual(NO_LINES);
-    expect([step.land, step.beat]).toEqual(["card-under-header", true]);
+    expect([step.meeting, step.beat]).toEqual(["land-or-reveal", true]);
     expect(step.save).toEqual({
       answers: { ...GERMAN_THREE.answers, qualification: "degree" }, history: [...GERMAN_THREE.history, "qualification"],
       done: false,
@@ -118,7 +118,7 @@ describe("interviewAfter: answered", () => {
     const step = after(state, { kind: "answered", value: "none", recordedAs: "None of these" });
     expect(step.screen).toEqual({ kind: "verdict" });
     expect(step.lines.justRecorded, "the commit banner is the next question's, and the verdict is not one").toBeNull();
-    expect([step.land, step.beat]).toEqual(["verdict-masthead", false]);
+    expect([step.meeting, step.beat]).toEqual(["reveal-masthead", false]);
     expect(step.save).toMatchObject({ done: true });
     expect(step.history).toEqual([{ call: "pushScreen", field: null }]);
   });
@@ -140,7 +140,7 @@ describe("interviewAfter: editedRow and back", () => {
     expect(step.screen).toEqual({ kind: "question", field: "situation", started: true });
     expect(step.state).toMatchObject({ editing: "situation", answers: GERMAN_THREE.answers, asked: GERMAN_THREE.history });
     expect(step.lines).toEqual(NO_LINES);
-    expect([step.land, step.beat, step.save]).toEqual(["card-under-folded-ledger", true, null]);
+    expect([step.meeting, step.beat, step.save]).toEqual(["fold-ledger-land-or-reveal", true, null]);
     expect(step.history).toEqual([{ call: "replaceScreen", field: "situation" }]);
   });
 
@@ -157,7 +157,7 @@ describe("interviewAfter: editedRow and back", () => {
     const step = after(openOnto(GERMAN_THREE, "").state, { kind: "back", field: "citizenship" });
     expect(step.screen).toEqual({ kind: "question", field: "citizenship", started: true });
     expect(step.state.editing).toBe("citizenship");
-    expect([step.land, step.beat, step.save]).toEqual(["card-under-folded-ledger", true, null]);
+    expect([step.meeting, step.beat, step.save]).toEqual(["fold-ledger-land-or-reveal", true, null]);
     expect(step.history).toEqual([{ call: "replaceScreen", field: "citizenship" }]);
   });
 });
@@ -168,7 +168,7 @@ describe("interviewAfter: kept", () => {
     const step = after(editing, { kind: "kept" });
     expect(step.screen).toEqual({ kind: "question", field: "qualification", started: true });
     expect(step.state.editing).toBeNull();
-    expect([step.land, step.beat, step.save]).toEqual(["card-under-header", true, null]);
+    expect([step.meeting, step.beat, step.save]).toEqual(["land-or-reveal", true, null]);
     expect(step.history).toEqual([{ call: "pushScreen", field: "qualification" }]);
   });
 
@@ -176,7 +176,7 @@ describe("interviewAfter: kept", () => {
     const editing = after(openOnto(EU_PASSPORT, "").state, { kind: "editedRow", field: "citizenship" }).state;
     const step = after(editing, { kind: "kept" });
     expect(step.screen).toEqual({ kind: "verdict" });
-    expect([step.land, step.beat]).toEqual(["verdict-masthead", false]);
+    expect([step.meeting, step.beat]).toEqual(["reveal-masthead", false]);
     expect(step.history).toEqual([{ call: "pushScreen", field: null }]);
   });
 });
@@ -185,19 +185,19 @@ describe("interviewAfter: kept", () => {
 describe("interviewAfter: Keep this answer's target", () => {
   it("Keep on an edit with questions left: the first question still asked, where kept lands", () => {
     const editing = after(openOnto(GERMAN_THREE, "").state, { kind: "editedRow", field: "situation" });
-    expect(editing.keepLandsOn).toEqual({ kind: "question", field: "qualification" });
+    expect(editing.keepGoesTo).toEqual({ kind: "question", field: "qualification" });
     expect(after(editing.state, { kind: "kept" }).screen).toMatchObject({ field: "qualification" });
   });
 
   it("Keep on an edit with nothing left to ask: the verdict, where kept lands", () => {
     const editing = after(openOnto(EU_PASSPORT, "").state, { kind: "editedRow", field: "citizenship" });
-    expect(editing.keepLandsOn).toEqual({ kind: "verdict" });
+    expect(editing.keepGoesTo).toEqual({ kind: "verdict" });
     expect(after(editing.state, { kind: "kept" }).screen).toEqual({ kind: "verdict" });
   });
 
   it("a question that is not an edit, and the verdict, have no Keep", () => {
-    expect(openOnto(GERMAN_THREE, "").keepLandsOn).toBeNull();
-    expect(openOnto(EU_PASSPORT, "").keepLandsOn).toBeNull();
+    expect(openOnto(GERMAN_THREE, "").keepGoesTo).toBeNull();
+    expect(openOnto(EU_PASSPORT, "").keepGoesTo).toBeNull();
   });
 });
 
@@ -214,7 +214,7 @@ describe("interviewAfter: restarted", () => {
   it("restarted lands at the page's top, with no beat", () => {
     for (const search of ["", "?country=de"]) {
       const step = after(openOnto(GERMAN_FIVE, search).state, { kind: "restarted", search });
-      expect([step.land, step.beat], search).toEqual(["page-top", false]);
+      expect([step.meeting, step.beat], search).toEqual(["page-top", false]);
     }
   });
 
@@ -265,19 +265,19 @@ describe("interviewAfter: browserMoved", () => {
     const step = after(openOnto(GERMAN_THREE, "").state, { kind: "browserMoved", field: "situation", ontoFirstScreen: false });
     expect(step.screen).toEqual({ kind: "question", field: "situation", started: true });
     expect(step.state).toMatchObject({ editing: "situation", answers: GERMAN_THREE.answers });
-    expect([step.land, step.beat, step.save, step.history]).toEqual(["card-under-header-after-restore", true, null, []]);
+    expect([step.meeting, step.beat, step.save, step.history]).toEqual(["land-after-restore", true, null, []]);
   });
 
   it("browserMoved onto the first screen: the browser's scroll kept, the beat still run", () => {
     const step = after(openOnto(GERMAN_THREE, "").state, { kind: "browserMoved", field: FIRST_FIELD, ontoFirstScreen: true });
     expect(step.screen).toMatchObject({ kind: "question", field: FIRST_FIELD });
-    expect([step.land, step.beat, step.history]).toEqual(["browser-scroll", true, []]);
+    expect([step.meeting, step.beat, step.history]).toEqual(["browser-restored", true, []]);
   });
 
   it("browserMoved to the verdict: the verdict even with questions left, the browser's scroll, no beat", () => {
     const step = after(openOnto(GERMAN_THREE, "").state, { kind: "browserMoved", field: null, ontoFirstScreen: false });
     expect(step.screen).toEqual({ kind: "verdict" });
     expect(step.state.editing).toBeNull();
-    expect([step.land, step.beat, step.save, step.history]).toEqual(["browser-scroll", false, null, []]);
+    expect([step.meeting, step.beat, step.save, step.history]).toEqual(["browser-restored", false, null, []]);
   });
 });
