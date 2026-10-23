@@ -1,5 +1,5 @@
 ---
-// @level presentation main
+// @level main
 import "../../tokens.css";
 // The identity pair (the PR mark above the stamp) comes from the one file the
 // route page inlines, so the "Record generated" stamp and the "Rules read"
@@ -9,17 +9,17 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { assertValidDataset } from "permit-rulebook-data/validate";
 import { datasetMeta, remainingQuestions } from "permit-rulebook-data";
 // The first question is the same for everyone until an answer is given, so the
-// build draws it — through the very code the module draws every later screen
-// with, never a second copy of the markup (s10, 2026-09-15).
+// build draws it — through the very code the interview draws every later
+// screen with, never a second copy of the markup (s10, 2026-09-15).
 // The question screens' masthead is drawn by the same function, server and
-// client alike — a second copy of the intro copy here is how "Start over" left
-// a stale claim on question 1 (product-critique v0.7, B4).
+// client alike, so "Start over" cannot leave a stale claim on question 1
+// (product-critique v0.7, B4).
 import {
   declarationCount, declarationHtml, holdLineHtml, questionCardHtml, questionMastheadOf, renderStandInsOverQuestionOne,
 } from "../lib/question.js";
 // The three things the page must know about the reader before it paints, read
-// in <head>, and the rules that paint the shape the module would have chosen
-// from them (s10, 2026-09-15).
+// in <head>, and the rules that paint the shape the interview would have
+// chosen from them (s10, 2026-09-15).
 import { FIRST_PAINT_SCRIPT, FIRST_PAINT_STYLE } from "../lib/first-paint.js";
 // The seal, the icon links and the pair: one set of elements, four screens
 // (Standards review, 2026-09-08).
@@ -31,7 +31,10 @@ import { contentSecurityPolicy } from "../lib/csp.js";
 import { footerFacts, navCountries } from "../lib/country-page.js";
 // The product's own words, in one place: the name, the tagline and the
 // disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
-import { PRODUCT_NAME, promise, TAGLINE } from "../lib/copy/frame.js";
+import {
+  HOME_DESCRIPTION, HOME_PREVIEW_TITLE, HOME_TITLE, promise, RULES_READ, TAGLINE,
+} from "../lib/copy/frame.js";
+import { START_OVER, YOU_DECLARED } from "../lib/copy/interview.js";
 import { routeCounts } from "../lib/data-page.js";
 import { analyticsBeacon, headMeta } from "../lib/site.js";
 
@@ -42,16 +45,15 @@ const intro = questionMastheadOf({ kind: "question", started: false });
 /**
  * The masthead's other standing form: the promise shortens once it has been
  * read, and a reader with a record read it last time. Both are painted, and
- * the promise the pre-paint script seeds says which one this reader gets — the module
- * used to swap the text 700 ms in, which pulled the whole interview up under
- * them (s10).
+ * the promise the pre-paint script seeds says which one this reader gets, so
+ * nothing swaps the text after the first paint (s10).
  */
 const started = questionMastheadOf({ kind: "question", started: true });
 /**
  * The screen the page paints with, before any script runs: question one, with
  * nothing on the record. Every reader meets it, and the ones whose own screen
  * differs — a saved record, an arrival from a country or route page — have
- * theirs put in its place by the module, in the same box.
+ * theirs put in its place by the interview, in the same box.
  */
 const firstQuestions = remainingQuestions(dataset, {});
 const firstScreen = questionCardHtml({
@@ -61,23 +63,18 @@ const firstScreen = questionCardHtml({
 const firstDeclaration = declarationHtml(dataset, { answers: {}, asked: [], currentField: firstQuestions[0].field });
 /**
  * And, over it, the line for a reader whose own screen is not this one. The
- * card stays in the box under it, so the box is the same box — a returning
- * reader was shown a question they had already answered until the module
- * landed, which is the one thing this product does not do (human's walk,
- * 2026-09-15).
+ * card stays in the box under it, so the box is the same box, and a returning
+ * reader is never shown a question they have already answered while the
+ * interview loads (human's walk, 2026-09-15).
  */
 const firstStandIns = renderStandInsOverQuestionOne();
 /**
  * And, for the reader owed a verdict, the same sentence under the eyebrow:
  * their headline has no shape a stylesheet could reserve, so nothing below
  * the eyebrow is painted for them at all, and the line says where they are
- * while the module draws (s31).
+ * while the interview draws (s31).
  */
 const holdLine = holdLineHtml();
-/** What a search result says about the interview. */
-const INTRO_DESCRIPTION =
-  "Which European work-permit routes fit? A check against dated, source-quoted "
-  + "official rules. Your answers never leave this device.";
 console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundary", ...meta }));
 ---
 <!doctype html>
@@ -88,11 +85,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <Fragment set:html={contentSecurityPolicy()} />
   <script is:inline set:html={FIRST_PAINT_SCRIPT}></script>
   <style is:inline set:html={FIRST_PAINT_STYLE}></style>
-  <title>{PRODUCT_NAME} — which work-permit routes fit?</title>
+  <title>{HOME_TITLE}</title>
   <Fragment set:html={iconLinks()} />
   <Fragment set:html={headMeta({
-    title: `${PRODUCT_NAME} — ${TAGLINE.toLowerCase().replace(/\.$/, "")}`,
-    description: INTRO_DESCRIPTION,
+    title: HOME_PREVIEW_TITLE,
+    description: HOME_DESCRIPTION,
     path: "/",
     kind: "website",
     preview: promise(routeCounts(dataset)),
@@ -113,7 +110,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           fact the route page states — when the rules were last read — and on
           the results it becomes the record's own date (human, 2026-09-08).
           The box never moves: only the words and the date inside it change. */}
-      <Fragment set:html={stamps("Rules read", meta.newest_retrieved_at ?? "", { live: true })} />
+      <Fragment set:html={stamps(RULES_READ, meta.newest_retrieved_at ?? "", { live: true })} />
     </header>
 
     <div id="app" class="cols" data-state="questions">
@@ -130,10 +127,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     -->
     <p class="visually-hidden" id="cstatus" role="status" aria-live="polite"></p>
       <details class="decl" id="decl" open>
-        <summary><span class="decl-title">You declared</span><span class="decl-count" id="decl-count">{declarationCount(0)}</span><span class="decl-set-aside-folded" id="decl-set-aside-folded"></span></summary>
+        <summary><span class="decl-title">{YOU_DECLARED}</span><span class="decl-count" id="decl-count">{declarationCount(0)}</span><span class="decl-set-aside-folded" id="decl-set-aside-folded"></span></summary>
         <dl id="decl-list" set:html={firstDeclaration}></dl>
         <div id="decl-set-aside"></div>
-        <a class="edit" href="#" id="restart" hidden>Start over</a>
+        <a class="edit" href="#" id="restart" hidden>{START_OVER}</a>
       </details>
     </div>
 
@@ -144,905 +141,26 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <script is:inline set:html={MENU_SCRIPT}></script>
 
   <script>
-    import dataset from "permit-rulebook-data/data/dataset.json";
-    import {
-      deriveQuestions, remainingQuestions, datasetMeta, type Dataset, type Question,
-    } from "permit-rulebook-data";
-    // Every decision the interview makes — the screen, its lines, the landing,
-    // the beat, the save and the history move — from one call per gesture;
-    // this page applies the result.
-    import {
-      EMPTY_INTERVIEW, interviewAfter, type Gesture, type HistoryCall, type InterviewScreen, type InterviewState,
-      type InterviewStep, type Landing,
-    } from "../lib/interview/index.js";
-    // The arrival line's words, over whichever screen an arrival lands on.
-    import { arrivalLineHtml } from "../lib/arrival-line.js";
-    // A symbol a stranger cannot read is explained the first time a screen uses
-    // it, by the same module the route pages use (human, 2026-09-08).
-    import { type Glossary } from "../lib/gloss.js";
-    // The passport search: built over the question's options and mounted on
-    // the card; what typing, a key and a click do is decided inside it.
-    import { countrySearchOf, hasClasses, mountCountrySearch } from "../lib/country-search/index.js";
-    import type { Masthead, VerdictMasthead } from "../lib/screen.js";
-    // The interview's history, and the browser's history behind its port: the
-    // page tells it what each gesture drew, and draws what the browser moved to.
-    import { openInterviewHistory, type InterviewHistory } from "../lib/interview-history/index.js";
+    // The page's one job: build the interview's two ports and start it. The
+    // interview, its drawing and its stylesheet are `lib/interview/`'s.
     import { browserHistoryOf } from "../lib/browser-history.js";
-    import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
-    // The question screen and the declaration panel: the same renderer the
-    // build drew the first paint with, so the module's first render finds the
-    // screen it would have drawn already on the page (s10).
-    import {
-      declarationCount, declarationHtml, isLongList, questionCardHtml, questionMastheadOf, setAsideHtml,
-    } from "../lib/question.js";
-    // The width the ledger stops being a disclosure at, said once, and read
-    // here and by the script that runs before the first paint (s10); and the
-    // one step that takes the first paint's covers off.
-    import { WIDE_QUERY, takeCoversOff } from "../lib/first-paint.js";
-    // One date format, everywhere a date prints (decision 12).
-    import { isoDay } from "../lib/copy/frame.js";
-    // The whole verdict — which screen it is, what is announced, and the body
-    // — from one call, so its grouping, order and cards are read by a test in
-    // Node (#170).
-    import { verdictHtml, verdictOf } from "../lib/verdict/index.js";
-
-    const ds = dataset as unknown as Dataset;
-    const questions = deriveQuestions(ds);
-    const main = document.getElementById("main")!;
-    const decl = document.getElementById("decl") as HTMLDetailsElement;
-    const declList = document.getElementById("decl-list")!;
-    const declSetAside = document.getElementById("decl-set-aside")!;
-    const declSetAsideFolded = document.getElementById("decl-set-aside-folded")!;
-    const restart = document.getElementById("restart")!;
-    const headline = document.getElementById("headline")!;
-    const subline = document.getElementById("subline")!;
-    const app = document.getElementById("app")!;
-    /** Where the pre-paint script left what it read about this reader. */
-    const page = document.documentElement;
+    import { startInterview, type InterviewPorts } from "../lib/interview/index.js";
 
     /**
-     * The stand-in line has done its job the moment this module exists: it was
-     * there to keep a reader from being shown a question they had already
-     * answered while the script was in the post, and the screen they should
-     * have is about to be drawn (s10).
-     *
-     * It goes now, before anything is compared, so what `paint` finds in the
-     * box is exactly what the renderer would draw and a fresh visit is still a
-     * page this module leaves alone. Nothing is painted between here and the
-     * first render — the cover that hides the question comes off just before
-     * it, in the same task — so the box never blinks. The reader owed a verdict has
-     * theirs in the masthead rather than in the box (s31), so the whole page
-     * is asked.
+     * The browser's own store, if it has one. Reading the property itself
+     * throws where site data is blocked (private mode, blocked cookies); the
+     * interview then works without surviving the tab, so the error is
+     * dropped. What is kept, what is dropped and what "Start over" takes is
+     * `record.ts`'s.
      */
-    for (const standIn of document.querySelectorAll(".stand-in")) standIn.remove();
-
-    /**
-     * Write markup into a box, unless it is already there.
-     *
-     * The build paints the first question through the same renderer this
-     * module uses, so on a fresh visit every string this page is about to
-     * write is the string already there. Writing it anyway would replace live
-     * nodes with identical ones — cheap, but it is the same gesture that
-     * produced the defect, and the measurement is what decides (s10).
-     *
-     * The candidate is parsed into an empty copy of the box itself, never a
-     * spare `<div>`: what a fragment serialises to depends on what it was
-     * parsed inside, and the ledger's rows are parsed inside a `<dl>`. Both
-     * sides then read as the browser writes them, which is the comparison
-     * that means something — our escaping and Chrome's do not spell `'` the
-     * same way, and comparing the raw strings would report a difference that
-     * is not one.
-     *
-     * Says whether it wrote.
-     */
-    const spares = new Map<Element, Element>();
-    function draw(el: Element, html: string): boolean {
-      let spare = spares.get(el);
-      if (!spare) spares.set(el, spare = el.cloneNode(false) as Element);
-      spare.innerHTML = html;
-      if (el.innerHTML === spare.innerHTML) return false;
-      el.innerHTML = html;
-      return true;
-    }
-
-    /**
-     * Draw, and hang this screen's listeners on what is now in the box.
-     *
-     * `wired` remembers which boxes hold nodes this module has already hung
-     * them on: the ones the BUILD drew need wiring without a repaint, and a
-     * repeated render that draws the same screen must not hang a second copy
-     * on the same nodes.
-     *
-     * THE RULE, for anything that writes a painted box some other way: take
-     * the box out of `wired` first, or the next render that happens to draw
-     * the same screen will trust listeners that went out with the old nodes
-     * and hang a second set on the new ones. `renderResults` is the one place
-     * that does, and it says so there too (s10).
-     */
-    const wired = new Set<Element>();
-    function paint(el: Element, html: string, wire: () => void): void {
-      if (draw(el, html)) wired.delete(el);
-      if (wired.has(el)) return;
-      wired.add(el);
-      wire();
-    }
-    /** The same, for a line of text with nothing to wire. */
-    function say(el: Node, text: string): void {
-      if (el.textContent !== text) el.textContent = text;
-    }
-
-    /**
-     * The stamp says which fact the screen is standing on.
-     *
-     * On the questions it is the dataset's own newest read date — the same
-     * sentence a route page carries, and a true thing to say before anyone has
-     * answered anything. On the results it is the day this record was made. It
-     * stayed hidden until the results until 2026-09-08, which left the masthead
-     * lopsided on the one screen every reader sees first.
-     */
-    const stampLabel = document.getElementById("stamp-label")!;
-    const stampDate = document.getElementById("stamp-date")!;
-    const stampTime = document.getElementById("stamp-time")!;
-    const rulesRead = datasetMeta(ds).newest_retrieved_at ?? "";
-
-    function setStamp(kind: "rules-read" | "record") {
-      const record = kind === "record";
-      stampLabel.textContent = record ? "Record generated" : "Rules read";
-      const day = record ? isoDay(new Date()) : rulesRead;
-      stampDate.textContent = day;
-      stampTime.setAttribute("datetime", day);
-    }
-    // ISO, like every other date the product prints (s6 decision 12). It read
-    // `07 · 09 · 2026` until this slice — a second format on a screen whose
-    // whole differentiator is when a thing was read, and ambiguous to exactly
-    // the reader most likely to be reading it (route-page critique F3). Local
-    // time, not UTC: the stamp is the day the person in front of it is having.
-    setStamp("rules-read");
-
-    const declCount = document.getElementById("decl-count")!;
-
-    /** Where the interview stands: the answers, the order they were asked in,
-     * the answer being reconsidered and the route the address sorts first.
-     * Every gesture replaces it with the state `interviewAfter` returns. An
-     * answer being reconsidered is never deleted while it is on screen: it
-     * renders as the selected option, and picking another replaces it. */
-    let interview: InterviewState = EMPTY_INTERVIEW;
-
-    /**
-     * Say something once, in the screen's own live region.
-     *
-     * Written after the render, never inside it: a region that arrives with its
-     * text already in place is not announced by every screen reader, and the
-     * interview's own status line proved the pattern works.
-     */
-    function announce(text: string): void {
-      const region = document.getElementById("cstatus");
-      if (region) region.textContent = text;
-    }
-
-    /**
-     * Bring the reader to the screen a gesture drew, once it is drawn.
-     *
-     * On a phone the ledger sits under a long result. Tapping a row's ✎ drew
-     * the question 1,366 px above the viewport and left the focus on <body>,
-     * so the control looked dead; answering drew the new verdict 8,000 px
-     * above where the reader stood (v1.1 gate critique, B2). Every answer
-     * dropped the focus to <body> as well, and a keyboard reader tabbed
-     * through the whole header before each question (F6).
-     *
-     * So, after a gesture: the top of what was drawn comes into view when it
-     * is not — `block: "start"`, and smooth unless the reader has asked for
-     * no motion — and the first thing they can act on takes the focus without
-     * moving the page a second time. Where the top is already on the screen
-     * nothing scrolls: a desktop reader whose card sits beside the ledger is
-     * not jolted for a correction they can already see. The first paint is
-     * not a gesture: nothing on it takes the focus from a reader who has
-     * touched nothing, and a browser history move keeps the scroll the
-     * browser restores.
-     */
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    function reveal(el: Element): void {
-      const { top } = el.getBoundingClientRect();
-      if (top >= 0 && top < window.innerHeight) return;
-      el.scrollIntoView({ block: "start", behavior: reducedMotion.matches ? "auto" : "smooth" });
-    }
-    /**
-     * On a phone the next question comes up to meet the reader.
-     *
-     * Every question after the first is drawn under the header, the headline,
-     * the subline and the stamp — 445 px down at 390 wide — with its first
-     * option at 550: at 844 tall the second option is often out of sight, at
-     * 667 a long first one is cut, and the reader who just tapped an answer
-     * scrolls to find what they were asked (v1.1 gate critique, P10). `reveal`
-     * never fires there: the card's top is on the screen; the question is not.
-     *
-     * So, on a narrow screen, an answer lands the card's top just under the
-     * header — one header's height and the breath the header keeps under
-     * itself, both read from the header rather than typed — and the masthead
-     * scrolls away with the rest. Narrow is the site's own breakpoint, read at
-     * the moment of the gesture. On a wide screen the card sits beside the
-     * ledger with room above it and the hero stays: s20's rule, as before.
-     *
-     * Once the reader has answered, the ledger line stands above the question
-     * and above the result on a phone (amendments 6–7). The landing is the
-     * question all the same — the card's top under the header, the line one
-     * swipe up: landed on the line, every answer felt like arriving at "You
-     * declared" (amendment 8, the human's phone). A correction lands too, on
-     * a narrow screen: with the ledger
-     * open above the card the re-drawn question sat below it, and s20's
-     * reveal, seeing the card's top on screen, did nothing (human's walk of
-     * the trial, 2026-09-18). So ✎ closes the ledger and lands as an answer
-     * does; s20's reveal is the wide screen's rule now.
-     *
-     * The card's ← Back is a history move (s16), and the browser brings back
-     * the scroll the reader LEFT that entry at — which, once they had scrolled
-     * on it, is not where the question is: measured at 390, an answer, a
-     * scroll of 250, an answer and Back put the card's top 177 px above the
-     * viewport (Spec review, 2026-09-18). The reader asked for that question,
-     * so on a narrow screen it lands the same way. The browser restores after
-     * the render its move asked for and before the first animation frame — read
-     * in that order, in that walk — so the landing waits for the frame and comes after
-     * it. Where the history move is to the page's first screen the landing
-     * stays out of it: that screen keeps the top of the page, as at the cold
-     * load. On a wide screen a history move still scrolls nothing of ours.
-     */
-    const headEl = document.querySelector<HTMLElement>(".site-head");
-    /** One list for the breakpoint: the landing reads it here, the ledger
-     * below listens to it. */
-    const wide = window.matchMedia(WIDE_QUERY);
-    function landOnQuestion(card: Element, land: Landing): void {
-      // The first paint and a browser move onto the first screen keep the
-      // browser's own scroll.
-      if (land === "first-paint" || land === "browser-scroll") return;
-      const afterRestore = land === "card-under-header-after-restore";
-      /** s20's reveal: every gesture on a wide screen, and Start over on any. */
-      const revealsOnly = wide.matches || land === "card-into-view";
-      if (revealsOnly || !headEl) {
-        if (!afterRestore) reveal(card);
-        return;
-      }
-      // The ledger the correction came from folds away, so the question it
-      // reopened is the next thing under the line.
-      if (land === "card-under-folded-ledger") decl.open = false;
-      const underHeader = () => {
-        const { height } = headEl.getBoundingClientRect();
-        const gap = parseFloat(getComputedStyle(headEl).paddingBottom);
-        const top = window.scrollY + card.getBoundingClientRect().top - height - gap;
-        window.scrollTo({ top, behavior: reducedMotion.matches ? "auto" : "smooth" });
-      };
-      if (afterRestore) requestAnimationFrame(underHeader);
-      else underHeader();
-    }
-    /** The first control on a question card — a button for a choice, the box
-     * for a search — and the card's own heading where there is neither. The
-     * search box keeps v0.7's rule (the caret in it, its text selected), which
-     * `renderQuestion` applies on every render of one. */
-    function focusFirst(card: Element): void {
-      const first = card.querySelector<HTMLElement>(".opt, #cfilter");
-      if (first) { first.focus({ preventScroll: true }); return; }
-      const heading = card.querySelector<HTMLElement>(".qlabel");
-      if (!heading) return;
-      heading.tabIndex = -1;
-      heading.focus({ preventScroll: true });
-    }
-    /**
-     * The beat (#86): a question card a gesture draws fades in, and for the
-     * beat nothing on it commits an answer.
-     *
-     * Every question's options sit in the same spot, so a reflex second click
-     * or Enter lands on a question nobody has read. The guard is time, not
-     * motion: it holds the same under reduced motion, where the fade is off. It
-     * stands in `answer`, the one door every commit goes through, so a click on
-     * an option or a row, Enter on a focused option and the search's Enter are
-     * all refused alike. Its length is the token `--motion-beat` (`tokens.css`
-     * says why either unit is read). A token that is not a positive duration is
-     * logged and runs no beat, never a beat that refuses every click. The first
-     * paint has no beat, and the verdict is not a question card.
-     */
-    const beatMs = readBeatMs();
-    function readBeatMs(): number {
-      const token = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
-      const duration = /^(\d*\.?\d+)(ms|s)$/.exec(token);
-      const ms = duration ? Number(duration[1]) * (duration[2] === "ms" ? 1 : 1000) : NaN;
-      if (Number.isFinite(ms) && ms > 0) return ms;
-      console.error(`--motion-beat is not a positive duration (${JSON.stringify(token)}): the interview runs without a beat`);
-      return 0;
-    }
-    let beatEndsAt = 0;
-    const insideBeat = (): boolean => performance.now() < beatEndsAt;
-    function beginBeat(): void {
-      if (beatMs === 0) return;
-      beatEndsAt = performance.now() + beatMs;
-      // The fade starts again even where the box kept the nodes it had.
-      delete main.dataset.beat;
-      void main.offsetWidth;
-      main.dataset.beat = "";
-    }
-
-    /** One masthead, one writer. Which screen a gesture lands on is
-     * `interviewAfter`'s, where a property test walks every gesture in every
-     * order (review H1), so no path back into the interview ("Start over", an
-     * edit, browser Back) can leave a claim about a comparison standing
-     * (product-critique v0.7, B4). A question screen's masthead is the
-     * question card's, with the standing promise its screen says; a verdict
-     * screen carries the one the verdict composed, and no standing promise. */
-    function advance(m: Masthead & Pick<VerdictMasthead, "sublineHtml">, standing: "started" | "fresh" | null) {
-      draw(headline, m.headline);
-      // The build painted both of the masthead's standing promises and an
-      // inline script in <head> seeded which one shows before the first paint,
-      // so writing the promise here is setting the same attribute rather than
-      // writing the text a second time. A verdict's subline is not standing —
-      // it counts what was compared — so that one is written, and once it is
-      // the two spans are gone for good. The spans are looked for by name: a
-      // verdict's subline may carry a link of its own (s19), and a child that
-      // is not one of the two promises is no reason to leave it standing on a
-      // question screen.
-      if (standing !== null && subline.querySelector(".sub-fresh")) {
-        if (page.dataset.promise !== standing) page.dataset.promise = standing;
-        return;
-      }
-      // The one subline that carries a link — the s19 written state's door to
-      // the quoted route — is drawn as the markup the verdict composed; every
-      // other subline is written as text.
-      if (m.sublineHtml !== undefined) draw(subline, m.sublineHtml);
-      else say(subline, m.subline);
-    }
-
-    // The ledger grows as the record accrues: answered rows accumulate and
-    // only the question currently on the table shows as a pending row. With
-    // adaptive pruning, fields that never get asked never appear — the panel
-    // promises nothing it won't deliver.
-    /**
-     * One screen, one memory of which abbreviations it has already expanded —
-     * the route page's rule, on a page that repaints instead of reloading. A
-     * route's name is where most readers meet "§": it is in the name of every
-     * German route (human walk, 2026-09-08). This one is the question
-     * screens' and the arrival line's; the verdict's cards keep their own,
-     * inside `verdictOf`.
-     */
-    let glossary: Glossary = new Set();
-
-    function renderDeclaration(step: InterviewStep, currentField: string | null) {
-      const { answers, asked } = step.state;
-      // "Start over" is the ledger's control. The resumed line borrows it for
-      // one screen (s20), and every render begins by taking it back — before
-      // the box is compared or written, so the box never holds a node the
-      // renderer did not draw and the next write cannot destroy it.
-      if (restart.parentElement !== decl) decl.append(restart);
-      paint(declList, declarationHtml(ds, { answers, asked, currentField }), () => {
-        declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
-          const jump = () => apply({ kind: "editedRow", field: row.dataset.field! });
-          row.addEventListener("click", jump);
-          row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); } });
-        });
-      });
-      // One line, in two places: under the rows, and in the summary row for a
-      // phone whose panel is folded, where the rows cannot be seen. The
-      // stylesheet shows the one that can be.
-      const setAsideLine = setAsideHtml(ds, step.lines.setAside);
-      draw(declSetAside, setAsideLine);
-      draw(declSetAsideFolded, setAsideLine);
-      say(declCount, declarationCount(asked.length));
-      restart.hidden = currentField !== null;
-      // The fact the count states, as a state the stylesheet can read: on a
-      // phone the ledger line stands above the question and above the result
-      // once there is something in it to review (amendments 6–7). The
-      // pre-paint script seeds the same state for a reader whose answers are
-      // on the device or in the link, so the line is above from the first
-      // paint and nothing moves when the module draws (s10). The head's word
-      // stands for the first screen: a link whose code this page does not
-      // know brings no answer, and the line it was painted with — "You
-      // declared · nothing yet" — is true; moving it below after the module
-      // lands is the shift s10 forbids. The seed comes down on a gesture
-      // (Start over), never on the arrival.
-      if (asked.length > 0) page.dataset.answered = "";
-      else if (step.land !== "first-paint") delete page.dataset.answered;
-    }
-
-    /** Draw the question screen a step lands on: its masthead, its ledger,
-     * and its card with the lines the step says, then meet the reader there. */
-    function renderQuestion(step: InterviewStep, screen: Extract<InterviewScreen, { kind: "question" }>): void {
-      glossary = new Set();
-      const { state, lines } = step;
-      // Only questions a still-alive route cares about; e.g. "no job offer"
-      // retires the salary question instead of asking it into the void.
-      const remaining = remainingQuestions(ds, state.answers);
-      const q = remaining.find((x) => x.field === screen.field) ?? questions.find((x) => x.field === screen.field)!;
-      // A question drawn over the verdict takes the stamp back to the rules'
-      // date; on the questions it already says that.
-      if (app.dataset.state !== "questions") {
-        setStamp("rules-read");
-        app.dataset.state = "questions";
-      }
-      advance(questionMastheadOf(screen), screen.started ? "started" : "fresh");
-      announce("");
-      renderDeclaration(step, q.field);
-      const arrivalHtml = lines.arrival ? arrivalLineHtml(ds, lines.arrival, glossary) : "";
-      paint(main, questionCardHtml({
-        dataset: ds, question: q, answers: state.answers, asked: state.asked, editing: state.editing,
-        total: state.asked.length + remaining.length, arrival: arrivalHtml, justRecorded: lines.justRecorded,
-        resumed: lines.resumed ?? undefined, glossary,
-      }), () => wireQuestion(q, state.answers[q.field]));
-      // The resumed line ends in the ledger's own "Start over", moved in after
-      // it — the same node, so there is one control and one listener. The
-      // ledger takes it back at the start of the next render.
-      if (lines.resumed) {
-        const line = main.querySelector<HTMLElement>(".resumed");
-        if (line) { line.append(" ", restart); restart.hidden = false; }
-      }
-      meetQuestion(step, isLongList(q));
-    }
-
-    /** Hang a question card's listeners: its answers, "Keep this answer" and
-     * "← Back". `chosen` is the answer on file for it, if any. */
-    function wireQuestion(q: Question, chosen: string | undefined): void {
-      /** Puts `value` on the record and draws the next screen, unless the
-       * card is inside its beat. `recordedAs` is the words the next screen
-       * says were recorded, where the control can commit a row that is not
-       * the text in the box. */
-      const answer = (value: string, recordedAs?: string) => {
-        if (!insideBeat()) apply({ kind: "answered", value, recordedAs });
-      };
-      if (isLongList(q)) {
-        // A commit says what was recorded on the next screen, in the
-        // question card: the side ledger is not where a person looks after
-        // pressing Enter.
-        const classed = hasClasses(q) ? { dataset: ds, field: q.field } : null;
-        mountCountrySearch(main, countrySearchOf(q.options, { chosen, classed }, answer));
-      } else {
-        main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
-          btn.addEventListener("click", () => answer(btn.dataset.value!)));
-      }
-      main.querySelector<HTMLElement>("#done")?.addEventListener("click", () => apply({ kind: "kept" }));
-      main.querySelector<HTMLElement>("#back")?.addEventListener("click", () => {
-        // Where the browser holds a step of ours behind, the history asks it
-        // to go back, and its move draws the question that entry was showing.
-        // Elsewhere the step is the one editing a declared row makes: the
-        // previous question in place. Nothing is erased on the way.
-        const move = interviewHistory?.back(interview.asked, interview.editing);
-        if (move?.kind === "in-place") apply({ kind: "back", field: move.field });
-      });
-    }
-
-    /** Meet the reader at the question card just drawn: the landing the step
-     * asks for, the focus, and the beat. */
-    function meetQuestion(step: InterviewStep, longList: boolean): void {
-      const card = main.querySelector<HTMLElement>(".qcard");
-      /** The card a gesture drew, as opposed to the one the first paint put
-       * in the box. */
-      const gestureCard = step.land === "first-paint" ? null : card;
-      if (gestureCard) landOnQuestion(gestureCard, step.land);
-      if (longList) {
-        // Every render of a search question puts the caret in it, whether or
-        // not the box had to be rewritten to get here. A correction starts by
-        // replacing, not by prepending: the caret sat at position 0 and the
-        // first keystroke produced "nigeriaNiger" (product-critique v0.7, F3).
-        const search = main.querySelector<HTMLInputElement>("#cfilter")!;
-        search.focus({ preventScroll: true });
-        search.select();
-      } else if (gestureCard) {
-        focusFirst(gestureCard);
-      }
-      if (step.beat) beginBeat();
-    }
-
-    /**
-     * Bring the marked card into view, opening whatever it is folded inside.
-     *
-     * Landing "somewhere on the results page" is what the route pages' one
-     * call to action did for a returning reader (B2): the card was there, three
-     * screens down, inside a collapsed group.
-     */
-    function showArrival(): boolean {
-      const card = main.querySelector<HTMLElement>("[data-came-from]");
-      if (!card) return false;
-      for (let node: HTMLElement | null = card; node; node = node.parentElement)
-        if (node instanceof HTMLDetailsElement) node.open = true;
-      // Instant, not smooth: a reader who arrives mid-scroll on a phone should
-      // not watch the page travel.
-      card.scrollIntoView({ block: "start" });
-      return true;
-    }
-
-    /**
-     * Where a verdict leaves the reader, once it is drawn.
-     *
-     * The card they came from, when they came from one. Otherwise the
-     * masthead — the block whose second line is the headline the verdict
-     * just wrote into the h1, and the first thing on the screen a reader
-     * reads. A reader who corrected an answer from the foot of a phone's
-     * result was left at the foot of the new one, with the new headline
-     * 8,000 px up (v1.1 gate critique, B2). Not when the reader was already
-     * on a result, not on the first paint, and not on a browser history
-     * move; the live region has said the headline by the time this runs.
-     *
-     * And the headline takes the focus. Every answer moves the focus to the
-     * next question's first control (F6), but the answer that draws the
-     * verdict left it on <body>: a keyboard reader who corrected a row was
-     * announced the new verdict and then tabbed through the whole header to
-     * reach it (v1.1 re-score). The headline is the element the live region
-     * just read out, so it is the one to hold the focus — out of the tab
-     * order, and without a second scroll: the reveal is the one move. The
-     * focus is taken on every gesture-drawn verdict, one drawn over a result
-     * the reader was already on included — only the reveal is skipped then.
-     * The first paint and a history move keep s10's rule: nothing takes the
-     * focus from a reader who has touched nothing (s31).
-     */
-    const masthead = document.querySelector<HTMLElement>(".masthead-with-stamps")!;
-    function landOnVerdict(wasResult: boolean, land: Landing): void {
-      if (showArrival()) return;
-      if (land !== "verdict-masthead") return;
-      if (!wasResult) reveal(masthead);
-      headline.tabIndex = -1;
-      headline.focus({ preventScroll: true });
-    }
-
-    /** Draw the verdict a step lands on, with the arrival line the step says. */
-    function renderResults(step: InterviewStep): void {
-      glossary = new Set();
-      // Whether the reader was already on a result: a verdict that replaces a
-      // question is brought to its headline; one drawn over a result the
-      // reader is still reading is not moved under them (s20).
-      const wasResult = app.dataset.state === "results";
-      // The verdict writes the box itself and hangs its own listeners, so what
-      // `paint` remembers about the box stops being true here. This is the one
-      // place that writes a painted box some other way, and the rule about
-      // doing so is written at `paint` (s10).
-      wired.delete(main);
-      renderDeclaration(step, null);
-      app.dataset.state = "results";
-      setStamp("record");
-      const { answers, asked, scopedRouteId } = step.state;
-      const verdict = verdictOf(ds, answers, { cameFrom: scopedRouteId, answered: asked.length });
-      advance(verdict.action.masthead, null);
-      // A notice that answers the reader outright is the whole body: the
-      // arrival line stands over a comparison only.
-      const answeredOutright = verdict.layout.kind === "notice";
-      const facts = step.lines.arrival;
-      const arrivalHtml = facts && !answeredOutright ? arrivalLineHtml(ds, facts, glossary) : "";
-      main.innerHTML = arrivalHtml + verdictHtml(verdict);
-      announce(verdict.action.masthead.announced);
-      landOnVerdict(wasResult, step.land);
-    }
-
-    /**
-     * The record, kept on this device so a reload, a closed tab or the phone's
-     * Back button no longer destroys a thirteen-question interview
-     * (product-critique v0.7, F2/F10). Nothing is transmitted; `localStorage`
-     * is per-browser, so the answers do not reach the person's other devices
-     * either. Storage can be unavailable (private mode, blocked site data) —
-     * the interview must still work, just without surviving the tab.
-     */
-    /** The browser's own store, if it has one: reading the property itself
-     * throws where site data is blocked. What is done with it — what is kept,
-     * what is dropped, what "Start over" takes with it — belongs to
-     * `record.ts`, where it is tested against a store in a bottle. */
-    const store: RecordStore | null = (() => {
+    const store: InterviewPorts["store"] = (() => {
       try {
         return window.localStorage;
       } catch { return null; }
     })();
 
-    /**
-     * The interview's history: one entry per screen, and one gesture behind
-     * the screen's "← Back" and the browser's. It is opened once the first
-     * screen is drawn, onto the entry the page opened onto; until then a
-     * render tells it nothing.
-     */
-    let interviewHistory: InterviewHistory | null = null;
-
-    /**
-     * A gesture, applied: the step `interviewAfter` decides is kept as the
-     * interview's state, the record is saved or cleared as it says, the screen
-     * is drawn, and the history is told last, once the screen is drawn and
-     * landed on. A gesture that leads nowhere draws nothing.
-     */
-    function apply(gesture: Gesture): InterviewStep | null {
-      const step = interviewAfter(ds, interview, gesture);
-      if (!step) return null;
-      interview = step.state;
-      if (step.save === "clear") clearRecord(store);
-      else if (step.save) writeRecord(store, step.save);
-      if (step.screen.kind === "verdict") renderResults(step);
-      else renderQuestion(step, step.screen);
-      for (const call of step.history) tellHistory(call);
-      return step;
-    }
-
-    /** One call on the interview's history, as the step named it. */
-    function tellHistory(call: HistoryCall): void {
-      if (call.call === "restarted") interviewHistory?.restarted();
-      else if (call.call === "movedForward") interviewHistory?.movedForward(call.field);
-      else interviewHistory?.redrawnInPlace(call.field);
-    }
-
-    restart.addEventListener("click", (e) => {
-      e.preventDefault();
-      apply({ kind: "restarted" });
-    });
-
-    /**
-     * The ledger is a fixed panel on a wide screen and a one-line disclosure
-     * on a phone, where it sat between the intro and the question and pushed
-     * the question below the fold (product-critique v0.7, F8). Wide always
-     * open — its summary is not a control there. Narrow starts collapsed, and
-     * once the person opens or closes it themselves, that decision stands.
-     */
-    let ledgerChosen = false;
-    const syncLedger = () => {
-      if (!ledgerChosen || wide.matches) decl.open = wide.matches;
-      // The stylesheet folded the panel away before the first paint on the
-      // strength of the seed the pre-paint script wrote; the seed comes down
-      // in the same task the real decision is made, so nothing is painted
-      // between the two and the reader's own taps are not fought (s10).
-      delete page.dataset.narrow;
-    };
-    decl.addEventListener("toggle", () => { if (!wide.matches) ledgerChosen = true; });
-    wide.addEventListener("change", syncLedger);
-    syncLedger();
-
-    /**
-     * A printed record that hides its own evidence is not a record: every
-     * collapsed section opens for the print and closes again afterwards. CSS
-     * alone cannot do it — a closed <details> hides its contents below the
-     * level a stylesheet reaches.
-     */
-    const printOpened: HTMLDetailsElement[] = [];
-    window.addEventListener("beforeprint", () => {
-      for (const d of document.querySelectorAll<HTMLDetailsElement>("details"))
-        if (!d.open) { d.open = true; printOpened.push(d); }
-    });
-    window.addEventListener("afterprint", () => {
-      for (const d of printOpened.splice(0)) d.open = false;
-    });
-
-    // The questions this interview can ask, with the answers each takes: a
-    // field the rules retired, or an answer a field no longer offers, is
-    // dropped here rather than resurrected on the ledger (s25).
-    let kept = readRecord(store, questions);
-
-    // Dev-only screenshot hook (stripped from production builds): pre-fill a
-    // profile via ?dev-profile={"destination":"de",...} to land on any screen.
-    if (import.meta.env.DEV) {
-      const raw = new URLSearchParams(location.search).get("dev-profile");
-      if (raw) {
-        try {
-          const answers = JSON.parse(raw);
-          kept = { answers, history: Object.keys(answers) };
-        } catch { /* fall through to the normal flow */ }
-      }
-    }
-
-    // The first screen is whatever the stored record left behind, with a
-    // country's or a route's call to action applied to it — a fresh interview
-    // when there is neither. The first paint's covers come off here, once, in
-    // the task that draws it, so nothing is painted in between.
-    takeCoversOff(page);
-    const first = apply({ kind: "loaded", record: kept, search: location.search });
-    const showing = first?.screen.kind === "question" ? first.screen.field : null;
-
-    // A reload empties the page while the browser keeps every entry it pushed:
-    // the history rebuilds its list from the record and the screen on show.
-    interviewHistory = openInterviewHistory(browserHistoryOf(window), { asked: interview.asked, showing });
-    interviewHistory.onMove((move) => apply({ kind: "browserMoved", ...move }));
-
-    // Dev-only layout probe: ?dev-probe=1 writes the widest offenders into the
-    // title so headless --dump-dom can report horizontal overflow (golden G1).
-    if (import.meta.env.DEV && new URLSearchParams(location.search).has("dev-probe")) {
-      const w = document.documentElement.clientWidth;
-      const bad = [...document.querySelectorAll<HTMLElement>("body *")]
-        .map((el) => ({ el, r: el.getBoundingClientRect() }))
-        .filter((x) => x.r.right > w + 1)
-        .slice(0, 8)
-        .map((x) => `${x.el.tagName.toLowerCase()}.${x.el.className || "-"}:${Math.round(x.r.right)}`);
-      document.title = `probe w=${w} sw=${document.documentElement.scrollWidth} | ${bad.join(" ; ")}`;
-    }
+    startInterview({ browserHistory: browserHistoryOf(window), store });
   </script>
-
-  <style is:global>
-    *{margin:0;padding:0;box-sizing:border-box}
-    /* The room a classic scrollbar takes is kept whether or not one is drawn.
-       This is the one page whose length changes after it has painted — a
-       verdict is thousands of pixels where a question was a screen — and on
-       a desktop with non-overlay scrollbars the bar that appeared took its
-       width from the layout and moved the centred column (s22's note; 15 px
-       in headless Chrome, 7.5 px of column). The route and country pages
-       ship at their length, so the rule is this page's, beside the body it
-       styles, rather than the identity's or the tokens' (s31). */
-    html{scrollbar-gutter:stable}
-    body{background:var(--color-bg);color:var(--color-ink);font:var(--text-body);padding:2.8rem 1.2rem 4rem}
-    .wrap{max-width:var(--max-content);margin:0 auto}
-    a{color:var(--color-stamp)}
-
-    /* The masthead below the site header. The header itself — its rule, its
-       wordmark and its seal — belongs to identity.css: three rules here were
-       painting the shared header a second way, which is how one product grows
-       two identities (Standards review, 2026-09-08). */
-    /* The stamps hang from the top of this block, and on this screen — the only
-       one whose header carries a nav and a button, so the tallest — the PR
-       mark's tilted corner was landing on the header's own rule, 1px below it
-       (human, 2026-09-11). A country page has 24px of air there; this gives
-       the same, and the headline keeps its place beside the stamps. */
-    .masthead-with-stamps{border-bottom:var(--rule-heavy);padding-top:var(--space-4);padding-bottom:1.3rem;margin-bottom:var(--space-5)}
-    .brand{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted);margin-top:.35rem}
-    .foot-links{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;margin-top:.6rem;font-size:.8rem}
-    .foot-links a{display:inline-flex;align-items:center;min-height:var(--tap-min)}
-    h1{font:var(--text-hero);margin:.5rem 0 .4rem;max-width:var(--max-prose)}
-    h1 b{color:var(--color-near)}
-    /* The hold line wears the subline's dress: it stands where the subline
-       will, in the same voice, so the two are one rule (s31). */
-    .sub,.stand-in-verdict{color:var(--color-muted);max-width:38rem;font-size:.92rem}
-    /* The one door a verdict's subline can carry: the quoted route's page (s19). */
-    .sub a{color:var(--color-band);font-weight:600;text-decoration:none}
-    /* Every rule keyed to the first paint's covers, to its seeds — the
-       standing promise, the ledger's narrow and answered states — or to the
-       narrow/wide threshold is rendered by lib/first-paint.ts and inlined in
-       <head>. */
-
-    /* The question is first in the DOM so a phone opens on it; on a wide
-       screen `order` puts the ledger back in the left column (F8). */
-    .cols{display:grid;grid-template-columns:15.5rem 1fr;gap:1.5rem;align-items:start}
-    .decl{order:1;background:var(--color-card);border:var(--rule-soft);padding:1.1rem 1.2rem;position:sticky;top:1rem}
-    main{order:2;min-width:0}
-    .decl > summary{list-style:none;cursor:pointer;font:var(--text-label);letter-spacing:var(--tracking-label);
-      text-transform:uppercase;color:var(--color-muted);border-bottom:2px solid var(--color-ink);
-      padding-bottom:.4rem;margin-bottom:.6rem;display:flex;justify-content:space-between;gap:.6rem;
-      align-items:baseline;min-height:var(--tap-min)}
-    .decl > summary::-webkit-details-marker{display:none}
-    .decl-title{white-space:nowrap}
-    .decl-count{font:500 .7rem var(--font-mono);text-transform:none;letter-spacing:0;text-align:right}
-    .decl dl div{display:flex;justify-content:space-between;gap:.6rem;border-bottom:var(--rule-dotted);padding:.42rem 0}
-    .decl dt{color:var(--color-muted);font-size:.78rem}
-    .decl dd{font:var(--text-value);text-align:right}
-    .decl div.done{cursor:pointer;min-height:var(--tap-min);align-items:center}
-    .decl div.done:hover dd,.decl div.done:focus-visible dd{color:var(--color-stamp)}
-    .decl .pen{color:var(--color-muted);font-size:.75rem;margin-left:.2rem}
-    .decl div.done:hover .pen{color:var(--color-stamp)}
-    .decl dd.pending{color:var(--color-muted);font-weight:400}
-    .decl .edit{display:inline-flex;align-items:center;margin-top:.8rem;font-size:.85rem;min-height:var(--tap-min)}
-    .decl .edit[hidden]{display:none}
-    .decl .set-aside{display:block;margin:.7rem 0 0;font:400 .78rem/1.4 var(--font-sans);
-      letter-spacing:0;text-transform:none;text-align:left;color:var(--color-muted)}
-    .decl-set-aside-folded{display:none}
-
-    /* Question mode */
-    .qcard{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:1.6rem 1.8rem}
-    /* The beat's fade (#86): opacity alone, so no box moves. */
-    #main[data-beat] .qcard{animation:beat-in var(--motion-beat) ease-out}
-    @keyframes beat-in{from{opacity:0}}
-    .qmeta{font:var(--text-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--color-muted)}
-    /* The line a returning reader meets over the question they resume on, and
-       the ledger's own "Start over" moved in after it (s20). It is the one
-       thing on a resumed screen the first paint could not hold room for — the
-       stand-in covers the card, it does not size it — so it is as short as a
-       line gets: the control keeps the tap floor through padding its margins
-       give back, and the line box stays the text's own. Measured, 390x1400:
-       the footer moves +87 px with a 44 px control in flow, +44 px this way. */
-    .resumed{font-size:.8rem;line-height:1.4;color:var(--color-muted);margin-bottom:.6rem}
-    .resumed .edit{display:inline-block;padding:.85rem .2rem;margin:-.85rem 0;font-weight:600}
-    .qlabel{font:var(--text-route);font-size:1.25rem;margin:.5rem 0 1rem}
-    /* The asked-for line (#139), under the question it explains: the muted
-       voice of the learn line, wrapping inside the card on a phone. */
-    .asked-for{font-size:.85rem;line-height:1.45;color:var(--color-muted);margin:-.6rem 0 .9rem;overflow-wrap:break-word}
-    .opts{display:grid;gap:.5rem}
-    .opt{font:600 .92rem var(--font-sans);text-align:left;background:var(--color-bg);border:var(--rule-soft);
-      padding:.7rem .9rem;min-height:var(--tap-min);cursor:pointer;color:var(--color-ink);display:block}
-    /* What the answer means, under the answer. Muted and lighter than the
-       label: it settles a choice, it does not compete with it. */
-    .opt-means{display:block;margin-top:.3rem;font:400 .8rem var(--font-sans);color:var(--color-muted);
-      white-space:normal;line-height:1.45}
-    .opt.sel .opt-means{color:var(--color-ink)}
-    /* A situation no scored route in the declared country takes, said under
-       the answer before it is picked (s19). It follows its button and is drawn
-       up against it: the same muted voice as the meaning line, with the door to
-       the quoted route's page as its last words. */
-    .opt-mark{display:block;margin-top:-.2rem;padding:0 .9rem .15rem;font:400 .8rem var(--font-sans);
-      color:var(--color-muted);white-space:normal;line-height:1.45}
-    .opt-mark a{color:var(--color-band);font-weight:600;text-decoration:none}
-    /* No ↗ after it: the door opens a page of this site, and the glyph is the
-       footer's word for leaving it (v1.1 re-score polish, s21). */
-    .opt:hover{border-color:var(--color-ink);background:var(--color-band-soft)}
-    .back{margin-top:1rem;background:none;border:none;color:var(--color-muted);cursor:pointer;font:inherit;font-size:.9rem;
-      min-height:var(--tap-min);padding:.2rem .1rem}
-    .back + .back{margin-left:1.4rem;color:var(--color-band);font-weight:600}
-
-    /* s5c: the question whose answer set is a list, not a handful of buttons.
-       Type to filter; the list below is the same option set the engine derives.
-       NB: .hint is scoped to .qcard — a bare .hint would reach any future
-       hint text on the results side (the .country/.country-sec lesson). */
-    .csearch{position:relative;max-width:26rem}
-    .csearch input{width:100%;font:600 .95rem var(--font-sans);color:var(--color-ink);background:var(--color-bg);
-      border:var(--rule-soft);border-bottom:2px solid var(--color-ink);padding:.65rem .8rem .65rem 2rem}
-    .csearch input::placeholder{color:var(--color-muted);font-weight:400}
-    .csearch .mag{position:absolute;left:.7rem;top:.72rem;color:var(--color-muted);font-size:.9rem}
-    .clist{margin-top:.5rem;max-height:15rem;overflow-y:auto;border:var(--rule-soft);background:var(--color-bg)}
-    .copt{display:flex;justify-content:space-between;align-items:center;gap:.8rem;width:100%;text-align:left;
-      background:none;border:none;border-bottom:var(--rule-dotted);padding:.6rem .8rem;cursor:pointer;
-      min-height:var(--tap-min);font:600 .9rem var(--font-sans);color:var(--color-ink)}
-    .copt:hover{background:var(--color-band-soft)}
-    .copt .cls{font:500 .68rem var(--font-mono);color:var(--color-muted);text-transform:none;letter-spacing:0;
-      text-align:right;flex-shrink:0}
-    .copt.on{background:var(--color-band-soft);box-shadow:inset 3px 0 0 var(--color-band)}
-    .opt.sel,.copt.sel{border-color:var(--color-band);box-shadow:inset 3px 0 0 var(--color-band)}
-    .opt.sel{background:var(--color-band-soft)}
-    .tick{color:var(--color-band);font-weight:700;margin-left:.35rem}
-    .copt.on .cls{color:var(--color-band)}
-    .visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-    .cnone,.cmore{font:500 .8rem var(--font-mono);color:var(--color-muted);padding:.7rem .8rem}
-    .qcard .hint{font-size:.8rem;color:var(--color-muted);margin-top:.6rem;max-width:32rem}
-    /* The question is in the HTML now, so a reader with script turned off can
-       read it and cannot answer it. One line, under the question, saying so
-       (s10). Nothing renders it when script is running. */
-    .nojs{font-size:.85rem;color:var(--color-muted);margin-top:1rem;border-top:var(--rule-dotted);padding-top:.7rem}
-    /* The way to look an answer up, at the question that asks for it. */
-    .qlearn{font-size:.85rem;color:var(--color-muted);margin:.15rem 0 .6rem}
-    .qlearn a{color:var(--color-band);font-weight:600;text-decoration:none}
-    .qlearn a::after{content:" ↗"}
-    /* B1: after Enter, the card itself says which country went on the record —
-       a monospace line in the side panel is not where a person is looking. */
-    .recorded{margin-top:.6rem;font-size:.88rem;color:var(--color-ink)}
-    .recorded b{color:var(--color-band)}
-    .recorded[hidden]{display:none}
-
-    footer{margin-top:var(--space-6);color:var(--color-muted);font-size:.8rem;border-top:var(--rule-heavy);padding-top:.9rem}
-    footer p{margin:0}
-    .health{margin-top:.6rem;padding-top:.55rem;border-top:var(--rule-dotted);font:var(--text-source);
-      display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem 1.5rem}
-
-    @media (max-width:760px){
-      body{padding:1.4rem .9rem 3rem}
-      .cols{grid-template-columns:1fr}
-      /* The question card comes first; "You declared" follows it, collapsed to
-         one line that expands on tap (F8) — for a reader with nothing declared.
-         Once there is something to review, the line stands above the question
-         (s30, amendment 6) and above the verdict too (amendment 7), by the
-         first paint's answered rule (lib/first-paint.ts). */
-      main{order:1}
-      .decl{order:2;position:static}
-      .decl > summary{margin-bottom:0}
-      .decl[open] > summary{margin-bottom:.6rem}
-      /* Folded, the summary row is all of the panel a phone shows, so the
-         set-aside line stands in it, on a row of its own (#137). An empty
-         slot takes no row: the row's gap alone moved the page 12 px. */
-      .decl:not([open]) > summary:has(.set-aside){flex-wrap:wrap}
-      .decl:not([open]) .decl-set-aside-folded:not(:empty){display:block;flex-basis:100%}
-      .decl-set-aside-folded .set-aside{margin:0 0 .2rem}
-      .qcard{padding:1.1rem 1rem}
-      .opt{white-space:normal}
-      .copt{flex-wrap:wrap;gap:.15rem}
-      .copt .cls{text-align:left}
-      h1{font-size:1.6rem}
-      .stamps[hidden]{display:none}
-    }
-    /* Wide: the ledger is a fixed panel, so its disclosure control is not a
-       control at all — it stays the panel heading, and the script keeps the
-       panel open. */
-    @media (min-width:761px){
-      .decl > summary{cursor:default;pointer-events:none;min-height:0}
-      .decl-count{display:none}
-    }
-
-    /* The record, on paper. A person can take the printout to an appointment:
-       the quotes and the read dates are the point, and the navigation is not
-       (product-critique v0.7, F10). */
-    @media print{
-      body{background:#fff;color:#000;padding:0;font-size:11pt}
-      .decl > summary,.back,.edit,.next,#restart,.strip,.say,.cnone,.cmore,.csearch,.clist{display:none!important}
-      .wrap{max-width:none}
-      header .stamps{position:static;margin:.6rem 0 0 auto;height:auto}
-      .stamps .mark{display:none}
-      .stamps .stamp{position:static;transform:none;border:1px solid #000;color:#000;background:none;white-space:normal}
-      .cols{display:block}
-      .decl{border:1px solid #000;margin-bottom:1rem;position:static;page-break-inside:avoid}
-      details{display:block}
-      details > summary{list-style:none}
-      /* Everything folded away on screen prints open: a printed record that
-         hides its own evidence is not a record. */
-      details > *{display:revert!important}
-      a[href]::after{content:" (" attr(href) ")";font-size:8pt;word-break:break-all}
-    }
-    @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-  </style>
   <Fragment set:html={analyticsBeacon()} />
 </body>
 </html>

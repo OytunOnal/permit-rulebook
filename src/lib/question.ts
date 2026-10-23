@@ -70,7 +70,7 @@ export interface QuestionScreen {
   justRecorded?: { field: string; label: string } | null;
   /** How many answers a returning reader's first paint brought back, when the
    * screen is the one they resume on; absent on every other screen (s20). The
-   * line it draws is the sentence alone — the page moves its own "Start over"
+   * line it draws is the sentence alone — the interview moves the ledger's "Start over"
    * in after it, so the control is the ledger's and there is never a second. */
   resumed?: number;
   /** The screen's memory of what it has already explained; the card's words

@@ -1,9 +1,9 @@
 // @level presentation
 /**
  * The verdict: the whole results screen as data, from the dataset, the
- * answers and the interview, and the body the page paints from it.
+ * answers and the interview, and the body the interview paints from it.
  *
- * The page keeps what has a side effect — painting, the arrival line, the
+ * The interview keeps what has a side effect — painting, the arrival line, the
  * announcement, the landing and the focus, recording the screen — and asks
  * this module everything a verdict decides: which screen it is (a
  * comparison, or a notice that answers outright), that screen's whole masthead with the sentence the live region
@@ -80,7 +80,7 @@ export function verdictOf(dataset: Dataset, answers: Profile, interview: Intervi
   return { action: comparedActionOf(screen, compared, interview.answered), notices, layout: layoutOf(screen, compared) };
 }
 
-/** The body the page paints for a verdict, under its arrival line. */
+/** The body the interview paints for a verdict, under its arrival line. */
 export function verdictHtml(verdict: Verdict): string {
   const { layout } = verdict;
   switch (layout.kind) {

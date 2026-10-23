@@ -1,11 +1,11 @@
 // @level application
 /**
  * The interview's decisions: from the state it stands in and one gesture of
- * the reader's, the next state and everything the page does about it — the
- * screen, the lines above it, the landing, the beat, the save and the history
- * move. Pure, so every decision is tested in Node; the page applies the
- * result and reads what is runtime (the screen's width, reduced motion, the
- * DOM) itself.
+ * the reader's, the next state and everything the interview does about it —
+ * the screen, the lines above it, the landing, the beat, the save and the
+ * history move. Pure, so every decision is tested in Node; the entry and the
+ * drawing parts apply the result, and the drawing reads what is runtime (the
+ * screen's width, reduced motion, the DOM) itself.
  *
  * One masthead, one writer: a question screen carries no masthead of its own
  * here, only whether the interview has started, so no path back into the
@@ -72,7 +72,7 @@ export interface InterviewLines {
 
 /**
  * Where a drawn screen meets the reader (GLOSSARY: Reveal / landing). Each
- * names the landing the gesture asks for; the page turns it into a scroll
+ * names the landing the gesture asks for; the drawing turns it into a scroll
  * with the width it reads.
  */
 export type Landing =
@@ -91,7 +91,7 @@ export type Landing =
   /** A verdict a gesture drew: its masthead into view and the focus on its headline. */
   | "verdict-masthead";
 
-/** One call on the interview's history, in the order the page makes them. */
+/** One call on the interview's history, in the order the entry makes them. */
 export type HistoryCall =
   | { call: "movedForward"; field: string | null }
   | { call: "redrawnInPlace"; field: string | null }

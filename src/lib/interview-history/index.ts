@@ -46,7 +46,7 @@ export interface OpenedOn {
 /** What the screen's "← Back" did: asked the browser, or a question to show in place, or nothing behind. */
 export type BackMove = { kind: "browser" } | { kind: "in-place"; field: string } | { kind: "none" };
 
-/** A move the browser made, as the page draws it. */
+/** A move the browser made, as the interview draws it. */
 export interface BrowserMove {
   /** The question to draw; null for the verdict. */
   field: string | null;

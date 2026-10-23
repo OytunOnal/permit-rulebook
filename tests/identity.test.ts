@@ -61,12 +61,13 @@ describe("the identity pair has one definition", () => {
     expect(built).toContain('class="stamps"');
     expect(built).toContain('class="mark"');
     expect(built).toContain('id="stamp-label"');
-    // And states nothing about the pair at all any more — not what it is made
-    // of, and since 2026-09-08 not where it goes either.
+    // And neither the page nor the interview's stylesheet states anything
+    // about the pair — not what it is made of, nor where it goes.
+    const interviewCss = read("src/lib/interview/interview.css");
     expect(page).toContain('<header class="masthead-with-stamps">');
-    expect(page).not.toContain("header .stamps{position:absolute");
+    expect(interviewCss).not.toContain("header .stamps{position:absolute");
     for (const property of ["border:var(--stamp-border)", "var(--font-mono)", "letter-spacing:.1em"])
-      expect(page.split("import \"../../identity.css\";")[1], property)
+      expect(page.split("import \"../../identity.css\";")[1] + interviewCss, property)
         .not.toContain(`.stamp{${property}`);
   });
 
@@ -83,7 +84,7 @@ describe("the identity pair has one definition", () => {
     // And both mastheads use it, rather than each stating its own.
     expect(read("src/pages/index.astro")).toContain('<header class="masthead-with-stamps">');
     expect(read("src/lib/route-page.ts")).toContain('<header class="masthead masthead-with-stamps">');
-    expect(read("src/pages/index.astro")).not.toContain("header .stamps{position:absolute");
+    expect(read("src/lib/interview/interview.css")).not.toContain("header .stamps{position:absolute");
   });
 
   it("nothing else in the site draws the pair", () => {
@@ -105,7 +106,7 @@ describe("the identity pair has one definition", () => {
       }
       return css.slice(0, at);
     };
-    for (const file of ["tokens.css", "src/pages/index.astro", "src/lib/route-page.ts", "src/lib/verdict/verdict.css"]) {
+    for (const file of ["tokens.css", "src/lib/interview/interview.css", "src/lib/route-page.ts", "src/lib/verdict/verdict.css"]) {
       const own = withoutPrint(read(file).split("${IDENTITY}").join(" "));
       expect(own, `${file} draws the mark`).not.toMatch(/\.stamps\s+\.mark\s*\{/);
       // And states nothing the pair is made of, only where it goes.
