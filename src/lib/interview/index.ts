@@ -65,7 +65,7 @@ export function startInterview({ browserHistory, store }: InterviewPorts): void 
     else if (step.save) saveRecord(store, step.save);
     history ??= openHistoryOn(step);
     for (const call of step.history) applyHistoryCall(history, call);
-    drawing.drawStep(step, history.backTarget(step.state.asked, step.state.editing));
+    drawing.drawStep(step, history.backTarget(step.state));
   };
   /** Opens the history onto the first step's screen; the browser's moves are gestures from then on. */
   const openHistoryOn = (first: InterviewStep): InterviewHistory => {
@@ -80,7 +80,7 @@ export function startInterview({ browserHistory, store }: InterviewPorts): void 
     // back and its move draws that entry's question; elsewhere the previous
     // question is drawn in place. Nothing is erased on the way.
     pressBack: () => {
-      const move = history?.back(interview.asked, interview.editing);
+      const move = history?.back(interview);
       if (move?.kind === "in-place") apply({ kind: "back", field: move.field });
     },
   });

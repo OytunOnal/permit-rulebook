@@ -58,7 +58,7 @@ class Page {
   }
 
   screenBack(): void {
-    const move = this.history.back(this.asked, this.editing);
+    const move = this.history.back({ asked: this.asked, editing: this.editing });
     if (move.kind !== "in-place") return;
     this.editing = move.field;
     this.shown = move.field;

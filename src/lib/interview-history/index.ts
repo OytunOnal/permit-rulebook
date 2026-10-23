@@ -43,6 +43,15 @@ export interface OpenedOn {
   showing: string | null;
 }
 
+/** The questions answered so far, and the one of them on screen again to be changed: what a Back
+ * in place steps back through. */
+export interface AnsweredSoFar {
+  /** The questions answered, in the order they were asked. */
+  asked: readonly string[];
+  /** The answered question being reconsidered; null when none is. */
+  editing: string | null;
+}
+
 /** What the screen's "← Back" did: asked the browser, or a question to show in place, or nothing behind. */
 export type BackMove = { kind: "browser" } | { kind: "in-place"; field: string } | { kind: "none" };
 
@@ -50,7 +59,7 @@ export type BackMove = { kind: "browser" } | { kind: "in-place"; field: string }
 export interface BrowserMove {
   /** The question to draw; null for the verdict. */
   field: string | null;
-  /** Whether it landed on the page's first screen, which keeps the top of the page as a cold load does. */
+  /** Whether it moved onto the page's first screen, which keeps the top of the page as a cold load does. */
   ontoFirstScreen: boolean;
 }
 
@@ -62,9 +71,9 @@ export interface InterviewHistory {
   /** "Start over": the entries go with the record. */
   startOver(): void;
   /** The question the screen's "← Back" goes to, or null where none is behind. */
-  backTarget(asked: readonly string[], editing: string | null): string | null;
+  backTarget(answered: AnsweredSoFar): string | null;
   /** The screen's "← Back". */
-  back(asked: readonly string[], editing: string | null): BackMove;
+  back(answered: AnsweredSoFar): BackMove;
   /** Calls `show` each time the browser moves onto one of the interview's entries. */
   onMove(show: (move: BrowserMove) => void): void;
 }
@@ -97,14 +106,14 @@ export function openInterviewHistory(browser: BrowserHistory, { asked, showing }
       if (!memory.restoring) write(browser, memory, recordInPlace(memory.list, field));
     },
     startOver: () => { memory.list = emptyHistory(); },
-    backTarget: (asked, editing) => backTargetOf(memory.list, asked, editing),
-    back: (asked, editing) => {
+    backTarget: (answered) => backTargetOf(memory.list, answered),
+    back: (answered) => {
       const held = heldStepBehind(memory.list);
       if (held !== null) {
         browser.back(memory.list.current - held);
         return { kind: "browser" };
       }
-      const field = inPlaceTarget(asked, editing);
+      const field = inPlaceTarget(answered);
       return field === undefined ? { kind: "none" } : { kind: "in-place", field };
     },
     onMove: (show) => { memory.show = show; },
@@ -120,15 +129,15 @@ function write(browser: BrowserHistory, memory: HistoryMemory, how: HistoryWrite
 }
 
 /** The question before the one on screen, or before the last answered: where a Back in place goes. */
-function inPlaceTarget(asked: readonly string[], editing: string | null): string | undefined {
+function inPlaceTarget({ asked, editing }: AnsweredSoFar): string | undefined {
   const at = editing ? asked.indexOf(editing) : asked.length;
   return asked[at - 1];
 }
 
-function backTargetOf(list: ScreenHistory, asked: readonly string[], editing: string | null): string | null {
+function backTargetOf(list: ScreenHistory, answered: AnsweredSoFar): string | null {
   const held = heldStepBehind(list);
   if (held !== null) return screenAt(list, held)?.field ?? null;
-  return inPlaceTarget(asked, editing) ?? null;
+  return inPlaceTarget(answered) ?? null;
 }
 
 /**

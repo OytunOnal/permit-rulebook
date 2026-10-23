@@ -35,7 +35,7 @@ describe("Back's target, through the interview's history", () => {
   it("Back on a plain question: the question answered before it", () => {
     const history = openInterviewHistory(freshTab(), { asked: [], showing: "destination" });
     history.pushScreen("citizenship");
-    expect(history.backTarget(["destination"], null)).toBe("destination");
+    expect(history.backTarget({ asked: ["destination"], editing: null })).toBe("destination");
   });
 
   it("Back on an edit screen past the first held step: the screen the browser holds behind, where its Back goes", () => {
@@ -43,18 +43,18 @@ describe("Back's target, through the interview's history", () => {
     const history = openInterviewHistory(tab, { asked: [], showing: "destination" });
     for (const field of ["citizenship", "situation", "qualification"]) history.pushScreen(field);
     history.replaceScreen("citizenship");
-    expect(history.backTarget(ASKED, "citizenship")).toBe("situation");
+    expect(history.backTarget({ asked: ASKED, editing: "citizenship" })).toBe("situation");
     const shown: (string | null)[] = [];
     history.onMove((move) => shown.push(move.field));
-    expect(history.back(ASKED, "citizenship")).toEqual({ kind: "browser" });
+    expect(history.back({ asked: ASKED, editing: "citizenship" })).toEqual({ kind: "browser" });
     expect(shown).toEqual(["situation"]);
   });
 
   it("Back in place, on an edit screen an outside entrance opened onto: the question asked before it", () => {
     const history = openInterviewHistory(freshTab(), { asked: ASKED, showing: "qualification" });
     history.replaceScreen("citizenship");
-    expect(history.backTarget(ASKED, "citizenship")).toBe("destination");
-    expect(history.back(ASKED, "citizenship")).toEqual({ kind: "in-place", field: "destination" });
+    expect(history.backTarget({ asked: ASKED, editing: "citizenship" })).toBe("destination");
+    expect(history.back({ asked: ASKED, editing: "citizenship" })).toEqual({ kind: "in-place", field: "destination" });
   });
 
   /** Two entries in a row can show one question: a ✎ on the result redraws the result's entry as
@@ -64,10 +64,10 @@ describe("Back's target, through the interview's history", () => {
     const history = openInterviewHistory(tab, { asked: [], showing: "destination" });
     for (const field of ["citizenship", "situation", null]) history.pushScreen(field);
     history.replaceScreen("situation");
-    expect(history.backTarget(ASKED, "situation")).toBe("citizenship");
+    expect(history.backTarget({ asked: ASKED, editing: "situation" })).toBe("citizenship");
     const shown: (string | null)[] = [];
     history.onMove((move) => shown.push(move.field));
-    expect(history.back(ASKED, "situation")).toEqual({ kind: "browser" });
+    expect(history.back({ asked: ASKED, editing: "situation" })).toEqual({ kind: "browser" });
     expect([shown, stepOf(tab)]).toEqual([["citizenship"], 1]);
   });
 
@@ -77,8 +77,8 @@ describe("Back's target, through the interview's history", () => {
     history.replaceScreen("situation");
     history.pushScreen(null);
     history.replaceScreen("situation");
-    expect(history.backTarget(ASKED, "situation")).toBe("citizenship");
-    expect(history.back(ASKED, "situation")).toEqual({ kind: "in-place", field: "citizenship" });
+    expect(history.backTarget({ asked: ASKED, editing: "situation" })).toBe("citizenship");
+    expect(history.back({ asked: ASKED, editing: "situation" })).toEqual({ kind: "in-place", field: "citizenship" });
     expect(stepOf(tab)).toBe(4);
   });
 });
@@ -120,11 +120,11 @@ class WiredInterview {
 
   /** The question the screen's Back is labelled with. */
   backLabel(): string | null {
-    return this.history!.backTarget(this.state.asked, this.state.editing);
+    return this.history!.backTarget(this.state);
   }
 
   pressBack(): void {
-    const move = this.history!.back(this.state.asked, this.state.editing);
+    const move = this.history!.back(this.state);
     if (move.kind === "in-place") this.apply({ kind: "back", field: move.field });
   }
 

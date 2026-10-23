@@ -68,7 +68,7 @@ function holdsBehind(state: unknown, answered: number): boolean {
   tab.replace(state);
   const asked = QUESTIONS.slice(0, answered);
   const history = openInterviewHistory(tab, { asked, showing: QUESTIONS[answered]! });
-  return history.back(asked, null).kind === "browser";
+  return history.back({ asked, editing: null }).kind === "browser";
 }
 
 /** The browser's Back onto an entry whose state is `state`, from a page opened onto `answered`
@@ -81,7 +81,7 @@ function popOnto(state: unknown, answered: number): { shown: (string | null)[]; 
   const history = openInterviewHistory(tab, { asked, showing: QUESTIONS[answered]! });
   const shown = shownOnMoves(history);
   tab.back();
-  return { shown, held: history.back(asked, shown[0] ?? null).kind === "browser" };
+  return { shown, held: history.back({ asked, editing: shown[0] ?? null }).kind === "browser" };
 }
 
 describe("a reloaded page rebuilds the entries the browser kept", () => {
@@ -99,7 +99,7 @@ describe("a reloaded page rebuilds the entries the browser kept", () => {
     const tab = freshTab();
     const history = openInterviewHistory(tab, { asked: [], showing: "destination" });
     expect([tab.length, stepOf(tab)]).toEqual([1, 0]);
-    expect(history.back([], null)).toEqual({ kind: "none" });
+    expect(history.back({ asked: [], editing: null })).toEqual({ kind: "none" });
   });
 
   it("a step the rebuilt list is shorter than lands on the nearest question", () => {
@@ -181,18 +181,18 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
   it("an outside entrance onto a stored record holds nothing behind the screen it opened on", () => {
     const { tab, history } = openOnEntry(null);
     expect(stepOf(tab)).toBe(3);
-    expect(history.back(ASKED, null)).toEqual({ kind: "in-place", field: "situation" });
+    expect(history.back({ asked: ASKED, editing: null })).toEqual({ kind: "in-place", field: "situation" });
     expect(tab.length).toBe(1);
   });
 
   it("an entry that says how many held steps stand behind it is believed, however the page was opened", () => {
     // Walked live in this tab, then reloaded: every step is held.
     const live = walkLive(QUESTIONS.slice(0, 4));
-    expect(reloadOnto(live.tab, ASKED, "qualification").back(ASKED, null)).toEqual({ kind: "browser" });
+    expect(reloadOnto(live.tab, ASKED, "qualification").back({ asked: ASKED, editing: null })).toEqual({ kind: "browser" });
     // An outside entrance, then reloaded or left and returned to: the browser
     // still holds only the screen it opened on, and the entry says so.
     const entrance = openOnEntry(null);
-    expect(reloadOnto(entrance.tab, ASKED, "qualification").back(ASKED, null))
+    expect(reloadOnto(entrance.tab, ASKED, "qualification").back({ asked: ASKED, editing: null }))
       .toEqual({ kind: "in-place", field: "situation" });
   });
 
@@ -279,14 +279,14 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     expect([tab.length, stepOf(tab)]).toEqual([2, 4]);
     // One entry of ours behind: the browser can go back onto it.
     const shown = shownOnMoves(history);
-    expect(history.back(asked, null)).toEqual({ kind: "browser" });
+    expect(history.back({ asked, editing: null })).toEqual({ kind: "browser" });
     expect(shown).toEqual(["qualification"]);
     // Back on the screen it opened on, nothing of ours is behind again.
-    expect(history.back(asked, "qualification")).toEqual({ kind: "in-place", field: "situation" });
+    expect(history.back({ asked, editing: "qualification" })).toEqual({ kind: "in-place", field: "situation" });
     // Stepping back in place rewrites the entry; it never moves the edge.
     history.replaceScreen("situation");
     expect([tab.length, stepOf(tab)]).toEqual([2, 3]);
-    expect(history.back(asked, "situation")).toEqual({ kind: "in-place", field: "citizenship" });
+    expect(history.back({ asked, editing: "situation" })).toEqual({ kind: "in-place", field: "citizenship" });
   });
 
   it("starting over stands on a held entry: the edge goes back to the first step", () => {
@@ -297,31 +297,31 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     history.replaceScreen("destination");
     expect(tab.state()).toEqual({ step: 0, held: 0 });
     history.pushScreen("citizenship");
-    expect(history.back(["destination"], null)).toEqual({ kind: "browser" });
+    expect(history.back({ asked: ["destination"], editing: null })).toEqual({ kind: "browser" });
   });
 
   it("a live walk from the first question holds every step", () => {
     const tab = freshTab();
     const history = openInterviewHistory(tab, { asked: [], showing: "destination" });
-    expect(history.back([], null)).toEqual({ kind: "none" });
+    expect(history.back({ asked: [], editing: null })).toEqual({ kind: "none" });
     history.pushScreen("citizenship");
     expect(tab.state()).toEqual({ step: 1, held: 1 });
-    expect(history.back(["destination"], null)).toEqual({ kind: "browser" });
+    expect(history.back({ asked: ["destination"], editing: null })).toEqual({ kind: "browser" });
   });
 
   /** The label on "← Back" and the move it makes cannot disagree (#56, ruling 6). */
   it("the screen's Back names the question it goes to, past the first held step and on it", () => {
     const { history } = openOnEntry(null);
     const asked = [...ASKED, "qualification"];
-    expect(history.backTarget(ASKED, null)).toBe("situation");
+    expect(history.backTarget({ asked: ASKED, editing: null })).toBe("situation");
     history.pushScreen("occupation_it");
     // Past the first held step: the entry behind, which the browser's Back shows.
-    expect(history.backTarget(asked, null)).toBe("qualification");
+    expect(history.backTarget({ asked, editing: null })).toBe("qualification");
     history.onMove(() => undefined);
-    history.back(asked, null);
+    history.back({ asked, editing: null });
     // On it: the question before, shown in place.
-    expect(history.backTarget(asked, "qualification")).toBe("situation");
-    expect(history.backTarget([], null)).toBeNull();
+    expect(history.backTarget({ asked, editing: "qualification" })).toBe("situation");
+    expect(history.backTarget({ asked: [], editing: null })).toBeNull();
   });
 });
 
@@ -338,7 +338,7 @@ describe("what an entry carries is written and read in one place", () => {
     // Reloaded onto that entry, the page's rule gives back the edge it had.
     const reloaded = reloadOnto(tab, ["destination", "citizenship"], "situation");
     expect(tab.state()).toEqual(written);
-    expect(reloaded.back(["destination", "citizenship"], null)).toEqual({ kind: "browser" });
+    expect(reloaded.back({ asked: ["destination", "citizenship"], editing: null })).toEqual({ kind: "browser" });
   });
 
   /**
@@ -351,11 +351,11 @@ describe("what an entry carries is written and read in one place", () => {
     const grown = [...ASKED, "qualification", "occupation_it"];
     const inPlace = { kind: "in-place", field: "occupation_it" };
     const tabA = openOnEntry(null).tab;
-    expect(reloadOnto(tabA, grown, "salary").back(grown, null)).toEqual(inPlace);
+    expect(reloadOnto(tabA, grown, "salary").back({ asked: grown, editing: null })).toEqual(inPlace);
     // Walked live from the first question, then grown: the steps walked are
     // behind the entry in the browser, but they name steps of the shorter list.
     const live = walkLive(QUESTIONS.slice(0, 4));
-    expect(reloadOnto(live.tab, grown, "salary").back(grown, null)).toEqual(inPlace);
+    expect(reloadOnto(live.tab, grown, "salary").back({ asked: grown, editing: null })).toEqual(inPlace);
   });
 
   it("a state nothing of ours wrote names no step and holds nothing", () => {
