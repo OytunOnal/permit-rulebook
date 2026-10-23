@@ -180,11 +180,20 @@ click on the tracker link. Answers never leave the device.
   the quotes the page prints. A site-wide page (/data/, /feedback/, the 404,
   the sitemap) dates the whole dataset, as the interview does (#76).
 - **Interview** — questions by information gain, then the verdict; runs
-  entirely in the browser. The verdict is one deep module, `src/lib/verdict/`
+  entirely in the browser. The page is wiring alone: it builds the browser's
+  history adapter and the record's store and starts the interview, one deep
+  module, `src/lib/interview/`. Every decision a gesture leads to (the screen,
+  its lines, how it meets the reader, the beat, the save, the history move)
+  comes from one pure step, `interviewAfter`; the drawing parts only apply it.
+  The browser's history is a deep module of its own behind a port,
+  `interview-history`, so Back across two tabs is tested in Node; Back names
+  where it goes and never the screen it is on. The passport search is a module
+  whose controller holds no DOM, `country-search`, and an arrival is one call,
+  `arrivalOf` (#208). The verdict is one deep module, `src/lib/verdict/`
   (#167): `verdictOf` decides everything the results screen says (the
   headline and masthead, the groups and their order, each card with its rail
   and gap, the steps, the offer line, the arranged line, the folds) and
-  `verdictHtml` draws it, with its own stylesheet; the page only paints,
+  `verdictHtml` draws it, with its own stylesheet; the interview only paints,
   announces and records one history entry per verdict. Steps are only what
   the reader can do; what a job offer would open and what someone else
   arranges are said beside them, never counted as steps.
@@ -192,7 +201,7 @@ click on the tracker link. Answers never leave the device.
   part, read by name. Its first paint is one module, `src/lib/first-paint.ts` (#66).
   An inline head script reads the record, the link and the width before
   anything paints, and writes a cover and the first-paint seeds on `<html>`.
-  The stylesheet it renders hides what each cover hides. The page takes the
+  The stylesheet it renders hides what each cover hides. The interview takes the
   covers off once, as it draws the reader's first screen, so no arrival moves
   the page.
   The masthead has one writer per screen: a question screen's is
@@ -221,7 +230,8 @@ click on the tracker link. Answers never leave the device.
   page the build draws (`tests/reader-pages.ts`) holds these (#151).
 - **Record** — localStorage (legacy key migrated) or nothing; a print
   stylesheet for a paper copy. A record longer than any the page writes
-  (8 KB) is no record, and is never parsed (#25).
+  (8 KB) is no record, and is never parsed (#25). Start over clears it on
+  every address: a shared device keeps nothing of a reader (#208).
 - **Tracker** — `permit-rulebook-data/issues` with `bug`, `design-flaw`,
   `new-need`; reached only by the reader's own click.
 
