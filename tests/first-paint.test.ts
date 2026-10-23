@@ -238,7 +238,7 @@ const READ = `JSON.stringify({
     : Math.round(document.querySelector("footer.site-foot").getBoundingClientRect().top - window.__foot),
   subline: Math.round(document.getElementById("subline").getBoundingClientRect().height),
   ledgerOpen: document.getElementById("decl").open,
-  resumed: !!document.querySelector("#main .qcard .resumed"),
+  resumed: !!document.querySelector("#main .resumed"),
   state: document.getElementById("app").dataset.state,
 })`;
 
@@ -266,9 +266,10 @@ interface Measured {
    */
   subline: number;
   ledgerOpen: boolean;
-  /** Whether the module drew the resumed line over the question — the one
-   * thing a returning reader's screen carries that the first paint could not
-   * hold room for, so the record arrival is measured with it there (s20). */
+  /** Whether the module drew the resumed line over the question or the
+   * verdict — the one thing a returning reader's screen carries that the first
+   * paint could not hold room for, so the record arrivals are measured with it
+   * there (s20, #56). */
   resumed: boolean;
   /** The screen the module drew — `questions` or `results` — so a row that
    * names a verdict is proven to be measuring one (s22). */
@@ -440,16 +441,14 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
 
         it(`${arrival.name}: the resumed line is there exactly when the reader resumed (s20)`, () => {
           // The measurement above is of the page WITH the line a returning
-          // reader is owed: a record with answers the interview keeps and
-          // questions still open lands on a question that says so. Nowhere
-          // else — not on a cold page, not on an arrival that narrates itself,
-          // not on a verdict.
+          // reader is owed: a record with answers the interview keeps lands on
+          // a question or a verdict that says so. Nowhere else — not on a cold
+          // page, not on an arrival that narrates itself.
           const m = read(screen.name, arrival.name);
           const kept = arrival.record
             ? replayRecord(DATASET, arrival.record.answers, [...arrival.record.history])
             : { answers: {}, order: [] };
-          const resumes = arrival.shape === "record"
-            && kept.order.length > 0 && remainingQuestions(DATASET, kept.answers).length > 0;
+          const resumes = (arrival.shape === "record" || arrival.shape === "verdict") && kept.order.length > 0;
           expect(m.resumed, `the resumed line is ${m.resumed ? "there" : "missing"}`).toBe(resumes);
         });
 

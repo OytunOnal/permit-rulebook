@@ -50,6 +50,19 @@ export function renderDeclaration(page: InterviewPage, step: InterviewStep, curr
 }
 
 /**
+ * The resumed line ends in the ledger's own "Start over", moved in after it:
+ * one control and one listener, on a question screen or the verdict. The
+ * ledger takes it back on the next render.
+ */
+export function lendRestartToResumedLine(page: InterviewPage): void {
+  const { main, restart } = page.els;
+  const line = main.querySelector<HTMLElement>(".resumed");
+  if (!line) return;
+  line.append(" ", restart);
+  restart.hidden = false;
+}
+
+/**
  * The ledger is a fixed panel on a wide screen and a one-line disclosure on a
  * phone, where it would push the question below the fold (product-critique
  * v0.7, F8). Wide is always open, its summary no control. Narrow starts

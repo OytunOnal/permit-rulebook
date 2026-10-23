@@ -11,7 +11,7 @@ import type { Glossary } from "../../gloss.js";
 import { isLongList, questionCardHtml, questionMastheadOf } from "../../question.js";
 import type { InterviewScreen, InterviewStep } from "../flow/interview-after.js";
 import { focusFirst, landOnQuestion } from "./landing.js";
-import { renderDeclaration } from "./ledger.js";
+import { lendRestartToResumedLine, renderDeclaration } from "./ledger.js";
 import { advance, setStamp } from "./masthead.js";
 import type { InterviewPage } from "./page.js";
 import { announce, paint } from "./paint.js";
@@ -80,7 +80,7 @@ function cardHtml(page: InterviewPage, step: InterviewStep, q: Question): string
 
 /** Draws the question screen a step lands on, then meets the reader there. */
 export function renderQuestion(page: InterviewPage, step: InterviewStep, screen: QuestionScreen): void {
-  const { app, main, restart } = page.els;
+  const { app, main } = page.els;
   const { answers } = step.state;
   // A question a still-alive route cares about, or the one on the record.
   const q = remainingQuestions(page.ds, answers).find((x) => x.field === screen.field)
@@ -94,11 +94,6 @@ export function renderQuestion(page: InterviewPage, step: InterviewStep, screen:
   announce("");
   renderDeclaration(page, step, q.field);
   paint(main, cardHtml(page, step, q), () => wireQuestion(page, q, answers[q.field]));
-  // The resumed line ends in the ledger's own "Start over", moved in after
-  // it: one control and one listener. The ledger takes it back on the next render.
-  if (step.lines.resumed) {
-    const line = main.querySelector<HTMLElement>(".resumed");
-    if (line) { line.append(" ", restart); restart.hidden = false; }
-  }
+  if (step.lines.resumed) lendRestartToResumedLine(page);
   meetQuestion(page, step, isLongList(q));
 }

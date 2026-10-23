@@ -125,12 +125,16 @@ function countedRoutesHtml(routes: OpenRoute[]): string {
   }).join(ASKED_FOR_COUNTS_JOIN);
 }
 
+/** The resumed line's sentence, for the first screen of a return onto a kept
+ * record of `kept` answers: over the question, or over the verdict's body. */
+export const resumedLineHtml = (kept: number): string => `<p class="resumed">${esc(resumedLine(kept))}</p>`;
+
 /** The lines above the question: the resumed line, the arrival line, what
  * the country picker just recorded, and where the interview stands. */
 function linesAboveQuestionHtml(screen: QuestionScreen): string {
   const { dataset, asked, editing, total } = screen;
   const justRecorded = screen.justRecorded ?? null;
-  return `${screen.resumed ? `<p class="resumed">${esc(resumedLine(screen.resumed))}</p>` : ""}
+  return `${screen.resumed ? resumedLineHtml(screen.resumed) : ""}
           ${screen.arrival ?? ""}
           ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(dataset, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${

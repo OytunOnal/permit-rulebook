@@ -69,8 +69,8 @@ export const RETURNING_LINE = "Your answers are on this device — bringing them
 export const LINK_ARRIVAL_LINE = "Setting up your questions.";
 
 /**
- * What the box says to a reader who came back to a half-done interview, once
- * the module has their screen.
+ * What the box says to a reader who came back to an interview kept on the
+ * device, over the question or the verdict, once the module has their screen.
  *
  * The stand-in above says the answers are coming back; this is the line that
  * says they came. Without it a returning visitor landed on "question 3 of up
