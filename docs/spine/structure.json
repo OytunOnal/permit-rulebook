@@ -42,12 +42,22 @@
    "entries": [
     {
      "file": "src/lib/interview/index.ts",
-     "level": "application"
+     "level": "main"
     }
    ],
    "files": [
+    "src/lib/interview/draw/beat.ts",
+    "src/lib/interview/draw/drawing.ts",
+    "src/lib/interview/draw/landing.ts",
+    "src/lib/interview/draw/ledger.ts",
+    "src/lib/interview/draw/masthead.ts",
+    "src/lib/interview/draw/page.ts",
+    "src/lib/interview/draw/paint.ts",
+    "src/lib/interview/draw/question-screen.ts",
+    "src/lib/interview/draw/verdict-screen.ts",
     "src/lib/interview/flow/interview-after.ts",
-    "src/lib/interview/index.ts"
+    "src/lib/interview/index.ts",
+    "src/lib/interview/interview.css"
    ]
   },
   {
@@ -148,8 +158,17 @@
   "src/lib/interview-history/index.ts": "application",
   "src/lib/interview-history/list/entry-state.ts": "domain",
   "src/lib/interview-history/list/screen-list.ts": "domain",
+  "src/lib/interview/draw/beat.ts": "presentation",
+  "src/lib/interview/draw/drawing.ts": "presentation",
+  "src/lib/interview/draw/landing.ts": "presentation",
+  "src/lib/interview/draw/ledger.ts": "presentation",
+  "src/lib/interview/draw/masthead.ts": "presentation",
+  "src/lib/interview/draw/page.ts": "presentation",
+  "src/lib/interview/draw/paint.ts": "presentation",
+  "src/lib/interview/draw/question-screen.ts": "presentation",
+  "src/lib/interview/draw/verdict-screen.ts": "presentation",
   "src/lib/interview/flow/interview-after.ts": "application",
-  "src/lib/interview/index.ts": "application",
+  "src/lib/interview/index.ts": "main",
   "src/lib/not-found.ts": "presentation",
   "src/lib/question.ts": "presentation",
   "src/lib/quote.ts": "presentation",
@@ -184,7 +203,7 @@
   "src/pages/data.astro": "presentation",
   "src/pages/dataset.json.ts": "presentation",
   "src/pages/feedback.astro": "presentation",
-  "src/pages/index.astro": "presentation main",
+  "src/pages/index.astro": "main",
   "src/pages/robots.txt.ts": "presentation",
   "src/pages/sitemap.xml.ts": "presentation",
   "src/pages/status.astro": "presentation",
@@ -752,6 +771,201 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/interview/draw/drawing.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/drawing.ts",
+   "to": "src/lib/interview/draw/ledger.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/drawing.ts",
+   "to": "src/lib/interview/draw/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/drawing.ts",
+   "to": "src/lib/interview/draw/page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/drawing.ts",
+   "to": "src/lib/interview/draw/question-screen.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/drawing.ts",
+   "to": "src/lib/interview/draw/verdict-screen.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/drawing.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/landing.ts",
+   "to": "src/lib/interview/draw/page.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/landing.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/ledger.ts",
+   "to": "src/lib/interview/draw/page.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/ledger.ts",
+   "to": "src/lib/interview/draw/paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/ledger.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/ledger.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/masthead.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/masthead.ts",
+   "to": "src/lib/interview/draw/page.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/masthead.ts",
+   "to": "src/lib/interview/draw/paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/masthead.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/page.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/page.ts",
+   "to": "src/lib/interview/draw/beat.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/page.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/arrival-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/country-search/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/interview/draw/landing.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/interview/draw/ledger.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/interview/draw/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/interview/draw/page.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/interview/draw/paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/arrival-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/interview/draw/landing.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/interview/draw/ledger.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/interview/draw/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/interview/draw/page.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/interview/draw/paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/interview/flow/interview-after.ts",
    "to": "src/lib/interview-history/index.ts",
    "kind": "type-only"
@@ -768,6 +982,16 @@
   },
   {
    "from": "src/lib/interview/index.ts",
+   "to": "src/lib/interview-history/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/draw/drawing.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/index.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "dependency"
   },
@@ -775,6 +999,16 @@
    "from": "src/lib/interview/index.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/interview.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/index.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/not-found.ts",
@@ -1393,11 +1627,6 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/arrival-line.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
    "to": "src/lib/browser-history.ts",
    "kind": "dependency"
   },
@@ -1408,12 +1637,12 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-page.ts",
    "kind": "dependency"
   },
   {
@@ -1433,17 +1662,7 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/gloss.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/pages/index.astro",
    "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/interview-history/index.ts",
    "kind": "dependency"
   },
   {
@@ -1458,22 +1677,7 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/screen.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/pages/index.astro",
    "to": "src/lib/site.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/verdict/index.ts",
    "kind": "dependency"
   },
   {
@@ -3776,7 +3980,23 @@
    }
   ],
   "src/lib/country-search/index.ts": [],
-  "src/lib/interview/index.ts": [],
+  "src/lib/interview/index.ts": [
+   {
+    "name": "InterviewPorts",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "tell",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "startInterview",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "src/lib/interview-history/index.ts": [
    {
     "name": "BrowserHistory",
@@ -4787,6 +5007,31 @@
     "exported": true
    },
    {
+    "name": "HOME_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "HOME_PREVIEW_TITLE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "HOME_DESCRIPTION",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RULES_READ",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "RECORD_GENERATED",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "DISCLAIMER",
     "kind": "const",
     "exported": true
@@ -4891,6 +5136,16 @@
    {
     "name": "resumedLine",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "YOU_DECLARED",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "START_OVER",
+    "kind": "const",
     "exported": true
    },
    {
@@ -7007,11 +7262,6 @@
     "name": "holdLine",
     "kind": "const",
     "exported": false
-   },
-   {
-    "name": "INTRO_DESCRIPTION",
-    "kind": "const",
-    "exported": false
    }
   ],
   "src/pages/robots.txt.ts": [
@@ -7111,5 +7361,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "cf4ce2524c65f0b8936b78a883220593ba1dd57357b533dbd74b55aea72336f8"
+ "digest": "18f65fb878230289099d1d5eefd3a0675315fd37a16e60c15ce27ecb3e86182d"
 }
