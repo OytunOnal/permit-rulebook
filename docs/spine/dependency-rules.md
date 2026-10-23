@@ -4,6 +4,7 @@
 <!-- a deep module's folder per line, or none; `folder/*` declares every folder directly under it -->
 - `scripts/carry-assets`
 - `src/lib/country-search`
+- `src/lib/interview`
 - `src/lib/interview-history`
 - `src/lib/verdict`
 
