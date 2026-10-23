@@ -360,6 +360,25 @@ _Avoid_: history depth, history index, arrival screen; hold, hold state (the
 s31 line a returning reader sees while the module draws — nothing to do with
 the browser's history)
 
+**Arrival / arrival line** (#56):
+An *arrival* is a reader sent to the interview by a country page's or a route
+page's call to action (`/?country=de`, `/?route=…`). The country the address
+names goes on the record. Every other answer is kept while the new country
+still asks it, and a route the address names sorts first in the verdict. An
+arrival that changes nothing on the record changes nothing. The *arrival line*
+says what the arrival did, on the first screen only. Start over on such an
+address clears the record and arrives again.
+_Avoid_: scope (as the name of the move — the *Scope statement* is what the
+checker asks), entrance (how the page came to stand on a history entry),
+landing (s30's move of the question card)
+
+**Resumed line** (UI: "Continuing where you left off — 5 answers kept." and
+Start over; s20, #56):
+The line on the first screen of a return onto a kept record, a question or the
+verdict, ending in the ledger's own Start over. It is never shown beside an
+arrival line, and never after a gesture.
+_Avoid_: returning line (the stand-in's words while the page loads), hold line
+
 ### Verdicts
 
 **Verdict** (UI: the results screen):
