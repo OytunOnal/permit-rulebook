@@ -755,7 +755,7 @@ export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun
   // route's name is a cross-reference and keeps the short form.
   const seen: Glossary = new Set();
   const heading = glossSection(route.name, seen);
-  const cards: RulePage = { dataset, country, route, seen, notice };
+  const rulePage: RulePage = { dataset, country, route, seen, notice };
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -809,7 +809,7 @@ ${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join(""
 
   <section class="rules" aria-labelledby="rules-h">
     <h2 class="visually-hidden" id="rules-h">The rules of this route</h2>${
-    rules.map((c) => ruleCard(cards, c)).join("")}${
+    rules.map((c) => ruleCard(rulePage, c)).join("")}${
     statedBlocks(route, seen)}
   </section>
 
