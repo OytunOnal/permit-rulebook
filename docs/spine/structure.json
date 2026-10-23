@@ -71,7 +71,6 @@
   "scripts/log-wording.mjs": "domain",
   "scripts/measure-taps.mjs": "infrastructure main",
   "scripts/render-assets.mjs": "infrastructure main",
-  "scripts/set-merge-driver.mjs": "infrastructure",
   "scripts/shot.mjs": "infrastructure main",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure main",
@@ -3505,11 +3504,6 @@
     "exported": false
    },
    {
-    "name": "noBuildDirectory",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "writeAssetDigests",
     "kind": "fn",
     "exported": true
@@ -3608,7 +3602,7 @@
    {
     "name": "TEST_FUNCTION_LENGTH",
     "kind": "const",
-    "exported": false
+    "exported": true
    },
    {
     "name": "NESTING",
@@ -3750,7 +3744,7 @@
   ],
   "scripts/build-directory-on-disk.mjs": [
    {
-    "name": "buildDirectoryOnDisk",
+    "name": "openBuildDirectoryOnDisk",
     "kind": "fn",
     "exported": true
    }
@@ -3977,7 +3971,7 @@
   ],
   "scripts/live-site-over-http.mjs": [
    {
-    "name": "liveAnswerOverHttp",
+    "name": "fetchLiveAnswerOverHttp",
     "kind": "fn",
     "exported": true
    },
@@ -4119,33 +4113,6 @@
    },
    {
     "name": "main",
-    "kind": "fn",
-    "exported": false
-   }
-  ],
-  "scripts/set-merge-driver.mjs": [
-   {
-    "name": "root",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "gitEnv",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "git",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "insideWorkTree",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "gitMessageOf",
     "kind": "fn",
     "exported": false
    }
@@ -5300,7 +5267,7 @@
     "exported": false
    },
    {
-    "name": "CountryList",
+    "name": "CountryCardContext",
     "kind": "type",
     "exported": false
    },
@@ -6198,11 +6165,6 @@
     "exported": false
    },
    {
-    "name": "WatchRun",
-    "kind": "type",
-    "exported": true
-   },
-   {
     "name": "routePage",
     "kind": "fn",
     "exported": true
@@ -6515,6 +6477,16 @@
    },
    {
     "name": "unreadSourcesAt",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "WatchRun",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "readWatchRun",
     "kind": "fn",
     "exported": true
    }
@@ -6841,7 +6813,6 @@
   "scripts/log-wording.mjs",
   "scripts/measure-taps.mjs",
   "scripts/render-assets.mjs",
-  "scripts/set-merge-driver.mjs",
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
@@ -6892,5 +6863,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "9340a8b4a920fc90144ce70957ed60644599c969039ff50e185a1b8b737372fb"
+ "digest": "636e04a5b58c709711a39e5757adc2b675dc664d514149775290e3064446fe81"
 }
