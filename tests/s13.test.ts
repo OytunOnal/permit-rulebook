@@ -130,7 +130,7 @@ describe("the page, and the three doors on it", () => {
       expect(page.html, `door ${i + 1}: no own-app line`).toContain(own);
     }
     // Each door: the button, then the line, then the template — in that order.
-    for (const [i, door] of FEEDBACK_DOORS.entries()) {
+    for (const door of FEEDBACK_DOORS) {
       const at = page.html.indexOf(door.heading);
       const button = page.html.indexOf(`>${door.button}</a>`, at);
       const line = page.html.indexOf(FEEDBACK_OWN_APP, at);

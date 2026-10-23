@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import dataset from "permit-rulebook-data/data/dataset.json";
 import { routePages } from "../src/lib/route-page.js";
 import { absolute, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { contentSecurityPolicy, sha256 } from "../src/lib/csp.js";
+import { sha256 } from "../src/lib/csp.js";
 import { MENU_SCRIPT } from "../src/lib/identity.js";
 import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
