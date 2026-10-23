@@ -68,8 +68,9 @@ export class FakeTab implements BrowserHistory {
     this.entries[this.index]!.state = state;
   }
 
-  back(): void {
-    this.go(-1);
+  /** The browser's Back, `steps` entries at once, as `history.go(-steps)` takes them. */
+  back(steps = 1): void {
+    this.go(-steps);
   }
 
   forward(): void {

@@ -11,7 +11,7 @@ import {
   DESK, fieldOnScreen, recordSeedScript, skipReason, tapOn, waitOutTheBeat, warnNotWalked, withSite,
   type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
-import { FakeTab } from "./fake-browser-history.js";
+import { FakeTab, stepOf } from "./fake-browser-history.js";
 
 /**
  * P7 (#56, ruling 6): every exit of the question card says where it goes.
@@ -55,6 +55,31 @@ describe("Back's target, through the interview's history", () => {
     history.redrawnInPlace("citizenship");
     expect(history.backTarget(ASKED, "citizenship")).toBe("destination");
     expect(history.back(ASKED, "citizenship")).toEqual({ kind: "in-place", field: "destination" });
+  });
+
+  /** Two entries in a row can show one question: a ✎ on the result redraws the result's entry as
+   * the question the reader had kept from (#216, ruling 1). Back never names the screen it is on. */
+  it("Back past entries that show the question on screen: the question before them, and the browser goes there", () => {
+    const tab = freshTab();
+    const history = openInterviewHistory(tab, { asked: [], showing: "destination" });
+    for (const field of ["citizenship", "situation", null]) history.movedForward(field);
+    history.redrawnInPlace("situation");
+    expect(history.backTarget(ASKED, "situation")).toBe("citizenship");
+    const shown: (string | null)[] = [];
+    history.onMove((move) => shown.push(move.field));
+    expect(history.back(ASKED, "situation")).toEqual({ kind: "browser" });
+    expect([shown, stepOf(tab)]).toEqual([["citizenship"], 1]);
+  });
+
+  it("Back past entries that show the question on screen, down to the first held step: the question before, in place", () => {
+    const tab = freshTab();
+    const history = openInterviewHistory(tab, { asked: ASKED, showing: null });
+    history.redrawnInPlace("situation");
+    history.movedForward(null);
+    history.redrawnInPlace("situation");
+    expect(history.backTarget(ASKED, "situation")).toBe("citizenship");
+    expect(history.back(ASKED, "situation")).toEqual({ kind: "in-place", field: "citizenship" });
+    expect(stepOf(tab)).toBe(4);
   });
 });
 
@@ -224,5 +249,23 @@ describe.skipIf(skipped !== null)("Back and Keep this answer go where their labe
     }, DESK);
     expect(seen.problems).toEqual([]);
     expect([keepNames(seen.editing.keep), seen.kept]).toEqual([RESULT, RESULT]);
+  }, 180_000);
+
+  /** The Spec axis's repro (#216, ruling 1): Keep to the result, then the same row's ✎ again. */
+  it("✎, Keep to the result, ✎ on the same row: Back names the question before, and lands there", async () => {
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      await editingOnRecord(site, { destination: "de", citizenship: "PL" }, "citizenship");
+      await tapAndWait(page, "#main #done");
+      const kept = await screenOf(page);
+      await tapAndWait(page, '#decl-list [data-field="citizenship"]');
+      const again = { screen: await screenOf(page), exits: await exitsOf(page) };
+      await tapAndWait(page, "#main #back");
+      return { kept, again, backedOnto: await screenOf(page), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect([seen.kept, seen.again.screen], "precondition: Keep showed the result, and the ✎ reopened the row")
+      .toEqual([RESULT, "citizenship"]);
+    expect([fieldNamedBy(backToLine, seen.again.exits.back), seen.backedOnto]).toEqual(["destination", "destination"]);
   }, 180_000);
 });

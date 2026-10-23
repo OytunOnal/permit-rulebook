@@ -10,7 +10,7 @@ export function browserHistoryOf(win: Window): BrowserHistory {
     state: () => win.history.state as unknown,
     push: (state) => win.history.pushState(state, ""),
     replace: (state) => win.history.replaceState(state, ""),
-    back: () => win.history.back(),
+    back: (steps) => win.history.go(-steps),
     onMove: (listener) => win.addEventListener("popstate", (e) => listener(e.state)),
   };
 }

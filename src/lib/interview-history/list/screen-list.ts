@@ -79,13 +79,20 @@ export function historyFor(answered: readonly string[], showing: string | null):
 }
 
 /**
- * What the screen's "← Back" does from where the reader stands. Past the first
- * held step it is the browser's Back, so the screen's Back and the phone's are
- * one gesture (human, 2026-09-08); on or before it the browser has nothing of
- * ours behind, and the previous question is shown in place instead.
+ * The held step the screen's "← Back" goes to: the nearest one behind the
+ * reader that shows another screen than the one on screen. There the screen's
+ * Back is the browser's, so the two are one gesture. Two entries in a row can
+ * show one question — a ✎ on the result redraws the result's entry as the
+ * question kept from — and Back to the question on screen would be a dead
+ * tap, so those are skipped. Null where no held step behind shows another
+ * screen: the browser has nothing of ours to go to, and the previous question
+ * is shown in place instead.
  */
-export function backFor(history: ScreenHistory): "browser" | "in-place" {
-  return history.current > history.firstHeld ? "browser" : "in-place";
+export function heldStepBehind(history: ScreenHistory): number | null {
+  const showing = history.entries[history.current]?.field;
+  for (let step = history.current - 1; step >= history.firstHeld; step--)
+    if (history.entries[step]?.field !== showing) return step;
+  return null;
 }
 
 /**

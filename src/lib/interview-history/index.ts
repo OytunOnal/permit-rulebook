@@ -17,7 +17,7 @@
  */
 import { entryState, firstHeldStep, readEntry } from "./list/entry-state.js";
 import {
-  backFor, clampStep, emptyHistory, historyFor, recordAdvance, recordInPlace, screenAt,
+  clampStep, emptyHistory, heldStepBehind, historyFor, recordAdvance, recordInPlace, screenAt,
   type HistoryWrite, type ScreenHistory,
 } from "./list/screen-list.js";
 
@@ -29,8 +29,8 @@ export interface BrowserHistory {
   push(state: unknown): void;
   /** The entry stood on, rewritten to carry `state`. */
   replace(state: unknown): void;
-  /** The browser's own Back. */
-  back(): void;
+  /** The browser's own Back, `steps` entries at once. */
+  back(steps: number): void;
   /** Calls `listener` with the state of the entry the browser moved onto within the page. */
   onMove(listener: (state: unknown) => void): void;
 }
@@ -99,8 +99,9 @@ export function openInterviewHistory(browser: BrowserHistory, { asked, showing }
     restarted: () => { kept.list = emptyHistory(); },
     backTarget: (asked, editing) => backTargetOf(kept.list, asked, editing),
     back: (asked, editing) => {
-      if (backFor(kept.list) === "browser") {
-        browser.back();
+      const held = heldStepBehind(kept.list);
+      if (held !== null) {
+        browser.back(kept.list.current - held);
         return { kind: "browser" };
       }
       const field = inPlaceTarget(asked, editing);
@@ -125,7 +126,8 @@ function inPlaceTarget(asked: readonly string[], editing: string | null): string
 }
 
 function backTargetOf(list: ScreenHistory, asked: readonly string[], editing: string | null): string | null {
-  if (backFor(list) === "browser") return screenAt(list, list.current - 1)?.field ?? null;
+  const held = heldStepBehind(list);
+  if (held !== null) return screenAt(list, held)?.field ?? null;
   return inPlaceTarget(asked, editing) ?? null;
 }
 
