@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { evaluate, notices, type Dataset, type Profile } from "permit-rulebook-data";
-import { arrivalFrom, arrivalPlan, destinationFor, scopedFirst } from "../src/lib/scope.js";
+import { arrivalOf, scopedFirst } from "../src/lib/scope.js";
 import { audienceNotice, routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { datasetDay, isoDay } from "../src/lib/copy/frame.js";
@@ -46,12 +46,9 @@ describe("s6 step 10 — the Irish reader on a German page", () => {
     // What the interview does with that link for an Irish reader: the
     // destination goes on the record, and the passport answers with a notice
     // that REPLACES the results rather than a screen of closed routes.
-    const arrival = arrivalFrom(ds, "?route=de-blue-card-general")!;
-    const answers: Profile = {};
-    const destination = destinationFor(arrival)!;
-    expect(destination).toBe("de");
-    answers["destination"] = destination;
-    answers["citizenship"] = "IE";
+    const { record } = arrivalOf(ds, "?route=de-blue-card-general", { answers: {}, order: [] });
+    expect(record.answers["destination"]).toBe("de");
+    const answers: Profile = { ...record.answers, citizenship: "IE" };
 
     const replacing = notices(ds, answers).filter((n) => n.kind === "no-permit-needed");
     expect(replacing.length).toBe(1);
@@ -65,14 +62,15 @@ describe("s6 step 10 — the Irish reader on a German page", () => {
 
 describe("s6 step 10 — arriving from a route page's call to action", () => {
   it("puts the route's country on the record and that route first", () => {
-    const arrival = arrivalFrom(ds, "?route=nl-orientation-year")!;
-    expect(arrival.route.id).toBe("nl-orientation-year");
-    expect(arrival.country.code).toBe("NL");
-    expect(destinationFor(arrival)).toBe("nl");
+    const arrival = arrivalOf(ds, "?route=nl-orientation-year", { answers: {}, order: [] });
+    expect(arrival.scopedRouteId).toBe("nl-orientation-year");
+    expect(arrival.line?.route?.id).toBe("nl-orientation-year");
+    expect(arrival.line?.country).toBe("NL");
+    expect(arrival.record.answers["destination"]).toBe("nl");
 
-    const answers: Profile = { destination: "nl", citizenship: "TR" };
+    const answers: Profile = { ...arrival.record.answers, citizenship: "TR" };
     const results = evaluate(ds, answers).filter((r) => r.country === "NL");
-    const ordered = scopedFirst(results, "nl-orientation-year");
+    const ordered = scopedFirst(results, arrival.scopedRouteId);
     expect(ordered[0].route.id).toBe("nl-orientation-year");
     // And nothing else moved: the rest keep the order the engine gave them.
     expect(ordered.slice(1).map((r) => r.route.id))
@@ -85,20 +83,19 @@ describe("s6 step 10 — arriving from a route page's call to action", () => {
     // her German verdicts with France nowhere on the screen (isolated v1-gate
     // critique, 2026-09-08, B2). A reader standing on a country's page,
     // pressing that page's own button, is asking about that country.
-    const arrival = arrivalFrom(ds, "?route=de-blue-card-general")!;
     const dutch: Profile = { destination: "nl", citizenship: "TR", qualification: "degree" };
-    const plan = arrivalPlan(ds, { answers: dutch, order: Object.keys(dutch) }, destinationFor(arrival)!);
-    expect(plan.changed).toBe(true);
-    expect(plan.answers["destination"]).toBe("de");
+    const { record, line } = arrivalOf(ds, "?route=de-blue-card-general", { answers: dutch, order: Object.keys(dutch) });
+    expect(line?.rescoped).toBe(true);
+    expect(record.answers["destination"]).toBe("de");
     // Her own answers travel with her; only where she is asking has changed.
-    expect(plan.answers["citizenship"]).toBe("TR");
-    expect(plan.answers["qualification"]).toBe("degree");
+    expect(record.answers["citizenship"]).toBe("TR");
+    expect(record.answers["qualification"]).toBe("degree");
   });
 
   it("a route id nothing answers to is ignored, not reported", () => {
-    expect(arrivalFrom(ds, "?route=de-does-not-exist")).toBeNull();
-    expect(arrivalFrom(ds, "")).toBeNull();
-    expect(destinationFor(null)).toBeNull();
+    const untouched = { record: { answers: {}, order: [] }, scopedRouteId: null, line: null };
+    expect(arrivalOf(ds, "?route=de-does-not-exist", { answers: {}, order: [] })).toEqual(untouched);
+    expect(arrivalOf(ds, "", { answers: {}, order: [] })).toEqual(untouched);
     const rows = [{ route: { id: "a" } }, { route: { id: "b" } }];
     expect(scopedFirst(rows, null)).toEqual(rows);
   });

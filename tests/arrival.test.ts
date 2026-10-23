@@ -3,10 +3,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { phraseAtStartOf, deriveBands, evaluate, fillRouteSlots, remainingQuestions } from "permit-rulebook-data";
-import {
-  arrivalFrom, arrivalPlan, arrivalSentence, countryArrivalFrom, destinationFor,
-  destinationForCountry, questionPhrase,
-} from "../src/lib/scope.js";
+import { arrivalOf, arrivalPlan, arrivalSentence, questionPhrase } from "../src/lib/scope.js";
 import { RECORD_VERSION, serialize } from "../src/lib/record.js";
 import { CAME_FROM_LINE } from "../src/lib/copy/verdict.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
@@ -33,40 +30,44 @@ const germanRecord: Profile = {
   salary_eur_year: "band_5", german: "b1", english: "c1", funds_eur_month: "band_1",
 };
 
+/** A reader with nothing on the record. */
+const noRecord = { answers: {}, order: [] };
+/** What an address that names nothing the dataset has does to that reader. */
+const untouched = { record: { answers: {}, order: [] }, scopedRouteId: null, line: null };
+
 describe("an arrival that names a country re-scopes the record", () => {
   it("the country in the link is where the record now stands", () => {
-    // The arrival names a country; what that does to a record is the plan's
-    // job, and this is only the address it resolves to.
-    expect(destinationForCountry(countryArrivalFrom(ds, "?country=fr"))).toBe("fr");
-    expect(destinationFor(arrivalFrom(ds, "?route=fr-talent-blue-card"))).toBe("fr");
-    expect(destinationForCountry(countryArrivalFrom(ds, "?country=zz"))).toBeNull();
-    expect(destinationFor(arrivalFrom(ds, "?route=de-does-not-exist"))).toBeNull();
+    // The arrival names a country; this is only the address it resolves to.
+    expect(arrivalOf(ds, "?country=fr", noRecord).record.answers["destination"]).toBe("fr");
+    expect(arrivalOf(ds, "?route=fr-talent-blue-card", noRecord).record.answers["destination"]).toBe("fr");
+    expect(arrivalOf(ds, "?country=zz", noRecord)).toEqual(untouched);
+    expect(arrivalOf(ds, "?route=de-does-not-exist", noRecord)).toEqual(untouched);
   });
 
   it("a German record arriving in France answers about France, keeping what it can", () => {
     const order = Object.keys(germanRecord);
-    const plan = arrivalPlan(ds, { answers: germanRecord, order }, "fr");
-    expect(plan.changed).toBe(true);
-    expect(plan.answers["destination"]).toBe("fr");
+    const { record, line } = arrivalOf(ds, "?country=fr", { answers: germanRecord, order });
+    expect(line?.rescoped, "the move from Germany is not said as a move").toBe(true);
+    expect(record.answers["destination"]).toBe("fr");
     // Facts France reads are hers still; facts only Germany reads are gone.
-    expect(plan.answers["citizenship"]).toBe("IN");
-    expect(plan.answers["qualification"]).toBe("degree");
-    expect(plan.answers["recognition_de"], "a German-only answer survived into France")
+    expect(record.answers["citizenship"]).toBe("IN");
+    expect(record.answers["qualification"]).toBe("degree");
+    expect(record.answers["recognition_de"], "a German-only answer survived into France")
       .toBeUndefined();
     // The amount travels: one pooled ladder, so the band names the same euros.
     const bands = deriveBands(ds, "salary_eur_year");
-    expect(bands.find((b) => b.id === plan.answers["salary_eur_year"])!.label)
+    expect(bands.find((b) => b.id === record.answers["salary_eur_year"])!.label)
       .toBe("\u20ac45,934.20 \u2013 under \u20ac50,700");
     // And the verdicts are French.
-    expect(evaluate(ds, plan.answers).filter((r) => r.status !== "hold").every((r) => r.country === "FR"))
+    expect(evaluate(ds, record.answers).filter((r) => r.status !== "hold").every((r) => r.country === "FR"))
       .toBe(true);
   });
 
   it("arriving where the record already is changes nothing at all", () => {
     const order = Object.keys(germanRecord);
-    const plan = arrivalPlan(ds, { answers: germanRecord, order }, "de");
-    expect(plan.changed).toBe(false);
-    expect(plan.answers).toEqual(germanRecord);
+    const arrival = arrivalOf(ds, "?country=de", { answers: germanRecord, order });
+    expect(arrival.line).toBeNull();
+    expect(arrival.record).toEqual({ answers: germanRecord, order });
   });
 
   it("the stored record keeps its version: nothing about what an answer means moved", () => {
@@ -273,6 +274,6 @@ describe("the arrival line says what actually happens next", () => {
 
   it("an arrival that changes nothing is not an event", () => {
     const record = fullRecordFor("DE");
-    expect(arrivalPlan(ds, record, "de").changed).toBe(false);
+    expect(arrivalOf(ds, "?country=de", record).line).toBeNull();
   });
 });

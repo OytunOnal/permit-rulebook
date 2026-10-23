@@ -216,6 +216,61 @@ export function arrivalPlan(
 }
 
 /**
+ * What an arrival did, as facts the line may state: the route the reader came
+ * from (null when they came from a country's own page), the country's code,
+ * whether the record named another country a moment ago, which answers
+ * survived the move, and how many questions this country still asks.
+ */
+export interface ArrivalFacts {
+  route: Route | null;
+  country: string;
+  rescoped: boolean;
+  kept: string[];
+  asks: number;
+}
+
+/**
+ * An arrival, decided once: the record after the move (unchanged when nothing
+ * moved), the route that sorts first in the verdict, and the facts of the
+ * arrival line, or null when nothing moved.
+ */
+export interface Arrival {
+  record: { answers: Profile; order: string[] };
+  scopedRouteId: string | null;
+  line: ArrivalFacts | null;
+}
+
+/**
+ * Land the reader where the address says they are (`location.search`).
+ *
+ * The country it names replaces the destination on the record and everything
+ * else the reader told us is kept while the new country still asks it,
+ * because a reader standing on France's page pressing France's own button is
+ * asking about France — whatever they asked yesterday (B2). A route it names
+ * sorts first whether or not the record moved.
+ */
+export function arrivalOf(dataset: Dataset, search: string, record: RecordOnArrival): Arrival {
+  const cameFrom = arrivalFrom(dataset, search);
+  const scopedRouteId = cameFrom ? cameFrom.route.id : null;
+  const country = cameFrom ? cameFrom.country : countryArrivalFrom(dataset, search);
+  const destination = cameFrom ? destinationFor(cameFrom) : destinationForCountry(country);
+  const untouched = { answers: record.answers, order: [...record.order] };
+  if (destination === null || !country) return { record: untouched, scopedRouteId, line: null };
+  const plan = arrivalPlan(dataset, record, destination);
+  // Nothing moved: the reader is already here, and a line saying so is a line
+  // about nothing.
+  if (!plan.changed) return { record: untouched, scopedRouteId, line: null };
+  const line: ArrivalFacts = {
+    route: cameFrom ? cameFrom.route : null,
+    country: country.code,
+    rescoped: record.answers["destination"] !== undefined,
+    kept: plan.kept,
+    asks: plan.asks,
+  };
+  return { record: { answers: plan.answers, order: plan.order }, scopedRouteId, line };
+}
+
+/**
  * The one line an arrival prints, on whichever screen the reader lands on.
  *
  * `rescoped` is the difference between a reader who told us nothing yet and a
