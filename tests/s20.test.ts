@@ -318,11 +318,13 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
     }
   }, 180000);
 
-  for (const [name, record, state] of [
-    ["a cold /", null, "questions"],
-    ["a finished record, which restores to the verdict", finished, "results"],
+  // A finished record's verdict is the first screen of a return too, and says
+  // so over its body (#56, ruling 7).
+  for (const [name, record, state, resumes] of [
+    ["a cold /", null, "questions", false],
+    ["a finished record, which restores to the verdict", finished, "results", true],
   ] as const)
-    it(`is absent on ${name}`, async () => {
+    it(`is ${resumes ? "there, with the one Start over control," : "absent"} on ${name}`, async () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
@@ -332,7 +334,8 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
           return JSON.parse(await page.evaluate(WHERE)) as Where;
         }, { viewport: { width: 390, height: 844 }, mobile: true });
         expect(seen.state).toBe(state);
-        expect(seen.resumed).toBeNull();
+        expect(seen.resumed !== null, `the resumed line is ${seen.resumed === null ? "missing" : "there"}`).toBe(resumes);
+        expect(seen.resumedRestart).toBe(resumes);
         expect(seen.restartsOnPage).toBe(1);
       } finally {
         server.close();

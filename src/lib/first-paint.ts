@@ -33,10 +33,10 @@ import { RECORD_MAX_LENGTH, STORAGE_KEY } from "./record.js";
  * - `data-cover`, the cover (see `COVERS`): written by the head script only,
  *   removed by `takeCoversOff` only;
  * - `data-promise`, the masthead's standing promise, `fresh` or `started`: the
- *   page's own state, which the page writes on every question screen and the
- *   head script seeds;
+ *   page's own state, which the interview writes on every question screen and
+ *   the head script seeds;
  * - `data-answered` and `data-narrow`, the ledger's two seeds: the head script
- *   seeds them and the page's own decisions write them after.
+ *   seeds them and the interview's own decisions write them after.
  */
 
 /**

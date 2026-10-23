@@ -2,11 +2,15 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { phraseAtStartOf, deriveBands, evaluate, fillRouteSlots, remainingQuestions } from "permit-rulebook-data";
 import {
-  arrivalFrom, arrivalPlan, arrivalSentence, countryArrivalFrom, destinationFor,
-  destinationForCountry, questionPhrase,
-} from "../src/lib/scope.js";
+  phraseAtStartOf, phraseOf, deriveBands, evaluate, fillRouteSlots, remainingQuestions, shortLabelOf, subjectOf,
+} from "permit-rulebook-data";
+import { arrivalOf, type ArrivalFacts } from "../src/lib/scope.js";
+import { arrivalLineHtml } from "../src/lib/arrival-line.js";
+import { ABBREVIATIONS, type Glossary } from "../src/lib/gloss.js";
+import {
+  comingFromRouteLine, placeAsksMoreClause, placeOnRecordLine, placeOnRecordNowLine,
+} from "../src/lib/copy/interview.js";
 import { RECORD_VERSION, serialize } from "../src/lib/record.js";
 import { CAME_FROM_LINE } from "../src/lib/copy/verdict.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
@@ -33,40 +37,44 @@ const germanRecord: Profile = {
   salary_eur_year: "band_5", german: "b1", english: "c1", funds_eur_month: "band_1",
 };
 
+/** A reader with nothing on the record. */
+const noRecord = { answers: {}, order: [] };
+/** What an address that names nothing the dataset has does to that reader. */
+const untouched = { record: { answers: {}, order: [] }, scopedRouteId: null, line: null };
+
 describe("an arrival that names a country re-scopes the record", () => {
   it("the country in the link is where the record now stands", () => {
-    // The arrival names a country; what that does to a record is the plan's
-    // job, and this is only the address it resolves to.
-    expect(destinationForCountry(countryArrivalFrom(ds, "?country=fr"))).toBe("fr");
-    expect(destinationFor(arrivalFrom(ds, "?route=fr-talent-blue-card"))).toBe("fr");
-    expect(destinationForCountry(countryArrivalFrom(ds, "?country=zz"))).toBeNull();
-    expect(destinationFor(arrivalFrom(ds, "?route=de-does-not-exist"))).toBeNull();
+    // The arrival names a country; this is only the address it resolves to.
+    expect(arrivalOf(ds, "?country=fr", noRecord).record.answers["destination"]).toBe("fr");
+    expect(arrivalOf(ds, "?route=fr-talent-blue-card", noRecord).record.answers["destination"]).toBe("fr");
+    expect(arrivalOf(ds, "?country=zz", noRecord)).toEqual(untouched);
+    expect(arrivalOf(ds, "?route=de-does-not-exist", noRecord)).toEqual(untouched);
   });
 
   it("a German record arriving in France answers about France, keeping what it can", () => {
     const order = Object.keys(germanRecord);
-    const plan = arrivalPlan(ds, { answers: germanRecord, order }, "fr");
-    expect(plan.changed).toBe(true);
-    expect(plan.answers["destination"]).toBe("fr");
+    const { record, line } = arrivalOf(ds, "?country=fr", { answers: germanRecord, order });
+    expect(line?.rescoped, "the move from Germany is not said as a move").toBe(true);
+    expect(record.answers["destination"]).toBe("fr");
     // Facts France reads are hers still; facts only Germany reads are gone.
-    expect(plan.answers["citizenship"]).toBe("IN");
-    expect(plan.answers["qualification"]).toBe("degree");
-    expect(plan.answers["recognition_de"], "a German-only answer survived into France")
+    expect(record.answers["citizenship"]).toBe("IN");
+    expect(record.answers["qualification"]).toBe("degree");
+    expect(record.answers["recognition_de"], "a German-only answer survived into France")
       .toBeUndefined();
     // The amount travels: one pooled ladder, so the band names the same euros.
     const bands = deriveBands(ds, "salary_eur_year");
-    expect(bands.find((b) => b.id === plan.answers["salary_eur_year"])!.label)
+    expect(bands.find((b) => b.id === record.answers["salary_eur_year"])!.label)
       .toBe("\u20ac45,934.20 \u2013 under \u20ac50,700");
     // And the verdicts are French.
-    expect(evaluate(ds, plan.answers).filter((r) => r.status !== "hold").every((r) => r.country === "FR"))
+    expect(evaluate(ds, record.answers).filter((r) => r.status !== "hold").every((r) => r.country === "FR"))
       .toBe(true);
   });
 
   it("arriving where the record already is changes nothing at all", () => {
     const order = Object.keys(germanRecord);
-    const plan = arrivalPlan(ds, { answers: germanRecord, order }, "de");
-    expect(plan.changed).toBe(false);
-    expect(plan.answers).toEqual(germanRecord);
+    const arrival = arrivalOf(ds, "?country=de", { answers: germanRecord, order });
+    expect(arrival.line).toBeNull();
+    expect(arrival.record).toEqual({ answers: germanRecord, order });
   });
 
   it("the stored record keeps its version: nothing about what an answer means moved", () => {
@@ -182,11 +190,13 @@ describe.skipIf(skipped !== null)("the walk the critique took, with a record in 
  * review, 2026-09-08). It lower-cased the ledger label "IT work" into the
  * fragment "it work"; and it was built from the answers the move DROPPED, so a
  * reader arriving in France was told five German questions were coming back
- * when what actually followed were two French ones. The sentence now reads
- * forwards, off the same plan the screen is drawn from: what survived, and how
- * many questions this country still has.
+ * when what actually followed were two French ones. The line reads forwards,
+ * off the facts `arrivalOf` returns: what survived, and how many questions
+ * this country still has.
  */
 describe("the arrival line says what actually happens next", () => {
+  /** The line as a reader reads it, on a screen whose glossary is fresh. */
+  const lineText = (facts: ArrivalFacts): string => plainTextOf(arrivalLineHtml(ds, facts, new Set()));
   const fullRecordFor = (code: string): { answers: Profile; order: string[] } => {
     // A complete interview for one country, answered the way a reader would.
     const answers: Profile = { destination: code.toLowerCase(), citizenship: "IN" };
@@ -206,73 +216,97 @@ describe("the arrival line says what actually happens next", () => {
       for (const to of ds.countries) {
         if (from.code === to.code) continue;
         const record = fullRecordFor(from.code);
-        const plan = arrivalPlan(ds, record, to.code.toLowerCase());
+        const { record: after, line } = arrivalOf(ds, `?country=${to.code.toLowerCase()}`, record);
         const where = `${from.code} → ${to.code}`;
+        expect(line?.rescoped, `${where}: the move is not said as a move`).toBe(true);
 
         // Every named answer is one the reader still has on the record.
-        for (const field of plan.kept)
-          expect(plan.answers[field], `${where}: ${field} is named but not kept`).toBeDefined();
-        expect(plan.kept, `${where}: the destination is not an answer that survived`)
+        for (const field of line!.kept)
+          expect(after.answers[field], `${where}: ${field} is named but not kept`).toBeDefined();
+        expect(line!.kept, `${where}: the destination is not an answer that survived`)
           .not.toContain("destination");
         // The count is the questions the interview will actually ask next.
-        expect(plan.asks, where).toBe(remainingQuestions(ds, plan.answers).length);
+        expect(line!.asks, where).toBe(remainingQuestions(ds, after.answers).length);
 
-        const line = arrivalSentence(ds, {
-          route: null, country: to.code, rescoped: true, kept: plan.kept, asks: plan.asks,
-        });
-        // One sentence, in the dataset's own words, with no field id in it.
-        expect(line, where).toMatch(new RegExp(`^${phraseAtStartOf(to.code)} is on the record now\\.`));
-        expect(line, where).not.toMatch(/_/);
-        expect(line, where).not.toContain("  ");
-        for (const field of plan.kept)
-          expect(line, `${where}: ${field}`).toContain(questionPhrase(ds, field));
+        // In the dataset's own words, with no field id in it.
+        const text = lineText(line!);
+        expect(text, where).not.toMatch(/_/);
+        for (const field of line!.kept)
+          expect(text, `${where}: ${field}`).toContain(subjectOf(ds, field));
         // And nothing the move dropped is named anywhere in it.
-        for (const field of record.order.filter((f) => plan.answers[f] === undefined))
-          expect(line, `${where}: ${field} was dropped but is named`)
-            .not.toContain(questionPhrase(ds, field));
+        for (const field of record.order.filter((f) => after.answers[f] === undefined))
+          expect(text, `${where}: ${field} was dropped but is named`).not.toContain(subjectOf(ds, field));
       }
   });
 
   it("uses a declared name for every field the interview can ask", () => {
-    for (const field of ds.fields.map((f) => f.id)) {
-      const def = ds.fields.find((f) => f.id === field)!;
-      const phrase = questionPhrase(ds, field);
+    for (const def of ds.fields) {
+      const text = lineText({ route: null, country: "DE", rescoped: true, kept: [def.id], asks: 0 });
       // The subject with any route it names said in full (#159), or the short label.
-      const subject = def.subject && fillRouteSlots(def.subject, ds);
-      expect([subject, def.short_label].filter(Boolean), `${field}: "${phrase}" is not declared`)
-        .toContain(phrase);
-      expect(phrase, field).not.toBe(field);
-      expect(phrase, field).not.toMatch(/_/);
+      const declared = [def.subject && fillRouteSlots(def.subject, ds), def.short_label].filter(Boolean);
+      expect(declared.some((name) => text.includes(name!)), `${def.id}: "${text}" names it by no declared name`)
+        .toBe(true);
+      expect(text, def.id).not.toMatch(/_/);
     }
-    // The regression itself, named: "IT work" lower-cased is "it work".
-    expect(questionPhrase(ds, "occupation_it")).toBe("whether your work is in information technology");
+    // A name stands in the case the dataset wrote it: the subject as written, and never the
+    // short label lower-cased, which turns an acronym into a fragment.
+    const field = "occupation_it";
+    const short = shortLabelOf(ds, field);
+    expect(short, "precondition: the short label has a capital to lose").not.toBe(short.toLowerCase());
+    const itWork = lineText({ route: null, country: "DE", rescoped: true, kept: [field], asks: 0 });
+    expect(itWork).toContain(subjectOf(ds, field));
+    expect(itWork).not.toContain(short.toLowerCase());
   });
 
   it("is built the way the ruling wrote it", () => {
-    expect(arrivalSentence(ds, {
-      route: null, country: "FR", rescoped: true, kept: ["citizenship", "german"], asks: 2,
-    })).toBe(
-      "France is on the record now."
-      + " Your answers about the passport you would apply with and your German level are kept;"
-      + " France asks 2 more questions.",
-    );
-    // One question, singular; nothing kept, no clause about answers.
-    expect(arrivalSentence(ds, { route: null, country: "ES", rescoped: true, kept: [], asks: 1 }))
-      .toBe("Spain is on the record now. Spain asks 1 more question.");
-    // A country's own page names the country once, not three times.
-    expect(arrivalSentence(ds, {
-      route: null, country: "DE", rescoped: false, kept: [], asks: 12,
-    })).toBe("Germany is on the record.");
-    // A first arrival narrates itself the way the route pages always did, and
-    // says no more: the reader has answered nothing, and the question counter
-    // under the line already states how many are coming.
-    expect(arrivalSentence(ds, {
-      route: "EU Blue Card — general", country: "DE", rescoped: false, kept: [], asks: 12,
-    })).toBe("Coming from EU Blue Card — general — Germany is on the record.");
+    // A move from a country's own page: the place on the record now, the
+    // answers kept, and what the place still asks, said after them.
+    const moved = lineText({ route: null, country: "FR", rescoped: true, kept: ["citizenship", "german"], asks: 2 });
+    expect(moved.startsWith(placeOnRecordNowLine(phraseAtStartOf("FR")))).toBe(true);
+    expect(moved).toContain(`${subjectOf(ds, "citizenship")} and ${subjectOf(ds, "german")}`);
+    expect(moved.endsWith(`; ${placeAsksMoreClause(phraseOf("FR"), 2)}.`)).toBe(true);
+    // Nothing kept: no clause about answers, and the count opens its clause.
+    expect(lineText({ route: null, country: "ES", rescoped: true, kept: [], asks: 1 }))
+      .toBe(`${placeOnRecordNowLine(phraseAtStartOf("ES"))} ${placeAsksMoreClause(phraseAtStartOf("ES"), 1)}.`);
+    // A first arrival says where the record stands and no more: the reader has
+    // answered nothing, and the question counter under the line already states
+    // how many are coming.
+    expect(lineText({ route: null, country: "DE", rescoped: false, kept: [], asks: 12 }))
+      .toBe(placeOnRecordLine(phraseAtStartOf("DE")));
+    const route = arrivalOf(ds, "?route=de-blue-card-general", noRecord).line!.route!;
+    expect(lineText({ route, country: "DE", rescoped: false, kept: [], asks: 12 }))
+      .toBe(comingFromRouteLine(route.name, phraseOf("DE")));
+  });
+
+  it("France three times: a country's own page names the country once before it says anything else", () => {
+    const order = Object.keys(germanRecord);
+    const { line } = arrivalOf(ds, "?country=fr", { answers: germanRecord, order });
+    expect(line?.route, "a country's own page is not a route").toBeNull();
+    const text = lineText(line!);
+    expect(text.slice(0, text.indexOf(".") + 1)).toBe(placeOnRecordNowLine(phraseAtStartOf("FR")));
+  });
+
+  it("the route's name is glossed with the screen's glossary, once", () => {
+    const facts = arrivalOf(ds, "?route=de-blue-card-general", noRecord).line!;
+    // No route's name cites a single section of an act today; one that did
+    // would have it explained on the screen's first use and not after.
+    const route = { ...facts.route!, name: "EU Blue Card (§ 18g AufenthG)" };
+    const [, words] = ABBREVIATIONS.find(([token]) => token === "AufenthG")!;
+    const glossary: Glossary = new Set();
+    expect(plainTextOf(arrivalLineHtml(ds, { ...facts, route }, glossary))).toContain(words);
+    expect(plainTextOf(arrivalLineHtml(ds, { ...facts, route }, glossary))).not.toContain(words);
+  });
+
+  it("is one status line, with the dataset's words escaped", () => {
+    const facts = arrivalOf(ds, "?route=de-blue-card-general", noRecord).line!;
+    const route = { ...facts.route!, name: "EU Blue Card <general> & more" };
+    const html = arrivalLineHtml(ds, { ...facts, route }, new Set());
+    expect(html).toMatch(/^<p class="recorded" role="status">[^<]*<\/p>$/);
+    expect(plainTextOf(html)).toContain(route.name);
   });
 
   it("an arrival that changes nothing is not an event", () => {
     const record = fullRecordFor("DE");
-    expect(arrivalPlan(ds, record, "de").changed).toBe(false);
+    expect(arrivalOf(ds, "?country=de", record).line).toBeNull();
   });
 });

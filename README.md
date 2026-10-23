@@ -82,7 +82,9 @@ more.
 The shape of the two repositories, the boundary between them and what crosses
 it: [docs/spine/ARCHITECTURE.md](docs/spine/ARCHITECTURE.md).
 
-- `src/pages/index.astro` — the interview and the results, client-side
+- `src/pages/index.astro` — the interview's page: it builds the browser's
+  history and the record's store and starts the interview
+- `src/lib/interview/` — the interview and the results, client-side
 - `src/pages/[country]/[route].astro` — one page per route, generated
 - `src/lib/route-page.ts` — the whole route page, built as a string so a test
   can read exactly what ships

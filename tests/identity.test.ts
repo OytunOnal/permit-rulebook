@@ -26,6 +26,32 @@ const read = (p: string) => readFileSync(root(p), "utf8").split("\r\n").join("\n
 const identity = read("identity.css");
 const dist = root("dist");
 
+/** Every stylesheet the built interview page links, as the browser receives them: the page's
+ * own (the tokens, the identity), the interview's and the verdict's, minified together. */
+function builtStylesheetsOfTheInterview(): string {
+  const page = read("dist/index.html");
+  const hrefs = [...page.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map((m) => m[1]!);
+  expect(hrefs.length, "precondition: the built page links its stylesheets").toBeGreaterThan(0);
+  return hrefs.map((href) => read(`dist/${href.replace(/^.*\/_astro\//, "_astro/")}`)).join("\n");
+}
+
+/** A stylesheet with every `@media print` block taken out. Paper is exempt: the printed record
+ * drops the mark and prints the stamp in black on white, a decision about what to print. Brace
+ * counting, not a regular expression: a print block contains nested rules. */
+function withoutPrint(css: string): string {
+  let rest = css;
+  for (let at = rest.indexOf("@media print"); at >= 0; at = rest.indexOf("@media print")) {
+    let depth = 0;
+    let end = rest.length;
+    for (let j = rest.indexOf("{", at); j < rest.length; j++) {
+      if (rest[j] === "{") depth++;
+      else if (rest[j] === "}" && --depth === 0) { end = j + 1; break; }
+    }
+    rest = rest.slice(0, at) + rest.slice(end);
+  }
+  return rest;
+}
+
 /** The selectors that make the pair what it is. */
 const PAIR_SELECTORS = [".stamps", ".stamps .mark", ".stamps .stamp"];
 
@@ -61,12 +87,13 @@ describe("the identity pair has one definition", () => {
     expect(built).toContain('class="stamps"');
     expect(built).toContain('class="mark"');
     expect(built).toContain('id="stamp-label"');
-    // And states nothing about the pair at all any more — not what it is made
-    // of, and since 2026-09-08 not where it goes either.
+    // And neither the page nor the stylesheets it is built with state anything
+    // about the pair beyond identity.css — not what it is made of, nor where it goes.
+    const builtCss = builtStylesheetsOfTheInterview();
     expect(page).toContain('<header class="masthead-with-stamps">');
-    expect(page).not.toContain("header .stamps{position:absolute");
+    expect(builtCss).not.toContain("header .stamps{position:absolute");
     for (const property of ["border:var(--stamp-border)", "var(--font-mono)", "letter-spacing:.1em"])
-      expect(page.split("import \"../../identity.css\";")[1], property)
+      expect(page.split("import \"../../identity.css\";")[1] + builtCss, property)
         .not.toContain(`.stamp{${property}`);
   });
 
@@ -83,29 +110,14 @@ describe("the identity pair has one definition", () => {
     // And both mastheads use it, rather than each stating its own.
     expect(read("src/pages/index.astro")).toContain('<header class="masthead-with-stamps">');
     expect(read("src/lib/route-page.ts")).toContain('<header class="masthead masthead-with-stamps">');
-    expect(read("src/pages/index.astro")).not.toContain("header .stamps{position:absolute");
+    expect(builtStylesheetsOfTheInterview()).not.toContain("header .stamps{position:absolute");
   });
 
   it("nothing else in the site draws the pair", () => {
     // A second definition is the drift this file exists to stop. `tokens.css`
     // holds values, not components; a page holds placement, not geometry.
-    //
-    // Print is deliberately exempt. Paper is a different medium — the results
-    // record drops the mark and prints the stamp in black on white — and that
-    // is a decision about what to print, not a second drawing.
-    // Brace counting, not a regular expression: a print block contains nested
-    // rules, and a lazy match stops at the first inner brace.
-    const withoutPrint = (css: string) => {
-      const at = css.indexOf("@media print");
-      if (at < 0) return css;
-      let depth = 0, i = css.indexOf("{", at);
-      for (let j = i; j < css.length; j++) {
-        if (css[j] === "{") depth++;
-        else if (css[j] === "}" && --depth === 0) return css.slice(0, at) + css.slice(j + 1);
-      }
-      return css.slice(0, at);
-    };
-    for (const file of ["tokens.css", "src/pages/index.astro", "src/lib/route-page.ts", "src/lib/verdict/verdict.css"]) {
+    // Print is exempt (`withoutPrint`).
+    for (const file of ["tokens.css", "src/lib/route-page.ts", "src/lib/verdict/verdict.css"]) {
       const own = withoutPrint(read(file).split("${IDENTITY}").join(" "));
       expect(own, `${file} draws the mark`).not.toMatch(/\.stamps\s+\.mark\s*\{/);
       // And states nothing the pair is made of, only where it goes.
@@ -115,6 +127,19 @@ describe("the identity pair has one definition", () => {
           expect(["position", "margin", "right", "left", "top", "bottom", "display", "flex", "align-self", "z-index"],
             `${file}: "${rule[2].trim()}" sets ${property}, which is the pair's own`).toContain(property);
       }
+    }
+  });
+
+  it("the interview page's built stylesheets draw the pair only as identity.css does", () => {
+    // Built, the interview's stylesheet is minified together with identity.css, so the pair's
+    // drawing rules are counted: as many as identity.css writes, and no more.
+    const built = withoutPrint(builtStylesheetsOfTheInterview());
+    expect(built, "precondition: the interview's stylesheet is among them").toContain(".qcard");
+    const own = withoutPrint(identity);
+    for (const part of ["mark", "stamp"]) {
+      const written = own.split(`.stamps .${part} {`).length - 1;
+      expect(written, `precondition: identity.css draws .stamps .${part}`).toBeGreaterThan(0);
+      expect(built.split(`.stamps .${part}{`).length - 1, `.stamps .${part} is drawn a second time`).toBe(written);
     }
   });
 });

@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW, MENU, MENU_CLOSE, PRODUCT_NAME, SEAL_LETTERS, unreadLabel,
+  COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW, MENU, MENU_CLOSE, PRODUCT_NAME, RULES_READ, SEAL_LETTERS, unreadLabel,
 } from "./copy/frame.js";
 import { esc, escAttr } from "./reason.js";
 import { url } from "./site.js";
@@ -16,7 +16,7 @@ import { url } from "./site.js";
  * rules place (Standards review, 2026-09-08).
  *
  * The interview's pair is the exception it declares: its stamp changes state as
- * the reader moves, so its markup carries the ids the page writes into. It
+ * the reader moves, so its markup carries the ids the interview writes into. It
  * still takes its geometry and its letters from here.
  */
 
@@ -51,8 +51,8 @@ export function stamps(label: string, date: string, o: { live?: boolean } = {}):
   const mark = `<span class="mark"${o.live ? "" : ' role="img"'} title="${escAttr(PRODUCT_NAME)}"${
     o.live ? "" : ` aria-label="${escAttr(PRODUCT_NAME)}"`}>${SEAL_LETTERS}</span>`;
   // The interview repaints its pair in place: the words and the date change
-  // state as the reader moves, so that one carries the ids the page writes
-  // into, and the box itself must not move between them.
+  // state as the reader moves, so that one carries the ids the interview
+  // writes into, and the box itself must not move between them.
   const inside = o.live
     ? `<time id="stamp-time" datetime="${escAttr(date)}"><span id="stamp-label">${
       esc(label)}</span><br><span id="stamp-date">${esc(date)}</span></time>`
@@ -62,7 +62,7 @@ export function stamps(label: string, date: string, o: { live?: boolean } = {}):
 }
 
 /** The pair a page shows when its own content is quoted from a source. */
-export const rulesRead = (date: string): string => stamps("Rules read", date);
+export const rulesRead = (date: string): string => stamps(RULES_READ, date);
 
 /**
  * The site header: the identity and the navigation, on every page from here.

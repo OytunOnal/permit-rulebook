@@ -1,8 +1,8 @@
 /*
  * The verdict's styles: everything the results body draws, beside the module
  * that draws it, imported by its entry. Every colour comes from tokens.css, a
- * size from it where its scale has one; the page keeps the frame, the
- * question card and the ledger.
+ * size from it where its scale has one; the interview's stylesheet keeps the
+ * frame, the question card and the ledger.
  */
 /* What the interview asks of a route, said on the card in the same words
    the route page uses — ink on card, no new colour and no verdict colour. */

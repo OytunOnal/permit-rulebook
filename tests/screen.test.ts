@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { SITUATION_FIELD, evaluate, isClosed, type Dataset, type Profile } from "permit-rulebook-data";
+import { SITUATION_FIELD, deriveQuestions, evaluate, isClosed, type Dataset, type Profile } from "permit-rulebook-data";
 import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/copy/interview.js";
 import { answersCheckedLine, nearestLine } from "../src/lib/copy/verdict.js";
+import {
+  EMPTY_INTERVIEW, interviewAfter, type Gesture, type InterviewState, type InterviewStep,
+} from "../src/lib/interview/index.js";
 import { questionMastheadOf } from "../src/lib/question.js";
-import { screenAfter, type FlowAction, type Masthead, type Screen } from "../src/lib/screen.js";
+import type { Masthead } from "../src/lib/screen.js";
 import { verdictOf, type Verdict } from "../src/lib/verdict/index.js";
 import { groupsIn } from "./verdict-cards.js";
 
@@ -39,9 +42,24 @@ function claimsAComparison(text: string): boolean {
     /\b\d+\s+(?:answers?|routes?|published|rule)/i.test(text);
 }
 
-/** The masthead a screen shows: the question card's on a question screen,
- * the one the verdict composed on a verdict screen — as the page draws it. */
-const mastheadOn = (screen: Screen): Masthead => (screen.kind === "question" ? questionMastheadOf(screen) : screen.masthead);
+/** The masthead a step's screen shows: the question card's on a question
+ * screen, the one the verdict composed on the verdict — as the page draws it. */
+function mastheadOn(step: InterviewStep): Masthead {
+  if (step.screen.kind === "question") return questionMastheadOf(step.screen);
+  const { answers, asked } = step.state;
+  return verdictOf(ds, answers, { cameFrom: step.state.scopedRouteId, answered: asked.length }).action.masthead;
+}
+
+/** The step a gesture leads to, where it leads to one. */
+function after(state: InterviewState, gesture: Gesture): InterviewStep {
+  const step = interviewAfter(ds, state, gesture);
+  if (step === null) throw new Error(`precondition: ${gesture.kind} leads to a step`);
+  return step;
+}
+
+/** The page opened onto `answers`, asked in the order they are written. */
+const openOnto = (answers: Profile): InterviewStep =>
+  after(EMPTY_INTERVIEW, { kind: "loaded", record: { answers, history: Object.keys(answers) }, search: "" });
 
 /** A reader of the Netherlands alone, with an offer there: one route open,
  * one within reach, the rest not yet. */
@@ -87,16 +105,42 @@ function oneDutchRoute(): Dataset {
   return copy;
 }
 
-/** The gestures that move the interview, and what each does to the count of
- * answers on file — the page's own `asked` array, modelled. */
-const GESTURES: Array<{ action: FlowAction; answers: (n: number) => number }> = [
-  { action: { kind: "answer" }, answers: (n) => n + 1 },
-  { action: { kind: "edit" }, answers: (n) => n },
-  { action: { kind: "restore" }, answers: (n) => n },
-  { action: { kind: "reset" }, answers: () => 0 },
-];
+/** Each question's answers, to answer it with one of them. */
+const OPTIONS = new Map(deriveQuestions(ds).map((q) => [q.field, q.options.map((o) => o.value)]));
 
-const COMPARE: FlowAction = verdictOn(ds, DUTCH_OFFER).action;
+/** The addresses Start over can be pressed on: a plain `/`, a country's arrival and a route's,
+ * each of which arrives again. */
+const START_OVER_ON = ["", "?country=de", "?route=de-blue-card-general"];
+
+/** One of `items`, chosen by `rand`. */
+const pick = <T>(rand: () => number, items: readonly T[]): T => items[Math.floor(rand() * items.length)];
+
+/**
+ * A gesture the page can make on the screen `step` drew: on a question, an
+ * answer from its options, Keep on an edit, Back in place; anywhere, a ledger
+ * row's ✎, the browser's Back or Forward and Start over.
+ */
+function gestureOn(rand: () => number, step: InterviewStep): Gesture {
+  const { asked, editing } = step.state;
+  const anywhere: Gesture[] = [
+    { kind: "restarted", search: pick(rand, START_OVER_ON) }, { kind: "browserMoved", field: null, ontoFirstScreen: false },
+  ];
+  if (asked.length > 0) {
+    anywhere.push({ kind: "editedRow", field: pick(rand, asked) });
+    anywhere.push({ kind: "browserMoved", field: pick(rand, asked), ontoFirstScreen: rand() < 0.3 });
+  }
+  if (step.screen.kind === "verdict") return pick(rand, anywhere);
+  const onQuestion: Gesture[] = [{ kind: "answered", value: pick(rand, OPTIONS.get(step.screen.field)!) }];
+  if (editing) onQuestion.push({ kind: "kept" }, { kind: "back", field: pick(rand, asked) });
+  // Answering is what moves an interview forward, so it is half of every walk.
+  return rand() < 0.5 ? pick(rand, onQuestion) : pick(rand, anywhere);
+}
+
+/** Whether the masthead `step` draws claims a comparison, with where it was drawn. */
+function claimOn(step: InterviewStep): { claims: boolean; where: string } {
+  const { headline, subline } = mastheadOn(step);
+  return { claims: claimsAComparison(headline) || claimsAComparison(subline), where: subline };
+}
 
 describe("invariant: a screen that has compared nothing claims nothing (B4)", () => {
   it("holds over random walks of the flow, at every point in every walk", () => {
@@ -104,53 +148,52 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
     // answers and left the claim about them standing. So the walk is what is
     // tested — every gesture the page can make, in any order, including the
     // two B4 was found on: post-reset and post-edit.
-    expect(COMPARE.kind, "precondition: the walk's comparison is one").toBe("compare");
     const rand = lcg(2718);
+    const trails: string[][] = [];
     for (let walk = 0; walk < 300; walk++) {
-      let answered = 0;
-      let last: FlowAction = { kind: "reset" };
+      let step = openOnto({});
       const trail: string[] = [];
-      for (let step = 0; step < 12; step++) {
-        // A result screen is reachable from anywhere the interview can end.
-        const gesture = rand() < 0.15 && answered > 0
-          ? { action: COMPARE, answers: (n: number) => n }
-          : GESTURES[Math.floor(rand() * GESTURES.length)];
-        answered = gesture.answers(answered);
-        last = gesture.action;
-        trail.push(last.kind);
-        const screen = screenAfter(last, { answered });
-        const { headline, subline } = mastheadOn(screen);
-        const where = `after ${trail.join(" → ")} with ${answered} answers: "${subline}"`;
-        if (last.kind === "compare") {
-          expect(screen.kind, where).toBe("results");
-          continue;
-        }
-        expect(screen.kind, where).toBe("question");
-        expect(claimsAComparison(subline), where).toBe(false);
-        expect(claimsAComparison(headline), where).toBe(false);
+      trails.push(trail);
+      for (let move = 0; move < 12; move++) {
+        const gesture = gestureOn(rand, step);
+        trail.push(gesture.kind === "restarted" ? `restarted on "${gesture.search}"` : gesture.kind);
+        step = interviewAfter(ds, step.state, gesture) ?? step;
+        // Only the verdict states what was compared.
+        if (step.screen.kind === "verdict") continue;
+        const { claims, where } = claimOn(step);
+        expect(claims, `after ${trail.join(" → ")}: "${where}"`).toBe(false);
       }
-      // And from wherever that walk ended — a result screen included — both
-      // ways back into the interview land on a screen that claims nothing.
-      for (const back of [{ kind: "reset" }, { kind: "edit" }] as FlowAction[]) {
-        const { headline, subline } = mastheadOn(screenAfter(back, { answered }));
-        expect(claimsAComparison(subline), `${back.kind} after ${trail.join(" → ")}`).toBe(false);
-        expect(claimsAComparison(headline), back.kind).toBe(false);
-      }
+      // And from wherever that walk ended — the verdict included — both ways
+      // back into the interview, Start over on every address, land on a screen that claims nothing.
+      const backs: Gesture[] = START_OVER_ON.map((search) => ({ kind: "restarted", search }));
+      if (step.state.asked.length > 0) backs.push({ kind: "editedRow", field: step.state.asked[0] });
+      for (const back of backs)
+        expect(claimOn(after(step.state, back)).claims, `${back.kind} after ${trail.join(" → ")}`).toBe(false);
     }
+    for (const search of START_OVER_ON)
+      expect(trails.flat(), `precondition: Start over on "${search}" was walked`).toContain(`restarted on "${search}"`);
   });
 
   it("\"Start over\" starts over regardless of what the caller believes", () => {
     // The reset does not take a count on trust: nothing was answered, so the
     // long promise is what a first-time reader gets, every time.
-    expect(screenAfter({ kind: "reset" }, { answered: 13 })).toEqual({ kind: "question", started: false });
-    expect(mastheadOn(screenAfter({ kind: "reset" }, { answered: 13 })).subline).toBe(INTRO_SUBLINE);
+    const restarted = after(openOnto(DUTCH_OFFER).state, { kind: "restarted", search: "" });
+    expect(restarted.screen).toMatchObject({ kind: "question", started: false });
+    expect(mastheadOn(restarted).subline).toBe(INTRO_SUBLINE);
   });
 
   it("an interview under way keeps the short promise, and an untouched one the long", () => {
-    for (const kind of ["answer", "edit", "restore"] as const) {
-      expect(mastheadOn(screenAfter({ kind }, { answered: 4 })).subline).toBe(SHORT_SUBLINE);
-      expect(mastheadOn(screenAfter({ kind }, { answered: 0 })).subline).toBe(INTRO_SUBLINE);
-    }
+    const threeAnswered = openOnto({ destination: "de", situation: "offer", citizenship: "IN" });
+    const underWay: Gesture[] = [
+      { kind: "answered", value: "degree" }, { kind: "editedRow", field: "situation" },
+      { kind: "back", field: "citizenship" }, { kind: "browserMoved", field: "destination", ontoFirstScreen: true },
+    ];
+    expect(mastheadOn(threeAnswered).subline, "loaded").toBe(SHORT_SUBLINE);
+    for (const gesture of underWay) expect(mastheadOn(after(threeAnswered.state, gesture)).subline, gesture.kind).toBe(SHORT_SUBLINE);
+    const untouched = openOnto({});
+    expect(mastheadOn(untouched).subline, "loaded").toBe(INTRO_SUBLINE);
+    const moved = after(untouched.state, { kind: "browserMoved", field: "destination", ontoFirstScreen: true });
+    expect(mastheadOn(moved).subline, "browserMoved").toBe(INTRO_SUBLINE);
   });
 
   it("the promise on a question screen is present tense, and counts nothing", () => {
@@ -188,7 +231,7 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
   it("the no-permit-needed screen says a comparison did not happen, and is a result", () => {
     const { action } = verdictOn(ds, EU_PASSPORT);
     expect(action.kind).toBe("answered-outright");
-    expect(screenAfter(action, { answered: 2 }).kind).toBe("notice");
+    expect(openOnto(EU_PASSPORT).screen.kind).toBe("verdict");
     expect(action.masthead.headline).toBe("No work permit needed.");
     expect(action.masthead.subline).toMatch(/nothing to compare/i);
   });

@@ -2,15 +2,15 @@
 /**
  * The question screens' words: the masthead before anything is compared,
  * the arrival line, the question card and its search, and what stands in the
- * box until the module draws (`lib/question.ts`, `lib/scope.ts`,
- * `lib/listbox.ts`, `lib/situations.ts`).
+ * box until the module draws (`lib/question.ts`, `lib/arrival-line.ts`,
+ * `lib/country-search/`, `lib/situations.ts`).
  *
  * Every word a reader reads lives in this folder, one file per screen or
  * part (CODING_STANDARDS.md, Rules).
  */
 
 /**
- * The arrival line's sentences (`lib/scope.ts`): a reader sent from a country's
+ * The arrival line's sentences (`lib/arrival-line.ts`): a reader sent from a country's
  * own page, or from one of its route pages, with the record set to that
  * country — newly, or moved from another. `placeOpening` is the country's
  * phrase where it opens a sentence, `place` its phrase within one, `route` the
@@ -20,6 +20,10 @@ export const placeOnRecordLine = (placeOpening: string): string => `${placeOpeni
 export const placeOnRecordNowLine = (placeOpening: string): string => `${placeOpening} is on the record now.`;
 export const comingFromRouteLine = (route: string, place: string): string => `Coming from ${route} — ${place} is on the record.`;
 export const startingFromRouteLine = (route: string, place: string): string => `Starting from ${route} — ${place} is on the record.`;
+/** The clause that names the answers a move kept, by their phrases already joined. */
+export const answersKeptClause = (phrases: string): string => `Your answers about ${phrases} are kept`;
+/** A kept answer's name when the dataset gives its field neither a subject nor a short label. */
+export const UNNAMED_QUESTION_PHRASE = "one more question";
 /** The clause that counts the questions still to come; `place` opens it or follows a clause before it. */
 export const placeAsksMoreClause = (place: string, asks: number): string =>
   `${place} asks ${asks} more question${asks === 1 ? "" : "s"}`;
@@ -65,8 +69,8 @@ export const RETURNING_LINE = "Your answers are on this device — bringing them
 export const LINK_ARRIVAL_LINE = "Setting up your questions.";
 
 /**
- * What the box says to a reader who came back to a half-done interview, once
- * the module has their screen.
+ * What the box says to a reader who came back to an interview kept on the
+ * device, over the question or the verdict, once the module has their screen.
  *
  * The stand-in above says the answers are coming back; this is the line that
  * says they came. Without it a returning visitor landed on "question 3 of up
@@ -77,6 +81,10 @@ export const LINK_ARRIVAL_LINE = "Setting up your questions.";
  */
 export const resumedLine = (kept: number): string =>
   `Continuing where you left off — ${kept} answer${kept === 1 ? "" : "s"} kept.`;
+
+/** The ledger's heading, and its one control, which takes the record away. */
+export const YOU_DECLARED = "You declared";
+export const START_OVER = "Start over";
 
 /**
  * The asked-for line's words (#139; GLOSSARY.md, *Asked-for line*): on a
@@ -106,6 +114,16 @@ export const ASKED_FOR_COUNTS_JOIN = ", ";
 export const EDIT_LINE = "Your answer — pick another to change it; answers your new choice still uses are kept";
 
 /**
+ * The question card's two exits (#56, ruling 6). Side by side on an edit
+ * screen they read alike, so each says where it goes: Back by the question it
+ * returns to, Keep by the question it moves on to, or the result. `label` is
+ * the question's short label, the ledger's own.
+ */
+export const backToLine = (label: string): string => `← Back to ${label}`;
+export const keepNextLine = (label: string): string => `Keep this answer — next: ${label}`;
+export const keepToResultLine = "Keep this answer — see your result";
+
+/**
  * What opens the set-aside line: the answers a change left without a route
  * that reads them, named after it by their short labels, on the next screen
  * only (#137).
@@ -115,6 +133,14 @@ export const setAsideLead = (count: number): string =>
 /** The whole line: the lead and the names, both already markup, and its
  * closing full stop. */
 export const setAsideLineHtml = (leadHtml: string, namesHtml: string): string => `${leadHtml} ${namesHtml}.`;
+
+/**
+ * What the passport picker just committed, on the question after it: the
+ * question's short label and the row's own name, both already markup, the
+ * name in bold.
+ */
+export const justRecordedLineHtml = (labelHtml: string, answerHtml: string): string =>
+  `${labelHtml} recorded: <b>${answerHtml}</b>`;
 
 /**
  * The mark under a situation answer no route the checker asks about in the
@@ -165,6 +191,30 @@ export const territoryLine = (
   territory: { atStart: string; inSentence: string }, countryPhrase: string, country: string,
 ): string =>
   `${territory.atStart} is not on this list: people from ${territory.inSentence} hold a passport of ${countryPhrase}. Choose ${country}.`;
+
+/**
+ * The passport search's other words (`lib/country-search/`). An empty box
+ * counts the list and says an everyday name finds a country; the live region
+ * counts the matches and names the row Enter would record; a list cut short
+ * counts what it left out.
+ */
+export const countriesToSearchLine = (countries: number): string =>
+  `${countries} countries — the name you grew up with works too.`;
+export const matchesHighlightedLine = (matches: number, highlighted: string | undefined): string =>
+  `${matches} match${matches === 1 ? "" : "es"}`
+  + (highlighted === undefined ? "" : `. ${highlighted} highlighted — press Enter to record it`);
+export const moreMatchesLine = (more: number): string => `${more} more — keep typing to narrow the list`;
+/** The box's name for a screen reader, and what it shows while empty. */
+export const SEARCH_BOX_LABEL = "Search the list";
+export const SEARCH_BOX_PLACEHOLDER = "Start typing…";
+/** What leads the passport already on the record, under the box. */
+export const ANSWER_ON_FILE = "Your answer on file:";
+/** Under a list whose options carry a country class: the class decides no
+ * rule, an agreement adds to it. The line break is the card's own. */
+export const PASSPORT_CLASSES_HINT = `Every non-EU passport is checked against the same rules. A few countries
+              have agreements that add rights on top — those are stated with their source when they apply to you.`;
+/** Beside a passport row a notice adds rights to, in place of its class. */
+export const NOTE_APPLIES_HINT = "a note applies to this passport";
 
 /**
  * The question screens' masthead (`lib/question.ts`): the standing tagline and

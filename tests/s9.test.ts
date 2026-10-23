@@ -6,7 +6,7 @@ import { countryPage, countryAddresses } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { indexedPaths } from "../src/lib/sitemap.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
-import { arrivalFrom, countryArrivalFrom, destinationForCountry } from "../src/lib/scope.js";
+import { arrivalOf } from "../src/lib/scope.js";
 import { NO_FIGURE } from "../src/lib/copy/route-page.js";
 import { QUOTED_ONLY_HEADING, countryHeadline } from "../src/lib/copy/country-page.js";
 
@@ -21,6 +21,9 @@ const textOf = (html: string): string =>
     .replace(/\s+/g, " ");
 
 const unscoredAddresses = () => routeAddresses(ds).filter((a) => !isScored(a.route));
+
+/** What the interview makes of an address, for a reader with nothing on the record. */
+const arrivalAt = (search: string) => arrivalOf(ds, search, { answers: {}, order: [] });
 
 /**
  * s9 — the five routes this product states and will not score, on the site.
@@ -117,13 +120,15 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
    */
   it("the interview does not take a scoped arrival from a route it never scores", () => {
     for (const a of unscoredAddresses()) {
-      expect(arrivalFrom(ds, `?route=${a.route.id}`), a.route.id).toBe(null);
+      const fromRoute = arrivalAt(`?route=${a.route.id}`);
+      expect(fromRoute.scopedRouteId, a.route.id).toBe(null);
+      expect(fromRoute.line?.route, a.route.id).toBe(null);
       // The country arrival the page actually offers still works.
-      expect(countryArrivalFrom(ds, `?country=${a.country.code.toLowerCase()}`)?.code, a.route.id)
+      expect(arrivalAt(`?country=${a.country.code.toLowerCase()}`).line?.country, a.route.id)
         .toBe(a.country.code);
     }
     // And a route it does score is still taken.
-    expect(arrivalFrom(ds, "?route=de-blue-card-general")?.route.id).toBe("de-blue-card-general");
+    expect(arrivalAt("?route=de-blue-card-general").scopedRouteId).toBe("de-blue-card-general");
   });
 
   it("it is the same document every other route page is", () => {
@@ -238,26 +243,29 @@ describe("s9 — the data page states both counts", () => {
 /**
  * The reader who came from a page with no verdict on it.
  *
- * `arrivalFrom` refuses an unscored route — there is no verdict to scope to —
- * and that refusal used to throw the route's country away with it: a reader
- * who pressed the button on the French employee card's page landed on an
- * interview about nowhere. They land on the interview scoped to that country
- * (Spec review, 2026-09-10).
+ * The arrival takes no route it does not score — there is no verdict to scope
+ * to — and keeps the route's country: a reader who pressed the button on the
+ * French employee card's page lands on the interview scoped to France, not on
+ * an interview about nowhere.
  */
 describe("arriving from a route that is not scored", () => {
   it("lands the reader in the route's country, with no route on the record", () => {
-    expect(arrivalFrom(ds, "?route=fr-salarie")).toBe(null);
-    const country = countryArrivalFrom(ds, "?route=fr-salarie");
-    expect(country?.code.toLowerCase()).toBe("fr");
-    expect(destinationForCountry(country)).toBe("fr");
+    const arrival = arrivalAt("?route=fr-salarie");
+    expect(arrival.scopedRouteId).toBe(null);
+    expect(arrival.line?.route).toBe(null);
+    expect(arrival.line?.country).toBe("FR");
+    expect(arrival.record.answers["destination"]).toBe("fr");
   });
 
   it("still refuses a route that does not exist", () => {
-    expect(countryArrivalFrom(ds, "?route=nowhere-at-all")).toBe(null);
+    expect(arrivalAt("?route=nowhere-at-all")).toEqual(
+      { record: { answers: {}, order: [] }, scopedRouteId: null, line: null });
   });
 
   it("leaves a scored route to the arrival that knows about verdicts", () => {
-    expect(countryArrivalFrom(ds, "?route=fr-ict")).toBe(null);
-    expect(arrivalFrom(ds, "?route=fr-ict")?.country.code.toLowerCase()).toBe("fr");
+    const arrival = arrivalAt("?route=fr-ict");
+    expect(arrival.scopedRouteId).toBe("fr-ict");
+    expect(arrival.line?.route?.id).toBe("fr-ict");
+    expect(arrival.record.answers["destination"]).toBe("fr");
   });
 });
