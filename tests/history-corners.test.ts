@@ -26,15 +26,15 @@ const BROWSER_BACK = (tab: InterviewTab) => tab.browserBack();
  * question back, none of them off the site. */
 function expectThreeStepsBack() {
   const tab = new InterviewTab(newStore());
-  const opened = tab.openFromOutside(3);
-  expect(opened.question, "the record did not restore to the fourth question").toBe(asks(3));
+  const entrance = tab.openFromOutside(3);
+  expect(entrance.question, "the record did not restore to the fourth question").toBe(asks(3));
   const backs = [tab.screenBack(), tab.screenBack(), tab.screenBack()];
   backs.forEach((screen, i) => {
     expect(screen.path, `tap ${i + 1} of the screen's Back left the site`).toBe("/");
     expect(screen.question, `tap ${i + 1} is not the question before`).toBe(asks(2 - i));
     // Stepping back in place pushes nothing: the browser's history stays the
     // length the reader walked it.
-    expect(screen.length, `tap ${i + 1} changed the browser's history`).toBe(opened.length);
+    expect(screen.length, `tap ${i + 1} changed the browser's history`).toBe(entrance.length);
   });
 }
 
@@ -42,22 +42,22 @@ function expectThreeStepsBack() {
 interface Change {
   /** Tab A opened `/` from outside onto this many stored answers, or walked
    * live from the first question. */
-  opened: number | "live";
+  entrance: number | "live";
   /** Tab A's answers in the tab after that. */
-  walked: number;
+  answeredInA: number;
   /** Whether tab B pressed "Start over" before answering. */
   restart: boolean;
   /** Tab B's answers. */
   answers: number;
 }
 /** Tab A's walk, tab B's, tab A's reload and the Backs tapped after it. */
-interface Walked {
-  walked: Where[]; inB: Where[]; reloaded: Where; backs: Where[];
+interface TwoTabWalk {
+  inA: Where[]; inB: Where[]; reloaded: Where; backs: Where[];
 }
 
 /** The step the list tab A rebuilds on reload stands on: one per answer on the record. */
 const topAfter = (c: Change) =>
-  c.restart ? c.answers : (c.opened === "live" ? 0 : c.opened) + c.walked + c.answers;
+  c.restart ? c.answers : (c.entrance === "live" ? 0 : c.entrance) + c.answeredInA + c.answers;
 
 /**
  * Walk `change` — tab A, then tab B on the record the two share, then a
@@ -65,23 +65,23 @@ const topAfter = (c: Change) =>
  * on the interview and, for the screen's Back, is offered: at most two more
  * taps than the two tabs made screens, so a Back that never ends still does.
  */
-function changedThenBack(change: Change, gesture: (tab: InterviewTab) => Where): Walked {
+function changedThenBack(change: Change, gesture: (tab: InterviewTab) => Where): TwoTabWalk {
   const store = newStore();
   const a = new InterviewTab(store);
-  const walked = change.opened === "live" ? a.live(change.walked) : [a.openFromOutside(change.opened)];
-  if (change.opened !== "live") for (let i = 0; i < change.walked; i++) walked.push(a.answer());
+  const inA = change.entrance === "live" ? a.live(change.answeredInA) : [a.openFromOutside(change.entrance)];
+  if (change.entrance !== "live") for (let i = 0; i < change.answeredInA; i++) inA.push(a.answer());
   const b = new InterviewTab(store);
   const inB = [b.open()];
   if (change.restart) inB.push(b.restart());
   for (let i = 0; i < change.answers; i++) inB.push(b.answer());
   const reloaded = a.reload();
   const backs: Where[] = [];
-  while (backs.length < walked.length + inB.length + 2) {
+  while (backs.length < inA.length + inB.length + 2) {
     if ((backs.at(-1) ?? reloaded).path !== "/") break;
     if (gesture === SCREEN_BACK && !a.hasBack) break;
     backs.push(gesture(a));
   }
-  return { walked, inB, reloaded, backs };
+  return { inA, inB, reloaded, backs };
 }
 
 /**
@@ -91,7 +91,7 @@ function changedThenBack(change: Change, gesture: (tab: InterviewTab) => Where):
  * first question, the reader on `/` throughout and the browser's history the
  * length it was.
  */
-function expectScreenBackWalksTheList(seen: Walked, change: Change) {
+function expectScreenBackWalksTheList(seen: TwoTabWalk, change: Change) {
   const top = topAfter(change);
   expect(seen.reloaded.question, "the reload did not restore what tab B left").toBe(seen.inB.at(-1)!.question);
   expect(seen.reloaded.step).toBe(top);
@@ -110,9 +110,9 @@ function expectScreenBackWalksTheList(seen: Walked, change: Change) {
 
 /** The browser's Back after a reload onto a changed record: one gesture per entry the tab wrote
  * behind the one it reloaded, in order, each on the page and none of them added by it; then off it. */
-function expectBrowserBackWalksItsOwnEntries({ walked, inB, reloaded, backs }: Walked) {
+function expectBrowserBackWalksItsOwnEntries({ inA, inB, reloaded, backs }: TwoTabWalk) {
   expect(reloaded.question, "the reload did not restore what tab B left").toBe(inB.at(-1)!.question);
-  const behind = walked.slice(0, -1).map((s) => s.step).reverse();
+  const behind = inA.slice(0, -1).map((s) => s.step).reverse();
   expect(backs.slice(0, -1).map((s) => s.step), "the browser's Back did not walk the tab's own entries")
     .toEqual(behind);
   backs.slice(0, -1).forEach((s, i) => {
@@ -135,14 +135,14 @@ describe("Back on a restored record", () => {
 
   it("an answer after an outside entrance is held, and the screen it opened on is still the edge", () => {
     const tab = new InterviewTab(newStore());
-    const opened = tab.openFromOutside(3);
+    const entrance = tab.openFromOutside(3);
     const advanced = tab.answer();
-    expect(advanced.question).not.toBe(opened.question);
-    expect(advanced.step).toBe((opened.step as number) + 1);
-    expect(advanced.length, "an answer is one entry").toBe(opened.length + 1);
+    expect(advanced.question).not.toBe(entrance.question);
+    expect(advanced.step).toBe((entrance.step as number) + 1);
+    expect(advanced.length, "an answer is one entry").toBe(entrance.length + 1);
     // The first Back goes onto the entry the answer pushed: the screen it opened on.
     const back1 = tab.screenBack();
-    expect([back1.path, back1.question, back1.step]).toEqual(["/", asks(3), opened.step]);
+    expect([back1.path, back1.question, back1.step]).toEqual(["/", asks(3), entrance.step]);
     // The second is behind the first held step: in place, not off the site.
     const back2 = tab.screenBack();
     expect([back2.path, back2.question], "the second Back left the site").toEqual(["/", asks(2)]);
@@ -180,11 +180,11 @@ describe("Back on a restored record", () => {
   it("a record grown in another tab, then a reload, still steps back in place", () => {
     const store = newStore();
     const a = new InterviewTab(store);
-    const opened = a.openFromOutside(3);
+    const entrance = a.openFromOutside(3);
     const b = new InterviewTab(store);
     const inB = [b.open(), b.answer(), b.answer()];
     // Tab B opened on the same record, and each answer moved it on.
-    expect(inB[0]!.question).toBe(opened.question);
+    expect(inB[0]!.question).toBe(entrance.question);
     expect(new Set(inB.map((s) => s.question)).size).toBe(3);
     // The reload restores what tab B left: two questions further on.
     const reloaded = a.reload();
@@ -206,9 +206,9 @@ describe("Back on a restored record", () => {
    */
   const SHRUNK: (Change & { name: string })[] = [
     { name: "three answers and three more, started over with three — the round's shallow shrink",
-      opened: 3, walked: 3, restart: true, answers: 3 },
-    { name: "two answers and two more, started over with two", opened: 2, walked: 2, restart: true, answers: 2 },
-    { name: "three answers and three more, started over with four", opened: 3, walked: 3, restart: true, answers: 4 },
+      entrance: 3, answeredInA: 3, restart: true, answers: 3 },
+    { name: "two answers and two more, started over with two", entrance: 2, answeredInA: 2, restart: true, answers: 2 },
+    { name: "three answers and three more, started over with four", entrance: 3, answeredInA: 3, restart: true, answers: 4 },
   ];
   for (const change of SHRUNK) {
     it(`a record shrunk in another tab (${change.name}), then a reload: every screen Back is the question before`, () => {
@@ -223,7 +223,7 @@ describe("Back on a restored record", () => {
    * the screen's Back is the browser's while they last and in place after.
    */
   it("a record restarted in another tab to the same length, then a reload: every screen Back is the question before", () => {
-    const change: Change = { opened: 2, walked: 2, restart: true, answers: 4 };
+    const change: Change = { entrance: 2, answeredInA: 2, restart: true, answers: 4 };
     expectScreenBackWalksTheList(changedThenBack(change, SCREEN_BACK), change);
   });
 
@@ -236,10 +236,10 @@ describe("Back on a restored record", () => {
    * agreement does not reach it.
    */
   const PARTED: (Change & { name: string })[] = [
-    { name: "grown by 1 after a live walk", opened: "live", walked: 3, restart: false, answers: 1 },
-    { name: "grown by 2 after a live walk", opened: "live", walked: 3, restart: false, answers: 2 },
+    { name: "grown by 1 after a live walk", entrance: "live", answeredInA: 3, restart: false, answers: 1 },
+    { name: "grown by 2 after a live walk", entrance: "live", answeredInA: 3, restart: false, answers: 2 },
     { name: "shrunk deep — three answers and three more, started over with one",
-      opened: 3, walked: 3, restart: true, answers: 1 },
+      entrance: 3, answeredInA: 3, restart: true, answers: 1 },
   ];
   for (const change of PARTED) {
     it(`a record ${change.name} in another tab, then a reload: the screen's Back walks the list, the browser's its own entries`, () => {

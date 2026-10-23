@@ -35,7 +35,7 @@ function freshTab(): FakeTab {
 }
 
 /** A tab that walked `fields` live: the first shown on opening, each next one by answering. */
-function walkedLive(fields: string[]): { tab: FakeTab; history: InterviewHistory } {
+function walkLive(fields: string[]): { tab: FakeTab; history: InterviewHistory } {
   const tab = freshTab();
   const history = openInterviewHistory(tab, { asked: [], showing: fields[0]! });
   for (const field of fields.slice(1)) history.pushScreen(field);
@@ -43,14 +43,14 @@ function walkedLive(fields: string[]): { tab: FakeTab; history: InterviewHistory
 }
 
 /** The page opened onto the three stored answers, on an entry whose state is `state`. */
-function openedOnto(state: unknown): { tab: FakeTab; history: InterviewHistory } {
+function openOnEntry(state: unknown): { tab: FakeTab; history: InterviewHistory } {
   const tab = freshTab();
   tab.replace(state);
   return { tab, history: openInterviewHistory(tab, { asked: ASKED, showing: "qualification" }) };
 }
 
 /** The tab reloaded, and the page opened again onto `asked`. */
-function reopened(tab: FakeTab, asked: string[], showing: string | null): InterviewHistory {
+function reloadOnto(tab: FakeTab, asked: string[], showing: string | null): InterviewHistory {
   tab.reload();
   return openInterviewHistory(tab, { asked, showing });
 }
@@ -73,7 +73,7 @@ function holdsBehind(state: unknown, answered: number): boolean {
 
 /** The browser's Back onto an entry whose state is `state`, from a page opened onto `answered`
  * answers: what it drew, and whether the screen's Back asks the browser after it. */
-function poppedOnto(state: unknown, answered: number): { shown: (string | null)[]; held: boolean } {
+function popOnto(state: unknown, answered: number): { shown: (string | null)[]; held: boolean } {
   const tab = freshTab();
   tab.replace(state);
   tab.push(null);
@@ -86,8 +86,8 @@ function poppedOnto(state: unknown, answered: number): { shown: (string | null)[
 
 describe("a reloaded page rebuilds the entries the browser kept", () => {
   it("one entry per answered question, then the one on screen", () => {
-    const { tab } = walkedLive(["destination", "situation", "qualification", "citizenship"]);
-    const history = reopened(tab, ["destination", "situation", "qualification"], "citizenship");
+    const { tab } = walkLive(["destination", "situation", "qualification", "citizenship"]);
+    const history = reloadOnto(tab, ["destination", "situation", "qualification"], "citizenship");
     // Standing on the last one, which is what the browser is showing.
     expect(stepOf(tab)).toBe(3);
     const shown = shownOnMoves(history);
@@ -138,7 +138,7 @@ describe("one history entry per question", () => {
   });
 
   it("every entry names the question it was showing", () => {
-    const { tab, history } = walkedLive(["destination", "situation", "citizenship"]);
+    const { tab, history } = walkLive(["destination", "situation", "citizenship"]);
     // The results screen is an entry too, and names no question.
     history.pushScreen(null);
     expect(stepOf(tab)).toBe(3);
@@ -154,7 +154,7 @@ describe("one history entry per question", () => {
   });
 
   it("answering after going back drops what was ahead", () => {
-    const { tab, history } = walkedLive(["destination", "situation", "citizenship"]);
+    const { tab, history } = walkLive(["destination", "situation", "citizenship"]);
     const shown = shownOnMoves(history);
     // Back to the second question, then a different answer.
     tab.back();
@@ -179,7 +179,7 @@ const NOT_A_COUNT: unknown[] = ["5", {}, -1, -Infinity, 1e308, Infinity, NaN, 2.
  */
 describe("the screen's Back asks the browser only for entries it holds", () => {
   it("an outside entrance onto a stored record holds nothing behind the screen it opened on", () => {
-    const { tab, history } = openedOnto(null);
+    const { tab, history } = openOnEntry(null);
     expect(stepOf(tab)).toBe(3);
     expect(history.back(ASKED, null)).toEqual({ kind: "in-place", field: "situation" });
     expect(tab.length).toBe(1);
@@ -187,12 +187,12 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
 
   it("an entry that says how many held steps stand behind it is believed, however the page was opened", () => {
     // Walked live in this tab, then reloaded: every step is held.
-    const live = walkedLive(QUESTIONS.slice(0, 4));
-    expect(reopened(live.tab, ASKED, "qualification").back(ASKED, null)).toEqual({ kind: "browser" });
+    const live = walkLive(QUESTIONS.slice(0, 4));
+    expect(reloadOnto(live.tab, ASKED, "qualification").back(ASKED, null)).toEqual({ kind: "browser" });
     // An outside entrance, then reloaded or left and returned to: the browser
     // still holds only the screen it opened on, and the entry says so.
-    const opened = openedOnto(null);
-    expect(reopened(opened.tab, ASKED, "qualification").back(ASKED, null))
+    const entrance = openOnEntry(null);
+    expect(reloadOnto(entrance.tab, ASKED, "qualification").back(ASKED, null))
       .toEqual({ kind: "in-place", field: "situation" });
   });
 
@@ -241,9 +241,9 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
    * nothing held.
    */
   it("a popped entry is believed where it lands on its own step, and not where it was clamped", () => {
-    expect(poppedOnto({ step: 2, held: 2 }, 4)).toEqual({ shown: ["situation"], held: true });
-    expect(poppedOnto({ step: 5, held: 3 }, 1)).toEqual({ shown: ["citizenship"], held: false });
-    expect(poppedOnto({ step: 5, held: 1 }, 1)).toEqual({ shown: ["citizenship"], held: false });
+    expect(popOnto({ step: 2, held: 2 }, 4)).toEqual({ shown: ["situation"], held: true });
+    expect(popOnto({ step: 5, held: 3 }, 1)).toEqual({ shown: ["citizenship"], held: false });
+    expect(popOnto({ step: 5, held: 1 }, 1)).toEqual({ shown: ["citizenship"], held: false });
   });
 
   /**
@@ -269,11 +269,11 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
    */
   it("an entry written before the held count is an outside entrance, however it was reached", () => {
     expect(holdsBehind({ step: 3 }, 3)).toBe(false);
-    expect(poppedOnto({ step: 3 }, 4)).toEqual({ shown: ["qualification"], held: false });
+    expect(popOnto({ step: 3 }, 4)).toEqual({ shown: ["qualification"], held: false });
   });
 
   it("an answer after an outside entrance is held, and the screen it opened on is still the edge", () => {
-    const { tab, history } = openedOnto(null);
+    const { tab, history } = openOnEntry(null);
     const asked = [...ASKED, "qualification"];
     history.pushScreen("occupation_it");
     expect([tab.length, stepOf(tab)]).toEqual([2, 4]);
@@ -290,7 +290,7 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
   });
 
   it("starting over stands on a held entry: the edge goes back to the first step", () => {
-    const { tab, history } = openedOnto(null);
+    const { tab, history } = openOnEntry(null);
     // "Start over" empties the list; its first screen rewrites the entry the
     // reader is standing on, which the browser holds.
     history.startOver();
@@ -311,7 +311,7 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
 
   /** The label on "← Back" and the move it makes cannot disagree (#56, ruling 6). */
   it("the screen's Back names the question it goes to, past the first held step and on it", () => {
-    const { history } = openedOnto(null);
+    const { history } = openOnEntry(null);
     const asked = [...ASKED, "qualification"];
     expect(history.backTarget(ASKED, null)).toBe("situation");
     history.pushScreen("occupation_it");
@@ -333,10 +333,10 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
  */
 describe("what an entry carries is written and read in one place", () => {
   it("a state the page wrote reads back as the step it names and where the held steps begin", () => {
-    const { tab } = walkedLive(["destination", "citizenship", "situation"]);
+    const { tab } = walkLive(["destination", "citizenship", "situation"]);
     const written = tab.state();
     // Reloaded onto that entry, the page's rule gives back the edge it had.
-    const reloaded = reopened(tab, ["destination", "citizenship"], "situation");
+    const reloaded = reloadOnto(tab, ["destination", "citizenship"], "situation");
     expect(tab.state()).toEqual(written);
     expect(reloaded.back(["destination", "citizenship"], null)).toEqual({ kind: "browser" });
   });
@@ -350,27 +350,27 @@ describe("what an entry carries is written and read in one place", () => {
   it("a record grown in another tab moves the list, and nothing behind it is held", () => {
     const grown = [...ASKED, "qualification", "occupation_it"];
     const inPlace = { kind: "in-place", field: "occupation_it" };
-    const tabA = openedOnto(null).tab;
-    expect(reopened(tabA, grown, "salary").back(grown, null)).toEqual(inPlace);
+    const tabA = openOnEntry(null).tab;
+    expect(reloadOnto(tabA, grown, "salary").back(grown, null)).toEqual(inPlace);
     // Walked live from the first question, then grown: the steps walked are
     // behind the entry in the browser, but they name steps of the shorter list.
-    const live = walkedLive(QUESTIONS.slice(0, 4));
-    expect(reopened(live.tab, grown, "salary").back(grown, null)).toEqual(inPlace);
+    const live = walkLive(QUESTIONS.slice(0, 4));
+    expect(reloadOnto(live.tab, grown, "salary").back(grown, null)).toEqual(inPlace);
   });
 
   it("a state nothing of ours wrote names no step and holds nothing", () => {
     for (const state of [null, undefined, "2", 2, { step: "2" }, { step: -1 }, { step: NaN }, { step: 1.5 }]) {
       expect(holdsBehind(state, 3), JSON.stringify(state)).toBe(false);
-      expect(poppedOnto(state, 3).shown, JSON.stringify(state)).toEqual([]);
+      expect(popOnto(state, 3).shown, JSON.stringify(state)).toEqual([]);
     }
   });
 
   it("the reader believes a held count only where the builder could have written it", () => {
     // The same nine shapes the Security axis measured (s37 round 1), read on a browser move.
     for (const held of NOT_A_COUNT)
-      expect(poppedOnto({ step: 3, held }, 4).held, `held: ${String(held)}`).toBe(false);
-    expect(poppedOnto({ step: 3 }, 4).held).toBe(false);
-    for (const held of [1, 3]) expect(poppedOnto({ step: 3, held }, 4).held).toBe(true);
+      expect(popOnto({ step: 3, held }, 4).held, `held: ${String(held)}`).toBe(false);
+    expect(popOnto({ step: 3 }, 4).held).toBe(false);
+    for (const held of [1, 3]) expect(popOnto({ step: 3, held }, 4).held).toBe(true);
   });
 
   /**
@@ -384,7 +384,7 @@ describe("what an entry carries is written and read in one place", () => {
     for (const held of [4, 100, Number.MAX_SAFE_INTEGER])
       expect(holdsBehind({ step: 3, held }, 3), `held: ${held}`).toBe(false);
     // A step it cannot read believes no count at all.
-    expect(poppedOnto({ held: 2 }, 3).shown).toEqual([]);
+    expect(popOnto({ held: 2 }, 3).shown).toEqual([]);
     // Up to the step itself, the count is one the page writes.
     for (const held of [2, 3]) expect(holdsBehind({ step: 3, held }, 3)).toBe(true);
   });

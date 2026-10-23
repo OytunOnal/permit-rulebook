@@ -58,7 +58,7 @@ function after(state: InterviewState, gesture: Gesture): InterviewStep {
 }
 
 /** The page opened onto `answers`, asked in the order they are written. */
-const loaded = (answers: Profile): InterviewStep =>
+const openOnto = (answers: Profile): InterviewStep =>
   after(EMPTY_INTERVIEW, { kind: "loaded", record: { answers, history: Object.keys(answers) }, search: "" });
 
 /** A reader of the Netherlands alone, with an offer there: one route open,
@@ -144,7 +144,7 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
     // two B4 was found on: post-reset and post-edit.
     const rand = lcg(2718);
     for (let walk = 0; walk < 300; walk++) {
-      let step = loaded({});
+      let step = openOnto({});
       const trail: string[] = [];
       for (let move = 0; move < 12; move++) {
         const gesture = gestureOn(rand, step);
@@ -167,20 +167,20 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
   it("\"Start over\" starts over regardless of what the caller believes", () => {
     // The reset does not take a count on trust: nothing was answered, so the
     // long promise is what a first-time reader gets, every time.
-    const restarted = after(loaded(DUTCH_OFFER).state, { kind: "restarted", search: "" });
+    const restarted = after(openOnto(DUTCH_OFFER).state, { kind: "restarted", search: "" });
     expect(restarted.screen).toMatchObject({ kind: "question", started: false });
     expect(mastheadOn(restarted).subline).toBe(INTRO_SUBLINE);
   });
 
   it("an interview under way keeps the short promise, and an untouched one the long", () => {
-    const threeAnswered = loaded({ destination: "de", situation: "offer", citizenship: "IN" });
+    const threeAnswered = openOnto({ destination: "de", situation: "offer", citizenship: "IN" });
     const underWay: Gesture[] = [
       { kind: "answered", value: "degree" }, { kind: "editedRow", field: "situation" },
       { kind: "back", field: "citizenship" }, { kind: "browserMoved", field: "destination", ontoFirstScreen: true },
     ];
     expect(mastheadOn(threeAnswered).subline, "loaded").toBe(SHORT_SUBLINE);
     for (const gesture of underWay) expect(mastheadOn(after(threeAnswered.state, gesture)).subline, gesture.kind).toBe(SHORT_SUBLINE);
-    const untouched = loaded({});
+    const untouched = openOnto({});
     expect(mastheadOn(untouched).subline, "loaded").toBe(INTRO_SUBLINE);
     const moved = after(untouched.state, { kind: "browserMoved", field: "destination", ontoFirstScreen: true });
     expect(mastheadOn(moved).subline, "browserMoved").toBe(INTRO_SUBLINE);
@@ -221,7 +221,7 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
   it("the no-permit-needed screen says a comparison did not happen, and is a result", () => {
     const { action } = verdictOn(ds, EU_PASSPORT);
     expect(action.kind).toBe("answered-outright");
-    expect(loaded(EU_PASSPORT).screen.kind).toBe("verdict");
+    expect(openOnto(EU_PASSPORT).screen.kind).toBe("verdict");
     expect(action.masthead.headline).toBe("No work permit needed.");
     expect(action.masthead.subline).toMatch(/nothing to compare/i);
   });

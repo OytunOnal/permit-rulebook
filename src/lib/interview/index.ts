@@ -63,16 +63,16 @@ export function startInterview({ browserHistory, store }: InterviewPorts): void 
     interview = step.state;
     if (step.save === "clear") clearRecord(store);
     else if (step.save) saveRecord(store, step.save);
-    history ??= opened(step);
+    history ??= openHistoryOn(step);
     for (const call of step.history) tell(history, call);
     drawing.drawStep(step, history.backTarget(step.state.asked, step.state.editing));
   };
-  /** The history, opened onto the first step's screen; the browser's moves are gestures from then on. */
-  const opened = (first: InterviewStep): InterviewHistory => {
+  /** Opens the history onto the first step's screen; the browser's moves are gestures from then on. */
+  const openHistoryOn = (first: InterviewStep): InterviewHistory => {
     const showing = first.screen.kind === "question" ? first.screen.field : null;
-    const openedHistory = openInterviewHistory(browserHistory, { asked: first.state.asked, showing });
-    openedHistory.onMove((move) => apply({ kind: "browserMoved", ...move }));
-    return openedHistory;
+    const firstHistory = openInterviewHistory(browserHistory, { asked: first.state.asked, showing });
+    firstHistory.onMove((move) => apply({ kind: "browserMoved", ...move }));
+    return firstHistory;
   };
   const drawing = openDrawing(ds, questions, {
     makeGesture: apply,

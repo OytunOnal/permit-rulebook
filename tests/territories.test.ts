@@ -34,7 +34,7 @@ const expectedTerritoryLine = (typed: string): string => {
 
 /** What the passport search draws for `typed`: its rows, the line the list
  * shows in their place, and what the live region reads. */
-function searchedFor(typed: string) {
+function searchFor(typed: string) {
   const view = countrySearchOf(passports, { chosen: undefined, classed: null }, () => {}).typeQuery(typed);
   return {
     rows: (view.listHtml.match(/role="option"/g) ?? []).length,
@@ -47,7 +47,7 @@ describe("the passport search's no-match decision", () => {
   it("a territory's name: the territory line, naming its passport's country, and no row", () => {
     const typed = "Puerto Rico";
     expect(matchOptions(passports, typed)).toEqual([]);
-    const said = searchedFor(typed);
+    const said = searchFor(typed);
     expect(said.rows).toBe(0);
     expect(said.line).toBe(expectedTerritoryLine(typed));
     expect(said.line).not.toBe(NO_COUNTRY_MATCHES);
@@ -59,14 +59,14 @@ describe("the passport search's no-match decision", () => {
     const territory = (countryVocabulary.territories ?? []).find((t) => t.aliases?.length)!;
     const alias = territory.aliases![0];
     expect(matchOptions(passports, alias)).toEqual([]);
-    expect(searchedFor(alias)).toMatchObject({ rows: 0, line: expectedTerritoryLine(territory.name) });
+    expect(searchFor(alias)).toMatchObject({ rows: 0, line: expectedTerritoryLine(territory.name) });
   });
 
   it("a name that is neither a country nor a territory: today's line, and no row", () => {
     const typed = "Narnia";
     expect(matchOptions(passports, typed)).toEqual([]);
     expect(findTerritory(typed)).toBeUndefined();
-    expect(searchedFor(typed)).toEqual({ rows: 0, line: NO_COUNTRY_MATCHES, status: NO_COUNTRY_MATCHES_STATUS });
+    expect(searchFor(typed)).toEqual({ rows: 0, line: NO_COUNTRY_MATCHES, status: NO_COUNTRY_MATCHES_STATUS });
   });
 
   it("the template reads no country's or territory's name of its own", () => {

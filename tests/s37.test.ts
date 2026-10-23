@@ -151,7 +151,7 @@ const WIDE: Viewport = { viewport: { width: 1100, height: 900 }, mobile: false }
 const PHONE: Viewport = { viewport: { width: 390, height: 844 }, mobile: true };
 
 /** `walk` in a fresh browser of `size` over the built site. */
-async function walked<T>(size: Viewport, walk: (w: Walker) => Promise<T>): Promise<T> {
+async function walkInBrowser<T>(size: Viewport, walk: (w: Walker) => Promise<T>): Promise<T> {
   const server = await serve(dist);
   try {
     return await withBrowser((page: BrowserPage) => walk(walker(page, server.url)), size) as T;
@@ -169,16 +169,16 @@ describe("Back on a restored record, in a real browser", () => {
 
 describe.skipIf(skipped !== null)("Back on a restored record", () => {
   it("from the screen an outside entrance opened on, the browser's Back still leaves to the page before", async () => {
-    const seen = await walked(WIDE, async (w) => {
-      const opened = await w.openFromOutside();
-      return { opened, back: await w.act(BROWSER_BACK, SETTLE.newDocument) };
+    const seen = await walkInBrowser(WIDE, async (w) => {
+      const entrance = await w.openFromOutside();
+      return { entrance, back: await w.act(BROWSER_BACK, SETTLE.newDocument) };
     });
-    expect(seen.opened.question).toBe(asks("qualification"));
+    expect(seen.entrance.question).toBe(asks("qualification"));
     expect(seen.back.path, "the browser's Back was held on the site").toBe("/data/");
   }, 180000);
 
   it("the reload path stays mended: three answered live, a reload, then step 3 → 2 → 1", async () => {
-    const seen = await walked(PHONE, async (w) => {
+    const seen = await walkInBrowser(PHONE, async (w) => {
       const live = await w.live(3);
       const reloaded = await w.act("location.reload()", SETTLE.newDocument);
       const screenBack = await w.act(SCREEN_BACK);
@@ -194,7 +194,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
   }, 180000);
 
   it("mid-interview, the screen's Back and the browser's land on the same question", async () => {
-    const seen = await walked(PHONE, async (w) => {
+    const seen = await walkInBrowser(PHONE, async (w) => {
       const walk = async (goBack: string) => {
         const live = await w.live(2);
         return { live, back: await w.act(goBack) };
@@ -216,7 +216,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
    * question again — a dead Back in a single tab, which no other walk caught.
    */
   it("in one tab, the browser's Back, the screen's, then the browser's: each a question back", async () => {
-    const seen = await walked(PHONE, async (w) => {
+    const seen = await walkInBrowser(PHONE, async (w) => {
       const live = await w.live(5);
       const backs: Where[] = [];
       for (const gesture of [BROWSER_BACK, SCREEN_BACK, BROWSER_BACK]) backs.push(await w.act(gesture));
@@ -242,7 +242,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
  */
 describe.skipIf(skipped !== null)("back and forward walk the questions", () => {
   it("four answers, back twice and forward once, land on the questions they name", async () => {
-    const seen = await walked(PHONE, async (w) => {
+    const seen = await walkInBrowser(PHONE, async (w) => {
       const asked = await w.live(4);
       const back1 = await w.act(BROWSER_BACK);
       const back2 = await w.act(BROWSER_BACK);
@@ -268,7 +268,7 @@ describe.skipIf(skipped !== null)("back and forward walk the questions", () => {
   }, 180000);
 
   it("the screen's own Back and the browser's land on the same question", async () => {
-    const seen = await walked(PHONE, async (w) => {
+    const seen = await walkInBrowser(PHONE, async (w) => {
       const walk = async (goBack: string) => {
         const live = await w.live(3);
         return { before: live.at(-1)!, after: await w.act(goBack) };
@@ -291,7 +291,7 @@ describe.skipIf(skipped !== null)("back and forward walk the questions", () => {
    * 2026-09-08).
    */
   it("after a reload both Backs still land on the same previous question, and forward returns", async () => {
-    const seen = await walked(PHONE, async (w) => {
+    const seen = await walkInBrowser(PHONE, async (w) => {
       const walk = async (goBack: string) => {
         const live = await w.live(4);
         const reloaded = await w.act("location.reload()", SETTLE.newDocument);

@@ -70,7 +70,7 @@ export interface InterviewHistory {
 }
 
 /** What the history holds between gestures. */
-interface Kept {
+interface HistoryMemory {
   list: ScreenHistory;
   /** Whether the browser is moving the reader: the screen it draws writes no entry. */
   restoring: boolean;
@@ -86,35 +86,35 @@ interface Kept {
 export function openInterviewHistory(browser: BrowserHistory, { asked, showing }: OpenedOn): InterviewHistory {
   const list = historyFor(asked, showing);
   list.firstHeld = firstHeldStep(browser.state(), list.current);
-  const kept: Kept = { list, restoring: false, show: null };
-  write(browser, kept, "replace");
-  browser.onMove((state) => browserMoved(kept, state));
+  const memory: HistoryMemory = { list, restoring: false, show: null };
+  write(browser, memory, "replace");
+  browser.onMove((state) => showBrowserMove(memory, state));
   return {
     pushScreen: (field) => {
-      if (!kept.restoring) write(browser, kept, recordAdvance(kept.list, field));
+      if (!memory.restoring) write(browser, memory, recordAdvance(memory.list, field));
     },
     replaceScreen: (field) => {
-      if (!kept.restoring) write(browser, kept, recordInPlace(kept.list, field));
+      if (!memory.restoring) write(browser, memory, recordInPlace(memory.list, field));
     },
-    startOver: () => { kept.list = emptyHistory(); },
-    backTarget: (asked, editing) => backTargetOf(kept.list, asked, editing),
+    startOver: () => { memory.list = emptyHistory(); },
+    backTarget: (asked, editing) => backTargetOf(memory.list, asked, editing),
     back: (asked, editing) => {
-      const held = heldStepBehind(kept.list);
+      const held = heldStepBehind(memory.list);
       if (held !== null) {
-        browser.back(kept.list.current - held);
+        browser.back(memory.list.current - held);
         return { kind: "browser" };
       }
       const field = inPlaceTarget(asked, editing);
       return field === undefined ? { kind: "none" } : { kind: "in-place", field };
     },
-    onMove: (show) => { kept.show = show; },
+    onMove: (show) => { memory.show = show; },
   };
 }
 
 /** Writes the entry the reader stands on. Every entry says how many held steps stand behind it, so a
  * reload or a return onto it can tell (s37). */
-function write(browser: BrowserHistory, kept: Kept, how: HistoryWrite): void {
-  const state = entryState(kept.list);
+function write(browser: BrowserHistory, memory: HistoryMemory, how: HistoryWrite): void {
+  const state = entryState(memory.list);
   if (how === "push") browser.push(state);
   else browser.replace(state);
 }
@@ -138,18 +138,18 @@ function backTargetOf(list: ScreenHistory, asked: readonly string[], editing: st
  * and how many steps the browser holds behind it is read from that entry,
  * believed only where it lands on its own step (s37).
  */
-function browserMoved(kept: Kept, state: unknown): void {
+function showBrowserMove(memory: HistoryMemory, state: unknown): void {
   const { step } = readEntry(state);
-  if (step === undefined || kept.show === null) return;
-  const at = clampStep(kept.list, step);
-  const screen = screenAt(kept.list, at);
+  if (step === undefined || memory.show === null) return;
+  const at = clampStep(memory.list, step);
+  const screen = screenAt(memory.list, at);
   if (!screen) return;
-  kept.list.current = at;
-  kept.list.firstHeld = firstHeldStep(state, at);
-  kept.restoring = true;
+  memory.list.current = at;
+  memory.list.firstHeld = firstHeldStep(state, at);
+  memory.restoring = true;
   try {
-    kept.show({ field: screen.field, ontoFirstScreen: at === 0 });
+    memory.show({ field: screen.field, ontoFirstScreen: at === 0 });
   } finally {
-    kept.restoring = false;
+    memory.restoring = false;
   }
 }
