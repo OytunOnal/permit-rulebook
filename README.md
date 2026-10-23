@@ -1,8 +1,8 @@
 # Permit Rulebook
 
-[![The results screen: three German routes open, each rule answered against what
-the reader declared, every value carrying the authority's quote and the day it
-was read](docs/media/results-2026-09-08.png)](https://permitrulebook.com)
+[![The results screen: three German routes open and one short by up to
+€304.20/year, each rule checked against what the reader declared, every value
+carrying the authority's quote and the day it was read](docs/media/results-2026-10-23.png)](https://permitrulebook.com)
 
 **Every route, quoted and dated.** A person answers a few questions and
 [permitrulebook.com](https://permitrulebook.com) shows which work-permit routes
@@ -19,26 +19,27 @@ them. This repository is the site; that one is the ruleset.
 wants the rules rather than an opinion — and anyone who needs the ruleset
 itself.
 
-**What it does now** — v1.2.1, from its
-[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.1):
+**What it does now** — v1.2.2, from its
+[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.2):
 
 > Public at https://permitrulebook.com: 29 routes across Germany, France,
-> Spain and the Netherlands — 23 scored against a reader's answers, 6 quoted
-> and dated but not scored, each with a page of its own — and 204 quotes, each
-> carrying the authority's sentence, its page and the day it was read. The
-> watch re-reads 46 sources every morning; two are read by a person, because a
-> browser reads them and the fetcher cannot. What changed since v1.2.0: the
-> deploy and the watch trust only reviewed code and their own sources — the
-> site's address is a line of reviewed code, the watch goes only where one
-> module allows, and a red watch, deploy or data check keeps one issue that its
-> next green run closes. Nothing a reader sees changed. The isolated walk:
-> 36/50 on RUBRIC 1.3, one blocker shipped with its reason
-> ([#55](https://github.com/OytunOnal/permit-rulebook/issues/55)).
-> 966 + 1220 tests. (2026-10-21)
+> Spain and the Netherlands — 23 checked against a reader's answers, 6 quoted
+> and dated but not checked, each with a page of its own — and 208 quotes,
+> each carrying the authority's sentence, its page and the day it was read.
+> The watch re-reads the sources every morning. What changed since v1.2.1:
+> every answer the reader gives shows up, and the verdict says only what it
+> knows — a gap is said one way, exact and with its period; steps are only
+> what the reader can do, with a job offer's routes and an arranged path said
+> beside them; Back lands on the last question answered. Every screen speaks
+> the reader's words, Germany's Blue Card has its IT path, and a fast second
+> click answers nothing. The isolated walk: 39/50 on RUBRIC 1.3, one blocker
+> shipped with its reason
+> ([#185](https://github.com/OytunOnal/permit-rulebook/issues/185)).
+> 1115 + 1321 tests. (2026-10-23)
 
 **How to run it.** Both repositories side by side — the site reads the dataset
 package from the sibling directory its manifest names. Tried from a fresh clone
-on 2026-10-21:
+on 2026-10-23:
 
 ```
 git clone https://github.com/OytunOnal/permit-rulebook-data.git && git clone https://github.com/OytunOnal/permit-rulebook.git && cd permit-rulebook-data && npm ci && npm run build && cd ../permit-rulebook && npm ci && npm run build
