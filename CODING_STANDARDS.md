@@ -37,6 +37,8 @@ pull request.
   true, `npm run lint` with 0 problems; the data — `npm run check` end to end
   (build, typecheck:tests, validate, watch:coverage, tests). Both, on the
   branch, before the merge.
+- Watch: data `npm run watch:sources` is the daily read of every source; it
+  is never run in a slice.
 
 ## Module boundaries
 
@@ -122,7 +124,8 @@ pull request.
 - Writes: into a project only inside its root, never under `.git` (however
   spelled) and never at the root itself; run output and agents' scratch under
   `.run/`, which git ignores; test fixtures in the OS temp folder, a throwaway
-  folder per case, removed.
+  folder per case, removed. A slice, a run or an agent leaves no worktree,
+  server or scratch file behind.
 - An outside program is called with an argument list, never through a shell,
   found from the PATH's absolute folders, never from the folder under check.
 - Every loop, regex and walk over outside input is bounded: by length, count or
