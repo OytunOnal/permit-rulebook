@@ -24,7 +24,6 @@
 ## Exceptions
 <!-- a dependency allowed until a version or a date; a line naming one file covers only that file's mixed levels, never its edges -->
 - `scripts/dev-server.mjs` → `src/lib/copy/frame.ts` — the dev server knows itself by the page's name, a screen word (v1.2.5)
-- `scripts/carry-assets/carry.mjs` — the flow reads and writes `dist/` and the clock itself, beside the use case (v1.2.3)
 - `scripts/check-base.mjs` — a command that builds and scans in its own body, beside its wiring (v1.2.5)
 - `scripts/data-pin.mjs` — a command that runs git and writes `data.lock` in its own body (v1.2.5)
 - `scripts/measure-taps.mjs` — a command that serves `dist/` and drives Chrome in its own body (v1.2.5)

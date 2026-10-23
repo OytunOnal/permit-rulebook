@@ -151,8 +151,8 @@ click on the tracker link. Answers never leave the device.
   targets at 390 px, the carry, then deploy. The carry (`scripts/carry-assets`)
   copies the live generation's assets into `dist/`, only from the site's own
   address and only bytes the previous build's digest list attests; it is a
-  deep module, one level per file, whose flow is given the live site, and it
-  never fails the deploy (#110). Beside the build, the audit job reads the
+  deep module, one level per file, whose flow is given the live site, the
+  build directory and the clock, and it never fails the deploy (#110). Beside the build, the audit job reads the
   site's lockfile: an advisory reddens the run, never holds the deploy; only
   `report` waits on it, and runs whatever its result. `report` runs last, on
   a scheduled or dispatched run's first attempt, after the build, the deploy,

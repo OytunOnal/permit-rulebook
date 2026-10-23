@@ -1,4 +1,4 @@
-// @level application infrastructure
+// @level application
 /**
  * Carry the live site's assets forward, so a cached page still finds them.
  *
@@ -22,11 +22,14 @@
  * nothing here throws, because a deploy that failed over a rescue of the
  * previous generation would be worse than the window it was rescuing.
  *
- * The live site is an input, `liveAnswerFor`: what it answers for a URL within
- * a timeout, with its body read on request up to a byte ceiling. Every rule
+ * It touches no disk, network or clock itself: the command hands it three
+ * ports. The live site, `liveAnswerFor`: what it answers for a URL within a
+ * timeout, with its body read on request up to a byte ceiling. Every rule
  * about what an answer means — its status, its content type, whether its
  * bytes are the file — is here, and the body is read only once the status and
- * the type have passed.
+ * the type have passed. The build directory, `buildDirectory`: what this
+ * build holds and where carried files and the digest list are written. The
+ * clock, `now`.
  *
  * ## Where it reads from
  *
@@ -80,8 +83,6 @@
  * window may be open is written where the verdict is computed, in
  * `logLinesOf`.
  */
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { readAssetNames } from "./generation/asset-names.mjs";
 import { DIGESTS_NAME, digestListOf, digestOf, readAssetDigests } from "./generation/digest-list.mjs";
 import { boundedList, oneLine, sentenceOfError, short } from "../log-wording.mjs";
@@ -98,6 +99,21 @@ export { readAssetNames, digestListOf, readAssetDigests };
  * @typedef {{ ok: true, status: number, contentType: string, readBody: () => Promise<LiveBody> }
  *   | { ok: false, why: string }} LiveAnswer
  * @typedef {(url: string, limits: { byteCeiling: number, timeoutMs: number }) => Promise<LiveAnswer>} LiveAnswerFor
+ */
+
+/**
+ * The build this run fills: the files this build put in `_astro/`, each with
+ * bytes that are read only when asked for; whether one name is already there;
+ * a carried asset written into `_astro/`; and the digest list written beside
+ * the page, under the name it is given. Each operation throws when the
+ * directory refuses it, and the flow turns that into a line.
+ *
+ * @typedef {{
+ *   builtAssets: () => { name: string, bytes: Buffer }[],
+ *   isBuilt: (name: string) => boolean,
+ *   writeCarriedAsset: (name: string, bytes: Buffer) => void,
+ *   writeDigestList: (name: string, text: string) => void,
+ * }} BuildDirectory
  */
 
 /**
@@ -166,7 +182,7 @@ const CARRIABLE = /^(?:text\/css|text\/javascript|application\/javascript|applic
  * carry both decline on it, so a value one of them accepted and the other did
  * not cannot publish a list into a directory nobody named.
  */
-const noBuildDirectory = (dist) => typeof dist !== "string" || dist.trim() === "";
+const noBuildDirectory = (buildDirectory) => !buildDirectory;
 
 /**
  * Publish what this build built, so the deploy after this one can check the
@@ -178,19 +194,15 @@ const noBuildDirectory = (dist) => typeof dist !== "string" || dist.trim() === "
  * the chain one generation long, the same way the carry itself is. It returns
  * what happened and throws nothing, being called from a step that may not fail.
  *
- * A file's bytes are read only when the list asks for them, which is only for
- * a name it will hold.
+ * It writes through `buildDirectory`, whose bytes are read only when the list
+ * asks for them, which is only for a name it will hold.
+ *
+ * @param {BuildDirectory} buildDirectory
  */
-export function writeAssetDigests(dist) {
+export function writeAssetDigests(buildDirectory) {
   try {
-    const dir = join(dist, "_astro");
-    const files = existsSync(dir)
-      ? readdirSync(dir, { withFileTypes: true })
-        .filter((entry) => entry.isFile())
-        .map((entry) => ({ name: entry.name, get bytes() { return readFileSync(join(dir, entry.name)); } }))
-      : [];
-    const list = digestListOf(files);
-    writeFileSync(join(dist, DIGESTS_NAME), list.text);
+    const list = digestListOf(buildDirectory.builtAssets());
+    buildDirectory.writeDigestList(DIGESTS_NAME, list.text);
     return { ok: true, count: list.count };
   } catch (e) {
     return { ok: false, why: sentenceOfError(e) };
@@ -201,15 +213,14 @@ export function writeAssetDigests(dist) {
  * The lines that say whether this build's digest list was published.
  *
  * There is nothing to say when there is no build: the carry refuses the same
- * value by name and its line is the whole of what happened, while a list
- * published anyway would land in whatever directory the process ran from. A
- * directory that is real and cannot be written into is a different thing, and
- * keeps the publish's own failure line.
+ * absence by name and its line is the whole of what happened. A directory
+ * that is real and cannot be written into is a different thing, and keeps the
+ * publish's own failure line.
  */
-function digestListLines(dist, { dryRun }) {
-  if (noBuildDirectory(dist)) return [];
+function digestListLines(buildDirectory, { dryRun }) {
+  if (noBuildDirectory(buildDirectory)) return [];
   if (dryRun) return [`would publish ${DIGESTS_NAME} for the next deploy`];
-  const published = writeAssetDigests(dist);
+  const published = writeAssetDigests(buildDirectory);
   if (published.ok) return [`published ${DIGESTS_NAME}: ${published.count} asset(s) this build made, for the next deploy to check against`];
   // An annotation, because a plain line here is invisible: on a deploy whose
   // page names are all already built, this run has nothing missing and nothing
@@ -220,29 +231,31 @@ function digestListLines(dist, { dryRun }) {
 }
 
 /**
- * Fill `dist` with whatever the live `origin` still references, this build does
- * not have, and the live deploy's own digest list attests to — after publishing
- * this build's own list for the next deploy. Returns what happened, and in
- * `logLines` what the step says about it, each one line. It throws nothing:
- * everything it could not do comes back in `problems`, including being called
- * without the things it cannot work without.
+ * Fill `buildDirectory` with whatever the live `origin` still references, this
+ * build does not have, and the live deploy's own digest list attests to —
+ * after publishing this build's own list for the next deploy — timing its
+ * requests by `now`. Returns what happened, and in `logLines` what the step
+ * says about it, each one line. It throws nothing: everything it could not do
+ * comes back in `problems`, including being called without the things it
+ * cannot work without.
  *
  * @param {{
  *   origin?: string,
- *   dist?: string,
+ *   buildDirectory?: BuildDirectory,
  *   liveAnswerFor?: LiveAnswerFor,
+ *   now?: () => number,
  *   dryRun?: boolean,
  *   budgetMs?: number,
  * }} [options]
  */
-export async function carryAssets({ origin, dist, liveAnswerFor, dryRun = false, budgetMs = BUDGET_MS } = {}) {
-  const digestListLogLines = digestListLines(dist, { dryRun });
+export async function carryAssets({ origin, buildDirectory, liveAnswerFor, now, dryRun = false, budgetMs = BUDGET_MS } = {}) {
+  const digestListLogLines = digestListLines(buildDirectory, { dryRun });
   // A throw is not one of the run's own bails and has none of their phrases to
   // carry, so this one blames nothing: what stopped the run is the caught
   // error, printed as its own line just above.
   let record = carryRecordOf({ problems: [], where: "nowhere — the line above says what stopped this run" });
   try {
-    record = await recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs });
+    record = await recordOfCarry({ origin, buildDirectory, liveAnswerFor, now, dryRun, budgetMs });
   } catch (e) {
     record.problems.push(`anything: ${sentenceOfError(e)}`);
   }
@@ -302,20 +315,20 @@ async function liveAssetDigests(answerWithinBudget, url) {
  * was: three phrases reach the counted line with no page read, and only two of
  * them are about the origin. Nothing of an unparsed value ever enters it.
  */
-async function recordOfCarry({ origin, dist, liveAnswerFor, dryRun, budgetMs }) {
-  const deadline = Date.now() + budgetMs;
+async function recordOfCarry({ origin, buildDirectory, liveAnswerFor, now, dryRun, budgetMs }) {
+  const deadline = now() + budgetMs;
   /**
    * The live answer for `url`, with the request's timeout cut to what is left
    * of the run's budget — and no request at all once the budget is spent.
    */
   const answerWithinBudget = (url, byteCeiling) => {
-    const timeoutMs = Math.min(TIMEOUT_MS, deadline - Date.now());
+    const timeoutMs = Math.min(TIMEOUT_MS, deadline - now());
     if (timeoutMs <= 0) return Promise.resolve({ ok: false, why: "the run's time budget was already spent" });
     return liveAnswerFor(url, { byteCeiling, timeoutMs });
   };
-  const run = { dist, dryRun, budgetMs, deadline, answerWithinBudget };
+  const run = { buildDirectory, now, dryRun, budgetMs, deadline, answerWithinBudget };
 
-  const address = pageUrlOf(origin, dist);
+  const address = pageUrlOf(origin, buildDirectory);
   if (!address.pageUrl) return carryRecordOf(address);
   const page = await assetNamesOfLivePage(address.pageUrl, run);
   if (page.needed.length === 0) return carryRecordOf(page);
@@ -360,9 +373,9 @@ function carryRecordOf({ carried = [], problems, alreadyBuilt = [], needed = [],
  * `readAssetNames` and the carry loop print unparsed all the time and must:
  * they are how a deploy's log says which reference it refused and why, there
  * may be four hundred of them, and nobody's secret is in them. Their rule is
- * `scripts/log-wording.mjs`'s — bounded by `short`, flattened by `oneLine` — and
- * `could not carry http://[/_astro/x.css: it is not a URL` obeys it rather
- * than breaking this one.
+ * `scripts/log-wording.mjs`'s — bounded by `short`, flattened by `oneLine` —
+ * and `could not carry http://[/_astro/x.css: it is not a URL` obeys it
+ * rather than breaking this one.
  *
  * An UNPARSED address cannot be made safe by a rule about its shape: by
  * construction the values that reach these two lines are the ones that
@@ -377,7 +390,7 @@ function carryRecordOf({ carried = [], problems, alreadyBuilt = [], needed = [],
  * it: whitespace, a line break and a fragment all end here rather than in a
  * request or in a log line.
  */
-function pageUrlOf(origin, dist) {
+function pageUrlOf(origin, buildDirectory) {
   // The two parse failures say nothing of the value, so they share one phrase.
   const unparsed = `a ${ORIGIN_VAR} no page could be read from`;
   if (typeof origin !== "string" || origin.trim() === "")
@@ -387,7 +400,7 @@ function pageUrlOf(origin, dist) {
     const problem = `anything: ${ORIGIN_VAR} is not an absolute http(s) address, so it is not somewhere to read a page from`;
     return { pageUrl: "", problems: [problem], where: unparsed };
   }
-  if (noBuildDirectory(dist)) {
+  if (noBuildDirectory(buildDirectory)) {
     // The one bail here that is not about the origin, and the counted line
     // says so rather than naming a variable nothing was wrong with.
     const where = "nowhere — no build directory was given, so no page was asked for";
@@ -447,7 +460,7 @@ async function assetNamesOfLivePage(pageUrl, run) {
   const needed = [];
   for (const name of references.names) {
     // Already in this build: no request, so no cost, so no ceiling.
-    if (existsSync(join(run.dist, "_astro", name))) alreadyBuilt.push(name);
+    if (run.buildDirectory.isBuilt(name)) alreadyBuilt.push(name);
     else needed.push(name);
   }
   // `looked`: this run now knows what a reader holding the live page will ask
@@ -502,8 +515,8 @@ async function liveDigestsMatchingPage(page, run) {
 
 /**
  * The phase that carries: every name the live `page` needs and `digests`
- * attests to, fetched, checked and written into `dist/_astro/` (named only,
- * under `dryRun`). Returns what it carried, and in `problems` why each one
+ * attests to, fetched, checked and written into the build's `_astro/` (named
+ * only, under `dryRun`). Returns what it carried, and in `problems` why each one
  * left behind was. The ceiling counts what was asked of the origin, not the
  * wins.
  */
@@ -515,7 +528,7 @@ async function carryAttestedAssets(page, digests, run) {
   const overBudget = [];
   for (const name of page.needed.filter((name) => digests.has(name))) {
     if (asked >= MAX_ASSETS) { overCeiling.push(name); continue; }
-    if (run.deadline - Date.now() <= 0) { overBudget.push(name); continue; }
+    if (run.deadline - run.now() <= 0) { overBudget.push(name); continue; }
     asked += 1;
     // Built here, from the origin this run was given — never from the ref.
     const url = new URL(`_astro/${name}`, page.from).href;
@@ -523,8 +536,7 @@ async function carryAttestedAssets(page, digests, run) {
     if (!asset.ok) { problems.push(`${name}: ${asset.why}`); continue; }
     if (!run.dryRun) {
       try {
-        mkdirSync(join(run.dist, "_astro"), { recursive: true });
-        writeFileSync(join(run.dist, "_astro", name), asset.bytes);
+        run.buildDirectory.writeCarriedAsset(name, asset.bytes);
       } catch (e) {
         problems.push(`${name}: it could not be written — ${sentenceOfError(e)}`);
         continue;

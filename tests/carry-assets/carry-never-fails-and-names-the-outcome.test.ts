@@ -1,20 +1,16 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { describe, expect, it } from "vitest";
 import { carryAssets } from "../../scripts/carry-assets/carry.mjs";
-import { annotationsOf, flowRunInProcess } from "./carry-runs.js";
-import {
-  CSS, CSS_NAME, DIGESTS, JS, JS_NAME,
-  astroFilesIn, digestListBytesOf, distHolding, liveDeployAnswers, sweepTemporary, tempDirectory,
-} from "./deploy-fixtures.js";
+import { buildDirectoryInMemory } from "./build-directory-in-memory.js";
+import { annotationsOf, fixedClock, flowRunInProcess } from "./carry-runs.js";
+import { CSS, CSS_NAME, DIGESTS, JS, JS_NAME, digestListBytesOf, liveDeployAnswers } from "./deploy-fixtures.js";
 import { pageOf, pageOfSize } from "./live-page.js";
 import { liveAnswerFor, liveSiteInMemory } from "./live-site-in-memory.js";
 
 /**
  * The carry's flow — the carrier that lets a cached page still find its
- * assets — against an in-memory live site, with no socket anywhere: that it
- * never fails the deploy, and that it says which of the three outcomes
- * happened.
+ * assets — against an in-memory live site and build directory, on a fixed
+ * clock, with no socket or disk anywhere: that it never fails the deploy, and
+ * that it says which of the three outcomes happened.
  *
  * Why the step exists, and what its ceilings are, is written once in
  * `scripts/carry-assets/carry.mjs`'s own header. That it never fails is the
@@ -26,8 +22,6 @@ import { liveAnswerFor, liveSiteInMemory } from "./live-site-in-memory.js";
  */
 
 const lastLine = (out: string): string => out.trim().split("\n").at(-1) ?? "";
-
-afterEach(sweepTemporary);
 
 /**
  * What an origin cannot make this step do to the deploy. Two kinds of case,
@@ -48,7 +42,7 @@ describe("the carrier cannot fail the deploy", () => {
     // reference with whitespace in it never becomes a name — so it is the
     // printing that holds rather than the trust: whatever this step is
     // handed, it says on one line.
-    const out = distHolding();
+    const out = buildDirectoryInMemory();
     const run = await flowRunInProcess("http://host.invalid/\r\n::error::title=pwn::injected", out);
     expect(run.status, run.out).toBe(0);
     const commands = run.out.split("\n").filter((line) => line.startsWith("::"));
@@ -64,7 +58,7 @@ describe("the carrier cannot fail the deploy", () => {
     // references. A log nobody can read is the same as no log.
     const long = `https://evil.example/_astro/${"a".repeat(400)}.js`;
     const live = liveSiteInMemory({ "/": { type: "text/html; charset=utf-8", body: pageOf([long]) } });
-    const out = distHolding();
+    const out = buildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -86,11 +80,11 @@ describe("the carrier cannot fail the deploy", () => {
     // The body is the real one, so the refusal turns on the type alone.
     answers[`/_astro/${CSS_NAME}`] = { type: `x-${"a".repeat(6000)}`, body: CSS };
     const live = liveSiteInMemory(answers);
-    const out = distHolding();
+    const out = buildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
-      expect(astroFilesIn(out)).toEqual([]);
+      expect(out.assetNames()).toEqual([]);
       const longest = Math.max(...run.out.trim().split("\n").map((line) => line.length));
       expect(longest, run.out).toBeLessThan(200);
       // Still reported, and still recognisable as the type it refused.
@@ -100,19 +94,18 @@ describe("the carrier cannot fail the deploy", () => {
 
   it("survives a dist it cannot write into", async () => {
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    // `_astro` as a FILE: portable across platforms, where a permission bit is
-    // not — Windows lets a process write into its own read-only directory.
-    const out = tempDirectory();
-    writeFileSync(join(out, "_astro"), "not a directory");
+    // A build whose `_astro/` cannot be listed or written into, the way a
+    // `dist/` holding `_astro` as a FILE refuses. That the disk adapter leaves
+    // such a path as it was is `build-directory-on-disk.test.ts`'s.
+    const out = buildDirectoryInMemory({}, { refusing: ["builtAssets", "writeCarriedAsset", "writeDigestList"] });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
-      expect(statSync(join(out, "_astro")).isFile(), "the carrier replaced the path it could not write").toBe(true);
-      expect(readFileSync(join(out, "_astro"), "utf8"), "the carrier wrote over the path").toBe("not a directory");
-      // And it left nothing else behind in the build it could not fill — not
-      // even the digest list, which it could not honestly write either: the
-      // assets it would describe are behind the same unreadable path.
-      expect(readdirSync(out)).toEqual(["_astro"]);
+      // And it left nothing behind in the build it could not fill — not even
+      // the digest list, which it could not honestly write either: the assets
+      // it would describe are behind the same unreadable path.
+      expect(out.assetNames()).toEqual([]);
+      expect([...out.besidePage.keys()]).toEqual([]);
       expect(run.out).toContain(DIGESTS);
       expect(run.out).toContain(CSS_NAME);
     } finally { live.close(); }
@@ -123,13 +116,13 @@ describe("the carrier cannot fail the deploy", () => {
     // the page's own: a page is an index.html, today 11,569 bytes, and 512 KB
     // is not an asset's 4 MB.
     const live = liveSiteInMemory({ "/": { type: "text/html; charset=utf-8", body: Buffer.from(pageOfSize(1024 * 1024), "utf8") } });
-    const out = distHolding();
+    const out = buildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
       // Read and refused: the list was never even asked for.
       expect(live.asked).toEqual(["/"]);
-      expect(astroFilesIn(out)).toEqual([]);
+      expect(out.assetNames()).toEqual([]);
     } finally { live.close(); }
   });
 
@@ -147,13 +140,13 @@ describe("the carrier cannot fail the deploy", () => {
 
   it("asks for twenty assets at most, however many the page names", async () => {
     const live = liveSiteInMemory(liveDeployAnswers(many));
-    const out = distHolding();
+    const out = buildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
       // The page, the list, then twenty assets, and not a request more.
       expect(live.asked).toHaveLength(22);
-      expect(astroFilesIn(out)).toHaveLength(20);
+      expect(out.assetNames()).toHaveLength(20);
     } finally { live.close(); }
   });
 
@@ -161,12 +154,12 @@ describe("the carrier cannot fail the deploy", () => {
     const answers = liveDeployAnswers(many);
     for (const name of manyNames) delete answers[`/_astro/${name}`];
     const live = liveSiteInMemory(answers);
-    const out = distHolding();
+    const out = buildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
       expect(live.asked).toHaveLength(22);
-      expect(astroFilesIn(out)).toEqual([]);
+      expect(out.assetNames()).toEqual([]);
       // One line per request it spent, one for the rest, one summary — not one
       // line per reference a stranger's page happened to name.
       const lines = run.out.trim().split("\n");
@@ -188,7 +181,7 @@ describe("the carrier cannot fail the deploy", () => {
 describe("the step says which of the three things happened", () => {
   it("is quiet only when this build already has everything the live page names", async () => {
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const out = distHolding({ [CSS_NAME]: CSS });
+    const out = buildDirectoryInMemory({ [CSS_NAME]: CSS });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -214,7 +207,7 @@ describe("the step says which of the three things happened", () => {
         ["a page over the 512 KB ceiling", flood.url],
       ];
       for (const [label, value] of cases) {
-        const out = distHolding();
+        const out = buildDirectoryInMemory();
         const run = await flowRunInProcess(value, out);
         expect(run.status, `${label}: ${run.out}`).toBe(0);
         expect(annotationsOf(run.out), `${label} ended as quiet as a healthy deploy: ${run.out}`).not.toBe("");
@@ -222,11 +215,12 @@ describe("the step says which of the three things happened", () => {
         // not claim to know what a reader will find.
         expect(annotationsOf(run.out), `${label}: ${run.out}`).toContain("could not read the live page");
       }
-      // The seventh return is the export's own: the entry always passes a
-      // build directory, so `looked` is where that path is measured.
+      // The seventh return is the export's own: no build directory at all,
+      // which the entry reaches only on a blank `--dist`, so `looked` is where
+      // that path is measured.
       const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
       try {
-        expect((await carryAssets({ origin: live.url, liveAnswerFor })).looked).toBe(false);
+        expect((await carryAssets({ origin: live.url, liveAnswerFor, now: fixedClock })).looked).toBe(false);
       } finally { live.close(); }
     } finally { stopped.close(); flood.close(); }
   });
@@ -240,11 +234,11 @@ describe("the step says which of the three things happened", () => {
     const answers = liveDeployAnswers({ [stale]: CSS, [shared]: JS });
     answers[`/${DIGESTS}`] = { type: "text/plain; charset=utf-8", body: digestListBytesOf({ [shared]: JS }) };
     const live = liveSiteInMemory(answers);
-    const out = distHolding();
+    const out = buildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
-      expect(astroFilesIn(out)).toEqual([shared]);
+      expect(out.assetNames()).toEqual([shared]);
       expect(annotationsOf(run.out), run.out).toContain(stale);
       // The one it did carry is not what the reader is missing, so it is not
       // in the line that names what the reader is missing.
@@ -264,13 +258,13 @@ describe("the step says which of the three things happened", () => {
       body: pageOf([`/_astro/${CSS_NAME}`, `/_astro/${JS_NAME}`, "/_astro/../../pwn.css"]),
     };
     const live = liveSiteInMemory(answers);
-    const out = distHolding({ [CSS_NAME]: CSS, [JS_NAME]: JS });
+    const out = buildDirectoryInMemory({ [CSS_NAME]: CSS, [JS_NAME]: JS });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
       expect(run.out, "a healthy deploy was called a disagreement between two generations")
         .not.toContain("different deploys");
-      expect(astroFilesIn(out)).toEqual([CSS_NAME, JS_NAME].sort());
+      expect(out.assetNames()).toEqual([CSS_NAME, JS_NAME].sort());
       // It still says what it could not carry, and still says it plainly: the
       // reader's page asks for a name nothing here can account for.
       expect(annotationsOf(run.out), run.out).toContain("pwn.css");
@@ -285,7 +279,7 @@ describe("the step says which of the three things happened", () => {
     const live = liveSiteInMemory({
       "/": { type: "text/html; charset=utf-8", body: Buffer.from("<!DOCTYPE html><html><body>back soon</body></html>", "utf8") },
     });
-    const out = distHolding({ [CSS_NAME]: CSS });
+    const out = buildDirectoryInMemory({ [CSS_NAME]: CSS });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -305,10 +299,8 @@ describe("the step says which of the three things happened", () => {
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
     // This build already has every name the live page references, so there is
     // nothing to carry, nothing missing and nothing else for the step to say.
-    // The list's own path is a DIRECTORY — portable, where a permission bit is
-    // not — so the publish is the one thing that fails.
-    const out = distHolding({ [CSS_NAME]: CSS });
-    mkdirSync(join(out, DIGESTS));
+    // Writing the list is refused, so the publish is the one thing that fails.
+    const out = buildDirectoryInMemory({ [CSS_NAME]: CSS }, { refusing: ["writeDigestList"] });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -326,15 +318,15 @@ describe("the step says which of the three things happened", () => {
     refusing[`/_astro/${CSS_NAME}`] = { status: 500, type: "text/html", body: Buffer.from("no") };
     const bad = liveSiteInMemory(refusing);
     const idle = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const missing = distHolding();
-    const nothingToCarry = distHolding({ [CSS_NAME]: CSS });
-    const blind = distHolding();
+    const missing = buildDirectoryInMemory();
+    const nothingToCarry = buildDirectoryInMemory({ [CSS_NAME]: CSS });
+    const blind = buildDirectoryInMemory();
     try {
       const alarm = await flowRunInProcess(bad.url, missing);
       const quiet = await flowRunInProcess(idle.url, nothingToCarry);
       const unseen = await flowRunInProcess("http://127.0.0.1:1", blind);
       for (const run of [alarm, quiet, unseen]) expect(run.status, run.out).toBe(0);
-      expect(astroFilesIn(missing)).toEqual([]);
+      expect(missing.assetNames()).toEqual([]);
       const said = [alarm, quiet, unseen].map((run) => lastLine(run.out));
       expect(new Set(said).size, said.join("\n")).toBe(3);
       // And the loud one names what the reader is going to ask for and not get.

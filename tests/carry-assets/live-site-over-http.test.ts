@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { carryAssets } from "../../scripts/carry-assets/carry.mjs";
 import { bodyWithin, liveAnswerOverHttp } from "../../scripts/live-site-over-http.mjs";
+import { buildDirectoryInMemory } from "./build-directory-in-memory.js";
 import { entryRunAsChildProcess } from "./carry-runs.js";
 import {
   CSS, CSS_NAME, DIGESTS, astroFilesIn, distHolding, expectRefusedOver, liveDeployAnswers, sha256, sweepTemporary,
@@ -431,13 +432,17 @@ describe("the live site's answers, read over HTTP", () => {
     const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: CSS });
     answers[`/_astro/${CSS_NAME}`] = { type: "text/css; charset=utf-8", body: CSS, delayMs: 5_000 };
     const live = await origin(answers);
-    const out = distHolding();
+    const out = buildDirectoryInMemory();
     try {
       const began = Date.now();
-      const result = await carryAssets({ origin: live.url, dist: out, liveAnswerFor: liveAnswerOverHttp, budgetMs: 500 });
+      // The real clock, as the entry passes it: the budget is measured against
+      // a host that is really silent.
+      const result = await carryAssets({
+        origin: live.url, buildDirectory: out, liveAnswerFor: liveAnswerOverHttp, now: Date.now, budgetMs: 500,
+      });
       const took = Date.now() - began;
       expect(result.carried).toEqual([]);
-      expect(astroFilesIn(out)).toEqual([]);
+      expect(out.assetNames()).toEqual([]);
       // A line NAMING what it could not carry, so a lone unrelated problem
       // cannot satisfy it.
       expect(result.problems).toEqual([expect.stringContaining(CSS_NAME)]);

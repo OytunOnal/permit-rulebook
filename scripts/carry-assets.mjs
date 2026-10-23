@@ -1,7 +1,8 @@
 // @level main
 /**
  * The deploy's command for the carry: it reads its inputs, hands the flow the
- * live site over HTTP, prints what the flow says, and exits 0 on every path.
+ * live site over HTTP, the build directory on disk and the clock, prints what
+ * the flow says, and exits 0 on every path.
  * Why the carry exists, what it carries and refuses, and what it says are
  * `carry-assets/carry.mjs`'s.
  *
@@ -33,6 +34,7 @@
  */
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildDirectoryOnDisk } from "./build-directory-on-disk.mjs";
 import { ORIGIN_VAR, carryAssets } from "./carry-assets/carry.mjs";
 import { liveAnswerOverHttp } from "./live-site-over-http.mjs";
 import { oneLine, sentenceOfError } from "./log-wording.mjs";
@@ -69,6 +71,12 @@ const dist = flag(argv, "dist") ?? join(root, "dist");
 // budget either: `--budget-ms 1` would make the step a no-op that exits 0.
 const origin = process.env[ORIGIN_VAR] ?? "";
 
-const { logLines } = await carryAssets({ origin, dist, liveAnswerFor: liveAnswerOverHttp, dryRun });
+const { logLines } = await carryAssets({
+  origin,
+  buildDirectory: buildDirectoryOnDisk(dist),
+  liveAnswerFor: liveAnswerOverHttp,
+  now: Date.now,
+  dryRun,
+});
 for (const line of logLines) console.log(line);
 process.exit(0);

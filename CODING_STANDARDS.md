@@ -20,9 +20,7 @@ pull request.
   `node ${CLAUDE_PLUGIN_ROOT}/scripts/structure-check.mjs` reads it against
   `docs/spine/dependency-rules.md`. Every source file carries its `// @level`
   tag as its first comment (an Astro file's, on the line after its first
-  `---`). The check is red on one line until the carry's folder is reshaped:
-  `scripts/carry-assets` holds five files at its root, and no exception can
-  cover that (#37).
+  `---`).
 - Green means: the site — `npm test` (vitest, browser cases drive headless
   Chrome over `dist/`), `npm run build` with 0 errors, `npm run assets:check`
   true; the data — `npm run check` end to end (build, typecheck:tests,
