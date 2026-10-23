@@ -32,6 +32,23 @@ export const promise = (counts: { total: number; scored: number }): string =>
   `An open, dated, source-quoted work-permit ruleset for four countries — ${
     routesCheckerAsksAbout(counts.total, counts.scored)} — every value with its official sentence and the day it was read, checked daily.`;
 
+/** The home page's title, and the title its link preview carries. */
+export const HOME_TITLE = `${PRODUCT_NAME} — which work-permit routes fit?`;
+export const HOME_PREVIEW_TITLE = `${PRODUCT_NAME} — ${TAGLINE.toLowerCase().replace(/\.$/, "")}`;
+
+/** What a search result says about the interview. */
+export const HOME_DESCRIPTION =
+  "Which European work-permit routes fit? A check against dated, source-quoted "
+  + "official rules. Your answers never leave this device.";
+
+/**
+ * The stamp's two labels: the day the rules were read, on every page that
+ * shows quotes and on the interview's questions; the day a record was made, on
+ * the interview's verdict.
+ */
+export const RULES_READ = "Rules read";
+export const RECORD_GENERATED = "Record generated";
+
 /**
  * The launch's legal wording, one sentence, everywhere. It is the IRCC-style
  * text that has been on the site since s1, and A1's condition — no advice, no

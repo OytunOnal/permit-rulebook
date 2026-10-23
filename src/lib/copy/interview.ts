@@ -82,6 +82,10 @@ export const LINK_ARRIVAL_LINE = "Setting up your questions.";
 export const resumedLine = (kept: number): string =>
   `Continuing where you left off — ${kept} answer${kept === 1 ? "" : "s"} kept.`;
 
+/** The ledger's heading, and its one control, which takes the record away. */
+export const YOU_DECLARED = "You declared";
+export const START_OVER = "Start over";
+
 /**
  * The asked-for line's words (#139; GLOSSARY.md, *Asked-for line*): on a
  * question only some of the reader's open routes read, which routes ask it,
