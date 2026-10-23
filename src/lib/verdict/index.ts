@@ -5,8 +5,8 @@
  *
  * The page keeps what has a side effect — painting, the arrival line, the
  * announcement, the landing and the focus, recording the screen — and asks
- * this module everything a verdict decides: which screen it is (the flow's
- * action), that screen's whole masthead with the sentence the live region
+ * this module everything a verdict decides: which screen it is (a
+ * comparison, or a notice that answers outright), that screen's whole masthead with the sentence the live region
  * announces, and the layout, each group's routes in order with each card's
  * markup.
  */

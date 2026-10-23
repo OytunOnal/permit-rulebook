@@ -1,14 +1,13 @@
 // @level application
 /**
- * The interview's flow: which screen a gesture lands on. What the browser's
- * history does about it is `interview-history/`'s. No words: a question screen's
- * masthead is written beside the question card (`question.ts`), a verdict's
- * inside the verdict (`verdict/`).
+ * The screens' shared types. Which screen a gesture lands on is the
+ * interview's (`interview/`). No words: a question screen's masthead is
+ * written beside the question card (`question.ts`), a verdict's inside the
+ * verdict (`verdict/`).
  *
  * A claim about a comparison can only stand on a screen that has one. The
- * type says so: only the results and notice screens carry a masthead, and
- * only the two moves that end on a verdict produce one (product-critique
- * v0.7, blocker B4).
+ * type says so: only the results and notice screens carry a masthead
+ * (product-critique v0.7, blocker B4).
  */
 export type Screen =
   /**
@@ -48,50 +47,4 @@ export interface VerdictMasthead extends Masthead {
   /** The sentence the live region announces: the headline's words, without
    * its markup. */
   announced: string;
-}
-
-/**
- * Every move the page can make between screens. B4 was a wiring defect rather
- * than a rendering one — "Start over" cleared the answers and left the claim
- * about them standing — so the transitions live here, where a property test
- * can walk them in any order.
- */
-export type FlowAction =
-  /** An answer recorded, or an edit finished. */
-  | { kind: "answer" }
-  /** An answered row reopened — from the ledger, or with "← Back". */
-  | { kind: "edit" }
-  /** A stored record read back, or a browser-Back snapshot restored. */
-  | { kind: "restore" }
-  /** "Start over". */
-  | { kind: "reset" }
-  /** The interview ended and the routes were compared. */
-  | { kind: "compare"; masthead: VerdictMasthead }
-  /** A published notice answers the person outright, so nothing was compared. */
-  | { kind: "answered-outright"; masthead: VerdictMasthead };
-
-/** What the flow needs to know about the interview so far. */
-export interface Interview {
-  /** Questions answered and on file — the page's `asked`. */
-  answered: number;
-}
-
-/** The screen a gesture lands on. Only `compare` and `answered-outright` can
- * produce a screen that says anything about a comparison, so no path back into
- * the interview can leave a claim standing. */
-export function screenAfter(action: FlowAction, interview: Interview): Screen {
-  switch (action.kind) {
-    case "reset":
-      // Start over does not take the count on trust: after it, by definition,
-      // nothing has been answered and nothing can be claimed.
-      return { kind: "question", started: false };
-    case "answer":
-    case "edit":
-    case "restore":
-      return { kind: "question", started: interview.answered > 0 };
-    case "compare":
-      return { kind: "results", masthead: action.masthead };
-    case "answered-outright":
-      return { kind: "notice", masthead: action.masthead };
-  }
 }
