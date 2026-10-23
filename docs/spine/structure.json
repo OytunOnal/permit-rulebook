@@ -3870,6 +3870,11 @@
     "exported": false
    },
    {
+    "name": "isAnswering",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "notOurDevServer",
     "kind": "fn",
     "exported": true
@@ -4119,6 +4124,16 @@
     "name": "smoke",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "reportLinesOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "surfacesAskedBy",
+    "kind": "fn",
+    "exported": false
    }
   ],
   "src/lib/clipboard.ts": [
@@ -4259,6 +4274,11 @@
    {
     "name": "FRESHNESS_HUMAN_HAND",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DatasetCounts",
+    "kind": "type",
     "exported": true
    },
    {
@@ -5190,6 +5210,11 @@
     "exported": false
    },
    {
+    "name": "CountryList",
+    "kind": "type",
+    "exported": false
+   },
+   {
     "name": "routeCard",
     "kind": "fn",
     "exported": false
@@ -5489,6 +5514,11 @@
     "exported": true
    },
    {
+    "name": "currentMarkOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "siteHeader",
     "kind": "fn",
     "exported": true
@@ -5660,6 +5690,11 @@
     "exported": true
    },
    {
+    "name": "InterviewProgress",
+    "kind": "type",
+    "exported": true
+   },
+   {
     "name": "declarationHtml",
     "kind": "fn",
     "exported": true
@@ -5806,6 +5841,11 @@
     "exported": true
    },
    {
+    "name": "RecordToKeep",
+    "kind": "type",
+    "exported": true
+   },
+   {
     "name": "saveRecord",
     "kind": "fn",
     "exported": true
@@ -5938,6 +5978,16 @@
     "exported": false
    },
    {
+    "name": "railRowText",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "RulePage",
+    "kind": "type",
+    "exported": false
+   },
+   {
     "name": "railHtml",
     "kind": "fn",
     "exported": false
@@ -6058,6 +6108,11 @@
     "exported": false
    },
    {
+    "name": "WatchRun",
+    "kind": "type",
+    "exported": true
+   },
+   {
     "name": "routePage",
     "kind": "fn",
     "exported": true
@@ -6112,6 +6167,11 @@
    {
     "name": "replayRecord",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "RecordOnArrival",
+    "kind": "type",
     "exported": true
    },
    {
@@ -6428,6 +6488,11 @@
     "exported": true
    },
    {
+    "name": "QuestionOption",
+    "kind": "type",
+    "exported": true
+   },
+   {
     "name": "markUnder",
     "kind": "fn",
     "exported": true
@@ -6737,5 +6802,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "2a3e93e9bbb9cb123f5dfb9c6b66616f4fc7162d629c65c3428a75dc96131a11"
+ "digest": "c081caf21672cd5e065fd22d6088e07f2bf84075fb8fac5e149d04d50f85aec7"
 }
