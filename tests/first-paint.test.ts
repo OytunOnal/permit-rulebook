@@ -31,8 +31,8 @@ import { url } from "../src/lib/site.js";
  *
  * What it asserts is four things, because the number alone is not the promise.
  * The number, on every arrival. WHICH nodes moved, because a 0.09 made
- * entirely of the masthead would pass a bound whose scenario forbids the page
- * moving under the reader. How far the FOOTER travelled in pixels, because the
+ * entirely of the masthead would pass a bound that forbids the page moving
+ * under the reader. How far the FOOTER travelled in pixels, because the
  * score cannot see a footer below the fold and the reader with a taller phone
  * can. And that the module leaves the built screen ALONE: rewriting identical
  * markup shifts nothing, so the number reads 0 whether the module skips the
@@ -115,8 +115,7 @@ interface BrowserPage {
 }
 
 /**
- * A realistic mobile lag on the module, and the one the table in the scenario
- * was measured at: HTML at once, script 700 ms later.
+ * A realistic mobile lag on the module: HTML at once, script 700 ms later.
  */
 const DELAY_JS_MS = 700;
 
@@ -254,8 +253,8 @@ interface Measured {
   footBox: boolean;
   /** How far the footer travelled between the build's paint and the module's,
    * in pixels, signed; null when the first paint gave it no room. The
-   * scenario's second requirement is about this number and the aggregate
-   * hides it: at 390x844 the footer is off the bottom of the screen and can
+   * footer's travel is a requirement of its own, and the aggregate hides
+   * it: at 390x844 the footer is off the bottom of the screen and can
    * move 140 px for nothing (Spec review, 2026-09-15). */
   footMoved: number | null;
   /**
@@ -302,7 +301,7 @@ const ARRIVALS = [
     shape: "link",
   },
   {
-    // The arrival the scenario's table does not name: a record with nothing
+    // One more arrival: a record with nothing
     // left to ask restores straight to the verdict, and 23 route cards go into
     // the box one question was painted in.
     //
@@ -710,7 +709,7 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
     // Asserted as a sentence off the built page, not as the constant read back
     // to itself: emptying the copy line used to leave every case green and
     // ship `<noscript><p class="nojs"></p></noscript>` (Standards review;
-    // DECISIONS.md — checks require decisions, not content).
+    // CODING_STANDARDS.md, Tests — a test asserts a decision, not content).
     const line = /<noscript>([\s\S]*?)<\/noscript>/.exec(inMain)?.[1] ?? "";
     const words = line.replace(/<[^>]*>/g, "").trim();
     expect(words, "the noscript box shipped empty").not.toBe("");
@@ -724,7 +723,7 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
   it("offers no feedback line: the cold / is a question, and the line is the verdict's (s13)", () => {
     // The line under the verdict — "Something to say about this result?" —
     // appears on a results screen only, never on a question, never before an
-    // answer (s13, scenario point 6). The built first paint is question one
+    // answer (`tests/s13.test.ts`). The built first paint is question one
     // with nothing on the record, so the box the build paints must not link
     // the page the line leads to.
     expect(inMain, "the cold first paint links /feedback/").not.toContain(url(FEEDBACK_PATH));
@@ -734,8 +733,8 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
   it("carries a sentence for each reader whose screen is not the one it painted", () => {
     // Asserted as sentences off the built page and not as the constants read
     // back to themselves: emptying either one has to turn this red, the way
-    // emptying the noscript line does (DECISIONS.md — checks require
-    // decisions, not content). The decision is that a reader who is about to
+    // emptying the noscript line does (CODING_STANDARDS.md, Tests — a test
+    // asserts a decision, not content). The decision is that a reader who is about to
     // have their screen replaced is told so, in words, rather than being shown
     // a question they have already answered.
     for (const [where, expected] of [

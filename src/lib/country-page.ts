@@ -4,7 +4,7 @@
 // disagree about what two is called (Standards review, 2026-09-08).
 import {
   countedWords, phraseOf, phraseAtStartOf, datasetMeta, isScored, joinAnd, scopeLine,
-  type Country, type Dataset, type Route, type UnreadSource,
+  type Country, type Dataset, type Route,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
@@ -20,7 +20,7 @@ import {
 import { readOn } from "./copy/quotes.js";
 import {
   DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, OWNER, REPO_DATA, analyticsBeacon,
-  SPONSOR_URL, headMeta, lastWatchRun, readRange, unreadSourcesAt, url,
+  SPONSOR_URL, headMeta, readRange, readWatchRun, url, type WatchRun,
 } from "./site.js";
 import { countryPath, countrySlug, routePath } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
@@ -137,6 +137,14 @@ function description(country: Country): string {
  * the middle of one ("one route"), and a heading's line begins with it. */
 const sentenceCase = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
+/** What every card on one country index shares: the dataset, the country,
+ * and the page's memory of what it has already explained. */
+interface CountryCardContext {
+  dataset: Dataset;
+  country: Country;
+  seen: Glossary;
+}
+
 /**
  * One card on a country index. The same card for a route the checker asks about
  * and one it does not — same name, same gist, same read date — minus the figure,
@@ -144,7 +152,8 @@ const sentenceCase = (s: string): string => s.charAt(0).toUpperCase() + s.slice(
  * figure's own "no salary threshold" on an unscored card would state as a fact
  * about the route something that is a fact about our dataset (s9).
  */
-function routeCard(dataset: Dataset, country: Country, route: Route, seen: Glossary): string {
+function routeCard(context: CountryCardContext, route: Route): string {
+  const { dataset, country, seen } = context;
   const figure = isScored(route) ? routeFigure(dataset, route) : undefined;
   return `
       <li><a class="card tap-min" href="${escAttr(url(routePath(country, route)))}"><span class="name">${
@@ -174,7 +183,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   const headline = countryHeadline(phraseAtStartOf(country.code), country.routes.length, scored.length);
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
-  const seen: Glossary = new Set();
+  const cardContext: CountryCardContext = { dataset, country, seen: new Set() };
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -203,14 +212,14 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
 
   <main>
     <ul class="routes" aria-label="${escAttr(askedRoutesLabel(phraseOf(country.code)))}">${
-    scored.map((route) => routeCard(dataset, country, route, seen)).join("")}
+    scored.map((route) => routeCard(cardContext, route)).join("")}
     </ul>${quotedOnly.length ? `
 
     <section class="quoted-only" aria-labelledby="quoted-only-h">
       <h2 class="label" id="quoted-only-h">${esc(QUOTED_ONLY_HEADING)}</h2>
       <p class="lede">${esc(notAskedLede(sentenceCase(countedWords(quotedOnly.length, "route")), quotedOnly.length))}</p>
       <ul class="routes" aria-label="${escAttr(notAskedRoutesLabel(phraseOf(country.code)))}">${
-    quotedOnly.map((route) => routeCard(dataset, country, route, seen)).join("")}
+    quotedOnly.map((route) => routeCard(cardContext, route)).join("")}
       </ul>
     </section>` : ""}
 
@@ -247,16 +256,13 @@ export function countryPages(dataset: Dataset): CountryPage[] {
  * typed into a page. It lives here because it needs the dataset and the footer
  * itself must not: `identity.ts` knows markup, not data.
  *
- * `unread` defaults to the live answer rather than being walked per page: the
- * walk behind it is cached on the dataset in the data package, and the route
- * page — the one caller that renders it twice, in its own sentence and in the
- * footer — passes the answer it already has (Standards review, 2026-09-15).
+ * What `run` leaves out is read from the watch's state rather than being
+ * walked per page: the walk behind it is cached on the dataset in the data
+ * package, and the route page — the one caller that renders it twice, in its
+ * own sentence and in the footer — passes the answer it already has.
  */
-export function footerFacts(
-  dataset: Dataset,
-  lastRun: string = lastWatchRun(),
-  unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
-): FooterFacts {
+export function footerFacts(dataset: Dataset, run: WatchRun = {}): FooterFacts {
+  const { lastRun, unread } = readWatchRun(dataset, run);
   // Once: it walks every route's provenance, and the year comes from the same
   // answer rather than a second walk (Standards review, 2026-09-08).
   const read = readRange(dataset);

@@ -124,7 +124,7 @@ describe("2 — link text is glossed on the screen's memory (#151, ruling 8)", (
 
 describe("3 — the three surfaces agree", () => {
   const doors = ds.fields.flatMap((f) => (f.learn ? [{ field: f.id, ...f.learn }] : []));
-  const pages = routePages(ds, "1970-01-01");
+  const pages = routePages(ds, { lastRun: "1970-01-01" });
 
   it("there are doors to agree on", () => {
     expect(doors.length).toBeGreaterThan(0);

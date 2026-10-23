@@ -40,7 +40,7 @@ neither is a blank; there are none below.
 
 - **Accounts:** 2FA on GitHub, Cloudflare — the human's item; not verifiable by the API with this session's token scopes, so the human confirms.
 - **Headers:** no HSTS on the custom domain (accepted, exposure named above; HTTPS is enforced by redirect); a meta CSP naming the script sources (pipeline round).
-- **Dependencies:** `npm audit --omit=dev` re-run on the launch commit in both repositories (result in DECISIONS at the v1 stamp).
+- **Dependencies:** `npm audit --omit=dev` re-run on the launch commit in both repositories (result in DECISIONS.md at the v1 stamp, in git history at e360dbaf; ADR 0001).
 - **Abuse limits:** nothing spends money or calls a paid API; not applicable, said so.
 - **Pipeline:** actions pinned by SHA, token read-only, no plaintext secret (the builder's round).
 - **The statement matches the wire:** the data page's sentence about the counter is what the never-leaves-the-device test measures.

@@ -271,7 +271,7 @@ describe("F3 — the route page's liveness line names its own source or stays si
   };
 
   it("a route whose own source went unread says so, and says the values still show their read day", () => {
-    const html = routePage(ds, address("de-chancenkarte"), run, [own]).html;
+    const html = routePage(ds, address("de-chancenkarte"), { lastRun: run, unread: [own] }).html;
     expect(textOf(html)).toContain(
       "a daily check re-reads every source; the last run did not reach one of this route's sources; "
       + "its values still show the day they were read.");
@@ -284,19 +284,19 @@ describe("F3 — the route page's liveness line names its own source or stays si
   });
 
   it("a route none of whose sources went unread prints the plain line, whatever went unread elsewhere", () => {
-    const html = routePage(ds, address("fr-talent-blue-card"), run, [own, other]).html;
+    const html = routePage(ds, address("fr-talent-blue-card"), { lastRun: run, unread: [own, other] }).html;
     expect(textOf(html)).toContain("a daily check re-reads every source. ");
     expect(textOf(html)).not.toContain("did not reach");
     expect(dailyCheck(0)).toBe("a daily check re-reads every source");
   });
 
   it("the footer's short form still counts every unread source the reader is looking at (s11)", () => {
-    const html = routePage(ds, address("fr-talent-blue-card"), run, [own, other]).html;
+    const html = routePage(ds, address("fr-talent-blue-card"), { lastRun: run, unread: [own, other] }).html;
     expect(textOf(html)).toContain(`re-read daily (last run ${run} · 2 sources unread)`);
   });
 
   it("over every route: only the pages citing the unread source carry the clause", () => {
-    const pages = routePages(ds, run, [own]);
+    const pages = routePages(ds, { lastRun: run, unread: [own] });
     const citing = new Set(routeAddresses(ds).filter((a) => routeSourceUrls(ds, a.route).has(ownUrl)).map((a) => a.path));
     expect(citing.size).toBeGreaterThan(0);
     expect(citing.size).toBeLessThan(pages.length);
@@ -305,7 +305,7 @@ describe("F3 — the route page's liveness line names its own source or stays si
   });
 
   it("/data/ keeps s11's sentence", () => {
-    const html = dataPage(ds, watchState.last_run!, [{ ...own, id: "bamf-hochschulabsolvent" }]).html;
+    const html = dataPage(ds, { lastRun: watchState.last_run!, unread: [{ ...own, id: "bamf-hochschulabsolvent" }] }).html;
     expect(textOf(html)).toContain("A German source did not answer on the last run; the values it backs were read on 2026-09-07");
   });
 });

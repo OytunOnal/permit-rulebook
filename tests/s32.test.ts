@@ -35,7 +35,7 @@ function blocksOf(html: string): { notChecked: string | null; asked: string[] } 
   return { notChecked, asked };
 }
 
-/** The eleven the scenario decides, by id: the nine that name their question
+/** The eleven this suite decides, by id: the nine that name their question
  * and the two tenures that name none. What the sweep below holds the cards
  * to, so the test does not read the implementation's own key back. */
 const DECIDED: { route: string; statement: string; field?: string }[] = [

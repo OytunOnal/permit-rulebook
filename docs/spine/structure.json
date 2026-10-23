@@ -5,32 +5,19 @@
    "path": "scripts/carry-assets",
    "entries": [
     {
-     "file": "scripts/carry-assets/asset-names.mjs",
-     "level": "domain"
-    },
-    {
      "file": "scripts/carry-assets/carry.mjs",
-     "level": "application infrastructure"
-    },
-    {
-     "file": "scripts/carry-assets/digest-list.mjs",
-     "level": "domain"
-    },
-    {
-     "file": "scripts/carry-assets/live-site-over-http.mjs",
-     "level": "infrastructure"
-    },
-    {
-     "file": "scripts/carry-assets/log-wording.mjs",
-     "level": "presentation"
+     "level": "application"
     }
    ],
    "files": [
-    "scripts/carry-assets/asset-names.mjs",
     "scripts/carry-assets/carry.mjs",
-    "scripts/carry-assets/digest-list.mjs",
-    "scripts/carry-assets/live-site-over-http.mjs",
-    "scripts/carry-assets/log-wording.mjs"
+    "scripts/carry-assets/generation/asset-names.mjs",
+    "scripts/carry-assets/generation/digest-list.mjs",
+    "scripts/carry-assets/live-deploy/attested-assets.mjs",
+    "scripts/carry-assets/live-deploy/ceilings.mjs",
+    "scripts/carry-assets/live-deploy/live-digests.mjs",
+    "scripts/carry-assets/live-deploy/live-page.mjs",
+    "scripts/carry-assets/outcome/outcome-lines.mjs"
    ]
   },
   {
@@ -61,13 +48,18 @@
  ],
  "levels": {
   "astro.config.mjs": "main",
+  "eslint.config.mjs": "main",
   "scripts/browser.mjs": "infrastructure",
+  "scripts/build-directory-on-disk.mjs": "infrastructure",
   "scripts/carry-assets.mjs": "main",
-  "scripts/carry-assets/asset-names.mjs": "domain",
-  "scripts/carry-assets/carry.mjs": "application infrastructure",
-  "scripts/carry-assets/digest-list.mjs": "domain",
-  "scripts/carry-assets/live-site-over-http.mjs": "infrastructure",
-  "scripts/carry-assets/log-wording.mjs": "presentation",
+  "scripts/carry-assets/carry.mjs": "application",
+  "scripts/carry-assets/generation/asset-names.mjs": "domain",
+  "scripts/carry-assets/generation/digest-list.mjs": "domain",
+  "scripts/carry-assets/live-deploy/attested-assets.mjs": "application",
+  "scripts/carry-assets/live-deploy/ceilings.mjs": "domain",
+  "scripts/carry-assets/live-deploy/live-digests.mjs": "application",
+  "scripts/carry-assets/live-deploy/live-page.mjs": "application",
+  "scripts/carry-assets/outcome/outcome-lines.mjs": "domain",
   "scripts/check-base.mjs": "infrastructure main",
   "scripts/child-env.mjs": "infrastructure",
   "scripts/chrome.mjs": "infrastructure",
@@ -75,6 +67,8 @@
   "scripts/data-pin.mjs": "infrastructure main",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
+  "scripts/live-site-over-http.mjs": "infrastructure",
+  "scripts/log-wording.mjs": "domain",
   "scripts/measure-taps.mjs": "infrastructure main",
   "scripts/render-assets.mjs": "infrastructure main",
   "scripts/shot.mjs": "infrastructure main",
@@ -153,47 +147,112 @@
   },
   {
    "from": "scripts/carry-assets.mjs",
+   "to": "scripts/build-directory-on-disk.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets.mjs",
    "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/carry-assets.mjs",
-   "to": "scripts/carry-assets/live-site-over-http.mjs",
+   "to": "scripts/live-site-over-http.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/carry-assets.mjs",
-   "to": "scripts/carry-assets/log-wording.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/carry-assets/asset-names.mjs",
-   "to": "scripts/carry-assets/log-wording.mjs",
+   "to": "scripts/log-wording.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/carry-assets/carry.mjs",
-   "to": "scripts/carry-assets/asset-names.mjs",
+   "to": "scripts/carry-assets/generation/asset-names.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/carry-assets/carry.mjs",
-   "to": "scripts/carry-assets/digest-list.mjs",
+   "to": "scripts/carry-assets/generation/digest-list.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/carry-assets/carry.mjs",
-   "to": "scripts/carry-assets/log-wording.mjs",
+   "to": "scripts/carry-assets/live-deploy/attested-assets.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/carry-assets/digest-list.mjs",
-   "to": "scripts/carry-assets/asset-names.mjs",
+   "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/carry-assets/live-deploy/live-digests.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/carry-assets/live-site-over-http.mjs",
-   "to": "scripts/carry-assets/log-wording.mjs",
+   "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/carry-assets/live-deploy/live-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/carry-assets/outcome/outcome-lines.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/generation/asset-names.mjs",
+   "to": "scripts/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/generation/digest-list.mjs",
+   "to": "scripts/carry-assets/generation/asset-names.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/attested-assets.mjs",
+   "to": "scripts/carry-assets/generation/digest-list.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/attested-assets.mjs",
+   "to": "scripts/carry-assets/live-deploy/ceilings.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/attested-assets.mjs",
+   "to": "scripts/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/live-digests.mjs",
+   "to": "scripts/carry-assets/generation/digest-list.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/live-digests.mjs",
+   "to": "scripts/carry-assets/live-deploy/ceilings.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/live-digests.mjs",
+   "to": "scripts/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/live-page.mjs",
+   "to": "scripts/carry-assets/generation/asset-names.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/live-page.mjs",
+   "to": "scripts/carry-assets/live-deploy/ceilings.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/outcome/outcome-lines.mjs",
+   "to": "scripts/log-wording.mjs",
    "kind": "dependency"
   },
   {
@@ -219,6 +278,11 @@
   {
    "from": "scripts/dev-server.mjs",
    "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/live-site-over-http.mjs",
+   "to": "scripts/log-wording.mjs",
    "kind": "dependency"
   },
   {
@@ -1388,7 +1452,7 @@
   },
   {
    "from": "tests/carry-assets/asset-names.test.ts",
-   "to": "scripts/carry-assets/asset-names.mjs",
+   "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
@@ -1397,8 +1461,83 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/carry-assets/build-directory-in-memory.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/carry-assets/build-directory-on-disk.test.ts",
+   "to": "scripts/build-directory-on-disk.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/build-directory-on-disk.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "tests/carry-assets/carry-runs.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "tests/carry-assets/live-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "tests/carry-assets/live-site-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts",
+   "to": "tests/carry-assets/carry-runs.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts",
+   "to": "tests/carry-assets/live-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts",
+   "to": "tests/carry-assets/live-site-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts",
    "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
    "kind": "dependency"
   },
   {
@@ -1432,32 +1571,27 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
-   "to": "scripts/carry-assets/asset-names.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "tests/carry-assets/carry-runs.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "tests/carry-assets/deploy-fixtures.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
-   "to": "tests/carry-assets/live-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "tests/carry-assets/live-site-in-memory.ts",
    "kind": "dependency"
   },
@@ -1473,7 +1607,7 @@
   },
   {
    "from": "tests/carry-assets/digest-list.test.ts",
-   "to": "scripts/carry-assets/digest-list.mjs",
+   "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
@@ -1487,13 +1621,38 @@
    "kind": "type-only"
   },
   {
-   "from": "tests/carry-assets/live-site-over-http.test.ts",
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
    "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
+   "to": "scripts/live-site-over-http.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
+   "to": "tests/carry-assets/carry-runs.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
+   "to": "tests/carry-assets/stand-in-origin.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/carry-assets/live-site-over-http.test.ts",
-   "to": "scripts/carry-assets/live-site-over-http.mjs",
+   "to": "scripts/live-site-over-http.mjs",
    "kind": "dependency"
   },
   {
@@ -1508,6 +1667,11 @@
   },
   {
    "from": "tests/carry-assets/live-site-over-http.test.ts",
+   "to": "tests/carry-assets/stand-in-origin.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/stand-in-origin.ts",
    "to": "tests/carry-assets/live-site-in-memory.ts",
    "kind": "type-only"
   },
@@ -1867,6 +2031,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/lint.test.ts",
+   "to": "eslint.config.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/listbox.test.ts",
    "to": "src/lib/listbox.ts",
    "kind": "dependency"
@@ -2023,7 +2192,7 @@
   },
   {
    "from": "tests/pipeline.test.ts",
-   "to": "scripts/carry-assets/asset-names.mjs",
+   "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
@@ -3318,38 +3487,6 @@
   }
  ],
  "declarations": {
-  "scripts/carry-assets/asset-names.mjs": [
-   {
-    "name": "MAX_NAME",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "NAME_CHARS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "NAME_PATTERN",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "PLAIN_NAME",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "readAssetNames",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "verdictOnReference",
-    "kind": "fn",
-    "exported": false
-   }
-  ],
   "scripts/carry-assets/carry.mjs": [
    {
     "name": "ORIGIN_VAR",
@@ -3364,36 +3501,6 @@
    {
     "name": "BUDGET_MS",
     "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "MAX_ASSETS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "MAX_PAGE_BYTES",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "MAX_ASSET_BYTES",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "MAX_LIST_BYTES",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "CARRIABLE",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "noBuildDirectory",
-    "kind": "fn",
     "exported": false
    },
    {
@@ -3412,11 +3519,6 @@
     "exported": true
    },
    {
-    "name": "liveAssetDigests",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "recordOfCarry",
     "kind": "fn",
     "exported": false
@@ -3430,107 +3532,6 @@
     "name": "pageUrlOf",
     "kind": "fn",
     "exported": false
-   },
-   {
-    "name": "assetNamesOfLivePage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "liveDigestsMatchingPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "carryAttestedAssets",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "attestedAssetOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "logLinesOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "verdictLinesOf",
-    "kind": "fn",
-    "exported": false
-   }
-  ],
-  "scripts/carry-assets/digest-list.mjs": [
-   {
-    "name": "DIGESTS_NAME",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "DIGESTS_HEADER",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "DIGESTS_LINE",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "digestOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "digestListOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "byName",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "readAssetDigests",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/carry-assets/live-site-over-http.mjs": [
-   {
-    "name": "liveAnswerOverHttp",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "bodyWithin",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/carry-assets/log-wording.mjs": [
-   {
-    "name": "boundedList",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "short",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "oneLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "sentenceOfError",
-    "kind": "fn",
-    "exported": true
    }
   ],
   "src/lib/verdict/index.ts": [
@@ -3564,6 +3565,108 @@
    {
     "name": "BASE",
     "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "default",
+    "kind": "other",
+    "exported": true
+   }
+  ],
+  "eslint.config.mjs": [
+   {
+    "name": "IGNORED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "TYPESCRIPT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "TESTS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "FILE_LENGTH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "FUNCTION_LENGTH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "TEST_FUNCTION_LENGTH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "NESTING",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "PARAMETERS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "NESTED_TERNARY",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "UNUSED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "UNUSED_IN_TYPESCRIPT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "FUNCTION_LIMIT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "coreFunctionLimit",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "isDescribeCallee",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "isDescribeCallback",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "functionLimitExceptDescribe",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "configWithoutExceptions",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "lintExceptions",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "blockOf",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -3635,6 +3738,13 @@
    },
    {
     "name": "withBrowser",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/build-directory-on-disk.mjs": [
+   {
+    "name": "openBuildDirectoryOnDisk",
     "kind": "fn",
     "exported": true
    }
@@ -3844,12 +3954,51 @@
     "exported": false
    },
    {
+    "name": "isAnswering",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "notOurDevServer",
     "kind": "fn",
     "exported": true
    },
    {
     "name": "startDev",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/live-site-over-http.mjs": [
+   {
+    "name": "fetchLiveAnswerOverHttp",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "bodyWithin",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/log-wording.mjs": [
+   {
+    "name": "boundedList",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "short",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "oneLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "sentenceOfError",
     "kind": "fn",
     "exported": true
    }
@@ -4032,6 +4181,16 @@
     "name": "smoke",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "reportLinesOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "surfacesAskedBy",
+    "kind": "fn",
+    "exported": false
    }
   ],
   "src/lib/clipboard.ts": [
@@ -4172,6 +4331,11 @@
    {
     "name": "FRESHNESS_HUMAN_HAND",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DatasetCounts",
+    "kind": "type",
     "exported": true
    },
    {
@@ -5103,6 +5267,11 @@
     "exported": false
    },
    {
+    "name": "CountryCardContext",
+    "kind": "type",
+    "exported": false
+   },
+   {
     "name": "routeCard",
     "kind": "fn",
     "exported": false
@@ -5402,6 +5571,11 @@
     "exported": true
    },
    {
+    "name": "currentMarkOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "siteHeader",
     "kind": "fn",
     "exported": true
@@ -5573,6 +5747,11 @@
     "exported": true
    },
    {
+    "name": "InterviewProgress",
+    "kind": "type",
+    "exported": true
+   },
+   {
     "name": "declarationHtml",
     "kind": "fn",
     "exported": true
@@ -5719,6 +5898,11 @@
     "exported": true
    },
    {
+    "name": "RecordToKeep",
+    "kind": "type",
+    "exported": true
+   },
+   {
     "name": "saveRecord",
     "kind": "fn",
     "exported": true
@@ -5848,6 +6032,16 @@
    {
     "name": "railRows",
     "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "railRowText",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "RulePage",
+    "kind": "type",
     "exported": false
    },
    {
@@ -6025,6 +6219,11 @@
    {
     "name": "replayRecord",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "RecordOnArrival",
+    "kind": "type",
     "exported": true
    },
    {
@@ -6280,6 +6479,16 @@
     "name": "unreadSourcesAt",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "WatchRun",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "readWatchRun",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "src/lib/sitemap.ts": [
@@ -6338,6 +6547,11 @@
    {
     "name": "SITUATION_COUNTRY_FIELD",
     "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "QuestionOption",
+    "kind": "type",
     "exported": true
    },
    {
@@ -6584,7 +6798,9 @@
  },
  "loose": [
   "astro.config.mjs",
+  "eslint.config.mjs",
   "scripts/browser.mjs",
+  "scripts/build-directory-on-disk.mjs",
   "scripts/carry-assets.mjs",
   "scripts/check-base.mjs",
   "scripts/child-env.mjs",
@@ -6593,6 +6809,8 @@
   "scripts/data-pin.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
+  "scripts/live-site-over-http.mjs",
+  "scripts/log-wording.mjs",
   "scripts/measure-taps.mjs",
   "scripts/render-assets.mjs",
   "scripts/shot.mjs",
@@ -6645,5 +6863,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "edec0cb4cd933c41cb451df2b7cc417dfa9d85c20a7effcd8910203a1108c8b9"
+ "digest": "636e04a5b58c709711a39e5757adc2b675dc664d514149775290e3064446fe81"
 }

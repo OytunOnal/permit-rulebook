@@ -170,21 +170,23 @@ export async function smoke({ dir = dist, surfaces = DEFAULT_SURFACES } = {}) {
   }
   return results;
 }
+/** What a run prints for one page load: a FAIL line with its failures under it, or one ok line. */
+function reportLinesOf(r) {
+  if (!r.failures.length) return [`ok   [${r.surface}] ${r.path} (${r.what}) — ${JSON.stringify(r.value)}, 0 console errors`];
+  return [`FAIL [${r.surface}] ${r.path} (${r.what})`, ...r.failures.map((f) => `     ${f}`)];
+}
+
+/** The surfaces a run asks for: `--dev` or `--dist` alone, or the default ones. */
+function surfacesAskedBy(argv) {
+  if (argv.includes("--dev")) return ["dev"];
+  if (argv.includes("--dist")) return ["dist"];
+  return DEFAULT_SURFACES;
+}
+
 if (process.argv[1]?.endsWith("smoke.mjs")) {
-  const only = process.argv.includes("--dev") ? ["dev"]
-    : process.argv.includes("--dist") ? ["dist"]
-    : DEFAULT_SURFACES;
-  const results = await smoke({ surfaces: only });
-  let failed = 0;
-  for (const r of results) {
-    if (r.failures.length) {
-      failed++;
-      console.log(`FAIL [${r.surface}] ${r.path} (${r.what})`);
-      for (const f of r.failures) console.log(`     ${f}`);
-    } else {
-      console.log(`ok   [${r.surface}] ${r.path} (${r.what}) — ${JSON.stringify(r.value)}, 0 console errors`);
-    }
-  }
+  const results = await smoke({ surfaces: surfacesAskedBy(process.argv) });
+  for (const line of results.flatMap(reportLinesOf)) console.log(line);
+  const failed = results.filter((r) => r.failures.length).length;
   console.log(`
 ${results.length} page loads in a real browser — ${failed} broken`);
   process.exit(failed === 0 ? 0 : 1);

@@ -49,17 +49,15 @@ export function stateFor(query: string): ListboxState {
 }
 
 /** The rows on screen, in the order the matcher ranks them (exact name first). */
-export function shownOptions(options: FieldOption[], state: ListboxState, limit = SHOWN_LIMIT): FieldOption[] {
+export function shownOptions(options: FieldOption[], state: ListboxState): FieldOption[] {
   if (!state.query.trim()) return [];
-  return matchOptions(options, state.query).slice(0, limit);
+  return matchOptions(options, state.query).slice(0, SHOWN_LIMIT);
 }
 
 /** The row the highlight is on — the only row Enter can ever commit. */
-export function activeOption(
-  options: FieldOption[], state: ListboxState, limit = SHOWN_LIMIT,
-): FieldOption | undefined {
+export function activeOption(options: FieldOption[], state: ListboxState): FieldOption | undefined {
   if (!state.open || state.active < 0) return undefined;
-  return shownOptions(options, state, limit)[state.active];
+  return shownOptions(options, state)[state.active];
 }
 
 export interface KeyResult {
@@ -68,10 +66,8 @@ export interface KeyResult {
   commit?: FieldOption;
 }
 
-export function onKey(
-  options: FieldOption[], state: ListboxState, key: ListboxKey, limit = SHOWN_LIMIT,
-): KeyResult {
-  const rows = shownOptions(options, state, limit);
+export function onKey(options: FieldOption[], state: ListboxState, key: ListboxKey): KeyResult {
+  const rows = shownOptions(options, state);
   const last = rows.length - 1;
   switch (key) {
     case "ArrowDown":
@@ -90,7 +86,7 @@ export function onKey(
       // Closes, and commits nothing — the answer on file is untouched.
       return { state: { ...state, open: false, active: -1 } };
     case "Enter": {
-      const option = activeOption(options, state, limit);
+      const option = activeOption(options, state);
       return option ? { state, commit: option } : { state };
     }
   }

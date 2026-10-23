@@ -286,7 +286,7 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
     const address = countryAddresses(ds).find((a) => a.country.code === "FR")!;
     const page = countryPage(ds, address);
     expect(page.html).toContain(`<h1>${esc(countryHeadline(phraseAtStartOf("FR"), 7, 5))}`);
-    const researcher = routePages(ds, "2026-09-16").find((p) => p.path === "/france/talent-researcher");
+    const researcher = routePages(ds, { lastRun: "2026-09-16" }).find((p) => p.path === "/france/talent-researcher");
     expect(researcher).toBeDefined();
     expect(textOf(researcher!.html))
       .toContain(scopeWords("rules-quoted-nothing-asked", { stated: 0, noted: 0 }, { reader: "not-answered" }));
@@ -391,7 +391,7 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
         await new Promise((r) => setTimeout(r, 900));
         const france = await read(FRANCE_RESEARCH);
         // Spain, the same two answers — and the passport, which is Spain's third
-        // tap (the scenario: CRITERIA MET in three).
+        // tap (CRITERIA MET in three).
         await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
         await page.goto(server.url("/"), 1400);
         const spain = await read(SPAIN_RESEARCH);

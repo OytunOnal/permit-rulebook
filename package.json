@@ -9,6 +9,7 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "test": "vitest run",
+    "lint": "eslint src scripts tests",
     "assets": "node scripts/render-assets.mjs",
     "assets:check": "node scripts/render-assets.mjs --check",
     "measure:taps": "node scripts/measure-taps.mjs",
@@ -25,7 +26,10 @@
     "@astrojs/check": "^0.9.10",
     "@types/node": "^26.4.1",
     "dependency-cruiser": "18.7.0",
+    "eslint": "10.13.0",
+    "eslint-plugin-astro": "3.2.1",
     "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0",
     "vitest": "^5.0.0"
   }
 }

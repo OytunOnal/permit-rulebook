@@ -124,7 +124,7 @@ describe("the two questions are asked from the dataset, in order, after recognit
 
   it("the declared rows carry the short labels and the chosen labels", () => {
     const answers = withExperience("2plus", "3to5");
-    const html = declarationHtml(ds, answers, [FIVE, SEVEN], null);
+    const html = declarationHtml(ds, { answers, asked: [FIVE, SEVEN], currentField: null });
     expect(textOf(html)).toContain("Experience (last 5 years) 2 years or more");
     expect(textOf(html)).toContain("Experience (last 7 years) 3 to under 5 years");
   });

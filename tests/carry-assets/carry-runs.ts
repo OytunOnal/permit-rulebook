@@ -1,13 +1,14 @@
 import { execFile } from "node:child_process";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { carryAssets } from "../../scripts/carry-assets/carry.mjs";
+import { carryAssets, type BuildDirectory } from "../../scripts/carry-assets/carry.mjs";
 import { liveAnswerFor } from "./live-site-in-memory.js";
 
 /**
  * One run of the carry, as its tests read it: its status and what it printed.
  * Two ways to get one — the flow in this process against the in-memory live
- * site, or the real entry as a child process, the deploy's own command.
+ * site and build directory, or the real entry as a child process, the
+ * deploy's own command.
  */
 export type CarryRun = { status: number; out: string };
 
@@ -15,13 +16,25 @@ const root = fileURLToPath(new URL("../..", import.meta.url));
 const entry = join(root, "scripts", "carry-assets.mjs");
 
 /**
- * The flow, run in this process as the entry runs it, against every in-memory
- * site the case has open: what it would print, and a status of 0 when the flow
- * came back — the whole of what makes the entry exit 0 — or 1 when it threw.
+ * The clock the flow's cases run on: one instant, so no case's outcome turns
+ * on how long a runner takes.
  */
-export async function flowRunInProcess(origin: string, into: string, { dryRun = false }: { dryRun?: boolean } = {}): Promise<CarryRun> {
+export const fixedClock = (): number => Date.UTC(2026, 9, 23);
+
+/**
+ * The flow, run in this process as the entry runs it, against every in-memory
+ * site the case has open, filling `into` — no build directory at all when it
+ * is left out — on the fixed clock: what it would print, and a status of 0
+ * when the flow came back — the whole of what makes the entry exit 0 — or 1
+ * when it threw.
+ */
+export async function flowRunInProcess(
+  origin: string,
+  into: BuildDirectory | undefined,
+  { dryRun = false }: { dryRun?: boolean } = {},
+): Promise<CarryRun> {
   try {
-    const result = await carryAssets({ origin, dist: into, liveAnswerFor, dryRun });
+    const result = await carryAssets({ origin, buildDirectory: into, liveAnswerFor, now: fixedClock, dryRun });
     return { status: 0, out: result.logLines.map((line: string) => `${line}\n`).join("") };
   } catch (e) {
     return { status: 1, out: String(e) };

@@ -8,10 +8,15 @@ pull request.
 
 ## Commands
 
-- Lint: none configured. `astro check` and `tsc` carry the type rules; the
-  shape limits (files ≤ 1000 lines, functions ≤ 40 lines, nesting ≤ 3,
-  parameters ≤ 3, no nested ternaries, no unused names) are read by review
-  until a linter enforces them.
+- Lint: site `npm run lint` (ESLint, `eslint.config.mjs`) over `src/`,
+  `scripts/`, `tests/` and the pages' scripts holds the six shape limits:
+  files ≤ 400 lines and functions ≤ 40 lines, every line counted, blank lines
+  and comments included; nesting ≤ 3; parameters ≤ 3; no nested ternaries; no
+  unused names. A `describe` callback is exempt from the function limit; every
+  `it` body and helper is held to it. A hit waiting on its issue is an entry
+  in the config's exception list, with that issue and its version, and
+  `tests/lint.test.ts` fails once that version comes. `astro check` and `tsc`
+  carry the type rules.
 - Format: none configured.
 - Typecheck: site `npm run build` (`astro check && astro build`); data
   `npm run build` (`tsc -p tsconfig.json`) and `npm run typecheck:tests`.
@@ -20,13 +25,20 @@ pull request.
   `node ${CLAUDE_PLUGIN_ROOT}/scripts/structure-check.mjs` reads it against
   `docs/spine/dependency-rules.md`. Every source file carries its `// @level`
   tag as its first comment (an Astro file's, on the line after its first
-  `---`). The check is red on one line until the carry's folder is reshaped:
-  `scripts/carry-assets` holds five files at its root, and no exception can
-  cover that (#37).
+  `---`). The file is generated and never resolved by hand: a merge
+  keeps one side's copy (`.gitattributes`, `merge=ours`; a fresh clone sets
+  the driver once with `git config merge.ours.driver true`, its worktrees
+  share it, and CI never merges), and after any merge that changed it, the
+  structure command is rerun
+  and its result committed. GitHub's merge ignores local drivers, so on its
+  conflict: merge master into the branch locally, rerun, push.
 - Green means: the site — `npm test` (vitest, browser cases drive headless
   Chrome over `dist/`), `npm run build` with 0 errors, `npm run assets:check`
-  true; the data — `npm run check` end to end (build, typecheck:tests,
-  validate, watch:coverage, tests). Both, on the branch, before the merge.
+  true, `npm run lint` with 0 problems; the data — `npm run check` end to end
+  (build, typecheck:tests, validate, watch:coverage, tests). Both, on the
+  branch, before the merge.
+- Watch: data `npm run watch:sources` is the daily read of every source; it
+  is never run in a slice.
 
 ## Module boundaries
 
@@ -112,7 +124,8 @@ pull request.
 - Writes: into a project only inside its root, never under `.git` (however
   spelled) and never at the root itself; run output and agents' scratch under
   `.run/`, which git ignores; test fixtures in the OS temp folder, a throwaway
-  folder per case, removed.
+  folder per case, removed. A slice, a run or an agent leaves no worktree,
+  server or scratch file behind.
 - An outside program is called with an argument list, never through a shell,
   found from the PATH's absolute folders, never from the folder under check.
 - Every loop, regex and walk over outside input is bounded: by length, count or

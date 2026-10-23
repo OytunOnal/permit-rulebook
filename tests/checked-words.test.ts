@@ -141,7 +141,7 @@ describe.skipIf(noBuild !== null)("every page the build draws", () => {
     expect(plainTextOf(places.lede!)).toContain(dataLedeOpen(scored, quotedOnly, countries));
     expect(plainTextOf(places.meta!)).toBe(dataMetaDescription(scored, quotedOnly, countries));
     expect((JSON.parse(places.ld!) as { description: string }).description)
-      .toBe(datasetDescription(total, scored, quotedOnly, countries));
+      .toBe(datasetDescription({ total, scored, quotedOnly, countries }));
     expect(plainTextOf(places.routes!)).toMatch(new RegExp(`^${scored} scored, ${quotedOnly} quoted\\b`));
   });
 

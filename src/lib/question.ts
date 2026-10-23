@@ -194,7 +194,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
               // page, and a link inside a button is not one. The button is
               // described by it, so a reader who Tabs to the answer hears the
               // mark too, not only the one who sees it (re-score polish).
-              const mark = markUnder(dataset, q.field, o.value, answers);
+              const mark = markUnder(dataset, { field: q.field, value: o.value }, answers);
               return `<button class="opt${chosen ? " sel" : ""}" data-value="${escAttr(o.value)}"${
                 chosen ? ` aria-pressed="true"` : ""}${mark ? ` aria-describedby="mark-${escAttr(o.value)}"` : ""}><span class="opt-label">${esc(o.label)}${
                 chosen ? `<span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
@@ -207,6 +207,14 @@ export function questionCardHtml(screen: QuestionScreen): string {
           ${editing ? `<button class="back" id="done">Keep this answer</button>` : ""}
           <noscript><p class="nojs">${esc(NO_SCRIPT_LINE)}</p></noscript>
         </section>`;
+}
+
+/** Where the interview stands: the answers, the fields in the order they were
+ * asked, and the question on the table, if any. */
+export interface InterviewProgress {
+  answers: Profile;
+  asked: string[];
+  currentField: string | null;
 }
 
 /**
@@ -228,9 +236,8 @@ export function questionCardHtml(screen: QuestionScreen): string {
  * answer a reader can pick draws an answered row with its pencil: a money
  * question's open unknown is one of its options and none of its bands.
  */
-export function declarationHtml(
-  dataset: Dataset, answers: Profile, asked: string[], currentField: string | null,
-): string {
+export function declarationHtml(dataset: Dataset, progress: InterviewProgress): string {
+  const { answers, asked, currentField } = progress;
   const fields = currentField && !asked.includes(currentField) ? [...asked, currentField] : asked;
   const offered = new Map(deriveQuestions(dataset).map((q) => [q.field, q.options]));
   return fields.map((f) => {

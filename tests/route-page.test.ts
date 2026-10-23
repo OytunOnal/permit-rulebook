@@ -67,8 +67,8 @@ describe("s6 — one page per route, generated from the dataset", () => {
     expect(routeAddresses(ds).length).toBe(29);
     const germany = ds.countries.find((c) => c.code === "DE")!;
     const blueCard = germany.routes.find((r) => r.id === "de-blue-card-general")!;
-    // The address the scenario walks: the country as a person names it, the
-    // route as the authority names it — never the dataset's own keys.
+    // The address names the country as a person names it and the route as
+    // the authority names it — never the dataset's own keys.
     expect(routePath(germany, blueCard)).toBe("/germany/eu-blue-card-general");
     expect(new Set(pages.map((p) => p.path)).size).toBe(29);
     for (const p of pages) expect(p.path, p.path).toMatch(/^\/[a-z-]+\/[a-z0-9-]+$/);
@@ -487,7 +487,7 @@ describe("s6 — one page per route, generated from the dataset", () => {
   });
 
   /**
-   * R8 — no abbreviation goes unexplained on first use (scenario step 1).
+   * R8 — no abbreviation goes unexplained on first use.
    */
   it("expands an abbreviation the first time a page uses it, and not after", () => {
     const de = pages.find((x) => x.path === "/germany/eu-blue-card-general")!;
@@ -664,7 +664,7 @@ describe("a route page dates what it prints", () => {
       { id: "audience", url: notice.source.source_url, last_read: notice.source.retrieved_at, countries: [] },
     ];
     const prints = (html: string): boolean => html.includes(esc(notice.source.quote));
-    const pagesWith = routeAddresses(ds).map((a) => routePage(ds, a, "2026-09-30", unread));
+    const pagesWith = routeAddresses(ds).map((a) => routePage(ds, a, { lastRun: "2026-09-30", unread }));
     expect(pagesWith.filter((p) => prints(p.html)).length, "no route page prints the notice's sentence")
       .toBeGreaterThan(0);
     for (const page of pagesWith)

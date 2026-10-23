@@ -58,7 +58,7 @@ const firstScreen = questionCardHtml({
   dataset, question: firstQuestions[0], answers: {}, asked: [], editing: null,
   total: firstQuestions.length,
 });
-const firstDeclaration = declarationHtml(dataset, {}, [], firstQuestions[0].field);
+const firstDeclaration = declarationHtml(dataset, { answers: {}, asked: [], currentField: firstQuestions[0].field });
 /**
  * And, over it, the line for a reader whose own screen is not this one. The
  * card stays in the box under it, so the box is the same box — a returning
@@ -164,7 +164,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     } from "../lib/listbox.js";
     import {
       backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, readEntry,
-      recordScreen as recordEntry, screenAfter, screenAt, type FlowAction,
+      recordScreen as recordEntry, screenAfter, screenAt, type FlowAction, type Screen,
     } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     import { esc, escAttr } from "../lib/reason.js";
@@ -364,7 +364,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       cameFromCountry = country.code;
       const before = answers["destination"];
       rescopedFrom = before !== undefined && before !== destination ? before : null;
-      const plan = arrivalPlan(ds, answers, asked, destination);
+      const plan = arrivalPlan(ds, { answers, order: asked }, destination);
       // Nothing moved: the reader is already here, and a line saying so is a
       // line about nothing (Spec review, 2026-09-08).
       if (!plan.changed) return;
@@ -551,6 +551,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       main.dataset.beat = "";
     }
 
+    /** The standing promise a question screen's masthead shows; a verdict
+     * screen has none. */
+    function standingPromiseOf(screen: Screen): "started" | "fresh" | null {
+      if (screen.kind !== "question") return null;
+      return screen.started ? "started" : "fresh";
+    }
+
     /** One masthead, one writer. Every gesture names itself, and only the two
      * that compare something can produce a screen that says so — no path back
      * into the interview ("Start over", an edit, browser Back) can leave a
@@ -571,7 +578,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // verdict's subline may carry a link of its own (s19), and a child that
       // is not one of the two promises is no reason to leave it standing on a
       // question screen.
-      const standing = screen.kind === "question" ? (screen.started ? "started" : "fresh") : null;
+      const standing = standingPromiseOf(screen);
       if (standing !== null && subline.querySelector(".sub-fresh")) {
         if (page.dataset.promise !== standing) page.dataset.promise = standing;
         return;
@@ -617,7 +624,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // the box is compared or written, so the box never holds a node the
       // renderer did not draw and the next write cannot destroy it.
       if (restart.parentElement !== decl) decl.append(restart);
-      paint(declList, declarationHtml(ds, answers, asked, currentField), () => {
+      paint(declList, declarationHtml(ds, { answers, asked, currentField }), () => {
         declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
           const jump = () => {
             const f = row.dataset.field!;
@@ -966,7 +973,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // With the one bit the verdict implies: whether the interview had nothing
     // left to ask when this was written, so the next visit can paint for a
     // verdict before the engine has run (s22).
-    const saveRecord = () => writeRecord(store, answers, asked, remainingQuestions(ds, answers).length === 0);
+    const saveRecord = () =>
+      writeRecord(store, { answers, history: asked, done: remainingQuestions(ds, answers).length === 0 });
     function loadRecord() {
       // The questions this interview can ask, with the answers each takes: a
       // field the rules retired, or an answer a field no longer offers, is

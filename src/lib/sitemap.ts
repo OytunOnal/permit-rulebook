@@ -54,7 +54,7 @@ export function sitemapEntries(dataset: Dataset): SitemapEntry[] {
     // absent: a crawler is invited to the page, not to the sign pointing at it.
     { path: DATA_PATH, lastmod: newest },
     // A page reachable from the header is not an orphan, and a crawler is told
-    // about it the way it is told about the others (s13, scenario point 8).
+    // about it the way it is told about the others (`tests/s13.test.ts`).
     { path: FEEDBACK_PATH, lastmod: newest },
     ...countryAddresses(dataset).map(({ country, path }) => ({
       path,

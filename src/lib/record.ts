@@ -126,10 +126,15 @@ export interface RecordStore {
   removeItem(key: string): void;
 }
 
+/** What a save keeps: the answers, the order they were asked in, and whether
+ * the interview had nothing left to ask (unfinished when not said). */
+export type RecordToKeep = Pick<StoredRecord, "answers" | "history"> & { done?: boolean };
+
 /** Keep what has been answered, and whether that was everything. Nothing
  * answered is nothing to keep: an empty record left behind still says someone
  * was here. */
-export function saveRecord(store: RecordStore | null, answers: Profile, history: string[], done = false): void {
+export function saveRecord(store: RecordStore | null, record: RecordToKeep): void {
+  const { answers, history, done = false } = record;
   try {
     if (history.length === 0) store?.removeItem(STORAGE_KEY);
     else store?.setItem(STORAGE_KEY, serialize(answers, history, done));

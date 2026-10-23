@@ -97,7 +97,7 @@ describe("3 — the 404 says it once", () => {
 
 describe("4 — the pencil never stands alone", () => {
   it("the row binds the pen to the last word of the answer with a space that cannot break", () => {
-    const html = declarationHtml(ds, { qualification: "degree" }, ["qualification"], null);
+    const html = declarationHtml(ds, { answers: { qualification: "degree" }, asked: ["qualification"], currentField: null });
     expect(html).toContain(`University degree&nbsp;<span class="pen" aria-hidden="true">✎</span>`);
     // The words are what they were: the label, then the pen.
     expect(textOf(html)).toContain("University degree ✎");
@@ -256,6 +256,12 @@ interface Section {
   nameLeft: number; nameTop: number; nameBottom: number; tallyLeft: number; tallyRight: number; tallyTop: number;
 }
 
+/** Where a section's tally sits against its name: on the name's line or beneath it, aligned or adrift. */
+function tallyPlaceOf(s: Section): string {
+  if (s.tallyTop < s.nameBottom) return s.tallyRight < 2 ? "right, on the name's line" : "adrift on the name's line";
+  return s.tallyLeft < 2 ? "beneath, left-aligned" : "beneath, adrift";
+}
+
 /** The four-country walk s26 seeds, to the result where every section is drawn: France leads, the other three closed. */
 const walkToFour = async (page: BrowserPage, base: string): Promise<void> => {
   await page.goto(base, 300);
@@ -286,7 +292,7 @@ const ledgerRows = (): string => {
       ...fieldOptions(ds, field.id).map((o) => o.value),
       ...(field.type === "money_band" ? deriveBands(ds, field.id).map((b) => b.id) : []),
     ];
-    for (const value of values) rows.push(declarationHtml(ds, { [field.id]: value }, [field.id], null));
+    for (const value of values) rows.push(declarationHtml(ds, { answers: { [field.id]: value }, asked: [field.id], currentField: null }));
   }
   return rows.join("");
 };
@@ -393,9 +399,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
           // The tally is level with the name, at the right — or, on the phone
           // only, wrapped beneath it and left-aligned. One of the two, never a
           // third place.
-          const onTheLine = s.tallyTop < s.nameBottom;
-          const place = onTheLine ? (s.tallyRight < 2 ? "right, on the name's line" : "adrift on the name's line")
-            : (s.tallyLeft < 2 ? "beneath, left-aligned" : "beneath, adrift");
+          const place = tallyPlaceOf(s);
           if (viewport.width === 1280) expect(place, where).toBe("right, on the name's line");
           else expect(["right, on the name's line", "beneath, left-aligned"], where).toContain(place);
         }

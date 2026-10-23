@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { contentSecurityPolicy, sha256 } from "../src/lib/csp.js";
+import { sha256 } from "../src/lib/csp.js";
 import { MENU_SCRIPT } from "../src/lib/identity.js";
 import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
@@ -124,11 +124,13 @@ describe("every page states what may run on it", () => {
     const hashes = [...policy.matchAll(/'sha256-[^']*'/g)].map((m) => m[0]);
     expect(hashes.length).toBe(3);
     expect(new Set(hashes)).toEqual(new Set([MENU_SCRIPT, FIRST_PAINT_SCRIPT, COPY_SCRIPT].map(sha256)));
+    const scriptsOfPage: Record<string, string[]> = {
+      "/index.html": [FIRST_PAINT_SCRIPT, MENU_SCRIPT],
+      "/feedback/index.html": [MENU_SCRIPT, COPY_SCRIPT],
+    };
     for (const page of pages) {
       const running = [...page.html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => sha256(m[1]!));
-      const wanted = page.path === "/index.html" ? [FIRST_PAINT_SCRIPT, MENU_SCRIPT]
-        : page.path === "/feedback/index.html" ? [MENU_SCRIPT, COPY_SCRIPT]
-          : [MENU_SCRIPT];
+      const wanted = scriptsOfPage[page.path] ?? [MENU_SCRIPT];
       expect(running, `${page.path} runs ${running.length} inline scripts`).toEqual(wanted.map(sha256));
     }
   });

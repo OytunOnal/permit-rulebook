@@ -696,6 +696,12 @@ browser cached still finds what it asks for. Its object is one asset; its
 subject is the deploy (`scripts/carry-assets.mjs`, s33).
 _Avoid_: mirror, backup, sync
 
+**Build directory**:
+The `dist/` a deploy has just built and is about to publish. The carry lists
+its assets, writes the carried ones into it, and writes the digest list beside
+its page.
+_Avoid_: output folder, dist (as a word in prose)
+
 **Generation** (of assets):
 The set of content-hashed `/_astro/` files one deploy publishes. A deploy
 carries exactly one previous generation forward.

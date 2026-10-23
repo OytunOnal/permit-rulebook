@@ -103,7 +103,7 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
     // B4 was a WIRING defect, not a rendering one: "Start over" cleared the
     // answers and left the claim about them standing. So the walk is what is
     // tested — every gesture the page can make, in any order, including the
-    // two the scenario names: post-reset and post-edit.
+    // two B4 was found on: post-reset and post-edit.
     expect(COMPARE.kind, "precondition: the walk's comparison is one").toBe("compare");
     const rand = lcg(2718);
     for (let walk = 0; walk < 300; walk++) {

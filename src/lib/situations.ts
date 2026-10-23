@@ -69,6 +69,12 @@ export function notScoredFor(ds: Dataset, destination: string | undefined, situa
  */
 export const SITUATION_COUNTRY_FIELD = "situation_country";
 
+/** One option of one question: the question's field and the option's value. */
+export interface QuestionOption {
+  field: string;
+  value: string;
+}
+
 /**
  * The mark under one option of one question, for the answers on the record —
  * or nothing, for every question but the two that carry one.
@@ -78,7 +84,8 @@ export const SITUATION_COUNTRY_FIELD = "situation_country";
  * situation is declared. One derivation either way; the renderer asks this
  * and never chooses a key itself.
  */
-export function markUnder(ds: Dataset, field: string, value: string, answers: Profile): NotScoredMark | null {
+export function markUnder(ds: Dataset, option: QuestionOption, answers: Profile): NotScoredMark | null {
+  const { field, value } = option;
   if (field === SITUATION_FIELD) return notScoredFor(ds, answers[DESTINATION_FIELD], value);
   if (field === SITUATION_COUNTRY_FIELD) {
     const situation = answers[SITUATION_FIELD];

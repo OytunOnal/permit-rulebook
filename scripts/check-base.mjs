@@ -59,16 +59,20 @@ try {
   if (html.length < 25) problems.push(`only ${html.length} pages built`);
   if (json.length < 23) problems.push(`only ${json.length} JSON endpoints built`);
 
+  const nameOf = (file) => relative(dist, file).split(sep).join("/");
+  /** Each match of `pattern` in `file` that `isProblem` flags, said as a problem. */
+  const problemsIn = (file, { pattern, isProblem, problemOf }) =>
+    [...readFileSync(file, "utf8").matchAll(pattern)]
+      .filter(isProblem)
+      .map((m) => `${nameOf(file)}: ${problemOf(m)}`);
+
   // 1. Nothing points at the site root instead of the base.
-  for (const file of files) {
-    if (!/[.](html|json|js|css)$/.test(file)) continue;
-    const name = relative(dist, file).split(sep).join("/");
-    for (const m of readFileSync(file, "utf8").matchAll(/(?:href|src|content)="([/][^"/][^"]*)"/g)) {
-      const target = m[1];
-      if (target === BASE || target.startsWith(`${BASE}/`)) continue;
-      problems.push(`${name}: root-absolute ${m[0].slice(0, 90)}`);
-    }
-  }
+  const rootAbsolute = {
+    pattern: /(?:href|src|content)="([/][^"/][^"]*)"/g,
+    isProblem: (m) => m[1] !== BASE && !m[1].startsWith(`${BASE}/`),
+    problemOf: (m) => `root-absolute ${m[0].slice(0, 90)}`,
+  };
+  for (const file of files.filter((f) => /[.](html|json|js|css)$/.test(f))) problems.push(...problemsIn(file, rootAbsolute));
 
   // 2. Every internal link resolves to something the build actually emitted.
   const resolves = (p) => {
@@ -76,14 +80,12 @@ try {
     const target = join(dist, clean);
     return (existsSync(target) && statSync(target).isFile()) || existsSync(join(target, "index.html"));
   };
-  for (const file of html) {
-    const name = relative(dist, file).split(sep).join("/");
-    for (const m of readFileSync(file, "utf8").matchAll(/(?:href|src)="([^"]+)"/g)) {
-      const target = m[1];
-      if (!target.startsWith(BASE)) continue;
-      if (!resolves(target)) problems.push(`${name}: ${target} resolves to nothing built`);
-    }
-  }
+  const unresolved = {
+    pattern: /(?:href|src)="([^"]+)"/g,
+    isProblem: (m) => m[1].startsWith(BASE) && !resolves(m[1]),
+    problemOf: (m) => `${m[1]} resolves to nothing built`,
+  };
+  for (const file of html) problems.push(...problemsIn(file, unresolved));
 
   // 3. The meta a link preview reads carries the base too.
   const home = readFileSync(join(dist, "index.html"), "utf8");

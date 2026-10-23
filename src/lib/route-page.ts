@@ -41,7 +41,7 @@ import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, REPO_DATA, analyticsBeacon,
-  absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
+  absolute, headMeta, readWatchRun, url, type WatchRun,
 } from "./site.js";
 import {
   ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, ROUTE_PAGE_ADDENDUM,
@@ -64,8 +64,8 @@ import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddres
  * of the template that made it, and a check that reads the template is
  * passed by moving a string.
  *
- * The page it renders is `docs/spine/design/s6-route-page.html`, approved with
- * the scenario and revised after its isolated critique: the rail's labels are a
+ * The page it renders is `docs/spine/design/s6-route-page.html`, approved in
+ * s6 and revised after its isolated critique: the rail's labels are a
  * list that cannot collide at any width (B1), every control reaches
  * `--tap-min` (B2), no badge and no verdict colour (B3), quotes are `<q>` with
  * their language tagged and a note where the source's notation differs from the
@@ -139,7 +139,7 @@ function gteUnder(c: Criterion): Gte[] {
 /**
  * Who the page is for, said before the first rule. An Irish reader who lands on
  * a German route page from a search is told here, not after seven rules and a
- * refusal (scenario step 10), and the call to action below leads to the notice
+ * refusal (`tests/s6-edges.test.ts`), and the call to action below leads to the notice
  * that answers her rather than to a rejection.
  */
 export const audienceSentence = (country: Country): string => audienceLine(phraseOf(country.code));
@@ -240,7 +240,7 @@ export function pageStamp(dataset: Dataset, route: Route): string {
  * The one notice that says who a route page is NOT for: an EU, EEA or Swiss
  * passport needs no permit here. It is on the page before the first rule so an
  * Irish reader landing on a German page is told, rather than walked through
- * seven rules and handed a refusal (scenario step 10).
+ * seven rules and handed a refusal (`tests/s6-edges.test.ts`).
  */
 export function audienceNotice(dataset: Dataset): Notice | undefined {
   return (dataset.notices ?? []).find((n) => n.kind === "no-permit-needed");
@@ -296,22 +296,38 @@ function railRows(country: Country, route: Route, own: Gte): RailRow[] {
     });
   return [...byAmount.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([amount, entry]) => {
-      // A route may state two amounts on one rule — the Spanish Blue Card
-      // states both of its salaries inside a disjunction — so "ours" is any
-      // amount this route states, not only the one the card was built from.
-      const own_ = entry.routes.includes(route);
-      const others = entry.routes.filter((r) => r !== route);
-      const text = own_
-        ? `this route${entry.label ? ` — ${entry.label}` : ""}`
-        : others.length === 1
-          ? `${others[0].name} — another route here`
-          : `${others.length} other routes here`;
-      return { amount, text, own: own_ };
-    });
+    .map(([amount, entry]) => ({ amount, text: railRowText(entry, route), own: entry.routes.includes(route) }));
 }
 
-function railHtml(dataset: Dataset, country: Country, route: Route, own: Gte): string {
+/**
+ * What a rail row says beside its amount: this route's own, one other route's
+ * name, or how many other routes state it. A route may state two amounts on
+ * one rule — the Spanish Blue Card states both of its salaries inside a
+ * disjunction — so "ours" is any amount this route states, not only the one
+ * the card was built from.
+ */
+function railRowText(entry: { routes: Route[]; label?: string }, route: Route): string {
+  if (entry.routes.includes(route)) return `this route${entry.label ? ` — ${entry.label}` : ""}`;
+  const others = entry.routes.filter((r) => r !== route);
+  if (others.length === 1) return `${others[0].name} — another route here`;
+  return `${others.length} other routes here`;
+}
+
+/**
+ * What every rule card on one route page shares: the dataset, the country and
+ * route the page is about, the page's memory of what it has already explained,
+ * and the free-movement notice the audience card may borrow its quote from.
+ */
+interface RulePage {
+  dataset: Dataset;
+  country: Country;
+  route: Route;
+  seen: Glossary;
+  notice?: Notice;
+}
+
+function railHtml(page: RulePage, own: Gte): string {
+  const { dataset, country, route } = page;
   const rows = railRows(country, route, own);
   if (rows.length < 2) return "";
   const lo = Math.min(...rows.map((r) => r.amount)) * 0.9;
@@ -452,9 +468,8 @@ function cardValues(c: Criterion, notice?: Notice): ProvenanceEntry[] {
   return values;
 }
 
-function ruleCard(
-  dataset: Dataset, country: Country, route: Route, c: Criterion, seen: Glossary, notice?: Notice,
-): string {
+function ruleCard(page: RulePage, c: Criterion): string {
+  const { dataset, seen, notice } = page;
   const values = cardValues(c, notice);
   const thresholds = gteUnder(c);
   const year = thresholds.length ? thresholds[0].threshold.retrieved_at.slice(0, 4) : "";
@@ -468,7 +483,7 @@ function ruleCard(
     esc(ruleKind(c))}${year ? ` · ${esc(year)}` : ""}</span></div>
         ${plainHtml(dataset, c, notice)}${
     thresholds.length ? `
-      ${railHtml(dataset, country, route, thresholds[0])}` : ""}${asks}${
+      ${railHtml(page, thresholds[0])}` : ""}${asks}${
     values.map((e) => `
       ${quoteBlock(e.value, { amount: e.amount, label: e.label }, seen)}`).join("")}
       </article>`;
@@ -709,20 +724,17 @@ function description(dataset: Dataset, country: Country, route: Route): string {
 /**
  * One route page.
  *
- * `lastRun` is the day the watch last re-read every source — the single value
- * on this page that moves without anyone editing anything. It is an argument
- * rather than a read inside the footer so that a render over a frozen dataset
- * is genuinely frozen: the fingerprint case hashed a page that changed by
- * itself, and failed the first build a data change ever reached through the
- * dispatch (CI 2026-09-09). What that run could not read moves with it, and is
- * read the same way, for the same reason.
+ * `run.lastRun` is the day the watch last re-read every source — the single
+ * value on this page that moves without anyone editing anything. It is an
+ * argument rather than a read inside the footer so that a render over a frozen
+ * dataset is genuinely frozen: the fingerprint case hashed a page that changed
+ * by itself, and failed the first build a data change ever reached through the
+ * dispatch (CI 2026-09-09). What that run could not read, `run.unread`, moves
+ * with it, and is read the same way, for the same reason. Either one left out
+ * is read from the watch's state.
  */
-export function routePage(
-  dataset: Dataset,
-  address: RouteAddress,
-  lastRun: string = lastWatchRun(),
-  unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
-): RoutePage {
+export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun = {}): RoutePage {
+  const watch = readWatchRun(dataset, run);
   const { country, route } = address;
   const notice = audienceNotice(dataset);
   const about = printedNotices(dataset, route);
@@ -734,7 +746,7 @@ export function routePage(
   const rules = ruleCriteria(dataset, route);
   // The footer counts every unread source a reader is looking at (s11); the
   // sentence under the scope heading speaks for this page's own (s23, F3).
-  const missed = ownUnread(dataset, route, unread).length;
+  const missed = ownUnread(dataset, route, watch.unread).length;
   // One page, one memory of which abbreviations it has already expanded. The
   // heading claims the section symbol before any citation can: it is where the
   // page states its own name, and a German route's name carries "§" whether
@@ -743,6 +755,7 @@ export function routePage(
   // route's name is a cross-reference and keeps the short form.
   const seen: Glossary = new Set();
   const heading = glossSection(route.name, seen);
+  const rulePage: RulePage = { dataset, country, route, seen, notice };
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -796,7 +809,7 @@ ${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join(""
 
   <section class="rules" aria-labelledby="rules-h">
     <h2 class="visually-hidden" id="rules-h">The rules of this route</h2>${
-    rules.map((c) => ruleCard(dataset, country, route, c, seen, notice)).join("")}${
+    rules.map((c) => ruleCard(rulePage, c)).join("")}${
     statedBlocks(route, seen)}
   </section>
 
@@ -817,7 +830,7 @@ ${neighbours(country, route, seen)}
   </aside>
   </div>
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset, lastRun, unread), {
+  ${siteFooter(navCountries(dataset), footerFacts(dataset, watch), {
     countryPath: countryPath(country), current: "true", jsonPath,
     checkPath: `/?country=${country.code.toLowerCase()}`,
   })}
@@ -843,8 +856,8 @@ ${analyticsBeacon()}`;
 }
 
 /** Every route page this dataset produces. 23 at launch. */
-export function routePages(dataset: Dataset, lastRun?: string, unread?: UnreadSource[]): RoutePage[] {
-  return routeAddresses(dataset).map((a) => routePage(dataset, a, lastRun, unread));
+export function routePages(dataset: Dataset, run: WatchRun = {}): RoutePage[] {
+  return routeAddresses(dataset).map((a) => routePage(dataset, a, run));
 }
 
 

@@ -153,8 +153,8 @@ describe.skipIf(!existsSync(dist))("the hold line ships in the masthead (s31)", 
   });
 });
 
-/** The module held four seconds out — the scenario's own measurement — and
- * the page read while it is still in the post. */
+/** The module held four seconds out, and the page read while it is still in
+ * the post. */
 const HELD_MS = 4000;
 
 describe.skipIf(skipped !== null)("the hold state is one line under the eyebrow (point 1)", () => {
@@ -359,7 +359,7 @@ describe.skipIf(skipped !== null)("the gutter is stable (point 3)", () => {
    * after and the edge could not move; the taller screen is where the
    * question page fits and the verdict's arrival used to take 15 px from
    * the layout — the column's edge moved 7.5 px on master. Both are read:
-   * the scenario's viewport, and the one where the defect shows.
+   * 1280x900, and the one where the defect shows.
    */
   for (const [name, viewport] of [
     ["1280x900", { width: 1280, height: 900 }],

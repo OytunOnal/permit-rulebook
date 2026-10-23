@@ -111,9 +111,9 @@ describe("the record says whether it was finished (s22)", () => {
 
   it("is written by the save, and is what the pre-paint script will find", () => {
     const store = fakeStore();
-    saveRecord(store, answers, history, true);
+    saveRecord(store, { answers, history, done: true });
     expect(JSON.parse(store.getItem(STORAGE_KEY)!).done).toBe(true);
-    saveRecord(store, answers, history);
+    saveRecord(store, { answers, history });
     expect(JSON.parse(store.getItem(STORAGE_KEY)!).done).toBe(false);
   });
 });
@@ -142,7 +142,7 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
 
   it("what was answered is there again after the tab closes", () => {
     const store = fakeStore();
-    saveRecord(store, answers, history);
+    saveRecord(store, { answers, history });
     expect(loadRecord(store, known)).toEqual({ answers, history });
   });
 
@@ -150,7 +150,7 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
     // A shared or borrowed computer must not hand the next person a
     // stranger's salary: the stored record goes with the screen.
     const store = fakeStore();
-    saveRecord(store, answers, history);
+    saveRecord(store, { answers, history });
     clearRecord(store);
     expect(loadRecord(store, known)).toEqual({ answers: {}, history: [] });
     expect(store.size).toBe(0);
@@ -159,13 +159,13 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
   it("an interview with nothing answered leaves no record behind", () => {
     // An empty record still says someone was here.
     const store = fakeStore();
-    saveRecord(store, answers, history);
-    saveRecord(store, {}, []);
+    saveRecord(store, { answers, history });
+    saveRecord(store, { answers: {}, history: [] });
     expect(store.size).toBe(0);
   });
 
   it("a browser that refuses site data does not break the interview", () => {
-    expect(() => saveRecord(refusingStore, answers, history)).not.toThrow();
+    expect(() => saveRecord(refusingStore, { answers, history })).not.toThrow();
     expect(() => clearRecord(refusingStore)).not.toThrow();
     expect(loadRecord(refusingStore, known)).toEqual({ answers: {}, history: [] });
   });
@@ -173,7 +173,7 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
   it("no storage at all is the same as an empty one", () => {
     // `localStorage` can throw on the property access itself, so the page may
     // have nothing to hand over.
-    expect(() => saveRecord(null, answers, history)).not.toThrow();
+    expect(() => saveRecord(null, { answers, history })).not.toThrow();
     expect(loadRecord(null, known)).toEqual({ answers: {}, history: [] });
   });
 });
@@ -326,7 +326,7 @@ describe("the rename does not cost anybody their answers", () => {
     expect(loadRecord(store, known)).toEqual({ answers, history });
 
     // The first save puts it under the new key and takes the old one away.
-    saveRecord(store, answers, history);
+    saveRecord(store, { answers, history });
     expect(store.getItem(STORAGE_KEY)).toBe(serialize(answers, history));
     expect(store.getItem(LEGACY_STORAGE_KEY)).toBeNull();
     expect(store.size).toBe(1);
@@ -341,6 +341,27 @@ describe("the rename does not cost anybody their answers", () => {
     expect(loadRecord(store, known)).toEqual({ answers: {}, history: [] });
   });
 });
+
+/** One request to the counter's endpoint after a pre-scoped walk: its preflight
+ * carries nothing, and its report carries an address and no answer. */
+function expectReportCarriesNoAnswer(request: Sent, declared: string[]): void {
+  if (request.method === "OPTIONS") return;
+  const raw = String(request.postData ?? "");
+  // Origin and path masked; the query string left in to be checked.
+  const body = raw.replace(/"location":"([^"?]*)([^"]*)"/g, (_m, _p, query) => `"location":"${query}"`);
+  // Measured, not assumed: the counter reports the path only — the
+  // query string the reader arrived with never reaches it, so the route
+  // id does not either, though it would have been allowed as the page's
+  // own address (Security review, 2026-09-08).
+  expect(raw).not.toContain("route=de-blue-card-general");
+  expect(raw, "the report carries no address at all").toContain('"location"');
+  // No answer, anywhere in it — query string included.
+  for (const answer of declared) {
+    const token = new RegExp(`(^|[^a-z0-9])${
+      answer.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
+    expect(token.test(body.toLowerCase()), `${answer} reached the beacon`).toBe(false);
+  }
+}
 
 /**
  * The other way in: a route page's call to action lands here with the route in
@@ -377,22 +398,7 @@ describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arrivi
       for (const request of seen.sent) {
         if (request.url.startsWith(BEACON_SCRIPT)) continue;
         if (request.url.startsWith(BEACON_ENDPOINT)) {
-          if (request.method === "OPTIONS") continue;
-          const raw = String(request.postData ?? "");
-          // Origin and path masked; the query string left in to be checked.
-          const body = raw.replace(/"location":"([^"?]*)([^"]*)"/g, (_m, _p, query) => `"location":"${query}"`);
-          // Measured, not assumed: the counter reports the path only — the
-          // query string the reader arrived with never reaches it, so the route
-          // id does not either, though it would have been allowed as the page's
-          // own address (Security review, 2026-09-08).
-          expect(raw).not.toContain("route=de-blue-card-general");
-          expect(raw, "the report carries no address at all").toContain('"location"');
-          // No answer, anywhere in it — query string included.
-          for (const answer of seen.declared) {
-            const token = new RegExp(`(^|[^a-z0-9])${
-              answer.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
-            expect(token.test(body.toLowerCase()), `${answer} reached the beacon`).toBe(false);
-          }
+          expectReportCarriesNoAnswer(request, seen.declared);
           continue;
         }
         expect(request.url.startsWith(origin), `a request left this origin — ${request.url}`).toBe(true);

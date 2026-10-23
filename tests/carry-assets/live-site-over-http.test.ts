@@ -1,146 +1,41 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { createServer, type Server } from "node:http";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
-import { carryAssets } from "../../scripts/carry-assets/carry.mjs";
-import { bodyWithin, liveAnswerOverHttp } from "../../scripts/carry-assets/live-site-over-http.mjs";
+import { bodyWithin } from "../../scripts/live-site-over-http.mjs";
 import { entryRunAsChildProcess } from "./carry-runs.js";
 import {
-  CSS, CSS_NAME, DIGESTS, astroFilesIn, distHolding, expectRefusedOver, liveDeployAnswers, sha256, sweepTemporary,
+  CSS, CSS_NAME, astroFilesIn, distHolding, expectRefusedOver, liveDeployAnswers, sha256, sweepTemporary,
 } from "./deploy-fixtures.js";
-import type { Answer } from "./live-site-in-memory.js";
+import { serveStandInOrigin, type HttpAnswer } from "./stand-in-origin.js";
 
 /**
  * The live site read over HTTP, on a real local server: what only an HTTP
- * exchange can show. A redirect is an error, the request asks for `identity`
- * and an answer that declares another encoding is refused, a declared length
- * is held to the ceiling and to what arrived, bytes are counted as bytes, and
- * the timeout holds. Why each of these is so is written in
- * `scripts/carry-assets/live-site-over-http.mjs`.
+ * exchange can show about the bytes. The request asks for `identity` and an
+ * answer that declares another encoding is refused, a declared length is
+ * held to what arrived, and bytes are counted as bytes. Why each of these is
+ * so is written in `scripts/live-site-over-http.mjs`.
  *
  * Most cases drive the real entry as a child process (`entryRunAsChildProcess`)
- * against a local stand-in for the live origin — the deploy's own command,
- * with the reader it passes — so the exit code is an assertion. The two that
- * reach `bodyWithin` hand it chunks directly, and the one that holds a budget
- * it is handed calls the flow with this reader. What the carry decides about
- * each answer is the flow's, in the two `carry-*.test.ts` files, against an
+ * against a local stand-in for the live origin (`stand-in-origin.ts`) — the
+ * deploy's own command, with the reader it passes — so the exit code is an
+ * assertion. The two that reach `bodyWithin` hand it chunks directly. The
+ * bounds an answer over HTTP is held to — the one origin, the ceiling, the
+ * budget — are `live-site-over-http-bounds.test.ts`'s. What the carry decides
+ * about each answer is the flow's, in the `carry-*.test.ts` files, against an
  * in-memory live site.
  */
-
-/** What the live host answers for one path, over HTTP. */
-type HttpAnswer = Answer & {
-  /** Answer a redirect instead, to this address. */
-  redirectTo?: string;
-  /**
-   * Write this many bytes of the body, promise more, then drop the socket —
-   * once those bytes are actually on the wire. Dropped in the same tick as the
-   * write, they go with it and the client never gets a usable response at all,
-   * so the case named for a body that stops halfway would never reach a body.
-   * Queued on the write's flush, the client reads `its body terminated (other
-   * side closed)`.
-   */
-  dropAfter?: number;
-  /** Answer only after this long — a host that has stopped answering. */
-  delayMs?: number;
-  /** Answer gzip-encoded, the way a CDN answers a request it decides to compress. */
-  gzip?: boolean;
-  /**
-   * Frame the answer by hand — exactly these headers, exactly these bytes, then
-   * close. `res.writeHead` will not send a wrong `content-length` or leave one
-   * out, and those are the shapes an origin uses to make HTTP attest to a file
-   * it is not sending.
-   */
-  raw?: { headers: string[]; body: Buffer };
-};
-
-/**
- * A local stand-in for the live origin: it answers exactly what a case tells it
- * to and records every path asked for — and what it was asked to encode it as —
- * so "it fetched only what was missing", "it never fetched that at all" and
- * "it asked for the bytes it would write" are measurements rather than
- * inferences.
- */
-async function origin(answers: Record<string, HttpAnswer>): Promise<{
-  url: string; asked: string[]; acceptEncoding: string[]; close: () => void;
-}> {
-  const asked: string[] = [];
-  const acceptEncoding: string[] = [];
-  const timers = new Set<NodeJS.Timeout>();
-  const server: Server = createServer((req, res) => {
-    const path = new URL(req.url ?? "/", "http://x").pathname;
-    asked.push(path);
-    acceptEncoding.push(String(req.headers["accept-encoding"] ?? ""));
-    const answer = answers[path];
-    const send = (): void => {
-      try {
-        if (!answer) { res.writeHead(404, { "content-type": "text/html" }); res.end("not found"); return; }
-        if (answer.redirectTo) { res.writeHead(302, { location: answer.redirectTo }); res.end(); return; }
-        const body = answer.body ?? Buffer.alloc(0);
-        if (answer.raw) {
-          // Straight onto the socket: this is the one answer Node must not
-          // frame for us. `connection: close` so a body with no declared
-          // length ends where the socket does.
-          const head = `HTTP/1.1 ${answer.status ?? 200} OK\r\n${[...answer.raw.headers, "connection: close"].join("\r\n")}\r\n\r\n`;
-          res.socket?.write(head);
-          // `end(body)` rather than a write and an end: a body past the socket
-          // buffer is still queued when the FIN goes out, and the server drops
-          // what it has not flushed — which reads as a client timeout and has
-          // nothing to do with the case.
-          res.socket?.end(answer.raw.body);
-          return;
-        }
-        if (answer.dropAfter !== undefined) {
-          // A promise of more than arrives: the shape of a CDN edge that dies
-          // mid-response.
-          res.writeHead(200, { "content-type": answer.type ?? "text/css", "content-length": String(body.length + 1000) });
-          // The drop is queued on the write's own flush, so the headers and
-          // these bytes are on the wire before the socket goes: that is what
-          // makes this a body that stops halfway rather than a response that
-          // never arrives. See `dropAfter`.
-          res.write(body.subarray(0, answer.dropAfter), () => res.socket?.destroy());
-          return;
-        }
-        if (answer.gzip) {
-          // Node writes the compressed length as `content-length`, which is the
-          // whole point of the case: the declaration describes the transfer and
-          // not the file.
-          res.writeHead(answer.status ?? 200, { "content-type": answer.type ?? "text/css", "content-encoding": "gzip" });
-          res.end(gzipSync(body));
-          return;
-        }
-        res.writeHead(answer.status ?? 200, { "content-type": answer.type ?? "application/octet-stream" });
-        res.end(body);
-      } catch { /* the client gave up first; that is the case's point */ }
-    };
-    if (answer?.delayMs) timers.add(setTimeout(send, answer.delayMs));
-    else send();
-  });
-  const port = await new Promise<number>((resolve) => {
-    server.listen(0, "127.0.0.1", () => resolve((server.address() as { port: number }).port));
-  });
-  return {
-    url: `http://127.0.0.1:${port}`,
-    asked,
-    acceptEncoding,
-    close: () => {
-      for (const timer of timers) clearTimeout(timer);
-      server.closeAllConnections?.();
-      server.close();
-    },
-  };
-}
 
 afterEach(sweepTemporary);
 
 describe("the live site's answers, read over HTTP", () => {
   it("asks the origin for the bytes it is going to write, not a transfer of them", async () => {
     // What the live host answers each way, and why that matters, is the
-    // reading in `scripts/carry-assets/live-site-over-http.mjs`, at
+    // reading in `scripts/live-site-over-http.mjs`, at
     // `bodyWithin`. It is not what makes a carried byte trustworthy — the
     // digest list is — but it is what makes the file on disk the file rather
     // than an archive of it.
-    const live = await origin(liveDeployAnswers({ [CSS_NAME]: CSS }));
+    const live = await serveStandInOrigin(liveDeployAnswers({ [CSS_NAME]: CSS }));
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -156,7 +51,7 @@ describe("the live site's answers, read over HTTP", () => {
     const asset = Buffer.alloc(104_000, 0x61);
     const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: asset });
     answers[`/_astro/${CSS_NAME}`] = { type: "text/css; charset=utf-8", body: asset, gzip: true };
-    const live = await origin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -168,24 +63,6 @@ describe("the live site's answers, read over HTTP", () => {
       // without ever draining it. See `expectRefusedOver`.
       expectRefusedOver(run.out, "gzip-encoded", "reading the encoding it declared");
     } finally { live.close(); }
-  });
-
-  it("takes the origin from the environment, and nothing on the command line can move it", async () => {
-    // The step passes no argv, and this is why: the flag reader takes any
-    // `--name value` — the entry header's "Where the address comes from". The
-    // address is a value, read from the environment, and a command line that
-    // spells an origin is inert: this case hands it one, pointing at a host
-    // that would answer, and measures that not a packet reached it.
-    const live = await origin(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const decoy = await origin(liveDeployAnswers({ "index.DECOYAAA.css": CSS }));
-    const out = distHolding();
-    try {
-      const run = await entryRunAsChildProcess(live.url, ["--dist", out, "--origin", decoy.url]);
-      expect(run.status, run.out).toBe(0);
-      expect(decoy.asked, "the command line moved the origin").toEqual([]);
-      expect(live.asked).toEqual(["/", `/${DIGESTS}`, `/_astro/${CSS_NAME}`]);
-      expect(astroFilesIn(out)).toEqual([CSS_NAME]);
-    } finally { live.close(); decoy.close(); }
   });
 
   it("carries a hand-framed answer that is whole, so the refusals below are about the bytes", async () => {
@@ -203,7 +80,7 @@ describe("the live site's answers, read over HTTP", () => {
     answers[`/_astro/${CSS_NAME}`] = {
       raw: { headers: ["content-type: text/css", `content-length: ${CSS.length}`], body: CSS },
     };
-    const live = await origin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -222,7 +99,7 @@ describe("the live site's answers, read over HTTP", () => {
     const asset = Buffer.alloc(104_000, 0x61);
     const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: asset });
     answers[`/_astro/${CSS_NAME}`] = { raw: { headers: ["content-type: text/css"], body: asset.subarray(0, 5_000) } };
-    const live = await origin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -243,7 +120,7 @@ describe("the live site's answers, read over HTTP", () => {
     const asset = Buffer.alloc(104_000, 0x61);
     const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: asset });
     answers[`/_astro/${CSS_NAME}`] = { raw: { headers: ["content-type: text/css", "content-length: 5000"], body: asset } };
-    const live = await origin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -315,7 +192,7 @@ describe("the live site's answers, read over HTTP", () => {
     answers[`/_astro/${CSS_NAME}`] = {
       raw: { headers: ["content-type: text/css", "content-encoding: identity"], body: gzipSync(CSS) },
     };
-    const live = await origin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -325,124 +202,6 @@ describe("the live site's answers, read over HTTP", () => {
       // By the digest — the point of the case is that nothing else could have
       // caught it, so the digest is the verdict to assert. See `expectRefusedOver`.
       expectRefusedOver(run.out, `sha256:${sha256(CSS)}`, "checking the digest the build recorded");
-    } finally { live.close(); }
-  });
-
-  it("refuses to follow a redirect off the host, rather than fetching where it points", async () => {
-    // A same-origin name, so nothing above refuses it, answering a redirect to
-    // a host we can watch — and that host serves a perfectly good stylesheet,
-    // so the only reason it goes uncarried is that the redirect was refused.
-    const moved = "index.GGGGGGGG.css";
-    const elsewhere = await origin({ "/pwn.css": { type: "text/css; charset=utf-8", body: CSS } });
-    const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [moved]: CSS });
-    answers[`/_astro/${moved}`] = { redirectTo: `${elsewhere.url}/pwn.css` };
-    const live = await origin(answers);
-    const out = distHolding();
-    try {
-      const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
-      expect(run.status, run.out).toBe(0);
-      expect(elsewhere.asked, "the carrier followed the redirect off the host").toEqual([]);
-      expect(astroFilesIn(out)).toEqual([]);
-      expect(run.out).toContain(moved);
-      // On the redirect, and not on the clock: a starved origin can leave all
-      // three assertions above holding while the step never saw a `location:`
-      // header at all. The mark is the concept rather than the sentence,
-      // because the words belong to undici — today `fetch failed (unexpected
-      // redirect)` — and a dependency's wording is not this step's decision.
-      // See `expectRefusedOver`.
-      expectRefusedOver(run.out, "redirect", "refusing the redirect instead of following it");
-    } finally { live.close(); elsewhere.close(); }
-  });
-
-  it("survives a body that stops halfway", async () => {
-    const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: CSS });
-    answers[`/_astro/${CSS_NAME}`] = { type: "text/css; charset=utf-8", body: CSS, dropAfter: 4 };
-    const live = await origin(answers);
-    const out = distHolding();
-    try {
-      const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
-      expect(run.status, run.out).toBe(0);
-      // Not a truncated stylesheet on disk: nothing at all.
-      expect(astroFilesIn(out)).toEqual([]);
-      expect(run.out).toContain(CSS_NAME);
-      // The mark is `<name>: its body`, and every word of it is this step's
-      // own: that prefix is written where an answer's headers were read, a
-      // body was begun, and the body is what failed. The cause after it
-      // belongs to undici — `terminated (other side closed)` today — and is
-      // not asserted, because a dependency's wording is not this step's
-      // decision.
-      //
-      // TWO MARKS, and not one, because the three shapes a starved runner
-      // reaches are not covered by either alone: the budget spent before the
-      // request prints `anything: asset-digests.txt: The operation was aborted
-      // due to timeout`, the fetch giving up before any body prints
-      // `index.…css: fetch failed (other side closed)`, and a clock firing
-      // mid-body prints `index.…css: its body The operation was aborted due to
-      // timeout`. The first two carry no `its body` at all, so the positive
-      // mark goes RED on them. The third carries `its body` and passes it, and
-      // is caught by the absence instead. Disjoint shapes, so dropping either
-      // leaves one of the three green for the wrong reason.
-      //
-      // They fail differently on purpose. The mark is the step's own wording
-      // and is allowed to go red the day this step changes it. The absence is
-      // a dependency's — Node's `The operation was aborted due to timeout` —
-      // and an absence can only ever weaken if that wording moves, never turn
-      // a deploy red over it.
-      //
-      // What shrinks the clock's window rather than asserting it away is the
-      // origin above, which queues its drop on the flush of the very bytes the
-      // client is reading. See `expectRefusedOver`.
-      expectRefusedOver(run.out, `${CSS_NAME}: its body`, "reading the body far enough to find it ended early");
-      expect(run.out, "the socket died on the step's own clock, not on the origin's silence")
-        .not.toContain("aborted due to timeout");
-    } finally { live.close(); }
-  });
-
-  it("survives a body larger than the ceiling, without holding it in memory to find out", async () => {
-    // Chunked, so there is no content-length to refuse it by: the ceiling has
-    // to hold while the bytes are arriving.
-    const big = Buffer.alloc(5 * 1024 * 1024, 0x61);
-    const answers = liveDeployAnswers({ [CSS_NAME]: big });
-    const live = await origin(answers);
-    const out = distHolding();
-    try {
-      const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
-      expect(run.status, run.out).toBe(0);
-      expect(astroFilesIn(out)).toEqual([]);
-      expect(run.out).toContain(CSS_NAME);
-      // This is the largest drain here — measured, 4 MB of the 5 reach the
-      // child before the ceiling trips — and it is safe because the client
-      // never waits: it aborts the moment the count passes. Asserting the
-      // ceiling is what says so. See `expectRefusedOver`.
-      expectRefusedOver(run.out, String(4 * 1024 * 1024), "counting the body past the asset ceiling");
-    } finally { live.close(); }
-  });
-
-  it("gives up when the run's time budget is spent, without waiting out a silent host", async () => {
-    // The budget is a ceiling the flow sets, not a knob: there is no
-    // `--budget-ms`, and the deploy passes no argv at all, so nothing
-    // reachable from `pages.yml` can shrink it to 1 and turn the step into a
-    // silent no-op. It is the exported flow that takes it, with the reader the
-    // entry passes, and that is what this case drives.
-    //
-    // What it bounds is waiting on the network, which is what this case
-    // measures: a host that has stopped answering. It does not bound the
-    // step's own work — the ceiling on that is the ceiling on the page.
-    const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: CSS });
-    answers[`/_astro/${CSS_NAME}`] = { type: "text/css; charset=utf-8", body: CSS, delayMs: 5_000 };
-    const live = await origin(answers);
-    const out = distHolding();
-    try {
-      const began = Date.now();
-      const result = await carryAssets({ origin: live.url, dist: out, liveAnswerFor: liveAnswerOverHttp, budgetMs: 500 });
-      const took = Date.now() - began;
-      expect(result.carried).toEqual([]);
-      expect(astroFilesIn(out)).toEqual([]);
-      // A line NAMING what it could not carry, so a lone unrelated problem
-      // cannot satisfy it.
-      expect(result.problems).toEqual([expect.stringContaining(CSS_NAME)]);
-      // It gave up on its own clock rather than the host's.
-      expect(took, `the run took ${took} ms`).toBeLessThan(4_000);
     } finally { live.close(); }
   });
 });

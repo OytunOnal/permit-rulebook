@@ -16,7 +16,7 @@ import {
  * group it lands in when the results come.
  *
  * It lives here rather than inside the page for the reason `screen.ts` does:
- * the behaviour the scenario walks in step 10 — "the pre-scoped route appears
+ * the behaviour `tests/s6-edges.test.ts` walks — "the pre-scoped route appears
  * first in the results and every behaviour from s5d and s5e holds" — has to be
  * readable by a test, and a rule written inline in a template is checked by
  * reading the template.
@@ -167,6 +167,12 @@ export function replayRecord(
   return { answers: kept, order: keptOrder, setAside };
 }
 
+/** The record an arrival finds: the answers, and the fields in the order they were asked. */
+export interface RecordOnArrival {
+  answers: Profile;
+  order: readonly string[];
+}
+
 /**
  * What an arrival does to the record, and what the screen can honestly say
  * about it.
@@ -179,8 +185,9 @@ export function replayRecord(
  * followed were two French ones (Spec review, 2026-09-08).
  */
 export function arrivalPlan(
-  dataset: Dataset, answers: Profile, order: readonly string[], destination: string,
+  dataset: Dataset, record: RecordOnArrival, destination: string,
 ): { answers: Profile; order: string[]; kept: string[]; asks: number; changed: boolean } {
+  const { answers, order } = record;
   const changed = answers["destination"] !== destination;
   // An arrival that changes nothing changes nothing: a reader already here
   // keeps the record exactly as they left it, replay included (Spec review,

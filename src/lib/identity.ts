@@ -101,16 +101,18 @@ export interface NavLink {
   action?: boolean;
 }
 
+/** The `aria-current` a header link carries on this page, or nothing. */
+function currentMarkOf(link: NavLink, place: HeaderPlace): string {
+  const isThisCountry = Boolean(place.countryPath) && link.path === place.countryPath;
+  if (isThisCountry && place.current) return ` aria-current="${escAttr(place.current)}"`;
+  if (place.here && link.path === place.here) return ' aria-current="page"';
+  return "";
+}
+
 export function siteHeader(countries: NavLink[], place: HeaderPlace = {}): string {
-  const item = (link: NavLink): string => {
-    const marked = place.countryPath && link.path === place.countryPath && place.current
-      ? ` aria-current="${escAttr(place.current)}"`
-      : place.here && link.path === place.here
-        ? ' aria-current="page"'
-        : "";
-    return `<a class="tap-min${link.action ? " check" : ""}" href="${escAttr(url(link.path))}"${
-      marked}>${esc(link.label)}</a>`;
-  };
+  const item = (link: NavLink): string =>
+    `<a class="tap-min${link.action ? " check" : ""}" href="${escAttr(url(link.path))}"${
+      currentMarkOf(link, place)}>${esc(link.label)}</a>`;
   /**
    * The four countries under one word (the human's second amendment,
    * 2026-09-16). The row held seven items and now holds four, and on a page

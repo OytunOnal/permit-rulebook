@@ -53,9 +53,9 @@ interface Tabs {
 /** The question each field asks, in the dataset's own words. */
 const asks = (field: string) => ds.fields.find((f) => f.id === field)!.label;
 
-/** Three answers, in the order they were given: the scenario's record. */
+/** Three answers, in the order they were given. */
 const RECORD = { destination: "de", citizenship: "IN", situation: "offer" };
-/** The record's first `n` answers, stored; the scenario's three by default. */
+/** The record's first `n` answers, stored; all three by default. */
 const seed = (n = 3) => {
   const answers = Object.fromEntries(Object.entries(RECORD).slice(0, n));
   return `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(JSON.stringify({
@@ -162,8 +162,7 @@ function walker(page: BrowserPage, url: (path: string) => string) {
 }
 
 type Viewport = { viewport: { width: number; height: number }; mobile: boolean };
-/** The scenario's two sizes: the desktop the fault was measured at, and the
- * phone width its proof list asks for. */
+/** Two sizes: the desktop the fault was measured at, and a phone's width. */
 const WIDE: Viewport = { viewport: { width: 1100, height: 900 }, mobile: false };
 const PHONE: Viewport = { viewport: { width: 390, height: 844 }, mobile: true };
 
@@ -219,6 +218,12 @@ interface Walked {
 const topAfter = (c: Change) =>
   c.restart ? c.answers : (c.opened === "live" ? 0 : c.opened) + c.walked + c.answers;
 
+/** The change two tabs make to the record, and the Back tapped after it. */
+interface BackAfterChange {
+  change: Change;
+  gesture: string;
+}
+
 /**
  * Walk `change` — tab A, then tab B on the record the two share, then a
  * reload in tab A — and tap `gesture` in tab A for as long as it keeps the tab
@@ -226,7 +231,7 @@ const topAfter = (c: Change) =>
  * taps than the two tabs made screens, so a Back that never ends still does.
  */
 async function changedThenBack(
-  page: BrowserPage & Tabs, url: (path: string) => string, change: Change, gesture: string,
+  page: BrowserPage & Tabs, url: (path: string) => string, { change, gesture }: BackAfterChange,
 ): Promise<Walked> {
   const a = walker(page, url);
   const walked = change.opened === "live" ? await a.live(change.walked) : [await a.openFromOutside(change.opened)];
@@ -430,7 +435,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser((page: BrowserPage & Tabs) =>
-          changedThenBack(page, server.url, change, SCREEN_BACK), WIDE) as Walked;
+          changedThenBack(page, server.url, { change, gesture: SCREEN_BACK }), WIDE) as Walked;
         expectScreenBackWalksTheList(seen, change);
       } finally {
         server.close();
@@ -451,7 +456,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser((page: BrowserPage & Tabs) =>
-        changedThenBack(page, server.url, change, SCREEN_BACK), WIDE) as Walked;
+        changedThenBack(page, server.url, { change, gesture: SCREEN_BACK }), WIDE) as Walked;
       expectScreenBackWalksTheList(seen, change);
     } finally {
       server.close();
@@ -485,8 +490,8 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage & Tabs) => ({
-          screen: await changedThenBack(page, server.url, change, SCREEN_BACK),
-          browser: await changedThenBack(page, server.url, change, BROWSER_BACK),
+          screen: await changedThenBack(page, server.url, { change, gesture: SCREEN_BACK }),
+          browser: await changedThenBack(page, server.url, { change, gesture: BROWSER_BACK }),
         }), PHONE) as Record<"screen" | "browser", Walked>;
 
         expectScreenBackWalksTheList(seen.screen, change);

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { readAssetNames } from "../../scripts/carry-assets/asset-names.mjs";
+import { readAssetNames } from "../../scripts/carry-assets/carry.mjs";
 import { pageOf, pageOfSize } from "./live-page.js";
 
 /**
  * Which references in a live page are this deploy's assets, as plain calls on
  * `readAssetNames`. What the running step does with each answer — what it
- * fetches, prints and annotates — is the flow's, in the two `carry-*.test.ts`
+ * fetches, prints and annotates — is the flow's, in the `carry-*.test.ts`
  * files.
  */
 describe("which references in a live page are this deploy's assets", () => {
@@ -13,7 +13,7 @@ describe("which references in a live page are this deploy's assets", () => {
     // The parsing rule itself, where the three foreign shapes can be read one
     // beside the other. What the running step does with them is the case on
     // another host, another scheme or no host, in
-    // `carry-takes-attested-bytes-from-our-origin.test.ts`.
+    // `carry-fetches-from-our-origin-only.test.ts`.
     const refs = [
       "https://evil.example/_astro/absolute.js",
       // A protocol-relative reference inherits the page's scheme, so only the

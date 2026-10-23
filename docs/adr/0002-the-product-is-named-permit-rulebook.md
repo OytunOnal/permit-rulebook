@@ -1,0 +1,10 @@
+# The product is named Permit Rulebook
+
+On 2026-09-07 the human named the product **Permit Rulebook**, one name for both the open dataset and the site; the two-name design was not adopted, so `Permit Watch` as the dataset's name did not reopen. It was chosen over **Route Rulebook**, whose case was real: it matches the schema, survives every planned wave and never contradicts the docs. Two things decided it. The product name does not have to equal the schema noun: `route` stays in the data, the types, the cards and the route pages at no cost. And *permit* forces no future rename: when Australia lands, a book called *Permit Rulebook* lists instruments called visas in its Australian section, a general title rather than a contradiction, where "EU" would have been false in Canada and forced one. What remained touches the reader: a frightened person reading in a second language knows what a rulebook is, and reads *route* as a road. The cost is accepted knowingly: the Australian section of a book called *Permit* will list visas; *route* becomes an internal word, so a reader of the code and then the product meets two vocabularies and the glossary says why; and the name is copyable in principle, though its register is not, since a rulebook has no agency and "here are the rules, work it out" is not a sales funnel.
+
+## Consequences
+
+- The name carries no "Work": the glossary says "work/residence permit" and the Blue Card is a residence title, so *Work Permit Rulebook* sounds more precise and is narrower.
+- The site's slug is `permit-rulebook`. The data repository is not named `permit-rules`: `permit.io` is a live developer-authorisation company (fetched 2026-09-07), so that slug reads as authorisation policy to the GitHub and HN audience, the declared first channel. It is `permit-rulebook-data`.
+- The tagline, "Every route, quoted and dated", keeps *route* where it earns its place and carries the per-value promise the name cannot.
+- The rename happened at the v1 tag, not before: nothing was public, so an earlier rename bought nothing.

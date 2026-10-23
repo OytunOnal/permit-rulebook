@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import dataset from "permit-rulebook-data/data/dataset.json";
 import { routePages } from "../src/lib/route-page.js";
 import { absolute, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
@@ -55,7 +54,7 @@ describe("the root build is what it was", () => {
     const fixture = JSON.parse(readFileSync(new URL("fixtures/root-build.json", import.meta.url), "utf8")) as
       { base: string; pages: Record<string, string> };
     const frozen = JSON.parse(readFileSync(new URL("fixtures/frozen-dataset.json", import.meta.url), "utf8")) as Dataset;
-    const pages = routePages(frozen, FROZEN_RUN);
+    const pages = routePages(frozen, { lastRun: FROZEN_RUN });
     expect(pages.length, "the frozen dataset stopped producing its two routes").toBe(2);
     expect(Object.keys(fixture.pages).length).toBe(pages.length);
     const moved: string[] = [];

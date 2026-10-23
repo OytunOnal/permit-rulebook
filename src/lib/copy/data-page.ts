@@ -101,6 +101,14 @@ export const FRESHNESS_HUMAN_HAND =
   `A source that has moved raises a flag and a person reads it ${FLAG_READ_WITHIN}: the values on this site, and the dates beside `
   + "them, change when a person changes them, never on their own.";
 
+/** What the dataset's description counts: its routes, scored and quoted only, and its countries. */
+export interface DatasetCounts {
+  total: number;
+  scored: number;
+  quotedOnly: number;
+  countries: number;
+}
+
 /**
  * The Dataset block's description on `/data/`. A dataset index (Google's
  * Dataset Search) reads it, and a person reads it in that index's result, so
@@ -108,7 +116,7 @@ export const FRESHNESS_HUMAN_HAND =
  * review of #64). The counts are the page's own; the last sentence is the
  * page's own promise, in the same clause.
  */
-export const datasetDescription = (total: number, scored: number, quotedOnly: number, countries: number): string =>
+export const datasetDescription = ({ total, scored, quotedOnly, countries }: DatasetCounts): string =>
   `${total} employment-based work-permit routes across ${countries} European countries: `
   + `${scored} scored against a reader's declared answers and ${quotedOnly} quoted and dated `
   + "without being scored. Every value — salary threshold, qualification, experience, language level — carries the "
@@ -134,8 +142,7 @@ export const dataMetaDescription = (scored: number, quotedOnly: number, countrie
  * The third count is of sentences kept on a dated reason — a source that
  * publishes only a scan, or a table — and it is usually zero. "0 standing on
  * a dated reason" was modelling vocabulary on a reader's line, and a zero is
- * not a fact a reader needs (v1.1 gate critique, P4; the scenario prefers
- * dropping it). Where the count is not zero, the row says it in the reader's
+ * not a fact a reader needs (v1.1 gate critique, P4). Where the count is not zero, the row says it in the reader's
  * word.
  */
 export const proseProvenanceCounts = (sourced: number, ours: number, dated: number): string => [

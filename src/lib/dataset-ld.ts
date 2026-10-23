@@ -43,7 +43,7 @@ export function datasetLd(dataset: Dataset, path: string): string {
     // Words, so the copy module's: a person reads them in the index's result,
     // and the last sentence is the page's own promise of when a flag is read
     // (#62).
-    description: datasetDescription(counts.total, counts.scored, counts.quotedOnly, countries.length),
+    description: datasetDescription({ ...counts, countries: countries.length }),
     url: absolute(path),
     sameAs: REPO_DATA,
     version: dataset.dataset_version,

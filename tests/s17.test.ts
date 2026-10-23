@@ -49,9 +49,9 @@ const CODE_AS_SUBJECT = /\bCode compar/;
 
 describe("the comparison has no subject called \"Code\" (s17)", () => {
   it("nothing under src/ writes \"Code compar\" — the sweep the scenario names, as a case", () => {
-    // `grep -n "Code compar"` over `src/` finds nothing after (scenario point
-    // 4). Run over what git tracks and what is new, the way the name sweep of
-    // s6 does, so a file added by this slice is inspected too.
+    // `grep -n "Code compar"` over `src/` finds nothing. Run over what git
+    // tracks and what is new, the way the name sweep of s6 does, so a file
+    // added by this slice is inspected too.
     const root = here("..");
     const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "src"], {
       cwd: root, encoding: "utf8",

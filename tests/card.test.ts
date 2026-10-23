@@ -173,8 +173,8 @@ describe("the source list says which quote applied to this reader", () => {
   });
 
   it("an undecided route marks nothing — it has ruled the reader out of nothing", () => {
-    // The scenario's own step 5, "I don't know wherever it is offered", with
-    // the salary question not yet reached. `applied` was one boolean carrying
+    // A reader who answers "I don't know" wherever it is offered, with the
+    // salary question not yet reached. `applied` was one boolean carrying
     // both LOST and NOT YET DECIDED, and an undecided disjunction decides
     // nothing — so both quotes came back false and the card told the reader
     // that each of its two thresholds was not theirs (review 2026-09-07).

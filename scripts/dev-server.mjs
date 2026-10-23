@@ -48,6 +48,16 @@ async function freePort() {
   });
 }
 
+/** Whether `address` answers with a page yet. */
+async function isAnswering(address) {
+  try {
+    const res = await fetch(address, { signal: AbortSignal.timeout(2000) });
+    return res.ok;
+  } catch {
+    return false; // not up yet: the caller asks again until its deadline
+  }
+}
+
 /**
  * Is this origin serving THIS project?
  *
@@ -128,10 +138,7 @@ export async function startDev({ timeoutMs = 90000 } = {}) {
         throw new Error(`astro dev exited (${exited}) before serving:\n${output.join("")}`);
       if (Date.now() > deadline)
         throw new Error(`astro dev did not serve ${home} in ${timeoutMs}ms:\n${output.join("")}`);
-      try {
-        const res = await fetch(home, { signal: AbortSignal.timeout(2000) });
-        if (res.ok) break;
-      } catch { /* not up yet */ }
+      if (await isAnswering(home)) break;
       await new Promise((r) => setTimeout(r, 300));
     }
 
