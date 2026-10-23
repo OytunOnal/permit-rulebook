@@ -103,7 +103,7 @@ describe("interviewAfter: answered", () => {
       answers: { ...GERMAN_THREE.answers, qualification: "degree" }, history: [...GERMAN_THREE.history, "qualification"],
       done: false,
     });
-    expect(step.history).toEqual([{ call: "movedForward", field: "recognition_de" }]);
+    expect(step.history).toEqual([{ call: "pushScreen", field: "recognition_de" }]);
   });
 
   it("answered with the words it recorded: the next question says what was recorded", () => {
@@ -120,7 +120,7 @@ describe("interviewAfter: answered", () => {
     expect(step.lines.justRecorded, "the commit banner is the next question's, and the verdict is not one").toBeNull();
     expect([step.land, step.beat]).toEqual(["verdict-masthead", false]);
     expect(step.save).toMatchObject({ done: true });
-    expect(step.history).toEqual([{ call: "movedForward", field: null }]);
+    expect(step.history).toEqual([{ call: "pushScreen", field: null }]);
   });
 
   it("answered on an edit that sets answers aside: the order kept, the rest replayed, the set-aside named once", () => {
@@ -130,7 +130,7 @@ describe("interviewAfter: answered", () => {
     expect(step.state).toMatchObject({ asked: ["destination", "situation", "citizenship", "qualification"], editing: null });
     expect(step.screen).toEqual({ kind: "question", field: "age_band", started: true });
     expect(step.save).toMatchObject({ history: ["destination", "situation", "citizenship", "qualification"] });
-    expect(step.history).toEqual([{ call: "movedForward", field: "age_band" }]);
+    expect(step.history).toEqual([{ call: "pushScreen", field: "age_band" }]);
   });
 });
 
@@ -141,7 +141,7 @@ describe("interviewAfter: editedRow and back", () => {
     expect(step.state).toMatchObject({ editing: "situation", answers: GERMAN_THREE.answers, asked: GERMAN_THREE.history });
     expect(step.lines).toEqual(NO_LINES);
     expect([step.land, step.beat, step.save]).toEqual(["card-under-folded-ledger", true, null]);
-    expect(step.history).toEqual([{ call: "redrawnInPlace", field: "situation" }]);
+    expect(step.history).toEqual([{ call: "replaceScreen", field: "situation" }]);
   });
 
   it("editedRow from the verdict: the question it names, never the verdict", () => {
@@ -158,7 +158,7 @@ describe("interviewAfter: editedRow and back", () => {
     expect(step.screen).toEqual({ kind: "question", field: "citizenship", started: true });
     expect(step.state.editing).toBe("citizenship");
     expect([step.land, step.beat, step.save]).toEqual(["card-under-folded-ledger", true, null]);
-    expect(step.history).toEqual([{ call: "redrawnInPlace", field: "citizenship" }]);
+    expect(step.history).toEqual([{ call: "replaceScreen", field: "citizenship" }]);
   });
 });
 
@@ -169,7 +169,7 @@ describe("interviewAfter: kept", () => {
     expect(step.screen).toEqual({ kind: "question", field: "qualification", started: true });
     expect(step.state.editing).toBeNull();
     expect([step.land, step.beat, step.save]).toEqual(["card-under-header", true, null]);
-    expect(step.history).toEqual([{ call: "movedForward", field: "qualification" }]);
+    expect(step.history).toEqual([{ call: "pushScreen", field: "qualification" }]);
   });
 
   it("kept on an edit of a finished record: the verdict, one entry on top", () => {
@@ -177,7 +177,7 @@ describe("interviewAfter: kept", () => {
     const step = after(editing, { kind: "kept" });
     expect(step.screen).toEqual({ kind: "verdict" });
     expect([step.land, step.beat]).toEqual(["verdict-masthead", false]);
-    expect(step.history).toEqual([{ call: "movedForward", field: null }]);
+    expect(step.history).toEqual([{ call: "pushScreen", field: null }]);
   });
 });
 
@@ -208,7 +208,7 @@ describe("interviewAfter: restarted", () => {
     expect(step.state).toEqual(EMPTY_INTERVIEW);
     expect(step.lines).toEqual(NO_LINES);
     expect(step.save).toBe("clear");
-    expect(step.history).toEqual([{ call: "restarted" }, { call: "redrawnInPlace", field: FIRST_FIELD }]);
+    expect(step.history).toEqual([{ call: "startOver" }, { call: "replaceScreen", field: FIRST_FIELD }]);
   });
 
   it("restarted lands at the page's top, with no beat", () => {
@@ -229,7 +229,7 @@ describe("interviewAfter: restarted", () => {
     expect(step.save).toBe("clear");
     expect(after(step.state, { kind: "answered", value: "offer" }).save)
       .toEqual({ answers: { destination: "de", situation: "offer" }, history: ["destination", "situation"], done: false });
-    expect(step.history).toEqual([{ call: "restarted" }, { call: "redrawnInPlace", field: "situation" }]);
+    expect(step.history).toEqual([{ call: "startOver" }, { call: "replaceScreen", field: "situation" }]);
   });
 
   it("restarted on a route's address: that route sorts first again, its country on the record with the arrival line", () => {

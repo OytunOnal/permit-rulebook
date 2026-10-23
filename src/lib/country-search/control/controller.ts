@@ -17,9 +17,9 @@ export interface KeyOutcome {
 }
 
 export interface CountrySearch {
-  typed(value: string): SearchView;
-  key(event: SearchKey): KeyOutcome;
-  clicked(value: string): void;
+  typeQuery(value: string): SearchView;
+  pressKey(event: SearchKey): KeyOutcome;
+  clickRow(value: string): void;
 }
 
 const LISTBOX_KEYS: readonly ListboxKey[] = ["ArrowDown", "ArrowUp", "Home", "End", "Enter", "Escape"];
@@ -40,11 +40,11 @@ export function countrySearchOf(
   const list = { options, marks };
   let state: ListboxState = stateFor("");
   return {
-    typed(value) {
+    typeQuery(value) {
       state = stateFor(value);
       return viewOf(list, state);
     },
-    key(event) {
+    pressKey(event) {
       const listKey = listKeyOf(event, state);
       if (listKey === null) return { handled: false, view: null };
       const result = onKey(options, state, listKey);
@@ -53,7 +53,7 @@ export function countrySearchOf(
       onCommit(result.commit.value, result.commit.label);
       return { handled: true, view: null };
     },
-    clicked(value) {
+    clickRow(value) {
       const option = options.find((o) => o.value === value);
       if (option) onCommit(option.value, option.label);
     },

@@ -33,7 +33,7 @@ export function openDrawing(ds: Dataset, questions: Question[], hands: GestureHa
   setStamp(page, "rules-read");
   page.els.restart.addEventListener("click", (e) => {
     e.preventDefault();
-    hands.made({ kind: "restarted", search: location.search });
+    hands.makeGesture({ kind: "restarted", search: location.search });
   });
   foldLedgerByWidth(page);
   openFoldsForPrint();

@@ -29,7 +29,7 @@ function wireQuestion(page: InterviewPage, q: Question, chosen: string | undefin
    * words the next screen says were recorded, where the control can commit a
    * row that is not the text in the box. */
   const answer = (value: string, recordedAs?: string) => {
-    if (!page.beat.inside()) hands.made({ kind: "answered", value, recordedAs });
+    if (!page.beat.inside()) hands.makeGesture({ kind: "answered", value, recordedAs });
   };
   if (isLongList(q)) {
     const classed = hasClasses(q) ? { dataset: page.ds, field: q.field } : null;
@@ -38,8 +38,8 @@ function wireQuestion(page: InterviewPage, q: Question, chosen: string | undefin
     main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
       btn.addEventListener("click", () => answer(btn.dataset.value!)));
   }
-  main.querySelector<HTMLElement>("#done")?.addEventListener("click", () => hands.made({ kind: "kept" }));
-  main.querySelector<HTMLElement>("#back")?.addEventListener("click", () => hands.backPressed());
+  main.querySelector<HTMLElement>("#done")?.addEventListener("click", () => hands.makeGesture({ kind: "kept" }));
+  main.querySelector<HTMLElement>("#back")?.addEventListener("click", () => hands.pressBack());
 }
 
 /** Meets the reader at the question card just drawn: the landing the step

@@ -40,7 +40,7 @@ class Page {
     this.history.onMove((move) => {
       this.editing = move.field;
       this.shown = move.field;
-      this.history.redrawnInPlace(move.field);
+      this.history.replaceScreen(move.field);
     });
   }
 
@@ -54,7 +54,7 @@ class Page {
     else this.asked.push(this.shown!);
     this.store.asked = [...this.asked];
     this.shown = this.next();
-    this.history.movedForward(this.shown);
+    this.history.pushScreen(this.shown);
   }
 
   screenBack(): void {
@@ -62,16 +62,16 @@ class Page {
     if (move.kind !== "in-place") return;
     this.editing = move.field;
     this.shown = move.field;
-    this.history.redrawnInPlace(move.field);
+    this.history.replaceScreen(move.field);
   }
 
   restart(): void {
     this.asked = [];
     this.store.asked = [];
     this.editing = null;
-    this.history.restarted();
+    this.history.startOver();
     this.shown = this.next();
-    this.history.redrawnInPlace(this.shown);
+    this.history.replaceScreen(this.shown);
   }
 
   private next(): string | null {

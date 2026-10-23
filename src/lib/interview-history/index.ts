@@ -56,11 +56,11 @@ export interface BrowserMove {
 
 export interface InterviewHistory {
   /** A screen drawn by answering: a new entry. `field` is null for the verdict. */
-  movedForward(field: string | null): void;
+  pushScreen(field: string | null): void;
   /** A screen drawn by any other gesture: the entry it stands on, rewritten. */
-  redrawnInPlace(field: string | null): void;
+  replaceScreen(field: string | null): void;
   /** "Start over": the entries go with the record. */
-  restarted(): void;
+  startOver(): void;
   /** The question the screen's "← Back" goes to, or null where none is behind. */
   backTarget(asked: readonly string[], editing: string | null): string | null;
   /** The screen's "← Back". */
@@ -90,13 +90,13 @@ export function openInterviewHistory(browser: BrowserHistory, { asked, showing }
   write(browser, kept, "replace");
   browser.onMove((state) => browserMoved(kept, state));
   return {
-    movedForward: (field) => {
+    pushScreen: (field) => {
       if (!kept.restoring) write(browser, kept, recordAdvance(kept.list, field));
     },
-    redrawnInPlace: (field) => {
+    replaceScreen: (field) => {
       if (!kept.restoring) write(browser, kept, recordInPlace(kept.list, field));
     },
-    restarted: () => { kept.list = emptyHistory(); },
+    startOver: () => { kept.list = emptyHistory(); },
     backTarget: (asked, editing) => backTargetOf(kept.list, asked, editing),
     back: (asked, editing) => {
       const held = heldStepBehind(kept.list);

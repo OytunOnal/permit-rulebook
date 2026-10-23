@@ -34,15 +34,15 @@ const ASKED = ["destination", "citizenship", "situation"];
 describe("Back's target, through the interview's history", () => {
   it("Back on a plain question: the question answered before it", () => {
     const history = openInterviewHistory(freshTab(), { asked: [], showing: "destination" });
-    history.movedForward("citizenship");
+    history.pushScreen("citizenship");
     expect(history.backTarget(["destination"], null)).toBe("destination");
   });
 
   it("Back on an edit screen past the first held step: the screen the browser holds behind, where its Back goes", () => {
     const tab = freshTab();
     const history = openInterviewHistory(tab, { asked: [], showing: "destination" });
-    for (const field of ["citizenship", "situation", "qualification"]) history.movedForward(field);
-    history.redrawnInPlace("citizenship");
+    for (const field of ["citizenship", "situation", "qualification"]) history.pushScreen(field);
+    history.replaceScreen("citizenship");
     expect(history.backTarget(ASKED, "citizenship")).toBe("situation");
     const shown: (string | null)[] = [];
     history.onMove((move) => shown.push(move.field));
@@ -52,7 +52,7 @@ describe("Back's target, through the interview's history", () => {
 
   it("Back in place, on an edit screen an outside entrance opened onto: the question asked before it", () => {
     const history = openInterviewHistory(freshTab(), { asked: ASKED, showing: "qualification" });
-    history.redrawnInPlace("citizenship");
+    history.replaceScreen("citizenship");
     expect(history.backTarget(ASKED, "citizenship")).toBe("destination");
     expect(history.back(ASKED, "citizenship")).toEqual({ kind: "in-place", field: "destination" });
   });
@@ -62,8 +62,8 @@ describe("Back's target, through the interview's history", () => {
   it("Back past entries that show the question on screen: the question before them, and the browser goes there", () => {
     const tab = freshTab();
     const history = openInterviewHistory(tab, { asked: [], showing: "destination" });
-    for (const field of ["citizenship", "situation", null]) history.movedForward(field);
-    history.redrawnInPlace("situation");
+    for (const field of ["citizenship", "situation", null]) history.pushScreen(field);
+    history.replaceScreen("situation");
     expect(history.backTarget(ASKED, "situation")).toBe("citizenship");
     const shown: (string | null)[] = [];
     history.onMove((move) => shown.push(move.field));
@@ -74,9 +74,9 @@ describe("Back's target, through the interview's history", () => {
   it("Back past entries that show the question on screen, down to the first held step: the question before, in place", () => {
     const tab = freshTab();
     const history = openInterviewHistory(tab, { asked: ASKED, showing: null });
-    history.redrawnInPlace("situation");
-    history.movedForward(null);
-    history.redrawnInPlace("situation");
+    history.replaceScreen("situation");
+    history.pushScreen(null);
+    history.replaceScreen("situation");
     expect(history.backTarget(ASKED, "situation")).toBe("citizenship");
     expect(history.back(ASKED, "situation")).toEqual({ kind: "in-place", field: "citizenship" });
     expect(stepOf(tab)).toBe(4);
@@ -85,9 +85,9 @@ describe("Back's target, through the interview's history", () => {
 
 /** One step's call on the history, as the interview's entry makes it. */
 function tell(history: InterviewHistory, call: HistoryCall): void {
-  if (call.call === "restarted") history.restarted();
-  else if (call.call === "movedForward") history.movedForward(call.field);
-  else history.redrawnInPlace(call.field);
+  if (call.call === "startOver") history.startOver();
+  else if (call.call === "pushScreen") history.pushScreen(call.field);
+  else history.replaceScreen(call.field);
 }
 
 /** The first option of the question asked about `field`. */

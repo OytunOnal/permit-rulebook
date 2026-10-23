@@ -19,16 +19,16 @@ export function mountCountrySearch(root: Element, search: CountrySearch): void {
     if (status) status.textContent = view.status;
     list.querySelector<HTMLElement>(".copt.on")?.scrollIntoView({ block: "nearest" });
   };
-  box.addEventListener("input", () => apply(search.typed(box.value)));
+  box.addEventListener("input", () => apply(search.typeQuery(box.value)));
   box.addEventListener("keydown", (e) => {
-    const outcome = search.key({ key: e.key, isComposing: e.isComposing });
+    const outcome = search.pressKey({ key: e.key, isComposing: e.isComposing });
     if (!outcome.handled) return;
     e.preventDefault();
     if (outcome.view) apply(outcome.view);
   });
   list.addEventListener("click", (e) => {
     const row = (e.target as Element).closest<HTMLElement>(".copt");
-    if (row?.dataset.value) search.clicked(row.dataset.value);
+    if (row?.dataset.value) search.clickRow(row.dataset.value);
   });
-  apply(search.typed(box.value));
+  apply(search.typeQuery(box.value));
 }

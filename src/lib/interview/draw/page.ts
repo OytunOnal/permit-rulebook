@@ -12,9 +12,9 @@ import { beatOf, type Beat } from "./beat.js";
 /** Where a drawn control's gesture goes. */
 export interface GestureHands {
   /** A gesture the interview decides on. */
-  made(gesture: Gesture): void;
+  makeGesture(gesture: Gesture): void;
   /** The screen's "← Back", which the history answers before the interview does. */
-  backPressed(): void;
+  pressBack(): void;
 }
 
 /** The elements the interview writes into, found once. */

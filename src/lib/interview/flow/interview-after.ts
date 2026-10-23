@@ -96,9 +96,9 @@ export type KeepTarget = { kind: "question"; field: string } | { kind: "verdict"
 
 /** One call on the interview's history, in the order the entry makes them. */
 export type HistoryCall =
-  | { call: "movedForward"; field: string | null }
-  | { call: "redrawnInPlace"; field: string | null }
-  | { call: "restarted" };
+  | { call: "pushScreen"; field: string | null }
+  | { call: "replaceScreen"; field: string | null }
+  | { call: "startOver" };
 
 /** What a gesture leads to. */
 export interface InterviewStep {
@@ -126,9 +126,9 @@ interface Reach {
    * but Start over's, which opens the interview as a cold load does. */
   beat: boolean;
   /** The call a question screen makes on the history; none while the browser moves or before it opens. */
-  questionCall: "movedForward" | "redrawnInPlace" | null;
+  questionCall: "pushScreen" | "replaceScreen" | null;
   /** The call a verdict makes: one entry on top of the last question's, so Back lands on that question. */
-  verdictCall: "movedForward" | null;
+  verdictCall: "pushScreen" | null;
 }
 
 const FIRST_PAINT: Reach = {
@@ -137,18 +137,18 @@ const FIRST_PAINT: Reach = {
 /** An answer, or Keep: one entry per question screen, and answering moves forward. */
 const BY_ANSWER: Reach = {
   questionLand: "card-under-header", verdictLand: "verdict-masthead", beat: true,
-  questionCall: "movedForward", verdictCall: "movedForward",
+  questionCall: "pushScreen", verdictCall: "pushScreen",
 };
 /** A ledger row's ✎, or Back in place: the question stands on the entry it replaces. */
 const BY_EDIT: Reach = {
   questionLand: "card-under-folded-ledger", verdictLand: "verdict-masthead", beat: true,
-  questionCall: "redrawnInPlace", verdictCall: "movedForward",
+  questionCall: "replaceScreen", verdictCall: "pushScreen",
 };
 /** Start over: the first question stands on the entry it replaces, at the page's top, and takes no
  * beat, since nothing on a screen the reader did not reach by answering refuses their first click. */
 const BY_RESTART: Reach = {
   questionLand: "page-top", verdictLand: "verdict-masthead", beat: false,
-  questionCall: "redrawnInPlace", verdictCall: "movedForward",
+  questionCall: "replaceScreen", verdictCall: "pushScreen",
 };
 /** The browser's Back or Forward onto a later screen: the browser restores the scroll, then the card lands. */
 const BY_BROWSER: Reach = {
@@ -195,7 +195,7 @@ export function interviewAfter(dataset: Dataset, state: InterviewState, gesture:
 function afterRestart(dataset: Dataset, search: string): InterviewStep {
   const { state, lines } = arrivedOn(dataset, search, { answers: {}, order: [] });
   const step = stepOnto(dataset, BY_RESTART, { state, lines });
-  return { ...step, save: "clear", history: [{ call: "restarted" }, ...step.history] };
+  return { ...step, save: "clear", history: [{ call: "startOver" }, ...step.history] };
 }
 
 /** The interview an address's arrival leaves on `record`, and the arrival line where it moved it. */

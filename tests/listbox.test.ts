@@ -18,7 +18,7 @@ function searchKeepingCommits() {
   const search = countrySearchOf(countries, { chosen: undefined, classed: null }, (value, label) => {
     commits.push({ value, label });
   });
-  const press = (key: string) => search.key({ key, isComposing: false });
+  const press = (key: string) => search.pressKey({ key, isComposing: false });
   return { search, commits, press };
 }
 
@@ -35,7 +35,7 @@ const highlightedIn = (view: SearchView): string | undefined =>
  * which key, if anything, and the view standing when it was. */
 function drive(query: string, keys: string[]) {
   const { search, commits, press } = searchKeepingCommits();
-  let view = search.typed(query);
+  let view = search.typeQuery(query);
   for (const key of keys) {
     const outcome = press(key);
     if (commits.length) return { commit: commits[0], committedOn: key, view, commits };
@@ -91,7 +91,7 @@ describe("invariant: the committed country equals the highlighted option (B1)", 
 
   it("an untouched box highlights nothing, so a habitual Enter answers nothing", () => {
     const { search, commits, press } = searchKeepingCommits();
-    expect(search.typed("").activeRowId).toBeNull();
+    expect(search.typeQuery("").activeRowId).toBeNull();
     press("Enter");
     expect(commits).toEqual([]);
     expect(press("ArrowDown").view?.activeRowId).toBeNull();
@@ -101,7 +101,7 @@ describe("invariant: the committed country equals the highlighted option (B1)", 
     const rand = lcg(4242);
     for (let i = 0; i < 200; i++) {
       const { search, press } = searchKeepingCommits();
-      let view = search.typed("an");
+      let view = search.typeQuery("an");
       for (let k = 0; k < 20; k++)
         view = press(rand() < 0.5 ? "ArrowDown" : "ArrowUp").view ?? view;
       expect(rowsOf(view).findIndex((row) => row.id === view.activeRowId)).toBeGreaterThanOrEqual(0);
@@ -111,7 +111,7 @@ describe("invariant: the committed country equals the highlighted option (B1)", 
 
   it("a needle that matches nothing has nothing to commit", () => {
     const { search, commits, press } = searchKeepingCommits();
-    expect(rowsOf(search.typed("zzzz"))).toEqual([]);
+    expect(rowsOf(search.typeQuery("zzzz"))).toEqual([]);
     press("Enter");
     expect(commits).toEqual([]);
     expect(press("ArrowDown").view?.activeRowId).toBeNull(); // no rows: nothing to highlight
@@ -119,11 +119,11 @@ describe("invariant: the committed country equals the highlighted option (B1)", 
 
   it("typing again re-ranks the list and returns the highlight to the top of it", () => {
     const { search, press } = searchKeepingCommits();
-    search.typed("niger");
+    search.typeQuery("niger");
     const moved = press("ArrowDown").view!;
     expect(rowsOf(moved).findIndex((row) => row.id === moved.activeRowId)).toBe(1);
     // Typing re-ranks the list, and the highlight returns to the top.
-    const view = search.typed("nigeria");
+    const view = search.typeQuery("nigeria");
     expect(view.activeRowId).toBe(rowsOf(view)[0].id);
     expect(highlightedIn(view)).toBe("NG");
   });
@@ -132,7 +132,7 @@ describe("invariant: the committed country equals the highlighted option (B1)", 
 describe("the search's controller, through countrySearchOf", () => {
   it("typing draws the ranked rows, highlights the first and counts them in the status", () => {
     const { search, commits } = searchKeepingCommits();
-    const view = search.typed("niger");
+    const view = search.typeQuery("niger");
     expect(rowsOf(view).map((row) => row.value)).toEqual(["NE", "NG"]);
     expect(highlightedIn(view)).toBe("NE");
     expect(view.expanded).toBe(true);
@@ -142,7 +142,7 @@ describe("the search's controller, through countrySearchOf", () => {
 
   it("ArrowDown and ArrowUp move the highlight, are handled, and commit nothing", () => {
     const { search, commits, press } = searchKeepingCommits();
-    search.typed("niger");
+    search.typeQuery("niger");
     const down = press("ArrowDown");
     expect(down.handled).toBe(true);
     expect(highlightedIn(down.view!)).toBe("NG");
@@ -157,7 +157,7 @@ describe("the search's controller, through countrySearchOf", () => {
     const { search, commits, press } = searchKeepingCommits();
     expect(press("Home")).toEqual({ handled: false, view: null });
     expect(press("End")).toEqual({ handled: false, view: null });
-    const rows = rowsOf(search.typed("an"));
+    const rows = rowsOf(search.typeQuery("an"));
     expect(press("End").view!.activeRowId).toBe(rows[rows.length - 1].id);
     expect(press("Home").view!.activeRowId).toBe(rows[0].id);
     expect(commits).toEqual([]);
@@ -165,7 +165,7 @@ describe("the search's controller, through countrySearchOf", () => {
 
   it("Enter commits the highlighted row with its label, and leaves the view to the next screen", () => {
     const { search, commits, press } = searchKeepingCommits();
-    search.typed("niger");
+    search.typeQuery("niger");
     press("ArrowDown");
     expect(press("Enter")).toEqual({ handled: true, view: null });
     expect(commits).toEqual([{ value: "NG", label: "Nigeria" }]);
@@ -173,7 +173,7 @@ describe("the search's controller, through countrySearchOf", () => {
 
   it("Escape closes the list: nothing highlighted, nothing announced, nothing committed", () => {
     const { search, commits, press } = searchKeepingCommits();
-    search.typed("germany");
+    search.typeQuery("germany");
     const escaped = press("Escape");
     expect(escaped.handled).toBe(true);
     expect(escaped.view).toMatchObject({ expanded: false, activeRowId: null, status: "" });
@@ -182,21 +182,21 @@ describe("the search's controller, through countrySearchOf", () => {
 
   it("an IME's composing Enter is the IME's: not handled, nothing committed", () => {
     const { search, commits } = searchKeepingCommits();
-    search.typed("niger");
-    expect(search.key({ key: "Enter", isComposing: true })).toEqual({ handled: false, view: null });
+    search.typeQuery("niger");
+    expect(search.pressKey({ key: "Enter", isComposing: true })).toEqual({ handled: false, view: null });
     expect(commits).toEqual([]);
   });
 
   it("a key that is not the search's is left to the box", () => {
     const { search, press } = searchKeepingCommits();
-    search.typed("niger");
+    search.typeQuery("niger");
     expect(press("a")).toEqual({ handled: false, view: null });
   });
 
   it("a click commits the clicked row with its label, whatever is highlighted", () => {
     const { search, commits } = searchKeepingCommits();
-    search.typed("niger");
-    search.clicked("NG");
+    search.typeQuery("niger");
+    search.clickRow("NG");
     expect(commits).toEqual([{ value: "NG", label: "Nigeria" }]);
   });
 });
@@ -208,7 +208,7 @@ describe("the search is bounded by length (#25)", () => {
     const overlong = "Germany".padEnd(QUERY_MAX_LENGTH, " ") + "zzz";
     expect(matchOptions(countries, overlong)).toEqual([]);
     const { search } = searchKeepingCommits();
-    expect(highlightedIn(search.typed(overlong))).toBe("DE");
+    expect(highlightedIn(search.typeQuery(overlong))).toBe("DE");
   });
 
   it("the cap still fits every name a country is found by", () => {

@@ -12,7 +12,7 @@ import { draw, paint, say } from "./paint.js";
 /** Hangs the ✎ gesture on each answered row the ledger drew. */
 function wireRows(page: InterviewPage): void {
   page.els.declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
-    const jump = () => page.hands.made({ kind: "editedRow", field: row.dataset.field! });
+    const jump = () => page.hands.makeGesture({ kind: "editedRow", field: row.dataset.field! });
     row.addEventListener("click", jump);
     row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); } });
   });

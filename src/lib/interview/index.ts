@@ -39,9 +39,9 @@ export interface InterviewPorts {
 
 /** One call on the interview's history, as the step named it. */
 function tell(history: InterviewHistory, call: HistoryCall): void {
-  if (call.call === "restarted") history.restarted();
-  else if (call.call === "movedForward") history.movedForward(call.field);
-  else history.redrawnInPlace(call.field);
+  if (call.call === "startOver") history.startOver();
+  else if (call.call === "pushScreen") history.pushScreen(call.field);
+  else history.replaceScreen(call.field);
 }
 
 /**
@@ -75,11 +75,11 @@ export function startInterview({ browserHistory, store }: InterviewPorts): void 
     return openedHistory;
   };
   const drawing = openDrawing(ds, questions, {
-    made: apply,
+    makeGesture: apply,
     // Where the browser holds a step of ours behind, the history asks it to go
     // back and its move draws that entry's question; elsewhere the previous
     // question is drawn in place. Nothing is erased on the way.
-    backPressed: () => {
+    pressBack: () => {
       const move = history?.back(interview.asked, interview.editing);
       if (move?.kind === "in-place") apply({ kind: "back", field: move.field });
     },

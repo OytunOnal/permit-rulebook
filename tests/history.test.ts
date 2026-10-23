@@ -38,7 +38,7 @@ function freshTab(): FakeTab {
 function walkedLive(fields: string[]): { tab: FakeTab; history: InterviewHistory } {
   const tab = freshTab();
   const history = openInterviewHistory(tab, { asked: [], showing: fields[0]! });
-  for (const field of fields.slice(1)) history.movedForward(field);
+  for (const field of fields.slice(1)) history.pushScreen(field);
   return { tab, history };
 }
 
@@ -114,7 +114,7 @@ describe("a reloaded page rebuilds the entries the browser kept", () => {
     tab.back();
     expect(shown).toEqual(["qualification", "situation"]);
     // Once "Start over" has emptied the list, an entry behind restores nothing.
-    history.restarted();
+    history.startOver();
     tab.forward();
     expect(shown).toHaveLength(2);
   });
@@ -127,12 +127,12 @@ describe("one history entry per question", () => {
     // the visitor, because Back would always land on another of our screens.
     const history = openInterviewHistory(tab, { asked: [], showing: "destination" });
     expect([tab.length, stepOf(tab)]).toEqual([1, 0]);
-    history.movedForward("situation");
+    history.pushScreen("situation");
     expect([tab.length, stepOf(tab)]).toEqual([2, 1]);
-    history.movedForward("citizenship");
+    history.pushScreen("citizenship");
     expect([tab.length, stepOf(tab)]).toEqual([3, 2]);
     // An edit is not a new screen: it rewrites the entry it is standing on.
-    history.redrawnInPlace("citizenship");
+    history.replaceScreen("citizenship");
     // Three questions answered, three entries — never four, never one.
     expect([tab.length, stepOf(tab)]).toEqual([3, 2]);
   });
@@ -140,7 +140,7 @@ describe("one history entry per question", () => {
   it("every entry names the question it was showing", () => {
     const { tab, history } = walkedLive(["destination", "situation", "citizenship"]);
     // The results screen is an entry too, and names no question.
-    history.movedForward(null);
+    history.pushScreen(null);
     expect(stepOf(tab)).toBe(3);
     const shown = shownOnMoves(history);
     for (let i = 0; i < 3; i++) tab.back();
@@ -158,7 +158,7 @@ describe("one history entry per question", () => {
     const shown = shownOnMoves(history);
     // Back to the second question, then a different answer.
     tab.back();
-    history.movedForward("qualification");
+    history.pushScreen("qualification");
     expect([tab.length, stepOf(tab)]).toEqual([3, 2]);
     tab.back();
     tab.forward();
@@ -275,7 +275,7 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
   it("an answer after an outside entrance is held, and the screen it opened on is still the edge", () => {
     const { tab, history } = openedOnto(null);
     const asked = [...ASKED, "qualification"];
-    history.movedForward("occupation_it");
+    history.pushScreen("occupation_it");
     expect([tab.length, stepOf(tab)]).toEqual([2, 4]);
     // One entry of ours behind: the browser can go back onto it.
     const shown = shownOnMoves(history);
@@ -284,7 +284,7 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     // Back on the screen it opened on, nothing of ours is behind again.
     expect(history.back(asked, "qualification")).toEqual({ kind: "in-place", field: "situation" });
     // Stepping back in place rewrites the entry; it never moves the edge.
-    history.redrawnInPlace("situation");
+    history.replaceScreen("situation");
     expect([tab.length, stepOf(tab)]).toEqual([2, 3]);
     expect(history.back(asked, "situation")).toEqual({ kind: "in-place", field: "citizenship" });
   });
@@ -293,10 +293,10 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     const { tab, history } = openedOnto(null);
     // "Start over" empties the list; its first screen rewrites the entry the
     // reader is standing on, which the browser holds.
-    history.restarted();
-    history.redrawnInPlace("destination");
+    history.startOver();
+    history.replaceScreen("destination");
     expect(tab.state()).toEqual({ step: 0, held: 0 });
-    history.movedForward("citizenship");
+    history.pushScreen("citizenship");
     expect(history.back(["destination"], null)).toEqual({ kind: "browser" });
   });
 
@@ -304,7 +304,7 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     const tab = freshTab();
     const history = openInterviewHistory(tab, { asked: [], showing: "destination" });
     expect(history.back([], null)).toEqual({ kind: "none" });
-    history.movedForward("citizenship");
+    history.pushScreen("citizenship");
     expect(tab.state()).toEqual({ step: 1, held: 1 });
     expect(history.back(["destination"], null)).toEqual({ kind: "browser" });
   });
@@ -314,7 +314,7 @@ describe("the screen's Back asks the browser only for entries it holds", () => {
     const { history } = openedOnto(null);
     const asked = [...ASKED, "qualification"];
     expect(history.backTarget(ASKED, null)).toBe("situation");
-    history.movedForward("occupation_it");
+    history.pushScreen("occupation_it");
     // Past the first held step: the entry behind, which the browser's Back shows.
     expect(history.backTarget(asked, null)).toBe("qualification");
     history.onMove(() => undefined);

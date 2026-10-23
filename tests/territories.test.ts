@@ -35,7 +35,7 @@ const expectedTerritoryLine = (typed: string): string => {
 /** What the passport search draws for `typed`: its rows, the line the list
  * shows in their place, and what the live region reads. */
 function searchedFor(typed: string) {
-  const view = countrySearchOf(passports, { chosen: undefined, classed: null }, () => {}).typed(typed);
+  const view = countrySearchOf(passports, { chosen: undefined, classed: null }, () => {}).typeQuery(typed);
   return {
     rows: (view.listHtml.match(/role="option"/g) ?? []).length,
     line: view.listHtml.replace(/<[^>]*>/g, ""),
