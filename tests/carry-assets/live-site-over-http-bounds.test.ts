@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { carryAssets } from "../../scripts/carry-assets/carry.mjs";
-import { liveAnswerOverHttp } from "../../scripts/live-site-over-http.mjs";
-import { buildDirectoryInMemory } from "./build-directory-in-memory.js";
+import { fetchLiveAnswerOverHttp } from "../../scripts/live-site-over-http.mjs";
+import { openBuildDirectoryInMemory } from "./build-directory-in-memory.js";
 import { entryRunAsChildProcess } from "./carry-runs.js";
 import {
   CSS, CSS_NAME, DIGESTS, astroFilesIn, distHolding, expectRefusedOver, liveDeployAnswers, sweepTemporary,
 } from "./deploy-fixtures.js";
-import { standInOrigin, type HttpAnswer } from "./stand-in-origin.js";
+import { serveStandInOrigin, type HttpAnswer } from "./stand-in-origin.js";
 
 /**
  * The live site read over HTTP, on a real local server: the bounds an answer
@@ -31,8 +31,8 @@ describe("the live site's answers, read over HTTP", () => {
     // address is a value, read from the environment, and a command line that
     // spells an origin is inert: this case hands it one, pointing at a host
     // that would answer, and measures that not a packet reached it.
-    const live = await standInOrigin(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const decoy = await standInOrigin(liveDeployAnswers({ "index.DECOYAAA.css": CSS }));
+    const live = await serveStandInOrigin(liveDeployAnswers({ [CSS_NAME]: CSS }));
+    const decoy = await serveStandInOrigin(liveDeployAnswers({ "index.DECOYAAA.css": CSS }));
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out, "--origin", decoy.url]);
@@ -48,10 +48,10 @@ describe("the live site's answers, read over HTTP", () => {
     // a host we can watch — and that host serves a perfectly good stylesheet,
     // so the only reason it goes uncarried is that the redirect was refused.
     const moved = "index.GGGGGGGG.css";
-    const elsewhere = await standInOrigin({ "/pwn.css": { type: "text/css; charset=utf-8", body: CSS } });
+    const elsewhere = await serveStandInOrigin({ "/pwn.css": { type: "text/css; charset=utf-8", body: CSS } });
     const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [moved]: CSS });
     answers[`/_astro/${moved}`] = { redirectTo: `${elsewhere.url}/pwn.css` };
-    const live = await standInOrigin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -72,7 +72,7 @@ describe("the live site's answers, read over HTTP", () => {
   it("survives a body that stops halfway", async () => {
     const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: CSS });
     answers[`/_astro/${CSS_NAME}`] = { type: "text/css; charset=utf-8", body: CSS, dropAfter: 4 };
-    const live = await standInOrigin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -114,7 +114,7 @@ describe("the live site's answers, read over HTTP", () => {
     // to hold while the bytes are arriving.
     const big = Buffer.alloc(5 * 1024 * 1024, 0x61);
     const answers = liveDeployAnswers({ [CSS_NAME]: big });
-    const live = await standInOrigin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -141,14 +141,14 @@ describe("the live site's answers, read over HTTP", () => {
     // step's own work — the ceiling on that is the ceiling on the page.
     const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: CSS });
     answers[`/_astro/${CSS_NAME}`] = { type: "text/css; charset=utf-8", body: CSS, delayMs: 5_000 };
-    const live = await standInOrigin(answers);
-    const out = buildDirectoryInMemory();
+    const live = await serveStandInOrigin(answers);
+    const out = openBuildDirectoryInMemory();
     try {
       const began = Date.now();
       // The real clock, as the entry passes it: the budget is measured against
       // a host that is really silent.
       const result = await carryAssets({
-        origin: live.url, buildDirectory: out, liveAnswerFor: liveAnswerOverHttp, now: Date.now, budgetMs: 500,
+        origin: live.url, buildDirectory: out, liveAnswerFor: fetchLiveAnswerOverHttp, now: Date.now, budgetMs: 500,
       });
       const took = Date.now() - began;
       expect(result.carried).toEqual([]);

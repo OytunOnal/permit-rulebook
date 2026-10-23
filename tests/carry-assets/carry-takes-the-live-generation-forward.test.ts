@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { readdirSync } from "node:fs";
 import { carryAssets } from "../../scripts/carry-assets/carry.mjs";
-import { buildDirectoryInMemory } from "./build-directory-in-memory.js";
+import { openBuildDirectoryInMemory } from "./build-directory-in-memory.js";
 import { entryRunAsChildProcess, fixedClock, flowRunInProcess } from "./carry-runs.js";
 import {
   CSS, CSS_NAME, DIGESTS, JS, JS_NAME,
@@ -45,7 +45,7 @@ afterEach(sweepTemporary);
 describe("the carrier takes the live generation forward", () => {
   it("fetches only the assets this build does not already have", async () => {
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS, [JS_NAME]: JS }));
-    const out = buildDirectoryInMemory({ [JS_NAME]: JS });
+    const out = openBuildDirectoryInMemory({ [JS_NAME]: JS });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -58,7 +58,7 @@ describe("the carrier takes the live generation forward", () => {
 
   it("writes the bytes the live host served, and says the name, the size and the digest", async () => {
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -74,7 +74,7 @@ describe("the carrier takes the live generation forward", () => {
     const answers = liveDeployAnswers({ [CSS_NAME]: CSS });
     answers[`/_astro/${CSS_NAME}`] = { status: 404, type: "text/html; charset=utf-8", body: Buffer.from("gone") };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -91,7 +91,7 @@ describe("the carrier takes the live generation forward", () => {
     const answers = liveDeployAnswers({ [CSS_NAME]: CSS });
     answers[`/_astro/${CSS_NAME}`] = { type: "text/html; charset=utf-8", body: Buffer.from("<html>404</html>") };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -104,7 +104,7 @@ describe("the carrier takes the live generation forward", () => {
   it("exits 0 when the live origin answers nothing at all", async () => {
     // The deploy must survive a host that is down, a DNS failure, a timeout.
     // No open site answers at this address, which is the same shape.
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     const run = await flowRunInProcess("http://127.0.0.1:1", out);
     expect(run.status, run.out).toBe(0);
     expect(out.assetNames()).toEqual([]);
@@ -118,7 +118,7 @@ describe("the carrier takes the live generation forward", () => {
     // under that same base, beside the page.
     const base = "/permit-rulebook";
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }, base));
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(`${live.url}${base}/`, out);
       expect(run.status, run.out).toBe(0);
@@ -129,7 +129,7 @@ describe("the carrier takes the live generation forward", () => {
 
   it("writes nothing under --dry-run, and still names what it would carry", async () => {
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS, [JS_NAME]: JS }));
-    const out = buildDirectoryInMemory({ [JS_NAME]: JS });
+    const out = openBuildDirectoryInMemory({ [JS_NAME]: JS });
     try {
       const run = await flowRunInProcess(live.url, out, { dryRun: true });
       expect(run.status, run.out).toBe(0);
@@ -146,7 +146,7 @@ describe("the carrier takes the live generation forward", () => {
     // arrived in this build, which is where the live site's stylesheet would
     // be if the empty value had fallen through to it.
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess("", out);
       expect(run.status, run.out).toBe(0);

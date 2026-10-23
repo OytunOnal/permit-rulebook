@@ -44,7 +44,7 @@ async function liveAssetDigests(answerWithinBudget, url) {
  * asset behind — one attribute in a page this step does not own, turning the
  * step off.
  */
-export async function liveDigestsMatchingPage(page, run) {
+export async function readLiveDigestsMatchingPage(page, run) {
   const list = await liveAssetDigests(run.answerWithinBudget, new URL(DIGESTS_NAME, page.from).href);
   if (!list.ok) return { digests: null, problems: [`anything: ${list.why}`] };
   const { names } = page;

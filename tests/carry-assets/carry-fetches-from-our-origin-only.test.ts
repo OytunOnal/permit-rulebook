@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDirectoryInMemory } from "./build-directory-in-memory.js";
+import { openBuildDirectoryInMemory } from "./build-directory-in-memory.js";
 import { annotationsOf, flowRunInProcess } from "./carry-runs.js";
 import { CSS, CSS_NAME, DIGESTS, liveDeployAnswers, pageNaming } from "./deploy-fixtures.js";
 import { pageOf } from "./live-page.js";
@@ -61,7 +61,7 @@ describe("the carrier fetches from our origin and nowhere else", () => {
         `https://${new URL(live.url).host}/_astro/scheme.FFFFFFFF.js`,
       ];
       answers["/"] = { type: "text/html; charset=utf-8", body: pageOf([...foreign, `/_astro/${mine}`]) };
-      const out = buildDirectoryInMemory();
+      const out = openBuildDirectoryInMemory();
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
       // Ours, and only ours. Nothing was asked of this host on behalf of the
@@ -86,7 +86,7 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     const answers = liveDeployAnswers({ [real]: CSS });
     answers["/"] = { type: "text/html; charset=utf-8", body: pageOf([`/_astro/../${real}`]) };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory({ [real]: CSS });
+    const out = openBuildDirectoryInMemory({ [real]: CSS });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -115,7 +115,7 @@ describe("the carrier fetches from our origin and nowhere else", () => {
       body: pageOf([`${base}/_astro/${CSS_NAME}`, `/_astro/${stale}`]),
     };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(`${live.url}${base}/`, out);
       expect(run.status, run.out).toBe(0);
@@ -143,7 +143,7 @@ describe("the carrier fetches from our origin and nowhere else", () => {
       const live = liveSiteInMemory(answers);
       // This build already has the healthy one, so nothing else can raise an
       // annotation: no name is missing and the page does reference one of ours.
-      const out = buildDirectoryInMemory({ [mine]: CSS });
+      const out = openBuildDirectoryInMemory({ [mine]: CSS });
       try {
         const run = await flowRunInProcess(live.url, out);
         expect(run.status, `${label}: ${run.out}`).toBe(0);
@@ -162,10 +162,10 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     // may carry `?`, `#`, `/`, a space or an `@`, and a value carrying one of
     // the first four also fails `new URL`. So the shapes are the case.
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       for (const [label, password] of PASSWORDS) {
-        const run = await flowRunInProcess(`http://reader:${password}@${new URL(live.url).host}/`, buildDirectoryInMemory());
+        const run = await flowRunInProcess(`http://reader:${password}@${new URL(live.url).host}/`, openBuildDirectoryInMemory());
         expect(run.status, `${label}: ${run.out}`).toBe(0);
         expect(run.out, `${label}: the repository variable's secret reached the deploy log`).not.toContain(SECRET);
       }
@@ -179,7 +179,7 @@ describe("the carrier fetches from our origin and nowhere else", () => {
       // chance to clean it. What holds there is not printing a value that did
       // not parse.
       for (const [label, value] of ORIGINS_REFUSED_UNPARSED) {
-        const refused = await flowRunInProcess(value, buildDirectoryInMemory());
+        const refused = await flowRunInProcess(value, openBuildDirectoryInMemory());
         expect(refused.status, `${label}: ${refused.out}`).toBe(0);
         expect(refused.out, `${label}: a value refused unparsed took the secret into the log with it`).not.toContain(SECRET);
         // Positive, so the absences above cannot be the whole of the case: the
@@ -212,7 +212,7 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     expect(run.status, run.out).toBe(0);
     expect(summary(run.out), "the summary named a host this run never opened a socket on").not.toContain("evil.example");
     expect(summary(run.out), "the summary named an origin no page was read from").not.toContain("permitrulebook.com");
-    const unparsed = await flowRunInProcess("//permitrulebook.com/x?to=a@evil.example", buildDirectoryInMemory());
+    const unparsed = await flowRunInProcess("//permitrulebook.com/x?to=a@evil.example", openBuildDirectoryInMemory());
     expect(unparsed.status, unparsed.out).toBe(0);
     expect(summary(unparsed.out), "the summary showed a value that never parsed").not.toContain("evil.example");
     expect(summary(unparsed.out), "the summary showed a value that never parsed").not.toContain("permitrulebook.com");
@@ -236,9 +236,9 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     // And the two bails that ARE about the origin still say so, and still say
     // which of the two: unset is a variable nobody set, and the other is a
     // value that is set and is not somewhere a page can be read from.
-    const unset = await flowRunInProcess("", buildDirectoryInMemory());
+    const unset = await flowRunInProcess("", openBuildDirectoryInMemory());
     expect(summary(unset.out), unset.out).toContain("an unset CARRY_ORIGIN");
-    const unreadable = await flowRunInProcess("not a url", buildDirectoryInMemory());
+    const unreadable = await flowRunInProcess("not a url", openBuildDirectoryInMemory());
     expect(summary(unreadable.out), unreadable.out).toContain("no page could be read from");
   });
 
@@ -247,7 +247,7 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     // `CARRY_ORIGIN` with a space at each end is the address without them,
     // not `…/%20%20/`, which would answer 404 with no explanation in it.
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(`  ${live.url}/  `, out);
       expect(run.status, run.out).toBe(0);
@@ -267,7 +267,7 @@ describe("the carrier fetches from our origin and nowhere else", () => {
         body: pageOf(Array.from({ length: 400 }, (_, i) => `https://evil.example/_astro/pwn.${i}.js`)),
       },
     });
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -283,7 +283,7 @@ describe("the carrier fetches from our origin and nowhere else", () => {
     // could kill the deploy with an attribute.
     const long = `${"a".repeat(300)}.css`;
     const live = liveSiteInMemory({ "/": { type: "text/html; charset=utf-8", body: pageNaming(long) } });
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);

@@ -26,7 +26,7 @@ import { sentenceOfError } from "./log-wording.mjs";
  * @param {{ byteCeiling: number, timeoutMs: number }} limits
  * @returns {Promise<LiveAnswer>}
  */
-export async function liveAnswerOverHttp(url, { byteCeiling, timeoutMs }) {
+export async function fetchLiveAnswerOverHttp(url, { byteCeiling, timeoutMs }) {
   let response;
   try {
     response = await fetch(url, {

@@ -90,7 +90,7 @@ function send(res: ServerResponse, answer: HttpAnswer | undefined): void {
  * "it never fetched that at all" and "it asked for the bytes it would write"
  * are measurements rather than inferences.
  */
-export async function standInOrigin(answers: Record<string, HttpAnswer>): Promise<StandInOrigin> {
+export async function serveStandInOrigin(answers: Record<string, HttpAnswer>): Promise<StandInOrigin> {
   const asked: string[] = [];
   const acceptEncoding: string[] = [];
   const timers = new Set<NodeJS.Timeout>();

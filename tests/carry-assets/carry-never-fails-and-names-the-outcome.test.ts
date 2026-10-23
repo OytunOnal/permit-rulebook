@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { carryAssets } from "../../scripts/carry-assets/carry.mjs";
-import { buildDirectoryInMemory } from "./build-directory-in-memory.js";
+import { openBuildDirectoryInMemory } from "./build-directory-in-memory.js";
 import { annotationsOf, fixedClock, flowRunInProcess } from "./carry-runs.js";
 import { CSS, CSS_NAME, DIGESTS, JS, JS_NAME, digestListBytesOf, liveDeployAnswers } from "./deploy-fixtures.js";
 import { pageOf, pageOfSize } from "./live-page.js";
@@ -42,7 +42,7 @@ describe("the carrier cannot fail the deploy", () => {
     // reference with whitespace in it never becomes a name — so it is the
     // printing that holds rather than the trust: whatever this step is
     // handed, it says on one line.
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     const run = await flowRunInProcess("http://host.invalid/\r\n::error::title=pwn::injected", out);
     expect(run.status, run.out).toBe(0);
     const commands = run.out.split("\n").filter((line) => line.startsWith("::"));
@@ -58,7 +58,7 @@ describe("the carrier cannot fail the deploy", () => {
     // references. A log nobody can read is the same as no log.
     const long = `https://evil.example/_astro/${"a".repeat(400)}.js`;
     const live = liveSiteInMemory({ "/": { type: "text/html; charset=utf-8", body: pageOf([long]) } });
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -80,7 +80,7 @@ describe("the carrier cannot fail the deploy", () => {
     // The body is the real one, so the refusal turns on the type alone.
     answers[`/_astro/${CSS_NAME}`] = { type: `x-${"a".repeat(6000)}`, body: CSS };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -97,7 +97,7 @@ describe("the carrier cannot fail the deploy", () => {
     // A build whose `_astro/` cannot be listed or written into, the way a
     // `dist/` holding `_astro` as a FILE refuses. That the disk adapter leaves
     // such a path as it was is `build-directory-on-disk.test.ts`'s.
-    const out = buildDirectoryInMemory({}, { refusing: ["builtAssets", "writeCarriedAsset", "writeDigestList"] });
+    const out = openBuildDirectoryInMemory({}, { refusing: ["builtAssets", "writeCarriedAsset", "writeDigestList"] });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -116,7 +116,7 @@ describe("the carrier cannot fail the deploy", () => {
     // the page's own: a page is an index.html, today 11,569 bytes, and 512 KB
     // is not an asset's 4 MB.
     const live = liveSiteInMemory({ "/": { type: "text/html; charset=utf-8", body: Buffer.from(pageOfSize(1024 * 1024), "utf8") } });
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -140,7 +140,7 @@ describe("the carrier cannot fail the deploy", () => {
 
   it("asks for twenty assets at most, however many the page names", async () => {
     const live = liveSiteInMemory(liveDeployAnswers(many));
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -154,7 +154,7 @@ describe("the carrier cannot fail the deploy", () => {
     const answers = liveDeployAnswers(many);
     for (const name of manyNames) delete answers[`/_astro/${name}`];
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -182,7 +182,7 @@ describe("the carrier cannot fail the deploy", () => {
 describe("the step says which of the three things happened", () => {
   it("is quiet only when this build already has everything the live page names", async () => {
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const out = buildDirectoryInMemory({ [CSS_NAME]: CSS });
+    const out = openBuildDirectoryInMemory({ [CSS_NAME]: CSS });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -208,7 +208,7 @@ describe("the step says which of the three things happened", () => {
         ["a page over the 512 KB ceiling", flood.url],
       ];
       for (const [label, value] of cases) {
-        const out = buildDirectoryInMemory();
+        const out = openBuildDirectoryInMemory();
         const run = await flowRunInProcess(value, out);
         expect(run.status, `${label}: ${run.out}`).toBe(0);
         expect(annotationsOf(run.out), `${label} ended as quiet as a healthy deploy: ${run.out}`).not.toBe("");
@@ -235,7 +235,7 @@ describe("the step says which of the three things happened", () => {
     const answers = liveDeployAnswers({ [stale]: CSS, [shared]: JS });
     answers[`/${DIGESTS}`] = { type: "text/plain; charset=utf-8", body: digestListBytesOf({ [shared]: JS }) };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -259,7 +259,7 @@ describe("the step says which of the three things happened", () => {
       body: pageOf([`/_astro/${CSS_NAME}`, `/_astro/${JS_NAME}`, "/_astro/../../pwn.css"]),
     };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory({ [CSS_NAME]: CSS, [JS_NAME]: JS });
+    const out = openBuildDirectoryInMemory({ [CSS_NAME]: CSS, [JS_NAME]: JS });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -280,7 +280,7 @@ describe("the step says which of the three things happened", () => {
     const live = liveSiteInMemory({
       "/": { type: "text/html; charset=utf-8", body: Buffer.from("<!DOCTYPE html><html><body>back soon</body></html>", "utf8") },
     });
-    const out = buildDirectoryInMemory({ [CSS_NAME]: CSS });
+    const out = openBuildDirectoryInMemory({ [CSS_NAME]: CSS });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -301,7 +301,7 @@ describe("the step says which of the three things happened", () => {
     // This build already has every name the live page references, so there is
     // nothing to carry, nothing missing and nothing else for the step to say.
     // Writing the list is refused, so the publish is the one thing that fails.
-    const out = buildDirectoryInMemory({ [CSS_NAME]: CSS }, { refusing: ["writeDigestList"] });
+    const out = openBuildDirectoryInMemory({ [CSS_NAME]: CSS }, { refusing: ["writeDigestList"] });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -319,9 +319,9 @@ describe("the step says which of the three things happened", () => {
     refusing[`/_astro/${CSS_NAME}`] = { status: 500, type: "text/html", body: Buffer.from("no") };
     const bad = liveSiteInMemory(refusing);
     const idle = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const missing = buildDirectoryInMemory();
-    const nothingToCarry = buildDirectoryInMemory({ [CSS_NAME]: CSS });
-    const blind = buildDirectoryInMemory();
+    const missing = openBuildDirectoryInMemory();
+    const nothingToCarry = openBuildDirectoryInMemory({ [CSS_NAME]: CSS });
+    const blind = openBuildDirectoryInMemory();
     try {
       const alarm = await flowRunInProcess(bad.url, missing);
       const quiet = await flowRunInProcess(idle.url, nothingToCarry);

@@ -18,7 +18,7 @@ import { join } from "node:path";
  * @param {string} dist
  * @returns {BuildDirectory | undefined}
  */
-export function buildDirectoryOnDisk(dist) {
+export function openBuildDirectoryOnDisk(dist) {
   if (dist.trim() === "") return undefined;
   const astro = join(dist, "_astro");
   return {

@@ -34,9 +34,9 @@
  */
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildDirectoryOnDisk } from "./build-directory-on-disk.mjs";
+import { openBuildDirectoryOnDisk } from "./build-directory-on-disk.mjs";
 import { ORIGIN_VAR, carryAssets } from "./carry-assets/carry.mjs";
-import { liveAnswerOverHttp } from "./live-site-over-http.mjs";
+import { fetchLiveAnswerOverHttp } from "./live-site-over-http.mjs";
 import { oneLine, sentenceOfError } from "./log-wording.mjs";
 
 /**
@@ -73,8 +73,8 @@ const origin = process.env[ORIGIN_VAR] ?? "";
 
 const { logLines } = await carryAssets({
   origin,
-  buildDirectory: buildDirectoryOnDisk(dist),
-  liveAnswerFor: liveAnswerOverHttp,
+  buildDirectory: openBuildDirectoryOnDisk(dist),
+  liveAnswerFor: fetchLiveAnswerOverHttp,
   now: Date.now,
   dryRun,
 });

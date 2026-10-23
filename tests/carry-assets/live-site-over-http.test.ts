@@ -7,7 +7,7 @@ import { entryRunAsChildProcess } from "./carry-runs.js";
 import {
   CSS, CSS_NAME, astroFilesIn, distHolding, expectRefusedOver, liveDeployAnswers, sha256, sweepTemporary,
 } from "./deploy-fixtures.js";
-import { standInOrigin, type HttpAnswer } from "./stand-in-origin.js";
+import { serveStandInOrigin, type HttpAnswer } from "./stand-in-origin.js";
 
 /**
  * The live site read over HTTP, on a real local server: what only an HTTP
@@ -35,7 +35,7 @@ describe("the live site's answers, read over HTTP", () => {
     // `bodyWithin`. It is not what makes a carried byte trustworthy — the
     // digest list is — but it is what makes the file on disk the file rather
     // than an archive of it.
-    const live = await standInOrigin(liveDeployAnswers({ [CSS_NAME]: CSS }));
+    const live = await serveStandInOrigin(liveDeployAnswers({ [CSS_NAME]: CSS }));
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -51,7 +51,7 @@ describe("the live site's answers, read over HTTP", () => {
     const asset = Buffer.alloc(104_000, 0x61);
     const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: asset });
     answers[`/_astro/${CSS_NAME}`] = { type: "text/css; charset=utf-8", body: asset, gzip: true };
-    const live = await standInOrigin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -80,7 +80,7 @@ describe("the live site's answers, read over HTTP", () => {
     answers[`/_astro/${CSS_NAME}`] = {
       raw: { headers: ["content-type: text/css", `content-length: ${CSS.length}`], body: CSS },
     };
-    const live = await standInOrigin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -99,7 +99,7 @@ describe("the live site's answers, read over HTTP", () => {
     const asset = Buffer.alloc(104_000, 0x61);
     const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: asset });
     answers[`/_astro/${CSS_NAME}`] = { raw: { headers: ["content-type: text/css"], body: asset.subarray(0, 5_000) } };
-    const live = await standInOrigin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -120,7 +120,7 @@ describe("the live site's answers, read over HTTP", () => {
     const asset = Buffer.alloc(104_000, 0x61);
     const answers: Record<string, HttpAnswer> = liveDeployAnswers({ [CSS_NAME]: asset });
     answers[`/_astro/${CSS_NAME}`] = { raw: { headers: ["content-type: text/css", "content-length: 5000"], body: asset } };
-    const live = await standInOrigin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);
@@ -192,7 +192,7 @@ describe("the live site's answers, read over HTTP", () => {
     answers[`/_astro/${CSS_NAME}`] = {
       raw: { headers: ["content-type: text/css", "content-encoding: identity"], body: gzipSync(CSS) },
     };
-    const live = await standInOrigin(answers);
+    const live = await serveStandInOrigin(answers);
     const out = distHolding();
     try {
       const run = await entryRunAsChildProcess(live.url, ["--dist", out]);

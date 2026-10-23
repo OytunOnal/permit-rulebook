@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { buildDirectoryOnDisk } from "../../scripts/build-directory-on-disk.mjs";
+import { openBuildDirectoryOnDisk } from "../../scripts/build-directory-on-disk.mjs";
 import { CSS, CSS_NAME, JS, JS_NAME, distHolding, sweepTemporary, tempDirectory } from "./deploy-fixtures.js";
 
 /**
@@ -15,7 +15,7 @@ afterEach(sweepTemporary);
 
 /** The adapter over `dist`, which these cases always give a path. */
 const onDisk = (dist: string) => {
-  const build = buildDirectoryOnDisk(dist);
+  const build = openBuildDirectoryOnDisk(dist);
   if (!build) throw new Error(`no build directory over ${dist}`);
   return build;
 };
@@ -58,7 +58,7 @@ describe("the build directory on disk", () => {
   it("is no build directory at all for a blank path", () => {
     // A blank `--dist` would resolve against the process's own folder, which
     // is not a build anyone named.
-    expect(buildDirectoryOnDisk("")).toBeUndefined();
-    expect(buildDirectoryOnDisk("  ")).toBeUndefined();
+    expect(openBuildDirectoryOnDisk("")).toBeUndefined();
+    expect(openBuildDirectoryOnDisk("  ")).toBeUndefined();
   });
 });

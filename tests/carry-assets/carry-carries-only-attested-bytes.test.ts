@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readAssetNames, writeAssetDigests } from "../../scripts/carry-assets/carry.mjs";
-import { buildDirectoryInMemory } from "./build-directory-in-memory.js";
+import { openBuildDirectoryInMemory } from "./build-directory-in-memory.js";
 import { flowRunInProcess } from "./carry-runs.js";
 import {
   CSS, CSS_NAME, DIGESTS, HEADER, JS, JS_NAME, digestListBytesOf, expectRefusedOver, liveDeployAnswers, sha256,
@@ -27,7 +27,7 @@ import { liveSiteInMemory } from "./live-site-in-memory.js";
  */
 describe("the carrier carries only what our own previous build attested to", () => {
   it("publishes the digest list this build's assets will be checked against", () => {
-    const out = buildDirectoryInMemory({ [CSS_NAME]: CSS, [JS_NAME]: JS });
+    const out = openBuildDirectoryInMemory({ [CSS_NAME]: CSS, [JS_NAME]: JS });
     const result = writeAssetDigests(out);
     expect(result.ok, JSON.stringify(result)).toBe(true);
     expect(out.besidePage.get(DIGESTS)).toBe(
@@ -40,7 +40,7 @@ describe("the carrier carries only what our own previous build attested to", () 
     // carried file lands in `_astro/` — and it is published whether or not
     // anything is carried, because the next deploy's whole check is this file.
     const live = liveSiteInMemory(liveDeployAnswers({ [CSS_NAME]: CSS }));
-    const out = buildDirectoryInMemory({ [JS_NAME]: JS });
+    const out = openBuildDirectoryInMemory({ [JS_NAME]: JS });
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -56,7 +56,7 @@ describe("the carrier carries only what our own previous build attested to", () 
     const answers = liveDeployAnswers({ [CSS_NAME]: CSS });
     delete answers[`/${DIGESTS}`];
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -75,7 +75,7 @@ describe("the carrier carries only what our own previous build attested to", () 
     const answers = liveDeployAnswers({ [CSS_NAME]: CSS });
     answers[`/${DIGESTS}`] = { type: "text/plain; charset=utf-8", body: digestListBytesOf({ [CSS_NAME]: CSS }).subarray(0, HEADER.length + 20) };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -95,7 +95,7 @@ describe("the carrier carries only what our own previous build attested to", () 
     const answers = liveDeployAnswers({ [CSS_NAME]: CSS });
     answers[`/${DIGESTS}`] = { type: "text/plain; charset=utf-8", body: digestListBytesOf({ "index.ZZZZZZZZ.css": CSS }) };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -121,7 +121,7 @@ describe("the carrier carries only what our own previous build attested to", () 
       body: pageOf([`/_astro/${CSS_NAME}`, `/_astro/${JS_NAME}`, "/_astro/../../pwn.css"]),
     };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -145,7 +145,7 @@ describe("the carrier carries only what our own previous build attested to", () 
       body: Buffer.from(`${HEADER}\n${sha256(CSS)}  ..\n${sha256(CSS)}  ${CSS_NAME}\n`, "utf8"),
     };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);
@@ -173,7 +173,7 @@ describe("the carrier carries only what our own previous build attested to", () 
     answers[`/${DIGESTS}`] = { type: "text/plain; charset=utf-8", body: digestListBytesOf({ [CSS_NAME]: empty }) };
     answers[`/_astro/${CSS_NAME}`] = { type: "text/css", body: empty };
     const live = liveSiteInMemory(answers);
-    const out = buildDirectoryInMemory();
+    const out = openBuildDirectoryInMemory();
     try {
       const run = await flowRunInProcess(live.url, out);
       expect(run.status, run.out).toBe(0);

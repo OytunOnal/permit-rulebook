@@ -79,7 +79,7 @@
 import { readAssetNames } from "./generation/asset-names.mjs";
 import { DIGESTS_NAME, digestListOf, readAssetDigests } from "./generation/digest-list.mjs";
 import { carryAttestedAssets } from "./live-deploy/attested-assets.mjs";
-import { liveDigestsMatchingPage } from "./live-deploy/live-digests.mjs";
+import { readLiveDigestsMatchingPage } from "./live-deploy/live-digests.mjs";
 import { assetNamesOfLivePage } from "./live-deploy/live-page.mjs";
 import { logLinesOf } from "./outcome/outcome-lines.mjs";
 import { oneLine, sentenceOfError } from "../log-wording.mjs";
@@ -271,7 +271,7 @@ async function recordOfCarry({ origin, buildDirectory, liveAnswerFor, now, dryRu
   if (!address.pageUrl) return carryRecordOf(address);
   const page = await assetNamesOfLivePage(address.pageUrl, run);
   if (page.needed.length === 0) return carryRecordOf(page);
-  const list = await liveDigestsMatchingPage(page, run);
+  const list = await readLiveDigestsMatchingPage(page, run);
   if (!list.digests) return carryRecordOf({ ...page, problems: [...page.problems, ...list.problems] });
   const carry = await carryAttestedAssets(page, list.digests, run);
   return carryRecordOf({ ...page, carried: carry.carried, problems: [...page.problems, ...list.problems, ...carry.problems] });

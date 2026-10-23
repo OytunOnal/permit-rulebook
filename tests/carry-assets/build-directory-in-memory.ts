@@ -23,7 +23,7 @@ export type BuildInMemory = BuildDirectory & {
  * A build that already holds `have` in `_astro/`. Every operation named in
  * `refusing` throws, as the filesystem does under a path it cannot use.
  */
-export function buildDirectoryInMemory(
+export function openBuildDirectoryInMemory(
   have: Record<string, Buffer> = {},
   { refusing = [] }: { refusing?: Operation[] } = {},
 ): BuildInMemory {
