@@ -1806,6 +1806,31 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/back-and-keep.test.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/back-and-keep.test.ts",
+   "to": "src/lib/interview-history/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/back-and-keep.test.ts",
+   "to": "src/lib/interview/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/back-and-keep.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/back-and-keep.test.ts",
+   "to": "tests/fake-browser-history.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/base-path.test.ts",
    "to": "src/lib/route-page.ts",
    "kind": "dependency"
@@ -5179,6 +5204,21 @@
     "exported": true
    },
    {
+    "name": "backToLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "keepNextLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "keepToResultLine",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "setAsideLead",
     "kind": "fn",
     "exported": true
@@ -6294,6 +6334,11 @@
     "exported": true
    },
    {
+    "name": "QuestionExits",
+    "kind": "type",
+    "exported": true
+   },
+   {
     "name": "NAMED_UP_TO",
     "kind": "const",
     "exported": false
@@ -7361,5 +7406,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "18f65fb878230289099d1d5eefd3a0675315fd37a16e60c15ce27ecb3e86182d"
+ "digest": "1909946dda0e9f29427fdbbaa55fd3f2f52d15c082d032d7a0de85cb9ec503f0"
 }
