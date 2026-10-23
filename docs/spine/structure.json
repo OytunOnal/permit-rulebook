@@ -962,6 +962,11 @@
   },
   {
    "from": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/verdict-screen.ts",
    "to": "src/lib/verdict/index.ts",
    "kind": "dependency"
   },
@@ -3866,6 +3871,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/start-over.test.ts",
+   "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/start-over.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/territories.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
@@ -6359,6 +6374,11 @@
     "exported": false
    },
    {
+    "name": "resumedLineHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "linesAboveQuestionHtml",
     "kind": "fn",
     "exported": false
@@ -7406,5 +7426,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "1909946dda0e9f29427fdbbaa55fd3f2f52d15c082d032d7a0de85cb9ec503f0"
+ "digest": "88e69bdf6c87be6c7baf79c21a6bc0e2b4a31dafbe68ff72d58288eff3563621"
 }

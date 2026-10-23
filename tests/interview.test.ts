@@ -72,11 +72,18 @@ describe("interviewAfter: loaded", () => {
     expect(loaded(NO_RECORD, "").state.scopedRouteId).toBeNull();
   });
 
-  it("loaded onto a finished record: the verdict, with no resumed line and no history move", () => {
+  it("loaded onto a finished record: the verdict, with the resumed line counting the answers kept, and no history move", () => {
     const step = loaded(EU_PASSPORT, "");
     expect(step.screen).toEqual({ kind: "verdict" });
-    expect(step.lines.resumed).toBeNull();
+    expect(step.lines).toEqual({ arrival: null, resumed: 2, setAside: [], justRecorded: null });
     expect([step.land, step.beat, step.save, step.history]).toEqual(["first-paint", false, null, []]);
+  });
+
+  it("loaded onto a finished record with an arrival that moved it: the verdict with the arrival line alone", () => {
+    const step = loaded(EU_PASSPORT, "?country=nl");
+    expect(step.screen).toEqual({ kind: "verdict" });
+    expect(step.lines.arrival?.country).toBe("NL");
+    expect(step.lines.resumed, "one line about the return, not two").toBeNull();
   });
 
   it("loaded onto a record the rules have moved past: what they no longer ask is dropped, and not named", () => {
@@ -195,19 +202,57 @@ describe("interviewAfter: Keep this answer's target", () => {
 });
 
 describe("interviewAfter: restarted", () => {
-  it("restarted: an empty record, question one, the card into view, the beat, the record cleared, the entries gone", () => {
-    const step = after(loaded(GERMAN_THREE, "").state, { kind: "restarted" });
+  it("restarted on /: an empty record, question one, no line, the record cleared, the entries gone", () => {
+    const step = after(loaded(GERMAN_THREE, "").state, { kind: "restarted", search: "" });
     expect(step.screen).toEqual({ kind: "question", field: FIRST_FIELD, started: false });
     expect(step.state).toEqual(EMPTY_INTERVIEW);
     expect(step.lines).toEqual(NO_LINES);
-    expect([step.land, step.beat, step.save]).toEqual(["card-into-view", true, "clear"]);
+    expect(step.save).toBe("clear");
     expect(step.history).toEqual([{ call: "restarted" }, { call: "redrawnInPlace", field: FIRST_FIELD }]);
   });
 
-  it("restarted on a route's address: no line and nothing applied again, the route still sorting first", () => {
-    const step = after(loaded(GERMAN_THREE, "?route=de-blue-card-general").state, { kind: "restarted" });
-    expect(step.state).toEqual({ ...EMPTY_INTERVIEW, scopedRouteId: "de-blue-card-general" });
-    expect(step.lines.arrival).toBeNull();
+  it("restarted lands at the page's top, with no beat", () => {
+    for (const search of ["", "?country=de"]) {
+      const step = after(loaded(GERMAN_FIVE, search).state, { kind: "restarted", search });
+      expect([step.land, step.beat], search).toEqual(["page-top", false]);
+    }
+  });
+
+  it("restarted on ?country=de: Germany back on the record, the arrival line, the question after the destination", () => {
+    const step = after(loaded(GERMAN_FIVE, "?country=de").state, { kind: "restarted", search: "?country=de" });
+    expect(step.state).toEqual({ answers: { destination: "de" }, asked: ["destination"], editing: null, scopedRouteId: null });
+    expect(step.screen).toEqual({ kind: "question", field: "situation", started: true });
+    expect(step.lines.arrival?.country).toBe("DE");
+    expect(step.lines.resumed).toBeNull();
+    expect(step.save, "nothing of the record before Start over is kept")
+      .toEqual({ answers: { destination: "de" }, history: ["destination"], done: false });
+    expect(step.history).toEqual([{ call: "restarted" }, { call: "redrawnInPlace", field: "situation" }]);
+  });
+
+  it("restarted on a route's address: that route sorts first again, its country on the record with the arrival line", () => {
+    const step = after(EMPTY_INTERVIEW, { kind: "restarted", search: "?route=de-blue-card-general" });
+    expect(step.state.scopedRouteId).toBe("de-blue-card-general");
+    expect(step.state.answers).toEqual({ destination: "de" });
+    expect(step.lines.arrival?.route?.id).toBe("de-blue-card-general");
+  });
+});
+
+describe("interviewAfter: the resumed line marks the return only", () => {
+  it("no gesture after the first screen gives the resumed line, on a question or the verdict", () => {
+    for (const record of [GERMAN_THREE, EU_PASSPORT]) {
+      const first = loaded(record, "");
+      expect(first.lines.resumed, "precondition: the first screen resumes").toBe(record.history.length);
+      const gestures: Gesture[] = [
+        { kind: "answered", value: "degree" }, { kind: "editedRow", field: "citizenship" },
+        { kind: "back", field: "destination" }, { kind: "kept" }, { kind: "restarted", search: "" },
+        { kind: "browserMoved", field: null, ontoFirstScreen: false },
+        { kind: "browserMoved", field: "destination", ontoFirstScreen: true },
+      ];
+      for (const gesture of gestures) {
+        const step = interviewAfter(ds, first.state, gesture);
+        expect(step?.lines.resumed ?? null, `${gesture.kind} after a return`).toBeNull();
+      }
+    }
   });
 });
 

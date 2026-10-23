@@ -15,9 +15,10 @@ import {
  * fades in, and for the beat nothing on it commits an answer — a click on an
  * option or a row, Enter on a focused option, Enter in the search box — the
  * same with or without motion. The gestures are an answer, a correction (✎),
- * ← Back, Keep this answer, Start over and the browser's Back. The beat's
- * length is the token `--motion-beat`, read from the page here only to wait it
- * out; no case types it. The first paint has no beat.
+ * ← Back, Keep this answer and the browser's Back. The beat's length is the
+ * token `--motion-beat`, read from the page here only to wait it out; no case
+ * types it. The first paint has no beat, and neither has Start over, which
+ * opens the interview as a cold load does.
  *
  * The clicks and keys are the platform's own, at a point of the viewport or on
  * the focused element, so whatever the new card has drawn under that point is
@@ -275,7 +276,7 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
     expectTheBeatHeld(seen);
   }, 120000);
 
-  it("Start over draws its card with a beat", async () => {
+  it("Start over draws its card with no beat: a click at once answers", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
       await coldStart(site);
@@ -284,11 +285,14 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       await page.goto(site.url("/"), 1200);
       const resumed = await where(page);
       await clickOn(page, "#restart");
-      return { ...(await clicksAroundTheBeat(page, resumed.question)), problems: page.problems() };
+      const drawn = await drawnAfter(page, resumed.question);
+      await clickOn(page, FIRST_OPTION);
+      await settle(100);
+      return { drawn, after: await where(page), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
     expect(seen.drawn.answers, "Start over did not clear the record").toBe(0);
-    expectTheBeatHeld(seen);
+    expect(seen.after.answers, "the card Start over drew refused the first click").toBe(1);
   }, 120000);
 
   it("the browser's Back draws its card with a beat", async () => {

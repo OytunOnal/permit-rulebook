@@ -16,7 +16,7 @@
 import { remainingQuestions, type Dataset, type Profile, type Question } from "permit-rulebook-data";
 import type { BrowserMove } from "../../interview-history/index.js";
 import type { RecordToKeep, StoredRecord } from "../../record.js";
-import { arrivalOf, replayRecord, type ArrivalFacts } from "../../scope.js";
+import { arrivalOf, replayRecord, type ArrivalFacts, type RecordOnArrival } from "../../scope.js";
 
 /** Where the interview stands between gestures. */
 export interface InterviewState {
@@ -49,8 +49,8 @@ export type Gesture =
   | { kind: "back"; field: string }
   /** Keep this answer. */
   | { kind: "kept" }
-  /** Start over. */
-  | { kind: "restarted" }
+  /** Start over, and the address's search, which arrives again. */
+  | { kind: "restarted"; search: string }
   /** The browser moved onto one of the interview's entries. */
   | ({ kind: "browserMoved" } & BrowserMove);
 
@@ -62,7 +62,7 @@ export type InterviewScreen = { kind: "question"; field: string; started: boolea
 export interface InterviewLines {
   /** What an arrival did, on the first screen only. */
   arrival: ArrivalFacts | null;
-  /** How many answers a return brought back, on the question it resumes on. */
+  /** How many answers a return brought back, on the question or the verdict it resumes on. */
   resumed: number | null;
   /** The answers an edit's replay set aside, named on the screen it leads to. */
   setAside: string[];
@@ -86,8 +86,8 @@ export type Landing =
   | "card-under-header"
   /** An edit, from a ledger row or Back in place: the ledger folds and the card lands as an answer's does. */
   | "card-under-folded-ledger"
-  /** Start over: the card into view, on every width. */
-  | "card-into-view"
+  /** Start over: the page's top, as a cold load opens it, on every width. */
+  | "page-top"
   /** A verdict a gesture drew: its masthead into view and the focus on its headline. */
   | "verdict-masthead";
 
@@ -110,7 +110,8 @@ export interface InterviewStep {
   land: Landing;
   /** Whether the question card it draws takes the beat (#86). */
   beat: boolean;
-  /** The record to keep, "clear" when Start over takes it, or null when it is untouched. */
+  /** The record to keep, which replaces the stored one whole; "clear" when Start over leaves
+   * nothing to keep; or null when it is untouched. */
   save: RecordToKeep | "clear" | null;
   history: HistoryCall[];
 }
@@ -121,8 +122,9 @@ const NO_LINES: InterviewLines = { arrival: null, resumed: null, setAside: [], j
 interface Reach {
   questionLand: Landing;
   verdictLand: Landing;
-  /** Whether a gesture drew the screen, which a question card answers with the beat. */
-  gesture: boolean;
+  /** Whether a question card drawn this way takes the beat: every gesture's
+   * but Start over's, which opens the interview as a cold load does. */
+  beat: boolean;
   /** The call a question screen makes on the history; none while the browser moves or before it opens. */
   questionCall: "movedForward" | "redrawnInPlace" | null;
   /** The call a verdict makes: one entry on top of the last question's, so Back lands on that question. */
@@ -130,26 +132,27 @@ interface Reach {
 }
 
 const FIRST_PAINT: Reach = {
-  questionLand: "first-paint", verdictLand: "first-paint", gesture: false, questionCall: null, verdictCall: null,
+  questionLand: "first-paint", verdictLand: "first-paint", beat: false, questionCall: null, verdictCall: null,
 };
 /** An answer, or Keep: one entry per question screen, and answering moves forward. */
 const BY_ANSWER: Reach = {
-  questionLand: "card-under-header", verdictLand: "verdict-masthead", gesture: true,
+  questionLand: "card-under-header", verdictLand: "verdict-masthead", beat: true,
   questionCall: "movedForward", verdictCall: "movedForward",
 };
 /** A ledger row's ✎, or Back in place: the question stands on the entry it replaces. */
 const BY_EDIT: Reach = {
-  questionLand: "card-under-folded-ledger", verdictLand: "verdict-masthead", gesture: true,
+  questionLand: "card-under-folded-ledger", verdictLand: "verdict-masthead", beat: true,
   questionCall: "redrawnInPlace", verdictCall: "movedForward",
 };
-/** Start over: the first question stands on the entry it replaces. */
+/** Start over: the first question stands on the entry it replaces, at the page's top, and takes no
+ * beat, since nothing on a screen the reader did not reach by answering refuses their first click. */
 const BY_RESTART: Reach = {
-  questionLand: "card-into-view", verdictLand: "verdict-masthead", gesture: true,
+  questionLand: "page-top", verdictLand: "verdict-masthead", beat: false,
   questionCall: "redrawnInPlace", verdictCall: "movedForward",
 };
 /** The browser's Back or Forward onto a later screen: the browser restores the scroll, then the card lands. */
 const BY_BROWSER: Reach = {
-  questionLand: "card-under-header-after-restore", verdictLand: "browser-scroll", gesture: true,
+  questionLand: "card-under-header-after-restore", verdictLand: "browser-scroll", beat: true,
   questionCall: null, verdictCall: null,
 };
 /** The browser's move onto the page's first screen, which keeps the top of the page as a cold load does. */
@@ -173,7 +176,7 @@ export function interviewAfter(dataset: Dataset, state: InterviewState, gesture:
     case "kept":
       return stepOnto(dataset, BY_ANSWER, { state: { ...state, editing: null } });
     case "restarted":
-      return afterRestart(dataset, state);
+      return afterRestart(dataset, gesture.search);
     case "browserMoved":
       return afterBrowserMove(dataset, state, gesture);
   }
@@ -182,12 +185,26 @@ export function interviewAfter(dataset: Dataset, state: InterviewState, gesture:
 /**
  * Start over. A shared or borrowed computer must not hand the next person a
  * stranger's salary, so the stored record goes with the screen, and Back
- * must not undo it: the entries go with the record. What the address sorts
- * first still sorts first.
+ * must not undo it: the entries go with the record. Then the address arrives
+ * again on the empty record, as the load does, so the screen matches the
+ * address the reader is on: its country back on the record with its line, its
+ * route sorting first. Where the arrival moved the record, the save replaces
+ * the stored record whole; elsewhere it is cleared.
  */
-function afterRestart(dataset: Dataset, state: InterviewState): InterviewStep {
-  const step = stepOnto(dataset, BY_RESTART, { state: { ...EMPTY_INTERVIEW, scopedRouteId: state.scopedRouteId } });
-  return { ...step, save: "clear", history: [{ call: "restarted" }, ...step.history] };
+function afterRestart(dataset: Dataset, search: string): InterviewStep {
+  const { state, lines } = arrivedOn(dataset, search, { answers: {}, order: [] });
+  const step = stepOnto(dataset, BY_RESTART, { state, lines });
+  const save = lines.arrival ? recordToKeep(dataset, state) : "clear";
+  return { ...step, save, history: [{ call: "restarted" }, ...step.history] };
+}
+
+/** The interview an address's arrival leaves on `record`, and the arrival line where it moved it. */
+function arrivedOn(dataset: Dataset, search: string, record: RecordOnArrival): Required<Onto> {
+  const arrival = arrivalOf(dataset, search, record);
+  const state: InterviewState = {
+    answers: arrival.record.answers, asked: arrival.record.order, editing: null, scopedRouteId: arrival.scopedRouteId,
+  };
+  return { state, lines: { ...NO_LINES, arrival: arrival.line } };
 }
 
 /**
@@ -208,22 +225,16 @@ function afterBrowserMove(
  * The page opened. The kept record is replayed against the rules as they
  * stand, then the address's arrival is applied to it; the record is saved
  * once, when the arrival moved it. A returning reader is told they returned
- * on the question the first paint brings them to, and not where an arrival
- * line already narrates what came back — one sentence about it, not two.
+ * on the screen the first paint brings them to, a question or the verdict,
+ * and not where an arrival line already narrates what came back — one
+ * sentence about it, not two.
  */
 function afterLoad(dataset: Dataset, gesture: Extract<Gesture, { kind: "loaded" }>): InterviewStep {
   const replayed = replayRecord(dataset, gesture.record.answers, gesture.record.history);
-  const arrival = arrivalOf(dataset, gesture.search, replayed);
-  const state: InterviewState = {
-    answers: arrival.record.answers, asked: arrival.record.order, editing: null, scopedRouteId: arrival.scopedRouteId,
-  };
-  const step = stepOnto(dataset, FIRST_PAINT, { state, lines: { ...NO_LINES, arrival: arrival.line } });
-  const resumes = step.screen.kind === "question" && !arrival.line && state.asked.length > 0;
-  return {
-    ...step,
-    lines: { ...step.lines, resumed: resumes ? state.asked.length : null },
-    save: arrival.line ? recordToKeep(dataset, state) : null,
-  };
+  const { state, lines } = arrivedOn(dataset, gesture.search, replayed);
+  const resumes = !lines.arrival && state.asked.length > 0;
+  const step = stepOnto(dataset, FIRST_PAINT, { state, lines: { ...lines, resumed: resumes ? state.asked.length : null } });
+  return { ...step, save: lines.arrival ? recordToKeep(dataset, state) : null };
 }
 
 /**
@@ -267,7 +278,7 @@ function stepOnto(dataset: Dataset, reach: Reach, { state, lines = NO_LINES }: O
   if (!state.editing && remaining.length === 0) return verdictStep(reach, { state, lines });
   const field = state.editing ?? remaining[0].field;
   return {
-    state, lines, land: reach.questionLand, beat: reach.gesture, save: null,
+    state, lines, land: reach.questionLand, beat: reach.beat, save: null,
     screen: { kind: "question", field, started: state.asked.length > 0 },
     keepLandsOn: state.editing ? keepTargetOf(remaining) : null,
     history: reach.questionCall ? [{ call: reach.questionCall, field }] : [],

@@ -50,9 +50,14 @@ export function landOnQuestion(page: InterviewPage, card: Element, land: Landing
   // The first paint and a browser move onto the first screen keep the
   // browser's own scroll.
   if (land === "first-paint" || land === "browser-scroll") return;
+  // Start over: the header, the hero and the stamp in view, as a first visit has them.
+  if (land === "page-top") {
+    window.scrollTo({ top: 0, behavior: motionOf(page) });
+    return;
+  }
   const afterRestore = land === "card-under-header-after-restore";
-  /** s20's reveal: every gesture on a wide screen, and Start over on any. */
-  const revealsOnly = page.wide.matches || land === "card-into-view";
+  /** s20's reveal: every gesture on a wide screen. */
+  const revealsOnly = page.wide.matches;
   const { head, decl } = page.els;
   if (revealsOnly || !head) {
     if (!afterRestore) reveal(page, card);

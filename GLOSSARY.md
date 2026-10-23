@@ -260,8 +260,7 @@ _Avoid_: dropped, discarded, lost, hidden answers
 
 **Reveal / landing** (the two ways a drawn screen meets the reader):
 A *reveal* (s20) scrolls only when the card's top is off the screen — every
-gesture on a wide screen, where the card sits beside the ledger, and Start
-over on a narrow one, which draws the first question again. A *landing*
+gesture on a wide screen, where the card sits beside the ledger. A *landing*
 (s30) brings the question card's top to just under the header (the header's
 measured height and its own padding) on a narrow screen after an answer, a
 correction, or a history move to a question later than the first — the
@@ -269,7 +268,9 @@ ledger line, when there is one, stays above it, one swipe up. A verdict is
 not landed on: it keeps
 s20's reveal of the masthead, and a gesture-drawn verdict takes the focus on
 the headline — the element the live region announces — with no second scroll
-(s31). The ledger's *place* is a separate matter from
+(s31). Start over is neither: on every width it scrolls to the page's top, as
+a first visit opens it, and the focus goes to the first control with no
+second scroll (#56). The ledger's *place* is a separate matter from
 either: on a phone, once answers exist, the line stands above the question
 and above the result (s30, amendments 6–7). The first paint is neither: a
 cold load, a restored record and a history move to the first screen keep the
@@ -280,9 +281,9 @@ _Avoid_: scroll-to, jump, snap, autoscroll
 The moment after a gesture draws a question card, when the card fades in and
 nothing on it commits an answer. It is the same length with or without motion;
 under reduced motion only the fade is gone. A beat follows every question
-card a gesture draws: an answer, a correction, Back, Keep this answer, Start
-over, the browser's own Back and Forward. The first paint has none, and the
-verdict has none.
+card a gesture draws: an answer, a correction, Back, Keep this answer, the
+browser's own Back and Forward. The first paint has none, Start over has none
+(#56), and the verdict has none.
 _Avoid_: reveal (s20's scroll), arrival (a reader sent from a country or route
 page), entrance (how the page came to stand on an entry), debounce, cooldown
 
