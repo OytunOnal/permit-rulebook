@@ -41,7 +41,7 @@ import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
 import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, REPO_DATA, analyticsBeacon,
-  absolute, headMeta, lastWatchRun, unreadSourcesAt, url,
+  absolute, headMeta, readWatchRun, url, type WatchRun,
 } from "./site.js";
 import {
   ANSWER_SOURCED, ANY_PATH, EITHER_PATH, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, ROUTE_PAGE_ADDENDUM,
@@ -721,12 +721,6 @@ function description(dataset: Dataset, country: Country, route: Route): string {
   return askedRouteDescription(possessiveAtStartOf(country.code), route.name, joinAnd(bits));
 }
 
-/** The watch's last run as a route page prints it: its day, and the sources it could not read. */
-export interface WatchRun {
-  lastRun?: string;
-  unread?: UnreadSource[];
-}
-
 /**
  * One route page.
  *
@@ -740,8 +734,7 @@ export interface WatchRun {
  * is read from the watch's state.
  */
 export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun = {}): RoutePage {
-  const lastRun = run.lastRun ?? lastWatchRun();
-  const unread = run.unread ?? unreadSourcesAt(dataset, lastRun);
+  const watch = readWatchRun(dataset, run);
   const { country, route } = address;
   const notice = audienceNotice(dataset);
   const about = printedNotices(dataset, route);
@@ -753,7 +746,7 @@ export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun
   const rules = ruleCriteria(dataset, route);
   // The footer counts every unread source a reader is looking at (s11); the
   // sentence under the scope heading speaks for this page's own (s23, F3).
-  const missed = ownUnread(dataset, route, unread).length;
+  const missed = ownUnread(dataset, route, watch.unread).length;
   // One page, one memory of which abbreviations it has already expanded. The
   // heading claims the section symbol before any citation can: it is where the
   // page states its own name, and a German route's name carries "§" whether
@@ -837,7 +830,7 @@ ${neighbours(country, route, seen)}
   </aside>
   </div>
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset, lastRun, unread), {
+  ${siteFooter(navCountries(dataset), footerFacts(dataset, watch), {
     countryPath: countryPath(country), current: "true", jsonPath,
     checkPath: `/?country=${country.code.toLowerCase()}`,
   })}
@@ -863,8 +856,8 @@ ${analyticsBeacon()}`;
 }
 
 /** Every route page this dataset produces. 23 at launch. */
-export function routePages(dataset: Dataset, lastRun?: string, unread?: UnreadSource[]): RoutePage[] {
-  return routeAddresses(dataset).map((a) => routePage(dataset, a, { lastRun, unread }));
+export function routePages(dataset: Dataset, run: WatchRun = {}): RoutePage[] {
+  return routeAddresses(dataset).map((a) => routePage(dataset, a, run));
 }
 
 

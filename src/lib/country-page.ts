@@ -4,7 +4,7 @@
 // disagree about what two is called (Standards review, 2026-09-08).
 import {
   countedWords, phraseOf, phraseAtStartOf, datasetMeta, isScored, joinAnd, scopeLine,
-  type Country, type Dataset, type Route, type UnreadSource,
+  type Country, type Dataset, type Route,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
@@ -20,7 +20,7 @@ import {
 import { readOn } from "./copy/quotes.js";
 import {
   DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, OWNER, REPO_DATA, analyticsBeacon,
-  SPONSOR_URL, headMeta, lastWatchRun, readRange, unreadSourcesAt, url,
+  SPONSOR_URL, headMeta, readRange, readWatchRun, url, type WatchRun,
 } from "./site.js";
 import { countryPath, countrySlug, routePath } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
@@ -256,16 +256,13 @@ export function countryPages(dataset: Dataset): CountryPage[] {
  * typed into a page. It lives here because it needs the dataset and the footer
  * itself must not: `identity.ts` knows markup, not data.
  *
- * `unread` defaults to the live answer rather than being walked per page: the
- * walk behind it is cached on the dataset in the data package, and the route
- * page — the one caller that renders it twice, in its own sentence and in the
- * footer — passes the answer it already has (Standards review, 2026-09-15).
+ * What `run` leaves out is read from the watch's state rather than being
+ * walked per page: the walk behind it is cached on the dataset in the data
+ * package, and the route page — the one caller that renders it twice, in its
+ * own sentence and in the footer — passes the answer it already has.
  */
-export function footerFacts(
-  dataset: Dataset,
-  lastRun: string = lastWatchRun(),
-  unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
-): FooterFacts {
+export function footerFacts(dataset: Dataset, run: WatchRun = {}): FooterFacts {
+  const { lastRun, unread } = readWatchRun(dataset, run);
   // Once: it walks every route's provenance, and the year comes from the same
   // answer rather than a second walk (Standards review, 2026-09-08).
   const read = readRange(dataset);

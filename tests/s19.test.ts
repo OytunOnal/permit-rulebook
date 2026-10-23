@@ -286,7 +286,7 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
     const address = countryAddresses(ds).find((a) => a.country.code === "FR")!;
     const page = countryPage(ds, address);
     expect(page.html).toContain(`<h1>${esc(countryHeadline(phraseAtStartOf("FR"), 7, 5))}`);
-    const researcher = routePages(ds, "2026-09-16").find((p) => p.path === "/france/talent-researcher");
+    const researcher = routePages(ds, { lastRun: "2026-09-16" }).find((p) => p.path === "/france/talent-researcher");
     expect(researcher).toBeDefined();
     expect(textOf(researcher!.html))
       .toContain(scopeWords("rules-quoted-nothing-asked", { stated: 0, noted: 0 }, { reader: "not-answered" }));

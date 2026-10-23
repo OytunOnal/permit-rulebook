@@ -1,7 +1,7 @@
 // @level presentation
 import {
   phraseOf, countryVocabulary, isScored, proseProvenance, routeProvenance, unreadClause,
-  type Dataset, type UnreadSource,
+  type Dataset,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { contentSecurityPolicy } from "./csp.js";
@@ -15,8 +15,8 @@ import { PRODUCT_NAME, TAGLINE, datasetDay } from "./copy/frame.js";
 import { WRONG_DOOR_LABEL } from "./copy/feedback.js";
 import { readOn } from "./copy/quotes.js";
 import {
-  DATA_LICENCE_FULL, REPO_DATA, absolute, analyticsBeacon, headMeta, lastWatchRun, readRange, unreadSourcesAt,
-  url,
+  DATA_LICENCE_FULL, REPO_DATA, absolute, analyticsBeacon, headMeta, readRange, readWatchRun, url,
+  type WatchRun,
 } from "./site.js";
 import { DATA_PATH, FEEDBACK_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
@@ -78,17 +78,14 @@ export function routeCounts(dataset: Dataset): RouteCounts {
 }
 
 /**
- * `lastRun` and `unread` are the two facts on this page that move without a
- * person: the day the watch last ran, and the sources it could not read that
- * day. They are arguments for the reason the route page's `lastRun` is one —
- * a render has to be askable about a run other than today's — and they default
- * to the live state, which is what the build passes.
+ * `run.lastRun` and `run.unread` are the two facts on this page that move
+ * without a person: the day the watch last ran, and the sources it could not
+ * read that day. They are an argument for the reason the route page's run is
+ * one — a render has to be askable about a run other than today's — and what
+ * `run` leaves out is read from the live state, which is what the build does.
  */
-export function dataPage(
-  dataset: Dataset,
-  lastRun: string = lastWatchRun(),
-  unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
-): DataPage {
+export function dataPage(dataset: Dataset, run: WatchRun = {}): DataPage {
+  const { lastRun, unread } = readWatchRun(dataset, run);
   // The page carries two read dates, and they are not the same date.
   //
   // `read` is the dataset's newest read date — the newest quote date ANYWHERE
@@ -250,7 +247,7 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
     </section>
   </main>
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset, lastRun, unread))}
+  ${siteFooter(navCountries(dataset), footerFacts(dataset, { lastRun, unread }))}
 
 </div>
 <script>${MENU_SCRIPT}</script>

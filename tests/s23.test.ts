@@ -296,7 +296,7 @@ describe("F3 — the route page's liveness line names its own source or stays si
   });
 
   it("over every route: only the pages citing the unread source carry the clause", () => {
-    const pages = routePages(ds, run, [own]);
+    const pages = routePages(ds, { lastRun: run, unread: [own] });
     const citing = new Set(routeAddresses(ds).filter((a) => routeSourceUrls(ds, a.route).has(ownUrl)).map((a) => a.path));
     expect(citing.size).toBeGreaterThan(0);
     expect(citing.size).toBeLessThan(pages.length);
@@ -305,7 +305,7 @@ describe("F3 — the route page's liveness line names its own source or stays si
   });
 
   it("/data/ keeps s11's sentence", () => {
-    const html = dataPage(ds, watchState.last_run!, [{ ...own, id: "bamf-hochschulabsolvent" }]).html;
+    const html = dataPage(ds, { lastRun: watchState.last_run!, unread: [{ ...own, id: "bamf-hochschulabsolvent" }] }).html;
     expect(textOf(html)).toContain("A German source did not answer on the last run; the values it backs were read on 2026-09-07");
   });
 });

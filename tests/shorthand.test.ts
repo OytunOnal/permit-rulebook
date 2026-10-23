@@ -93,7 +93,7 @@ function findingsOn(page: Page): string[] {
 
 /** Every page the build draws from the shipped dataset with no reader on it. */
 const READERLESS: Page[] = [
-  ...routePages(ds, "1970-01-01", []).map((p) => markupPage(p.path, p.html)),
+  ...routePages(ds, { lastRun: "1970-01-01", unread: [] }).map((p) => markupPage(p.path, p.html)),
   ...countryPages(ds).map((p) => markupPage(p.path, p.html)),
   ...deriveQuestions(ds).map((question) => markupPage(`question ${question.field}`, questionCardHtml({
     dataset: ds, question, answers: {}, asked: [], editing: null, total: 10, glossary: new Set(),

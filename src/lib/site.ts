@@ -274,3 +274,18 @@ export const watchState: WatchState = watchStateJson as WatchState;
  */
 export const unreadSourcesAt = (dataset: Dataset, run: string): UnreadSource[] =>
   run === lastWatchRun() ? unreadSources(dataset, watchState) : [];
+
+/** The watch's last run as a page prints it: its day, and the sources it could not read. */
+export interface WatchRun {
+  lastRun?: string;
+  unread?: UnreadSource[];
+}
+
+/**
+ * A watch run with whatever it leaves out read from the watch's state: the day
+ * of its last run, and the sources that day's pass could not read.
+ */
+export function readWatchRun(dataset: Dataset, run: WatchRun = {}): Required<WatchRun> {
+  const lastRun = run.lastRun ?? lastWatchRun();
+  return { lastRun, unread: run.unread ?? unreadSourcesAt(dataset, lastRun) };
+}

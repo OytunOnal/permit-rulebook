@@ -11,7 +11,7 @@ import { NO_FIGURE } from "../src/lib/copy/route-page.js";
 import { QUOTED_ONLY_HEADING, countryHeadline } from "../src/lib/copy/country-page.js";
 
 const ds = dataset as unknown as Dataset;
-const pages = routePages(ds, "2026-09-10");
+const pages = routePages(ds, { lastRun: "2026-09-10" });
 
 const textOf = (html: string): string =>
   html.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<style[\s\S]*?<\/style>/g, " ")
