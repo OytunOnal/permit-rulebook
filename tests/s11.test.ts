@@ -224,7 +224,8 @@ describe("the state this site is built against", () => {
    * words themselves, on lists they chose. The route sentence is asked with
    * the page's own count (s23, F3) and the footer with the whole list (s11).
    */
-  function everySurfaceSays(run: string, unread: UnreadSource[], routes: RoutePage[], data: string): void {
+  function everySurfaceSays(watchRun: { run: string; unread: UnreadSource[] }, routes: RoutePage[], data: string): void {
+    const { run, unread } = watchRun;
     const day = unread.length
       ? `an unread day, ${run}: ${unread.map((u) => u.id).join(", ")}`
       : `a clean day, ${run}`;
@@ -249,14 +250,14 @@ describe("the state this site is built against", () => {
    */
   it("every surface says what the state says today — clean or not", () => {
     const run = lastWatchRun();
-    everySurfaceSays(run, unreadSourcesAt(ds, run), routePages(ds), dataPage(ds).html);
+    everySurfaceSays({ run, unread: unreadSourcesAt(ds, run) }, routePages(ds), dataPage(ds).html);
   });
 
   it("a fabricated clean run: the plain thing on every surface", () => {
     const run = watchState.last_run!;
     const unread = unreadSources(ds, { ...watchState, unread: [] });
     expect(unread).toEqual([]);
-    everySurfaceSays(run, unread, routePages(ds, run, unread), dataPage(ds, run, unread).html);
+    everySurfaceSays({ run, unread }, routePages(ds, run, unread), dataPage(ds, run, unread).html);
   });
 
   /**
@@ -270,7 +271,7 @@ describe("the state this site is built against", () => {
     const unread = unreadSources(ds, { ...watchState, unread: [{ id: "bamf-hochschulabsolvent", url: BAMF }] });
     expect(unread.map((u) => [u.id, u.countries])).toEqual([["bamf-hochschulabsolvent", ["DE"]]]);
     const since = watchState.entries["bamf-hochschulabsolvent"]!.retrieved_at;
-    everySurfaceSays(run, unread, routePages(ds, run, unread), dataPage(ds, run, unread).html);
+    everySurfaceSays({ run, unread }, routePages(ds, run, unread), dataPage(ds, run, unread).html);
     expect(readerSees(dataPage(ds, run, unread).html)).toContain(
       `A German source did not answer on the last run; the values it backs were read on ${since}.`);
     expect(readerSees(siteFooter(navCountries(ds), footerFacts(ds, run, unread))))

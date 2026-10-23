@@ -398,9 +398,16 @@ const readResult = async (page: BrowserPage, verdict: Verdict): Promise<Result> 
   sent: page.requests(),
 });
 
-/** Question 3 answered France by the button, then the given answers, one tap
+/** A walk's taps after France, and the reader its whole record makes. */
+interface Walk {
+  taps: string[];
+  reader: Profile;
+}
+
+/** Question 3 answered France by the button, then the walk's answers, one tap
  * each, to the results the reader's whole record composes. */
-const walkFrom = async (page: BrowserPage, base: string, taps: string[], reader: Profile): Promise<Result> => {
+const walkFrom = async (page: BrowserPage, base: string, walk: Walk): Promise<Result> => {
+  const { taps, reader } = walk;
   await page.goto(base, 300);
   await page.evaluate(seed({ destination: "all", situation: "research" }));
   // The walk's own requests: from the load that draws question 3 on.
@@ -431,10 +438,10 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => ({
-          nothingOpen: await walkFrom(page, server.url("/"), ["none", "TR", "no", "no"], WALKED_TO_NOTHING_OPEN),
-          opened: await walkFrom(
-            page, server.url("/"), ["degree", "TR", "recognized", "no", "no", "a1", "band_1"], WALKED_TO_A_GERMAN_ROUTE,
-          ),
+          nothingOpen: await walkFrom(page, server.url("/"), { taps: ["none", "TR", "no", "no"], reader: WALKED_TO_NOTHING_OPEN }),
+          opened: await walkFrom(page, server.url("/"), {
+            taps: ["degree", "TR", "recognized", "no", "no", "a1", "band_1"], reader: WALKED_TO_A_GERMAN_ROUTE,
+          }),
         }), { viewport, mobile, network: true }) as { nothingOpen: Result; opened: Result };
 
         const { nothingOpen, opened } = seen;

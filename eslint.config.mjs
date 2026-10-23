@@ -156,10 +156,6 @@ export const lintExceptions = [
     until: "1.2.3",
   },
   { file: "tests/carry-assets/live-site-over-http.test.ts", rules: [FILE_LENGTH, TEST_FUNCTION_LENGTH], issue: 199, until: "1.2.3" },
-  { file: "scripts/render-assets.mjs", rules: [PARAMETERS], issue: 199, until: "1.2.3" },
-  { file: "tests/s11.test.ts", rules: [PARAMETERS], issue: 199, until: "1.2.3" },
-  { file: "tests/s26.test.ts", rules: [PARAMETERS], issue: 199, until: "1.2.3" },
-  { file: "tests/s37.test.ts", rules: [PARAMETERS], issue: 199, until: "1.2.3" },
 ];
 
 /** An entry's rules off for its file, and for the scripts the processor lifts out of a page. */

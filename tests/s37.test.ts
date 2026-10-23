@@ -219,6 +219,12 @@ interface Walked {
 const topAfter = (c: Change) =>
   c.restart ? c.answers : (c.opened === "live" ? 0 : c.opened) + c.walked + c.answers;
 
+/** The change two tabs make to the record, and the Back tapped after it. */
+interface BackAfterChange {
+  change: Change;
+  gesture: string;
+}
+
 /**
  * Walk `change` — tab A, then tab B on the record the two share, then a
  * reload in tab A — and tap `gesture` in tab A for as long as it keeps the tab
@@ -226,7 +232,7 @@ const topAfter = (c: Change) =>
  * taps than the two tabs made screens, so a Back that never ends still does.
  */
 async function changedThenBack(
-  page: BrowserPage & Tabs, url: (path: string) => string, change: Change, gesture: string,
+  page: BrowserPage & Tabs, url: (path: string) => string, { change, gesture }: BackAfterChange,
 ): Promise<Walked> {
   const a = walker(page, url);
   const walked = change.opened === "live" ? await a.live(change.walked) : [await a.openFromOutside(change.opened)];
@@ -430,7 +436,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser((page: BrowserPage & Tabs) =>
-          changedThenBack(page, server.url, change, SCREEN_BACK), WIDE) as Walked;
+          changedThenBack(page, server.url, { change, gesture: SCREEN_BACK }), WIDE) as Walked;
         expectScreenBackWalksTheList(seen, change);
       } finally {
         server.close();
@@ -451,7 +457,7 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser((page: BrowserPage & Tabs) =>
-        changedThenBack(page, server.url, change, SCREEN_BACK), WIDE) as Walked;
+        changedThenBack(page, server.url, { change, gesture: SCREEN_BACK }), WIDE) as Walked;
       expectScreenBackWalksTheList(seen, change);
     } finally {
       server.close();
@@ -485,8 +491,8 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage & Tabs) => ({
-          screen: await changedThenBack(page, server.url, change, SCREEN_BACK),
-          browser: await changedThenBack(page, server.url, change, BROWSER_BACK),
+          screen: await changedThenBack(page, server.url, { change, gesture: SCREEN_BACK }),
+          browser: await changedThenBack(page, server.url, { change, gesture: BROWSER_BACK }),
         }), PHONE) as Record<"screen" | "browser", Walked>;
 
         expectScreenBackWalksTheList(seen.screen, change);

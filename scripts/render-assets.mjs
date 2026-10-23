@@ -44,7 +44,9 @@ const ICON_SIZES = [16, 32, 64, 96, 180];
 const ICO_SIZES = [16, 32, 64];
 const SIDECAR = "social-card.json";
 
-function shoot(html, width, height, out) {
+/** The PNG of `html` drawn at `size` (a width and a height), written to `out`. */
+function shoot(html, size, out) {
+  const { width, height } = size;
   const dir = join(tmpdir(), `permit-rulebook-assets-${process.pid}`);
   mkdirSync(dir, { recursive: true });
   const page = join(dir, "page.html");
@@ -154,7 +156,7 @@ async function main() {
   }
   writeFileSync(join(publicDir, "favicon.ico"), ico(images));
 
-  shoot(socialCardHtml(facts, tokens), CARD.width, CARD.height, join(publicDir, "social-card.png"));
+  shoot(socialCardHtml(facts, tokens), CARD, join(publicDir, "social-card.png"));
   writeFileSync(join(publicDir, SIDECAR), `${JSON.stringify(facts, null, 2)}\n`, "utf8");
 
   console.log(JSON.stringify({
