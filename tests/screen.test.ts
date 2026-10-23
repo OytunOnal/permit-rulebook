@@ -118,7 +118,7 @@ const pick = <T>(rand: () => number, items: readonly T[]): T => items[Math.floor
  */
 function gestureOn(rand: () => number, step: InterviewStep): Gesture {
   const { asked, editing } = step.state;
-  const anywhere: Gesture[] = [{ kind: "restarted" }, { kind: "browserMoved", field: null, ontoFirstScreen: false }];
+  const anywhere: Gesture[] = [{ kind: "restarted", search: "" }, { kind: "browserMoved", field: null, ontoFirstScreen: false }];
   if (asked.length > 0) {
     anywhere.push({ kind: "editedRow", field: pick(rand, asked) });
     anywhere.push({ kind: "browserMoved", field: pick(rand, asked), ontoFirstScreen: rand() < 0.3 });
@@ -157,7 +157,7 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
       }
       // And from wherever that walk ended — the verdict included — both ways
       // back into the interview land on a screen that claims nothing.
-      const backs: Gesture[] = [{ kind: "restarted" }];
+      const backs: Gesture[] = [{ kind: "restarted", search: "" }];
       if (step.state.asked.length > 0) backs.push({ kind: "editedRow", field: step.state.asked[0] });
       for (const back of backs)
         expect(claimOn(after(step.state, back)).claims, `${back.kind} after ${trail.join(" → ")}`).toBe(false);
@@ -167,7 +167,7 @@ describe("invariant: a screen that has compared nothing claims nothing (B4)", ()
   it("\"Start over\" starts over regardless of what the caller believes", () => {
     // The reset does not take a count on trust: nothing was answered, so the
     // long promise is what a first-time reader gets, every time.
-    const restarted = after(loaded(DUTCH_OFFER).state, { kind: "restarted" });
+    const restarted = after(loaded(DUTCH_OFFER).state, { kind: "restarted", search: "" });
     expect(restarted.screen).toMatchObject({ kind: "question", started: false });
     expect(mastheadOn(restarted).subline).toBe(INTRO_SUBLINE);
   });

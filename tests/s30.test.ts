@@ -320,7 +320,7 @@ describe.skipIf(skipped !== null)("what does not change", () => {
   }, 180000);
 });
 
-describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back under the first question, the page stays", () => {
+describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back under the first question, the page to its top", () => {
   /** A reader four answers in, the way s20 seeds one: their first screen
    * carries the resumed line, and Start over with it. */
   const halfDone = { destination: "fr", citizenship: "TR", situation: "offer", situation_country: "fr" };
@@ -353,12 +353,12 @@ describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back u
       expect(seen.before.cardTop!).toBeGreaterThan(0);
       expect(seen.before.cardTop!).toBeLessThan(seen.before.viewport);
       // Nothing declared any more: the seed is down, the question comes first
-      // again (F8), and the page stands where the reader left it — s20's
-      // reveal, the card's top being on the screen.
+      // again (F8), and the page opens at its top, as a first visit does (#56).
+      expect(seen.before.scrollY, "precondition: the reader read on").toBeGreaterThan(0);
       expect(seen.reset.answered).toBe(false);
       expect(seen.reset.cardTop!, "the ledger did not go back under the question").toBeLessThan(seen.reset.declTop);
       expect(seen.reset.question).not.toBe(seen.restored.question);
-      expect(seen.reset.scrollY, "Start over moved a page the reader could already see").toBe(seen.before.scrollY);
+      expect(seen.reset.scrollY, "Start over left the page mid-way").toBe(0);
     } finally {
       server.close();
     }
