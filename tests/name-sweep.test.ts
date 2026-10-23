@@ -21,10 +21,7 @@ import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "../src/lib/copy/frame.js";
  *     unedited by instruction; they record what happened under the old name;
  *   · `GLOSSARY.md` (named `CONTEXT.md` until 2026-10-17) and everything
  *     under `docs/spine/**` are the project's own record of itself, not
- *     strings a reader of the product ever sees — which is where the Turkish
- *     notes of the 2026-08-26 design conversation now live
- *     (`docs/spine/notes-pre-genesis.md`), pre-history rather than product
- *     copy (human, 2026-09-08);
+ *     strings a reader of the product ever sees;
  *   · git history itself, which is the point of having it.
  *
  * Everything else — every page, every library, every README, both package
