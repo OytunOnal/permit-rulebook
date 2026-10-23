@@ -9,6 +9,7 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "test": "vitest run",
+    "lint": "eslint src scripts tests",
     "assets": "node scripts/render-assets.mjs",
     "assets:check": "node scripts/render-assets.mjs --check",
     "measure:taps": "node scripts/measure-taps.mjs",
