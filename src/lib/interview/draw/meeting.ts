@@ -98,16 +98,17 @@ function showCameFrom(page: InterviewPage): boolean {
 
 /**
  * Where a verdict leaves the reader: the card they came from, when they came
- * from one; otherwise, after a gesture, the masthead whose headline the
- * verdict just wrote, unless the reader was already on a result. The headline
- * takes the focus — it is what the live region just read out — out of the
- * tab order and without a second scroll, on every gesture-drawn verdict.
+ * from one; otherwise, after a gesture, the reveal of the masthead whose
+ * headline the verdict just wrote, unless it was drawn over a result the
+ * reader is still reading. The headline takes the focus — it is what the live
+ * region just read out — out of the tab order and without a second scroll, on
+ * every gesture-drawn verdict.
  */
-export function meetVerdict(page: InterviewPage, wasResult: boolean, meeting: Meeting): void {
+export function meetVerdict(page: InterviewPage, meeting: Meeting, drawnOver: "question" | "verdict"): void {
   if (showCameFrom(page)) return;
   if (meeting !== "reveal-masthead") return;
   const { masthead, headline } = page.els;
-  if (!wasResult) reveal(page, masthead);
+  if (drawnOver === "question") reveal(page, masthead);
   headline.tabIndex = -1;
   headline.focus({ preventScroll: true });
 }

@@ -254,17 +254,19 @@ describe("Back on a restored record", () => {
    * step back in place first. Each Back from its own fresh walk.
    */
   it("after an outside entrance, the two Backs agree on every screen reached by answering", () => {
-    const walk = (inPlaceFirst: boolean, goBack: (tab: InterviewTab) => Where) => {
+    /** Answers on `answerOn` — the screen the entrance opened on, or the one a Back in place
+     * showed after it — then taps `goBack`. */
+    const walk = (answerOn: "entrance" | "back-in-place", goBack: (tab: InterviewTab) => Where) => {
       const tab = new InterviewTab(newStore());
       let answeredOn = tab.openFromOutside(3);
-      if (inPlaceFirst) answeredOn = tab.screenBack();
+      if (answerOn === "back-in-place") answeredOn = tab.screenBack();
       const answered = tab.answer();
       return { answeredOn, answered, back: goBack(tab) };
     };
-    expect(walk(false, SCREEN_BACK).answeredOn.question).toBe(asks(3));
-    expect(walk(true, SCREEN_BACK).answeredOn.question).toBe(asks(2));
-    for (const inPlaceFirst of [false, true]) {
-      const [screen, browser] = [walk(inPlaceFirst, SCREEN_BACK), walk(inPlaceFirst, BROWSER_BACK)];
+    expect(walk("entrance", SCREEN_BACK).answeredOn.question).toBe(asks(3));
+    expect(walk("back-in-place", SCREEN_BACK).answeredOn.question).toBe(asks(2));
+    for (const answerOn of ["entrance", "back-in-place"] as const) {
+      const [screen, browser] = [walk(answerOn, SCREEN_BACK), walk(answerOn, BROWSER_BACK)];
       expect(screen.answered.question).toBe(browser.answered.question);
       expect(screen.answered.question, "the answer did not move on").not.toBe(screen.answeredOn.question);
       for (const back of [screen.back, browser.back]) expect(back.path, "a Back left the site").toBe("/");

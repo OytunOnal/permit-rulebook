@@ -44,17 +44,18 @@ function wireQuestion(page: InterviewPage, q: Question, chosen: string | undefin
 
 /** Meets the reader at the question card just drawn: the scroll the step
  * asks for, the focus, and the beat. */
-function meetQuestion(page: InterviewPage, step: InterviewStep, longList: boolean): void {
+function meetQuestion(page: InterviewPage, step: InterviewStep): void {
   const { main } = page.els;
   const card = main.querySelector<HTMLElement>(".qcard");
   /** The card a gesture drew, as opposed to the one the first paint put in the box. */
   const gestureCard = step.meeting === "untouched" ? null : card;
   if (gestureCard) scrollToQuestion(page, gestureCard, step.meeting);
-  if (longList) {
+  // The box a long list is asked through, where the card drew one.
+  const search = main.querySelector<HTMLInputElement>("#cfilter");
+  if (search) {
     // Every render of a search question puts the caret in it with its text
     // selected, so a correction starts by replacing, not by prepending
     // (product-critique v0.7, F3).
-    const search = main.querySelector<HTMLInputElement>("#cfilter")!;
     search.focus({ preventScroll: true });
     search.select();
   } else if (gestureCard) {
@@ -99,5 +100,5 @@ export function renderQuestion(
   renderDeclaration(page, step, q.field);
   paint(main, cardHtml(page, step, { q, backTo }), () => wireQuestion(page, q, answers[q.field]));
   if (step.lines.resumed) lendRestartToResumedLine(page);
-  meetQuestion(page, step, isLongList(q));
+  meetQuestion(page, step);
 }

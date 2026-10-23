@@ -35,7 +35,7 @@ export function renderResults(page: InterviewPage, step: InterviewStep): void {
   const { app, main } = page.els;
   // A verdict that replaces a question is brought to its headline; one drawn
   // over a result the reader is still reading is not moved under them (s20).
-  const wasResult = app.dataset.state === "results";
+  const drawnOver = app.dataset.state === "results" ? "verdict" : "question";
   // The verdict writes the box itself and hangs its own listeners, so what
   // `paint` remembers about the box stops being true here.
   unwire(main);
@@ -48,5 +48,5 @@ export function renderResults(page: InterviewPage, step: InterviewStep): void {
   main.innerHTML = lineAboveVerdictHtml(page, step, verdict) + verdictHtml(verdict);
   if (step.lines.resumed) lendRestartToResumedLine(page);
   announce(verdict.action.masthead.announced);
-  meetVerdict(page, wasResult, step.meeting);
+  meetVerdict(page, step.meeting, drawnOver);
 }
