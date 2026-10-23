@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fieldOptions, matchOptions, remainingQuestions, type Dataset } from "permit-rulebook-data";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
+import { matchesHighlightedLine } from "../src/lib/copy/interview.js";
 import { QUERY_MAX_LENGTH, countrySearchOf, type SearchView } from "../src/lib/country-search/index.js";
 import { questionCardHtml } from "../src/lib/question.js";
 
@@ -136,7 +137,7 @@ describe("the search's controller, through countrySearchOf", () => {
     expect(rowsOf(view).map((row) => row.value)).toEqual(["NE", "NG"]);
     expect(highlightedIn(view)).toBe("NE");
     expect(view.expanded).toBe(true);
-    expect(view.status).toMatch(/^2\b/);
+    expect(view.status).toBe(matchesHighlightedLine(2, countries.find((o) => o.value === "NE")!.label));
     expect(commits).toEqual([]);
   });
 

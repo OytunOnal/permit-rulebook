@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  phraseAtStartOf, phraseOf, deriveBands, evaluate, fillRouteSlots, remainingQuestions, subjectOf,
+  phraseAtStartOf, phraseOf, deriveBands, evaluate, fillRouteSlots, remainingQuestions, shortLabelOf, subjectOf,
 } from "permit-rulebook-data";
 import { arrivalOf, type ArrivalFacts } from "../src/lib/scope.js";
 import { arrivalLineHtml } from "../src/lib/arrival-line.js";
@@ -248,10 +248,14 @@ describe("the arrival line says what actually happens next", () => {
         .toBe(true);
       expect(text, def.id).not.toMatch(/_/);
     }
-    // The regression itself, named: "IT work" lower-cased is "it work".
-    const itWork = lineText({ route: null, country: "DE", rescoped: true, kept: ["occupation_it"], asks: 0 });
-    expect(itWork).toContain("whether your work is in information technology");
-    expect(itWork).not.toContain("it work");
+    // A name stands in the case the dataset wrote it: the subject as written, and never the
+    // short label lower-cased, which turns an acronym into a fragment.
+    const field = "occupation_it";
+    const short = shortLabelOf(ds, field);
+    expect(short, "precondition: the short label has a capital to lose").not.toBe(short.toLowerCase());
+    const itWork = lineText({ route: null, country: "DE", rescoped: true, kept: [field], asks: 0 });
+    expect(itWork).toContain(subjectOf(ds, field));
+    expect(itWork).not.toContain(short.toLowerCase());
   });
 
   it("is built the way the ruling wrote it", () => {
