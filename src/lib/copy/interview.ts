@@ -135,6 +135,14 @@ export const setAsideLead = (count: number): string =>
 export const setAsideLineHtml = (leadHtml: string, namesHtml: string): string => `${leadHtml} ${namesHtml}.`;
 
 /**
+ * What the passport picker just committed, on the question after it: the
+ * question's short label and the row's own name, both already markup, the
+ * name in bold.
+ */
+export const justRecordedLineHtml = (labelHtml: string, answerHtml: string): string =>
+  `${labelHtml} recorded: <b>${answerHtml}</b>`;
+
+/**
  * The mark under a situation answer no route the checker asks about in the
  * chosen country takes (s19).
  *

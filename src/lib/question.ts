@@ -6,7 +6,7 @@ import {
 import {
   ASKED_FOR, ASKED_FOR_COUNTS_JOIN, EDIT_LINE, INTRO_HEADLINE, INTRO_SUBLINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
   RETURNING_LINE, SHORT_SUBLINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, backToLine,
-  keepNextLine, keepToResultLine, questionCounter, resumedLine, setAsideLead, setAsideLineHtml,
+  justRecordedLineHtml, keepNextLine, keepToResultLine, questionCounter, resumedLine, setAsideLead, setAsideLineHtml,
 } from "./copy/interview.js";
 import { countryOf } from "./countries.js";
 import { type Glossary, glossSection, glossed } from "./gloss.js";
@@ -148,7 +148,8 @@ function linesAboveQuestionHtml(screen: QuestionScreen): string {
   const justRecorded = screen.justRecorded ?? null;
   return `${screen.resumed ? resumedLineHtml(screen.resumed) : ""}
           ${screen.arrival ?? ""}
-          ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(dataset, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
+          ${justRecorded ? `<p class="recorded" role="status">${
+            justRecordedLineHtml(esc(shortLabelOf(dataset, justRecorded.field)), esc(justRecorded.label))}</p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${
             esc(editing ? EDIT_LINE : questionCounter(asked.length + 1, total))
           }</div>`;
