@@ -14,9 +14,9 @@ import { liveAnswerFor, liveSiteInMemory } from "./live-site-in-memory.js";
  *
  * Why the step exists is written once in `scripts/carry-assets/carry.mjs`'s
  * own header, and its ceilings in `live-deploy/ceilings.mjs` beside it. That
- * it never fails is the promise the deploy rests on. What it carries, and from where, is
- * `carry-takes-attested-bytes-from-our-origin.test.ts`'s; what the live site
- * over HTTP does is `live-site-over-http.test.ts`'s.
+ * it never fails is the promise the deploy rests on. What it carries, and from
+ * where, is the other `carry-*.test.ts` files'; what the live site over HTTP
+ * does is the `live-site-over-http*.test.ts` files'.
  *
  * Every case runs the flow in this process (`flowRunInProcess`).
  */
@@ -31,8 +31,8 @@ const lastLine = (out: string): string => out.trim().split("\n").at(-1) ?? "";
  * The failures it survives — a `dist/` it cannot write into, a value that
  * would start a line of its own — and the ceilings that bound what a page may
  * cost: how large a page may be, how much of the log it may fill, and how many
- * requests it may spend. What an answer over HTTP cannot make it do is
- * `live-site-over-http.test.ts`'s.
+ * requests it may spend. What an answer over HTTP cannot make it do is the
+ * `live-site-over-http*.test.ts` files'.
  */
 describe("the carrier cannot fail the deploy", () => {
   it("prints nothing that can become a line of its own in the deploy log", async () => {

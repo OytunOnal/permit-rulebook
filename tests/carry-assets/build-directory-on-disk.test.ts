@@ -7,7 +7,7 @@ import { CSS, CSS_NAME, JS, JS_NAME, distHolding, sweepTemporary, tempDirectory 
 /**
  * The build directory over a real `dist/`, in a throwaway folder per case: the
  * disk work the carry's flow hands to its port. What the flow does with each
- * answer is the two `carry-*.test.ts` files', against a build directory in
+ * answer is the `carry-*.test.ts` files', against a build directory in
  * memory.
  */
 
