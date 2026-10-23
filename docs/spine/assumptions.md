@@ -78,6 +78,10 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   in "No open routes" at a glance, while "0 routes look open" reads as a
   figure to parse and sounds unsure (the human, real use of #167, 2026-10-23;
   issue #181). — `untested`
+- **A23 — a type error is caught in the edit that made it.** A `typecheck`
+  script builders run between edits, in their own worktree, catches a type
+  error before the green does (#218, retros of #110, #133, #151 and #208).
+  — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
