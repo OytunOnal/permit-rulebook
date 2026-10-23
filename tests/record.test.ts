@@ -111,9 +111,9 @@ describe("the record says whether it was finished (s22)", () => {
 
   it("is written by the save, and is what the pre-paint script will find", () => {
     const store = fakeStore();
-    saveRecord(store, answers, history, true);
+    saveRecord(store, { answers, history, done: true });
     expect(JSON.parse(store.getItem(STORAGE_KEY)!).done).toBe(true);
-    saveRecord(store, answers, history);
+    saveRecord(store, { answers, history });
     expect(JSON.parse(store.getItem(STORAGE_KEY)!).done).toBe(false);
   });
 });
@@ -142,7 +142,7 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
 
   it("what was answered is there again after the tab closes", () => {
     const store = fakeStore();
-    saveRecord(store, answers, history);
+    saveRecord(store, { answers, history });
     expect(loadRecord(store, known)).toEqual({ answers, history });
   });
 
@@ -150,7 +150,7 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
     // A shared or borrowed computer must not hand the next person a
     // stranger's salary: the stored record goes with the screen.
     const store = fakeStore();
-    saveRecord(store, answers, history);
+    saveRecord(store, { answers, history });
     clearRecord(store);
     expect(loadRecord(store, known)).toEqual({ answers: {}, history: [] });
     expect(store.size).toBe(0);
@@ -159,13 +159,13 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
   it("an interview with nothing answered leaves no record behind", () => {
     // An empty record still says someone was here.
     const store = fakeStore();
-    saveRecord(store, answers, history);
-    saveRecord(store, {}, []);
+    saveRecord(store, { answers, history });
+    saveRecord(store, { answers: {}, history: [] });
     expect(store.size).toBe(0);
   });
 
   it("a browser that refuses site data does not break the interview", () => {
-    expect(() => saveRecord(refusingStore, answers, history)).not.toThrow();
+    expect(() => saveRecord(refusingStore, { answers, history })).not.toThrow();
     expect(() => clearRecord(refusingStore)).not.toThrow();
     expect(loadRecord(refusingStore, known)).toEqual({ answers: {}, history: [] });
   });
@@ -173,7 +173,7 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
   it("no storage at all is the same as an empty one", () => {
     // `localStorage` can throw on the property access itself, so the page may
     // have nothing to hand over.
-    expect(() => saveRecord(null, answers, history)).not.toThrow();
+    expect(() => saveRecord(null, { answers, history })).not.toThrow();
     expect(loadRecord(null, known)).toEqual({ answers: {}, history: [] });
   });
 });
@@ -326,7 +326,7 @@ describe("the rename does not cost anybody their answers", () => {
     expect(loadRecord(store, known)).toEqual({ answers, history });
 
     // The first save puts it under the new key and takes the old one away.
-    saveRecord(store, answers, history);
+    saveRecord(store, { answers, history });
     expect(store.getItem(STORAGE_KEY)).toBe(serialize(answers, history));
     expect(store.getItem(LEGACY_STORAGE_KEY)).toBeNull();
     expect(store.size).toBe(1);

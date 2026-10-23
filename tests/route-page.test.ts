@@ -664,7 +664,7 @@ describe("a route page dates what it prints", () => {
       { id: "audience", url: notice.source.source_url, last_read: notice.source.retrieved_at, countries: [] },
     ];
     const prints = (html: string): boolean => html.includes(esc(notice.source.quote));
-    const pagesWith = routeAddresses(ds).map((a) => routePage(ds, a, "2026-09-30", unread));
+    const pagesWith = routeAddresses(ds).map((a) => routePage(ds, a, { lastRun: "2026-09-30", unread }));
     expect(pagesWith.filter((p) => prints(p.html)).length, "no route page prints the notice's sentence")
       .toBeGreaterThan(0);
     for (const page of pagesWith)

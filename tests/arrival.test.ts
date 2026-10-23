@@ -45,7 +45,7 @@ describe("an arrival that names a country re-scopes the record", () => {
 
   it("a German record arriving in France answers about France, keeping what it can", () => {
     const order = Object.keys(germanRecord);
-    const plan = arrivalPlan(ds, germanRecord, order, "fr");
+    const plan = arrivalPlan(ds, { answers: germanRecord, order }, "fr");
     expect(plan.changed).toBe(true);
     expect(plan.answers["destination"]).toBe("fr");
     // Facts France reads are hers still; facts only Germany reads are gone.
@@ -64,7 +64,7 @@ describe("an arrival that names a country re-scopes the record", () => {
 
   it("arriving where the record already is changes nothing at all", () => {
     const order = Object.keys(germanRecord);
-    const plan = arrivalPlan(ds, germanRecord, order, "de");
+    const plan = arrivalPlan(ds, { answers: germanRecord, order }, "de");
     expect(plan.changed).toBe(false);
     expect(plan.answers).toEqual(germanRecord);
   });
@@ -206,7 +206,7 @@ describe("the arrival line says what actually happens next", () => {
       for (const to of ds.countries) {
         if (from.code === to.code) continue;
         const record = fullRecordFor(from.code);
-        const plan = arrivalPlan(ds, record.answers, record.order, to.code.toLowerCase());
+        const plan = arrivalPlan(ds, record, to.code.toLowerCase());
         const where = `${from.code} → ${to.code}`;
 
         // Every named answer is one the reader still has on the record.
@@ -273,6 +273,6 @@ describe("the arrival line says what actually happens next", () => {
 
   it("an arrival that changes nothing is not an event", () => {
     const record = fullRecordFor("DE");
-    expect(arrivalPlan(ds, record.answers, record.order, "de").changed).toBe(false);
+    expect(arrivalPlan(ds, record, "de").changed).toBe(false);
   });
 });

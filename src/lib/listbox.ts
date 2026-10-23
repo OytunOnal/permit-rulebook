@@ -68,10 +68,8 @@ export interface KeyResult {
   commit?: FieldOption;
 }
 
-export function onKey(
-  options: FieldOption[], state: ListboxState, key: ListboxKey, limit = SHOWN_LIMIT,
-): KeyResult {
-  const rows = shownOptions(options, state, limit);
+export function onKey(options: FieldOption[], state: ListboxState, key: ListboxKey): KeyResult {
+  const rows = shownOptions(options, state);
   const last = rows.length - 1;
   switch (key) {
     case "ArrowDown":
@@ -90,7 +88,7 @@ export function onKey(
       // Closes, and commits nothing — the answer on file is untouched.
       return { state: { ...state, open: false, active: -1 } };
     case "Enter": {
-      const option = activeOption(options, state, limit);
+      const option = activeOption(options, state);
       return option ? { state, commit: option } : { state };
     }
   }

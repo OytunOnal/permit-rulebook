@@ -97,7 +97,7 @@ describe("3 — the 404 says it once", () => {
 
 describe("4 — the pencil never stands alone", () => {
   it("the row binds the pen to the last word of the answer with a space that cannot break", () => {
-    const html = declarationHtml(ds, { qualification: "degree" }, ["qualification"], null);
+    const html = declarationHtml(ds, { answers: { qualification: "degree" }, asked: ["qualification"], currentField: null });
     expect(html).toContain(`University degree&nbsp;<span class="pen" aria-hidden="true">✎</span>`);
     // The words are what they were: the label, then the pen.
     expect(textOf(html)).toContain("University degree ✎");
@@ -292,7 +292,7 @@ const ledgerRows = (): string => {
       ...fieldOptions(ds, field.id).map((o) => o.value),
       ...(field.type === "money_band" ? deriveBands(ds, field.id).map((b) => b.id) : []),
     ];
-    for (const value of values) rows.push(declarationHtml(ds, { [field.id]: value }, [field.id], null));
+    for (const value of values) rows.push(declarationHtml(ds, { answers: { [field.id]: value }, asked: [field.id], currentField: null }));
   }
   return rows.join("");
 };

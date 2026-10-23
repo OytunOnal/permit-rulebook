@@ -71,14 +71,15 @@ describe("s21 — question 3 marks a country the declared situation cannot use",
 
   it("one derivation, keyed either way: the mark under a country option is the s19 mark for that country and the declared situation", () => {
     const answers = { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "research" };
-    expect(markUnder(ds, SITUATION_COUNTRY_FIELD, "fr", answers)).toEqual(notScoredFor(ds, "fr", "research"));
-    expect(markUnder(ds, SITUATION_COUNTRY_FIELD, "de", answers)).toBeNull();
+    expect(markUnder(ds, { field: SITUATION_COUNTRY_FIELD, value: "fr" }, answers)).toEqual(notScoredFor(ds, "fr", "research"));
+    expect(markUnder(ds, { field: SITUATION_COUNTRY_FIELD, value: "de" }, answers)).toBeNull();
     // Question 2 keeps its own key: the option is the situation, the destination is declared.
-    expect(markUnder(ds, SITUATION_FIELD, "research", { [DESTINATION_FIELD]: "fr" })).toEqual(notScoredFor(ds, "fr", "research"));
+    expect(markUnder(ds, { field: SITUATION_FIELD, value: "research" }, { [DESTINATION_FIELD]: "fr" }))
+      .toEqual(notScoredFor(ds, "fr", "research"));
     // With no situation on the record there is nothing to mark a country against.
-    expect(markUnder(ds, SITUATION_COUNTRY_FIELD, "fr", { [DESTINATION_FIELD]: "all" })).toBeNull();
+    expect(markUnder(ds, { field: SITUATION_COUNTRY_FIELD, value: "fr" }, { [DESTINATION_FIELD]: "all" })).toBeNull();
     // And no other question is ever marked.
-    expect(markUnder(ds, "qualification", "degree", answers)).toBeNull();
+    expect(markUnder(ds, { field: "qualification", value: "degree" }, answers)).toBeNull();
   });
 
   it("over every situation × country, the mark is exactly where situationsAsked says", () => {

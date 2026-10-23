@@ -137,6 +137,14 @@ function description(country: Country): string {
  * the middle of one ("one route"), and a heading's line begins with it. */
 const sentenceCase = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
+/** What every card on one country index shares: the dataset, the country,
+ * and the page's memory of what it has already explained. */
+interface CountryList {
+  dataset: Dataset;
+  country: Country;
+  seen: Glossary;
+}
+
 /**
  * One card on a country index. The same card for a route the checker asks about
  * and one it does not — same name, same gist, same read date — minus the figure,
@@ -144,7 +152,8 @@ const sentenceCase = (s: string): string => s.charAt(0).toUpperCase() + s.slice(
  * figure's own "no salary threshold" on an unscored card would state as a fact
  * about the route something that is a fact about our dataset (s9).
  */
-function routeCard(dataset: Dataset, country: Country, route: Route, seen: Glossary): string {
+function routeCard(list: CountryList, route: Route): string {
+  const { dataset, country, seen } = list;
   const figure = isScored(route) ? routeFigure(dataset, route) : undefined;
   return `
       <li><a class="card tap-min" href="${escAttr(url(routePath(country, route)))}"><span class="name">${
@@ -174,7 +183,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   const headline = countryHeadline(phraseAtStartOf(country.code), country.routes.length, scored.length);
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
-  const seen: Glossary = new Set();
+  const list: CountryList = { dataset, country, seen: new Set() };
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -203,14 +212,14 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
 
   <main>
     <ul class="routes" aria-label="${escAttr(askedRoutesLabel(phraseOf(country.code)))}">${
-    scored.map((route) => routeCard(dataset, country, route, seen)).join("")}
+    scored.map((route) => routeCard(list, route)).join("")}
     </ul>${quotedOnly.length ? `
 
     <section class="quoted-only" aria-labelledby="quoted-only-h">
       <h2 class="label" id="quoted-only-h">${esc(QUOTED_ONLY_HEADING)}</h2>
       <p class="lede">${esc(notAskedLede(sentenceCase(countedWords(quotedOnly.length, "route")), quotedOnly.length))}</p>
       <ul class="routes" aria-label="${escAttr(notAskedRoutesLabel(phraseOf(country.code)))}">${
-    quotedOnly.map((route) => routeCard(dataset, country, route, seen)).join("")}
+    quotedOnly.map((route) => routeCard(list, route)).join("")}
       </ul>
     </section>` : ""}
 

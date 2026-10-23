@@ -313,7 +313,21 @@ function railRowText(entry: { routes: Route[]; label?: string }, route: Route): 
   return `${others.length} other routes here`;
 }
 
-function railHtml(dataset: Dataset, country: Country, route: Route, own: Gte): string {
+/**
+ * What every rule card on one route page shares: the dataset, the country and
+ * route the page is about, the page's memory of what it has already explained,
+ * and the free-movement notice the audience card may borrow its quote from.
+ */
+interface RulePage {
+  dataset: Dataset;
+  country: Country;
+  route: Route;
+  seen: Glossary;
+  notice?: Notice;
+}
+
+function railHtml(page: RulePage, own: Gte): string {
+  const { dataset, country, route } = page;
   const rows = railRows(country, route, own);
   if (rows.length < 2) return "";
   const lo = Math.min(...rows.map((r) => r.amount)) * 0.9;
@@ -454,9 +468,8 @@ function cardValues(c: Criterion, notice?: Notice): ProvenanceEntry[] {
   return values;
 }
 
-function ruleCard(
-  dataset: Dataset, country: Country, route: Route, c: Criterion, seen: Glossary, notice?: Notice,
-): string {
+function ruleCard(page: RulePage, c: Criterion): string {
+  const { dataset, seen, notice } = page;
   const values = cardValues(c, notice);
   const thresholds = gteUnder(c);
   const year = thresholds.length ? thresholds[0].threshold.retrieved_at.slice(0, 4) : "";
@@ -470,7 +483,7 @@ function ruleCard(
     esc(ruleKind(c))}${year ? ` · ${esc(year)}` : ""}</span></div>
         ${plainHtml(dataset, c, notice)}${
     thresholds.length ? `
-      ${railHtml(dataset, country, route, thresholds[0])}` : ""}${asks}${
+      ${railHtml(page, thresholds[0])}` : ""}${asks}${
     values.map((e) => `
       ${quoteBlock(e.value, { amount: e.amount, label: e.label }, seen)}`).join("")}
       </article>`;
@@ -708,23 +721,27 @@ function description(dataset: Dataset, country: Country, route: Route): string {
   return askedRouteDescription(possessiveAtStartOf(country.code), route.name, joinAnd(bits));
 }
 
+/** The watch's last run as a route page prints it: its day, and the sources it could not read. */
+export interface WatchRun {
+  lastRun?: string;
+  unread?: UnreadSource[];
+}
+
 /**
  * One route page.
  *
- * `lastRun` is the day the watch last re-read every source — the single value
- * on this page that moves without anyone editing anything. It is an argument
- * rather than a read inside the footer so that a render over a frozen dataset
- * is genuinely frozen: the fingerprint case hashed a page that changed by
- * itself, and failed the first build a data change ever reached through the
- * dispatch (CI 2026-09-09). What that run could not read moves with it, and is
- * read the same way, for the same reason.
+ * `run.lastRun` is the day the watch last re-read every source — the single
+ * value on this page that moves without anyone editing anything. It is an
+ * argument rather than a read inside the footer so that a render over a frozen
+ * dataset is genuinely frozen: the fingerprint case hashed a page that changed
+ * by itself, and failed the first build a data change ever reached through the
+ * dispatch (CI 2026-09-09). What that run could not read, `run.unread`, moves
+ * with it, and is read the same way, for the same reason. Either one left out
+ * is read from the watch's state.
  */
-export function routePage(
-  dataset: Dataset,
-  address: RouteAddress,
-  lastRun: string = lastWatchRun(),
-  unread: UnreadSource[] = unreadSourcesAt(dataset, lastRun),
-): RoutePage {
+export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun = {}): RoutePage {
+  const lastRun = run.lastRun ?? lastWatchRun();
+  const unread = run.unread ?? unreadSourcesAt(dataset, lastRun);
   const { country, route } = address;
   const notice = audienceNotice(dataset);
   const about = printedNotices(dataset, route);
@@ -745,6 +762,7 @@ export function routePage(
   // route's name is a cross-reference and keeps the short form.
   const seen: Glossary = new Set();
   const heading = glossSection(route.name, seen);
+  const cards: RulePage = { dataset, country, route, seen, notice };
 
   const head = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -798,7 +816,7 @@ ${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join(""
 
   <section class="rules" aria-labelledby="rules-h">
     <h2 class="visually-hidden" id="rules-h">The rules of this route</h2>${
-    rules.map((c) => ruleCard(dataset, country, route, c, seen, notice)).join("")}${
+    rules.map((c) => ruleCard(cards, c)).join("")}${
     statedBlocks(route, seen)}
   </section>
 
@@ -846,7 +864,7 @@ ${analyticsBeacon()}`;
 
 /** Every route page this dataset produces. 23 at launch. */
 export function routePages(dataset: Dataset, lastRun?: string, unread?: UnreadSource[]): RoutePage[] {
-  return routeAddresses(dataset).map((a) => routePage(dataset, a, lastRun, unread));
+  return routeAddresses(dataset).map((a) => routePage(dataset, a, { lastRun, unread }));
 }
 
 

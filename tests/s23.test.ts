@@ -271,7 +271,7 @@ describe("F3 — the route page's liveness line names its own source or stays si
   };
 
   it("a route whose own source went unread says so, and says the values still show their read day", () => {
-    const html = routePage(ds, address("de-chancenkarte"), run, [own]).html;
+    const html = routePage(ds, address("de-chancenkarte"), { lastRun: run, unread: [own] }).html;
     expect(textOf(html)).toContain(
       "a daily check re-reads every source; the last run did not reach one of this route's sources; "
       + "its values still show the day they were read.");
@@ -284,14 +284,14 @@ describe("F3 — the route page's liveness line names its own source or stays si
   });
 
   it("a route none of whose sources went unread prints the plain line, whatever went unread elsewhere", () => {
-    const html = routePage(ds, address("fr-talent-blue-card"), run, [own, other]).html;
+    const html = routePage(ds, address("fr-talent-blue-card"), { lastRun: run, unread: [own, other] }).html;
     expect(textOf(html)).toContain("a daily check re-reads every source. ");
     expect(textOf(html)).not.toContain("did not reach");
     expect(dailyCheck(0)).toBe("a daily check re-reads every source");
   });
 
   it("the footer's short form still counts every unread source the reader is looking at (s11)", () => {
-    const html = routePage(ds, address("fr-talent-blue-card"), run, [own, other]).html;
+    const html = routePage(ds, address("fr-talent-blue-card"), { lastRun: run, unread: [own, other] }).html;
     expect(textOf(html)).toContain(`re-read daily (last run ${run} · 2 sources unread)`);
   });
 

@@ -54,7 +54,7 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
   it("its scope line says quoted and dated, and that the checker does not ask about it", () => {
     const notAsked = scopeWords("rules-quoted-nothing-asked", { stated: 0, noted: 0 }, { reader: "not-answered" });
     for (const a of unscoredAddresses()) {
-      const text = textOf(routePage(ds, a, "2026-09-10").html);
+      const text = textOf(routePage(ds, a, { lastRun: "2026-09-10" }).html);
       expect(scopeLine(a.route, { reader: "not-answered" }), a.route.id).toBe(notAsked);
       expect(text, a.route.id).toContain(notAsked);
     }
@@ -62,7 +62,7 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
 
   it("says why, in our own words, under the heading and before any rule", () => {
     for (const a of unscoredAddresses()) {
-      const page = routePage(ds, a, "2026-09-10");
+      const page = routePage(ds, a, { lastRun: "2026-09-10" });
       const reason = a.route.scope.reason;
       expect(textOf(page.html), a.route.id).toContain(reason.replace(/\s+/g, " "));
       // Before the first thing the authority says, not after the last.
@@ -78,7 +78,7 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
 
   it("every rule on it is quoted, sourced and dated", () => {
     for (const a of unscoredAddresses()) {
-      const text = textOf(routePage(ds, a, "2026-09-10").html);
+      const text = textOf(routePage(ds, a, { lastRun: "2026-09-10" }).html);
       const quoted = routeStatements(a.route).filter((s) => s.source);
       expect(quoted.length, a.route.id).toBeGreaterThan(0);
       for (const s of quoted) {
@@ -96,7 +96,7 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
    */
   it("nothing on it invites a verdict on this route", () => {
     for (const a of unscoredAddresses()) {
-      const html = routePage(ds, a, "2026-09-10").html;
+      const html = routePage(ds, a, { lastRun: "2026-09-10" }).html;
       const text = textOf(html);
       expect(html, a.route.id).not.toContain(`?route=${a.route.id}`);
       expect(text, a.route.id).not.toContain("Where do you stand on this route?");
@@ -128,7 +128,7 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
 
   it("it is the same document every other route page is", () => {
     for (const a of unscoredAddresses()) {
-      const page = routePage(ds, a, "2026-09-10");
+      const page = routePage(ds, a, { lastRun: "2026-09-10" });
       const html = page.html;
       for (const tag of [
         'property="og:title"', 'property="og:description"', 'rel="canonical"', 'rel="icon"',

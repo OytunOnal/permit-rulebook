@@ -106,15 +106,15 @@ export function precondHtml(screen: CardScreen, route: Route): string {
     if (field === null) { unasked.push(s); continue; }
     asked.set(field, [...(asked.get(field) ?? []), s]);
   }
-  return proseBlock(
-    "precond", NOT_CHECKED_HEADING,
-    [...(route.preconditions ?? []), ...unasked.map((s) => s.text)].map((t) => esc(glossed(t, seen))),
-    " · ",
-  ) + [...asked].map(([field, ss]) => proseBlock(
-    "precond asked", esc(askedHeading(answerLabel(ds, field, answers[field]))),
-    ss.map((s) => esc(glossed(s.text, seen))),
-    " · ",
-  )).join("");
+  return proseBlock({
+    cls: "precond", heading: NOT_CHECKED_HEADING,
+    items: [...(route.preconditions ?? []), ...unasked.map((s) => s.text)].map((t) => esc(glossed(t, seen))),
+    join: " · ",
+  }) + [...asked].map(([field, ss]) => proseBlock({
+    cls: "precond asked", heading: esc(askedHeading(answerLabel(ds, field, answers[field]))),
+    items: ss.map((s) => esc(glossed(s.text, seen))),
+    join: " · ",
+  })).join("");
 }
 
 /**
@@ -178,14 +178,14 @@ const binding = (route: Route, answers: Profile): RouteStatement[] =>
  */
 export function carveOutHtml(screen: CardScreen, route: Route): string {
   const { answers, glossary: seen = new Set() } = screen;
-  return proseBlock(
-    "caveat carveout", NOT_REQUIRED_FOR_YOUR_PASSPORT,
-    routeStatements(route).flatMap((s) => {
+  return proseBlock({
+    cls: "caveat carveout", heading: NOT_REQUIRED_FOR_YOUR_PASSPORT,
+    items: routeStatements(route).flatMap((s) => {
       const except = carveOutFor(s, answers);
       return except ? [esc(glossed(except.text, seen))] : [];
     }),
-    " · ",
-  );
+    join: " · ",
+  });
 }
 
 /**
@@ -205,6 +205,15 @@ export function scopedHtml(route: Route, answers: Profile, href: string): string
     escAttr(href)}">${esc(ROUTE_DOOR)}</a></div>`;
 }
 
+/** A prose block's class, heading and items, and the separator its items are
+ * joined by: a space unless it names its own. */
+interface ProseBlock {
+  cls: string;
+  heading: string;
+  items: string[];
+  join?: string;
+}
+
 /**
  * One block of dataset prose under one heading. The three blocks below were
  * three structural copies of the same six lines, differing only in which
@@ -213,7 +222,8 @@ export function scopedHtml(route: Route, answers: Profile, href: string): string
  * that matters, because it is the part that tells the reader whose words these
  * are. Parameterising it puts those three claims side by side in one place.
  */
-function proseBlock(cls: string, heading: string, items: string[], join = " "): string {
+function proseBlock(block: ProseBlock): string {
+  const { cls, heading, items, join = " " } = block;
   if (!items.length) return "";
   return `<div class="${escAttr(cls)}"><b>${heading}</b> ${items.join(join)}</div>`;
 }
@@ -229,10 +239,10 @@ function proseBlock(cls: string, heading: string, items: string[], join = " "): 
  */
 function sourcedCaveatHtml(screen: CardScreen, route: Route): string {
   const { answers, glossary: seen = new Set() } = screen;
-  return proseBlock(
-    "caveat", `${PAGE_ALSO_SAYS}:`,
-    binding(route, answers).filter((s) => s.kind === "caveat" && s.source).map((s) => esc(glossed(s.text, seen))),
-  );
+  return proseBlock({
+    cls: "caveat", heading: `${PAGE_ALSO_SAYS}:`,
+    items: binding(route, answers).filter((s) => s.kind === "caveat" && s.source).map((s) => esc(glossed(s.text, seen))),
+  });
 }
 
 /** Why we have no quote, said to the reader: the declared reason's sentence,
@@ -252,12 +262,12 @@ function unsourcedSaid(s: RouteStatement): string {
  */
 function unsourcedCaveatHtml(screen: CardScreen, route: Route): string {
   const { answers, glossary: seen = new Set() } = screen;
-  return proseBlock(
-    "caveat nosrc", NO_OFFICIAL_WORDING_HEADING,
-    binding(route, answers)
+  return proseBlock({
+    cls: "caveat nosrc", heading: NO_OFFICIAL_WORDING_HEADING,
+    items: binding(route, answers)
       .filter((s) => s.kind === "caveat" && !s.source)
       .map((s) => `${esc(glossed(s.text, seen))} <i>${esc(unsourcedSaid(s))}</i>`),
-  );
+  });
 }
 
 /**
@@ -286,10 +296,10 @@ export function caveatHtml(screen: CardScreen, route: Route): string {
  * keep in step across two repositories (review 2026-09-07).
  */
 export function readingHtml(route: Route, seen: Glossary = new Set()): string {
-  return proseBlock(
-    "caveat ours", OUR_READING_HEADING,
-    routeReadings(route).map((r) => esc(glossed(r.text, seen))),
-  );
+  return proseBlock({
+    cls: "caveat ours", heading: OUR_READING_HEADING,
+    items: routeReadings(route).map((r) => esc(glossed(r.text, seen))),
+  });
 }
 
 /**

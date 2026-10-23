@@ -101,7 +101,7 @@ describe("the results card carries the sign without an explainer, from the verdi
   it("prints the § names bare — no explainer, no number restated (amendment 6)", () => {
     // The results screen's box and its ledger, as the verdict and the
     // declaration renderer compose them for the reader's record.
-    const text = plainTextOf(verdictHtml(verdictFor(GERMAN)) + declarationHtml(ds, GERMAN, Object.keys(GERMAN), null));
+    const text = plainTextOf(verdictHtml(verdictFor(GERMAN)) + declarationHtml(ds, { answers: GERMAN, asked: Object.keys(GERMAN), currentField: null }));
     expect(text, "no German route name reached the card").toContain("§ 18");
     // The explainer read once per screen from s23 to s32's amendment 6;
     // the sign is read as a reader reads it now.

@@ -87,7 +87,7 @@ describe("s6 step 10 — arriving from a route page's call to action", () => {
     // pressing that page's own button, is asking about that country.
     const arrival = arrivalFrom(ds, "?route=de-blue-card-general")!;
     const dutch: Profile = { destination: "nl", citizenship: "TR", qualification: "degree" };
-    const plan = arrivalPlan(ds, dutch, Object.keys(dutch), destinationFor(arrival)!);
+    const plan = arrivalPlan(ds, { answers: dutch, order: Object.keys(dutch) }, destinationFor(arrival)!);
     expect(plan.changed).toBe(true);
     expect(plan.answers["destination"]).toBe("de");
     // Her own answers travel with her; only where she is asking has changed.
