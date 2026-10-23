@@ -14,7 +14,7 @@ const TESTS = ["tests/**"];
 
 const FILE_LENGTH = "max-lines";
 const FUNCTION_LENGTH = "max-lines-per-function";
-const TEST_FUNCTION_LENGTH = "shape/max-lines-per-function-except-describe";
+export const TEST_FUNCTION_LENGTH = "shape/max-lines-per-function-except-describe";
 const NESTING = "max-depth";
 const PARAMETERS = "max-params";
 const NESTED_TERNARY = "no-nested-ternary";
@@ -100,11 +100,13 @@ export const configWithoutExceptions = [
   },
 ];
 
+/** @typedef {{ file: string, rules: string[], issue: number, until: string }} LintException */
+
 /**
  * What the lint flags today and the issue that removes it: one entry per file
  * and issue, naming only the rules that file breaks. `until` is the version
  * at which `tests/lint.test.ts` fails on the entry (#37, rulings 13 and 14).
- * @type {{ file: string, rules: string[], issue: number, until: string }[]}
+ * @type {LintException[]}
  */
 export const lintExceptions = [
   { file: "src/pages/index.astro", rules: [FILE_LENGTH, FUNCTION_LENGTH], issue: 56, until: "1.2.3" },

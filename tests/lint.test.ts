@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { ESLint } from "eslint";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { configWithoutExceptions, lintExceptions } from "../eslint.config.mjs";
+import {
+  TEST_FUNCTION_LENGTH, configWithoutExceptions, lintExceptions, type LintException,
+} from "../eslint.config.mjs";
 
 /**
  * The lint's config through ESLint's own API (#199, seam 3): each of the six
@@ -27,8 +29,6 @@ const linesOf = (count: number, line: string): string[] => Array.from({ length: 
 /** A function of `total` lines, its head and its closing brace counted. */
 const functionOf = (total: number): string =>
   ["export function sized() {", ...linesOf(total - 2, "  // a line of the body"), "}"].join("\n");
-
-const TEST_FUNCTION_LENGTH = "shape/max-lines-per-function-except-describe";
 
 describe("the lint holds the six shape limits", () => {
   it("a file over 400 lines fails, comments and blank lines counted", async () => {
@@ -122,8 +122,6 @@ describe("an .astro page's script is linted under the same rules", () => {
     expect(await brokenRulesOf(pageWith(plain), "src/pages/sized.astro")).toEqual([]);
   });
 });
-
-type LintException = { file: string; rules: string[]; issue: number; until: string };
 
 /** Whether `version` has reached `until`, compared part by part as numbers. */
 function isReached(until: string, version: string): boolean {
