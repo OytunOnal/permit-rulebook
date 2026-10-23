@@ -5,32 +5,14 @@
    "path": "scripts/carry-assets",
    "entries": [
     {
-     "file": "scripts/carry-assets/asset-names.mjs",
-     "level": "domain"
-    },
-    {
      "file": "scripts/carry-assets/carry.mjs",
-     "level": "application infrastructure"
-    },
-    {
-     "file": "scripts/carry-assets/digest-list.mjs",
-     "level": "domain"
-    },
-    {
-     "file": "scripts/carry-assets/live-site-over-http.mjs",
-     "level": "infrastructure"
-    },
-    {
-     "file": "scripts/carry-assets/log-wording.mjs",
-     "level": "presentation"
+     "level": "application"
     }
    ],
    "files": [
-    "scripts/carry-assets/asset-names.mjs",
     "scripts/carry-assets/carry.mjs",
-    "scripts/carry-assets/digest-list.mjs",
-    "scripts/carry-assets/live-site-over-http.mjs",
-    "scripts/carry-assets/log-wording.mjs"
+    "scripts/carry-assets/generation/asset-names.mjs",
+    "scripts/carry-assets/generation/digest-list.mjs"
    ]
   },
   {
@@ -62,12 +44,11 @@
  "levels": {
   "astro.config.mjs": "main",
   "scripts/browser.mjs": "infrastructure",
+  "scripts/build-directory-on-disk.mjs": "infrastructure",
   "scripts/carry-assets.mjs": "main",
-  "scripts/carry-assets/asset-names.mjs": "domain",
-  "scripts/carry-assets/carry.mjs": "application infrastructure",
-  "scripts/carry-assets/digest-list.mjs": "domain",
-  "scripts/carry-assets/live-site-over-http.mjs": "infrastructure",
-  "scripts/carry-assets/log-wording.mjs": "presentation",
+  "scripts/carry-assets/carry.mjs": "application",
+  "scripts/carry-assets/generation/asset-names.mjs": "domain",
+  "scripts/carry-assets/generation/digest-list.mjs": "domain",
   "scripts/check-base.mjs": "infrastructure main",
   "scripts/child-env.mjs": "infrastructure",
   "scripts/chrome.mjs": "infrastructure",
@@ -75,6 +56,8 @@
   "scripts/data-pin.mjs": "infrastructure main",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
+  "scripts/live-site-over-http.mjs": "infrastructure",
+  "scripts/log-wording.mjs": "domain",
   "scripts/measure-taps.mjs": "infrastructure main",
   "scripts/render-assets.mjs": "infrastructure main",
   "scripts/shot.mjs": "infrastructure main",
@@ -153,47 +136,47 @@
   },
   {
    "from": "scripts/carry-assets.mjs",
+   "to": "scripts/build-directory-on-disk.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets.mjs",
    "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/carry-assets.mjs",
-   "to": "scripts/carry-assets/live-site-over-http.mjs",
+   "to": "scripts/live-site-over-http.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/carry-assets.mjs",
-   "to": "scripts/carry-assets/log-wording.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/carry-assets/asset-names.mjs",
-   "to": "scripts/carry-assets/log-wording.mjs",
+   "to": "scripts/log-wording.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/carry-assets/carry.mjs",
-   "to": "scripts/carry-assets/asset-names.mjs",
+   "to": "scripts/carry-assets/generation/asset-names.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/carry-assets/carry.mjs",
-   "to": "scripts/carry-assets/digest-list.mjs",
+   "to": "scripts/carry-assets/generation/digest-list.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/carry-assets/carry.mjs",
-   "to": "scripts/carry-assets/log-wording.mjs",
+   "to": "scripts/log-wording.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/carry-assets/digest-list.mjs",
-   "to": "scripts/carry-assets/asset-names.mjs",
+   "from": "scripts/carry-assets/generation/asset-names.mjs",
+   "to": "scripts/log-wording.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/carry-assets/live-site-over-http.mjs",
-   "to": "scripts/carry-assets/log-wording.mjs",
+   "from": "scripts/carry-assets/generation/digest-list.mjs",
+   "to": "scripts/carry-assets/generation/asset-names.mjs",
    "kind": "dependency"
   },
   {
@@ -219,6 +202,11 @@
   {
    "from": "scripts/dev-server.mjs",
    "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/live-site-over-http.mjs",
+   "to": "scripts/log-wording.mjs",
    "kind": "dependency"
   },
   {
@@ -1388,7 +1376,7 @@
   },
   {
    "from": "tests/carry-assets/asset-names.test.ts",
-   "to": "scripts/carry-assets/asset-names.mjs",
+   "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
@@ -1397,8 +1385,28 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/carry-assets/build-directory-in-memory.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/carry-assets/build-directory-on-disk.test.ts",
+   "to": "scripts/build-directory-on-disk.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/build-directory-on-disk.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts",
    "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
    "kind": "dependency"
   },
   {
@@ -1433,12 +1441,12 @@
   },
   {
    "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
-   "to": "scripts/carry-assets/asset-names.mjs",
+   "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
    "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
-   "to": "scripts/carry-assets/carry.mjs",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
    "kind": "dependency"
   },
   {
@@ -1473,7 +1481,7 @@
   },
   {
    "from": "tests/carry-assets/digest-list.test.ts",
-   "to": "scripts/carry-assets/digest-list.mjs",
+   "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
@@ -1493,7 +1501,12 @@
   },
   {
    "from": "tests/carry-assets/live-site-over-http.test.ts",
-   "to": "scripts/carry-assets/live-site-over-http.mjs",
+   "to": "scripts/live-site-over-http.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http.test.ts",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
    "kind": "dependency"
   },
   {
@@ -2023,7 +2036,7 @@
   },
   {
    "from": "tests/pipeline.test.ts",
-   "to": "scripts/carry-assets/asset-names.mjs",
+   "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
@@ -3318,38 +3331,6 @@
   }
  ],
  "declarations": {
-  "scripts/carry-assets/asset-names.mjs": [
-   {
-    "name": "MAX_NAME",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "NAME_CHARS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "NAME_PATTERN",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "PLAIN_NAME",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "readAssetNames",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "verdictOnReference",
-    "kind": "fn",
-    "exported": false
-   }
-  ],
   "scripts/carry-assets/carry.mjs": [
    {
     "name": "ORIGIN_VAR",
@@ -3462,77 +3443,6 @@
     "exported": false
    }
   ],
-  "scripts/carry-assets/digest-list.mjs": [
-   {
-    "name": "DIGESTS_NAME",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "DIGESTS_HEADER",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "DIGESTS_LINE",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "digestOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "digestListOf",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "byName",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "readAssetDigests",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/carry-assets/live-site-over-http.mjs": [
-   {
-    "name": "liveAnswerOverHttp",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "bodyWithin",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/carry-assets/log-wording.mjs": [
-   {
-    "name": "boundedList",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "short",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "oneLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "sentenceOfError",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
   "src/lib/verdict/index.ts": [
    {
     "name": "answeredOutright",
@@ -3635,6 +3545,13 @@
    },
    {
     "name": "withBrowser",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/build-directory-on-disk.mjs": [
+   {
+    "name": "buildDirectoryOnDisk",
     "kind": "fn",
     "exported": true
    }
@@ -3850,6 +3767,40 @@
    },
    {
     "name": "startDev",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/live-site-over-http.mjs": [
+   {
+    "name": "liveAnswerOverHttp",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "bodyWithin",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/log-wording.mjs": [
+   {
+    "name": "boundedList",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "short",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "oneLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "sentenceOfError",
     "kind": "fn",
     "exported": true
    }
@@ -6585,6 +6536,7 @@
  "loose": [
   "astro.config.mjs",
   "scripts/browser.mjs",
+  "scripts/build-directory-on-disk.mjs",
   "scripts/carry-assets.mjs",
   "scripts/check-base.mjs",
   "scripts/child-env.mjs",
@@ -6593,6 +6545,8 @@
   "scripts/data-pin.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
+  "scripts/live-site-over-http.mjs",
+  "scripts/log-wording.mjs",
   "scripts/measure-taps.mjs",
   "scripts/render-assets.mjs",
   "scripts/shot.mjs",
@@ -6645,5 +6599,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "edec0cb4cd933c41cb451df2b7cc417dfa9d85c20a7effcd8910203a1108c8b9"
+ "digest": "f4aec0ac7b07cae1efd8ed9cd7af3153164d4c6cf0b609f1c1e7f9e0786a1db2"
 }
