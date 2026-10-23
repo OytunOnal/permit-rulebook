@@ -41,7 +41,7 @@ const carveOutOf = (answers: Profile, route: string, data: Dataset = ds): string
   withoutGlosses(blocksIn(cardFor(answers, route, data), "caveat carveout"));
 
 /**
- * The reader of the scenario: a job offer in the Netherlands, a salary above
+ * The reader: a job offer in the Netherlands, a salary above
  * the highly-skilled-migrant threshold, and everything else the interview asks
  * answered, so the route comes out met and the card is the full one.
  */
@@ -52,7 +52,7 @@ const turkish: Profile = {
 const japanese: Profile = { ...turkish, citizenship: "JP" };
 
 /**
- * s7 — the scenario, on the screens a reader actually sees.
+ * s7 — on the screens a reader actually sees.
  *
  * The product asks which passport a reader would apply with and then scored
  * them against conditions the authority itself sets aside for that passport

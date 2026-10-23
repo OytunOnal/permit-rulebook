@@ -10,7 +10,7 @@ import { datasetDay, isoDay } from "../src/lib/copy/frame.js";
 const ds = dataset as unknown as Dataset;
 
 /**
- * Scenario step 10 — the edge profiles, mandatory.
+ * The edge profiles, mandatory.
  *
  * Two readers the route page has to survive: one who does not need a permit at
  * all and lands on a page for a country she can already work in, and one who

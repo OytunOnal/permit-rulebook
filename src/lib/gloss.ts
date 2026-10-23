@@ -1,8 +1,8 @@
 // @level presentation
 /**
  * Abbreviations a stranger cannot be expected to know, expanded the first time
- * each page uses one (scenario step 1: no abbreviation goes unexplained on
- * first use). `AufenthG` appears twice in the German source lines and `BeschV`
+ * each page uses one (no abbreviation goes unexplained on first use;
+ * `tests/route-page.test.ts`, R8). `AufenthG` appears twice in the German source lines and `BeschV`
  * in the experienced-worker route's; to a searcher outside German-speaking
  * legal culture they are opaque tokens dressed as authority (route-page
  * critique F8).

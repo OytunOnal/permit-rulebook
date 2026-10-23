@@ -178,7 +178,7 @@ describe("s21 — the four-country result says it in the country's line", () => 
   });
 
   /**
-   * The headline on that path (scenario point 3). The branch the page takes is
+   * The headline on that path. The branch the page takes is
    * the existing headline: the other branch — every visible country closed to
    * the situation — cannot occur on the dataset today, because the "all"
    * answer's set is the union of the four countries' and every offered

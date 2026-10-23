@@ -53,9 +53,9 @@ interface Tabs {
 /** The question each field asks, in the dataset's own words. */
 const asks = (field: string) => ds.fields.find((f) => f.id === field)!.label;
 
-/** Three answers, in the order they were given: the scenario's record. */
+/** Three answers, in the order they were given. */
 const RECORD = { destination: "de", citizenship: "IN", situation: "offer" };
-/** The record's first `n` answers, stored; the scenario's three by default. */
+/** The record's first `n` answers, stored; all three by default. */
 const seed = (n = 3) => {
   const answers = Object.fromEntries(Object.entries(RECORD).slice(0, n));
   return `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(JSON.stringify({
@@ -162,8 +162,7 @@ function walker(page: BrowserPage, url: (path: string) => string) {
 }
 
 type Viewport = { viewport: { width: number; height: number }; mobile: boolean };
-/** The scenario's two sizes: the desktop the fault was measured at, and the
- * phone width its proof list asks for. */
+/** Two sizes: the desktop the fault was measured at, and a phone's width. */
 const WIDE: Viewport = { viewport: { width: 1100, height: 900 }, mobile: false };
 const PHONE: Viewport = { viewport: { width: 390, height: 844 }, mobile: true };
 

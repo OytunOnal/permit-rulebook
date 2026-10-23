@@ -89,7 +89,7 @@ describe("s9 — a route page that quotes the rules and offers no verdict", () =
   });
 
   /**
-   * Step 4 of the scenario: nothing on the page invites a verdict. The
+   * Nothing on the page invites a verdict. The
    * interview never offers these routes, so the page must not either — and a
    * reader who does walk on from here lands where every other arrival lands,
    * on the interview scoped to this country.
@@ -241,8 +241,8 @@ describe("s9 — the data page states both counts", () => {
  * `arrivalFrom` refuses an unscored route — there is no verdict to scope to —
  * and that refusal used to throw the route's country away with it: a reader
  * who pressed the button on the French employee card's page landed on an
- * interview about nowhere. The scenario says they land on the interview
- * scoped to that country (Spec review, 2026-09-10).
+ * interview about nowhere. They land on the interview scoped to that country
+ * (Spec review, 2026-09-10).
  */
 describe("arriving from a route that is not scored", () => {
   it("lands the reader in the route's country, with no route on the record", () => {

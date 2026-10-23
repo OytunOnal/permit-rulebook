@@ -43,8 +43,9 @@ export interface FeedbackPage {
  * types a word.
  *
  * It takes the door and nothing else. There is no record to read here, no
- * query string and no screen: that is scenario point 2 held by construction
- * rather than by care, and it is the bound that replaced "the GitHub account
+ * query string and no screen: the mail carries nothing the reader declared,
+ * held by construction rather than by care (`tests/s13.test.ts`), and it is
+ * the bound that replaced "the GitHub account
  * requirement is said before the click" when the door stopped being GitHub.
  */
 export const feedbackMailto = (door: FeedbackDoor): string =>

@@ -391,7 +391,7 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
         await new Promise((r) => setTimeout(r, 900));
         const france = await read(FRANCE_RESEARCH);
         // Spain, the same two answers — and the passport, which is Spain's third
-        // tap (the scenario: CRITERIA MET in three).
+        // tap (CRITERIA MET in three).
         await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
         await page.goto(server.url("/"), 1400);
         const spain = await read(SPAIN_RESEARCH);

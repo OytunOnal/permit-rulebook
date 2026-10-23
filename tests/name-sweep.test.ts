@@ -12,8 +12,7 @@ import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "../src/lib/copy/frame.js";
  * s6 decision 1 — the name changed in one sweep, and nothing user-facing may
  * still say the working name.
  *
- * "Checked by grep, not by eye" is the scenario's own wording, so this is a
- * grep, run over what `git ls-files` tracks in both repositories. What it does
+ * It is checked by grep, not by eye, so this is a grep, run over what `git ls-files` tracks in both repositories. What it does
  * NOT read is stated in its name and enforced below, because each exclusion is
  * a decision someone could otherwise quietly widen:
  *

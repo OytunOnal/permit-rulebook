@@ -64,8 +64,8 @@ import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddres
  * of the template that made it, and a check that reads the template is
  * passed by moving a string.
  *
- * The page it renders is `docs/spine/design/s6-route-page.html`, approved with
- * the scenario and revised after its isolated critique: the rail's labels are a
+ * The page it renders is `docs/spine/design/s6-route-page.html`, approved in
+ * s6 and revised after its isolated critique: the rail's labels are a
  * list that cannot collide at any width (B1), every control reaches
  * `--tap-min` (B2), no badge and no verdict colour (B3), quotes are `<q>` with
  * their language tagged and a note where the source's notation differs from the
@@ -139,7 +139,7 @@ function gteUnder(c: Criterion): Gte[] {
 /**
  * Who the page is for, said before the first rule. An Irish reader who lands on
  * a German route page from a search is told here, not after seven rules and a
- * refusal (scenario step 10), and the call to action below leads to the notice
+ * refusal (`tests/s6-edges.test.ts`), and the call to action below leads to the notice
  * that answers her rather than to a rejection.
  */
 export const audienceSentence = (country: Country): string => audienceLine(phraseOf(country.code));
@@ -240,7 +240,7 @@ export function pageStamp(dataset: Dataset, route: Route): string {
  * The one notice that says who a route page is NOT for: an EU, EEA or Swiss
  * passport needs no permit here. It is on the page before the first rule so an
  * Irish reader landing on a German page is told, rather than walked through
- * seven rules and handed a refusal (scenario step 10).
+ * seven rules and handed a refusal (`tests/s6-edges.test.ts`).
  */
 export function audienceNotice(dataset: Dataset): Notice | undefined {
   return (dataset.notices ?? []).find((n) => n.kind === "no-permit-needed");

@@ -75,8 +75,7 @@ describe("what /data/ says on a day something went unread", () => {
    * It names ONE source and not two, and that is the rule working rather than
    * failing: `es-uge-index` is a sentinel — an edition index watched so a person
    * notices a new PDF — and no dataset value cites it. The reader is told about
-   * values, so the sentence is about the PDF, and its date, 2026-09-07, is the
-   * date the scenario's own sentence gives.
+   * values, so the sentence is about the PDF, and its date is 2026-09-07.
    */
   it("the run of 2026-09-15, as it would now be recorded", () => {
     const unread = unreadSources(ds, {

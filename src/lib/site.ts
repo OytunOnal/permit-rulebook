@@ -87,8 +87,8 @@ export const TRACKER_URL = `${REPO_DATA}/issues/new/choose`;
  * Cloudflare Email Routing. **The routing is the human's to set up, and this
  * name is the proposed one until they say it works**: the gate before the
  * merge is a mail sent to the alias from another address arriving in their
- * inbox, and only then does this constant become the live name (s13, scenario
- * point 3; the decision of 2026-09-16). Until then the branch builds with the
+ * inbox, and only then does this constant become the live name
+ * (`tests/s13.test.ts`; the decision of 2026-09-16). Until then the branch builds with the
  * name below and does not merge — merge is the deploy, and the deploy names
  * the address.
  *
@@ -181,7 +181,7 @@ export const OWNER = "Oytun Onal";
 export const DATA_LICENCE_URL = `${REPO_DATA}/blob/master/data/LICENSE`;
 export const DATA_LICENCE_NAME = "CC BY 4.0";
 /** The same licence, spelled out — no abbreviation goes unexplained on first
- * use (scenario step 1), and "CC BY 4.0" is one to a reader who is not a
+ * use, and "CC BY 4.0" is one to a reader who is not a
  * developer. The short form is fine everywhere after it. */
 export const DATA_LICENCE_FULL = "Creative Commons Attribution 4.0 (CC BY 4.0)";
 

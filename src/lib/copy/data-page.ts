@@ -142,8 +142,7 @@ export const dataMetaDescription = (scored: number, quotedOnly: number, countrie
  * The third count is of sentences kept on a dated reason — a source that
  * publishes only a scan, or a table — and it is usually zero. "0 standing on
  * a dated reason" was modelling vocabulary on a reader's line, and a zero is
- * not a fact a reader needs (v1.1 gate critique, P4; the scenario prefers
- * dropping it). Where the count is not zero, the row says it in the reader's
+ * not a fact a reader needs (v1.1 gate critique, P4). Where the count is not zero, the row says it in the reader's
  * word.
  */
 export const proseProvenanceCounts = (sourced: number, ours: number, dated: number): string => [

@@ -34,8 +34,8 @@ import type { Dataset, Profile } from "permit-rulebook-data";
  * where it can be seen: one word, *Feedback*, in the header, under the verdict
  * and in the footer, all leading to `/feedback/`.
  *
- * The bound this slice exists to keep is the one in point 2 of the scenario:
- * the mail carries nothing the reader declared. It holds here by construction —
+ * The bound this slice exists to keep: the mail carries nothing the reader
+ * declared. It holds here by construction —
  * every `mailto:` is a function of the copy and one address, and of nothing
  * else — and the cases below assert the construction, not the care.
  */
@@ -203,7 +203,7 @@ describe("the page, and the three doors on it", () => {
 });
 
 /**
- * Point 2 of the scenario, which is the promise the whole slice turns on.
+ * The promise the whole slice turns on.
  * `record.test.ts` holds the other half: answers never leave the device.
  */
 describe("the mail carries nothing the reader declared", () => {
@@ -580,7 +580,7 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
 });
 
 /**
- * The header, measured rather than assumed (scenario point 9).
+ * The header, measured rather than assumed.
  *
  * The 2026-09-08 measurement warned that six items filled 94% of the row on
  * CI's fonts. The countries are under one word now and the row holds four
@@ -588,7 +588,7 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
  * measured with the generic stack forced, and the opened list is measured
  * against every other item's box.
  *
- * NOT at 761 px, though the scenario names that width. Below 960 px the header
+ * NOT at 761 px, the width first named for it. Below 960 px the header
  * folds behind Menu (identity.css, 2026-09-08: "the band between 761 and
  * 939 px had no state in the first revision of the mock"), so at 761 there is
  * no row to measure — every item's box is 0 by 0, and the first draft of this
@@ -803,7 +803,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
 
       expect(seen.heading, "no Countries heading over the rows").toBe(COUNTRIES);
       // The country whose page this is does not become the heading: the phone's
-      // heading is always the word (scenario point 4).
+      // heading is always the word.
       expect(seen.summaryShown, "the disclosure's word is shown twice on the phone").toBe(false);
       expect(seen.rows).toEqual([
         ...countryLinks(ds).map((l) => l.name), "Check yours", "The data", FEEDBACK,

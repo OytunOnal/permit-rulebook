@@ -16,7 +16,7 @@ import {
  * group it lands in when the results come.
  *
  * It lives here rather than inside the page for the reason `screen.ts` does:
- * the behaviour the scenario walks in step 10 — "the pre-scoped route appears
+ * the behaviour `tests/s6-edges.test.ts` walks — "the pre-scoped route appears
  * first in the results and every behaviour from s5d and s5e holds" — has to be
  * readable by a test, and a rule written inline in a template is checked by
  * reading the template.
