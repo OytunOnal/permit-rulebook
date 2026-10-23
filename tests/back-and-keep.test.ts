@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { deriveQuestions, type Dataset } from "permit-rulebook-data";
+import { deriveQuestions, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
+import { backToLine, keepNextLine, keepToResultLine } from "../src/lib/copy/interview.js";
 import {
   EMPTY_INTERVIEW, interviewAfter, type Gesture, type HistoryCall, type InterviewState, type InterviewStep,
   type KeptRecord,
 } from "../src/lib/interview/index.js";
 import { openInterviewHistory, type InterviewHistory } from "../src/lib/interview-history/index.js";
+import {
+  DESK, fieldOnScreen, recordSeedScript, skipReason, tapOn, waitOutTheBeat, warnNotWalked, withSite,
+  type BrowserPage, type PageOnSite,
+} from "./browser-walk.js";
 import { FakeTab } from "./fake-browser-history.js";
 
 /**
@@ -149,4 +154,75 @@ describe("the field Back's label names is the field Back goes to", () => {
       expect(s.landed, `screen ${i + 1}: Back labelled ${String(s.label)} from ${s.before}`).toBe(s.label ?? s.before);
     });
   });
+});
+
+const skipped = skipReason();
+if (skipped) warnNotWalked("WHERE BACK AND KEEP THIS ANSWER GO", skipped);
+
+/** What the verdict is called where a screen is named. */
+const RESULT = "the result";
+
+/** The words on the question card's two exits; null where the card has none. */
+const EXITS = `JSON.stringify({
+  back: document.querySelector("#main #back")?.textContent.trim() ?? null,
+  keep: document.querySelector("#main #done")?.textContent.trim() ?? null,
+})`;
+interface Exits { back: string | null; keep: string | null }
+const exitsOf = async (page: BrowserPage): Promise<Exits> => JSON.parse(await page.evaluate(EXITS)) as Exits;
+
+/** The question an exit's words name, by its short label; null where they name none. */
+const fieldNamedBy = (line: (label: string) => string, words: string | null): string | null =>
+  ds.fields.find((f) => line(shortLabelOf(ds, f.id)) === words)?.id ?? null;
+/** Where Keep's words say it goes: a question, or the result. */
+const keepNames = (words: string | null): string | null =>
+  (words === keepToResultLine ? RESULT : fieldNamedBy(keepNextLine, words));
+
+/** The screen the interview shows: a question's field, or the result. */
+async function screenOf(page: BrowserPage): Promise<string> {
+  const state = await page.evaluate('document.getElementById("app").dataset.state');
+  return state === "results" ? RESULT : fieldOnScreen(page);
+}
+
+/** A real click on `selector`, then the beat of the card it draws waited out. */
+async function tapAndWait(page: BrowserPage, selector: string): Promise<void> {
+  await tapOn(page, selector);
+  await waitOutTheBeat(page);
+}
+
+/** `/` opened onto a stored record of `answers`, asked in their own order, and the ✎ of `field` tapped. */
+async function editingOnRecord({ page, url }: PageOnSite, answers: Profile, field: string): Promise<Exits> {
+  await page.goto(url("/404.html"), 300);
+  await page.evaluate(recordSeedScript(answers));
+  await page.goto(url("/"), 1200);
+  await tapAndWait(page, `#decl-list [data-field="${field}"]`);
+  return exitsOf(page);
+}
+
+describe.skipIf(skipped !== null)("Back and Keep this answer go where their labels say, at 1280", () => {
+  it("on an edit screen, Back lands on the question its label names, and Keep on the next question its label names", async () => {
+    const seen = await withSite(async (site) => {
+      const { page } = site;
+      const editing = await editingOnRecord(site, { destination: "de", citizenship: "IN", situation: "offer" }, "situation");
+      await tapAndWait(page, "#main #back");
+      const backedOnto = { screen: await screenOf(page), exits: await exitsOf(page) };
+      await tapAndWait(page, "#main #done");
+      return { editing, backedOnto, kept: await screenOf(page), problems: page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.editing.keep, "the ✎ did not open an edit screen").not.toBeNull();
+    // Back in place from the situation: the question asked before it.
+    expect([fieldNamedBy(backToLine, seen.editing.back), seen.backedOnto.screen]).toEqual(["citizenship", "citizenship"]);
+    // Keep from there: the first question the record leaves unanswered.
+    expect([keepNames(seen.backedOnto.exits.keep), seen.kept]).toEqual(["qualification", "qualification"]);
+  }, 180_000);
+
+  it("on an edit screen with nothing left to ask, Keep's label names the result, and Keep shows it", async () => {
+    const seen = await withSite(async (site) => {
+      const editing = await editingOnRecord(site, { destination: "de", citizenship: "PL" }, "citizenship");
+      await tapAndWait(site.page, "#main #done");
+      return { editing, kept: await screenOf(site.page), problems: site.page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect([keepNames(seen.editing.keep), seen.kept]).toEqual([RESULT, RESULT]);
+  }, 180_000);
 });

@@ -38,37 +38,44 @@ export interface InterviewPorts {
 }
 
 /** One call on the interview's history, as the step named it. */
-function tell(history: InterviewHistory | null, call: HistoryCall): void {
-  if (call.call === "restarted") history?.restarted();
-  else if (call.call === "movedForward") history?.movedForward(call.field);
-  else history?.redrawnInPlace(call.field);
+function tell(history: InterviewHistory, call: HistoryCall): void {
+  if (call.call === "restarted") history.restarted();
+  else if (call.call === "movedForward") history.movedForward(call.field);
+  else history.redrawnInPlace(call.field);
 }
 
 /**
- * Starts the interview on the page. The history opens once the first screen
- * is drawn, onto the entry the page opened onto, and rebuilds its list from
- * the record, since a reload empties the page while the browser keeps every
- * entry; until then a step tells it nothing.
+ * Starts the interview on the page. The history opens with the first step,
+ * onto the entry the page opened onto, and rebuilds its list from the
+ * record, since a reload empties the page while the browser keeps every
+ * entry.
  */
 export function startInterview({ browserHistory, store }: InterviewPorts): void {
   const ds = dataset as unknown as Dataset;
   const questions = deriveQuestions(ds);
   let interview = EMPTY_INTERVIEW;
   let history: InterviewHistory | null = null;
-  /** A gesture, applied: the state kept, the record saved or cleared, the
-   * screen drawn, and the history told last. One that leads nowhere draws nothing. */
-  const apply = (gesture: Gesture): InterviewStep | null => {
+  /** A gesture, applied: the state kept, the record saved or cleared, the history told, and the screen drawn
+   * last, so its Back names where the history now sends it. One that leads nowhere draws nothing. */
+  const apply = (gesture: Gesture): void => {
     const step = interviewAfter(ds, interview, gesture);
-    if (!step) return null;
+    if (!step) return;
     interview = step.state;
     if (step.save === "clear") clearRecord(store);
     else if (step.save) saveRecord(store, step.save);
-    drawing.drawStep(step);
+    history ??= opened(step);
     for (const call of step.history) tell(history, call);
-    return step;
+    drawing.drawStep(step, history.backTarget(step.state.asked, step.state.editing));
+  };
+  /** The history, opened onto the first step's screen; the browser's moves are gestures from then on. */
+  const opened = (first: InterviewStep): InterviewHistory => {
+    const showing = first.screen.kind === "question" ? first.screen.field : null;
+    const openedHistory = openInterviewHistory(browserHistory, { asked: first.state.asked, showing });
+    openedHistory.onMove((move) => apply({ kind: "browserMoved", ...move }));
+    return openedHistory;
   };
   const drawing = openDrawing(ds, questions, {
-    made: (gesture) => { apply(gesture); },
+    made: apply,
     // Where the browser holds a step of ours behind, the history asks it to go
     // back and its move draws that entry's question; elsewhere the previous
     // question is drawn in place. Nothing is erased on the way.
@@ -81,8 +88,5 @@ export function startInterview({ browserHistory, store }: InterviewPorts): void 
   // answers each takes (s25).
   const kept = loadRecord(store, questions);
   drawing.uncover();
-  const first = apply({ kind: "loaded", record: kept, search: location.search });
-  const showing = first?.screen.kind === "question" ? first.screen.field : null;
-  history = openInterviewHistory(browserHistory, { asked: interview.asked, showing });
-  history.onMove((move) => apply({ kind: "browserMoved", ...move }));
+  apply({ kind: "loaded", record: kept, search: location.search });
 }

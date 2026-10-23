@@ -63,8 +63,9 @@ function meetQuestion(page: InterviewPage, step: InterviewStep, longList: boolea
   if (step.beat) page.beat.begin();
 }
 
-/** The card's markup, with the lines the step says above the question. */
-function cardHtml(page: InterviewPage, step: InterviewStep, q: Question): string {
+/** The card's markup, with the lines the step says above the question and
+ * its exits: Back to `backTo`, and Keep where the step says it lands. */
+function cardHtml(page: InterviewPage, step: InterviewStep, { q, backTo }: { q: Question; backTo: string | null }): string {
   const { state, lines } = step;
   // A symbol a stranger cannot read is explained the first time a screen
   // uses it: one memory per screen, shared by the arrival line and the card.
@@ -74,12 +75,15 @@ function cardHtml(page: InterviewPage, step: InterviewStep, q: Question): string
   return questionCardHtml({
     dataset: page.ds, question: q, answers: state.answers, asked: state.asked, editing: state.editing,
     total: state.asked.length + remaining.length, arrival, justRecorded: lines.justRecorded,
-    resumed: lines.resumed ?? undefined, glossary,
+    resumed: lines.resumed ?? undefined, glossary, exits: { backTo, keepTo: step.keepLandsOn },
   });
 }
 
-/** Draws the question screen a step lands on, then meets the reader there. */
-export function renderQuestion(page: InterviewPage, step: InterviewStep, screen: QuestionScreen): void {
+/** Draws the question screen a step lands on, then meets the reader there.
+ * `backTo` is the question the history says the screen's Back goes to. */
+export function renderQuestion(
+  page: InterviewPage, step: InterviewStep, { screen, backTo }: { screen: QuestionScreen; backTo: string | null },
+): void {
   const { app, main, restart } = page.els;
   const { answers } = step.state;
   // A question a still-alive route cares about, or the one on the record.
@@ -93,7 +97,7 @@ export function renderQuestion(page: InterviewPage, step: InterviewStep, screen:
   advance(page, questionMastheadOf(screen), screen.started ? "started" : "fresh");
   announce("");
   renderDeclaration(page, step, q.field);
-  paint(main, cardHtml(page, step, q), () => wireQuestion(page, q, answers[q.field]));
+  paint(main, cardHtml(page, step, { q, backTo }), () => wireQuestion(page, q, answers[q.field]));
   // The resumed line ends in the ledger's own "Start over", moved in after
   // it: one control and one listener. The ledger takes it back on the next render.
   if (step.lines.resumed) {

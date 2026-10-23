@@ -15,8 +15,9 @@ import { renderResults } from "./verdict-screen.js";
 export interface Drawing {
   /** Takes the first paint's covers off, in the task that draws the first screen. */
   uncover(): void;
-  /** Draws the screen a step lands on. */
-  drawStep(step: InterviewStep): void;
+  /** Draws the screen a step lands on. `backTo` is the question the
+   * history says the screen's Back goes to, null where none is behind. */
+  drawStep(step: InterviewStep, backTo: string | null): void;
 }
 
 /**
@@ -38,9 +39,9 @@ export function openDrawing(ds: Dataset, questions: Question[], hands: GestureHa
   openFoldsForPrint();
   return {
     uncover: () => takeCoversOff(page.els.root),
-    drawStep: (step) => {
+    drawStep: (step, backTo) => {
       if (step.screen.kind === "verdict") renderResults(page, step);
-      else renderQuestion(page, step, step.screen);
+      else renderQuestion(page, step, { screen: step.screen, backTo });
     },
   };
 }

@@ -35,7 +35,7 @@ export interface BrowserHistory {
   onMove(listener: (state: unknown) => void): void;
 }
 
-/** Where the interview stands when its history is opened, after the first screen is drawn. */
+/** Where the interview stands when its history is opened, once its first screen is decided. */
 export interface OpenedOn {
   /** The questions answered, in the order the record keeps. */
   asked: readonly string[];
@@ -78,7 +78,7 @@ interface Kept {
 }
 
 /**
- * The history of an interview whose first screen is drawn. The list is
+ * The history of an interview whose first screen is decided. The list is
  * rebuilt from the record, since a reload empties it while the browser keeps
  * every entry; where the held steps begin is read from the entry the page
  * opened onto, before the history writes one of its own.

@@ -114,6 +114,16 @@ export const ASKED_FOR_COUNTS_JOIN = ", ";
 export const EDIT_LINE = "Your answer — pick another to change it; answers your new choice still uses are kept";
 
 /**
+ * The question card's two exits (#56, ruling 6). Side by side on an edit
+ * screen they read alike, so each says where it goes: Back by the question it
+ * returns to, Keep by the question it moves on to, or the result. `label` is
+ * the question's short label, the ledger's own.
+ */
+export const backToLine = (label: string): string => `← Back to ${label}`;
+export const keepNextLine = (label: string): string => `Keep this answer — next: ${label}`;
+export const keepToResultLine = "Keep this answer — see your result";
+
+/**
  * What opens the set-aside line: the answers a change left without a route
  * that reads them, named after it by their short labels, on the next screen
  * only (#137).

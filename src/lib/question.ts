@@ -5,8 +5,8 @@ import {
 } from "permit-rulebook-data";
 import {
   ASKED_FOR, ASKED_FOR_COUNTS_JOIN, EDIT_LINE, INTRO_HEADLINE, INTRO_SUBLINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
-  RETURNING_LINE, SHORT_SUBLINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, questionCounter,
-  resumedLine, setAsideLead, setAsideLineHtml,
+  RETURNING_LINE, SHORT_SUBLINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, backToLine,
+  keepNextLine, keepToResultLine, questionCounter, resumedLine, setAsideLead, setAsideLineHtml,
 } from "./copy/interview.js";
 import { countryOf } from "./countries.js";
 import { type Glossary, glossSection, glossed } from "./gloss.js";
@@ -73,11 +73,23 @@ export interface QuestionScreen {
    * line it draws is the sentence alone — the interview moves the ledger's "Start over"
    * in after it, so the control is the ledger's and there is never a second. */
   resumed?: number;
+  /** Where the card's exits go; absent where it has neither, as on the
+   * build's first paint, where nothing is behind and nothing is being edited. */
+  exits?: QuestionExits;
   /** The screen's memory of what it has already explained; the card's words
    * and the asked-for line's route names spend from it like every route name
    * on the page. Absent on the build's first paint, where the card starts
    * one of its own. */
   glossary?: Glossary;
+}
+
+/** Where the question card's two exits go (#56, ruling 6). */
+export interface QuestionExits {
+  /** The question "← Back" goes to; null where none is behind, and no Back is drawn. */
+  backTo: string | null;
+  /** Where "Keep this answer" lands: a question, or the verdict; null off an
+   * edit screen, and no Keep is drawn. */
+  keepTo: { kind: "question"; field: string } | { kind: "verdict" } | null;
 }
 
 /** Up to this many routes the asked-for line names; above it, it counts. */
@@ -138,12 +150,14 @@ function linesAboveQuestionHtml(screen: QuestionScreen): string {
           }</div>`;
 }
 
-/** The two exits: Back, where there is a question behind, and Keep, on an
- * edit. */
-function exitsHtml({ asked, editing }: QuestionScreen): string {
-  return `${(editing ? asked.indexOf(editing) > 0 : asked.length > 0)
-            ? `<button class="back" id="back">← Back</button>` : ""}
-          ${editing ? `<button class="back" id="done">Keep this answer</button>` : ""}`;
+/** The two exits, each saying where it goes by the question's short label:
+ * Back, where there is a question behind, and Keep, on an edit. */
+function exitsHtml({ dataset, exits }: QuestionScreen): string {
+  const backTo = exits?.backTo ?? null;
+  const keepTo = exits?.keepTo ?? null;
+  const keepLine = keepTo?.kind === "question" ? keepNextLine(shortLabelOf(dataset, keepTo.field)) : keepToResultLine;
+  return `${backTo === null ? "" : `<button class="back" id="back">${esc(backToLine(shortLabelOf(dataset, backTo)))}</button>`}
+          ${keepTo === null ? "" : `<button class="back" id="done">${esc(keepLine)}</button>`}`;
 }
 
 export function questionCardHtml(screen: QuestionScreen): string {
