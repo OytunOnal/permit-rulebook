@@ -296,19 +296,21 @@ function railRows(country: Country, route: Route, own: Gte): RailRow[] {
     });
   return [...byAmount.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([amount, entry]) => {
-      // A route may state two amounts on one rule — the Spanish Blue Card
-      // states both of its salaries inside a disjunction — so "ours" is any
-      // amount this route states, not only the one the card was built from.
-      const own_ = entry.routes.includes(route);
-      const others = entry.routes.filter((r) => r !== route);
-      const text = own_
-        ? `this route${entry.label ? ` — ${entry.label}` : ""}`
-        : others.length === 1
-          ? `${others[0].name} — another route here`
-          : `${others.length} other routes here`;
-      return { amount, text, own: own_ };
-    });
+    .map(([amount, entry]) => ({ amount, text: railRowText(entry, route), own: entry.routes.includes(route) }));
+}
+
+/**
+ * What a rail row says beside its amount: this route's own, one other route's
+ * name, or how many other routes state it. A route may state two amounts on
+ * one rule — the Spanish Blue Card states both of its salaries inside a
+ * disjunction — so "ours" is any amount this route states, not only the one
+ * the card was built from.
+ */
+function railRowText(entry: { routes: Route[]; label?: string }, route: Route): string {
+  if (entry.routes.includes(route)) return `this route${entry.label ? ` — ${entry.label}` : ""}`;
+  const others = entry.routes.filter((r) => r !== route);
+  if (others.length === 1) return `${others[0].name} — another route here`;
+  return `${others.length} other routes here`;
 }
 
 function railHtml(dataset: Dataset, country: Country, route: Route, own: Gte): string {

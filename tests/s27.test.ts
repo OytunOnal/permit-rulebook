@@ -256,6 +256,12 @@ interface Section {
   nameLeft: number; nameTop: number; nameBottom: number; tallyLeft: number; tallyRight: number; tallyTop: number;
 }
 
+/** Where a section's tally sits against its name: on the name's line or beneath it, aligned or adrift. */
+function tallyPlaceOf(s: Section): string {
+  if (s.tallyTop < s.nameBottom) return s.tallyRight < 2 ? "right, on the name's line" : "adrift on the name's line";
+  return s.tallyLeft < 2 ? "beneath, left-aligned" : "beneath, adrift";
+}
+
 /** The four-country walk s26 seeds, to the result where every section is drawn: France leads, the other three closed. */
 const walkToFour = async (page: BrowserPage, base: string): Promise<void> => {
   await page.goto(base, 300);
@@ -393,9 +399,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
           // The tally is level with the name, at the right — or, on the phone
           // only, wrapped beneath it and left-aligned. One of the two, never a
           // third place.
-          const onTheLine = s.tallyTop < s.nameBottom;
-          const place = onTheLine ? (s.tallyRight < 2 ? "right, on the name's line" : "adrift on the name's line")
-            : (s.tallyLeft < 2 ? "beneath, left-aligned" : "beneath, adrift");
+          const place = tallyPlaceOf(s);
           if (viewport.width === 1280) expect(place, where).toBe("right, on the name's line");
           else expect(["right, on the name's line", "beneath, left-aligned"], where).toContain(place);
         }

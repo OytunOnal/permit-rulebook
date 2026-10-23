@@ -463,6 +463,15 @@ export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string 
         </div>`;
 }
 
+/** Whether a settled amount applies to this reader, said beside its quote;
+ * nothing where its path is not decided yet. */
+function appliesMarkHtml(applied: boolean | undefined): string {
+  if (applied === undefined) return "";
+  return applied
+    ? ` · <b class="applies">${esc(APPLIES_TO_YOU)}</b>`
+    : ` · <span class="applies-not">${esc(DOES_NOT_APPLY_TO_YOU)}</span>`;
+}
+
 /**
  * Every value this route rests on, quoted and dated. Where a route states two
  * thresholds and only one of them applied to this reader, both still render —
@@ -493,11 +502,7 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
     const { lang, host, note } = quoteFrame(value, amount);
     // Per entry, not per card: one settled disjunction on a route must not put
     // a ruled-out mark under a second one nobody has decided.
-    const mark = !contested || amount === undefined || applied === undefined
-      ? ""
-      : applied
-        ? ` · <b class="applies">${esc(APPLIES_TO_YOU)}</b>`
-        : ` · <span class="applies-not">${esc(DOES_NOT_APPLY_TO_YOU)}</span>`;
+    const mark = contested && amount !== undefined ? appliesMarkHtml(applied) : "";
     return `<div class="src${contested && amount !== undefined && applied === false ? " unapplied" : ""}"><i${
       lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${

@@ -170,11 +170,15 @@ export async function smoke({ dir = dist, surfaces = DEFAULT_SURFACES } = {}) {
   }
   return results;
 }
+/** The surfaces a run asks for: `--dev` or `--dist` alone, or the default ones. */
+function surfacesAskedBy(argv) {
+  if (argv.includes("--dev")) return ["dev"];
+  if (argv.includes("--dist")) return ["dist"];
+  return DEFAULT_SURFACES;
+}
+
 if (process.argv[1]?.endsWith("smoke.mjs")) {
-  const only = process.argv.includes("--dev") ? ["dev"]
-    : process.argv.includes("--dist") ? ["dist"]
-    : DEFAULT_SURFACES;
-  const results = await smoke({ surfaces: only });
+  const results = await smoke({ surfaces: surfacesAskedBy(process.argv) });
   let failed = 0;
   for (const r of results) {
     if (r.failures.length) {

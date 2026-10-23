@@ -21,6 +21,15 @@ import { fileURLToPath } from "node:url";
 const publicDir = fileURLToPath(new URL("../public/", import.meta.url));
 const svg = readFileSync(`${publicDir}favicon.svg`, "utf8").split("\r\n").join("\n");
 
+/** PNG's Paeth predictor: the neighbour nearest to left + up − upper-left,
+ * left winning a tie, then up. */
+function paeth(left: number, up: number, upperLeft: number): number {
+  const p = left + up - upperLeft;
+  const toLeft = Math.abs(p - left), toUp = Math.abs(p - up), toUpperLeft = Math.abs(p - upperLeft);
+  if (toLeft <= toUp && toLeft <= toUpperLeft) return left;
+  return toUp <= toUpperLeft ? up : upperLeft;
+}
+
 /** The pixels of a PNG, as RGBA rows. Small icons only — no interlacing. */
 function pixels(file: string): { width: number; height: number; rgba: Buffer; colourType: number } {
   const png = readFileSync(file);
@@ -50,11 +59,7 @@ function pixels(file: string): { width: number; height: number; rgba: Buffer; co
       if (filter === 1) value += a;
       else if (filter === 2) value += b;
       else if (filter === 3) value += (a + b) >> 1;
-      else if (filter === 4) {
-        const p = a + b - c;
-        const pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
-        value += pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
-      }
+      else if (filter === 4) value += paeth(a, b, c);
       out[y * stride + x] = value & 255;
     }
   }

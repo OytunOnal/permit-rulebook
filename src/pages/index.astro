@@ -164,7 +164,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     } from "../lib/listbox.js";
     import {
       backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, readEntry,
-      recordScreen as recordEntry, screenAfter, screenAt, type FlowAction,
+      recordScreen as recordEntry, screenAfter, screenAt, type FlowAction, type Screen,
     } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     import { esc, escAttr } from "../lib/reason.js";
@@ -551,6 +551,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       main.dataset.beat = "";
     }
 
+    /** The standing promise a question screen's masthead shows; a verdict
+     * screen has none. */
+    function standingPromiseOf(screen: Screen): "started" | "fresh" | null {
+      if (screen.kind !== "question") return null;
+      return screen.started ? "started" : "fresh";
+    }
+
     /** One masthead, one writer. Every gesture names itself, and only the two
      * that compare something can produce a screen that says so — no path back
      * into the interview ("Start over", an edit, browser Back) can leave a
@@ -571,7 +578,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // verdict's subline may carry a link of its own (s19), and a child that
       // is not one of the two promises is no reason to leave it standing on a
       // question screen.
-      const standing = screen.kind === "question" ? (screen.started ? "started" : "fresh") : null;
+      const standing = standingPromiseOf(screen);
       if (standing !== null && subline.querySelector(".sub-fresh")) {
         if (page.dataset.promise !== standing) page.dataset.promise = standing;
         return;
