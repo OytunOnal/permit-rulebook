@@ -1,11 +1,6 @@
-// @level application presentation
-import {
-  phraseOf, phraseAtStartOf, isScored, joinAnd, remainingQuestions, shortLabelOf, subjectOf,
-} from "permit-rulebook-data";
+// @level application
+import { isScored, remainingQuestions } from "permit-rulebook-data";
 import type { Country, Dataset, Profile, Route } from "permit-rulebook-data";
-import {
-  comingFromRouteLine, placeAsksMoreClause, placeOnRecordLine, placeOnRecordNowLine, startingFromRouteLine,
-} from "./copy/interview.js";
 
 /**
  * Arriving at the interview from a route page.
@@ -15,13 +10,10 @@ import {
  * starts where the reader already is, and that route sorts first in whatever
  * group it lands in when the results come.
  *
- * It lives here rather than inside the page for the reason `screen.ts` does:
- * the behaviour `tests/s6-edges.test.ts` walks — "the pre-scoped route appears
- * first in the results and every behaviour from s5d and s5e holds" — has to be
- * readable by a test, and a rule written inline in a template is checked by
- * reading the template.
+ * The whole arrival is decided by `arrivalOf`, one call a test drives with the
+ * address as a string; the line's words and markup are `arrival-line.ts`'.
  */
-export interface ScopedArrival {
+interface ScopedArrival {
   route: Route;
   country: Country;
 }
@@ -39,7 +31,7 @@ export interface ScopedArrival {
  * results it can never appear in: the screen would promise a verdict on the one
  * route the whole page said it would never reach (s9).
  */
-export function arrivalFrom(dataset: Dataset, search: string): ScopedArrival | null {
+function arrivalFrom(dataset: Dataset, search: string): ScopedArrival | null {
   const id = new URLSearchParams(search).get("route");
   if (!id) return null;
   for (const country of dataset.countries)
@@ -59,7 +51,7 @@ export function arrivalFrom(dataset: Dataset, search: string): ScopedArrival | n
  * not louder than the question the reader is asking now; it is re-scoped, and
  * the screen says so.
  */
-export function destinationFor(arrival: ScopedArrival | null): string | null {
+function destinationFor(arrival: ScopedArrival | null): string | null {
   return arrival ? arrival.country.code.toLowerCase() : null;
 }
 
@@ -84,7 +76,7 @@ export function scopedFirst<T extends { route: { id: string } }>(rows: T[], rout
  * A code the dataset does not have is ignored, for the reason a stale route id
  * is: a stranger with an old link gets the ordinary interview, not an error.
  */
-export function countryArrivalFrom(dataset: Dataset, search: string): Country | null {
+function countryArrivalFrom(dataset: Dataset, search: string): Country | null {
   const params = new URLSearchParams(search);
   const code = params.get("country");
   if (code)
@@ -108,30 +100,8 @@ export function countryArrivalFrom(dataset: Dataset, search: string): Country | 
  * as a route arrival: the country the reader pressed is the country they are
  * asking about.
  */
-export function destinationForCountry(country: Country | null): string | null {
+function destinationForCountry(country: Country | null): string | null {
   return country ? country.code.toLowerCase() : null;
-}
-
-/**
- * How a question is named inside a sentence about it.
- *
- * The dataset writes two names for every field: a `subject`, a noun phrase
- * built to sit inside a sentence ("your German level", "whether your work is
- * in information technology"), and a `short_label` for the answer ledger ("IT
- * work"). The line that named a returning question lower-cased the ledger
- * label, which turned the acronym in "IT work" into a fragment — the live site
- * read "we ask again about it work" (human re-read, 2026-09-08).
- *
- * So: the subject, which is already a phrase in the case the dataset wrote it;
- * the short label verbatim if a field has no subject; and, if the dataset has
- * neither, a phrase that is still a sentence rather than a field id.
- */
-export function questionPhrase(dataset: Dataset, field: string): string {
-  const subject = subjectOf(dataset, field);
-  if (subject !== field) return subject;
-  const short = shortLabelOf(dataset, field);
-  if (short !== field) return short;
-  return "one more question";
 }
 
 /**
@@ -184,7 +154,7 @@ export interface RecordOnArrival {
  * France that five German questions were coming back when what actually
  * followed were two French ones (Spec review, 2026-09-08).
  */
-export function arrivalPlan(
+function arrivalPlan(
   dataset: Dataset, record: RecordOnArrival, destination: string,
 ): { answers: Profile; order: string[]; kept: string[]; asks: number; changed: boolean } {
   const { answers, order } = record;
@@ -268,45 +238,4 @@ export function arrivalOf(dataset: Dataset, search: string, record: RecordOnArri
     asks: plan.asks,
   };
   return { record: { answers: plan.answers, order: plan.order }, scopedRouteId, line };
-}
-
-/**
- * The one line an arrival prints, on whichever screen the reader lands on.
- *
- * `rescoped` is the difference between a reader who told us nothing yet and a
- * reader whose record said another country a moment ago: the second one is
- * being moved, and the sentence says so rather than describing a record they
- * did not write. Everything after the opening is read forwards — the answers
- * that survived, and the questions that are actually coming.
- *
- * `route` is the name of the route page the reader came from, or null when
- * they came from the country's own page; `country` is the country's code.
- */
-export function arrivalSentence(dataset: Dataset, o: {
-  route: string | null; country: string; rescoped: boolean;
-  kept: readonly string[]; asks: number;
-}): string {
-  const place = phraseOf(o.country);
-  const placeOpening = phraseAtStartOf(o.country);
-  const opening = arrivalOpening(o.route, { place, placeOpening }, o.rescoped);
-  // A reader who has answered nothing has no answers to account for, and the
-  // question counter under this line already says how many are coming.
-  if (!o.rescoped) return opening;
-  const clauses: string[] = [];
-  if (o.kept.length)
-    clauses.push(`Your answers about ${joinAnd(o.kept.map((f) => questionPhrase(dataset, f)))} are kept`);
-  if (o.asks > 0) clauses.push(placeAsksMoreClause(clauses.length ? place : placeOpening, o.asks));
-  return clauses.length ? `${opening} ${clauses.join("; ")}.` : opening;
-}
-
-/**
- * The arrival line's first sentence. A reader who came from a country's own
- * page (`route` null) is not told they came from it: the sentence states the
- * place once. One sent from a route page is told which route.
- */
-function arrivalOpening(
-  route: string | null, names: { place: string; placeOpening: string }, rescoped: boolean,
-): string {
-  if (route === null) return rescoped ? placeOnRecordNowLine(names.placeOpening) : placeOnRecordLine(names.placeOpening);
-  return rescoped ? startingFromRouteLine(route, names.place) : comingFromRouteLine(route, names.place);
 }

@@ -149,16 +149,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       deriveQuestions, remainingQuestions, notices, matchOptions, countryClasses, datasetMeta,
       type Dataset, type FieldOption, type Profile,
     } from "permit-rulebook-data";
-    // Arriving from a route page's call to action: what goes on the record and
-    // what sorts first, beside the page rather than inside it (step 10).
-    import {
-      arrivalFrom, arrivalPlan, arrivalSentence, countryArrivalFrom, destinationFor,
-      destinationForCountry, replayRecord,
-      type ScopedArrival,
-    } from "../lib/scope.js";
+    // Arriving from a country's or a route's call to action: what goes on the
+    // record, what sorts first and what the line says, decided in one call.
+    import { arrivalOf, replayRecord, type Arrival } from "../lib/scope.js";
+    import { arrivalLineHtml } from "../lib/arrival-line.js";
     // A symbol a stranger cannot read is explained the first time a screen uses
     // it, by the same module the route pages use (human, 2026-09-08).
-    import { type Glossary, glossSection } from "../lib/gloss.js";
+    import { type Glossary } from "../lib/gloss.js";
     import {
       activeOption, composeNoMatchLine, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState,
     } from "../lib/listbox.js";
@@ -320,84 +317,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     let setAside: string[] = [];
 
     /**
-     * The route a reader arrived from, when the call to action on a route page
-     * sent them here (`/?route=de-blue-card-general`).
-     *
-     * It does two things and no more: the destination goes on the record, so
-     * the interview starts where the reader already is, and that route sorts
-     * first in its own group when the results come. It never overrides an
-     * answer the person gave — a link is not louder than a declaration — so a
-     * stored record with a destination in it is left exactly as it stands.
+     * The arrival from a country's or a route's call to action (`/?country=de`,
+     * `/?route=de-blue-card-general`), decided once at load: the route that
+     * sorts first in every verdict, and the facts of the arrival line, which
+     * the first screen shows and every later screen drops.
      */
-    let scopedRouteId: string | null = null;
-    let cameFrom: ScopedArrival | null = null;
-    /** The code of the country an arrival named, by its own page or by a
-     * route's. */
-    let cameFromCountry: string | null = null;
-    /** Whether this arrival is what put the destination on the record. */
-    let scopeRecorded = false;
-    /** What survived the arrival, and how many questions this country still
-     * has — the two facts the arrival line is allowed to state. */
-    let arrivalKept: string[] = [];
-    let arrivalAsks = 0;
-    /** The country the record named before this arrival moved it, if any. */
-    let rescopedFrom: string | null = null;
-
-    /**
-     * Land the reader where the link says they are.
-     *
-     * The country on the link replaces the destination on the record and
-     * everything else they told us is kept, because a reader standing on
-     * France's page pressing France's own button is asking about France —
-     * whatever they asked yesterday. Money answers travel through the engine's
-     * own translation between ladders, and one it cannot read is asked again
-     * rather than guessed (isolated v1-gate critique, 2026-09-08, B2).
-     */
-    function scopeFromLink() {
-      cameFrom = arrivalFrom(ds, location.search);
-      const country = cameFrom ? cameFrom.country : countryArrivalFrom(ds, location.search);
-      const destination = cameFrom
-        ? destinationFor(cameFrom)
-        : destinationForCountry(country);
-      if (cameFrom) scopedRouteId = cameFrom.route.id;
-      if (destination === null || !country) return;
-      cameFromCountry = country.code;
-      const before = answers["destination"];
-      rescopedFrom = before !== undefined && before !== destination ? before : null;
-      const plan = arrivalPlan(ds, { answers, order: asked }, destination);
-      // Nothing moved: the reader is already here, and a line saying so is a
-      // line about nothing (Spec review, 2026-09-08).
-      if (!plan.changed) return;
-      answers = plan.answers;
-      asked = plan.order;
-      arrivalKept = plan.kept;
-      arrivalAsks = plan.asks;
-      scopeRecorded = true;
-      saveRecord();
-    }
-
-    /**
-     * What the arrival did, in one line, on whichever screen the reader lands
-     * on.
-     *
-     * The route path narrated itself and the country path did not (critique
-     * F15), and neither said anything at all to a reader with a record — who
-     * is exactly the reader whose screen just changed country (B2). Where an
-     * answer could not travel to the new ladder, the line says which question
-     * is coming back rather than letting it reappear unexplained.
-     */
-    function arrivalLine(): string {
-      if (!scopeRecorded || !cameFromCountry) return "";
-      // The words are built where they can be read by a test, over every
-      // question that can come back: the label lower-cased here turned "IT
-      // work" into "it work" on the live site (human re-read, 2026-09-08).
-      return `<p class="recorded" role="status">${
-        esc(arrivalSentence(ds, {
-          route: cameFrom ? routeName(cameFrom) : null, country: cameFromCountry,
-          rescoped: rescopedFrom !== null, kept: arrivalKept, asks: arrivalAsks,
-        }))
-      }</p>`;
-    }
+    let arrival: Arrival = { record: { answers: {}, order: [] }, scopedRouteId: null, line: null };
 
     /**
      * Say something once, in the screen's own live region.
@@ -616,7 +541,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * inside `verdictOf`.
      */
     let glossary: Glossary = new Set();
-    const routeName = (r: { route: { name: string } }): string => glossSection(r.route.name, glossary);
 
     function renderDeclaration(currentField: string | null) {
       // "Start over" is the ledger's control. The resumed line borrows it for
@@ -723,11 +647,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // paint brings them to and on no other: a second visit read as a broken
       // first question (v1.1 gate critique, F5). Not where an arrival line
       // already narrates what came back — one sentence about it, not two.
-      const arrival = arrivalLine();
-      const resumed = arriving && !arrival && asked.length > 0 ? asked.length : undefined;
+      const arrivalHtml = arrival.line ? arrivalLineHtml(ds, arrival.line, glossary) : "";
+      const resumed = arriving && !arrivalHtml && asked.length > 0 ? asked.length : undefined;
       paint(main, questionCardHtml({
         dataset: ds, question: q, answers, asked, editing, total,
-        arrival, justRecorded, resumed, glossary,
+        arrival: arrivalHtml, justRecorded, resumed, glossary,
       }), () => {
         if (longList) {
           const filter = document.getElementById("cfilter") as HTMLInputElement;
@@ -862,8 +786,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // Shown once, on the screen straight after the commit.
       justRecorded = null;
       // The same rule for the line that says where the reader came from.
-      cameFrom = null;
-      scopeRecorded = false;
+      arrival = { ...arrival, line: null };
 
       // One entry per question screen: answering moves forward, everything
       // else — editing, restoring, starting over — stands where it is.
@@ -938,12 +861,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       renderDeclaration(null);
       app.dataset.state = "results";
       setStamp("record");
-      const verdict = verdictOf(ds, answers, { cameFrom: scopedRouteId, answered: asked.length });
+      const verdict = verdictOf(ds, answers, { cameFrom: arrival.scopedRouteId, answered: asked.length });
       advance(verdict.action);
       // A notice that answers the reader outright is the whole body: the
-      // arrival line stands over a comparison only.
+      // arrival line stands over a comparison only, and on the first screen.
       const answeredOutright = verdict.layout.kind === "notice";
-      main.innerHTML = (answeredOutright ? "" : arrivalLine()) + verdictHtml(verdict);
+      const arrivalHtml = arrival.line && !answeredOutright ? arrivalLineHtml(ds, arrival.line, glossary) : "";
+      arrival = { ...arrival, line: null };
+      main.innerHTML = arrivalHtml + verdictHtml(verdict);
       announce(verdict.action.masthead.announced);
       landOnVerdict(wasResult);
       // Every verdict, a notice that answers outright included, is one entry
@@ -1121,8 +1046,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     });
 
     loadRecord();
-    // A route page's call to action lands here already scoped to its country.
-    scopeFromLink();
+    // A country's or a route's call to action lands here already scoped to its
+    // country; the record is saved once, when the arrival moved it.
+    arrival = arrivalOf(ds, location.search, { answers, order: asked });
+    answers = arrival.record.answers;
+    asked = arrival.record.order;
+    if (arrival.line) saveRecord();
 
     // Dev-only screenshot hook (stripped from production builds): pre-fill a
     // profile via ?dev-profile={"destination":"de",...} to land on any screen.

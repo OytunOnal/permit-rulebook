@@ -2,7 +2,7 @@
 /**
  * The question screens' words: the masthead before anything is compared,
  * the arrival line, the question card and its search, and what stands in the
- * box until the module draws (`lib/question.ts`, `lib/scope.ts`,
+ * box until the module draws (`lib/question.ts`, `lib/arrival-line.ts`,
  * `lib/listbox.ts`, `lib/situations.ts`).
  *
  * Every word a reader reads lives in this folder, one file per screen or
@@ -10,7 +10,7 @@
  */
 
 /**
- * The arrival line's sentences (`lib/scope.ts`): a reader sent from a country's
+ * The arrival line's sentences (`lib/arrival-line.ts`): a reader sent from a country's
  * own page, or from one of its route pages, with the record set to that
  * country — newly, or moved from another. `placeOpening` is the country's
  * phrase where it opens a sentence, `place` its phrase within one, `route` the
@@ -20,6 +20,10 @@ export const placeOnRecordLine = (placeOpening: string): string => `${placeOpeni
 export const placeOnRecordNowLine = (placeOpening: string): string => `${placeOpening} is on the record now.`;
 export const comingFromRouteLine = (route: string, place: string): string => `Coming from ${route} — ${place} is on the record.`;
 export const startingFromRouteLine = (route: string, place: string): string => `Starting from ${route} — ${place} is on the record.`;
+/** The clause that names the answers a move kept, by their phrases already joined. */
+export const answersKeptClause = (phrases: string): string => `Your answers about ${phrases} are kept`;
+/** A kept answer's name when the dataset gives its field neither a subject nor a short label. */
+export const UNNAMED_QUESTION_PHRASE = "one more question";
 /** The clause that counts the questions still to come; `place` opens it or follows a clause before it. */
 export const placeAsksMoreClause = (place: string, asks: number): string =>
   `${place} asks ${asks} more question${asks === 1 ? "" : "s"}`;
