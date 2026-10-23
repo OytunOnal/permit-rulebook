@@ -78,6 +78,7 @@
   "scripts/dev-server.mjs": "infrastructure",
   "scripts/measure-taps.mjs": "infrastructure main",
   "scripts/render-assets.mjs": "infrastructure main",
+  "scripts/set-merge-driver.mjs": "infrastructure",
   "scripts/shot.mjs": "infrastructure main",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure main",
@@ -4076,6 +4077,33 @@
     "exported": false
    }
   ],
+  "scripts/set-merge-driver.mjs": [
+   {
+    "name": "root",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "gitEnv",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "git",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "insideWorkTree",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "gitMessageOf",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
   "scripts/shot.mjs": [
    {
     "name": "root",
@@ -6704,6 +6732,7 @@
   "scripts/dev-server.mjs",
   "scripts/measure-taps.mjs",
   "scripts/render-assets.mjs",
+  "scripts/set-merge-driver.mjs",
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
@@ -6754,5 +6783,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "5bd2c28a1070408f6cc325795f8d9aa544898df8c2d2d014d9990db6ffd9de4b"
+ "digest": "827a53bef02890b35d22ce9dbeb1612a51f37c2fc76e3a3b070d78fee528311f"
 }
