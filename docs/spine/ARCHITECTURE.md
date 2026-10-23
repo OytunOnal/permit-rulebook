@@ -147,12 +147,19 @@ click on the tracker link. Answers never leave the device.
   never typed) plus 29 route JSON endpoints, the dataset and the countries as
   JSON, the sitemap, favicons, the social card.
 - **CI** — `pages.yml`: both repositories checked out, data gates, build,
-  tests with a real browser over `dist/`, asset truth, base-path check, tap
-  targets at 390 px, the carry, then deploy. The carry (`scripts/carry-assets`)
+  tests with a real browser over `dist/`, the lint, asset truth, base-path
+  check, tap targets at 390 px, the carry, then deploy. The lint
+  (`eslint.config.mjs`) holds the shape limits, 400 lines a file and 40 a
+  function with every line counted; what it still flags is a dated exception
+  naming the issue that removes it, and a test fails the green once its
+  version comes (#199). The carry (`scripts/carry-assets`)
   copies the live generation's assets into `dist/`, only from the site's own
   address and only bytes the previous build's digest list attests; it is a
-  deep module, one level per file, whose flow is given the live site, the
-  build directory and the clock, and it never fails the deploy (#110). Beside the build, the audit job reads the
+  deep module whose entry, the flow, is given the live site, the build
+  directory and the clock as ports. Its domain parts are private
+  (`generation/`, `outcome/`, the ceilings in `live-deploy/`); its adapters
+  and its log wording sit beside the command that wires them, and it never
+  fails the deploy (#110, #199). Beside the build, the audit job reads the
   site's lockfile: an advisory reddens the run, never holds the deploy; only
   `report` waits on it, and runs whatever its result. `report` runs last, on
   a scheduled or dispatched run's first attempt, after the build, the deploy,
