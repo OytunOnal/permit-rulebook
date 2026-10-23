@@ -146,11 +146,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <script>
     import dataset from "permit-rulebook-data/data/dataset.json";
     import {
-      deriveQuestions, remainingQuestions, datasetMeta, type Dataset, type Profile,
+      deriveQuestions, remainingQuestions, datasetMeta, type Dataset, type Question,
     } from "permit-rulebook-data";
-    // Arriving from a country's or a route's call to action: what goes on the
-    // record, what sorts first and what the line says, decided in one call.
-    import { arrivalOf, replayRecord, type Arrival } from "../lib/scope.js";
+    // Every decision the interview makes — the screen, its lines, the landing,
+    // the beat, the save and the history move — from one call per gesture;
+    // this page applies the result.
+    import {
+      EMPTY_INTERVIEW, interviewAfter, type Gesture, type HistoryCall, type InterviewScreen, type InterviewState,
+      type InterviewStep, type Landing,
+    } from "../lib/interview/index.js";
+    // The arrival line's words, over whichever screen an arrival lands on.
     import { arrivalLineHtml } from "../lib/arrival-line.js";
     // A symbol a stranger cannot read is explained the first time a screen uses
     // it, by the same module the route pages use (human, 2026-09-08).
@@ -158,10 +163,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // The passport search: built over the question's options and mounted on
     // the card; what typing, a key and a click do is decided inside it.
     import { countrySearchOf, hasClasses, mountCountrySearch } from "../lib/country-search/index.js";
-    import { screenAfter, type FlowAction, type Screen } from "../lib/screen.js";
+    import type { Masthead, VerdictMasthead } from "../lib/screen.js";
     // The interview's history, and the browser's history behind its port: the
     // page tells it what each gesture drew, and draws what the browser moved to.
-    import { openInterviewHistory, type BrowserMove, type InterviewHistory } from "../lib/interview-history/index.js";
+    import { openInterviewHistory, type InterviewHistory } from "../lib/interview-history/index.js";
     import { browserHistoryOf } from "../lib/browser-history.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     // The question screen and the declaration panel: the same renderer the
@@ -296,32 +301,12 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     const declCount = document.getElementById("decl-count")!;
 
-    let answers: Profile = {};
-    let asked: string[] = []; // answered fields, in order, for Back
-    /** The field being reconsidered — from the declaration panel or from Back.
-     * The answer is never deleted while it is on screen: it renders as the
-     * selected option, and picking another replaces it. */
-    let editing: string | null = null;
-
-    /** What the country picker just put on the record. The control commits a
-     * row that need not be the text in the box, so the commit is stated in
-     * words on the next screen — the side ledger was the only feedback, and a
-     * whole record was computed for the wrong nationality in silence
-     * (product-critique v0.7, B1). */
-    let justRecorded: { field: string; label: string } | null = null;
-
-    /** The answers the last edit's replay set aside. The panel names them on
-     * the screen the edit draws, question or verdict, and the render after
-     * takes them away, as the resumed line holds for one screen (#137). */
-    let setAside: string[] = [];
-
-    /**
-     * The arrival from a country's or a route's call to action (`/?country=de`,
-     * `/?route=de-blue-card-general`), decided once at load: the route that
-     * sorts first in every verdict, and the facts of the arrival line, which
-     * the first screen shows and every later screen drops.
-     */
-    let arrival: Arrival = { record: { answers: {}, order: [] }, scopedRouteId: null, line: null };
+    /** Where the interview stands: the answers, the order they were asked in,
+     * the answer being reconsidered and the route the address sorts first.
+     * Every gesture replaces it with the state `interviewAfter` returns. An
+     * answer being reconsidered is never deleted while it is on screen: it
+     * renders as the selected option, and picking another replaces it. */
+    let interview: InterviewState = EMPTY_INTERVIEW;
 
     /**
      * Say something once, in the screen's own live region.
@@ -405,25 +390,28 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     /** One list for the breakpoint: the landing reads it here, the ledger
      * below listens to it. */
     const wide = window.matchMedia(WIDE_QUERY);
-    function landOnQuestion(card: Element, action: FlowAction): void {
-      // Outside the first paint, `restore` is only ever the browser's move.
-      const moved = action.kind === "restore";
-      const lands = action.kind === "answer" || action.kind === "edit" || moved;
-      if (wide.matches || !headEl || !lands) {
-        if (!moved) reveal(card);
+    function landOnQuestion(card: Element, land: Landing): void {
+      // The first paint and a browser move onto the first screen keep the
+      // browser's own scroll.
+      if (land === "first-paint" || land === "browser-scroll") return;
+      const afterRestore = land === "card-under-header-after-restore";
+      /** s20's reveal: every gesture on a wide screen, and Start over on any. */
+      const revealsOnly = wide.matches || land === "card-into-view";
+      if (revealsOnly || !headEl) {
+        if (!afterRestore) reveal(card);
         return;
       }
       // The ledger the correction came from folds away, so the question it
       // reopened is the next thing under the line.
-      if (action.kind === "edit") decl.open = false;
-      const land = () => {
+      if (land === "card-under-folded-ledger") decl.open = false;
+      const underHeader = () => {
         const { height } = headEl.getBoundingClientRect();
         const gap = parseFloat(getComputedStyle(headEl).paddingBottom);
         const top = window.scrollY + card.getBoundingClientRect().top - height - gap;
         window.scrollTo({ top, behavior: reducedMotion.matches ? "auto" : "smooth" });
       };
-      if (moved) requestAnimationFrame(land);
-      else land();
+      if (afterRestore) requestAnimationFrame(underHeader);
+      else underHeader();
     }
     /** The first control on a question card — a button for a choice, the box
      * for a search — and the card's own heading where there is neither. The
@@ -437,10 +425,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       heading.tabIndex = -1;
       heading.focus({ preventScroll: true });
     }
-    /** Whether the render under way is the one that puts the reader's own
-     * screen in the box at load — the one render that is not a gesture. */
-    let arriving = true;
-
     /**
      * The beat (#86): a question card a gesture draws fades in, and for the
      * beat nothing on it commits an answer.
@@ -475,23 +459,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       main.dataset.beat = "";
     }
 
-    /** The standing promise a question screen's masthead shows; a verdict
-     * screen has none. */
-    function standingPromiseOf(screen: Screen): "started" | "fresh" | null {
-      if (screen.kind !== "question") return null;
-      return screen.started ? "started" : "fresh";
-    }
-
-    /** One masthead, one writer. Every gesture names itself, and only the two
-     * that compare something can produce a screen that says so — no path back
-     * into the interview ("Start over", an edit, browser Back) can leave a
-     * claim about a comparison standing (product-critique v0.7, B4). The
-     * transitions themselves live in `screen.ts`, where a property test walks
-     * them in every order (review H1). A question screen's masthead is the
-     * question card's; a verdict screen carries the one the verdict composed. */
-    function advance(action: FlowAction) {
-      const screen = screenAfter(action, { answered: asked.length });
-      const m = screen.kind === "question" ? questionMastheadOf(screen) : screen.masthead;
+    /** One masthead, one writer. Which screen a gesture lands on is
+     * `interviewAfter`'s, where a property test walks every gesture in every
+     * order (review H1), so no path back into the interview ("Start over", an
+     * edit, browser Back) can leave a claim about a comparison standing
+     * (product-critique v0.7, B4). A question screen's masthead is the
+     * question card's, with the standing promise its screen says; a verdict
+     * screen carries the one the verdict composed, and no standing promise. */
+    function advance(m: Masthead & Pick<VerdictMasthead, "sublineHtml">, standing: "started" | "fresh" | null) {
       draw(headline, m.headline);
       // The build painted both of the masthead's standing promises and an
       // inline script in <head> seeded which one shows before the first paint,
@@ -502,7 +477,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // verdict's subline may carry a link of its own (s19), and a child that
       // is not one of the two promises is no reason to leave it standing on a
       // question screen.
-      const standing = standingPromiseOf(screen);
       if (standing !== null && subline.querySelector(".sub-fresh")) {
         if (page.dataset.promise !== standing) page.dataset.promise = standing;
         return;
@@ -510,8 +484,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // The one subline that carries a link — the s19 written state's door to
       // the quoted route — is drawn as the markup the verdict composed; every
       // other subline is written as text.
-      const sublineWithDoor = screen.kind === "question" ? undefined : screen.masthead.sublineHtml;
-      if (sublineWithDoor !== undefined) draw(subline, sublineWithDoor);
+      if (m.sublineHtml !== undefined) draw(subline, m.sublineHtml);
       else say(subline, m.subline);
     }
 
@@ -529,7 +502,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      */
     let glossary: Glossary = new Set();
 
-    function renderDeclaration(currentField: string | null) {
+    function renderDeclaration(step: InterviewStep, currentField: string | null) {
+      const { answers, asked } = step.state;
       // "Start over" is the ledger's control. The resumed line borrows it for
       // one screen (s20), and every render begins by taking it back — before
       // the box is compared or written, so the box never holds a node the
@@ -537,14 +511,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       if (restart.parentElement !== decl) decl.append(restart);
       paint(declList, declarationHtml(ds, { answers, asked, currentField }), () => {
         declList.querySelectorAll<HTMLElement>("[data-field]").forEach((row) => {
-          const jump = () => {
-            const f = row.dataset.field!;
-            if (asked.indexOf(f) < 0) return;
-            editing = f;
-            setStamp("rules-read");
-            app.dataset.state = "questions";
-            renderQuestion({ kind: "edit" });
-          };
+          const jump = () => apply({ kind: "editedRow", field: row.dataset.field! });
           row.addEventListener("click", jump);
           row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); jump(); } });
         });
@@ -552,10 +519,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // One line, in two places: under the rows, and in the summary row for a
       // phone whose panel is folded, where the rows cannot be seen. The
       // stylesheet shows the one that can be.
-      const setAsideLine = setAsideHtml(ds, setAside);
+      const setAsideLine = setAsideHtml(ds, step.lines.setAside);
       draw(declSetAside, setAsideLine);
       draw(declSetAsideFolded, setAsideLine);
-      setAside = [];
       say(declCount, declarationCount(asked.length));
       restart.hidden = currentField !== null;
       // The fact the count states, as a state the stylesheet can read: on a
@@ -570,117 +536,82 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // lands is the shift s10 forbids. The seed comes down on a gesture
       // (Start over), never on the arrival.
       if (asked.length > 0) page.dataset.answered = "";
-      else if (!arriving) delete page.dataset.answered;
+      else if (step.land !== "first-paint") delete page.dataset.answered;
     }
 
-    /**
-     * Replay the stored answers through the interview and keep the ones it
-     * still asks for. Changing "destination: Netherlands" to "Germany" drops
-     * the Dutch-only answers because the flow no longer reaches them; it does
-     * not drop citizenship, age or salary, which it still does, so an edit
-     * re-asks nothing already answered. Anything the interview would not ask
-     * is forgotten rather than shown as a stale row. Returns the answers it
-     * set aside, for an edit to name.
-     */
-    function answersSetAsideByReplay(): string[] {
-      const replayed = replayRecord(ds, answers, asked);
-      answers = replayed.answers;
-      asked = replayed.order;
-      return replayed.setAside;
-    }
-
-    /** Draw the question screen the gesture lands on. Rendering and advancing
-     * the masthead are one call, so a path back into the interview cannot
-     * render without saying which gesture brought it here (B4). Returns the
-     * question drawn, or null where nothing was left to ask and it drew the
-     * verdict. */
-    function renderQuestion(action: FlowAction): string | null {
+    /** Draw the question screen a step lands on: its masthead, its ledger,
+     * and its card with the lines the step says, then meet the reader there. */
+    function renderQuestion(step: InterviewStep, screen: Extract<InterviewScreen, { kind: "question" }>): void {
       glossary = new Set();
+      const { state, lines } = step;
       // Only questions a still-alive route cares about; e.g. "no job offer"
       // retires the salary question instead of asking it into the void.
-      const remaining = remainingQuestions(ds, answers);
-      if (!editing && remaining.length === 0) return renderResults();
-      const q = editing
-        ? (remaining.find((x) => x.field === editing) ?? questions.find((x) => x.field === editing)!)
-        : remaining[0];
-      advance(action);
+      const remaining = remainingQuestions(ds, state.answers);
+      const q = remaining.find((x) => x.field === screen.field) ?? questions.find((x) => x.field === screen.field)!;
+      // A question drawn over the verdict takes the stamp back to the rules'
+      // date; on the questions it already says that.
+      if (app.dataset.state !== "questions") {
+        setStamp("rules-read");
+        app.dataset.state = "questions";
+      }
+      advance(questionMastheadOf(screen), screen.started ? "started" : "fresh");
       announce("");
-      renderDeclaration(q.field);
-      const total = asked.length + remaining.length;
+      renderDeclaration(step, q.field);
+      const arrivalHtml = lines.arrival ? arrivalLineHtml(ds, lines.arrival, glossary) : "";
+      paint(main, questionCardHtml({
+        dataset: ds, question: q, answers: state.answers, asked: state.asked, editing: state.editing,
+        total: state.asked.length + remaining.length, arrival: arrivalHtml, justRecorded: lines.justRecorded,
+        resumed: lines.resumed ?? undefined, glossary,
+      }), () => wireQuestion(q, state.answers[q.field]));
+      // The resumed line ends in the ledger's own "Start over", moved in after
+      // it — the same node, so there is one control and one listener. The
+      // ledger takes it back at the start of the next render.
+      if (lines.resumed) {
+        const line = main.querySelector<HTMLElement>(".resumed");
+        if (line) { line.append(" ", restart); restart.hidden = false; }
+      }
+      meetQuestion(step, isLongList(q));
+    }
+
+    /** Hang a question card's listeners: its answers, "Keep this answer" and
+     * "← Back". `chosen` is the answer on file for it, if any. */
+    function wireQuestion(q: Question, chosen: string | undefined): void {
       /** Puts `value` on the record and draws the next screen, unless the
        * card is inside its beat. `recordedAs` is the words the next screen
        * says were recorded, where the control can commit a row that is not
        * the text in the box. */
       const answer = (value: string, recordedAs?: string) => {
-        if (insideBeat()) return;
-        if (recordedAs !== undefined) justRecorded = { field: q.field, label: recordedAs };
-        answers[q.field] = value;
-        if (editing) {
-          // The edited answer keeps its place in the order; everything after it
-          // survives unless the flow no longer asks it, and what it does not
-          // survive is named on the next screen.
-          editing = null;
-          setAside = answersSetAsideByReplay();
-        } else {
-          asked.push(q.field);
-        }
-        saveRecord();
-        renderQuestion({ kind: "answer" });
+        if (!insideBeat()) apply({ kind: "answered", value, recordedAs });
       };
-      const longList = isLongList(q);
-      // A returning reader is told they returned, on the screen the first
-      // paint brings them to and on no other: a second visit read as a broken
-      // first question (v1.1 gate critique, F5). Not where an arrival line
-      // already narrates what came back — one sentence about it, not two.
-      const arrivalHtml = arrival.line ? arrivalLineHtml(ds, arrival.line, glossary) : "";
-      const resumed = arriving && !arrivalHtml && asked.length > 0 ? asked.length : undefined;
-      paint(main, questionCardHtml({
-        dataset: ds, question: q, answers, asked, editing, total,
-        arrival: arrivalHtml, justRecorded, resumed, glossary,
-      }), () => {
-        if (longList) {
-          // A commit says what was recorded on the next screen, in the
-          // question card: the side ledger is not where a person looks after
-          // pressing Enter.
-          const classed = hasClasses(q) ? { dataset: ds, field: q.field } : null;
-          mountCountrySearch(main, countrySearchOf(q.options, { chosen: answers[q.field], classed }, answer));
-        } else {
-          main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
-            btn.addEventListener("click", () => answer(btn.dataset.value!)));
-        }
-
-        main.querySelector<HTMLElement>("#done")?.addEventListener("click", () => {
-          editing = null;
-          renderQuestion({ kind: "answer" });
-        });
-        main.querySelector<HTMLElement>("#back")?.addEventListener("click", () => {
-          // Where the browser holds a step of ours behind, the history asks it
-          // to go back, and its move draws the question that entry was showing.
-          // Elsewhere the step is the one editing a declared row makes: the
-          // previous question in place. Nothing is erased on the way.
-          const move = interviewHistory?.back(asked, editing);
-          if (move?.kind !== "in-place") return;
-          editing = move.field;
-          setStamp("rules-read");
-          app.dataset.state = "questions";
-          renderQuestion({ kind: "edit" });
-        });
-      });
-      // The resumed line ends in the ledger's own "Start over", moved in after
-      // it — the same node, so there is one control and one listener. The
-      // ledger takes it back at the start of the next render.
-      if (resumed) {
-        const line = main.querySelector<HTMLElement>(".resumed");
-        if (line) { line.append(" ", restart); restart.hidden = false; }
+      if (isLongList(q)) {
+        // A commit says what was recorded on the next screen, in the
+        // question card: the side ledger is not where a person looks after
+        // pressing Enter.
+        const classed = hasClasses(q) ? { dataset: ds, field: q.field } : null;
+        mountCountrySearch(main, countrySearchOf(q.options, { chosen, classed }, answer));
+      } else {
+        main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
+          btn.addEventListener("click", () => answer(btn.dataset.value!)));
       }
+      main.querySelector<HTMLElement>("#done")?.addEventListener("click", () => apply({ kind: "kept" }));
+      main.querySelector<HTMLElement>("#back")?.addEventListener("click", () => {
+        // Where the browser holds a step of ours behind, the history asks it
+        // to go back, and its move draws the question that entry was showing.
+        // Elsewhere the step is the one editing a declared row makes: the
+        // previous question in place. Nothing is erased on the way.
+        const move = interviewHistory?.back(interview.asked, interview.editing);
+        if (move?.kind === "in-place") apply({ kind: "back", field: move.field });
+      });
+    }
+
+    /** Meet the reader at the question card just drawn: the landing the step
+     * asks for, the focus, and the beat. */
+    function meetQuestion(step: InterviewStep, longList: boolean): void {
       const card = main.querySelector<HTMLElement>(".qcard");
       /** The card a gesture drew, as opposed to the one the first paint put
        * in the box. */
-      const gestureCard = arriving ? null : card;
-      // A history move to the page's first screen keeps the browser's own
-      // restore (the top of the page); every other gesture, the browser's Back
-      // included, hands the card to the landing.
-      if (gestureCard && !browserMove?.ontoFirstScreen) landOnQuestion(gestureCard, action);
+      const gestureCard = step.land === "first-paint" ? null : card;
+      if (gestureCard) landOnQuestion(gestureCard, step.land);
       if (longList) {
         // Every render of a search question puts the caret in it, whether or
         // not the box had to be rewritten to get here. A correction starts by
@@ -692,17 +623,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       } else if (gestureCard) {
         focusFirst(gestureCard);
       }
-      if (gestureCard) beginBeat();
-      // Shown once, on the screen straight after the commit.
-      justRecorded = null;
-      // The same rule for the line that says where the reader came from.
-      arrival = { ...arrival, line: null };
-
-      // One entry per question screen: answering moves forward, everything
-      // else — editing, restoring, starting over — stands where it is.
-      if (action.kind === "answer") interviewHistory?.movedForward(q.field);
-      else interviewHistory?.redrawnInPlace(q.field);
-      return q.field;
+      if (step.beat) beginBeat();
     }
 
     /**
@@ -748,16 +669,16 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * focus from a reader who has touched nothing (s31).
      */
     const masthead = document.querySelector<HTMLElement>(".masthead-with-stamps")!;
-    function landOnVerdict(wasResult: boolean): void {
+    function landOnVerdict(wasResult: boolean, land: Landing): void {
       if (showArrival()) return;
-      if (arriving || browserMove) return;
+      if (land !== "verdict-masthead") return;
       if (!wasResult) reveal(masthead);
       headline.tabIndex = -1;
       headline.focus({ preventScroll: true });
     }
 
-    /** Draw the verdict. Returns null, the question it draws: none. */
-    function renderResults(): null {
+    /** Draw the verdict a step lands on, with the arrival line the step says. */
+    function renderResults(step: InterviewStep): void {
       glossary = new Set();
       // Whether the reader was already on a result: a verdict that replaces a
       // question is brought to its headline; one drawn over a result the
@@ -768,28 +689,20 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // place that writes a painted box some other way, and the rule about
       // doing so is written at `paint` (s10).
       wired.delete(main);
-      // The commit banner belongs to the screen after the commit, and the
-      // verdict is not it.
-      justRecorded = null;
-      renderDeclaration(null);
+      renderDeclaration(step, null);
       app.dataset.state = "results";
       setStamp("record");
-      const verdict = verdictOf(ds, answers, { cameFrom: arrival.scopedRouteId, answered: asked.length });
-      advance(verdict.action);
+      const { answers, asked, scopedRouteId } = step.state;
+      const verdict = verdictOf(ds, answers, { cameFrom: scopedRouteId, answered: asked.length });
+      advance(verdict.action.masthead, null);
       // A notice that answers the reader outright is the whole body: the
-      // arrival line stands over a comparison only, and on the first screen.
+      // arrival line stands over a comparison only.
       const answeredOutright = verdict.layout.kind === "notice";
-      const arrivalHtml = arrival.line && !answeredOutright ? arrivalLineHtml(ds, arrival.line, glossary) : "";
-      arrival = { ...arrival, line: null };
+      const facts = step.lines.arrival;
+      const arrivalHtml = facts && !answeredOutright ? arrivalLineHtml(ds, facts, glossary) : "";
       main.innerHTML = arrivalHtml + verdictHtml(verdict);
       announce(verdict.action.masthead.announced);
-      landOnVerdict(wasResult);
-      // Every verdict, a notice that answers outright included, is one entry
-      // on top of the last question's, so Back lands on that question. It is
-      // written last, once the screen is drawn and landed on, as a question
-      // screen's is.
-      interviewHistory?.movedForward(null);
-      return null;
+      landOnVerdict(wasResult, step.land);
     }
 
     /**
@@ -809,35 +722,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         return window.localStorage;
       } catch { return null; }
     })();
-    // With the one bit the verdict implies: whether the interview had nothing
-    // left to ask when this was written, so the next visit can paint for a
-    // verdict before the engine has run (s22).
-    const saveRecord = () =>
-      writeRecord(store, { answers, history: asked, done: remainingQuestions(ds, answers).length === 0 });
-    function loadRecord() {
-      // The questions this interview can ask, with the answers each takes: a
-      // field the rules retired, or an answer a field no longer offers, is
-      // dropped here rather than resurrected on the ledger (s25).
-      const kept = readRecord(store, questions);
-      answers = kept.answers;
-      asked = kept.history;
-      // The rules may have moved since it was written: replay drops anything
-      // this interview would no longer ask.
-      answersSetAsideByReplay();
-    }
-
-    restart.addEventListener("click", (e) => {
-      e.preventDefault();
-      // A shared or borrowed computer must not hand the next person a
-      // stranger's salary: the stored record goes with the screen.
-      answers = {}; asked = []; editing = null;
-      clearRecord(store);
-      // Back must not undo it: the entries go with the record.
-      interviewHistory?.restarted();
-      app.dataset.state = "questions";
-      setStamp("rules-read");
-      renderQuestion({ kind: "reset" });
-    });
 
     /**
      * The interview's history: one entry per screen, and one gesture behind
@@ -846,25 +730,36 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * render tells it nothing.
      */
     let interviewHistory: InterviewHistory | null = null;
-    /** The browser's move being drawn, while it is: it keeps the scroll the
-     * browser restores, and the focus where it is. */
-    let browserMove: BrowserMove | null = null;
 
-    function drawBrowserMove(move: BrowserMove): void {
-      browserMove = move;
-      if (move.field === null) {
-        editing = null;
-        renderResults();
-      } else {
-        // The question that entry was showing, with everything answered since
-        // still on the record — back is a step, not an undo.
-        editing = move.field;
-        setStamp("rules-read");
-        app.dataset.state = "questions";
-        renderQuestion({ kind: "restore" });
-      }
-      browserMove = null;
+    /**
+     * A gesture, applied: the step `interviewAfter` decides is kept as the
+     * interview's state, the record is saved or cleared as it says, the screen
+     * is drawn, and the history is told last, once the screen is drawn and
+     * landed on. A gesture that leads nowhere draws nothing.
+     */
+    function apply(gesture: Gesture): InterviewStep | null {
+      const step = interviewAfter(ds, interview, gesture);
+      if (!step) return null;
+      interview = step.state;
+      if (step.save === "clear") clearRecord(store);
+      else if (step.save) writeRecord(store, step.save);
+      if (step.screen.kind === "verdict") renderResults(step);
+      else renderQuestion(step, step.screen);
+      for (const call of step.history) tellHistory(call);
+      return step;
     }
+
+    /** One call on the interview's history, as the step named it. */
+    function tellHistory(call: HistoryCall): void {
+      if (call.call === "restarted") interviewHistory?.restarted();
+      else if (call.call === "movedForward") interviewHistory?.movedForward(call.field);
+      else interviewHistory?.redrawnInPlace(call.field);
+    }
+
+    restart.addEventListener("click", (e) => {
+      e.preventDefault();
+      apply({ kind: "restarted" });
+    });
 
     /**
      * The ledger is a fixed panel on a wide screen and a one-line disclosure
@@ -901,13 +796,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       for (const d of printOpened.splice(0)) d.open = false;
     });
 
-    loadRecord();
-    // A country's or a route's call to action lands here already scoped to its
-    // country; the record is saved once, when the arrival moved it.
-    arrival = arrivalOf(ds, location.search, { answers, order: asked });
-    answers = arrival.record.answers;
-    asked = arrival.record.order;
-    if (arrival.line) saveRecord();
+    // The questions this interview can ask, with the answers each takes: a
+    // field the rules retired, or an answer a field no longer offers, is
+    // dropped here rather than resurrected on the ledger (s25).
+    let kept = readRecord(store, questions);
 
     // Dev-only screenshot hook (stripped from production builds): pre-fill a
     // profile via ?dev-profile={"destination":"de",...} to land on any screen.
@@ -915,24 +807,24 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       const raw = new URLSearchParams(location.search).get("dev-profile");
       if (raw) {
         try {
-          answers = JSON.parse(raw);
-          asked = Object.keys(answers);
+          const answers = JSON.parse(raw);
+          kept = { answers, history: Object.keys(answers) };
         } catch { /* fall through to the normal flow */ }
       }
     }
 
-    // The first screen is whatever the stored record left behind — a fresh
-    // interview when there is none. The first paint's covers come off here,
-    // once, in the task that draws it, so nothing is painted in between.
+    // The first screen is whatever the stored record left behind, with a
+    // country's or a route's call to action applied to it — a fresh interview
+    // when there is neither. The first paint's covers come off here, once, in
+    // the task that draws it, so nothing is painted in between.
     takeCoversOff(page);
-    const showing = renderQuestion({ kind: "restore" });
-    // Everything from here on is a gesture, and a gesture lands where it drew.
-    arriving = false;
+    const first = apply({ kind: "loaded", record: kept, search: location.search });
+    const showing = first?.screen.kind === "question" ? first.screen.field : null;
 
     // A reload empties the page while the browser keeps every entry it pushed:
     // the history rebuilds its list from the record and the screen on show.
-    interviewHistory = openInterviewHistory(browserHistoryOf(window), { asked, showing });
-    interviewHistory.onMove(drawBrowserMove);
+    interviewHistory = openInterviewHistory(browserHistoryOf(window), { asked: interview.asked, showing });
+    interviewHistory.onMove((move) => apply({ kind: "browserMoved", ...move }));
 
     // Dev-only layout probe: ?dev-probe=1 writes the widest offenders into the
     // title so headless --dump-dom can report horizontal overflow (golden G1).

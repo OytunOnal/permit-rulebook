@@ -109,7 +109,7 @@ export const configWithoutExceptions = [
  * @type {LintException[]}
  */
 export const lintExceptions = [
-  { file: "src/pages/index.astro", rules: [FILE_LENGTH, FUNCTION_LENGTH], issue: 56, until: "1.2.3" },
+  { file: "src/pages/index.astro", rules: [FILE_LENGTH], issue: 56, until: "1.2.3" },
 
   { file: "src/lib/route-page.ts", rules: [FILE_LENGTH, FUNCTION_LENGTH], issue: 142, until: "1.2.3" },
   { file: "src/lib/country-page.ts", rules: [FUNCTION_LENGTH], issue: 142, until: "1.2.3" },
