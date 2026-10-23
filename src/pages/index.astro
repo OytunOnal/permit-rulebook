@@ -146,8 +146,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
   <script>
     import dataset from "permit-rulebook-data/data/dataset.json";
     import {
-      deriveQuestions, remainingQuestions, notices, matchOptions, countryClasses, datasetMeta,
-      type Dataset, type FieldOption, type Profile,
+      deriveQuestions, remainingQuestions, datasetMeta, type Dataset, type Profile,
     } from "permit-rulebook-data";
     // Arriving from a country's or a route's call to action: what goes on the
     // record, what sorts first and what the line says, decided in one call.
@@ -156,20 +155,19 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // A symbol a stranger cannot read is explained the first time a screen uses
     // it, by the same module the route pages use (human, 2026-09-08).
     import { type Glossary } from "../lib/gloss.js";
-    import {
-      activeOption, composeNoMatchLine, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState,
-    } from "../lib/listbox.js";
+    // The passport search: built over the question's options and mounted on
+    // the card; what typing, a key and a click do is decided inside it.
+    import { countrySearchOf, hasClasses, mountCountrySearch } from "../lib/country-search/index.js";
     import {
       backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, readEntry,
       recordScreen as recordEntry, screenAfter, screenAt, type FlowAction, type Screen,
     } from "../lib/screen.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
-    import { esc, escAttr } from "../lib/reason.js";
     // The question screen and the declaration panel: the same renderer the
     // build drew the first paint with, so the module's first render finds the
     // screen it would have drawn already on the page (s10).
     import {
-      declarationCount, declarationHtml, hasClasses, isLongList, questionCardHtml, questionMastheadOf, setAsideHtml,
+      declarationCount, declarationHtml, isLongList, questionCardHtml, questionMastheadOf, setAsideHtml,
     } from "../lib/question.js";
     // The width the ledger stops being a disclosure at, said once, and read
     // here and by the script that runs before the first paint (s10); and the
@@ -516,18 +514,6 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       else say(subline, m.subline);
     }
 
-    /** What an option's class reads as beside it. Derived from the dataset —
-     * the class the option implies, or the fact that a notice would fire on
-     * this answer — never a string keyed to one country. */
-    function classHint(field: string, o: FieldOption): string {
-      // A notice that adds rights says so in its own title; naming one treaty
-      // here would print the wrong one for the next agreement (review).
-      const extra = notices(ds, { [field]: o.value }).find((n) => n.kind === "extra-rights");
-      if (extra) return "a note applies to this passport";
-      const cls = o.implies?.[0];
-      return cls ? (countryClasses[cls]?.label ?? cls) : "";
-    }
-
     // The ledger grows as the record accrues: answered rows accumulate and
     // only the question currently on the table shows as a pending row. With
     // adaptive pruning, fields that never get asked never appear — the panel
@@ -638,11 +624,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         saveRecord();
         renderQuestion({ kind: "answer" });
       };
-      // A list this long is a search, not a choice between buttons — but it is
-      // still a choice from the dataset's own options: no free text, no
-      // guessing at spellings.
       const longList = isLongList(q);
-      const classed = hasClasses(q);
       // A returning reader is told they returned, on the screen the first
       // paint brings them to and on no other: a second visit read as a broken
       // first question (v1.1 gate critique, F5). Not where an arrival line
@@ -654,79 +636,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
         arrival: arrivalHtml, justRecorded, resumed, glossary,
       }), () => {
         if (longList) {
-          const filter = document.getElementById("cfilter") as HTMLInputElement;
-          const list = document.getElementById("clist")!;
-          // The control's selection semantics live in one pure model, and the DOM
-          // is only its picture: what Enter commits is decided there, where a
-          // property test can hold it (product-critique v0.7, B1).
-          let box: ListboxState = stateFor(filter.value);
-          const drawList = () => {
-            filter.setAttribute("aria-expanded", String(box.open && box.query.trim() !== ""));
-            const status = document.getElementById("cstatus");
-            if (!box.query.trim() || !box.open) {
-              // Before aliases existed the cold list was the only escape hatch
-              // for someone who could not spell the official name; now typing
-              // finds them, so opening on sixty rows is just noise (tracker #4).
-              list.innerHTML = `<p class="cnone">${q.options.length} countries — the name you grew up with works too.</p>`;
-              filter.removeAttribute("aria-activedescendant");
-              if (status) status.textContent = "";
-              return;
-            }
-            const matches = matchOptions(q.options, box.query);
-            if (!matches.length) {
-              // An empty box says nothing; this says what to do about it, or,
-              // for a territory, whose passport its people hold (#160).
-              const said = composeNoMatchLine(box.query);
-              list.innerHTML = `<p class="cnone">${esc(said.line)}</p>`;
-              filter.removeAttribute("aria-activedescendant");
-              if (status) status.textContent = said.status;
-              return;
-            }
-            const shown = shownOptions(q.options, box);
-            const active = activeOption(q.options, box);
-            if (status)
-              status.textContent = `${matches.length} match${matches.length === 1 ? "" : "es"}` +
-                (active ? `. ${active.label} highlighted — press Enter to record it` : "");
-            list.innerHTML = shown.map((o, i) => {
-              const chosen = answers[q.field] === o.value;
-              return `<button class="copt${i === box.active ? " on" : ""}${chosen ? " sel" : ""}" role="option" id="${escAttr(rowId(i))}"
-                aria-selected="${escAttr(String(i === box.active))}" data-value="${escAttr(o.value)}"><span>${esc(o.label)}${
-                chosen ? ` <span class="tick" aria-hidden="true">✓</span>` : ""}</span>${
-                classed ? `<span class="cls">${esc(classHint(q.field, o))}</span>` : ""}</button>`;
-            }).join("") +
-              (matches.length > shown.length
-                ? `<p class="cmore">${matches.length - shown.length} more — keep typing to narrow the list</p>`
-                : "");
-            if (box.active >= 0) filter.setAttribute("aria-activedescendant", rowId(box.active));
-            else filter.removeAttribute("aria-activedescendant");
-            list.querySelector<HTMLElement>(".copt.on")?.scrollIntoView({ block: "nearest" });
-            list.querySelectorAll<HTMLButtonElement>(".copt").forEach((b) =>
-              b.addEventListener("click", () => {
-                const chosen = q.options.find((o) => o.value === b.dataset.value);
-                answer(b.dataset.value!, chosen?.label);
-              }));
-          };
-          filter.addEventListener("input", () => { box = stateFor(filter.value); drawList(); });
-          filter.addEventListener("keydown", (e) => {
-            // isComposing: an IME's committing Enter belongs to the IME.
-            if (e.isComposing) return;
-            const keys = ["ArrowDown", "ArrowUp", "Home", "End", "Enter", "Escape"];
-            if (!keys.includes(e.key)) return;
-            // Home/End inside a text box move the caret; claim them only once a
-            // row is highlighted, so typing still behaves like typing.
-            if ((e.key === "Home" || e.key === "End") && box.active < 0) return;
-            e.preventDefault();
-            const result = onKey(q.options, box, e.key as ListboxKey);
-            box = result.state;
-            if (result.commit) {
-              // The next screen says what was recorded, in the question card —
-              // the side ledger is not where a person looks after pressing Enter.
-              answer(result.commit.value, result.commit.label);
-              return;
-            }
-            drawList();
-          });
-          drawList();
+          // A commit says what was recorded on the next screen, in the
+          // question card: the side ledger is not where a person looks after
+          // pressing Enter.
+          const classed = hasClasses(q) ? { dataset: ds, field: q.field } : null;
+          mountCountrySearch(main, countrySearchOf(q.options, { chosen: answers[q.field], classed }, answer));
         } else {
           main.querySelectorAll<HTMLButtonElement>(".opt").forEach((btn) =>
             btn.addEventListener("click", () => answer(btn.dataset.value!)));

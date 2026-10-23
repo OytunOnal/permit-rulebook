@@ -5,7 +5,7 @@ import {
   type Dataset,
 } from "permit-rulebook-data";
 import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy/interview.js";
-import { composeNoMatchLine } from "../src/lib/listbox.js";
+import { countrySearchOf } from "../src/lib/country-search/index.js";
 import {
   PHONE, recordSeedScript, settle, skipReason, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
@@ -32,11 +32,23 @@ const expectedTerritoryLine = (typed: string): string => {
   );
 };
 
+/** What the passport search draws for `typed`: its rows, the line the list
+ * shows in their place, and what the live region reads. */
+function searchedFor(typed: string) {
+  const view = countrySearchOf(passports, { chosen: undefined, classed: null }, () => {}).typed(typed);
+  return {
+    rows: (view.listHtml.match(/role="option"/g) ?? []).length,
+    line: view.listHtml.replace(/<[^>]*>/g, ""),
+    status: view.status,
+  };
+}
+
 describe("the passport search's no-match decision", () => {
   it("a territory's name: the territory line, naming its passport's country, and no row", () => {
     const typed = "Puerto Rico";
     expect(matchOptions(passports, typed)).toEqual([]);
-    const said = composeNoMatchLine(typed);
+    const said = searchedFor(typed);
+    expect(said.rows).toBe(0);
     expect(said.line).toBe(expectedTerritoryLine(typed));
     expect(said.line).not.toBe(NO_COUNTRY_MATCHES);
     // The live region reads the same sentence the list shows.
@@ -47,14 +59,14 @@ describe("the passport search's no-match decision", () => {
     const territory = (countryVocabulary.territories ?? []).find((t) => t.aliases?.length)!;
     const alias = territory.aliases![0];
     expect(matchOptions(passports, alias)).toEqual([]);
-    expect(composeNoMatchLine(alias).line).toBe(expectedTerritoryLine(territory.name));
+    expect(searchedFor(alias)).toMatchObject({ rows: 0, line: expectedTerritoryLine(territory.name) });
   });
 
   it("a name that is neither a country nor a territory: today's line, and no row", () => {
     const typed = "Narnia";
     expect(matchOptions(passports, typed)).toEqual([]);
     expect(findTerritory(typed)).toBeUndefined();
-    expect(composeNoMatchLine(typed)).toEqual({ line: NO_COUNTRY_MATCHES, status: NO_COUNTRY_MATCHES_STATUS });
+    expect(searchedFor(typed)).toEqual({ rows: 0, line: NO_COUNTRY_MATCHES, status: NO_COUNTRY_MATCHES_STATUS });
   });
 
   it("the template reads no country's or territory's name of its own", () => {

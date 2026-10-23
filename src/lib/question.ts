@@ -12,7 +12,7 @@ import { countryOf } from "./countries.js";
 import { type Glossary, glossSection, glossed } from "./gloss.js";
 import { esc, escAttr } from "./reason.js";
 import { glossedLearnLinkText } from "./quote.js";
-import { QUERY_MAX_LENGTH } from "./listbox.js";
+import { countrySearchHtml } from "./country-search/index.js";
 import type { Masthead, Screen } from "./screen.js";
 // Which situation answers a country's scored routes take, and the quoted
 // route that would have asked otherwise — derived, never typed (s19); keyed
@@ -50,10 +50,6 @@ export const LONG_LIST_ABOVE = 12;
 
 /** Whether this question is asked as a search rather than as buttons. */
 export const isLongList = (question: Question): boolean => question.options.length > LONG_LIST_ABOVE;
-
-/** Whether this question's options carry a country class. The card says so
- * once in a hint; the list the search draws says it row by row. */
-export const hasClasses = (question: Question): boolean => question.options.some((o) => o.implies !== undefined);
 
 /** Everything the question screen is a function of. */
 export interface QuestionScreen {
@@ -129,23 +125,35 @@ function countedRoutesHtml(routes: OpenRoute[]): string {
   }).join(ASKED_FOR_COUNTS_JOIN);
 }
 
-export function questionCardHtml(screen: QuestionScreen): string {
-  const { dataset, question: q, answers, asked, editing, total } = screen;
-  // One card, one memory: the label, the asked-for line, the help and every
-  // answer's words spend from it in the order they are drawn.
-  const glossary: Glossary = screen.glossary ?? new Set();
-  const longList = isLongList(q);
-  const classed = hasClasses(q);
-  const declared = q.options.find((o) => o.value === answers[q.field]);
+/** The lines above the question: the resumed line, the arrival line, what
+ * the country picker just recorded, and where the interview stands. */
+function linesAboveQuestionHtml(screen: QuestionScreen): string {
+  const { dataset, asked, editing, total } = screen;
   const justRecorded = screen.justRecorded ?? null;
-  return `
-        <section class="qcard">
-          ${screen.resumed ? `<p class="resumed">${esc(resumedLine(screen.resumed))}</p>` : ""}
+  return `${screen.resumed ? `<p class="resumed">${esc(resumedLine(screen.resumed))}</p>` : ""}
           ${screen.arrival ?? ""}
           ${justRecorded ? `<p class="recorded" role="status">${esc(shortLabelOf(dataset, justRecorded.field))} recorded: <b>${esc(justRecorded.label)}</b></p>` : ""}
           <div class="qmeta" role="status" aria-live="polite">${
             esc(editing ? EDIT_LINE : questionCounter(asked.length + 1, total))
-          }</div>
+          }</div>`;
+}
+
+/** The two exits: Back, where there is a question behind, and Keep, on an
+ * edit. */
+function exitsHtml({ asked, editing }: QuestionScreen): string {
+  return `${(editing ? asked.indexOf(editing) > 0 : asked.length > 0)
+            ? `<button class="back" id="back">← Back</button>` : ""}
+          ${editing ? `<button class="back" id="done">Keep this answer</button>` : ""}`;
+}
+
+export function questionCardHtml(screen: QuestionScreen): string {
+  const { dataset, question: q } = screen;
+  // One card, one memory: the label, the asked-for line, the help and every
+  // answer's words spend from it in the order they are drawn.
+  const glossary: Glossary = screen.glossary ?? new Set();
+  return `
+        <section class="qcard">
+          ${linesAboveQuestionHtml(screen)}
           <h2 class="qlabel">${esc(glossed(q.label, glossary))}</h2>
           ${askedForLineHtml({ ...screen, glossary })}
           ${(() => {
@@ -163,19 +171,17 @@ export function questionCardHtml(screen: QuestionScreen): string {
                 esc(glossedLearnLinkText(learn, glossary))}</a></p>`
               : "";
           })()}
-          ${longList ? `
-            <div class="csearch">
-              <span class="mag" aria-hidden="true">⌕</span>
-              <input type="text" id="cfilter" autocomplete="off" spellcheck="false" maxlength="${escAttr(String(QUERY_MAX_LENGTH))}"
-                role="combobox" aria-expanded="false" aria-autocomplete="list"
-                aria-label="Search the list" aria-controls="clist" placeholder="Start typing…"
-                value="${escAttr(declared?.label ?? "")}">
-            </div>
-            <div class="clist" id="clist" role="listbox" aria-label="${escAttr(q.label)}"></div>
-            <p class="recorded" id="crecorded"${declared ? "" : " hidden"}>Your answer on file: <b>${esc(declared?.label ?? "")}</b></p>
-            ${classed ? `<p class="hint">Every non-EU passport is checked against the same rules. A few countries
-              have agreements that add rights on top — those are stated with their source when they apply to you.</p>` : ""}`
-          : `<div class="opts">
+          ${optionsHtml({ ...screen, glossary })}
+          ${exitsHtml(screen)}
+          <noscript><p class="nojs">${esc(NO_SCRIPT_LINE)}</p></noscript>
+        </section>`;
+}
+
+/** The answers: a search over a long list, or a button each. */
+function optionsHtml(screen: QuestionScreen & { glossary: Glossary }): string {
+  const { dataset, question: q, answers, glossary } = screen;
+  if (isLongList(q)) return countrySearchHtml(q, q.options.find((o) => o.value === answers[q.field]));
+  return `<div class="opts">
             ${q.options.map((o) => {
               const chosen = answers[q.field] === o.value;
               // A reader whose employer was moving them to a branch abroad read
@@ -201,12 +207,7 @@ export function questionCardHtml(screen: QuestionScreen): string {
                 means ? `<small class="opt-means">${esc(glossed(means, glossary))}</small>` : ""}</button>${
                 mark ? `<small class="opt-mark" id="mark-${escAttr(o.value)}" data-for="${escAttr(o.value)}">${notScoredMarkHtml(mark)}</small>` : ""}`;
             }).join("")}
-          </div>`}
-          ${(editing ? asked.indexOf(editing) > 0 : asked.length > 0)
-            ? `<button class="back" id="back">← Back</button>` : ""}
-          ${editing ? `<button class="back" id="done">Keep this answer</button>` : ""}
-          <noscript><p class="nojs">${esc(NO_SCRIPT_LINE)}</p></noscript>
-        </section>`;
+          </div>`;
 }
 
 /** Where the interview stands: the answers, the fields in the order they were
