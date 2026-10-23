@@ -1,5 +1,5 @@
 ---
-// @level presentation infrastructure main
+// @level presentation main
 import "../../tokens.css";
 // The identity pair (the PR mark above the stamp) comes from the one file the
 // route page inlines, so the "Record generated" stamp and the "Rules read"
@@ -162,10 +162,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     import {
       activeOption, composeNoMatchLine, onKey, rowId, shownOptions, stateFor, type ListboxKey, type ListboxState,
     } from "../lib/listbox.js";
-    import {
-      backFor, clampStep, emptyHistory, entryState, firstHeldStep, historyFor, readEntry,
-      recordScreen as recordEntry, screenAfter, screenAt, type FlowAction, type Screen,
-    } from "../lib/screen.js";
+    import { screenAfter, type FlowAction, type Screen } from "../lib/screen.js";
+    // The interview's history, and the browser's history behind its port: the
+    // page tells it what each gesture drew, and draws what the browser moved to.
+    import { openInterviewHistory, type BrowserMove, type InterviewHistory } from "../lib/interview-history/index.js";
+    import { browserHistoryOf } from "../lib/browser-history.js";
     import { clearRecord, loadRecord as readRecord, saveRecord as writeRecord, type RecordStore } from "../lib/record.js";
     import { esc, escAttr } from "../lib/reason.js";
     // The question screen and the declaration panel: the same renderer the
@@ -471,8 +472,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * scroll of 250, an answer and Back put the card's top 177 px above the
      * viewport (Spec review, 2026-09-18). The reader asked for that question,
      * so on a narrow screen it lands the same way. The browser restores after
-     * the popstate handler and before the first animation frame — read in that
-     * order, in that walk — so the landing waits for the frame and comes after
+     * the render its move asked for and before the first animation frame — read
+     * in that order, in that walk — so the landing waits for the frame and comes after
      * it. Where the history move is to the page's first screen the landing
      * stays out of it: that screen keeps the top of the page, as at the cold
      * load. On a wide screen a history move still scrolls nothing of ours.
@@ -482,7 +483,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
      * below listens to it. */
     const wide = window.matchMedia(WIDE_QUERY);
     function landOnQuestion(card: Element, action: FlowAction): void {
-      // Outside the first paint, `restore` is only ever the popstate render.
+      // Outside the first paint, `restore` is only ever the browser's move.
       const moved = action.kind === "restore";
       const lands = action.kind === "answer" || action.kind === "edit" || moved;
       if (wide.matches || !headEl || !lands) {
@@ -680,8 +681,10 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
     /** Draw the question screen the gesture lands on. Rendering and advancing
      * the masthead are one call, so a path back into the interview cannot
-     * render without saying which gesture brought it here (B4). */
-    function renderQuestion(action: FlowAction) {
+     * render without saying which gesture brought it here (B4). Returns the
+     * question drawn, or null where nothing was left to ask and it drew the
+     * verdict. */
+    function renderQuestion(action: FlowAction): string | null {
       glossary = new Set();
       // Only questions a still-alive route cares about; e.g. "no job offer"
       // retires the salary question instead of asking it into the void.
@@ -813,20 +816,13 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
           renderQuestion({ kind: "answer" });
         });
         main.querySelector<HTMLElement>("#back")?.addEventListener("click", () => {
-          // The screen's Back and the phone's Back are one gesture, so they can
-          // never land on different screens (human, 2026-09-08): this asks the
-          // browser to go back, and the popstate handler shows the question that
-          // entry was showing. Nothing is erased on the way. It asks only for a
-          // step the browser holds — on an outside entrance onto a stored
-          // record the steps behind are the page's own, and the browser's Back
-          // from there is the page the reader came from (s37).
-          if (backFor(screens) === "browser") { window.history.back(); return; }
-          // Nothing of ours behind in the browser, so the step is the one
-          // editing a declared row makes: the previous question in place.
-          const at = editing ? asked.indexOf(editing) : asked.length;
-          const prev = asked[at - 1];
-          if (prev === undefined) return;
-          editing = prev;
+          // Where the browser holds a step of ours behind, the history asks it
+          // to go back, and its move draws the question that entry was showing.
+          // Elsewhere the step is the one editing a declared row makes: the
+          // previous question in place. Nothing is erased on the way.
+          const move = interviewHistory?.back(asked, editing);
+          if (move?.kind !== "in-place") return;
+          editing = move.field;
           setStamp("rules-read");
           app.dataset.state = "questions";
           renderQuestion({ kind: "edit" });
@@ -846,7 +842,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // A history move to the page's first screen keeps the browser's own
       // restore (the top of the page); every other gesture, the browser's Back
       // included, hands the card to the landing.
-      if (gestureCard && !(restoring && screens.current === 0)) landOnQuestion(gestureCard, action);
+      if (gestureCard && !browserMove?.ontoFirstScreen) landOnQuestion(gestureCard, action);
       if (longList) {
         // Every render of a search question puts the caret in it, whether or
         // not the box had to be rewritten to get here. A correction starts by
@@ -867,7 +863,9 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 
       // One entry per question screen: answering moves forward, everything
       // else — editing, restoring, starting over — stands where it is.
-      recordScreen(q.field, action.kind === "answer");
+      if (action.kind === "answer") interviewHistory?.movedForward(q.field);
+      else interviewHistory?.redrawnInPlace(q.field);
+      return q.field;
     }
 
     /**
@@ -915,13 +913,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     const masthead = document.querySelector<HTMLElement>(".masthead-with-stamps")!;
     function landOnVerdict(wasResult: boolean): void {
       if (showArrival()) return;
-      if (arriving || restoring) return;
+      if (arriving || browserMove) return;
       if (!wasResult) reveal(masthead);
       headline.tabIndex = -1;
       headline.focus({ preventScroll: true });
     }
 
-    function renderResults() {
+    /** Draw the verdict. Returns null, the question it draws: none. */
+    function renderResults(): null {
       glossary = new Set();
       // Whether the reader was already on a result: a verdict that replaces a
       // question is brought to its headline; one drawn over a result the
@@ -950,7 +949,8 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // on top of the last question's, so Back lands on that question. It is
       // written last, once the screen is drawn and landed on, as a question
       // screen's is.
-      recordScreen(null, true);
+      interviewHistory?.movedForward(null);
+      return null;
     }
 
     /**
@@ -993,97 +993,39 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       // stranger's salary: the stored record goes with the screen.
       answers = {}; asked = []; editing = null;
       clearRecord(store);
-      // Back must not undo it: the entries go with the record, so anything
-      // behind us now restores nothing and the browser simply leaves the page.
-      screens.entries.length = 0;
-      screens.current = -1;
+      // Back must not undo it: the entries go with the record.
+      interviewHistory?.restarted();
       app.dataset.state = "questions";
       setStamp("rules-read");
       renderQuestion({ kind: "reset" });
     });
 
     /**
-     * Browser Back is the phone's "previous question" gesture, and it has to
-     * mean exactly what the screen's own "← Back" means.
-     *
-     * It did not. Every render pushed an entry — answering, editing, going
-     * back, a notice — so the entries stopped corresponding to the questions:
-     * on the human's phone walk of 2026-09-08 three answers grew `history` by
-     * one entry while the page's own counter reached 7, the first back gesture
-     * jumped three questions, and the second went FORWARD. (A phone throttles
-     * a burst of `pushState` calls and drops the extra entries; the page kept
-     * counting, so its state numbers named snapshots the browser no longer
-     * had.)
-     *
-     * One entry per question screen, then, and one gesture behind both Backs:
-     * advancing to a new question pushes, every other render replaces the entry
-     * it is standing on, and "← Back" IS `history.back()` wherever the browser
-     * holds an entry of ours behind the reader. An entry remembers which
-     * question it was showing rather than a copy of the answers, so stepping
-     * back keeps everything answered since — the same thing editing an earlier
-     * row has always done.
-     *
-     * The browser does not always hold what the list says: an outside
-     * entrance onto a stored record rebuilds the list behind the screen it
-     * opened on with nothing of ours behind it in the browser, and "← Back" as
-     * `history.back()` took the reader off the site (s37, 2026-09-25). There
-     * the screen's Back steps back in place; the browser's own Back leaves, as
-     * it does from any page just opened.
+     * The interview's history: one entry per screen, and one gesture behind
+     * the screen's "← Back" and the browser's. It is opened once the first
+     * screen is drawn, onto the entry the page opened onto; until then a
+     * render tells it nothing.
      */
-    const screens = emptyHistory();
-    /**
-     * The state on the entry the page opened onto, read before it writes one
-     * of its own: the rebuild after the first render decides from it where
-     * the steps the browser holds begin (s37).
-     */
-    const openedOnto: unknown = window.history.state;
-    /** Whether we are the ones moving the reader, rather than the browser. */
-    let restoring = false;
+    let interviewHistory: InterviewHistory | null = null;
+    /** The browser's move being drawn, while it is: it keeps the scroll the
+     * browser restores, and the focus where it is. */
+    let browserMove: BrowserMove | null = null;
 
-    function recordScreen(field: string | null, advance: boolean) {
-      if (restoring) return;
-      const move = recordEntry(screens, field, advance);
-      // Every entry says how many held steps stand behind it, so a reload or
-      // a return onto it can tell (s37).
-      const state = entryState(screens);
-      // The first screen REPLACES the page's own entry rather than adding one:
-      // pushing there would trap the visitor on the site, because Back would
-      // always land on another of our own screens.
-      if (move.how === "push") window.history.pushState(state, "");
-      else window.history.replaceState(state, "");
-    }
-
-    window.addEventListener("popstate", (e) => {
-      const { step } = readEntry(e.state);
-      // An entry we did not write, or one "Start over" has since invalidated:
-      // leave the screen alone rather than restoring a stranger's answers.
-      if (step === undefined) return;
-      // A step this page has no entry for — a reload rebuilt a shorter list,
-      // or the dataset stopped asking something — lands on the nearest question
-      // it does have. Doing nothing is what left the gesture dead.
-      const at = clampStep(screens, step);
-      const screen = screenAt(screens, at);
-      if (!screen) return;
-      screens.current = at;
-      // How many of its steps the browser holds behind the reader is read
-      // from the entry it now stands on, not remembered from the load, and
-      // believed only where that entry lands on its own step: a record grown
-      // or shrunk in another tab moved the list under it (s37).
-      screens.firstHeld = firstHeldStep(e.state, at);
-      restoring = true;
-      if (screen.field === null) {
+    function drawBrowserMove(move: BrowserMove): void {
+      browserMove = move;
+      if (move.field === null) {
         editing = null;
         renderResults();
       } else {
         // The question that entry was showing, with everything answered since
         // still on the record — back is a step, not an undo.
-        editing = screen.field;
+        editing = move.field;
         setStamp("rules-read");
         app.dataset.state = "questions";
         renderQuestion({ kind: "restore" });
       }
-      restoring = false;
-    });
+      browserMove = null;
+    }
 
     /**
      * The ledger is a fixed panel on a wide screen and a one-line disclosure
@@ -1140,30 +1082,14 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
     // interview when there is none. The first paint's covers come off here,
     // once, in the task that draws it, so nothing is painted in between.
     takeCoversOff(page);
-    renderQuestion({ kind: "restore" });
+    const showing = renderQuestion({ kind: "restore" });
     // Everything from here on is a gesture, and a gesture lands where it drew.
     arriving = false;
 
-    /**
-     * After a reload the browser still holds every entry this page pushed
-     * before it, and the page holds none of them: `step` restarted at 0 while
-     * `history.length` stayed where it was, so browser Back found no screen and
-     * the page's own Back fell through to the edit path (Spec review,
-     * 2026-09-08). The record knows what was answered and in what order — that
-     * is the list, rebuilt, with the entry we are standing on rewritten to
-     * match it.
-     */
-    (() => {
-      const showing = screenAt(screens, screens.current)?.field ?? null;
-      const rebuilt = historyFor(asked, showing);
-      screens.entries = rebuilt.entries;
-      screens.current = rebuilt.current;
-      // The list is rebuilt whatever the browser holds; where the held steps
-      // begin is read from the entry the page opened onto. An outside
-      // entrance onto a stored record holds only the screen it opened on (s37).
-      screens.firstHeld = firstHeldStep(openedOnto, screens.current);
-      window.history.replaceState(entryState(screens), "");
-    })();
+    // A reload empties the page while the browser keeps every entry it pushed:
+    // the history rebuilds its list from the record and the screen on show.
+    interviewHistory = openInterviewHistory(browserHistoryOf(window), { asked, showing });
+    interviewHistory.onMove(drawBrowserMove);
 
     // Dev-only layout probe: ?dev-probe=1 writes the widest offenders into the
     // title so headless --dump-dom can report horizontal overflow (golden G1).

@@ -3,6 +3,7 @@
 ## Modules
 <!-- a deep module's folder per line, or none; `folder/*` declares every folder directly under it -->
 - `scripts/carry-assets`
+- `src/lib/interview-history`
 - `src/lib/verdict`
 
 ## Levels
@@ -31,7 +32,7 @@
 - `scripts/shot.mjs` — a command that drives Chrome and writes `docs/media/` in its own body (v1.2.5)
 - `scripts/smoke.mjs` — a command that walks the browser and the dev server in its own body (v1.2.5)
 - `src/lib/scope.ts` — the arrival use case beside the sentences the screen prints (v1.2.4)
-- `src/pages/index.astro` — the page, the history API and the wiring of the record's store in one file (v1.2.4)
+- `src/pages/index.astro` — the page and the wiring of its adapters in one file (v1.2.4)
 
 ## Tests
 <!-- test file patterns: * within a folder, ** across folders -->
