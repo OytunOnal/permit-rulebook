@@ -22,7 +22,11 @@ pull request.
   tag as its first comment (an Astro file's, on the line after its first
   `---`). The check is red on one line until the carry's folder is reshaped:
   `scripts/carry-assets` holds five files at its root, and no exception can
-  cover that (#37).
+  cover that (#37). The file is generated and never resolved by hand: a merge
+  keeps one side's copy (`.gitattributes`, `merge=ours`; `npm ci` sets the
+  driver), and after any merge that changed it, the structure command is rerun
+  and its result committed. GitHub's merge ignores local drivers, so on its
+  conflict: merge master into the branch locally, rerun, push.
 - Green means: the site — `npm test` (vitest, browser cases drive headless
   Chrome over `dist/`), `npm run build` with 0 errors, `npm run assets:check`
   true; the data — `npm run check` end to end (build, typecheck:tests,
