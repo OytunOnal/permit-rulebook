@@ -60,13 +60,19 @@ try {
   if (json.length < 23) problems.push(`only ${json.length} JSON endpoints built`);
 
   const nameOf = (file) => relative(dist, file).split(sep).join("/");
+  /** Each match of `pattern` in `file` that `isProblem` flags, said as a problem. */
+  const problemsIn = (file, { pattern, isProblem, problemOf }) =>
+    [...readFileSync(file, "utf8").matchAll(pattern)]
+      .filter(isProblem)
+      .map((m) => `${nameOf(file)}: ${problemOf(m)}`);
 
   // 1. Nothing points at the site root instead of the base.
-  const rootAbsoluteIn = (file) =>
-    [...readFileSync(file, "utf8").matchAll(/(?:href|src|content)="([/][^"/][^"]*)"/g)]
-      .filter((m) => m[1] !== BASE && !m[1].startsWith(`${BASE}/`))
-      .map((m) => `${nameOf(file)}: root-absolute ${m[0].slice(0, 90)}`);
-  for (const file of files.filter((f) => /[.](html|json|js|css)$/.test(f))) problems.push(...rootAbsoluteIn(file));
+  const rootAbsolute = {
+    pattern: /(?:href|src|content)="([/][^"/][^"]*)"/g,
+    isProblem: (m) => m[1] !== BASE && !m[1].startsWith(`${BASE}/`),
+    problemOf: (m) => `root-absolute ${m[0].slice(0, 90)}`,
+  };
+  for (const file of files.filter((f) => /[.](html|json|js|css)$/.test(f))) problems.push(...problemsIn(file, rootAbsolute));
 
   // 2. Every internal link resolves to something the build actually emitted.
   const resolves = (p) => {
@@ -74,12 +80,12 @@ try {
     const target = join(dist, clean);
     return (existsSync(target) && statSync(target).isFile()) || existsSync(join(target, "index.html"));
   };
-  const unresolvedIn = (file) =>
-    [...readFileSync(file, "utf8").matchAll(/(?:href|src)="([^"]+)"/g)]
-      .map((m) => m[1])
-      .filter((target) => target.startsWith(BASE) && !resolves(target))
-      .map((target) => `${nameOf(file)}: ${target} resolves to nothing built`);
-  for (const file of html) problems.push(...unresolvedIn(file));
+  const unresolved = {
+    pattern: /(?:href|src)="([^"]+)"/g,
+    isProblem: (m) => m[1].startsWith(BASE) && !resolves(m[1]),
+    problemOf: (m) => `${m[1]} resolves to nothing built`,
+  };
+  for (const file of html) problems.push(...problemsIn(file, unresolved));
 
   // 3. The meta a link preview reads carries the base too.
   const home = readFileSync(join(dist, "index.html"), "utf8");
