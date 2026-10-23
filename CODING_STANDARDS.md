@@ -8,10 +8,15 @@ pull request.
 
 ## Commands
 
-- Lint: none configured. `astro check` and `tsc` carry the type rules; the
-  shape limits (files ≤ 1000 lines, functions ≤ 40 lines, nesting ≤ 3,
-  parameters ≤ 3, no nested ternaries, no unused names) are read by review
-  until a linter enforces them.
+- Lint: site `npm run lint` (ESLint, `eslint.config.mjs`) over `src/`,
+  `scripts/`, `tests/` and the pages' scripts holds the six shape limits:
+  files ≤ 400 lines and functions ≤ 40 lines, every line counted, blank lines
+  and comments included; nesting ≤ 3; parameters ≤ 3; no nested ternaries; no
+  unused names. A `describe` callback is exempt from the function limit; every
+  `it` body and helper is held to it. A hit waiting on its issue is an entry
+  in the config's exception list, with that issue and its version, and
+  `tests/lint.test.ts` fails once that version comes. `astro check` and `tsc`
+  carry the type rules.
 - Format: none configured.
 - Typecheck: site `npm run build` (`astro check && astro build`); data
   `npm run build` (`tsc -p tsconfig.json`) and `npm run typecheck:tests`.
@@ -25,8 +30,9 @@ pull request.
   cover that (#37).
 - Green means: the site — `npm test` (vitest, browser cases drive headless
   Chrome over `dist/`), `npm run build` with 0 errors, `npm run assets:check`
-  true; the data — `npm run check` end to end (build, typecheck:tests,
-  validate, watch:coverage, tests). Both, on the branch, before the merge.
+  true, `npm run lint` with 0 problems; the data — `npm run check` end to end
+  (build, typecheck:tests, validate, watch:coverage, tests). Both, on the
+  branch, before the merge.
 
 ## Module boundaries
 
