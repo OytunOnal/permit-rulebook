@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { digestListOf, readAssetDigests } from "../../scripts/carry-assets/digest-list.mjs";
+import { digestListOf, readAssetDigests } from "../../scripts/carry-assets/carry.mjs";
 import { CSS, CSS_NAME, HEADER, JS, JS_NAME, sha256 } from "./deploy-fixtures.js";
 
 /**

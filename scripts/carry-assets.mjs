@@ -34,8 +34,8 @@
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ORIGIN_VAR, carryAssets } from "./carry-assets/carry.mjs";
-import { liveAnswerOverHttp } from "./carry-assets/live-site-over-http.mjs";
-import { oneLine, sentenceOfError } from "./carry-assets/log-wording.mjs";
+import { liveAnswerOverHttp } from "./live-site-over-http.mjs";
+import { oneLine, sentenceOfError } from "./log-wording.mjs";
 
 /**
  * `--name value` or `--name=value`; a flag that is not there keeps its default.

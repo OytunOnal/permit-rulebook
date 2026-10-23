@@ -13,7 +13,7 @@
  */
 import { sentenceOfError } from "./log-wording.mjs";
 
-/** @typedef {import("./carry.mjs").LiveAnswer} LiveAnswer */
+/** @typedef {import("./carry-assets/carry.mjs").LiveAnswer} LiveAnswer */
 
 /**
  * What the live site answers for `url` within `timeoutMs`, or the reason there

@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { carryAssets } from "../../scripts/carry-assets/carry.mjs";
-import { bodyWithin, liveAnswerOverHttp } from "../../scripts/carry-assets/live-site-over-http.mjs";
+import { bodyWithin, liveAnswerOverHttp } from "../../scripts/live-site-over-http.mjs";
 import { entryRunAsChildProcess } from "./carry-runs.js";
 import {
   CSS, CSS_NAME, DIGESTS, astroFilesIn, distHolding, expectRefusedOver, liveDeployAnswers, sha256, sweepTemporary,
@@ -17,7 +17,7 @@ import type { Answer } from "./live-site-in-memory.js";
  * and an answer that declares another encoding is refused, a declared length
  * is held to the ceiling and to what arrived, bytes are counted as bytes, and
  * the timeout holds. Why each of these is so is written in
- * `scripts/carry-assets/live-site-over-http.mjs`.
+ * `scripts/live-site-over-http.mjs`.
  *
  * Most cases drive the real entry as a child process (`entryRunAsChildProcess`)
  * against a local stand-in for the live origin — the deploy's own command,
@@ -136,7 +136,7 @@ afterEach(sweepTemporary);
 describe("the live site's answers, read over HTTP", () => {
   it("asks the origin for the bytes it is going to write, not a transfer of them", async () => {
     // What the live host answers each way, and why that matters, is the
-    // reading in `scripts/carry-assets/live-site-over-http.mjs`, at
+    // reading in `scripts/live-site-over-http.mjs`, at
     // `bodyWithin`. It is not what makes a carried byte trustworthy — the
     // digest list is — but it is what makes the file on disk the file rather
     // than an archive of it.

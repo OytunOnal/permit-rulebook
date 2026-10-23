@@ -42,15 +42,15 @@
  *
  * ## What a page may cost this build
  *
- * A name is bounded where names are read, in `asset-names.mjs`. A page is at
- * most 512 KB and an asset at most 4 MB — two ceilings, because they bound two
- * different things: how much text is read for names, and how large a file may
- * be written. A run asks the origin for at most 20 assets, counted whether
+ * A name is bounded where names are read, in `generation/asset-names.mjs`. A
+ * page is at most 512 KB and an asset at most 4 MB — two ceilings, because
+ * they bound two different things: how much text is read for names, and how
+ * large a file may be written. A run asks the origin for at most 20 assets, counted whether
  * they answer or 404, so a page of dead references costs twenty requests
  * against our own origin and no more.
  *
  * The log is bounded for the same reason the network is, and how is
- * `log-wording.mjs`'s.
+ * `scripts/log-wording.mjs`'s.
  *
  * The run's budget bounds how long this will WAIT ON THE NETWORK: it sizes
  * request timeouts and does nothing else, so a run that never waits can no
@@ -59,13 +59,13 @@
  * lie: the costly one is reading the names out of a page, which runs after the
  * body is in hand, with no clock on it, inside a deploy job which, with
  * `cancel-in-progress: false`, queues the next deploy behind it. Why that
- * reading is linear in the page is `asset-names.mjs`'s.
+ * reading is linear in the page is `generation/asset-names.mjs`'s.
  *
  * ## What makes a carried byte trustworthy
  *
  * The digest list, and why it and not the HTTP exchange is what a carried byte
- * is checked against, is `digest-list.mjs`'s; what the carry does with the list
- * is here.
+ * is checked against, is `generation/digest-list.mjs`'s; what the carry does
+ * with the list is here.
  *
  * The page and the list are published together and fetched together, so they
  * describe the same deploy. Whether they do is a question about the page's
@@ -82,9 +82,12 @@
  */
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { readAssetNames } from "./asset-names.mjs";
-import { DIGESTS_NAME, digestListOf, digestOf, readAssetDigests } from "./digest-list.mjs";
-import { boundedList, oneLine, sentenceOfError, short } from "./log-wording.mjs";
+import { readAssetNames } from "./generation/asset-names.mjs";
+import { DIGESTS_NAME, digestListOf, digestOf, readAssetDigests } from "./generation/digest-list.mjs";
+import { boundedList, oneLine, sentenceOfError, short } from "../log-wording.mjs";
+
+// The generation's readers, which their own tests reach through this entry.
+export { readAssetNames, digestListOf, readAssetDigests };
 
 /**
  * The live site's answer for one URL, as `liveAnswerFor` hands it over: its
@@ -357,7 +360,7 @@ function carryRecordOf({ carried = [], problems, alreadyBuilt = [], needed = [],
  * `readAssetNames` and the carry loop print unparsed all the time and must:
  * they are how a deploy's log says which reference it refused and why, there
  * may be four hundred of them, and nobody's secret is in them. Their rule is
- * `log-wording.mjs`'s — bounded by `short`, flattened by `oneLine` — and
+ * `scripts/log-wording.mjs`'s — bounded by `short`, flattened by `oneLine` — and
  * `could not carry http://[/_astro/x.css: it is not a URL` obeys it rather
  * than breaking this one.
  *

@@ -1,8 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { carryAssets, writeAssetDigests } from "../../scripts/carry-assets/carry.mjs";
-import { readAssetNames } from "../../scripts/carry-assets/asset-names.mjs";
+import { carryAssets, readAssetNames, writeAssetDigests } from "../../scripts/carry-assets/carry.mjs";
 import { annotationsOf, entryRunAsChildProcess, flowRunInProcess } from "./carry-runs.js";
 import {
   CSS, CSS_NAME, DIGESTS, HEADER, JS, JS_NAME,
@@ -222,7 +221,7 @@ describe("the carrier takes the live generation forward", () => {
 
 /**
  * The authority for a carried byte: the digest list, and what it is and is not
- * worth. That reading is written once, in `scripts/carry-assets/digest-list.mjs`
+ * worth. That reading is written once, in `scripts/carry-assets/generation/digest-list.mjs`
  * under "What makes a carried byte trustworthy", and it is not repeated here
  * — the measurements that argue for each case are in the case.
  *
@@ -338,7 +337,7 @@ describe("the carrier carries only what our own previous build attested to", () 
   });
 
   it("holds the list to the same rule for a name as the carrier does", async () => {
-    // One rule, spelled once, in `asset-names.mjs`: the carrier's plain name
+    // One rule, spelled once, in `generation/asset-names.mjs`: the carrier's plain name
     // and the list's line pattern are the same pattern.
     //
     // Measured from both ends of the same name: the page's reader refuses it,

@@ -4,7 +4,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { basename, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDir, readLock } from "../scripts/data-pin.mjs";
-import { readAssetNames } from "../scripts/carry-assets/asset-names.mjs";
+import { readAssetNames } from "../scripts/carry-assets/carry.mjs";
 import { jobKeyValueOf, jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
 /**
@@ -193,7 +193,7 @@ describe("a cached page still finds its assets", () => {
    * The other half of the same assumption, and the one nothing was watching.
    *
    * The carrier reads references out of HTML with a pattern, not with a
-   * browser, and `scripts/carry-assets/asset-names.mjs`'s "What shapes this
+   * browser, and `scripts/carry-assets/generation/asset-names.mjs`'s "What shapes this
    * reads" writes down why: honouring what a browser resolves means
    * `<base href>`, character references, `srcset` and CSS `url()`, and half a
    * browser reads strings no reader asks for while still missing the ones it

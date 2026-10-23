@@ -1,4 +1,4 @@
-// @level presentation
+// @level domain
 /**
  * What a string the carry did not write looks like in the deploy's log.
  *
@@ -24,7 +24,7 @@ export const boundedList = (names) => (names.length <= 3 ? names.join(", ") : `$
  * reference, the host one names, the path one resolves to, a `content-type`
  * the origin chose. The live address is not among them; it is the other
  * population, and its rule is all or nothing — printed whole once it has
- * parsed, or not printed at all (`pageUrlOf`, in `carry.mjs`).
+ * parsed, or not printed at all (`pageUrlOf`, in `carry-assets/carry.mjs`).
  */
 export const short = (text, max = 40) => (text.length > max ? `${text.slice(0, max)}…` : text);
 

@@ -2,7 +2,7 @@
 /**
  * Which references in a live page are this deploy's assets.
  */
-import { short } from "./log-wording.mjs";
+import { short } from "../../log-wording.mjs";
 
 /**
  * The longest name taken. A name becomes a file under `dist/_astro/`, and one

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readAssetNames } from "../../scripts/carry-assets/asset-names.mjs";
+import { readAssetNames } from "../../scripts/carry-assets/carry.mjs";
 import { pageOf, pageOfSize } from "./live-page.js";
 
 /**
