@@ -13,7 +13,7 @@
  * a comparison standing (product-critique v0.7, B4). A verdict's masthead is
  * the verdict's.
  */
-import { remainingQuestions, type Dataset, type Profile } from "permit-rulebook-data";
+import { remainingQuestions, type Dataset, type Profile, type Question } from "permit-rulebook-data";
 import type { BrowserMove } from "../../interview-history/index.js";
 import type { RecordToKeep, StoredRecord } from "../../record.js";
 import { arrivalOf, replayRecord, type ArrivalFacts } from "../../scope.js";
@@ -91,6 +91,9 @@ export type Landing =
   /** A verdict a gesture drew: its masthead into view and the focus on its headline. */
   | "verdict-masthead";
 
+/** Where "Keep this answer" lands: the first question still asked, or the verdict. */
+export type KeepTarget = { kind: "question"; field: string } | { kind: "verdict" };
+
 /** One call on the interview's history, in the order the entry makes them. */
 export type HistoryCall =
   | { call: "movedForward"; field: string | null }
@@ -101,6 +104,8 @@ export type HistoryCall =
 export interface InterviewStep {
   state: InterviewState;
   screen: InterviewScreen;
+  /** Where the screen's "Keep this answer" lands, on an edit screen; null on any other screen, which has no Keep. */
+  keepLandsOn: KeepTarget | null;
   lines: InterviewLines;
   land: Landing;
   /** Whether the question card it draws takes the beat (#86). */
@@ -264,8 +269,15 @@ function stepOnto(dataset: Dataset, reach: Reach, { state, lines = NO_LINES }: O
   return {
     state, lines, land: reach.questionLand, beat: reach.gesture, save: null,
     screen: { kind: "question", field, started: state.asked.length > 0 },
+    keepLandsOn: state.editing ? keepTargetOf(remaining) : null,
     history: reach.questionCall ? [{ call: reach.questionCall, field }] : [],
   };
+}
+
+/** Where Keep lands from an edit: what `kept` puts on screen once the edit is
+ * let go, with the same answers and so the same questions left. */
+function keepTargetOf(remaining: readonly Question[]): KeepTarget {
+  return remaining.length ? { kind: "question", field: remaining[0].field } : { kind: "verdict" };
 }
 
 /** The verdict. The commit banner belongs to the question after a commit,
@@ -273,7 +285,7 @@ function stepOnto(dataset: Dataset, reach: Reach, { state, lines = NO_LINES }: O
 function verdictStep(reach: Reach, { state, lines = NO_LINES }: Onto): InterviewStep {
   return {
     state, lines: { ...lines, justRecorded: null }, land: reach.verdictLand, beat: false, save: null,
-    screen: { kind: "verdict" },
+    screen: { kind: "verdict" }, keepLandsOn: null,
     history: reach.verdictCall ? [{ call: reach.verdictCall, field: null }] : [],
   };
 }

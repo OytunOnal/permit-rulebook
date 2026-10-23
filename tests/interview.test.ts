@@ -174,6 +174,26 @@ describe("interviewAfter: kept", () => {
   });
 });
 
+/** Where "Keep this answer" goes, said on its label (#56, ruling 6). */
+describe("interviewAfter: Keep this answer's target", () => {
+  it("Keep on an edit with questions left: the first question still asked, where kept lands", () => {
+    const editing = after(loaded(GERMAN_THREE, "").state, { kind: "editedRow", field: "situation" });
+    expect(editing.keepLandsOn).toEqual({ kind: "question", field: "qualification" });
+    expect(after(editing.state, { kind: "kept" }).screen).toMatchObject({ field: "qualification" });
+  });
+
+  it("Keep on an edit with nothing left to ask: the verdict, where kept lands", () => {
+    const editing = after(loaded(EU_PASSPORT, "").state, { kind: "editedRow", field: "citizenship" });
+    expect(editing.keepLandsOn).toEqual({ kind: "verdict" });
+    expect(after(editing.state, { kind: "kept" }).screen).toEqual({ kind: "verdict" });
+  });
+
+  it("a question that is not an edit, and the verdict, have no Keep", () => {
+    expect(loaded(GERMAN_THREE, "").keepLandsOn).toBeNull();
+    expect(loaded(EU_PASSPORT, "").keepLandsOn).toBeNull();
+  });
+});
+
 describe("interviewAfter: restarted", () => {
   it("restarted: an empty record, question one, the card into view, the beat, the record cleared, the entries gone", () => {
     const step = after(loaded(GERMAN_THREE, "").state, { kind: "restarted" });

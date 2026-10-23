@@ -28,7 +28,7 @@ import {
 
 export { EMPTY_INTERVIEW, interviewAfter } from "./flow/interview-after.js";
 export type {
-  Gesture, HistoryCall, InterviewLines, InterviewScreen, InterviewState, InterviewStep, KeptRecord, Landing,
+  Gesture, HistoryCall, InterviewLines, InterviewScreen, InterviewState, InterviewStep, KeepTarget, KeptRecord, Landing,
 } from "./flow/interview-after.js";
 
 /** What the page hands the interview: the browser's history, and the record's store, null where site data is blocked. */
