@@ -73,8 +73,8 @@ export const PLAIN_NAME = new RegExp(`^${NAME_PATTERN}$`);
  * missed alarm. Wide: a `/_astro/` name a page holds in a comment or a script
  * string, which no reader will ever ask for, reaches `needed` all the same;
  * what that costs a run is the flow's, beside its count of twenty requests in
- * `carry.mjs`. Our own pages hold no such string, and what would separate one
- * from a real reference is an HTML parser, below.
+ * `live-deploy/ceilings.mjs`. Our own pages hold no such string, and what
+ * would separate one from a real reference is an HTML parser, below.
  *
  * They stay unread deliberately. Reading what a BROWSER resolves is not a
  * wider pattern here; it is a second HTML parser. A `<base href>` retargets

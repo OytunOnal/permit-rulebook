@@ -148,7 +148,6 @@ export const lintExceptions = [
   { file: "tests/site-index.test.ts", rules: [TEST_FUNCTION_LENGTH], issue: 198, until: "1.2.4" },
   { file: "tests/wire.ts", rules: [TEST_FUNCTION_LENGTH], issue: 198, until: "1.2.4" },
 
-  { file: "scripts/carry-assets/carry.mjs", rules: [FILE_LENGTH], issue: 199, until: "1.2.3" },
   {
     file: "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
     rules: [FILE_LENGTH, TEST_FUNCTION_LENGTH],
