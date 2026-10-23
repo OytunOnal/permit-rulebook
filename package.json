@@ -16,8 +16,7 @@
     "smoke": "node scripts/smoke.mjs",
     "smoke:dev": "node scripts/smoke.mjs --dev",
     "check:base": "node scripts/check-base.mjs",
-    "data:pin": "node scripts/data-pin.mjs",
-    "prepare": "node scripts/set-merge-driver.mjs"
+    "data:pin": "node scripts/data-pin.mjs"
   },
   "dependencies": {
     "astro": "^7.2.10",

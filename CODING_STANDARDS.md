@@ -26,8 +26,10 @@ pull request.
   `docs/spine/dependency-rules.md`. Every source file carries its `// @level`
   tag as its first comment (an Astro file's, on the line after its first
   `---`). The file is generated and never resolved by hand: a merge
-  keeps one side's copy (`.gitattributes`, `merge=ours`; `npm ci` sets the
-  driver), and after any merge that changed it, the structure command is rerun
+  keeps one side's copy (`.gitattributes`, `merge=ours`; a fresh clone sets
+  the driver once with `git config merge.ours.driver true`, its worktrees
+  share it, and CI never merges), and after any merge that changed it, the
+  structure command is rerun
   and its result committed. GitHub's merge ignores local drivers, so on its
   conflict: merge master into the branch locally, rerun, push.
 - Green means: the site — `npm test` (vitest, browser cases drive headless
