@@ -12,7 +12,12 @@
    "files": [
     "scripts/carry-assets/carry.mjs",
     "scripts/carry-assets/generation/asset-names.mjs",
-    "scripts/carry-assets/generation/digest-list.mjs"
+    "scripts/carry-assets/generation/digest-list.mjs",
+    "scripts/carry-assets/live-deploy/attested-assets.mjs",
+    "scripts/carry-assets/live-deploy/ceilings.mjs",
+    "scripts/carry-assets/live-deploy/live-digests.mjs",
+    "scripts/carry-assets/live-deploy/live-page.mjs",
+    "scripts/carry-assets/outcome/outcome-lines.mjs"
    ]
   },
   {
@@ -50,6 +55,11 @@
   "scripts/carry-assets/carry.mjs": "application",
   "scripts/carry-assets/generation/asset-names.mjs": "domain",
   "scripts/carry-assets/generation/digest-list.mjs": "domain",
+  "scripts/carry-assets/live-deploy/attested-assets.mjs": "application",
+  "scripts/carry-assets/live-deploy/ceilings.mjs": "domain",
+  "scripts/carry-assets/live-deploy/live-digests.mjs": "application",
+  "scripts/carry-assets/live-deploy/live-page.mjs": "application",
+  "scripts/carry-assets/outcome/outcome-lines.mjs": "domain",
   "scripts/check-base.mjs": "infrastructure main",
   "scripts/child-env.mjs": "infrastructure",
   "scripts/chrome.mjs": "infrastructure",
@@ -168,6 +178,26 @@
   },
   {
    "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/carry-assets/live-deploy/attested-assets.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/carry-assets/live-deploy/live-digests.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/carry-assets/live-deploy/live-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/carry.mjs",
+   "to": "scripts/carry-assets/outcome/outcome-lines.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/carry.mjs",
    "to": "scripts/log-wording.mjs",
    "kind": "dependency"
   },
@@ -179,6 +209,51 @@
   {
    "from": "scripts/carry-assets/generation/digest-list.mjs",
    "to": "scripts/carry-assets/generation/asset-names.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/attested-assets.mjs",
+   "to": "scripts/carry-assets/generation/digest-list.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/attested-assets.mjs",
+   "to": "scripts/carry-assets/live-deploy/ceilings.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/attested-assets.mjs",
+   "to": "scripts/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/live-digests.mjs",
+   "to": "scripts/carry-assets/generation/digest-list.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/live-digests.mjs",
+   "to": "scripts/carry-assets/live-deploy/ceilings.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/live-digests.mjs",
+   "to": "scripts/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/live-page.mjs",
+   "to": "scripts/carry-assets/generation/asset-names.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/live-deploy/live-page.mjs",
+   "to": "scripts/carry-assets/live-deploy/ceilings.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/carry-assets/outcome/outcome-lines.mjs",
+   "to": "scripts/log-wording.mjs",
    "kind": "dependency"
   },
   {
@@ -1402,6 +1477,61 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "tests/carry-assets/carry-runs.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "tests/carry-assets/live-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-carries-only-attested-bytes.test.ts",
+   "to": "tests/carry-assets/live-site-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts",
+   "to": "tests/carry-assets/carry-runs.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts",
+   "to": "tests/carry-assets/live-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts",
+   "to": "tests/carry-assets/live-site-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts",
    "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
@@ -1442,32 +1572,27 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "scripts/carry-assets/carry.mjs",
    "kind": "dependency"
   },
   {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "tests/carry-assets/build-directory-in-memory.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "tests/carry-assets/carry-runs.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "tests/carry-assets/deploy-fixtures.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
-   "to": "tests/carry-assets/live-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/carry-assets/carry-takes-attested-bytes-from-our-origin.test.ts",
+   "from": "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts",
    "to": "tests/carry-assets/live-site-in-memory.ts",
    "kind": "dependency"
   },
@@ -1497,18 +1622,38 @@
    "kind": "type-only"
   },
   {
-   "from": "tests/carry-assets/live-site-over-http.test.ts",
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
    "to": "scripts/carry-assets/carry.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
+   "to": "scripts/live-site-over-http.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
+   "to": "tests/carry-assets/build-directory-in-memory.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
+   "to": "tests/carry-assets/carry-runs.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
+   "to": "tests/carry-assets/deploy-fixtures.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/live-site-over-http-bounds.test.ts",
+   "to": "tests/carry-assets/stand-in-origin.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/carry-assets/live-site-over-http.test.ts",
    "to": "scripts/live-site-over-http.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/carry-assets/live-site-over-http.test.ts",
-   "to": "tests/carry-assets/build-directory-in-memory.ts",
    "kind": "dependency"
   },
   {
@@ -1523,6 +1668,11 @@
   },
   {
    "from": "tests/carry-assets/live-site-over-http.test.ts",
+   "to": "tests/carry-assets/stand-in-origin.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/carry-assets/stand-in-origin.ts",
    "to": "tests/carry-assets/live-site-in-memory.ts",
    "kind": "type-only"
   },
@@ -3355,31 +3505,6 @@
     "exported": false
    },
    {
-    "name": "MAX_ASSETS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "MAX_PAGE_BYTES",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "MAX_ASSET_BYTES",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "MAX_LIST_BYTES",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "CARRIABLE",
-    "kind": "const",
-    "exported": false
-   },
-   {
     "name": "noBuildDirectory",
     "kind": "fn",
     "exported": false
@@ -3400,11 +3525,6 @@
     "exported": true
    },
    {
-    "name": "liveAssetDigests",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "recordOfCarry",
     "kind": "fn",
     "exported": false
@@ -3416,36 +3536,6 @@
    },
    {
     "name": "pageUrlOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "assetNamesOfLivePage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "liveDigestsMatchingPage",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "carryAttestedAssets",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "attestedAssetOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "logLinesOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "verdictLinesOf",
     "kind": "fn",
     "exported": false
    }
@@ -6802,5 +6892,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "c081caf21672cd5e065fd22d6088e07f2bf84075fb8fac5e149d04d50f85aec7"
+ "digest": "9340a8b4a920fc90144ce70957ed60644599c969039ff50e185a1b8b737372fb"
 }
