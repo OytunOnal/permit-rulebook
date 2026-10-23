@@ -245,10 +245,10 @@ jobs:
           echo "urls=$urls" >> "$GITHUB_OUTPUT"
           echo "$(echo "$urls" | jq length) addresses in the sitemap"
 
-      # Why a deploy carries the previous generation's assets at all, the one
-      # generation it keeps, and the ceilings it holds an origin to: all of it
-      # is in `site/scripts/carry-assets/carry.mjs`'s own header, which is the
-      # place it is kept true.
+      # Why a deploy carries the previous generation's assets at all, and the
+      # one generation it keeps, is in `site/scripts/carry-assets/carry.mjs`'s
+      # own header, which is the place it is kept true; the ceilings it holds an
+      # origin to are in `live-deploy/ceilings.mjs` beside it.
       #
       # What the step is: the last thing before the artifact is sealed, because
       # it adds files to `dist/` and a file carried after the upload is a file

@@ -12,11 +12,11 @@ import { liveAnswerFor, liveSiteInMemory } from "./live-site-in-memory.js";
  * clock, with no socket or disk anywhere: that it never fails the deploy, and
  * that it says which of the three outcomes happened.
  *
- * Why the step exists, and what its ceilings are, is written once in
- * `scripts/carry-assets/carry.mjs`'s own header. That it never fails is the
- * promise the deploy rests on. What it carries, and from where, is
- * `carry-takes-attested-bytes-from-our-origin.test.ts`'s; what the live site
- * over HTTP does is `live-site-over-http.test.ts`'s.
+ * Why the step exists is written once in `scripts/carry-assets/carry.mjs`'s
+ * own header, and its ceilings in `live-deploy/ceilings.mjs` beside it. That
+ * it never fails is the promise the deploy rests on. What it carries, and from
+ * where, is the other `carry-*.test.ts` files'; what the live site over HTTP
+ * does is the `live-site-over-http*.test.ts` files'.
  *
  * Every case runs the flow in this process (`flowRunInProcess`).
  */
@@ -31,8 +31,8 @@ const lastLine = (out: string): string => out.trim().split("\n").at(-1) ?? "";
  * The failures it survives — a `dist/` it cannot write into, a value that
  * would start a line of its own — and the ceilings that bound what a page may
  * cost: how large a page may be, how much of the log it may fill, and how many
- * requests it may spend. What an answer over HTTP cannot make it do is
- * `live-site-over-http.test.ts`'s.
+ * requests it may spend. What an answer over HTTP cannot make it do is the
+ * `live-site-over-http*.test.ts` files'.
  */
 describe("the carrier cannot fail the deploy", () => {
   it("prints nothing that can become a line of its own in the deploy log", async () => {
@@ -175,7 +175,8 @@ describe("the carrier cannot fail the deploy", () => {
  * the only place a reader's broken page is ever going to be predicted: the
  * quiet outcome has to be rare and true, and both loud ones have to be loud.
  * When the step ends quiet and when it raises the annotation is one rule,
- * written where the verdict is computed in `scripts/carry-assets/carry.mjs`;
+ * written where the verdict is computed, in
+ * `scripts/carry-assets/outcome/outcome-lines.mjs`;
  * these cases measure the flow against it.
  */
 describe("the step says which of the three things happened", () => {

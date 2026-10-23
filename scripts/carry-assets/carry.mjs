@@ -26,8 +26,8 @@
  * ports. The live site, `liveAnswerFor`: what it answers for a URL within a
  * timeout, with its body read on request up to a byte ceiling. Every rule
  * about what an answer means — its status, its content type, whether its
- * bytes are the file — is here, and the body is read only once the status and
- * the type have passed. The build directory, `buildDirectory`: what this
+ * bytes are the file — is the carry's, in `live-deploy/`, and the body is read
+ * only once the status and the type have passed. The build directory, `buildDirectory`: what this
  * build holds and where carried files and the digest list are written. The
  * clock, `now`.
  *
@@ -45,15 +45,8 @@
  *
  * ## What a page may cost this build
  *
- * A name is bounded where names are read, in `generation/asset-names.mjs`. A
- * page is at most 512 KB and an asset at most 4 MB — two ceilings, because
- * they bound two different things: how much text is read for names, and how
- * large a file may be written. A run asks the origin for at most 20 assets, counted whether
- * they answer or 404, so a page of dead references costs twenty requests
- * against our own origin and no more.
- *
- * The log is bounded for the same reason the network is, and how is
- * `scripts/log-wording.mjs`'s.
+ * What one origin may make this step do, and why each bound is there, is
+ * `live-deploy/ceilings.mjs`'s.
  *
  * The run's budget bounds how long this will WAIT ON THE NETWORK: it sizes
  * request timeouts and does nothing else, so a run that never waits can no
@@ -74,18 +67,22 @@
  * describe the same deploy. Whether they do is a question about the page's
  * whole reference set; whether one name can be carried is a question about
  * that name alone. Both are asked, and answered, where
- * `liveDigestsMatchingPage` reads the list. A live deploy that published no
- * list is one this carries nothing from, and this build's list is published
- * either way, for the deploy after.
+ * `live-deploy/live-digests.mjs` reads the list. A live deploy that published
+ * no list is one this carries nothing from, and this build's list is
+ * published either way, for the deploy after.
  *
  * Each guard carries its own reason beside itself, where a reader can see the
  * line as well as the claim. When this step ends quiet and when it says the
  * window may be open is written where the verdict is computed, in
- * `logLinesOf`.
+ * `outcome/outcome-lines.mjs`.
  */
 import { readAssetNames } from "./generation/asset-names.mjs";
-import { DIGESTS_NAME, digestListOf, digestOf, readAssetDigests } from "./generation/digest-list.mjs";
-import { boundedList, oneLine, sentenceOfError, short } from "../log-wording.mjs";
+import { DIGESTS_NAME, digestListOf, readAssetDigests } from "./generation/digest-list.mjs";
+import { carryAttestedAssets } from "./live-deploy/attested-assets.mjs";
+import { liveDigestsMatchingPage } from "./live-deploy/live-digests.mjs";
+import { assetNamesOfLivePage } from "./live-deploy/live-page.mjs";
+import { logLinesOf } from "./outcome/outcome-lines.mjs";
+import { oneLine, sentenceOfError } from "../log-wording.mjs";
 
 // The generation's readers, which their own tests reach through this entry.
 export { readAssetNames, digestListOf, readAssetDigests };
@@ -134,47 +131,6 @@ export const ORIGIN_VAR = "CARRY_ORIGIN";
  */
 const TIMEOUT_MS = 10_000;
 const BUDGET_MS = 60_000;
-
-/**
- * What one origin may make this step do; why each of these is bounded, and why
- * a page and an asset are bounded separately, is the header's "What a page may
- * cost this build". Today the page is 11,569 bytes and names two assets of
- * 27 KB and 244 KB, so these are the orders of magnitude above what the site
- * actually is.
- *
- * `MAX_ASSETS` counts requests, not files carried, so a reference that fails
- * costs one of the twenty like one that works. The page is one request on top
- * of that, always; the digest list is one more, and only when there is
- * something to carry — `recordOfCarry` ends before fetching it when this
- * build already has everything the live page names.
- *
- * A `/_astro/` name a page holds in a comment or a script string, which
- * `readAssetNames` reads as readily as a reference, reaches `needed` all the
- * same. What it costs there turns on the live `asset-digests.txt`, and the
- * two halves are exclusive. A name the live deploy no longer publishes is not
- * in that list, and the carry loop filters `needed` against the list BEFORE
- * `asked` is incremented — so such a name spends NONE of the twenty requests,
- * draws the refusal line saying the list does not name it, and raises the
- * annotation that says a reader holding this page gets a 404. That annotation
- * is the FALSE alarm, on the one line the carry exists to make trustworthy. A
- * name the list still carries does spend one of the twenty, and is then
- * carried: a wasted request and nothing else, no line and no annotation.
- *
- * `MAX_LIST_BYTES` is the same idea one file down: today's list is a 33-byte
- * header and two lines of 85 and 121 bytes, and 64 KB holds five hundred more
- * of the longer one.
- */
-const MAX_ASSETS = 20;
-const MAX_PAGE_BYTES = 512 * 1024;
-const MAX_ASSET_BYTES = 4 * 1024 * 1024;
-const MAX_LIST_BYTES = 64 * 1024;
-
-/**
- * What may be written into `dist/_astro/`. A host that has lost a file answers
- * `200` with an HTML page saying so — writing that over a stylesheet would
- * break the very deploy this step exists to save.
- */
-const CARRIABLE = /^(?:text\/css|text\/javascript|application\/javascript|application\/ecmascript|text\/ecmascript)$/;
 
 /**
  * Whether this run was given a build to fill at all — one spelling, because
@@ -263,24 +219,6 @@ export async function carryAssets({ origin, buildDirectory, liveAnswerFor, now, 
 }
 
 /**
- * The live deploy's digest list, or the reason this run will carry nothing.
- *
- * One request, and only when there is something to carry: a deploy that
- * changed neither asset has nothing to check, and spending a request to learn
- * that is a request too many.
- */
-async function liveAssetDigests(answerWithinBudget, url) {
-  const answer = await answerWithinBudget(url, MAX_LIST_BYTES);
-  if (!answer.ok) return { ok: false, why: `${DIGESTS_NAME}: ${answer.why}` };
-  if (answer.status !== 200)
-    return { ok: false, why: `${DIGESTS_NAME}: answered ${answer.status} — the live deploy published no digest list for this one to check bytes against` };
-  const body = await answer.readBody();
-  if (!body.ok) return { ok: false, why: `${DIGESTS_NAME}: its body ${body.why}` };
-  const list = readAssetDigests(body.bytes.toString("utf8"));
-  return list.ok ? list : { ok: false, why: `${DIGESTS_NAME}: it ${list.why}` };
-}
-
-/**
  * What one run did: which names it carried and from where, which it left
  * behind and why. Every field `logLinesOf` reads to tell the three outcomes
  * apart comes from here. It runs in phases — parse the address, read the live
@@ -326,6 +264,7 @@ async function recordOfCarry({ origin, buildDirectory, liveAnswerFor, now, dryRu
     if (timeoutMs <= 0) return Promise.resolve({ ok: false, why: "the run's time budget was already spent" });
     return liveAnswerFor(url, { byteCeiling, timeoutMs });
   };
+  // What every phase in `live-deploy/` is handed.
   const run = { buildDirectory, now, dryRun, budgetMs, deadline, answerWithinBudget };
 
   const address = pageUrlOf(origin, buildDirectory);
@@ -362,9 +301,9 @@ function carryRecordOf({ carried = [], problems, alreadyBuilt = [], needed = [],
  * named for what it is (the entry's "Where the address comes from").
  *
  * NEVER PRINT A VALUE THAT DID NOT PARSE — the rule the two refusals here and
- * the counted line at the end all follow.
+ * the counted line `logLinesOf` prints all follow.
  *
- * Which population, because this file holds two and the rules differ. THIS
+ * Which population, because the carry prints two and the rules differ. THIS
  * one is the ENVIRONMENT's: `CARRY_ORIGIN`, one value, and carrying a
  * credential is a thing it does. For it the rule is all or nothing — printed
  * whole once it has parsed (`new URL` has dropped the credentials by then),
@@ -423,243 +362,4 @@ function pageUrlOf(origin, buildDirectory) {
   // it in its address (`check:base` guards the same edge).
   if (!home.pathname.endsWith("/")) home.pathname += "/";
   return { pageUrl: home.href, problems: [], where: home.href };
-}
-
-/**
- * The phase that reads the live page at `pageUrl`: the names it references
- * that are this deploy's assets, which of them this build already has and
- * which it needs, every reference it declined, and whether it got as far as
- * looking.
- *
- * The reasons differ reference by reference, so the declined ones stay lines
- * rather than a folded list — but there is the same bottom to how many a page
- * can print as to how many it can fetch. A reference that resolves off this
- * deploy is reported the same way: it is a reference this step declined, and
- * the line says why, which is what the reader is going to run into. It is
- * also kept apart in `unserved` for the verdict: it resolves under OUR OWN
- * origin to something this deploy does not publish, so it is a request the
- * reader's browser makes to our host and a 404 it gets back. The rest name
- * another host, which answers for itself, or resolve nowhere at all, which is
- * a request no browser makes either.
- */
-async function assetNamesOfLivePage(pageUrl, run) {
-  const unread = { names: [], from: pageUrl, unserved: [], alreadyBuilt: [], needed: [], looked: false };
-  const page = await run.answerWithinBudget(pageUrl, MAX_PAGE_BYTES);
-  if (!page.ok) return { ...unread, problems: [`the live page ${pageUrl}: ${page.why}`] };
-  if (page.status !== 200) return { ...unread, problems: [`the live page ${pageUrl}: answered ${page.status}`] };
-  const html = await page.readBody();
-  if (!html.ok) return { ...unread, problems: [`the live page ${pageUrl}: its body ${html.why}`] };
-
-  const references = readAssetNames(html.bytes.toString("utf8"), pageUrl);
-  const declined = [...references.refused, ...references.unserved];
-  const problems = declined.slice(0, MAX_ASSETS).map(({ ref, why }) => `${ref}: it ${why}`);
-  if (declined.length > MAX_ASSETS)
-    problems.push(`the ${declined.length - MAX_ASSETS} further reference(s) this page named: each refused unread`);
-
-  const alreadyBuilt = [];
-  const needed = [];
-  for (const name of references.names) {
-    // Already in this build: no request, so no cost, so no ceiling.
-    if (run.buildDirectory.isBuilt(name)) alreadyBuilt.push(name);
-    else needed.push(name);
-  }
-  // `looked`: this run now knows what a reader holding the live page will ask
-  // for, so what it says at the end is about those names rather than about not
-  // having looked.
-  const unserved = [...references.unserved];
-  return { names: references.names, from: pageUrl, problems, unserved, alreadyBuilt, needed, looked: true };
-}
-
-/**
- * The phase that reads the digest list beside the live `page`: its digests,
- * when the list describes that page, with `problems` naming the needed names
- * it does not carry — or null, with `problems` saying why there is nothing to
- * check a byte against.
- *
- * Two questions, asked of two different sets. Whether the page and the list
- * describe the same deploy is asked of the page's WHOLE reference set: they
- * are published together, so a list naming not one of the names its page
- * references is not that page's list — a proxy holding one of them, or a
- * deploy that landed between these two requests — and there is then nothing
- * to check ANY byte against. Asked of what is left to carry instead, it would
- * make an ordinary deploy a disagreement: both real names are already built on
- * a deploy that changed neither, so one stray reference would be the whole of
- * `needed`.
- *
- * Whether one name can be carried is asked of that name alone: nothing here
- * can say what the bytes of a name the list does not carry should be. A page
- * reference `/_astro/../../pwn.css` normalises to `pwn.css`, which no list of
- * ours will ever carry, and refusing the run over it would leave every real
- * asset behind — one attribute in a page this step does not own, turning the
- * step off.
- */
-async function liveDigestsMatchingPage(page, run) {
-  const list = await liveAssetDigests(run.answerWithinBudget, new URL(DIGESTS_NAME, page.from).href);
-  if (!list.ok) return { digests: null, problems: [`anything: ${list.why}`] };
-  const { names } = page;
-  if (!names.some((name) => list.digests.has(name))) {
-    const problem = `anything: ${DIGESTS_NAME} names none of the ${names.length} asset(s) this page references (${boundedList(names)})`
-      + " — the page and the list are from different deploys, so there is nothing to check these bytes against";
-    return { digests: null, problems: [problem] };
-  }
-  const problems = [];
-  const unlisted = page.needed.filter((name) => !list.digests.has(name));
-  if (unlisted.length) {
-    problems.push(
-      `${boundedList(unlisted)}: ${DIGESTS_NAME} does not name ${unlisted.length === 1 ? "it" : "them"},`
-      + " so there is nothing to check those bytes against",
-    );
-  }
-  return { digests: list.digests, problems };
-}
-
-/**
- * The phase that carries: every name the live `page` needs and `digests`
- * attests to, fetched, checked and written into the build's `_astro/` (named
- * only, under `dryRun`). Returns what it carried, and in `problems` why each one
- * left behind was. The ceiling counts what was asked of the origin, not the
- * wins.
- */
-async function carryAttestedAssets(page, digests, run) {
-  const carried = [];
-  const problems = [];
-  let asked = 0;
-  const overCeiling = [];
-  const overBudget = [];
-  for (const name of page.needed.filter((name) => digests.has(name))) {
-    if (asked >= MAX_ASSETS) { overCeiling.push(name); continue; }
-    if (run.deadline - run.now() <= 0) { overBudget.push(name); continue; }
-    asked += 1;
-    // Built here, from the origin this run was given — never from the ref.
-    const url = new URL(`_astro/${name}`, page.from).href;
-    const asset = await attestedAssetOf(url, digests.get(name), run.answerWithinBudget);
-    if (!asset.ok) { problems.push(`${name}: ${asset.why}`); continue; }
-    if (!run.dryRun) {
-      try {
-        run.buildDirectory.writeCarriedAsset(name, asset.bytes);
-      } catch (e) {
-        problems.push(`${name}: it could not be written — ${sentenceOfError(e)}`);
-        continue;
-      }
-    }
-    carried.push({ name, bytes: asset.bytes.length, sha256: asset.digest });
-  }
-  // One line each, however many names are behind them.
-  if (overCeiling.length)
-    problems.push(`${boundedList(overCeiling)}: this run had already asked the origin for its ceiling of ${MAX_ASSETS} assets`);
-  if (overBudget.length) problems.push(`${boundedList(overBudget)}: the run's ${run.budgetMs} ms budget was spent`);
-  return { carried, problems };
-}
-
-/**
- * The bytes the origin answers at `url`, once its status, its type, its length
- * and its digest have all passed, with that digest — or why they did not.
- *
- * `short` on the type for the same reason as on every reference, one
- * population over: a `content-type` is a string the ORIGIN chose and this
- * step did not write, bounded by nothing but Node's header limit and reachable
- * once per asset, twenty times a run. `oneLine` already means it cannot start
- * a line of its own, so what `short` saves is a deploy log somebody can read.
- *
- * A 0-byte file would publish a 200 that answers nothing under a name the
- * deploy swears by — the defect this step exists to fix, with no console error
- * to find it by. It is refused before it is even hashed.
- */
-async function attestedAssetOf(url, recordedDigest, answerWithinBudget) {
-  const asset = await answerWithinBudget(url, MAX_ASSET_BYTES);
-  if (!asset.ok) return { ok: false, why: asset.why };
-  if (asset.status !== 200) return { ok: false, why: `answered ${asset.status}` };
-  const type = asset.contentType.split(";")[0].trim().toLowerCase();
-  if (!CARRIABLE.test(type)) return { ok: false, why: `answered 200 as ${type ? short(type) : "no content type"}` };
-  const body = await asset.readBody();
-  if (!body.ok) return { ok: false, why: `its body ${body.why}` };
-  if (body.bytes.length === 0) return { ok: false, why: "answered 200 with an empty body" };
-  const digest = digestOf(body.bytes);
-  if (digest !== recordedDigest)
-    return { ok: false, why: `its ${body.bytes.length} bytes are sha256:${digest}, not the sha256:${recordedDigest} the build that published this page recorded` };
-  return { ok: true, bytes: body.bytes, digest };
-}
-
-/**
- * What the step says about one run, each line through `oneLine`: what it
- * carried, what it could not, the counted line, and the verdict.
- *
- * WHEN THIS STEP ENDS QUIET — the rule, in the one place it is decided.
- * Nothing downstream reads this step's output, so the run summary is where a
- * reader's broken page is predicted or nowhere.
- *
- * THREE OUTCOMES, and they are the whole of what this step says about the page
- * a reader is holding: nothing to do · could not look · looked and something
- * is still missing. It ends quiet only on the first. The third has three
- * shapes, each its own line because each is a different thing that page needs
- * and does not have — a file this build lacks, a URL this deploy does not
- * publish, or any evidence at all that what answered was a page this site
- * published. Three lines, one outcome; a page can be wrong in more than one of
- * these ways at once and each is worth saying.
- *
- * Anything but the first is a `::warning::` on the run summary, as the
- * IndexNow step already uses for "nothing sent", and each says which it is.
- * The failed digest publish is annotated where it happens, in
- * `digestListLines`, and is not one of these three because it is not about
- * this page at all — its subject is the NEXT deploy, which without a list has
- * nothing to check a carried byte against.
- */
-function logLinesOf(record, { dryRun }) {
-  const lines = [];
-  for (const { name, bytes, sha256 } of record.carried) {
-    lines.push(oneLine(`${dryRun ? "would carry" : "carried"} ${name}  ${bytes} bytes  sha256:${sha256}`));
-  }
-  for (const problem of record.problems) lines.push(oneLine(`could not carry ${problem}`));
-  // Where the page came from, and only ever the parse: `where` is `from` — set
-  // the moment `new URL` succeeds — whenever there is one, so this names a host
-  // exactly when a request was built for one. With no parse there is no
-  // address to report, so what is printed is the phrase the bail that ended
-  // the run chose for itself; the lines above have already said why.
-  lines.push(oneLine(
-    `${record.carried.length} asset(s) ${dryRun ? "would be carried" : "carried"} `
-    + `from ${record.where}, `
-    + `${record.alreadyBuilt.length} already in this build, ${record.problems.length} left behind`,
-  ));
-  return [...lines, ...verdictLinesOf(record)];
-}
-
-/** The annotations that say which of the three outcomes happened; none on the quiet one. */
-function verdictLinesOf(record) {
-  if (!record.looked) {
-    return [oneLine(
-      "::warning::could not read the live page, so this deploy does not know whether a reader holding it"
-      + ` still finds its assets: ${record.problems.at(-1) ?? "no reason was given"}`,
-    )];
-  }
-  const lines = [];
-  const missing = record.needed.filter((name) => !record.carried.some((asset) => asset.name === name));
-  const unserved = record.unserved.map(({ ref }) => ref);
-  // A page whose every reference is unserved raises the first of these AND the
-  // third, and that is the intended reading of two true things rather than one
-  // predicate being loose. Counting `unserved` in with `alreadyBuilt` and
-  // `needed` would still fire on a proxy notice, because a page referencing
-  // nothing has no unserved reference either; what it would cost is this page,
-  // which would then report only that one URL 404s and withhold the other
-  // half, that NOTHING on it matched this deploy, which is the evidence that
-  // the page answering may not be ours at all. Two questions, two answers, and
-  // neither answers the other.
-  if (record.alreadyBuilt.length + record.needed.length === 0) {
-    lines.push(oneLine(
-      "::warning::the live page answered 200 and references none of this deploy's assets"
-      + " — every page of ours that is cached names them, so nothing here was checked against a page this site published",
-    ));
-  }
-  if (missing.length) {
-    lines.push(oneLine(
-      `::warning::the live page references ${boundedList(missing)}, which this build does not have`
-      + ` — a reader holding that page asks for ${missing.length === 1 ? "it" : "them"} and gets a 404`,
-    ));
-  }
-  if (unserved.length) {
-    lines.push(oneLine(
-      `::warning::the live page references ${boundedList(unserved)}, which ${unserved.length === 1 ? "does" : "do"} not resolve to this deploy's assets`
-      + ` — a reader holding that page asks for ${unserved.length === 1 ? "that URL" : "those URLs"} and gets a 404, and this step does not carry ${unserved.length === 1 ? "it" : "them"}`,
-    ));
-  }
-  return lines;
 }
