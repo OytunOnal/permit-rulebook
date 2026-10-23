@@ -128,11 +128,6 @@ describe("Back on a restored record", () => {
     expectThreeStepsBack();
   });
 
-  /** The history knows no width: the phone's walk is the same walk. */
-  it("the same walk on a phone, where the rule this bends was written", () => {
-    expectThreeStepsBack();
-  });
-
   it("an answer after an outside entrance is held, and the screen it opened on is still the edge", () => {
     const tab = new InterviewTab(newStore());
     const entrance = tab.openFromOutside(3);

@@ -8,10 +8,11 @@ import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
 /**
  * s37 — Back on a restored record, and the Back gesture, in a real browser:
  * what a browser alone does. Its real Back and Forward and the moves they
- * hand the page, a reload that keeps the entries and their states, and a
- * Back that leaves the site. Where the browser's history and the page's list
- * part — a second tab, an outside entrance, an entry another tab's record no
- * longer matches — is walked in Node, through the history's entry
+ * hand the page, a reload that keeps the entries and their states, a Back
+ * that leaves the site, two real tabs on one stored record, a phone's width,
+ * and no tab throwing. Where the browser's history and the page's list part —
+ * a second tab, an outside entrance, an entry another tab's record no longer
+ * matches — every corner is walked in Node, through the history's entry
  * (`history-corners.test.ts`, `history.test.ts`).
  */
 
@@ -21,24 +22,22 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const { chromePath } = await import("../scripts/chrome.mjs");
 const { GOTO_SETTLE_MS, serve, withBrowser } = await import("../scripts/browser.mjs");
 
-function why(): string | null {
+/** Why the walk cannot run here: no Chrome, or no build. Null when it can. */
+function walkSkipReason(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
   if (!existsSync(dist)) return "no dist/ — run npm run build first";
   return null;
 }
-const skipped = why();
-if (skipped)
-  process.stderr.write([
-    "",
-    `  !! BACK ON A RESTORED RECORD WAS NOT WALKED: ${skipped}.`,
-    "     Run: npm run build && npm test",
-    "",
-    "",
-  ].join("\n"));
 
-interface BrowserPage {
+/** A tab, as `scripts/browser.mjs` hands it over. */
+interface TabPage {
   goto(url: string, settleMs?: number): Promise<void>;
   evaluate(expression: string): Promise<string>;
+  /** What this tab has thrown or logged as an error since its last `goto`. */
+  problems(): string[];
+  /** A second tab on the same browser: the same origin's storage, a history of its own. */
+  openTab(): Promise<TabPage>;
+  front(): Promise<void>;
 }
 
 /** The question each field asks, in the dataset's own words. */
@@ -69,6 +68,7 @@ const ANSWER = `(() => {
 const SCREEN_BACK = 'document.getElementById("back").click()';
 const BROWSER_BACK = "history.back()";
 const BROWSER_FORWARD = "history.forward()";
+const RELOAD = "location.reload()";
 
 interface Where { path: string; question: string; length: number; step: number | null }
 const WHERE = 'JSON.stringify({ path: location.pathname,'
@@ -78,63 +78,75 @@ const WHERE = 'JSON.stringify({ path: location.pathname,'
 const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * How long each kind of gesture is given before the tab is read — one wait
- * per kind, whichever walk makes it. Measured on the built site in headless
- * Chrome, 2026-09-25, eight runs alone on the machine: an answer or a Back
- * that stays on the page drew in at most 14 ms, opening `/` or reloading it
- * in at most 82 ms, and a Back off the site to `/data/` in at most 230 ms.
- * The suite drives several browsers side by side, so each wait is many times
- * the slowest reading of its kind; the factor is given on each.
+ * How long a gesture that stays on the page is given before the tab is read:
+ * 450 ms, about 32 times the 14 ms an answer or a Back on the page took to
+ * draw on the built site in headless Chrome, alone on the machine. The suite
+ * drives several browsers side by side.
  */
-const SETTLE = {
-  /** An answer, or a Back that lands on a question of this page: 450 ms,
-   * about 32 times the 14 ms measured. */
-  onPage: 450,
-  /** A gesture that loads a document — opening `/`, a reload, a Back or
-   * Forward across pages: 1200 ms, about 15 times the 82 ms measured for `/`
-   * and about 5 times the 230 ms for a Back off the site. */
-  newDocument: 1200,
-  /** `/data/`, opened only for its origin and left: nothing on it is waited
-   * for and nothing was measured, so the harness's own `goto` default. */
-  offInterview: GOTO_SETTLE_MS,
-};
+const ON_PAGE_MS = 450;
+
+/** The document the tab shows, told from every other by the moment it began. */
+const DOCUMENT = "String(performance.timeOrigin)";
 
 /**
- * A read that lands while a new document is still loading is asked again,
- * up to four more times, 400 ms apart: 1.6 s past the gesture's own wait,
- * about 7 times the slowest document load measured above (230 ms).
+ * Whether the tab stands on a document other than `left` whose first screen
+ * is drawn. The build paints stand-in lines over question one, and the
+ * interview takes them out in the task that draws its first screen, so a page
+ * on `/` without them has drawn; a page off the interview has nothing of ours
+ * to wait for.
  */
-const READ_RETRY = { times: 4, everyMs: 400 };
+const drawnAfter = (left: string) => `(() => {
+  if (${DOCUMENT} === ${JSON.stringify(left)} || document.readyState === "loading") return "no";
+  if (location.pathname !== "/") return "yes";
+  return document.querySelector(".stand-in") ? "no" : "yes";
+})()`;
 
-/** A walk: `at()` reads where the tab stands, `openFromOutside()` opens `/`
- * onto the three answers seeded from `/data/` — an outside entrance — and
- * `live(n)` answers n questions in the tab. */
-function walker(page: BrowserPage, url: (path: string) => string) {
-  // A Back that leaves the site is a new document: a read that lands while it
-  // is still loading is asked again rather than failing the walk on timing.
-  const at = async (): Promise<Where> => {
-    for (let tries = 0; ; tries++) {
-      try { return JSON.parse(await page.evaluate(WHERE)) as Where; } catch (e) {
-        if (tries >= READ_RETRY.times) throw e;
-        await settle(READ_RETRY.everyMs);
-      }
-    }
-  };
+/** A new document's first draw is waited for this long at most, read every 50 ms. */
+const DRAW_WAIT = { ms: 15000, everyMs: 50 };
+
+const whereOf = async (page: TabPage): Promise<Where> => JSON.parse(await page.evaluate(WHERE)) as Where;
+
+/** Where the tab stands once a document other than `left` has drawn its first screen. A read
+ * while the document is being replaced has no context to run in, and is asked again. */
+async function whereOnceDrawnAfter(page: TabPage, left: string): Promise<Where> {
+  for (let waited = 0; waited < DRAW_WAIT.ms; waited += DRAW_WAIT.everyMs) {
+    try { if ((await page.evaluate(drawnAfter(left))) === "yes") return await whereOf(page); } catch { /* replaced: ask again */ }
+    await settle(DRAW_WAIT.everyMs);
+  }
+  throw new Error(`no new document drew its first screen within ${DRAW_WAIT.ms} ms`);
+}
+
+/** A walk: `at()` reads where the tab stands, `act` makes a gesture that stays
+ * on the page and `actAcross` one that loads a document, `openFromOutside()`
+ * opens `/` onto the three answers seeded from `/data/` — an outside entrance —
+ * and `live(n)` answers n questions in the tab. */
+function walker(page: TabPage, url: (path: string) => string) {
+  const at = () => whereOf(page);
+  const untilDrawnAfter = (left: string) => whereOnceDrawnAfter(page, left);
   // The gesture runs on the page's next task, so the evaluation has returned
   // before a Back that leaves the site tears the document down.
-  const act = async (expression: string, ms = SETTLE.onPage) => {
+  const act = async (expression: string) => {
     await page.evaluate(`setTimeout(() => { ${expression}; }, 0), 0`);
-    await settle(ms);
+    await settle(ON_PAGE_MS);
     return at();
+  };
+  const actAcross = async (expression: string) => {
+    const left = await page.evaluate(DOCUMENT);
+    await page.evaluate(`setTimeout(() => { ${expression}; }, 0), 0`);
+    return untilDrawnAfter(left);
+  };
+  const openOnto = async (path: string) => {
+    const left = await page.evaluate(DOCUMENT);
+    await page.goto(url(path), 0);
+    return untilDrawnAfter(left);
   };
   const outside = async (seed: string) => {
-    await page.goto(url("/data/"), SETTLE.offInterview);
+    await page.goto(url("/data/"), GOTO_SETTLE_MS);
     await page.evaluate(seed);
-    await page.goto(url("/"), SETTLE.newDocument);
-    return at();
+    return openOnto("/");
   };
   return {
-    at, act,
+    at, act, actAcross, openOnto,
     openFromOutside: () => outside(SEED),
     async live(n: number) {
       const seen = [await outside(CLEAR)];
@@ -150,15 +162,28 @@ type Viewport = { viewport: { width: number; height: number }; mobile: boolean }
 const WIDE: Viewport = { viewport: { width: 1100, height: 900 }, mobile: false };
 const PHONE: Viewport = { viewport: { width: 390, height: 844 }, mobile: true };
 
+/** The tab a walk is handed, and the site's addresses, for a second tab of its own. */
+interface Site { page: TabPage; url: (path: string) => string }
+
 /** `walk` in a fresh browser of `size` over the built site. */
-async function walkInBrowser<T>(size: Viewport, walk: (w: Walker) => Promise<T>): Promise<T> {
+async function walkInBrowser<T>(size: Viewport, walk: (w: Walker, site: Site) => Promise<T>): Promise<T> {
   const server = await serve(dist);
   try {
-    return await withBrowser((page: BrowserPage) => walk(walker(page, server.url)), size) as T;
+    return await withBrowser((page: TabPage) => walk(walker(page, server.url), { page, url: server.url }), size) as T;
   } finally {
     server.close();
   }
 }
+
+const skipped = walkSkipReason();
+if (skipped)
+  process.stderr.write([
+    "",
+    `  !! BACK ON A RESTORED RECORD WAS NOT WALKED: ${skipped}.`,
+    "     Run: npm run build && npm test",
+    "",
+    "",
+  ].join("\n"));
 
 describe("Back on a restored record, in a real browser", () => {
   it("never lets a pipeline skip the walk", () => {
@@ -171,16 +196,56 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
   it("from the screen an outside entrance opened on, the browser's Back still leaves to the page before", async () => {
     const seen = await walkInBrowser(WIDE, async (w) => {
       const entrance = await w.openFromOutside();
-      return { entrance, back: await w.act(BROWSER_BACK, SETTLE.newDocument) };
+      return { entrance, back: await w.actAcross(BROWSER_BACK) };
     });
     expect(seen.entrance.question).toBe(asks("qualification"));
     expect(seen.back.path, "the browser's Back was held on the site").toBe("/data/");
   }, 180000);
 
+  /** At a phone's width, where the rule this bends was written: three screen Backs from an
+   * outside entrance, each a question back, none of them off the site, and nothing thrown. */
+  it("the same walk on a phone, where the rule this bends was written", async () => {
+    const seen = await walkInBrowser(PHONE, async (w, { page }) => {
+      const entrance = await w.openFromOutside();
+      const backs: Where[] = [];
+      for (let i = 0; i < 3; i++) backs.push(await w.act(SCREEN_BACK));
+      return { entrance, backs, problems: page.problems() };
+    });
+    expect(seen.problems, "a tab threw").toEqual([]);
+    expect(seen.entrance.question, "the record did not restore to the fourth question").toBe(asks("qualification"));
+    expect(seen.backs.map((s) => s.question), "a tap is not the question before")
+      .toEqual(["situation", "citizenship", "destination"].map(asks));
+    for (const back of seen.backs)
+      expect([back.path, back.length], "a tap left the site or changed the browser's history")
+        .toEqual(["/", seen.entrance.length]);
+  }, 180000);
+
+  /** Two real tabs share the stored record and nothing else: tab B answers two more, tab A
+   * reloads onto the longer record, and its screen's Back steps back in place. */
+  it("two real tabs on one stored record: grown in tab B, tab A reloads and steps back in place, and no tab threw", async () => {
+    const seen = await walkInBrowser(WIDE, async (a, { page, url }) => {
+      const entrance = await a.openFromOutside();
+      const tabB = await page.openTab();
+      await tabB.front();
+      const b = walker(tabB, url);
+      const inB = [await b.openOnto("/"), await b.act(ANSWER), await b.act(ANSWER)];
+      await page.front();
+      const reloaded = await a.actAcross(RELOAD);
+      const back = await a.act(SCREEN_BACK);
+      return { entrance, inB, reloaded, back, problems: { a: page.problems(), b: tabB.problems() } };
+    });
+    expect(seen.problems, "a tab threw").toEqual({ a: [], b: [] });
+    expect(seen.inB[0]!.question, "tab B did not open on the stored record").toBe(seen.entrance.question);
+    expect(new Set(seen.inB.map((s) => s.question)).size, "tab B's answers did not move it on").toBe(3);
+    expect(seen.reloaded.question, "the reload did not restore what tab B left").toBe(seen.inB[2]!.question);
+    expect([seen.back.path, seen.back.question], "the screen's Back left the site, or stayed").toEqual(["/", seen.inB[1]!.question]);
+    expect(seen.back.length, "stepping back in place pushed an entry").toBe(seen.reloaded.length);
+  }, 180000);
+
   it("the reload path stays mended: three answered live, a reload, then step 3 → 2 → 1", async () => {
     const seen = await walkInBrowser(PHONE, async (w) => {
       const live = await w.live(3);
-      const reloaded = await w.act("location.reload()", SETTLE.newDocument);
+      const reloaded = await w.actAcross(RELOAD);
       const screenBack = await w.act(SCREEN_BACK);
       const browserBack = await w.act(BROWSER_BACK);
       return { live, reloaded, screenBack, browserBack };
@@ -294,7 +359,7 @@ describe.skipIf(skipped !== null)("back and forward walk the questions", () => {
     const seen = await walkInBrowser(PHONE, async (w) => {
       const walk = async (goBack: string) => {
         const live = await w.live(4);
-        const reloaded = await w.act("location.reload()", SETTLE.newDocument);
+        const reloaded = await w.actAcross(RELOAD);
         const back = await w.act(goBack);
         const questions = live.map((s) => s.question);
         return { questions, before: live.at(-1)!, reloaded, back, forward: await w.act(BROWSER_FORWARD) };
