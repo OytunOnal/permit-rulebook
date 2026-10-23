@@ -43,6 +43,7 @@
  ],
  "levels": {
   "astro.config.mjs": "main",
+  "eslint.config.mjs": "main",
   "scripts/browser.mjs": "infrastructure",
   "scripts/build-directory-on-disk.mjs": "infrastructure",
   "scripts/carry-assets.mjs": "main",
@@ -1881,6 +1882,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/lint.test.ts",
+   "to": "eslint.config.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/listbox.test.ts",
    "to": "src/lib/listbox.ts",
    "kind": "dependency"
@@ -3475,6 +3481,108 @@
    {
     "name": "BASE",
     "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "default",
+    "kind": "other",
+    "exported": true
+   }
+  ],
+  "eslint.config.mjs": [
+   {
+    "name": "IGNORED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "TYPESCRIPT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "TESTS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "FILE_LENGTH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "FUNCTION_LENGTH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "TEST_FUNCTION_LENGTH",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "NESTING",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "PARAMETERS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "NESTED_TERNARY",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "UNUSED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "UNUSED_IN_TYPESCRIPT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "FUNCTION_LIMIT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "coreFunctionLimit",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "isDescribeCallee",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "isDescribeCallback",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "functionLimitExceptDescribe",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "configWithoutExceptions",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "lintExceptions",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "blockOf",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -6563,6 +6671,7 @@
  },
  "loose": [
   "astro.config.mjs",
+  "eslint.config.mjs",
   "scripts/browser.mjs",
   "scripts/build-directory-on-disk.mjs",
   "scripts/carry-assets.mjs",
@@ -6628,5 +6737,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "9a9e3c6463489b197f411dfd2603f2e92d025c09665825fc4da329c61ff2081d"
+ "digest": "2a3e93e9bbb9cb123f5dfb9c6b66616f4fc7162d629c65c3428a75dc96131a11"
 }

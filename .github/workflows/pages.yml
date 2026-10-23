@@ -208,6 +208,12 @@ jobs:
         working-directory: site
         run: npm test
 
+      # The six shape limits, in the green as the suite is: a red lint stops
+      # the deploy the way a red test does.
+      - name: Lint
+        working-directory: site
+        run: npm run lint
+
       - name: The first minute's assets are committed and still true
         working-directory: site
         run: npm run assets:check
