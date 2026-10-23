@@ -134,6 +134,7 @@ pull request.
   before a connection is made.
 - Secrets live in `.env` or in the repository's Actions secrets, never in
   code.
+- A shared device keeps nothing of a reader after Start over.
 - A third-party script is pinned to a version and loaded with its integrity
   hash. The analytics beacon, which its vendor serves unversioned, is the one
   exception, allowed by name in the Content-Security-Policy.

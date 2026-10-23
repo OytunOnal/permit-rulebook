@@ -224,8 +224,11 @@ describe("interviewAfter: restarted", () => {
     expect(step.screen).toEqual({ kind: "question", field: "situation", started: true });
     expect(step.lines.arrival?.country).toBe("DE");
     expect(step.lines.resumed).toBeNull();
-    expect(step.save, "nothing of the record before Start over is kept")
-      .toEqual({ answers: { destination: "de" }, history: ["destination"], done: false });
+    // A shared device keeps nothing of a reader after Start over (#216, ruling 2): the arrival's
+    // record lives on screen, and the next answer saves it as every answer does.
+    expect(step.save).toBe("clear");
+    expect(after(step.state, { kind: "answered", value: "offer" }).save)
+      .toEqual({ answers: { destination: "de", situation: "offer" }, history: ["destination", "situation"], done: false });
     expect(step.history).toEqual([{ call: "restarted" }, { call: "redrawnInPlace", field: "situation" }]);
   });
 
@@ -234,6 +237,7 @@ describe("interviewAfter: restarted", () => {
     expect(step.state.scopedRouteId).toBe("de-blue-card-general");
     expect(step.state.answers).toEqual({ destination: "de" });
     expect(step.lines.arrival?.route?.id).toBe("de-blue-card-general");
+    expect(step.save).toBe("clear");
   });
 });
 

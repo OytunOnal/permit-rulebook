@@ -110,8 +110,8 @@ export interface InterviewStep {
   land: Landing;
   /** Whether the question card it draws takes the beat (#86). */
   beat: boolean;
-  /** The record to keep, which replaces the stored one whole; "clear" when Start over leaves
-   * nothing to keep; or null when it is untouched. */
+  /** The record to keep, which replaces the stored one whole; "clear" on Start over, which
+   * leaves nothing on the device; or null when it is untouched. */
   save: RecordToKeep | "clear" | null;
   history: HistoryCall[];
 }
@@ -188,14 +188,14 @@ export function interviewAfter(dataset: Dataset, state: InterviewState, gesture:
  * must not undo it: the entries go with the record. Then the address arrives
  * again on the empty record, as the load does, so the screen matches the
  * address the reader is on: its country back on the record with its line, its
- * route sorting first. Where the arrival moved the record, the save replaces
- * the stored record whole; elsewhere it is cleared.
+ * route sorting first. The stored record is cleared on every address, so the
+ * device keeps nothing of the reader: the arrival's record lives on screen,
+ * and the next answer saves it as every answer does.
  */
 function afterRestart(dataset: Dataset, search: string): InterviewStep {
   const { state, lines } = arrivedOn(dataset, search, { answers: {}, order: [] });
   const step = stepOnto(dataset, BY_RESTART, { state, lines });
-  const save = lines.arrival ? recordToKeep(dataset, state) : "clear";
-  return { ...step, save, history: [{ call: "restarted" }, ...step.history] };
+  return { ...step, save: "clear", history: [{ call: "restarted" }, ...step.history] };
 }
 
 /** The interview an address's arrival leaves on `record`, and the arrival line where it moved it. */

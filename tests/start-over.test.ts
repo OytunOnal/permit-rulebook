@@ -117,6 +117,24 @@ describe.skipIf(skipped !== null)("a kept verdict at a country's address, and St
     expect(seen.field, "Start over did not arrive again in Germany").toBe("situation");
     expect(seen.restarted.arrivalLine, "the arrival line is missing").toBe(true);
     expect(seen.restarted.resumed).toBe(false);
-    expect(seen.restarted.storedAnswers, "the record before Start over outlived it").toEqual({ destination: "de" });
+    // Ruling 2 of #216 reverses #215's accepted choice 1, which kept Germany stored.
+    expect(seen.restarted.storedAnswers, "the device kept something after Start over").toBeNull();
+  }, 120000);
+
+  /** A shared device keeps nothing of a reader after Start over (#216, ruling 2): the next
+   * person to open `/` meets question one, and nothing says it is continuing. */
+  it("after Start over on /?country=de the stored record is empty, and / then shows question one with no resumed line", async () => {
+    const seen = await withSite(async (site) => {
+      await openOnKeptVerdict(site, "/?country=de");
+      await tapOn(site.page, "#restart");
+      const restarted = await settledAfterStartOver(site.page);
+      await site.page.goto(site.url("/"), 1200);
+      const nextReader = await where(site.page);
+      return { restarted, nextReader, field: await fieldOnScreen(site.page), problems: site.page.problems() };
+    }, DESK);
+    expect(seen.problems).toEqual([]);
+    expect(seen.restarted.storedAnswers, "the device kept something after Start over").toBeNull();
+    expect([seen.nextReader.state, seen.field]).toEqual(["questions", "destination"]);
+    expect(seen.nextReader.resumed, "the next reader is told they are continuing").toBe(false);
   }, 120000);
 });
