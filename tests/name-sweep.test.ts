@@ -12,12 +12,11 @@ import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "../src/lib/copy/frame.js";
  * s6 decision 1 — the name changed in one sweep, and nothing user-facing may
  * still say the working name.
  *
- * It is checked by grep, not by eye, so this is a grep, run over what `git ls-files` tracks in both repositories. What it does
- * NOT read is stated in its name and enforced below, because each exclusion is
- * a decision someone could otherwise quietly widen:
+ * It is checked by grep, not by eye, so this is a grep, run over what
+ * `git ls-files` tracks in both repositories. What it does NOT read is stated
+ * in its name and enforced below, because each exclusion is a decision
+ * someone could otherwise quietly widen:
  *
- *   · the ledgers — STATUS.md, KANBAN.md, DECISIONS.md — keep their history
- *     unedited by instruction; they record what happened under the old name;
  *   · `GLOSSARY.md` (named `CONTEXT.md` until 2026-10-17) and everything
  *     under `docs/spine/**` are the project's own record of itself, not
  *     strings a reader of the product ever sees;
@@ -51,7 +50,7 @@ const REPOS = {
  * in a package manifest is a path, not a name, and is excluded by that rule
  * rather than by an oversight.
  */
-const HISTORY = ["STATUS.md", "KANBAN.md", "DECISIONS.md", "GLOSSARY.md"];
+const HISTORY = ["GLOSSARY.md"];
 
 /** Directory and filename prefixes that are records of what happened, not
  * strings a reader of the product meets. Each is named in the describe() above;
