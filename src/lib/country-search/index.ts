@@ -9,8 +9,8 @@
  * read by a test in Node; `mountCountrySearch` only applies the views it
  * returns.
  */
-export { countrySearchOf, type CountrySearch, type KeyOutcome, type SearchKey } from "./controller.js";
-export { QUERY_MAX_LENGTH } from "./listbox.js";
-export { countrySearchHtml, hasClasses } from "./markup.js";
-export { mountCountrySearch } from "./mount.js";
-export type { ClassedField, RowMarks, SearchView } from "./view.js";
+export { countrySearchOf, type CountrySearch, type KeyOutcome, type SearchKey } from "./control/controller.js";
+export { QUERY_MAX_LENGTH } from "./control/listbox.js";
+export { countrySearchHtml, hasClasses } from "./control/markup.js";
+export { mountCountrySearch } from "./control/mount.js";
+export type { ClassedField, RowMarks, SearchView } from "./control/view.js";

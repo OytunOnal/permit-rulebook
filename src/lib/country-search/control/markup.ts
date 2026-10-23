@@ -1,7 +1,7 @@
 // @level presentation
 import type { FieldOption, Question } from "permit-rulebook-data";
-import { ANSWER_ON_FILE, PASSPORT_CLASSES_HINT, SEARCH_BOX_LABEL, SEARCH_BOX_PLACEHOLDER } from "../copy/interview.js";
-import { esc, escAttr } from "../reason.js";
+import { ANSWER_ON_FILE, PASSPORT_CLASSES_HINT, SEARCH_BOX_LABEL, SEARCH_BOX_PLACEHOLDER } from "../../copy/interview.js";
+import { esc, escAttr } from "../../reason.js";
 import { QUERY_MAX_LENGTH } from "./listbox.js";
 
 /** Whether this question's options carry a country class. The card says so

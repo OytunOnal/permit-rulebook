@@ -2,8 +2,8 @@
 import { countryClasses, matchOptions, notices, type Dataset, type FieldOption } from "permit-rulebook-data";
 import {
   NOTE_APPLIES_HINT, countriesToSearchLine, matchesHighlightedLine, moreMatchesLine,
-} from "../copy/interview.js";
-import { esc, escAttr } from "../reason.js";
+} from "../../copy/interview.js";
+import { esc, escAttr } from "../../reason.js";
 import { activeOption, composeNoMatchLine, rowId, shownOptions, type ListboxState } from "./listbox.js";
 
 /** The question's field and the dataset its rows' class hints are read from. */
