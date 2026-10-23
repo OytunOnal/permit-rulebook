@@ -74,6 +74,7 @@
   "scripts/shot.mjs": "infrastructure main",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure main",
+  "src/lib/arrival-line.ts": "presentation",
   "src/lib/clipboard.ts": "presentation",
   "src/lib/copy/country-page.ts": "presentation",
   "src/lib/copy/data-page.ts": "presentation",
@@ -100,7 +101,7 @@
   "src/lib/reason.ts": "presentation",
   "src/lib/record.ts": "application",
   "src/lib/route-page.ts": "presentation",
-  "src/lib/scope.ts": "application presentation",
+  "src/lib/scope.ts": "application",
   "src/lib/screen.ts": "application",
   "src/lib/site.ts": "presentation",
   "src/lib/sitemap.ts": "presentation",
@@ -334,6 +335,26 @@
    "from": "scripts/smoke.mjs",
    "to": "scripts/site-base.mjs",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/arrival-line.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/arrival-line.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/arrival-line.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/arrival-line.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/copy/country-page.ts",
@@ -743,11 +764,6 @@
   {
    "from": "src/lib/route-page.ts",
    "to": "tokens.css",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/scope.ts",
-   "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
   {
@@ -1207,6 +1223,11 @@
   },
   {
    "from": "src/pages/index.astro",
+   "to": "src/lib/arrival-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
@@ -1233,7 +1254,7 @@
   {
    "from": "src/pages/index.astro",
    "to": "src/lib/gloss.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/pages/index.astro",
@@ -1352,7 +1373,22 @@
   },
   {
    "from": "tests/arrival.test.ts",
+   "to": "src/lib/arrival-line.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "src/lib/copy/interview.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
    "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
   {
@@ -4193,6 +4229,28 @@
     "exported": false
    }
   ],
+  "src/lib/arrival-line.ts": [
+   {
+    "name": "arrivalLineHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "questionPhrase",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "arrivalSentence",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "arrivalOpening",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
   "src/lib/clipboard.ts": [
    {
     "name": "COPY_SCRIPT",
@@ -4527,6 +4585,16 @@
    {
     "name": "startingFromRouteLine",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "answersKeptClause",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "UNNAMED_QUESTION_PHRASE",
+    "kind": "const",
     "exported": true
    },
    {
@@ -6184,17 +6252,17 @@
    {
     "name": "ScopedArrival",
     "kind": "type",
-    "exported": true
+    "exported": false
    },
    {
     "name": "arrivalFrom",
     "kind": "fn",
-    "exported": true
+    "exported": false
    },
    {
     "name": "destinationFor",
     "kind": "fn",
-    "exported": true
+    "exported": false
    },
    {
     "name": "scopedFirst",
@@ -6204,17 +6272,12 @@
    {
     "name": "countryArrivalFrom",
     "kind": "fn",
-    "exported": true
+    "exported": false
    },
    {
     "name": "destinationForCountry",
     "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "questionPhrase",
-    "kind": "fn",
-    "exported": true
+    "exported": false
    },
    {
     "name": "replayRecord",
@@ -6229,17 +6292,22 @@
    {
     "name": "arrivalPlan",
     "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "arrivalSentence",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "arrivalOpening",
-    "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "ArrivalFacts",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "Arrival",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "arrivalOf",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "src/lib/screen.ts": [
@@ -6816,6 +6884,7 @@
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
+  "src/lib/arrival-line.ts",
   "src/lib/clipboard.ts",
   "src/lib/copy/country-page.ts",
   "src/lib/copy/data-page.ts",
@@ -6863,5 +6932,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "636e04a5b58c709711a39e5757adc2b675dc664d514149775290e3064446fe81"
+ "digest": "4d300c8fa07c0d56f51e61864826342389fd14d32df68b08fa4eb5e6ba32b5e8"
 }
