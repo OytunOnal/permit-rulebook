@@ -38,6 +38,19 @@
    ]
   },
   {
+   "path": "src/lib/interview",
+   "entries": [
+    {
+     "file": "src/lib/interview/index.ts",
+     "level": "application"
+    }
+   ],
+   "files": [
+    "src/lib/interview/flow/interview-after.ts",
+    "src/lib/interview/index.ts"
+   ]
+  },
+  {
    "path": "src/lib/interview-history",
    "entries": [
     {
@@ -135,6 +148,8 @@
   "src/lib/interview-history/index.ts": "application",
   "src/lib/interview-history/list/entry-state.ts": "domain",
   "src/lib/interview-history/list/screen-list.ts": "domain",
+  "src/lib/interview/flow/interview-after.ts": "application",
+  "src/lib/interview/index.ts": "application",
   "src/lib/not-found.ts": "presentation",
   "src/lib/question.ts": "presentation",
   "src/lib/quote.ts": "presentation",
@@ -737,6 +752,31 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/interview/flow/interview-after.ts",
+   "to": "src/lib/interview-history/index.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/flow/interview-after.ts",
+   "to": "src/lib/record.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/flow/interview-after.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/not-found.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -1209,11 +1249,6 @@
   {
    "from": "src/lib/verdict/compose/types.ts",
    "to": "src/lib/screen.ts",
-   "kind": "inheritance"
-  },
-  {
-   "from": "src/lib/verdict/compose/types.ts",
-   "to": "src/lib/screen.ts",
    "kind": "type-only"
   },
   {
@@ -1413,6 +1448,11 @@
   },
   {
    "from": "src/pages/index.astro",
+   "to": "src/lib/interview/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
@@ -1423,13 +1463,8 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/scope.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
    "to": "src/lib/screen.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/pages/index.astro",
@@ -2224,6 +2259,11 @@
   {
    "from": "tests/interview-tab.ts",
    "to": "tests/fake-browser-history.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/interview.test.ts",
+   "to": "src/lib/interview/index.ts",
    "kind": "dependency"
   },
   {
@@ -3468,13 +3508,18 @@
   },
   {
    "from": "tests/screen.test.ts",
+   "to": "src/lib/interview/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/screen.test.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/screen.test.ts",
    "to": "src/lib/screen.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "tests/screen.test.ts",
@@ -3731,6 +3776,7 @@
    }
   ],
   "src/lib/country-search/index.ts": [],
+  "src/lib/interview/index.ts": [],
   "src/lib/interview-history/index.ts": [
    {
     "name": "BrowserHistory",
@@ -6543,21 +6589,6 @@
     "name": "VerdictMasthead",
     "kind": "type",
     "exported": true
-   },
-   {
-    "name": "FlowAction",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "Interview",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "screenAfter",
-    "kind": "fn",
-    "exported": true
    }
   ],
   "src/lib/site.ts": [
@@ -7080,5 +7111,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "60bd20ec45af59f66e9cac46af58d9e27e85f281f1fc841a75e60bf2c3ecf988"
+ "digest": "cf4ce2524c65f0b8936b78a883220593ba1dd57357b533dbd74b55aea72336f8"
 }
