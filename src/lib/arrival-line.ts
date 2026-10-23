@@ -10,14 +10,13 @@ import { esc } from "./reason.js";
 import type { ArrivalFacts } from "./scope.js";
 
 /**
- * The arrival line: what an arrival did, in one sentence, on whichever screen
- * the reader lands on.
+ * The arrival line: what an arrival did, in one sentence, on the first screen
+ * it leads to.
  *
- * The route path narrated itself and the country path did not (critique F15),
- * and neither said anything to a reader with a record — who is exactly the
- * reader whose screen just changed country (B2). The route's name is glossed
- * with the screen's own glossary, so an act it cites is explained once on
- * that screen, here or in the card below.
+ * Every arrival says it, from a country's page as from a route's, and to a
+ * reader with a record too, whose screen has just changed country. The
+ * route's name is glossed with the screen's own glossary, so an act it cites
+ * is explained once on that screen, here or in the card below.
  */
 export function arrivalLineHtml(dataset: Dataset, facts: ArrivalFacts, glossary: Glossary): string {
   const route = facts.route ? glossSection(facts.route.name, glossary) : null;

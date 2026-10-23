@@ -9,14 +9,14 @@ export interface EntryState {
    * How many held steps stand behind this one — how many times the browser
    * can go back from it and stay in the interview. A count, not the step they
    * begin at: a record grown in another tab rebuilds a longer list on reload,
-   * and a step number written against the shorter one then stood behind the
-   * reader, so the screen's Back left the site (Security review, s37 round 1).
+   * and a step number written against the shorter one would stand behind the
+   * reader and send the screen's Back off the site.
    */
   held: number;
 }
 
 /** The state for the entry the reader stands on: the one object every push
- * and replace writes, so the shape has one author (s37). */
+ * and replace writes, so the shape has one author. */
 export function entryState(history: ScreenHistory): EntryState {
   return { step: history.current, held: history.current - history.firstHeld };
 }
@@ -33,7 +33,7 @@ const isCount = (value: unknown): value is number => Number.isSafeInteger(value)
  * infinity, NaN, more steps held than the entry stands on — is read as 0,
  * nothing held behind, which is an outside entrance. That is the safe side:
  * stepping back in place never leaves the site, and the browser's Back onto
- * nothing does (Security review, s37 rounds 1 and 2).
+ * nothing does.
  *
  * An entry that carries a step and no held count is read as an outside
  * entrance too. For a tab that had walked its questions live the two Backs
@@ -56,20 +56,19 @@ export function readEntry(state: unknown): { step: number | undefined; held: num
  * browser's history, a restored session — keeps every entry the interview
  * wrote; an outside entrance onto a stored record holds one, the screen it
  * opened on, and a "← Back" that asked the browser for the step before it
- * took the reader off the site (s37, measured 2026-09-25).
+ * would take the reader off the site.
  *
  * The navigation's type cannot tell them apart: an outside entrance that is
  * then reloaded, or left and returned to, reads `reload` or `back_forward`
- * while the browser still holds only the screen it opened on (headless
- * Chrome, 2026-09-25). The entry itself can: every entry carries how many
- * held steps stand behind it, and the browser keeps that state with the
- * entry through a reload, a return and a restored session.
+ * while the browser still holds only the screen it opened on. The entry
+ * itself can: every entry carries how many held steps stand behind it, and
+ * the browser keeps that state with the entry through a reload, a return and
+ * a restored session.
  *
  * The count is believed only where the step the entry names is the step the
- * page stands on (human, 2026-09-25). Another tab shares the record and not
- * the history: it grows the record, or starts over and answers again, and the
- * entries behind this one still name steps of the list they were written
- * against. Popped, one past the rebuilt list clamps onto the question already
+ * page stands on. Another tab shares the record and not the history: it
+ * grows the record, or starts over and answers again, and the entries behind
+ * this one still name steps of the list they were written against. Popped, one past the rebuilt list clamps onto the question already
  * on screen — a dead tap — and over a grown list they skip the questions the
  * other tab added. Where the count is not believed nothing is held, and the
  * screen's Back steps back in place, which can neither leave the site nor

@@ -6,9 +6,9 @@
  * which question it was showing — never a copy of the answers, so stepping
  * back keeps everything answered since. The rule about when an entry is added
  * and when one is rewritten lives here, where a test reaches it through the
- * module's entry: every render that adds an entry made the numbers stop
- * naming the questions, and a phone that throttles a burst of pushes drops
- * some of them (human's phone walk, 2026-09-08).
+ * module's entry: an entry added on every render would stop the steps naming
+ * the questions, and a phone that throttles a burst of pushes drops some of
+ * them.
  */
 export interface HistoryEntry {
   /** The question this entry shows; null on the results or a notice screen. */
@@ -23,7 +23,7 @@ export interface ScreenHistory {
    * The first step the browser holds an entry of this interview for. Every
    * step from here to `current` is one the browser's Back can land on; the
    * steps before it are the page's own, rebuilt from the record, and the
-   * browser has nothing of ours there (s37).
+   * browser has nothing of ours there.
    */
   firstHeld: number;
 }
@@ -67,8 +67,8 @@ export function screenAt(history: ScreenHistory, step: number): HistoryEntry | u
 
 /**
  * The entries an opened page rebuilds. A reload empties the page's own list
- * while the browser keeps every entry it pushed, so both Backs stopped
- * meaning anything (Spec review, 2026-09-08). The record knows the order the
+ * while the browser keeps every entry it pushed, and without the list both
+ * Backs would mean nothing. The record knows the order the
  * questions were answered in: one entry per answered question, then the one
  * on screen.
  */
