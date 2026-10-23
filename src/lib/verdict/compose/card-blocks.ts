@@ -512,8 +512,9 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
     const { lang, host, note } = quoteFrame(value, amount);
     // Per entry, not per card: one settled disjunction on a route must not put
     // a ruled-out mark under a second one nobody has decided.
-    const mark = contested && amount !== undefined ? appliesMarkHtml(applied) : "";
-    return `<div class="src${contested && amount !== undefined && applied === false ? " unapplied" : ""}"><i${
+    const takesMark = contested && amount !== undefined;
+    const mark = takesMark ? appliesMarkHtml(applied) : "";
+    return `<div class="src${takesMark && applied === false ? " unapplied" : ""}"><i${
       lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
       label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
       citation ? ` · ${esc(citation)}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
