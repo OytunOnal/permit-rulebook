@@ -59,16 +59,14 @@ try {
   if (html.length < 25) problems.push(`only ${html.length} pages built`);
   if (json.length < 23) problems.push(`only ${json.length} JSON endpoints built`);
 
+  const nameOf = (file) => relative(dist, file).split(sep).join("/");
+
   // 1. Nothing points at the site root instead of the base.
-  for (const file of files) {
-    if (!/[.](html|json|js|css)$/.test(file)) continue;
-    const name = relative(dist, file).split(sep).join("/");
-    for (const m of readFileSync(file, "utf8").matchAll(/(?:href|src|content)="([/][^"/][^"]*)"/g)) {
-      const target = m[1];
-      if (target === BASE || target.startsWith(`${BASE}/`)) continue;
-      problems.push(`${name}: root-absolute ${m[0].slice(0, 90)}`);
-    }
-  }
+  const rootAbsoluteIn = (file) =>
+    [...readFileSync(file, "utf8").matchAll(/(?:href|src|content)="([/][^"/][^"]*)"/g)]
+      .filter((m) => m[1] !== BASE && !m[1].startsWith(`${BASE}/`))
+      .map((m) => `${nameOf(file)}: root-absolute ${m[0].slice(0, 90)}`);
+  for (const file of files.filter((f) => /[.](html|json|js|css)$/.test(f))) problems.push(...rootAbsoluteIn(file));
 
   // 2. Every internal link resolves to something the build actually emitted.
   const resolves = (p) => {
@@ -76,14 +74,12 @@ try {
     const target = join(dist, clean);
     return (existsSync(target) && statSync(target).isFile()) || existsSync(join(target, "index.html"));
   };
-  for (const file of html) {
-    const name = relative(dist, file).split(sep).join("/");
-    for (const m of readFileSync(file, "utf8").matchAll(/(?:href|src)="([^"]+)"/g)) {
-      const target = m[1];
-      if (!target.startsWith(BASE)) continue;
-      if (!resolves(target)) problems.push(`${name}: ${target} resolves to nothing built`);
-    }
-  }
+  const unresolvedIn = (file) =>
+    [...readFileSync(file, "utf8").matchAll(/(?:href|src)="([^"]+)"/g)]
+      .map((m) => m[1])
+      .filter((target) => target.startsWith(BASE) && !resolves(target))
+      .map((target) => `${nameOf(file)}: ${target} resolves to nothing built`);
+  for (const file of html) problems.push(...unresolvedIn(file));
 
   // 3. The meta a link preview reads carries the base too.
   const home = readFileSync(join(dist, "index.html"), "utf8");

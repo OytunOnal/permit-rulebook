@@ -227,10 +227,9 @@ describe("the arrival line says what actually happens next", () => {
         for (const field of plan.kept)
           expect(line, `${where}: ${field}`).toContain(questionPhrase(ds, field));
         // And nothing the move dropped is named anywhere in it.
-        for (const field of record.order)
-          if (plan.answers[field] === undefined)
-            expect(line, `${where}: ${field} was dropped but is named`)
-              .not.toContain(questionPhrase(ds, field));
+        for (const field of record.order.filter((f) => plan.answers[f] === undefined))
+          expect(line, `${where}: ${field} was dropped but is named`)
+            .not.toContain(questionPhrase(ds, field));
       }
   });
 

@@ -342,6 +342,27 @@ describe("the rename does not cost anybody their answers", () => {
   });
 });
 
+/** One request to the counter's endpoint after a pre-scoped walk: its preflight
+ * carries nothing, and its report carries an address and no answer. */
+function expectReportCarriesNoAnswer(request: Sent, declared: string[]): void {
+  if (request.method === "OPTIONS") return;
+  const raw = String(request.postData ?? "");
+  // Origin and path masked; the query string left in to be checked.
+  const body = raw.replace(/"location":"([^"?]*)([^"]*)"/g, (_m, _p, query) => `"location":"${query}"`);
+  // Measured, not assumed: the counter reports the path only — the
+  // query string the reader arrived with never reaches it, so the route
+  // id does not either, though it would have been allowed as the page's
+  // own address (Security review, 2026-09-08).
+  expect(raw).not.toContain("route=de-blue-card-general");
+  expect(raw, "the report carries no address at all").toContain('"location"');
+  // No answer, anywhere in it — query string included.
+  for (const answer of declared) {
+    const token = new RegExp(`(^|[^a-z0-9])${
+      answer.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
+    expect(token.test(body.toLowerCase()), `${answer} reached the beacon`).toBe(false);
+  }
+}
+
 /**
  * The other way in: a route page's call to action lands here with the route in
  * the query string. That id is the page's own address and the counter may carry
@@ -377,22 +398,7 @@ describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arrivi
       for (const request of seen.sent) {
         if (request.url.startsWith(BEACON_SCRIPT)) continue;
         if (request.url.startsWith(BEACON_ENDPOINT)) {
-          if (request.method === "OPTIONS") continue;
-          const raw = String(request.postData ?? "");
-          // Origin and path masked; the query string left in to be checked.
-          const body = raw.replace(/"location":"([^"?]*)([^"]*)"/g, (_m, _p, query) => `"location":"${query}"`);
-          // Measured, not assumed: the counter reports the path only — the
-          // query string the reader arrived with never reaches it, so the route
-          // id does not either, though it would have been allowed as the page's
-          // own address (Security review, 2026-09-08).
-          expect(raw).not.toContain("route=de-blue-card-general");
-          expect(raw, "the report carries no address at all").toContain('"location"');
-          // No answer, anywhere in it — query string included.
-          for (const answer of seen.declared) {
-            const token = new RegExp(`(^|[^a-z0-9])${
-              answer.toLowerCase().replace(/[^a-z0-9]/g, "[^a-z0-9]")}([^a-z0-9]|$)`);
-            expect(token.test(body.toLowerCase()), `${answer} reached the beacon`).toBe(false);
-          }
+          expectReportCarriesNoAnswer(request, seen.declared);
           continue;
         }
         expect(request.url.startsWith(origin), `a request left this origin — ${request.url}`).toBe(true);

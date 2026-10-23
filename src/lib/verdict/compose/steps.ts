@@ -116,17 +116,18 @@ export function arrangeSteps(ds: Dataset, rows: Unlock[], answers: Profile): Ste
   const rungOf = (u: Unlock) => fieldOptions(ds, u.field).findIndex((o) => o.value === u.option.value);
   const ids = (u: Unlock) => new Set(u.routes.map((r) => r.route.id));
   const stepRows = rows.filter((u) => !u.option.is_arranged);
+  // A higher rung on the same ladder that opens nothing the lower one does not.
+  const foldsInto = (above: Unlock, u: Unlock): boolean =>
+    above !== u && above.field === u.field && !above.qualifier && rungOf(above) > rungOf(u)
+    && [...ids(above)].every((id) => ids(u).has(id));
   const steps: Step[] = [];
   const folded = new Set<Unlock>();
   for (const u of stepRows) {
     if (folded.has(u)) continue;
     const step: Step = { unlock: u, title: unlockTitleOf(ds, u, answers), folded: [] };
     if (!u.qualifier && isLadder(ds, u.field)) {
-      const opened = ids(u);
-      for (const above of stepRows) {
-        if (above === u || above.field !== u.field || above.qualifier || rungOf(above) <= rungOf(u)) continue;
-        if ([...ids(above)].every((id) => opened.has(id))) { step.folded.push(above); folded.add(above); }
-      }
+      step.folded = stepRows.filter((above) => foldsInto(above, u));
+      step.folded.forEach((above) => folded.add(above));
       if (step.folded.length) step.title = orAbove(step.title);
     }
     steps.push(step);
