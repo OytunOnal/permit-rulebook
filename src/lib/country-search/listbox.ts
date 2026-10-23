@@ -2,18 +2,13 @@
 import {
   phraseOf, findTerritory, matchOptions, territoryPhraseOf, territoryPhraseAtStartOf, type FieldOption,
 } from "permit-rulebook-data";
-import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "./copy/interview.js";
+import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../copy/interview.js";
 
 /**
  * The selection semantics of the country control, as a pure state machine.
- *
- * The control used to have none: ↓ left the highlight where it was, Enter took
- * the first row, and the first row was not the exact match — so typing "sudan"
- * and pressing Enter recorded South Sudan, computed a whole eligibility record
- * for the wrong nationality, and said nothing about it (product-critique v0.7,
- * blocker B1). The rule the page now keeps is one sentence: **Enter commits the
- * highlighted option and nothing else.** It lives here, away from the DOM,
- * because that sentence is a promise with a property test behind it.
+ * Its rule is one sentence: **Enter commits the highlighted option and
+ * nothing else** (B1). It lives away from the DOM because that sentence is a
+ * promise with a property test behind it.
  */
 export interface ListboxState {
   /** What is in the search box. */

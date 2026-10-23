@@ -3,7 +3,7 @@
  * The question screens' words: the masthead before anything is compared,
  * the arrival line, the question card and its search, and what stands in the
  * box until the module draws (`lib/question.ts`, `lib/scope.ts`,
- * `lib/listbox.ts`, `lib/situations.ts`).
+ * `lib/country-search/`, `lib/situations.ts`).
  *
  * Every word a reader reads lives in this folder, one file per screen or
  * part (CODING_STANDARDS.md, Rules).
@@ -165,6 +165,30 @@ export const territoryLine = (
   territory: { atStart: string; inSentence: string }, countryPhrase: string, country: string,
 ): string =>
   `${territory.atStart} is not on this list: people from ${territory.inSentence} hold a passport of ${countryPhrase}. Choose ${country}.`;
+
+/**
+ * The passport search's other words (`lib/country-search/`). An empty box
+ * counts the list and says an everyday name finds a country; the live region
+ * counts the matches and names the row Enter would record; a list cut short
+ * counts what it left out.
+ */
+export const countriesToSearchLine = (countries: number): string =>
+  `${countries} countries — the name you grew up with works too.`;
+export const matchesHighlightedLine = (matches: number, highlighted: string | undefined): string =>
+  `${matches} match${matches === 1 ? "" : "es"}`
+  + (highlighted === undefined ? "" : `. ${highlighted} highlighted — press Enter to record it`);
+export const moreMatchesLine = (more: number): string => `${more} more — keep typing to narrow the list`;
+/** The box's name for a screen reader, and what it shows while empty. */
+export const SEARCH_BOX_LABEL = "Search the list";
+export const SEARCH_BOX_PLACEHOLDER = "Start typing…";
+/** What leads the passport already on the record, under the box. */
+export const ANSWER_ON_FILE = "Your answer on file:";
+/** Under a list whose options carry a country class: the class decides no
+ * rule, an agreement adds to it. The line break is the card's own. */
+export const PASSPORT_CLASSES_HINT = `Every non-EU passport is checked against the same rules. A few countries
+              have agreements that add rights on top — those are stated with their source when they apply to you.`;
+/** Beside a passport row a notice adds rights to, in place of its class. */
+export const NOTE_APPLIES_HINT = "a note applies to this passport";
 
 /**
  * The question screens' masthead (`lib/question.ts`): the standing tagline and

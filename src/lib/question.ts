@@ -12,7 +12,7 @@ import { countryOf } from "./countries.js";
 import { type Glossary, glossSection, glossed } from "./gloss.js";
 import { esc, escAttr } from "./reason.js";
 import { glossedLearnLinkText } from "./quote.js";
-import { QUERY_MAX_LENGTH } from "./listbox.js";
+import { QUERY_MAX_LENGTH, hasClasses } from "./country-search/index.js";
 import type { Masthead, Screen } from "./screen.js";
 // Which situation answers a country's scored routes take, and the quoted
 // route that would have asked otherwise — derived, never typed (s19); keyed
@@ -50,10 +50,6 @@ export const LONG_LIST_ABOVE = 12;
 
 /** Whether this question is asked as a search rather than as buttons. */
 export const isLongList = (question: Question): boolean => question.options.length > LONG_LIST_ABOVE;
-
-/** Whether this question's options carry a country class. The card says so
- * once in a hint; the list the search draws says it row by row. */
-export const hasClasses = (question: Question): boolean => question.options.some((o) => o.implies !== undefined);
 
 /** Everything the question screen is a function of. */
 export interface QuestionScreen {
