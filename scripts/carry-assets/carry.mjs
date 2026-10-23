@@ -133,14 +133,6 @@ const TIMEOUT_MS = 10_000;
 const BUDGET_MS = 60_000;
 
 /**
- * Whether this run was given a build to fill at all — one spelling, because
- * two would be a hole between them: the publish of the digest list and the
- * carry both decline on it, so a value one of them accepted and the other did
- * not cannot publish a list into a directory nobody named.
- */
-const noBuildDirectory = (buildDirectory) => !buildDirectory;
-
-/**
  * Publish what this build built, so the deploy after this one can check the
  * bytes it fetches against something we made rather than against the origin's
  * own headers.
@@ -174,7 +166,7 @@ export function writeAssetDigests(buildDirectory) {
  * publish's own failure line.
  */
 function digestListLines(buildDirectory, { dryRun }) {
-  if (noBuildDirectory(buildDirectory)) return [];
+  if (!buildDirectory) return [];
   if (dryRun) return [`would publish ${DIGESTS_NAME} for the next deploy`];
   const published = writeAssetDigests(buildDirectory);
   if (published.ok) return [`published ${DIGESTS_NAME}: ${published.count} asset(s) this build made, for the next deploy to check against`];
@@ -339,7 +331,7 @@ function pageUrlOf(origin, buildDirectory) {
     const problem = `anything: ${ORIGIN_VAR} is not an absolute http(s) address, so it is not somewhere to read a page from`;
     return { pageUrl: "", problems: [problem], where: unparsed };
   }
-  if (noBuildDirectory(buildDirectory)) {
+  if (!buildDirectory) {
     // The one bail here that is not about the origin, and the counted line
     // says so rather than naming a variable nothing was wrong with.
     const where = "nowhere — no build directory was given, so no page was asked for";
