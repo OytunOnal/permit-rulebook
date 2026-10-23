@@ -2,6 +2,9 @@ import { openInterviewHistory, type InterviewHistory } from "../src/lib/intervie
 import { FakeTab, stepOf } from "./fake-browser-history.js";
 
 /**
+ * `history-corners.test.ts`' helper, in a file of its own because the two
+ * together pass the lint's 400 lines a file.
+ *
  * The interview page in a browser tab, in Node: as much of it as the history
  * sees. It draws the next unanswered question, or the one being edited, and
  * tells the history what each gesture drew as the page does; a browser move
