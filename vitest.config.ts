@@ -30,9 +30,11 @@ export default defineConfig({
     // the suite quick and few enough that the launches do not fight over the
     // machine; a flaky suite is a suite nobody reads.
     maxWorkers: 4,
-    // A builder's worktree sits under `.claude/worktrees/` inside this
-    // checkout. Its suites test its tree, never this one, and run here they
-    // would double the browsers at work (#239).
-    exclude: [...configDefaults.exclude, ".claude/**"],
+    // The suite reads this checkout's tree alone (#239): `.claude/` holds
+    // Claude Code's own files, a builder's worktree among them, and `.run/`
+    // the agents' scratch, suites included. The same homes as
+    // `dependency-rules.md`'s `## Ignore`, which ESLint mirrors; Vitest keeps
+    // its own list, since the rest of that one would hide nothing it reads.
+    exclude: [...configDefaults.exclude, ".claude/**", ".run/**"],
   },
 });
