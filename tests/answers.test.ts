@@ -71,7 +71,8 @@ if (skipped)
   ].join("\n"));
 
 interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
+  /** Opens `url` and returns once its document has drawn. */
+  goto(url: string): Promise<void>;
   evaluate(expression: string): Promise<string>;
 }
 
@@ -85,7 +86,7 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         // Answered up to the German recognition question, and no further — with
         // a real passport, since the record keeps only answers a question
         // offers (s25) and the class the rules reason with was never one.
@@ -93,7 +94,7 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
           destination: "de", citizenship: "IN", situation: "offer",
           qualification: "degree", occupation_shortage: "yes",
         }));
-        await page.goto(server.url("/"), 1200);
+        await page.goto(server.url("/"));
         return page.evaluate(
           'JSON.stringify({'
           + ' question: document.querySelector(".qlabel").textContent.trim(),'
@@ -121,12 +122,12 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
       const painted = (answers: Profile) =>
         paintedAsComposedScript(verdictFor(replayRecord(ds, answers, Object.keys(answers)).answers));
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         await page.evaluate(seed(CONTRADICTED as Record<string, string>));
-        await page.goto(server.url("/"), 1400);
+        await page.goto(server.url("/"));
         const contradicted = JSON.parse(await page.evaluate(painted(CONTRADICTED)));
         await page.evaluate(seed(CONSISTENT as Record<string, string>));
-        await page.goto(server.url("/"), 1400);
+        await page.goto(server.url("/"));
         const consistent = JSON.parse(await page.evaluate(painted(CONSISTENT)));
         return { contradicted, consistent };
       }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, typeof PAINTED_AS_COMPOSED>;
@@ -152,7 +153,7 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         // `occupation_it` on the record: Germany asks it before the shortage
         // question since the shortage Blue Card's IT path reads it (#134), and
         // a reader out of IT is asked the shortage question next.
@@ -160,7 +161,7 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
           destination: "de", citizenship: "IN", situation: "offer",
           qualification: "degree", recognition_de: "recognized", occupation_it: "no",
         }));
-        await page.goto(server.url("/"), 1200);
+        await page.goto(server.url("/"));
         return page.evaluate(
           'JSON.stringify({'
           + ' question: document.querySelector(".qlabel").textContent.trim(),'

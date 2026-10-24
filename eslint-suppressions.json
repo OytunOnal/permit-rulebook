@@ -637,9 +637,6 @@
     },
     "spine/constant-reason": {
       "count": 3
-    },
-    "spine/named-condition": {
-      "count": 1
     }
   },
   "tests/shorthand.test.ts": {
