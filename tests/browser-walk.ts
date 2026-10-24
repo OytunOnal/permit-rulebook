@@ -39,8 +39,17 @@ export function warnNotWalked(what: string, reason: string): void {
 
 /** The page `scripts/browser.mjs` hands a walk. */
 export interface BrowserPage {
+  /** With no time, returns once the new document has drawn; given one, sleeps it (until #237). */
   goto(url: string, settleMs?: number): Promise<void>;
+  /** Navigates and returns at once, for a read before the page's script runs. */
+  navigate(url: string): Promise<void>;
   evaluate(expression: string): Promise<string>;
+  /** Reads `condition` in the page until it holds, and returns its value. */
+  waitUntil(condition: string, what: string): Promise<unknown>;
+  /** Returns once nothing animates, scrolls or loads. */
+  waitUntilAtRest(): Promise<void>;
+  /** After a gesture that loads a document: once a document other than the one left has drawn. */
+  waitUntilNewDocumentDrawn(): Promise<void>;
   emulateMedia(features: { name: string; value: string }[]): Promise<void>;
   clickAt(x: number, y: number): Promise<void>;
   pressEnter(): Promise<void>;
@@ -125,13 +134,32 @@ const pick = (value: string, searchFor: string) => `(() => {
   return "row";
 })()`;
 
-/** Answers the question on the screen with `value`, then waits out the beat
- * of the card it draws. */
+/** The screen as a reader tells one from the next: which screen, and its question. */
+const SCREEN_SHOWN = `${STATE} + " " + ${QLABEL}`;
+
+/**
+ * Picks `value` until the screen is no longer `before`, a reading of
+ * SCREEN_SHOWN: "moved", or why it could not pick. For its beat a card refuses
+ * an answer, and nothing on the page says when the beat lifts, so a pick the
+ * beat refused is made again on the next read; one that takes moves the
+ * screen in the same task, and is never made twice.
+ */
+const pickedFrom = (before: string, value: string, searchFor: string) => `(() => {
+  const moved = () => ${SCREEN_SHOWN} !== ${JSON.stringify(before)};
+  if (moved()) return "moved";
+  const how = ${pick(value, searchFor)};
+  if (how !== "opt" && how !== "row") return how;
+  return moved() ? "moved" : "";
+})()`;
+
+/** Answers the question on the screen with `value`, and returns once the
+ * screen has moved on and the page is at rest. */
 export async function answer(page: BrowserPage, field: string, value: string): Promise<void> {
   const name = fieldOptions(ds, field).find((o) => o.value === value)?.label ?? value;
-  const how = await page.evaluate(pick(value, name));
-  if (how !== "opt" && how !== "row") throw new Error(`${field} = ${value}: ${how}`);
-  await waitOutTheBeat(page);
+  const before = await page.evaluate(SCREEN_SHOWN);
+  const how = await page.waitUntil(pickedFrom(before, value, name), `${field} = ${value} never moved the screen on`);
+  if (how !== "moved") throw new Error(`${field} = ${value}: ${how}`);
+  await page.waitUntilAtRest();
 }
 
 /** The field of the question on the screen, from its label as the card draws
@@ -152,9 +180,9 @@ export const recordSeedScript = (answers: Profile, history: string[] = Object.ke
 
 /** The interview's first screen, with nothing on the record. */
 export async function openCold({ page, url }: PageOnSite): Promise<void> {
-  await page.goto(url("/404.html"), 300);
+  await page.goto(url("/404.html"));
   await page.evaluate("localStorage.clear()");
-  await page.goto(url("/"), 1200);
+  await page.goto(url("/"));
 }
 
 /**
