@@ -128,6 +128,10 @@
   "scripts/shot.mjs": "infrastructure main",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure main",
+  "spine-lint/lint.mjs": "domain",
+  "spine-lint/rules/ceiling-paid-off.mjs": "domain",
+  "spine-lint/rules/constant-reason.mjs": "domain",
+  "spine-lint/rules/named-condition.mjs": "domain",
   "src/lib/arrival-line.ts": "presentation",
   "src/lib/browser-history.ts": "infrastructure",
   "src/lib/clipboard.ts": "presentation",
@@ -210,6 +214,11 @@
   "vitest.config.ts": "main"
  },
  "edges": [
+  {
+   "from": "eslint.config.mjs",
+   "to": "spine-lint/lint.mjs",
+   "kind": "dependency"
+  },
   {
    "from": "scripts/browser.mjs",
    "to": "scripts/chrome.mjs",
@@ -408,6 +417,21 @@
   {
    "from": "scripts/smoke.mjs",
    "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "spine-lint/lint.mjs",
+   "to": "spine-lint/rules/ceiling-paid-off.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "spine-lint/lint.mjs",
+   "to": "spine-lint/rules/constant-reason.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "spine-lint/lint.mjs",
+   "to": "spine-lint/rules/named-condition.mjs",
    "kind": "dependency"
   },
   {
@@ -2501,11 +2525,6 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/lint.test.ts",
-   "to": "eslint.config.mjs",
-   "kind": "dependency"
-  },
-  {
    "from": "tests/listbox.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
@@ -4155,88 +4174,13 @@
     "exported": false
    },
    {
-    "name": "TESTS",
+    "name": "SHAPED",
     "kind": "const",
     "exported": false
    },
    {
-    "name": "FILE_LENGTH",
+    "name": "ceilings",
     "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "FUNCTION_LENGTH",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "TEST_FUNCTION_LENGTH",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "NESTING",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "PARAMETERS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "NESTED_TERNARY",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "UNUSED",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "UNUSED_IN_TYPESCRIPT",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "FUNCTION_LIMIT",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "coreFunctionLimit",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "isDescribeCallee",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "isDescribeCallback",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "functionLimitExceptDescribe",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "configWithoutExceptions",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "lintExceptions",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "blockOf",
-    "kind": "fn",
     "exported": false
    },
    {
@@ -4761,6 +4705,89 @@
     "name": "surfacesAskedBy",
     "kind": "fn",
     "exported": false
+   }
+  ],
+  "spine-lint/lint.mjs": [
+   {
+    "name": "FILE_LINES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "plugin",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SHAPE_RULES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "isCeiling",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "ceilingConfigs",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "preset",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "spine-lint/rules/ceiling-paid-off.mjs": [
+   {
+    "name": "lineCount",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "ceilingPaidOff",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "spine-lint/rules/constant-reason.mjs": [
+   {
+    "name": "UPPER",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "topLevelConstants",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "explained",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "constantReason",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "spine-lint/rules/named-condition.mjs": [
+   {
+    "name": "clauses",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "reportLongUnnamedTest",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "namedCondition",
+    "kind": "const",
+    "exported": true
    }
   ],
   "src/lib/arrival-line.ts": [
@@ -7393,6 +7420,10 @@
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
+  "spine-lint/lint.mjs",
+  "spine-lint/rules/ceiling-paid-off.mjs",
+  "spine-lint/rules/constant-reason.mjs",
+  "spine-lint/rules/named-condition.mjs",
   "src/lib/arrival-line.ts",
   "src/lib/browser-history.ts",
   "src/lib/clipboard.ts",
@@ -7441,5 +7472,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "3268fd50e8f279888034267fb9478be9b47a09fe644ba4fbd9ebd2e89276b4bd"
+ "digest": "7fdf4a1c6a762cfc5fa1608859c350a9fe5cbaa4e3c206d959f5044ee01a1aa7"
 }

@@ -1,0 +1,710 @@
+{
+  "scripts/browser.mjs": {
+    "max-lines-per-function": {
+      "count": 3
+    },
+    "spine/constant-reason": {
+      "count": 2
+    },
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "scripts/carry-assets.mjs": {
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "scripts/carry-assets/carry.mjs": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "scripts/carry-assets/generation/asset-names.mjs": {
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "scripts/carry-assets/generation/digest-list.mjs": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "scripts/carry-assets/live-deploy/ceilings.mjs": {
+    "spine/constant-reason": {
+      "count": 3
+    }
+  },
+  "scripts/check-base.mjs": {
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "scripts/dev-server.mjs": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "scripts/measure-taps.mjs": {
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "scripts/render-assets.mjs": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 3
+    }
+  },
+  "src/lib/copy/country-page.ts": {
+    "spine/constant-reason": {
+      "count": 4
+    }
+  },
+  "src/lib/copy/data-page.ts": {
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "src/lib/copy/feedback.ts": {
+    "spine/constant-reason": {
+      "count": 6
+    }
+  },
+  "src/lib/copy/frame.ts": {
+    "spine/constant-reason": {
+      "count": 4
+    }
+  },
+  "src/lib/copy/interview.ts": {
+    "spine/constant-reason": {
+      "count": 6
+    }
+  },
+  "src/lib/copy/route-page.ts": {
+    "spine/constant-reason": {
+      "count": 3
+    }
+  },
+  "src/lib/copy/verdict.ts": {
+    "spine/constant-reason": {
+      "count": 27
+    }
+  },
+  "src/lib/country-page.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/lib/country-search/control/controller.ts": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "src/lib/data-page.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/lib/dataset-ld.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/lib/feedback-page.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/lib/first-paint.ts": {
+    "spine/constant-reason": {
+      "count": 3
+    }
+  },
+  "src/lib/identity.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "src/lib/interview-history/list/entry-state.ts": {
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "src/lib/interview/flow/interview-after.ts": {
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "src/lib/not-found.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/lib/quote.ts": {
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "src/lib/route-page.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/named-condition": {
+      "count": 2
+    }
+  },
+  "src/lib/site.ts": {
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "src/lib/situations.ts": {
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "src/lib/social-card.ts": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/compose/card-blocks.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "src/lib/verdict/compose/html.ts": {
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "src/pages/[country]/[route].json.ts": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/answers.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/arrival.test.ts": {
+    "max-lines-per-function": {
+      "count": 3
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/asked-for.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/back-and-keep.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "spine/constant-reason": {
+      "count": 7
+    }
+  },
+  "tests/base-path.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/beat.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/card.test.ts": {
+    "max-lines-per-function": {
+      "count": 4
+    }
+  },
+  "tests/carry-assets/asset-names.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/carry-assets/build-directory-on-disk.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/carry-assets/carry-carries-only-attested-bytes.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/carry-assets/carry-fetches-from-our-origin-only.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/carry-assets/carry-never-fails-and-names-the-outcome.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    }
+  },
+  "tests/carry-assets/carry-takes-the-live-generation-forward.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/carry-assets/deploy-fixtures.ts": {
+    "spine/constant-reason": {
+      "count": 4
+    }
+  },
+  "tests/carry-assets/digest-list.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/carry-assets/live-site-over-http-bounds.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/carry-assets/live-site-over-http.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/checked-words.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/consolidated-text.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/csp.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "tests/dataset-ld.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/deploy-finding.test.ts": {
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "tests/escaping.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/first-paint.test.ts": {
+    "max-lines-per-function": {
+      "count": 4
+    },
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "tests/footer.test.ts": {
+    "max-lines-per-function": {
+      "count": 3
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/gloss.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/history-corners.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "tests/history.test.ts": {
+    "max-lines-per-function": {
+      "count": 3
+    }
+  },
+  "tests/identity.test.ts": {
+    "max-lines-per-function": {
+      "count": 8
+    },
+    "spine/constant-reason": {
+      "count": 3
+    }
+  },
+  "tests/interview.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "tests/listbox.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    }
+  },
+  "tests/means.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/money-rows.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 3
+    },
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "tests/name-sweep.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/not-found.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/orientation.test.ts": {
+    "max-lines-per-function": {
+      "count": 5
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/paths-named.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/pipeline.test.ts": {
+    "max-lines-per-function": {
+      "count": 4
+    }
+  },
+  "tests/rail.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/reader-pages.test.ts": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/reason.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/rebuild-trigger.test.ts": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/record.test.ts": {
+    "max-lines-per-function": {
+      "count": 4
+    }
+  },
+  "tests/route-page.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    }
+  },
+  "tests/route-slot.test.ts": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/s11.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/s12.test.ts": {
+    "max-lines-per-function": {
+      "count": 3
+    }
+  },
+  "tests/s13.test.ts": {
+    "max-lines-per-function": {
+      "count": 8
+    }
+  },
+  "tests/s16.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/s19.test.ts": {
+    "max-lines-per-function": {
+      "count": 3
+    },
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "tests/s20.test.ts": {
+    "max-lines-per-function": {
+      "count": 3
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/s21.test.ts": {
+    "max-lines-per-function": {
+      "count": 6
+    },
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "tests/s23.test.ts": {
+    "max-lines-per-function": {
+      "count": 3
+    }
+  },
+  "tests/s24.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/s25.test.ts": {
+    "max-lines-per-function": {
+      "count": 4
+    },
+    "spine/constant-reason": {
+      "count": 5
+    }
+  },
+  "tests/s26.test.ts": {
+    "max-lines-per-function": {
+      "count": 4
+    },
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "tests/s27.test.ts": {
+    "max-lines-per-function": {
+      "count": 3
+    },
+    "spine/constant-reason": {
+      "count": 4
+    }
+  },
+  "tests/s28.test.ts": {
+    "max-lines-per-function": {
+      "count": 4
+    },
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "tests/s30.test.ts": {
+    "max-lines-per-function": {
+      "count": 5
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/s31.test.ts": {
+    "max-lines-per-function": {
+      "count": 4
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/s32.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 3
+    }
+  },
+  "tests/s37.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "spine/constant-reason": {
+      "count": 7
+    }
+  },
+  "tests/s5e.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "tests/s6-edges.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/s7.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/s8.test.ts": {
+    "max-lines-per-function": {
+      "count": 3
+    },
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "tests/s9.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    }
+  },
+  "tests/screen.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    }
+  },
+  "tests/set-aside.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 3
+    },
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "tests/shorthand.test.ts": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/site-index.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "tests/smoke.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    }
+  },
+  "tests/start-over.test.ts": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/territories.test.ts": {
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/verdict-gap.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/verdict-history.test.ts": {
+    "spine/constant-reason": {
+      "count": 2
+    }
+  },
+  "tests/verdict-look.test.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  },
+  "tests/verdict-steps.test.ts": {
+    "max-lines-per-function": {
+      "count": 2
+    },
+    "spine/named-condition": {
+      "count": 1
+    }
+  },
+  "tests/wire.ts": {
+    "max-lines-per-function": {
+      "count": 1
+    },
+    "spine/constant-reason": {
+      "count": 1
+    }
+  }
+}
