@@ -128,6 +128,7 @@
   "scripts/shot.mjs": "infrastructure main",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure main",
+  "scripts/tab-waits.mjs": "infrastructure",
   "spine-lint/lint.mjs": "domain",
   "spine-lint/rules/ceiling-paid-off.mjs": "domain",
   "spine-lint/rules/constant-reason.mjs": "domain",
@@ -227,6 +228,11 @@
   {
    "from": "scripts/browser.mjs",
    "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser.mjs",
+   "to": "scripts/tab-waits.mjs",
    "kind": "dependency"
   },
   {
@@ -1902,6 +1908,16 @@
   {
    "from": "tests/browser-walk.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/browser.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/browser.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -4241,11 +4257,6 @@
     "exported": true
    },
    {
-    "name": "GOTO_SETTLE_MS",
-    "kind": "const",
-    "exported": true
-   },
-   {
     "name": "LOCAL_BEACON_NOISE",
     "kind": "const",
     "exported": false
@@ -4705,6 +4716,53 @@
     "name": "surfacesAskedBy",
     "kind": "fn",
     "exported": false
+   }
+  ],
+  "scripts/tab-waits.mjs": [
+   {
+    "name": "WAIT_BACKSTOP",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DOCUMENT_SHOWN",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "REPLACED_CONTEXT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "AT_REST",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "drawnAfter",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pause",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "answerWithin",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pollUntil",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "TabWaits",
+    "kind": "class",
+    "exported": true
    }
   ],
   "spine-lint/lint.mjs": [
@@ -7420,6 +7478,7 @@
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
+  "scripts/tab-waits.mjs",
   "spine-lint/lint.mjs",
   "spine-lint/rules/ceiling-paid-off.mjs",
   "spine-lint/rules/constant-reason.mjs",
@@ -7472,5 +7531,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7fdf4a1c6a762cfc5fa1608859c350a9fe5cbaa4e3c206d959f5044ee01a1aa7"
+ "digest": "2c91477601f2adc9bb5de8f43a2dac3e97d5e8ac44fa8207dab7b232f8947f0e"
 }

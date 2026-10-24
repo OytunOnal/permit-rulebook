@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { extname, join } from "node:path";
 import { chromePath } from "./chrome.mjs";
 import { at, siteBase } from "./site-base.mjs";
+import { TabWaits } from "./tab-waits.mjs";
 
 /**
  * A real browser over the built site, shared by everything that needs one.
@@ -128,19 +129,15 @@ export async function serve(dir, { base = siteBase(), delayJsMs = 0 } = {}) {
 }
 
 /**
- * How long `goto` gives a page before it returns, when the caller names no
- * wait: long enough for the interview's module script to take a turn. A
- * caller that means "the harness default" imports this rather than retyping
- * the number.
- */
-export const GOTO_SETTLE_MS = 400;
-
-/**
  * Headless Chrome, attached over CDP, handed to `run` as a small page object:
  *
  *   openTab()          a second tab in the same browser
  *   front()            bring this tab to the front
- *   goto(url)          navigate and settle
+ *   goto(url)          navigate, and return once the new document has drawn
+ *   navigate(url)      navigate, and return at once
+ *   waitUntil(c, what) read a condition until it holds, return its value
+ *   waitUntilAtRest()  wait until nothing animates, scrolls or loads
+ *   waitUntilNewDocumentDrawn()  after a gesture that loads a document
  *   evaluate(expr)     run an expression in the page, return its value
  *   emulateMedia(fs)   set a media feature, such as reduced motion
  *   clickAt(x, y)      a mouse click at a point of the viewport
@@ -177,6 +174,9 @@ export async function withBrowser(run, {
   // only sometimes works. Stale ones from processes that have gone are swept at
   // launch instead, which is the sweep that always works.
   sweepStaleProfiles();
+  // BROWSER_CPU_SLOWDOWN slows every tab by that factor through Chrome's CPU throttling, a busy runner here; unset, none.
+  const cpuSlowdown = Number(process.env.BROWSER_CPU_SLOWDOWN || 1);
+  if (!(cpuSlowdown >= 1)) throw new Error(`BROWSER_CPU_SLOWDOWN is a factor of 1 or more, not ${process.env.BROWSER_CPU_SLOWDOWN}`);
   const userDataDir = join(tmpdir(), `${PROFILE_PREFIX}${process.pid}-${nextProfile++}`);
   // Scrollbars are hidden unless the caller asks for them: a measurement of
   // the page's shape wants the layout, not the platform's chrome around it.
@@ -219,6 +219,7 @@ export async function withBrowser(run, {
     const tab = tabs.get(message.sessionId);
     // An event from no tab of ours — the browser's own — has no list to go on.
     if (message.method && !tab) return;
+    if (tab) tab.waits.watch(message);
     const { problems, requests } = tab ?? {};
     if (message.method === "Runtime.exceptionThrown") {
       const d = message.params.exceptionDetails;
@@ -229,7 +230,7 @@ export async function withBrowser(run, {
       problems.push(`console.error: ${message.params.args.map((a) => a.value ?? a.description ?? "").join(" ")}`);
       return;
     }
-    if (message.method === "Network.requestWillBeSent") {
+    if (message.method === "Network.requestWillBeSent" && network) {
       const { request, type, requestId } = message.params;
       const record = {
         url: request.url,
@@ -285,15 +286,15 @@ export async function withBrowser(run, {
     const problems = [];
     /** Every request the page made, when the caller asked to watch. */
     const requests = [];
-    tabs.set(sessionId, { problems, requests });
+    const waits = new TabWaits((method, params) => send(method, params, sessionId), () => { problems.length = 0; });
+    tabs.set(sessionId, { problems, requests, waits });
     await send("Page.enable", {}, sessionId);
     await send("Runtime.enable", {}, sessionId);
     await send("Log.enable", {}, sessionId);
-    // Off by default: only the case that asks a question about the network pays
-    // for the events. "Answers never leave the device" is a promise about what
-    // the page DOES, so the only honest check is what it actually sent
-    // (human, 2026-09-08).
-    if (network) await send("Network.enable", {}, sessionId);
+    // Every tab's requests are counted, since a page at rest has none in
+    // flight; only a case that asks about the network keeps the list of them.
+    await send("Network.enable", {}, sessionId);
+    if (cpuSlowdown > 1) await send("Emulation.setCPUThrottlingRate", { rate: cpuSlowdown }, sessionId);
     await send("Emulation.setDeviceMetricsOverride", {
       width: viewport.width, height: viewport.height, deviceScaleFactor: 2, mobile,
     }, sessionId);
@@ -309,12 +310,11 @@ export async function withBrowser(run, {
       openTab,
       /** Makes this tab the one the browser shows. */
       front: () => send("Page.bringToFront", {}, sessionId),
-      async goto(url, settleMs = GOTO_SETTLE_MS) {
-        problems.length = 0;
-        await send("Page.navigate", { url }, sessionId);
-        // The interview draws its screen from a module script; give it a turn.
-        await new Promise((r) => setTimeout(r, settleMs));
-      },
+      goto: waits.goto,
+      navigate: waits.navigate,
+      waitUntil: waits.waitUntil,
+      waitUntilAtRest: waits.waitUntilAtRest,
+      waitUntilNewDocumentDrawn: waits.waitUntilNewDocumentDrawn,
       async evaluate(expression) {
         const { result } = await send("Runtime.evaluate", { expression, returnByValue: true }, sessionId);
         return result.value;
