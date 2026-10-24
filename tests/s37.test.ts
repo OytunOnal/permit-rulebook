@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
+import { waitUntilPastTheBeat } from "./browser-walk.js";
 
 /**
  * s37 — Back on a restored record, and the Back gesture, in a real browser:
@@ -88,22 +89,23 @@ const whereOf = async (page: TabPage): Promise<Where> => JSON.parse(await page.e
 const movedFrom = (before: string) => `${WHERE} !== ${JSON.stringify(before)}`;
 
 /**
- * Answers whatever the question on the screen offers, until the tab stands
- * anywhere other than `before`. For its beat a card refuses an answer, and
- * nothing on the page says when the beat lifts, so an answer the beat refused
- * is given again on the next read; one that takes moves the screen in the
- * same task, and is never given twice.
+ * Answers whatever the question on the screen offers, once: "moved" when the
+ * tab then stands anywhere else, or why it does not. An answer that takes
+ * moves the screen in the same task, so a screen still where it was is a
+ * refused answer.
  */
-const answeredFrom = (before: string) => `(() => {
-  if (${movedFrom(before)}) return true;
-  ${ANSWER};
-  return ${movedFrom(before)};
+const ANSWERED_ONCE = `(() => {
+  const before = ${WHERE};
+  if (${ANSWER} === "none") return "the screen offered no answer";
+  return ${WHERE} !== before ? "moved" : "the tap was refused after the beat";
 })()`;
 
-/** Where the tab stands once the question on its screen is answered and the page is at rest. */
+/** Where the tab stands once the question on its screen is answered, after
+ * its beat, and the page is at rest. */
 async function answerOn(page: TabPage): Promise<Where> {
-  const before = await page.evaluate(WHERE);
-  await page.waitUntil(answeredFrom(before), "no answer moved the screen on");
+  await waitUntilPastTheBeat(page);
+  const how = await page.evaluate(ANSWERED_ONCE);
+  if (how !== "moved") throw new Error(how);
   await page.waitUntilAtRest();
   return whereOf(page);
 }

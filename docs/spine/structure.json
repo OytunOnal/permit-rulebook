@@ -3661,6 +3661,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s37.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s5e.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"

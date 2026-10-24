@@ -92,10 +92,21 @@ const BEAT_MS = `(() => {
 
 /** The beat's length in milliseconds. A page without the token fails here
  * rather than waiting nothing. */
-export async function beatMsOf(page: BrowserPage): Promise<number> {
+export async function beatMsOf(page: Pick<BrowserPage, "evaluate">): Promise<number> {
   const ms = Number(await page.evaluate(BEAT_MS));
   if (!(ms > 0)) throw new Error("the page declares no --motion-beat");
   return ms;
+}
+
+/**
+ * Returns once the beat of the card on the screen is over, by the page's own
+ * clock: the moment this read sees the card, plus the page's beat. A card
+ * shows only once it is drawn, and its beat begins as it is drawn.
+ */
+export async function waitUntilPastTheBeat(page: Pick<BrowserPage, "evaluate" | "waitUntil">): Promise<void> {
+  const seenAt = Number(await page.evaluate("performance.now()"));
+  const beatMs = await beatMsOf(page);
+  await page.waitUntil(`performance.now() >= ${seenAt + beatMs}`, "the page's clock never passed the beat");
 }
 
 /** Past the beat, with room for a frame or two. */
@@ -138,26 +149,23 @@ const pick = (value: string, searchFor: string) => `(() => {
 const SCREEN_SHOWN = `${STATE} + " " + ${QLABEL}`;
 
 /**
- * Picks `value` until the screen is no longer `before`, a reading of
- * SCREEN_SHOWN: "moved", or why it could not pick. For its beat a card refuses
- * an answer, and nothing on the page says when the beat lifts, so a pick the
- * beat refused is made again on the next read; one that takes moves the
- * screen in the same task, and is never made twice.
+ * Picks `value` once: "moved" when the screen moved on, or why it did not. A
+ * pick that takes moves the screen in the same task, so a screen still where
+ * it was is a refused pick.
  */
-const pickedFrom = (before: string, value: string, searchFor: string) => `(() => {
-  const moved = () => ${SCREEN_SHOWN} !== ${JSON.stringify(before)};
-  if (moved()) return "moved";
+const pickedOnce = (value: string, searchFor: string) => `(() => {
+  const before = ${SCREEN_SHOWN};
   const how = ${pick(value, searchFor)};
   if (how !== "opt" && how !== "row") return how;
-  return moved() ? "moved" : "";
+  return ${SCREEN_SHOWN} !== before ? "moved" : "the tap was refused after the beat";
 })()`;
 
-/** Answers the question on the screen with `value`, and returns once the
- * screen has moved on and the page is at rest. */
+/** Answers the question on the screen with `value` once its beat is over,
+ * and returns once the screen has moved on and the page is at rest. */
 export async function answer(page: BrowserPage, field: string, value: string): Promise<void> {
   const name = fieldOptions(ds, field).find((o) => o.value === value)?.label ?? value;
-  const before = await page.evaluate(SCREEN_SHOWN);
-  const how = await page.waitUntil(pickedFrom(before, value, name), `${field} = ${value} never moved the screen on`);
+  await waitUntilPastTheBeat(page);
+  const how = await page.evaluate(pickedOnce(value, name));
   if (how !== "moved") throw new Error(`${field} = ${value}: ${how}`);
   await page.waitUntilAtRest();
 }
