@@ -149,10 +149,13 @@ click on the tracker link. Answers never leave the device.
 - **CI** — `pages.yml`: both repositories checked out, data gates, build,
   tests with a real browser over `dist/`, the lint, asset truth, base-path
   check, tap targets at 390 px, the carry, then deploy. The lint
-  (`eslint.config.mjs`) holds the shape limits, 400 lines a file and 40 a
-  function with every line counted; what it still flags is a dated exception
-  naming the issue that removes it, and a test fails the green once its
-  version comes (#199). The carry (`scripts/carry-assets`)
+  (`eslint.config.mjs`) loads Spine's preset from `spine-lint/`, which holds
+  the limits, 400 lines a file and 40 a function with every line counted. The
+  files over 400 lines are Ceilings in `docs/spine/ceilings.json`, each held
+  to its count until within 400; every other existing breach is a Suppression
+  in `eslint-suppressions.json`, whose count per file and rule cannot grow.
+  The issues that pay them off carry the deadline on their milestones (#149).
+  The carry (`scripts/carry-assets`)
   copies the live generation's assets into `dist/`, only from the site's own
   address and only bytes the previous build's digest list attests; it is a
   deep module whose entry, the flow, is given the live site, the build

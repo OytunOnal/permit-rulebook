@@ -19,6 +19,8 @@ pull request.
 - Format: none configured.
 - Typecheck: site `npm run build` (`astro check && astro build`); data
   `npm run build` (`tsc -p tsconfig.json`) and `npm run typecheck:tests`.
+- Tests: site `npm test` (vitest; browser cases drive headless Chrome over
+  `dist/`); data `npm test`.
 - Structure: in the site's root, Spine's `structure.mjs`, set up as Spine's
   `structure-command.md` says, writes `docs/spine/structure.json` from the
   code, and Spine's `structure-check.mjs` reads it against
@@ -32,9 +34,9 @@ pull request.
   and its result committed. GitHub's merge ignores local drivers, so on its
   conflict: merge master into the branch locally, rerun, push.
 - Green means: the site — the deploy's checks, in its order: `npm run build`
-  with 0 errors, `npm test` (vitest, browser cases drive headless Chrome over
-  `dist/`), `npm run lint` with 0 problems, `npm run assets:check` true,
-  `npm run check:base` and `npm run measure:taps`; the data — `npm run check`
+  with 0 errors, `npm test`, `npm run lint` with 0 problems,
+  `npm run assets:check` true, `npm run check:base` and
+  `npm run measure:taps`; the data — `npm run check`
   end to end (build, typecheck:tests, validate, watch:coverage, tests). Both,
   on the branch, before the merge.
 - Watch: data `npm run watch:sources` is the daily read of every source; it
