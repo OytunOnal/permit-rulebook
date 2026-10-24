@@ -21,6 +21,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
+import { skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -191,23 +192,10 @@ describe("2 — the four-country result's sections, from the verdict", () => {
  * The browser: the four slips a stylesheet decides are measured on the built
  * site at the phone and the desktop the critique named.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write(`\n  !! THE S27 SLIPS WERE NOT MEASURED IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
-
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
+const skipped = skipReason();
+if (skipped) warnNotWalked("THE S27 SLIPS", skipped);
 
 const VIEWPORTS = [
   ["390x844", { width: 390, height: 844 }, true],
