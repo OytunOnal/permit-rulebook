@@ -39,7 +39,7 @@ if (missing)
     "",
   ].join("\n"));
 
-describe("B4 — a wrong URL lands on a page of this product's own", () => {
+describe("a wrong URL lands on a page of this product's own", () => {
   it("never lets a pipeline skip the built file", () => {
     if (missing) expect(process.env.CI, `CI cannot skip: ${missing}`).toBeFalsy();
     else expect(missing).toBeNull();

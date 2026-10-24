@@ -142,7 +142,7 @@ function claimOn(step: InterviewStep): { claims: boolean; where: string } {
   return { claims: claimsAComparison(headline) || claimsAComparison(subline), where: subline };
 }
 
-describe("invariant: a screen that has compared nothing claims nothing (B4)", () => {
+describe("invariant: a screen that has compared nothing claims nothing", () => {
   it("holds over random walks of the flow, at every point in every walk", () => {
     // B4 was a WIRING defect, not a rendering one: "Start over" cleared the
     // answers and left the claim about them standing. So the walk is what is

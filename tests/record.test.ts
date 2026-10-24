@@ -13,7 +13,7 @@ const dataset = rawDataset as unknown as Dataset;
 const known = deriveQuestions(dataset);
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-describe("the record survives leaving the page (F2, F10)", () => {
+describe("the record survives leaving the page", () => {
   it("comes back exactly as it went in", () => {
     const answers = { destination: "nl", citizenship: "TR", situation: "offer" };
     const history = ["destination", "citizenship", "situation"];

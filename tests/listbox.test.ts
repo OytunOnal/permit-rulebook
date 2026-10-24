@@ -45,7 +45,7 @@ function drive(query: string, keys: string[]) {
   return { commit: undefined, committedOn: undefined, view, commits };
 }
 
-describe("invariant: the committed country equals the highlighted option (B1)", () => {
+describe("invariant: the committed country equals the highlighted option", () => {
   it("holds over random typed prefixes and arrow-key sequences", () => {
     const rand = lcg(1861);
     const keys = ["ArrowDown", "ArrowUp", "ArrowDown", "Home", "End", "ArrowUp"];
