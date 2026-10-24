@@ -1,5 +1,5 @@
 // @level main
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 /**
  * Vitest stubs CSS imports to empty by default, which would make the route
@@ -30,5 +30,9 @@ export default defineConfig({
     // the suite quick and few enough that the launches do not fight over the
     // machine; a flaky suite is a suite nobody reads.
     maxWorkers: 4,
+    // A builder's worktree sits under `.claude/worktrees/` inside this
+    // checkout. Its suites test its tree, never this one, and run here they
+    // would double the browsers at work (#239).
+    exclude: [...configDefaults.exclude, ".claude/**"],
   },
 });

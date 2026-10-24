@@ -45,6 +45,7 @@
 - `.astro/**`
 - `.run/**`
 - `docs/**`
+- `.claude/**`
 
 ## Relations
 <!-- association, aggregation or composition, where the code cannot show them -->

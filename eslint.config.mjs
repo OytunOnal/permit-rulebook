@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 import { preset } from "./spine-lint/lint.mjs";
 
 /** What `docs/spine/dependency-rules.md`'s `## Ignore` skips, and Spine's own copy. */
-const IGNORED = ["src/*.d.ts", "dist/**", ".astro/**", ".run/**", "docs/**", "spine-lint/**"];
+const IGNORED = ["src/*.d.ts", "dist/**", ".astro/**", ".run/**", "docs/**", ".claude/**", "spine-lint/**"];
 
 /** TypeScript: the `.ts` files and the scripts inside the pages. */
 const TYPESCRIPT = ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts", "src/pages/**/*.astro/*.ts"];
