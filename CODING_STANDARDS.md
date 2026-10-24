@@ -12,17 +12,21 @@ pull request.
 ## Commands
 
 - Lint: site `npm run lint` (ESLint, `eslint.config.mjs`) over `src/`,
-  `scripts/`, `tests/` and the pages' scripts holds Spine's shape limits,
-  every line counted, blank lines and comments included. A hit waiting on its
+  `scripts/`, `tests/` and the pages' scripts holds Spine's lint limits,
+  every line counted, blank lines and comments included, except two that this
+  config does not hold yet: a condition of more than two clauses named, and a
+  `describe` callback's length, which it exempts from the function limit.
+  Spine's preset brings both with the setup slice that follows Spine's
+  `project-tools.md`. A hit waiting on its
   issue is an entry in the config's exception list, with that issue and its
   version, and `tests/lint.test.ts` fails once that version comes.
   `astro check` and `tsc` carry the type rules.
 - Format: none configured.
 - Typecheck: site `npm run build` (`astro check && astro build`); data
   `npm run build` (`tsc -p tsconfig.json`) and `npm run typecheck:tests`.
-- Structure: in the site's root, Spine's structure command, set up as Spine's
+- Structure: in the site's root, Spine's `structure.mjs`, set up as Spine's
   `structure-command.md` says, writes `docs/spine/structure.json` from the
-  code, and Spine's structure check reads it against
+  code, and Spine's `structure-check.mjs` reads it against
   `docs/spine/dependency-rules.md`. Every source file carries its `// @level`
   tag as its first comment (an Astro file's, on the line after its first
   `---`). The file is generated and never resolved by hand: a merge
@@ -40,7 +44,8 @@ pull request.
 - Watch: data `npm run watch:sources` is the daily read of every source; it
   is never run in a slice.
 - Spine's tools (the green, red-before, same-cases, the check at write) run
-  the steps of `docs/spine/commands.json`; their commands are in Spine's
+  the steps of `docs/spine/commands.json`, which the setup slice writes; until
+  it exists, the hooks let everything pass. Their commands are in Spine's
   `briefing.md`.
 
 ## Module boundaries
@@ -74,32 +79,18 @@ pull request.
 
 - Browser cases measure geometry and state from the running page, through
   `scripts/browser.mjs`.
-- A fixture's `source` line is where it records why it was regenerated.
 
 ## Departures
 
 Each line names a general rule and its section in `SPINE_STANDARDS.md`, this
-product's version, and why.
+product's version, and why. A lint departure also adds its override after
+Spine's preset in `eslint.config.mjs`.
 
-- Lint limits (Rules): a `describe` callback is exempt from the function
-  limit, because it only groups cases, each `it` body is held to the limit,
-  and the file limit bounds the whole.
-- A condition of more than two clauses named (Rules): a test's oracle is
-  exempt, because the oracle is the decision the case asserts, and a name
-  would put that decision out of sight.
-- Records go under a dated home (Rules): the watch's flags share one home and
-  carry their day in their name (`watch/flags/<source>-<day>.md`), because
-  the step that files them as issues reads one folder.
-- Errors are visible (Rules): an error may be dropped with a comment saying
-  why dropping it is safe, because some failures (a browser that refuses
-  site data) leave nothing for the log or the reader to act on.
 - A test decides its pass on a state it writes itself (Tests): the quote gate
   is the exception, because it is meant to go red when a source page changes.
-- Secrets live in `.env` (Security): also in the repository's Actions
-  secrets, because the deploy and the watch run in GitHub Actions.
-- A third-party script is pinned and loaded with its integrity hash
-  (Security): the analytics beacon is the one exception, allowed by name in
-  the Content-Security-Policy, because its vendor serves it unversioned.
+- Secrets live in `.env` (Security): also in the data repository's Actions
+  secrets, because the watch's dispatch to the site runs in GitHub Actions
+  with `DISPATCH_TOKEN`, and Actions has no `.env`.
 
 ## Security
 
