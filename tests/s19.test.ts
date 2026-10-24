@@ -21,6 +21,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
+import { waitUntilPastTheBeat, type BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -321,12 +322,6 @@ const skipped = why();
 if (skipped)
   process.stderr.write(`\n  !! THE S19 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
-
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
     version: RECORD_VERSION, answers, history: Object.keys(answers),
@@ -348,9 +343,10 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const out: Record<string, unknown> = {};
         for (const destination of ["fr", "de", "es", "nl", "all"]) {
-          await page.goto(server.url("/"), 300);
+          await page.goto(server.url("/"));
           await page.evaluate(seed({ destination }));
-          await page.goto(server.url("/"), 900);
+          await page.goto(server.url("/"));
+          await page.waitUntilAtRest();
           out[destination] = {
             question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
             marks: JSON.parse(await page.evaluate(MARKS)),
@@ -377,23 +373,24 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        const read = async (answers: Profile) => ({
+        // Each screen is read once the page is at rest.
+        const read = async (answers: Profile) => page.waitUntilAtRest().then(async () => ({
           status: await page.evaluate('document.getElementById("cstatus").textContent'),
           painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
           state: await page.evaluate('document.getElementById("app").dataset.state'),
           problems: page.problems(),
-        });
+        }));
         // France, by the buttons: the destination on the record, then the marked answer tapped.
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         await page.evaluate(seed({ destination: "fr" }));
-        await page.goto(server.url("/"), 900);
+        await page.goto(server.url("/"));
+        await waitUntilPastTheBeat(page);
         await page.evaluate('document.querySelector(".opt[data-value=research]").click()');
-        await new Promise((r) => setTimeout(r, 900));
         const france = await read(FRANCE_RESEARCH);
         // Spain, the same two answers — and the passport, which is Spain's third
         // tap (CRITERIA MET in three).
         await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
-        await page.goto(server.url("/"), 1400);
+        await page.goto(server.url("/"));
         const spain = await read(SPAIN_RESEARCH);
         return { france, spain };
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, {
