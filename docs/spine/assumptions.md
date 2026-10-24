@@ -94,6 +94,10 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   Analytics counts a page view sent by a pinned copy of its beacon, served
   from our origin with its integrity hash (#222, the human's ruling on PR
   #219). — `untested`
+- **A27 — a fixed version drops in unchanged.** Each moderate advisory's
+  fixed version (astro, vitest, fast-uri) lands as one package change and
+  the site's green passes as before (#229, the human's word 2026-10-24).
+  — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
