@@ -110,13 +110,11 @@ if (skipped)
   ].join(String.fromCharCode(10)));
 
 interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
+  goto(url: string): Promise<void>; navigate(url: string): Promise<void>; evaluate(expression: string): Promise<string>;
+  waitUntil(condition: string, what: string): Promise<unknown>; waitUntilAtRest(): Promise<void>;
 }
 
-/**
- * A realistic mobile lag on the module: HTML at once, script 700 ms later.
- */
+/** A realistic mobile lag on the module: HTML at once, script 700 ms later. */
 const DELAY_JS_MS = 700;
 
 /**
@@ -139,16 +137,14 @@ const VIEWPORTS = [
 const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
 
 /**
- * The observer goes in after the load and reads `buffered: true`, so it still
- * sees the shifts that happened before it existed. It is installed rather than
- * awaited because the driver's `evaluate` hands back a value, not a promise —
- * hence the beat between installing and reading.
+ * The observer goes in once the page is at rest and reads `buffered: true`, so
+ * it is handed every shift since the navigation, and `takeRecords()` hands
+ * them over in the same task: the read needs no beat after it.
  *
  * Each source is named the way the field's debug rows name it — a path up to
  * the nearest id — with how far it travelled, so a failure says where to look.
  */
-const INSTALL = `(() => {
-  window.__cls = [];
+const GATHER_SHIFTS = `(() => {
   const elementOf = (node) => node && (node.nodeType === 1 ? node : node.parentElement);
   const named = (node) => {
     const parts = [];
@@ -159,7 +155,9 @@ const INSTALL = `(() => {
     }
     return parts.join(">") || "?";
   };
-  new PerformanceObserver((l) => window.__cls.push(...l.getEntries()
+  const observer = new PerformanceObserver(() => {});
+  observer.observe({ type: "layout-shift", buffered: true });
+  window.__cls = observer.takeRecords()
     .filter((e) => !e.hadRecentInput)
     .map((e) => ({
       value: e.value,
@@ -172,8 +170,7 @@ const INSTALL = `(() => {
           above: !!el && !!el.closest(${JSON.stringify(ABOVE_THE_BOX)}),
         };
       }),
-    })))).observe({ type: "layout-shift", buffered: true });
-  return "installed";
+    }));
 })()`;
 
 /**
@@ -229,7 +226,7 @@ interface AtFirstPaint {
   countShown: boolean;
 }
 
-const READ = `JSON.stringify({
+const READ = `${GATHER_SHIFTS}, JSON.stringify({
   cls: window.__cls.reduce((s, e) => s + e.value, 0),
   shifts: window.__cls.map((e) => ({ value: Math.round(e.value * 10000) / 10000, sources: e.sources })),
   sameCard: window.__built === document.querySelector("#main > *"),
@@ -385,7 +382,7 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           await withBrowser(async (page: BrowserPage) => {
             // Storage belongs to the origin, so it is written from a page of
             // this site — 404 is the cheapest one that runs no interview.
-            await page.goto(server.url("/404.html"), 300);
+            await page.goto(server.url("/404.html"));
             // Seeded the way the product writes it: a record that reached a
             // verdict carries the bit that says so (s22).
             await page.evaluate(arrival.record
@@ -394,16 +391,19 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
                   arrival.record.answers, [...arrival.record.history], arrival.shape === "verdict",
                 ))})`
               : "localStorage.clear()");
-            // Read back while the module is still 450 ms out: what is on the
-            // screen at this point is what the build put there.
-            await page.goto(server.url(arrival.path), 250);
+            // Read back once the HTML is parsed, with the module still held:
+            // what is on the screen at this point is what the build put there.
+            const href = new URL(server.url(arrival.path)).href;
+            await page.navigate(href);
+            await page.waitUntil(`location.href === ${JSON.stringify(href)} && document.readyState !== "loading"`,
+              `${href} was never parsed`);
             const built = JSON.parse(await page.evaluate(AT_FIRST_PAINT)) as AtFirstPaint;
             expect(built.held, `${key(screen.name, arrival.name)}: the built page painted nothing into #main`)
               .toBe(true);
             atFirstPaint.set(key(screen.name, arrival.name), built);
-            await new Promise((r) => setTimeout(r, DELAY_JS_MS + 1250));
-            await page.evaluate(INSTALL);
-            await new Promise((r) => setTimeout(r, 400));
+            // The stand-ins go in the task that draws the reader's screen.
+            await page.waitUntil(`!document.querySelector(".stand-in")`, "the module never drew the reader's screen");
+            await page.waitUntilAtRest();
             measured.set(key(screen.name, arrival.name), JSON.parse(await page.evaluate(READ)) as Measured);
           }, { viewport: screen.viewport, mobile: screen.mobile });
     } finally {
