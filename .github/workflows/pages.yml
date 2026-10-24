@@ -210,8 +210,7 @@ jobs:
         run: npm test
 
       # Spine's lint limits, with the Ceilings and Suppressions, in the green
-      # as the suite is: a red lint stops
-      # the deploy the way a red test does.
+      # as the suite is: a red lint stops the deploy the way a red test does.
       - name: Lint
         working-directory: site
         run: npm run lint
