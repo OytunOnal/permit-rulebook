@@ -15,5 +15,5 @@ docs/spine/structure.json text eol=lf
 # The file is generated, so no hand resolves it: a merge keeps this side's
 # copy, and the structure command is rerun on the merged tree. A fresh clone
 # sets the `ours` driver once with `git config merge.ours.driver true`
-# (CODING_STANDARDS.md, Structure).
+# (CODING_STANDARDS.md, Commands).
 docs/spine/structure.json merge=ours
