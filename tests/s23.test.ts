@@ -312,11 +312,9 @@ describe("the route page's liveness line names its own source or stays silent", 
 
 describe("a citation never restates its number, and the sign carries no explainer", () => {
   it("restates no number, and explains the act alone where the citation names one", () => {
-    // P1 replaced "(§ 20a, section 20a)" with "§ = section" once per page;
-    // amendment 6 (the human's walk, 2026-09-18) took the sign's words away
-    // — the sign is read as a reader reads it. What stands is the rule: a
-    // citation never restates its own number, and the act it names is said
-    // once, in the citation's own bracket.
+    // A citation never restates its own number, and the act it names is said
+    // once, in the citation's own bracket; the sign is read as a reader reads
+    // it, with no words of its own.
     expect(glossSection("Opportunity Card (Chancenkarte, § 20a)", new Set()))
       .toBe("Opportunity Card (Chancenkarte, § 20a)");
     expect(glossSection("Experienced worker (§ 19c / § 6 BeschV)", new Set()))
