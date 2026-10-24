@@ -39,8 +39,17 @@ export function warnNotWalked(what: string, reason: string): void {
 
 /** The page `scripts/browser.mjs` hands a walk. */
 export interface BrowserPage {
+  /** With no time, returns once the new document has drawn; given one, sleeps it (until #237). */
   goto(url: string, settleMs?: number): Promise<void>;
+  /** Navigates and returns at once, for a read before the page's script runs. */
+  navigate(url: string): Promise<void>;
   evaluate(expression: string): Promise<string>;
+  /** Reads `condition` in the page until it holds, and returns its value. */
+  waitUntil(condition: string, what: string): Promise<unknown>;
+  /** Returns once nothing animates, scrolls or loads. */
+  waitUntilAtRest(): Promise<void>;
+  /** After a gesture that loads a document: once a document other than the one left has drawn. */
+  waitUntilNewDocumentDrawn(): Promise<void>;
   emulateMedia(features: { name: string; value: string }[]): Promise<void>;
   clickAt(x: number, y: number): Promise<void>;
   pressEnter(): Promise<void>;
@@ -83,10 +92,21 @@ const BEAT_MS = `(() => {
 
 /** The beat's length in milliseconds. A page without the token fails here
  * rather than waiting nothing. */
-export async function beatMsOf(page: BrowserPage): Promise<number> {
+export async function beatMsOf(page: Pick<BrowserPage, "evaluate">): Promise<number> {
   const ms = Number(await page.evaluate(BEAT_MS));
   if (!(ms > 0)) throw new Error("the page declares no --motion-beat");
   return ms;
+}
+
+/**
+ * Returns once the beat of the card on the screen is over, by the page's own
+ * clock: the moment this read sees the card, plus the page's beat. A card
+ * shows only once it is drawn, and its beat begins as it is drawn.
+ */
+export async function waitUntilPastTheBeat(page: Pick<BrowserPage, "evaluate" | "waitUntil">): Promise<void> {
+  const seenAt = Number(await page.evaluate("performance.now()"));
+  const beatMs = await beatMsOf(page);
+  await page.waitUntil(`performance.now() >= ${seenAt + beatMs}`, "the page's clock never passed the beat");
 }
 
 /** Past the beat, with room for a frame or two. */
@@ -125,13 +145,29 @@ const pick = (value: string, searchFor: string) => `(() => {
   return "row";
 })()`;
 
-/** Answers the question on the screen with `value`, then waits out the beat
- * of the card it draws. */
+/** The screen as a reader tells one from the next: which screen, and its question. */
+const SCREEN_SHOWN = `${STATE} + " " + ${QLABEL}`;
+
+/**
+ * Picks `value` once: "moved" when the screen moved on, or why it did not. A
+ * pick that takes moves the screen in the same task, so a screen still where
+ * it was is a refused pick.
+ */
+const pickedOnce = (value: string, searchFor: string) => `(() => {
+  const before = ${SCREEN_SHOWN};
+  const how = ${pick(value, searchFor)};
+  if (how !== "opt" && how !== "row") return how;
+  return ${SCREEN_SHOWN} !== before ? "moved" : "the tap was refused after the beat";
+})()`;
+
+/** Answers the question on the screen with `value` once its beat is over,
+ * and returns once the screen has moved on and the page is at rest. */
 export async function answer(page: BrowserPage, field: string, value: string): Promise<void> {
   const name = fieldOptions(ds, field).find((o) => o.value === value)?.label ?? value;
-  const how = await page.evaluate(pick(value, name));
-  if (how !== "opt" && how !== "row") throw new Error(`${field} = ${value}: ${how}`);
-  await waitOutTheBeat(page);
+  await waitUntilPastTheBeat(page);
+  const how = await page.evaluate(pickedOnce(value, name));
+  if (how !== "moved") throw new Error(`${field} = ${value}: ${how}`);
+  await page.waitUntilAtRest();
 }
 
 /** The field of the question on the screen, from its label as the card draws
@@ -152,9 +188,9 @@ export const recordSeedScript = (answers: Profile, history: string[] = Object.ke
 
 /** The interview's first screen, with nothing on the record. */
 export async function openCold({ page, url }: PageOnSite): Promise<void> {
-  await page.goto(url("/404.html"), 300);
+  await page.goto(url("/404.html"));
   await page.evaluate("localStorage.clear()");
-  await page.goto(url("/"), 1200);
+  await page.goto(url("/"));
 }
 
 /**
