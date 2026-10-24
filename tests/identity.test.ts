@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { PAGE_CSS } from "../src/lib/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { datasetMeta, type Dataset } from "permit-rulebook-data";
+import { waitUntilPastTheBeat, type BrowserPage } from "./browser-walk.js";
 
 /**
  * The identity pair is one drawing, used twice.
@@ -281,12 +282,8 @@ const PROBE = `(() => {
   });
 })()`;
 
-/** What the probe hands back, and the slice of the harness this file uses. */
+/** What the probe hands back. */
 type Measure = Record<string, number | string | undefined>;
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
 
 describe.skipIf(skipped !== null)("the identity pair lands identically on both screens", () => {
   const RESULTS = "/";
@@ -300,14 +297,15 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
         const seen = await withBrowser(async (page: BrowserPage) => {
           const out: Record<string, Measure> = {};
           for (const path of [RESULTS, ROUTE]) {
-            await page.goto(server.url(path), 400);
+            await page.goto(server.url(path));
             if (force) await page.evaluate(FALLBACK_STACK);
             if (path === RESULTS) {
               // The results screen, which is where this page carries the
               // "Record generated" stamp; unseeded, `/` is question one and
               // states the rules-read date instead (human, 2026-09-08).
               await page.evaluate(SEED_FINISHED_RECORD);
-              await page.goto(server.url(path), 1400);
+              await page.goto(server.url(path));
+              await page.waitUntilAtRest();
               if (force) await page.evaluate(FALLBACK_STACK);
             }
             out[path] = JSON.parse(await page.evaluate(PROBE)) as Measure;
@@ -348,11 +346,12 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
         const seen = await withBrowser(async (page: BrowserPage) => {
           const out: Record<string, Measure> = {};
           for (const path of [RESULTS, ROUTE]) {
-            await page.goto(server.url(path), 400);
+            await page.goto(server.url(path));
             if (force) await page.evaluate(FALLBACK_STACK);
             if (path === RESULTS) {
               await page.evaluate(SEED_FINISHED_RECORD);
-              await page.goto(server.url(path), 1400);
+              await page.goto(server.url(path));
+              await page.waitUntilAtRest();
               if (force) await page.evaluate(FALLBACK_STACK);
             }
             out[path] = JSON.parse(await page.evaluate(PLACEMENT)) as Measure;
@@ -416,14 +415,16 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const read = () => page.evaluate(STAMP_STATE);
-        await page.goto(server.url("/"), 900);
+        await page.goto(server.url("/"));
         if (force) await page.evaluate(FALLBACK_STACK);
         const first = JSON.parse(await read()) as Measure;
+        await waitUntilPastTheBeat(page);
         await page.evaluate('document.querySelector(".qcard .opt").click()');
-        await new Promise((r) => setTimeout(r, 500));
+        await page.waitUntilAtRest();
         const answered = JSON.parse(await read()) as Measure;
         await page.evaluate(SEED_FINISHED_RECORD);
-        await page.goto(server.url("/"), 1400);
+        await page.goto(server.url("/"));
+        await page.waitUntilAtRest();
         if (force) await page.evaluate(FALLBACK_STACK);
         const results = JSON.parse(await read()) as Measure;
         // The words alone, with the masthead's own copy untouched.
@@ -439,9 +440,7 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
       expect(seen.answered.text).toBe(`Rules read ${newest}`);
       // The results stand on the day the record was made.
       expect(seen.results.text).toMatch(/^Record generated [0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-
-      // The box is the same box on every screen, and swapping the words alone
-      // moves nothing at all.
+      // The box is the same box on every screen, and swapping the words alone moves nothing at all.
       for (const state of ["answered", "results"])
         for (const key of ["left", "width", "height"])
           expect(seen[state][key], `${key} moved on ${state}`).toBe(seen.first[key]);
@@ -462,7 +461,7 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
       const seen = await withBrowser(async (page: BrowserPage) => {
         const out: Record<string, Measure> = {};
         for (const [label, path] of [["interview", "/"], ["route", ROUTE]] as const) {
-          await page.goto(server.url(path), 900);
+          await page.goto(server.url(path));
           if (force) await page.evaluate(FALLBACK_STACK);
           out[label] = JSON.parse(await page.evaluate(HEADING)) as Measure;
         }
@@ -566,8 +565,6 @@ function whyNotMeasured(): string | null {
 }
 const notMeasured = whyNotMeasured();
 
-interface Page { goto(url: string, settleMs?: number): Promise<void>; evaluate(expression: string): Promise<string> }
-
 const HEADER_BOX = 'JSON.stringify((() => {'
   + ' const head = document.querySelector(".site-head");'
   + ' const mark = document.querySelector(".site-head .wordmark");'
@@ -584,13 +581,13 @@ describe.skipIf(notMeasured !== null)("the header is one object, measured", () =
   it("the same box, wordmark and seal on the interview and on a route page", async () => {
     const server = await serveDir(dist);
     try {
-      const seen = await withChrome(async (page: Page) => {
+      const seen = await withChrome(async (page: BrowserPage) => {
         const at: Record<string, unknown> = {};
         for (const [name, path] of [
           ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
           ["country", "/germany/"], ["data", "/data/"],
         ] as const) {
-          await page.goto(server.url(path), 500);
+          await page.goto(server.url(path));
           at[name] = JSON.parse(await page.evaluate(HEADER_BOX));
         }
         return at;
@@ -654,15 +651,15 @@ describe.skipIf(notMeasured !== null)("the header holds on a machine with none o
   it("one row at 1100 px, with room to spare, on every page", async () => {
     const server = await serveDir(dist);
     try {
-      const seen = await withChrome(async (page: Page) => {
+      const seen = await withChrome(async (page: BrowserPage) => {
         const at: Record<string, unknown> = {};
         for (const [name, path] of [
           ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
           ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"], ["error", "/404.html"],
         ] as const) {
-          await page.goto(server.url(path), 500);
+          await page.goto(server.url(path));
           await page.evaluate(FALLBACK);
-          await new Promise((r) => setTimeout(r, 200));
+          await page.waitUntilAtRest();
           at[name] = JSON.parse(await page.evaluate(ROW));
         }
         return at;
@@ -732,26 +729,26 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
   it("the interview, the results, a route page, a country page and the data page", async () => {
     const server = await serveDir(dist);
     try {
-      const seen = await withChrome(async (page: Page) => {
+      const seen = await withChrome(async (page: BrowserPage) => {
         const at: Record<string, unknown> = {};
         for (const [name, path] of [
           ["interview", "/"], ["results", "/"], ["route", "/germany/eu-blue-card-general/"],
           ["country", "/germany/"], ["data", "/data/"],
         ] as const) {
-          await page.goto(server.url(path), 600);
+          await page.goto(server.url(path));
           if (name === "results") {
             // The screen the stamp is widest on: "Record generated" is longer
             // than "Rules read".
             await page.evaluate(SEED_FINISHED_RECORD);
-            await page.goto(server.url(path), 1400);
+            await page.goto(server.url(path));
           }
           await page.evaluate(FALLBACK_STACK);
-          await new Promise((r) => setTimeout(r, 250));
+          await page.waitUntilAtRest();
           at[name] = JSON.parse(await page.evaluate(OVERFLOW));
           // And again as a wider family would draw it.
           for (const extra of ["0.055", "0.11"]) {
             await page.evaluate(WIDER(extra));
-            await new Promise((r) => setTimeout(r, 200));
+            await page.waitUntilAtRest();
             at[`${name} at +${extra}em`] = JSON.parse(await page.evaluate(OVERFLOW));
           }
         }
@@ -779,11 +776,12 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
   it("keeps its longest label on one line under a font wider than the runner's", async () => {
     const server = await serveDir(dist);
     try {
-      const seen = await withChrome(async (page: Page) => {
-        await page.goto(server.url("/"), 600);
+      const seen = await withChrome(async (page: BrowserPage) => {
+        await page.goto(server.url("/"));
         await page.evaluate(SEED_FINISHED_RECORD);
-        await page.goto(server.url("/"), 1400);
+        await page.goto(server.url("/"));
         await page.evaluate(FALLBACK_STACK);
+        await page.waitUntilAtRest();
         const box = 'JSON.stringify({ overflow: document.documentElement.scrollWidth'
           + ' - document.documentElement.clientWidth,'
           + ' height: document.querySelector(".stamps .stamp").offsetHeight,'
@@ -798,7 +796,7 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
             + ` s.textContent = ".stamps .stamp{letter-spacing:calc(var(--stamp-tracking) + ${extra}em)}";`
             + ' document.head.appendChild(s); return 1; })()',
           );
-          await new Promise((r) => setTimeout(r, 200));
+          await page.waitUntilAtRest();
           at[extra] = JSON.parse(await page.evaluate(box));
         }
         return at;
