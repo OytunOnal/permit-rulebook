@@ -310,7 +310,7 @@ describe("the route page's liveness line names its own source or stays silent", 
   });
 });
 
-describe("a route's name never stutters, and the sign carries no explainer", () => {
+describe("a citation never restates its number, and the sign carries no explainer", () => {
   it("restates no number, and explains the act alone where the citation names one", () => {
     // P1 replaced "(§ 20a, section 20a)" with "§ = section" once per page;
     // amendment 6 (the human's walk, 2026-09-18) took the sign's words away
@@ -358,7 +358,7 @@ describe("the curator's note stays in the data", () => {
   });
 });
 
-describe("/data/ says nothing of a count of none", () => {
+describe("/data/'s provenance line", () => {
   it("counts what stands, and says nothing of a count of none", () => {
     expect(proseProvenanceCounts(41, 12, 0)).toBe("41 sourced, 12 ours");
     expect(proseProvenanceCounts(41, 12, 2)).toBe("41 sourced, 12 ours, 2 kept on a dated reason");
@@ -368,7 +368,7 @@ describe("/data/ says nothing of a count of none", () => {
   });
 });
 
-describe("the learn box ends on the Anabin link, with no stray full stop after it", () => {
+describe("the Anabin link carries no stray full stop", () => {
   it("the learn box ends on the link: nothing after it can wrap alone", () => {
     // Deniz works in IT with three years in the last seven, so the shortage
     // Blue Card's IT path (#134) meets the card without recognition and no
@@ -385,7 +385,7 @@ describe("the learn box ends on the Anabin link, with no stray full stop after i
   });
 });
 
-describe("the question counter says about, not up to", () => {
+describe("the question counter", () => {
   it("says about, not up to", () => {
     expect(questionCounter(1, 24)).toBe("Question 1 of about 24");
     const html = questionCardHtml({
