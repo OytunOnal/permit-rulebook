@@ -1,5 +1,8 @@
 # Coding standards
 
+Spine's general rules, `SPINE_STANDARDS.md` at the Spine plugin's root, hold in
+every section below; a line under `## Departures` wins over the rule it names.
+
 Two repositories, one product: the site (this repository) and the data package
 (`OytunOnal/permit-rulebook-data`, checked out beside it). Where they differ a
 line says so. The data repository's `CONTRIBUTING.md` is the data contract and
@@ -9,20 +12,21 @@ pull request.
 ## Commands
 
 - Lint: site `npm run lint` (ESLint, `eslint.config.mjs`) over `src/`,
-  `scripts/`, `tests/` and the pages' scripts holds the six shape limits:
-  files ≤ 400 lines and functions ≤ 40 lines, every line counted, blank lines
-  and comments included; nesting ≤ 3; parameters ≤ 3; no nested ternaries; no
-  unused names. A `describe` callback is exempt from the function limit; every
-  `it` body and helper is held to it. A hit waiting on its issue is an entry
-  in the config's exception list, with that issue and its version, and
-  `tests/lint.test.ts` fails once that version comes. `astro check` and `tsc`
-  carry the type rules.
+  `scripts/`, `tests/` and the pages' scripts holds Spine's lint limits,
+  every line counted, blank lines and comments included, except two that this
+  config does not hold yet: a condition of more than two clauses named, and a
+  `describe` callback's length, which it exempts from the function limit.
+  Spine's preset brings both with the setup slice that follows Spine's
+  `project-tools.md`. A hit waiting on its
+  issue is an entry in the config's exception list, with that issue and its
+  version, and `tests/lint.test.ts` fails once that version comes.
+  `astro check` and `tsc` carry the type rules.
 - Format: none configured.
 - Typecheck: site `npm run build` (`astro check && astro build`); data
   `npm run build` (`tsc -p tsconfig.json`) and `npm run typecheck:tests`.
-- Structure: in the site's root, `node ${CLAUDE_PLUGIN_ROOT}/scripts/structure.mjs`
-  writes `docs/spine/structure.json` from the code, and
-  `node ${CLAUDE_PLUGIN_ROOT}/scripts/structure-check.mjs` reads it against
+- Structure: in the site's root, Spine's `structure.mjs`, set up as Spine's
+  `structure-command.md` says, writes `docs/spine/structure.json` from the
+  code, and Spine's `structure-check.mjs` reads it against
   `docs/spine/dependency-rules.md`. Every source file carries its `// @level`
   tag as its first comment (an Astro file's, on the line after its first
   `---`). The file is generated and never resolved by hand: a merge
@@ -39,6 +43,10 @@ pull request.
   branch, before the merge.
 - Watch: data `npm run watch:sources` is the daily read of every source; it
   is never run in a slice.
+- Spine's tools (the green, red-before, same-cases, the check at write) run
+  the steps of `docs/spine/commands.json`, which the setup slice writes; until
+  it exists, the hooks let everything pass. Their commands are in Spine's
+  `briefing.md`.
 
 ## Module boundaries
 
@@ -54,20 +62,9 @@ pull request.
 
 ## Rules
 
-- Logs are structured: the watch writes one JSON line per event (`ts`,
-  `level`, `msg`). A record the code produces carries its day in its name
-  (`watch/flags/<source>-<day>.md`). A `.gitignore` line names a home, never a
-  name shape (`*.tmp`).
-- Errors are visible: each reaches the log or the user. None is swallowed
-  without a comment saying why dropping it is safe.
 - The site's health signal is the footer line on every page: the oldest and
   newest day a value was read, the watch's last run, the sources it could not
   read, and the dataset version.
-- The lockfile is committed in both repositories, and dependencies are audited
-  in CI. An upgrade is one package per change; its lockfile diff is read, never
-  hand-edited.
-- The deploy triggers on product paths, never on docs (`pages.yml`,
-  `paths-ignore`).
 - Every user-facing string lives in the copy module (site) or in the dataset
   (data). The copy module is `src/lib/copy/`, one file per screen or part:
   `frame.ts` for the frame every page shares, `quotes.ts` for the words around
@@ -76,67 +73,29 @@ pull request.
   template, a page, a test or an inline script; a
   script reads its words from `data-` attributes the template renders. No
   country name, route name or dataset value inside an inline script.
-- Naming: files and ids are kebab-case; exported functions are verbs
-  (`renderQuestion`, `askedFieldOf`); a term the code leans on lives in
-  `GLOSSARY.md`.
-- A comment states a non-obvious constraint or reason, today's; obvious code
-  carries none. No history.
-
-## Code
-
-- The plainest form that does the job: no clever trick where a plain form
-  reads. A finding names the plainer form.
-- No boolean argument that switches what a function does: two functions, or an
-  option named for it.
-- A condition of more than two clauses gets a name that says what it asks; a
-  test's oracle is exempt.
-- A helper sits in its only user's file, or inside its deep module's folder
-  when only that module uses it; used by several modules, it is a module of its
-  own. A module's own logic stays in it, never in a helper others share.
-- No compatibility shims, no `// removed` comments.
-- A case for new behaviour, a bug fix's included, fails before its code; a
-  guard case, which the code already holds, is exempt.
+- Naming: files and ids are kebab-case.
 
 ## Tests
 
-- A test asserts a decision, not content. A check keyed to a substring, a word
-  count or a sentence's shape is a finding unless the contract declares that
-  set and the test names it.
-- No source-grep: a test reads rendered output or runs the engine. Two
-  precedents: the sweep that proves a retired name is gone, and a workflow,
-  which no test can run: it is read from its file.
-- A test that pins a date, a version or a count says why when it moves.
 - Browser cases measure geometry and state from the running page, through
   `scripts/browser.mjs`.
-- A fixture regenerates only with a recorded reason in its own `source` line.
-- No check that content can silence, and none that demands content.
-- A test decides its pass on a state it writes itself, never on one a
-  scheduled run rewrites (the shipped `watch/state.json`). The quote gate is
-  the exception: it is meant to go red when a page changes.
+
+## Departures
+
+Each line names a general rule and its section in `SPINE_STANDARDS.md`, this
+product's version, and why. A lint departure also adds its override after
+Spine's preset in `eslint.config.mjs`.
+
+- A test decides its pass on a state it writes itself (Tests): the quote gate
+  is the exception, because it is meant to go red when a source page changes.
+- Secrets live in `.env` (Security): also in the data repository's Actions
+  secrets, because the watch's dispatch to the site runs in GitHub Actions
+  with `DISPATCH_TOKEN`, and Actions has no `.env`.
 
 ## Security
 
-- Data crossing a boundary (a request, a file, an external API, a fetched
-  source page) is validated against a schema.
-- Text from outside is escaped where it is rendered, and never run: not by a
-  shell, an `eval`, a query or a prompt.
-- Files are read inside the project only, no link followed.
-- Writes: into a project only inside its root, never under `.git` (however
-  spelled) and never at the root itself; run output and agents' scratch under
-  `.run/`, which git ignores; test fixtures in the OS temp folder, a throwaway
-  folder per case, removed. A slice, a run or an agent leaves no worktree,
-  server or scratch file behind.
-- An outside program is called with an argument list, never through a shell,
-  found from the PATH's absolute folders, never from the folder under check.
-- Every loop, regex and walk over outside input is bounded: by length, count or
-  depth. A fetched page is bounded on the wire and when unpacked.
 - The watch fetches only public addresses: every resolved address is judged
   before a connection is made.
-- Secrets live in `.env` or in the repository's Actions secrets, never in
-  code.
 - A shared device keeps nothing of a reader after Start over.
-- A third-party script is pinned to a version and loaded with its integrity
-  hash. The analytics beacon, which its vendor serves unversioned, is the one
-  exception, allowed by name in the Content-Security-Policy.
 - The Content-Security-Policy names every script the page runs: `'self'`, the
   analytics beacon, and each inline script by its hash.
