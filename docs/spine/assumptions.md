@@ -82,6 +82,18 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   script builders run between edits, in their own worktree, catches a type
   error before the green does (#218, retros of #110, #133, #151 and #208).
   — `untested`
+- **A24 — a day's folder takes nothing from the watch.** Flags at
+  `watch/flags/<day>/<source>.md` are filed as issues, and found again on a
+  rerun, as they are from one folder (#220, the human's ruling on PR #219).
+  — `untested`
+- **A25 — every dropped error has a place to go without noise.** Teardown and
+  probes go to the log at a low level, and a browser that refuses site data
+  tells the reader once that their answers will not be kept (#221, the
+  human's ruling on PR #219). — `untested`
+- **A26 — a pinned copy of the beacon still counts.** Cloudflare Web
+  Analytics counts a page view sent by a pinned copy of its beacon, served
+  from our origin with its integrity hash (#222, the human's ruling on PR
+  #219). — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
