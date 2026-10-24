@@ -1,0 +1,47 @@
+{
+  "scripts/browser.mjs": {
+    "lines": 407
+  },
+  "src/lib/route-page.ts": {
+    "lines": 1071
+  },
+  "src/lib/verdict/compose/card-blocks.ts": {
+    "lines": 705
+  },
+  "tests/first-paint.test.ts": {
+    "lines": 751
+  },
+  "tests/identity.test.ts": {
+    "lines": 824
+  },
+  "tests/orientation.test.ts": {
+    "lines": 423
+  },
+  "tests/record.test.ts": {
+    "lines": 412
+  },
+  "tests/route-page.test.ts": {
+    "lines": 709
+  },
+  "tests/s13.test.ts": {
+    "lines": 907
+  },
+  "tests/s19.test.ts": {
+    "lines": 415
+  },
+  "tests/s23.test.ts": {
+    "lines": 483
+  },
+  "tests/s25.test.ts": {
+    "lines": 442
+  },
+  "tests/s26.test.ts": {
+    "lines": 470
+  },
+  "tests/s27.test.ts": {
+    "lines": 547
+  },
+  "tests/s30.test.ts": {
+    "lines": 510
+  }
+}

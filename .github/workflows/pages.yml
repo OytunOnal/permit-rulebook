@@ -44,11 +44,15 @@ on:
     # while a deploy is running cancelled that deploy (2026-09-09, c5c6ef9), and
     # every docs push rebuilt a site nothing in it had changed. Product paths
     # only (steward-48).
-    paths-ignore:
-      - "GLOSSARY.md"
-      - "CODING_STANDARDS.md"
-      - "CLAUDE.md"
-      - "docs/**"
+    # The Ceilings file is let back in last: the lint reads it, so a push
+    # changing only it must still run the Lint step (#149).
+    paths:
+      - "**"
+      - "!GLOSSARY.md"
+      - "!CODING_STANDARDS.md"
+      - "!CLAUDE.md"
+      - "!docs/**"
+      - "docs/spine/ceilings.json"
   schedule:
     - cron: "40 6 * * *" # daily, 06:40 UTC — after the data watch at 05:17 UTC
   repository_dispatch:
@@ -205,8 +209,8 @@ jobs:
         working-directory: site
         run: npm test
 
-      # The six shape limits, in the green as the suite is: a red lint stops
-      # the deploy the way a red test does.
+      # Spine's lint limits, with the Ceilings and Suppressions, in the green
+      # as the suite is: a red lint stops the deploy the way a red test does.
       - name: Lint
         working-directory: site
         run: npm run lint

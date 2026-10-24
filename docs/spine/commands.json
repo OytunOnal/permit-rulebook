@@ -1,0 +1,16 @@
+{
+  "stack": "js-ts",
+  "green": [
+    ["npm", "run", "build"],
+    ["npm", "test"],
+    ["npm", "run", "lint"],
+    ["npm", "run", "assets:check"],
+    ["npm", "run", "check:base"],
+    ["npm", "run", "measure:taps"]
+  ],
+  "tests": "tests/**/*.test.ts",
+  "runTests": ["npx", "vitest", "run", "--reporter=junit", "--outputFile={out}", "{files}"],
+  "beforeTests": [["npx", "astro", "build"]],
+  "lintFile": ["npx", "eslint", "--format", "json", "{file}"],
+  "readByNothing": ["GLOSSARY.md", "CODING_STANDARDS.md", "CLAUDE.md", "docs/**"]
+}

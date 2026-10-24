@@ -11,19 +11,16 @@ pull request.
 
 ## Commands
 
-- Lint: site `npm run lint` (ESLint, `eslint.config.mjs`) over `src/`,
-  `scripts/`, `tests/` and the pages' scripts holds Spine's lint limits,
-  every line counted, blank lines and comments included, except two that this
-  config does not hold yet: a condition of more than two clauses named, and a
-  `describe` callback's length, which it exempts from the function limit.
-  Spine's preset brings both with the setup slice that follows Spine's
-  `project-tools.md`. A hit waiting on its
-  issue is an entry in the config's exception list, with that issue and its
-  version, and `tests/lint.test.ts` fails once that version comes.
-  `astro check` and `tsc` carry the type rules.
+- Lint: site `npm run lint` (ESLint, `eslint.config.mjs`); it loads Spine's
+  rules from `spine-lint/` over `src/`, `scripts/`, `tests/` and the pages'
+  scripts. Existing breaches: Ceilings in `docs/spine/ceilings.json`,
+  Suppressions in `eslint-suppressions.json`. `astro check` and `tsc` carry
+  the type rules.
 - Format: none configured.
 - Typecheck: site `npm run build` (`astro check && astro build`); data
   `npm run build` (`tsc -p tsconfig.json`) and `npm run typecheck:tests`.
+- Tests: site `npm test` (vitest; browser cases drive headless Chrome over
+  `dist/`); data `npm test`.
 - Structure: in the site's root, Spine's `structure.mjs`, set up as Spine's
   `structure-command.md` says, writes `docs/spine/structure.json` from the
   code, and Spine's `structure-check.mjs` reads it against
@@ -36,17 +33,17 @@ pull request.
   structure command is rerun
   and its result committed. GitHub's merge ignores local drivers, so on its
   conflict: merge master into the branch locally, rerun, push.
-- Green means: the site — `npm test` (vitest, browser cases drive headless
-  Chrome over `dist/`), `npm run build` with 0 errors, `npm run assets:check`
-  true, `npm run lint` with 0 problems; the data — `npm run check` end to end
-  (build, typecheck:tests, validate, watch:coverage, tests). Both, on the
-  branch, before the merge.
+- Green means: the site — the deploy's checks, in its order: `npm run build`
+  with 0 errors, `npm test`, `npm run lint` with 0 problems,
+  `npm run assets:check` true, `npm run check:base` and
+  `npm run measure:taps`; the data — `npm run check`
+  end to end (build, typecheck:tests, validate, watch:coverage, tests). Both,
+  on the branch, before the merge.
 - Watch: data `npm run watch:sources` is the daily read of every source; it
   is never run in a slice.
 - Spine's tools (the green, red-before, same-cases, the check at write) run
-  the steps of `docs/spine/commands.json`, which the setup slice writes; until
-  it exists, the hooks let everything pass. Their commands are in Spine's
-  `briefing.md`.
+  the steps of `docs/spine/commands.json`, one in each repository; their
+  commands are in Spine's `briefing.md`.
 
 ## Module boundaries
 
