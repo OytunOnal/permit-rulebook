@@ -121,6 +121,7 @@
   "scripts/cli-deploy-finding.mjs": "presentation",
   "scripts/cli-measure-taps.mjs": "presentation",
   "scripts/cli-shot.mjs": "presentation",
+  "scripts/cli-smoke.mjs": "presentation",
   "scripts/data-pin.mjs": "infrastructure main",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
@@ -130,12 +131,13 @@
   "scripts/main-check-base.mjs": "main",
   "scripts/main-measure-taps.mjs": "main",
   "scripts/main-shot.mjs": "main",
+  "scripts/main-smoke.mjs": "main",
   "scripts/measure-taps.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
   "scripts/render-assets.mjs": "infrastructure main",
   "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
-  "scripts/smoke.mjs": "infrastructure main",
+  "scripts/smoke.mjs": "infrastructure",
   "scripts/tab-waits.mjs": "infrastructure",
   "spine-lint/lint.mjs": "domain",
   "spine-lint/rules/ceiling-paid-off.mjs": "domain",
@@ -426,6 +428,21 @@
   {
    "from": "scripts/main-shot.mjs",
    "to": "scripts/shot.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
+   "to": "scripts/cli-smoke.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
+   "to": "scripts/smoke.mjs",
    "kind": "dependency"
   },
   {
@@ -4732,6 +4749,23 @@
     "exported": true
    }
   ],
+  "scripts/cli-smoke.mjs": [
+   {
+    "name": "smokeOptionsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "reportLinesOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "smokeReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/data-pin.mjs": [
    {
     "name": "root",
@@ -4928,6 +4962,7 @@
    }
   ],
   "scripts/main-shot.mjs": [],
+  "scripts/main-smoke.mjs": [],
   "scripts/measure-taps.mjs": [
    {
     "name": "dist",
@@ -5123,16 +5158,6 @@
     "name": "smoke",
     "kind": "fn",
     "exported": true
-   },
-   {
-    "name": "reportLinesOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "surfacesAskedBy",
-    "kind": "fn",
-    "exported": false
    }
   ],
   "scripts/tab-waits.mjs": [
@@ -7893,6 +7918,7 @@
   "scripts/cli-deploy-finding.mjs",
   "scripts/cli-measure-taps.mjs",
   "scripts/cli-shot.mjs",
+  "scripts/cli-smoke.mjs",
   "scripts/data-pin.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
@@ -7902,6 +7928,7 @@
   "scripts/main-check-base.mjs",
   "scripts/main-measure-taps.mjs",
   "scripts/main-shot.mjs",
+  "scripts/main-smoke.mjs",
   "scripts/measure-taps.mjs",
   "scripts/print-report.mjs",
   "scripts/render-assets.mjs",
@@ -7961,5 +7988,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a755f041d84c9ee44ef61a1fcf6e8ae9185238a5ba06cf828d8b902dcfd95d5d"
+ "digest": "a00771d0a389493aef4de863d8be8c6a4c76b626644bbf5955a00ec3abf84db6"
 }
