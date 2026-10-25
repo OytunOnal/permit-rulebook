@@ -285,6 +285,24 @@ const PROBE = `(() => {
 /** What the probe hands back. */
 type Measure = Record<string, number | string | undefined>;
 
+/** The stamp's state on question one, after one answer, on the results, and with only its label swapped. */
+async function readStampOnEveryScreen(page: BrowserPage, url: (path: string) => string, force: boolean): Promise<Record<string, Measure>> {
+  const read = async () => JSON.parse(await page.evaluate(STAMP_STATE)) as Measure;
+  const openTheInterview = async () => { await page.goto(url("/")); await page.waitUntilAtRest(); if (force) await page.evaluate(FALLBACK_STACK); };
+  await openTheInterview();
+  const first = await read();
+  await waitUntilPastTheBeat(page);
+  await page.evaluate('document.querySelector(".qcard .opt").click()');
+  await page.waitUntilAtRest();
+  const answered = await read();
+  await page.evaluate(SEED_FINISHED_RECORD);
+  await openTheInterview();
+  const results = await read();
+  // The words alone, with the masthead's own copy untouched.
+  await page.evaluate('document.getElementById("stamp-label").textContent = "Rules read"');
+  return { first, answered, results, swapped: await read() };
+}
+
 describe.skipIf(skipped !== null)("the identity pair lands identically on both screens", () => {
   const RESULTS = "/";
   const ROUTE = "/germany/eu-blue-card-general/";
@@ -413,25 +431,7 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
   it(`states the rules-read date on the questions and the record's date on the results, in ${stack}`, async () => {
     const server = await serve(dist);
     try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const read = () => page.evaluate(STAMP_STATE);
-        await page.goto(server.url("/"));
-        if (force) await page.evaluate(FALLBACK_STACK);
-        const first = JSON.parse(await read()) as Measure;
-        await waitUntilPastTheBeat(page);
-        await page.evaluate('document.querySelector(".qcard .opt").click()');
-        await page.waitUntilAtRest();
-        const answered = JSON.parse(await read()) as Measure;
-        await page.evaluate(SEED_FINISHED_RECORD);
-        await page.goto(server.url("/"));
-        await page.waitUntilAtRest();
-        if (force) await page.evaluate(FALLBACK_STACK);
-        const results = JSON.parse(await read()) as Measure;
-        // The words alone, with the masthead's own copy untouched.
-        await page.evaluate('document.getElementById("stamp-label").textContent = "Rules read"');
-        const swapped = JSON.parse(await read()) as Measure;
-        return { first, answered, results, swapped };
-      }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as Record<string, Measure>;
+      const seen = await withBrowser((page: BrowserPage) => readStampOnEveryScreen(page, server.url, force), { viewport: { width: 1100, height: 1000 }, mobile: false }) as Record<string, Measure>;
 
       const newest = datasetMeta(dataset as unknown as Dataset).newest_retrieved_at;
       // The questions stand on the dataset's own newest read date.
