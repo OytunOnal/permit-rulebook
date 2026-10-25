@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Profile } from "permit-rulebook-data";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import type { BrowserPage } from "./browser-walk.js";
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
@@ -30,12 +31,6 @@ function why(): string | null {
 const skipped = why();
 if (skipped)
   process.stderr.write(`\n  !! THE VERDICT'S LOOK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
-
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
 
 /** An offer in Spain, a recognised degree, the middle bands: Spain's two
  * open routes, one titled on one line at 390 and one on two. */
@@ -141,9 +136,9 @@ async function looksAt(viewport: { width: number; height: number }, mobile: bool
     return await withBrowser(async (page: BrowserPage) => {
       const out: Look[] = [];
       for (const answers of profiles) {
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         await page.evaluate(seed(answers));
-        await page.goto(server.url("/"), 1400);
+        await page.goto(server.url("/"));
         expect(page.problems()).toEqual([]);
         out.push(JSON.parse(await page.evaluate(READ_LOOK)) as Look);
       }

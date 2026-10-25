@@ -191,9 +191,9 @@ const RESULT_LINKS = 'JSON.stringify([...document.querySelectorAll("#main a")].m
 describe.skipIf(skipped !== null)("the results screen, as drawn", () => {
   it("every link to a consolidated text carries that label, and none the authority's", async () => {
     const seen = await withSite(async ({ page, url }: PageOnSite) => {
-      await page.goto(url("/"), 300);
+      await page.goto(url("/"));
       await page.evaluate(recordSeedScript(UNSURE));
-      await page.goto(url("/"), 1600);
+      await page.goto(url("/"));
       return {
         state: await page.evaluate('document.getElementById("app").dataset.state'),
         links: (JSON.parse(await page.evaluate(RESULT_LINKS)) as Link[]).map((l) => ({ ...l, where: "results" })),

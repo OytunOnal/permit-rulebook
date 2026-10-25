@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 /**
  * s30 — on a phone the next question comes up to meet the reader.
@@ -28,32 +28,10 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.js";
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write([
-    "",
-    `  !! THE QUESTION'S LANDING WAS NOT WALKED IN A BROWSER: ${skipped}.`,
-    "     Run: npm run build && npm test",
-    "",
-    "",
-  ].join(String.fromCharCode(10)));
-
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  emulateMedia(features: { name: string; value: string }[]): Promise<void>;
-  problems(): string[];
-}
-
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const skipped = skipReason();
+if (skipped) warnNotWalked("THE QUESTION'S LANDING", skipped);
 
 /**
  * Where the reader is, read the way a reader would: the card's top against
@@ -131,6 +109,15 @@ const TAP_FIRST = 'document.querySelector("#main .qcard .opt").click()';
  * had a frame: what an instant landing leaves, and a smooth one does not. */
 const TAP_FIRST_AND_READ = `(() => { ${TAP_FIRST}; return ${WHERE}; })()`;
 const TAP_BACK = 'document.querySelector("#main #back").click()';
+
+/** The screen's Back: a history move, drawn on the browser's turn rather than
+ * the tap's, so waited on until the question it leaves is gone, then at rest. */
+async function pressBack(page: BrowserPage): Promise<void> {
+  const left = await page.evaluate(QLABEL);
+  await page.evaluate(TAP_BACK);
+  await page.waitUntil(`${QLABEL} !== ${JSON.stringify(left)}`, "Back never left the question");
+  await page.waitUntilAtRest();
+}
 /** The reader reads on down the page before answering — a quarter of the
  * viewport, so the card's top is still on the screen and the browser has
  * something of theirs to bring back. */
@@ -159,10 +146,10 @@ const OPEN_AND_TAP_DESTINATION = `(() => {
   document.querySelector('#decl-list [data-field="destination"]').click();
 })()`;
 
-async function coldStart(page: BrowserPage, origin: (p: string) => string, settleMs = 1200): Promise<Where> {
-  await page.goto(origin("/404.html"), 300);
+async function coldStart(page: BrowserPage, origin: (p: string) => string): Promise<Where> {
+  await page.goto(origin("/404.html"));
   await page.evaluate("localStorage.clear()");
-  await page.goto(origin("/"), settleMs);
+  await openAtRest(page, origin("/"));
   return where(page);
 }
 
@@ -176,14 +163,11 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
           const cold = await coldStart(page, server.url);
-          await page.evaluate(TAP_FIRST);
-          await settle(900);
+          await answerWith(page, TAP_FIRST);
           const first = await where(page);
-          await page.evaluate(TAP_FIRST);
-          await settle(900);
+          await answerWith(page, TAP_FIRST);
           const second = await where(page);
-          await page.evaluate(TAP_BACK);
-          await settle(900);
+          await pressBack(page);
           const back = await where(page);
           // The reader reads on down the page, answers, and comes back: the
           // browser restores the scroll they LEFT the entry at, which is not
@@ -191,11 +175,9 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
           // -177 at 390).
           await page.evaluate(READ_ON);
           const readOn = await where(page);
-          await page.evaluate(TAP_FIRST);
-          await settle(900);
+          await answerWith(page, TAP_FIRST);
           const third = await where(page);
-          await page.evaluate(TAP_BACK);
-          await settle(900);
+          await pressBack(page);
           const backFromScrolled = await where(page);
           return { cold, first, second, back, readOn, third, backFromScrolled, problems: page.problems() };
         }, { viewport, mobile: true });
@@ -241,8 +223,9 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
         await page.emulateMedia([{ name: "prefers-reduced-motion", value: "reduce" }]);
         const cold = await coldStart(page, server.url);
         const reduced = await page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches");
-        const atOnce = JSON.parse(await page.evaluate(TAP_FIRST_AND_READ)) as Where;
-        await settle(900);
+        // Read again once the page is at rest: whatever would still move has
+        // moved by then, so a landing that kept going is caught.
+        const atOnce = JSON.parse(await answerWith(page, TAP_FIRST_AND_READ)) as Where;
         const later = await where(page);
         return { cold, reduced, atOnce, later, problems: page.problems() };
       }, { viewport: { width: 390, height: 844 }, mobile: true });
@@ -262,11 +245,9 @@ describe.skipIf(skipped !== null)("what does not change", () => {
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const cold = await coldStart(page, server.url);
-        await page.evaluate(TAP_FIRST);
-        await settle(900);
+        await answerWith(page, TAP_FIRST);
         const first = await where(page);
-        await page.evaluate(TAP_FIRST);
-        await settle(900);
+        await answerWith(page, TAP_FIRST);
         const second = await where(page);
         return { cold, first, second, problems: page.problems() };
       }, { viewport: { width: 1280, height: 900 }, mobile: false });
@@ -286,15 +267,13 @@ describe.skipIf(skipped !== null)("what does not change", () => {
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const cold = await coldStart(page, server.url);
-        await page.evaluate(TAP_FIRST);
-        await settle(900);
+        await answerWith(page, TAP_FIRST);
         const answered = await where(page);
         // The reader reads a little way down — the card's top is still on the
         // screen — then reopens the first row from the ledger beside it.
         await page.evaluate(READ_ON);
         const before = await where(page);
-        await page.evaluate(OPEN_AND_TAP_DESTINATION);
-        await settle(900);
+        await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
         const corrected = await where(page);
         return { cold, answered, before, corrected, problems: page.problems() };
       }, { viewport: { width: 1280, height: 900 }, mobile: false });
@@ -331,16 +310,15 @@ describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back u
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/404.html"), 300);
+        await page.goto(server.url("/404.html"));
         await page.evaluate(SEED);
-        await page.goto(server.url("/"), 1600);
+        await openAtRest(page, server.url("/"));
         const restored = await where(page);
         // The reader reads a little way down — the card's top stays on the
         // screen — then starts over from the resumed line.
         await page.evaluate(READ_ON);
         const before = await where(page);
-        await page.evaluate('document.querySelector("#main .resumed #restart").click()');
-        await settle(900);
+        await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
         const reset = await where(page);
         return { restored, before, reset, problems: page.problems() };
       }, { viewport: { width: 390, height: 844 }, mobile: true });
@@ -370,9 +348,9 @@ describe.skipIf(skipped !== null)("a link the page does not know keeps the first
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/404.html"), 300);
+        await page.goto(server.url("/404.html"));
         await page.evaluate("localStorage.clear()");
-        await page.goto(server.url("/?country=zz"), 1600);
+        await openAtRest(page, server.url("/?country=zz"));
         const landed = await where(page);
         const count = await page.evaluate('document.getElementById("decl-count").textContent');
         return { landed, count, problems: page.problems() };
@@ -409,15 +387,13 @@ describe.skipIf(skipped !== null)("on a phone the ledger line sits above the res
   const ANSWER_ANOTHER_BAND = 'document.querySelector("#main .qcard .opt:not(.sel)").click()';
 
   async function verdictWalk(page: BrowserPage, origin: (p: string) => string) {
-    await page.goto(origin("/404.html"), 300);
+    await page.goto(origin("/404.html"));
     await page.evaluate(SEED);
-    await page.goto(origin("/"), 1600);
+    await openAtRest(page, origin("/"));
     const verdict = await where(page);
-    await page.evaluate(OPEN_AND_TAP_SALARY);
-    await settle(900);
+    await evaluateAtRest(page, OPEN_AND_TAP_SALARY);
     const corrected = await where(page);
-    await page.evaluate(ANSWER_ANOTHER_BAND);
-    await settle(900);
+    await answerWith(page, ANSWER_ANOTHER_BAND);
     const returned = await where(page);
     return { verdict, corrected, returned, problems: page.problems() };
   }
@@ -490,11 +466,9 @@ describe.skipIf(skipped !== null)("on a phone a correction lands too (amendment 
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
           await coldStart(page, server.url);
-          await page.evaluate(TAP_FIRST);
-          await settle(900);
+          await answerWith(page, TAP_FIRST);
           const answered = await where(page);
-          await page.evaluate(OPEN_AND_TAP_DESTINATION);
-          await settle(900);
+          await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
           const corrected = await where(page);
           return { answered, corrected, problems: page.problems() };
         }, { viewport, mobile: true });

@@ -16,6 +16,103 @@ const SHAPED = ["src/**", "scripts/**", "tests/**"];
 /** The files over Spine's 400 lines, each held to its count until it is paid off (Spine's Ceilings). */
 const ceilings = JSON.parse(readFileSync(new URL("docs/spine/ceilings.json", import.meta.url), "utf8"));
 
+/** What a refused fixed wait says to write instead: the harness's waits (#230). */
+const FIXED_WAIT =
+  "a fixed wait: wait on what the page does, with page.waitUntil(condition, what) or page.waitUntilAtRest(); "
+  + "to read the page before its script runs, page.navigate(url), then waitUntil";
+
+/** Where Node keeps its timers as promises, each of them a sleep: taken in any way, refused. */
+const TIMER_PROMISES = ["timers/promises", "node:timers/promises"];
+
+/** The timers that can hold a promise back. */
+const TIMERS = ["setTimeout", "setInterval"];
+
+/** The calls that open a page: given a time, a sleep after it. */
+const NAVIGATIONS = ["goto", "navigate"];
+
+/** The name a call is made by: `f(…)` or `x.f(…)`. */
+function findCalledName({ callee }) {
+  if (callee.type === "Identifier") return callee.name;
+  return callee.type === "MemberExpression" && !callee.computed ? callee.property.name : null;
+}
+
+/** Whether the function `fn` is the one a `new Promise(…)` is made with. */
+function isPromiseExecutor(fn) {
+  const made = fn.parent;
+  const isNewPromise = made.type === "NewExpression" && made.callee.type === "Identifier" && made.callee.name === "Promise";
+  return isNewPromise && made.arguments[0] === fn;
+}
+
+/** The variable `identifier` names, looked up from the scope it stands in; null for a global. */
+function variableOf(sourceCode, identifier) {
+  for (let scope = sourceCode.getScope(identifier); scope; scope = scope.upper) {
+    const found = scope.set.get(identifier.name);
+    if (found) return found;
+  }
+  return null;
+}
+
+/** What `identifier`'s value is handed to: the name a declaration or an assignment gives it; null when neither. */
+function handedTo(identifier) {
+  const { parent } = identifier;
+  if (parent.type === "VariableDeclarator" && parent.init === identifier) return parent.id;
+  if (parent.type === "AssignmentExpression" && parent.right === identifier) return parent.left;
+  return null;
+}
+
+/** The variable `reference` hands its value to, as `const done = resolve` or `release = resolve` do; null when none. */
+function aliasOf(sourceCode, { identifier }) {
+  const target = handedTo(identifier);
+  return target?.type === "Identifier" ? variableOf(sourceCode, target) : null;
+}
+
+/** A promise's `resolve` and every variable it is handed to, each read and written where the file does. */
+function resolveAndItsAliases(sourceCode, resolve) {
+  const known = new Set([resolve]);
+  for (const variable of known)
+    for (const reference of variable.references) {
+      const alias = aliasOf(sourceCode, reference);
+      if (alias) known.add(alias);
+    }
+  return [...known];
+}
+
+/**
+ * A test waits on an event, never a sleep (`SPINE_STANDARDS.md`, Tests; #230,
+ * rulings 2 and 11): a timer handed a promise's `resolve`, under its own name
+ * or another, Node's promised timers, and a navigation given a time are
+ * refused. A timer doing other work, such as a fake server holding a response
+ * back, is not a wait, and a timer written in an expression sent to the page
+ * is text.
+ */
+const noFixedWait = {
+  create: (context) => {
+    const { sourceCode } = context;
+    const refuse = (node) => context.report({ node, message: FIXED_WAIT });
+    const timers = [];
+    const resolves = [];
+    return {
+      CallExpression(node) {
+        const name = findCalledName(node);
+        if (TIMERS.includes(name)) timers.push(node);
+        if (NAVIGATIONS.includes(name) && node.arguments.length > 1) refuse(node);
+      },
+      "ArrowFunctionExpression, FunctionExpression"(fn) {
+        const [resolve] = fn.params;
+        if (isPromiseExecutor(fn) && resolve?.type === "Identifier") resolves.push(variableOf(sourceCode, resolve));
+      },
+      ImportDeclaration(node) { if (TIMER_PROMISES.includes(node.source.value)) refuse(node); },
+      ImportExpression(node) { if (TIMER_PROMISES.includes(node.source.value)) refuse(node); },
+      "Program:exit"() {
+        const handed = resolves.flatMap((resolve) => resolveAndItsAliases(sourceCode, resolve))
+          .flatMap((variable) => variable.references.map(({ identifier }) => identifier.range));
+        for (const timer of timers)
+          if (handed.some(([from, to]) => from >= timer.range[0] && to <= timer.range[1])) refuse(timer);
+      },
+    };
+  },
+};
+
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   { ignores: IGNORED },
@@ -38,5 +135,12 @@ export default [
     files: TYPESCRIPT,
     plugins: { "@typescript-eslint": tseslint.plugin },
     rules: { "no-unused-vars": "off", "@typescript-eslint/no-unused-vars": "error" },
+  },
+  // The harness's own modules (`scripts/browser.mjs`, `scripts/tab-waits.mjs`) stand outside: their backstop is
+  // the one timer the browser cases keep.
+  {
+    files: ["tests/**"],
+    plugins: { waits: { rules: { "no-fixed-wait": noFixedWait } } },
+    rules: { "waits/no-fixed-wait": "error" },
   },
 ];

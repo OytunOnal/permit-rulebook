@@ -16,6 +16,7 @@ import { CAME_FROM_LINE } from "../src/lib/copy/verdict.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { everyCardIn, verdictOn } from "./verdict-cards.js";
+import type { BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -108,11 +109,6 @@ function why(): string | null {
 }
 const skipped = why();
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
-
 const SEED = `localStorage.setItem("permit-rulebook.record.v1", ${
   JSON.stringify(serialize(germanRecord, Object.keys(germanRecord)))})`;
 
@@ -130,10 +126,10 @@ describe.skipIf(skipped !== null)("the walk the critique took, with a record in 
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/france/"), 500);
+        await page.goto(server.url("/france/"));
         await page.evaluate(SEED);
         await page.evaluate(CLICK_CHECK_YOURS);
-        await new Promise((r) => setTimeout(r, 1500));
+        await page.waitUntilNewDocumentDrawn();
         return page.evaluate(
           'JSON.stringify({ url: location.search,'
           + ' countries: [...document.querySelectorAll("#main .country")].map((c) => c.textContent.trim()),'
@@ -156,10 +152,12 @@ describe.skipIf(skipped !== null)("the walk the critique took, with a record in 
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/germany/researcher/"), 500);
+        await page.goto(server.url("/germany/researcher/"));
         await page.evaluate(SEED);
         await page.evaluate(CLICK_CHECK_YOURS);
-        await new Promise((r) => setTimeout(r, 1800));
+        await page.waitUntilNewDocumentDrawn();
+        // The landing scrolls to the card, after the draw.
+        await page.waitUntilAtRest();
         return page.evaluate(
           '(() => { const el = document.querySelector("[data-came-from]");'
           + ' const r = el ? el.getBoundingClientRect() : null;'

@@ -5,6 +5,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { routePages } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { isScored, type Dataset } from "permit-rulebook-data";
+import type { BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -82,18 +83,13 @@ if (skipped)
     "",
   ].join("\n"));
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
-
 describe.skipIf(skipped !== null)("measured in a browser", () => {
   for (const [width, height, mobile] of [[1100, 900, false], [390, 844, true]] as const)
     it(`the number, the read date and the way in are in the first screen at ${width} px`, async () => {
       const server = await serve(dist);
       try {
         const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/germany/eu-blue-card-general/"), 500);
+          await page.goto(server.url("/germany/eu-blue-card-general/"));
           return page.evaluate(
             'JSON.stringify((() => {'
             + ' const box = document.querySelector(".answer");'
@@ -133,7 +129,7 @@ describe.skipIf(skipped !== null)("a country page's first route is in the first 
       const server = await serve(dist);
       try {
         const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/germany/"), 500);
+          await page.goto(server.url("/germany/"));
           return page.evaluate(
             'JSON.stringify((() => {'
             + ' const y = (el) => el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;'

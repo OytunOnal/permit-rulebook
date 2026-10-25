@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import {
-  PHONE, fieldOnScreen, openCold, settle, skipReason, tapOn, waitOutTheBeat, warnNotWalked, withSite,
+  PHONE, SCREEN_SHOWN, fieldOnScreen, openCold, skipReason, tapOn, waitUntilPastTheBeat, warnNotWalked, withSite,
   type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 
@@ -43,6 +43,7 @@ const ON_SEARCH = '!!document.querySelector("#main .qcard #cfilter")';
 /** Answers the question on the screen as a reader does: a tap on the option,
  * or the option's name typed into the search and Enter. */
 async function answerByHand(page: BrowserPage, field: string, value: string): Promise<void> {
+  await waitUntilPastTheBeat(page);
   if (await page.evaluate(ON_SEARCH)) {
     const name = fieldOptions(ds, field).find((o) => o.value === value)?.label;
     if (!name) throw new Error(`${field} offers no ${value}`);
@@ -51,7 +52,7 @@ async function answerByHand(page: BrowserPage, field: string, value: string): Pr
   } else {
     await tapOn(page, `#main .qcard .opt[data-value='${value}']`);
   }
-  await waitOutTheBeat(page);
+  await page.waitUntilAtRest();
 }
 
 /** From a cold start, answers by hand until the verdict is drawn. Hands back
@@ -78,9 +79,13 @@ interface AroundTheVerdict {
   problems: string[];
 }
 
-/** The screen a history move draws, once the browser has taken its turn. */
-async function screenAfterMove(page: BrowserPage): Promise<{ state: string; field: string }> {
-  await settle(700);
+/** The screen a history move draws: once the browser has taken its turn and
+ * the screen is another, at rest. */
+async function screenAfterMove(page: BrowserPage, move: () => Promise<void>): Promise<{ state: string; field: string }> {
+  const before = await page.evaluate(SCREEN_SHOWN);
+  await move();
+  await page.waitUntil(`${SCREEN_SHOWN} !== ${JSON.stringify(before)}`, `the history move left "${before}" on the screen`);
+  await page.waitUntilAtRest();
   const state = await page.evaluate(STATE);
   return { state, field: state === "questions" ? await fieldOnScreen(page) : "" };
 }
@@ -89,10 +94,8 @@ async function backAndForward(reader: Profile): Promise<AroundTheVerdict> {
   return withSite(async (site) => {
     const { page } = site;
     const asked = await walkToTheVerdict(site, reader);
-    await page.back();
-    const afterBack = await screenAfterMove(page);
-    await page.forward();
-    const afterForward = await screenAfterMove(page);
+    const afterBack = await screenAfterMove(page, () => page.back());
+    const afterForward = await screenAfterMove(page, () => page.forward());
     return { lastAnswered: asked.at(-1)!, afterBack, afterForward, problems: page.problems() };
   }, PHONE);
 }

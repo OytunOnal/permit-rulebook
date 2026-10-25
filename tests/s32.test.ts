@@ -12,6 +12,7 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import {
   PAINTED_AS_COMPOSED, cardOn, everyCardIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
+import type { BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -185,12 +186,6 @@ const skipped = why();
 if (skipped)
   process.stderr.write(`\n  !! THE S32 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
-
 const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
   JSON.stringify(serialize(transferee, Object.keys(transferee), true))})`;
 
@@ -199,9 +194,9 @@ describe.skipIf(skipped !== null)("s32 — in the browser", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/404.html"), 300);
+        await page.goto(server.url("/404.html"));
         await page.evaluate(SEED);
-        await page.goto(server.url("/"), 1600);
+        await page.goto(server.url("/"));
         return {
           state: await page.evaluate('document.getElementById("app").dataset.state'),
           painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, transferee)))),

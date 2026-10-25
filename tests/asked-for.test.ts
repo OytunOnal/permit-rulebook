@@ -3,9 +3,10 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossSection, type Glossary } from "../src/lib/gloss.js";
 import {
-  DESK, PHONE, QLABEL, answer, middleBandOf, settle, skipReason, tapOn, topBandOf, waitOutTheBeat, walkTo,
+  DESK, PHONE, QLABEL, answer, middleBandOf, skipReason, tapOn, topBandOf, waitUntilPastTheBeat, walkTo,
   warnNotWalked, withSite, type BrowserPage,
 } from "./browser-walk.js";
+import { shiftScoreSince } from "./layout-shifts.js";
 
 /**
  * #139 — a question that only some of the reader's open routes read says
@@ -92,15 +93,6 @@ function expectTheCardWithALine<T extends { question: string; line: Line | null 
 }
 
 const namedRoutes = (line: Line) => line.named.map((n) => [n.route, n.country]);
-
-/** A layout-shift observer counting what CLS counts from now on: the walk's
- * own scripted answers shifted the page before, and are not the card's. */
-const WATCH_SHIFTS_FROM_NOW = `(() => {
-  window.__cls = 0;
-  new PerformanceObserver((l) => {
-    for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
-  }).observe({ type: "layout-shift" });
-})()`;
 
 /** The asked-for line's box against its card's: inside it or not, how many
  * lines it wraps to, and whether each option stays on the card. */
@@ -218,7 +210,7 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
       })())`)) as { x: number; y: number } | null;
       if (!at) throw new Error("no experience_5y row in the declared panel");
       await page.clickAt(at.x, at.y);
-      await waitOutTheBeat(page);
+      await page.waitUntilAtRest();
       return { ...(await screenOf(page)), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
@@ -243,14 +235,15 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     const seen = await withSite(async (site) => {
       const { page } = site;
       await walkTo(site, IT_NO_DEGREE, "experience_5y");
-      await page.evaluate(WATCH_SHIFTS_FROM_NOW);
+      // The shifts from now on: the walk's own scripted answers shifted the page before, and are not the card's.
+      const since = Number(await page.evaluate("performance.now()"));
       // The answer that draws the seven-year card, by a real tap.
+      await waitUntilPastTheBeat(page);
       await tapOn(page, `#main .qcard .opt[data-value='${IT_NO_DEGREE.experience_5y}']`);
-      await waitOutTheBeat(page);
-      await settle(800);
+      await page.waitUntilAtRest();
       const geometry = JSON.parse(await page.evaluate(LINE_GEOMETRY)) as LineGeometry | null;
       return {
-        ...(await screenOf(page)), geometry, cls: Number(await page.evaluate("window.__cls")), problems: page.problems(),
+        ...(await screenOf(page)), geometry, cls: await shiftScoreSince(page, since), problems: page.problems(),
       };
     }, PHONE);
     expect(seen.problems).toEqual([]);

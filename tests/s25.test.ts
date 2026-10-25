@@ -14,6 +14,7 @@ import { glossed } from "../src/lib/gloss.js";
 import { declarationHtml, questionCardHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
+import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, paintedAsComposedScript, placed, stepsIn, verdictFor, verdictOn,
 } from "./verdict-cards.js";
@@ -345,17 +346,10 @@ const skipped = why();
 if (skipped)
   process.stderr.write(`\n  !! THE S25 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
-
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
     version: RECORD_VERSION, answers, history: Object.keys(answers),
   }))})`;
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const QLABEL = '(() => { const h = document.querySelector(".qcard .qlabel"); return h ? h.textContent.trim() : ""; })()';
 const STATE = 'document.getElementById("app").dataset.state';
 // Quoted: a rung like 2plus is not a bare CSS identifier.
@@ -375,16 +369,10 @@ async function walk(page: BrowserPage, profile: Profile, painted: string): Promi
     const field = byLabel.get(label);
     if (!field) throw new Error(`no field for the question "${label}"`);
     asked.push(field);
-    await page.evaluate(tap(profile[field]!));
-    // The next screen, not a fixed sleep: the page advances the masthead
-    // before it draws the question, and a tap read too early reads the
-    // question it just answered.
-    for (let waited = 0; waited < 4000; waited += 100) {
-      await settle(100);
-      if ((await page.evaluate(STATE)) === "results" || (await page.evaluate(QLABEL)) !== label) break;
-    }
+    // A tap commits once the card's beat is over, and draws the next screen
+    // in the task that handles it; the page is read once it is at rest.
+    await answerWith(page, tap(profile[field]!));
   }
-  await settle(600);
   return { asked, painted: JSON.parse(await page.evaluate(painted)), problems: page.problems() };
 }
 
@@ -394,9 +382,9 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/"), 300);
+          await page.goto(server.url("/"));
           await page.evaluate(seed(SEEDED as Record<string, string>));
-          await page.goto(server.url("/"), 900);
+          await page.goto(server.url("/"));
           const resumed = await page.evaluate(RESUMED);
           const first = await page.evaluate(QLABEL);
           const walked = await walk(page, withExperience(five, seven), paintedAsComposedScript(verdictFor(walkedTo(five, seven))));
@@ -420,9 +408,9 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         await page.evaluate(seed({ ...SEEDED as Record<string, string>, experience: "y3in7", experience_7y: "yes" }));
-        await page.goto(server.url("/"), 900);
+        await openAtRest(page, server.url("/"));
         return {
           resumed: await page.evaluate(RESUMED),
           first: await page.evaluate(QLABEL),

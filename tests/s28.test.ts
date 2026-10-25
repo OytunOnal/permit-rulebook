@@ -11,6 +11,7 @@ import { routePages } from "../src/lib/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
+import { PICK_TURKEY, answerWith, type BrowserPage } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor, verdictOn,
 } from "./verdict-cards.js";
@@ -234,18 +235,11 @@ const skipped = why();
 if (skipped)
   process.stderr.write(`\n  !! THE S28 LINK WAS NOT READ IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
-
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
     version: RECORD_VERSION, answers, history: Object.keys(answers),
   }))})`;
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** One link read off the page: its text as drawn and where it goes. */
 interface Link { text: string; href: string }
@@ -262,24 +256,19 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         await page.evaluate(seed(WALK_START as Record<string, string>));
-        await page.goto(server.url("/"), 900);
-        await page.evaluate('(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
-        await settle(300);
-        await page.evaluate('document.querySelector(".clist [role=option]").click()');
-        await settle(400);
+        await page.goto(server.url("/"));
+        await answerWith(page, PICK_TURKEY);
         // The shortage question is next; its help line is the door.
         const help = JSON.parse(await page.evaluate(LINKS(".qlearn a"))) as Link[];
         const helpText = await page.evaluate('document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : ""');
-        for (const value of WALK_TAPS) {
-          await page.evaluate(tap(value));
-          await settle(400);
-        }
-        await settle(900);
+        for (const value of WALK_TAPS) await answerWith(page, tap(value));
         const state = await page.evaluate('document.getElementById("app").dataset.state');
         const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(walked()))));
-        await page.goto(server.url("/germany/eu-blue-card-shortage-occupation/"), 600);
+        await page.goto(server.url("/germany/eu-blue-card-shortage-occupation/"));
+        // Nothing thrown on the route page is read once it is at rest.
+        await page.waitUntilAtRest();
         const asks = JSON.parse(await page.evaluate(LINKS(`.asks a[href="${door.url}"]`))) as Link[];
         // The block that carries the door — the page draws one per unquoted rule.
         const asksText = await page.evaluate(

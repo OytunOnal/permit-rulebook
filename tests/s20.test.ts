@@ -7,6 +7,7 @@ import { resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
+import { answerWith, evaluateAtRest, openAtRest, type BrowserPage } from "./browser-walk.js";
 
 /**
  * s20 — the correction lands on the question and returns to the verdict.
@@ -99,14 +100,6 @@ if (skipped)
     "",
   ].join(String.fromCharCode(10)));
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
-
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 /**
  * Where the reader is, read the way a reader would read it: the card's top
  * edge against the viewport, and what holds the focus. The first control is
@@ -181,15 +174,13 @@ const ANSWER_ANOTHER_BAND = `(() => {
 })()`;
 
 async function correction(page: BrowserPage, origin: (p: string) => string) {
-  await page.goto(origin("/404.html"), 300);
+  await page.goto(origin("/404.html"));
   await page.evaluate(seed(finished));
-  await page.goto(origin("/"), 1600);
+  await openAtRest(page, origin("/"));
   const result = JSON.parse(await page.evaluate(WHERE)) as Where;
-  await page.evaluate(TAP_SALARY);
-  await settle(900);
+  await evaluateAtRest(page, TAP_SALARY);
   const onQuestion = JSON.parse(await page.evaluate(WHERE)) as Where;
-  await page.evaluate(ANSWER_ANOTHER_BAND);
-  await settle(900);
+  await answerWith(page, ANSWER_ANOTHER_BAND);
   const back = JSON.parse(await page.evaluate(WHERE)) as Where;
   return { result, onQuestion, back, problems: page.problems() };
 }
@@ -245,16 +236,15 @@ describe.skipIf(skipped !== null)("every answer moves the focus to the next ques
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/404.html"), 300);
+        await page.goto(server.url("/404.html"));
         await page.evaluate(seed(null));
-        await page.goto(server.url("/"), 1200);
+        await openAtRest(page, server.url("/"));
         const steps: Where[] = [JSON.parse(await page.evaluate(WHERE))];
         for (let i = 0; i < 3; i++) {
           // A choice: its first button. The country search does not come this
           // early on any path, and the focus rule for it is v0.7's (the caret in
           // the box, its text selected).
-          await page.evaluate('document.querySelector("#main .qcard .opt").click()');
-          await settle(700);
+          await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
           steps.push(JSON.parse(await page.evaluate(WHERE)));
         }
         return { steps, problems: page.problems() };
@@ -278,18 +268,16 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/404.html"), 300);
+        await page.goto(server.url("/404.html"));
         await page.evaluate(seed(halfDone));
-        await page.goto(server.url("/"), 1200);
+        await openAtRest(page, server.url("/"));
         const resumed = JSON.parse(await page.evaluate(WHERE)) as Where;
         // One answer on: the line was for the arrival, not for the screen after it.
-        await page.evaluate('document.querySelector("#main .qcard .opt").click()');
-        await settle(700);
+        await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
         const next = JSON.parse(await page.evaluate(WHERE)) as Where;
         // Start over from the resumed line: the same control the panel carries.
-        await page.goto(server.url("/"), 1200);
-        await page.evaluate('document.querySelector("#main .resumed #restart").click()');
-        await settle(700);
+        await openAtRest(page, server.url("/"));
+        await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
         const restarted = JSON.parse(await page.evaluate(WHERE)) as Where;
         const stored = await page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
         return { resumed, next, restarted, stored, problems: page.problems() };
@@ -328,9 +316,9 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"), 300);
+          await page.goto(server.url("/404.html"));
           await page.evaluate(seed(record));
-          await page.goto(server.url("/"), 1200);
+          await openAtRest(page, server.url("/"));
           return JSON.parse(await page.evaluate(WHERE)) as Where;
         }, { viewport: { width: 390, height: 844 }, mobile: true });
         expect(seen.state).toBe(state);

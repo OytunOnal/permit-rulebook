@@ -9,39 +9,39 @@
     "lines": 705
   },
   "tests/first-paint.test.ts": {
-    "lines": 751
+    "lines": 746
   },
   "tests/identity.test.ts": {
-    "lines": 824
+    "lines": 711
   },
   "tests/orientation.test.ts": {
-    "lines": 423
+    "lines": 421
   },
   "tests/record.test.ts": {
-    "lines": 412
+    "lines": 401
   },
   "tests/route-page.test.ts": {
     "lines": 709
   },
   "tests/s13.test.ts": {
-    "lines": 907
+    "lines": 901
   },
   "tests/s19.test.ts": {
-    "lines": 415
+    "lines": 410
   },
   "tests/s23.test.ts": {
-    "lines": 483
+    "lines": 476
   },
   "tests/s25.test.ts": {
-    "lines": 442
+    "lines": 430
   },
   "tests/s26.test.ts": {
-    "lines": 470
+    "lines": 451
   },
   "tests/s27.test.ts": {
-    "lines": 547
+    "lines": 526
   },
   "tests/s30.test.ts": {
-    "lines": 510
+    "lines": 484
   }
 }

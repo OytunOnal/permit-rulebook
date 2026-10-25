@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { STORAGE_KEY } from "../src/lib/record.js";
 import {
-  DESK, WATCH_SHIFTS, beatMsOf, openCold, settle, skipReason, waitOutTheBeat, warnNotWalked, withSite,
+  BEAT_MS, DESK, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
   type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
+import { shiftScoreSince } from "./layout-shifts.js";
 
 /**
  * #86 — a fast second click answers the next question.
@@ -16,9 +17,9 @@ import {
  * option or a row, Enter on a focused option, Enter in the search box — the
  * same with or without motion. The gestures are an answer, a correction (✎),
  * ← Back, Keep this answer and the browser's Back. The beat's length is the
- * token `--motion-beat`, read from the page here only to wait it out; no case
- * types it. The first paint has no beat, and neither has Start over, which
- * opens the interview as a cold load does.
+ * token `--motion-beat`, read from the page here only to wait it out or to
+ * time a click against it; no case types it. The first paint has no beat,
+ * and neither has Start over, which opens the interview as a cold load does.
  *
  * The clicks and keys are the platform's own, at a point of the viewport or on
  * the focused element, so whatever the new card has drawn under that point is
@@ -66,16 +67,24 @@ async function clickOn(page: BrowserPage, selector: string): Promise<void> {
   await page.clickAt(at.x, at.y);
 }
 
-/** The screen once a gesture has drawn a question other than `before`, read
- * the moment it is there: a history move draws on the browser's turn, not
- * the gesture's. */
-async function drawnAfter(page: BrowserPage, before: string): Promise<Where> {
-  for (let tries = 0; tries < 200; tries++) {
-    const now = await where(page);
-    if (now.question && now.question !== before) return now;
-    await settle(5);
-  }
-  throw new Error(`no question replaced "${before}"`);
+/** Waits until a gesture has drawn a question other than `before`, and
+ * returns the screen read the moment it is there: the page answers in the
+ * task that draws the card, and a history move draws on the browser's turn,
+ * not the gesture's. */
+async function waitUntilAnotherQuestionDrawn(page: BrowserPage, before: string): Promise<Where> {
+  const drawn = `new Promise((resolve) => {
+    const check = () => {
+      const label = document.querySelector("#main .qcard .qlabel");
+      const question = label ? (label.textContent || "").trim() : "";
+      if (!question || question === ${JSON.stringify(before)}) return;
+      watching.disconnect();
+      resolve(${WHERE});
+    };
+    const watching = new MutationObserver(check);
+    watching.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    check();
+  })`;
+  return JSON.parse(String(await page.waitUntil(drawn, `no question replaced "${before}"`))) as Where;
 }
 
 /** The first screen with nothing on the record, and its first option's centre. */
@@ -84,31 +93,83 @@ async function coldStart(site: PageOnSite): Promise<Point> {
   return pointOf(site.page, FIRST_OPTION);
 }
 
-/** Answers `count` questions with the first option each, a beat apart. */
+/** Answers `count` questions with the first option each, each after its
+ * card's beat: the card's own first option, which an asked-for line (#139)
+ * can draw lower than the last card's. */
 async function answerFirstOptions(page: BrowserPage, count: number): Promise<Where> {
   for (let i = 0; i < count; i++) {
+    await waitUntilPastTheBeat(page);
     await clickOn(page, FIRST_OPTION);
-    await waitOutTheBeat(page);
+    await page.waitUntilAtRest();
   }
   return where(page);
 }
 
-/** The first option clicked at once on the card a gesture drew, then again
- * after the beat, at the same point. */
-async function clicksAroundTheBeat(page: BrowserPage, before: string): Promise<{ drawn: Where; within: Where; after: Where }> {
-  const drawn = await drawnAfter(page, before);
-  const at = await pointOf(page, FIRST_OPTION);
-  await page.clickAt(at.x, at.y);
-  await waitOutTheBeat(page);
-  const within = await where(page);
-  await page.clickAt(at.x, at.y);
-  await waitOutTheBeat(page);
-  return { drawn, within, after: await where(page) };
+/** The walks a case takes for its press meant for inside the beat to land there:
+ * a press the machine delays past the beat says nothing of the guard, so the
+ * walk is taken again; late on every walk, the case says so. */
+const WALKS_FOR_A_PRESS_INSIDE = 3;
+
+/** Starts the page's clock on the reader's gestures: when each reaches the
+ * page, by its own time stamp, before a handler of the page's can begin a
+ * beat, and when each is done, after the page's handlers have judged it. */
+const CLOCK_THE_GESTURES = `(() => {
+  const clock = window.__gestures = { reached: [], done: [] };
+  for (const type of ["click", "keydown", "popstate"]) {
+    addEventListener(type, (e) => clock.reached.push(e.timeStamp), true);
+    addEventListener(type, () => clock.done.push(performance.now()));
+  }
+  return "clocking";
+})()`;
+
+interface SpanAndBeat { spanMs: number; beatMs: number }
+
+/** On the page's clock, from the first gesture clocked reaching the page to the
+ * last done, beside the beat the page declares: a span shorter than the beat
+ * puts the last press inside it. */
+const readSpanAndBeat = async (page: BrowserPage): Promise<SpanAndBeat> => JSON.parse(await page.evaluate(`JSON.stringify((() => {
+  const { reached, done } = window.__gestures;
+  return { spanMs: done[done.length - 1] - reached[0], beatMs: ${BEAT_MS} };
+})())`)) as SpanAndBeat;
+
+const pressFirstOption = (page: BrowserPage) => clickOn(page, FIRST_OPTION);
+
+interface AroundTheBeat<T> extends SpanAndBeat { walked: T; drawn: Where; within: Where; after: Where; problems: string[] }
+
+type Step<T> = (page: BrowserPage) => Promise<T>;
+interface Walk<T> { walkUp: Step<T>; gesture: Step<void>; press?: Step<void> }
+
+/**
+ * From a cold start, `walkUp`, then `gesture`, then `press` on the card the
+ * gesture drew at once, and again after the beat, as a reader does; walked
+ * again while the press meant for inside the beat came after it.
+ */
+async function pressedAroundTheBeat<T>(site: PageOnSite, { walkUp, gesture, press = pressFirstOption }: Walk<T>): Promise<AroundTheBeat<T>> {
+  const { page } = site;
+  for (let walk = 1; ; walk++) {
+    await coldStart(site);
+    const walked = await walkUp(page);
+    const before = (await where(page)).question;
+    await page.evaluate(CLOCK_THE_GESTURES);
+    await gesture(page);
+    const drawn = await waitUntilAnotherQuestionDrawn(page, before);
+    await press(page);
+    await page.waitUntilAtRest();
+    const within = await where(page);
+    const timed = await readSpanAndBeat(page);
+    if (timed.spanMs >= timed.beatMs && walk < WALKS_FOR_A_PRESS_INSIDE) continue;
+    await waitUntilPastTheBeat(page);
+    await press(page);
+    await page.waitUntilAtRest();
+    return { ...timed, walked, drawn, within, after: await where(page), problems: page.problems() };
+  }
 }
 
-/** What a gesture's beat must hold: the click inside it answers nothing,
- * and the click after it answers. */
-function expectTheBeatHeld(seen: { drawn: Where; within: Where; after: Where }): void {
+/** What a gesture's beat must hold: the press inside it answers nothing,
+ * and the press after it answers. */
+function expectTheBeatHeld(seen: AroundTheBeat<unknown>): void {
+  expect(seen.problems).toEqual([]);
+  expect(seen.spanMs, "the press meant for inside the beat came after it").toBeLessThan(seen.beatMs);
   expect(seen.within.question, "a click inside the beat answered the card the gesture drew").toBe(seen.drawn.question);
   expect(seen.within.answers).toBe(seen.drawn.answers);
   expect(seen.after.question, "the guard did not lift after the beat").not.toBe(seen.drawn.question);
@@ -128,33 +189,35 @@ const optionUnder = (at: Point) => `(() => {
   return opt ? opt.dataset.value : "";
 })()`;
 
-interface DoubleClick { cold: Where; drawn: Where; under: string; elapsedMs: number; beatMs: number; after: Where }
+interface DoubleClick extends SpanAndBeat { cold: Where; drawn: Where; under: string; after: Where }
 
 /**
  * Two clicks at one point of a cold card, the second on the card the first
  * one draws, before its beat is out. The point is the first option's centre
  * that lands on an option of that card: an asked-for line (#139) can set its
  * options lower, and a second click on its padding answers nothing with or
- * without a guard. Null when no option's centre does.
+ * without a guard. Null when no option's centre does. Walked again at the
+ * same point while the second click came after the beat.
  */
 async function doubleClickOnAnOption(site: PageOnSite): Promise<DoubleClick | null> {
   const { page } = site;
-  for (let i = 0; ; i++) {
-    await coldStart(site);
-    const at = (JSON.parse(await page.evaluate(OPTION_CENTRES)) as Point[])[i];
-    if (!at) return null;
-    const cold = await where(page);
-    const beatMs = await beatMsOf(page);
-    const start = performance.now();
-    await page.clickAt(at.x, at.y);
-    const drawn = await drawnAfter(page, cold.question);
-    const under = await page.evaluate(optionUnder(at));
-    if (!under) continue;
-    await page.clickAt(at.x, at.y);
-    const elapsedMs = performance.now() - start;
-    await waitOutTheBeat(page);
-    return { cold, drawn, under, elapsedMs, beatMs, after: await where(page) };
-  }
+  for (let i = 0; ; i++)
+    for (let walk = 1; ; walk++) {
+      await coldStart(site);
+      const at = (JSON.parse(await page.evaluate(OPTION_CENTRES)) as Point[])[i];
+      if (!at) return null;
+      const cold = await where(page);
+      await page.evaluate(CLOCK_THE_GESTURES);
+      await page.clickAt(at.x, at.y);
+      const drawn = await waitUntilAnotherQuestionDrawn(page, cold.question);
+      const under = await page.evaluate(optionUnder(at));
+      if (!under) break;
+      await page.clickAt(at.x, at.y);
+      await page.waitUntilAtRest();
+      const timed = await readSpanAndBeat(page);
+      if (timed.spanMs >= timed.beatMs && walk < WALKS_FOR_A_PRESS_INSIDE) continue;
+      return { ...timed, cold, drawn, under, after: await where(page) };
+    }
 }
 
 describe.skipIf(skipped !== null)("a question card a gesture draws takes no click for a beat (#86)", () => {
@@ -164,10 +227,10 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
     }), DESK) as { twice: DoubleClick | null; problems: string[] };
     expect(seen.problems).toEqual([]);
     expect(seen.twice, "no option's centre lands on an option of the card its click draws").not.toBeNull();
-    const { cold, drawn, under, elapsedMs, beatMs, after } = seen.twice!;
+    const { cold, drawn, under, spanMs, beatMs, after } = seen.twice!;
     expect(drawn.answers, "the first click did not answer").toBe(1);
     expect(under, "the second click's point is on no option of the drawn card").not.toBe("");
-    expect(elapsedMs, "the second click came after the beat").toBeLessThan(beatMs);
+    expect(spanMs, "the second click came after the beat").toBeLessThan(beatMs);
     expect(after.answers, "the second click answered the question it landed on").toBe(1);
     expect(after.question).not.toBe(cold.question);
   }, 120000);
@@ -175,15 +238,9 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
   it("a click after the beat answers", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
-      const at = await coldStart(site);
-      await page.clickAt(at.x, at.y);
-      await waitOutTheBeat(page);
-      const first = await where(page);
-      // On the new card's own first option: an asked-for line (#139) can
-      // draw it lower than the last card's.
-      await clickOn(page, FIRST_OPTION);
-      await waitOutTheBeat(page);
-      return { first, second: await where(page), problems: page.problems() };
+      await coldStart(site);
+      const first = await answerFirstOptions(page, 1);
+      return { first, second: await answerFirstOptions(page, 1), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
     expect(seen.first.answers).toBe(1);
@@ -196,11 +253,12 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       const { page } = site;
       const at = await coldStart(site);
       await page.clickAt(at.x, at.y);
-      await waitOutTheBeat(page);
+      await page.waitUntilAtRest();
+      await waitUntilPastTheBeat(page);
       const ready = await where(page);
       await page.pressEnter();
       await page.pressEnter();
-      await waitOutTheBeat(page);
+      await page.waitUntilAtRest();
       return { ready, after: await where(page), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
@@ -210,70 +268,52 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
   }, 120000);
 
   it("Enter in the search box ← Back has drawn commits nothing within the beat, and commits after it", async () => {
-    const seen = await withSite(async (site) => {
-      const { page } = site;
-      await coldStart(site);
-      let now = await where(page);
-      for (let i = 0; i < 10 && !now.search; i++) now = await answerFirstOptions(page, 1);
-      const search = now;
-      await page.type("a");
-      await page.pressEnter();
-      await waitOutTheBeat(page);
-      const past = await where(page);
-      await clickOn(page, "#back");
-      const drawn = await drawnAfter(page, past.question);
-      await page.pressEnter();
-      await waitOutTheBeat(page);
-      const within = await where(page);
-      await page.pressEnter();
-      await waitOutTheBeat(page);
-      return { search, past, drawn, within, after: await where(page), problems: page.problems() };
-    }, DESK);
+    const seen = await withSite((site) => pressedAroundTheBeat(site, {
+      walkUp: async (page) => {
+        let now = await where(page);
+        for (let i = 0; i < 10 && !now.search; i++) now = await answerFirstOptions(page, 1);
+        await waitUntilPastTheBeat(page);
+        await page.type("a");
+        await page.pressEnter();
+        await page.waitUntilAtRest();
+        return { search: now, past: await where(page) };
+      },
+      gesture: (page) => clickOn(page, "#back"),
+      press: (page) => page.pressEnter(),
+    }), DESK);
     expect(seen.problems).toEqual([]);
-    expect(seen.search.search, "the walk never reached the search").toBe(true);
-    expect(seen.past.question, "Enter in the search did not commit").not.toBe(seen.search.question);
+    expect(seen.walked.search.search, "the walk never reached the search").toBe(true);
+    expect(seen.walked.past.question, "Enter in the search did not commit").not.toBe(seen.walked.search.question);
     expect(seen.drawn.search, "← Back did not draw the search").toBe(true);
+    expect(seen.spanMs, "the Enter meant for inside the beat came after it").toBeLessThan(seen.beatMs);
     expect(seen.within.question, "Enter inside the beat committed the search's row").toBe(seen.drawn.question);
     expect(seen.after.question, "Enter after the beat did not commit").not.toBe(seen.drawn.question);
   }, 120000);
 
+  /** Two questions answered: a card with a Back, and an answer to correct. */
+  const answerTwoQuestions = (page: BrowserPage) => answerFirstOptions(page, 2);
+
   it("← Back draws its card with a beat", async () => {
-    const seen = await withSite(async (site) => {
-      const { page } = site;
-      await coldStart(site);
-      const now = await answerFirstOptions(page, 2);
-      await clickOn(page, "#back");
-      return { ...(await clicksAroundTheBeat(page, now.question)), problems: page.problems() };
-    }, DESK);
-    expect(seen.problems).toEqual([]);
-    expectTheBeatHeld(seen);
+    expectTheBeatHeld(await withSite((site) => pressedAroundTheBeat(site, {
+      walkUp: answerTwoQuestions, gesture: (page) => clickOn(page, "#back"),
+    }), DESK));
   }, 120000);
 
   it("✎, a correction, draws its card with a beat", async () => {
-    const seen = await withSite(async (site) => {
-      const { page } = site;
-      await coldStart(site);
-      const now = await answerFirstOptions(page, 2);
-      await clickOn(page, "[data-field]");
-      return { ...(await clicksAroundTheBeat(page, now.question)), problems: page.problems() };
-    }, DESK);
-    expect(seen.problems).toEqual([]);
-    expectTheBeatHeld(seen);
+    expectTheBeatHeld(await withSite((site) => pressedAroundTheBeat(site, {
+      walkUp: answerTwoQuestions, gesture: (page) => clickOn(page, "[data-field]"),
+    }), DESK));
   }, 120000);
 
   it("Keep this answer draws its card with a beat", async () => {
-    const seen = await withSite(async (site) => {
-      const { page } = site;
-      await coldStart(site);
-      await answerFirstOptions(page, 2);
-      await clickOn(page, "[data-field]");
-      await waitOutTheBeat(page);
-      const editing = await where(page);
-      await clickOn(page, "#done");
-      return { ...(await clicksAroundTheBeat(page, editing.question)), problems: page.problems() };
-    }, DESK);
-    expect(seen.problems).toEqual([]);
-    expectTheBeatHeld(seen);
+    expectTheBeatHeld(await withSite((site) => pressedAroundTheBeat(site, {
+      walkUp: async (page) => {
+        await answerTwoQuestions(page);
+        await clickOn(page, "[data-field]");
+        await page.waitUntilAtRest();
+      },
+      gesture: (page) => clickOn(page, "#done"),
+    }), DESK));
   }, 120000);
 
   it("Start over draws its card with no beat: a click at once answers", async () => {
@@ -282,12 +322,12 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       await coldStart(site);
       await answerFirstOptions(page, 2);
       // The resumed line carries "Start over" while a question is on the table.
-      await page.goto(site.url("/"), 1200);
+      await page.goto(site.url("/"));
       const resumed = await where(page);
       await clickOn(page, "#restart");
-      const drawn = await drawnAfter(page, resumed.question);
+      const drawn = await waitUntilAnotherQuestionDrawn(page, resumed.question);
       await clickOn(page, FIRST_OPTION);
-      await settle(100);
+      await page.waitUntilAtRest();
       return { drawn, after: await where(page), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
@@ -296,15 +336,9 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
   }, 120000);
 
   it("the browser's Back draws its card with a beat", async () => {
-    const seen = await withSite(async (site) => {
-      const { page } = site;
-      await coldStart(site);
-      const now = await answerFirstOptions(page, 2);
-      await page.back();
-      return { ...(await clicksAroundTheBeat(page, now.question)), problems: page.problems() };
-    }, DESK);
-    expect(seen.problems).toEqual([]);
-    expectTheBeatHeld(seen);
+    expectTheBeatHeld(await withSite((site) => pressedAroundTheBeat(site, {
+      walkUp: answerTwoQuestions, gesture: (page) => page.back(),
+    }), DESK));
   }, 120000);
 
   it("after an answer the focus is on the new card's first option, zero Tabs away", async () => {
@@ -312,7 +346,7 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       const { page } = site;
       const at = await coldStart(site);
       await page.clickAt(at.x, at.y);
-      await waitOutTheBeat(page);
+      await page.waitUntilAtRest();
       return { after: await where(page), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
@@ -329,7 +363,7 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       await page.clickAt(at.x, at.y);
       const drawn = await where(page);
       await page.clickAt(at.x, at.y);
-      await waitOutTheBeat(page);
+      await page.waitUntilAtRest();
       return { reduced, drawn, after: await where(page), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
@@ -341,15 +375,9 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
   it("nothing on the page shifts across an answer: CLS stays 0", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
-      const at = await coldStart(site);
-      await page.evaluate(WATCH_SHIFTS);
-      await page.clickAt(at.x, at.y);
-      await waitOutTheBeat(page);
-      // The new card's own first option: an asked-for line (#139) can draw
-      // it lower than the last card's.
-      await clickOn(page, FIRST_OPTION);
-      await waitOutTheBeat(page);
-      return { cls: Number(await page.evaluate("window.__cls")), after: await where(page), problems: page.problems() };
+      await coldStart(site);
+      await answerFirstOptions(page, 2);
+      return { cls: await shiftScoreSince(page), after: await where(page), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
     expect(seen.after.answers).toBe(2);

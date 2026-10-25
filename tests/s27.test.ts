@@ -21,6 +21,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
+import { answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -191,23 +192,10 @@ describe("2 — the four-country result's sections, from the verdict", () => {
  * The browser: the four slips a stylesheet decides are measured on the built
  * site at the phone and the desktop the critique named.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write(`\n  !! THE S27 SLIPS WERE NOT MEASURED IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
-
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
+const skipped = skipReason();
+if (skipped) warnNotWalked("THE S27 SLIPS", skipped);
 
 const VIEWPORTS = [
   ["390x844", { width: 390, height: 844 }, true],
@@ -219,7 +207,6 @@ const seed = (answers: Record<string, string>) =>
     version: RECORD_VERSION, answers, history: Object.keys(answers),
   }))})`;
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const BUTTON = '(() => { const b = document.querySelector(".menu"); return JSON.stringify({ text: b.textContent.trim(), expanded: b.getAttribute("aria-expanded") }); })()';
 
@@ -264,21 +251,15 @@ function tallyPlaceOf(s: Section): string {
 
 /** The four-country walk s26 seeds, to the result where every section is drawn: France leads, the other three closed. */
 const walkToFour = async (page: BrowserPage, base: string): Promise<void> => {
-  await page.goto(base, 300);
+  await page.goto(base);
   await page.evaluate(seed({ destination: "all", situation: "research" }));
-  await page.goto(base, 900);
-  await page.evaluate(tap("fr"));
-  await settle(400);
-  await page.evaluate(tap("none"));
-  await settle(400);
-  await page.evaluate('(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
-  await settle(300);
-  await page.evaluate('document.querySelector(".clist [role=option]").click()');
-  await settle(400);
-  await page.evaluate(tap("no"));
-  await settle(400);
-  await page.evaluate(tap("no"));
-  await settle(900);
+  await openAtRest(page, base);
+  await answerWith(page, tap("fr"));
+  await answerWith(page, tap("none"));
+  await evaluateAtRest(page, '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
+  await answerWith(page, 'document.querySelector(".clist [role=option]").click()');
+  await answerWith(page, tap("no"));
+  await answerWith(page, tap("no"));
 };
 
 /**
@@ -344,7 +325,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/germany/"), 500);
+          await page.goto(server.url("/germany/"));
           const closed = JSON.parse(await page.evaluate(BUTTON));
           await page.evaluate('document.querySelector(".menu").click()');
           const open = JSON.parse(await page.evaluate(BUTTON));
@@ -372,8 +353,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
           await walkToFour(page, server.url("/"));
           const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALKED_TO_FOUR))));
           const asDrawn = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
-          await page.evaluate('document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
-          await settle(200);
+          await evaluateAtRest(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
           const toggled = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
           return { painted, asDrawn, toggled, problems: page.problems() };
         }, { viewport, mobile }) as {
@@ -413,7 +393,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
       const server = await serve(dist);
       try {
         const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"), 400);
+          await page.goto(server.url("/404.html"));
           return page.evaluate(`JSON.stringify((() => {
             const section = document.querySelector("section.cta");
             const label = document.getElementById(section.getAttribute("aria-labelledby"));
@@ -438,11 +418,11 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url(EXPERIENCED), 400);
+          await page.goto(server.url(EXPERIENCED));
           const route = JSON.parse(await page.evaluate(HEADER)) as Header;
           const routeProblems = page.problems();
           // The country page keeps the em: the type the tagline must match.
-          await page.goto(server.url("/germany/"), 400);
+          await page.goto(server.url("/germany/"));
           const country = JSON.parse(await page.evaluate(HEADER)) as Header;
           return { route, country, problems: [...routeProblems, ...page.problems()] };
         }, { viewport, mobile }) as { route: Header; country: Header; problems: string[] };
@@ -466,9 +446,8 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
     try {
       const rows = ledgerRows();
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 900);
-        await page.evaluate(`document.getElementById("decl-list").innerHTML = ${JSON.stringify(rows)}`);
-        await settle(200);
+        await openAtRest(page, server.url("/"));
+        await evaluateAtRest(page, `document.getElementById("decl-list").innerHTML = ${JSON.stringify(rows)}`);
         return { pens: JSON.parse(await page.evaluate(PENS)) as Pen[], problems: page.problems() };
       }, { viewport: { width: 1280, height: 900 }, mobile: false }) as { pens: Pen[]; problems: string[] };
       expect(seen.problems).toEqual([]);
@@ -492,9 +471,9 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/"), 300);
+          await page.goto(server.url("/"));
           await page.evaluate(seed(OPENED as Record<string, string>));
-          await page.goto(server.url("/"), 1400);
+          await openAtRest(page, server.url("/"));
           const door = JSON.parse(await page.evaluate(`JSON.stringify((() => {
             const scoped = document.querySelector(".route .scoped");
             const door = scoped.querySelector(".door");

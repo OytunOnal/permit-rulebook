@@ -15,6 +15,7 @@ import { url } from "../src/lib/site.js";
 import type { CountrySection, Tally, Verdict, VerdictGroup } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, cardsIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { expectNothingLeft, type Sent } from "./wire.js";
+import { PICK_TURKEY, answerWith, type BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -355,21 +356,12 @@ const skipped = why();
 if (skipped)
   process.stderr.write(`\n  !! THE S26 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-  requests(): Sent[];
-  forgetRequests(): void;
-}
-
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
     version: RECORD_VERSION, answers, history: Object.keys(answers),
   }))})`;
 
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 interface Result {
   state: string; status: string; problems: string[];
@@ -408,24 +400,13 @@ interface Walk {
  * each, to the results the reader's whole record composes. */
 const walkFrom = async (page: BrowserPage, base: string, walk: Walk): Promise<Result> => {
   const { taps, reader } = walk;
-  await page.goto(base, 300);
+  await page.goto(base);
   await page.evaluate(seed({ destination: "all", situation: "research" }));
   // The walk's own requests: from the load that draws question 3 on.
   page.forgetRequests();
-  await page.goto(base, 900);
-  await page.evaluate(tap("fr"));
-  await settle(400);
-  for (const value of taps) {
-    if (value === "TR") {
-      await page.evaluate('(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
-      await settle(300);
-      await page.evaluate('document.querySelector(".clist [role=option]").click()');
-    } else {
-      await page.evaluate(tap(value));
-    }
-    await settle(400);
-  }
-  await settle(900);
+  await page.goto(base);
+  for (const value of ["fr", ...taps]) await answerWith(page, value === "TR" ? PICK_TURKEY : tap(value));
+  // The last answer left the page at rest: what it sent has been sent.
   return readResult(page, verdictFor(reader));
 };
 

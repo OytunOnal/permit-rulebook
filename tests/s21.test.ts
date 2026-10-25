@@ -14,6 +14,7 @@ import { routesNeed, unscoredHeadline, unscoredTallyLine } from "../src/lib/copy
 import { url } from "../src/lib/site.js";
 import { verdictHtml, type Tally } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictOn } from "./verdict-cards.js";
+import { PICK_TURKEY, answerWith, type BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -265,12 +266,6 @@ const skipped = why();
 if (skipped)
   process.stderr.write(`\n  !! THE S21 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
-
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
     version: RECORD_VERSION, answers, history: Object.keys(answers),
@@ -288,7 +283,6 @@ const DESCRIBED = 'JSON.stringify([...document.querySelectorAll(".qcard .opt")].
 const LINK_GLYPHS = 'JSON.stringify([...document.querySelectorAll(".country-sec .tally a")]'
   + '.map((a) => getComputedStyle(a, "::after").content))';
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 describe.skipIf(skipped !== null)("s21 — in the browser", () => {
   it("question 3 is never in the cold HTML; the mark is drawn from the two answers before it", () => {
@@ -302,9 +296,11 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         await page.evaluate(seed({ destination: "all", situation: "research" }));
-        await page.goto(server.url("/"), 900);
+        await page.goto(server.url("/"));
+        // Nothing thrown is read once the page is at rest.
+        await page.waitUntilAtRest();
         const q3 = {
           question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
           marks: JSON.parse(await page.evaluate(MARKS)),
@@ -315,19 +311,12 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
         // contradicts nothing: no qualification, a Turkish passport, no Dutch
         // graduation, no top-200 degree. Seven answers; nothing open, as the
         // critique's walk ended, with the France line now saying why.
-        await page.evaluate(tap("fr"));
-        await settle(400);
+        await answerWith(page, tap("fr"));
         const q4 = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
-        await page.evaluate(tap("none"));
-        await settle(400);
-        await page.evaluate('(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
-        await settle(300);
-        await page.evaluate('document.querySelector(".clist [role=option]").click()');
-        await settle(400);
-        await page.evaluate(tap("no"));
-        await settle(400);
-        await page.evaluate(tap("no"));
-        await settle(900);
+        await answerWith(page, tap("none"));
+        await answerWith(page, PICK_TURKEY);
+        await answerWith(page, tap("no"));
+        await answerWith(page, tap("no"));
         const result = {
           state: await page.evaluate('document.getElementById("app").dataset.state'),
           glyphs: JSON.parse(await page.evaluate(LINK_GLYPHS)),

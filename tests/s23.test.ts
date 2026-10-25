@@ -21,6 +21,7 @@ import { routeAddresses } from "../src/lib/slug.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, hintsIn, paintedAsComposedScript, placed, stepsIn, verdictFor,
 } from "./verdict-cards.js";
+import type { BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -444,12 +445,6 @@ const skipped = why();
 if (skipped)
   process.stderr.write(`\n  !! s23's screen was not walked: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
-
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
     version: RECORD_VERSION, answers, history: Object.keys(answers),
@@ -460,9 +455,9 @@ describe.skipIf(skipped !== null)("the result screen, as drawn", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         await page.evaluate(seed(PRIYA as Record<string, string>));
-        await page.goto(server.url("/"), 1600);
+        await page.goto(server.url("/"));
         return {
           state: await page.evaluate('document.querySelector("#app").dataset.state'),
           painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(PRIYA)))),

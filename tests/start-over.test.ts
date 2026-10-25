@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import {
-  DESK, PHONE, fieldOnScreen, settle, skipReason, tapOn, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+  DESK, PHONE, fieldOnScreen, openAtRest, skipReason, tapOn, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 
 /**
@@ -51,23 +51,19 @@ interface Where {
 
 const where = async (page: BrowserPage): Promise<Where> => JSON.parse(await page.evaluate(WHERE)) as Where;
 
-/** The page once Start over has drawn a question and the scroll has come to rest, smooth or not. */
+/** The page once Start over has drawn a question and the page is at rest, its scroll smooth or not. */
 async function settledAfterStartOver(page: BrowserPage): Promise<Where> {
-  let last = await where(page);
-  for (let tries = 0; tries < 40; tries++) {
-    await settle(100);
-    const now = await where(page);
-    if (now.state === "questions" && now.scrollY === last.scrollY) return now;
-    last = now;
-  }
-  throw new Error(`Start over did not come to rest: ${JSON.stringify(last)}`);
+  await page.waitUntilAtRest();
+  const now = await where(page);
+  if (now.state !== "questions") throw new Error(`Start over drew no question: ${JSON.stringify(now)}`);
+  return now;
 }
 
 /** A kept finished record opened at `path`: the verdict, the first screen of a return. */
 async function openOnKeptVerdict({ page, url }: PageOnSite, path: string): Promise<Where> {
-  await page.goto(url("/404.html"), 300);
+  await page.goto(url("/404.html"));
   await page.evaluate(SEED_FINISHED);
-  await page.goto(url(path), 1200);
+  await openAtRest(page, url(path));
   return where(page);
 }
 
@@ -87,7 +83,7 @@ describe.skipIf(skipped !== null)("Start over lands at the page's top (P8/P9)", 
       const seen = await withSite(async (site) => {
         const verdict = await openOnKeptVerdict(site, "/");
         const focused = await site.page.evaluate(PRESS_START_OVER_FROM_THE_FOOT);
-        await settle(300);
+        await site.page.waitUntilAtRest();
         const atFoot = await where(site.page);
         await site.page.pressEnter();
         return { verdict, focused, atFoot, after: await settledAfterStartOver(site.page), problems: site.page.problems() };
@@ -128,7 +124,7 @@ describe.skipIf(skipped !== null)("a kept verdict at a country's address, and St
       await openOnKeptVerdict(site, "/?country=de");
       await tapOn(site.page, "#restart");
       const restarted = await settledAfterStartOver(site.page);
-      await site.page.goto(site.url("/"), 1200);
+      await openAtRest(site.page, site.url("/"));
       const nextReader = await where(site.page);
       return { restarted, nextReader, field: await fieldOnScreen(site.page), problems: site.page.problems() };
     }, DESK);

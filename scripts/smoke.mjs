@@ -126,7 +126,8 @@ async function walk(target, surface) {
   return withBrowser(async (page) => {
     const results = [];
     for (const check of CHECKS) {
-      await page.goto(target.url(check.path), 900);
+      await page.goto(target.url(check.path));
+      await page.waitUntilAtRest();
       let value = {};
       let unreadable = [];
       try {

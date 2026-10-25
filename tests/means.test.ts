@@ -6,6 +6,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { optionMeans, type Dataset, type Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, stepsIn, verdictFor } from "./verdict-cards.js";
+import type { BrowserPage } from "./browser-walk.js";
 
 /**
  * The human's walk, 2026-09-08.
@@ -127,11 +128,6 @@ if (skipped)
     "",
   ].join("\n"));
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
-
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
     version: RECORD_VERSION, answers, history: Object.keys(answers),
@@ -143,9 +139,9 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         // 1. The situation question, with the destination already declared.
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         await page.evaluate(seed({ destination: "nl" }));
-        await page.goto(server.url("/"), 900);
+        await page.goto(server.url("/"));
         const question = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
         const options = JSON.parse(await page.evaluate(
           'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
@@ -156,7 +152,7 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
         // 2. The results the walk reached: the verdict whose step the case
         // above reads, as painted.
         await page.evaluate(seed(WALK));
-        await page.goto(server.url("/"), 1400);
+        await page.goto(server.url("/"));
         const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALK))));
         return { question, options, painted };
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {

@@ -4,6 +4,7 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import type { Sent } from "./wire.js";
 
 /**
  * The interview walked in headless Chrome over the built page: what the
@@ -39,15 +40,31 @@ export function warnNotWalked(what: string, reason: string): void {
 
 /** The page `scripts/browser.mjs` hands a walk. */
 export interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
+  /** Navigates and returns once the new document has drawn. */
+  goto(url: string): Promise<void>;
+  /** Navigates and returns at once, for a read before the page's script runs. */
+  navigate(url: string): Promise<void>;
   evaluate(expression: string): Promise<string>;
+  /** Reads `condition` in the page until it holds, and returns its value. */
+  waitUntil(condition: string, what: string): Promise<unknown>;
+  /** Returns once nothing animates, scrolls or loads. */
+  waitUntilAtRest(): Promise<void>;
+  /** After a gesture that loads a document: once a document other than the one left has drawn. */
+  waitUntilNewDocumentDrawn(): Promise<void>;
   emulateMedia(features: { name: string; value: string }[]): Promise<void>;
   clickAt(x: number, y: number): Promise<void>;
   pressEnter(): Promise<void>;
   type(text: string): Promise<void>;
   back(): Promise<void>;
   forward(): Promise<void>;
+  /** What this tab has thrown or logged as an error since its last navigation. */
   problems(): string[];
+  /** Every request the page made, when the browser was asked to watch. */
+  requests(): Sent[];
+  forgetRequests(): void;
+  /** A second tab on the same browser: the same origin's storage, a history of its own. */
+  openTab(): Promise<BrowserPage>;
+  front(): Promise<void>;
 }
 
 /** A browser page and the address of the site it is on, which every walk
@@ -72,26 +89,46 @@ export const DESK = { viewport: { width: 1280, height: 900 }, mobile: false };
 /** A phone. */
 export const PHONE = { viewport: { width: 390, height: 844 }, mobile: true };
 
-export const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 /** The beat in milliseconds, as the built stylesheet carries it, in either
  * unit (`tokens.css` says why). */
-const BEAT_MS = `(() => {
+export const BEAT_MS = `(() => {
   const value = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
   return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
 })()`;
 
-/** The beat's length in milliseconds. A page without the token fails here
- * rather than waiting nothing. */
-export async function beatMsOf(page: BrowserPage): Promise<number> {
-  const ms = Number(await page.evaluate(BEAT_MS));
-  if (!(ms > 0)) throw new Error("the page declares no --motion-beat");
-  return ms;
+/**
+ * Returns once the beat of the card on the screen is over, by the page's own
+ * clock: the moment this read sees the card, plus the page's beat. A card
+ * shows only once it is drawn, and its beat begins as it is drawn. A page
+ * without the beat's token fails here rather than waiting nothing.
+ */
+export async function waitUntilPastTheBeat(page: Pick<BrowserPage, "evaluate" | "waitUntil">): Promise<void> {
+  const seenAt = Number(await page.evaluate("performance.now()"));
+  const beatMs = Number(await page.evaluate(BEAT_MS));
+  if (!(beatMs > 0)) throw new Error("the page declares no --motion-beat");
+  await page.waitUntil(`performance.now() >= ${seenAt + beatMs}`, "the page's clock never passed the beat");
 }
 
-/** Past the beat, with room for a frame or two. */
-export async function waitOutTheBeat(page: BrowserPage): Promise<void> {
-  await settle((await beatMsOf(page)) + 150);
+/** The page as a gesture and an answer drive it. */
+type GesturedPage = Pick<BrowserPage, "evaluate" | "waitUntil" | "waitUntilAtRest">;
+
+/** Opens `url` and returns once the page has drawn and come to rest. */
+export async function openAtRest(page: Pick<BrowserPage, "goto" | "waitUntilAtRest">, url: string): Promise<void> {
+  await page.goto(url);
+  await page.waitUntilAtRest();
+}
+
+/** Evaluates `expression`, a gesture that stays on the page, and returns its value once the page is at rest. */
+export async function evaluateAtRest(page: GesturedPage, expression: string): Promise<string> {
+  const value = await page.evaluate(expression);
+  await page.waitUntilAtRest();
+  return value;
+}
+
+/** An answer, tapped once the card's beat is over, returned once the page is at rest. */
+export async function answerWith(page: GesturedPage, expression: string): Promise<string> {
+  await waitUntilPastTheBeat(page);
+  return evaluateAtRest(page, expression);
 }
 
 /** The label of the question on the screen, or "" where none is. */
@@ -125,14 +162,41 @@ const pick = (value: string, searchFor: string) => `(() => {
   return "row";
 })()`;
 
-/** Answers the question on the screen with `value`, then waits out the beat
- * of the card it draws. */
-export async function answer(page: BrowserPage, field: string, value: string): Promise<void> {
-  const name = fieldOptions(ds, field).find((o) => o.value === value)?.label ?? value;
-  const how = await page.evaluate(pick(value, name));
-  if (how !== "opt" && how !== "row") throw new Error(`${field} = ${value}: ${how}`);
-  await waitOutTheBeat(page);
+/** The screen as a reader tells one from the next: which screen, and its question. */
+export const SCREEN_SHOWN = `${STATE} + " " + ${QLABEL}`;
+
+/**
+ * Runs `pickExpression` once, which says "opt" or "row" for what it tapped or
+ * why it tapped nothing: "moved" when the screen moved on, or why it did not.
+ * A pick that takes moves the screen in the same task, so a screen still where
+ * it was is a refused pick.
+ */
+const pickOnceAndSayWhetherMoved = (pickExpression: string) => `(() => {
+  const before = ${SCREEN_SHOWN};
+  const how = ${pickExpression};
+  if (how !== "opt" && how !== "row") return how;
+  return ${SCREEN_SHOWN} !== before ? "moved" : "the tap was refused after the beat";
+})()`;
+
+/** Answers the question on the screen by `pickExpression` once its beat is
+ * over, and returns once the screen has moved on and the page is at rest. A
+ * refused answer throws, named by `what`. */
+export async function answerOnce(page: GesturedPage, pickExpression: string, what: string): Promise<void> {
+  await waitUntilPastTheBeat(page);
+  const how = await page.evaluate(pickOnceAndSayWhetherMoved(pickExpression));
+  if (how !== "moved") throw new Error(`${what}: ${how}`);
+  await page.waitUntilAtRest();
 }
+
+/** Answers the question on the screen with `value` once its beat is over,
+ * and returns once the screen has moved on and the page is at rest. */
+export async function answer(page: GesturedPage, field: string, value: string): Promise<void> {
+  const name = fieldOptions(ds, field).find((o) => o.value === value)?.label ?? value;
+  await answerOnce(page, pick(value, name), `${field} = ${value}`);
+}
+
+/** "Turkey" typed into the passport search, as its `input` event commits it, and the first row it draws picked. */
+export const PICK_TURKEY = '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); document.querySelector(".clist [role=option]").click(); })()';
 
 /** The field of the question on the screen, from its label as the card draws
  * it: the first words on the card, glossed on the card's own memory (#156),
@@ -152,9 +216,9 @@ export const recordSeedScript = (answers: Profile, history: string[] = Object.ke
 
 /** The interview's first screen, with nothing on the record. */
 export async function openCold({ page, url }: PageOnSite): Promise<void> {
-  await page.goto(url("/404.html"), 300);
+  await page.goto(url("/404.html"));
   await page.evaluate("localStorage.clear()");
-  await page.goto(url("/"), 1200);
+  await page.goto(url("/"));
 }
 
 /**
@@ -191,12 +255,3 @@ export async function tapOn(page: BrowserPage, selector: string): Promise<void> 
   if (!at) throw new Error(`nothing on the page matches ${selector}`);
   await page.clickAt(at.x, at.y);
 }
-
-/** A layout-shift observer, counting what CLS counts, from the page's load. */
-export const WATCH_SHIFTS = `(() => {
-  window.__cls = 0;
-  new PerformanceObserver((l) => {
-    for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
-  }).observe({ type: "layout-shift", buffered: true });
-  return "watching";
-})()`;

@@ -5,8 +5,9 @@ import { EDIT_LINE } from "../src/lib/copy/interview.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import {
-  PHONE, WATCH_SHIFTS, settle, skipReason, tapOn, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+  PHONE, openAtRest, skipReason, tapOn, waitUntilPastTheBeat, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
+import { shiftScoreSince } from "./layout-shifts.js";
 
 /**
  * #137 — a change of country names the answers it set aside.
@@ -105,23 +106,20 @@ const screenOf = async (page: BrowserPage) => {
 };
 type Seen = Awaited<ReturnType<typeof screenOf>>;
 
-/** Run a gesture and wait for the screen it draws, then out the beat. */
-async function act(page: BrowserPage, gesture: string): Promise<Seen> {
-  const before = await screenOf(page);
-  await page.evaluate(gesture);
-  return screenAfter(page, before);
-}
-
-/** The screen once it differs from `before`, out of its beat. */
-async function screenAfter(page: BrowserPage, before: Seen): Promise<Seen> {
-  for (let waited = 0; waited < 5000; waited += 100) {
-    await settle(100);
-    const now = await screenOf(page);
-    if (now.state !== before.state || now.question !== before.question || now.meta !== before.meta) break;
-  }
-  await settle(700);
+/**
+ * Runs `make`, a gesture that draws a screen, once the beat of the card on the
+ * screen is over, and reads the screen it draws once the page is at rest: its
+ * beat's fade over, so what it shows is drawn as it stays.
+ */
+async function screenAfter(page: BrowserPage, make: () => Promise<unknown>): Promise<Seen> {
+  await waitUntilPastTheBeat(page);
+  await make();
+  await page.waitUntilAtRest();
   return screenOf(page);
 }
+
+/** Run a gesture written in the page and read the screen it draws. */
+const act = (page: BrowserPage, gesture: string): Promise<Seen> => screenAfter(page, () => page.evaluate(gesture));
 
 const PENCIL = (field: string) => `(() => {
   document.getElementById("decl").open = true;
@@ -133,10 +131,10 @@ const named = (fields: string[]) => fields.map((field) => ({ field, name: shortL
 
 /** Seed the walk's record and open on its verdict. */
 async function openOnVerdict({ page, url }: PageOnSite, walk: Walk): Promise<Seen> {
-  await page.goto(url("/404.html"), 300);
+  await page.goto(url("/404.html"));
   await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
     JSON.stringify(serialize(walk.answers, walk.order, true))})`);
-  await page.goto(url("/"), 1600);
+  await openAtRest(page, url("/"));
   return screenOf(page);
 }
 
@@ -168,11 +166,7 @@ const SUMMARY = `JSON.stringify((() => {
 interface Summary { collapsed: boolean; shown: { field: string; inSummary: boolean }[] }
 
 /** A tap that draws a screen, and the screen it draws, out of its beat. */
-async function tapToNext(page: BrowserPage, selector: string): Promise<Seen> {
-  const before = await screenOf(page);
-  await tapOn(page, selector);
-  return screenAfter(page, before);
-}
+const tapToNext = (page: BrowserPage, selector: string): Promise<Seen> => screenAfter(page, () => tapOn(page, selector));
 
 describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   it("France → Spain to a question: its panel names the French answers, the screen after does not", async () => {
@@ -247,15 +241,14 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
       const verdict = await openOnVerdict(site, TO_A_QUESTION);
-      await page.evaluate(WATCH_SHIFTS);
       await tapOn(page, "#decl > summary");
-      await settle(300);
+      await page.waitUntilAtRest();
       const editing = await tapToNext(page, '#decl-list [data-field="destination"]');
       const next = await tapToNext(page, "#main .qcard .opt[data-value='es']");
       const nextRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
       const after = await tapToNext(page, "#main .qcard .opt[data-value='yes']");
       const afterRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
-      const cls = Number(await page.evaluate("window.__cls"));
+      const cls = await shiftScoreSince(page);
       return { verdict, editing, next, nextRow, after, afterRow, cls, problems: page.problems() };
     }, PHONE) as {
       verdict: Seen; editing: Seen; next: Seen; nextRow: Summary; after: Seen; afterRow: Summary;

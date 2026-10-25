@@ -23,6 +23,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
+import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
 /**
@@ -469,11 +470,6 @@ if (skipped)
     "",
   ].join(String.fromCharCode(10)));
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
-
 /** What the results screen says about feedback, and what it carries. */
 const SAY = 'JSON.stringify((() => {'
   + ' const main = document.getElementById("main");'
@@ -494,9 +490,9 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page_: BrowserPage) => {
-          await page_.goto(server.url("/"), 500);
+          await page_.goto(server.url("/"));
           await page_.evaluate(seed(profile));
-          await page_.goto(server.url(arrival), 1600);
+          await openAtRest(page_, server.url(arrival));
           return {
             say: JSON.parse(await page_.evaluate(SAY)),
             // The record as the page restores it: replayed through the
@@ -528,11 +524,11 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await page_.goto(server.url("/"), 500);
+        await page_.goto(server.url("/"));
         await page_.evaluate(seed(frRecord));
-        await page_.goto(server.url("/?country=fr"), 1600);
+        await page_.goto(server.url("/?country=fr"));
         await page_.evaluate('document.querySelector(".say a").click()');
-        await new Promise((r) => setTimeout(r, 900));
+        await page_.waitUntilNewDocumentDrawn();
         return page_.evaluate(
           'JSON.stringify({ path: location.pathname,'
           + ' mailtos: [...document.querySelectorAll("a[href^=\'mailto:\']")].map((a) => a.getAttribute("href")),'
@@ -561,11 +557,10 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await page_.goto(server.url("/"), 900);
+        await openAtRest(page_, server.url("/"));
         const first = await page_.evaluate(SAY);
         // One answer in, still a question screen.
-        await page_.evaluate('document.querySelector(".qcard .opt").click()');
-        await new Promise((r) => setTimeout(r, 700));
+        await answerWith(page_, 'document.querySelector(".qcard .opt").click()');
         const second = await page_.evaluate(SAY);
         return JSON.stringify({ first: JSON.parse(first), second: JSON.parse(second) });
       }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
@@ -649,9 +644,9 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
           ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
           ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"],
         ] as const) {
-          await page_.goto(server.url(path), 500);
+          await page_.goto(server.url(path));
           await page_.evaluate(FALLBACK);
-          await new Promise((r) => setTimeout(r, 200));
+          await page_.waitUntilAtRest();
           at[name] = JSON.parse(await page_.evaluate(ROW));
         }
         return at;
@@ -686,15 +681,15 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
         // under the separator where "Netherlands" ran 15 (measured, 2026-09-16).
         const words: Record<string, unknown> = {};
         for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
-          await page_.goto(server.url(path), 500);
+          await page_.goto(server.url(path));
           await page_.evaluate(FALLBACK);
-          await new Promise((r) => setTimeout(r, 200));
+          await page_.waitUntilAtRest();
           await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
           words[path] = JSON.parse(await page_.evaluate(OPEN_LIST));
         }
-        await page_.goto(server.url("/germany/"), 500);
+        await page_.goto(server.url("/germany/"));
         await page_.evaluate(FALLBACK);
-        await new Promise((r) => setTimeout(r, 200));
+        await page_.waitUntilAtRest();
         await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
         const opened = JSON.parse(await page_.evaluate(OPEN_LIST));
         await page_.evaluate(
@@ -738,7 +733,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
       const seen = await withBrowser(async (page_: BrowserPage) => {
         const words: Record<string, unknown> = {};
         for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
-          await page_.goto(server.url(path), 500);
+          await page_.goto(server.url(path));
           await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
           words[path] = JSON.parse(await page_.evaluate(OPEN_LIST));
         }
@@ -761,9 +756,9 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await page_.goto(server.url("/"), 500);
+        await page_.goto(server.url("/"));
         await page_.evaluate(FALLBACK);
-        await new Promise((r) => setTimeout(r, 200));
+        await page_.waitUntilAtRest();
         return page_.evaluate(
           'JSON.stringify({ menuShown: getComputedStyle(document.querySelector(".menu")).display !== "none",'
           + ' navShown: getComputedStyle(document.querySelector(".site-head .nav")).display !== "none",'
@@ -783,9 +778,9 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await page_.goto(server.url("/france/"), 500);
+        await page_.goto(server.url("/france/"));
         await page_.evaluate('document.querySelector(".menu").click()');
-        await new Promise((r) => setTimeout(r, 250));
+        await page_.waitUntilAtRest();
         return page_.evaluate(
           'JSON.stringify((() => {'
           + ' const nav = document.querySelector(".site-head .nav");'
@@ -821,7 +816,7 @@ describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await page_.goto(server.url("/feedback/"), 600);
+        await page_.goto(server.url("/feedback/"));
         // Headless Chrome may refuse the clipboard: the write is stood in for
         // by a stub that records what it was handed, which is the fact under
         // test — the script hands the clipboard the page's address and nothing
@@ -835,15 +830,14 @@ describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
         const word = 'document.querySelector(".addr .done")';
         // The word beside the address, at each moment. Two taps: the glyph's
         // own box, and the address text — both are the one button.
+        // A tap's word waits on the copy it follows, and the clearing on the word gone.
         const before = await page_.evaluate(`${word}.textContent`);
         await page_.evaluate(`${button}.querySelector("svg").dispatchEvent(new MouseEvent("click", { bubbles: true }))`);
-        await new Promise((r) => setTimeout(r, 150));
-        const afterIcon = await page_.evaluate(`${word}.textContent`);
-        await new Promise((r) => setTimeout(r, 2200));
+        const afterIcon = await page_.waitUntil(`window.__copied.length === 1 && ${word}.textContent`, "the glyph's tap never said anything");
+        await page_.waitUntil(`${word}.textContent === ""`, "the word never cleared");
         const later = await page_.evaluate(`${word}.textContent`);
         await page_.evaluate('document.getElementById("feedback-address").dispatchEvent(new MouseEvent("click", { bubbles: true }))');
-        await new Promise((r) => setTimeout(r, 150));
-        const afterText = await page_.evaluate(`${word}.textContent`);
+        const afterText = await page_.waitUntil(`window.__copied.length === 2 && ${word}.textContent`, "the address's tap never said anything");
         return page_.evaluate(
           `JSON.stringify({ copied: window.__copied, before: ${JSON.stringify(before)},`
           + ` afterIcon: ${JSON.stringify(afterIcon)}, later: ${JSON.stringify(later)},`
@@ -883,7 +877,7 @@ describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
       const server = await serve(dist);
       try {
         const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-          await page_.goto(server.url("/feedback/"), 600);
+          await page_.goto(server.url("/feedback/"));
           return page_.evaluate(
             'JSON.stringify({ overflow: document.documentElement.scrollWidth'
             + ' - document.documentElement.clientWidth,'

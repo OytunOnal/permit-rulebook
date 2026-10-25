@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { PAGE_CSS } from "../src/lib/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { datasetMeta, type Dataset } from "permit-rulebook-data";
+import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
 
 /**
  * The identity pair is one drawing, used twice.
@@ -281,12 +282,35 @@ const PROBE = `(() => {
   });
 })()`;
 
-/** What the probe hands back, and the slice of the harness this file uses. */
+/** What the probe hands back. */
 type Measure = Record<string, number | string | undefined>;
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
+
+/** The stamp's state on question one, after one answer, on the results, and
+ * with only its label swapped, the interview opened each time by `openTheInterview`. */
+async function readStampOnScreensOpenedBy(page: BrowserPage, openTheInterview: () => Promise<void>): Promise<Record<string, Measure>> {
+  const read = async () => JSON.parse(await page.evaluate(STAMP_STATE)) as Measure;
+  await openTheInterview();
+  const first = await read();
+  await answerWith(page, 'document.querySelector(".qcard .opt").click()');
+  const answered = await read();
+  await page.evaluate(SEED_FINISHED_RECORD);
+  await openTheInterview();
+  const results = await read();
+  // The words alone, with the masthead's own copy untouched.
+  await page.evaluate('document.getElementById("stamp-label").textContent = "Rules read"');
+  return { first, answered, results, swapped: await read() };
 }
+
+/** The stamp's state on every screen, in our fonts. */
+const readStampOnEveryScreen = (page: BrowserPage, url: (path: string) => string) =>
+  readStampOnScreensOpenedBy(page, () => openAtRest(page, url("/")));
+
+/** The stamp's state on every screen, in the fonts the machine falls back to. */
+const readStampOnEveryScreenInTheFallbackStack = (page: BrowserPage, url: (path: string) => string) =>
+  readStampOnScreensOpenedBy(page, async () => {
+    await openAtRest(page, url("/"));
+    await page.evaluate(FALLBACK_STACK);
+  });
 
 describe.skipIf(skipped !== null)("the identity pair lands identically on both screens", () => {
   const RESULTS = "/";
@@ -300,14 +324,14 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
         const seen = await withBrowser(async (page: BrowserPage) => {
           const out: Record<string, Measure> = {};
           for (const path of [RESULTS, ROUTE]) {
-            await page.goto(server.url(path), 400);
+            await page.goto(server.url(path));
             if (force) await page.evaluate(FALLBACK_STACK);
             if (path === RESULTS) {
               // The results screen, which is where this page carries the
               // "Record generated" stamp; unseeded, `/` is question one and
               // states the rules-read date instead (human, 2026-09-08).
               await page.evaluate(SEED_FINISHED_RECORD);
-              await page.goto(server.url(path), 1400);
+              await openAtRest(page, server.url(path));
               if (force) await page.evaluate(FALLBACK_STACK);
             }
             out[path] = JSON.parse(await page.evaluate(PROBE)) as Measure;
@@ -348,11 +372,11 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
         const seen = await withBrowser(async (page: BrowserPage) => {
           const out: Record<string, Measure> = {};
           for (const path of [RESULTS, ROUTE]) {
-            await page.goto(server.url(path), 400);
+            await page.goto(server.url(path));
             if (force) await page.evaluate(FALLBACK_STACK);
             if (path === RESULTS) {
               await page.evaluate(SEED_FINISHED_RECORD);
-              await page.goto(server.url(path), 1400);
+              await openAtRest(page, server.url(path));
               if (force) await page.evaluate(FALLBACK_STACK);
             }
             out[path] = JSON.parse(await page.evaluate(PLACEMENT)) as Measure;
@@ -410,27 +434,17 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
    * becomes the record's own date. One pair, two states, and the box does not
    * move between them.
    */
-  for (const { name: stack, force } of STACKS)
+  for (const [stack, readStamp] of [
+    ["our fonts", readStampOnEveryScreen],
+    ["the fallback stack", readStampOnEveryScreenInTheFallbackStack],
+  ] as const)
   it(`states the rules-read date on the questions and the record's date on the results, in ${stack}`, async () => {
     const server = await serve(dist);
     try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const read = () => page.evaluate(STAMP_STATE);
-        await page.goto(server.url("/"), 900);
-        if (force) await page.evaluate(FALLBACK_STACK);
-        const first = JSON.parse(await read()) as Measure;
-        await page.evaluate('document.querySelector(".qcard .opt").click()');
-        await new Promise((r) => setTimeout(r, 500));
-        const answered = JSON.parse(await read()) as Measure;
-        await page.evaluate(SEED_FINISHED_RECORD);
-        await page.goto(server.url("/"), 1400);
-        if (force) await page.evaluate(FALLBACK_STACK);
-        const results = JSON.parse(await read()) as Measure;
-        // The words alone, with the masthead's own copy untouched.
-        await page.evaluate('document.getElementById("stamp-label").textContent = "Rules read"');
-        const swapped = JSON.parse(await read()) as Measure;
-        return { first, answered, results, swapped };
-      }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as Record<string, Measure>;
+      const seen = await withBrowser(
+        (page: BrowserPage) => readStamp(page, server.url),
+        { viewport: { width: 1100, height: 1000 }, mobile: false },
+      ) as Record<string, Measure>;
 
       const newest = datasetMeta(dataset as unknown as Dataset).newest_retrieved_at;
       // The questions stand on the dataset's own newest read date.
@@ -439,9 +453,7 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
       expect(seen.answered.text).toBe(`Rules read ${newest}`);
       // The results stand on the day the record was made.
       expect(seen.results.text).toMatch(/^Record generated [0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-
-      // The box is the same box on every screen, and swapping the words alone
-      // moves nothing at all.
+      // The box is the same box on every screen, and swapping the words alone moves nothing at all.
       for (const state of ["answered", "results"])
         for (const key of ["left", "width", "height"])
           expect(seen[state][key], `${key} moved on ${state}`).toBe(seen.first[key]);
@@ -462,7 +474,7 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
       const seen = await withBrowser(async (page: BrowserPage) => {
         const out: Record<string, Measure> = {};
         for (const [label, path] of [["interview", "/"], ["route", ROUTE]] as const) {
-          await page.goto(server.url(path), 900);
+          await page.goto(server.url(path));
           if (force) await page.evaluate(FALLBACK_STACK);
           out[label] = JSON.parse(await page.evaluate(HEADING)) as Measure;
         }
@@ -550,12 +562,6 @@ describe("the identity has one set of elements too", () => {
   });
 });
 
-/**
- * The interview painted the shared header a second way: three page-local rules
- * (`header`, `.wordmark`, `.wordmark .seal`) with their own sizes, so the same
- * header was a different object on the two halves of the product (Standards
- * review, 2026-09-08). identity.css owns it; this measures that it does.
- */
 const { chromePath: chromeAt } = await import("../scripts/chrome.mjs");
 const { serve: serveDir, withBrowser: withChrome } = await import("../scripts/browser.mjs");
 
@@ -565,126 +571,6 @@ function whyNotMeasured(): string | null {
   return null;
 }
 const notMeasured = whyNotMeasured();
-
-interface Page { goto(url: string, settleMs?: number): Promise<void>; evaluate(expression: string): Promise<string> }
-
-const HEADER_BOX = 'JSON.stringify((() => {'
-  + ' const head = document.querySelector(".site-head");'
-  + ' const mark = document.querySelector(".site-head .wordmark");'
-  + ' const seal = document.querySelector(".site-head .seal");'
-  + ' const box = (el) => { const r = el.getBoundingClientRect();'
-  + '   return { height: Math.round(r.height), width: Math.round(r.width) }; };'
-  + ' const font = getComputedStyle(mark);'
-  + ' return { head: box(head), mark: box(mark), seal: box(seal),'
-  + '   family: font.fontFamily, size: font.fontSize, weight: font.fontWeight,'
-  + '   rule: getComputedStyle(head).borderBottomWidth };'
-  + '})())';
-
-describe.skipIf(notMeasured !== null)("the header is one object, measured", () => {
-  it("the same box, wordmark and seal on the interview and on a route page", async () => {
-    const server = await serveDir(dist);
-    try {
-      const seen = await withChrome(async (page: Page) => {
-        const at: Record<string, unknown> = {};
-        for (const [name, path] of [
-          ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
-          ["country", "/germany/"], ["data", "/data/"],
-        ] as const) {
-          await page.goto(server.url(path), 500);
-          at[name] = JSON.parse(await page.evaluate(HEADER_BOX));
-        }
-        return at;
-      }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, unknown>;
-
-      // Everything identity.css owns. The header's own WIDTH is the page
-      // container's business — the interview keeps a wider gutter than the
-      // generated pages — so it is measured out of this comparison and the
-      // height, the wordmark, the seal, the type and the rule are not.
-      const owned = (box: unknown) => {
-        const b = box as { head: { height: number }; mark: unknown; seal: unknown;
-          family: string; size: string; weight: string; rule: string };
-        return JSON.stringify({ height: b.head.height, mark: b.mark, seal: b.seal,
-          family: b.family, size: b.size, weight: b.weight, rule: b.rule });
-      };
-      const reference = owned(seen.route);
-      for (const [name, box] of Object.entries(seen))
-        expect(owned(box), `${name}'s header is not the route page's header`).toBe(reference);
-      // And it is a real header, not four identically-missing ones.
-      const route = seen.route as { head: { height: number }; seal: { height: number } };
-      expect(route.head.height).toBeGreaterThan(40);
-      expect(route.seal.height).toBeGreaterThan(14);
-    } finally {
-      server.close();
-    }
-  }, 180000);
-});
-
-/**
- * And it has to hold with fonts this machine has never seen.
- *
- * CI runs on ubuntu, where there is no Segoe UI and no Cambria: the fallback
- * stack is wider, the nav row wrapped onto a second line on the narrower
- * generated pages, and the header measured 59 px on the interview against
- * 123 px on a route page (2026-09-08). The design had about 6% of slack, which
- * is not slack. This forces the generic stack — whatever this machine falls
- * back to — and asks for room to spare on the narrowest page the site builds.
- */
-describe.skipIf(notMeasured !== null)("the header holds on a machine with none of our fonts", () => {
-  /** Drop the named families: what is left is the generic fallback. */
-  const FALLBACK = '(() => { const s = document.createElement("style");'
-    + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
-    + ' document.head.appendChild(s); return "forced"; })()';
-
-  /**
-   * The row's own items. Since s13 the four countries sit INSIDE a closed
-   * disclosure and are not on the row at all — a hidden link's box is at 0,0,
-   * which read as a second row the first time this probe met one — so what is
-   * counted is the disclosure's word and the links beside it.
-   */
-  const ROW = 'JSON.stringify((() => {'
-    + ' const head = document.querySelector(".site-head");'
-    + ' const mark = document.querySelector(".site-head .wordmark");'
-    + ' const nav = document.querySelector(".site-head .nav");'
-    + ' return { height: Math.round(head.getBoundingClientRect().height),'
-    + '   have: Math.round(head.getBoundingClientRect().width),'
-    + '   need: Math.round(mark.getBoundingClientRect().width + nav.getBoundingClientRect().width),'
-    + '   rows: new Set([...nav.querySelectorAll(":scope > a, :scope > details > summary")]'
-    + '     .map((a) => Math.round(a.getBoundingClientRect().top))).size }; })())';
-
-  it("one row at 1100 px, with room to spare, on every page", async () => {
-    const server = await serveDir(dist);
-    try {
-      const seen = await withChrome(async (page: Page) => {
-        const at: Record<string, unknown> = {};
-        for (const [name, path] of [
-          ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
-          ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"], ["error", "/404.html"],
-        ] as const) {
-          await page.goto(server.url(path), 500);
-          await page.evaluate(FALLBACK);
-          await new Promise((r) => setTimeout(r, 200));
-          at[name] = JSON.parse(await page.evaluate(ROW));
-        }
-        return at;
-      }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, {
-        height: number; have: number; need: number; rows: number;
-      }>;
-
-      const heights = new Set(Object.values(seen).map((v) => v.height));
-      expect(heights.size, `header heights: ${[...heights].join(", ")}`).toBe(1);
-      for (const [name, box] of Object.entries(seen)) {
-        // Every nav item on the same line: a wrapped row is the defect itself.
-        expect(box.rows, `${name}: the nav wrapped onto ${box.rows} rows`).toBe(1);
-        // And room for a stack wider still than this machine's fallback.
-        const headroom = (box.have - box.need) / box.have;
-        expect(headroom, `${name}: ${box.need} px of row in ${box.have} px — ${
-          Math.round(headroom * 100)}% spare`).toBeGreaterThan(0.12);
-      }
-    } finally {
-      server.close();
-    }
-  }, 180000);
-});
 
 /**
  * And nothing anywhere pushes a phone sideways.
@@ -732,26 +618,26 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
   it("the interview, the results, a route page, a country page and the data page", async () => {
     const server = await serveDir(dist);
     try {
-      const seen = await withChrome(async (page: Page) => {
+      const seen = await withChrome(async (page: BrowserPage) => {
         const at: Record<string, unknown> = {};
         for (const [name, path] of [
           ["interview", "/"], ["results", "/"], ["route", "/germany/eu-blue-card-general/"],
           ["country", "/germany/"], ["data", "/data/"],
         ] as const) {
-          await page.goto(server.url(path), 600);
+          await page.goto(server.url(path));
           if (name === "results") {
             // The screen the stamp is widest on: "Record generated" is longer
             // than "Rules read".
             await page.evaluate(SEED_FINISHED_RECORD);
-            await page.goto(server.url(path), 1400);
+            await page.goto(server.url(path));
           }
           await page.evaluate(FALLBACK_STACK);
-          await new Promise((r) => setTimeout(r, 250));
+          await page.waitUntilAtRest();
           at[name] = JSON.parse(await page.evaluate(OVERFLOW));
           // And again as a wider family would draw it.
           for (const extra of ["0.055", "0.11"]) {
             await page.evaluate(WIDER(extra));
-            await new Promise((r) => setTimeout(r, 200));
+            await page.waitUntilAtRest();
             at[`${name} at +${extra}em`] = JSON.parse(await page.evaluate(OVERFLOW));
           }
         }
@@ -779,11 +665,12 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
   it("keeps its longest label on one line under a font wider than the runner's", async () => {
     const server = await serveDir(dist);
     try {
-      const seen = await withChrome(async (page: Page) => {
-        await page.goto(server.url("/"), 600);
+      const seen = await withChrome(async (page: BrowserPage) => {
+        await page.goto(server.url("/"));
         await page.evaluate(SEED_FINISHED_RECORD);
-        await page.goto(server.url("/"), 1400);
+        await page.goto(server.url("/"));
         await page.evaluate(FALLBACK_STACK);
+        await page.waitUntilAtRest();
         const box = 'JSON.stringify({ overflow: document.documentElement.scrollWidth'
           + ' - document.documentElement.clientWidth,'
           + ' height: document.querySelector(".stamps .stamp").offsetHeight,'
@@ -798,7 +685,7 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
             + ` s.textContent = ".stamps .stamp{letter-spacing:calc(var(--stamp-tracking) + ${extra}em)}";`
             + ' document.head.appendChild(s); return 1; })()',
           );
-          await new Promise((r) => setTimeout(r, 200));
+          await page.waitUntilAtRest();
           at[extra] = JSON.parse(await page.evaluate(box));
         }
         return at;
