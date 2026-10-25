@@ -4271,6 +4271,41 @@
     "exported": false
    },
    {
+    "name": "FIXED_WAIT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "TIMER_PROMISES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "calledName",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "isPromiseExecutor",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "executorsAround",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "resolvesAPromise",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "noFixedWait",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "default",
     "kind": "other",
     "exported": true
@@ -7615,5 +7650,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "6f17d27ea651d60e2893158181d797cacd75911db562cfebb223606c919569e1"
+ "digest": "7eb346991270b05ac8eba2c69707c23eeed6ea52db132ff60d52fd588e396f56"
 }

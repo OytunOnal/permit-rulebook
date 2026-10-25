@@ -101,6 +101,28 @@ export async function waitUntilPastTheBeat(page: Pick<BrowserPage, "evaluate" | 
   await page.waitUntil(`performance.now() >= ${seenAt + beatMs}`, "the page's clock never passed the beat");
 }
 
+/** The page as a gesture and an answer drive it. */
+type GesturedPage = Pick<BrowserPage, "evaluate" | "waitUntil" | "waitUntilAtRest">;
+
+/** Opens `url` and returns once the page has drawn and come to rest. */
+export async function openAtRest(page: Pick<BrowserPage, "goto" | "waitUntilAtRest">, url: string): Promise<void> {
+  await page.goto(url);
+  await page.waitUntilAtRest();
+}
+
+/** A gesture that stays on the page, returned once the page is at rest. */
+export async function gesture(page: GesturedPage, expression: string): Promise<string> {
+  const value = await page.evaluate(expression);
+  await page.waitUntilAtRest();
+  return value;
+}
+
+/** An answer, tapped once the card's beat is over, returned once the page is at rest. */
+export async function answerWith(page: GesturedPage, expression: string): Promise<string> {
+  await waitUntilPastTheBeat(page);
+  return gesture(page, expression);
+}
+
 /** The label of the question on the screen, or "" where none is. */
 export const QLABEL = '(() => { const h = document.querySelector("#main .qcard .qlabel"); return h ? h.textContent.trim() : ""; })()';
 /** Which screen the interview is on. */

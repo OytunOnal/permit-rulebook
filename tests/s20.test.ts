@@ -7,7 +7,7 @@ import { resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { waitUntilPastTheBeat } from "./browser-walk.js";
+import { answerWith, gesture, openAtRest } from "./browser-walk.js";
 
 /**
  * s20 — the correction lands on the question and returns to the verdict.
@@ -106,25 +106,6 @@ interface BrowserPage {
   waitUntil(condition: string, what: string): Promise<unknown>;
   waitUntilAtRest(): Promise<void>;
   problems(): string[];
-}
-
-/** Opens `url` and returns once the page has drawn and come to rest. */
-async function openAtRest(page: BrowserPage, url: string): Promise<void> {
-  await page.goto(url);
-  await page.waitUntilAtRest();
-}
-
-/** A gesture that stays on the page, read once the page is at rest. */
-async function gesture(page: BrowserPage, expression: string): Promise<string> {
-  const value = await page.evaluate(expression);
-  await page.waitUntilAtRest();
-  return value;
-}
-
-/** An answer, tapped once the card's beat is over, read once the page is at rest. */
-async function answerWith(page: BrowserPage, expression: string): Promise<string> {
-  await waitUntilPastTheBeat(page);
-  return gesture(page, expression);
 }
 
 /**
