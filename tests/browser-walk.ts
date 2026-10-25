@@ -236,12 +236,3 @@ export async function tapOn(page: BrowserPage, selector: string): Promise<void> 
   if (!at) throw new Error(`nothing on the page matches ${selector}`);
   await page.clickAt(at.x, at.y);
 }
-
-/** A layout-shift observer, counting what CLS counts, from the page's load. */
-export const WATCH_SHIFTS = `(() => {
-  window.__cls = 0;
-  new PerformanceObserver((l) => {
-    for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value;
-  }).observe({ type: "layout-shift", buffered: true });
-  return "watching";
-})()`;

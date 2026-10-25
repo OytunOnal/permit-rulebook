@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { STORAGE_KEY } from "../src/lib/record.js";
 import {
-  DESK, WATCH_SHIFTS, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
+  DESK, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
   type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
+import { shiftScoreSince } from "./layout-shifts.js";
 
 /**
  * #86 — a fast second click answers the next question.
@@ -374,9 +375,8 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
     const seen = await withSite(async (site) => {
       const { page } = site;
       await coldStart(site);
-      await page.evaluate(WATCH_SHIFTS);
       await answerFirstOptions(page, 2);
-      return { cls: Number(await page.evaluate("window.__cls")), after: await where(page), problems: page.problems() };
+      return { cls: await shiftScoreSince(page), after: await where(page), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
     expect(seen.after.answers).toBe(2);

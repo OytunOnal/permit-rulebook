@@ -5,8 +5,9 @@ import { EDIT_LINE } from "../src/lib/copy/interview.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import {
-  PHONE, WATCH_SHIFTS, skipReason, tapOn, waitUntilPastTheBeat, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+  PHONE, skipReason, tapOn, waitUntilPastTheBeat, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
+import { shiftScoreSince } from "./layout-shifts.js";
 
 /**
  * #137 — a change of country names the answers it set aside.
@@ -241,7 +242,6 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
       const verdict = await openOnVerdict(site, TO_A_QUESTION);
-      await page.evaluate(WATCH_SHIFTS);
       await tapOn(page, "#decl > summary");
       await page.waitUntilAtRest();
       const editing = await tapToNext(page, '#decl-list [data-field="destination"]');
@@ -249,7 +249,7 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
       const nextRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
       const after = await tapToNext(page, "#main .qcard .opt[data-value='yes']");
       const afterRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
-      const cls = Number(await page.evaluate("window.__cls"));
+      const cls = await shiftScoreSince(page);
       return { verdict, editing, next, nextRow, after, afterRow, cls, problems: page.problems() };
     }, PHONE) as {
       verdict: Seen; editing: Seen; next: Seen; nextRow: Summary; after: Seen; afterRow: Summary;

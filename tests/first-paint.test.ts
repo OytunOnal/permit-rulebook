@@ -546,6 +546,7 @@ describe.skipIf(skipped !== null)("the page arriving in pieces paints where it s
       expect(before.counted, "the page's own shift in its first frames went uncounted").toEqual(before.every.map((s) => s.value));
       expect(after.every.map((s) => s.markedAsInput), `the tap moved nothing: ${JSON.stringify(after)}`).toEqual([true, true]);
       expect(after.counted, "the shift the tap made was counted").toEqual(before.counted);
+      expect([before.score, after.score], "the shift score is not what the measure counts").toEqual([before.counted[0], before.counted[0]]);
     }, 120000);
 });
 

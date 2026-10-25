@@ -1842,6 +1842,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/asked-for.test.ts",
+   "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/audit-and-runner.test.ts",
    "to": "tests/workflow-text.ts",
    "kind": "dependency"
@@ -1894,6 +1899,11 @@
   {
    "from": "tests/beat.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/beat.test.ts",
+   "to": "tests/layout-shifts.ts",
    "kind": "dependency"
   },
   {
@@ -3894,6 +3904,11 @@
   {
    "from": "tests/set-aside.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/set-aside.test.ts",
+   "to": "tests/layout-shifts.ts",
    "kind": "dependency"
   },
   {

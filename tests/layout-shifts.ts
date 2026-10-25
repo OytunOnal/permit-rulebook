@@ -40,6 +40,7 @@ export const GATHER_SHIFTS = `(() => {
     .filter((e) => !(e.hadRecentInput && afterAnInput(e)))
     .map((e) => ({
       value: e.value,
+      startTime: e.startTime,
       sources: (e.sources ?? []).map((s) => {
         const el = elementOf(s.node);
         return {
@@ -51,6 +52,34 @@ export const GATHER_SHIFTS = `(() => {
       }),
     }));
 })()`;
+
+/**
+ * How many layout shifts Chrome keeps for an observer that asks for those
+ * before it: the later ones are dropped, so a read that finds this many
+ * cannot say none came after.
+ */
+const SHIFTS_CHROME_BUFFERS = 150;
+
+/** The measure's shifts since `sinceMs` on the page's clock, summed as CLS sums them, and how many Chrome kept. */
+const shiftScoreRead = (sinceMs: number) => `(() => {
+  ${GATHER_SHIFTS};
+  const observer = new PerformanceObserver(() => {});
+  observer.observe({ type: "layout-shift", buffered: true });
+  const kept = observer.takeRecords().length;
+  const score = window.__cls.filter((e) => e.startTime >= ${sinceMs}).reduce((sum, e) => sum + e.value, 0);
+  return JSON.stringify({ kept, score });
+})()`;
+
+/**
+ * The shifts the first paint's measure counts on the page since `sinceMs` on
+ * the page's clock (0: since the page loaded), summed as CLS sums them: one
+ * measure for every case that asserts nothing shifted (#243).
+ */
+export async function shiftScoreSince(page: Pick<TappablePage, "evaluate">, sinceMs = 0): Promise<number> {
+  const { kept, score } = JSON.parse(await page.evaluate(shiftScoreRead(sinceMs))) as { kept: number; score: number };
+  if (kept >= SHIFTS_CHROME_BUFFERS) throw new Error(`Chrome kept ${kept} shifts and dropped any after: the score cannot be read`);
+  return score;
+}
 
 /**
  * A page that moves twice: in its second frame, with nothing done to it, and
@@ -85,7 +114,12 @@ const SHIFTS_SEEN = `(() => {
 export interface ShiftsSeen {
   every: { value: number; markedAsInput: boolean }[];
   counted: number[];
+  /** What `shiftScoreSince` reads since the page loaded. */
+  score: number;
 }
+
+const shiftsSeenOn = async (page: TappablePage): Promise<ShiftsSeen> =>
+  ({ ...JSON.parse(await page.evaluate(SHIFTS_SEEN)), score: await shiftScoreSince(page) }) as ShiftsSeen;
 
 interface TappablePage {
   goto(url: string): Promise<void>; evaluate(expression: string): Promise<string>; clickAt(x: number, y: number): Promise<void>;
@@ -100,9 +134,9 @@ export async function shiftsBeforeAndAfterATap(page: TappablePage): Promise<{ be
   await page.goto(`data:text/html,${encodeURIComponent(MOVES_EARLY_AND_ON_A_TAP)}`);
   await page.waitUntil("window.__movedEarly === true", "the page never moved in its first frames");
   await page.waitUntilAtRest();
-  const before = JSON.parse(await page.evaluate(SHIFTS_SEEN)) as ShiftsSeen;
+  const before = await shiftsSeenOn(page);
   await page.clickAt(100, 300);
   await page.waitUntil("window.__tapped === true", "the tap never reached the page");
   await page.waitUntilAtRest();
-  return { before, after: JSON.parse(await page.evaluate(SHIFTS_SEEN)) as ShiftsSeen };
+  return { before, after: await shiftsSeenOn(page) };
 }
