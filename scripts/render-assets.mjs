@@ -1,4 +1,4 @@
-// @level infrastructure main
+// @level infrastructure
 /**
  * The assets someone meets in the first minute, rendered for real.
  *
@@ -14,36 +14,32 @@
  * the palette from `tokens.css`, the layout from `src/lib/social-card.ts` and
  * the numbers from the dataset — the first cut of this script retyped all four,
  * so the card could quietly disagree with the product about what the product
- * says (Standards review, 2026-09-07).
+ * says (Standards review, 2026-09-07). `main-render-assets.mjs` imports the
+ * words, the layout and the numbers and hands this job the card's facts and
+ * its HTML; this job never reaches them. It only reads `tokens.css` from disk
+ * (`readTokensStylesheet`) for the entry to hand to the layout.
  *
  * Each render writes `public/social-card.json` beside the image: the facts the
- * image was drawn from. `--check` re-reads the dataset and fails when the image
- * no longer tells the truth — a route added, a value re-read, the tagline
- * changed — which existence-and-size could never notice.
+ * image was drawn from. `--check` is handed the facts as they are today and
+ * finds where the image no longer tells the truth — a route added, a value
+ * re-read, the tagline changed — which existence-and-size could never notice.
  *
- *   node scripts/render-assets.mjs         # re-render into public/
- *   node scripts/render-assets.mjs --check # verify what is committed, change nothing
- *   node scripts/render-assets.mjs --out <dir> # render into <dir>, the mark still read from public/
+ *   npm run assets                   # re-render into public/
+ *   npm run assets:check             # verify what is committed, change nothing
+ *   npm run assets -- --out <dir>    # render into <dir>, the mark still read from public/
+ *
+ * `renderAssets` and `checkAssets` return what they wrote or found and print
+ * nothing: the report's lines and exit code are `cli-render-assets.mjs`'s.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromePath } from "./chrome.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const publicDir = join(root, "public");
-const check = process.argv.includes("--check");
-
-/** Where a render writes: the folder after `--out`, else `public/`. */
-function outDirAskedBy(argv) {
-  const flag = argv.indexOf("--out");
-  if (flag === -1) return publicDir;
-  if (!argv[flag + 1]) throw new Error("--out names no folder: npm run assets -- --out <dir>");
-  return resolve(argv[flag + 1]);
-}
-const outDir = outDirAskedBy(process.argv);
 
 const CARD = { width: 1200, height: 630 };
 // 16/32/64 are the tab; 96 is what a search engine asks for (Google states a
@@ -54,23 +50,46 @@ const ICON_SIZES = [16, 32, 64, 96, 180];
 const ICO_SIZES = [16, 32, 64];
 const SIDECAR = "social-card.json";
 
-/** The PNG of `html` drawn at `size` (a width and a height), written to `out`. */
-function shoot(html, size, out) {
+/** Every file a render writes, in the order it writes them. */
+const RENDERED = [...ICON_SIZES.map((s) => `favicon-${s}.png`), "favicon.ico", "social-card.png", SIDECAR];
+
+/** The text of the site's `tokens.css`, the palette the card is drawn in. */
+export const readTokensStylesheet =() => readFileSync(join(root, "tokens.css"), "utf8");
+
+/** A PNG's width and height, from its header. */
+const pngSizeOf = (png) => ({ width: png.readUInt32BE(16), height: png.readUInt32BE(20) });
+
+/**
+ * The PNG of `html` drawn by headless Chrome at `size` (a width and a height),
+ * written to `out` and returned; each of `beside` (a file name to its text) is
+ * written next to the page for it to load. The ground is transparent: Chrome
+ * paints white behind a page unless told otherwise, and a white square is
+ * exactly what the icon stopped having (human 2026-09-08); the card paints its
+ * own ground.
+ */
+function drawPage({ html, size, out, beside = {} }) {
   const { width, height } = size;
   const dir = join(tmpdir(), `permit-rulebook-assets-${process.pid}`);
   mkdirSync(dir, { recursive: true });
+  for (const [name, text] of Object.entries(beside)) writeFileSync(join(dir, name), text, "utf8");
   const page = join(dir, "page.html");
   writeFileSync(page, html, "utf8");
   execFileSync(chromePath(), [
     "--headless", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
+    "--default-background-color=00000000",
     `--window-size=${width},${height}`, `--screenshot=${out}`,
     pathToFileURL(page).href,
   ], { stdio: "ignore" });
   rmSync(dir, { recursive: true, force: true });
-  const png = readFileSync(out);
-  const w = png.readUInt32BE(16), h = png.readUInt32BE(20);
-  if (w !== width || h !== height) throw new Error(`${out}: rendered ${w}x${h}, wanted ${width}x${height}`);
-  return png;
+  return readFileSync(out);
+}
+
+/** Draws the card from `cardHtml` into `outDir`, and throws when Chrome drew it at any size but the card's. */
+function drawCard(cardHtml, outDir) {
+  const out = join(outDir, "social-card.png");
+  const drawn = pngSizeOf(drawPage({ html: cardHtml, size: CARD, out }));
+  if (drawn.width !== CARD.width || drawn.height !== CARD.height)
+    throw new Error(`${out}: rendered ${drawn.width}x${drawn.height}, wanted ${CARD.width}x${CARD.height}`);
 }
 
 /** The mark, at whatever size is asked for, drawn from the committed SVG so the
@@ -107,73 +126,45 @@ function ico(images) {
   return Buffer.concat([header, ...entries, ...images.map((i) => i.png)]);
 }
 
-async function main() {
-  const { default: dataset } = await import("permit-rulebook-data/data/dataset.json", { with: { type: "json" } });
-  const { datasetMeta } = await import("permit-rulebook-data");
-  // The product's own words and the card's own layout, imported rather than
-  // retyped. Node strips the types; the specifiers are `.ts` because Node
-  // resolves a `.js` specifier literally and there is no build step here.
-  const { PRODUCT_NAME, TAGLINE, routesCheckerAsksAbout } = await import("../src/lib/copy/frame.ts");
-  const { socialCardFacts, socialCardHtml } = await import("../src/lib/social-card.ts");
-  const tokens = readFileSync(join(root, "tokens.css"), "utf8");
-  const facts = socialCardFacts(dataset, datasetMeta(dataset).newest_retrieved_at, {
-    product: PRODUCT_NAME, tagline: TAGLINE, routesLineOf: routesCheckerAsksAbout,
-  });
-
-  if (check) {
-    const missing = ["favicon.svg", "favicon.ico", ...ICON_SIZES.map((s) => `favicon-${s}.png`), "social-card.png", SIDECAR]
-      .filter((f) => !existsSync(join(publicDir, f)));
-    if (missing.length) throw new Error(`public/${missing.join(", public/")} missing — run: npm run assets`);
-
-    const card = readFileSync(join(publicDir, "social-card.png"));
-    const w = card.readUInt32BE(16), h = card.readUInt32BE(20);
-    if (w !== CARD.width || h !== CARD.height)
-      throw new Error(`social-card.png is ${w}x${h}, must be ${CARD.width}x${CARD.height}`);
-
-    const drawn = JSON.parse(readFileSync(join(publicDir, SIDECAR), "utf8"));
-    const differences = Object.entries(facts)
-      .filter(([k, v]) => JSON.stringify(drawn[k]) !== JSON.stringify(v))
-      .map(([k, v]) => `${k}: the image says ${JSON.stringify(drawn[k])}, the dataset says ${JSON.stringify(v)}`);
-    if (differences.length)
-      throw new Error(`social-card.png no longer tells the truth — run: npm run assets\n  ${differences.join("\n  ")}`);
-
-    console.log(JSON.stringify({
-      level: "info", msg: "assets present and true",
-      social_card: `${w}x${h}`, routes: facts.routesLine, read: facts.read,
-    }));
-    return;
-  }
-
-  mkdirSync(outDir, { recursive: true });
+/** The mark drawn at every icon size into `outDir`: each size with its PNG. */
+function drawIcons(outDir) {
   const svg = readFileSync(join(publicDir, "favicon.svg"), "utf8");
-  const images = [];
-  for (const size of ICON_SIZES) {
-    const out = join(outDir, `favicon-${size}.png`);
-    const dir = join(tmpdir(), `permit-rulebook-icon-${size}`);
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, "favicon.svg"), svg, "utf8");
-    writeFileSync(join(dir, "page.html"), markPage(size), "utf8");
-    execFileSync(chromePath(), [
-      "--headless", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
-      // Chrome paints white behind a page unless told otherwise, and a white
-      // square is exactly what the icon stopped having (human 2026-09-08).
-      "--default-background-color=00000000",
-      `--window-size=${size},${size}`, `--screenshot=${out}`,
-      pathToFileURL(join(dir, "page.html")).href,
-    ], { stdio: "ignore" });
-    rmSync(dir, { recursive: true, force: true });
-    if (ICO_SIZES.includes(size)) images.push({ size, png: readFileSync(out) });
-  }
-  writeFileSync(join(outDir, "favicon.ico"), ico(images));
-
-  shoot(socialCardHtml(facts, tokens), CARD, join(outDir, "social-card.png"));
-  writeFileSync(join(outDir, SIDECAR),`${JSON.stringify(facts, null, 2)}\n`, "utf8");
-
-  console.log(JSON.stringify({
-    level: "info", msg: "assets rendered",
-    files: [...ICON_SIZES.map((s) => `favicon-${s}.png`), "favicon.ico", "social-card.png", SIDECAR],
-    routes: facts.routesLine, read: facts.read,
+  return ICON_SIZES.map((size) => ({
+    size,
+    png: drawPage({ html: markPage(size), size: { width: size, height: size }, out: join(outDir, `favicon-${size}.png`), beside: { "favicon.svg": svg } }),
   }));
 }
 
-await main();
+/**
+ * Draws the icons, the .ico and the card from `cardHtml` into `outDir`
+ * (`public/` unless another folder is given), and writes `facts` beside the
+ * card as the sidecar. Returns the names of the files it wrote.
+ */
+export function renderAssets({ facts, cardHtml, outDir = publicDir }) {
+  mkdirSync(outDir, { recursive: true });
+  const icons = drawIcons(outDir);
+  writeFileSync(join(outDir, "favicon.ico"), ico(icons.filter(({ size }) => ICO_SIZES.includes(size))));
+  drawCard(cardHtml, outDir);
+  writeFileSync(join(outDir, SIDECAR), `${JSON.stringify(facts, null, 2)}\n`, "utf8");
+  return { files: RENDERED };
+}
+
+/**
+ * What `public/` holds against `facts`, the card's facts as they are today,
+ * changing nothing: `missing`, the files it lacks; when none is, `card`, the
+ * committed card's size and the size it must be; when those agree,
+ * `differences`, each fact whose sidecar value is not today's, an empty list
+ * for none.
+ */
+export function checkAssets(facts) {
+  const missing = ["favicon.svg", "favicon.ico", ...ICON_SIZES.map((s) => `favicon-${s}.png`), "social-card.png", SIDECAR]
+    .filter((f) => !existsSync(join(publicDir, f)));
+  if (missing.length > 0) return { missing };
+  const card = { size: pngSizeOf(readFileSync(join(publicDir, "social-card.png"))), wantedSize: CARD };
+  if (card.size.width !== CARD.width || card.size.height !== CARD.height) return { missing, card, differences: [] };
+  const drawn = JSON.parse(readFileSync(join(publicDir, SIDECAR), "utf8"));
+  const differences = Object.entries(facts)
+    .filter(([fact, today]) => JSON.stringify(drawn[fact]) !== JSON.stringify(today))
+    .map(([fact, today]) => ({ fact, drawn: drawn[fact], today }));
+  return { missing, card, differences };
+}
