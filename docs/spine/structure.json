@@ -114,17 +114,22 @@
   "scripts/carry-assets/live-deploy/live-digests.mjs": "application",
   "scripts/carry-assets/live-deploy/live-page.mjs": "application",
   "scripts/carry-assets/outcome/outcome-lines.mjs": "domain",
-  "scripts/check-base.mjs": "infrastructure main",
+  "scripts/check-base.mjs": "infrastructure",
   "scripts/child-env.mjs": "infrastructure",
   "scripts/chrome.mjs": "infrastructure",
+  "scripts/cli-check-base.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
+  "scripts/cli-measure-taps.mjs": "presentation",
   "scripts/data-pin.mjs": "infrastructure main",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
   "scripts/html-in-pieces.mjs": "infrastructure",
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
-  "scripts/measure-taps.mjs": "infrastructure main",
+  "scripts/main-check-base.mjs": "main",
+  "scripts/main-measure-taps.mjs": "main",
+  "scripts/measure-taps.mjs": "infrastructure",
+  "scripts/print-report.mjs": "presentation",
   "scripts/render-assets.mjs": "infrastructure main",
   "scripts/shot.mjs": "infrastructure main",
   "scripts/site-base.mjs": "infrastructure",
@@ -374,6 +379,36 @@
   {
    "from": "scripts/live-site-over-http.mjs",
    "to": "scripts/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-check-base.mjs",
+   "to": "scripts/check-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-check-base.mjs",
+   "to": "scripts/cli-check-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-check-base.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-measure-taps.mjs",
+   "to": "scripts/cli-measure-taps.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-measure-taps.mjs",
+   "to": "scripts/measure-taps.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-measure-taps.mjs",
+   "to": "scripts/print-report.mjs",
    "kind": "dependency"
   },
   {
@@ -4564,14 +4599,49 @@
     "exported": false
    },
    {
-    "name": "problems",
-    "kind": "const",
+    "name": "nameOf",
+    "kind": "fn",
     "exported": false
    },
    {
-    "name": "dist",
-    "kind": "const",
+    "name": "problemsIn",
+    "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "buildUnderBase",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "tooFewProblems",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "rootAbsoluteProblems",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "unresolvedProblems",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "missingMetaProblems",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "scanBuild",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "checkBase",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/child-env.mjs": [
@@ -4603,7 +4673,36 @@
     "exported": true
    }
   ],
+  "scripts/cli-check-base.mjs": [
+   {
+    "name": "SHOWN_PROBLEMS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "baseReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/cli-deploy-finding.mjs": [],
+  "scripts/cli-measure-taps.mjs": [
+   {
+    "name": "hasProblem",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "screenLinesOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "tapReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/data-pin.mjs": [
    {
     "name": "root",
@@ -4791,6 +4890,14 @@
     "exported": true
    }
   ],
+  "scripts/main-check-base.mjs": [],
+  "scripts/main-measure-taps.mjs": [
+   {
+    "name": "measured",
+    "kind": "const",
+    "exported": false
+   }
+  ],
   "scripts/measure-taps.mjs": [
    {
     "name": "dist",
@@ -4818,11 +4925,6 @@
     "exported": false
    },
    {
-    "name": "pages",
-    "kind": "const",
-    "exported": false
-   },
-   {
     "name": "DRAWN",
     "kind": "const",
     "exported": false
@@ -4833,19 +4935,31 @@
     "exported": false
    },
    {
-    "name": "server",
-    "kind": "const",
+    "name": "measureAtRest",
+    "kind": "fn",
     "exported": false
    },
    {
-    "name": "failures",
-    "kind": "other",
+    "name": "measureBuilt",
+    "kind": "fn",
     "exported": false
    },
    {
-    "name": "overflows",
-    "kind": "other",
+    "name": "measureDrawn",
+    "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "measureTaps",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/print-report.mjs": [
+   {
+    "name": "printReport",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/render-assets.mjs": [
@@ -7745,14 +7859,19 @@
   "scripts/check-base.mjs",
   "scripts/child-env.mjs",
   "scripts/chrome.mjs",
+  "scripts/cli-check-base.mjs",
   "scripts/cli-deploy-finding.mjs",
+  "scripts/cli-measure-taps.mjs",
   "scripts/data-pin.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
   "scripts/html-in-pieces.mjs",
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
+  "scripts/main-check-base.mjs",
+  "scripts/main-measure-taps.mjs",
   "scripts/measure-taps.mjs",
+  "scripts/print-report.mjs",
   "scripts/render-assets.mjs",
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
@@ -7810,5 +7929,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "55c5a7657e821a7f79155d5395b3982bb0752b55c3ddb7c848830c7ffd92454d"
+ "digest": "74dab0e5f54ff5d059810e59fe1bc29e2305f22bea3d0e76c91e2324bad92aed"
 }
