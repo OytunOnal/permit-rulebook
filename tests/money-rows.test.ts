@@ -3,7 +3,7 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
 import { STORAGE_KEY } from "../src/lib/record.js";
 import {
-  DESK, QLABEL, answer, middleBandOf, settle, skipReason, waitOutTheBeat, walkTo, warnNotWalked, withSite,
+  DESK, QLABEL, answer, middleBandOf, skipReason, walkTo, warnNotWalked, withSite,
   type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 
@@ -99,15 +99,13 @@ function expectAnsweredWithItsPencil(row: Row | null, field: string): asserts ro
   expect(row!.editable).toBe(true);
 }
 
-/** The question on the screen once the pencil has drawn one, read when it is
- * there: the gesture draws its card on its own turn. */
+/** The question on the screen once the pencil has drawn one other than
+ * `before`, read when it is there and the page is at rest. */
 async function questionAfter(page: BrowserPage, before: string): Promise<string> {
-  for (let tries = 0; tries < 200; tries++) {
-    const now = await page.evaluate(QLABEL);
-    if (now && now !== before) return now;
-    await settle(10);
-  }
-  return page.evaluate(QLABEL);
+  const drawn = `(() => { const now = ${QLABEL}; return now && now !== ${JSON.stringify(before)} ? now : false; })()`;
+  const now = String(await page.waitUntil(drawn, `the pencil drew no question other than "${before}"`));
+  await page.waitUntilAtRest();
+  return now;
 }
 
 const CHOSEN = '(() => { const o = document.querySelector("#main .qcard .opt.sel"); return o ? o.dataset.value : ""; })()';
@@ -143,7 +141,6 @@ describe.skipIf(skipped !== null)("a money row answered with its open unknown is
         const next = await page.evaluate(QLABEL);
         await page.clickAt(before.at.x, before.at.y);
         const reopened = await questionAfter(page, next);
-        await waitOutTheBeat(page);
         const chosen = await page.evaluate(CHOSEN);
         await answer(page, field, band);
         return {

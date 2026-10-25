@@ -447,7 +447,7 @@ if (skipped)
   process.stderr.write(`\n  !! s23's screen was not walked: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
 interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
+  goto(url: string): Promise<void>;
   evaluate(expression: string): Promise<string>;
   problems(): string[];
 }
@@ -462,9 +462,9 @@ describe.skipIf(skipped !== null)("the result screen, as drawn", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         await page.evaluate(seed(PRIYA as Record<string, string>));
-        await page.goto(server.url("/"), 1600);
+        await page.goto(server.url("/"));
         return {
           state: await page.evaluate('document.querySelector("#app").dataset.state'),
           painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(PRIYA)))),

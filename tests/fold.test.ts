@@ -83,7 +83,8 @@ if (skipped)
   ].join("\n"));
 
 interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
+  /** Returns once the new document has drawn. */
+  goto(url: string): Promise<void>;
   evaluate(expression: string): Promise<string>;
 }
 
@@ -93,7 +94,7 @@ describe.skipIf(skipped !== null)("measured in a browser", () => {
       const server = await serve(dist);
       try {
         const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/germany/eu-blue-card-general/"), 500);
+          await page.goto(server.url("/germany/eu-blue-card-general/"));
           return page.evaluate(
             'JSON.stringify((() => {'
             + ' const box = document.querySelector(".answer");'
@@ -133,7 +134,7 @@ describe.skipIf(skipped !== null)("a country page's first route is in the first 
       const server = await serve(dist);
       try {
         const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/germany/"), 500);
+          await page.goto(server.url("/germany/"));
           return page.evaluate(
             'JSON.stringify((() => {'
             + ' const y = (el) => el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;'
