@@ -39,8 +39,8 @@ export function warnNotWalked(what: string, reason: string): void {
 
 /** The page `scripts/browser.mjs` hands a walk. */
 export interface BrowserPage {
-  /** With no time, returns once the new document has drawn; given one, sleeps it (until #237). */
-  goto(url: string, settleMs?: number): Promise<void>;
+  /** Navigates and returns once the new document has drawn. */
+  goto(url: string): Promise<void>;
   /** Navigates and returns at once, for a read before the page's script runs. */
   navigate(url: string): Promise<void>;
   evaluate(expression: string): Promise<string>;
@@ -81,8 +81,6 @@ export const DESK = { viewport: { width: 1280, height: 900 }, mobile: false };
 /** A phone. */
 export const PHONE = { viewport: { width: 390, height: 844 }, mobile: true };
 
-export const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 /** The beat in milliseconds, as the built stylesheet carries it, in either
  * unit (`tokens.css` says why). */
 const BEAT_MS = `(() => {
@@ -90,28 +88,17 @@ const BEAT_MS = `(() => {
   return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
 })()`;
 
-/** The beat's length in milliseconds. A page without the token fails here
- * rather than waiting nothing. */
-export async function beatMsOf(page: Pick<BrowserPage, "evaluate">): Promise<number> {
-  const ms = Number(await page.evaluate(BEAT_MS));
-  if (!(ms > 0)) throw new Error("the page declares no --motion-beat");
-  return ms;
-}
-
 /**
  * Returns once the beat of the card on the screen is over, by the page's own
  * clock: the moment this read sees the card, plus the page's beat. A card
- * shows only once it is drawn, and its beat begins as it is drawn.
+ * shows only once it is drawn, and its beat begins as it is drawn. A page
+ * without the beat's token fails here rather than waiting nothing.
  */
 export async function waitUntilPastTheBeat(page: Pick<BrowserPage, "evaluate" | "waitUntil">): Promise<void> {
   const seenAt = Number(await page.evaluate("performance.now()"));
-  const beatMs = await beatMsOf(page);
+  const beatMs = Number(await page.evaluate(BEAT_MS));
+  if (!(beatMs > 0)) throw new Error("the page declares no --motion-beat");
   await page.waitUntil(`performance.now() >= ${seenAt + beatMs}`, "the page's clock never passed the beat");
-}
-
-/** Past the beat, with room for a frame or two. */
-export async function waitOutTheBeat(page: BrowserPage): Promise<void> {
-  await settle((await beatMsOf(page)) + 150);
 }
 
 /** The label of the question on the screen, or "" where none is. */

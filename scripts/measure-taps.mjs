@@ -113,7 +113,8 @@ try {
       const path = relative(dist, file).split("\\").join("/");
       // Through the server's own url(): a site built for a subpath asks for
       // its assets there, and served at the root it measures as unstyled.
-      await page.goto(server.url(`/${path.replace(/index\.html$/, "")}`), 350);
+      await page.goto(server.url(`/${path.replace(/index\.html$/, "")}`));
+      await page.waitUntilAtRest();
       const m = JSON.parse(await page.evaluate(PROBE));
       const overflow = m.scrollWidth > m.innerWidth + 1;
       if (overflow) overflows++;
@@ -128,9 +129,10 @@ try {
       }
     }
     for (const [name, answers] of DRAWN) {
-      await page.goto(server.url("/"), 300);
+      await page.goto(server.url("/"));
       await page.evaluate(seedFor(answers));
-      await page.goto(server.url("/"), 1200);
+      await page.goto(server.url("/"));
+      await page.waitUntilAtRest();
       const m = JSON.parse(await page.evaluate(PROBE));
       const overflow = m.scrollWidth > m.innerWidth + 1;
       if (overflow) overflows++;
