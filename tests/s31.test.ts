@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import { waitUntilPastTheBeat, type BrowserPage } from "./browser-walk.js";
 
 /**
  * s31 — the hold state says where it is, and two small things.
@@ -49,13 +50,6 @@ if (skipped)
     "",
   ].join(String.fromCharCode(10)));
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  problems(): string[];
-}
-
-const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** s20's finished persona: an offer in Germany, a Turkish passport, every
  * question answered, so the record restores straight to a verdict. */
@@ -167,11 +161,14 @@ describe.skipIf(skipped !== null)("the hold state is one line under the eyebrow 
       const server = await serve(dist, { delayJsMs: HELD_MS });
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"), 300);
+          await page.goto(server.url("/404.html"));
           await page.evaluate(SEED_FINISHED);
-          await page.goto(server.url("/"), 500);
+          await page.navigate(server.url("/"));
+          // The build's paint, before the module runs: the cover on, the document parsed, every stylesheet in.
+          await page.waitUntil(`document.documentElement?.dataset.cover && document.readyState !== "loading" && [...document.querySelectorAll('link[rel="stylesheet"]')].every((l) => l.sheet)`, "the build's paint never laid out");
           const held = JSON.parse(await page.evaluate(HOLD)) as Hold;
-          await settle(HELD_MS + 1200);
+          await page.waitUntil('!document.querySelector(".stand-in")', "the module never drew its first screen");
+          await page.waitUntilAtRest();
           const drawn = JSON.parse(await page.evaluate(HOLD)) as Hold;
           return { held, drawn, problems: page.problems() };
         }, { viewport, mobile });
@@ -259,6 +256,8 @@ const ANSWER_ANOTHER_BAND = `(() => {
   other.click();
   return other.textContent.trim();
 })()`;
+/** The reveal has brought the headline's top into view: a smooth scroll's first frames can pass for a two-frame rest. */
+const HEADLINE_IN_VIEW = 'document.getElementById("headline").getBoundingClientRect().top >= 0';
 
 describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
   for (const [name, viewport, mobile] of [
@@ -269,26 +268,27 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"), 300);
+          await page.goto(server.url("/404.html"));
           await page.evaluate(SEED_FINISHED);
-          await page.goto(server.url("/"), 1600);
+          await page.goto(server.url("/"));
+          await page.waitUntilAtRest();
           const arrived = JSON.parse(await page.evaluate(FOCUS)) as Focus;
           await page.evaluate(TAP_SALARY);
-          await settle(900);
+          await page.waitUntilAtRest();
           const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
+          await waitUntilPastTheBeat(page);
           await page.evaluate(ANSWER_ANOTHER_BAND);
-          await settle(900);
+          await page.waitUntil(HEADLINE_IN_VIEW, "the reveal never brought the headline into view");
+          await page.waitUntilAtRest();
           const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
           return { arrived, onQuestion, back, problems: page.problems() };
         }, { viewport, mobile });
         expect(seen.problems).toEqual([]);
-        // The arrival keeps s10's rule: a reader who touched nothing has
-        // nothing taken from them.
+        // The arrival keeps s10's rule: a reader who touched nothing has nothing taken from them.
         expect(seen.arrived.state).toBe("results");
         expect(seen.arrived.active, `the arrival focused ${seen.arrived.active}`).toBe("body");
         expect(seen.onQuestion.state).toBe("questions");
-        // The return: the verdict is drawn, announced once, and the headline
-        // — the same element — holds the focus, out of the tab order.
+        // The return: the verdict is drawn, announced once, and the headline — the same element — holds the focus, out of the tab order.
         const r = seen.back;
         expect(r.state).toBe("results");
         expect(r.headline).not.toBe("");
@@ -314,9 +314,10 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"), 300);
+          await page.goto(server.url("/404.html"));
           await page.evaluate(seed);
-          await page.goto(server.url(path), 1600);
+          await page.goto(server.url(path));
+          await page.waitUntilAtRest();
           return { at: JSON.parse(await page.evaluate(FOCUS)) as Focus, problems: page.problems() };
         }, { viewport: { width: 390, height: 844 }, mobile: true });
         expect(seen.problems).toEqual([]);
@@ -369,13 +370,15 @@ describe.skipIf(skipped !== null)("the gutter is stable (point 3)", () => {
       const server = await serve(dist);
       try {
         const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"), 300);
+          await page.goto(server.url("/404.html"));
           await page.evaluate("localStorage.clear()");
-          await page.goto(server.url("/"), 1200);
+          await page.goto(server.url("/"));
+          await page.waitUntilAtRest();
           const question = JSON.parse(await page.evaluate(EDGE)) as Edge;
-          await page.goto(server.url("/404.html"), 300);
+          await page.goto(server.url("/404.html"));
           await page.evaluate(SEED_FINISHED);
-          await page.goto(server.url("/"), 1600);
+          await page.goto(server.url("/"));
+          await page.waitUntilAtRest();
           const verdict = JSON.parse(await page.evaluate(EDGE)) as Edge;
           return { question, verdict, problems: page.problems() };
         }, { viewport, mobile: false, scrollbars: true });
