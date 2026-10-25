@@ -162,6 +162,12 @@ click on the tracker link. Answers never leave the device.
   the lint refuses a sleep in a test. `BROWSER_CPU_SLOWDOWN` slows every tab,
   and `serve` can send a page's HTML in two pieces (`scripts/html-in-pieces.mjs`)
   to test a paint mid-parse (#230).
+  Each command under `scripts/` is three files, one level each: the job
+  (`smoke.mjs`, `infrastructure`) does the work and returns what it found, its
+  CLI (`cli-smoke.mjs`, `presentation`) reads the arguments and words the
+  result, and its entry (`main-smoke.mjs`, `main`) wires the two and is what
+  `package.json` runs. The dev server knows the server it started is this
+  project's by `/countries.json`, and reaches no screen word (#247).
   The carry (`scripts/carry-assets`)
   copies the live generation's assets into `dist/`, only from the site's own
   address and only bytes the previous build's digest list attests; it is a
