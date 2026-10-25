@@ -51,7 +51,7 @@ const controlsOf = (html: string): string[][] =>
   [...html.matchAll(/<(?:a|button)\b([^>]*)>/g)]
     .map((m) => (/class="([^"]*)"/.exec(m[1])?.[1] ?? "").split(/\s+/).filter(Boolean));
 
-describe("B2 — the site can be crawled and browsed", () => {
+describe("the site can be crawled and browsed", () => {
   /**
    * The sitemap is generated from the dataset, so a route added tomorrow is in
    * it tomorrow. What it must never be is a list somebody keeps in step by

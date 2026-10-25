@@ -56,7 +56,7 @@ function renderedReasons(): Array<[string, string]> {
   return out;
 }
 
-describe("the reason column reads as prose, as rendered (blocker B3)", () => {
+describe("the reason column reads as prose, as rendered", () => {
   // The permanent form of B3 at THIS layer. `permit-rulebook-data` proves the engine
   // never produces a field id; what this proves is that the page never puts
   // one on screen — over what it actually draws, not over the source text it

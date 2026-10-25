@@ -1,5 +1,5 @@
 // @level main
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 /**
  * Vitest stubs CSS imports to empty by default, which would make the route
@@ -30,5 +30,11 @@ export default defineConfig({
     // the suite quick and few enough that the launches do not fight over the
     // machine; a flaky suite is a suite nobody reads.
     maxWorkers: 4,
+    // The suite reads this checkout's tree alone (#239): `.claude/` holds
+    // Claude Code's own files, a builder's worktree among them, and `.run/`
+    // the agents' scratch, suites included. The same homes as
+    // `dependency-rules.md`'s `## Ignore`, which ESLint mirrors; Vitest keeps
+    // its own list, since the rest of that one would hide nothing it reads.
+    exclude: [...configDefaults.exclude, ".claude/**", ".run/**"],
   },
 });

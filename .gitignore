@@ -12,3 +12,6 @@ docs/spine/issues.json
 .run/
 # What a vitest run leaves behind (the retro of #25, #97).
 .vitest/
+# Claude Code's own: the builders' worktrees and the session's local settings (#239).
+.claude/worktrees/
+.claude/settings.local.json

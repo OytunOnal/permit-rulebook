@@ -77,7 +77,7 @@ function nearestNamed(answers: Profile): string | undefined {
   return stepsIn(verdict).map((s) => s.title).find((title) => subline.includes(nearestLine(title)));
 }
 
-describe("F1a — the job-search sentence reaches only a reader without an offer", () => {
+describe("the job-search sentence reaches only a reader without an offer", () => {
   const seekOpen = (answers: Profile) =>
     evaluate(ds, answers).some((r) => r.route.kind === "seek" && r.status !== "hold");
 
@@ -118,7 +118,7 @@ describe("F1a — the job-search sentence reaches only a reader without an offer
   });
 });
 
-describe("F1b — unlock steps ordered by what the reader can do", () => {
+describe("the unlock steps are ordered by what the reader can do", () => {
   it("a change of situation the reader can make comes after the steps within their own situation", () => {
     // Deniz as a transferee: a job offer is a path step he can take, and it
     // ranks after the improvable ones (recognition, language) — the key is
@@ -179,7 +179,7 @@ describe("F1b — unlock steps ordered by what the reader can do", () => {
   });
 });
 
-describe("F4 — the not-yet Opportunity Card prints its tally, and the CEFR rungs are one step", () => {
+describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are one step", () => {
   /** The points tally on the Opportunity Card the verdict for these answers draws. */
   const tallyFor = (answers: Profile): string =>
     blocksIn(cardOn(verdictFor(answers), "de-chancenkarte"), "ptsline met", "ptsline short");
@@ -251,7 +251,7 @@ describe("F4 — the not-yet Opportunity Card prints its tally, and the CEFR run
   });
 });
 
-describe("F3 — the route page's liveness line names its own source or stays silent", () => {
+describe("the route page's liveness line names its own source or stays silent", () => {
   const run = lastWatchRun();
   const address = (id: string) => routeAddresses(ds).find((a) => a.route.id === id)!;
   /**
@@ -310,13 +310,11 @@ describe("F3 — the route page's liveness line names its own source or stays si
   });
 });
 
-describe("P1 — never a stutter; and, since s32's amendment 6, no explainer for the sign", () => {
+describe("a citation never restates its number, and the sign carries no explainer", () => {
   it("restates no number, and explains the act alone where the citation names one", () => {
-    // P1 replaced "(§ 20a, section 20a)" with "§ = section" once per page;
-    // amendment 6 (the human's walk, 2026-09-18) took the sign's words away
-    // — the sign is read as a reader reads it. What stands is the rule: a
-    // citation never restates its own number, and the act it names is said
-    // once, in the citation's own bracket.
+    // A citation never restates its own number, and the act it names is said
+    // once, in the citation's own bracket; the sign is read as a reader reads
+    // it, with no words of its own.
     expect(glossSection("Opportunity Card (Chancenkarte, § 20a)", new Set()))
       .toBe("Opportunity Card (Chancenkarte, § 20a)");
     expect(glossSection("Experienced worker (§ 19c / § 6 BeschV)", new Set()))
@@ -341,7 +339,7 @@ describe("P1 — never a stutter; and, since s32's amendment 6, no explainer for
   });
 });
 
-describe("P2 — a rule with limbs is one sentence", () => {
+describe("a rule with limbs is one sentence", () => {
   it("a rule's limbs open on the copy module's lead-in, never 'Either of these answers this rule:'", () => {
     // The lead-in introduces one line per path: "either" for two paths, and
     // never for three (paths-named.test.ts).
@@ -351,14 +349,14 @@ describe("P2 — a rule with limbs is one sentence", () => {
   });
 });
 
-describe("P3 — the curator's note stays in the data", () => {
+describe("the curator's note stays in the data", () => {
   it("no card and no page carries it", () => {
     expect(blocksIn(cardOn(verdictFor(PRIYA), "de-chancenkarte"), "srcs")).not.toContain("times out");
     for (const { path, text } of builtPages()) expect(text, path).not.toContain("times out");
   });
 });
 
-describe("P4 — /data/ drops the zero", () => {
+describe("/data/'s provenance line", () => {
   it("counts what stands, and says nothing of a count of none", () => {
     expect(proseProvenanceCounts(41, 12, 0)).toBe("41 sourced, 12 ours");
     expect(proseProvenanceCounts(41, 12, 2)).toBe("41 sourced, 12 ours, 2 kept on a dated reason");
@@ -368,7 +366,7 @@ describe("P4 — /data/ drops the zero", () => {
   });
 });
 
-describe("P5 — the Anabin link's stray full stop", () => {
+describe("the Anabin link carries no stray full stop", () => {
   it("the learn box ends on the link: nothing after it can wrap alone", () => {
     // Deniz works in IT with three years in the last seven, so the shortage
     // Blue Card's IT path (#134) meets the card without recognition and no
@@ -385,7 +383,7 @@ describe("P5 — the Anabin link's stray full stop", () => {
   });
 });
 
-describe("P6 — the counter's honest word", () => {
+describe("the question counter", () => {
   it("says about, not up to", () => {
     expect(questionCounter(1, 24)).toBe("Question 1 of about 24");
     const html = questionCardHtml({
