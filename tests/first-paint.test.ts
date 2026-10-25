@@ -535,7 +535,8 @@ describe.skipIf(skipped !== null)("the page arriving in pieces paints where it s
     }, 120000);
   for (const screen of VIEWPORTS.filter((s) => s.mobile))
     it(`${screen.name} · the measure counts a shift Chrome marks as input until a tap reaches the page (#243)`, async () => {
-      const { before, after }: Awaited<ReturnType<typeof shiftsBeforeAndAfterATap>> = await withBrowser(shiftsBeforeAndAfterATap, { viewport: screen.viewport, mobile: true });
+      type Seen = Awaited<ReturnType<typeof shiftsBeforeAndAfterATap>>;
+      const { before, after }: Seen = await withBrowser(shiftsBeforeAndAfterATap, { viewport: screen.viewport, mobile: true });
       expect(before.every.map((s) => s.markedAsInput), `none marked as input, so no subject: ${JSON.stringify(before)}`).toEqual([true]);
       expect(before.counted, "the page's own shift in its first frames went uncounted").toEqual(before.every.map((s) => s.value));
       expect(after.every.map((s) => s.markedAsInput), `the tap moved nothing: ${JSON.stringify(after)}`).toEqual([true, true]);

@@ -164,8 +164,13 @@ describe.skipIf(skipped !== null)("the hold state is one line under the eyebrow 
           await page.goto(server.url("/404.html"));
           await page.evaluate(SEED_FINISHED);
           await page.navigate(server.url("/"));
-          // The build's paint, before the module runs: the cover on, the document parsed, every stylesheet in.
-          await page.waitUntil(`document.documentElement?.dataset.cover && document.readyState !== "loading" && [...document.querySelectorAll('link[rel="stylesheet"]')].every((l) => l.sheet)`, "the build's paint never laid out");
+          // The build's paint, before the module runs: the cover on, the
+          // document parsed, every stylesheet in.
+          await page.waitUntil(
+            `document.documentElement?.dataset.cover && document.readyState !== "loading"`
+            + ` && [...document.querySelectorAll('link[rel="stylesheet"]')].every((l) => l.sheet)`,
+            "the build's paint never laid out",
+          );
           const held = JSON.parse(await page.evaluate(HOLD)) as Hold;
           await page.waitUntil('!document.querySelector(".stand-in")', "the module never drew its first screen");
           await page.waitUntilAtRest();
@@ -278,11 +283,13 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
           return { arrived, onQuestion, back, problems: page.problems() };
         }, { viewport, mobile });
         expect(seen.problems).toEqual([]);
-        // The arrival keeps s10's rule: a reader who touched nothing has nothing taken from them.
+        // The arrival keeps s10's rule: a reader who touched nothing has
+        // nothing taken from them.
         expect(seen.arrived.state).toBe("results");
         expect(seen.arrived.active, `the arrival focused ${seen.arrived.active}`).toBe("body");
         expect(seen.onQuestion.state).toBe("questions");
-        // The return: the verdict is drawn, announced once, and the headline — the same element — holds the focus, out of the tab order.
+        // The return: the verdict is drawn, announced once, and the headline —
+        // the same element — holds the focus, out of the tab order.
         const r = seen.back;
         expect(r.state).toBe("results");
         expect(r.headline).not.toBe("");

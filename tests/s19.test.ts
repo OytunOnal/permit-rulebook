@@ -373,12 +373,12 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
         // Each screen is read once the page is at rest.
-        const read = async (answers: Profile) => page.waitUntilAtRest().then(async () => ({
+        const read = async (answers: Profile) => ({
           status: await page.evaluate('document.getElementById("cstatus").textContent'),
           painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
           state: await page.evaluate('document.getElementById("app").dataset.state'),
           problems: page.problems(),
-        }));
+        });
         // France, by the buttons: the destination on the record, then the marked answer tapped.
         await page.goto(server.url("/"));
         await page.evaluate(seed({ destination: "fr" }));
@@ -388,7 +388,7 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
         // Spain, the same two answers — and the passport, which is Spain's third
         // tap (CRITERIA MET in three).
         await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
-        await page.goto(server.url("/"));
+        await openAtRest(page, server.url("/"));
         const spain = await read(SPAIN_RESEARCH);
         return { france, spain };
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, {

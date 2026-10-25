@@ -18,8 +18,8 @@ import { shiftScoreSince } from "./layout-shifts.js";
  * same with or without motion. The gestures are an answer, a correction (✎),
  * ← Back, Keep this answer and the browser's Back. The beat's length is the
  * token `--motion-beat`, read from the page here only to wait it out or to
- * time a click against it; no case types it. The first paint has no beat, and neither has Start over, which
- * opens the interview as a cold load does.
+ * time a click against it; no case types it. The first paint has no beat,
+ * and neither has Start over, which opens the interview as a cold load does.
  *
  * The clicks and keys are the platform's own, at a point of the viewport or on
  * the focused element, so whatever the new card has drawn under that point is
@@ -201,22 +201,23 @@ interface DoubleClick extends SpanAndBeat { cold: Where; drawn: Where; under: st
  */
 async function doubleClickOnAnOption(site: PageOnSite): Promise<DoubleClick | null> {
   const { page } = site;
-  for (let i = 0, walk = 1; ; walk++) {
-    await coldStart(site);
-    const at = (JSON.parse(await page.evaluate(OPTION_CENTRES)) as Point[])[i];
-    if (!at) return null;
-    const cold = await where(page);
-    await page.evaluate(CLOCK_THE_GESTURES);
-    await page.clickAt(at.x, at.y);
-    const drawn = await waitUntilAnotherQuestionDrawn(page, cold.question);
-    const under = await page.evaluate(optionUnder(at));
-    if (!under) { i++; walk = 0; continue; }
-    await page.clickAt(at.x, at.y);
-    await page.waitUntilAtRest();
-    const timed = await readSpanAndBeat(page);
-    if (timed.spanMs >= timed.beatMs && walk < WALKS_FOR_A_PRESS_INSIDE) continue;
-    return { ...timed, cold, drawn, under, after: await where(page) };
-  }
+  for (let i = 0; ; i++)
+    for (let walk = 1; ; walk++) {
+      await coldStart(site);
+      const at = (JSON.parse(await page.evaluate(OPTION_CENTRES)) as Point[])[i];
+      if (!at) return null;
+      const cold = await where(page);
+      await page.evaluate(CLOCK_THE_GESTURES);
+      await page.clickAt(at.x, at.y);
+      const drawn = await waitUntilAnotherQuestionDrawn(page, cold.question);
+      const under = await page.evaluate(optionUnder(at));
+      if (!under) break;
+      await page.clickAt(at.x, at.y);
+      await page.waitUntilAtRest();
+      const timed = await readSpanAndBeat(page);
+      if (timed.spanMs >= timed.beatMs && walk < WALKS_FOR_A_PRESS_INSIDE) continue;
+      return { ...timed, cold, drawn, under, after: await where(page) };
+    }
 }
 
 describe.skipIf(skipped !== null)("a question card a gesture draws takes no click for a beat (#86)", () => {
