@@ -518,7 +518,7 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
  * rows prove it does, on a page that moves early and on a tap.
  */
 describe.skipIf(skipped !== null)("the page arriving in pieces paints where it stays (#236)", () => {
-  const LEDGER = '<details class="decl"';
+  const LEDGER = '<details class="decl"'; // the ledger's opening tag in the built page: the marker the HTML is split before
   for (const screen of VIEWPORTS)
     it(`${screen.name} · /?country=fr, the HTML split before the ledger: nothing moves`, async () => {
       expect(readFileSync(join(dist, "index.html"), "utf8"), "the page has no ledger to split before").toContain(LEDGER);
