@@ -118,17 +118,19 @@
   "scripts/child-env.mjs": "infrastructure",
   "scripts/chrome.mjs": "infrastructure",
   "scripts/cli-check-base.mjs": "presentation",
+  "scripts/cli-data-pin.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
   "scripts/cli-measure-taps.mjs": "presentation",
   "scripts/cli-shot.mjs": "presentation",
   "scripts/cli-smoke.mjs": "presentation",
-  "scripts/data-pin.mjs": "infrastructure main",
+  "scripts/data-pin.mjs": "infrastructure",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
   "scripts/html-in-pieces.mjs": "infrastructure",
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
   "scripts/main-check-base.mjs": "main",
+  "scripts/main-data-pin.mjs": "main",
   "scripts/main-measure-taps.mjs": "main",
   "scripts/main-shot.mjs": "main",
   "scripts/main-smoke.mjs": "main",
@@ -397,6 +399,21 @@
   },
   {
    "from": "scripts/main-check-base.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-pin.mjs",
+   "to": "scripts/cli-data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-pin.mjs",
+   "to": "scripts/data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-pin.mjs",
    "to": "scripts/print-report.mjs",
    "kind": "dependency"
   },
@@ -4719,6 +4736,18 @@
     "exported": true
    }
   ],
+  "scripts/cli-data-pin.mjs": [
+   {
+    "name": "pinOptionsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pinReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/cli-deploy-finding.mjs": [],
   "scripts/cli-measure-taps.mjs": [
    {
@@ -4773,7 +4802,7 @@
     "exported": false
    },
    {
-    "name": "lockPath",
+    "name": "siteLockPath",
     "kind": "const",
     "exported": false
    },
@@ -4793,9 +4822,9 @@
     "exported": false
    },
    {
-    "name": "lockPathAskedBy",
+    "name": "pinData",
     "kind": "fn",
-    "exported": false
+    "exported": true
    }
   ],
   "scripts/deploy-finding.mjs": [
@@ -4954,6 +4983,7 @@
    }
   ],
   "scripts/main-check-base.mjs": [],
+  "scripts/main-data-pin.mjs": [],
   "scripts/main-measure-taps.mjs": [
    {
     "name": "measured",
@@ -7915,6 +7945,7 @@
   "scripts/child-env.mjs",
   "scripts/chrome.mjs",
   "scripts/cli-check-base.mjs",
+  "scripts/cli-data-pin.mjs",
   "scripts/cli-deploy-finding.mjs",
   "scripts/cli-measure-taps.mjs",
   "scripts/cli-shot.mjs",
@@ -7926,6 +7957,7 @@
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
   "scripts/main-check-base.mjs",
+  "scripts/main-data-pin.mjs",
   "scripts/main-measure-taps.mjs",
   "scripts/main-shot.mjs",
   "scripts/main-smoke.mjs",
@@ -7988,5 +8020,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a00771d0a389493aef4de863d8be8c6a4c76b626644bbf5955a00ec3abf84db6"
+ "digest": "9c39aaf32e4d89260a3290ace071e8972b98253fcda6017412c182c8f9945699"
 }
