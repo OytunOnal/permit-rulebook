@@ -34,7 +34,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromePath } from "./chrome.mjs";
 
@@ -137,10 +137,14 @@ function drawIcons(outDir) {
 
 /**
  * Draws the icons, the .ico and the card from `cardHtml` into `outDir`
- * (`public/` unless another folder is given), and writes `facts` beside the
- * card as the sidecar. Returns the names of the files it wrote.
+ * (`public/` unless another folder is given, a relative one read from the
+ * working folder), and writes `facts` beside the card as the sidecar. Returns
+ * the names of the files it wrote.
  */
-export function renderAssets({ facts, cardHtml, outDir = publicDir }) {
+export function renderAssets({ facts, cardHtml, outDir: askedDir = publicDir }) {
+  // Resolved here, not left to Chrome: Chrome does not write a relative
+  // --screenshot where this process then reads it back.
+  const outDir = resolve(askedDir);
   mkdirSync(outDir, { recursive: true });
   const icons = drawIcons(outDir);
   writeFileSync(join(outDir, "favicon.ico"), ico(icons.filter(({ size }) => ICO_SIZES.includes(size))));

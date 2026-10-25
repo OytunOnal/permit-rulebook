@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { execFile, execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/chrome.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
@@ -132,6 +132,19 @@ describe.skipIf(noChrome !== null)("npm run assets", () => {
       expect(pngSizeOf(join(folder, "social-card.png"))).toBe("1200x630");
       const sidecar = JSON.parse(readFileSync(join(folder, "social-card.json"), "utf8"));
       expect(Object.keys(sidecar).sort()).toEqual(["countries", "headline", "product", "read", "routesLine", "tagline"]);
+    });
+    expect(writtenTimesIn("public"), "a file of public/ was written").toEqual(before);
+  }, 180000);
+
+  it("renders into a folder given relative to the folder it runs in", async () => {
+    const before = writtenTimesIn("public");
+    await inThrowawayFolder(async (folder) => {
+      const run = await nodeRun([...scriptArgumentsOf("assets"), "--out", relative(root, folder)]);
+      expect(run.status, run.out).toBe(0);
+      expect(readdirSync(folder).sort()).toEqual([
+        "favicon-16.png", "favicon-180.png", "favicon-32.png", "favicon-64.png", "favicon-96.png",
+        "favicon.ico", "social-card.json", "social-card.png",
+      ]);
     });
     expect(writtenTimesIn("public"), "a file of public/ was written").toEqual(before);
   }, 180000);
