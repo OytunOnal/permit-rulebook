@@ -4,7 +4,6 @@ import { existsSync } from "node:fs";
 import { createServer } from "node:net";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PRODUCT_NAME } from "../src/lib/copy/frame.ts";
 import { childEnv } from "./child-env.mjs";
 import { at, siteBase } from "./site-base.mjs";
 
@@ -59,10 +58,24 @@ async function isAnswering(address) {
 }
 
 /**
+ * Why `body` is not this project's country list, or null when it is: JSON
+ * whose `countries` is an array, as `src/pages/countries.json.ts` builds it.
+ */
+function notOurCountryList(body) {
+  let list;
+  try {
+    list = JSON.parse(body);
+  } catch (e) {
+    return `not this project's country list (not JSON: ${e.message})`;
+  }
+  return Array.isArray(list?.countries) ? null : "not this project's country list";
+}
+
+/**
  * Is this origin serving THIS project?
  *
- * `/status` is a real page of the site and it prints the product's name, so a
- * 200 whose body carries the name answers both halves of the question at once:
+ * `/countries.json` is a fact of this build, so a 200 whose body is this
+ * project's country list answers both halves of the question at once:
  * something is there, and it is us. A dev server with the wrong root answers
  * 404 here while looking perfectly healthy to its own manager — which is
  * exactly the failure this check exists for. `/@vite/client` is asked as well,
@@ -74,12 +87,10 @@ export async function notOurDevServer(origin) {
   // Everything is asked for under the served root, base included.
   const root = origin.endsWith("/") ? origin : origin + "/";
   try {
-    // With `trailingSlash: "always"` a page's address ends in a slash, and the
-    // dev server answers 404 without it (2026-09-08).
-    const status = await fetch(`${root}data/`, { signal: AbortSignal.timeout(5000) });
-    if (!status.ok) return `${root}data/ answered ${status.status} — it serves no pages of this project`;
-    const html = await status.text();
-    if (!html.includes(PRODUCT_NAME)) return `${root}data/ does not mention ${PRODUCT_NAME}`;
+    const countries = await fetch(`${root}countries.json`, { signal: AbortSignal.timeout(5000) });
+    if (!countries.ok) return `${root}countries.json answered ${countries.status} — it serves nothing of this project`;
+    const notOurs = notOurCountryList(await countries.text());
+    if (notOurs) return `${root}countries.json answered ${notOurs}`;
     const client = await fetch(`${root}@vite/client`, { signal: AbortSignal.timeout(5000) });
     if (!client.ok) return `${root}@vite/client answered ${client.status} — not a dev server`;
     return null;
