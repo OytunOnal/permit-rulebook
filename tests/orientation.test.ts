@@ -13,6 +13,7 @@ import { routePages } from "../src/lib/route-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { absolute, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
+import type { BrowserPage } from "./browser-walk.js";
 
 /**
  * The Orientation lens (RUBRIC 1.3), which the site map's own birth demanded.
@@ -184,11 +185,6 @@ if (skipped)
     "",
   ].join(String.fromCharCode(10)));
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
-
 const STATE = 'JSON.stringify({'
   + ' expanded: document.querySelector(".menu").getAttribute("aria-expanded"),'
   + ' menuShown: getComputedStyle(document.querySelector(".menu")).display !== "none",'
@@ -202,7 +198,7 @@ describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
       const server = await serve(dist);
       try {
         const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/germany/"), 400);
+          await page.goto(server.url("/germany/"));
           return page.evaluate(STATE);
         }, { viewport: { width, height: 900 }, mobile: false }) as string) as
           { menuShown: boolean; navShown: boolean };
@@ -217,7 +213,7 @@ describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/germany/"), 500);
+        await page.goto(server.url("/germany/"));
         const closed = JSON.parse(await page.evaluate(STATE));
         await page.evaluate('document.querySelector(".menu").click()');
         const open = JSON.parse(await page.evaluate(STATE));
@@ -271,7 +267,7 @@ describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
       const seen = await withBrowser(async (page: BrowserPage) => {
         const state = async () => JSON.parse(await page.evaluate(STATE)) as
           { expanded: string; navShown: boolean };
-        await page.goto(server.url("/germany/"), 500);
+        await page.goto(server.url("/germany/"));
         // Escape pressed on the document, with the focus nowhere near the menu.
         await page.evaluate('document.querySelector(".menu").click()');
         const opened = await state();
@@ -321,7 +317,7 @@ describe.skipIf(skipped !== null)("the data page's headings sit clear of their l
       const server = await serve(dist);
       try {
         const heads = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/data/"), 700);
+          await page.goto(server.url("/data/"));
           return page.evaluate(
             'JSON.stringify([...document.querySelectorAll(".jsonlinks")].map((nav) => {'
             + ' const label = nav.querySelector(".label");'
@@ -361,7 +357,9 @@ describe.skipIf(skipped !== null)("nothing the site does is refused by its own p
           ["interview", "/"], ["country", "/germany/"], ["data", "/data/"],
           ["route", "/germany/researcher/"], ["error", "/404.html"],
         ] as const) {
-          await page.goto(server.url(path), 1500);
+          await page.goto(server.url(path));
+          // What the policy refused is read once nothing is still loading.
+          await page.waitUntilAtRest();
           out[name] = {
             menu: await page.evaluate(
               '(() => { const b = document.querySelector(".menu"); if (!b) return "no button";'
