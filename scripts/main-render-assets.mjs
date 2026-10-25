@@ -1,12 +1,12 @@
 // @level main
 /**
- * `npm run assets` and `npm run assets:check`: reads the dataset, the
+ * `npm run assets` and `npm run assets:check`: imports the dataset, the
  * product's words and the social card's layout, builds the card's facts (and,
- * to render, its HTML in the palette of `tokens.css`), hands them to
- * `render-assets.mjs`, prints the report `cli-render-assets.mjs` makes of
- * what it did, and exits with its code.
+ * to render, its HTML in the palette `render-assets.mjs` reads from
+ * `tokens.css`), hands them to `render-assets.mjs`, prints the report
+ * `cli-render-assets.mjs` makes of what it did, and exits with its code. It
+ * reads no file itself.
  */
-import { readFileSync } from "node:fs";
 import { datasetMeta } from "permit-rulebook-data";
 import dataset from "permit-rulebook-data/data/dataset.json" with { type: "json" };
 // The product's own words and the card's own layout, imported rather than
@@ -16,7 +16,7 @@ import { PRODUCT_NAME, TAGLINE, routesCheckerAsksAbout } from "../src/lib/copy/f
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.ts";
 import { assetsAskedBy, checkReportOf, renderReportOf } from "./cli-render-assets.mjs";
 import { printReport } from "./print-report.mjs";
-import { checkAssets, renderAssets } from "./render-assets.mjs";
+import { checkAssets, renderAssets, tokensStylesheet } from "./render-assets.mjs";
 
 const asked = assetsAskedBy(process.argv.slice(2));
 const facts = socialCardFacts(dataset, datasetMeta(dataset).newest_retrieved_at, {
@@ -26,6 +26,6 @@ const facts = socialCardFacts(dataset, datasetMeta(dataset).newest_retrieved_at,
 if (asked.isCheck) {
   printReport(checkReportOf(checkAssets(facts), facts));
 } else {
-  const tokens = readFileSync(new URL("../tokens.css", import.meta.url), "utf8");
-  printReport(renderReportOf(renderAssets({ facts, cardHtml: socialCardHtml(facts, tokens), outDir: asked.outDir }), facts));
+  const cardHtml = socialCardHtml(facts, tokensStylesheet());
+  printReport(renderReportOf(renderAssets({ facts, cardHtml, outDir: asked.outDir }), facts));
 }
