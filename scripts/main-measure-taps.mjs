@@ -6,9 +6,7 @@
  */
 import { screenLinesOf, tapReportOf } from "./cli-measure-taps.mjs";
 import { measureTaps } from "./measure-taps.mjs";
+import { printReport } from "./print-report.mjs";
 
-const measured = await measureTaps({ onScreen: (screen) => { for (const line of screenLinesOf(screen)) console.log(line); } });
-const report = tapReportOf(measured);
-for (const line of report.err) console.error(line);
-for (const line of report.out) console.log(line);
-process.exit(report.exitCode);
+const measured = await measureTaps({ onScreen: (screen) => printReport({ out: screenLinesOf(screen) }) });
+printReport(tapReportOf(measured));

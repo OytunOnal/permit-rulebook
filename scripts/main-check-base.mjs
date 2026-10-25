@@ -5,7 +5,6 @@
  */
 import { baseReportOf } from "./cli-check-base.mjs";
 import { checkBase } from "./check-base.mjs";
+import { printReport } from "./print-report.mjs";
 
-const report = baseReportOf(checkBase());
-for (const line of report.out) console.log(line);
-process.exit(report.exitCode);
+printReport(baseReportOf(checkBase()));
