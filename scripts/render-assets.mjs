@@ -75,11 +75,15 @@ function drawPage({ html, size, out, beside = {} }) {
     pathToFileURL(page).href,
   ], { stdio: "ignore" });
   rmSync(dir, { recursive: true, force: true });
-  const png = readFileSync(out);
-  const drawn = pngSizeOf(png);
-  if (drawn.width !== width || drawn.height !== height)
-    throw new Error(`${out}: rendered ${drawn.width}x${drawn.height}, wanted ${width}x${height}`);
-  return png;
+  return readFileSync(out);
+}
+
+/** Draws the card from `cardHtml` into `outDir`, and throws when Chrome drew it at any size but the card's. */
+function drawCard(cardHtml, outDir) {
+  const out = join(outDir, "social-card.png");
+  const drawn = pngSizeOf(drawPage({ html: cardHtml, size: CARD, out }));
+  if (drawn.width !== CARD.width || drawn.height !== CARD.height)
+    throw new Error(`${out}: rendered ${drawn.width}x${drawn.height}, wanted ${CARD.width}x${CARD.height}`);
 }
 
 /** The mark, at whatever size is asked for, drawn from the committed SVG so the
@@ -134,7 +138,7 @@ export function renderAssets({ facts, cardHtml, outDir = publicDir }) {
   mkdirSync(outDir, { recursive: true });
   const icons = drawIcons(outDir);
   writeFileSync(join(outDir, "favicon.ico"), ico(icons.filter(({ size }) => ICO_SIZES.includes(size))));
-  drawPage({ html: cardHtml, size: CARD, out: join(outDir, "social-card.png") });
+  drawCard(cardHtml, outDir);
   writeFileSync(join(outDir, SIDECAR), `${JSON.stringify(facts, null, 2)}\n`, "utf8");
   return { files: RENDERED };
 }
