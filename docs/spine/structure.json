@@ -121,6 +121,7 @@
   "scripts/data-pin.mjs": "infrastructure main",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
+  "scripts/html-in-pieces.mjs": "infrastructure",
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
   "scripts/measure-taps.mjs": "infrastructure main",
@@ -223,6 +224,11 @@
   {
    "from": "scripts/browser.mjs",
    "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser.mjs",
+   "to": "scripts/html-in-pieces.mjs",
    "kind": "dependency"
   },
   {
@@ -2386,6 +2392,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/first-paint.test.ts",
+   "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/fold.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -4540,6 +4551,13 @@
    },
    {
     "name": "startDev",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/html-in-pieces.mjs": [
+   {
+    "name": "sendBody",
     "kind": "fn",
     "exported": true
    }
@@ -7526,6 +7544,7 @@
   "scripts/data-pin.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
+  "scripts/html-in-pieces.mjs",
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
   "scripts/measure-taps.mjs",
@@ -7586,5 +7605,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "9d566284125a7a96a292ec56fc18677e2c60a44dadd037b9ab084533d0f94de0"
+ "digest": "6f17d27ea651d60e2893158181d797cacd75911db562cfebb223606c919569e1"
 }
