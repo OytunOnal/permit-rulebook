@@ -2673,6 +2673,11 @@
   },
   {
    "from": "tests/hand-run-commands.test.ts",
+   "to": "scripts/data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/hand-run-commands.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
@@ -5258,6 +5263,16 @@
     "name": "renderAssets",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "readCommittedCard",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readFactDifferences",
+    "kind": "fn",
+    "exported": false
    },
    {
     "name": "checkAssets",
@@ -8165,5 +8180,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8afca749dadf910fb3b6c4b0455320080dc34e5337f4d417667ee4012375ccf6"
+ "digest": "373be40039527534e91a0968470f0ecdca913a49e3e4ad08dc09d4622bfb4b40"
 }

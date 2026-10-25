@@ -46,10 +46,10 @@ export function pinData({ lockPath = siteLockPath } = {}) {
   const dir = dataDir();
   const sha = at(dir, "rev-parse", "HEAD");
   const datasetVersion = JSON.parse(readFileSync(join(dir, "data", "dataset.json"), "utf8")).dataset_version;
-  const before = readLock(readFileSync(target, "utf8"));
-  const text = readFileSync(target, "utf8")
+  const lockText = readFileSync(target, "utf8");
+  const pinned = lockText
     .replace(/^sha=.*$/m, `sha=${sha}`)
     .replace(/^dataset_version=.*$/m, `dataset_version=${datasetVersion}`);
-  writeFileSync(target, text, "utf8");
-  return { previousSha: before.sha, sha, datasetVersion };
+  writeFileSync(target, pinned, "utf8");
+  return { previousSha: readLock(lockText).sha, sha, datasetVersion };
 }

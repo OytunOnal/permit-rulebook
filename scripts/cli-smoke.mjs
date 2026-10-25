@@ -17,9 +17,10 @@ export function smokeOptionsOf(args) {
 }
 
 /** What a run prints for one page load: a FAIL line with its failures under it, or one ok line. */
-function reportLinesOf(r) {
-  if (!r.failures.length) return [`ok   [${r.surface}] ${r.path} (${r.what}) — ${JSON.stringify(r.value)}, 0 console errors`];
-  return [`FAIL [${r.surface}] ${r.path} (${r.what})`, ...r.failures.map((f) => `     ${f}`)];
+function reportLinesOf(pageLoad) {
+  const { surface, path, what, value, failures } = pageLoad;
+  if (!failures.length) return [`ok   [${surface}] ${path} (${what}) — ${JSON.stringify(value)}, 0 console errors`];
+  return [`FAIL [${surface}] ${path} (${what})`, ...failures.map((f) => `     ${f}`)];
 }
 
 /** What the command prints to stdout, and the code it exits with: 0 when no page load broke, 1 when one did. */

@@ -154,22 +154,32 @@ export function renderAssets({ facts, cardHtml, outDir: askedDir = publicDir }) 
   return { files: RENDERED };
 }
 
+/** Reads the committed card's size: it, the size it must be, and whether they agree. */
+function readCommittedCard() {
+  const size = decodePngSize(readFileSync(join(publicDir, "social-card.png")));
+  return { size, wantedSize: CARD, isWantedSize: isCardSize(size) };
+}
+
+/** Reads the committed sidecar: each of `facts` whose value there is not today's, an empty list for none. */
+function readFactDifferences(facts) {
+  const drawn = JSON.parse(readFileSync(join(publicDir, SIDECAR), "utf8"));
+  return Object.entries(facts)
+    .filter(([fact, today]) => JSON.stringify(drawn[fact]) !== JSON.stringify(today))
+    .map(([fact, today]) => ({ fact, drawn: drawn[fact], today }));
+}
+
 /**
  * What `public/` holds against `facts`, the card's facts as they are today,
- * changing nothing: `missing`, the files it lacks; when none is, `card`, the
- * committed card's size and the size it must be; when those agree,
- * `differences`, each fact whose sidecar value is not today's, an empty list
- * for none.
+ * changing nothing, always in one shape: `missing`, the files it lacks, an
+ * empty list for none; `card`, the committed card's size, the size it must be
+ * and whether they agree, null when a file is missing and the card is not
+ * read; and `differences`, each fact the sidecar draws otherwise than today,
+ * null when the card is not read or is not at its size, so the sidecar is not
+ * compared.
  */
 export function checkAssets(facts) {
   const missing = ["favicon.svg", ...RENDERED].filter((f) => !existsSync(join(publicDir, f)));
-  if (missing.length > 0) return { missing };
-  const size = decodePngSize(readFileSync(join(publicDir, "social-card.png")));
-  const card = { size, wantedSize: CARD, isWantedSize: isCardSize(size) };
-  if (!card.isWantedSize) return { missing, card, differences: [] };
-  const drawn = JSON.parse(readFileSync(join(publicDir, SIDECAR), "utf8"));
-  const differences = Object.entries(facts)
-    .filter(([fact, today]) => JSON.stringify(drawn[fact]) !== JSON.stringify(today))
-    .map(([fact, today]) => ({ fact, drawn: drawn[fact], today }));
+  const card = missing.length === 0 ? readCommittedCard() : null;
+  const differences = card?.isWantedSize ? readFactDifferences(facts) : null;
   return { missing, card, differences };
 }

@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/chrome.mjs";
+import { dataDir } from "../scripts/data-pin.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
@@ -23,11 +24,11 @@ import { skipReason, warnNotWalked } from "./browser-walk.js";
 const root = fileURLToPath(new URL("..", import.meta.url));
 
 /** The data clone beside the site, where `package.json`'s `file:` link points. */
-const dataClone = join(root, "..", "permit-rulebook-data");
+const dataClone = dataDir();
 
 /** Why the commands that walk the built site cannot run here: no Chrome, or no build. Null when they can. */
-const skipped = skipReason();
-if (skipped) warnNotWalked("THE PICTURE AND THE SMOKE COMMAND", skipped);
+const walkSkipReason = skipReason();
+if (walkSkipReason) warnNotWalked("THE PICTURE AND THE SMOKE COMMAND", walkSkipReason);
 
 /** Why the assets' render cannot draw here: it needs Chrome alone, no build. Null when it can. */
 function chromeMissingReason(): string | null {
@@ -38,8 +39,8 @@ function chromeMissingReason(): string | null {
     return (e as Error).message;
   }
 }
-const noChrome = chromeMissingReason();
-if (noChrome) warnNotWalked("THE ASSETS' RENDER", noChrome);
+const renderSkipReason = chromeMissingReason();
+if (renderSkipReason) warnNotWalked("THE ASSETS' RENDER", renderSkipReason);
 
 type CommandRun = { status: number; out: string };
 
@@ -115,7 +116,7 @@ describe("npm run data:pin", () => {
   }, 60000);
 });
 
-describe.skipIf(noChrome !== null)("npm run assets", () => {
+describe.skipIf(renderSkipReason !== null)("npm run assets", () => {
   it("writes the icons, the .ico, the social card at 1200x630 and its sidecar", async () => {
     const before = writtenTimesIn("public");
     await inThrowawayFolder(async (folder) => {
@@ -150,7 +151,7 @@ describe.skipIf(noChrome !== null)("npm run assets", () => {
   }, 180000);
 });
 
-describe.skipIf(skipped !== null)("node scripts/main-shot.mjs <out.png>", () => {
+describe.skipIf(walkSkipReason !== null)("node scripts/main-shot.mjs <out.png>", () => {
   it("writes a PNG of the frame's size where it is told", async () => {
     const before = writtenTimesIn(join("docs", "media"));
     await inThrowawayFolder(async (folder) => {
@@ -167,7 +168,7 @@ describe.skipIf(skipped !== null)("node scripts/main-shot.mjs <out.png>", () => 
 /** The surfaces a smoke run's output names, each once, in the order it walked them. */
 const surfacesNamedIn = (out: string): string[] => [...new Set([...out.matchAll(/\[(dev|dist)\]/g)].map((m) => m[1]!))];
 
-describe.skipIf(skipped !== null)("npm run smoke", () => {
+describe.skipIf(walkSkipReason !== null)("npm run smoke", () => {
   it("walks dist/ alone under --dist, exits 0 on the healthy build and non-zero on a broken page", async () => {
     const healthy = await nodeRun([...scriptArgumentsOf("smoke"), "--dist"]);
     expect(healthy.status, healthy.out).toBe(0);
