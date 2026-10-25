@@ -16,6 +16,61 @@ const SHAPED = ["src/**", "scripts/**", "tests/**"];
 /** The files over Spine's 400 lines, each held to its count until it is paid off (Spine's Ceilings). */
 const ceilings = JSON.parse(readFileSync(new URL("docs/spine/ceilings.json", import.meta.url), "utf8"));
 
+/** What a refused fixed wait says to write instead: the harness's waits (#230). */
+const FIXED_WAIT =
+  "a fixed wait: wait on what the page does, with page.waitUntil(condition, what) or page.waitUntilAtRest(); "
+  + "to read the page before its script runs, page.navigate(url), then waitUntil";
+
+/** Where Node keeps its sleep as a promise. */
+const TIMER_PROMISES = ["timers/promises", "node:timers/promises"];
+
+/** The name a call is made by: `f(…)` or `x.f(…)`. */
+function calledName({ callee }) {
+  if (callee.type === "Identifier") return callee.name;
+  return callee.type === "MemberExpression" && !callee.computed ? callee.property.name : null;
+}
+
+/** Whether `fn` is the function a `new Promise(…)` is made with. */
+function isPromiseExecutor(fn) {
+  const made = fn.parent;
+  const isNewPromise = made?.type === "NewExpression" && made.callee.type === "Identifier" && made.callee.name === "Promise";
+  return fn.type.endsWith("FunctionExpression") && isNewPromise && made.arguments[0] === fn;
+}
+
+/** The functions around `node` that are a `new Promise(…)`'s executor. */
+const executorsAround = (sourceCode, node) => sourceCode.getAncestors(node).filter(isPromiseExecutor);
+
+/** Whether the `setTimeout` call hands its timer a promise's `resolve`: a sleep. */
+function resolvesAPromise(sourceCode, call) {
+  const [from, to] = call.range;
+  return executorsAround(sourceCode, call).some((executor) => {
+    const resolve = sourceCode.getDeclaredVariables(executor).find((v) => v.name === executor.params[0]?.name);
+    return resolve?.references.some(({ identifier: { range } }) => range[0] >= from && range[1] <= to);
+  });
+}
+
+/**
+ * A test waits on an event, never a sleep (`SPINE_STANDARDS.md`, Tests; #230,
+ * rulings 2 and 11): a `setTimeout` that resolves a promise, Node's promised
+ * `setTimeout`, and a `goto` given a time are refused. A timer doing other
+ * work, such as a fake server holding a response back, is not a wait, and a
+ * timer written in an expression sent to the page is text.
+ */
+const noFixedWait = {
+  create: (context) => ({
+    CallExpression(node) {
+      const name = calledName(node);
+      const sleeps = name === "setTimeout" && resolvesAPromise(context.sourceCode, node);
+      if (sleeps || (name === "goto" && node.arguments.length > 1)) context.report({ node, message: FIXED_WAIT });
+    },
+    ImportDeclaration(node) {
+      if (!TIMER_PROMISES.includes(node.source.value)) return;
+      for (const s of node.specifiers)
+        if (s.type === "ImportSpecifier" && s.imported.name === "setTimeout") context.report({ node: s, message: FIXED_WAIT });
+    },
+  }),
+};
+
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   { ignores: IGNORED },
@@ -38,5 +93,12 @@ export default [
     files: TYPESCRIPT,
     plugins: { "@typescript-eslint": tseslint.plugin },
     rules: { "no-unused-vars": "off", "@typescript-eslint/no-unused-vars": "error" },
+  },
+  // The harness's own modules (`scripts/browser.mjs`, `scripts/tab-waits.mjs`) stand outside: their backstop is
+  // the one timer the browser cases keep.
+  {
+    files: ["tests/**"],
+    plugins: { waits: { rules: { "no-fixed-wait": noFixedWait } } },
+    rules: { "waits/no-fixed-wait": "error" },
   },
 ];
