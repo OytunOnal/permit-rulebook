@@ -51,9 +51,6 @@
     }
   },
   "scripts/render-assets.mjs": {
-    "max-lines-per-function": {
-      "count": 1
-    },
     "spine/constant-reason": {
       "count": 3
     }
