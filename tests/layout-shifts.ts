@@ -6,6 +6,15 @@ const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
  * it is handed every shift since the navigation, and `takeRecords()` hands
  * them over in the same task: the read needs no beat after it.
  *
+ * A shift Chrome marks `hadRecentInput` is left out, as the field leaves it,
+ * only once an input has reached the page: the page's first input, as its own
+ * timeline holds it, came before the shift. Under the harness's mobile
+ * emulation Chrome sets each new document's viewport to the phone's in its
+ * first moments and counts that change of the viewport's size as input, so the
+ * shifts of the page's first half second come marked though the page received
+ * none; leaving those out blinded the phone rows to the page moving as it
+ * first paints (#243).
+ *
  * Each source is named the way the field's debug rows name it — a path up to
  * the nearest id — with how far it travelled, so a failure says where to look.
  */
@@ -20,10 +29,15 @@ export const GATHER_SHIFTS = `(() => {
     }
     return parts.join(">") || "?";
   };
-  const observer = new PerformanceObserver(() => {});
-  observer.observe({ type: "layout-shift", buffered: true });
-  window.__cls = observer.takeRecords()
-    .filter((e) => !e.hadRecentInput)
+  const recordsOf = (type) => {
+    const observer = new PerformanceObserver(() => {});
+    observer.observe({ type, buffered: true });
+    return observer.takeRecords();
+  };
+  const [firstInput] = recordsOf("first-input");
+  const afterAnInput = (e) => firstInput !== undefined && e.startTime >= firstInput.startTime;
+  window.__cls = recordsOf("layout-shift")
+    .filter((e) => !(e.hadRecentInput && afterAnInput(e)))
     .map((e) => ({
       value: e.value,
       sources: (e.sources ?? []).map((s) => {
@@ -37,3 +51,58 @@ export const GATHER_SHIFTS = `(() => {
       }),
     }));
 })()`;
+
+/**
+ * A page that moves twice: in its second frame, with nothing done to it, and
+ * in answer to a tap. The first frame is painted before the move, so the move
+ * is a shift; it falls in the half second after Chrome sets the phone's
+ * viewport, so Chrome marks it as input.
+ */
+const MOVES_EARLY_AND_ON_A_TAP = `<!doctype html><html><head>
+<meta name="viewport" content="width=device-width, initial-scale=1"><script>
+const moveDown = (text) => {
+  const block = document.createElement("p");
+  block.style.height = "100px";
+  block.textContent = text;
+  document.body.prepend(block);
+};
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  moveDown("in the first frames");
+  window.__movedEarly = true;
+}));
+addEventListener("click", () => { moveDown("on the tap"); window.__tapped = true; });
+</script></head><body><p>above</p><p style="height:400px">below</p></body></html>`;
+
+/** Every shift Chrome reported, and the values of those the measure counts. */
+const SHIFTS_SEEN = `(() => {
+  const observer = new PerformanceObserver(() => {});
+  observer.observe({ type: "layout-shift", buffered: true });
+  const every = observer.takeRecords().map((e) => ({ value: e.value, markedAsInput: e.hadRecentInput }));
+  ${GATHER_SHIFTS};
+  return JSON.stringify({ every, counted: window.__cls.map((e) => e.value) });
+})()`;
+
+export interface ShiftsSeen {
+  every: { value: number; markedAsInput: boolean }[];
+  counted: number[];
+}
+
+interface TappablePage {
+  goto(url: string): Promise<void>; evaluate(expression: string): Promise<string>; clickAt(x: number, y: number): Promise<void>;
+  waitUntil(condition: string, what: string): Promise<unknown>; waitUntilAtRest(): Promise<void>;
+}
+
+/**
+ * The page that moves early and on a tap, read once at rest after its own
+ * move and again after the tap: what a phone row's measure can see (#243).
+ */
+export async function shiftsBeforeAndAfterATap(page: TappablePage): Promise<{ before: ShiftsSeen; after: ShiftsSeen }> {
+  await page.goto(`data:text/html,${encodeURIComponent(MOVES_EARLY_AND_ON_A_TAP)}`);
+  await page.waitUntil("window.__movedEarly === true", "the page never moved in its first frames");
+  await page.waitUntilAtRest();
+  const before = JSON.parse(await page.evaluate(SHIFTS_SEEN)) as ShiftsSeen;
+  await page.clickAt(100, 300);
+  await page.waitUntil("window.__tapped === true", "the tap never reached the page");
+  await page.waitUntilAtRest();
+  return { before, after: JSON.parse(await page.evaluate(SHIFTS_SEEN)) as ShiftsSeen };
+}
