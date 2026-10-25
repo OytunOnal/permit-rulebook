@@ -161,7 +161,7 @@ export function renderAssets({ facts, cardHtml, outDir: askedDir = publicDir }) 
  * for none.
  */
 export function checkAssets(facts) {
-  const missing = ["favicon.svg", "favicon.ico", ...ICON_SIZES.map((s) => `favicon-${s}.png`), "social-card.png", SIDECAR]
+  const missing = ["favicon.svg", ...ICON_SIZES.map((s) => `favicon-${s}.png`), "favicon.ico", "social-card.png", SIDECAR]
     .filter((f) => !existsSync(join(publicDir, f)));
   if (missing.length > 0) return { missing };
   const card = { size: pngSizeOf(readFileSync(join(publicDir, "social-card.png"))), wantedSize: CARD };
