@@ -2823,6 +2823,11 @@
   },
   {
    "from": "tests/record.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/record.test.ts",
    "to": "tests/wire.ts",
    "kind": "dependency"
   },
