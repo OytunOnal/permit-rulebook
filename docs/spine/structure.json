@@ -2547,6 +2547,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/header.test.ts",
+   "to": "scripts/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/header.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/header.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "tests/history-corners.test.ts",
    "to": "tests/interview-tab.ts",
    "kind": "dependency"
