@@ -139,6 +139,21 @@ const askThenWorkOn = (scroll: string) => `(() => {
   while (performance.now() < done);
   return "asked for";
 })()`;
+/**
+ * `scroll`, a scroll asked for on a Chrome without scroll promises, played on
+ * this one: while it runs, the native `scrollTo`, as the harness's watch of
+ * smooth scrolls calls it (through `apply`: Chrome keeps the native on the
+ * window itself, where the watch has put its own), scrolls and gives back
+ * nothing. What the call returned, by `typeof`.
+ */
+const withoutTheScrollPromise = (scroll: string) => `(() => {
+  const apply = Function.prototype.apply;
+  Function.prototype.apply = function (self, args) {
+    const returned = Reflect.apply(apply, this, [self, args]);
+    return this.name === "scrollTo" ? undefined : returned;
+  };
+  try { return typeof ${scroll}; } finally { Function.prototype.apply = apply; }
+})()`;
 
 describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, after a smooth scroll", () => {
   // Two frames reading the same scroll is not a smooth scroll's end: its
@@ -175,5 +190,20 @@ describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, after a smooth
       return page.waitUntilAtRest().then(() => "", (e: Error) => e.message);
     });
     expect(failure).toBe("");
+  }, 60000);
+});
+
+describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, on a Chrome without scroll promises", () => {
+  it("waitUntilAtRest returns after a smooth scrollTo with nowhere to go, which gives no promise", async () => {
+    const seen = await onSite(async (page, url) => {
+      await page.goto(url("/404.html"));
+      await page.evaluate(MARK_FAR_DOWN);
+      await page.evaluate('(document.getElementById("mark").scrollIntoView({ block: "start" }), "there")');
+      await page.waitUntilAtRest();
+      const returned = await page.evaluate(withoutTheScrollPromise('scrollTo({ top: scrollY, behavior: "smooth" })'));
+      return { returned, failure: await page.waitUntilAtRest().then(() => "", (e: Error) => e.message) };
+    });
+    expect(seen.returned, "scrollTo still gave a promise, so nothing here plays a Chrome without one").toBe("undefined");
+    expect(seen.failure).toBe("");
   }, 60000);
 });

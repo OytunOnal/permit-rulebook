@@ -32,9 +32,10 @@ const REPLACED_CONTEXT = /Execution context was destroyed|Cannot find default ex
  * barely move, or not at all, and Chrome can run them back to back (#242).
  *
  * `scrollTo`, `scroll` and `scrollBy` end when the promise they return
- * settles. `scrollIntoView`'s settles at once, so its scroll ends at the next
- * `scrollend`, or once the viewport has no more than a pixel left to go: a
- * scroll asked of an element already there moves nothing and fires none.
+ * settles. `scrollIntoView`'s settles at once, and a Chrome without scroll
+ * promises returns none from the others, so such a scroll ends at the next
+ * `scrollend`, or once its scroller has no more than a pixel left to go: a
+ * scroll asked of a scroller already there moves nothing and fires none.
  */
 const WATCH_SMOOTH_SCROLLS = `(() => {
   const going = new Set();
@@ -51,13 +52,27 @@ const WATCH_SMOOTH_SCROLLS = `(() => {
   };
   const isSmooth = (options, scroller) => options?.behavior === "smooth"
     || (options?.behavior !== "instant" && getComputedStyle(scroller).scrollBehavior === "smooth");
+  // Where a scrollTo, scroll or scrollBy call asks its scroller to go, each axis within the scroll it has.
+  const askedFor = (scroller, name, [first, second]) => {
+    const asked = typeof first === "object" && first !== null ? [first.left, first.top] : [first, second];
+    const now = [scroller.scrollLeft, scroller.scrollTop];
+    const furthest = [scroller.scrollWidth - scroller.clientWidth, scroller.scrollHeight - scroller.clientHeight];
+    return asked.map((to, axis) => {
+      if (!Number.isFinite(Number(to))) return now[axis];
+      const at = name === "scrollBy" ? now[axis] + Number(to) : Number(to);
+      return Math.min(Math.max(at, 0), furthest[axis]);
+    });
+  };
+  const isWithinAPixelOf = (scroller, [x, y]) => Math.abs(scroller.scrollLeft - x) <= 1 && Math.abs(scroller.scrollTop - y) <= 1;
   for (const owner of [window, Element.prototype])
     for (const name of ["scrollTo", "scroll", "scrollBy"]) {
       const ask = owner[name];
       owner[name] = function (...args) {
+        const scroller = this instanceof Element ? this : document.documentElement;
+        if (!isSmooth(args[0], scroller)) return ask.apply(this, args);
+        const target = askedFor(scroller, name, args);
         const end = ask.apply(this, args);
-        if (isSmooth(args[0], this instanceof Element ? this : document.documentElement))
-          going.add(typeof end?.then === "function" ? untilSettled(end) : untilScrollEndOr(() => false));
+        going.add(typeof end?.then === "function" ? untilSettled(end) : untilScrollEndOr(() => isWithinAPixelOf(scroller, target)));
         return end;
       };
     }
