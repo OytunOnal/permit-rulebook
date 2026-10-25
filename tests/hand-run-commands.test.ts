@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { chromePath } from "../scripts/chrome.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
@@ -24,8 +25,21 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 /** The data clone beside the site, where `package.json`'s `file:` link points. */
 const dataClone = join(root, "..", "permit-rulebook-data");
 
+/** Why the commands that walk the built site cannot run here: no Chrome, or no build. Null when they can. */
 const skipped = skipReason();
-if (skipped) warnNotWalked("THE HAND-RUN COMMANDS THAT DRIVE CHROME", skipped);
+if (skipped) warnNotWalked("THE PICTURE AND THE SMOKE COMMAND", skipped);
+
+/** Why the assets' render cannot draw here: it needs Chrome alone, no build. Null when it can. */
+function chromeMissingReason(): string | null {
+  try {
+    chromePath();
+    return null;
+  } catch (e) {
+    return (e as Error).message;
+  }
+}
+const noChrome = chromeMissingReason();
+if (noChrome) warnNotWalked("THE ASSETS' RENDER", noChrome);
 
 type CommandRun = { status: number; out: string };
 
@@ -101,7 +115,7 @@ describe("npm run data:pin", () => {
   }, 60000);
 });
 
-describe.skipIf(skipped !== null)("npm run assets", () => {
+describe.skipIf(noChrome !== null)("npm run assets", () => {
   it("writes the icons, the .ico, the social card at 1200x630 and its sidecar", async () => {
     const before = writtenTimesIn("public");
     await inThrowawayFolder(async (folder) => {
