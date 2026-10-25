@@ -4356,6 +4356,16 @@
     "exported": false
    },
    {
+    "name": "TIMERS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "NAVIGATIONS",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "calledName",
     "kind": "fn",
     "exported": false
@@ -4366,12 +4376,22 @@
     "exported": false
    },
    {
-    "name": "executorsAround",
+    "name": "variableOf",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "resolvesAPromise",
+    "name": "handedTo",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "aliasOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "resolveAndItsAliases",
     "kind": "fn",
     "exported": false
    },
@@ -7725,5 +7745,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "133150ebc51f982b39f72a8cf6057d85b3d6b34f7fa350f178c2c1cd199c0d42"
+ "digest": "9d3041220f4a4a44537650d5bc09738e56d43e7a678fe2deb1fb39ceab534bed"
 }

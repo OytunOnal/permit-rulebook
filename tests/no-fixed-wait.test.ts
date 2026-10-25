@@ -63,6 +63,72 @@ describe("the lint on a fixed wait", () => {
   });
 });
 
+describe("the lint on a navigation given a time", () => {
+  it("a bare goto(url, 900) is an error", async () => {
+    const refused = await fixedWaitsIn(lines(
+      "declare function goto(url: string, ms?: number): Promise<void>;",
+      "export async function open(url: string): Promise<void> {",
+      "  await goto(url, 900);",
+      "  await goto(url);",
+      "}",
+    ));
+    expect(refused).toHaveLength(1);
+    expectItPointsAtTheWaits(refused[0]);
+  });
+
+  it("navigate(url, 900) is an error", async () => {
+    const refused = await fixedWaitsIn(lines(
+      "interface Page { navigate(url: string, ms?: number): Promise<void> }",
+      "export async function open(page: Page, url: string): Promise<void> {",
+      "  await page.navigate(url, 900);",
+      "  await page.navigate(url);",
+      "}",
+    ));
+    expect(refused).toHaveLength(1);
+    expectItPointsAtTheWaits(refused[0]);
+  });
+});
+
+describe("the lint on Node's promised timers", () => {
+  for (const [how, code] of [
+    ["a named import", ['import { setTimeout } from "node:timers/promises";', "export const read = () => setTimeout(900);"]],
+    ["a default import", ['import timers from "timers/promises";', "export const read = () => timers.setTimeout(900);"]],
+    ["a namespace import", ['import * as timers from "node:timers/promises";', "export const read = () => timers.setTimeout(900);"]],
+    ["a dynamic import", ['export const read = async () => (await import("node:timers/promises")).setTimeout(900);']],
+  ] as const)
+    it(`Node's promised timers taken by ${how} are an error`, async () => {
+      const refused = await fixedWaitsIn(lines(...code));
+      expect(refused).toHaveLength(1);
+      expectItPointsAtTheWaits(refused[0]);
+    });
+});
+
+describe("the lint on a sleep by another timer or another name", () => {
+  it("a setInterval that resolves a promise is an error", async () => {
+    const refused = await fixedWaitsIn(lines(
+      "export async function read(): Promise<void> {",
+      "  await new Promise<void>((resolve) => { const every = setInterval(() => { clearInterval(every); resolve(); }, 300); });",
+      "}",
+    ));
+    expect(refused).toHaveLength(1);
+    expectItPointsAtTheWaits(refused[0]);
+  });
+
+  it("a timer handed a promise's resolve under another name is an error", async () => {
+    const refused = await fixedWaitsIn(lines(
+      "export async function read(): Promise<void> {",
+      "  await new Promise<void>((resolve) => { const done = resolve; setTimeout(done, 300); });",
+      "  let release = () => {};",
+      "  const held = new Promise<void>((resolve) => { release = resolve; });",
+      "  setTimeout(() => release(), 300);",
+      "  await held;",
+      "}",
+    ));
+    expect(refused).toHaveLength(2);
+    expectItPointsAtTheWaits(refused[0]);
+  });
+});
+
 describe("the lint on a timer that is no wait", () => {
   it("a fake server's held response is not", async () => {
     const code = readFileSync(new URL(`../${STAND_IN_ORIGIN}`, import.meta.url), "utf8");
