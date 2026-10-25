@@ -16,7 +16,7 @@ import { PRODUCT_NAME, TAGLINE, routesCheckerAsksAbout } from "../src/lib/copy/f
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.ts";
 import { assetsAskedBy, checkReportOf, renderReportOf } from "./cli-render-assets.mjs";
 import { printReport } from "./print-report.mjs";
-import { checkAssets, renderAssets, tokensStylesheet } from "./render-assets.mjs";
+import { checkAssets, readTokensStylesheet, renderAssets } from "./render-assets.mjs";
 
 const asked = assetsAskedBy(process.argv.slice(2));
 const facts = socialCardFacts(dataset, datasetMeta(dataset).newest_retrieved_at, {
@@ -26,6 +26,6 @@ const facts = socialCardFacts(dataset, datasetMeta(dataset).newest_retrieved_at,
 if (asked.isCheck) {
   printReport(checkReportOf(checkAssets(facts), facts));
 } else {
-  const cardHtml = socialCardHtml(facts, tokensStylesheet());
+  const cardHtml = socialCardHtml(facts, readTokensStylesheet());
   printReport(renderReportOf(renderAssets({ facts, cardHtml, outDir: asked.outDir }), facts));
 }

@@ -17,7 +17,7 @@
  * says (Standards review, 2026-09-07). `main-render-assets.mjs` imports the
  * words, the layout and the numbers and hands this job the card's facts and
  * its HTML; this job never reaches them. It only reads `tokens.css` from disk
- * (`tokensStylesheet`) for the entry to hand to the layout.
+ * (`readTokensStylesheet`) for the entry to hand to the layout.
  *
  * Each render writes `public/social-card.json` beside the image: the facts the
  * image was drawn from. `--check` is handed the facts as they are today and
@@ -54,7 +54,7 @@ const SIDECAR = "social-card.json";
 const RENDERED = [...ICON_SIZES.map((s) => `favicon-${s}.png`), "favicon.ico", "social-card.png", SIDECAR];
 
 /** The text of the site's `tokens.css`, the palette the card is drawn in. */
-export const tokensStylesheet = () => readFileSync(join(root, "tokens.css"), "utf8");
+export const readTokensStylesheet =() => readFileSync(join(root, "tokens.css"), "utf8");
 
 /** A PNG's width and height, from its header. */
 const pngSizeOf = (png) => ({ width: png.readUInt32BE(16), height: png.readUInt32BE(20) });
