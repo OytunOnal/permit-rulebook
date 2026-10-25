@@ -9,13 +9,13 @@ import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
  * The commands a person runs by hand, run the way they run them: `data:pin`,
- * the assets' render, the README's picture and the smoke command (#248). No
- * other case runs them, so these pin what each does today from outside (what
- * it writes, prints and exits with) before their files are split (#247).
+ * the assets' render, the README's picture and the smoke command. No other
+ * case runs them, so these pin what each does from outside: what it writes,
+ * prints and exits with.
  *
- * Each runs the command line `package.json` gives its script, so a split that
- * moves a script's file keeps these cases as they are; `shot` has no script
- * and is run by its file. What a command writes goes into a throwaway folder
+ * Each runs the command line `package.json` gives its script, so a script
+ * whose file moves keeps these cases as they are; `shot` has no script and is
+ * run by its file. What a command writes goes into a throwaway folder
  * of the OS temp folder, removed after, never into `public/`, `data.lock` or
  * `docs/media/`, and each case asserts the site's own copy was not touched.
  */
