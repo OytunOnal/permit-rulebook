@@ -154,9 +154,9 @@ describe.skipIf(skipped !== null)("the results screen explains its shorthand the
     const read = await withSite(async ({ page, url }: PageOnSite) => {
       const out: Record<string, { state: string; prose: string; quotes: string[] }> = {};
       for (const [name, answers] of Object.entries(READERS)) {
-        await page.goto(url("/"), 300);
+        await page.goto(url("/"));
         await page.evaluate(recordSeedScript(answers));
-        await page.goto(url("/"), 1400);
+        await page.goto(url("/"));
         out[name] = JSON.parse(await page.evaluate(READ_RESULTS));
         await page.evaluate("localStorage.clear()");
       }

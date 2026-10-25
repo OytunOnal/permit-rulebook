@@ -7,7 +7,7 @@ import {
 import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy/interview.js";
 import { countrySearchOf } from "../src/lib/country-search/index.js";
 import {
-  PHONE, recordSeedScript, settle, skipReason, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+  PHONE, recordSeedScript, skipReason, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
@@ -96,23 +96,21 @@ const LIST = `JSON.stringify({
 })`;
 interface Listed { query: string; rows: number; line: string; status: string }
 
-/** The list once the search has drawn its line for `typed`, read every 50 ms
- * for up to five seconds rather than after a fixed wait. */
+/** The list once the search has drawn its line for `typed`. */
 async function listFor(page: BrowserPage, typed: string): Promise<Listed> {
-  for (let i = 0; i < 100; i++) {
-    const listed = JSON.parse(await page.evaluate(LIST)) as Listed;
-    if (listed.query === typed && listed.line) return listed;
-    await settle(50);
-  }
-  throw new Error(`the search drew no line for "${typed}" within five seconds`);
+  const drawn = `(() => {
+    const listed = JSON.parse(${LIST});
+    return listed.query === ${JSON.stringify(typed)} && listed.line ? JSON.stringify(listed) : false;
+  })()`;
+  return JSON.parse(String(await page.waitUntil(drawn, `the search drew no line for "${typed}"`))) as Listed;
 }
 
 describe.skipIf(skipped !== null)("#160 — in the browser at 390×844", () => {
   it("typing \"Puerto Rico\" into the passport search shows the territory line and no row", async () => {
     const seen = await withSite(async ({ page, url }: PageOnSite) => {
-      await page.goto(url("/"), 300);
+      await page.goto(url("/"));
       await page.evaluate(recordSeedScript(BEFORE_PASSPORT));
-      await page.goto(url("/"), 900);
+      await page.goto(url("/"));
       await page.evaluate('document.getElementById("cfilter").focus()');
       await page.type("Puerto Rico");
       return { ...(await listFor(page, "Puerto Rico")), problems: page.problems() };

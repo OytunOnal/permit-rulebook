@@ -197,8 +197,13 @@ function why(): string | null {
 const skipped = why();
 
 interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
+  /** Returns once the new document has drawn. */
+  goto(url: string): Promise<void>;
   evaluate(expression: string): Promise<string>;
+  /** Reads `condition` in the page until it holds, and returns its value. */
+  waitUntil(condition: string, what: string): Promise<unknown>;
+  /** Returns once nothing animates, scrolls or loads. */
+  waitUntilAtRest(): Promise<void>;
 }
 
 const LAYOUT = 'JSON.stringify((() => {'
@@ -210,26 +215,18 @@ const LAYOUT = 'JSON.stringify((() => {'
   + ' const lines = [...foot.querySelectorAll(".line > span")].map((s) => Math.round(s.getBoundingClientRect().height));'
   + ' return { rows: new Set(cols).size, cols, links, lines }; })())';
 
-/** The layout, or "" until the page at `path` has loaded with its fonts. */
-const layoutOnceLoadedAt = (path: string): string =>
-  `(location.pathname === ${JSON.stringify(path)} && document.readyState === "complete"`
-  + ` && document.fonts.status === "loaded") ? ${LAYOUT} : ""`;
+/** Whether the page has loaded with its fonts, which the layout is drawn in. */
+const LOADED_WITH_FONTS = 'document.readyState === "complete" && document.fonts.status === "loaded"';
 
 /**
- * The footer's layout on the page at `path` once it has settled: read every
- * 50 ms until the page has loaded with its fonts and two reads in a row
- * agree, for up to ten seconds, rather than after a fixed wait.
+ * The footer's layout on the page at `path` once it has settled: the page
+ * drawn, loaded with its fonts, and at rest.
  */
 async function settledLayoutAt(page: BrowserPage, url: string, path: string): Promise<unknown> {
-  await page.goto(url, 0);
-  let last = "";
-  for (let i = 0; i < 200; i++) {
-    const now = await page.evaluate(layoutOnceLoadedAt(path));
-    if (now !== "" && now === last) return JSON.parse(now);
-    last = now;
-    await new Promise((r) => setTimeout(r, 50));
-  }
-  throw new Error(`the footer on ${path} did not settle within ten seconds`);
+  await page.goto(url);
+  await page.waitUntil(LOADED_WITH_FONTS, `the page at ${path} never loaded with its fonts`);
+  await page.waitUntilAtRest();
+  return JSON.parse(await page.evaluate(LAYOUT));
 }
 
 describe.skipIf(skipped !== null)("the footer lays out where it says it does", () => {
@@ -278,7 +275,7 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/germany/eu-blue-card-general/"), 500);
+        await page.goto(server.url("/germany/eu-blue-card-general/"));
         // The runner's fonts are wider than this machine's, and a family wider
         // still is only a matter of time: measure the widened case.
         await page.evaluate(
@@ -287,7 +284,7 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
           + ' + "body{letter-spacing:0.11em}";'
           + ' document.head.appendChild(s); return 1; })()',
         );
-        await new Promise((r) => setTimeout(r, 250));
+        await page.waitUntilAtRest();
         return page.evaluate(
           // An inline element that wraps sits on more than one line: its
           // fragments start at more than one top edge. (A count of fragments

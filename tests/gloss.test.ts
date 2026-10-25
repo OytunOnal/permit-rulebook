@@ -131,7 +131,8 @@ if (skipped)
   ].join("\n"));
 
 interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
+  /** Returns once the new document has drawn. */
+  goto(url: string): Promise<void>;
   evaluate(expression: string): Promise<string>;
 }
 
@@ -142,12 +143,12 @@ describe.skipIf(skipped !== null)("the results card carries the sign without an 
       // What the card says is the verdict's (the case above); the page paints
       // the verdict the record, as it restores, composes.
       const painted = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 300);
+        await page.goto(server.url("/"));
         await page.evaluate(`localStorage.setItem("permit-rulebook.record.v1", ${
           JSON.stringify(JSON.stringify({
             version: RECORD_VERSION, answers: GERMAN, history: Object.keys(GERMAN),
           }))})`);
-        await page.goto(server.url("/"), 1400);
+        await page.goto(server.url("/"));
         const restored = replayRecord(ds, GERMAN, Object.keys(GERMAN)).answers;
         return JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(restored))));
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as typeof PAINTED_AS_COMPOSED;
