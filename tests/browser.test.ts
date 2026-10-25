@@ -4,8 +4,9 @@ import { skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 /**
  * The harness's page object (`scripts/browser.mjs`): each wait returns once
- * what it waits for is there, and never before it, which is the bug a fixed
- * sleep had (#224). A broken page fails naming what never came.
+ * what it waits for is there, and never before it, since a case reading
+ * before then reads an unfinished page. A broken page fails naming what never
+ * came.
  */
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -129,8 +130,8 @@ interface AfterScroll { ended: boolean; scrollY: number; offEnd: number }
 /**
  * A gesture that asks for `scroll` and then works on for 100 ms, as a tap's
  * draw does on a loaded machine. Chrome then runs the frames it owes back to
- * back, before the scroll has moved: two frames reading the same scroll
- * (#242, the frames #232's probe saw sharing a timestamp).
+ * back, sharing one timestamp, before the scroll has moved: two frames that
+ * read the same scroll.
  */
 const askThenWorkOn = (scroll: string) => `(() => {
   ${scroll};

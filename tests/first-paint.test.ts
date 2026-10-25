@@ -509,14 +509,13 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
 
 /**
  * The same page with its HTML arriving in two pieces, split before the ledger,
- * and the module as late as above.
- * Chrome paints while it waits for the rest, and the box, parsed before the
- * ledger the grid places first, was drawn in the ledger's place and moved when
- * the ledger came: the deploy's `#main x+272px` of 2026-10-24 at 1280x800, and
+ * and the module as late as above. Chrome paints while it waits for the rest:
+ * a box parsed before the ledger the grid places first would be drawn in the
+ * ledger's place and move when the ledger came, 272 px across at 1280x800 and
  * 105 px down on a phone. Throttling the CPU never paints mid-page here; a
- * network that pauses does (#236). The phone rows see their 105 px since the
- * measure counts a shift Chrome marks as input before any input reached the
- * page; the last rows prove it can, on a page that moves early and on a tap (#243).
+ * network that pauses does. The phone rows see a shift Chrome marks as input
+ * because the measure counts one until an input reaches the page; the last
+ * rows prove it does, on a page that moves early and on a tap.
  */
 describe.skipIf(skipped !== null)("the page arriving in pieces paints where it stays (#236)", () => {
   const LEDGER = '<details class="decl"';

@@ -14,8 +14,8 @@ const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
  * emulation Chrome sets each new document's viewport to the phone's in its
  * first moments and counts that change of the viewport's size as input, so the
  * shifts of the page's first half second come marked though the page received
- * none; leaving those out blinded the phone rows to the page moving as it
- * first paints (#243).
+ * none; left out, they would hide from the phone rows the page moving as it
+ * first paints.
  *
  * It leaves every shift Chrome reported in `window.__shiftsReported`, and those
  * the measure counts in `window.__cls`. Each source is named the way the
@@ -77,7 +77,7 @@ const scoreShiftsSince = (sinceMs: number) => `(() => {
 /**
  * The shifts the first paint's measure counts on the page since `sinceMs` on
  * the page's clock (0: since the page loaded), summed as CLS sums them: one
- * measure for every case that asserts nothing shifted (#243).
+ * measure for every case that asserts nothing shifted.
  */
 export async function shiftScoreSince(page: Pick<BrowserPage, "evaluate">, sinceMs = 0): Promise<number> {
   const { kept, score } = JSON.parse(await page.evaluate(scoreShiftsSince(sinceMs))) as { kept: number; score: number };
@@ -124,7 +124,7 @@ const shiftsSeenOn = async (page: Pick<BrowserPage, "evaluate">): Promise<Shifts
 
 /**
  * The page that moves early and on a tap, read once at rest after its own
- * move and again after the tap: what a phone row's measure can see (#243).
+ * move and again after the tap: what a phone row's measure can see.
  */
 export async function shiftsBeforeAndAfterATap(
   page: Pick<BrowserPage, "goto" | "evaluate" | "clickAt" | "waitUntil" | "waitUntilAtRest">,
