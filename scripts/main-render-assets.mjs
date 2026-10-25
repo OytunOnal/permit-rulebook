@@ -23,9 +23,8 @@ const facts = socialCardFacts(dataset, datasetMeta(dataset).newest_retrieved_at,
   product: PRODUCT_NAME, tagline: TAGLINE, routesLineOf: routesCheckerAsksAbout,
 });
 
-if (asked.isCheck) {
-  printReport(checkReportOf(checkAssets(facts), facts));
-} else {
-  const cardHtml = socialCardHtml(facts, readTokensStylesheet());
-  printReport(renderReportOf(renderAssets({ facts, cardHtml, outDir: asked.outDir }), facts));
-}
+const report = asked.isCheck
+  ? checkReportOf(checkAssets(facts), facts)
+  : renderReportOf(renderAssets({ facts, cardHtml: socialCardHtml(facts, readTokensStylesheet()), outDir: asked.outDir }), facts);
+printReport(report);
+process.exit(report.exitCode);

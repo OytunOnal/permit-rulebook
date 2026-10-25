@@ -39,8 +39,8 @@ const PROFILE = {
   experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
 };
 
-/** The results screen for `PROFILE` as a PNG, its record written and the page reloaded; a page that reported a problem throws. */
-async function resultsPngOf(server) {
+/** Opens the results screen for `PROFILE` in Chrome, its record written and the page reloaded, and returns its screenshot; a page that reported a problem throws. */
+async function screenshotResultsInChrome(server) {
   return withBrowser(async (page) => {
     await page.goto(server.url("/"));
     await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
@@ -63,7 +63,7 @@ async function resultsPngOf(server) {
 export async function takeShot({ path = todaysPath() } = {}) {
   const server = await serve(join(root, "dist"));
   try {
-    const png = await resultsPngOf(server);
+    const png = await screenshotResultsInChrome(server);
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, png);
     return { path, png };

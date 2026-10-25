@@ -8,4 +8,6 @@ import { smokeOptionsOf, smokeReportOf } from "./cli-smoke.mjs";
 import { printReport } from "./print-report.mjs";
 import { smoke } from "./smoke.mjs";
 
-printReport(smokeReportOf(await smoke(smokeOptionsOf(process.argv.slice(2)))));
+const report = smokeReportOf(await smoke(smokeOptionsOf(process.argv.slice(2))));
+printReport(report);
+process.exit(report.exitCode);

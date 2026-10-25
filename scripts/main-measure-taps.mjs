@@ -9,4 +9,6 @@ import { measureTaps } from "./measure-taps.mjs";
 import { printReport } from "./print-report.mjs";
 
 const measured = await measureTaps({ onScreen: (screen) => printReport({ out: screenLinesOf(screen) }) });
-printReport(tapReportOf(measured));
+const report = tapReportOf(measured);
+printReport(report);
+process.exit(report.exitCode);

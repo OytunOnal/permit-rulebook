@@ -10,4 +10,6 @@ import { shotOptionsOf, shotReportOf } from "./cli-shot.mjs";
 import { printReport } from "./print-report.mjs";
 import { takeShot } from "./shot.mjs";
 
-printReport(shotReportOf(await takeShot(shotOptionsOf(process.argv.slice(2)))));
+const report = shotReportOf(await takeShot(shotOptionsOf(process.argv.slice(2))));
+printReport(report);
+process.exit(report.exitCode);

@@ -1,14 +1,13 @@
 // @level presentation
 /**
  * The one printer every command's entry uses: a report's `err` lines to
- * stderr, its `out` lines to stdout, and, when it carries an `exitCode`, the
- * exit with that code. A report without one is part of a longer run, such as
- * a screen's lines printed as it is measured.
+ * stderr and its `out` lines to stdout. It never exits: each entry exits with
+ * its report's `exitCode` itself, and a report printed as part of a longer
+ * run, such as a screen's lines printed as it is measured, carries none.
  */
 
-/** Prints `report` to the terminal, then exits with its `exitCode` when it has one. */
-export function printReport({ out = [], err = [], exitCode }) {
+/** Prints `report`'s lines to the terminal: its `err` lines to stderr, then its `out` lines to stdout. */
+export function printReport({ out = [], err = [] }) {
   for (const line of err) console.error(line);
   for (const line of out) console.log(line);
-  if (exitCode !== undefined) process.exit(exitCode);
 }

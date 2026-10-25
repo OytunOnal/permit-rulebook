@@ -30,7 +30,7 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const BASE = "/sub";
 const SITE = `https://example.org${BASE}/`;
 
-const emitted = (dir) => {
+const listEmittedFiles = (dir) => {
   const out = [];
   (function walk(here) {
     for (const entry of readdirSync(here)) {
@@ -43,8 +43,8 @@ const emitted = (dir) => {
 };
 
 const nameOf = (dist, file) => relative(dist, file).split(sep).join("/");
-/** Each match of `pattern` in `file` that `isProblem` flags, said as a problem. */
-const problemsIn = (dist, file, { pattern, isProblem, problemOf }) =>
+/** Reads `file` and returns each match of `pattern` in it that `isProblem` flags, said as a problem. */
+const readProblemsIn = (dist, file, { pattern, isProblem, problemOf }) =>
   [...readFileSync(file, "utf8").matchAll(pattern)]
     .filter(isProblem)
     .map((m) => `${nameOf(dist, file)}: ${problemOf(m)}`);
@@ -67,17 +67,17 @@ function tooFewProblems(html, json) {
 }
 
 /** 1. Nothing points at the site root instead of the base. */
-function rootAbsoluteProblems(dist, files) {
+function readRootAbsoluteProblems(dist, files) {
   const rootAbsolute = {
     pattern: /(?:href|src|content)="([/][^"/][^"]*)"/g,
     isProblem: (m) => m[1] !== BASE && !m[1].startsWith(`${BASE}/`),
     problemOf: (m) => `root-absolute ${m[0].slice(0, 90)}`,
   };
-  return files.filter((f) => /[.](html|json|js|css)$/.test(f)).flatMap((file) => problemsIn(dist, file, rootAbsolute));
+  return files.filter((f) => /[.](html|json|js|css)$/.test(f)).flatMap((file) => readProblemsIn(dist, file, rootAbsolute));
 }
 
 /** 2. Every internal link resolves to something the build actually emitted. */
-function unresolvedProblems(dist, html) {
+function readUnresolvedProblems(dist, html) {
   const resolves = (p) => {
     const clean = p.replace(/[?#].*$/, "").slice(BASE.length);
     const target = join(dist, clean);
@@ -88,11 +88,11 @@ function unresolvedProblems(dist, html) {
     isProblem: (m) => m[1].startsWith(BASE) && !resolves(m[1]),
     problemOf: (m) => `${m[1]} resolves to nothing built`,
   };
-  return html.flatMap((file) => problemsIn(dist, file, unresolved));
+  return html.flatMap((file) => readProblemsIn(dist, file, unresolved));
 }
 
 /** 3. The meta a link preview reads carries the base too. */
-function missingMetaProblems(dist) {
+function readMissingMetaProblems(dist) {
   const home = readFileSync(join(dist, "index.html"), "utf8");
   const route = readFileSync(join(dist, "germany", "eu-blue-card-general", "index.html"), "utf8");
   const expected = [
@@ -110,14 +110,14 @@ function missingMetaProblems(dist) {
 
 /** What the build in `dist` holds: its pages and endpoints counted, and each problem found in it. */
 function scanBuild(dist) {
-  const files = emitted(dist);
+  const files = listEmittedFiles(dist);
   const html = files.filter((f) => f.endsWith(".html"));
   const json = files.filter((f) => f.endsWith(".json"));
   const problems = [
     ...tooFewProblems(html, json),
-    ...rootAbsoluteProblems(dist, files),
-    ...unresolvedProblems(dist, html),
-    ...missingMetaProblems(dist),
+    ...readRootAbsoluteProblems(dist, files),
+    ...readUnresolvedProblems(dist, html),
+    ...readMissingMetaProblems(dist),
   ];
   return { site: SITE, pageCount: html.length, endpointCount: json.length, problems };
 }

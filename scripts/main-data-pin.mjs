@@ -8,4 +8,6 @@ import { pinOptionsOf, pinReportOf } from "./cli-data-pin.mjs";
 import { pinData } from "./data-pin.mjs";
 import { printReport } from "./print-report.mjs";
 
-printReport(pinReportOf(pinData(pinOptionsOf(process.argv.slice(2)))));
+const report = pinReportOf(pinData(pinOptionsOf(process.argv.slice(2))));
+printReport(report);
+process.exit(report.exitCode);

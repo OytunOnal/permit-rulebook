@@ -69,7 +69,7 @@ const PROBE = `(() => {
   });
 })()`;
 
-function builtPages(dir) {
+function listBuiltPages(dir) {
   const pages = [];
   (function walk(here) {
     for (const entry of readdirSync(here)) {
@@ -116,7 +116,7 @@ async function measureAtRest(page, name, kind) {
 }
 
 /** Each page the build emitted, in its path's order: its name, its kind, and how the page opens it. */
-const builtScreens = (server) => builtPages(dist).map((file) => {
+const listBuiltScreens = (server) => listBuiltPages(dist).map((file) => {
   const path = relative(dist, file).split("\\").join("/");
   // Through the server's own url(): a site built for a subpath asks for
   // its assets there, and served at the root it measures as unstyled.
@@ -158,7 +158,7 @@ export async function measureTaps({ onScreen = () => {} } = {}) {
   const server = await serve(dist);
   try {
     const screens = await withBrowser(
-      (page) => measureEach(page, [...builtScreens(server), ...drawnScreens(server)], onScreen),
+      (page) => measureEach(page, [...listBuiltScreens(server), ...drawnScreens(server)], onScreen),
       { viewport: VIEWPORT, mobile: true },
     );
     return { isBuilt: true, viewportWidth: VIEWPORT.width, screens };

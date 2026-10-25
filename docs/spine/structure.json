@@ -4684,7 +4684,7 @@
     "exported": false
    },
    {
-    "name": "emitted",
+    "name": "listEmittedFiles",
     "kind": "fn",
     "exported": false
    },
@@ -4694,7 +4694,7 @@
     "exported": false
    },
    {
-    "name": "problemsIn",
+    "name": "readProblemsIn",
     "kind": "fn",
     "exported": false
    },
@@ -4709,17 +4709,17 @@
     "exported": false
    },
    {
-    "name": "rootAbsoluteProblems",
+    "name": "readRootAbsoluteProblems",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "unresolvedProblems",
+    "name": "readUnresolvedProblems",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "missingMetaProblems",
+    "name": "readMissingMetaProblems",
     "kind": "fn",
     "exported": false
    },
@@ -5057,11 +5057,28 @@
     "exported": true
    }
   ],
-  "scripts/main-check-base.mjs": [],
-  "scripts/main-data-pin.mjs": [],
+  "scripts/main-check-base.mjs": [
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/main-data-pin.mjs": [
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
   "scripts/main-measure-taps.mjs": [
    {
     "name": "measured",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "report",
     "kind": "const",
     "exported": false
    }
@@ -5076,10 +5093,27 @@
     "name": "facts",
     "kind": "const",
     "exported": false
+   },
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
    }
   ],
-  "scripts/main-shot.mjs": [],
-  "scripts/main-smoke.mjs": [],
+  "scripts/main-shot.mjs": [
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/main-smoke.mjs": [
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
   "scripts/measure-taps.mjs": [
    {
     "name": "dist",
@@ -5102,7 +5136,7 @@
     "exported": false
    },
    {
-    "name": "builtPages",
+    "name": "listBuiltPages",
     "kind": "fn",
     "exported": false
    },
@@ -5122,7 +5156,7 @@
     "exported": false
    },
    {
-    "name": "builtScreens",
+    "name": "listBuiltScreens",
     "kind": "fn",
     "exported": false
    },
@@ -5248,7 +5282,7 @@
     "exported": false
    },
    {
-    "name": "resultsPngOf",
+    "name": "screenshotResultsInChrome",
     "kind": "fn",
     "exported": false
    },
@@ -8131,5 +8165,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "793cacc18e7ee9d9a1c60d5c9b4cc156810f5c7155af56311bc3d0a6dd29588a"
+ "digest": "8afca749dadf910fb3b6c4b0455320080dc34e5337f4d417667ee4012375ccf6"
 }
