@@ -121,6 +121,7 @@
   "scripts/cli-data-pin.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
   "scripts/cli-measure-taps.mjs": "presentation",
+  "scripts/cli-render-assets.mjs": "presentation",
   "scripts/cli-shot.mjs": "presentation",
   "scripts/cli-smoke.mjs": "presentation",
   "scripts/data-pin.mjs": "infrastructure",
@@ -132,11 +133,12 @@
   "scripts/main-check-base.mjs": "main",
   "scripts/main-data-pin.mjs": "main",
   "scripts/main-measure-taps.mjs": "main",
+  "scripts/main-render-assets.mjs": "main",
   "scripts/main-shot.mjs": "main",
   "scripts/main-smoke.mjs": "main",
   "scripts/measure-taps.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
-  "scripts/render-assets.mjs": "infrastructure main",
+  "scripts/render-assets.mjs": "infrastructure",
   "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure",
@@ -433,6 +435,31 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/main-render-assets.mjs",
+   "to": "scripts/cli-render-assets.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-render-assets.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-render-assets.mjs",
+   "to": "scripts/render-assets.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-render-assets.mjs",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-render-assets.mjs",
+   "to": "src/lib/social-card.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/main-shot.mjs",
    "to": "scripts/cli-shot.mjs",
    "kind": "dependency"
@@ -475,16 +502,6 @@
   {
    "from": "scripts/render-assets.mjs",
    "to": "scripts/chrome.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/render-assets.mjs",
-   "to": "src/lib/copy/frame.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/render-assets.mjs",
-   "to": "src/lib/social-card.ts",
    "kind": "dependency"
   },
   {
@@ -4766,6 +4783,28 @@
     "exported": true
    }
   ],
+  "scripts/cli-render-assets.mjs": [
+   {
+    "name": "assetsAskedBy",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "renderReportOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "checkFailureOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "checkReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/cli-shot.mjs": [
    {
     "name": "shotOptionsOf",
@@ -4991,6 +5030,18 @@
     "exported": false
    }
   ],
+  "scripts/main-render-assets.mjs": [
+   {
+    "name": "asked",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "facts",
+    "kind": "const",
+    "exported": false
+   }
+  ],
   "scripts/main-shot.mjs": [],
   "scripts/main-smoke.mjs": [],
   "scripts/measure-taps.mjs": [
@@ -5069,21 +5120,6 @@
     "exported": false
    },
    {
-    "name": "check",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "outDirAskedBy",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "outDir",
-    "kind": "const",
-    "exported": false
-   },
-   {
     "name": "CARD",
     "kind": "const",
     "exported": false
@@ -5104,7 +5140,27 @@
     "exported": false
    },
    {
-    "name": "shoot",
+    "name": "RENDERED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "readTokensStylesheet",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pngSizeOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "drawPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "drawCard",
     "kind": "fn",
     "exported": false
    },
@@ -5119,9 +5175,19 @@
     "exported": false
    },
    {
-    "name": "main",
+    "name": "drawIcons",
     "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "renderAssets",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "checkAssets",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/shot.mjs": [
@@ -7948,6 +8014,7 @@
   "scripts/cli-data-pin.mjs",
   "scripts/cli-deploy-finding.mjs",
   "scripts/cli-measure-taps.mjs",
+  "scripts/cli-render-assets.mjs",
   "scripts/cli-shot.mjs",
   "scripts/cli-smoke.mjs",
   "scripts/data-pin.mjs",
@@ -7959,6 +8026,7 @@
   "scripts/main-check-base.mjs",
   "scripts/main-data-pin.mjs",
   "scripts/main-measure-taps.mjs",
+  "scripts/main-render-assets.mjs",
   "scripts/main-shot.mjs",
   "scripts/main-smoke.mjs",
   "scripts/measure-taps.mjs",
@@ -8020,5 +8088,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "9c39aaf32e4d89260a3290ace071e8972b98253fcda6017412c182c8f9945699"
+ "digest": "0371c639e043e777a121b56ddb67e9c7c83da58af631399b4391f1a791bef80e"
 }
