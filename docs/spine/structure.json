@@ -372,11 +372,6 @@
    "kind": "dependency"
   },
   {
-   "from": "scripts/dev-server.mjs",
-   "to": "src/lib/copy/frame.ts",
-   "kind": "dependency"
-  },
-  {
    "from": "scripts/live-site-over-http.mjs",
    "to": "scripts/log-wording.mjs",
    "kind": "dependency"
@@ -4067,6 +4062,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/smoke.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/start-over.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
@@ -4700,9 +4700,34 @@
     "exported": false
    },
    {
+    "name": "notOurCountryList",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "notOurDevServer",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "spawnAstroDev",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "closerOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "waitUntilAnswering",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "assertServingThisProject",
+    "kind": "fn",
+    "exported": false
    },
    {
     "name": "startDev",
@@ -7760,5 +7785,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "b871b7d7a43e8c5e46eb2ca5c6a7efb5df3d8cfb00a76a6f8095ba087859089b"
+ "digest": "a0f158609fe69b82e72fc58a97597b83c69f5ed853ffa5b09aed546308e92605"
 }
