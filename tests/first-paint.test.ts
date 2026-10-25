@@ -12,7 +12,7 @@ import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/ques
 import { replayRecord } from "../src/lib/scope.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { url } from "../src/lib/site.js";
-import { GATHER_SHIFTS } from "./layout-shifts.js";
+import { GATHER_SHIFTS, shiftsBeforeAndAfterATap } from "./layout-shifts.js";
 
 /**
  * The first paint, measured the way the field measures it.
@@ -518,9 +518,9 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
  * ledger the grid places first, was drawn in the ledger's place and moved when
  * the ledger came: the deploy's `#main x+272px` of 2026-10-24 at 1280x800, and
  * 105 px down on a phone. Throttling the CPU never paints mid-page here; a
- * network that pauses does (#236). The phone rows cannot see their 105 px:
- * under the harness's mobile emulation Chrome marks that early shift
- * `hadRecentInput`, which the field's measure leaves out, so they guard only.
+ * network that pauses does (#236). The phone rows see their 105 px since the
+ * measure counts a shift Chrome marks as input before any input reached the
+ * page; the last rows prove it can, on a page that moves early and on a tap (#243).
  */
 describe.skipIf(skipped !== null)("the page arriving in pieces paints where it stays (#236)", () => {
   const LEDGER = '<details class="decl"';
@@ -538,6 +538,14 @@ describe.skipIf(skipped !== null)("the page arriving in pieces paints where it s
       } finally {
         server.close();
       }
+    }, 120000);
+  for (const screen of VIEWPORTS.filter((s) => s.mobile))
+    it(`${screen.name} · the measure counts a shift Chrome marks as input until a tap reaches the page (#243)`, async () => {
+      const { before, after } = await withBrowser(shiftsBeforeAndAfterATap, { viewport: screen.viewport, mobile: true });
+      expect(before.every.map((s) => s.markedAsInput), `none marked as input, so no subject: ${JSON.stringify(before)}`).toEqual([true]);
+      expect(before.counted, "the page's own shift in its first frames went uncounted").toEqual(before.every.map((s) => s.value));
+      expect(after.every.map((s) => s.markedAsInput), `the tap moved nothing: ${JSON.stringify(after)}`).toEqual([true, true]);
+      expect(after.counted, "the shift the tap made was counted").toEqual(before.counted);
     }, 120000);
 });
 
