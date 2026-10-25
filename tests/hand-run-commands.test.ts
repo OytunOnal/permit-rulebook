@@ -137,12 +137,12 @@ describe.skipIf(noChrome !== null)("npm run assets", () => {
   }, 180000);
 });
 
-describe.skipIf(skipped !== null)("node scripts/shot.mjs <out.png>", () => {
+describe.skipIf(skipped !== null)("node scripts/main-shot.mjs <out.png>", () => {
   it("writes a PNG of the frame's size where it is told", async () => {
     const before = writtenTimesIn(join("docs", "media"));
     await inThrowawayFolder(async (folder) => {
       const out = join(folder, "results.png");
-      const run = await nodeRun([join("scripts", "shot.mjs"), out]);
+      const run = await nodeRun([join("scripts", "main-shot.mjs"), out]);
       expect(run.status, run.out).toBe(0);
       // The frame is 1100x1400 CSS pixels, drawn at the harness's device scale of 2.
       expect(pngSizeOf(out)).toBe("2200x2800");

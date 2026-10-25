@@ -118,22 +118,28 @@
   "scripts/child-env.mjs": "infrastructure",
   "scripts/chrome.mjs": "infrastructure",
   "scripts/cli-check-base.mjs": "presentation",
+  "scripts/cli-data-pin.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
   "scripts/cli-measure-taps.mjs": "presentation",
-  "scripts/data-pin.mjs": "infrastructure main",
+  "scripts/cli-shot.mjs": "presentation",
+  "scripts/cli-smoke.mjs": "presentation",
+  "scripts/data-pin.mjs": "infrastructure",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
   "scripts/html-in-pieces.mjs": "infrastructure",
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
   "scripts/main-check-base.mjs": "main",
+  "scripts/main-data-pin.mjs": "main",
   "scripts/main-measure-taps.mjs": "main",
+  "scripts/main-shot.mjs": "main",
+  "scripts/main-smoke.mjs": "main",
   "scripts/measure-taps.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
   "scripts/render-assets.mjs": "infrastructure main",
-  "scripts/shot.mjs": "infrastructure main",
+  "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
-  "scripts/smoke.mjs": "infrastructure main",
+  "scripts/smoke.mjs": "infrastructure",
   "scripts/tab-waits.mjs": "infrastructure",
   "spine-lint/lint.mjs": "domain",
   "spine-lint/rules/ceiling-paid-off.mjs": "domain",
@@ -397,6 +403,21 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/main-data-pin.mjs",
+   "to": "scripts/cli-data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-pin.mjs",
+   "to": "scripts/data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-pin.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/main-measure-taps.mjs",
    "to": "scripts/cli-measure-taps.mjs",
    "kind": "dependency"
@@ -409,6 +430,36 @@
   {
    "from": "scripts/main-measure-taps.mjs",
    "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-shot.mjs",
+   "to": "scripts/cli-shot.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-shot.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-shot.mjs",
+   "to": "scripts/shot.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
+   "to": "scripts/cli-smoke.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
+   "to": "scripts/smoke.mjs",
    "kind": "dependency"
   },
   {
@@ -4685,6 +4736,18 @@
     "exported": true
    }
   ],
+  "scripts/cli-data-pin.mjs": [
+   {
+    "name": "pinOptionsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pinReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/cli-deploy-finding.mjs": [],
   "scripts/cli-measure-taps.mjs": [
    {
@@ -4703,6 +4766,35 @@
     "exported": true
    }
   ],
+  "scripts/cli-shot.mjs": [
+   {
+    "name": "shotOptionsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "shotReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/cli-smoke.mjs": [
+   {
+    "name": "smokeOptionsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "reportLinesOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "smokeReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/data-pin.mjs": [
    {
     "name": "root",
@@ -4710,7 +4802,7 @@
     "exported": false
    },
    {
-    "name": "lockPath",
+    "name": "siteLockPath",
     "kind": "const",
     "exported": false
    },
@@ -4730,9 +4822,9 @@
     "exported": false
    },
    {
-    "name": "lockPathAskedBy",
+    "name": "pinData",
     "kind": "fn",
-    "exported": false
+    "exported": true
    }
   ],
   "scripts/deploy-finding.mjs": [
@@ -4891,6 +4983,7 @@
    }
   ],
   "scripts/main-check-base.mjs": [],
+  "scripts/main-data-pin.mjs": [],
   "scripts/main-measure-taps.mjs": [
    {
     "name": "measured",
@@ -4898,6 +4991,8 @@
     "exported": false
    }
   ],
+  "scripts/main-shot.mjs": [],
+  "scripts/main-smoke.mjs": [],
   "scripts/measure-taps.mjs": [
    {
     "name": "dist",
@@ -5036,13 +5131,8 @@
     "exported": false
    },
    {
-    "name": "today",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "out",
-    "kind": "const",
+    "name": "todaysPath",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -5051,9 +5141,14 @@
     "exported": false
    },
    {
-    "name": "server",
-    "kind": "const",
+    "name": "resultsPngOf",
+    "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "takeShot",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/site-base.mjs": [
@@ -5093,16 +5188,6 @@
     "name": "smoke",
     "kind": "fn",
     "exported": true
-   },
-   {
-    "name": "reportLinesOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "surfacesAskedBy",
-    "kind": "fn",
-    "exported": false
    }
   ],
   "scripts/tab-waits.mjs": [
@@ -7860,8 +7945,11 @@
   "scripts/child-env.mjs",
   "scripts/chrome.mjs",
   "scripts/cli-check-base.mjs",
+  "scripts/cli-data-pin.mjs",
   "scripts/cli-deploy-finding.mjs",
   "scripts/cli-measure-taps.mjs",
+  "scripts/cli-shot.mjs",
+  "scripts/cli-smoke.mjs",
   "scripts/data-pin.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
@@ -7869,7 +7957,10 @@
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
   "scripts/main-check-base.mjs",
+  "scripts/main-data-pin.mjs",
   "scripts/main-measure-taps.mjs",
+  "scripts/main-shot.mjs",
+  "scripts/main-smoke.mjs",
   "scripts/measure-taps.mjs",
   "scripts/print-report.mjs",
   "scripts/render-assets.mjs",
@@ -7929,5 +8020,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "74dab0e5f54ff5d059810e59fe1bc29e2305f22bea3d0e76c91e2324bad92aed"
+ "digest": "9c39aaf32e4d89260a3290ace071e8972b98253fcda6017412c182c8f9945699"
 }
