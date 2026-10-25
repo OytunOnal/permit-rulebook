@@ -105,7 +105,7 @@ const TYPES = {
  * on by default: only the first-paint measurement asks, because what it
  * measures (the page rearranging itself) is invisible at local speed (s10, #236).
  */
-export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPieces = null } = {}) {
+export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPieces = /** @type {{ before: string, heldMs: number } | null} */ (null) } = {}) {
   const server = createServer((req, res) => {
     let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
     if (base && (path === base || path.startsWith(`${base}/`))) path = path.slice(base.length) || "/";
