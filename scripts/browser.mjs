@@ -1,10 +1,11 @@
 // @level infrastructure
 import { spawn } from "node:child_process";
-import { createReadStream, existsSync, readdirSync, rmSync, statSync } from "node:fs";
+import { existsSync, readdirSync, rmSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { extname, join } from "node:path";
 import { chromePath } from "./chrome.mjs";
+import { sendBody } from "./html-in-pieces.mjs";
 import { at, siteBase } from "./site-base.mjs";
 import { TabWaits } from "./tab-waits.mjs";
 
@@ -99,12 +100,12 @@ const TYPES = {
  * missing and the interview as empty (2026-09-08).
  *
  * `delayJsMs` holds every `.js` response back by that many milliseconds while
- * the HTML goes out at once — a phone's network, on a loopback that has none.
- * Zero by default: only the first-paint measurement asks for it, because the
- * defect it measures (the page rearranging itself when the module lands) is
- * invisible at local speed, where Chrome paints once (s10, 2026-09-15).
+ * the HTML goes out at once, and `htmlInPieces` sends the HTML in two (its
+ * module says how): a phone's network, on a loopback that has none. Neither is
+ * on by default: only the first-paint measurement asks, because what it
+ * measures (the page rearranging itself) is invisible at local speed (s10, #236).
  */
-export async function serve(dir, { base = siteBase(), delayJsMs = 0 } = {}) {
+export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPieces = null } = {}) {
   const server = createServer((req, res) => {
     let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
     if (base && (path === base || path.startsWith(`${base}/`))) path = path.slice(base.length) || "/";
@@ -113,10 +114,9 @@ export async function serve(dir, { base = siteBase(), delayJsMs = 0 } = {}) {
     if (!existsSync(file)) { res.writeHead(404); res.end("not found"); return; }
     const send = () => {
       res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream" });
-      createReadStream(file).pipe(res);
+      sendBody(file, res, htmlInPieces);
     };
-    if (delayJsMs > 0 && extname(file) === ".js") setTimeout(send, delayJsMs);
-    else send();
+    if (delayJsMs > 0 && extname(file) === ".js") setTimeout(send, delayJsMs); else send();
   });
   // Port 0: the OS picks a free one. Never a fixed port — a harness that binds
   // 4321 fights the developer's own dev server for it.

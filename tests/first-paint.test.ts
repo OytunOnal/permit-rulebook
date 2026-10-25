@@ -12,6 +12,7 @@ import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/ques
 import { replayRecord } from "../src/lib/scope.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { url } from "../src/lib/site.js";
+import { GATHER_SHIFTS } from "./layout-shifts.js";
 
 /**
  * The first paint, measured the way the field measures it.
@@ -110,13 +111,11 @@ if (skipped)
   ].join(String.fromCharCode(10)));
 
 interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
+  goto(url: string): Promise<void>; navigate(url: string): Promise<void>; evaluate(expression: string): Promise<string>;
+  waitUntil(condition: string, what: string): Promise<unknown>; waitUntilAtRest(): Promise<void>;
 }
 
-/**
- * A realistic mobile lag on the module: HTML at once, script 700 ms later.
- */
+/** A realistic mobile lag on the module: HTML at once, script 700 ms later. */
 const DELAY_JS_MS = 700;
 
 /**
@@ -134,47 +133,6 @@ const VIEWPORTS = [
   { name: "1280x900", viewport: { width: 1280, height: 900 }, mobile: false },
   { name: "1280x800", viewport: { width: 1280, height: 800 }, mobile: false },
 ] as const;
-
-/** Everything ABOVE the box: the site's header and the masthead. */
-const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
-
-/**
- * The observer goes in after the load and reads `buffered: true`, so it still
- * sees the shifts that happened before it existed. It is installed rather than
- * awaited because the driver's `evaluate` hands back a value, not a promise —
- * hence the beat between installing and reading.
- *
- * Each source is named the way the field's debug rows name it — a path up to
- * the nearest id — with how far it travelled, so a failure says where to look.
- */
-const INSTALL = `(() => {
-  window.__cls = [];
-  const elementOf = (node) => node && (node.nodeType === 1 ? node : node.parentElement);
-  const named = (node) => {
-    const parts = [];
-    const pathCanTake = (el) => el && el !== document.body && parts.length < 4;
-    for (let el = elementOf(node); pathCanTake(el); el = el.parentElement) {
-      if (el.id) { parts.unshift("#" + el.id); break; }
-      parts.unshift(el.tagName.toLowerCase() + (el.classList[0] ? "." + el.classList[0] : ""));
-    }
-    return parts.join(">") || "?";
-  };
-  new PerformanceObserver((l) => window.__cls.push(...l.getEntries()
-    .filter((e) => !e.hadRecentInput)
-    .map((e) => ({
-      value: e.value,
-      sources: (e.sources ?? []).map((s) => {
-        const el = elementOf(s.node);
-        return {
-          node: named(s.node),
-          dx: Math.round(s.currentRect.x - s.previousRect.x),
-          dy: Math.round(s.currentRect.y - s.previousRect.y),
-          above: !!el && !!el.closest(${JSON.stringify(ABOVE_THE_BOX)}),
-        };
-      }),
-    })))).observe({ type: "layout-shift", buffered: true });
-  return "installed";
-})()`;
 
 /**
  * What is on the screen while the module is still in the post — which is to
@@ -229,7 +187,7 @@ interface AtFirstPaint {
   countShown: boolean;
 }
 
-const READ = `JSON.stringify({
+const READ = `${GATHER_SHIFTS}, JSON.stringify({
   cls: window.__cls.reduce((s, e) => s + e.value, 0),
   shifts: window.__cls.map((e) => ({ value: Math.round(e.value * 10000) / 10000, sources: e.sources })),
   sameCard: window.__built === document.querySelector("#main > *"),
@@ -385,7 +343,7 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           await withBrowser(async (page: BrowserPage) => {
             // Storage belongs to the origin, so it is written from a page of
             // this site — 404 is the cheapest one that runs no interview.
-            await page.goto(server.url("/404.html"), 300);
+            await page.goto(server.url("/404.html"));
             // Seeded the way the product writes it: a record that reached a
             // verdict carries the bit that says so (s22).
             await page.evaluate(arrival.record
@@ -394,16 +352,19 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
                   arrival.record.answers, [...arrival.record.history], arrival.shape === "verdict",
                 ))})`
               : "localStorage.clear()");
-            // Read back while the module is still 450 ms out: what is on the
-            // screen at this point is what the build put there.
-            await page.goto(server.url(arrival.path), 250);
+            // Read back once the HTML is parsed, with the module still held:
+            // what is on the screen at this point is what the build put there.
+            const href = new URL(server.url(arrival.path)).href;
+            await page.navigate(href);
+            await page.waitUntil(`location.href === ${JSON.stringify(href)} && document.readyState !== "loading"`,
+              `${href} was never parsed`);
             const built = JSON.parse(await page.evaluate(AT_FIRST_PAINT)) as AtFirstPaint;
             expect(built.held, `${key(screen.name, arrival.name)}: the built page painted nothing into #main`)
               .toBe(true);
             atFirstPaint.set(key(screen.name, arrival.name), built);
-            await new Promise((r) => setTimeout(r, DELAY_JS_MS + 1250));
-            await page.evaluate(INSTALL);
-            await new Promise((r) => setTimeout(r, 400));
+            // The stand-ins go in the task that draws the reader's screen.
+            await page.waitUntil(`!document.querySelector(".stand-in")`, "the module never drew the reader's screen");
+            await page.waitUntilAtRest();
             measured.set(key(screen.name, arrival.name), JSON.parse(await page.evaluate(READ)) as Measured);
           }, { viewport: screen.viewport, mobile: screen.mobile });
     } finally {
@@ -548,6 +509,36 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           .toBe(screen.viewport.width >= WIDE_FROM_PX);
       });
     });
+});
+
+/**
+ * The same page with its HTML arriving in two pieces, split before the ledger,
+ * and the module as late as above.
+ * Chrome paints while it waits for the rest, and the box, parsed before the
+ * ledger the grid places first, was drawn in the ledger's place and moved when
+ * the ledger came: the deploy's `#main x+272px` of 2026-10-24 at 1280x800, and
+ * 105 px down on a phone. Throttling the CPU never paints mid-page here; a
+ * network that pauses does (#236). The phone rows cannot see their 105 px:
+ * under the harness's mobile emulation Chrome marks that early shift
+ * `hadRecentInput`, which the field's measure leaves out, so they guard only.
+ */
+describe.skipIf(skipped !== null)("the page arriving in pieces paints where it stays (#236)", () => {
+  const LEDGER = '<details class="decl"';
+  for (const screen of VIEWPORTS)
+    it(`${screen.name} · /?country=fr, the HTML split before the ledger: nothing moves`, async () => {
+      expect(readFileSync(join(dist, "index.html"), "utf8"), "the page has no ledger to split before").toContain(LEDGER);
+      const server = await serve(dist, { delayJsMs: DELAY_JS_MS, htmlInPieces: { before: LEDGER, heldMs: 300 } });
+      try {
+        const m = await withBrowser(async (page: BrowserPage) => {
+          await page.goto(server.url("/?country=fr"));
+          await page.waitUntilAtRest();
+          return JSON.parse(await page.evaluate(READ)) as Measured;
+        }, { viewport: screen.viewport, mobile: screen.mobile });
+        expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBe(0);
+      } finally {
+        server.close();
+      }
+    }, 120000);
 });
 
 /**
