@@ -23,17 +23,27 @@
  *
  *   node scripts/render-assets.mjs         # re-render into public/
  *   node scripts/render-assets.mjs --check # verify what is committed, change nothing
+ *   node scripts/render-assets.mjs --out <dir> # render into <dir>, the mark still read from public/
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromePath } from "./chrome.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const publicDir = join(root, "public");
 const check = process.argv.includes("--check");
+
+/** Where a render writes: the folder after `--out`, else `public/`. */
+function outDirAskedBy(argv) {
+  const flag = argv.indexOf("--out");
+  if (flag === -1) return publicDir;
+  if (!argv[flag + 1]) throw new Error("--out names no folder: npm run assets -- --out <dir>");
+  return resolve(argv[flag + 1]);
+}
+const outDir = outDirAskedBy(process.argv);
 
 const CARD = { width: 1200, height: 630 };
 // 16/32/64 are the tab; 96 is what a search engine asks for (Google states a
@@ -134,11 +144,11 @@ async function main() {
     return;
   }
 
-  mkdirSync(publicDir, { recursive: true });
+  mkdirSync(outDir, { recursive: true });
   const svg = readFileSync(join(publicDir, "favicon.svg"), "utf8");
   const images = [];
   for (const size of ICON_SIZES) {
-    const out = join(publicDir, `favicon-${size}.png`);
+    const out = join(outDir, `favicon-${size}.png`);
     const dir = join(tmpdir(), `permit-rulebook-icon-${size}`);
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "favicon.svg"), svg, "utf8");
@@ -154,10 +164,10 @@ async function main() {
     rmSync(dir, { recursive: true, force: true });
     if (ICO_SIZES.includes(size)) images.push({ size, png: readFileSync(out) });
   }
-  writeFileSync(join(publicDir, "favicon.ico"), ico(images));
+  writeFileSync(join(outDir, "favicon.ico"), ico(images));
 
-  shoot(socialCardHtml(facts, tokens), CARD, join(publicDir, "social-card.png"));
-  writeFileSync(join(publicDir, SIDECAR), `${JSON.stringify(facts, null, 2)}\n`, "utf8");
+  shoot(socialCardHtml(facts, tokens), CARD, join(outDir, "social-card.png"));
+  writeFileSync(join(outDir, SIDECAR),`${JSON.stringify(facts, null, 2)}\n`, "utf8");
 
   console.log(JSON.stringify({
     level: "info", msg: "assets rendered",
