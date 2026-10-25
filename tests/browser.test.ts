@@ -123,3 +123,65 @@ describe.skipIf(skipped !== null)("the harness's waitUntilAtRest", () => {
     expect(ended).toBe("ended");
   }, 60000);
 });
+
+/** A paragraph 3000 px down a tall page, and a note of the scroll's own end, `scrollend`. */
+const MARK_FAR_DOWN = `(() => {
+  const mark = Object.assign(document.createElement("p"), { id: "mark", textContent: "where the scroll ends" });
+  mark.style.cssText = "margin:3000px 0 6000px";
+  document.body.append(mark);
+  addEventListener("scrollend", () => { window.__scrollEnded = true; });
+  return "marked";
+})()`;
+/** Where the page stands once at rest: whether the scroll said it ended, and how far it stands from its end. */
+const AFTER_SCROLL = (offEnd: string) => `JSON.stringify({ ended: window.__scrollEnded === true, scrollY, offEnd: ${offEnd} })`;
+interface AfterScroll { ended: boolean; scrollY: number; offEnd: number }
+/**
+ * A gesture that asks for `scroll` and then works on for 100 ms, as a tap's
+ * draw does on a loaded machine. Chrome then runs the frames it owes back to
+ * back, before the scroll has moved: two frames reading the same scroll
+ * (#242, the frames #232's probe saw sharing a timestamp).
+ */
+const ASK_THEN_WORK_ON = (scroll: string) => `(() => {
+  ${scroll};
+  const done = performance.now() + 100;
+  while (performance.now() < done);
+  return "asked for";
+})()`;
+
+describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, after a smooth scroll", () => {
+  // Two frames reading the same scroll is not a smooth scroll's end: its
+  // first frames barely move, or not at all. Each is asked for the way the
+  // interview asks: `scrollTo` lands a card, `scrollIntoView` reveals the
+  // masthead; the wait has begun its look when the gesture asks.
+  for (const [how, start, offEnd] of [
+    ["scrollTo", 'scrollTo({ top: 3000, behavior: "smooth" })', "scrollY - 3000"],
+    ["scrollIntoView", 'document.getElementById("mark").scrollIntoView({ block: "start", behavior: "smooth" })',
+      'document.getElementById("mark").getBoundingClientRect().top'],
+  ] as const)
+    it(`waitUntilAtRest returns only once a smooth ${how} just begun has ended`, async () => {
+      const seen = await onSite(async (page, url) => {
+        await page.goto(url("/404.html"));
+        await page.evaluate(MARK_FAR_DOWN);
+        // Its loading over first, so the next look sees nothing but the scroll.
+        await page.waitUntilAtRest();
+        const atRest = page.waitUntilAtRest();
+        await page.evaluate(ASK_THEN_WORK_ON(start));
+        await atRest;
+        return JSON.parse(await page.evaluate(AFTER_SCROLL(offEnd))) as AfterScroll;
+      });
+      expect(seen.ended, `at rest returned mid-scroll, at scrollY ${seen.scrollY}`).toBe(true);
+      expect(Math.abs(seen.offEnd), `at rest returned ${seen.offEnd} px from the scroll's end`).toBeLessThan(1);
+    }, 60000);
+
+  it("waitUntilAtRest returns after a smooth scrollIntoView with nowhere to go, which fires no scrollend", async () => {
+    const failure = await onSite(async (page, url) => {
+      await page.goto(url("/404.html"));
+      await page.evaluate(MARK_FAR_DOWN);
+      await page.evaluate('(document.getElementById("mark").scrollIntoView({ block: "start" }), "there")');
+      await page.waitUntilAtRest();
+      await page.evaluate('(document.getElementById("mark").scrollIntoView({ block: "start", behavior: "smooth" }), "asked for")');
+      return page.waitUntilAtRest().then(() => "", (e: Error) => e.message);
+    });
+    expect(failure).toBe("");
+  }, 60000);
+});

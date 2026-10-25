@@ -256,8 +256,6 @@ const ANSWER_ANOTHER_BAND = `(() => {
   other.click();
   return other.textContent.trim();
 })()`;
-/** The reveal has brought the headline's top into view: a smooth scroll's first frames can pass for a two-frame rest. */
-const HEADLINE_IN_VIEW = 'document.getElementById("headline").getBoundingClientRect().top >= 0';
 
 describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
   for (const [name, viewport, mobile] of [
@@ -278,7 +276,6 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
           const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
           await waitUntilPastTheBeat(page);
           await page.evaluate(ANSWER_ANOTHER_BAND);
-          await page.waitUntil(HEADLINE_IN_VIEW, "the reveal never brought the headline into view");
           await page.waitUntilAtRest();
           const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
           return { arrived, onQuestion, back, problems: page.problems() };

@@ -26,16 +26,76 @@ const DOCUMENT_SHOWN = "String(performance.timeOrigin)";
 const REPLACED_CONTEXT = /Execution context was destroyed|Cannot find default execution context|Cannot find context with specified id|Inspected target navigated or closed/;
 
 /**
- * At rest, as the page sees it: no animation or transition running, and the
- * scroll position the same across two animation frames. The requests in
- * flight are counted from the tab's network events, outside the page.
+ * Run in every document the tab opens, before the page's own scripts: counts
+ * the page's smooth scrolls still going, as each scroll says so itself. Two
+ * frames reading the same scroll is not the end of one: its first frames
+ * barely move, or not at all, and Chrome can run them back to back (#242).
+ *
+ * `scrollTo`, `scroll` and `scrollBy` end when the promise they return
+ * settles. `scrollIntoView`'s settles at once, so its scroll ends at the next
+ * `scrollend`, or once the viewport has no more than a pixel left to go: a
+ * scroll asked of an element already there moves nothing and fires none.
+ */
+const WATCH_SMOOTH_SCROLLS = `(() => {
+  const going = new Set();
+  const untilSettled = (end) => {
+    let settled = false;
+    const settle = () => { settled = true; };
+    end.then(settle, settle);
+    return () => !settled;
+  };
+  const untilScrollEndOr = (there) => {
+    let ended = false;
+    addEventListener("scrollend", () => { ended = true; }, { capture: true, once: true });
+    return () => !ended && !there();
+  };
+  const smooth = (options, scroller) => options?.behavior === "smooth"
+    || (options?.behavior !== "instant" && getComputedStyle(scroller).scrollBehavior === "smooth");
+  for (const owner of [window, Element.prototype])
+    for (const name of ["scrollTo", "scroll", "scrollBy"]) {
+      const ask = owner[name];
+      owner[name] = function (...args) {
+        const end = ask.apply(this, args);
+        if (smooth(args[0], this instanceof Element ? this : document.documentElement))
+          going.add(typeof end?.then === "function" ? untilSettled(end) : untilScrollEndOr(() => false));
+        return end;
+      };
+    }
+  // How far the viewport still has to scroll to bring el where block asks, within the scroll it has.
+  const leftToGo = (el, block) => {
+    const { top, bottom } = el.getBoundingClientRect();
+    const by = { start: top, end: bottom - innerHeight, center: (top + bottom - innerHeight) / 2,
+      nearest: top < 0 && bottom > innerHeight ? 0 : top < 0 ? top : Math.max(bottom - innerHeight, 0) }[block];
+    const furthest = document.documentElement.scrollHeight - innerHeight;
+    return Math.min(Math.max(scrollY + by, 0), furthest) - scrollY;
+  };
+  const intoView = Element.prototype.scrollIntoView;
+  Element.prototype.scrollIntoView = function (...args) {
+    const returned = intoView.apply(this, args);
+    const block = args[0] === false ? "end" : (args[0]?.block ?? "start");
+    if (smooth(args[0], document.documentElement)) going.add(untilScrollEndOr(() => Math.abs(leftToGo(this, block)) <= 1));
+    return returned;
+  };
+  Object.defineProperty(window, "__smoothScrollsUnfinished", {
+    get: () => {
+      for (const goes of going) if (!goes()) going.delete(goes);
+      return going.size;
+    },
+  });
+})()`;
+
+/**
+ * At rest, as the page sees it: no animation or transition running, no
+ * smooth scroll the page asked for still going, and the scroll position the
+ * same across two animation frames. The requests in flight are counted from
+ * the tab's network events, outside the page.
  */
 const AT_REST = `new Promise((resolve) => {
   const scrolled = () => scrollX + "," + scrollY;
   const before = scrolled();
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const moving = document.getAnimations().some((a) => a.pending || a.playState === "running");
-    resolve(!moving && scrolled() === before);
+    resolve(!moving && !window.__smoothScrollsUnfinished && scrolled() === before);
   }));
 })`;
 
@@ -92,6 +152,8 @@ export class TabWaits {
   #inFlight = new Map();
   /** The document the last wait read the tab on: the one a gesture leaves. */
   #documentSeen = null;
+  /** Chrome's reply once every document the tab opens from here on counts its smooth scrolls. */
+  #smoothScrollsWatched = null;
 
   constructor(sendToTab, forgetProblems) {
     this.#sendToTab = sendToTab;
@@ -119,6 +181,7 @@ export class TabWaits {
     if (settleMs !== undefined) {
       this.#forgetProblems();
       this.#documentSeen = null;
+      await this.#watchSmoothScrolls();
       await this.#sendToTab("Page.navigate", { url });
       return pause(settleMs);
     }
@@ -131,6 +194,7 @@ export class TabWaits {
   navigate = async (url) => {
     this.#forgetProblems();
     this.#documentSeen = null;
+    await this.#watchSmoothScrolls();
     const { errorText } = await this.#sendToTab("Page.navigate", { url });
     if (errorText) throw new Error(`${url} did not load: ${errorText}`);
   };
@@ -138,14 +202,14 @@ export class TabWaits {
   /** Reads `condition` in the page until it holds, and returns its value. */
   waitUntil = async (condition, what) => (await this.#holding(() => this.#readOnce(condition), what)).held;
 
-  /** Waits until no animation or transition runs, the scroll is still, and no request is in flight. */
+  /** Waits until no animation or transition runs, no smooth scroll goes on, the scroll is still, and no request is in flight. */
   waitUntilAtRest = async () => {
     const atRest = async () => {
       const seen = await this.#readOnce(AT_REST);
       return this.#inFlight.size === 0 ? seen : null;
     };
     await this.#holding(atRest, () => `the page never came to rest: ${this.#inFlight.size === 0
-      ? "an animation ran or the scroll moved"
+      ? "an animation ran, a smooth scroll went on, or the scroll moved"
       : `requests stayed in flight (${[...this.#inFlight.values()].slice(0, 3).map((r) => r.url).join(", ")})`}`);
   };
 
@@ -155,6 +219,12 @@ export class TabWaits {
     if (this.#documentSeen === null) throw new Error("no wait has read the document the gesture left: wait on it before the gesture");
     await this.#waitUntilDrawnAfter(this.#documentSeen);
   };
+
+  /** From the tab's first navigation on, every document it opens counts its smooth scrolls; asked once. */
+  #watchSmoothScrolls() {
+    this.#smoothScrollsWatched ??= this.#sendToTab("Page.addScriptToEvaluateOnNewDocument", { source: WATCH_SMOOTH_SCROLLS });
+    return this.#smoothScrollsWatched;
+  }
 
   #forgetRequestsNotOf(loaderId) {
     for (const [requestId, request] of this.#inFlight)
