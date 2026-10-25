@@ -49,14 +49,14 @@ const WATCH_SMOOTH_SCROLLS = `(() => {
     addEventListener("scrollend", () => { ended = true; }, { capture: true, once: true });
     return () => !ended && !there();
   };
-  const smooth = (options, scroller) => options?.behavior === "smooth"
+  const isSmooth = (options, scroller) => options?.behavior === "smooth"
     || (options?.behavior !== "instant" && getComputedStyle(scroller).scrollBehavior === "smooth");
   for (const owner of [window, Element.prototype])
     for (const name of ["scrollTo", "scroll", "scrollBy"]) {
       const ask = owner[name];
       owner[name] = function (...args) {
         const end = ask.apply(this, args);
-        if (smooth(args[0], this instanceof Element ? this : document.documentElement))
+        if (isSmooth(args[0], this instanceof Element ? this : document.documentElement))
           going.add(typeof end?.then === "function" ? untilSettled(end) : untilScrollEndOr(() => false));
         return end;
       };
@@ -73,7 +73,7 @@ const WATCH_SMOOTH_SCROLLS = `(() => {
   Element.prototype.scrollIntoView = function (...args) {
     const returned = intoView.apply(this, args);
     const block = args[0] === false ? "end" : (args[0]?.block ?? "start");
-    if (smooth(args[0], document.documentElement)) going.add(untilScrollEndOr(() => Math.abs(leftToGo(this, block)) <= 1));
+    if (isSmooth(args[0], document.documentElement)) going.add(untilScrollEndOr(() => Math.abs(leftToGo(this, block)) <= 1));
     return returned;
   };
   Object.defineProperty(window, "__smoothScrollsUnfinished", {
@@ -106,7 +106,7 @@ const AT_REST = `new Promise((resolve) => {
  * task that draws its first screen; any other page has drawn once it has
  * loaded.
  */
-const drawnAfter = (left) => `${DOCUMENT_SHOWN} !== ${JSON.stringify(left)}
+const isNewDocumentDrawn = (left) => `${DOCUMENT_SHOWN} !== ${JSON.stringify(left)}
   && document.readyState !== "loading" && !document.querySelector(".stand-in")`;
 
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -176,7 +176,7 @@ export class TabWaits {
   goto = async (url) => {
     const left = await this.waitUntil(DOCUMENT_SHOWN, "the tab stood on no document");
     await this.navigate(url);
-    await this.#waitUntilDrawnAfter(left);
+    await this.#waitUntilNewDocumentDrawnAfter(left);
   };
 
   /** Sends the navigation and returns at once, for a read before the page's script runs. */
@@ -189,7 +189,7 @@ export class TabWaits {
   };
 
   /** Reads `condition` in the page until it holds, and returns its value. */
-  waitUntil = async (condition, what) => (await this.#holding(() => this.#readOnce(condition), what)).held;
+  waitUntil = async (condition, what) => (await this.#waitUntilReadHolds(() => this.#readOnce(condition), what)).held;
 
   /** Waits until no animation or transition runs, no smooth scroll goes on, the scroll is still, and no request is in flight. */
   waitUntilAtRest = async () => {
@@ -197,7 +197,7 @@ export class TabWaits {
       const seen = await this.#readOnce(AT_REST);
       return this.#inFlight.size === 0 ? seen : null;
     };
-    await this.#holding(atRest, () => `the page never came to rest: ${this.#inFlight.size === 0
+    await this.#waitUntilReadHolds(atRest, () => `the page never came to rest: ${this.#inFlight.size === 0
       ? "an animation ran, a smooth scroll went on, or the scroll moved"
       : `requests stayed in flight (${[...this.#inFlight.values()].slice(0, 3).map((r) => r.url).join(", ")})`}`);
   };
@@ -206,7 +206,7 @@ export class TabWaits {
    * document other than the one the last wait read, and it has drawn. */
   waitUntilNewDocumentDrawn = async () => {
     if (this.#documentSeen === null) throw new Error("no wait has read the document the gesture left: wait on it before the gesture");
-    await this.#waitUntilDrawnAfter(this.#documentSeen);
+    await this.#waitUntilNewDocumentDrawnAfter(this.#documentSeen);
   };
 
   /** From the tab's first navigation on, every document it opens counts its smooth scrolls; asked once. */
@@ -220,12 +220,12 @@ export class TabWaits {
       if (request.loaderId !== loaderId) this.#inFlight.delete(requestId);
   }
 
-  #waitUntilDrawnAfter(left) {
-    return this.#holding(() => this.#readOnce(drawnAfter(left)), "no new document drew its first screen");
+  #waitUntilNewDocumentDrawnAfter(left) {
+    return this.#waitUntilReadHolds(() => this.#readOnce(isNewDocumentDrawn(left)), "no new document drew its first screen");
   }
 
-  /** The read that holds, its document kept as the one the tab was last seen on. */
-  async #holding(read, what) {
+  /** Waits until `read` holds and returns what it read, its document kept as the one the tab was last seen on. */
+  async #waitUntilReadHolds(read, what) {
     const seen = await pollUntil(read, what);
     this.#documentSeen = seen.document;
     return seen;

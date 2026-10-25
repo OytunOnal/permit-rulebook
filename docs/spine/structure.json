@@ -4968,7 +4968,7 @@
     "exported": false
    },
    {
-    "name": "drawnAfter",
+    "name": "isNewDocumentDrawn",
     "kind": "fn",
     "exported": false
    },
@@ -7760,5 +7760,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "9d3041220f4a4a44537650d5bc09738e56d43e7a678fe2deb1fb39ceab534bed"
+ "digest": "a0305afd642e7bfd4263f2bf88d893046f42959a46e7b9408cac1aa76d7372c8"
 }
