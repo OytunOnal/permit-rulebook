@@ -155,6 +155,13 @@ click on the tracker link. Answers never leave the device.
   to its count until within 400; every other existing breach is a Suppression
   in `eslint-suppressions.json`, whose count per file and rule cannot grow.
   The issues that pay them off carry the deadline on their milestones (#149).
+  The browser cases drive Chrome through `scripts/browser.mjs`, and each waits
+  on what it reads, never a time: the page drawn, the page at rest (no
+  animation, no smooth scroll going, no request in flight), a new document
+  drawn, or a condition, with one 15 s backstop (`scripts/tab-waits.mjs`);
+  the lint refuses a sleep in a test. `BROWSER_CPU_SLOWDOWN` slows every tab,
+  and `serve` can send a page's HTML in two pieces (`scripts/html-in-pieces.mjs`)
+  to test a paint mid-parse (#230).
   The carry (`scripts/carry-assets`)
   copies the live generation's assets into `dist/`, only from the site's own
   address and only bytes the previous build's digest list attests; it is a
@@ -206,7 +213,8 @@ click on the tracker link. Answers never leave the device.
   anything paints, and writes a cover and the first-paint seeds on `<html>`.
   The stylesheet it renders hides what each cover hides. The interview takes the
   covers off once, as it draws the reader's first screen, so no arrival moves
-  the page.
+  the page. The box takes no room until the ledger after it is parsed, so a
+  page arriving in pieces paints where it stays (#236).
   The masthead has one writer per screen: a question screen's is
   `questionMastheadOf`, beside the question card; a results or notice
   screen's is composed inside the verdict module and carried by the screen
