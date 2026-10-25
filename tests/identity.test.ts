@@ -285,10 +285,10 @@ const PROBE = `(() => {
 /** What the probe hands back. */
 type Measure = Record<string, number | string | undefined>;
 
-/** The stamp's state on question one, after one answer, on the results, and with only its label swapped. */
-async function readStampOnEveryScreen(page: BrowserPage, url: (path: string) => string, force: boolean): Promise<Record<string, Measure>> {
+/** The stamp's state on question one, after one answer, on the results, and
+ * with only its label swapped, the interview opened each time by `openTheInterview`. */
+async function readStampOnScreensOpenedBy(page: BrowserPage, openTheInterview: () => Promise<void>): Promise<Record<string, Measure>> {
   const read = async () => JSON.parse(await page.evaluate(STAMP_STATE)) as Measure;
-  const openTheInterview = async () => { await openAtRest(page, url("/")); if (force) await page.evaluate(FALLBACK_STACK); };
   await openTheInterview();
   const first = await read();
   await answerWith(page, 'document.querySelector(".qcard .opt").click()');
@@ -300,6 +300,17 @@ async function readStampOnEveryScreen(page: BrowserPage, url: (path: string) => 
   await page.evaluate('document.getElementById("stamp-label").textContent = "Rules read"');
   return { first, answered, results, swapped: await read() };
 }
+
+/** The stamp's state on every screen, in our fonts. */
+const readStampOnEveryScreen = (page: BrowserPage, url: (path: string) => string) =>
+  readStampOnScreensOpenedBy(page, () => openAtRest(page, url("/")));
+
+/** The stamp's state on every screen, in the fonts the machine falls back to. */
+const readStampOnEveryScreenInTheFallbackStack = (page: BrowserPage, url: (path: string) => string) =>
+  readStampOnScreensOpenedBy(page, async () => {
+    await openAtRest(page, url("/"));
+    await page.evaluate(FALLBACK_STACK);
+  });
 
 describe.skipIf(skipped !== null)("the identity pair lands identically on both screens", () => {
   const RESULTS = "/";
@@ -423,11 +434,17 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
    * becomes the record's own date. One pair, two states, and the box does not
    * move between them.
    */
-  for (const { name: stack, force } of STACKS)
+  for (const [stack, readStamp] of [
+    ["our fonts", readStampOnEveryScreen],
+    ["the fallback stack", readStampOnEveryScreenInTheFallbackStack],
+  ] as const)
   it(`states the rules-read date on the questions and the record's date on the results, in ${stack}`, async () => {
     const server = await serve(dist);
     try {
-      const seen = await withBrowser((page: BrowserPage) => readStampOnEveryScreen(page, server.url, force), { viewport: { width: 1100, height: 1000 }, mobile: false }) as Record<string, Measure>;
+      const seen = await withBrowser(
+        (page: BrowserPage) => readStamp(page, server.url),
+        { viewport: { width: 1100, height: 1000 }, mobile: false },
+      ) as Record<string, Measure>;
 
       const newest = datasetMeta(dataset as unknown as Dataset).newest_retrieved_at;
       // The questions stand on the dataset's own newest read date.
