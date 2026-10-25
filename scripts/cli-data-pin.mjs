@@ -8,13 +8,12 @@
  *
  * `--lock` names another lock file to write, which must exist already.
  */
+import { findOptionValue } from "./find-option-value.mjs";
 
 /** The pin's options from the command's arguments: the lock after `--lock`, else none, and the site's own is written. */
 export function pinOptionsOf(argv) {
-  const flag = argv.indexOf("--lock");
-  if (flag === -1) return {};
-  if (!argv[flag + 1]) throw new Error("--lock names no path: npm run data:pin -- --lock <path>");
-  return { lockPath: argv[flag + 1] };
+  const lockPath = findOptionValue(argv, "--lock", "--lock names no path: npm run data:pin -- --lock <path>");
+  return lockPath === undefined ? {} : { lockPath };
 }
 
 /** What the command prints to stdout, one JSON line, and the code it exits with: always 0. */

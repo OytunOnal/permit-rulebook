@@ -37,6 +37,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromePath } from "./chrome.mjs";
+import { decodePngSize } from "./decode-png-size.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const publicDir = join(root, "public");
@@ -56,8 +57,8 @@ const RENDERED = [...ICON_SIZES.map((s) => `favicon-${s}.png`), "favicon.ico", "
 /** The text of the site's `tokens.css`, the palette the card is drawn in. */
 export const readTokensStylesheet =() => readFileSync(join(root, "tokens.css"), "utf8");
 
-/** A PNG's width and height, from its header. */
-const pngSizeOf = (png) => ({ width: png.readUInt32BE(16), height: png.readUInt32BE(20) });
+/** Whether `size` (a width and a height) is the card's. */
+const isCardSize = (size) => size.width === CARD.width && size.height === CARD.height;
 
 /**
  * The PNG of `html` drawn by headless Chrome at `size` (a width and a height),
@@ -87,8 +88,8 @@ function drawPage({ html, size, out, beside = {} }) {
 /** Draws the card from `cardHtml` into `outDir`, and throws when Chrome drew it at any size but the card's. */
 function drawCard(cardHtml, outDir) {
   const out = join(outDir, "social-card.png");
-  const drawn = pngSizeOf(drawPage({ html: cardHtml, size: CARD, out }));
-  if (drawn.width !== CARD.width || drawn.height !== CARD.height)
+  const drawn = decodePngSize(drawPage({ html: cardHtml, size: CARD, out }));
+  if (!isCardSize(drawn))
     throw new Error(`${out}: rendered ${drawn.width}x${drawn.height}, wanted ${CARD.width}x${CARD.height}`);
 }
 
@@ -161,11 +162,11 @@ export function renderAssets({ facts, cardHtml, outDir: askedDir = publicDir }) 
  * for none.
  */
 export function checkAssets(facts) {
-  const missing = ["favicon.svg", ...ICON_SIZES.map((s) => `favicon-${s}.png`), "favicon.ico", "social-card.png", SIDECAR]
-    .filter((f) => !existsSync(join(publicDir, f)));
+  const missing = ["favicon.svg", ...RENDERED].filter((f) => !existsSync(join(publicDir, f)));
   if (missing.length > 0) return { missing };
-  const card = { size: pngSizeOf(readFileSync(join(publicDir, "social-card.png"))), wantedSize: CARD };
-  if (card.size.width !== CARD.width || card.size.height !== CARD.height) return { missing, card, differences: [] };
+  const size = decodePngSize(readFileSync(join(publicDir, "social-card.png")));
+  const card = { size, wantedSize: CARD, isWantedSize: isCardSize(size) };
+  if (!card.isWantedSize) return { missing, card, differences: [] };
   const drawn = JSON.parse(readFileSync(join(publicDir, SIDECAR), "utf8"));
   const differences = Object.entries(facts)
     .filter(([fact, today]) => JSON.stringify(drawn[fact]) !== JSON.stringify(today))

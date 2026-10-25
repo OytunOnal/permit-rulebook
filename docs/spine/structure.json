@@ -125,8 +125,10 @@
   "scripts/cli-shot.mjs": "presentation",
   "scripts/cli-smoke.mjs": "presentation",
   "scripts/data-pin.mjs": "infrastructure",
+  "scripts/decode-png-size.mjs": "domain",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
+  "scripts/find-option-value.mjs": "presentation",
   "scripts/html-in-pieces.mjs": "infrastructure",
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
@@ -370,8 +372,23 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/cli-data-pin.mjs",
+   "to": "scripts/find-option-value.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/cli-deploy-finding.mjs",
    "to": "scripts/deploy-finding.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/cli-render-assets.mjs",
+   "to": "scripts/find-option-value.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/cli-shot.mjs",
+   "to": "scripts/decode-png-size.mjs",
    "kind": "dependency"
   },
   {
@@ -502,6 +519,11 @@
   {
    "from": "scripts/render-assets.mjs",
    "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/render-assets.mjs",
+   "to": "scripts/decode-png-size.mjs",
    "kind": "dependency"
   },
   {
@@ -4866,6 +4888,13 @@
     "exported": true
    }
   ],
+  "scripts/decode-png-size.mjs": [
+   {
+    "name": "decodePngSize",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/deploy-finding.mjs": [
    {
     "name": "DEPLOY_JOBS",
@@ -4980,6 +5009,13 @@
     "exported": true
    }
   ],
+  "scripts/find-option-value.mjs": [
+   {
+    "name": "findOptionValue",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/html-in-pieces.mjs": [
    {
     "name": "sendBody",
@@ -5086,12 +5122,17 @@
     "exported": false
    },
    {
-    "name": "measureBuilt",
+    "name": "builtScreens",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "measureDrawn",
+    "name": "drawnScreens",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "measureEach",
     "kind": "fn",
     "exported": false
    },
@@ -5150,7 +5191,7 @@
     "exported": true
    },
    {
-    "name": "pngSizeOf",
+    "name": "isCardSize",
     "kind": "fn",
     "exported": false
    },
@@ -8018,8 +8059,10 @@
   "scripts/cli-shot.mjs",
   "scripts/cli-smoke.mjs",
   "scripts/data-pin.mjs",
+  "scripts/decode-png-size.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
+  "scripts/find-option-value.mjs",
   "scripts/html-in-pieces.mjs",
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
@@ -8088,5 +8131,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "4e41bf7de34f11fcca74698fa9b1aec983e37e0675649712ab32c0b99acffd59"
+ "digest": "793cacc18e7ee9d9a1c60d5c9b4cc156810f5c7155af56311bc3d0a6dd29588a"
 }

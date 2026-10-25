@@ -115,33 +115,35 @@ async function measureAtRest(page, name, kind) {
   return { name, kind, floorPx: TAP_MIN, ...measured, isOverflowing: measured.scrollWidth > measured.innerWidth + 1 };
 }
 
-/** Each page the build emitted, measured in its path's order and handed to `onScreen` as it is measured. */
-async function measureBuilt(page, server, onScreen) {
-  const screens = [];
-  for (const file of builtPages(dist)) {
-    const path = relative(dist, file).split("\\").join("/");
-    // Through the server's own url(): a site built for a subpath asks for
-    // its assets there, and served at the root it measures as unstyled.
-    await page.goto(server.url(`/${path.replace(/index\.html$/, "")}`));
-    const screen = await measureAtRest(page, path, "built");
-    onScreen(screen);
-    screens.push(screen);
-  }
-  return screens;
-}
+/** Each page the build emitted, in its path's order: its name, its kind, and how the page opens it. */
+const builtScreens = (server) => builtPages(dist).map((file) => {
+  const path = relative(dist, file).split("\\").join("/");
+  // Through the server's own url(): a site built for a subpath asks for
+  // its assets there, and served at the root it measures as unstyled.
+  return { name: path, kind: "built", open: (page) => page.goto(server.url(`/${path.replace(/index\.html$/, "")}`)) };
+});
 
-/** Each drawn screen, measured after its record is written and the page reloaded, and handed to `onScreen`. */
-async function measureDrawn(page, server, onScreen) {
-  const screens = [];
-  for (const [name, answers] of DRAWN) {
+/** Each drawn screen: its name, its kind, and how the page opens it, its record written and the page reloaded. */
+const drawnScreens = (server) => DRAWN.map(([name, answers]) => ({
+  name,
+  kind: "drawn",
+  async open(page) {
     await page.goto(server.url("/"));
     await page.evaluate(seedFor(answers));
     await page.goto(server.url("/"));
-    const screen = await measureAtRest(page, name, "drawn");
+  },
+}));
+
+/** Each of `screens` opened and measured in turn, handed to `onScreen` as it is measured; all of them returned. */
+async function measureEach(page, screens, onScreen) {
+  const measured = [];
+  for (const { name, kind, open } of screens) {
+    await open(page);
+    const screen = await measureAtRest(page, name, kind);
     onScreen(screen);
-    screens.push(screen);
+    measured.push(screen);
   }
-  return screens;
+  return measured;
 }
 
 /**
@@ -156,7 +158,7 @@ export async function measureTaps({ onScreen = () => {} } = {}) {
   const server = await serve(dist);
   try {
     const screens = await withBrowser(
-      async (page) => [...await measureBuilt(page, server, onScreen), ...await measureDrawn(page, server, onScreen)],
+      (page) => measureEach(page, [...builtScreens(server), ...drawnScreens(server)], onScreen),
       { viewport: VIEWPORT, mobile: true },
     );
     return { isBuilt: true, viewportWidth: VIEWPORT.width, screens };

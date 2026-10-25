@@ -6,6 +6,7 @@
  * It reads, runs and prints nothing; `main-render-assets.mjs` prints what it
  * returns.
  */
+import { findOptionValue } from "./find-option-value.mjs";
 
 /**
  * What the arguments ask for: `isCheck` for `--check`, and `outDir`, the
@@ -13,9 +14,8 @@
  * `public/`. Throws when `--out` names no folder.
  */
 export function assetsAskedBy(argv) {
-  const flag = argv.indexOf("--out");
-  if (flag !== -1 && !argv[flag + 1]) throw new Error("--out names no folder: npm run assets -- --out <dir>");
-  return { isCheck: argv.includes("--check"), outDir: flag === -1 ? undefined : argv[flag + 1] };
+  const outDir = findOptionValue(argv, "--out", "--out names no folder: npm run assets -- --out <dir>");
+  return { isCheck: argv.includes("--check"), outDir };
 }
 
 /** The render's report: one line naming the files written and the facts drawn, and exit 0. */
@@ -29,8 +29,8 @@ export function renderReportOf(rendered, facts) {
 /** Why the check fails, one message, or undefined when the committed assets are present and true. */
 function checkFailureOf(checked) {
   if (checked.missing.length > 0) return `public/${checked.missing.join(", public/")} missing — run: npm run assets`;
-  const { size, wantedSize } = checked.card;
-  if (size.width !== wantedSize.width || size.height !== wantedSize.height)
+  const { size, wantedSize, isWantedSize } = checked.card;
+  if (!isWantedSize)
     return `social-card.png is ${size.width}x${size.height}, must be ${wantedSize.width}x${wantedSize.height}`;
   if (checked.differences.length === 0) return undefined;
   const lines = checked.differences.map(({ fact, drawn, today }) =>
