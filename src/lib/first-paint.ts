@@ -222,8 +222,17 @@ function coverRules(name: CoverName): string {
  * properly, in the same task it takes the seed down. On a narrow screen, once
  * something is answered, the ledger line stands above the question and above
  * the verdict (s30, amendments 6–7).
+ *
+ * The box takes no room until the ledger after it has been parsed. The
+ * question comes first in the document and the grid puts the ledger beside it
+ * (on a phone, above it once something is answered), so a frame painted while
+ * the HTML was still arriving, with the box parsed and the ledger not, drew
+ * the box in the ledger's place and moved it when the ledger came: 272 px
+ * across at 1280x800, 105 px down at 390x1400 (#236). Hidden until then, the
+ * box appears where it stays.
  */
 export const FIRST_PAINT_STYLE = [
+  "#main:not(:has(~ #decl)){display:none}",
   ".stand-in{display:none}",
   ...(Object.keys(COVERS) as CoverName[]).map(coverRules),
   ".standing-promise{display:grid}",
