@@ -2542,6 +2542,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/hand-run-commands.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/hand-run-commands.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/header.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -4619,6 +4629,11 @@
     "name": "at",
     "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "lockPathAskedBy",
+    "kind": "fn",
+    "exported": false
    }
   ],
   "scripts/deploy-finding.mjs": [
@@ -4846,6 +4861,16 @@
    },
    {
     "name": "check",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "outDirAskedBy",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "outDir",
     "kind": "const",
     "exported": false
    },
@@ -7785,5 +7810,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a0f158609fe69b82e72fc58a97597b83c69f5ed853ffa5b09aed546308e92605"
+ "digest": "55c5a7657e821a7f79155d5395b3982bb0752b55c3ddb7c848830c7ffd92454d"
 }
