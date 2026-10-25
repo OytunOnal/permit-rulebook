@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { STORAGE_KEY } from "../src/lib/record.js";
 import {
-  DESK, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
+  BEAT_MS, DESK, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
   type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
@@ -124,12 +124,11 @@ const CLOCK_THE_GESTURES = `(() => {
 interface SpanAndBeat { spanMs: number; beatMs: number }
 
 /** On the page's clock, from the first gesture clocked reaching the page to the
- * last done, beside the beat the page declares (`--motion-beat`, either unit;
- * `tokens.css` says why): a span shorter than the beat puts the last press inside it. */
+ * last done, beside the beat the page declares: a span shorter than the beat
+ * puts the last press inside it. */
 const spanAndBeat = async (page: BrowserPage): Promise<SpanAndBeat> => JSON.parse(await page.evaluate(`JSON.stringify((() => {
-  const value = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
   const { reached, done } = window.__gestures;
-  return { spanMs: done[done.length - 1] - reached[0], beatMs: parseFloat(value) * (value.endsWith("ms") ? 1 : 1000) };
+  return { spanMs: done[done.length - 1] - reached[0], beatMs: ${BEAT_MS} };
 })())`)) as SpanAndBeat;
 
 const pressFirstOption = (page: BrowserPage) => clickOn(page, FIRST_OPTION);

@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
-import { waitUntilPastTheBeat } from "./browser-walk.js";
+import { answerOnce, type BrowserPage, type PageOnSite } from "./browser-walk.js";
 
 /**
  * s37 — Back on a restored record, and the Back gesture, in a real browser:
@@ -30,22 +30,6 @@ function walkSkipReason(): string | null {
   return null;
 }
 
-/** A tab, as `scripts/browser.mjs` hands it over. */
-interface TabPage {
-  /** Opens `url` and returns once its document has drawn. */
-  goto(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  waitUntil(condition: string, what: string): Promise<unknown>;
-  waitUntilAtRest(): Promise<void>;
-  /** After a gesture that loads a document: once a document other than the one left has drawn. */
-  waitUntilNewDocumentDrawn(): Promise<void>;
-  /** What this tab has thrown or logged as an error since its last `goto`. */
-  problems(): string[];
-  /** A second tab on the same browser: the same origin's storage, a history of its own. */
-  openTab(): Promise<TabPage>;
-  front(): Promise<void>;
-}
-
 /** The question each field asks, in the dataset's own words. */
 const asks = (field: string) => ds.fields.find((f) => f.id === field)!.label;
 
@@ -57,8 +41,9 @@ const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.string
 }))})`;
 const CLEAR = `localStorage.removeItem(${JSON.stringify(STORAGE_KEY)})`;
 
-/** Answer whatever the current question offers, whichever kind it is. A
- * search list shows no rows until something is typed: one letter draws them. */
+/** Answer whatever the current question offers, whichever kind it is: "opt"
+ * or "row" for what it tapped, or why it tapped nothing. A search list shows
+ * no rows until something is typed: one letter draws them. */
 const ANSWER = `(() => {
   const opt = document.querySelector(".qcard .opts .opt");
   if (opt) { opt.click(); return "opt"; }
@@ -69,7 +54,7 @@ const ANSWER = `(() => {
   }
   const row = document.querySelector(".clist [role=option]");
   if (row) { row.click(); return "row"; }
-  return "none";
+  return "the screen offered no answer";
 })()`;
 const SCREEN_BACK = 'document.getElementById("back").click()';
 const BROWSER_BACK = "history.back()";
@@ -81,41 +66,19 @@ const WHERE = 'JSON.stringify({ path: location.pathname,'
   + ' question: ((document.querySelector(".qlabel") || {}).textContent || "").trim(),'
   + ' length: history.length, step: (history.state || {}).step ?? null })';
 
-const whereOf = async (page: TabPage): Promise<Where> => JSON.parse(await page.evaluate(WHERE)) as Where;
+const whereOf = async (page: BrowserPage): Promise<Where> => JSON.parse(await page.evaluate(WHERE)) as Where;
 
 /** Whether the tab stands anywhere other than `before`, a reading of WHERE. A
  * history move draws on the browser's turn, not the gesture's, so a gesture
  * that stays on the page is waited on until the screen it leaves is gone. */
 const movedFrom = (before: string) => `${WHERE} !== ${JSON.stringify(before)}`;
 
-/**
- * Answers whatever the question on the screen offers, once: "moved" when the
- * tab then stands anywhere else, or why it does not. An answer that takes
- * moves the screen in the same task, so a screen still where it was is a
- * refused answer.
- */
-const ANSWERED_ONCE = `(() => {
-  const before = ${WHERE};
-  if (${ANSWER} === "none") return "the screen offered no answer";
-  return ${WHERE} !== before ? "moved" : "the tap was refused after the beat";
-})()`;
-
-/** Where the tab stands once the question on its screen is answered, after
- * its beat, and the page is at rest. */
-async function answerOn(page: TabPage): Promise<Where> {
-  await waitUntilPastTheBeat(page);
-  const how = await page.evaluate(ANSWERED_ONCE);
-  if (how !== "moved") throw new Error(how);
-  await page.waitUntilAtRest();
-  return whereOf(page);
-}
-
 /** A walk: `at()` reads where the tab stands, `act` makes a gesture that stays
  * on the page and `actAcross` one that loads a document, `answer()` answers
  * the question on the screen, `openFromOutside()` opens `/` onto the three
  * answers seeded from `/data/` — an outside entrance — and `live(n)` answers
  * n questions in the tab. */
-function walker(page: TabPage, url: (path: string) => string) {
+function walker(page: BrowserPage, url: (path: string) => string) {
   const at = () => whereOf(page);
   // The gesture runs on the page's next task, so the evaluation has returned
   // before a Back that leaves the site tears the document down.
@@ -125,6 +88,10 @@ function walker(page: TabPage, url: (path: string) => string) {
     await gesture(expression);
     await page.waitUntil(movedFrom(before), `${expression} moved nothing`);
     await page.waitUntilAtRest();
+    return at();
+  };
+  const answer = async () => {
+    await answerOnce(page, ANSWER, "the question on the screen");
     return at();
   };
   const actAcross = async (expression: string) => {
@@ -142,12 +109,11 @@ function walker(page: TabPage, url: (path: string) => string) {
     return openOnto("/");
   };
   return {
-    at, act, actAcross, openOnto,
-    answer: () => answerOn(page),
+    at, act, actAcross, openOnto, answer,
     openFromOutside: () => outside(SEED),
     async live(n: number) {
       const seen = [await outside(CLEAR)];
-      for (let i = 0; i < n; i++) seen.push(await answerOn(page));
+      for (let i = 0; i < n; i++) seen.push(await answer());
       return seen;
     },
   };
@@ -159,14 +125,11 @@ type Viewport = { viewport: { width: number; height: number }; mobile: boolean }
 const WIDE: Viewport = { viewport: { width: 1100, height: 900 }, mobile: false };
 const PHONE: Viewport = { viewport: { width: 390, height: 844 }, mobile: true };
 
-/** The tab a walk is handed, and the site's addresses, for a second tab of its own. */
-interface Site { page: TabPage; url: (path: string) => string }
-
 /** `walk` in a fresh browser of `size` over the built site. */
-async function walkInBrowser<T>(size: Viewport, walk: (w: Walker, site: Site) => Promise<T>): Promise<T> {
+async function walkInBrowser<T>(size: Viewport, walk: (w: Walker, site: PageOnSite) => Promise<T>): Promise<T> {
   const server = await serve(dist);
   try {
-    return await withBrowser((page: TabPage) => walk(walker(page, server.url), { page, url: server.url }), size) as T;
+    return await withBrowser((page: BrowserPage) => walk(walker(page, server.url), { page, url: server.url }), size) as T;
   } finally {
     server.close();
   }

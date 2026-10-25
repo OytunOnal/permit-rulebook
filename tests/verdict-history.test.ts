@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import {
-  PHONE, QLABEL, fieldOnScreen, openCold, skipReason, tapOn, waitUntilPastTheBeat, warnNotWalked, withSite,
+  PHONE, SCREEN_SHOWN, fieldOnScreen, openCold, skipReason, tapOn, waitUntilPastTheBeat, warnNotWalked, withSite,
   type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 
@@ -79,15 +79,12 @@ interface AroundTheVerdict {
   problems: string[];
 }
 
-/** Which screen the interview is on, and its question. */
-const SCREEN = `${STATE} + " " + ${QLABEL}`;
-
 /** The screen a history move draws: once the browser has taken its turn and
  * the screen is another, at rest. */
 async function screenAfterMove(page: BrowserPage, move: () => Promise<void>): Promise<{ state: string; field: string }> {
-  const before = await page.evaluate(SCREEN);
+  const before = await page.evaluate(SCREEN_SHOWN);
   await move();
-  await page.waitUntil(`${SCREEN} !== ${JSON.stringify(before)}`, `the history move left "${before}" on the screen`);
+  await page.waitUntil(`${SCREEN_SHOWN} !== ${JSON.stringify(before)}`, `the history move left "${before}" on the screen`);
   await page.waitUntilAtRest();
   const state = await page.evaluate(STATE);
   return { state, field: state === "questions" ? await fieldOnScreen(page) : "" };

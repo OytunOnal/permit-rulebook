@@ -21,7 +21,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
-import { waitUntilPastTheBeat, type BrowserPage } from "./browser-walk.js";
+import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -345,8 +345,7 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
         for (const destination of ["fr", "de", "es", "nl", "all"]) {
           await page.goto(server.url("/"));
           await page.evaluate(seed({ destination }));
-          await page.goto(server.url("/"));
-          await page.waitUntilAtRest();
+          await openAtRest(page, server.url("/"));
           out[destination] = {
             question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
             marks: JSON.parse(await page.evaluate(MARKS)),
@@ -384,8 +383,7 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
         await page.goto(server.url("/"));
         await page.evaluate(seed({ destination: "fr" }));
         await page.goto(server.url("/"));
-        await waitUntilPastTheBeat(page);
-        await page.evaluate('document.querySelector(".opt[data-value=research]").click()');
+        await answerWith(page, 'document.querySelector(".opt[data-value=research]").click()');
         const france = await read(FRANCE_RESEARCH);
         // Spain, the same two answers — and the passport, which is Spain's third
         // tap (CRITERIA MET in three).

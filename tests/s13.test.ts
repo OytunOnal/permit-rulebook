@@ -23,7 +23,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import { waitUntilPastTheBeat, type BrowserPage } from "./browser-walk.js";
+import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
 /**
@@ -492,8 +492,7 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
         const seen = await withBrowser(async (page_: BrowserPage) => {
           await page_.goto(server.url("/"));
           await page_.evaluate(seed(profile));
-          await page_.goto(server.url(arrival));
-          await page_.waitUntilAtRest();
+          await openAtRest(page_, server.url(arrival));
           return {
             say: JSON.parse(await page_.evaluate(SAY)),
             // The record as the page restores it: replayed through the
@@ -558,13 +557,10 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
     const server = await serve(dist);
     try {
       const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await page_.goto(server.url("/"));
-        await page_.waitUntilAtRest();
+        await openAtRest(page_, server.url("/"));
         const first = await page_.evaluate(SAY);
         // One answer in, still a question screen.
-        await waitUntilPastTheBeat(page_);
-        await page_.evaluate('document.querySelector(".qcard .opt").click()');
-        await page_.waitUntilAtRest();
+        await answerWith(page_, 'document.querySelector(".qcard .opt").click()');
         const second = await page_.evaluate(SAY);
         return JSON.stringify({ first: JSON.parse(first), second: JSON.parse(second) });
       }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as

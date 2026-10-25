@@ -4,6 +4,7 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import type { Sent } from "./wire.js";
 
 /**
  * The interview walked in headless Chrome over the built page: what the
@@ -56,7 +57,14 @@ export interface BrowserPage {
   type(text: string): Promise<void>;
   back(): Promise<void>;
   forward(): Promise<void>;
+  /** What this tab has thrown or logged as an error since its last navigation. */
   problems(): string[];
+  /** Every request the page made, when the browser was asked to watch. */
+  requests(): Sent[];
+  forgetRequests(): void;
+  /** A second tab on the same browser: the same origin's storage, a history of its own. */
+  openTab(): Promise<BrowserPage>;
+  front(): Promise<void>;
 }
 
 /** A browser page and the address of the site it is on, which every walk
@@ -83,7 +91,7 @@ export const PHONE = { viewport: { width: 390, height: 844 }, mobile: true };
 
 /** The beat in milliseconds, as the built stylesheet carries it, in either
  * unit (`tokens.css` says why). */
-const BEAT_MS = `(() => {
+export const BEAT_MS = `(() => {
   const value = getComputedStyle(document.documentElement).getPropertyValue("--motion-beat").trim();
   return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
 })()`;
@@ -155,29 +163,40 @@ const pick = (value: string, searchFor: string) => `(() => {
 })()`;
 
 /** The screen as a reader tells one from the next: which screen, and its question. */
-const SCREEN_SHOWN = `${STATE} + " " + ${QLABEL}`;
+export const SCREEN_SHOWN = `${STATE} + " " + ${QLABEL}`;
 
 /**
- * Picks `value` once: "moved" when the screen moved on, or why it did not. A
- * pick that takes moves the screen in the same task, so a screen still where
+ * Runs `pickExpression` once, which says "opt" or "row" for what it tapped or
+ * why it tapped nothing: "moved" when the screen moved on, or why it did not.
+ * A pick that takes moves the screen in the same task, so a screen still where
  * it was is a refused pick.
  */
-const pickedOnce = (value: string, searchFor: string) => `(() => {
+const pickedOnce = (pickExpression: string) => `(() => {
   const before = ${SCREEN_SHOWN};
-  const how = ${pick(value, searchFor)};
+  const how = ${pickExpression};
   if (how !== "opt" && how !== "row") return how;
   return ${SCREEN_SHOWN} !== before ? "moved" : "the tap was refused after the beat";
 })()`;
 
-/** Answers the question on the screen with `value` once its beat is over,
- * and returns once the screen has moved on and the page is at rest. */
-export async function answer(page: BrowserPage, field: string, value: string): Promise<void> {
-  const name = fieldOptions(ds, field).find((o) => o.value === value)?.label ?? value;
+/** Answers the question on the screen by `pickExpression` once its beat is
+ * over, and returns once the screen has moved on and the page is at rest. A
+ * refused answer throws, named by `what`. */
+export async function answerOnce(page: GesturedPage, pickExpression: string, what: string): Promise<void> {
   await waitUntilPastTheBeat(page);
-  const how = await page.evaluate(pickedOnce(value, name));
-  if (how !== "moved") throw new Error(`${field} = ${value}: ${how}`);
+  const how = await page.evaluate(pickedOnce(pickExpression));
+  if (how !== "moved") throw new Error(`${what}: ${how}`);
   await page.waitUntilAtRest();
 }
+
+/** Answers the question on the screen with `value` once its beat is over,
+ * and returns once the screen has moved on and the page is at rest. */
+export async function answer(page: GesturedPage, field: string, value: string): Promise<void> {
+  const name = fieldOptions(ds, field).find((o) => o.value === value)?.label ?? value;
+  await answerOnce(page, pick(value, name), `${field} = ${value}`);
+}
+
+/** "Turkey" typed into the passport search, as its `input` event commits it, and the first row it draws picked. */
+export const PICK_TURKEY = '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); document.querySelector(".clist [role=option]").click(); })()';
 
 /** The field of the question on the screen, from its label as the card draws
  * it: the first words on the card, glossed on the card's own memory (#156),

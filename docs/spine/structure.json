@@ -1773,6 +1773,11 @@
   },
   {
    "from": "tests/answers.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/answers.test.ts",
    "to": "tests/reader-pages.ts",
    "kind": "dependency"
   },
@@ -1820,6 +1825,11 @@
    "from": "tests/arrival.test.ts",
    "to": "src/lib/scope.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/arrival.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/arrival.test.ts",
@@ -1925,6 +1935,11 @@
    "from": "tests/browser-walk.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/browser-walk.ts",
+   "to": "tests/wire.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/browser.test.ts",
@@ -2403,6 +2418,11 @@
   },
   {
    "from": "tests/first-paint.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/first-paint.test.ts",
    "to": "tests/layout-shifts.ts",
    "kind": "dependency"
   },
@@ -2425,6 +2445,11 @@
    "from": "tests/fold.test.ts",
    "to": "src/lib/slug.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/fold.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/footer.test.ts",
@@ -2467,6 +2492,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/footer.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "tests/gloss.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -2500,6 +2530,11 @@
    "from": "tests/gloss.test.ts",
    "to": "src/lib/verdict/index.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/gloss.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/gloss.test.ts",
@@ -2567,6 +2602,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/layout-shifts.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "tests/listbox.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
@@ -2595,6 +2635,11 @@
    "from": "tests/means.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/means.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/means.test.ts",
@@ -3373,6 +3418,11 @@
   },
   {
    "from": "tests/s23.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/s23.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -3715,6 +3765,11 @@
    "from": "tests/s32.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/s32.test.ts",
@@ -4070,6 +4125,11 @@
    "from": "tests/verdict-look.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-look.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/verdict-module.test.ts",

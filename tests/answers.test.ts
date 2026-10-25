@@ -8,6 +8,7 @@ import { glossed } from "../src/lib/gloss.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, everyCardIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
+import type { BrowserPage } from "./browser-walk.js";
 
 /**
  * Two things the interview did not do, walked in a browser.
@@ -69,12 +70,6 @@ if (skipped)
     "",
     "",
   ].join("\n"));
-
-interface BrowserPage {
-  /** Opens `url` and returns once its document has drawn. */
-  goto(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
 
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({

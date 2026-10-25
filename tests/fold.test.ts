@@ -5,6 +5,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { routePages } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { isScored, type Dataset } from "permit-rulebook-data";
+import type { BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -81,12 +82,6 @@ if (skipped)
     "",
     "",
   ].join("\n"));
-
-interface BrowserPage {
-  /** Returns once the new document has drawn. */
-  goto(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
 
 describe.skipIf(skipped !== null)("measured in a browser", () => {
   for (const [width, height, mobile] of [[1100, 900, false], [390, 844, true]] as const)

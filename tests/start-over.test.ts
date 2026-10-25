@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import {
-  DESK, PHONE, fieldOnScreen, skipReason, tapOn, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+  DESK, PHONE, fieldOnScreen, openAtRest, skipReason, tapOn, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 
 /**
@@ -63,8 +63,7 @@ async function settledAfterStartOver(page: BrowserPage): Promise<Where> {
 async function openOnKeptVerdict({ page, url }: PageOnSite, path: string): Promise<Where> {
   await page.goto(url("/404.html"));
   await page.evaluate(SEED_FINISHED);
-  await page.goto(url(path));
-  await page.waitUntilAtRest();
+  await openAtRest(page, url(path));
   return where(page);
 }
 
@@ -125,8 +124,7 @@ describe.skipIf(skipped !== null)("a kept verdict at a country's address, and St
       await openOnKeptVerdict(site, "/?country=de");
       await tapOn(site.page, "#restart");
       const restarted = await settledAfterStartOver(site.page);
-      await site.page.goto(site.url("/"));
-      await site.page.waitUntilAtRest();
+      await openAtRest(site.page, site.url("/"));
       const nextReader = await where(site.page);
       return { restarted, nextReader, field: await fieldOnScreen(site.page), problems: site.page.problems() };
     }, DESK);

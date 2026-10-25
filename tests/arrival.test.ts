@@ -16,6 +16,7 @@ import { CAME_FROM_LINE } from "../src/lib/copy/verdict.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { everyCardIn, verdictOn } from "./verdict-cards.js";
+import type { BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -107,16 +108,6 @@ function why(): string | null {
   return null;
 }
 const skipped = why();
-
-interface BrowserPage {
-  /** Returns once the new document has drawn. */
-  goto(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  /** Returns once nothing animates, scrolls or loads. */
-  waitUntilAtRest(): Promise<void>;
-  /** After a gesture that loads a document: once a document other than the one left has drawn. */
-  waitUntilNewDocumentDrawn(): Promise<void>;
-}
 
 const SEED = `localStorage.setItem("permit-rulebook.record.v1", ${
   JSON.stringify(serialize(germanRecord, Object.keys(germanRecord)))})`;

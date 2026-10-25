@@ -6,6 +6,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { optionMeans, type Dataset, type Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, stepsIn, verdictFor } from "./verdict-cards.js";
+import type { BrowserPage } from "./browser-walk.js";
 
 /**
  * The human's walk, 2026-09-08.
@@ -126,12 +127,6 @@ if (skipped)
     "",
     "",
   ].join("\n"));
-
-interface BrowserPage {
-  /** Returns once the new document has drawn. */
-  goto(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
 
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({

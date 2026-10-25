@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { PAGE_CSS } from "../src/lib/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { datasetMeta, type Dataset } from "permit-rulebook-data";
-import { waitUntilPastTheBeat, type BrowserPage } from "./browser-walk.js";
+import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
 
 /**
  * The identity pair is one drawing, used twice.
@@ -288,12 +288,10 @@ type Measure = Record<string, number | string | undefined>;
 /** The stamp's state on question one, after one answer, on the results, and with only its label swapped. */
 async function readStampOnEveryScreen(page: BrowserPage, url: (path: string) => string, force: boolean): Promise<Record<string, Measure>> {
   const read = async () => JSON.parse(await page.evaluate(STAMP_STATE)) as Measure;
-  const openTheInterview = async () => { await page.goto(url("/")); await page.waitUntilAtRest(); if (force) await page.evaluate(FALLBACK_STACK); };
+  const openTheInterview = async () => { await openAtRest(page, url("/")); if (force) await page.evaluate(FALLBACK_STACK); };
   await openTheInterview();
   const first = await read();
-  await waitUntilPastTheBeat(page);
-  await page.evaluate('document.querySelector(".qcard .opt").click()');
-  await page.waitUntilAtRest();
+  await answerWith(page, 'document.querySelector(".qcard .opt").click()');
   const answered = await read();
   await page.evaluate(SEED_FINISHED_RECORD);
   await openTheInterview();
@@ -322,8 +320,7 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
               // "Record generated" stamp; unseeded, `/` is question one and
               // states the rules-read date instead (human, 2026-09-08).
               await page.evaluate(SEED_FINISHED_RECORD);
-              await page.goto(server.url(path));
-              await page.waitUntilAtRest();
+              await openAtRest(page, server.url(path));
               if (force) await page.evaluate(FALLBACK_STACK);
             }
             out[path] = JSON.parse(await page.evaluate(PROBE)) as Measure;
@@ -368,8 +365,7 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
             if (force) await page.evaluate(FALLBACK_STACK);
             if (path === RESULTS) {
               await page.evaluate(SEED_FINISHED_RECORD);
-              await page.goto(server.url(path));
-              await page.waitUntilAtRest();
+              await openAtRest(page, server.url(path));
               if (force) await page.evaluate(FALLBACK_STACK);
             }
             out[path] = JSON.parse(await page.evaluate(PLACEMENT)) as Measure;

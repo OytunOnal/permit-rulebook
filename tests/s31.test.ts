@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { waitUntilPastTheBeat, type BrowserPage } from "./browser-walk.js";
+import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
 
 /**
  * s31 — the hold state says where it is, and two small things.
@@ -268,15 +268,12 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
         const seen = await withBrowser(async (page: BrowserPage) => {
           await page.goto(server.url("/404.html"));
           await page.evaluate(SEED_FINISHED);
-          await page.goto(server.url("/"));
-          await page.waitUntilAtRest();
+          await openAtRest(page, server.url("/"));
           const arrived = JSON.parse(await page.evaluate(FOCUS)) as Focus;
           await page.evaluate(TAP_SALARY);
           await page.waitUntilAtRest();
           const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-          await waitUntilPastTheBeat(page);
-          await page.evaluate(ANSWER_ANOTHER_BAND);
-          await page.waitUntilAtRest();
+          await answerWith(page, ANSWER_ANOTHER_BAND);
           const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
           return { arrived, onQuestion, back, problems: page.problems() };
         }, { viewport, mobile });
@@ -313,8 +310,7 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
         const seen = await withBrowser(async (page: BrowserPage) => {
           await page.goto(server.url("/404.html"));
           await page.evaluate(seed);
-          await page.goto(server.url(path));
-          await page.waitUntilAtRest();
+          await openAtRest(page, server.url(path));
           return { at: JSON.parse(await page.evaluate(FOCUS)) as Focus, problems: page.problems() };
         }, { viewport: { width: 390, height: 844 }, mobile: true });
         expect(seen.problems).toEqual([]);
@@ -369,13 +365,11 @@ describe.skipIf(skipped !== null)("the gutter is stable (point 3)", () => {
         const seen = await withBrowser(async (page: BrowserPage) => {
           await page.goto(server.url("/404.html"));
           await page.evaluate("localStorage.clear()");
-          await page.goto(server.url("/"));
-          await page.waitUntilAtRest();
+          await openAtRest(page, server.url("/"));
           const question = JSON.parse(await page.evaluate(EDGE)) as Edge;
           await page.goto(server.url("/404.html"));
           await page.evaluate(SEED_FINISHED);
-          await page.goto(server.url("/"));
-          await page.waitUntilAtRest();
+          await openAtRest(page, server.url("/"));
           const verdict = JSON.parse(await page.evaluate(EDGE)) as Edge;
           return { question, verdict, problems: page.problems() };
         }, { viewport, mobile: false, scrollbars: true });

@@ -7,7 +7,7 @@ import { resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { answerWith, gesture, openAtRest } from "./browser-walk.js";
+import { answerWith, gesture, openAtRest, type BrowserPage } from "./browser-walk.js";
 
 /**
  * s20 — the correction lands on the question and returns to the verdict.
@@ -99,14 +99,6 @@ if (skipped)
     "",
     "",
   ].join(String.fromCharCode(10)));
-
-interface BrowserPage {
-  goto(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  waitUntil(condition: string, what: string): Promise<unknown>;
-  waitUntilAtRest(): Promise<void>;
-  problems(): string[];
-}
 
 /**
  * Where the reader is, read the way a reader would read it: the card's top

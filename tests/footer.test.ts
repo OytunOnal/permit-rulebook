@@ -10,6 +10,7 @@ import { routePages } from "../src/lib/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, unreadSourcesAt, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
+import type { BrowserPage } from "./browser-walk.js";
 
 /**
  * One footer under every page.
@@ -195,16 +196,6 @@ function why(): string | null {
   return null;
 }
 const skipped = why();
-
-interface BrowserPage {
-  /** Returns once the new document has drawn. */
-  goto(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  /** Reads `condition` in the page until it holds, and returns its value. */
-  waitUntil(condition: string, what: string): Promise<unknown>;
-  /** Returns once nothing animates, scrolls or loads. */
-  waitUntilAtRest(): Promise<void>;
-}
 
 const LAYOUT = 'JSON.stringify((() => {'
   + ' const foot = document.querySelector(".site-foot");'

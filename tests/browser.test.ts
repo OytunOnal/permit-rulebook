@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
-import { skipReason, warnNotWalked } from "./browser-walk.js";
+import { skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 /**
  * The harness's page object (`scripts/browser.mjs`): each wait returns once
@@ -10,15 +10,6 @@ import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const { serve, withBrowser } = await import("../scripts/browser.mjs");
-
-/** The page object, as much of it as these cases drive. */
-interface HarnessPage {
-  goto(url: string): Promise<void>;
-  navigate(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  waitUntil(condition: string, what: string): Promise<unknown>;
-  waitUntilAtRest(): Promise<void>;
-}
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE HARNESS'S WAITS", skipped);
@@ -35,10 +26,10 @@ const SCREEN = `JSON.stringify({
 interface Screen { standIns: number; cover: string; question: string }
 
 /** `run` on a page over the built site, its scripts held back `delayJsMs` when asked. */
-async function onSite<T>(run: (page: HarnessPage, url: (path: string) => string) => Promise<T>, delayJsMs = 0): Promise<T> {
+async function onSite<T>(run: (page: BrowserPage, url: (path: string) => string) => Promise<T>, delayJsMs = 0): Promise<T> {
   const server = await serve(dist, { delayJsMs });
   try {
-    return await withBrowser((page: HarnessPage) => run(page, server.url)) as T;
+    return await withBrowser((page: BrowserPage) => run(page, server.url)) as T;
   } finally {
     server.close();
   }

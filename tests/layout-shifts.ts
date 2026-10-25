@@ -1,3 +1,5 @@
+import type { BrowserPage } from "./browser-walk.js";
+
 /** Everything ABOVE the box: the site's header and the masthead. */
 const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
 
@@ -15,8 +17,10 @@ const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
  * none; leaving those out blinded the phone rows to the page moving as it
  * first paints (#243).
  *
- * Each source is named the way the field's debug rows name it — a path up to
- * the nearest id — with how far it travelled, so a failure says where to look.
+ * It leaves every shift Chrome reported in `window.__shiftsReported`, and those
+ * the measure counts in `window.__cls`. Each source is named the way the
+ * field's debug rows name it — a path up to the nearest id — with how far it
+ * travelled, so a failure says where to look.
  */
 export const GATHER_SHIFTS = `(() => {
   const elementOf = (node) => node && (node.nodeType === 1 ? node : node.parentElement);
@@ -36,7 +40,9 @@ export const GATHER_SHIFTS = `(() => {
   };
   const [firstInput] = recordsOf("first-input");
   const afterAnInput = (e) => firstInput !== undefined && e.startTime >= firstInput.startTime;
-  window.__cls = recordsOf("layout-shift")
+  const shifts = recordsOf("layout-shift");
+  window.__shiftsReported = shifts.map((e) => ({ value: e.value, markedAsInput: e.hadRecentInput }));
+  window.__cls = shifts
     .filter((e) => !(e.hadRecentInput && afterAnInput(e)))
     .map((e) => ({
       value: e.value,
@@ -63,9 +69,7 @@ const SHIFTS_CHROME_BUFFERS = 150;
 /** The measure's shifts since `sinceMs` on the page's clock, summed as CLS sums them, and how many Chrome kept. */
 const shiftScoreRead = (sinceMs: number) => `(() => {
   ${GATHER_SHIFTS};
-  const observer = new PerformanceObserver(() => {});
-  observer.observe({ type: "layout-shift", buffered: true });
-  const kept = observer.takeRecords().length;
+  const kept = window.__shiftsReported.length;
   const score = window.__cls.filter((e) => e.startTime >= ${sinceMs}).reduce((sum, e) => sum + e.value, 0);
   return JSON.stringify({ kept, score });
 })()`;
@@ -75,7 +79,7 @@ const shiftScoreRead = (sinceMs: number) => `(() => {
  * the page's clock (0: since the page loaded), summed as CLS sums them: one
  * measure for every case that asserts nothing shifted (#243).
  */
-export async function shiftScoreSince(page: Pick<TappablePage, "evaluate">, sinceMs = 0): Promise<number> {
+export async function shiftScoreSince(page: Pick<BrowserPage, "evaluate">, sinceMs = 0): Promise<number> {
   const { kept, score } = JSON.parse(await page.evaluate(shiftScoreRead(sinceMs))) as { kept: number; score: number };
   if (kept >= SHIFTS_CHROME_BUFFERS) throw new Error(`Chrome kept ${kept} shifts and dropped any after: the score cannot be read`);
   return score;
@@ -104,11 +108,8 @@ addEventListener("click", () => { moveDown("on the tap"); window.__tapped = true
 
 /** Every shift Chrome reported, and the values of those the measure counts. */
 const SHIFTS_SEEN = `(() => {
-  const observer = new PerformanceObserver(() => {});
-  observer.observe({ type: "layout-shift", buffered: true });
-  const every = observer.takeRecords().map((e) => ({ value: e.value, markedAsInput: e.hadRecentInput }));
   ${GATHER_SHIFTS};
-  return JSON.stringify({ every, counted: window.__cls.map((e) => e.value) });
+  return JSON.stringify({ every: window.__shiftsReported, counted: window.__cls.map((e) => e.value) });
 })()`;
 
 export interface ShiftsSeen {
@@ -118,19 +119,16 @@ export interface ShiftsSeen {
   score: number;
 }
 
-const shiftsSeenOn = async (page: TappablePage): Promise<ShiftsSeen> =>
+const shiftsSeenOn = async (page: Pick<BrowserPage, "evaluate">): Promise<ShiftsSeen> =>
   ({ ...JSON.parse(await page.evaluate(SHIFTS_SEEN)), score: await shiftScoreSince(page) }) as ShiftsSeen;
-
-interface TappablePage {
-  goto(url: string): Promise<void>; evaluate(expression: string): Promise<string>; clickAt(x: number, y: number): Promise<void>;
-  waitUntil(condition: string, what: string): Promise<unknown>; waitUntilAtRest(): Promise<void>;
-}
 
 /**
  * The page that moves early and on a tap, read once at rest after its own
  * move and again after the tap: what a phone row's measure can see (#243).
  */
-export async function shiftsBeforeAndAfterATap(page: TappablePage): Promise<{ before: ShiftsSeen; after: ShiftsSeen }> {
+export async function shiftsBeforeAndAfterATap(
+  page: Pick<BrowserPage, "goto" | "evaluate" | "clickAt" | "waitUntil" | "waitUntilAtRest">,
+): Promise<{ before: ShiftsSeen; after: ShiftsSeen }> {
   await page.goto(`data:text/html,${encodeURIComponent(MOVES_EARLY_AND_ON_A_TAP)}`);
   await page.waitUntil("window.__movedEarly === true", "the page never moved in its first frames");
   await page.waitUntilAtRest();

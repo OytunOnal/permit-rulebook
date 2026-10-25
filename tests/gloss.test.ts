@@ -10,6 +10,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
+import type { BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -129,12 +130,6 @@ if (skipped)
     "",
     "",
   ].join("\n"));
-
-interface BrowserPage {
-  /** Returns once the new document has drawn. */
-  goto(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-}
 
 describe.skipIf(skipped !== null)("the results card carries the sign without an explainer", () => {
   it("prints the § names bare — no explainer, no number restated (amendment 6)", async () => {

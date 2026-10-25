@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { answerWith, gesture, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
+import { QLABEL, answerWith, gesture, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 /**
  * s30 — on a phone the next question comes up to meet the reader.
@@ -109,15 +109,13 @@ const TAP_FIRST = 'document.querySelector("#main .qcard .opt").click()';
  * had a frame: what an instant landing leaves, and a smooth one does not. */
 const TAP_FIRST_AND_READ = `(() => { ${TAP_FIRST}; return ${WHERE}; })()`;
 const TAP_BACK = 'document.querySelector("#main #back").click()';
-/** The question on the screen, "" where none is. */
-const QUESTION = '(document.querySelector("#main .qcard .qlabel")?.textContent || "").trim()';
 
 /** The screen's Back: a history move, drawn on the browser's turn rather than
  * the tap's, so waited on until the question it leaves is gone, then at rest. */
 async function pressBack(page: BrowserPage): Promise<void> {
-  const left = await page.evaluate(QUESTION);
+  const left = await page.evaluate(QLABEL);
   await page.evaluate(TAP_BACK);
-  await page.waitUntil(`${QUESTION} !== ${JSON.stringify(left)}`, "Back never left the question");
+  await page.waitUntil(`${QLABEL} !== ${JSON.stringify(left)}`, "Back never left the question");
   await page.waitUntilAtRest();
 }
 /** The reader reads on down the page before answering — a quarter of the

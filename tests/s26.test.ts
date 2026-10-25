@@ -15,7 +15,7 @@ import { url } from "../src/lib/site.js";
 import type { CountrySection, Tally, Verdict, VerdictGroup } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, cardsIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { expectNothingLeft, type Sent } from "./wire.js";
-import { answerWith } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, type BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -356,25 +356,12 @@ const skipped = why();
 if (skipped)
   process.stderr.write(`\n  !! THE S26 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-interface BrowserPage {
-  /** Opens `url` and returns once its document has drawn. */
-  goto(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  waitUntil(condition: string, what: string): Promise<unknown>;
-  waitUntilAtRest(): Promise<void>;
-  problems(): string[];
-  requests(): Sent[];
-  forgetRequests(): void;
-}
-
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
     version: RECORD_VERSION, answers, history: Object.keys(answers),
   }))})`;
 
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
-/** "Turkey" typed into the passport search, as its `input` event commits it, and the first row it draws picked. */
-const PICK_TURKEY = '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); document.querySelector(".clist [role=option]").click(); })()';
 
 interface Result {
   state: string; status: string; problems: string[];

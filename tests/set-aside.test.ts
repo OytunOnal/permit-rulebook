@@ -5,7 +5,7 @@ import { EDIT_LINE } from "../src/lib/copy/interview.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import {
-  PHONE, skipReason, tapOn, waitUntilPastTheBeat, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+  PHONE, openAtRest, skipReason, tapOn, waitUntilPastTheBeat, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
 
@@ -134,8 +134,7 @@ async function openOnVerdict({ page, url }: PageOnSite, walk: Walk): Promise<See
   await page.goto(url("/404.html"));
   await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
     JSON.stringify(serialize(walk.answers, walk.order, true))})`);
-  await page.goto(url("/"));
-  await page.waitUntilAtRest();
+  await openAtRest(page, url("/"));
   return screenOf(page);
 }
 

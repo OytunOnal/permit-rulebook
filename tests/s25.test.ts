@@ -14,7 +14,7 @@ import { glossed } from "../src/lib/gloss.js";
 import { declarationHtml, questionCardHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import { waitUntilPastTheBeat } from "./browser-walk.js";
+import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, paintedAsComposedScript, placed, stepsIn, verdictFor, verdictOn,
 } from "./verdict-cards.js";
@@ -346,15 +346,6 @@ const skipped = why();
 if (skipped)
   process.stderr.write(`\n  !! THE S25 WALK WAS NOT SEEN IN A BROWSER: ${skipped}.\n     Run: npm run build && npm test\n\n`);
 
-interface BrowserPage {
-  /** Opens `url` and returns once its document has drawn. */
-  goto(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  waitUntil(condition: string, what: string): Promise<unknown>;
-  waitUntilAtRest(): Promise<void>;
-  problems(): string[];
-}
-
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
     version: RECORD_VERSION, answers, history: Object.keys(answers),
@@ -380,9 +371,7 @@ async function walk(page: BrowserPage, profile: Profile, painted: string): Promi
     asked.push(field);
     // A tap commits once the card's beat is over, and draws the next screen
     // in the task that handles it; the page is read once it is at rest.
-    await waitUntilPastTheBeat(page);
-    await page.evaluate(tap(profile[field]!));
-    await page.waitUntilAtRest();
+    await answerWith(page, tap(profile[field]!));
   }
   return { asked, painted: JSON.parse(await page.evaluate(painted)), problems: page.problems() };
 }
@@ -421,8 +410,7 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
       const seen = await withBrowser(async (page: BrowserPage) => {
         await page.goto(server.url("/"));
         await page.evaluate(seed({ ...SEEDED as Record<string, string>, experience: "y3in7", experience_7y: "yes" }));
-        await page.goto(server.url("/"));
-        await page.waitUntilAtRest();
+        await openAtRest(page, server.url("/"));
         return {
           resumed: await page.evaluate(RESUMED),
           first: await page.evaluate(QLABEL),

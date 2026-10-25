@@ -13,6 +13,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { url } from "../src/lib/site.js";
 import { GATHER_SHIFTS, shiftsBeforeAndAfterATap } from "./layout-shifts.js";
+import { openAtRest, type BrowserPage } from "./browser-walk.js";
 
 /**
  * The first paint, measured the way the field measures it.
@@ -109,11 +110,6 @@ if (skipped)
     "",
     "",
   ].join(String.fromCharCode(10)));
-
-interface BrowserPage {
-  goto(url: string): Promise<void>; navigate(url: string): Promise<void>; evaluate(expression: string): Promise<string>;
-  waitUntil(condition: string, what: string): Promise<unknown>; waitUntilAtRest(): Promise<void>;
-}
 
 /** A realistic mobile lag on the module: HTML at once, script 700 ms later. */
 const DELAY_JS_MS = 700;
@@ -530,8 +526,7 @@ describe.skipIf(skipped !== null)("the page arriving in pieces paints where it s
       const server = await serve(dist, { delayJsMs: DELAY_JS_MS, htmlInPieces: { before: LEDGER, heldMs: 300 } });
       try {
         const m = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/?country=fr"));
-          await page.waitUntilAtRest();
+          await openAtRest(page, server.url("/?country=fr"));
           return JSON.parse(await page.evaluate(READ)) as Measured;
         }, { viewport: screen.viewport, mobile: screen.mobile });
         expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBe(0);
