@@ -1,4 +1,4 @@
-// @level infrastructure main
+// @level infrastructure
 /**
  * Does the site actually run?
  *
@@ -18,6 +18,10 @@
  * `dist/` would have missed it exactly as the rest of the suite did.
  *
  *   npm run build && npm run smoke
+ *
+ * `smoke` walks the surfaces it is given and returns what each page load
+ * showed, and prints nothing: the report's lines and exit code are
+ * `cli-smoke.mjs`'s, and `main-smoke.mjs` runs the two.
  */
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -170,25 +174,4 @@ export async function smoke({ dir = dist, surfaces = DEFAULT_SURFACES } = {}) {
     try { results.push(...await walk(server, "dist")); } finally { server.close(); }
   }
   return results;
-}
-/** What a run prints for one page load: a FAIL line with its failures under it, or one ok line. */
-function reportLinesOf(r) {
-  if (!r.failures.length) return [`ok   [${r.surface}] ${r.path} (${r.what}) — ${JSON.stringify(r.value)}, 0 console errors`];
-  return [`FAIL [${r.surface}] ${r.path} (${r.what})`, ...r.failures.map((f) => `     ${f}`)];
-}
-
-/** The surfaces a run asks for: `--dev` or `--dist` alone, or the default ones. */
-function surfacesAskedBy(argv) {
-  if (argv.includes("--dev")) return ["dev"];
-  if (argv.includes("--dist")) return ["dist"];
-  return DEFAULT_SURFACES;
-}
-
-if (process.argv[1]?.endsWith("smoke.mjs")) {
-  const results = await smoke({ surfaces: surfacesAskedBy(process.argv) });
-  for (const line of results.flatMap(reportLinesOf)) console.log(line);
-  const failed = results.filter((r) => r.failures.length).length;
-  console.log(`
-${results.length} page loads in a real browser — ${failed} broken`);
-  process.exit(failed === 0 ? 0 : 1);
 }
