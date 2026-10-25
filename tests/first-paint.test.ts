@@ -517,7 +517,7 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
  * because the measure counts one until an input reaches the page; the last
  * rows prove it does, on a page that moves early and on a tap.
  */
-describe.skipIf(skipped !== null)("the page arriving in pieces paints where it stays (#236)", () => {
+describe.skipIf(skipped !== null)("the page arriving in pieces paints where it stays", () => {
   const LEDGER = '<details class="decl"'; // the ledger's opening tag in the built page: the marker the HTML is split before
   for (const screen of VIEWPORTS)
     it(`${screen.name} · /?country=fr, the HTML split before the ledger: nothing moves`, async () => {
@@ -534,7 +534,7 @@ describe.skipIf(skipped !== null)("the page arriving in pieces paints where it s
       }
     }, 120000);
   for (const screen of VIEWPORTS.filter((s) => s.mobile))
-    it(`${screen.name} · the measure counts a shift Chrome marks as input until a tap reaches the page (#243)`, async () => {
+    it(`${screen.name} · the measure counts a shift Chrome marks as input until a tap reaches the page`, async () => {
       type Seen = Awaited<ReturnType<typeof shiftsBeforeAndAfterATap>>;
       const { before, after }: Seen = await withBrowser(shiftsBeforeAndAfterATap, { viewport: screen.viewport, mobile: true });
       expect(before.every.map((s) => s.markedAsInput), `none marked as input, so no subject: ${JSON.stringify(before)}`).toEqual([true]);
