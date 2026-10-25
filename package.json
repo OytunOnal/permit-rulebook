@@ -16,7 +16,7 @@
     "smoke": "node scripts/smoke.mjs",
     "smoke:dev": "node scripts/smoke.mjs --dev",
     "check:base": "node scripts/main-check-base.mjs",
-    "data:pin": "node scripts/data-pin.mjs"
+    "data:pin": "node scripts/main-data-pin.mjs"
   },
   "dependencies": {
     "astro": "^7.2.10",
