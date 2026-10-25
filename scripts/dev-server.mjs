@@ -100,6 +100,68 @@ export async function notOurDevServer(origin) {
 }
 
 /**
+ * `astro dev` on `port`, a foreground child of this process at the site root.
+ * Returns the child, the output it has written so far, and its exit code once
+ * it has exited (null until then).
+ */
+function spawnAstroDev(port) {
+  const child = spawn(process.execPath,
+    [ASTRO_BIN, "dev", "--port", String(port), "--host", "127.0.0.1", "--ignore-lock"],
+    {
+      // The site root, explicitly. A dev server started with the wrong root
+      // answers 404 to every path while its own manager calls it healthy, which
+      // is what the leaked daemon turned out to be.
+      cwd: SITE_ROOT,
+      stdio: ["ignore", "pipe", "pipe"],
+      // Astro 7 detects an agent environment and silently daemonises `astro
+      // dev`. This is the CLI's own opt-out from that detection, and with no
+      // `--background` flag the result is a plain foreground child. Together
+      // with `--ignore-lock` no lock file is written or read, so this server is
+      // invisible to `astro dev status` and dies with the process that started
+      // it — which is the point.
+      env: childEnv({ ASTRO_DEV_BACKGROUND: "0" }),
+    });
+  const dev = { child, output: [], exited: null };
+  child.stdout.on("data", (c) => dev.output.push(c.toString()));
+  child.stderr.on("data", (c) => dev.output.push(c.toString()));
+  child.on("exit", (code) => { dev.exited = code; });
+  return dev;
+}
+
+/** A `close` that kills `child` and is safe to call twice. */
+function closerOf(child) {
+  let closed = false;
+  return () => {
+    if (closed) return;
+    closed = true;
+    try { child.kill(); } catch { /* already gone */ }
+  };
+}
+
+/** Waits until `home` answers; throws when `dev` exits first or `timeoutMs` passes. */
+async function waitUntilAnswering(dev, home, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    if (dev.exited !== null)
+      throw new Error(`astro dev exited (${dev.exited}) before serving:\n${dev.output.join("")}`);
+    if (Date.now() > deadline)
+      throw new Error(`astro dev did not serve ${home} in ${timeoutMs}ms:\n${dev.output.join("")}`);
+    if (await isAnswering(home)) return;
+    await new Promise((r) => setTimeout(r, 300));
+  }
+}
+
+/** Throws, with `dev`'s output, unless `home` is this project's dev server. */
+async function assertServingThisProject(dev, home) {
+  const wrong = await notOurDevServer(home);
+  if (wrong)
+    throw new Error(
+      `the dev server this harness started is not serving the site: ${wrong}\n` +
+      `  cwd was ${SITE_ROOT}\n${dev.output.join("")}`,
+    );
+}
+
+/**
  * Start a dev server this process owns. `close` is safe to call twice, and the
  * child is killed on the way out of any failure, so no run leaves a listener.
  */
@@ -112,55 +174,13 @@ export async function startDev({ timeoutMs = 90000 } = {}) {
   // server that had been up the whole time (2026-09-08).
   const base = siteBase();
   const home = at(origin, base, "/");
-  const output = [];
-
-  const child = spawn(process.execPath,
-    [ASTRO_BIN, "dev", "--port", String(port), "--host", "127.0.0.1", "--ignore-lock"],
-    {
-      // The site root, explicitly. A dev server started with the wrong root
-      // answers 404 to every path while its own manager calls it healthy, which
-      // is what the leaked daemon turned out to be.
-      cwd: SITE_ROOT,
-      stdio: ["ignore", "pipe", "pipe"],
-            // Astro 7 detects an agent environment and silently daemonises `astro
-      // dev`. This is the CLI's own opt-out from that detection, and with no
-      // `--background` flag the result is a plain foreground child. Together
-      // with `--ignore-lock` no lock file is written or read, so this server is
-      // invisible to `astro dev status` and dies with the process that started
-      // it — which is the point.
-      env: childEnv({ ASTRO_DEV_BACKGROUND: "0" }),
-    });
-  child.stdout.on("data", (c) => output.push(c.toString()));
-  child.stderr.on("data", (c) => output.push(c.toString()));
-
-  let closed = false;
-  const close = () => {
-    if (closed) return;
-    closed = true;
-    try { child.kill(); } catch { /* already gone */ }
-  };
-  let exited = null;
-  child.on("exit", (code) => { exited = code; });
+  const dev = spawnAstroDev(port);
+  const close = closerOf(dev.child);
 
   try {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-      if (exited !== null)
-        throw new Error(`astro dev exited (${exited}) before serving:\n${output.join("")}`);
-      if (Date.now() > deadline)
-        throw new Error(`astro dev did not serve ${home} in ${timeoutMs}ms:\n${output.join("")}`);
-      if (await isAnswering(home)) break;
-      await new Promise((r) => setTimeout(r, 300));
-    }
-
+    await waitUntilAnswering(dev, home, timeoutMs);
     // Answering is not the same as serving this project.
-    const wrong = await notOurDevServer(home);
-    if (wrong)
-      throw new Error(
-        `the dev server this harness started is not serving the site: ${wrong}\n` +
-        `  cwd was ${SITE_ROOT}\n${output.join("")}`,
-      );
-
+    await assertServingThisProject(dev, home);
     return { origin, base, url: (path) => at(origin, base, path), close };
   } catch (e) {
     close();
