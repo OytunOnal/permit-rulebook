@@ -10,13 +10,13 @@
     "preview": "astro preview",
     "test": "vitest run",
     "lint": "eslint .",
-    "assets": "node scripts/render-assets.mjs",
-    "assets:check": "node scripts/render-assets.mjs --check",
-    "measure:taps": "node scripts/measure-taps.mjs",
-    "smoke": "node scripts/smoke.mjs",
-    "smoke:dev": "node scripts/smoke.mjs --dev",
-    "check:base": "node scripts/check-base.mjs",
-    "data:pin": "node scripts/data-pin.mjs"
+    "assets": "node scripts/main-render-assets.mjs",
+    "assets:check": "node scripts/main-render-assets.mjs --check",
+    "measure:taps": "node scripts/main-measure-taps.mjs",
+    "smoke": "node scripts/main-smoke.mjs",
+    "smoke:dev": "node scripts/main-smoke.mjs --dev",
+    "check:base": "node scripts/main-check-base.mjs",
+    "data:pin": "node scripts/main-data-pin.mjs"
   },
   "dependencies": {
     "astro": "^7.2.10",

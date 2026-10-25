@@ -118,6 +118,40 @@ describe("the site, in a real browser", () => {
 });
 
 /**
+ * The probe's reason for refusing a local server that answers each path in
+ * `answers` with a 200 and its body, and every other path with a 404; null
+ * when the probe accepts it. The server is closed before this returns.
+ */
+async function probeRefusalFor(answers: Map<string, string>): Promise<string | null> {
+  const { createServer } = await import("node:http");
+  const server = createServer((req, res) => {
+    const body = answers.get(req.url ?? "");
+    res.writeHead(body === undefined ? 404 : 200);
+    res.end(body ?? "Cannot GET /");
+  });
+  const port: number = await new Promise((r) =>
+    server.listen(0, "127.0.0.1", () => r((server.address() as { port: number }).port)));
+  try {
+    return await notOurDevServer(`http://127.0.0.1:${port}`);
+  } finally {
+    server.close();
+  }
+}
+
+/**
+ * Our name on `/data/` and a Vite client, as a copy of the frame would give,
+ * with someone else's `/countries.json`: a bare list of names.
+ */
+async function lookalikeAnswers(): Promise<Map<string, string>> {
+  const { PRODUCT_NAME } = await import("../src/lib/copy/frame.ts");
+  return new Map([
+    ["/data/", `<h1>${PRODUCT_NAME}</h1>`],
+    ["/@vite/client", ""],
+    ["/countries.json", JSON.stringify(["Germany", "France"])],
+  ]);
+}
+
+/**
  * The harness's own guard, pinned.
  *
  * `startDev` used to reuse whatever was listening, on Astro's word that a dev
@@ -129,17 +163,9 @@ describe("the site, in a real browser", () => {
  */
 describe("the harness refuses to walk a process it did not start", () => {
   it("rejects a listener that serves none of this project's routes", async () => {
-    const { createServer } = await import("node:http");
-    const stranger = createServer((_req, res) => { res.writeHead(404); res.end("Cannot GET /"); });
-    const port: number = await new Promise((r) =>
-      stranger.listen(0, "127.0.0.1", () => r((stranger.address() as { port: number }).port)));
-    try {
-      const reason = await notOurDevServer(`http://127.0.0.1:${port}`);
-      expect(reason).toContain("/data/ answered 404");
-      expect(reason).toContain("serves no pages of this project");
-    } finally {
-      stranger.close();
-    }
+    const reason = await probeRefusalFor(new Map());
+    expect(reason).toContain("/countries.json answered 404");
+    expect(reason).toContain("serves nothing of this project");
   }, 30000);
 
   it("rejects the built site served statically — real pages, but not a dev server", async () => {
@@ -148,13 +174,19 @@ describe("the harness refuses to walk a process it did not start", () => {
     const server = await serve(dist);
     try {
       // The first half of the check passes here: it is our product, with its
-      // own /status page. Only the second half catches it.
+      // own /countries.json. Only the second half catches it.
       // The served root, not the bare origin: under a base the origin is not
       // the site, and the check would reject it for the wrong reason.
       expect(await notOurDevServer(server.url("/"))).toContain("@vite/client");
     } finally {
       server.close();
     }
+  }, 30000);
+
+  it("rejects a dev server that shows the product's name but not this project's country list", async () => {
+    const reason = await probeRefusalFor(await lookalikeAnswers());
+    expect(reason).toContain("/countries.json");
+    expect(reason).toContain("not this project's country list");
   }, 30000);
 
   it("rejects a port with nothing on it", async () => {

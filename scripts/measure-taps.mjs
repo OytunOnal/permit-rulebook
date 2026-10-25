@@ -1,4 +1,4 @@
-// @level infrastructure main
+// @level infrastructure
 /**
  * The tap floor, measured rather than argued.
  *
@@ -9,6 +9,10 @@
  * a real 390 px viewport, over every built page.
  *
  *   npm run build && npm run measure:taps
+ *
+ * `measureTaps` hands over each screen as it is measured and returns them all,
+ * and prints nothing: the report's lines and exit code are
+ * `cli-measure-taps.mjs`'s, and `main-measure-taps.mjs` runs the two.
  *
  * It used to carry its own copy of the server and the CDP plumbing, and its own
  * cleanup at the end of the happy path only: a throw halfway through left a
@@ -65,7 +69,7 @@ const PROBE = `(() => {
   });
 })()`;
 
-function builtPages(dir) {
+function listBuiltPages(dir) {
   const pages = [];
   (function walk(here) {
     for (const entry of readdirSync(here)) {
@@ -76,10 +80,6 @@ function builtPages(dir) {
   })(dir);
   return pages.sort();
 }
-
-if (!existsSync(dist)) { console.error("no dist/ — run npm run build first"); process.exit(2); }
-
-const pages = builtPages(dist);
 
 /**
  * Screens the page draws rather than the build emits, each with the record
@@ -103,53 +103,66 @@ const DRAWN = [
 const seedFor = (answers) =>
   `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
     JSON.stringify(JSON.stringify({ version: RECORD_VERSION, answers, history: Object.keys(answers) }))})`;
-const server = await serve(dist);
-let failures = 0;
-let overflows = 0;
 
-try {
-  await withBrowser(async (page) => {
-    for (const file of pages) {
-      const path = relative(dist, file).split("\\").join("/");
-      // Through the server's own url(): a site built for a subpath asks for
-      // its assets there, and served at the root it measures as unstyled.
-      await page.goto(server.url(`/${path.replace(/index\.html$/, "")}`));
-      await page.waitUntilAtRest();
-      const m = JSON.parse(await page.evaluate(PROBE));
-      const overflow = m.scrollWidth > m.innerWidth + 1;
-      if (overflow) overflows++;
-      if (m.bad.length || overflow) {
-        failures++;
-        console.log(`FAIL ${path}`);
-        console.log(`     viewport ${m.innerWidth}px · scrollWidth ${m.scrollWidth}px · ${m.controls} controls · --tap-min ${m.tapMin}`);
-        for (const b of m.bad) console.log(`     under the floor: ${b}`);
-        if (overflow) console.log(`     horizontal overflow: ${m.scrollWidth - m.innerWidth}px`);
-      } else {
-        console.log(`ok   ${path} — ${m.innerWidth}px, ${m.controls} controls, none under ${TAP_MIN}px, no overflow`);
-      }
-    }
-    for (const [name, answers] of DRAWN) {
-      await page.goto(server.url("/"));
-      await page.evaluate(seedFor(answers));
-      await page.goto(server.url("/"));
-      await page.waitUntilAtRest();
-      const m = JSON.parse(await page.evaluate(PROBE));
-      const overflow = m.scrollWidth > m.innerWidth + 1;
-      if (overflow) overflows++;
-      if (m.bad.length || overflow) {
-        failures++;
-        console.log(`FAIL ${name}`);
-        console.log(`     viewport ${m.innerWidth}px · scrollWidth ${m.scrollWidth}px · ${m.controls} controls`);
-        for (const b of m.bad) console.log(`     under the floor: ${b}`);
-        if (overflow) console.log(`     horizontal overflow: ${m.scrollWidth - m.innerWidth}px`);
-      } else {
-        console.log(`ok   ${name} — ${m.innerWidth}px, ${m.controls} controls, none under ${TAP_MIN}px, no overflow`);
-      }
-    }
-  }, { viewport: VIEWPORT, mobile: true });
-} finally {
-  server.close();
+/**
+ * The open page's measure, once it is at rest: the probe's fields, the
+ * screen's name, the floor it was measured against, and `kind`, "built" for
+ * a page the build emits or "drawn" for one the page draws from a record.
+ */
+async function measureAtRest(page, name, kind) {
+  await page.waitUntilAtRest();
+  const measured = JSON.parse(await page.evaluate(PROBE));
+  return { name, kind, floorPx: TAP_MIN, ...measured, isOverflowing: measured.scrollWidth > measured.innerWidth + 1 };
 }
 
-console.log(`\n${pages.length + DRAWN.length} screens at ${VIEWPORT.width} px — ${failures} with a problem (${overflows} overflowing)`);
-process.exit(failures === 0 ? 0 : 1);
+/** Each page the build emitted, in its path's order: its name, its kind, and how the page opens it. */
+const listBuiltScreens = (server) => listBuiltPages(dist).map((file) => {
+  const path = relative(dist, file).split("\\").join("/");
+  // Through the server's own url(): a site built for a subpath asks for
+  // its assets there, and served at the root it measures as unstyled.
+  return { name: path, kind: "built", open: (page) => page.goto(server.url(`/${path.replace(/index\.html$/, "")}`)) };
+});
+
+/** Each drawn screen: its name, its kind, and how the page opens it, its record written and the page reloaded. */
+const drawnScreens = (server) => DRAWN.map(([name, answers]) => ({
+  name,
+  kind: "drawn",
+  async open(page) {
+    await page.goto(server.url("/"));
+    await page.evaluate(seedFor(answers));
+    await page.goto(server.url("/"));
+  },
+}));
+
+/** Each of `screens` opened and measured in turn, handed to `onScreen` as it is measured; all of them returned. */
+async function measureEach(page, screens, onScreen) {
+  const measured = [];
+  for (const { name, kind, open } of screens) {
+    await open(page);
+    const screen = await measureAtRest(page, name, kind);
+    onScreen(screen);
+    measured.push(screen);
+  }
+  return measured;
+}
+
+/**
+ * Serves `dist/` and measures every built page, then every drawn screen, in
+ * Chrome at the viewport. Each screen goes to `onScreen` the moment it is
+ * measured, so a run that stops halfway has already handed over what it
+ * measured; all of them come back at the end. With no `dist/`, `isBuilt` is
+ * false and `screens` is empty; nothing is served.
+ */
+export async function measureTaps({ onScreen = () => {} } = {}) {
+  if (!existsSync(dist)) return { isBuilt: false, viewportWidth: VIEWPORT.width, screens: [] };
+  const server = await serve(dist);
+  try {
+    const screens = await withBrowser(
+      (page) => measureEach(page, [...listBuiltScreens(server), ...drawnScreens(server)], onScreen),
+      { viewport: VIEWPORT, mobile: true },
+    );
+    return { isBuilt: true, viewportWidth: VIEWPORT.width, screens };
+  } finally {
+    server.close();
+  }
+}

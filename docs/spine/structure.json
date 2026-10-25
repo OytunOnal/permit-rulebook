@@ -114,21 +114,36 @@
   "scripts/carry-assets/live-deploy/live-digests.mjs": "application",
   "scripts/carry-assets/live-deploy/live-page.mjs": "application",
   "scripts/carry-assets/outcome/outcome-lines.mjs": "domain",
-  "scripts/check-base.mjs": "infrastructure main",
+  "scripts/check-base.mjs": "infrastructure",
   "scripts/child-env.mjs": "infrastructure",
   "scripts/chrome.mjs": "infrastructure",
+  "scripts/cli-check-base.mjs": "presentation",
+  "scripts/cli-data-pin.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
-  "scripts/data-pin.mjs": "infrastructure main",
+  "scripts/cli-measure-taps.mjs": "presentation",
+  "scripts/cli-render-assets.mjs": "presentation",
+  "scripts/cli-shot.mjs": "presentation",
+  "scripts/cli-smoke.mjs": "presentation",
+  "scripts/data-pin.mjs": "infrastructure",
+  "scripts/decode-png-size.mjs": "domain",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
+  "scripts/find-option-value.mjs": "presentation",
   "scripts/html-in-pieces.mjs": "infrastructure",
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
-  "scripts/measure-taps.mjs": "infrastructure main",
-  "scripts/render-assets.mjs": "infrastructure main",
-  "scripts/shot.mjs": "infrastructure main",
+  "scripts/main-check-base.mjs": "main",
+  "scripts/main-data-pin.mjs": "main",
+  "scripts/main-measure-taps.mjs": "main",
+  "scripts/main-render-assets.mjs": "main",
+  "scripts/main-shot.mjs": "main",
+  "scripts/main-smoke.mjs": "main",
+  "scripts/measure-taps.mjs": "infrastructure",
+  "scripts/print-report.mjs": "presentation",
+  "scripts/render-assets.mjs": "infrastructure",
+  "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
-  "scripts/smoke.mjs": "infrastructure main",
+  "scripts/smoke.mjs": "infrastructure",
   "scripts/tab-waits.mjs": "infrastructure",
   "spine-lint/lint.mjs": "domain",
   "spine-lint/rules/ceiling-paid-off.mjs": "domain",
@@ -357,8 +372,23 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/cli-data-pin.mjs",
+   "to": "scripts/find-option-value.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/cli-deploy-finding.mjs",
    "to": "scripts/deploy-finding.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/cli-render-assets.mjs",
+   "to": "scripts/find-option-value.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/cli-shot.mjs",
+   "to": "scripts/decode-png-size.mjs",
    "kind": "dependency"
   },
   {
@@ -372,13 +402,108 @@
    "kind": "dependency"
   },
   {
-   "from": "scripts/dev-server.mjs",
+   "from": "scripts/live-site-over-http.mjs",
+   "to": "scripts/log-wording.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-check-base.mjs",
+   "to": "scripts/check-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-check-base.mjs",
+   "to": "scripts/cli-check-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-check-base.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-pin.mjs",
+   "to": "scripts/cli-data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-pin.mjs",
+   "to": "scripts/data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-pin.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-measure-taps.mjs",
+   "to": "scripts/cli-measure-taps.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-measure-taps.mjs",
+   "to": "scripts/measure-taps.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-measure-taps.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-render-assets.mjs",
+   "to": "scripts/cli-render-assets.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-render-assets.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-render-assets.mjs",
+   "to": "scripts/render-assets.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-render-assets.mjs",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
-   "from": "scripts/live-site-over-http.mjs",
-   "to": "scripts/log-wording.mjs",
+   "from": "scripts/main-render-assets.mjs",
+   "to": "src/lib/social-card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-shot.mjs",
+   "to": "scripts/cli-shot.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-shot.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-shot.mjs",
+   "to": "scripts/shot.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
+   "to": "scripts/cli-smoke.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-smoke.mjs",
+   "to": "scripts/smoke.mjs",
    "kind": "dependency"
   },
   {
@@ -398,12 +523,7 @@
   },
   {
    "from": "scripts/render-assets.mjs",
-   "to": "src/lib/copy/frame.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/render-assets.mjs",
-   "to": "src/lib/social-card.ts",
+   "to": "scripts/decode-png-size.mjs",
    "kind": "dependency"
   },
   {
@@ -2547,6 +2667,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/hand-run-commands.test.ts",
+   "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/hand-run-commands.test.ts",
+   "to": "scripts/data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/hand-run-commands.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/header.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -4067,6 +4202,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/smoke.test.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/start-over.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
@@ -4549,19 +4689,54 @@
     "exported": false
    },
    {
-    "name": "emitted",
+    "name": "listEmittedFiles",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "problems",
-    "kind": "const",
+    "name": "nameOf",
+    "kind": "fn",
     "exported": false
    },
    {
-    "name": "dist",
-    "kind": "const",
+    "name": "readProblemsIn",
+    "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "buildUnderBase",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "tooFewProblems",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readRootAbsoluteProblems",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readUnresolvedProblems",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readMissingMetaProblems",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "scanBuild",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "checkBase",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/child-env.mjs": [
@@ -4593,7 +4768,99 @@
     "exported": true
    }
   ],
+  "scripts/cli-check-base.mjs": [
+   {
+    "name": "SHOWN_PROBLEMS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "baseReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/cli-data-pin.mjs": [
+   {
+    "name": "pinOptionsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pinReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/cli-deploy-finding.mjs": [],
+  "scripts/cli-measure-taps.mjs": [
+   {
+    "name": "hasProblem",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "screenLinesOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "tapReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/cli-render-assets.mjs": [
+   {
+    "name": "assetsAskedBy",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "renderReportOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "checkFailureOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "checkReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/cli-shot.mjs": [
+   {
+    "name": "shotOptionsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "shotReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/cli-smoke.mjs": [
+   {
+    "name": "smokeOptionsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "reportLinesOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "smokeReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/data-pin.mjs": [
    {
     "name": "root",
@@ -4601,7 +4868,7 @@
     "exported": false
    },
    {
-    "name": "lockPath",
+    "name": "siteLockPath",
     "kind": "const",
     "exported": false
    },
@@ -4619,6 +4886,18 @@
     "name": "at",
     "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "pinData",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/decode-png-size.mjs": [
+   {
+    "name": "decodePngSize",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/deploy-finding.mjs": [
@@ -4700,12 +4979,44 @@
     "exported": false
    },
    {
+    "name": "notOurCountryList",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "notOurDevServer",
     "kind": "fn",
     "exported": true
    },
    {
+    "name": "spawnAstroDev",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "closerOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "waitUntilAnswering",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "assertServingThisProject",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "startDev",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/find-option-value.mjs": [
+   {
+    "name": "findOptionValue",
     "kind": "fn",
     "exported": true
    }
@@ -4751,6 +5062,63 @@
     "exported": true
    }
   ],
+  "scripts/main-check-base.mjs": [
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/main-data-pin.mjs": [
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/main-measure-taps.mjs": [
+   {
+    "name": "measured",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/main-render-assets.mjs": [
+   {
+    "name": "asked",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "facts",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/main-shot.mjs": [
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/main-smoke.mjs": [
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
   "scripts/measure-taps.mjs": [
    {
     "name": "dist",
@@ -4773,13 +5141,8 @@
     "exported": false
    },
    {
-    "name": "builtPages",
+    "name": "listBuiltPages",
     "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "pages",
-    "kind": "const",
     "exported": false
    },
    {
@@ -4793,19 +5156,36 @@
     "exported": false
    },
    {
-    "name": "server",
-    "kind": "const",
+    "name": "measureAtRest",
+    "kind": "fn",
     "exported": false
    },
    {
-    "name": "failures",
-    "kind": "other",
+    "name": "listBuiltScreens",
+    "kind": "fn",
     "exported": false
    },
    {
-    "name": "overflows",
-    "kind": "other",
+    "name": "drawnScreens",
+    "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "measureEach",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "measureTaps",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/print-report.mjs": [
+   {
+    "name": "printReport",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/render-assets.mjs": [
@@ -4816,11 +5196,6 @@
    },
    {
     "name": "publicDir",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "check",
     "kind": "const",
     "exported": false
    },
@@ -4845,7 +5220,27 @@
     "exported": false
    },
    {
-    "name": "shoot",
+    "name": "RENDERED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "readTokensStylesheet",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "isCardSize",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "drawPage",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "drawCard",
     "kind": "fn",
     "exported": false
    },
@@ -4860,9 +5255,29 @@
     "exported": false
    },
    {
-    "name": "main",
+    "name": "drawIcons",
     "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "renderAssets",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "readCommittedCard",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "readFactDifferences",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "checkAssets",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/shot.mjs": [
@@ -4872,13 +5287,8 @@
     "exported": false
    },
    {
-    "name": "today",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "out",
-    "kind": "const",
+    "name": "todaysPath",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -4887,9 +5297,14 @@
     "exported": false
    },
    {
-    "name": "server",
-    "kind": "const",
+    "name": "screenshotResultsInChrome",
+    "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "takeShot",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/site-base.mjs": [
@@ -4929,16 +5344,6 @@
     "name": "smoke",
     "kind": "fn",
     "exported": true
-   },
-   {
-    "name": "reportLinesOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "surfacesAskedBy",
-    "kind": "fn",
-    "exported": false
    }
   ],
   "scripts/tab-waits.mjs": [
@@ -7695,14 +8100,29 @@
   "scripts/check-base.mjs",
   "scripts/child-env.mjs",
   "scripts/chrome.mjs",
+  "scripts/cli-check-base.mjs",
+  "scripts/cli-data-pin.mjs",
   "scripts/cli-deploy-finding.mjs",
+  "scripts/cli-measure-taps.mjs",
+  "scripts/cli-render-assets.mjs",
+  "scripts/cli-shot.mjs",
+  "scripts/cli-smoke.mjs",
   "scripts/data-pin.mjs",
+  "scripts/decode-png-size.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
+  "scripts/find-option-value.mjs",
   "scripts/html-in-pieces.mjs",
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
+  "scripts/main-check-base.mjs",
+  "scripts/main-data-pin.mjs",
+  "scripts/main-measure-taps.mjs",
+  "scripts/main-render-assets.mjs",
+  "scripts/main-shot.mjs",
+  "scripts/main-smoke.mjs",
   "scripts/measure-taps.mjs",
+  "scripts/print-report.mjs",
   "scripts/render-assets.mjs",
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
@@ -7760,5 +8180,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "b871b7d7a43e8c5e46eb2ca5c6a7efb5df3d8cfb00a76a6f8095ba087859089b"
+ "digest": "373be40039527534e91a0968470f0ecdca913a49e3e4ad08dc09d4622bfb4b40"
 }

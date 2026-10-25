@@ -100,7 +100,7 @@ describe("the same paths under a subpath", () => {
   it("the whole-site check exists and is wired into the build", () => {
     // The case above proves the helper; `npm run check:base` proves the site.
     const scripts = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).scripts;
-    expect(scripts["check:base"]).toBe("node scripts/check-base.mjs");
+    expect(scripts["check:base"]).toBe("node scripts/main-check-base.mjs");
     expect(pagesYaml).toContain("npm run check:base");
   });
 });
