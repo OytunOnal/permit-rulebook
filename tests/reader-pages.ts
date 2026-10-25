@@ -125,9 +125,9 @@ const seed = (walk: Walk) =>
 
 async function screenHtmlOf(site: PageOnSite, path: string, record: Walk | null): Promise<string> {
   const { page, url } = site;
-  await page.goto(url("/404.html"), 300);
+  await page.goto(url("/404.html"));
   await page.evaluate(record ? seed(record) : "localStorage.clear()");
-  await page.goto(url(path), 1400);
+  await page.goto(url(path));
   return (JSON.parse(await page.evaluate(DRAWN)) as { html: string }).html;
 }
 

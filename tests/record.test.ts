@@ -7,6 +7,7 @@ import { RECORD_MAX_LENGTH, RECORD_VERSION,
   clearRecord, loadRecord, restore, saveRecord, serialize, LEGACY_STORAGE_KEY, STORAGE_KEY,
   type RecordStore,
 } from "../src/lib/record.js";
+import { waitUntilPastTheBeat, type BrowserPage as WalkPage } from "./browser-walk.js";
 import { BEACON_ENDPOINT, BEACON_SCRIPT, expectNothingLeft, type Sent } from "./wire.js";
 
 const dataset = rawDataset as unknown as Dataset;
@@ -213,9 +214,7 @@ if (skipped)
     "",
   ].join(String.fromCharCode(10)));
 
-interface BrowserPage {
-  goto(url: string, settleMs?: number): Promise<void>;
-  evaluate(expression: string): Promise<string>;
+interface BrowserPage extends Pick<WalkPage, "goto" | "evaluate" | "waitUntil" | "waitUntilAtRest"> {
   requests(): Sent[];
   forgetRequests(): void;
 }
@@ -236,13 +235,14 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 900);
+        await page.goto(server.url("/"));
         const answered: string[] = [];
         for (let step = 0; step < 25; step++) {
           const state = await page.evaluate('document.querySelector("#app").dataset.state');
           if (state === "results") break;
+          await waitUntilPastTheBeat(page);
           answered.push(await page.evaluate(ANSWER_ONE));
-          await new Promise((r) => setTimeout(r, 260));
+          await page.waitUntilAtRest();
         }
         const reached = await page.evaluate('document.querySelector("#app").dataset.state');
         const walk = page.requests();
@@ -251,9 +251,9 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
         // answer once a verdict is on the screen.
         page.forgetRequests();
         await page.evaluate('document.querySelector("#app .done").click()');
-        await new Promise((r) => setTimeout(r, 400));
+        await waitUntilPastTheBeat(page);
         await page.evaluate(ANSWER_ONE);
-        await new Promise((r) => setTimeout(r, 600));
+        await page.waitUntilAtRest();
         const afterEdit = page.requests();
 
         const declared = await page.evaluate(
@@ -374,14 +374,14 @@ describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arrivi
     const server = await serve(dist);
     try {
       const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"), 600);
+        await page.goto(server.url("/"));
         await page.evaluate('localStorage.removeItem("permit-rulebook.record.v1")');
-        await page.goto(`${server.url("/")}?route=de-blue-card-general`, 1400);
+        await page.goto(`${server.url("/")}?route=de-blue-card-general`);
         for (let step = 0; step < 4; step++) {
+          await waitUntilPastTheBeat(page);
           await page.evaluate(ANSWER_ONE);
-          await new Promise((r) => setTimeout(r, 300));
+          await page.waitUntilAtRest();
         }
-        await new Promise((r) => setTimeout(r, 1500));
         const declared = await page.evaluate(
           'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
         );

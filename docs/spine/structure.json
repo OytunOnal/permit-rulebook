@@ -2823,6 +2823,11 @@
   },
   {
    "from": "tests/record.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/record.test.ts",
    "to": "tests/wire.ts",
    "kind": "dependency"
   },
@@ -3232,6 +3237,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s20.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s21.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -3483,11 +3493,6 @@
   },
   {
    "from": "tests/s27.test.ts",
-   "to": "scripts/chrome.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s27.test.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
@@ -3554,6 +3559,11 @@
   {
    "from": "tests/s27.test.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -3628,17 +3638,17 @@
   },
   {
    "from": "tests/s30.test.ts",
-   "to": "scripts/chrome.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s30.test.ts",
    "to": "src/lib/first-paint.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s30.test.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s30.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {

@@ -8,7 +8,7 @@ import {
 } from "../src/lib/interview/index.js";
 import { openInterviewHistory, type InterviewHistory } from "../src/lib/interview-history/index.js";
 import {
-  DESK, fieldOnScreen, recordSeedScript, skipReason, tapOn, waitOutTheBeat, warnNotWalked, withSite,
+  DESK, fieldOnScreen, recordSeedScript, skipReason, tapOn, warnNotWalked, withSite,
   type BrowserPage, type PageOnSite,
 } from "./browser-walk.js";
 import { FakeTab, stepOf } from "./fake-browser-history.js";
@@ -208,17 +208,17 @@ async function screenOf(page: BrowserPage): Promise<string> {
   return state === "results" ? RESULT : fieldOnScreen(page);
 }
 
-/** A real click on `selector`, then the beat of the card it draws waited out. */
+/** A real click on `selector`, then the page at rest. */
 async function tapAndWait(page: BrowserPage, selector: string): Promise<void> {
   await tapOn(page, selector);
-  await waitOutTheBeat(page);
+  await page.waitUntilAtRest();
 }
 
 /** `/` opened onto a stored record of `answers`, asked in their own order, and the ✎ of `field` tapped. */
 async function editingOnRecord({ page, url }: PageOnSite, answers: Profile, field: string): Promise<Exits> {
-  await page.goto(url("/404.html"), 300);
+  await page.goto(url("/404.html"));
   await page.evaluate(recordSeedScript(answers));
-  await page.goto(url("/"), 1200);
+  await page.goto(url("/"));
   await tapAndWait(page, `#decl-list [data-field="${field}"]`);
   return exitsOf(page);
 }

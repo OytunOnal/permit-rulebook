@@ -137,9 +137,9 @@ describe.skipIf(skipped !== null)("#155 a results card names a failed criterion 
     // paints the verdict the reader's record composes.
     const reader = readerFailingEveryPath();
     const seen = await withSite(async ({ page, url }: { page: BrowserPage; url: (p: string) => string }) => {
-      await page.goto(url("/404.html"), 300);
+      await page.goto(url("/404.html"));
       await page.evaluate(recordSeedScript(reader));
-      await page.goto(url("/"), 1600);
+      await page.goto(url("/"));
       return {
         state: await page.evaluate('document.getElementById("app").dataset.state'),
         painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(reader)))),
