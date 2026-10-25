@@ -121,6 +121,7 @@
   "scripts/data-pin.mjs": "infrastructure main",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
+  "scripts/html-in-pieces.mjs": "infrastructure",
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
   "scripts/measure-taps.mjs": "infrastructure main",
@@ -223,6 +224,11 @@
   {
    "from": "scripts/browser.mjs",
    "to": "scripts/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser.mjs",
+   "to": "scripts/html-in-pieces.mjs",
    "kind": "dependency"
   },
   {
@@ -2386,6 +2392,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/first-paint.test.ts",
+   "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/fold.test.ts",
    "to": "scripts/browser.mjs",
    "kind": "dependency"
@@ -2669,6 +2680,11 @@
    "from": "tests/orientation.test.ts",
    "to": "src/lib/sitemap.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/paths-named.test.ts",
@@ -3167,6 +3183,11 @@
   },
   {
    "from": "tests/s19.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -3243,6 +3264,11 @@
   {
    "from": "tests/s21.test.ts",
    "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s21.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -3377,6 +3403,11 @@
   },
   {
    "from": "tests/s25.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s25.test.ts",
    "to": "tests/reader-pages.ts",
    "kind": "dependency"
   },
@@ -3419,6 +3450,11 @@
    "from": "tests/s26.test.ts",
    "to": "src/lib/verdict/index.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "tests/s26.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
   },
   {
    "from": "tests/s26.test.ts",
@@ -3558,6 +3594,11 @@
   {
    "from": "tests/s28.test.ts",
    "to": "src/lib/verdict/index.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s28.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -4495,6 +4536,13 @@
    },
    {
     "name": "startDev",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/html-in-pieces.mjs": [
+   {
+    "name": "sendBody",
     "kind": "fn",
     "exported": true
    }
@@ -7476,6 +7524,7 @@
   "scripts/data-pin.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
+  "scripts/html-in-pieces.mjs",
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
   "scripts/measure-taps.mjs",
@@ -7536,5 +7585,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "2c91477601f2adc9bb5de8f43a2dac3e97d5e8ac44fa8207dab7b232f8947f0e"
+ "digest": "44795d9dd7c70be2addcc44ffd605055bd09315108e073e2b54c7e17edde3b3a"
 }

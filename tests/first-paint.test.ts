@@ -512,6 +512,36 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
 });
 
 /**
+ * The same page with its HTML arriving in two pieces, split before the ledger,
+ * and the module as late as above.
+ * Chrome paints while it waits for the rest, and the box, parsed before the
+ * ledger the grid places first, was drawn in the ledger's place and moved when
+ * the ledger came: the deploy's `#main x+272px` of 2026-10-24 at 1280x800, and
+ * 105 px down on a phone. Throttling the CPU never paints mid-page here; a
+ * network that pauses does (#236). The phone rows cannot see their 105 px:
+ * under the harness's mobile emulation Chrome marks that early shift
+ * `hadRecentInput`, which the field's measure leaves out, so they guard only.
+ */
+describe.skipIf(skipped !== null)("the page arriving in pieces paints where it stays (#236)", () => {
+  const LEDGER = '<details class="decl"';
+  for (const screen of VIEWPORTS)
+    it(`${screen.name} · /?country=fr, the HTML split before the ledger: nothing moves`, async () => {
+      expect(readFileSync(join(dist, "index.html"), "utf8"), "the page has no ledger to split before").toContain(LEDGER);
+      const server = await serve(dist, { delayJsMs: DELAY_JS_MS, htmlInPieces: { before: LEDGER, heldMs: 300 } });
+      try {
+        const m = await withBrowser(async (page: BrowserPage) => {
+          await page.goto(server.url("/?country=fr"));
+          await page.waitUntilAtRest();
+          return JSON.parse(await page.evaluate(READ)) as Measured;
+        }, { viewport: screen.viewport, mobile: screen.mobile });
+        expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBe(0);
+      } finally {
+        server.close();
+      }
+    }, 120000);
+});
+
+/**
  * The pre-paint script, run against a page in a bottle.
  *
  * It is a string that runs in <head>, so the browser gate above is what proves
