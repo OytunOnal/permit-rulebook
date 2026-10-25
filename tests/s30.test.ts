@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { QLABEL, answerWith, gesture, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
+import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 /**
  * s30 — on a phone the next question comes up to meet the reader.
@@ -273,7 +273,7 @@ describe.skipIf(skipped !== null)("what does not change", () => {
         // screen — then reopens the first row from the ledger beside it.
         await page.evaluate(READ_ON);
         const before = await where(page);
-        await gesture(page, OPEN_AND_TAP_DESTINATION);
+        await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
         const corrected = await where(page);
         return { cold, answered, before, corrected, problems: page.problems() };
       }, { viewport: { width: 1280, height: 900 }, mobile: false });
@@ -318,7 +318,7 @@ describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back u
         // screen — then starts over from the resumed line.
         await page.evaluate(READ_ON);
         const before = await where(page);
-        await gesture(page, 'document.querySelector("#main .resumed #restart").click()');
+        await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
         const reset = await where(page);
         return { restored, before, reset, problems: page.problems() };
       }, { viewport: { width: 390, height: 844 }, mobile: true });
@@ -391,7 +391,7 @@ describe.skipIf(skipped !== null)("on a phone the ledger line sits above the res
     await page.evaluate(SEED);
     await openAtRest(page, origin("/"));
     const verdict = await where(page);
-    await gesture(page, OPEN_AND_TAP_SALARY);
+    await evaluateAtRest(page, OPEN_AND_TAP_SALARY);
     const corrected = await where(page);
     await answerWith(page, ANSWER_ANOTHER_BAND);
     const returned = await where(page);
@@ -468,7 +468,7 @@ describe.skipIf(skipped !== null)("on a phone a correction lands too (amendment 
           await coldStart(page, server.url);
           await answerWith(page, TAP_FIRST);
           const answered = await where(page);
-          await gesture(page, OPEN_AND_TAP_DESTINATION);
+          await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
           const corrected = await where(page);
           return { answered, corrected, problems: page.problems() };
         }, { viewport, mobile: true });

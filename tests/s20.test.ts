@@ -7,7 +7,7 @@ import { resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { answerWith, gesture, openAtRest, type BrowserPage } from "./browser-walk.js";
+import { answerWith, evaluateAtRest, openAtRest, type BrowserPage } from "./browser-walk.js";
 
 /**
  * s20 — the correction lands on the question and returns to the verdict.
@@ -178,7 +178,7 @@ async function correction(page: BrowserPage, origin: (p: string) => string) {
   await page.evaluate(seed(finished));
   await openAtRest(page, origin("/"));
   const result = JSON.parse(await page.evaluate(WHERE)) as Where;
-  await gesture(page, TAP_SALARY);
+  await evaluateAtRest(page, TAP_SALARY);
   const onQuestion = JSON.parse(await page.evaluate(WHERE)) as Where;
   await answerWith(page, ANSWER_ANOTHER_BAND);
   const back = JSON.parse(await page.evaluate(WHERE)) as Where;
@@ -277,7 +277,7 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
         const next = JSON.parse(await page.evaluate(WHERE)) as Where;
         // Start over from the resumed line: the same control the panel carries.
         await openAtRest(page, server.url("/"));
-        await gesture(page, 'document.querySelector("#main .resumed #restart").click()');
+        await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
         const restarted = JSON.parse(await page.evaluate(WHERE)) as Where;
         const stored = await page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
         return { resumed, next, restarted, stored, problems: page.problems() };

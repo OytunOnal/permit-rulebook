@@ -118,8 +118,8 @@ export async function openAtRest(page: Pick<BrowserPage, "goto" | "waitUntilAtRe
   await page.waitUntilAtRest();
 }
 
-/** A gesture that stays on the page, returned once the page is at rest. */
-export async function gesture(page: GesturedPage, expression: string): Promise<string> {
+/** Evaluates `expression`, a gesture that stays on the page, and returns its value once the page is at rest. */
+export async function evaluateAtRest(page: GesturedPage, expression: string): Promise<string> {
   const value = await page.evaluate(expression);
   await page.waitUntilAtRest();
   return value;
@@ -128,7 +128,7 @@ export async function gesture(page: GesturedPage, expression: string): Promise<s
 /** An answer, tapped once the card's beat is over, returned once the page is at rest. */
 export async function answerWith(page: GesturedPage, expression: string): Promise<string> {
   await waitUntilPastTheBeat(page);
-  return gesture(page, expression);
+  return evaluateAtRest(page, expression);
 }
 
 /** The label of the question on the screen, or "" where none is. */
@@ -171,7 +171,7 @@ export const SCREEN_SHOWN = `${STATE} + " " + ${QLABEL}`;
  * A pick that takes moves the screen in the same task, so a screen still where
  * it was is a refused pick.
  */
-const pickedOnce = (pickExpression: string) => `(() => {
+const pickOnceAndSayWhetherMoved = (pickExpression: string) => `(() => {
   const before = ${SCREEN_SHOWN};
   const how = ${pickExpression};
   if (how !== "opt" && how !== "row") return how;
@@ -183,7 +183,7 @@ const pickedOnce = (pickExpression: string) => `(() => {
  * refused answer throws, named by `what`. */
 export async function answerOnce(page: GesturedPage, pickExpression: string, what: string): Promise<void> {
   await waitUntilPastTheBeat(page);
-  const how = await page.evaluate(pickedOnce(pickExpression));
+  const how = await page.evaluate(pickOnceAndSayWhetherMoved(pickExpression));
   if (how !== "moved") throw new Error(`${what}: ${how}`);
   await page.waitUntilAtRest();
 }

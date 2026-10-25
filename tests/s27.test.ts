@@ -21,7 +21,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
-import { answerWith, gesture, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
+import { answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -256,7 +256,7 @@ const walkToFour = async (page: BrowserPage, base: string): Promise<void> => {
   await openAtRest(page, base);
   await answerWith(page, tap("fr"));
   await answerWith(page, tap("none"));
-  await gesture(page, '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
+  await evaluateAtRest(page, '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); })()');
   await answerWith(page, 'document.querySelector(".clist [role=option]").click()');
   await answerWith(page, tap("no"));
   await answerWith(page, tap("no"));
@@ -353,7 +353,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
           await walkToFour(page, server.url("/"));
           const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALKED_TO_FOUR))));
           const asDrawn = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
-          await gesture(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
+          await evaluateAtRest(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
           const toggled = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
           return { painted, asDrawn, toggled, problems: page.problems() };
         }, { viewport, mobile }) as {
@@ -447,7 +447,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
       const rows = ledgerRows();
       const seen = await withBrowser(async (page: BrowserPage) => {
         await openAtRest(page, server.url("/"));
-        await gesture(page, `document.getElementById("decl-list").innerHTML = ${JSON.stringify(rows)}`);
+        await evaluateAtRest(page, `document.getElementById("decl-list").innerHTML = ${JSON.stringify(rows)}`);
         return { pens: JSON.parse(await page.evaluate(PENS)) as Pen[], problems: page.problems() };
       }, { viewport: { width: 1280, height: 900 }, mobile: false }) as { pens: Pen[]; problems: string[] };
       expect(seen.problems).toEqual([]);
