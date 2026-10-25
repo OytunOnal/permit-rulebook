@@ -120,6 +120,7 @@
   "scripts/cli-check-base.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
   "scripts/cli-measure-taps.mjs": "presentation",
+  "scripts/cli-shot.mjs": "presentation",
   "scripts/data-pin.mjs": "infrastructure main",
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
@@ -128,10 +129,11 @@
   "scripts/log-wording.mjs": "domain",
   "scripts/main-check-base.mjs": "main",
   "scripts/main-measure-taps.mjs": "main",
+  "scripts/main-shot.mjs": "main",
   "scripts/measure-taps.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
   "scripts/render-assets.mjs": "infrastructure main",
-  "scripts/shot.mjs": "infrastructure main",
+  "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure main",
   "scripts/tab-waits.mjs": "infrastructure",
@@ -409,6 +411,21 @@
   {
    "from": "scripts/main-measure-taps.mjs",
    "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-shot.mjs",
+   "to": "scripts/cli-shot.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-shot.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-shot.mjs",
+   "to": "scripts/shot.mjs",
    "kind": "dependency"
   },
   {
@@ -4703,6 +4720,18 @@
     "exported": true
    }
   ],
+  "scripts/cli-shot.mjs": [
+   {
+    "name": "shotOptionsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "shotReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/data-pin.mjs": [
    {
     "name": "root",
@@ -4898,6 +4927,7 @@
     "exported": false
    }
   ],
+  "scripts/main-shot.mjs": [],
   "scripts/measure-taps.mjs": [
    {
     "name": "dist",
@@ -5036,13 +5066,8 @@
     "exported": false
    },
    {
-    "name": "today",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "out",
-    "kind": "const",
+    "name": "todaysPath",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -5051,9 +5076,14 @@
     "exported": false
    },
    {
-    "name": "server",
-    "kind": "const",
+    "name": "resultsPngOf",
+    "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "takeShot",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "scripts/site-base.mjs": [
@@ -7862,6 +7892,7 @@
   "scripts/cli-check-base.mjs",
   "scripts/cli-deploy-finding.mjs",
   "scripts/cli-measure-taps.mjs",
+  "scripts/cli-shot.mjs",
   "scripts/data-pin.mjs",
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
@@ -7870,6 +7901,7 @@
   "scripts/log-wording.mjs",
   "scripts/main-check-base.mjs",
   "scripts/main-measure-taps.mjs",
+  "scripts/main-shot.mjs",
   "scripts/measure-taps.mjs",
   "scripts/print-report.mjs",
   "scripts/render-assets.mjs",
@@ -7929,5 +7961,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "74dab0e5f54ff5d059810e59fe1bc29e2305f22bea3d0e76c91e2324bad92aed"
+ "digest": "a755f041d84c9ee44ef61a1fcf6e8ae9185238a5ba06cf828d8b902dcfd95d5d"
 }
