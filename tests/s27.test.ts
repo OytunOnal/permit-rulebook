@@ -21,7 +21,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
-import { skipReason, waitUntilPastTheBeat, warnNotWalked, type BrowserPage } from "./browser-walk.js";
+import { answerWith, gesture, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -196,24 +196,6 @@ const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE S27 SLIPS", skipped);
-
-/** Opens `url` and returns once the page has drawn and come to rest. */
-async function openAtRest(page: BrowserPage, url: string): Promise<void> {
-  await page.goto(url);
-  await page.waitUntilAtRest();
-}
-
-/** A gesture that stays on the page, returned once the page is at rest. */
-async function gesture(page: BrowserPage, expression: string): Promise<void> {
-  await page.evaluate(expression);
-  await page.waitUntilAtRest();
-}
-
-/** An answer, tapped once the card's beat is over, returned once the page is at rest. */
-async function answerWith(page: BrowserPage, expression: string): Promise<void> {
-  await waitUntilPastTheBeat(page);
-  await gesture(page, expression);
-}
 
 const VIEWPORTS = [
   ["390x844", { width: 390, height: 844 }, true],

@@ -39,12 +39,13 @@ const PROFILE = {
 const server = await serve(join(root, "dist"));
 try {
   const png = await withBrowser(async (page) => {
-    await page.goto(server.url("/"), 300);
+    await page.goto(server.url("/"));
     await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
       JSON.stringify(JSON.stringify({
         version: RECORD_VERSION, answers: PROFILE, history: Object.keys(PROFILE),
       }))})`);
-    await page.goto(server.url("/"), 1600);
+    await page.goto(server.url("/"));
+    await page.waitUntilAtRest();
     const problems = page.problems();
     if (problems.length) throw new Error(`the page reported ${problems.length}: ${problems[0]}`);
     return page.screenshot();

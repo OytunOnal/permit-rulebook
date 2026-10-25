@@ -172,19 +172,8 @@ export class TabWaits {
     if (method === "Page.frameNavigated" && !params.frame.parentId) this.#forgetRequestsNotOf(params.frame.loaderId);
   };
 
-  /**
-   * Sends the navigation and returns once the new document has drawn. Given a
-   * time, it sleeps that long instead and waits for nothing: the old way,
-   * kept until every case has moved off it (#230).
-   */
-  goto = async (url, settleMs) => {
-    if (settleMs !== undefined) {
-      this.#forgetProblems();
-      this.#documentSeen = null;
-      await this.#watchSmoothScrolls();
-      await this.#sendToTab("Page.navigate", { url });
-      return pause(settleMs);
-    }
+  /** Sends the navigation and returns once the new document has drawn. */
+  goto = async (url) => {
     const left = await this.waitUntil(DOCUMENT_SHOWN, "the tab stood on no document");
     await this.navigate(url);
     await this.#waitUntilDrawnAfter(left);

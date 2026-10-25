@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { skipReason, waitUntilPastTheBeat, warnNotWalked, type BrowserPage } from "./browser-walk.js";
+import { answerWith, gesture, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 /**
  * s30 — on a phone the next question comes up to meet the reader.
@@ -32,25 +32,6 @@ const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE QUESTION'S LANDING", skipped);
-
-/** Opens `url` and returns once the page has drawn and come to rest. */
-async function openAtRest(page: BrowserPage, url: string): Promise<void> {
-  await page.goto(url);
-  await page.waitUntilAtRest();
-}
-
-/** A gesture that stays on the page, returned once the page is at rest. */
-async function gesture(page: BrowserPage, expression: string): Promise<string> {
-  const value = await page.evaluate(expression);
-  await page.waitUntilAtRest();
-  return value;
-}
-
-/** An answer, tapped once the card's beat is over, returned once the page is at rest. */
-async function answerWith(page: BrowserPage, expression: string): Promise<string> {
-  await waitUntilPastTheBeat(page);
-  return gesture(page, expression);
-}
 
 /**
  * Where the reader is, read the way a reader would: the card's top against

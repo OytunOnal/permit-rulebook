@@ -1842,6 +1842,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/asked-for.test.ts",
+   "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/audit-and-runner.test.ts",
    "to": "tests/workflow-text.ts",
    "kind": "dependency"
@@ -1894,6 +1899,11 @@
   {
    "from": "tests/beat.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/beat.test.ts",
+   "to": "tests/layout-shifts.ts",
    "kind": "dependency"
   },
   {
@@ -3897,6 +3907,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/set-aside.test.ts",
+   "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/shorthand.test.ts",
    "to": "src/lib/country-page.ts",
    "kind": "dependency"
@@ -4267,6 +4282,41 @@
    },
    {
     "name": "ceilings",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "FIXED_WAIT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "TIMER_PROMISES",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "calledName",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "isPromiseExecutor",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "executorsAround",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "resolvesAPromise",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "noFixedWait",
     "kind": "const",
     "exported": false
    },
@@ -7615,5 +7665,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "6f17d27ea651d60e2893158181d797cacd75911db562cfebb223606c919569e1"
+ "digest": "ab80f4b6224d8cbfc703bacba4e3843194e04fb10cb5dab118de5d7e2fc4c170"
 }

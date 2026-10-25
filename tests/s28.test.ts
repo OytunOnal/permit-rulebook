@@ -11,7 +11,7 @@ import { routePages } from "../src/lib/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import { waitUntilPastTheBeat } from "./browser-walk.js";
+import { answerWith } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor, verdictOn,
 } from "./verdict-cards.js";
@@ -251,12 +251,6 @@ const seed = (answers: Record<string, string>) =>
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
 /** "Turkey" typed into the passport search, as its `input` event commits it, and the first row it draws picked. */
 const PICK_TURKEY = '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); document.querySelector(".clist [role=option]").click(); })()';
-/** Answers the question on the screen by `gesture` once its beat is over; returns once the page is at rest. */
-async function answerWith(page: BrowserPage, gesture: string): Promise<void> {
-  await waitUntilPastTheBeat(page);
-  await page.evaluate(gesture);
-  await page.waitUntilAtRest();
-}
 
 /** One link read off the page: its text as drawn and where it goes. */
 interface Link { text: string; href: string }

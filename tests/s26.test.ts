@@ -15,7 +15,7 @@ import { url } from "../src/lib/site.js";
 import type { CountrySection, Tally, Verdict, VerdictGroup } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, cardsIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { expectNothingLeft, type Sent } from "./wire.js";
-import { waitUntilPastTheBeat } from "./browser-walk.js";
+import { answerWith } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -375,12 +375,6 @@ const seed = (answers: Record<string, string>) =>
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
 /** "Turkey" typed into the passport search, as its `input` event commits it, and the first row it draws picked. */
 const PICK_TURKEY = '(() => { const i = document.querySelector("#cfilter"); i.value = "Turkey"; i.dispatchEvent(new Event("input", { bubbles: true })); document.querySelector(".clist [role=option]").click(); })()';
-/** Answers the question on the screen by `gesture` once its beat is over; returns once the page is at rest. */
-async function answerWith(page: BrowserPage, gesture: string): Promise<void> {
-  await waitUntilPastTheBeat(page);
-  await page.evaluate(gesture);
-  await page.waitUntilAtRest();
-}
 
 interface Result {
   state: string; status: string; problems: string[];
