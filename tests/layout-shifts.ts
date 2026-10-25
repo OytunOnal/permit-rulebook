@@ -39,11 +39,11 @@ export const GATHER_SHIFTS = `(() => {
     return observer.takeRecords();
   };
   const [firstInput] = recordsOf("first-input");
-  const afterAnInput = (e) => firstInput !== undefined && e.startTime >= firstInput.startTime;
+  const cameAfterAnInput = (e) => firstInput !== undefined && e.startTime >= firstInput.startTime;
   const shifts = recordsOf("layout-shift");
   window.__shiftsReported = shifts.map((e) => ({ value: e.value, markedAsInput: e.hadRecentInput }));
   window.__cls = shifts
-    .filter((e) => !(e.hadRecentInput && afterAnInput(e)))
+    .filter((e) => !(e.hadRecentInput && cameAfterAnInput(e)))
     .map((e) => ({
       value: e.value,
       startTime: e.startTime,
@@ -67,7 +67,7 @@ export const GATHER_SHIFTS = `(() => {
 const SHIFTS_CHROME_BUFFERS = 150;
 
 /** The measure's shifts since `sinceMs` on the page's clock, summed as CLS sums them, and how many Chrome kept. */
-const shiftScoreRead = (sinceMs: number) => `(() => {
+const scoreShiftsSince = (sinceMs: number) => `(() => {
   ${GATHER_SHIFTS};
   const kept = window.__shiftsReported.length;
   const score = window.__cls.filter((e) => e.startTime >= ${sinceMs}).reduce((sum, e) => sum + e.value, 0);
@@ -80,7 +80,7 @@ const shiftScoreRead = (sinceMs: number) => `(() => {
  * measure for every case that asserts nothing shifted (#243).
  */
 export async function shiftScoreSince(page: Pick<BrowserPage, "evaluate">, sinceMs = 0): Promise<number> {
-  const { kept, score } = JSON.parse(await page.evaluate(shiftScoreRead(sinceMs))) as { kept: number; score: number };
+  const { kept, score } = JSON.parse(await page.evaluate(scoreShiftsSince(sinceMs))) as { kept: number; score: number };
   if (kept >= SHIFTS_CHROME_BUFFERS) throw new Error(`Chrome kept ${kept} shifts and dropped any after: the score cannot be read`);
   return score;
 }

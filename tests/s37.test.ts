@@ -71,7 +71,7 @@ const whereOf = async (page: BrowserPage): Promise<Where> => JSON.parse(await pa
 /** Whether the tab stands anywhere other than `before`, a reading of WHERE. A
  * history move draws on the browser's turn, not the gesture's, so a gesture
  * that stays on the page is waited on until the screen it leaves is gone. */
-const movedFrom = (before: string) => `${WHERE} !== ${JSON.stringify(before)}`;
+const hasMovedFrom = (before: string) => `${WHERE} !== ${JSON.stringify(before)}`;
 
 /** A walk: `at()` reads where the tab stands, `act` makes a gesture that stays
  * on the page and `actAcross` one that loads a document, `answer()` answers
@@ -82,11 +82,11 @@ function walker(page: BrowserPage, url: (path: string) => string) {
   const at = () => whereOf(page);
   // The gesture runs on the page's next task, so the evaluation has returned
   // before a Back that leaves the site tears the document down.
-  const gesture = (expression: string) => page.evaluate(`setTimeout(() => { ${expression}; }, 0), 0`);
+  const runOnTheNextTask = (expression: string) => page.evaluate(`setTimeout(() => { ${expression}; }, 0), 0`);
   const act = async (expression: string) => {
     const before = await page.evaluate(WHERE);
-    await gesture(expression);
-    await page.waitUntil(movedFrom(before), `${expression} moved nothing`);
+    await runOnTheNextTask(expression);
+    await page.waitUntil(hasMovedFrom(before), `${expression} moved nothing`);
     await page.waitUntilAtRest();
     return at();
   };
@@ -95,7 +95,7 @@ function walker(page: BrowserPage, url: (path: string) => string) {
     return at();
   };
   const actAcross = async (expression: string) => {
-    await gesture(expression);
+    await runOnTheNextTask(expression);
     await page.waitUntilNewDocumentDrawn();
     return at();
   };

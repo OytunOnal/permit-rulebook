@@ -124,7 +124,7 @@ const MARK_FAR_DOWN = `(() => {
   return "marked";
 })()`;
 /** Where the page stands once at rest: whether the scroll said it ended, and how far it stands from its end. */
-const AFTER_SCROLL = (offEnd: string) => `JSON.stringify({ ended: window.__scrollEnded === true, scrollY, offEnd: ${offEnd} })`;
+const reportWhereTheScrollStands = (offEnd: string) => `JSON.stringify({ ended: window.__scrollEnded === true, scrollY, offEnd: ${offEnd} })`;
 interface AfterScroll { ended: boolean; scrollY: number; offEnd: number }
 /**
  * A gesture that asks for `scroll` and then works on for 100 ms, as a tap's
@@ -132,7 +132,7 @@ interface AfterScroll { ended: boolean; scrollY: number; offEnd: number }
  * back, before the scroll has moved: two frames reading the same scroll
  * (#242, the frames #232's probe saw sharing a timestamp).
  */
-const ASK_THEN_WORK_ON = (scroll: string) => `(() => {
+const askThenWorkOn = (scroll: string) => `(() => {
   ${scroll};
   const done = performance.now() + 100;
   while (performance.now() < done);
@@ -156,9 +156,9 @@ describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, after a smooth
         // Its loading over first, so the next look sees nothing but the scroll.
         await page.waitUntilAtRest();
         const atRest = page.waitUntilAtRest();
-        await page.evaluate(ASK_THEN_WORK_ON(start));
+        await page.evaluate(askThenWorkOn(start));
         await atRest;
-        return JSON.parse(await page.evaluate(AFTER_SCROLL(offEnd))) as AfterScroll;
+        return JSON.parse(await page.evaluate(reportWhereTheScrollStands(offEnd))) as AfterScroll;
       });
       expect(seen.ended, `at rest returned mid-scroll, at scrollY ${seen.scrollY}`).toBe(true);
       expect(Math.abs(seen.offEnd), `at rest returned ${seen.offEnd} px from the scroll's end`).toBeLessThan(1);

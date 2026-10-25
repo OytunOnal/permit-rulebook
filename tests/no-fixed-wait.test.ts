@@ -24,7 +24,7 @@ const STAND_IN_ORIGIN = "tests/carry-assets/stand-in-origin.ts";
 
 /** The rule's messages on `code` linted as the file at `filePath`, once the
  * config is seen to run the rule there. */
-async function fixedWaitsIn(code: string, filePath = A_TEST): Promise<string[]> {
+async function lintForFixedWaits(code: string, filePath = A_TEST): Promise<string[]> {
   const config = await eslint.calculateConfigForFile(filePath) as { rules?: Record<string, unknown> };
   expect(config.rules?.[RULE], `the config runs no ${RULE} on ${filePath}`).toEqual([2]);
   const [result] = await eslint.lintText(code, { filePath });
@@ -40,7 +40,7 @@ const lines = (...code: string[]) => code.join("\n");
 
 describe("the lint on a fixed wait", () => {
   it("a sleep in a test file is an error", async () => {
-    const refused = await fixedWaitsIn(lines(
+    const refused = await lintForFixedWaits(lines(
       "export async function read(): Promise<void> {",
       "  await new Promise((r) => setTimeout(r, 900));",
       "  await new Promise<void>((resolve) => { setTimeout(() => resolve(), 300); });",
@@ -51,7 +51,7 @@ describe("the lint on a fixed wait", () => {
   });
 
   it("goto(url, 900) is an error", async () => {
-    const refused = await fixedWaitsIn(lines(
+    const refused = await lintForFixedWaits(lines(
       "interface Page { goto(url: string, ms?: number): Promise<void> }",
       "export async function open(page: Page, url: string): Promise<void> {",
       "  await page.goto(url, 900);",
@@ -65,7 +65,7 @@ describe("the lint on a fixed wait", () => {
 
 describe("the lint on a navigation given a time", () => {
   it("a bare goto(url, 900) is an error", async () => {
-    const refused = await fixedWaitsIn(lines(
+    const refused = await lintForFixedWaits(lines(
       "declare function goto(url: string, ms?: number): Promise<void>;",
       "export async function open(url: string): Promise<void> {",
       "  await goto(url, 900);",
@@ -77,7 +77,7 @@ describe("the lint on a navigation given a time", () => {
   });
 
   it("navigate(url, 900) is an error", async () => {
-    const refused = await fixedWaitsIn(lines(
+    const refused = await lintForFixedWaits(lines(
       "interface Page { navigate(url: string, ms?: number): Promise<void> }",
       "export async function open(page: Page, url: string): Promise<void> {",
       "  await page.navigate(url, 900);",
@@ -97,7 +97,7 @@ describe("the lint on Node's promised timers", () => {
     ["a dynamic import", ['export const read = async () => (await import("node:timers/promises")).setTimeout(900);']],
   ] as const)
     it(`Node's promised timers taken by ${how} are an error`, async () => {
-      const refused = await fixedWaitsIn(lines(...code));
+      const refused = await lintForFixedWaits(lines(...code));
       expect(refused).toHaveLength(1);
       expectItPointsAtTheWaits(refused[0]);
     });
@@ -105,7 +105,7 @@ describe("the lint on Node's promised timers", () => {
 
 describe("the lint on a sleep by another timer or another name", () => {
   it("a setInterval that resolves a promise is an error", async () => {
-    const refused = await fixedWaitsIn(lines(
+    const refused = await lintForFixedWaits(lines(
       "export async function read(): Promise<void> {",
       "  await new Promise<void>((resolve) => { const every = setInterval(() => { clearInterval(every); resolve(); }, 300); });",
       "}",
@@ -115,7 +115,7 @@ describe("the lint on a sleep by another timer or another name", () => {
   });
 
   it("a timer handed a promise's resolve under another name is an error", async () => {
-    const refused = await fixedWaitsIn(lines(
+    const refused = await lintForFixedWaits(lines(
       "export async function read(): Promise<void> {",
       "  await new Promise<void>((resolve) => { const done = resolve; setTimeout(done, 300); });",
       "  let release = () => {};",
@@ -133,11 +133,11 @@ describe("the lint on a timer that is no wait", () => {
   it("a fake server's held response is not", async () => {
     const code = readFileSync(new URL(`../${STAND_IN_ORIGIN}`, import.meta.url), "utf8");
     expect(code, "the stand-in origin no longer holds a response back").toMatch(/setTimeout\(\(\) => send\(/);
-    expect(await fixedWaitsIn(code, STAND_IN_ORIGIN)).toEqual([]);
+    expect(await lintForFixedWaits(code, STAND_IN_ORIGIN)).toEqual([]);
   });
 
   it("a setTimeout inside a string sent to the page is not", async () => {
-    const refused = await fixedWaitsIn(lines(
+    const refused = await lintForFixedWaits(lines(
       "interface Page { evaluate(expression: string): Promise<string> }",
       "export async function tapNextTask(page: Page): Promise<void> {",
       "  await page.evaluate('setTimeout(() => { window.__arrived = \"here\"; }, 300), 0');",

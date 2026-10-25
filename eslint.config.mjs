@@ -31,7 +31,7 @@ const TIMERS = ["setTimeout", "setInterval"];
 const NAVIGATIONS = ["goto", "navigate"];
 
 /** The name a call is made by: `f(…)` or `x.f(…)`. */
-function calledName({ callee }) {
+function findCalledName({ callee }) {
   if (callee.type === "Identifier") return callee.name;
   return callee.type === "MemberExpression" && !callee.computed ? callee.property.name : null;
 }
@@ -93,7 +93,7 @@ const noFixedWait = {
     const resolves = [];
     return {
       CallExpression(node) {
-        const name = calledName(node);
+        const name = findCalledName(node);
         if (TIMERS.includes(name)) timers.push(node);
         if (NAVIGATIONS.includes(name) && node.arguments.length > 1) refuse(node);
       },

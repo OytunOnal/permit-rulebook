@@ -67,10 +67,11 @@ async function clickOn(page: BrowserPage, selector: string): Promise<void> {
   await page.clickAt(at.x, at.y);
 }
 
-/** The screen once a gesture has drawn a question other than `before`, read
- * the moment it is there: the page answers in the task that draws the card,
- * and a history move draws on the browser's turn, not the gesture's. */
-async function drawnAfter(page: BrowserPage, before: string): Promise<Where> {
+/** Waits until a gesture has drawn a question other than `before`, and
+ * returns the screen read the moment it is there: the page answers in the
+ * task that draws the card, and a history move draws on the browser's turn,
+ * not the gesture's. */
+async function waitUntilAnotherQuestionDrawn(page: BrowserPage, before: string): Promise<Where> {
   const drawn = `new Promise((resolve) => {
     const check = () => {
       const label = document.querySelector("#main .qcard .qlabel");
@@ -126,7 +127,7 @@ interface SpanAndBeat { spanMs: number; beatMs: number }
 /** On the page's clock, from the first gesture clocked reaching the page to the
  * last done, beside the beat the page declares: a span shorter than the beat
  * puts the last press inside it. */
-const spanAndBeat = async (page: BrowserPage): Promise<SpanAndBeat> => JSON.parse(await page.evaluate(`JSON.stringify((() => {
+const readSpanAndBeat = async (page: BrowserPage): Promise<SpanAndBeat> => JSON.parse(await page.evaluate(`JSON.stringify((() => {
   const { reached, done } = window.__gestures;
   return { spanMs: done[done.length - 1] - reached[0], beatMs: ${BEAT_MS} };
 })())`)) as SpanAndBeat;
@@ -151,11 +152,11 @@ async function pressedAroundTheBeat<T>(site: PageOnSite, { walkUp, gesture, pres
     const before = (await where(page)).question;
     await page.evaluate(CLOCK_THE_GESTURES);
     await gesture(page);
-    const drawn = await drawnAfter(page, before);
+    const drawn = await waitUntilAnotherQuestionDrawn(page, before);
     await press(page);
     await page.waitUntilAtRest();
     const within = await where(page);
-    const timed = await spanAndBeat(page);
+    const timed = await readSpanAndBeat(page);
     if (timed.spanMs >= timed.beatMs && walk < WALKS_FOR_A_PRESS_INSIDE) continue;
     await waitUntilPastTheBeat(page);
     await press(page);
@@ -207,12 +208,12 @@ async function doubleClickOnAnOption(site: PageOnSite): Promise<DoubleClick | nu
     const cold = await where(page);
     await page.evaluate(CLOCK_THE_GESTURES);
     await page.clickAt(at.x, at.y);
-    const drawn = await drawnAfter(page, cold.question);
+    const drawn = await waitUntilAnotherQuestionDrawn(page, cold.question);
     const under = await page.evaluate(optionUnder(at));
     if (!under) { i++; walk = 0; continue; }
     await page.clickAt(at.x, at.y);
     await page.waitUntilAtRest();
-    const timed = await spanAndBeat(page);
+    const timed = await readSpanAndBeat(page);
     if (timed.spanMs >= timed.beatMs && walk < WALKS_FOR_A_PRESS_INSIDE) continue;
     return { ...timed, cold, drawn, under, after: await where(page) };
   }
@@ -289,24 +290,24 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
   }, 120000);
 
   /** Two questions answered: a card with a Back, and an answer to correct. */
-  const twoAnswered = (page: BrowserPage) => answerFirstOptions(page, 2);
+  const answerTwoQuestions = (page: BrowserPage) => answerFirstOptions(page, 2);
 
   it("← Back draws its card with a beat", async () => {
     expectTheBeatHeld(await withSite((site) => pressedAroundTheBeat(site, {
-      walkUp: twoAnswered, gesture: (page) => clickOn(page, "#back"),
+      walkUp: answerTwoQuestions, gesture: (page) => clickOn(page, "#back"),
     }), DESK));
   }, 120000);
 
   it("✎, a correction, draws its card with a beat", async () => {
     expectTheBeatHeld(await withSite((site) => pressedAroundTheBeat(site, {
-      walkUp: twoAnswered, gesture: (page) => clickOn(page, "[data-field]"),
+      walkUp: answerTwoQuestions, gesture: (page) => clickOn(page, "[data-field]"),
     }), DESK));
   }, 120000);
 
   it("Keep this answer draws its card with a beat", async () => {
     expectTheBeatHeld(await withSite((site) => pressedAroundTheBeat(site, {
       walkUp: async (page) => {
-        await twoAnswered(page);
+        await answerTwoQuestions(page);
         await clickOn(page, "[data-field]");
         await page.waitUntilAtRest();
       },
@@ -323,7 +324,7 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       await page.goto(site.url("/"));
       const resumed = await where(page);
       await clickOn(page, "#restart");
-      const drawn = await drawnAfter(page, resumed.question);
+      const drawn = await waitUntilAnotherQuestionDrawn(page, resumed.question);
       await clickOn(page, FIRST_OPTION);
       await page.waitUntilAtRest();
       return { drawn, after: await where(page), problems: page.problems() };
@@ -335,7 +336,7 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
 
   it("the browser's Back draws its card with a beat", async () => {
     expectTheBeatHeld(await withSite((site) => pressedAroundTheBeat(site, {
-      walkUp: twoAnswered, gesture: (page) => page.back(),
+      walkUp: answerTwoQuestions, gesture: (page) => page.back(),
     }), DESK));
   }, 120000);
 
