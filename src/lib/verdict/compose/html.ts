@@ -53,9 +53,7 @@ function foldHtml(fold: Fold): string {
 
 /**
  * The job-search sentence under the steps, for the reader it is true of
- * (s23, F1a): an explorer with an open job-search permit above. It reached
- * an offer-holder for as long as it was keyed on the card alone (v1.1 gate
- * critique, F1).
+ * (s23, F1a): an explorer with an open job-search permit above.
  */
 export function seekHintHtml(ds: Dataset, results: RouteResult[], answers: Profile): string {
   if (!isExploring(ds, answers)) return "";

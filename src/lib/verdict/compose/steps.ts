@@ -91,7 +91,9 @@ const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
  *
  * Only what the reader can do is a step: a row whose answer the dataset marks
  * arranged — a transfer, a hosting agreement, which the employer or the host
- * decides — is left out, and said apart (`arrangedLineIn`; #175).
+ * decides — is left out, and said apart: counted by
+ * `countRoutesOpenedByArrangedAnswers`, whose words `composeArrangedLine`
+ * makes (#175).
  *
  * Order: a step within the reader's own situation — recognition, language,
  * experience, funds: the fields the dataset marks `improvable` — before a
