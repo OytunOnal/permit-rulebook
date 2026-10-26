@@ -1,4 +1,4 @@
-// @level presentation
+// @level application
 import {
   SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, routesAnOfferFrees,
   type Dataset, type FieldOption, type Profile, type RoutesFreedByAnOffer, type Unlock,
