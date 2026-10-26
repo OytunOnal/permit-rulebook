@@ -98,6 +98,10 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   fixed version (astro, vitest, fast-uri) lands as one package change and
   the site's green passes as before (#229, the human's word 2026-10-24).
   — `untested`
+- **A28 — a search never needs The Road.** A root `.ignore` naming
+  `docs/spine/road.html` keeps the generated page out of every repo-wide
+  search, and nothing a reviewer or builder looks for lives only there (#260,
+  retro of #183, the human's word 2026-10-26). — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
