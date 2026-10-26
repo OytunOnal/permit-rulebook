@@ -213,6 +213,10 @@ click on the tracker link. Answers never leave the device.
   announces and records one history entry per verdict. Steps are only what
   the reader can do; what a job offer would open and what someone else
   arranges are said beside them, never counted as steps.
+  Inside the verdict, its reckoning is `application` and makes no word, the
+  dataset's included: `in-view.ts` and `steps.ts` say which results are in
+  view, which steps there are and what each arranged answer or a job offer
+  would open, and the presentation files around them name it (#183).
   Every word a screen prints lives in `src/lib/copy/`, one file per screen or
   part, read by name. Its first paint is one module, `src/lib/first-paint.ts` (#66).
   An inline head script reads the record, the link and the width before
