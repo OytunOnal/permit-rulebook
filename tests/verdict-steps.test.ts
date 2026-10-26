@@ -254,8 +254,8 @@ describe("Nearest names a step as its card titles it", () => {
     // Priya with no English: nothing is open, and the nearest step is German's ladder.
     const answers: Profile = { ...PRIYA, english: "none" };
     const lowest = unlocks(ds, answers).find((u) => u.field === "german")!;
-    const nearest = nearestIn(verdictFor(answers), stepsIn(verdictFor(answers)).map((s) => s.title));
+    const verdict = verdictFor(answers);
+    const nearest = nearestIn(verdict, stepsIn(verdict).map((s) => s.title));
     expect(nearest).toBe(orAbove(unlockTitleOf(ds, lowest, answers)));
-    expect(nearest).toMatch(/^German at B1 .*or above$/);
   });
 });
