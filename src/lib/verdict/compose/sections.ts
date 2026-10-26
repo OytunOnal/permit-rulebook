@@ -88,7 +88,7 @@ function composeArrangedLine(counts: ArrangedAnswerCount[], code: string): Arran
 
 /** A field as running text names it: its `subject`. A field with none is
  * refused rather than named by its id. */
-function subjectNamed(ds: Dataset, field: string): string {
+function nameFieldBySubject(ds: Dataset, field: string): string {
   if (ds.fields.find((f) => f.id === field)?.subject === undefined)
     throw new Error(`"${field}" has no subject for the offer line to name it by`);
   return subjectOf(ds, field);
@@ -104,7 +104,7 @@ function composeOfferLine(ds: Dataset, freed: RoutesFreedByAnOffer[], code: stri
   if (!here) return null;
   return {
     offer: phraseOfAnswer(findJobOfferAnswer(ds)), country: phraseOf(code), routes: here.routes.length,
-    fields: here.fieldsLeftOpen.map((f) => subjectNamed(ds, f)),
+    fields: here.fieldsLeftOpen.map((f) => nameFieldBySubject(ds, f)),
   };
 }
 
