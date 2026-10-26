@@ -73,7 +73,7 @@ export function verdictOf(dataset: Dataset, answers: Profile, interview: Intervi
   // arranged answers' rows and what an offer would free, said apart (#175).
   const rows = unlocks(dataset, answers);
   const compared = {
-    inView, whole, zeroOpen, steps: arrangeSteps(dataset, rows, answers), arranged: arrangedRowsOf(rows),
+    inView, whole, zeroOpen, steps: arrangeSteps(dataset, rows), arranged: arrangedRowsOf(rows),
     freed: routesAnOfferFreesFor(dataset, answers),
   };
   const notices = noticesAbove(screen, inView);
