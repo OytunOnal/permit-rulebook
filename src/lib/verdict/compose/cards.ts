@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  liveUnknowns, shortLabelOf, unlockMeansOf, unlockProfile, type Profile, type RouteResult,
+  liveUnknowns, shortLabelOf, unlockMeansOf, unlockProfile, unlockTitleOf, type Profile, type RouteResult,
 } from "permit-rulebook-data";
 import {
   carveOutHtml, caveatHtml, learnBoxHtml, moneyShortfallOf, pointsLineHtml, precondHtml, provenanceHtml, railHtml,
@@ -8,7 +8,7 @@ import {
 } from "./card-blocks.js";
 import {
   CAME_FROM_LINE, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET,
-  WOULD_COME_WITHIN_REACH, pointsMore, shortByPoints, withStepHtml,
+  WOULD_COME_WITHIN_REACH, orAbove, pointsMore, shortByPoints, withStepHtml,
 } from "../../copy/verdict.js";
 import { countryOf } from "../../countries.js";
 import { type Glossary, glossSection, glossed } from "../../gloss.js";
@@ -161,13 +161,20 @@ function unlockedRouteHtml(screen: VerdictScreen, r: RouteResult, taken: Profile
   return `<li>${esc(routeName(screen, r))} — ${how}</li>`;
 }
 
+/** A step's title, as its card, the steps group and the headline's Nearest
+ * say it: the row's own, "… or above" where higher rungs folded into it. */
+export function composeStepTitle(screen: VerdictScreen, step: Step): string {
+  const title = unlockTitleOf(screen.ds, step.unlock, screen.answers);
+  return step.folded.length ? orAbove(title) : title;
+}
+
 /** A step, and the routes it opens on this section. */
 export function unlockCardHtml(screen: VerdictScreen, step: Step, routes: RouteResult[]): string {
   const means = unlockMeansOf(screen.ds, step.unlock, screen.answers);
   const taken = unlockProfile(step.unlock, screen.answers);
   return `
         <article class="unlock">
-          <h3>${withStepHtml(esc(step.title))}</h3>
+          <h3>${withStepHtml(esc(composeStepTitle(screen, step)))}</h3>
           ${means ? `<p class="unlock-means">${esc(means)}</p>` : ""}
           <ul>${routes.map((r) => unlockedRouteHtml(screen, r, taken)).join("")}
           </ul>

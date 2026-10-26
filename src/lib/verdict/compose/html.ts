@@ -1,7 +1,7 @@
 // @level presentation
-import { joinOr } from "permit-rulebook-data";
+import { joinOr, type Dataset, type Profile, type RouteResult } from "permit-rulebook-data";
 import {
-  CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING, SUMMARY_LABEL,
+  CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, SEEK_HINT, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING, SUMMARY_LABEL,
   UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, arrangedLine, notOpenToPassportCount, notYetCount,
   notYetWithUnknowns, offerLine, openCount, resultFeedbackLine, routesInCountryWhereYouToldUs,
   routesInCountryYouAreNotLookingAt, routesNeed, routesNeedSeeStepsAbove, unlockingSteps, unsettledCount,
@@ -11,6 +11,7 @@ import { FEEDBACK } from "../../copy/frame.js";
 import { FEEDBACK_PATH } from "../../identity.js";
 import { esc, escAttr } from "../../reason.js";
 import { url } from "../../site.js";
+import { isExploring } from "./steps.js";
 import type { CountrySection, Fold, RouteCard, Strip, Tally, VerdictGroup } from "./types.js";
 
 /** A group's heading words and the class its colour is read from. */
@@ -48,6 +49,16 @@ function foldHtml(fold: Fold): string {
             <summary>${esc(summary)}</summary>
             <div class="hold-group-body">${cardsHtml(fold.cards)}</div>
           </details>`;
+}
+
+/**
+ * The job-search sentence under the steps, for the reader it is true of
+ * (s23, F1a): an explorer with an open job-search permit above.
+ */
+export function seekHintHtml(ds: Dataset, results: RouteResult[], answers: Profile): string {
+  if (!isExploring(ds, answers)) return "";
+  if (!results.some((r) => r.route.kind === "seek" && r.status !== "hold")) return "";
+  return `<p class="unlock-hint">${esc(SEEK_HINT)}</p>`;
 }
 
 /** One group's markup; `stepsHeading` is the steps group's heading, which

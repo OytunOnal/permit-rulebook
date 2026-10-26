@@ -4,7 +4,7 @@ import {
   NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, stepsWouldChangeHeadline, unsettledHeadline,
 } from "../../copy/verdict.js";
 import { moneyShortfallOf } from "./card-blocks.js";
-import type { VerdictScreen } from "./cards.js";
+import { composeStepTitle, type VerdictScreen } from "./cards.js";
 import { comparedMastheadOf, type Explore, type Headline } from "./masthead.js";
 import type { Compared } from "./in-view.js";
 import { nearestStep } from "./steps.js";
@@ -34,11 +34,11 @@ function nearNote(screen: VerdictScreen, near: RouteResult[]): string {
  * to do next is part of the one line (review J2), pointing at country
  * sections only where there are some (F7).
  */
-function zeroOpenHeadline(c: Compared): Headline {
+function zeroOpenHeadline(screen: VerdictScreen, c: Compared): Headline {
   const unsettled = c.whole.unsettled.length;
   if (unsettled) return { headline: unsettledHeadline(unsettled) };
   const nearest = nearestStep(c.steps);
-  if (nearest) return { headline: stepsWouldChangeHeadline(c.steps.length), nearest: nearest.title };
+  if (nearest) return { headline: stepsWouldChangeHeadline(c.steps.length), nearest: composeStepTitle(screen, nearest) };
   const explore: Explore = c.inView.visible.length === 1 ? "one-country" : "several-countries";
   return { headline: NOTHING_OPEN_HEADLINE, explore };
 }
@@ -62,7 +62,7 @@ function openHeadline(screen: VerdictScreen, c: Compared): Headline {
 function comparedHeadline(screen: VerdictScreen, c: Compared): Headline {
   const unscored = c.zeroOpen ? unscoredVerdict(screen.ds, screen.answers) : null;
   if (unscored) return { headline: unscored.headline, unscored };
-  if (c.zeroOpen) return zeroOpenHeadline(c);
+  if (c.zeroOpen) return zeroOpenHeadline(screen, c);
   return openHeadline(screen, c);
 }
 

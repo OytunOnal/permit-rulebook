@@ -1,10 +1,18 @@
 // @level presentation
-import { SITUATION_FIELD, type Country, type RouteResult } from "permit-rulebook-data";
+import {
+  SITUATION_FIELD, phraseOf, subjectOf, type Country, type Dataset, type RouteResult, type RoutesFreedByAnOffer,
+} from "permit-rulebook-data";
+import { phraseOfAnswer } from "./answer-phrase.js";
 import { closedRowHtml } from "./card-blocks.js";
-import { fullCardHtml, hasLiveUnknown, unlockCardHtml, type CardLook, type VerdictScreen } from "./cards.js";
+import {
+  composeStepTitle, fullCardHtml, hasLiveUnknown, unlockCardHtml, type CardLook, type VerdictScreen,
+} from "./cards.js";
+import { seekHintHtml } from "./html.js";
 import { notYetGroupOf } from "./not-yet.js";
 import { groupedRoutesOf, type Compared, type GroupedRoutes } from "./in-view.js";
-import { arrangedLineIn, offerLineIn, seekHintHtml, type Step } from "./steps.js";
+import {
+  countRoutesOpenedByArrangedAnswers, findJobOfferAnswer, type ArrangedAnswerCount, type Step,
+} from "./steps.js";
 import type {
   ArrangedLine, CountrySection, OfferLine, RouteCard, Strip, VerdictGroup, VerdictLayout,
 } from "./types.js";
@@ -39,7 +47,8 @@ const routeGroup = (kind: "open" | "unsettled" | "within-reach" | "closed", card
  * its heading, wherever either is there (#175). */
 function stepsGroup(screen: VerdictScreen, s: Section): VerdictGroup | null {
   if (!s.steps.length && !s.offer) return null;
-  const steps = s.steps.map(({ step, routes }) => ({ title: step.title, html: unlockCardHtml(screen, step, routes) }));
+  const steps = s.steps.map(({ step, routes }) =>
+    ({ title: composeStepTitle(screen, step), html: unlockCardHtml(screen, step, routes) }));
   // The job-search sentence, to the reader it is true of — one with no
   // offer yet — and only under steps (s23, F1a).
   return { kind: "steps", offer: s.offer, steps, hint: seekHintHtml(screen.ds, s.results, screen.answers) };
@@ -70,9 +79,40 @@ function groupsOf(screen: VerdictScreen, s: Section): VerdictGroup[] {
   return groups.filter((g): g is VerdictGroup => g !== null);
 }
 
+/** One country's arranged line, in the dataset's words, or null where no
+ * arranged answer opens a route there. */
+function composeArrangedLine(counts: ArrangedAnswerCount[], code: string): ArrangedLine | null {
+  if (!counts.length) return null;
+  return { country: phraseOf(code), answers: counts.map((c) => ({ answer: phraseOfAnswer(c.answer), routes: c.routes })) };
+}
+
+/** A field as running text names it: its `subject`. A field with none is
+ * refused rather than named by its id. */
+function nameFieldBySubject(ds: Dataset, field: string): string {
+  if (ds.fields.find((f) => f.id === field)?.subject === undefined)
+    throw new Error(`"${field}" has no subject for the offer line to name it by`);
+  return subjectOf(ds, field);
+}
+
+/**
+ * One country's offer line, or null where an offer frees nothing there: the
+ * job offer by its phrase, the country by its in-sentence phrase, and the
+ * questions the freed routes would ask next by their subjects.
+ */
+function composeOfferLine(ds: Dataset, freed: RoutesFreedByAnOffer[], code: string): OfferLine | null {
+  const here = freed.find((f) => f.country === code);
+  if (!here) return null;
+  return {
+    offer: phraseOfAnswer(findJobOfferAnswer(ds)), country: phraseOf(code), routes: here.routes.length,
+    fields: here.fieldsLeftOpen.map((f) => nameFieldBySubject(ds, f)),
+  };
+}
+
 /** One country's offer line and arranged line. */
-const linesIn = (screen: VerdictScreen, c: Compared, code: string): Pick<Section, "offer" | "arranged"> =>
-  ({ offer: offerLineIn(screen.ds, c.freed, code), arranged: arrangedLineIn(c.arranged, code) });
+const linesIn = (screen: VerdictScreen, c: Compared, code: string): Pick<Section, "offer" | "arranged"> => ({
+  offer: composeOfferLine(screen.ds, c.freed, code),
+  arranged: composeArrangedLine(countRoutesOpenedByArrangedAnswers(c.arranged, code), code),
+});
 
 /** Counted the way the rows read: an unknown on a hard-failed route is moot,
  * and no learn box offers to resolve it (critique #4). */

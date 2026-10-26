@@ -208,11 +208,11 @@
   "src/lib/verdict/compose/cards.ts": "presentation",
   "src/lib/verdict/compose/headline.ts": "presentation",
   "src/lib/verdict/compose/html.ts": "presentation",
-  "src/lib/verdict/compose/in-view.ts": "presentation",
+  "src/lib/verdict/compose/in-view.ts": "application",
   "src/lib/verdict/compose/masthead.ts": "presentation",
   "src/lib/verdict/compose/not-yet.ts": "presentation",
   "src/lib/verdict/compose/sections.ts": "presentation",
-  "src/lib/verdict/compose/steps.ts": "presentation",
+  "src/lib/verdict/compose/steps.ts": "application",
   "src/lib/verdict/compose/types.ts": "presentation",
   "src/lib/verdict/compose/unscored.ts": "presentation",
   "src/lib/verdict/index.ts": "presentation",
@@ -1479,7 +1479,7 @@
   {
    "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/verdict/compose/cards.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
@@ -1529,6 +1529,11 @@
   {
    "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/verdict/compose/steps.ts",
    "kind": "dependency"
   },
   {
@@ -1588,12 +1593,22 @@
   },
   {
    "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/answer-phrase.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
    "to": "src/lib/verdict/compose/card-blocks.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/sections.ts",
    "to": "src/lib/verdict/compose/cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/sections.ts",
+   "to": "src/lib/verdict/compose/html.ts",
    "kind": "dependency"
   },
   {
@@ -1620,26 +1635,6 @@
    "from": "src/lib/verdict/compose/sections.ts",
    "to": "src/lib/verdict/compose/unscored.ts",
    "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/steps.ts",
-   "to": "src/lib/copy/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/steps.ts",
-   "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/steps.ts",
-   "to": "src/lib/verdict/compose/answer-phrase.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/steps.ts",
-   "to": "src/lib/verdict/compose/types.ts",
-   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/types.ts",
@@ -8180,5 +8175,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "373be40039527534e91a0968470f0ecdca913a49e3e4ad08dc09d4622bfb4b40"
+ "digest": "71bc2b6ea98e42760ba8b89adf1e5427f85d2511726bb77c312268cfb619dc6a"
 }

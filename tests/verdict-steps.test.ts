@@ -6,7 +6,7 @@ import {
 } from "permit-rulebook-data";
 import {
   EXPLORE_ONE_COUNTRY, NOTHING_OPEN_HEADLINE, STATUS_LABEL, STEPS_HEADING, WOULD_BE_MET, arrangedLine, nearestLine,
-  offerLine, stepsWouldChangeHeadline,
+  offerLine, orAbove, stepsWouldChangeHeadline,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
 import { verdictHtml, type CountrySection, type Verdict, type VerdictGroup } from "../src/lib/verdict/index.js";
@@ -246,5 +246,16 @@ describe("#175 — the not-yet fold points up only at something above it", () =>
         seen.add(above);
       }
     expect([...seen].sort(), "the profiles no longer draw a fold both with and without something above").toEqual([false, true]);
+  });
+});
+
+describe("Nearest names a step as its card titles it", () => {
+  it("a folded ladder, by its lowest rung, '… or above'", () => {
+    // Priya with no English: nothing is open, and the nearest step is German's ladder.
+    const answers: Profile = { ...PRIYA, english: "none" };
+    const lowest = unlocks(ds, answers).find((u) => u.field === "german")!;
+    const verdict = verdictFor(answers);
+    const nearest = nearestIn(verdict, stepsIn(verdict).map((s) => s.title));
+    expect(nearest).toBe(orAbove(unlockTitleOf(ds, lowest, answers)));
   });
 });
