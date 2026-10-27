@@ -124,6 +124,15 @@ const AT_REST = `new Promise((resolve) => {
 const isNewDocumentDrawn = (left) => `${DOCUMENT_SHOWN} !== ${JSON.stringify(left)}
   && document.readyState !== "loading" && !document.querySelector(".stand-in")`;
 
+/**
+ * Whether the document `landed` has reported its first input, or the tab
+ * stands on another. Chrome hands a page its layout shifts as soon as a frame
+ * is laid out, but its first input only once the frame is presented, so a read
+ * made before then finds no input and counts the gesture's own shift (#269).
+ */
+const isGestureReportedOn = (landed) => `${DOCUMENT_SHOWN} !== ${JSON.stringify(landed)}
+  || performance.getEntriesByType("first-input").length > 0`;
+
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
@@ -222,6 +231,19 @@ export class TabWaits {
   waitUntilNewDocumentDrawn = async () => {
     if (this.#documentSeen === null) throw new Error("no wait has read the document the gesture left: wait on it before the gesture");
     await this.#waitUntilNewDocumentDrawnAfter(this.#documentSeen);
+  };
+
+  /**
+   * Sends a gesture with `send`, and returns once the document it landed on
+   * has reported its first input, or the tab stands on another document: the
+   * gesture loaded one. After a document's first gesture the report is already
+   * there, so the wait reads once. The document landed on stays the one the
+   * tab was last seen on, for `waitUntilNewDocumentDrawn` after it.
+   */
+  sendGestureUntilReported = async (send) => {
+    const landed = await this.waitUntil(DOCUMENT_SHOWN, "the tab stood on no document");
+    await send();
+    await pollUntil(() => this.#readOnce(isGestureReportedOn(landed)), "the page never reported the gesture's input");
   };
 
   /** From the tab's first navigation on, every document it opens counts its smooth scrolls; asked once. */

@@ -5386,6 +5386,11 @@
     "exported": false
    },
    {
+    "name": "isGestureReportedOn",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "pause",
     "kind": "fn",
     "exported": false
@@ -8189,5 +8194,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "87042251d91af07941201ed5467656d32653d9649211ed32848aad4de9b2a29a"
+ "digest": "8e7aee77dda2d6f9df9526738eab449a44d1b67544d6cb4c96c00bb91cd5dba7"
 }

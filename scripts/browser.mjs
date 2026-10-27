@@ -141,8 +141,8 @@ export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPiece
  *   waitUntilNewDocumentDrawn()  after a gesture that loads a document
  *   evaluate(expr)     run an expression in the page, return its value
  *   emulateMedia(fs)   set a media feature, such as reduced motion
- *   clickAt(x, y)      a mouse click at a point of the viewport
- *   pressEnter()       Enter pressed and released
+ *   clickAt(x, y)      a mouse click at a point of the viewport, once the page reports it
+ *   pressEnter()       Enter pressed and released, once the page reports it
  *   type(text)         text typed into the focused field
  *   back()             the browser's own Back
  *   forward()          the browser's own Forward
@@ -289,7 +289,7 @@ export async function withBrowser(run, {
     const requests = [];
     const sendToTab = (method, params) => send(method, params, sessionId);
     const waits = new TabWaits(sendToTab, () => { problems.length = 0; });
-    const gestures = new TabGestures(sendToTab);
+    const gestures = new TabGestures(sendToTab, waits);
     tabs.set(sessionId, { problems, requests, waits });
     await send("Page.enable", {}, sessionId);
     await send("Runtime.enable", {}, sessionId);

@@ -207,3 +207,48 @@ describe.skipIf(skipped !== null)("the harness's waitUntilAtRest, on a Chrome wi
     expect(seen.failure).toBe("");
   }, 60000);
 });
+
+/** How many first-input entries the page's own timeline holds: one once Chrome has reported a gesture to it. */
+const FIRST_INPUTS_REPORTED = 'performance.getEntriesByType("first-input").length';
+
+/** A link over the whole viewport, so a click anywhere loads `/data/`. */
+const LINK_OVER_THE_PAGE = `(() => {
+  const a = document.createElement("a");
+  a.href = "/data/";
+  a.style.cssText = "position:fixed;inset:0;display:block;z-index:9";
+  document.body.append(a);
+  return "placed";
+})()`;
+
+/** What each of five documents in one tab has reported right after `gesture` returned on it. */
+const reportedAfterEach = (gesture: (page: BrowserPage) => Promise<void>) => onSite(async (page, url) => {
+  const counts: unknown[] = [];
+  for (let n = 1; n <= 5; n++) {
+    await page.goto(url(`/404.html?document=${n}`));
+    await gesture(page);
+    counts.push(await page.evaluate(FIRST_INPUTS_REPORTED));
+  }
+  return counts;
+});
+
+describe.skipIf(skipped !== null)("the harness's gestures, waited on until the page reports them (#269)", () => {
+  it("clickAt, on each of five documents in one tab, returns only once that document has reported its first input", async () => {
+    const reported = await reportedAfterEach((page) => page.clickAt(100, 100));
+    expect(reported, "clickAt returned before the page reported the click").toEqual([1, 1, 1, 1, 1]);
+  }, 60000);
+
+  it("pressEnter, on each of five documents in one tab, returns only once that document has reported its first input", async () => {
+    const reported = await reportedAfterEach((page) => page.pressEnter());
+    expect(reported, "pressEnter returned before the page reported the key").toEqual([1, 1, 1, 1, 1]);
+  }, 60000);
+
+  it("a clickAt that loads a document returns once the tab stands on the new one", async () => {
+    const path = await onSite(async (page, url) => {
+      await page.goto(url("/404.html"));
+      await page.evaluate(LINK_OVER_THE_PAGE);
+      await page.clickAt(100, 100);
+      return page.evaluate("location.pathname");
+    });
+    expect(path, "clickAt returned on the document the click left").toBe("/data/");
+  }, 60000);
+});
