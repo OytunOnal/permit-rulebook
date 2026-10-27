@@ -231,7 +231,7 @@ const reportedAfterEach = (gesture: (page: BrowserPage) => Promise<void>) => onS
   return counts;
 });
 
-describe.skipIf(skipped !== null)("the harness's gestures, waited on until the page reports them (#269)", () => {
+describe.skipIf(skipped !== null)("the harness's gestures, waited on until the page reports them", () => {
   it("clickAt, on each of five documents in one tab, returns only once that document has reported its first input", async () => {
     const reported = await reportedAfterEach((page) => page.clickAt(100, 100));
     expect(reported, "clickAt returned before the page reported the click").toEqual([1, 1, 1, 1, 1]);
@@ -250,5 +250,17 @@ describe.skipIf(skipped !== null)("the harness's gestures, waited on until the p
       return page.evaluate("location.pathname");
     });
     expect(path, "clickAt returned on the document the click left").toBe("/data/");
+  }, 60000);
+
+  it("waitUntilNewDocumentDrawn after a clickAt that loads a document returns on the new one", async () => {
+    const seen = await onSite(async (page, url) => {
+      await page.goto(url("/404.html"));
+      await page.evaluate(LINK_OVER_THE_PAGE);
+      await page.clickAt(100, 100);
+      const failure = await page.waitUntilNewDocumentDrawn().then(() => "", (e: Error) => e.message);
+      return { failure, path: await page.evaluate("location.pathname") };
+    });
+    expect(seen.failure, "waitUntilNewDocumentDrawn waited for a document other than the one the click loaded").toBe("");
+    expect(seen.path).toBe("/data/");
   }, 60000);
 });

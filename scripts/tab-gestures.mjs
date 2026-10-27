@@ -19,15 +19,26 @@ export class TabGestures {
   }
 
   /** A mouse click at a point of the viewport. */
-  clickAt = (x, y) => this.#waits.sendGestureUntilReported(async () => {
+  clickAt = (x, y) => this.#sendAndWaitUntilReported(async () => {
     for (const type of ["mousePressed", "mouseReleased"])
       await this.#sendToTab("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 });
   });
 
   /** Enter pressed and released, as a keyboard does: on a focused button it is a click (#86). */
-  pressEnter = () => this.#waits.sendGestureUntilReported(async () => {
+  pressEnter = () => this.#sendAndWaitUntilReported(async () => {
     const enter = { key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 };
     await this.#sendToTab("Input.dispatchKeyEvent", { type: "keyDown", text: "\r", ...enter });
     await this.#sendToTab("Input.dispatchKeyEvent", { type: "keyUp", ...enter });
   });
+
+  /**
+   * Reads the document the gesture leaves, sends the gesture with `send`, and
+   * waits until that document has reported its first input, or the tab stands
+   * on another: the gesture loaded one.
+   */
+  async #sendAndWaitUntilReported(send) {
+    const left = await this.#waits.readDocumentShown();
+    await send();
+    await this.#waits.waitUntilFirstInputReportedOrLeft(left);
+  }
 }

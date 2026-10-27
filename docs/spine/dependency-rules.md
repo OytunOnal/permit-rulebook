@@ -42,3 +42,4 @@
 
 ## Relations
 <!-- association, aggregation or composition, where the code cannot show them -->
+- association: `scripts/tab-gestures.mjs` → `scripts/tab-waits.mjs`

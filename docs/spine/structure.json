@@ -5386,7 +5386,7 @@
     "exported": false
    },
    {
-    "name": "isGestureReportedOn",
+    "name": "isFirstInputReportedOrLeft",
     "kind": "fn",
     "exported": false
    },
@@ -8194,5 +8194,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8e7aee77dda2d6f9df9526738eab449a44d1b67544d6cb4c96c00bb91cd5dba7"
+ "digest": "c0a22898cef2c377aeb86091dd9e22f155c725b0554bcc9f54eb77d5431336dd"
 }

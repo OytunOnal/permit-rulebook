@@ -6,7 +6,8 @@ const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
 /**
  * The observer goes in once the page is at rest and reads `buffered: true`, so
  * it is handed every shift since the navigation, and `takeRecords()` hands
- * them over in the same task: the read needs no beat after it.
+ * them over in the same task: the read needs no beat after it, and leaves no
+ * observer behind, so a wait can ask it on every poll.
  *
  * A shift Chrome marks `hadRecentInput` is left out, as the field leaves it,
  * only once an input has reached the page: the page's first input, as its own
@@ -36,7 +37,9 @@ export const GATHER_SHIFTS = `(() => {
   const recordsOf = (type) => {
     const observer = new PerformanceObserver(() => {});
     observer.observe({ type, buffered: true });
-    return observer.takeRecords();
+    const records = observer.takeRecords();
+    observer.disconnect();
+    return records;
   };
   const [firstInput] = recordsOf("first-input");
   const cameAfterAnInput = (e) => firstInput !== undefined && e.startTime >= firstInput.startTime;
@@ -86,12 +89,11 @@ export async function shiftScoreSince(page: Pick<BrowserPage, "evaluate">, since
 }
 
 /**
- * A page that moves twice: in its second frame, with nothing done to it, and
- * in answer to a tap. It moves early once Chrome has reported its first paint
- * to it, so a frame was presented before the move and the move is a shift: a
- * move made before the first paint is no shift at all (#269). It falls in the
- * half second after Chrome sets the phone's viewport, so Chrome marks it as
- * input.
+ * A page that moves twice: once Chrome has reported its first paint to it,
+ * with nothing done to it, and in answer to a tap. A frame was presented
+ * before that first move, so the move is a shift: a move made before the first
+ * paint is no shift at all (#269). It falls in the half second after Chrome
+ * sets the phone's viewport, so Chrome marks it as input.
  */
 const MOVES_EARLY_AND_ON_A_TAP = `<!doctype html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1"><script>
@@ -110,9 +112,8 @@ addEventListener("click", () => { moveDown("on the tap"); window.__tapped = true
 
 /** Whether Chrome has reported a layout shift to the page. */
 const A_SHIFT_REPORTED = `(() => {
-  const observer = new PerformanceObserver(() => {});
-  observer.observe({ type: "layout-shift", buffered: true });
-  return observer.takeRecords().length > 0;
+  ${GATHER_SHIFTS};
+  return window.__shiftsReported.length > 0;
 })()`;
 
 /** Every shift Chrome reported, and the values of those the measure counts. */
