@@ -4111,7 +4111,7 @@
   },
   {
    "from": "tests/served-folder.ts",
-   "to": "scripts/static-server.mjs",
+   "to": "scripts/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -8242,5 +8242,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "fd5eac8452c924df0de7020e9c87124469af2d7e160b5175c6ebf66b38ae4218"
+ "digest": "c676cb3140b9415744d023c8888ebf310cbf9a751430bc1c31b1407fb3ed90a2"
 }

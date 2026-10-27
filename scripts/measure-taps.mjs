@@ -18,7 +18,8 @@
  * cleanup at the end of the happy path only: a throw halfway through left a
  * listener and a Chrome behind, and the next run then found a port held by a
  * process nobody owned (coordinator, 2026-09-07). Both now come from
- * `browser.mjs`, which closes what it opens however the process leaves.
+ * `browser.mjs`, and `owned.mjs` closes what they open however the process
+ * leaves.
  *
  * What it cannot see, and never could: whether the page is alive at all. It
  * counts elements, so a dead interview measures as "0 controls under the

@@ -8,7 +8,7 @@ import { owned } from "./owned.mjs";
 import { TabGestures } from "./tab-gestures.mjs";
 import { TabWaits } from "./tab-waits.mjs";
 
-// The built site's server, from here as before: every walk takes both (#245).
+// The built site's server: every walk takes both it and the browser from this module (#245).
 export { serve } from "./static-server.mjs";
 
 /**

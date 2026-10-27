@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { ask, OUTSIDE, servedFolder } from "./served-folder.js";
 
 /**
- * The test server (`scripts/static-server.mjs`) serves only what is inside
- * the folder it was given (#245). A page under test asks it for paths, and a
- * path is outside text: an escaped `../` or `..\` once read files of the
- * checkout, and a broken escape once killed the whole run.
+ * The test server (`serve`, from `scripts/browser.mjs`) serves only what is
+ * inside the folder it was given (#245). A page under test asks it for paths,
+ * and a path is outside text: no escaped `../` or `..\` in it may reach a file
+ * beside the folder.
  */
 
 const server = servedFolder();
