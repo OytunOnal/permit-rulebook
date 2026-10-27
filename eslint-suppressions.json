@@ -4,9 +4,6 @@
       "count": 3
     },
     "spine/constant-reason": {
-      "count": 2
-    },
-    "spine/named-condition": {
       "count": 1
     }
   },
@@ -53,6 +50,14 @@
   "scripts/render-assets.mjs": {
     "spine/constant-reason": {
       "count": 3
+    }
+  },
+  "scripts/static-server.mjs": {
+    "spine/constant-reason": {
+      "count": 1
+    },
+    "spine/named-condition": {
+      "count": 1
     }
   },
   "src/lib/copy/country-page.ts": {
