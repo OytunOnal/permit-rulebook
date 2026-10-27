@@ -1,14 +1,15 @@
 // @level infrastructure
 import { spawn } from "node:child_process";
-import { existsSync, readdirSync, rmSync, statSync } from "node:fs";
-import { createServer } from "node:http";
+import { readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { extname, join } from "node:path";
+import { join } from "node:path";
 import { chromePath } from "./chrome.mjs";
-import { sendBody } from "./html-in-pieces.mjs";
-import { at, siteBase } from "./site-base.mjs";
+import { owned } from "./owned.mjs";
 import { TabGestures } from "./tab-gestures.mjs";
 import { TabWaits } from "./tab-waits.mjs";
+
+// The built site's server, from here as before: every walk takes both (#245).
+export { serve } from "./static-server.mjs";
 
 /**
  * A real browser over the built site, shared by everything that needs one.
@@ -26,17 +27,6 @@ import { TabWaits } from "./tab-waits.mjs";
  * nothing in the suite or the harness noticed.
  */
 
-/**
- * Everything this process has opened that must not outlive it.
- *
- * A `finally` covers a throw. It does not cover Ctrl-C, and it does not cover a
- * crash — and a leaked listener is not a tidiness problem here: the next run
- * finds a port held by a process nobody owns, and a harness that trusts what is
- * listening walks it (coordinator, 2026-09-07). Everything registers, and the
- * process closes the lot on its way out however it leaves.
- */
-const openThings = new Set();
-
 /** Distinguishes concurrent browsers within one process. */
 let nextProfile = 0;
 const PROFILE_PREFIX = "permit-rulebook-browser-";
@@ -52,81 +42,6 @@ function sweepStaleProfiles() {
     try { process.kill(pid, 0); continue; } catch { /* gone: sweep it */ }
     try { rmSync(join(tmpdir(), name), { recursive: true, force: true }); } catch { /* in use */ }
   }
-}
-
-function closeEverything() {
-  for (const close of [...openThings]) {
-    openThings.delete(close);
-    try { close(); } catch { /* going away anyway */ }
-  }
-}
-
-let hooked = false;
-function hookExit() {
-  if (hooked) return;
-  hooked = true;
-  process.on("exit", closeEverything);
-  for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"])
-    process.on(signal, () => { closeEverything(); process.exit(130); });
-  process.on("uncaughtException", (e) => { closeEverything(); throw e; });
-}
-
-/** Register a thing to be closed, and hand back a close that only runs once. */
-export function owned(close) {
-  hookExit();
-  let done = false;
-  const once = () => {
-    if (done) return;
-    done = true;
-    openThings.delete(once);
-    try { close(); } catch { /* already gone */ }
-  };
-  openThings.add(once);
-  return once;
-}
-
-const TYPES = {
-  ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css",
-  ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png",
-  ".ico": "image/x-icon", ".map": "application/json", ".txt": "text/plain",
-};
-
-/**
- * A static server over a directory, on a port the OS picks, mounted where the
- * build believes it lives.
- *
- * A site built for a subpath asks for its own assets under that subpath. Served
- * at the root it gets 404 for every stylesheet and script, and every measured
- * page comes out unstyled — which is how CI reported the identity pair as
- * missing and the interview as empty (2026-09-08).
- *
- * `delayJsMs` holds every `.js` response back by that many milliseconds while
- * the HTML goes out at once, and `htmlInPieces` sends the HTML in two (its
- * module says how): a phone's network, on a loopback that has none. Neither is
- * on by default: only the first-paint measurement asks, because what it
- * measures (the page rearranging itself) is invisible at local speed (s10, #236).
- */
-export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPieces = /** @type {{ before: string, heldMs: number } | null} */ (null) } = {}) {
-  const server = createServer((req, res) => {
-    let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
-    if (base && (path === base || path.startsWith(`${base}/`))) path = path.slice(base.length) || "/";
-    let file = join(dir, path);
-    if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
-    if (!existsSync(file)) { res.writeHead(404); res.end("not found"); return; }
-    const send = () => {
-      res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream" });
-      sendBody(file, res, htmlInPieces);
-    };
-    if (delayJsMs > 0 && extname(file) === ".js") setTimeout(send, delayJsMs); else send();
-  });
-  // Port 0: the OS picks a free one. Never a fixed port — a harness that binds
-  // 4321 fights the developer's own dev server for it.
-  const port = await new Promise((resolve) => {
-    server.listen(0, "127.0.0.1", () => resolve(server.address().port));
-  });
-  const close = owned(() => { server.closeAllConnections?.(); server.close(); });
-  const origin = `http://127.0.0.1:${port}`;
-  return { port, origin, base, url: (path) => at(origin, base, path), close };
 }
 
 /**

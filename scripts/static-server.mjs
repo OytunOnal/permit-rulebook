@@ -1,0 +1,51 @@
+// @level infrastructure
+import { existsSync, statSync } from "node:fs";
+import { createServer } from "node:http";
+import { extname, join } from "node:path";
+import { sendBody } from "./html-in-pieces.mjs";
+import { owned } from "./owned.mjs";
+import { at, siteBase } from "./site-base.mjs";
+
+const TYPES = {
+  ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css",
+  ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png",
+  ".ico": "image/x-icon", ".map": "application/json", ".txt": "text/plain",
+};
+
+/**
+ * A static server over a directory, on a port the OS picks, mounted where the
+ * build believes it lives.
+ *
+ * A site built for a subpath asks for its own assets under that subpath. Served
+ * at the root it gets 404 for every stylesheet and script, and every measured
+ * page comes out unstyled — which is how CI reported the identity pair as
+ * missing and the interview as empty (2026-09-08).
+ *
+ * `delayJsMs` holds every `.js` response back by that many milliseconds while
+ * the HTML goes out at once, and `htmlInPieces` sends the HTML in two (its
+ * module says how): a phone's network, on a loopback that has none. Neither is
+ * on by default: only the first-paint measurement asks, because what it
+ * measures (the page rearranging itself) is invisible at local speed (s10, #236).
+ */
+export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPieces = /** @type {{ before: string, heldMs: number } | null} */ (null) } = {}) {
+  const server = createServer((req, res) => {
+    let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    if (base && (path === base || path.startsWith(`${base}/`))) path = path.slice(base.length) || "/";
+    let file = join(dir, path);
+    if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
+    if (!existsSync(file)) { res.writeHead(404); res.end("not found"); return; }
+    const send = () => {
+      res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream" });
+      sendBody(file, res, htmlInPieces);
+    };
+    if (delayJsMs > 0 && extname(file) === ".js") setTimeout(send, delayJsMs); else send();
+  });
+  // Port 0: the OS picks a free one. Never a fixed port — a harness that binds
+  // 4321 fights the developer's own dev server for it.
+  const port = await new Promise((resolve) => {
+    server.listen(0, "127.0.0.1", () => resolve(server.address().port));
+  });
+  const close = owned(() => { server.closeAllConnections?.(); server.close(); });
+  const origin = `http://127.0.0.1:${port}`;
+  return { port, origin, base, url: (path) => at(origin, base, path), close };
+}
