@@ -161,7 +161,10 @@ click on the tracker link. Answers never leave the device.
   drawn, or a condition, with one 15 s backstop (`scripts/tab-waits.mjs`);
   the lint refuses a sleep in a test. `BROWSER_CPU_SLOWDOWN` slows every tab,
   and `serve` can send a page's HTML in two pieces (`scripts/html-in-pieces.mjs`)
-  to test a paint mid-parse (#230).
+  to test a paint mid-parse (#230). A click or an Enter
+  (`scripts/tab-gestures.mjs`) returns once the page has reported its first
+  input, or another document stands: Chrome reports that input only once its
+  frame is presented, after the shifts the measure reads (#269).
   Each command under `scripts/` is three files, one level each: the job
   (`smoke.mjs`, `infrastructure`) does the work and returns what it found, its
   CLI (`cli-smoke.mjs`, `presentation`) reads the arguments and words the
