@@ -4110,6 +4110,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/served-folder.ts",
+   "to": "scripts/static-server.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/set-aside.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
@@ -4235,8 +4240,13 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/static-server-broken-escape.test.ts",
+   "to": "tests/served-folder.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/static-server.test.ts",
-   "to": "scripts/static-server.mjs",
+   "to": "tests/served-folder.ts",
    "kind": "dependency"
   },
   {
