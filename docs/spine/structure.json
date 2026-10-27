@@ -144,6 +144,7 @@
   "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure",
+  "scripts/tab-gestures.mjs": "infrastructure",
   "scripts/tab-waits.mjs": "infrastructure",
   "spine-lint/lint.mjs": "domain",
   "spine-lint/rules/ceiling-paid-off.mjs": "domain",
@@ -249,6 +250,11 @@
   {
    "from": "scripts/browser.mjs",
    "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser.mjs",
+   "to": "scripts/tab-gestures.mjs",
    "kind": "dependency"
   },
   {
@@ -5341,6 +5347,13 @@
     "exported": true
    }
   ],
+  "scripts/tab-gestures.mjs": [
+   {
+    "name": "TabGestures",
+    "kind": "class",
+    "exported": true
+   }
+  ],
   "scripts/tab-waits.mjs": [
    {
     "name": "WAIT_BACKSTOP",
@@ -8122,6 +8135,7 @@
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
+  "scripts/tab-gestures.mjs",
   "scripts/tab-waits.mjs",
   "spine-lint/lint.mjs",
   "spine-lint/rules/ceiling-paid-off.mjs",
@@ -8175,5 +8189,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "71bc2b6ea98e42760ba8b89adf1e5427f85d2511726bb77c312268cfb619dc6a"
+ "digest": "87042251d91af07941201ed5467656d32653d9649211ed32848aad4de9b2a29a"
 }
