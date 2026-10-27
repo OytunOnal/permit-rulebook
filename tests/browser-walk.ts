@@ -52,7 +52,9 @@ export interface BrowserPage {
   /** After a gesture that loads a document: once a document other than the one left has drawn. */
   waitUntilNewDocumentDrawn(): Promise<void>;
   emulateMedia(features: { name: string; value: string }[]): Promise<void>;
+  /** A click at a point, returned once the page has reported its first input or another document stands. */
   clickAt(x: number, y: number): Promise<void>;
+  /** Enter pressed and released, returned as `clickAt` is. */
   pressEnter(): Promise<void>;
   type(text: string): Promise<void>;
   back(): Promise<void>;

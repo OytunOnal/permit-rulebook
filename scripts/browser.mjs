@@ -7,6 +7,7 @@ import { extname, join } from "node:path";
 import { chromePath } from "./chrome.mjs";
 import { sendBody } from "./html-in-pieces.mjs";
 import { at, siteBase } from "./site-base.mjs";
+import { TabGestures } from "./tab-gestures.mjs";
 import { TabWaits } from "./tab-waits.mjs";
 
 /**
@@ -140,8 +141,8 @@ export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPiece
  *   waitUntilNewDocumentDrawn()  after a gesture that loads a document
  *   evaluate(expr)     run an expression in the page, return its value
  *   emulateMedia(fs)   set a media feature, such as reduced motion
- *   clickAt(x, y)      a mouse click at a point of the viewport
- *   pressEnter()       Enter pressed and released
+ *   clickAt(x, y)      a mouse click at a point of the viewport, once the page reports it
+ *   pressEnter()       Enter pressed and released, once the page reports it
  *   type(text)         text typed into the focused field
  *   back()             the browser's own Back
  *   forward()          the browser's own Forward
@@ -286,7 +287,9 @@ export async function withBrowser(run, {
     const problems = [];
     /** Every request the page made, when the caller asked to watch. */
     const requests = [];
-    const waits = new TabWaits((method, params) => send(method, params, sessionId), () => { problems.length = 0; });
+    const sendToTab = (method, params) => send(method, params, sessionId);
+    const waits = new TabWaits(sendToTab, () => { problems.length = 0; });
+    const gestures = new TabGestures(sendToTab, waits);
     tabs.set(sessionId, { problems, requests, waits });
     await send("Page.enable", {}, sessionId);
     await send("Runtime.enable", {}, sessionId);
@@ -328,22 +331,8 @@ export async function withBrowser(run, {
       async emulateMedia(features) {
         await send("Emulation.setEmulatedMedia", { features }, sessionId);
       },
-      /**
-       * A mouse click at a point of the viewport, as the platform delivers one:
-       * whatever is under the point when it lands takes it, which a script's
-       * `.click()` on a chosen element cannot show (#86).
-       */
-      async clickAt(x, y) {
-        for (const type of ["mousePressed", "mouseReleased"])
-          await send("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 }, sessionId);
-      },
-      /** Enter pressed and released, as a keyboard does: on a focused button it
-       * is a click (#86). */
-      async pressEnter() {
-        const enter = { key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 };
-        await send("Input.dispatchKeyEvent", { type: "keyDown", text: "\r", ...enter }, sessionId);
-        await send("Input.dispatchKeyEvent", { type: "keyUp", ...enter }, sessionId);
-      },
+      clickAt: gestures.clickAt,
+      pressEnter: gestures.pressEnter,
       /** Text typed into the focused field, as a keyboard commits it: the
        * field's own `input` event fires. */
       async type(text) {

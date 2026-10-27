@@ -1,7 +1,4 @@
 {
-  "scripts/browser.mjs": {
-    "lines": 407
-  },
   "src/lib/route-page.ts": {
     "lines": 1071
   },
