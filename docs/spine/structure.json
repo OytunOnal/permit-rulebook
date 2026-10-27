@@ -5383,6 +5383,11 @@
     "exported": false
    },
    {
+    "name": "realPathOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "fileFor",
     "kind": "fn",
     "exported": false
@@ -8247,5 +8252,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "46027a0c9e24693b0493f238809e58da1c5f2e704b86ed7190d7f19f5d6cd526"
+ "digest": "0a3b816325b789cd34ef03eff290edf922345b5481753ca0e52fbc84afb30d2e"
 }

@@ -28,29 +28,28 @@ export const ask = (port: number, path: string): Promise<Answer> => new Promise(
 /** What the file beside the served folder holds, so an answer that carries it is a leak. */
 export const OUTSIDE = "a file next to the served folder";
 
-/** The running case's server: the port it listens on. */
-export interface Served { port: number }
+/** The running case's server: the port it listens on, the folder it serves, and the folder that holds both it and `outside.txt`. */
+export interface Served { port: number; site: string; root: string }
 
 /** Serves a fresh temporary folder before each case and removes it after; what it returns holds the running case's server. */
 export function servedFolder(): Served {
-  const served: Served = { port: 0 };
-  let root = "";
+  const served: Served = { port: 0, site: "", root: "" };
   let server: { port: number; close: () => void };
 
   beforeEach(async () => {
-    root = mkdtempSync(join(tmpdir(), "permit-rulebook-static-server-"));
-    const site = join(root, "site");
-    mkdirSync(site);
-    writeFileSync(join(site, "index.html"), "the site");
-    writeFileSync(join(site, "..notes.txt"), "a name that starts with two dots");
-    writeFileSync(join(root, "outside.txt"), OUTSIDE);
-    server = await serve(site, { base: "" });
+    served.root = mkdtempSync(join(tmpdir(), "permit-rulebook-static-server-"));
+    served.site = join(served.root, "site");
+    mkdirSync(served.site);
+    writeFileSync(join(served.site, "index.html"), "the site");
+    writeFileSync(join(served.site, "..notes.txt"), "a name that starts with two dots");
+    writeFileSync(join(served.root, "outside.txt"), OUTSIDE);
+    server = await serve(served.site, { base: "" });
     served.port = server.port;
   });
 
   afterEach(() => {
     server.close();
-    rmSync(root, { recursive: true, force: true });
+    rmSync(served.root, { recursive: true, force: true });
   });
 
   return served;

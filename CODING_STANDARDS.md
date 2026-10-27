@@ -98,3 +98,6 @@ Spine's preset in `eslint.config.mjs`.
   analytics beacon, and each inline script by its hash.
 - A path built from outside text, such as a request's path, is decoded,
   resolved, and refused unless it stays inside the folder it was built on.
+  The inside check runs on real paths, every link followed: the file's
+  against the folder's, so a link in the folder that leads out of it is
+  refused too.

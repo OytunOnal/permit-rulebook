@@ -1,5 +1,5 @@
 // @level infrastructure
-import { existsSync, statSync } from "node:fs";
+import { existsSync, realpathSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { sendBody } from "./html-in-pieces.mjs";
@@ -19,12 +19,24 @@ function isInside(folder, file) {
   return !leavesIt;
 }
 
-/** The file `path` names in `folder`, its `index.html` for a folder; null when there is none inside it. */
+/** `file`'s real path, every link on the way to it followed; null when there is no such file. */
+function realPathOf(file) {
+  try { return realpathSync(file); } catch { return null; }
+}
+
+/**
+ * The file `path` names in `folder`, its `index.html` for a folder; null when
+ * there is none inside it. Inside means the path as written and the file's real
+ * path both, so a link in the folder that leads out of it reaches nothing.
+ */
 function fileFor(folder, path) {
   const named = join(folder, path);
   if (!isInside(folder, named)) return null;
   const file = existsSync(named) && statSync(named).isDirectory() ? join(named, "index.html") : named;
-  return existsSync(file) ? file : null;
+  const real = realPathOf(file);
+  // A file that is there sits under `folder`, so the folder is there too.
+  const staysInside = real !== null && isInside(realpathSync(folder), real);
+  return staysInside ? file : null;
 }
 
 /** Answers `status` with a word on why, and nothing of any file. */
@@ -49,8 +61,9 @@ function refuse(res, status, why) {
  * measures (the page rearranging itself) is invisible at local speed (s10, #236).
  *
  * It serves only what is inside `dir`. A request's path is outside text: an
- * escaped `../` (`..%2f`, or `..%5c` on Windows) is not found, and a path whose
- * escapes cannot be decoded is a bad request, never a thrown error (#245).
+ * escaped `../` (`..%2f`, or `..%5c` on Windows) is not found, nor is a file
+ * reached through a link or junction in `dir` that leads out of it, and a path
+ * whose escapes cannot be decoded is a bad request, never a thrown error (#245).
  */
 export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPieces = /** @type {{ before: string, heldMs: number } | null} */ (null) } = {}) {
   const folder = resolve(dir);
