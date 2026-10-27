@@ -19,6 +19,14 @@ function isInside(folder, file) {
   return !leavesIt;
 }
 
+/** The file `path` names in `folder`, its `index.html` for a folder; null when there is none inside it. */
+function fileFor(folder, path) {
+  const named = join(folder, path);
+  if (!isInside(folder, named)) return null;
+  const file = existsSync(named) && statSync(named).isDirectory() ? join(named, "index.html") : named;
+  return existsSync(file) ? file : null;
+}
+
 /** Answers `status` with a word on why, and nothing of any file. */
 function refuse(res, status, why) {
   res.writeHead(status);
@@ -50,10 +58,8 @@ export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPiece
     let path = "";
     try { path = decodeURIComponent(new URL(req.url, "http://x").pathname); } catch { refuse(res, 400, "bad request"); return; }
     if (base && (path === base || path.startsWith(`${base}/`))) path = path.slice(base.length) || "/";
-    let file = join(folder, path);
-    if (!isInside(folder, file)) { refuse(res, 404, "not found"); return; }
-    if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
-    if (!existsSync(file)) { refuse(res, 404, "not found"); return; }
+    const file = fileFor(folder, path);
+    if (!file) { refuse(res, 404, "not found"); return; }
     const send = () => {
       res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream" });
       sendBody(file, res, htmlInPieces);
