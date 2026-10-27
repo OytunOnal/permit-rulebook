@@ -1,4 +1,12 @@
-# Visa Navigator — One-pager (2026-09-01)
+# Permit Rulebook
+
+Permit Rulebook tells a knowledge worker from outside the EU which work-permit
+routes in Germany, France, Spain and the Netherlands they qualify for, and what
+they are missing. Every value it checks carries the official sentence it comes
+from and the date it was read, and a daily watch flags a source that changes.
+The data and the code are open; the site is permitrulebook.com.
+
+*One-pager written 2026-09-01 as "Visa Navigator"; renamed Permit Rulebook.*
 
 ## Problem
 
@@ -64,8 +72,8 @@ not selling but citing sources; cross-referral with JobRadar in a later period.
 - **Wave 2:** CA + AU (points systems). **Wave 3:** the rest of Europe
   (community + pipeline). **USA:** a separate decision, a separate route type
   (the lottery breaks determinism).
-- **Structure:** two repos — `visa-rules` (schema+dataset+engine+pipeline;
-  dataset CC-BY-4.0, code MIT, TS+JSON Schema) + `visa-navigator` (Astro
+- **Structure:** two repos — `permit-rulebook-data` (schema+dataset+engine+pipeline;
+  dataset CC-BY-4.0, code MIT, TS+JSON Schema) + `permit-rulebook` (Astro
   static site). LLM only for build-time polish of the question wording; no
   runtime RAG ("ask the route a question" v1.x backlog).
 
