@@ -96,3 +96,5 @@ Spine's preset in `eslint.config.mjs`.
 - A shared device keeps nothing of a reader after Start over.
 - The Content-Security-Policy names every script the page runs: `'self'`, the
   analytics beacon, and each inline script by its hash.
+- A path built from outside text, such as a request's path, is decoded,
+  resolved, and refused unless it stays inside the folder it was built on.

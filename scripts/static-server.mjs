@@ -1,7 +1,7 @@
 // @level infrastructure
 import { existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
-import { extname, join } from "node:path";
+import { extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { sendBody } from "./html-in-pieces.mjs";
 import { owned } from "./owned.mjs";
 import { at, siteBase } from "./site-base.mjs";
@@ -11,6 +11,19 @@ const TYPES = {
   ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png",
   ".ico": "image/x-icon", ".map": "application/json", ".txt": "text/plain",
 };
+
+/** Whether `file` stays inside `folder`: a `..` step out of it, or another drive, leaves it. */
+function isInside(folder, file) {
+  const fromFolder = relative(folder, file);
+  const leavesIt = fromFolder === ".." || fromFolder.startsWith(`..${sep}`) || isAbsolute(fromFolder);
+  return !leavesIt;
+}
+
+/** Answers `status` with a word on why, and nothing of any file. */
+function refuse(res, status, why) {
+  res.writeHead(status);
+  res.end(why);
+}
 
 /**
  * A static server over a directory, on a port the OS picks, mounted where the
@@ -26,14 +39,21 @@ const TYPES = {
  * module says how): a phone's network, on a loopback that has none. Neither is
  * on by default: only the first-paint measurement asks, because what it
  * measures (the page rearranging itself) is invisible at local speed (s10, #236).
+ *
+ * It serves only what is inside `dir`. A request's path is outside text: an
+ * escaped `../` (`..%2f`, or `..%5c` on Windows) is not found, and a path whose
+ * escapes cannot be decoded is a bad request, never a thrown error (#245).
  */
 export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPieces = /** @type {{ before: string, heldMs: number } | null} */ (null) } = {}) {
+  const folder = resolve(dir);
   const server = createServer((req, res) => {
-    let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    let path = "";
+    try { path = decodeURIComponent(new URL(req.url, "http://x").pathname); } catch { refuse(res, 400, "bad request"); return; }
     if (base && (path === base || path.startsWith(`${base}/`))) path = path.slice(base.length) || "/";
-    let file = join(dir, path);
+    let file = join(folder, path);
+    if (!isInside(folder, file)) { refuse(res, 404, "not found"); return; }
     if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
-    if (!existsSync(file)) { res.writeHead(404); res.end("not found"); return; }
+    if (!existsSync(file)) { refuse(res, 404, "not found"); return; }
     const send = () => {
       res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream" });
       sendBody(file, res, htmlInPieces);

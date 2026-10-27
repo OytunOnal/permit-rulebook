@@ -4235,6 +4235,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/static-server.test.ts",
+   "to": "scripts/static-server.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/territories.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
@@ -5360,6 +5365,16 @@
    {
     "name": "TYPES",
     "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "isInside",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "refuse",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -8217,5 +8232,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "413f08cc6c6fda007f230e2bad362ccd24fb48292ee43f10acff5e5b6c36b316"
+ "digest": "fd5eac8452c924df0de7020e9c87124469af2d7e160b5175c6ebf66b38ae4218"
 }
