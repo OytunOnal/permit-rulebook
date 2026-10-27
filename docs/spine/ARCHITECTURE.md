@@ -161,7 +161,11 @@ click on the tracker link. Answers never leave the device.
   drawn, or a condition, with one 15 s backstop (`scripts/tab-waits.mjs`);
   the lint refuses a sleep in a test. `BROWSER_CPU_SLOWDOWN` slows every tab,
   and `serve` can send a page's HTML in two pieces (`scripts/html-in-pieces.mjs`)
-  to test a paint mid-parse (#230). A click or an Enter
+  to test a paint mid-parse (#230). `serve` (`scripts/static-server.mjs`,
+  re-exported by `browser.mjs`) serves only what is inside its folder: an
+  escaped `../` or a link leading out is not found, and a path it cannot
+  decode is a bad request (#245). What a walk opens is closed however the
+  process leaves (`scripts/owned.mjs`). A click or an Enter
   (`scripts/tab-gestures.mjs`) returns once the page has reported its first
   input, or another document stands: Chrome reports that input only once its
   frame is presented, after the shifts the measure reads (#269).
