@@ -21,7 +21,6 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, openAtRest } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
@@ -311,7 +310,7 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
  * The browser: the mark where the reader is standing, the written state where
  * the walk ended, and the Spanish researcher still met.
  */
-const { chromePath, serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { chromePath, walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -338,73 +337,67 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
   });
 
   it("France marks research with the link; Germany, Spain, the Netherlands and all four mark nothing", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const out: Record<string, unknown> = {};
-        for (const destination of ["fr", "de", "es", "nl", "all"]) {
-          await page.goto(server.url("/"));
-          await page.evaluate(seed({ destination }));
-          await openAtRest(page, server.url("/"));
-          out[destination] = {
-            question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
-            marks: JSON.parse(await page.evaluate(MARKS)),
-            problems: page.problems(),
-          };
-        }
-        return out;
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string,
-        { question: string; marks: { under: string; text: string; href: string | null }[]; problems: string[] }>;
-      for (const [destination, s] of Object.entries(seen)) {
-        expect(s.question, destination).toBe("Which best describes your situation?");
-        expect(s.problems, destination).toEqual([]);
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1200 }, mobile: false }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+      const out: Record<string, unknown> = {};
+      for (const destination of ["fr", "de", "es", "nl", "all"]) {
+        await page.goto(addressOf("/"));
+        await page.evaluate(seed({ destination }));
+        await openAtRest(page, addressOf("/"));
+        out[destination] = {
+          question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
+          marks: JSON.parse(await page.evaluate(MARKS)),
+          problems: page.problems(),
+        };
       }
-      expect(seen.fr!.marks).toEqual([{
-        under: "research",
-        text: "Not checked for France yet — Talent — researcher (chercheur) is quoted, not checked: read it here.",
-        href: url("/france/talent-researcher"),
-      }]);
-      for (const destination of ["de", "es", "nl", "all"]) expect(seen[destination]!.marks, destination).toEqual([]);
-    } finally { server.close(); }
+      return out;
+    })).returned as Record<string,
+      { question: string; marks: { under: string; text: string; href: string | null }[]; problems: string[] }>;
+    for (const [destination, s] of Object.entries(seen)) {
+      expect(s.question, destination).toBe("Which best describes your situation?");
+      expect(s.problems, destination).toEqual([]);
+    }
+    expect(seen.fr!.marks).toEqual([{
+      under: "research",
+      text: "Not checked for France yet — Talent — researcher (chercheur) is quoted, not checked: read it here.",
+      href: url("/france/talent-researcher"),
+    }]);
+    for (const destination of ["de", "es", "nl", "all"]) expect(seen[destination]!.marks, destination).toEqual([]);
   }, 120_000);
 
   it("France → research reads the written state; Spain → research is met, as before", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        // Each screen is read once the page is at rest.
-        const read = async (answers: Profile) => ({
-          status: await page.evaluate('document.getElementById("cstatus").textContent'),
-          painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
-          state: await page.evaluate('document.getElementById("app").dataset.state'),
-          problems: page.problems(),
-        });
-        // France, by the buttons: the destination on the record, then the marked answer tapped.
-        await page.goto(server.url("/"));
-        await page.evaluate(seed({ destination: "fr" }));
-        await page.goto(server.url("/"));
-        await answerWith(page, 'document.querySelector(".opt[data-value=research]").click()');
-        const france = await read(FRANCE_RESEARCH);
-        // Spain, the same two answers — and the passport, which is Spain's third
-        // tap (CRITERIA MET in three).
-        await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
-        await openAtRest(page, server.url("/"));
-        const spain = await read(SPAIN_RESEARCH);
-        return { france, spain };
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, {
-        status: string; painted: typeof PAINTED_AS_COMPOSED; state: string; problems: string[];
-      }>;
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1200 }, mobile: false }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+      // Each screen is read once the page is at rest.
+      const read = async (answers: Profile) => ({
+        status: await page.evaluate('document.getElementById("cstatus").textContent'),
+        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
+        state: await page.evaluate('document.getElementById("app").dataset.state'),
+        problems: page.problems(),
+      });
+      // France, by the buttons: the destination on the record, then the marked answer tapped.
+      await page.goto(addressOf("/"));
+      await page.evaluate(seed({ destination: "fr" }));
+      await page.goto(addressOf("/"));
+      await answerWith(page, 'document.querySelector(".opt[data-value=research]").click()');
+      const france = await read(FRANCE_RESEARCH);
+      // Spain, the same two answers — and the passport, which is Spain's third
+      // tap (CRITERIA MET in three).
+      await page.evaluate(seed(SPAIN_RESEARCH as Record<string, string>));
+      await openAtRest(page, addressOf("/"));
+      const spain = await read(SPAIN_RESEARCH);
+      return { france, spain };
+    })).returned as Record<string, {
+      status: string; painted: typeof PAINTED_AS_COMPOSED; state: string; problems: string[];
+    }>;
 
-      // What each screen says is the verdict's ("s19 — the two walks' results,
-      // from the verdict"); the page paints it, and says France's written state.
-      const { france, spain } = seen;
-      expect(france!.problems).toEqual([]);
-      expect(france!.state).toBe("results");
-      expect(france!.status).toBe("No route we check in France takes a research hosting agreement.");
-      expect(france!.painted).toEqual(PAINTED_AS_COMPOSED);
+    // What each screen says is the verdict's ("s19 — the two walks' results,
+    // from the verdict"); the page paints it, and says France's written state.
+    const { france, spain } = seen;
+    expect(france!.problems).toEqual([]);
+    expect(france!.state).toBe("results");
+    expect(france!.status).toBe("No route we check in France takes a research hosting agreement.");
+    expect(france!.painted).toEqual(PAINTED_AS_COMPOSED);
 
-      expect(spain!.problems).toEqual([]);
-      expect(spain!.painted).toEqual(PAINTED_AS_COMPOSED);
-    } finally { server.close(); }
+    expect(spain!.problems).toEqual([]);
+    expect(spain!.painted).toEqual(PAINTED_AS_COMPOSED);
   }, 120_000);
 });

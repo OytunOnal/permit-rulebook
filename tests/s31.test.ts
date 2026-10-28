@@ -5,7 +5,6 @@ import { fileURLToPath } from "node:url";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, openAtRest } from "./browser-walk.js";
 
 /**
@@ -34,7 +33,7 @@ import { answerWith, openAtRest } from "./browser-walk.js";
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -159,60 +158,55 @@ describe.skipIf(skipped !== null)("the hold state is one line under the eyebrow 
     ["1280x900", { width: 1280, height: 900 }, false],
   ] as const)
     it(`at ${name}: header, eyebrow, the line, and nothing else — then the verdict where it stays`, async () => {
-      const server = await serve(dist, { delayJsMs: HELD_MS });
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"));
-          await page.evaluate(SEED_FINISHED);
-          await page.navigate(server.url("/"));
-          // The build's paint, before the module runs: the cover on, the
-          // document parsed, every stylesheet in.
-          await page.waitUntil(
-            `document.documentElement?.dataset.cover && document.readyState !== "loading"`
-            + ` && [...document.querySelectorAll('link[rel="stylesheet"]')].every((l) => l.sheet)`,
-            "the build's paint never laid out",
-          );
-          const held = JSON.parse(await page.evaluate(HOLD)) as Hold;
-          await page.waitUntil('!document.querySelector(".stand-in")', "the module never drew its first screen");
-          await page.waitUntilAtRest();
-          const drawn = JSON.parse(await page.evaluate(HOLD)) as Hold;
-          return { held, drawn, problems: page.problems() };
-        }, { viewport, mobile });
-        expect(seen.problems).toEqual([]);
-        const h = seen.held;
-        expect(h.cover, "the pre-paint script did not name a reader owed a verdict").toBe("verdict");
-        expect(h.state, "the module had already drawn — the hold was not held").toBe("questions");
-        expect(h.headerShown, "the site header is not on the screen").toBe(true);
-        expect(h.brandShown, "the eyebrow is not on the screen").toBe(true);
-        // The line, once, in the reader's own words.
-        expect(h.lines).toEqual([RETURNING_LINE]);
-        // Directly under the eyebrow: within the eyebrow's own height and one
-        // gap — the breath the header keeps under itself — of its bottom.
-        expect(h.line!.top, `the line's top is at ${h.line!.top}, the eyebrow's bottom at ${h.brand.bottom}`)
-          .toBeGreaterThanOrEqual(h.brand.bottom - 1);
-        expect(h.line!.top - h.brand.bottom, `the line sits ${h.line!.top - h.brand.bottom} px under the eyebrow`)
-          .toBeLessThanOrEqual(h.brand.height + h.gap);
-        // The covered things take no room: not hidden in place, gone from
-        // the flow until the module draws.
-        expect(h.room, "something covered still holds its room").toEqual({
-          headline: false, subline: false, stamp: false, app: false, footer: false,
-        });
-        expect(h.below, `painted below the line: ${h.below.join(", ")}`).toEqual([]);
+      const seen = (await walkSite({ site: { folder: dist, delayJsMs: HELD_MS }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url }) => {
+        await page.goto(url("/404.html"));
+        await page.evaluate(SEED_FINISHED);
+        await page.navigate(url("/"));
+        // The build's paint, before the module runs: the cover on, the
+        // document parsed, every stylesheet in.
+        await page.waitUntil(
+          `document.documentElement?.dataset.cover && document.readyState !== "loading"`
+          + ` && [...document.querySelectorAll('link[rel="stylesheet"]')].every((l) => l.sheet)`,
+          "the build's paint never laid out",
+        );
+        const held = JSON.parse(await page.evaluate(HOLD)) as Hold;
+        await page.waitUntil('!document.querySelector(".stand-in")', "the module never drew its first screen");
+        await page.waitUntilAtRest();
+        const drawn = JSON.parse(await page.evaluate(HOLD)) as Hold;
+        return { held, drawn, problems: page.problems() };
+      })).returned;
+      expect(seen.problems).toEqual([]);
+      const h = seen.held;
+      expect(h.cover, "the pre-paint script did not name a reader owed a verdict").toBe("verdict");
+      expect(h.state, "the module had already drawn — the hold was not held").toBe("questions");
+      expect(h.headerShown, "the site header is not on the screen").toBe(true);
+      expect(h.brandShown, "the eyebrow is not on the screen").toBe(true);
+      // The line, once, in the reader's own words.
+      expect(h.lines).toEqual([RETURNING_LINE]);
+      // Directly under the eyebrow: within the eyebrow's own height and one
+      // gap — the breath the header keeps under itself — of its bottom.
+      expect(h.line!.top, `the line's top is at ${h.line!.top}, the eyebrow's bottom at ${h.brand.bottom}`)
+        .toBeGreaterThanOrEqual(h.brand.bottom - 1);
+      expect(h.line!.top - h.brand.bottom, `the line sits ${h.line!.top - h.brand.bottom} px under the eyebrow`)
+        .toBeLessThanOrEqual(h.brand.height + h.gap);
+      // The covered things take no room: not hidden in place, gone from
+      // the flow until the module draws.
+      expect(h.room, "something covered still holds its room").toEqual({
+        headline: false, subline: false, stamp: false, app: false, footer: false,
+      });
+      expect(h.below, `painted below the line: ${h.below.join(", ")}`).toEqual([]);
 
-        // The module has drawn: the line is gone, the verdict is there, and
-        // it appeared under the eyebrow — where the line was — not somewhere
-        // the reader has to scroll to.
-        const d = seen.drawn;
-        expect(d.state, "the module did not draw the verdict").toBe("results");
-        expect(d.standInsLeft, "a stand-in outlived the first screen").toBe(0);
-        expect(d.headlineShown).toBe(true);
-        expect(d.room.footer).toBe(true);
-        expect(d.headline.top, "the headline is not under the eyebrow").toBeGreaterThanOrEqual(d.brand.bottom - 1);
-        expect(d.headline.top - d.brand.bottom).toBeLessThanOrEqual(d.brand.height + d.gap);
-        expect(d.scrollY, "the first paint is not a gesture: nothing scrolls").toBe(0);
-      } finally {
-        server.close();
-      }
+      // The module has drawn: the line is gone, the verdict is there, and
+      // it appeared under the eyebrow — where the line was — not somewhere
+      // the reader has to scroll to.
+      const d = seen.drawn;
+      expect(d.state, "the module did not draw the verdict").toBe("results");
+      expect(d.standInsLeft, "a stand-in outlived the first screen").toBe(0);
+      expect(d.headlineShown).toBe(true);
+      expect(d.room.footer).toBe(true);
+      expect(d.headline.top, "the headline is not under the eyebrow").toBeGreaterThanOrEqual(d.brand.bottom - 1);
+      expect(d.headline.top - d.brand.bottom).toBeLessThanOrEqual(d.brand.height + d.gap);
+      expect(d.scrollY, "the first paint is not a gesture: nothing scrolls").toBe(0);
     }, 180000);
 });
 
@@ -269,42 +263,37 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
     ["1240x900, where the ledger is a sidebar", { width: 1240, height: 900 }, false],
   ] as const)
     it(`at ${name}: after a correction the headline holds the focus — the element the live region says`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"));
-          await page.evaluate(SEED_FINISHED);
-          await openAtRest(page, server.url("/"));
-          const arrived = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-          await page.evaluate(TAP_SALARY);
-          await page.waitUntilAtRest();
-          const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-          await answerWith(page, ANSWER_ANOTHER_BAND);
-          const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-          return { arrived, onQuestion, back, problems: page.problems() };
-        }, { viewport, mobile });
-        expect(seen.problems).toEqual([]);
-        // The arrival keeps s10's rule: a reader who touched nothing has
-        // nothing taken from them.
-        expect(seen.arrived.state).toBe("results");
-        expect(seen.arrived.active, `the arrival focused ${seen.arrived.active}`).toBe("body");
-        expect(seen.onQuestion.state).toBe("questions");
-        // The return: the verdict is drawn, announced once, and the headline —
-        // the same element — holds the focus, out of the tab order.
-        const r = seen.back;
-        expect(r.state).toBe("results");
-        expect(r.headline).not.toBe("");
-        expect(r.headline).not.toBe(seen.arrived.headline);
-        expect(r.active, `the focus is on ${r.active || "nothing"}`).toBe("#headline");
-        expect(r.tabindex, "the headline is in the tab order, or not focusable").toBe("-1");
-        expect(r.live, "the live region does not say the headline").toBe(r.headline);
-        // One move: the reveal brought the masthead into view (s20), and the
-        // focus did not scroll a second time — the headline is on the screen.
-        expect(r.h1Top, `the headline's top is at ${r.h1Top} (scrollY ${r.scrollY})`).toBeGreaterThanOrEqual(0);
-        expect(r.h1Bottom, `the headline's bottom is at ${r.h1Bottom} of ${r.viewport}`).toBeLessThanOrEqual(r.viewport);
-      } finally {
-        server.close();
-      }
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url }) => {
+        await page.goto(url("/404.html"));
+        await page.evaluate(SEED_FINISHED);
+        await openAtRest(page, url("/"));
+        const arrived = JSON.parse(await page.evaluate(FOCUS)) as Focus;
+        await page.evaluate(TAP_SALARY);
+        await page.waitUntilAtRest();
+        const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
+        await answerWith(page, ANSWER_ANOTHER_BAND);
+        const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
+        return { arrived, onQuestion, back, problems: page.problems() };
+      })).returned;
+      expect(seen.problems).toEqual([]);
+      // The arrival keeps s10's rule: a reader who touched nothing has
+      // nothing taken from them.
+      expect(seen.arrived.state).toBe("results");
+      expect(seen.arrived.active, `the arrival focused ${seen.arrived.active}`).toBe("body");
+      expect(seen.onQuestion.state).toBe("questions");
+      // The return: the verdict is drawn, announced once, and the headline —
+      // the same element — holds the focus, out of the tab order.
+      const r = seen.back;
+      expect(r.state).toBe("results");
+      expect(r.headline).not.toBe("");
+      expect(r.headline).not.toBe(seen.arrived.headline);
+      expect(r.active, `the focus is on ${r.active || "nothing"}`).toBe("#headline");
+      expect(r.tabindex, "the headline is in the tab order, or not focusable").toBe("-1");
+      expect(r.live, "the live region does not say the headline").toBe(r.headline);
+      // One move: the reveal brought the masthead into view (s20), and the
+      // focus did not scroll a second time — the headline is on the screen.
+      expect(r.h1Top, `the headline's top is at ${r.h1Top} (scrollY ${r.scrollY})`).toBeGreaterThanOrEqual(0);
+      expect(r.h1Bottom, `the headline's bottom is at ${r.h1Bottom} of ${r.viewport}`).toBeLessThanOrEqual(r.viewport);
     }, 180000);
 
   for (const [name, path, seed] of [
@@ -313,19 +302,14 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
     ["a finished record", "/", SEED_FINISHED],
   ] as const)
     it(`a first arrival takes no focus: ${name}`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"));
-          await page.evaluate(seed);
-          await openAtRest(page, server.url(path));
-          return { at: JSON.parse(await page.evaluate(FOCUS)) as Focus, problems: page.problems() };
-        }, { viewport: { width: 390, height: 844 }, mobile: true });
-        expect(seen.problems).toEqual([]);
-        expect(seen.at.active, `the arrival focused ${seen.at.active}`).toBe("body");
-      } finally {
-        server.close();
-      }
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+        await page.goto(url("/404.html"));
+        await page.evaluate(seed);
+        await openAtRest(page, url(path));
+        return { at: JSON.parse(await page.evaluate(FOCUS)) as Focus, problems: page.problems() };
+      })).returned;
+      expect(seen.problems).toEqual([]);
+      expect(seen.at.active, `the arrival focused ${seen.at.active}`).toBe("body");
     }, 180000);
 });
 
@@ -368,32 +352,27 @@ describe.skipIf(skipped !== null)("the gutter is stable (point 3)", () => {
     ["1280x1400, where the question page fits without a scrollbar", { width: 1280, height: 1400 }],
   ] as const)
     it(`at ${name}: the column's left edge is the same before and after the verdict`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"));
-          await page.evaluate("localStorage.clear()");
-          await openAtRest(page, server.url("/"));
-          const question = JSON.parse(await page.evaluate(EDGE)) as Edge;
-          await page.goto(server.url("/404.html"));
-          await page.evaluate(SEED_FINISHED);
-          await openAtRest(page, server.url("/"));
-          const verdict = JSON.parse(await page.evaluate(EDGE)) as Edge;
-          return { question, verdict, problems: page.problems() };
-        }, { viewport, mobile: false, scrollbars: true });
-        expect(seen.problems).toEqual([]);
-        expect(seen.question.state).toBe("questions");
-        expect(seen.verdict.state).toBe("results");
-        // The browser draws classic scrollbars, or the case measures nothing.
-        expect(seen.verdict.scrolls).toBe(true);
-        expect(seen.verdict.chrome, "the scrollbar takes no width — an overlay, or hidden").toBeGreaterThan(0);
-        expect(seen.question.gutter).toBe("stable");
-        expect(
-          seen.question.mainLeft,
-          `the column's edge moved from ${seen.question.mainLeft} to ${seen.verdict.mainLeft} when the verdict arrived`,
-        ).toBe(seen.verdict.mainLeft);
-      } finally {
-        server.close();
-      }
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: false }, errorsExpected: true, scrollbars: true }, async ({ page, url }) => {
+        await page.goto(url("/404.html"));
+        await page.evaluate("localStorage.clear()");
+        await openAtRest(page, url("/"));
+        const question = JSON.parse(await page.evaluate(EDGE)) as Edge;
+        await page.goto(url("/404.html"));
+        await page.evaluate(SEED_FINISHED);
+        await openAtRest(page, url("/"));
+        const verdict = JSON.parse(await page.evaluate(EDGE)) as Edge;
+        return { question, verdict, problems: page.problems() };
+      })).returned;
+      expect(seen.problems).toEqual([]);
+      expect(seen.question.state).toBe("questions");
+      expect(seen.verdict.state).toBe("results");
+      // The browser draws classic scrollbars, or the case measures nothing.
+      expect(seen.verdict.scrolls).toBe(true);
+      expect(seen.verdict.chrome, "the scrollbar takes no width — an overlay, or hidden").toBeGreaterThan(0);
+      expect(seen.question.gutter).toBe("stable");
+      expect(
+        seen.question.mainLeft,
+        `the column's edge moved from ${seen.question.mainLeft} to ${seen.verdict.mainLeft} when the verdict arrived`,
+      ).toBe(seen.verdict.mainLeft);
     }, 180000);
 });

@@ -3339,11 +3339,6 @@
   },
   {
    "from": "tests/s13.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/s13.test.ts",
    "to": "src/lib/clipboard.ts",
    "kind": "dependency"
   },
@@ -3464,11 +3459,6 @@
   },
   {
    "from": "tests/s19.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/s19.test.ts",
    "to": "src/lib/copy/country-page.ts",
    "kind": "dependency"
   },
@@ -3579,11 +3569,6 @@
   },
   {
    "from": "tests/s21.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/s21.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
@@ -3631,11 +3616,6 @@
    "from": "tests/s23.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/s23.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
   },
   {
    "from": "tests/s23.test.ts",
@@ -3909,11 +3889,6 @@
   },
   {
    "from": "tests/s28.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/s28.test.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
@@ -3989,11 +3964,6 @@
   },
   {
    "from": "tests/s31.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/s31.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
@@ -4016,11 +3986,6 @@
    "from": "tests/s32.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/s32.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
   },
   {
    "from": "tests/s32.test.ts",
