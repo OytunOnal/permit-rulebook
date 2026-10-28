@@ -5,7 +5,8 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { phraseOf, phraseAtStartOf, countryVocabulary, type Dataset } from "permit-rulebook-data";
 import { countryAddresses } from "../src/lib/country-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
-import { DESK, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { DESK } from "../scripts/browser/browser.mjs";
+import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {
   builtPages, drawnScreens, headingsOf, questionCards, sentencesOf, walks, type ReaderPage,
 } from "./reader-pages.js";

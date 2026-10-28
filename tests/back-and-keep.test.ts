@@ -7,9 +7,9 @@ import {
   type KeptRecord,
 } from "../src/lib/interview/index.js";
 import { openInterviewHistory, type InterviewHistory } from "../src/lib/interview-history/index.js";
+import { DESK, type BrowserPage } from "../scripts/browser/browser.mjs";
 import {
-  DESK, fieldOnScreen, recordSeedScript, skipReason, tapOn, warnNotWalked, withSite,
-  type BrowserPage, type PageOnSite,
+  fieldOnScreen, recordSeedScript, skipReason, warnNotWalked, withSite, type PageOnSite,
 } from "./browser-walk.js";
 import { FakeTab, stepOf } from "./fake-browser-history.js";
 
@@ -210,7 +210,7 @@ async function screenOf(page: BrowserPage): Promise<string> {
 
 /** A real click on `selector`, then the page at rest. */
 async function tapAndWait(page: BrowserPage, selector: string): Promise<void> {
-  await tapOn(page, selector);
+  await page.tapOn(selector);
   await page.waitUntilAtRest();
 }
 

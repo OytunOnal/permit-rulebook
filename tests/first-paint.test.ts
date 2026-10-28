@@ -12,8 +12,9 @@ import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/ques
 import { replayRecord } from "../src/lib/scope.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { url } from "../src/lib/site.js";
-import { GATHER_SHIFTS, shiftsBeforeAndAfterATap } from "./layout-shifts.js";
-import { openAtRest, type BrowserPage } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { ABOVE_THE_BOX, shiftsBeforeAndAfterATap } from "./layout-shifts.js";
+import { openAtRest, skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
  * The first paint, measured the way the field measures it.
@@ -93,23 +94,10 @@ import { openAtRest, type BrowserPage } from "./browser-walk.js";
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const DATASET = rawDataset as unknown as Dataset;
 
-const { chromePath } = await import("../scripts/browser/browser.mjs");
 const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
-if (skipped)
-  process.stderr.write([
-    "",
-    `  !! THE FIRST PAINT WAS NOT MEASURED IN A BROWSER: ${skipped}.`,
-    "     Run: npm run build && npm test",
-    "",
-    "",
-  ].join(String.fromCharCode(10)));
+const skipped = skipReason();
+if (skipped) warnNotWalked("THE FIRST PAINT", skipped);
 
 /** A realistic mobile lag on the module: HTML at once, script 700 ms later. */
 const DELAY_JS_MS = 700;
@@ -183,9 +171,8 @@ interface AtFirstPaint {
   countShown: boolean;
 }
 
-const READ = `${GATHER_SHIFTS}, JSON.stringify({
-  cls: window.__cls.reduce((s, e) => s + e.value, 0),
-  shifts: window.__cls.map((e) => ({ value: Math.round(e.value * 10000) / 10000, sources: e.sources })),
+/** What the page reads once the module has drawn, its shifts aside. */
+const READ_BESIDE_THE_SHIFTS = `JSON.stringify({
   sameCard: window.__built === document.querySelector("#main > *"),
   footBox: document.querySelector("footer.site-foot").getClientRects().length > 0,
   footMoved: window.__foot === null ? null
@@ -200,7 +187,7 @@ interface Measured {
   cls: number;
   /** Each shift, with every node it moved: named, how far across and down it
    * went, and whether it is above the box. */
-  shifts: { value: number; sources: { node: string; dx: number; dy: number; above: boolean }[] }[];
+  shifts: { value: number; sources: { node: string; dx: number; dy: number; inRegion: boolean }[] }[];
   /** Whether the node the build drew is still the node on the screen. */
   sameCard: boolean;
   /** Whether the footer takes room once the module has drawn. */
@@ -228,6 +215,13 @@ interface Measured {
   /** The screen the module drew — `questions` or `results` — so a row that
    * names a verdict is proven to be measuring one (s22). */
   state: string;
+}
+
+/** What the page measures once the module has drawn: its shifts, the box's region marked, and the rest. */
+async function readMeasured(page: BrowserPage): Promise<Measured> {
+  const { counted } = await page.readLayoutShifts();
+  const shifts = counted.map((e) => ({ value: Math.round(e.value * 10000) / 10000, sources: e.sources }));
+  return { cls: counted.reduce((s, e) => s + e.value, 0), shifts, ...JSON.parse(await page.evaluate(READ_BESIDE_THE_SHIFTS)) };
 }
 
 /**
@@ -361,8 +355,8 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
             // The stand-ins go in the task that draws the reader's screen.
             await page.waitUntil(`!document.querySelector(".stand-in")`, "the module never drew the reader's screen");
             await page.waitUntilAtRest();
-            measured.set(key(screen.name, arrival.name), JSON.parse(await page.evaluate(READ)) as Measured);
-          }, { viewport: screen.viewport, mobile: screen.mobile });
+            measured.set(key(screen.name, arrival.name), await readMeasured(page));
+          }, { viewport: screen.viewport, mobile: screen.mobile, shiftRegion: ABOVE_THE_BOX });
     } finally {
       server.close();
     }
@@ -424,7 +418,7 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
           // masthead says and how tall it is are settled before the page
           // paints, so this is asserted as zero, not as a budget.
           const m = read(screen.name, arrival.name);
-          const moved = m.shifts.flatMap((s) => s.sources).filter((x) => x.above).map((x) => x.node);
+          const moved = m.shifts.flatMap((s) => s.sources).filter((x) => x.inRegion).map((x) => x.node);
           expect(moved, `${moved.join(", ")} moved — ${detail(m)}`).toEqual([]);
         });
 
@@ -526,8 +520,8 @@ describe.skipIf(skipped !== null)("the page arriving in pieces paints where it s
       try {
         const m = await withBrowser(async (page: BrowserPage) => {
           await openAtRest(page, server.url("/?country=fr"));
-          return JSON.parse(await page.evaluate(READ)) as Measured;
-        }, { viewport: screen.viewport, mobile: screen.mobile });
+          return readMeasured(page);
+        }, { viewport: screen.viewport, mobile: screen.mobile, shiftRegion: ABOVE_THE_BOX });
         expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBe(0);
       } finally {
         server.close();

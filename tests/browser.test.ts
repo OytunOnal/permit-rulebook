@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
-import { skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
  * The harness's page object (`scripts/browser/browser.mjs`): each wait returns once

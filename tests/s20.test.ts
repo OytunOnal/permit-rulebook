@@ -7,7 +7,8 @@ import { resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { answerWith, evaluateAtRest, openAtRest, type BrowserPage } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { answerWith, evaluateAtRest, openAtRest } from "./browser-walk.js";
 
 /**
  * s20 — the correction lands on the question and returns to the verdict.

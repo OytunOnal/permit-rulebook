@@ -10,7 +10,8 @@ import { TabWaits } from "./tab-waits.mjs";
  * returns its page.
  *
  * `setup`: the screen (`viewport`, `mobile`), whether to keep the requests
- * (`network`), and the factor every tab is slowed by (`cpuSlowdown`).
+ * (`network`), the factor every tab is slowed by (`cpuSlowdown`), and the
+ * region whose shifts are marked (`shiftRegion`, a selector or null).
  */
 export async function openTab(connection, setup) {
   const { targetId } = await connection.send("Target.createTarget", { url: "about:blank" });
@@ -24,7 +25,9 @@ export async function openTab(connection, setup) {
     events.record(message);
   });
   await setUpTab(sendToTab, setup);
-  return new TabPage(sendToTab, { waits, gestures, events, openTab: () => openTab(connection, setup) });
+  return new TabPage(sendToTab, {
+    waits, gestures, events, openTab: () => openTab(connection, setup), shiftRegion: setup.shiftRegion,
+  });
 }
 
 /** Enables the events the tab is read by, and sets its CPU and its screen. */

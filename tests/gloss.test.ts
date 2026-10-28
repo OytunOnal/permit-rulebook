@@ -10,7 +10,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import type { BrowserPage } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
 
 const ds = dataset as unknown as Dataset;
 

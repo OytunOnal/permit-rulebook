@@ -7,7 +7,8 @@ import { RECORD_MAX_LENGTH, RECORD_VERSION,
   clearRecord, loadRecord, restore, saveRecord, serialize, LEGACY_STORAGE_KEY, STORAGE_KEY,
   type RecordStore,
 } from "../src/lib/record.js";
-import { answerWith, type BrowserPage } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { answerWith } from "./browser-walk.js";
 import { BEACON_ENDPOINT, BEACON_SCRIPT, expectNothingLeft, type Sent } from "./wire.js";
 
 const dataset = rawDataset as unknown as Dataset;
@@ -196,8 +197,7 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
  * driven in a real browser with the network watched, and the only thing
  * asserted is what it actually sent (human, 2026-09-08).
  */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { chromePath, serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

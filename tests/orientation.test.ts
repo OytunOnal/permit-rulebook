@@ -13,7 +13,7 @@ import { routePages } from "../src/lib/route-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { absolute, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
-import type { BrowserPage } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
 
 /**
  * The Orientation lens (RUBRIC 1.3), which the site map's own birth demanded.

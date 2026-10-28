@@ -14,7 +14,8 @@ import { countryHeadline } from "../src/lib/copy/country-page.js";
 import { dataLedeOpen, dataMetaDescription, datasetDescription } from "../src/lib/copy/data-page.js";
 import { routeCounts } from "../src/lib/data-page.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
-import { DESK, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { DESK } from "../scripts/browser/browser.mjs";
+import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {
   builtPages, drawnScreens, headingsOf, plainTextOf, questionCards, walks, type ReaderPage,
 } from "./reader-pages.js";

@@ -23,7 +23,8 @@ import { replayRecord } from "../src/lib/scope.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { answerWith, openAtRest } from "./browser-walk.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
 /**
@@ -452,8 +453,7 @@ describe("the results line, from the verdict", () => {
     });
 });
 
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { chromePath, serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

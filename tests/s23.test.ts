@@ -21,7 +21,7 @@ import { routeAddresses } from "../src/lib/slug.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, hintsIn, paintedAsComposedScript, placed, stepsIn, verdictFor,
 } from "./verdict-cards.js";
-import type { BrowserPage } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));

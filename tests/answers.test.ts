@@ -8,7 +8,7 @@ import { glossed } from "../src/lib/gloss.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, everyCardIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import type { BrowserPage } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
 
 /**
  * Two things the interview did not do, walked in a browser.

@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 import { PAGE_CSS } from "../src/lib/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { datasetMeta, type Dataset } from "permit-rulebook-data";
-import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { answerWith, openAtRest } from "./browser-walk.js";
 
 /**
  * The identity pair is one drawing, used twice.
@@ -150,8 +151,7 @@ describe("the identity pair has one definition", () => {
  * is not a shared result: a page can override it, and the promise the human
  * made is geometric — the corner meets the middle of the top edge.
  */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { chromePath, serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
