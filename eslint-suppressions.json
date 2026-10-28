@@ -36,7 +36,7 @@
   },
   "scripts/measure-taps.mjs": {
     "roadkeeper/constant-reason": {
-      "count": 2
+      "count": 1
     }
   },
   "scripts/render-assets.mjs": {

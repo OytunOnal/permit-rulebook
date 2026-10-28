@@ -35,7 +35,7 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { serve, withBrowser } from "./browser/browser.mjs";
+import { PHONE, walkSite } from "./browser/browser.mjs";
 // The record module itself, not a copy of its constants: a seed written by
 // hand goes stale the day the format moves, and this script would then
 // measure a screen the reader never sees (Standards review, 2026-09-08).
@@ -45,7 +45,6 @@ const dist = join(fileURLToPath(new URL("..", import.meta.url)), "dist");
 
 /** The token's own value, asserted against the stylesheet the page ships. */
 const TAP_MIN = 44;
-const VIEWPORT = { width: 390, height: 844 };
 
 const PROBE = `(() => {
   const floor = ${TAP_MIN};
@@ -116,22 +115,22 @@ async function measureAtRest(page, name, kind) {
   return { name, kind, floorPx: TAP_MIN, ...measured, isOverflowing: measured.scrollWidth > measured.innerWidth + 1 };
 }
 
-/** Each page the build emitted, in its path's order: its name, its kind, and how the page opens it. */
-const listBuiltScreens = (server) => listBuiltPages(dist).map((file) => {
+/** Each page the build emitted, in its path's order: its name, its kind, and how the page opens it at the site's address `url` makes. */
+const listBuiltScreens = (url) => listBuiltPages(dist).map((file) => {
   const path = relative(dist, file).split("\\").join("/");
-  // Through the server's own url(): a site built for a subpath asks for
+  // Through the walk's own url(): a site built for a subpath asks for
   // its assets there, and served at the root it measures as unstyled.
-  return { name: path, kind: "built", open: (page) => page.goto(server.url(`/${path.replace(/index\.html$/, "")}`)) };
+  return { name: path, kind: "built", open: (page) => page.goto(url(`/${path.replace(/index\.html$/, "")}`)) };
 });
 
-/** Each drawn screen: its name, its kind, and how the page opens it, its record written and the page reloaded. */
-const drawnScreens = (server) => DRAWN.map(([name, answers]) => ({
+/** Each drawn screen: its name, its kind, and how the page opens it at the site's address `url` makes, its record written and the page reloaded. */
+const drawnScreens = (url) => DRAWN.map(([name, answers]) => ({
   name,
   kind: "drawn",
   async open(page) {
-    await page.goto(server.url("/"));
+    await page.goto(url("/"));
     await page.evaluate(seedFor(answers));
-    await page.goto(server.url("/"));
+    await page.goto(url("/"));
   },
 }));
 
@@ -149,21 +148,15 @@ async function measureEach(page, screens, onScreen) {
 
 /**
  * Serves `dist/` and measures every built page, then every drawn screen, in
- * Chrome at the viewport. Each screen goes to `onScreen` the moment it is
+ * Chrome on the phone screen. Each screen goes to `onScreen` the moment it is
  * measured, so a run that stops halfway has already handed over what it
- * measured; all of them come back at the end. With no `dist/`, `isBuilt` is
- * false and `screens` is empty; nothing is served.
+ * measured; all of them come back at the end. Nothing here judges the pages'
+ * errors, so the walk fails on them. With no `dist/`, `isBuilt` is false and
+ * `screens` is empty; nothing is served.
  */
 export async function measureTaps({ onScreen = () => {} } = {}) {
-  if (!existsSync(dist)) return { isBuilt: false, viewportWidth: VIEWPORT.width, screens: [] };
-  const server = await serve(dist);
-  try {
-    const screens = await withBrowser(
-      (page) => measureEach(page, [...listBuiltScreens(server), ...drawnScreens(server)], onScreen),
-      { viewport: VIEWPORT, mobile: true },
-    );
-    return { isBuilt: true, viewportWidth: VIEWPORT.width, screens };
-  } finally {
-    server.close();
-  }
+  if (!existsSync(dist)) return { isBuilt: false, viewportWidth: PHONE.viewport.width, screens: [] };
+  const { returned: screens } = await walkSite({ site: { folder: dist }, screen: PHONE },
+    ({ page, url }) => measureEach(page, [...listBuiltScreens(url), ...drawnScreens(url)], onScreen));
+  return { isBuilt: true, viewportWidth: PHONE.viewport.width, screens };
 }

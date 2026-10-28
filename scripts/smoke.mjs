@@ -26,7 +26,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { serve, withBrowser } from "./browser/browser.mjs";
+import { PHONE, walkSite } from "./browser/browser.mjs";
 import { startDev } from "./dev-server.mjs";
 import { siteBase } from "./site-base.mjs";
 
@@ -126,11 +126,28 @@ export const CHECKS = [
   },
 ];
 
-async function walk(target, surface) {
-  return withBrowser(async (page) => {
-    const results = [];
+/**
+ * What one check showed on one page load.
+ *
+ * @typedef {object} PageLoad
+ * @property {string} surface "dev" or "dist".
+ * @property {string} path The check's path.
+ * @property {string} what What the page is, in words.
+ * @property {Record<string, any>} value What the check's probe read; its fields are the probe's own, so they differ per check.
+ * @property {string[]} thrown What the page threw or logged since it was opened.
+ * @property {string[]} failures Every reason the check failed; none when it passed.
+ */
+
+/**
+ * Every check on `site`, named `surface` in its results; the checks judge the pages' errors, so the walk returns them.
+ *
+ * @returns {Promise<PageLoad[]>}
+ */
+async function walk(site, surface) {
+  const { returned } = await walkSite({ site, screen: PHONE, errorsExpected: true }, async ({ page, url }) => {
+    const results = /** @type {PageLoad[]} */ ([]);
     for (const check of CHECKS) {
-      await page.goto(target.url(check.path));
+      await page.goto(url(check.path));
       await page.waitUntilAtRest();
       let value = {};
       let unreadable = [];
@@ -151,6 +168,7 @@ async function walk(target, surface) {
     }
     return results;
   });
+  return returned;
 }
 
 /**
@@ -166,12 +184,11 @@ export async function smoke({ dir = dist, surfaces = DEFAULT_SURFACES } = {}) {
   const results = [];
   if (surfaces.includes("dev")) {
     const dev = await startDev();
-    try { results.push(...await walk(dev, "dev")); } finally { dev.close(); }
+    try { results.push(...await walk({ address: dev.url("/") }, "dev")); } finally { dev.close(); }
   }
   if (surfaces.includes("dist")) {
     if (!existsSync(dir)) throw new Error(`no ${dir} — run npm run build first`);
-    const server = await serve(dir);
-    try { results.push(...await walk(server, "dist")); } finally { server.close(); }
+    results.push(...await walk({ folder: dir }, "dist"));
   }
   return results;
 }

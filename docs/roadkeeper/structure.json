@@ -5246,11 +5246,6 @@
     "exported": false
    },
    {
-    "name": "VIEWPORT",
-    "kind": "const",
-    "exported": false
-   },
-   {
     "name": "PROBE",
     "kind": "const",
     "exported": false
@@ -5408,6 +5403,11 @@
    },
    {
     "name": "PROFILE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "README_SCREEN",
     "kind": "const",
     "exported": false
    },
@@ -8156,5 +8156,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "55905c700923047d3983a697b0bb2fee552936f149724aef0828aff2d44fe4a6"
+ "digest": "cf5bf29b8567fd0c2bfcb428ebbf54abc91da7d4b582f983abaee06a5942b982"
 }
