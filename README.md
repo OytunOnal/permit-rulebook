@@ -80,7 +80,7 @@ more.
 ## How it is put together
 
 The shape of the two repositories, the boundary between them and what crosses
-it: [docs/spine/ARCHITECTURE.md](docs/spine/ARCHITECTURE.md).
+it: [docs/roadkeeper/ARCHITECTURE.md](docs/roadkeeper/ARCHITECTURE.md).
 
 - `src/pages/index.astro` — the interview's page: it builds the browser's
   history and the record's store and starts the interview

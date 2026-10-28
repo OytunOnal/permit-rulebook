@@ -2,19 +2,19 @@
 import { readFileSync } from "node:fs";
 import astro from "eslint-plugin-astro";
 import tseslint from "typescript-eslint";
-import { preset } from "./spine-lint/lint.mjs";
+import { preset } from "./roadkeeper-lint/lint.mjs";
 
-/** What `docs/spine/dependency-rules.md`'s `## Ignore` skips, and Spine's own copy. */
-const IGNORED = ["src/*.d.ts", "dist/**", ".astro/**", ".run/**", "docs/**", ".claude/**", "spine-lint/**"];
+/** What `docs/roadkeeper/dependency-rules.md`'s `## Ignore` skips, and Roadkeeper's own copy. */
+const IGNORED = ["src/*.d.ts", "dist/**", ".astro/**", ".run/**", "docs/**", ".claude/**", "roadkeeper-lint/**"];
 
 /** TypeScript: the `.ts` files and the scripts inside the pages. */
 const TYPESCRIPT = ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts", "src/pages/**/*.astro/*.ts"];
 
-/** Spine's shape limits hold over the code, the scripts and the tests, the pages' scripts included. */
+/** Roadkeeper's shape limits hold over the code, the scripts and the tests, the pages' scripts included. */
 const SHAPED = ["src/**", "scripts/**", "tests/**"];
 
-/** The files over Spine's 400 lines, each held to its count until it is paid off (Spine's Ceilings). */
-const ceilings = JSON.parse(readFileSync(new URL("docs/spine/ceilings.json", import.meta.url), "utf8"));
+/** The files over Roadkeeper's 400 lines, each held to its count until it is paid off (Roadkeeper's Ceilings). */
+const ceilings = JSON.parse(readFileSync(new URL("docs/roadkeeper/ceilings.json", import.meta.url), "utf8"));
 
 /** What a refused fixed wait says to write instead: the harness's waits (#230). */
 const FIXED_WAIT =
@@ -78,7 +78,7 @@ function resolveAndItsAliases(sourceCode, resolve) {
 }
 
 /**
- * A test waits on an event, never a sleep (`SPINE_STANDARDS.md`, Tests; #230,
+ * A test waits on an event, never a sleep (`ROADKEEPER_STANDARDS.md`, Tests; #230,
  * rulings 2 and 11): a timer handed a promise's `resolve`, under its own name
  * or another, Node's promised timers, and a navigation given a time are
  * refused. A timer doing other work, such as a fake server holding a response

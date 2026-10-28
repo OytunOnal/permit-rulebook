@@ -12,7 +12,7 @@ import { esc } from "./reason.ts";
  * the copy module (`lib/copy/`), the palette from `tokens.css`, and the
  * numbers from the dataset.
  *
- * `docs/spine/design/s6-identity-a.html`, panel 3, at full size. The card
+ * `docs/roadkeeper/design/s6-identity-a.html`, panel 3, at full size. The card
  * carries no wordmark (human, 2026-09-07): the mark is the name. Two stamps in
  * the same treatment — border, stamp red, mono, uppercase — the PR one larger
  * and tilted the other way, its bottom-right corner landing on the middle of

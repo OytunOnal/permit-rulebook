@@ -7,10 +7,10 @@ move.
 
 | # | Metric | Target | Kind | Source | Field | Cadence (days) | Next reading |
 |---|---|---|---|---|---|---|---|
-| 1 | Dataset liveness — open source-change flags older than 48 h | 0 | file | `docs/spine/readings/liveness.json` | `value` | 7 | 2026-11-04 |
-| 2 | The daily watch finishes — failures in the last 7 scheduled runs on master | 0 (one single-day failure tolerated) | file | `docs/spine/readings/watch.json` | `value` | 7 | 2026-11-04 |
+| 1 | Dataset liveness — open source-change flags older than 48 h | 0 | file | `docs/roadkeeper/readings/liveness.json` | `value` | 7 | 2026-11-04 |
+| 2 | The daily watch finishes — failures in the last 7 scheduled runs on master | 0 (one single-day failure tolerated) | file | `docs/roadkeeper/readings/watch.json` | `value` | 7 | 2026-11-04 |
 | 3 | Visits from search and referrals, days 8–30 (A2) | ≥ 300 | ask | Cloudflare Web Analytics, last 30 days, bots excluded, referrer not direct | — | 30 | 2026-10-09 |
-| 4 | A stranger touched the data (A7) — issues, pull requests or forks by anyone but the owner | ≥ 1 | file | `docs/spine/readings/stranger.json` | `value` | 30 | 2026-11-16 |
+| 4 | A stranger touched the data (A7) — issues, pull requests or forks by anyone but the owner | ≥ 1 | file | `docs/roadkeeper/readings/stranger.json` | `value` | 30 | 2026-11-16 |
 | 5 | Domains linking to the site (A8) | as pre-registered 2026-09-08 | ask | Google Search Console → Links → Top linking sites | — | 30 | 2026-10-09 |
 | 6 | CLS share of samples "good" (site #8) | > 92 % (the 2026-09-15 reading) | ask | Cloudflare Web Analytics → Core Web Vitals, last 7 days, bots excluded | — | 7 | 2026-09-30 |
 

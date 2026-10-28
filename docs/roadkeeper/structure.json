@@ -103,6 +103,10 @@
  "levels": {
   "astro.config.mjs": "main",
   "eslint.config.mjs": "main",
+  "roadkeeper-lint/lint.mjs": "domain",
+  "roadkeeper-lint/rules/ceiling-paid-off.mjs": "domain",
+  "roadkeeper-lint/rules/constant-reason.mjs": "domain",
+  "roadkeeper-lint/rules/named-condition.mjs": "domain",
   "scripts/browser.mjs": "infrastructure",
   "scripts/build-directory-on-disk.mjs": "infrastructure",
   "scripts/carry-assets.mjs": "main",
@@ -148,10 +152,6 @@
   "scripts/static-server.mjs": "infrastructure",
   "scripts/tab-gestures.mjs": "infrastructure",
   "scripts/tab-waits.mjs": "infrastructure",
-  "spine-lint/lint.mjs": "domain",
-  "spine-lint/rules/ceiling-paid-off.mjs": "domain",
-  "spine-lint/rules/constant-reason.mjs": "domain",
-  "spine-lint/rules/named-condition.mjs": "domain",
   "src/lib/arrival-line.ts": "presentation",
   "src/lib/browser-history.ts": "infrastructure",
   "src/lib/clipboard.ts": "presentation",
@@ -236,7 +236,22 @@
  "edges": [
   {
    "from": "eslint.config.mjs",
-   "to": "spine-lint/lint.mjs",
+   "to": "roadkeeper-lint/lint.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "roadkeeper-lint/lint.mjs",
+   "to": "roadkeeper-lint/rules/ceiling-paid-off.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "roadkeeper-lint/lint.mjs",
+   "to": "roadkeeper-lint/rules/constant-reason.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "roadkeeper-lint/lint.mjs",
+   "to": "roadkeeper-lint/rules/named-condition.mjs",
    "kind": "dependency"
   },
   {
@@ -572,21 +587,6 @@
   {
    "from": "scripts/static-server.mjs",
    "to": "scripts/site-base.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "spine-lint/lint.mjs",
-   "to": "spine-lint/rules/ceiling-paid-off.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "spine-lint/lint.mjs",
-   "to": "spine-lint/rules/constant-reason.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "spine-lint/lint.mjs",
-   "to": "spine-lint/rules/named-condition.mjs",
    "kind": "dependency"
   },
   {
@@ -4594,6 +4594,89 @@
     "exported": true
    }
   ],
+  "roadkeeper-lint/lint.mjs": [
+   {
+    "name": "FILE_LINES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "plugin",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "SHAPE_RULES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "isCeiling",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "ceilingConfigs",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "preset",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "roadkeeper-lint/rules/ceiling-paid-off.mjs": [
+   {
+    "name": "lineCount",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "ceilingPaidOff",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "roadkeeper-lint/rules/constant-reason.mjs": [
+   {
+    "name": "UPPER",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "topLevelConstants",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "explained",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "constantReason",
+    "kind": "const",
+    "exported": true
+   }
+  ],
+  "roadkeeper-lint/rules/named-condition.mjs": [
+   {
+    "name": "clauses",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "reportLongUnnamedTest",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "namedCondition",
+    "kind": "const",
+    "exported": true
+   }
+  ],
   "scripts/browser.mjs": [
    {
     "name": "nextProfile",
@@ -5464,89 +5547,6 @@
    {
     "name": "TabWaits",
     "kind": "class",
-    "exported": true
-   }
-  ],
-  "spine-lint/lint.mjs": [
-   {
-    "name": "FILE_LINES",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "plugin",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "SHAPE_RULES",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "isCeiling",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "ceilingConfigs",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "preset",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "spine-lint/rules/ceiling-paid-off.mjs": [
-   {
-    "name": "lineCount",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "ceilingPaidOff",
-    "kind": "const",
-    "exported": true
-   }
-  ],
-  "spine-lint/rules/constant-reason.mjs": [
-   {
-    "name": "UPPER",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "topLevelConstants",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "explained",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "constantReason",
-    "kind": "const",
-    "exported": true
-   }
-  ],
-  "spine-lint/rules/named-condition.mjs": [
-   {
-    "name": "clauses",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "reportLongUnnamedTest",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "namedCondition",
-    "kind": "const",
     "exported": true
    }
   ],
@@ -8163,6 +8163,10 @@
  "loose": [
   "astro.config.mjs",
   "eslint.config.mjs",
+  "roadkeeper-lint/lint.mjs",
+  "roadkeeper-lint/rules/ceiling-paid-off.mjs",
+  "roadkeeper-lint/rules/constant-reason.mjs",
+  "roadkeeper-lint/rules/named-condition.mjs",
   "scripts/browser.mjs",
   "scripts/build-directory-on-disk.mjs",
   "scripts/carry-assets.mjs",
@@ -8200,10 +8204,6 @@
   "scripts/static-server.mjs",
   "scripts/tab-gestures.mjs",
   "scripts/tab-waits.mjs",
-  "spine-lint/lint.mjs",
-  "spine-lint/rules/ceiling-paid-off.mjs",
-  "spine-lint/rules/constant-reason.mjs",
-  "spine-lint/rules/named-condition.mjs",
   "src/lib/arrival-line.ts",
   "src/lib/browser-history.ts",
   "src/lib/clipboard.ts",
@@ -8252,5 +8252,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "0a3b816325b789cd34ef03eff290edf922345b5481753ca0e52fbc84afb30d2e"
+ "digest": "66aedd12a1ee17beb7b3500e23f6158f5966a2baccfb5546b8361cf4ebf1774b"
 }

@@ -64,7 +64,7 @@ import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddres
  * of the template that made it, and a check that reads the template is
  * passed by moving a string.
  *
- * The page it renders is `docs/spine/design/s6-route-page.html`, approved in
+ * The page it renders is `docs/roadkeeper/design/s6-route-page.html`, approved in
  * s6 and revised after its isolated critique: the rail's labels are a
  * list that cannot collide at any width (B1), every control reaches
  * `--tap-min` (B2), no badge and no verdict colour (B3), quotes are `<q>` with
@@ -866,7 +866,7 @@ export function routePages(dataset: Dataset, run: WatchRun = {}): RoutePage[] {
 // ---------------------------------------------------------------------------
 
 /**
- * `docs/spine/design/s6-route-page.html`, verbatim, plus the two tap rules and
+ * `docs/roadkeeper/design/s6-route-page.html`, verbatim, plus the two tap rules and
  * the accessibility fixes the critique's F5 asked for (a focus style of the
  * page's own, and a way to give a section a heading a screen reader can find
  * without printing one twice).

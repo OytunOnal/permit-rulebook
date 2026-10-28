@@ -703,7 +703,7 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
     // Asserted as a sentence off the built page, not as the constant read back
     // to itself: emptying the copy line used to leave every case green and
     // ship `<noscript><p class="nojs"></p></noscript>` (Standards review;
-    // SPINE_STANDARDS.md, Tests — a test asserts a decision, not content).
+    // ROADKEEPER_STANDARDS.md, Tests — a test asserts a decision, not content).
     const line = /<noscript>([\s\S]*?)<\/noscript>/.exec(inMain)?.[1] ?? "";
     const words = line.replace(/<[^>]*>/g, "").trim();
     expect(words, "the noscript box shipped empty").not.toBe("");
@@ -727,7 +727,7 @@ describe.skipIf(!existsSync(dist))("the first question ships in the HTML (s10)",
   it("carries a sentence for each reader whose screen is not the one it painted", () => {
     // Asserted as sentences off the built page and not as the constants read
     // back to themselves: emptying either one has to turn this red, the way
-    // emptying the noscript line does (SPINE_STANDARDS.md, Tests — a test
+    // emptying the noscript line does (ROADKEEPER_STANDARDS.md, Tests — a test
     // asserts a decision, not content). The decision is that a reader who is about to
     // have their screen replaced is told so, in words, rather than being shown
     // a question they have already answered.

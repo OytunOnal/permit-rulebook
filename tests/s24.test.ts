@@ -154,7 +154,7 @@ describe("recorded where a reader can see it (point 4)", () => {
   });
 
   it("the threat model accepts the public key in one row", () => {
-    const threats = readText(join(root, "docs", "spine", "threats.md"));
+    const threats = readText(join(root, "docs", "roadkeeper", "threats.md"));
     const row = threats.split("\n").find((l) => l.startsWith("|") && l.includes("IndexNow"));
     expect(row, "threats.md has no IndexNow row").toBeDefined();
     expect(row).toMatch(/\*\*Accepted, because\*\*/);
