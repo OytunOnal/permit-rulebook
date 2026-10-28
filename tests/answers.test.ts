@@ -8,7 +8,7 @@ import { glossed } from "../src/lib/gloss.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, everyCardIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { withSite } from "./browser-walk.js";
 
 /**
  * Two things the interview did not do, walked in a browser.
@@ -54,7 +54,6 @@ describe("two answers that cannot both be true, from the verdict", () => {
 });
 
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -78,60 +77,50 @@ const seed = (answers: Record<string, string>) =>
 
 describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
   it("puts the way to look an answer up at the question, not after it", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        // Answered up to the German recognition question, and no further — with
-        // a real passport, since the record keeps only answers a question
-        // offers (s25) and the class the rules reason with was never one.
-        await page.evaluate(seed({
-          destination: "de", citizenship: "IN", situation: "offer",
-          qualification: "degree", occupation_shortage: "yes",
-        }));
-        await page.goto(server.url("/"));
-        return page.evaluate(
-          'JSON.stringify({'
-          + ' question: document.querySelector(".qlabel").textContent.trim(),'
-          + ' help: document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : null,'
-          + ' href: document.querySelector(".qlearn a") ? document.querySelector(".qlearn a").href : null })',
-        );
-      }, { viewport: { width: 1100, height: 900 }, mobile: false }) as string) as
-        { question: string; help: string | null; href: string | null };
+    const seen = JSON.parse(await withSite(async ({ page, url }) => {
+      await page.goto(url("/"));
+      // Answered up to the German recognition question, and no further — with
+      // a real passport, since the record keeps only answers a question
+      // offers (s25) and the class the rules reason with was never one.
+      await page.evaluate(seed({
+        destination: "de", citizenship: "IN", situation: "offer",
+        qualification: "degree", occupation_shortage: "yes",
+      }));
+      await page.goto(url("/"));
+      return page.evaluate(
+        'JSON.stringify({'
+        + ' question: document.querySelector(".qlabel").textContent.trim(),'
+        + ' help: document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : null,'
+        + ' href: document.querySelector(".qlearn a") ? document.querySelector(".qlearn a").href : null })',
+      );
+    }, { viewport: { width: 1100, height: 900 }, mobile: false }) as string) as
+      { question: string; help: string | null; href: string | null };
 
-      expect(seen.question).toContain("recognition");
-      expect(seen.help, "the question offers no way to find the answer out").toBeTruthy();
-      expect(seen.help!).toContain("Anabin");
-      expect(seen.href!).toContain("anabin");
-    } finally {
-      server.close();
-    }
+    expect(seen.question).toContain("recognition");
+    expect(seen.help, "the question offers no way to find the answer out").toBeTruthy();
+    expect(seen.help!).toContain("Anabin");
+    expect(seen.href!).toContain("anabin");
   }, 180000);
 
   it("says so when two answers cannot both be true, before any verdict", async () => {
-    const server = await serve(dist);
-    try {
-      // What the screen says, and that the verdicts still stand, is the
-      // verdict's ("two answers that cannot both be true, from the verdict");
-      // the page paints it, over the record as it restores it.
-      const painted = (answers: Profile) =>
-        paintedAsComposedScript(verdictFor(replayRecord(ds, answers, Object.keys(answers)).answers));
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        await page.evaluate(seed(CONTRADICTED as Record<string, string>));
-        await page.goto(server.url("/"));
-        const contradicted = JSON.parse(await page.evaluate(painted(CONTRADICTED)));
-        await page.evaluate(seed(CONSISTENT as Record<string, string>));
-        await page.goto(server.url("/"));
-        const consistent = JSON.parse(await page.evaluate(painted(CONSISTENT)));
-        return { contradicted, consistent };
-      }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, typeof PAINTED_AS_COMPOSED>;
+    // What the screen says, and that the verdicts still stand, is the
+    // verdict's ("two answers that cannot both be true, from the verdict");
+    // the page paints it, over the record as it restores it.
+    const painted = (answers: Profile) =>
+      paintedAsComposedScript(verdictFor(replayRecord(ds, answers, Object.keys(answers)).answers));
+    const seen = await withSite(async ({ page, url }) => {
+      await page.goto(url("/"));
+      await page.evaluate(seed(CONTRADICTED as Record<string, string>));
+      await page.goto(url("/"));
+      const contradicted = JSON.parse(await page.evaluate(painted(CONTRADICTED)));
+      await page.evaluate(seed(CONSISTENT as Record<string, string>));
+      await page.goto(url("/"));
+      const consistent = JSON.parse(await page.evaluate(painted(CONSISTENT)));
+      return { contradicted, consistent };
+    }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, typeof PAINTED_AS_COMPOSED>;
 
-      expect(seen.contradicted).toEqual(PAINTED_AS_COMPOSED);
-      expect(seen.consistent).toEqual(PAINTED_AS_COMPOSED);
-    } finally {
-      server.close();
-    }
+    expect(seen.contradicted).toEqual(PAINTED_AS_COMPOSED);
+    expect(seen.consistent).toEqual(PAINTED_AS_COMPOSED);
   }, 180000);
 
   /**
@@ -145,39 +134,34 @@ describe.skipIf(skipped !== null)("the interview helps where it asks", () => {
    * (#151, ruling 8).
    */
   it("prints the shortage question's help as the dataset's sentence, its shorthand explained and no act named", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        // `occupation_it` on the record: Germany asks it before the shortage
-        // question since the shortage Blue Card's IT path reads it (#134), and
-        // a reader out of IT is asked the shortage question next.
-        await page.evaluate(seed({
-          destination: "de", citizenship: "IN", situation: "offer",
-          qualification: "degree", recognition_de: "recognized", occupation_it: "no",
-        }));
-        await page.goto(server.url("/"));
-        return page.evaluate(
-          'JSON.stringify({'
-          + ' question: document.querySelector(".qlabel").textContent.trim(),'
-          + ' help: document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : null })',
-        );
-      }, { viewport: { width: 1100, height: 900 }, mobile: false }) as string) as
-        { question: string; help: string | null };
+    const seen = JSON.parse(await withSite(async ({ page, url }) => {
+      await page.goto(url("/"));
+      // `occupation_it` on the record: Germany asks it before the shortage
+      // question since the shortage Blue Card's IT path reads it (#134), and
+      // a reader out of IT is asked the shortage question next.
+      await page.evaluate(seed({
+        destination: "de", citizenship: "IN", situation: "offer",
+        qualification: "degree", recognition_de: "recognized", occupation_it: "no",
+      }));
+      await page.goto(url("/"));
+      return page.evaluate(
+        'JSON.stringify({'
+        + ' question: document.querySelector(".qlabel").textContent.trim(),'
+        + ' help: document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : null })',
+      );
+    }, { viewport: { width: 1100, height: 900 }, mobile: false }) as string) as
+      { question: string; help: string | null };
 
-      expect(seen.question.toLowerCase()).toContain("shortage");
-      expect(seen.help, "the shortage question offers no help at all").toBeTruthy();
-      // The link's text is the label as the data wrote it, whole, glossed on
-      // the card's memory: nothing above it on the card uses its shorthand.
-      const door = ds.fields.find((f) => f.id === "occupation_shortage")!.learn!;
-      expect(seen.help!).toContain(glossed(door.label, new Set()));
-      // And no act was explained into it: no citation, no symbol to explain
-      // (and the sign's own explainer is gone from every screen since s32's
-      // amendment 6).
-      expect(seen.help!).not.toContain(glossed("AufenthG", new Set()));
-      expect(seen.help!).not.toContain("§");
-    } finally {
-      server.close();
-    }
+    expect(seen.question.toLowerCase()).toContain("shortage");
+    expect(seen.help, "the shortage question offers no help at all").toBeTruthy();
+    // The link's text is the label as the data wrote it, whole, glossed on
+    // the card's memory: nothing above it on the card uses its shorthand.
+    const door = ds.fields.find((f) => f.id === "occupation_shortage")!.learn!;
+    expect(seen.help!).toContain(glossed(door.label, new Set()));
+    // And no act was explained into it: no citation, no symbol to explain
+    // (and the sign's own explainer is gone from every screen since s32's
+    // amendment 6).
+    expect(seen.help!).not.toContain(glossed("AufenthG", new Set()));
+    expect(seen.help!).not.toContain("§");
   }, 180000);
 });

@@ -6,7 +6,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { optionMeans, type Dataset, type Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, stepsIn, verdictFor } from "./verdict-cards.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { withSite } from "./browser-walk.js";
 
 /**
  * The human's walk, 2026-09-08.
@@ -111,7 +111,6 @@ describe("the step says what it means, from the verdict", () => {
 
 /** And the page actually shows both, where the reader was standing. */
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -135,47 +134,42 @@ const seed = (answers: Record<string, string>) =>
 
 describe.skipIf(skipped !== null)("the page shows it where the reader was standing", () => {
   it("under the answer in the interview, and beside the step in the results", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        // 1. The situation question, with the destination already declared.
-        await page.goto(server.url("/"));
-        await page.evaluate(seed({ destination: "nl" }));
-        await page.goto(server.url("/"));
-        const question = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
-        const options = JSON.parse(await page.evaluate(
-          'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
-          + ' label: b.querySelector(".opt-label").textContent.trim(),'
-          + ' means: b.querySelector(".opt-means") ? b.querySelector(".opt-means").textContent.trim() : null })))',
-        ));
+    const seen = await withSite(async ({ page, url }) => {
+      // 1. The situation question, with the destination already declared.
+      await page.goto(url("/"));
+      await page.evaluate(seed({ destination: "nl" }));
+      await page.goto(url("/"));
+      const question = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
+      const options = JSON.parse(await page.evaluate(
+        'JSON.stringify([...document.querySelectorAll(".qcard .opt")].map((b) => ({'
+        + ' label: b.querySelector(".opt-label").textContent.trim(),'
+        + ' means: b.querySelector(".opt-means") ? b.querySelector(".opt-means").textContent.trim() : null })))',
+      ));
 
-        // 2. The results the walk reached: the verdict whose step the case
-        // above reads, as painted.
-        await page.evaluate(seed(WALK));
-        await page.goto(server.url("/"));
-        const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALK))));
-        return { question, options, painted };
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
-        question: string;
-        options: { label: string; means: string | null }[];
-        painted: typeof PAINTED_AS_COMPOSED;
-      };
+      // 2. The results the walk reached: the verdict whose step the case
+      // above reads, as painted.
+      await page.evaluate(seed(WALK));
+      await page.goto(url("/"));
+      const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALK))));
+      return { question, options, painted };
+    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
+      question: string;
+      options: { label: string; means: string | null }[];
+      painted: typeof PAINTED_AS_COMPOSED;
+    };
 
-      expect(seen.question).toBe("Which best describes your situation?");
-      const offer = seen.options.find((o) => o.label.includes("job offer"))!;
-      const transfer = seen.options.find((o) => o.label.includes("transferring"))!;
-      expect(offer.means, "the job-offer answer says nothing about what it means")
-        .toContain("not a transfer to a branch on a contract you hold abroad");
-      expect(transfer.means, "the transfer answer says nothing about what it means")
-        .toContain("Your contract stays with the company abroad");
-      // Only where there is something to settle.
-      expect(seen.options.filter((o) => o.means).length).toBe(2);
+    expect(seen.question).toBe("Which best describes your situation?");
+    const offer = seen.options.find((o) => o.label.includes("job offer"))!;
+    const transfer = seen.options.find((o) => o.label.includes("transferring"))!;
+    expect(offer.means, "the job-offer answer says nothing about what it means")
+      .toContain("not a transfer to a branch on a contract you hold abroad");
+    expect(transfer.means, "the transfer answer says nothing about what it means")
+      .toContain("Your contract stays with the company abroad");
+    // Only where there is something to settle.
+    expect(seen.options.filter((o) => o.means).length).toBe(2);
 
-      // Beside the step: what the step says is the verdict's ("the step says
-      // what it means, from the verdict"); the page paints it.
-      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
-    } finally {
-      server.close();
-    }
+    // Beside the step: what the step says is the verdict's ("the step says
+    // what it means, from the verdict"); the page paints it.
+    expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
   }, 180000);
 });

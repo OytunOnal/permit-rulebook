@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Profile } from "permit-rulebook-data";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { withSite } from "./browser-walk.js";
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
@@ -21,7 +21,6 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * alone on that line where it does not.
  */
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -131,20 +130,17 @@ const READ_LOOK = `JSON.stringify((() => {
 
 /** The results screens these answers draw, read once each is drawn. */
 async function looksAt(viewport: { width: number; height: number }, mobile: boolean, profiles: Profile[]): Promise<Look[]> {
-  const server = await serve(dist);
-  try {
-    return await withBrowser(async (page: BrowserPage) => {
-      const out: Look[] = [];
-      for (const answers of profiles) {
-        await page.goto(server.url("/"));
-        await page.evaluate(seed(answers));
-        await page.goto(server.url("/"));
-        expect(page.problems()).toEqual([]);
-        out.push(JSON.parse(await page.evaluate(READ_LOOK)) as Look);
-      }
-      return out;
-    }, { viewport, mobile });
-  } finally { server.close(); }
+  return await withSite(async ({ page, url }) => {
+    const out: Look[] = [];
+    for (const answers of profiles) {
+      await page.goto(url("/"));
+      await page.evaluate(seed(answers));
+      await page.goto(url("/"));
+      expect(page.problems()).toEqual([]);
+      out.push(JSON.parse(await page.evaluate(READ_LOOK)) as Look);
+    }
+    return out;
+  }, { viewport, mobile });
 }
 
 /** Where a box's vertical centre is. */

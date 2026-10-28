@@ -17,7 +17,7 @@ const ds = rawDataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 /** Why the browser cannot walk here: no Chrome, or no build. Null when it can. */
 export function skipReason(): string | null {
@@ -42,15 +42,12 @@ export function warnNotWalked(what: string, reason: string): void {
  * takes together. */
 export interface PageOnSite { page: BrowserPage; url: (path: string) => string }
 
-/** Serves the built site, opens a browser on `screen`, and hands `run` the
- * page on the site; the browser and the server close after it. */
+/** Walks the built site on `screen`, handing `run` the page on the site, and
+ * returns what `run` returned. Errors are expected: the browser cases assert
+ * the page's `problems()` themselves. */
 export async function withSite<T>(run: (site: PageOnSite) => Promise<T>, screen: Screen): Promise<T> {
-  const server = await serve(dist);
-  try {
-    return await withBrowser((page: BrowserPage) => run({ page, url: server.url }), screen);
-  } finally {
-    server.close();
-  }
+  const { returned } = await walkSite({ site: { folder: dist }, screen, errorsExpected: true }, run);
+  return returned;
 }
 
 /** The beat in milliseconds, as the built stylesheet carries it, in either

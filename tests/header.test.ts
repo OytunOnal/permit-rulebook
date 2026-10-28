@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { withSite } from "./browser-walk.js";
 
 /**
  * The site's header is one object, drawn by identity.css on every page, and
@@ -17,7 +17,6 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * review, 2026-09-08). identity.css owns it; this measures that it does.
  */
 const { chromePath: chromeAt } = await import("../scripts/browser/browser.mjs");
-const { serve: serveDir, withBrowser: withChrome } = await import("../scripts/browser/browser.mjs");
 
 function whyNotMeasured(): string | null {
   try { chromeAt(); } catch (e) { return (e as Error).message; }
@@ -40,40 +39,35 @@ const HEADER_BOX = 'JSON.stringify((() => {'
 
 describe.skipIf(notMeasured !== null)("the header is one object, measured", () => {
   it("the same box, wordmark and seal on the interview and on a route page", async () => {
-    const server = await serveDir(dist);
-    try {
-      const seen = await withChrome(async (page: BrowserPage) => {
-        const at: Record<string, unknown> = {};
-        for (const [name, path] of [
-          ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
-          ["country", "/germany/"], ["data", "/data/"],
-        ] as const) {
-          await page.goto(server.url(path));
-          at[name] = JSON.parse(await page.evaluate(HEADER_BOX));
-        }
-        return at;
-      }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, unknown>;
+    const seen = await withSite(async ({ page, url }) => {
+      const at: Record<string, unknown> = {};
+      for (const [name, path] of [
+        ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
+        ["country", "/germany/"], ["data", "/data/"],
+      ] as const) {
+        await page.goto(url(path));
+        at[name] = JSON.parse(await page.evaluate(HEADER_BOX));
+      }
+      return at;
+    }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, unknown>;
 
-      // Everything identity.css owns. The header's own WIDTH is the page
-      // container's business — the interview keeps a wider gutter than the
-      // generated pages — so it is measured out of this comparison and the
-      // height, the wordmark, the seal, the type and the rule are not.
-      const owned = (box: unknown) => {
-        const b = box as { head: { height: number }; mark: unknown; seal: unknown;
-          family: string; size: string; weight: string; rule: string };
-        return JSON.stringify({ height: b.head.height, mark: b.mark, seal: b.seal,
-          family: b.family, size: b.size, weight: b.weight, rule: b.rule });
-      };
-      const reference = owned(seen.route);
-      for (const [name, box] of Object.entries(seen))
-        expect(owned(box), `${name}'s header is not the route page's header`).toBe(reference);
-      // And it is a real header, not four identically-missing ones.
-      const route = seen.route as { head: { height: number }; seal: { height: number } };
-      expect(route.head.height).toBeGreaterThan(40);
-      expect(route.seal.height).toBeGreaterThan(14);
-    } finally {
-      server.close();
-    }
+    // Everything identity.css owns. The header's own WIDTH is the page
+    // container's business — the interview keeps a wider gutter than the
+    // generated pages — so it is measured out of this comparison and the
+    // height, the wordmark, the seal, the type and the rule are not.
+    const owned = (box: unknown) => {
+      const b = box as { head: { height: number }; mark: unknown; seal: unknown;
+        family: string; size: string; weight: string; rule: string };
+      return JSON.stringify({ height: b.head.height, mark: b.mark, seal: b.seal,
+        family: b.family, size: b.size, weight: b.weight, rule: b.rule });
+    };
+    const reference = owned(seen.route);
+    for (const [name, box] of Object.entries(seen))
+      expect(owned(box), `${name}'s header is not the route page's header`).toBe(reference);
+    // And it is a real header, not four identically-missing ones.
+    const route = seen.route as { head: { height: number }; seal: { height: number } };
+    expect(route.head.height).toBeGreaterThan(40);
+    expect(route.seal.height).toBeGreaterThan(14);
   }, 180000);
 });
 
@@ -110,36 +104,31 @@ describe.skipIf(notMeasured !== null)("the header holds on a machine with none o
     + '     .map((a) => Math.round(a.getBoundingClientRect().top))).size }; })())';
 
   it("one row at 1100 px, with room to spare, on every page", async () => {
-    const server = await serveDir(dist);
-    try {
-      const seen = await withChrome(async (page: BrowserPage) => {
-        const at: Record<string, unknown> = {};
-        for (const [name, path] of [
-          ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
-          ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"], ["error", "/404.html"],
-        ] as const) {
-          await page.goto(server.url(path));
-          await page.evaluate(FALLBACK);
-          await page.waitUntilAtRest();
-          at[name] = JSON.parse(await page.evaluate(ROW));
-        }
-        return at;
-      }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, {
-        height: number; have: number; need: number; rows: number;
-      }>;
-
-      const heights = new Set(Object.values(seen).map((v) => v.height));
-      expect(heights.size, `header heights: ${[...heights].join(", ")}`).toBe(1);
-      for (const [name, box] of Object.entries(seen)) {
-        // Every nav item on the same line: a wrapped row is the defect itself.
-        expect(box.rows, `${name}: the nav wrapped onto ${box.rows} rows`).toBe(1);
-        // And room for a stack wider still than this machine's fallback.
-        const headroom = (box.have - box.need) / box.have;
-        expect(headroom, `${name}: ${box.need} px of row in ${box.have} px — ${
-          Math.round(headroom * 100)}% spare`).toBeGreaterThan(0.12);
+    const seen = await withSite(async ({ page, url }) => {
+      const at: Record<string, unknown> = {};
+      for (const [name, path] of [
+        ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
+        ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"], ["error", "/404.html"],
+      ] as const) {
+        await page.goto(url(path));
+        await page.evaluate(FALLBACK);
+        await page.waitUntilAtRest();
+        at[name] = JSON.parse(await page.evaluate(ROW));
       }
-    } finally {
-      server.close();
+      return at;
+    }, { viewport: { width: 1100, height: 900 }, mobile: false }) as Record<string, {
+      height: number; have: number; need: number; rows: number;
+    }>;
+
+    const heights = new Set(Object.values(seen).map((v) => v.height));
+    expect(heights.size, `header heights: ${[...heights].join(", ")}`).toBe(1);
+    for (const [name, box] of Object.entries(seen)) {
+      // Every nav item on the same line: a wrapped row is the defect itself.
+      expect(box.rows, `${name}: the nav wrapped onto ${box.rows} rows`).toBe(1);
+      // And room for a stack wider still than this machine's fallback.
+      const headroom = (box.have - box.need) / box.have;
+      expect(headroom, `${name}: ${box.need} px of row in ${box.have} px — ${
+        Math.round(headroom * 100)}% spare`).toBeGreaterThan(0.12);
     }
   }, 180000);
 });

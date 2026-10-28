@@ -355,7 +355,7 @@
   },
   "tests/identity.test.ts": {
     "max-lines-per-function": {
-      "count": 7
+      "count": 6
     },
     "roadkeeper/constant-reason": {
       "count": 2
@@ -376,7 +376,7 @@
   },
   "tests/means.test.ts": {
     "max-lines-per-function": {
-      "count": 2
+      "count": 1
     },
     "roadkeeper/constant-reason": {
       "count": 1
@@ -408,7 +408,7 @@
   },
   "tests/orientation.test.ts": {
     "max-lines-per-function": {
-      "count": 5
+      "count": 4
     },
     "roadkeeper/constant-reason": {
       "count": 1
