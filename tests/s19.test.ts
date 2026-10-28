@@ -21,7 +21,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
-import { answerWith, openAtRest } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -310,7 +310,7 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
  * The browser: the mark where the reader is standing, the written state where
  * the walk ended, and the Spanish researcher still met.
  */
-const { chromePath, walkSite } = await import("../scripts/browser/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -337,7 +337,7 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
   });
 
   it("France marks research with the link; Germany, Spain, the Netherlands and all four mark nothing", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1200 }, mobile: false }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+    const seen = await withSite(async ({ page, url: addressOf }) => {
       const out: Record<string, unknown> = {};
       for (const destination of ["fr", "de", "es", "nl", "all"]) {
         await page.goto(addressOf("/"));
@@ -350,7 +350,7 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
         };
       }
       return out;
-    })).returned as Record<string,
+    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string,
       { question: string; marks: { under: string; text: string; href: string | null }[]; problems: string[] }>;
     for (const [destination, s] of Object.entries(seen)) {
       expect(s.question, destination).toBe("Which best describes your situation?");
@@ -365,7 +365,7 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
   }, 120_000);
 
   it("France → research reads the written state; Spain → research is met, as before", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1200 }, mobile: false }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+    const seen = await withSite(async ({ page, url: addressOf }) => {
       // Each screen is read once the page is at rest.
       const read = async (answers: Profile) => ({
         status: await page.evaluate('document.getElementById("cstatus").textContent'),
@@ -385,7 +385,7 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
       await openAtRest(page, addressOf("/"));
       const spain = await read(SPAIN_RESEARCH);
       return { france, spain };
-    })).returned as Record<string, {
+    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, {
       status: string; painted: typeof PAINTED_AS_COMPOSED; state: string; problems: string[];
     }>;
 

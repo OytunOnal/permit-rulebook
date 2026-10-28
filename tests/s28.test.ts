@@ -11,7 +11,7 @@ import { routePages } from "../src/lib/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import { PICK_TURKEY, answerWith } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor, verdictOn,
 } from "./verdict-cards.js";
@@ -224,7 +224,6 @@ describe("4 — the walk's result, from the verdict", () => {
  * in its box; and the route page carries the same sentence.
  */
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -253,7 +252,7 @@ interface Walk {
 describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
   it("Germany → offer → degree → Türkiye → not sure on the shortage list → … : the box is the sentence as one link; the route page says the same", async () => {
     const door = ds.fields.find((f) => f.id === SHORTAGE)!.learn!;
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+    const seen = await withSite(async ({ page, url }) => {
       await page.goto(url("/"));
       await page.evaluate(seed(WALK_START as Record<string, string>));
       await page.goto(url("/"));
@@ -273,7 +272,7 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
         `(() => { const a = document.querySelector(${JSON.stringify(`.asks a[href="${door.url}"]`)}); return a ? a.closest(".asks").textContent.replace(/\\s+/g, " ").trim() : ""; })()`,
       );
       return { help, helpText, state, painted, asks, asksText, problems: page.problems() };
-    })).returned as Walk;
+    }, { viewport: { width: 390, height: 844 }, mobile: true }) as Walk;
 
     expect(seen.problems).toEqual([]);
     // Under the question: the sentence as one link, its shorthand explained

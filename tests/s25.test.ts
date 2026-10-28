@@ -15,7 +15,7 @@ import { declarationHtml, questionCardHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
 import type { BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, openAtRest } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, paintedAsComposedScript, placed, stepsIn, verdictFor, verdictOn,
 } from "./verdict-cards.js";
@@ -335,7 +335,7 @@ describe("s25 — the walked results, from the verdict", () => {
  * The browser: the two questions answered three ways, by the buttons, to the
  * verdict the cases above read, as painted.
  */
-const { chromePath, walkSite } = await import("../scripts/browser/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -379,7 +379,7 @@ async function walk(page: BrowserPage, profile: Profile, painted: string): Promi
 describe.skipIf(skipped !== null)("s25 — in the browser", () => {
   for (const [five, seven, expected] of WAYS)
     it(`${five} / ${seven}: the experienced worker reads ${expected.worker}, the card's tally ${expected.tally ?? "names no experience"}`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1200 }, mobile: false }, errorsExpected: true }, async ({ page, url }) => {
+      const seen = await withSite(async ({ page, url }) => {
         await page.goto(url("/"));
         await page.evaluate(seed(SEEDED as Record<string, string>));
         await page.goto(url("/"));
@@ -387,7 +387,7 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
         const first = await page.evaluate(QLABEL);
         const walked = await walk(page, withExperience(five, seven), paintedAsComposedScript(verdictFor(walkedTo(five, seven))));
         return { resumed, first, ...walked };
-      })).returned as
+      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
         { resumed: string; first: string; asked: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] };
       expect(seen.problems).toEqual([]);
       expect(seen.resumed).toContain(resumedLine(Object.keys(SEEDED).length));
@@ -400,7 +400,7 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
     }, 120_000);
 
   it("an old record with y3in7 restores without it and says how many answers were kept", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1200 }, mobile: false }, errorsExpected: true }, async ({ page, url }) => {
+    const seen = await withSite(async ({ page, url }) => {
       await page.goto(url("/"));
       await page.evaluate(seed({ ...SEEDED as Record<string, string>, experience: "y3in7", experience_7y: "yes" }));
       await openAtRest(page, url("/"));
@@ -410,7 +410,7 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
         rows: await page.evaluate('[...document.querySelectorAll("#decl-list [data-field]")].map((r) => r.dataset.field).join(",")'),
         problems: page.problems(),
       };
-    })).returned as
+    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
       { resumed: string; first: string; rows: string; problems: string[] };
     expect(seen.problems).toEqual([]);
     expect(seen.resumed).toContain(resumedLine(Object.keys(SEEDED).length));

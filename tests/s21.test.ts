@@ -14,7 +14,7 @@ import { routesNeed, unscoredHeadline, unscoredTallyLine } from "../src/lib/copy
 import { url } from "../src/lib/site.js";
 import { verdictHtml, type Tally } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictOn } from "./verdict-cards.js";
-import { PICK_TURKEY, answerWith } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -255,7 +255,6 @@ describe("s21 — the walk's result, from the verdict", () => {
  * and the sentence where "5 not yet" was.
  */
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -293,7 +292,7 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
   });
 
   it("all four → research: France is marked at question 3, announced, with an internal link; the walk ends with the sentence on France's line", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1200 }, mobile: false }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+    const seen = await withSite(async ({ page, url: addressOf }) => {
       await page.goto(addressOf("/"));
       await page.evaluate(seed({ destination: "all", situation: "research" }));
       await page.goto(addressOf("/"));
@@ -322,7 +321,7 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
         problems: page.problems(),
       };
       return { q3, q4, result };
-    })).returned as {
+    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
       q3: {
         question: string; problems: string[];
         marks: { under: string; id: string; text: string; href: string | null; glyph: string | null }[];

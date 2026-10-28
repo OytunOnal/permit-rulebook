@@ -21,8 +21,8 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
-import { walkSite, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -322,7 +322,7 @@ interface Header {
 describe.skipIf(skipped !== null)("s27 — in the browser", () => {
   for (const [name, viewport, mobile] of VIEWPORTS) {
     it(`${name}: the menu button reads Menu, then Close, then Menu again after Escape and after a tap outside`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+      const seen = await withSite(async ({ page, url: addressOf }) => {
         await page.goto(addressOf("/germany/"));
         const closed = JSON.parse(await page.evaluate(BUTTON));
         await page.evaluate('document.querySelector(".menu").click()');
@@ -334,7 +334,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         await page.evaluate('document.querySelector("footer").click()');
         const outside = JSON.parse(await page.evaluate(BUTTON));
         return { closed, open, escaped, reopened, outside, problems: page.problems() };
-      })).returned as unknown as Record<string, { text: string; expanded: string }> & { problems: string[] };
+      }, { viewport, mobile }) as unknown as Record<string, { text: string; expanded: string }> & { problems: string[] };
       expect(seen.problems).toEqual([]);
       expect(seen.closed).toEqual({ text: MENU, expanded: "false" });
       expect(seen.open).toEqual({ text: MENU_CLOSE, expanded: "true" });
@@ -344,14 +344,14 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
     }, 180_000);
 
     it(`${name}: on the four-country result the mark is within 0.6 em of the name, closed and open, on every section`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+      const seen = await withSite(async ({ page, url: addressOf }) => {
         await walkToFour(page, addressOf("/"));
         const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALKED_TO_FOUR))));
         const asDrawn = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
         await evaluateAtRest(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
         const toggled = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
         return { painted, asDrawn, toggled, problems: page.problems() };
-      })).returned as {
+      }, { viewport, mobile }) as {
         painted: typeof PAINTED_AS_COMPOSED; asDrawn: Section[]; toggled: Section[]; problems: string[];
       };
       expect(seen.problems).toEqual([]);
@@ -384,7 +384,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
     }, 180_000);
 
     it(`${name}: the 404 carries the sentence once, as the visible heading its section is labelled by`, async () => {
-      const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+      const seen = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
         await page.goto(addressOf("/404.html"));
         return page.evaluate(`JSON.stringify((() => {
           const section = document.querySelector("section.cta");
@@ -396,7 +396,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
             && getComputedStyle(label).position !== "absolute", carriers: carriers.length,
             carrierIsLabel: carriers.length === 1 && carriers[0] === label };
         })())`);
-      })).returned as string) as { tag: string; text: string; visible: boolean; carriers: number; carrierIsLabel: boolean };
+      }, { viewport, mobile }) as string) as { tag: string; text: string; visible: boolean; carriers: number; carrierIsLabel: boolean };
       expect(seen.tag).toBe("H2");
       expect(seen.text).toBe(NOT_FOUND_START);
       expect(seen.visible).toBe(true);
@@ -406,7 +406,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
     }, 180_000);
 
     it(`${name}: a route page's H1 is the name; the tagline is the next element, in the type the em had`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+      const seen = await withSite(async ({ page, url: addressOf }) => {
         await page.goto(addressOf(EXPERIENCED));
         const route = JSON.parse(await page.evaluate(HEADER)) as Header;
         const routeProblems = page.problems();
@@ -414,7 +414,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         await page.goto(addressOf("/germany/"));
         const country = JSON.parse(await page.evaluate(HEADER)) as Header;
         return { route, country, problems: [...routeProblems, ...page.problems()] };
-      })).returned as { route: Header; country: Header; problems: string[] };
+      }, { viewport, mobile }) as { route: Header; country: Header; problems: string[] };
       expect(seen.problems).toEqual([]);
       // The name alone — and since s32's amendment 6 without the sign's
       // explainer after the citation.
@@ -431,11 +431,11 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
 
   it("1280x900: in the ledger, over every answer the dataset offers, the pen sits on the answer's last line and never as its first glyph", async () => {
     const rows = ledgerRows();
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1280, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+    const seen = await withSite(async ({ page, url: addressOf }) => {
       await openAtRest(page, addressOf("/"));
       await evaluateAtRest(page, `document.getElementById("decl-list").innerHTML = ${JSON.stringify(rows)}`);
       return { pens: JSON.parse(await page.evaluate(PENS)) as Pen[], problems: page.problems() };
-    })).returned as { pens: Pen[]; problems: string[] };
+    }, { viewport: { width: 1280, height: 900 }, mobile: false }) as { pens: Pen[]; problems: string[] };
     expect(seen.problems).toEqual([]);
     expect(seen.pens.length).toBeGreaterThan(200);
     // The measurement is of the real sidebar, at its real width: the 15.5rem
@@ -453,7 +453,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
 
   for (const [name, viewport, mobile] of VIEWPORTS) {
     it(`${name}: under the open card the door is underlined, in the prose-link colour, on a line of its own beneath the scope line, at the tap size`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+      const seen = await withSite(async ({ page, url: addressOf }) => {
         await page.goto(addressOf("/"));
         await page.evaluate(seed(OPENED as Record<string, string>));
         await openAtRest(page, addressOf("/"));
@@ -474,7 +474,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
           decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
         };
         return { door, problems: page.problems() };
-      })).returned as {
+      }, { viewport, mobile }) as {
         door: { decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number };
         problems: string[];
       };

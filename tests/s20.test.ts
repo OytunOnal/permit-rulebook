@@ -8,7 +8,7 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import type { BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, evaluateAtRest, openAtRest } from "./browser-walk.js";
+import { answerWith, evaluateAtRest, openAtRest, withSite } from "./browser-walk.js";
 
 /**
  * s20 — the correction lands on the question and returns to the verdict.
@@ -84,7 +84,6 @@ describe("the two records the walks seed", () => {
 });
 
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -192,9 +191,7 @@ describe.skipIf(skipped !== null)("✎ on a result lands on the question and the
     ["1240x900, where the panel is a sidebar", { width: 1240, height: 900 }, false],
   ] as const)
     it(`at ${name}`, async () => {
-      const seen = (await walkSite(
-        { site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, ({ page, url }) => correction(page, url),
-      )).returned;
+      const seen = await withSite(({ page, url }) => correction(page, url), { viewport, mobile });
       expect(seen.problems).toEqual([]);
       expect(seen.result.state, "the finished record did not restore to a result").toBe("results");
 
@@ -229,7 +226,7 @@ describe.skipIf(skipped !== null)("✎ on a result lands on the question and the
 
 describe.skipIf(skipped !== null)("every answer moves the focus to the next question's first control (F6)", () => {
   it("three questions in a row, from a cold /", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1240, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page, url }) => {
+    const seen = await withSite(async ({ page, url }) => {
       await page.goto(url("/404.html"));
       await page.evaluate(seed(null));
       await openAtRest(page, url("/"));
@@ -242,7 +239,7 @@ describe.skipIf(skipped !== null)("every answer moves the focus to the next ques
         steps.push(JSON.parse(await page.evaluate(WHERE)));
       }
       return { steps, problems: page.problems() };
-    })).returned;
+    }, { viewport: { width: 1240, height: 900 }, mobile: false });
     expect(seen.problems).toEqual([]);
     // The cold first paint is left alone: nothing takes the focus from a
     // reader who has not touched anything yet.
@@ -256,7 +253,7 @@ describe.skipIf(skipped !== null)("every answer moves the focus to the next ques
 
 describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
   it("a half-done record: the line, its count, and the one Start over control", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+    const seen = await withSite(async ({ page, url }) => {
       await page.goto(url("/404.html"));
       await page.evaluate(seed(halfDone));
       await openAtRest(page, url("/"));
@@ -270,7 +267,7 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
       const restarted = JSON.parse(await page.evaluate(WHERE)) as Where;
       const stored = await page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
       return { resumed, next, restarted, stored, problems: page.problems() };
-    })).returned;
+    }, { viewport: { width: 390, height: 844 }, mobile: true });
     expect(seen.problems).toEqual([]);
     expect(seen.resumed.state).toBe("questions");
     // The count is the ledger's own: what the replay keeps of the record,
@@ -299,12 +296,12 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
     ["a finished record, which restores to the verdict", finished, "results", true],
   ] as const)
     it(`is ${resumes ? "there, with the one Start over control," : "absent"} on ${name}`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+      const seen = await withSite(async ({ page, url }) => {
         await page.goto(url("/404.html"));
         await page.evaluate(seed(record));
         await openAtRest(page, url("/"));
         return JSON.parse(await page.evaluate(WHERE)) as Where;
-      })).returned;
+      }, { viewport: { width: 390, height: 844 }, mobile: true });
       expect(seen.state).toBe(state);
       expect(seen.resumed !== null, `the resumed line is ${seen.resumed === null ? "missing" : "there"}`).toBe(resumes);
       expect(seen.resumedRestart).toBe(resumes);

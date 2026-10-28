@@ -23,7 +23,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import { answerWith, openAtRest } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
 /**
@@ -452,7 +452,7 @@ describe("the results line, from the verdict", () => {
     });
 });
 
-const { chromePath, walkSite } = await import("../scripts/browser/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -486,7 +486,7 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
   // <details class="country-sec"> per country shown.
   for (const [name, profile, arrival] of LAYOUTS)
     it(`the line is under the strip on the ${name} layout, and its link is the page`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1000 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+      const seen = await withSite(async ({ page: page_, url }) => {
         await page_.goto(url("/"));
         await page_.evaluate(seed(profile));
         await openAtRest(page_, url(arrival));
@@ -499,7 +499,7 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
             verdictFor(replayRecord(ds, profile, Object.keys(profile)).answers),
           ))),
         };
-      })).returned as {
+      }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as {
         say: { height: number; mailtos: string[] }; painted: typeof PAINTED_AS_COMPOSED;
       };
 
@@ -515,7 +515,7 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
     }, 180000);
 
   it("and on /feedback/ reached from that screen the hrefs are the constants, byte for byte", async () => {
-    const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1000 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+    const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
       await page_.goto(url("/"));
       await page_.evaluate(seed(frRecord));
       await page_.goto(url("/?country=fr"));
@@ -528,7 +528,7 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
         + '   .map((a) => a.getAttribute("href")),'
         + ' search: location.search })',
       );
-    })).returned as string) as
+    }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
       { path: string; mailtos: string[]; gmails: string[]; search: string };
 
     expect(seen.path).toBe(url(FEEDBACK_PATH));
@@ -543,14 +543,14 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
   }, 180000);
 
   it("no question screen carries it", async () => {
-    const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1000 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+    const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
       await openAtRest(page_, url("/"));
       const first = await page_.evaluate(SAY);
       // One answer in, still a question screen.
       await answerWith(page_, 'document.querySelector(".qcard .opt").click()');
       const second = await page_.evaluate(SAY);
       return JSON.stringify({ first: JSON.parse(first), second: JSON.parse(second) });
-    })).returned as string) as
+    }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
       { first: { present: boolean }; second: { present: boolean } };
 
     expect(seen.first.present, "question one offers a line about a result").toBe(false);
@@ -620,7 +620,7 @@ interface Opened {
 
 describe.skipIf(skipped !== null)("the header row, measured at the fold", () => {
   it("at 960 px holds its four items on one line with fonts this machine has never seen", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 960, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+    const seen = await withSite(async ({ page: page_, url }) => {
       const at: Record<string, unknown> = {};
       for (const [name, path] of [
         ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
@@ -632,7 +632,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
         at[name] = JSON.parse(await page_.evaluate(ROW));
       }
       return at;
-    })).returned as Record<string, {
+    }, { viewport: { width: 960, height: 900 }, mobile: false }) as Record<string, {
       items: { text: string; width: number }[]; rows: number; have: number; need: number;
     }>;
 
@@ -652,7 +652,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
   }, 180000);
 
   it("the opened list covers no other item on the row, and closes on Escape and on a tap outside", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 960, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+    const seen = await withSite(async ({ page: page_, url }) => {
       // Every word the summary can be, because the list is centred on the
       // word and the shortest word overhangs the most: "Spain" ran 45 px
       // under the separator where "Netherlands" ran 15 (measured, 2026-09-16).
@@ -678,7 +678,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
       await page_.evaluate('document.querySelector("h1").click()');
       const outside = JSON.parse(await page_.evaluate(OPEN_LIST));
       return { opened, escaped, again, outside, words };
-    })).returned as unknown as Record<string, {
+    }, { viewport: { width: 960, height: 900 }, mobile: false }) as unknown as Record<string, {
       open: boolean; list: number[]; hits: { text: string; overlap: boolean; box: number[] }[];
     }> & { words: Record<string, Opened> };
 
@@ -702,7 +702,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
   }, 180000);
 
   it("at 1240 px, where the human measured it, the list clears the separator on every word", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1240, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+    const seen = await withSite(async ({ page: page_, url }) => {
       const words: Record<string, unknown> = {};
       for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
         await page_.goto(url(path));
@@ -710,7 +710,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
         words[path] = JSON.parse(await page_.evaluate(OPEN_LIST));
       }
       return words;
-    })).returned as Record<string, Opened>;
+    }, { viewport: { width: 1240, height: 900 }, mobile: false }) as Record<string, Opened>;
 
     for (const [path, at] of Object.entries(seen)) {
       for (const hit of at.hits)
@@ -722,7 +722,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
   }, 180000);
 
   it("at 761 px the header is folded behind Menu, as it has been since 2026-09-08", async () => {
-    const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width: 761, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+    const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
       await page_.goto(url("/"));
       await page_.evaluate(FALLBACK);
       await page_.waitUntilAtRest();
@@ -731,7 +731,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
         + ' navShown: getComputedStyle(document.querySelector(".site-head .nav")).display !== "none",'
         + ' overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth })',
       );
-    })).returned as string) as
+    }, { viewport: { width: 761, height: 900 }, mobile: false }) as string) as
       { menuShown: boolean; navShown: boolean; overflow: number };
     expect(seen.menuShown, "no Menu control at 761").toBe(true);
     expect(seen.navShown, "the row is showing at 761, where it folds").toBe(false);
@@ -739,7 +739,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
   }, 180000);
 
   it("at 390 the menu lists the four countries under their heading, then the three", async () => {
-    const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page: page_, url }) => {
+    const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
       await page_.goto(url("/france/"));
       await page_.evaluate('document.querySelector(".menu").click()');
       await page_.waitUntilAtRest();
@@ -755,7 +755,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
         + '   taps: [...nav.querySelectorAll("a")].filter(shown)'
         + '     .map((a) => Math.round(a.getBoundingClientRect().height)) }; })())',
       );
-    })).returned as string) as
+    }, { viewport: { width: 390, height: 844 }, mobile: true }) as string) as
       { rows: string[]; heading: string; summaryShown: boolean; taps: number[] };
 
     expect(seen.heading, "no Countries heading over the rows").toBe(COUNTRIES);
@@ -772,7 +772,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
 
 describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
   it("the Copy button puts the address on the clipboard and says so for two seconds", async () => {
-    const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1000, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+    const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
       await page_.goto(url("/feedback/"));
       // Headless Chrome may refuse the clipboard: the write is stood in for
       // by a stub that records what it was handed, which is the fact under
@@ -806,7 +806,7 @@ describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
         + ` visible: ${button}.textContent.trim(),`
         + ' text: document.getElementById("feedback-address").textContent })',
       );
-    })).returned as string) as {
+    }, { viewport: { width: 1000, height: 900 }, mobile: false }) as string) as {
       copied: string[]; before: string; afterIcon: string; later: string; afterText: string;
       height: number; borderWidth: string; icon: number; visible: string; text: string;
     };
@@ -828,7 +828,7 @@ describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
 
   for (const [width, height, mobile] of [[390, 844, true], [1000, 900, false]] as const)
     it(`every button and link reaches the tap floor at ${width} px`, async () => {
-      const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width, height }, mobile }, errorsExpected: true }, async ({ page: page_, url }) => {
+      const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
         await page_.goto(url("/feedback/"));
         return page_.evaluate(
           'JSON.stringify({ overflow: document.documentElement.scrollWidth'
@@ -837,7 +837,7 @@ describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
           + '   text: el.textContent.trim().slice(0, 40),'
           + '   height: Math.round(el.getBoundingClientRect().height) })) })',
         );
-      })).returned) as
+      }, { viewport: { width, height }, mobile })) as
         { overflow: number; targets: { text: string; height: number }[] };
 
       expect(seen.targets.length, "the page has no doors on it").toBeGreaterThanOrEqual(6);

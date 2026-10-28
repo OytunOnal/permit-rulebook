@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { RETURNING_LINE } from "../src/lib/copy/interview.js";
 import { holdLineHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { answerWith, openAtRest } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 
 /**
  * s31 — the hold state says where it is, and two small things.
@@ -263,7 +263,7 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
     ["1240x900, where the ledger is a sidebar", { width: 1240, height: 900 }, false],
   ] as const)
     it(`at ${name}: after a correction the headline holds the focus — the element the live region says`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url }) => {
+      const seen = await withSite(async ({ page, url }) => {
         await page.goto(url("/404.html"));
         await page.evaluate(SEED_FINISHED);
         await openAtRest(page, url("/"));
@@ -274,7 +274,7 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
         await answerWith(page, ANSWER_ANOTHER_BAND);
         const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
         return { arrived, onQuestion, back, problems: page.problems() };
-      })).returned;
+      }, { viewport, mobile });
       expect(seen.problems).toEqual([]);
       // The arrival keeps s10's rule: a reader who touched nothing has
       // nothing taken from them.
@@ -302,12 +302,12 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
     ["a finished record", "/", SEED_FINISHED],
   ] as const)
     it(`a first arrival takes no focus: ${name}`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+      const seen = await withSite(async ({ page, url }) => {
         await page.goto(url("/404.html"));
         await page.evaluate(seed);
         await openAtRest(page, url(path));
         return { at: JSON.parse(await page.evaluate(FOCUS)) as Focus, problems: page.problems() };
-      })).returned;
+      }, { viewport: { width: 390, height: 844 }, mobile: true });
       expect(seen.problems).toEqual([]);
       expect(seen.at.active, `the arrival focused ${seen.at.active}`).toBe("body");
     }, 180000);

@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { fileURLToPath } from "node:url";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { walkSite, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 
 /**
  * s30 — on a phone the next question comes up to meet the reader.
@@ -27,8 +26,6 @@ import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalk
  * keeps F8's order. And a correction lands too — with the ledger open above
  * the card the reopened question sat below it and s20's reveal did nothing.
  */
-const dist = fileURLToPath(new URL("../dist", import.meta.url));
-
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE QUESTION'S LANDING", skipped);
@@ -159,7 +156,7 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
     ["375x667, where a long first option was cut", { width: 375, height: 667 }],
   ] as const)
     it(`at ${name}: the first answer, the next, and Back`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+      const seen = await withSite(async ({ page, url }) => {
         const cold = await coldStart(page, url);
         await answerWith(page, TAP_FIRST);
         const first = await where(page);
@@ -178,7 +175,7 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
         await pressBack(page);
         const backFromScrolled = await where(page);
         return { cold, first, second, back, readOn, third, backFromScrolled, problems: page.problems() };
-      })).returned;
+      }, { viewport, mobile: true });
       expect(seen.problems).toEqual([]);
       expect(seen.cold.wide, "the breakpoint reads this width as wide").toBe(false);
       // The first paint is not a gesture: the cold load scrolls nothing, and
@@ -208,7 +205,7 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
     }, 180000);
 
   it("with reduced motion the landing is instant: final before the browser draws a frame", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+    const seen = await withSite(async ({ page, url }) => {
       // The feature in CDP's own form (a name and a value, not a query), and
       // then the platform's query for it — spelled the way the page spells it
       // in its script, which declares it as a literal and exports nothing.
@@ -221,7 +218,7 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
       const atOnce = JSON.parse(await answerWith(page, TAP_FIRST_AND_READ)) as Where;
       const later = await where(page);
       return { cold, reduced, atOnce, later, problems: page.problems() };
-    })).returned;
+    }, { viewport: { width: 390, height: 844 }, mobile: true });
     expect(seen.problems).toEqual([]);
     expect(seen.reduced, "the browser did not take the reduced-motion preference").toBe(true);
     expectLanded(seen.atOnce, "in the same task as the tap");
@@ -231,14 +228,14 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
 
 describe.skipIf(skipped !== null)("what does not change", () => {
   it("at 1280x900 an answer scrolls nothing: the card sits beside the ledger with room above it", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1280, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page, url }) => {
+    const seen = await withSite(async ({ page, url }) => {
       const cold = await coldStart(page, url);
       await answerWith(page, TAP_FIRST);
       const first = await where(page);
       await answerWith(page, TAP_FIRST);
       const second = await where(page);
       return { cold, first, second, problems: page.problems() };
-    })).returned;
+    }, { viewport: { width: 1280, height: 900 }, mobile: false });
     expect(seen.problems).toEqual([]);
     expect(seen.cold.wide, "the breakpoint reads this width as narrow").toBe(true);
     expect(seen.first.state).toBe("questions");
@@ -248,7 +245,7 @@ describe.skipIf(skipped !== null)("what does not change", () => {
   }, 180000);
 
   it("at 1280x900 a ✎ correction keeps s20's rule: a card whose top is on the screen is not moved", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1280, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page, url }) => {
+    const seen = await withSite(async ({ page, url }) => {
       const cold = await coldStart(page, url);
       await answerWith(page, TAP_FIRST);
       const answered = await where(page);
@@ -259,7 +256,7 @@ describe.skipIf(skipped !== null)("what does not change", () => {
       await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
       const corrected = await where(page);
       return { cold, answered, before, corrected, problems: page.problems() };
-    })).returned;
+    }, { viewport: { width: 1280, height: 900 }, mobile: false });
     expect(seen.problems).toEqual([]);
     // The ledger is beside the card, before and after an answer: the order
     // the grid gives a wide screen does not change.
@@ -287,7 +284,7 @@ describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back u
     JSON.stringify(serialize(halfDone, Object.keys(halfDone)))})`;
 
   it("at 390x844", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+    const seen = await withSite(async ({ page, url }) => {
       await page.goto(url("/404.html"));
       await page.evaluate(SEED);
       await openAtRest(page, url("/"));
@@ -299,7 +296,7 @@ describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back u
       await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
       const reset = await where(page);
       return { restored, before, reset, problems: page.problems() };
-    })).returned;
+    }, { viewport: { width: 390, height: 844 }, mobile: true });
     expect(seen.problems).toEqual([]);
     // With answers on the device the ledger line is above from the first
     // paint, and the first paint scrolls nothing.
@@ -320,14 +317,14 @@ describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back u
 
 describe.skipIf(skipped !== null)("a link the page does not know keeps the first paint's order on a phone", () => {
   it("at 390x844: ?country=zz brings no answer, and the ledger line stays where the head put it", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+    const seen = await withSite(async ({ page, url }) => {
       await page.goto(url("/404.html"));
       await page.evaluate("localStorage.clear()");
       await openAtRest(page, url("/?country=zz"));
       const landed = await where(page);
       const count = await page.evaluate('document.getElementById("decl-count").textContent');
       return { landed, count, problems: page.problems() };
-    })).returned;
+    }, { viewport: { width: 390, height: 844 }, mobile: true });
     expect(seen.problems).toEqual([]);
     // The head wrote the seed for a link it cannot check; the module found
     // no answer in it. Its word stands for the first screen: the line above
@@ -384,7 +381,7 @@ describe.skipIf(skipped !== null)("on a phone the ledger line sits above the res
     ["375x667", { width: 375, height: 667 }],
   ] as const)
     it(`at ${name}: the verdict, ✎ from it, and the way back`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: true }, errorsExpected: true }, ({ page, url }) => verdictWalk(page, url))).returned;
+      const seen = await withSite(({ page, url }) => verdictWalk(page, url), { viewport, mobile: true });
       expect(seen.problems).toEqual([]);
       expect(seen.verdict.answered).toBe(true);
       expectLedgerAboveResult(seen.verdict, "on arrival");
@@ -405,7 +402,7 @@ describe.skipIf(skipped !== null)("on a phone the ledger line sits above the res
     }, 180000);
 
   it("at 1280x900 the ledger stays beside the result", async () => {
-    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1280, height: 900 }, mobile: false }, errorsExpected: true }, ({ page, url }) => verdictWalk(page, url))).returned;
+    const seen = await withSite(({ page, url }) => verdictWalk(page, url), { viewport: { width: 1280, height: 900 }, mobile: false });
     expect(seen.problems).toEqual([]);
     for (const [label, step] of [["on arrival", seen.verdict], ["after the answer", seen.returned]] as const) {
       expect(step.state, label).toBe("results");
@@ -422,14 +419,14 @@ describe.skipIf(skipped !== null)("on a phone a correction lands too (amendment 
     ["375x667", { width: 375, height: 667 }],
   ] as const)
     it(`at ${name}: the ledger opened, ✎ tapped — the ledger closes and lands, the question under it`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+      const seen = await withSite(async ({ page, url }) => {
         await coldStart(page, url);
         await answerWith(page, TAP_FIRST);
         const answered = await where(page);
         await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
         const corrected = await where(page);
         return { answered, corrected, problems: page.problems() };
-      })).returned;
+      }, { viewport, mobile: true });
       expect(seen.problems).toEqual([]);
       expect(seen.corrected.question, "the correction did not reopen the first question").not.toBe(seen.answered.question);
       expect(seen.corrected.declOpen, "the ledger stayed open above the reopened question").toBe(false);

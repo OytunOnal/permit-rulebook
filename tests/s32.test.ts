@@ -12,6 +12,7 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import {
   PAINTED_AS_COMPOSED, cardOn, everyCardIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
+import { withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -174,7 +175,6 @@ describe("s32 — the transferee's ICT card, from the verdict", () => {
  * the card the case above reads, as the phone paints it.
  */
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -191,7 +191,7 @@ const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
 describe.skipIf(skipped !== null)("s32 — in the browser", () => {
   it("a transferee in Germany reads the tenure under not checked here on the ICT card at 390×844", async () => {
     const phone = { viewport: { width: 390, height: 844 }, mobile: true };
-    const { returned: seen } = await walkSite({ site: { folder: dist }, screen: phone, errorsExpected: true }, async ({ page, url }) => {
+    const seen = await withSite(async ({ page, url }) => {
       await page.goto(url("/404.html"));
       await page.evaluate(SEED);
       await page.goto(url("/"));
@@ -200,7 +200,7 @@ describe.skipIf(skipped !== null)("s32 — in the browser", () => {
         painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, transferee)))) as typeof PAINTED_AS_COMPOSED,
         problems: page.problems(),
       };
-    });
+    }, phone);
     expect(seen.problems).toEqual([]);
     expect(seen.state).toBe("results");
     expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
