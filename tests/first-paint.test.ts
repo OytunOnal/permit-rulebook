@@ -12,7 +12,7 @@ import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/ques
 import { replayRecord } from "../src/lib/scope.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { url } from "../src/lib/site.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { walkSite, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { ABOVE_THE_BOX, shiftsBeforeAndAfterATap } from "./layout-shifts.js";
 import { openAtRest, skipReason, warnNotWalked } from "./browser-walk.js";
 
@@ -93,8 +93,6 @@ import { openAtRest, skipReason, warnNotWalked } from "./browser-walk.js";
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const DATASET = rawDataset as unknown as Dataset;
-
-const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE FIRST PAINT", skipped);

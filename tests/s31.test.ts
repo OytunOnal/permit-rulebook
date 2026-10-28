@@ -32,8 +32,7 @@ import { answerWith, openAtRest, withSite } from "./browser-walk.js";
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
-const { walkSite } = await import("../scripts/browser/browser.mjs");
+const { chromePath, PHONE, walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

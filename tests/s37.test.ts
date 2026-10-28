@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
-import { PHONE, type BrowserPage, type Screen } from "../scripts/browser/browser.mjs";
+import { PHONE, chromePath, type BrowserPage, type Screen } from "../scripts/browser/browser.mjs";
 import { answerOnce, withSite, type PageOnSite } from "./browser-walk.js";
 
 /**
@@ -20,8 +20,6 @@ import { answerOnce, withSite, type PageOnSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
-
-const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 /** Why the walk cannot run here: no Chrome, or no build. Null when it can. */
 function walkSkipReason(): string | null {

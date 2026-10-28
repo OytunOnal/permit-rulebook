@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { PHONE, walkSite, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
@@ -11,7 +11,6 @@ import { skipReason, warnNotWalked } from "./browser-walk.js";
  */
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
-const { PHONE, walkSite } = await import("../scripts/browser/browser.mjs");
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE HARNESS'S WAITS", skipped);

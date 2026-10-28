@@ -287,14 +287,13 @@ describe("a country page prints the section sign bare", () => {
  * pointed at a redirect, and a link preview at a different address from the
  * sitemap (devils-advocate, 2026-09-08). One address per page now.
  */
-const { chromePath: chromeFor } = await import("../scripts/browser/browser.mjs");
-const { serve: serveSite } = await import("../scripts/browser/browser.mjs");
+const { chromePath, serve } = await import("../scripts/browser/browser.mjs");
 
 describe("every address the site publishes is the address it serves", () => {
   it("every sitemap URL answers 200 with no redirect, and matches the page's own canonical", async () => {
     if (!existsSync(dist)) return;
-    try { chromeFor(); } catch { return; }
-    const server = await serveSite(dist);
+    try { chromePath(); } catch { return; }
+    const server = await serve(dist);
     try {
       const locs = [...sitemapXml(ds).matchAll(/<loc>([^<]*)<[/]loc>/g)].map((m) => m[1]!);
       expect(locs.length).toBeGreaterThan(25);

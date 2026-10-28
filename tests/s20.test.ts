@@ -7,7 +7,7 @@ import { resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, evaluateAtRest, openAtRest, withSite } from "./browser-walk.js";
 
 /**
@@ -82,8 +82,6 @@ describe("the two records the walks seed", () => {
     expect(remainingQuestions(ds, halfDone).length).toBeGreaterThan(0);
   });
 });
-
-const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

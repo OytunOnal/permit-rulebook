@@ -10,7 +10,7 @@ import { routePages } from "../src/lib/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, unreadSourcesAt, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
-import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { withSite } from "./browser-walk.js";
 
 /**
@@ -188,8 +188,6 @@ describe("one footer, every page", () => {
 });
 
 /** And how it lays out, measured at the widths the critique named. */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
   if (!existsSync(dist)) return "no dist/ — run npm run build first";

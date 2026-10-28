@@ -23,7 +23,7 @@ import { fileURLToPath } from "node:url";
  * cannot open the site must not report that the site is fine.
  */
 
-const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { chromePath, serve } = await import("../scripts/browser/browser.mjs");
 const { smoke, CHECKS, DEFAULT_SURFACES } = await import("../scripts/smoke.mjs");
 const { notOurDevServer } = await import("../scripts/dev-server.mjs");
 
@@ -170,7 +170,6 @@ describe("the harness refuses to walk a process it did not start", () => {
 
   it("rejects the built site served statically — real pages, but not a dev server", async () => {
     if (!existsSync(dist)) return;
-    const { serve } = await import("../scripts/browser/browser.mjs");
     const server = await serve(dist);
     try {
       // The first half of the check passes here: it is our product, with its

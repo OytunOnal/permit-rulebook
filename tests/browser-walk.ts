@@ -4,7 +4,7 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import type { BrowserPage, Screen } from "../scripts/browser/browser.mjs";
+import { chromePath, walkSite, type BrowserPage, type Screen } from "../scripts/browser/browser.mjs";
 
 /**
  * The interview walked in headless Chrome over the built page: what the
@@ -15,9 +15,6 @@ const ds = rawDataset as unknown as Dataset;
 
 /** The built site the walks are served from. */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
-
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 /** Why the browser cannot walk here: no Chrome, or no build. Null when it can. */
 export function skipReason(): string | null {

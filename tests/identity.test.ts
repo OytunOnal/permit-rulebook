@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { PAGE_CSS } from "../src/lib/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { datasetMeta, type Dataset } from "permit-rulebook-data";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 
 /**
@@ -151,8 +151,6 @@ describe("the identity pair has one definition", () => {
  * is not a shared result: a page can override it, and the promise the human
  * made is geometric — the corner meets the middle of the top edge.
  */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
   if (!existsSync(dist)) return "no dist/ — run npm run build first";
@@ -542,10 +540,8 @@ describe("the identity has one set of elements too", () => {
   });
 });
 
-const { chromePath: chromeAt } = await import("../scripts/browser/browser.mjs");
-
 function whyNotMeasured(): string | null {
-  try { chromeAt(); } catch (e) { return (e as Error).message; }
+  try { chromePath(); } catch (e) { return (e as Error).message; }
   if (!existsSync(dist)) return "no dist/ — run npm run build first";
   return null;
 }

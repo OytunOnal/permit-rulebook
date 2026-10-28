@@ -14,7 +14,7 @@ import { glossed } from "../src/lib/gloss.js";
 import { declarationHtml, questionCardHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, paintedAsComposedScript, placed, stepsIn, verdictFor, verdictOn,
@@ -335,8 +335,6 @@ describe("s25 — the walked results, from the verdict", () => {
  * The browser: the two questions answered three ways, by the buttons, to the
  * verdict the cases above read, as painted.
  */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
-
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
   if (!existsSync(dist)) return "no dist/ — run npm run build first";
