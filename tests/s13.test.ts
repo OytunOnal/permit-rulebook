@@ -23,7 +23,6 @@ import { replayRecord } from "../src/lib/scope.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, openAtRest } from "./browser-walk.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
@@ -453,7 +452,7 @@ describe("the results line, from the verdict", () => {
     });
 });
 
-const { chromePath, serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { chromePath, walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -487,90 +486,75 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
   // <details class="country-sec"> per country shown.
   for (const [name, profile, arrival] of LAYOUTS)
     it(`the line is under the strip on the ${name} layout, and its link is the page`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page_: BrowserPage) => {
-          await page_.goto(server.url("/"));
-          await page_.evaluate(seed(profile));
-          await openAtRest(page_, server.url(arrival));
-          return {
-            say: JSON.parse(await page_.evaluate(SAY)),
-            // The record as the page restores it: replayed through the
-            // interview, which drops what it would not ask (France never
-            // asks the five-year question).
-            painted: JSON.parse(await page_.evaluate(paintedAsComposedScript(
-              verdictFor(replayRecord(ds, profile, Object.keys(profile)).answers),
-            ))),
-          };
-        }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as {
-          say: { height: number; mailtos: string[] }; painted: typeof PAINTED_AS_COMPOSED;
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1000 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+        await page_.goto(url("/"));
+        await page_.evaluate(seed(profile));
+        await openAtRest(page_, url(arrival));
+        return {
+          say: JSON.parse(await page_.evaluate(SAY)),
+          // The record as the page restores it: replayed through the
+          // interview, which drops what it would not ask (France never
+          // asks the five-year question).
+          painted: JSON.parse(await page_.evaluate(paintedAsComposedScript(
+            verdictFor(replayRecord(ds, profile, Object.keys(profile)).answers),
+          ))),
         };
+      })).returned as {
+        say: { height: number; mailtos: string[] }; painted: typeof PAINTED_AS_COMPOSED;
+      };
 
-        // The layout, where the line sits, its words and its link are the
-        // verdict's ("the results line, from the verdict"); the page paints
-        // that verdict, and the link is a tap target.
-        expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
-        expect(seen.say.height, `the link is ${seen.say.height} px`).toBeGreaterThanOrEqual(44);
-        // No mailto: anywhere on a results screen: the door in the body is a
-        // link to a page, and the footer stopped carrying the address on the
-        // s13 walk. Nothing here could carry the record into a mail.
-        expect(seen.say.mailtos, "a mailto: on the results screen").toEqual([]);
-      } finally {
-        server.close();
-      }
+      // The layout, where the line sits, its words and its link are the
+      // verdict's ("the results line, from the verdict"); the page paints
+      // that verdict, and the link is a tap target.
+      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
+      expect(seen.say.height, `the link is ${seen.say.height} px`).toBeGreaterThanOrEqual(44);
+      // No mailto: anywhere on a results screen: the door in the body is a
+      // link to a page, and the footer stopped carrying the address on the
+      // s13 walk. Nothing here could carry the record into a mail.
+      expect(seen.say.mailtos, "a mailto: on the results screen").toEqual([]);
     }, 180000);
 
   it("and on /feedback/ reached from that screen the hrefs are the constants, byte for byte", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await page_.goto(server.url("/"));
-        await page_.evaluate(seed(frRecord));
-        await page_.goto(server.url("/?country=fr"));
-        await page_.evaluate('document.querySelector(".say a").click()');
-        await page_.waitUntilNewDocumentDrawn();
-        return page_.evaluate(
-          'JSON.stringify({ path: location.pathname,'
-          + ' mailtos: [...document.querySelectorAll("a[href^=\'mailto:\']")].map((a) => a.getAttribute("href")),'
-          + ' gmails: [...document.querySelectorAll("a[href^=\'https://mail.google.com/\']")]'
-          + '   .map((a) => a.getAttribute("href")),'
-          + ' search: location.search })',
-        );
-      }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
-        { path: string; mailtos: string[]; gmails: string[]; search: string };
+    const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1000 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+      await page_.goto(url("/"));
+      await page_.evaluate(seed(frRecord));
+      await page_.goto(url("/?country=fr"));
+      await page_.evaluate('document.querySelector(".say a").click()');
+      await page_.waitUntilNewDocumentDrawn();
+      return page_.evaluate(
+        'JSON.stringify({ path: location.pathname,'
+        + ' mailtos: [...document.querySelectorAll("a[href^=\'mailto:\']")].map((a) => a.getAttribute("href")),'
+        + ' gmails: [...document.querySelectorAll("a[href^=\'https://mail.google.com/\']")]'
+        + '   .map((a) => a.getAttribute("href")),'
+        + ' search: location.search })',
+      );
+    })).returned as string) as
+      { path: string; mailtos: string[]; gmails: string[]; search: string };
 
-      expect(seen.path).toBe(url(FEEDBACK_PATH));
-      // The line links the page and nothing else: no query travels with it.
-      expect(seen.search, "the results line carried a query to /feedback/").toBe("");
-      // Both links of every door, and every one of them the build-time
-      // constant to the byte: a record on the device and a screen just left,
-      // and nothing of either reached any of them. (Neither the footer nor the
-      // address line links a mail now, so the doors are the whole list.)
-      expect(seen.gmails).toEqual(FEEDBACK_DOORS.map(feedbackGmail));
-      expect(seen.mailtos).toEqual(FEEDBACK_DOORS.map(feedbackMailto));
-    } finally {
-      server.close();
-    }
+    expect(seen.path).toBe(url(FEEDBACK_PATH));
+    // The line links the page and nothing else: no query travels with it.
+    expect(seen.search, "the results line carried a query to /feedback/").toBe("");
+    // Both links of every door, and every one of them the build-time
+    // constant to the byte: a record on the device and a screen just left,
+    // and nothing of either reached any of them. (Neither the footer nor the
+    // address line links a mail now, so the doors are the whole list.)
+    expect(seen.gmails).toEqual(FEEDBACK_DOORS.map(feedbackGmail));
+    expect(seen.mailtos).toEqual(FEEDBACK_DOORS.map(feedbackMailto));
   }, 180000);
 
   it("no question screen carries it", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await openAtRest(page_, server.url("/"));
-        const first = await page_.evaluate(SAY);
-        // One answer in, still a question screen.
-        await answerWith(page_, 'document.querySelector(".qcard .opt").click()');
-        const second = await page_.evaluate(SAY);
-        return JSON.stringify({ first: JSON.parse(first), second: JSON.parse(second) });
-      }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
-        { first: { present: boolean }; second: { present: boolean } };
+    const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1000 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+      await openAtRest(page_, url("/"));
+      const first = await page_.evaluate(SAY);
+      // One answer in, still a question screen.
+      await answerWith(page_, 'document.querySelector(".qcard .opt").click()');
+      const second = await page_.evaluate(SAY);
+      return JSON.stringify({ first: JSON.parse(first), second: JSON.parse(second) });
+    })).returned as string) as
+      { first: { present: boolean }; second: { present: boolean } };
 
-      expect(seen.first.present, "question one offers a line about a result").toBe(false);
-      expect(seen.second.present, "question two offers a line about a result").toBe(false);
-    } finally {
-      server.close();
-    }
+    expect(seen.first.present, "question one offers a line about a result").toBe(false);
+    expect(seen.second.present, "question two offers a line about a result").toBe(false);
   }, 180000);
 });
 
@@ -636,266 +620,231 @@ interface Opened {
 
 describe.skipIf(skipped !== null)("the header row, measured at the fold", () => {
   it("at 960 px holds its four items on one line with fonts this machine has never seen", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page_: BrowserPage) => {
-        const at: Record<string, unknown> = {};
-        for (const [name, path] of [
-          ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
-          ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"],
-        ] as const) {
-          await page_.goto(server.url(path));
-          await page_.evaluate(FALLBACK);
-          await page_.waitUntilAtRest();
-          at[name] = JSON.parse(await page_.evaluate(ROW));
-        }
-        return at;
-      }, { viewport: { width: 960, height: 900 }, mobile: false }) as Record<string, {
-        items: { text: string; width: number }[]; rows: number; have: number; need: number;
-      }>;
-
-      for (const [name, row] of Object.entries(seen)) {
-        expect(row.items.length, `${name}: ${row.items.map((i) => i.text).join(" | ")}`).toBe(4);
-        // Every item drawn — a 0-wide item is a hidden one, and a hidden row
-        // holds anything.
-        for (const item of row.items) expect(item.width, `${name}: "${item.text}" is not drawn`).toBeGreaterThan(20);
-        expect(row.rows, `${name}: the row wrapped onto ${row.rows} lines — ${
-          row.items.map((i) => `${i.text} ${i.width}px`).join(", ")}`).toBe(1);
-        // And room for a stack wider still than this machine's fallback — the
-        // same 12% the 1100-px case in identity.test.ts asks for.
-        const headroom = (row.have - row.need) / row.have;
-        expect(headroom, `${name}: ${row.need} px of row in ${row.have} px — ${
-          Math.round(headroom * 100)}% spare`).toBeGreaterThan(0.12);
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 960, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+      const at: Record<string, unknown> = {};
+      for (const [name, path] of [
+        ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
+        ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"],
+      ] as const) {
+        await page_.goto(url(path));
+        await page_.evaluate(FALLBACK);
+        await page_.waitUntilAtRest();
+        at[name] = JSON.parse(await page_.evaluate(ROW));
       }
-    } finally {
-      server.close();
+      return at;
+    })).returned as Record<string, {
+      items: { text: string; width: number }[]; rows: number; have: number; need: number;
+    }>;
+
+    for (const [name, row] of Object.entries(seen)) {
+      expect(row.items.length, `${name}: ${row.items.map((i) => i.text).join(" | ")}`).toBe(4);
+      // Every item drawn — a 0-wide item is a hidden one, and a hidden row
+      // holds anything.
+      for (const item of row.items) expect(item.width, `${name}: "${item.text}" is not drawn`).toBeGreaterThan(20);
+      expect(row.rows, `${name}: the row wrapped onto ${row.rows} lines — ${
+        row.items.map((i) => `${i.text} ${i.width}px`).join(", ")}`).toBe(1);
+      // And room for a stack wider still than this machine's fallback — the
+      // same 12% the 1100-px case in identity.test.ts asks for.
+      const headroom = (row.have - row.need) / row.have;
+      expect(headroom, `${name}: ${row.need} px of row in ${row.have} px — ${
+        Math.round(headroom * 100)}% spare`).toBeGreaterThan(0.12);
     }
   }, 180000);
 
   it("the opened list covers no other item on the row, and closes on Escape and on a tap outside", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page_: BrowserPage) => {
-        // Every word the summary can be, because the list is centred on the
-        // word and the shortest word overhangs the most: "Spain" ran 45 px
-        // under the separator where "Netherlands" ran 15 (measured, 2026-09-16).
-        const words: Record<string, unknown> = {};
-        for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
-          await page_.goto(server.url(path));
-          await page_.evaluate(FALLBACK);
-          await page_.waitUntilAtRest();
-          await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
-          words[path] = JSON.parse(await page_.evaluate(OPEN_LIST));
-        }
-        await page_.goto(server.url("/germany/"));
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 960, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+      // Every word the summary can be, because the list is centred on the
+      // word and the shortest word overhangs the most: "Spain" ran 45 px
+      // under the separator where "Netherlands" ran 15 (measured, 2026-09-16).
+      const words: Record<string, unknown> = {};
+      for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
+        await page_.goto(url(path));
         await page_.evaluate(FALLBACK);
         await page_.waitUntilAtRest();
         await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
-        const opened = JSON.parse(await page_.evaluate(OPEN_LIST));
-        await page_.evaluate(
-          'document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))',
-        );
-        const escaped = JSON.parse(await page_.evaluate(OPEN_LIST));
-        await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
-        const again = JSON.parse(await page_.evaluate(OPEN_LIST));
-        await page_.evaluate('document.querySelector("h1").click()');
-        const outside = JSON.parse(await page_.evaluate(OPEN_LIST));
-        return { opened, escaped, again, outside, words };
-      }, { viewport: { width: 960, height: 900 }, mobile: false }) as Record<string, {
-        open: boolean; list: number[]; hits: { text: string; overlap: boolean; box: number[] }[];
-      }> & { words: Record<string, Opened> };
-
-      expect(seen.opened!.open, "the disclosure did not open").toBe(true);
-      // The list is drawn, under the row: a box of zeros is a hidden list.
-      expect(seen.opened!.list[3]! - seen.opened!.list[1]!, "the open list has no height").toBeGreaterThan(100);
-      expect(seen.opened!.list[2]! - seen.opened!.list[0]!, "the open list has no width").toBeGreaterThan(100);
-      for (const [path, at] of Object.entries(seen.words)) {
-        expect(at.open, `${path}: the disclosure did not open`).toBe(true);
-        // Not one item, and not the separator, under any part of the list.
-        for (const hit of at.hits)
-          expect(hit.overlap, `${path} (${at.word}): the open list ${at.list.join(",")} covers "${
-            hit.text}" at ${hit.box.join(",")}`).toBe(false);
-        // And clear of the separator by the margin the human asked for.
-        expect(at.clearance, `${path} (${at.word}): the list ends ${at.clearance} px before the separator`)
-          .toBeGreaterThanOrEqual(12);
+        words[path] = JSON.parse(await page_.evaluate(OPEN_LIST));
       }
-      expect(seen.escaped!.open, "Escape left the list open").toBe(false);
-      expect(seen.again!.open, "the disclosure would not reopen").toBe(true);
-      expect(seen.outside!.open, "a tap outside left the list open").toBe(false);
-    } finally {
-      server.close();
+      await page_.goto(url("/germany/"));
+      await page_.evaluate(FALLBACK);
+      await page_.waitUntilAtRest();
+      await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
+      const opened = JSON.parse(await page_.evaluate(OPEN_LIST));
+      await page_.evaluate(
+        'document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))',
+      );
+      const escaped = JSON.parse(await page_.evaluate(OPEN_LIST));
+      await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
+      const again = JSON.parse(await page_.evaluate(OPEN_LIST));
+      await page_.evaluate('document.querySelector("h1").click()');
+      const outside = JSON.parse(await page_.evaluate(OPEN_LIST));
+      return { opened, escaped, again, outside, words };
+    })).returned as unknown as Record<string, {
+      open: boolean; list: number[]; hits: { text: string; overlap: boolean; box: number[] }[];
+    }> & { words: Record<string, Opened> };
+
+    expect(seen.opened!.open, "the disclosure did not open").toBe(true);
+    // The list is drawn, under the row: a box of zeros is a hidden list.
+    expect(seen.opened!.list[3]! - seen.opened!.list[1]!, "the open list has no height").toBeGreaterThan(100);
+    expect(seen.opened!.list[2]! - seen.opened!.list[0]!, "the open list has no width").toBeGreaterThan(100);
+    for (const [path, at] of Object.entries(seen.words)) {
+      expect(at.open, `${path}: the disclosure did not open`).toBe(true);
+      // Not one item, and not the separator, under any part of the list.
+      for (const hit of at.hits)
+        expect(hit.overlap, `${path} (${at.word}): the open list ${at.list.join(",")} covers "${
+          hit.text}" at ${hit.box.join(",")}`).toBe(false);
+      // And clear of the separator by the margin the human asked for.
+      expect(at.clearance, `${path} (${at.word}): the list ends ${at.clearance} px before the separator`)
+        .toBeGreaterThanOrEqual(12);
     }
+    expect(seen.escaped!.open, "Escape left the list open").toBe(false);
+    expect(seen.again!.open, "the disclosure would not reopen").toBe(true);
+    expect(seen.outside!.open, "a tap outside left the list open").toBe(false);
   }, 180000);
 
   it("at 1240 px, where the human measured it, the list clears the separator on every word", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page_: BrowserPage) => {
-        const words: Record<string, unknown> = {};
-        for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
-          await page_.goto(server.url(path));
-          await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
-          words[path] = JSON.parse(await page_.evaluate(OPEN_LIST));
-        }
-        return words;
-      }, { viewport: { width: 1240, height: 900 }, mobile: false }) as Record<string, Opened>;
-
-      for (const [path, at] of Object.entries(seen)) {
-        for (const hit of at.hits)
-          expect(hit.overlap, `${path} (${at.word}): the open list ${at.list.join(",")} covers "${
-            hit.text}" at ${hit.box.join(",")}`).toBe(false);
-        expect(at.clearance, `${path} (${at.word}): the list ends ${at.clearance} px before the separator`)
-          .toBeGreaterThanOrEqual(12);
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1240, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+      const words: Record<string, unknown> = {};
+      for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
+        await page_.goto(url(path));
+        await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
+        words[path] = JSON.parse(await page_.evaluate(OPEN_LIST));
       }
-    } finally {
-      server.close();
+      return words;
+    })).returned as Record<string, Opened>;
+
+    for (const [path, at] of Object.entries(seen)) {
+      for (const hit of at.hits)
+        expect(hit.overlap, `${path} (${at.word}): the open list ${at.list.join(",")} covers "${
+          hit.text}" at ${hit.box.join(",")}`).toBe(false);
+      expect(at.clearance, `${path} (${at.word}): the list ends ${at.clearance} px before the separator`)
+        .toBeGreaterThanOrEqual(12);
     }
   }, 180000);
 
   it("at 761 px the header is folded behind Menu, as it has been since 2026-09-08", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await page_.goto(server.url("/"));
-        await page_.evaluate(FALLBACK);
-        await page_.waitUntilAtRest();
-        return page_.evaluate(
-          'JSON.stringify({ menuShown: getComputedStyle(document.querySelector(".menu")).display !== "none",'
-          + ' navShown: getComputedStyle(document.querySelector(".site-head .nav")).display !== "none",'
-          + ' overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth })',
-        );
-      }, { viewport: { width: 761, height: 900 }, mobile: false }) as string) as
-        { menuShown: boolean; navShown: boolean; overflow: number };
-      expect(seen.menuShown, "no Menu control at 761").toBe(true);
-      expect(seen.navShown, "the row is showing at 761, where it folds").toBe(false);
-      expect(seen.overflow).toBeLessThanOrEqual(0);
-    } finally {
-      server.close();
-    }
+    const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width: 761, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+      await page_.goto(url("/"));
+      await page_.evaluate(FALLBACK);
+      await page_.waitUntilAtRest();
+      return page_.evaluate(
+        'JSON.stringify({ menuShown: getComputedStyle(document.querySelector(".menu")).display !== "none",'
+        + ' navShown: getComputedStyle(document.querySelector(".site-head .nav")).display !== "none",'
+        + ' overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth })',
+      );
+    })).returned as string) as
+      { menuShown: boolean; navShown: boolean; overflow: number };
+    expect(seen.menuShown, "no Menu control at 761").toBe(true);
+    expect(seen.navShown, "the row is showing at 761, where it folds").toBe(false);
+    expect(seen.overflow).toBeLessThanOrEqual(0);
   }, 180000);
 
   it("at 390 the menu lists the four countries under their heading, then the three", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await page_.goto(server.url("/france/"));
-        await page_.evaluate('document.querySelector(".menu").click()');
-        await page_.waitUntilAtRest();
-        return page_.evaluate(
-          'JSON.stringify((() => {'
-          + ' const nav = document.querySelector(".site-head .nav");'
-          + ' const shown = (el) => el.getBoundingClientRect().height > 0;'
-          + ' const group = nav.querySelector(".group");'
-          + ' return { rows: [...nav.querySelectorAll("a")].filter(shown)'
-          + '     .map((a) => a.textContent.trim()),'
-          + '   heading: group && shown(group) ? group.textContent.trim() : "",'
-          + '   summaryShown: shown(nav.querySelector("summary")),'
-          + '   taps: [...nav.querySelectorAll("a")].filter(shown)'
-          + '     .map((a) => Math.round(a.getBoundingClientRect().height)) }; })())',
-        );
-      }, { viewport: { width: 390, height: 844 }, mobile: true }) as string) as
-        { rows: string[]; heading: string; summaryShown: boolean; taps: number[] };
+    const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page: page_, url }) => {
+      await page_.goto(url("/france/"));
+      await page_.evaluate('document.querySelector(".menu").click()');
+      await page_.waitUntilAtRest();
+      return page_.evaluate(
+        'JSON.stringify((() => {'
+        + ' const nav = document.querySelector(".site-head .nav");'
+        + ' const shown = (el) => el.getBoundingClientRect().height > 0;'
+        + ' const group = nav.querySelector(".group");'
+        + ' return { rows: [...nav.querySelectorAll("a")].filter(shown)'
+        + '     .map((a) => a.textContent.trim()),'
+        + '   heading: group && shown(group) ? group.textContent.trim() : "",'
+        + '   summaryShown: shown(nav.querySelector("summary")),'
+        + '   taps: [...nav.querySelectorAll("a")].filter(shown)'
+        + '     .map((a) => Math.round(a.getBoundingClientRect().height)) }; })())',
+      );
+    })).returned as string) as
+      { rows: string[]; heading: string; summaryShown: boolean; taps: number[] };
 
-      expect(seen.heading, "no Countries heading over the rows").toBe(COUNTRIES);
-      // The country whose page this is does not become the heading: the phone's
-      // heading is always the word.
-      expect(seen.summaryShown, "the disclosure's word is shown twice on the phone").toBe(false);
-      expect(seen.rows).toEqual([
-        ...countryLinks(ds).map((l) => l.name), "Check yours", "The data", FEEDBACK,
-      ]);
-      for (const [i, tap] of seen.taps.entries())
-        expect(tap, `"${seen.rows[i]}" is ${tap} px`).toBeGreaterThanOrEqual(44);
-    } finally {
-      server.close();
-    }
+    expect(seen.heading, "no Countries heading over the rows").toBe(COUNTRIES);
+    // The country whose page this is does not become the heading: the phone's
+    // heading is always the word.
+    expect(seen.summaryShown, "the disclosure's word is shown twice on the phone").toBe(false);
+    expect(seen.rows).toEqual([
+      ...countryLinks(ds).map((l) => l.name), "Check yours", "The data", FEEDBACK,
+    ]);
+    for (const [i, tap] of seen.taps.entries())
+      expect(tap, `"${seen.rows[i]}" is ${tap} px`).toBeGreaterThanOrEqual(44);
   }, 180000);
 });
 
 describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
   it("the Copy button puts the address on the clipboard and says so for two seconds", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-        await page_.goto(server.url("/feedback/"));
-        // Headless Chrome may refuse the clipboard: the write is stood in for
-        // by a stub that records what it was handed, which is the fact under
-        // test — the script hands the clipboard the page's address and nothing
-        // else. The button's own words are read off the screen.
-        await page_.evaluate(
-          '(() => { window.__copied = []; Object.defineProperty(navigator, "clipboard", { value: {'
-          + ' writeText: (t) => { window.__copied.push(t); return Promise.resolve(); } }, configurable: true });'
-          + ' return 1; })()',
-        );
-        const button = 'document.querySelector(".addr button[data-copy]")';
-        const word = 'document.querySelector(".addr .done")';
-        // The word beside the address, at each moment. Two taps: the glyph's
-        // own box, and the address text — both are the one button.
-        // A tap's word waits on the copy it follows, and the clearing on the word gone.
-        const before = await page_.evaluate(`${word}.textContent`);
-        await page_.evaluate(`${button}.querySelector("svg").dispatchEvent(new MouseEvent("click", { bubbles: true }))`);
-        const afterIcon = await page_.waitUntil(`window.__copied.length === 1 && ${word}.textContent`, "the glyph's tap never said anything");
-        await page_.waitUntil(`${word}.textContent === ""`, "the word never cleared");
-        const later = await page_.evaluate(`${word}.textContent`);
-        await page_.evaluate('document.getElementById("feedback-address").dispatchEvent(new MouseEvent("click", { bubbles: true }))');
-        const afterText = await page_.waitUntil(`window.__copied.length === 2 && ${word}.textContent`, "the address's tap never said anything");
-        return page_.evaluate(
-          `JSON.stringify({ copied: window.__copied, before: ${JSON.stringify(before)},`
-          + ` afterIcon: ${JSON.stringify(afterIcon)}, later: ${JSON.stringify(later)},`
-          + ` afterText: ${JSON.stringify(afterText)},`
-          + ` height: Math.round(${button}.getBoundingClientRect().height),`
-          // Text-like, not a box; the glyph at the text's size; no visible word.
-          + ` borderWidth: getComputedStyle(${button}).borderTopWidth,`
-          + ` icon: Math.round(${button}.querySelector("svg").getBoundingClientRect().width),`
-          + ` visible: ${button}.textContent.trim(),`
-          + ' text: document.getElementById("feedback-address").textContent })',
-        );
-      }, { viewport: { width: 1000, height: 900 }, mobile: false }) as string) as {
-        copied: string[]; before: string; afterIcon: string; later: string; afterText: string;
-        height: number; borderWidth: string; icon: number; visible: string; text: string;
-      };
+    const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1000, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page: page_, url }) => {
+      await page_.goto(url("/feedback/"));
+      // Headless Chrome may refuse the clipboard: the write is stood in for
+      // by a stub that records what it was handed, which is the fact under
+      // test — the script hands the clipboard the page's address and nothing
+      // else. The button's own words are read off the screen.
+      await page_.evaluate(
+        '(() => { window.__copied = []; Object.defineProperty(navigator, "clipboard", { value: {'
+        + ' writeText: (t) => { window.__copied.push(t); return Promise.resolve(); } }, configurable: true });'
+        + ' return 1; })()',
+      );
+      const button = 'document.querySelector(".addr button[data-copy]")';
+      const word = 'document.querySelector(".addr .done")';
+      // The word beside the address, at each moment. Two taps: the glyph's
+      // own box, and the address text — both are the one button.
+      // A tap's word waits on the copy it follows, and the clearing on the word gone.
+      const before = await page_.evaluate(`${word}.textContent`);
+      await page_.evaluate(`${button}.querySelector("svg").dispatchEvent(new MouseEvent("click", { bubbles: true }))`);
+      const afterIcon = await page_.waitUntil(`window.__copied.length === 1 && ${word}.textContent`, "the glyph's tap never said anything");
+      await page_.waitUntil(`${word}.textContent === ""`, "the word never cleared");
+      const later = await page_.evaluate(`${word}.textContent`);
+      await page_.evaluate('document.getElementById("feedback-address").dispatchEvent(new MouseEvent("click", { bubbles: true }))');
+      const afterText = await page_.waitUntil(`window.__copied.length === 2 && ${word}.textContent`, "the address's tap never said anything");
+      return page_.evaluate(
+        `JSON.stringify({ copied: window.__copied, before: ${JSON.stringify(before)},`
+        + ` afterIcon: ${JSON.stringify(afterIcon)}, later: ${JSON.stringify(later)},`
+        + ` afterText: ${JSON.stringify(afterText)},`
+        + ` height: Math.round(${button}.getBoundingClientRect().height),`
+        // Text-like, not a box; the glyph at the text's size; no visible word.
+        + ` borderWidth: getComputedStyle(${button}).borderTopWidth,`
+        + ` icon: Math.round(${button}.querySelector("svg").getBoundingClientRect().width),`
+        + ` visible: ${button}.textContent.trim(),`
+        + ' text: document.getElementById("feedback-address").textContent })',
+      );
+    })).returned as string) as {
+      copied: string[]; before: string; afterIcon: string; later: string; afterText: string;
+      height: number; borderWidth: string; icon: number; visible: string; text: string;
+    };
 
-      expect(seen.text).toBe(FEEDBACK_ADDRESS);
-      // Both taps copied the address and nothing else.
-      expect(seen.copied, "the clipboard was handed something other than the address")
-        .toEqual([FEEDBACK_ADDRESS, FEEDBACK_ADDRESS]);
-      expect(seen.before).toBe("");
-      expect(seen.afterIcon, "the glyph did not say it had copied").toBe(COPIED);
-      expect(seen.later, "the word did not clear").toBe("");
-      expect(seen.afterText, "the address text did not say it had copied").toBe(COPIED);
-      expect(seen.height, `the button is ${seen.height} px`).toBeGreaterThanOrEqual(44);
-      expect(seen.borderWidth, "the address has a border").toBe("0px");
-      expect(seen.icon, `the glyph is ${seen.icon} px`).toBeGreaterThanOrEqual(14);
-      // The only visible text of the button is the address itself.
-      expect(seen.visible).toBe(FEEDBACK_ADDRESS);
-    } finally {
-      server.close();
-    }
+    expect(seen.text).toBe(FEEDBACK_ADDRESS);
+    // Both taps copied the address and nothing else.
+    expect(seen.copied, "the clipboard was handed something other than the address")
+      .toEqual([FEEDBACK_ADDRESS, FEEDBACK_ADDRESS]);
+    expect(seen.before).toBe("");
+    expect(seen.afterIcon, "the glyph did not say it had copied").toBe(COPIED);
+    expect(seen.later, "the word did not clear").toBe("");
+    expect(seen.afterText, "the address text did not say it had copied").toBe(COPIED);
+    expect(seen.height, `the button is ${seen.height} px`).toBeGreaterThanOrEqual(44);
+    expect(seen.borderWidth, "the address has a border").toBe("0px");
+    expect(seen.icon, `the glyph is ${seen.icon} px`).toBeGreaterThanOrEqual(14);
+    // The only visible text of the button is the address itself.
+    expect(seen.visible).toBe(FEEDBACK_ADDRESS);
   }, 180000);
 
   for (const [width, height, mobile] of [[390, 844, true], [1000, 900, false]] as const)
     it(`every button and link reaches the tap floor at ${width} px`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = JSON.parse(await withBrowser(async (page_: BrowserPage) => {
-          await page_.goto(server.url("/feedback/"));
-          return page_.evaluate(
-            'JSON.stringify({ overflow: document.documentElement.scrollWidth'
-            + ' - document.documentElement.clientWidth,'
-            + ' targets: [...document.querySelectorAll("main a, main button")].map((el) => ({'
-            + '   text: el.textContent.trim().slice(0, 40),'
-            + '   height: Math.round(el.getBoundingClientRect().height) })) })',
-          );
-        }, { viewport: { width, height }, mobile }) as string) as
-          { overflow: number; targets: { text: string; height: number }[] };
+      const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport: { width, height }, mobile }, errorsExpected: true }, async ({ page: page_, url }) => {
+        await page_.goto(url("/feedback/"));
+        return page_.evaluate(
+          'JSON.stringify({ overflow: document.documentElement.scrollWidth'
+          + ' - document.documentElement.clientWidth,'
+          + ' targets: [...document.querySelectorAll("main a, main button")].map((el) => ({'
+          + '   text: el.textContent.trim().slice(0, 40),'
+          + '   height: Math.round(el.getBoundingClientRect().height) })) })',
+        );
+      })).returned) as
+        { overflow: number; targets: { text: string; height: number }[] };
 
-        expect(seen.targets.length, "the page has no doors on it").toBeGreaterThanOrEqual(6);
-        for (const target of seen.targets)
-          expect(target.height, `"${target.text}" is ${target.height} px at ${width}`)
-            .toBeGreaterThanOrEqual(44);
-        expect(seen.overflow, `/feedback/ scrolls sideways by ${seen.overflow} px at ${width}`)
-          .toBeLessThanOrEqual(0);
-      } finally {
-        server.close();
-      }
+      expect(seen.targets.length, "the page has no doors on it").toBeGreaterThanOrEqual(6);
+      for (const target of seen.targets)
+        expect(target.height, `"${target.text}" is ${target.height} px at ${width}`)
+          .toBeGreaterThanOrEqual(44);
+      expect(seen.overflow, `/feedback/ scrolls sideways by ${seen.overflow} px at ${width}`)
+        .toBeLessThanOrEqual(0);
     }, 180000);
 });

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { serve, withBrowser, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { walkSite, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
@@ -159,143 +159,123 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
     ["375x667, where a long first option was cut", { width: 375, height: 667 }],
   ] as const)
     it(`at ${name}: the first answer, the next, and Back`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          const cold = await coldStart(page, server.url);
-          await answerWith(page, TAP_FIRST);
-          const first = await where(page);
-          await answerWith(page, TAP_FIRST);
-          const second = await where(page);
-          await pressBack(page);
-          const back = await where(page);
-          // The reader reads on down the page, answers, and comes back: the
-          // browser restores the scroll they LEFT the entry at, which is not
-          // where the question is (Spec review, 2026-09-18: 622, card top
-          // -177 at 390).
-          await page.evaluate(READ_ON);
-          const readOn = await where(page);
-          await answerWith(page, TAP_FIRST);
-          const third = await where(page);
-          await pressBack(page);
-          const backFromScrolled = await where(page);
-          return { cold, first, second, back, readOn, third, backFromScrolled, problems: page.problems() };
-        }, { viewport, mobile: true });
-        expect(seen.problems).toEqual([]);
-        expect(seen.cold.wide, "the breakpoint reads this width as wide").toBe(false);
-        // The first paint is not a gesture: the cold load scrolls nothing, and
-        // with nothing declared the question comes first (F8).
-        expect(seen.cold.scrollY).toBe(0);
-        expect(seen.cold.cardTop!, "with nothing declared the ledger is above the question").toBeLessThan(seen.cold.declTop);
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+        const cold = await coldStart(page, url);
+        await answerWith(page, TAP_FIRST);
+        const first = await where(page);
+        await answerWith(page, TAP_FIRST);
+        const second = await where(page);
+        await pressBack(page);
+        const back = await where(page);
+        // The reader reads on down the page, answers, and comes back: the
+        // browser restores the scroll they LEFT the entry at, which is not
+        // where the question is (Spec review, 2026-09-18: 622, card top
+        // -177 at 390).
+        await page.evaluate(READ_ON);
+        const readOn = await where(page);
+        await answerWith(page, TAP_FIRST);
+        const third = await where(page);
+        await pressBack(page);
+        const backFromScrolled = await where(page);
+        return { cold, first, second, back, readOn, third, backFromScrolled, problems: page.problems() };
+      })).returned;
+      expect(seen.problems).toEqual([]);
+      expect(seen.cold.wide, "the breakpoint reads this width as wide").toBe(false);
+      // The first paint is not a gesture: the cold load scrolls nothing, and
+      // with nothing declared the question comes first (F8).
+      expect(seen.cold.scrollY).toBe(0);
+      expect(seen.cold.cardTop!, "with nothing declared the ledger is above the question").toBeLessThan(seen.cold.declTop);
 
-        expectLanded(seen.first, "after the first answer");
-        expect(seen.first.question).not.toBe(seen.cold.question);
-        expectLanded(seen.second, "after the second answer");
-        expect(seen.second.question).not.toBe(seen.first.question);
-        expectLanded(seen.back, "after Back");
-        expect(seen.back.question, "Back did not return to the question before").toBe(seen.first.question);
+      expectLanded(seen.first, "after the first answer");
+      expect(seen.first.question).not.toBe(seen.cold.question);
+      expectLanded(seen.second, "after the second answer");
+      expect(seen.second.question).not.toBe(seen.first.question);
+      expectLanded(seen.back, "after Back");
+      expect(seen.back.question, "Back did not return to the question before").toBe(seen.first.question);
 
-        expect(seen.readOn.scrollY, "reading on did not move the page").toBeGreaterThan(seen.back.scrollY);
-        expectLanded(seen.third, "after the answer that followed reading on");
-        expectLanded(seen.backFromScrolled, "after Back to an entry the reader had scrolled on");
-        expect(seen.backFromScrolled.question).toBe(seen.back.question);
+      expect(seen.readOn.scrollY, "reading on did not move the page").toBeGreaterThan(seen.back.scrollY);
+      expectLanded(seen.third, "after the answer that followed reading on");
+      expectLanded(seen.backFromScrolled, "after Back to an entry the reader had scrolled on");
+      expect(seen.backFromScrolled.question).toBe(seen.back.question);
 
-        // The focus behaviour does not change: the first control holds it,
-        // and the page moved once to get there.
-        for (const [label, step] of [
-          ["first answer", seen.first], ["second answer", seen.second], ["Back", seen.back],
-          ["third answer", seen.third], ["Back from a scrolled entry", seen.backFromScrolled],
-        ] as const)
-          expect(step.activeIsFirst, `after the ${label} the focus is on ${step.active || "nothing"}`).toBe(true);
-      } finally {
-        server.close();
-      }
+      // The focus behaviour does not change: the first control holds it,
+      // and the page moved once to get there.
+      for (const [label, step] of [
+        ["first answer", seen.first], ["second answer", seen.second], ["Back", seen.back],
+        ["third answer", seen.third], ["Back from a scrolled entry", seen.backFromScrolled],
+      ] as const)
+        expect(step.activeIsFirst, `after the ${label} the focus is on ${step.active || "nothing"}`).toBe(true);
     }, 180000);
 
   it("with reduced motion the landing is instant: final before the browser draws a frame", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        // The feature in CDP's own form (a name and a value, not a query), and
-        // then the platform's query for it — spelled the way the page spells it
-        // in its script, which declares it as a literal and exports nothing.
-        // This only checks the harness applied the preference.
-        await page.emulateMedia([{ name: "prefers-reduced-motion", value: "reduce" }]);
-        const cold = await coldStart(page, server.url);
-        const reduced = await page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches");
-        // Read again once the page is at rest: whatever would still move has
-        // moved by then, so a landing that kept going is caught.
-        const atOnce = JSON.parse(await answerWith(page, TAP_FIRST_AND_READ)) as Where;
-        const later = await where(page);
-        return { cold, reduced, atOnce, later, problems: page.problems() };
-      }, { viewport: { width: 390, height: 844 }, mobile: true });
-      expect(seen.problems).toEqual([]);
-      expect(seen.reduced, "the browser did not take the reduced-motion preference").toBe(true);
-      expectLanded(seen.atOnce, "in the same task as the tap");
-      expect(seen.later.scrollY, "the page kept moving after the instant landing").toBe(seen.atOnce.scrollY);
-    } finally {
-      server.close();
-    }
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+      // The feature in CDP's own form (a name and a value, not a query), and
+      // then the platform's query for it — spelled the way the page spells it
+      // in its script, which declares it as a literal and exports nothing.
+      // This only checks the harness applied the preference.
+      await page.emulateMedia([{ name: "prefers-reduced-motion", value: "reduce" }]);
+      const cold = await coldStart(page, url);
+      const reduced = await page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches");
+      // Read again once the page is at rest: whatever would still move has
+      // moved by then, so a landing that kept going is caught.
+      const atOnce = JSON.parse(await answerWith(page, TAP_FIRST_AND_READ)) as Where;
+      const later = await where(page);
+      return { cold, reduced, atOnce, later, problems: page.problems() };
+    })).returned;
+    expect(seen.problems).toEqual([]);
+    expect(seen.reduced, "the browser did not take the reduced-motion preference").toBe(true);
+    expectLanded(seen.atOnce, "in the same task as the tap");
+    expect(seen.later.scrollY, "the page kept moving after the instant landing").toBe(seen.atOnce.scrollY);
   }, 180000);
 });
 
 describe.skipIf(skipped !== null)("what does not change", () => {
   it("at 1280x900 an answer scrolls nothing: the card sits beside the ledger with room above it", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const cold = await coldStart(page, server.url);
-        await answerWith(page, TAP_FIRST);
-        const first = await where(page);
-        await answerWith(page, TAP_FIRST);
-        const second = await where(page);
-        return { cold, first, second, problems: page.problems() };
-      }, { viewport: { width: 1280, height: 900 }, mobile: false });
-      expect(seen.problems).toEqual([]);
-      expect(seen.cold.wide, "the breakpoint reads this width as narrow").toBe(true);
-      expect(seen.first.state).toBe("questions");
-      expect(seen.first.scrollY, "the first answer moved a desktop reader").toBe(0);
-      expect(seen.second.scrollY, "the second answer moved a desktop reader").toBe(0);
-      expect(seen.first.activeIsFirst, `the focus is on ${seen.first.active || "nothing"}`).toBe(true);
-    } finally {
-      server.close();
-    }
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1280, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page, url }) => {
+      const cold = await coldStart(page, url);
+      await answerWith(page, TAP_FIRST);
+      const first = await where(page);
+      await answerWith(page, TAP_FIRST);
+      const second = await where(page);
+      return { cold, first, second, problems: page.problems() };
+    })).returned;
+    expect(seen.problems).toEqual([]);
+    expect(seen.cold.wide, "the breakpoint reads this width as narrow").toBe(true);
+    expect(seen.first.state).toBe("questions");
+    expect(seen.first.scrollY, "the first answer moved a desktop reader").toBe(0);
+    expect(seen.second.scrollY, "the second answer moved a desktop reader").toBe(0);
+    expect(seen.first.activeIsFirst, `the focus is on ${seen.first.active || "nothing"}`).toBe(true);
   }, 180000);
 
   it("at 1280x900 a ✎ correction keeps s20's rule: a card whose top is on the screen is not moved", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const cold = await coldStart(page, server.url);
-        await answerWith(page, TAP_FIRST);
-        const answered = await where(page);
-        // The reader reads a little way down — the card's top is still on the
-        // screen — then reopens the first row from the ledger beside it.
-        await page.evaluate(READ_ON);
-        const before = await where(page);
-        await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
-        const corrected = await where(page);
-        return { cold, answered, before, corrected, problems: page.problems() };
-      }, { viewport: { width: 1280, height: 900 }, mobile: false });
-      expect(seen.problems).toEqual([]);
-      // The ledger is beside the card, before and after an answer: the order
-      // the grid gives a wide screen does not change.
-      for (const [label, step] of [["cold", seen.cold], ["after an answer", seen.answered]] as const) {
-        expect(step.declLeft, `${label}: the ledger is not to the left of the card`).toBeLessThan(step.cardLeft!);
-        expect(Math.abs(step.declTop - step.cardTop!), `${label}: the ledger is not beside the card`)
-          .toBeLessThan(step.declBottom - step.declTop);
-      }
-      expect(seen.before.cardTop!).toBeGreaterThan(0);
-      expect(seen.before.cardTop!).toBeLessThan(seen.before.viewport);
-      expect(seen.corrected.state).toBe("questions");
-      expect(seen.corrected.question, "the correction did not reopen the first question").not.toBe(seen.answered.question);
-      // s20: the card is revealed only when its top is off the screen. It was
-      // on it, so the page stands where the reader left it.
-      expect(seen.corrected.scrollY, "a correction moved a card the reader could already see").toBe(seen.before.scrollY);
-      expect(seen.corrected.activeIsFirst, `the focus is on ${seen.corrected.active || "nothing"}`).toBe(true);
-    } finally {
-      server.close();
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1280, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page, url }) => {
+      const cold = await coldStart(page, url);
+      await answerWith(page, TAP_FIRST);
+      const answered = await where(page);
+      // The reader reads a little way down — the card's top is still on the
+      // screen — then reopens the first row from the ledger beside it.
+      await page.evaluate(READ_ON);
+      const before = await where(page);
+      await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
+      const corrected = await where(page);
+      return { cold, answered, before, corrected, problems: page.problems() };
+    })).returned;
+    expect(seen.problems).toEqual([]);
+    // The ledger is beside the card, before and after an answer: the order
+    // the grid gives a wide screen does not change.
+    for (const [label, step] of [["cold", seen.cold], ["after an answer", seen.answered]] as const) {
+      expect(step.declLeft, `${label}: the ledger is not to the left of the card`).toBeLessThan(step.cardLeft!);
+      expect(Math.abs(step.declTop - step.cardTop!), `${label}: the ledger is not beside the card`)
+        .toBeLessThan(step.declBottom - step.declTop);
     }
+    expect(seen.before.cardTop!).toBeGreaterThan(0);
+    expect(seen.before.cardTop!).toBeLessThan(seen.before.viewport);
+    expect(seen.corrected.state).toBe("questions");
+    expect(seen.corrected.question, "the correction did not reopen the first question").not.toBe(seen.answered.question);
+    // s20: the card is revealed only when its top is off the screen. It was
+    // on it, so the page stands where the reader left it.
+    expect(seen.corrected.scrollY, "a correction moved a card the reader could already see").toBe(seen.before.scrollY);
+    expect(seen.corrected.activeIsFirst, `the focus is on ${seen.corrected.active || "nothing"}`).toBe(true);
   }, 180000);
 });
 
@@ -307,66 +287,56 @@ describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back u
     JSON.stringify(serialize(halfDone, Object.keys(halfDone)))})`;
 
   it("at 390x844", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/404.html"));
-        await page.evaluate(SEED);
-        await openAtRest(page, server.url("/"));
-        const restored = await where(page);
-        // The reader reads a little way down — the card's top stays on the
-        // screen — then starts over from the resumed line.
-        await page.evaluate(READ_ON);
-        const before = await where(page);
-        await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
-        const reset = await where(page);
-        return { restored, before, reset, problems: page.problems() };
-      }, { viewport: { width: 390, height: 844 }, mobile: true });
-      expect(seen.problems).toEqual([]);
-      // With answers on the device the ledger line is above from the first
-      // paint, and the first paint scrolls nothing.
-      expect(seen.restored.answered).toBe(true);
-      expect(seen.restored.declTop).toBeLessThan(seen.restored.cardTop!);
-      expect(seen.restored.scrollY).toBe(0);
-      expect(seen.before.cardTop!).toBeGreaterThan(0);
-      expect(seen.before.cardTop!).toBeLessThan(seen.before.viewport);
-      // Nothing declared any more: the seed is down, the question comes first
-      // again (F8), and the page opens at its top, as a first visit does (#56).
-      expect(seen.before.scrollY, "precondition: the reader read on").toBeGreaterThan(0);
-      expect(seen.reset.answered).toBe(false);
-      expect(seen.reset.cardTop!, "the ledger did not go back under the question").toBeLessThan(seen.reset.declTop);
-      expect(seen.reset.question).not.toBe(seen.restored.question);
-      expect(seen.reset.scrollY, "Start over left the page mid-way").toBe(0);
-    } finally {
-      server.close();
-    }
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+      await page.goto(url("/404.html"));
+      await page.evaluate(SEED);
+      await openAtRest(page, url("/"));
+      const restored = await where(page);
+      // The reader reads a little way down — the card's top stays on the
+      // screen — then starts over from the resumed line.
+      await page.evaluate(READ_ON);
+      const before = await where(page);
+      await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
+      const reset = await where(page);
+      return { restored, before, reset, problems: page.problems() };
+    })).returned;
+    expect(seen.problems).toEqual([]);
+    // With answers on the device the ledger line is above from the first
+    // paint, and the first paint scrolls nothing.
+    expect(seen.restored.answered).toBe(true);
+    expect(seen.restored.declTop).toBeLessThan(seen.restored.cardTop!);
+    expect(seen.restored.scrollY).toBe(0);
+    expect(seen.before.cardTop!).toBeGreaterThan(0);
+    expect(seen.before.cardTop!).toBeLessThan(seen.before.viewport);
+    // Nothing declared any more: the seed is down, the question comes first
+    // again (F8), and the page opens at its top, as a first visit does (#56).
+    expect(seen.before.scrollY, "precondition: the reader read on").toBeGreaterThan(0);
+    expect(seen.reset.answered).toBe(false);
+    expect(seen.reset.cardTop!, "the ledger did not go back under the question").toBeLessThan(seen.reset.declTop);
+    expect(seen.reset.question).not.toBe(seen.restored.question);
+    expect(seen.reset.scrollY, "Start over left the page mid-way").toBe(0);
   }, 180000);
 });
 
 describe.skipIf(skipped !== null)("a link the page does not know keeps the first paint's order on a phone", () => {
   it("at 390x844: ?country=zz brings no answer, and the ledger line stays where the head put it", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/404.html"));
-        await page.evaluate("localStorage.clear()");
-        await openAtRest(page, server.url("/?country=zz"));
-        const landed = await where(page);
-        const count = await page.evaluate('document.getElementById("decl-count").textContent');
-        return { landed, count, problems: page.problems() };
-      }, { viewport: { width: 390, height: 844 }, mobile: true });
-      expect(seen.problems).toEqual([]);
-      // The head wrote the seed for a link it cannot check; the module found
-      // no answer in it. Its word stands for the first screen: the line above
-      // question one says "nothing yet", which is true, and nothing moves
-      // after the module lands (s10).
-      expect(seen.landed.state).toBe("questions");
-      expect(seen.landed.answered).toBe(true);
-      expect(seen.landed.declTop).toBeLessThan(seen.landed.cardTop!);
-      expect(seen.count).toBe("nothing yet");
-    } finally {
-      server.close();
-    }
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 390, height: 844 }, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+      await page.goto(url("/404.html"));
+      await page.evaluate("localStorage.clear()");
+      await openAtRest(page, url("/?country=zz"));
+      const landed = await where(page);
+      const count = await page.evaluate('document.getElementById("decl-count").textContent');
+      return { landed, count, problems: page.problems() };
+    })).returned;
+    expect(seen.problems).toEqual([]);
+    // The head wrote the seed for a link it cannot check; the module found
+    // no answer in it. Its word stands for the first screen: the line above
+    // question one says "nothing yet", which is true, and nothing moves
+    // after the module lands (s10).
+    expect(seen.landed.state).toBe("questions");
+    expect(seen.landed.answered).toBe(true);
+    expect(seen.landed.declTop).toBeLessThan(seen.landed.cardTop!);
+    expect(seen.count).toBe("nothing yet");
   }, 180000);
 });
 
@@ -414,44 +384,34 @@ describe.skipIf(skipped !== null)("on a phone the ledger line sits above the res
     ["375x667", { width: 375, height: 667 }],
   ] as const)
     it(`at ${name}: the verdict, ✎ from it, and the way back`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser((page: BrowserPage) => verdictWalk(page, server.url), { viewport, mobile: true });
-        expect(seen.problems).toEqual([]);
-        expect(seen.verdict.answered).toBe(true);
-        expectLedgerAboveResult(seen.verdict, "on arrival");
-        // ✎ from the verdict: the correction landing (amendment 6).
-        expect(seen.corrected.declOpen).toBe(false);
-        expectLanded(seen.corrected, "after ✎ from the verdict");
-        expect(seen.corrected.activeIsFirst, `the focus is on ${seen.corrected.active || "nothing"}`).toBe(true);
-        // The new band: the verdict re-drawn, on its masthead (s20's return),
-        // the ledger still above the result. Whether the band changes the
-        // headline is the dataset's business, not this test's.
-        expect(seen.returned.state).toBe("results");
-        expect(seen.returned.headline).not.toBe("");
-        // Rounded the way s20's own reading is: `scrollIntoView` lands a
-        // sub-pixel short of the edge at 2x.
-        expect(Math.round(seen.returned.mastheadTop), `the masthead's top is at ${seen.returned.mastheadTop} (scrollY ${seen.returned.scrollY})`)
-          .toBeGreaterThanOrEqual(0);
-        expectLedgerAboveResult(seen.returned, "after the answer");
-      } finally {
-        server.close();
-      }
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: true }, errorsExpected: true }, ({ page, url }) => verdictWalk(page, url))).returned;
+      expect(seen.problems).toEqual([]);
+      expect(seen.verdict.answered).toBe(true);
+      expectLedgerAboveResult(seen.verdict, "on arrival");
+      // ✎ from the verdict: the correction landing (amendment 6).
+      expect(seen.corrected.declOpen).toBe(false);
+      expectLanded(seen.corrected, "after ✎ from the verdict");
+      expect(seen.corrected.activeIsFirst, `the focus is on ${seen.corrected.active || "nothing"}`).toBe(true);
+      // The new band: the verdict re-drawn, on its masthead (s20's return),
+      // the ledger still above the result. Whether the band changes the
+      // headline is the dataset's business, not this test's.
+      expect(seen.returned.state).toBe("results");
+      expect(seen.returned.headline).not.toBe("");
+      // Rounded the way s20's own reading is: `scrollIntoView` lands a
+      // sub-pixel short of the edge at 2x.
+      expect(Math.round(seen.returned.mastheadTop), `the masthead's top is at ${seen.returned.mastheadTop} (scrollY ${seen.returned.scrollY})`)
+        .toBeGreaterThanOrEqual(0);
+      expectLedgerAboveResult(seen.returned, "after the answer");
     }, 180000);
 
   it("at 1280x900 the ledger stays beside the result", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser((page: BrowserPage) => verdictWalk(page, server.url), { viewport: { width: 1280, height: 900 }, mobile: false });
-      expect(seen.problems).toEqual([]);
-      for (const [label, step] of [["on arrival", seen.verdict], ["after the answer", seen.returned]] as const) {
-        expect(step.state, label).toBe("results");
-        expect(step.declLeft, `${label}: the ledger is not to the left of the result`).toBeLessThan(step.mainLeft);
-        expect(Math.abs(step.declTop - step.mainTop), `${label}: the ledger is not level with the result`)
-          .toBeLessThan(step.declBottom - step.declTop);
-      }
-    } finally {
-      server.close();
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1280, height: 900 }, mobile: false }, errorsExpected: true }, ({ page, url }) => verdictWalk(page, url))).returned;
+    expect(seen.problems).toEqual([]);
+    for (const [label, step] of [["on arrival", seen.verdict], ["after the answer", seen.returned]] as const) {
+      expect(step.state, label).toBe("results");
+      expect(step.declLeft, `${label}: the ledger is not to the left of the result`).toBeLessThan(step.mainLeft);
+      expect(Math.abs(step.declTop - step.mainTop), `${label}: the ledger is not level with the result`)
+        .toBeLessThan(step.declBottom - step.declTop);
     }
   }, 180000);
 });
@@ -462,23 +422,18 @@ describe.skipIf(skipped !== null)("on a phone a correction lands too (amendment 
     ["375x667", { width: 375, height: 667 }],
   ] as const)
     it(`at ${name}: the ledger opened, ✎ tapped — the ledger closes and lands, the question under it`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await coldStart(page, server.url);
-          await answerWith(page, TAP_FIRST);
-          const answered = await where(page);
-          await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
-          const corrected = await where(page);
-          return { answered, corrected, problems: page.problems() };
-        }, { viewport, mobile: true });
-        expect(seen.problems).toEqual([]);
-        expect(seen.corrected.question, "the correction did not reopen the first question").not.toBe(seen.answered.question);
-        expect(seen.corrected.declOpen, "the ledger stayed open above the reopened question").toBe(false);
-        expectLanded(seen.corrected, "after ✎");
-        expect(seen.corrected.activeIsFirst, `the focus is on ${seen.corrected.active || "nothing"}`).toBe(true);
-      } finally {
-        server.close();
-      }
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: true }, errorsExpected: true }, async ({ page, url }) => {
+        await coldStart(page, url);
+        await answerWith(page, TAP_FIRST);
+        const answered = await where(page);
+        await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
+        const corrected = await where(page);
+        return { answered, corrected, problems: page.problems() };
+      })).returned;
+      expect(seen.problems).toEqual([]);
+      expect(seen.corrected.question, "the correction did not reopen the first question").not.toBe(seen.answered.question);
+      expect(seen.corrected.declOpen, "the ledger stayed open above the reopened question").toBe(false);
+      expectLanded(seen.corrected, "after ✎");
+      expect(seen.corrected.activeIsFirst, `the focus is on ${seen.corrected.active || "nothing"}`).toBe(true);
     }, 180000);
 });
