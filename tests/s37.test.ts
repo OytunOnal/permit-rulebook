@@ -22,7 +22,7 @@ const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 /** Why the walk cannot run here: no Chrome, or no build. Null when it can. */
 function walkSkipReason(): string | null {
@@ -126,14 +126,11 @@ type Viewport = { viewport: { width: number; height: number }; mobile: boolean }
 const WIDE: Viewport = { viewport: { width: 1100, height: 900 }, mobile: false };
 const PHONE: Viewport = { viewport: { width: 390, height: 844 }, mobile: true };
 
-/** `walk` in a fresh browser of `size` over the built site. */
+/** `walk` in a fresh browser of `size` over the built site; the cases assert the tabs' errors themselves. */
 async function walkInBrowser<T>(size: Viewport, walk: (w: Walker, site: PageOnSite) => Promise<T>): Promise<T> {
-  const server = await serve(dist);
-  try {
-    return await withBrowser((page: BrowserPage) => walk(walker(page, server.url), { page, url: server.url }), size) as T;
-  } finally {
-    server.close();
-  }
+  const walked = await walkSite({ site: { folder: dist }, screen: size, errorsExpected: true },
+    (site: PageOnSite) => walk(walker(site.page, site.url), site));
+  return walked.returned;
 }
 
 const skipped = walkSkipReason();

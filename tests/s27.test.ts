@@ -21,7 +21,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
-import { serve, withBrowser, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { walkSite, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
@@ -322,191 +322,173 @@ interface Header {
 describe.skipIf(skipped !== null)("s27 — in the browser", () => {
   for (const [name, viewport, mobile] of VIEWPORTS) {
     it(`${name}: the menu button reads Menu, then Close, then Menu again after Escape and after a tap outside`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/germany/"));
-          const closed = JSON.parse(await page.evaluate(BUTTON));
-          await page.evaluate('document.querySelector(".menu").click()');
-          const open = JSON.parse(await page.evaluate(BUTTON));
-          await page.evaluate('document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))');
-          const escaped = JSON.parse(await page.evaluate(BUTTON));
-          await page.evaluate('document.querySelector(".menu").click()');
-          const reopened = JSON.parse(await page.evaluate(BUTTON));
-          await page.evaluate('document.querySelector("footer").click()');
-          const outside = JSON.parse(await page.evaluate(BUTTON));
-          return { closed, open, escaped, reopened, outside, problems: page.problems() };
-        }, { viewport, mobile }) as Record<string, { text: string; expanded: string }> & { problems: string[] };
-        expect(seen.problems).toEqual([]);
-        expect(seen.closed).toEqual({ text: MENU, expanded: "false" });
-        expect(seen.open).toEqual({ text: MENU_CLOSE, expanded: "true" });
-        expect(seen.escaped).toEqual({ text: MENU, expanded: "false" });
-        expect(seen.reopened).toEqual({ text: MENU_CLOSE, expanded: "true" });
-        expect(seen.outside).toEqual({ text: MENU, expanded: "false" });
-      } finally { server.close(); }
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+        await page.goto(addressOf("/germany/"));
+        const closed = JSON.parse(await page.evaluate(BUTTON));
+        await page.evaluate('document.querySelector(".menu").click()');
+        const open = JSON.parse(await page.evaluate(BUTTON));
+        await page.evaluate('document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))');
+        const escaped = JSON.parse(await page.evaluate(BUTTON));
+        await page.evaluate('document.querySelector(".menu").click()');
+        const reopened = JSON.parse(await page.evaluate(BUTTON));
+        await page.evaluate('document.querySelector("footer").click()');
+        const outside = JSON.parse(await page.evaluate(BUTTON));
+        return { closed, open, escaped, reopened, outside, problems: page.problems() };
+      })).returned as unknown as Record<string, { text: string; expanded: string }> & { problems: string[] };
+      expect(seen.problems).toEqual([]);
+      expect(seen.closed).toEqual({ text: MENU, expanded: "false" });
+      expect(seen.open).toEqual({ text: MENU_CLOSE, expanded: "true" });
+      expect(seen.escaped).toEqual({ text: MENU, expanded: "false" });
+      expect(seen.reopened).toEqual({ text: MENU_CLOSE, expanded: "true" });
+      expect(seen.outside).toEqual({ text: MENU, expanded: "false" });
     }, 180_000);
 
     it(`${name}: on the four-country result the mark is within 0.6 em of the name, closed and open, on every section`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await walkToFour(page, server.url("/"));
-          const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALKED_TO_FOUR))));
-          const asDrawn = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
-          await evaluateAtRest(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
-          const toggled = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
-          return { painted, asDrawn, toggled, problems: page.problems() };
-        }, { viewport, mobile }) as {
-          painted: typeof PAINTED_AS_COMPOSED; asDrawn: Section[]; toggled: Section[]; problems: string[];
-        };
-        expect(seen.problems).toEqual([]);
-        // The sections, their order and which line says the sentence are the
-        // verdict's ("2 — the four-country result's sections, from the
-        // verdict"); the walk ends on that verdict, painted.
-        expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
-        expect(seen.asDrawn).toHaveLength(4);
-        // Both states of every section: the one it was drawn in, and the other.
-        expect(seen.toggled.map((s) => s.open)).toEqual(seen.asDrawn.map((s) => !s.open));
-        for (const s of [...seen.asDrawn, ...seen.toggled]) {
-          const where = `${name} ${s.name} ${s.open ? "open" : "closed"}`;
-          expect(s.markContent, where).toBe(s.open ? '"▾"' : '"▸"');
-          expect(s.markWidth, where).toBeGreaterThan(0);
-          expect(s.gap, where).toBeGreaterThanOrEqual(0);
-          expect(s.gap, `${where}: the mark is ${s.gap.toFixed(1)} px from the name (0.6 em is ${(0.6 * s.fontSize).toFixed(1)} px)`)
-            .toBeLessThanOrEqual(0.6 * s.fontSize);
-          // The group sits at the line's start.
-          expect(s.nameLeft, where).toBeLessThan(2);
-          // The tally is level with the name, at the right — or, on the phone
-          // only, wrapped beneath it and left-aligned. One of the two, never a
-          // third place.
-          const place = tallyPlaceOf(s);
-          if (viewport.width === 1280) expect(place, where).toBe("right, on the name's line");
-          else expect(["right, on the name's line", "beneath, left-aligned"], where).toContain(place);
-        }
-        // The s21 sentence keeps its own row on the phone.
-        const said = seen.asDrawn.find((s) => s.said)!;
-        if (viewport.width === 390) expect(said.tallyTop).toBeGreaterThanOrEqual(said.nameBottom);
-      } finally { server.close(); }
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+        await walkToFour(page, addressOf("/"));
+        const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(WALKED_TO_FOUR))));
+        const asDrawn = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
+        await evaluateAtRest(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
+        const toggled = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
+        return { painted, asDrawn, toggled, problems: page.problems() };
+      })).returned as {
+        painted: typeof PAINTED_AS_COMPOSED; asDrawn: Section[]; toggled: Section[]; problems: string[];
+      };
+      expect(seen.problems).toEqual([]);
+      // The sections, their order and which line says the sentence are the
+      // verdict's ("2 — the four-country result's sections, from the
+      // verdict"); the walk ends on that verdict, painted.
+      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
+      expect(seen.asDrawn).toHaveLength(4);
+      // Both states of every section: the one it was drawn in, and the other.
+      expect(seen.toggled.map((s) => s.open)).toEqual(seen.asDrawn.map((s) => !s.open));
+      for (const s of [...seen.asDrawn, ...seen.toggled]) {
+        const where = `${name} ${s.name} ${s.open ? "open" : "closed"}`;
+        expect(s.markContent, where).toBe(s.open ? '"▾"' : '"▸"');
+        expect(s.markWidth, where).toBeGreaterThan(0);
+        expect(s.gap, where).toBeGreaterThanOrEqual(0);
+        expect(s.gap, `${where}: the mark is ${s.gap.toFixed(1)} px from the name (0.6 em is ${(0.6 * s.fontSize).toFixed(1)} px)`)
+          .toBeLessThanOrEqual(0.6 * s.fontSize);
+        // The group sits at the line's start.
+        expect(s.nameLeft, where).toBeLessThan(2);
+        // The tally is level with the name, at the right — or, on the phone
+        // only, wrapped beneath it and left-aligned. One of the two, never a
+        // third place.
+        const place = tallyPlaceOf(s);
+        if (viewport.width === 1280) expect(place, where).toBe("right, on the name's line");
+        else expect(["right, on the name's line", "beneath, left-aligned"], where).toContain(place);
+      }
+      // The s21 sentence keeps its own row on the phone.
+      const said = seen.asDrawn.find((s) => s.said)!;
+      if (viewport.width === 390) expect(said.tallyTop).toBeGreaterThanOrEqual(said.nameBottom);
     }, 180_000);
 
     it(`${name}: the 404 carries the sentence once, as the visible heading its section is labelled by`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"));
-          return page.evaluate(`JSON.stringify((() => {
-            const section = document.querySelector("section.cta");
-            const label = document.getElementById(section.getAttribute("aria-labelledby"));
-            const box = label.getBoundingClientRect();
-            const carriers = [...document.querySelectorAll("body *")].filter((el) =>
-              [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.toLowerCase().includes(${JSON.stringify(SENTENCE)})));
-            return { tag: label.tagName, text: label.textContent.trim(), visible: box.width > 10 && box.height > 10
-              && getComputedStyle(label).position !== "absolute", carriers: carriers.length,
-              carrierIsLabel: carriers.length === 1 && carriers[0] === label };
-          })())`);
-        }, { viewport, mobile }) as string) as { tag: string; text: string; visible: boolean; carriers: number; carrierIsLabel: boolean };
-        expect(seen.tag).toBe("H2");
-        expect(seen.text).toBe(NOT_FOUND_START);
-        expect(seen.visible).toBe(true);
-        // One element on the page says it, and it is the one the section is labelled by.
-        expect(seen.carriers).toBe(1);
-        expect(seen.carrierIsLabel).toBe(true);
-      } finally { server.close(); }
+      const seen = JSON.parse((await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+        await page.goto(addressOf("/404.html"));
+        return page.evaluate(`JSON.stringify((() => {
+          const section = document.querySelector("section.cta");
+          const label = document.getElementById(section.getAttribute("aria-labelledby"));
+          const box = label.getBoundingClientRect();
+          const carriers = [...document.querySelectorAll("body *")].filter((el) =>
+            [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.toLowerCase().includes(${JSON.stringify(SENTENCE)})));
+          return { tag: label.tagName, text: label.textContent.trim(), visible: box.width > 10 && box.height > 10
+            && getComputedStyle(label).position !== "absolute", carriers: carriers.length,
+            carrierIsLabel: carriers.length === 1 && carriers[0] === label };
+        })())`);
+      })).returned as string) as { tag: string; text: string; visible: boolean; carriers: number; carrierIsLabel: boolean };
+      expect(seen.tag).toBe("H2");
+      expect(seen.text).toBe(NOT_FOUND_START);
+      expect(seen.visible).toBe(true);
+      // One element on the page says it, and it is the one the section is labelled by.
+      expect(seen.carriers).toBe(1);
+      expect(seen.carrierIsLabel).toBe(true);
     }, 180_000);
 
     it(`${name}: a route page's H1 is the name; the tagline is the next element, in the type the em had`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url(EXPERIENCED));
-          const route = JSON.parse(await page.evaluate(HEADER)) as Header;
-          const routeProblems = page.problems();
-          // The country page keeps the em: the type the tagline must match.
-          await page.goto(server.url("/germany/"));
-          const country = JSON.parse(await page.evaluate(HEADER)) as Header;
-          return { route, country, problems: [...routeProblems, ...page.problems()] };
-        }, { viewport, mobile }) as { route: Header; country: Header; problems: string[] };
-        expect(seen.problems).toEqual([]);
-        // The name alone — and since s32's amendment 6 without the sign's
-        // explainer after the citation.
-        expect(seen.route.h1).toBe("Experienced worker (§ 19c / § 6 BeschV)");
-        expect(seen.route.nextTag).toBe("P");
-        expect(seen.route.nextClass).toBe("tagline");
-        expect(seen.route.nextText).toBe(ROUTE_TAGLINE);
-        expect(seen.route.tagline.display).toBe("block");
-        expect(seen.country.em, "the country page lost its em").not.toBeNull();
-        expect(seen.route.tagline.font).toBe(seen.country.em!.font);
-        expect(seen.route.tagline.color).toBe(seen.country.em!.color);
-      } finally { server.close(); }
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+        await page.goto(addressOf(EXPERIENCED));
+        const route = JSON.parse(await page.evaluate(HEADER)) as Header;
+        const routeProblems = page.problems();
+        // The country page keeps the em: the type the tagline must match.
+        await page.goto(addressOf("/germany/"));
+        const country = JSON.parse(await page.evaluate(HEADER)) as Header;
+        return { route, country, problems: [...routeProblems, ...page.problems()] };
+      })).returned as { route: Header; country: Header; problems: string[] };
+      expect(seen.problems).toEqual([]);
+      // The name alone — and since s32's amendment 6 without the sign's
+      // explainer after the citation.
+      expect(seen.route.h1).toBe("Experienced worker (§ 19c / § 6 BeschV)");
+      expect(seen.route.nextTag).toBe("P");
+      expect(seen.route.nextClass).toBe("tagline");
+      expect(seen.route.nextText).toBe(ROUTE_TAGLINE);
+      expect(seen.route.tagline.display).toBe("block");
+      expect(seen.country.em, "the country page lost its em").not.toBeNull();
+      expect(seen.route.tagline.font).toBe(seen.country.em!.font);
+      expect(seen.route.tagline.color).toBe(seen.country.em!.color);
     }, 180_000);
   }
 
   it("1280x900: in the ledger, over every answer the dataset offers, the pen sits on the answer's last line and never as its first glyph", async () => {
-    const server = await serve(dist);
-    try {
-      const rows = ledgerRows();
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await openAtRest(page, server.url("/"));
-        await evaluateAtRest(page, `document.getElementById("decl-list").innerHTML = ${JSON.stringify(rows)}`);
-        return { pens: JSON.parse(await page.evaluate(PENS)) as Pen[], problems: page.problems() };
-      }, { viewport: { width: 1280, height: 900 }, mobile: false }) as { pens: Pen[]; problems: string[] };
-      expect(seen.problems).toEqual([]);
-      expect(seen.pens.length).toBeGreaterThan(200);
-      // The measurement is of the real sidebar, at its real width: the 15.5rem
-      // column less the panel's padding, and no wider.
-      expect(seen.pens[0]!.width).toBeGreaterThan(200);
-      expect(seen.pens[0]!.width).toBeLessThan(260);
-      // Some answers do wrap here — the measurement has to cover a second line to mean anything.
-      expect(seen.pens.filter((p) => p.lines > 1).length).toBeGreaterThan(0);
-      for (const p of seen.pens) {
-        const where = `${p.field}: "${p.text}"`;
-        expect(Math.abs(p.penTop - p.lastTop), `${where} — the pen's top is ${(p.penTop - p.lastTop).toFixed(1)} px off its answer's last line`).toBeLessThanOrEqual(2);
-        expect(p.penLeft, `${where} — the pen is the first glyph on its line`).toBeGreaterThan(p.lastLeft + 1);
-      }
-    } finally { server.close(); }
+    const rows = ledgerRows();
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1280, height: 900 }, mobile: false }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+      await openAtRest(page, addressOf("/"));
+      await evaluateAtRest(page, `document.getElementById("decl-list").innerHTML = ${JSON.stringify(rows)}`);
+      return { pens: JSON.parse(await page.evaluate(PENS)) as Pen[], problems: page.problems() };
+    })).returned as { pens: Pen[]; problems: string[] };
+    expect(seen.problems).toEqual([]);
+    expect(seen.pens.length).toBeGreaterThan(200);
+    // The measurement is of the real sidebar, at its real width: the 15.5rem
+    // column less the panel's padding, and no wider.
+    expect(seen.pens[0]!.width).toBeGreaterThan(200);
+    expect(seen.pens[0]!.width).toBeLessThan(260);
+    // Some answers do wrap here — the measurement has to cover a second line to mean anything.
+    expect(seen.pens.filter((p) => p.lines > 1).length).toBeGreaterThan(0);
+    for (const p of seen.pens) {
+      const where = `${p.field}: "${p.text}"`;
+      expect(Math.abs(p.penTop - p.lastTop), `${where} — the pen's top is ${(p.penTop - p.lastTop).toFixed(1)} px off its answer's last line`).toBeLessThanOrEqual(2);
+      expect(p.penLeft, `${where} — the pen is the first glyph on its line`).toBeGreaterThan(p.lastLeft + 1);
+    }
   }, 180_000);
 
   for (const [name, viewport, mobile] of VIEWPORTS) {
     it(`${name}: under the open card the door is underlined, in the prose-link colour, on a line of its own beneath the scope line, at the tap size`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/"));
-          await page.evaluate(seed(OPENED as Record<string, string>));
-          await openAtRest(page, server.url("/"));
-          const door = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-            const scoped = document.querySelector(".route .scoped");
-            const door = scoped.querySelector(".door");
-            const s = getComputedStyle(door);
-            const range = document.createRange();
-            range.setStart(scoped, 0);
-            range.setEndBefore(door);
-            const line = [...range.getClientRects()].filter((r) => r.width > 0).pop();
-            const box = door.getBoundingClientRect();
-            return { decoration: s.textDecorationLine, color: s.color,
-              band: getComputedStyle(document.documentElement).getPropertyValue("--color-band").trim(),
-              beneath: line && box.top >= line.bottom - 1, left: Math.round(box.left - scoped.getBoundingClientRect().left),
-              height: box.height, tapMin: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tap-min")) };
-          })())`)) as {
-            decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
-          };
-          return { door, problems: page.problems() };
-        }, { viewport, mobile }) as {
-          door: { decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number };
-          problems: string[];
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url: addressOf }) => {
+        await page.goto(addressOf("/"));
+        await page.evaluate(seed(OPENED as Record<string, string>));
+        await openAtRest(page, addressOf("/"));
+        const door = JSON.parse(await page.evaluate(`JSON.stringify((() => {
+          const scoped = document.querySelector(".route .scoped");
+          const door = scoped.querySelector(".door");
+          const s = getComputedStyle(door);
+          const range = document.createRange();
+          range.setStart(scoped, 0);
+          range.setEndBefore(door);
+          const line = [...range.getClientRects()].filter((r) => r.width > 0).pop();
+          const box = door.getBoundingClientRect();
+          return { decoration: s.textDecorationLine, color: s.color,
+            band: getComputedStyle(document.documentElement).getPropertyValue("--color-band").trim(),
+            beneath: line && box.top >= line.bottom - 1, left: Math.round(box.left - scoped.getBoundingClientRect().left),
+            height: box.height, tapMin: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--tap-min")) };
+        })())`)) as {
+          decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
         };
-        expect(seen.problems).toEqual([]);
-        // The door's words and its internal href are the verdict's ("8 — the
-        // card's door is a door"); here, how it is drawn.
-        const { door } = seen;
-        expect(door.decoration).toBe("underline");
-        // The band colour, read back as the browser states it.
-        const [r, g, b] = [1, 3, 5].map((i) => parseInt(door.band.slice(i, i + 2), 16));
-        expect(door.color).toBe(`rgb(${r}, ${g}, ${b})`);
-        expect(door.beneath, `${name}: the door shares the scope line's last line`).toBe(true);
-        expect(door.left).toBe(0);
-        expect(door.height).toBeGreaterThanOrEqual(door.tapMin);
-      } finally { server.close(); }
+        return { door, problems: page.problems() };
+      })).returned as {
+        door: { decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number };
+        problems: string[];
+      };
+      expect(seen.problems).toEqual([]);
+      // The door's words and its internal href are the verdict's ("8 — the
+      // card's door is a door"); here, how it is drawn.
+      const { door } = seen;
+      expect(door.decoration).toBe("underline");
+      // The band colour, read back as the browser states it.
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(door.band.slice(i, i + 2), 16));
+      expect(door.color).toBe(`rgb(${r}, ${g}, ${b})`);
+      expect(door.beneath, `${name}: the door shares the scope line's last line`).toBe(true);
+      expect(door.left).toBe(0);
+      expect(door.height).toBeGreaterThanOrEqual(door.tapMin);
     }, 180_000);
   }
 

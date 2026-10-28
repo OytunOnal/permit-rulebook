@@ -345,7 +345,7 @@ describe("s26 — the results the walks end on, from the verdict", () => {
  * everywhere and never reaches question 3, so this is the one walk through it
  * that reads what the page sent (Security review of s26).
  */
-const { chromePath, serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { chromePath, walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -416,36 +416,34 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
     ["1280x900", { width: 1280, height: 900 }, false],
   ] as const) {
     it(`${name}: all four → research → France → nothing open reads France's written state, France's section first and open; a German route opening reads the open headline; nothing leaves the device`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => ({
-          nothingOpen: await walkFrom(page, server.url("/"), { taps: ["none", "TR", "no", "no"], reader: WALKED_TO_NOTHING_OPEN }),
-          opened: await walkFrom(page, server.url("/"), {
-            taps: ["degree", "TR", "recognized", "no", "no", "a1", "band_1"], reader: WALKED_TO_A_GERMAN_ROUTE,
-          }),
-        }), { viewport, mobile, network: true }) as { nothingOpen: Result; opened: Result };
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true, network: true }, async ({ page, url: addressOf }) => ({
+        nothingOpen: await walkFrom(page, addressOf("/"), { taps: ["none", "TR", "no", "no"], reader: WALKED_TO_NOTHING_OPEN }),
+        opened: await walkFrom(page, addressOf("/"), {
+          taps: ["degree", "TR", "recognized", "no", "no", "a1", "band_1"], reader: WALKED_TO_A_GERMAN_ROUTE,
+        }),
+        origin: new URL(addressOf("/")).origin,
+      }))).returned;
 
-        const { nothingOpen, opened } = seen;
-        expect(nothingOpen.problems).toEqual([]);
-        expect(nothingOpen.state).toBe("results");
-        // The live region says France's written state.
-        expect(nothingOpen.status).toBe("No route we check in France takes a research hosting agreement.");
-        // The page paints what the verdict composed: the cases above read it.
-        expect(nothingOpen.painted).toEqual(PAINTED_AS_COMPOSED);
+      const { nothingOpen, opened } = seen;
+      expect(nothingOpen.problems).toEqual([]);
+      expect(nothingOpen.state).toBe("results");
+      // The live region says France's written state.
+      expect(nothingOpen.status).toBe("No route we check in France takes a research hosting agreement.");
+      // The page paints what the verdict composed: the cases above read it.
+      expect(nothingOpen.painted).toEqual(PAINTED_AS_COMPOSED);
 
-        expect(opened.problems).toEqual([]);
-        expect(opened.state).toBe("results");
-        expect(opened.painted).toEqual(PAINTED_AS_COMPOSED);
+      expect(opened.problems).toEqual([]);
+      expect(opened.state).toBe("results");
+      expect(opened.painted).toEqual(PAINTED_AS_COMPOSED);
 
-        // Answers never leave the device — on this path too. The record test's
-        // own assertion, over every request the two walks made.
-        const origin = server.origin as string;
-        for (const [where, walk] of [["the walk to nothing open", nothingOpen], ["the walk that opens a route", opened]] as const) {
-          expect(walk.declared.length, `${where} answered nothing`).toBeGreaterThan(5);
-          expect(walk.sent.length, `${where} sent nothing at all`).toBeGreaterThan(0);
-          expectNothingLeft(walk.sent, { origin, where, declared: walk.declared, routes: walk.routes });
-        }
-      } finally { server.close(); }
+      // Answers never leave the device — on this path too. The record test's
+      // own assertion, over every request the two walks made.
+      const { origin } = seen;
+      for (const [where, walk] of [["the walk to nothing open", nothingOpen], ["the walk that opens a route", opened]] as const) {
+        expect(walk.declared.length, `${where} answered nothing`).toBeGreaterThan(5);
+        expect(walk.sent.length, `${where} sent nothing at all`).toBeGreaterThan(0);
+        expectNothingLeft(walk.sent, { origin, where, declared: walk.declared, routes: walk.routes });
+      }
     }, 180_000);
   }
 });

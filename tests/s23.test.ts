@@ -21,7 +21,6 @@ import { routeAddresses } from "../src/lib/slug.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, hintsIn, paintedAsComposedScript, placed, stepsIn, verdictFor,
 } from "./verdict-cards.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -434,7 +433,7 @@ describe("the result screen, decided by the verdict", () => {
 
 /** And the screen itself: Priya's result, as the browser paints it. */
 const { chromePath } = await import("../scripts/browser/browser.mjs");
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -452,25 +451,20 @@ const seed = (answers: Record<string, string>) =>
 
 describe.skipIf(skipped !== null)("the result screen, as drawn", () => {
   it("Priya's not-yet Opportunity Card shows its tally; her steps start with one she can take; the German rungs are one", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        await page.evaluate(seed(PRIYA as Record<string, string>));
-        await page.goto(server.url("/"));
-        return {
-          state: await page.evaluate('document.querySelector("#app").dataset.state'),
-          painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(PRIYA)))),
-        };
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
-        { state: string; painted: typeof PAINTED_AS_COMPOSED };
+    const seen = (await walkSite({ site: { folder: dist }, screen: { viewport: { width: 1100, height: 1200 }, mobile: false }, errorsExpected: true }, async ({ page, url }) => {
+      await page.goto(url("/"));
+      await page.evaluate(seed(PRIYA as Record<string, string>));
+      await page.goto(url("/"));
+      return {
+        state: await page.evaluate('document.querySelector("#app").dataset.state'),
+        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(PRIYA)))),
+      };
+    })).returned as
+      { state: string; painted: typeof PAINTED_AS_COMPOSED };
 
-      // What the screen says is the verdict's ("the result screen, decided by
-      // the verdict"); the page paints it.
-      expect(seen.state).toBe("results");
-      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
-    } finally {
-      server.close();
-    }
+    // What the screen says is the verdict's ("the result screen, decided by
+    // the verdict"); the page paints it.
+    expect(seen.state).toBe("results");
+    expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
   }, 180000);
 });
