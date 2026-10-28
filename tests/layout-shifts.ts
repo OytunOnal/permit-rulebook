@@ -28,9 +28,10 @@ export async function shiftScoreSince(page: Pick<BrowserPage, "readLayoutShifts"
  * before that first move, so the move is a shift: a move made before the first
  * paint is no shift at all (#269). It falls in the half second after Chrome
  * sets the phone's viewport, so Chrome marks it as input. It notes in
- * `window.__shiftReported` when Chrome has reported a shift to it.
+ * `window.__shiftReported` when Chrome has reported a shift to it, and in
+ * `window.__tapped` that a tap reached it; `#below` is the block to tap.
  */
-const MOVES_EARLY_AND_ON_A_TAP = `<!doctype html><html><head>
+export const MOVES_EARLY_AND_ON_A_TAP = `<!doctype html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1"><script>
 const moveDown = (text) => {
   const block = document.createElement("p");
@@ -44,7 +45,7 @@ new PerformanceObserver((_, observer) => {
 }).observe({ type: "paint", buffered: true });
 new PerformanceObserver(() => { window.__shiftReported = true; }).observe({ type: "layout-shift", buffered: true });
 addEventListener("click", () => { moveDown("on the tap"); window.__tapped = true; });
-</script></head><body><p>above</p><p style="height:400px">below</p></body></html>`;
+</script></head><body><p>above</p><p id="below" style="height:400px">below</p></body></html>`;
 
 export interface ShiftsSeen {
   every: { value: number; markedAsInput: boolean }[];

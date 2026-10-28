@@ -51,8 +51,13 @@ export class TabPage {
   #events;
   #openTab;
   #shiftRegion;
+  #walkLog;
 
-  /** `parts`: the tab's `TabWaits`, `TabGestures` and `TabEvents`, what opens another tab in its browser, and the region whose shifts are marked. */
+  /**
+   * `parts`: the tab's `TabWaits`, `TabGestures` and `TabEvents`, what opens
+   * another tab in its browser, the region whose shifts are marked, and the
+   * browser's `WalkLog`.
+   */
   constructor(sendToTab, parts) {
     this.#sendToTab = sendToTab;
     this.#waits = parts.waits;
@@ -60,6 +65,7 @@ export class TabPage {
     this.#events = parts.events;
     this.#openTab = parts.openTab;
     this.#shiftRegion = parts.shiftRegion;
+    this.#walkLog = parts.walkLog;
   }
 
   /**
@@ -71,8 +77,11 @@ export class TabPage {
    */
   openTab = () => this.#openTab();
 
-  /** Makes this tab the one the browser shows. */
-  front = () => this.#sendToTab("Page.bringToFront", {});
+  /** Makes this tab the one the browser shows, and the walk's tab on screen. */
+  front = async () => {
+    await this.#sendToTab("Page.bringToFront", {});
+    this.#walkLog.showTab(this);
+  };
 
   goto = (url) => this.#waits.goto(url);
   navigate = (url) => this.#waits.navigate(url);

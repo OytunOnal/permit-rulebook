@@ -11,13 +11,14 @@ import { TabWaits } from "./tab-waits.mjs";
  *
  * `setup`: the screen (`viewport`, `mobile`), whether to keep the requests
  * (`network`), the factor every tab is slowed by (`cpuSlowdown`), and the
- * region whose shifts are marked (`shiftRegion`, a selector or null).
+ * region whose shifts are marked (`shiftRegion`, a selector or null), and
+ * the browser's `WalkLog`, which every tab's errors and fronting reach.
  */
 export async function openTab(connection, setup) {
   const { targetId } = await connection.send("Target.createTarget", { url: "about:blank" });
   const { sessionId } = await connection.send("Target.attachToTarget", { targetId, flatten: true });
   const sendToTab = (method, params) => connection.send(method, params, sessionId);
-  const events = new TabEvents(sendToTab, { network: setup.network });
+  const events = new TabEvents(sendToTab, { network: setup.network, walkLog: setup.walkLog });
   const waits = new TabWaits(sendToTab, events.forgetProblems);
   const gestures = new TabGestures(sendToTab, waits);
   connection.listenToTab(sessionId, (message) => {
@@ -26,7 +27,7 @@ export async function openTab(connection, setup) {
   });
   await setUpTab(sendToTab, setup);
   return new TabPage(sendToTab, {
-    waits, gestures, events, openTab: () => openTab(connection, setup), shiftRegion: setup.shiftRegion,
+    waits, gestures, events, openTab: () => openTab(connection, setup), shiftRegion: setup.shiftRegion, walkLog: setup.walkLog,
   });
 }
 

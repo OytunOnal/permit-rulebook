@@ -23,7 +23,10 @@
     "scripts/browser/tab/tab-gestures.mjs",
     "scripts/browser/tab/tab-page.mjs",
     "scripts/browser/tab/tab-waits.mjs",
-    "scripts/browser/walk/screens.mjs"
+    "scripts/browser/walk/open-browser.mjs",
+    "scripts/browser/walk/screens.mjs",
+    "scripts/browser/walk/walk-log.mjs",
+    "scripts/browser/walk/walk-site.mjs"
    ]
   },
   {
@@ -145,7 +148,10 @@
   "scripts/browser/tab/tab-gestures.mjs": "infrastructure",
   "scripts/browser/tab/tab-page.mjs": "infrastructure",
   "scripts/browser/tab/tab-waits.mjs": "infrastructure",
+  "scripts/browser/walk/open-browser.mjs": "infrastructure",
   "scripts/browser/walk/screens.mjs": "infrastructure",
+  "scripts/browser/walk/walk-log.mjs": "infrastructure",
+  "scripts/browser/walk/walk-site.mjs": "infrastructure",
   "scripts/build-directory-on-disk.mjs": "infrastructure",
   "scripts/carry-assets.mjs": "main",
   "scripts/carry-assets/carry.mjs": "application",
@@ -288,22 +294,7 @@
   },
   {
    "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/chrome/chrome-launch.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/browser/browser.mjs",
    "to": "scripts/browser/chrome/chrome.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/connection/devtools-connection.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/exit-register/owned.mjs",
    "kind": "dependency"
   },
   {
@@ -313,12 +304,17 @@
   },
   {
    "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/walk/open-browser.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/browser/browser.mjs",
    "to": "scripts/browser/walk/screens.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/walk/walk-site.mjs",
    "kind": "dependency"
   },
   {
@@ -364,6 +360,51 @@
   {
    "from": "scripts/browser/tab/tab-page.mjs",
    "to": "scripts/browser/layout-shifts/layout-shift-reading.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/chrome/chrome-launch.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/connection/devtools-connection.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/exit-register/owned.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/tab/open-tab.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/walk/walk-log.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-log.mjs",
+   "to": "scripts/browser/tab/tab-events.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/browser/static-server/static-server.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/browser/walk/open-browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/site-base.mjs",
    "kind": "dependency"
   },
   {
@@ -4405,6 +4446,21 @@
    "from": "tests/verdict-steps.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/walk-site.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/walk-site.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/walk-site.test.ts",
+   "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
   }
  ],
  "declarations": {
@@ -8135,5 +8191,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "2a52b9ab8e5eba266ba83c8d22c55acc7598dc79bbe14ac822f7c251628ecc8e"
+ "digest": "55905c700923047d3983a697b0bb2fee552936f149724aef0828aff2d44fe4a6"
 }
