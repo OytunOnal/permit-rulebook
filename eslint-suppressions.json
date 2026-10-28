@@ -1,20 +1,4 @@
 {
-  "scripts/browser/browser.mjs": {
-    "max-lines-per-function": {
-      "count": 3
-    },
-    "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "scripts/browser/static-server/static-server.mjs": {
-    "roadkeeper/constant-reason": {
-      "count": 1
-    },
-    "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
   "scripts/carry-assets.mjs": {
     "roadkeeper/named-condition": {
       "count": 1
