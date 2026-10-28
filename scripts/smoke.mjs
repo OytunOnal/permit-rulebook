@@ -126,10 +126,26 @@ export const CHECKS = [
   },
 ];
 
-/** Every check on `site`, named `surface` in its results; the checks judge the pages' errors, so the walk returns them. */
+/**
+ * What one check showed on one page load.
+ *
+ * @typedef {object} PageLoad
+ * @property {string} surface "dev" or "dist".
+ * @property {string} path The check's path.
+ * @property {string} what What the page is, in words.
+ * @property {Record<string, any>} value What the check's probe read; its fields are the probe's own, so they differ per check.
+ * @property {string[]} thrown What the page threw or logged since it was opened.
+ * @property {string[]} failures Every reason the check failed; none when it passed.
+ */
+
+/**
+ * Every check on `site`, named `surface` in its results; the checks judge the pages' errors, so the walk returns them.
+ *
+ * @returns {Promise<PageLoad[]>}
+ */
 async function walk(site, surface) {
   const { returned } = await walkSite({ site, screen: PHONE, errorsExpected: true }, async ({ page, url }) => {
-    const results = [];
+    const results = /** @type {PageLoad[]} */ ([]);
     for (const check of CHECKS) {
       await page.goto(url(check.path));
       await page.waitUntilAtRest();
