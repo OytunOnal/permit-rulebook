@@ -6,16 +6,10 @@
     "lines": 705
   },
   "tests/first-paint.test.ts": {
-    "lines": 740
+    "lines": 732
   },
   "tests/identity.test.ts": {
-    "lines": 711
-  },
-  "tests/orientation.test.ts": {
-    "lines": 421
-  },
-  "tests/record.test.ts": {
-    "lines": 401
+    "lines": 680
   },
   "tests/route-page.test.ts": {
     "lines": 709

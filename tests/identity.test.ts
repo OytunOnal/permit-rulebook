@@ -6,7 +6,7 @@ import { PAGE_CSS } from "../src/lib/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { datasetMeta, type Dataset } from "permit-rulebook-data";
 import type { BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, openAtRest } from "./browser-walk.js";
+import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 
 /**
  * The identity pair is one drawing, used twice.
@@ -151,7 +151,7 @@ describe("the identity pair has one definition", () => {
  * is not a shared result: a page can override it, and the promise the human
  * made is geometric — the corner meets the middle of the top edge.
  */
-const { chromePath, serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -319,109 +319,99 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
   for (const { name: stack, force } of STACKS)
   for (const [width, label] of [[1100, "desktop"], [390, "390 px"]] as const) {
     it(`is the same drawing on the results page and a route page at ${label}, in ${stack}`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          const out: Record<string, Measure> = {};
-          for (const path of [RESULTS, ROUTE]) {
-            await page.goto(server.url(path));
+      const seen = await withSite(async ({ page, url }) => {
+        const out: Record<string, Measure> = {};
+        for (const path of [RESULTS, ROUTE]) {
+          await page.goto(url(path));
+          if (force) await page.evaluate(FALLBACK_STACK);
+          if (path === RESULTS) {
+            // The results screen, which is where this page carries the
+            // "Record generated" stamp; unseeded, `/` is question one and
+            // states the rules-read date instead (human, 2026-09-08).
+            await page.evaluate(SEED_FINISHED_RECORD);
+            await openAtRest(page, url(path));
             if (force) await page.evaluate(FALLBACK_STACK);
-            if (path === RESULTS) {
-              // The results screen, which is where this page carries the
-              // "Record generated" stamp; unseeded, `/` is question one and
-              // states the rules-read date instead (human, 2026-09-08).
-              await page.evaluate(SEED_FINISHED_RECORD);
-              await openAtRest(page, server.url(path));
-              if (force) await page.evaluate(FALLBACK_STACK);
-            }
-            out[path] = JSON.parse(await page.evaluate(PROBE)) as Measure;
           }
-          return out;
-        }, { viewport: { width, height: 900 }, mobile: width < 800 }) as Record<string, Measure>;
-
-        const results = seen[RESULTS];
-        const route = seen[ROUTE];
-        expect(results.missing, "the results page has no pair").toBeUndefined();
-        expect(route.missing, "the route page has no pair").toBeUndefined();
-
-        // The promise: the mark's bottom-right corner sits on the middle of the
-        // stamp's top edge.
-        for (const [path, m] of Object.entries(seen)) {
-          expect(Math.abs(m.dx as number), `${path} dx`).toBeLessThan(2);
-          expect(Math.abs(m.dy as number), `${path} dy`).toBeLessThan(2);
+          out[path] = JSON.parse(await page.evaluate(PROBE)) as Measure;
         }
+        return out;
+      }, { viewport: { width, height: 900 }, mobile: width < 800 }) as Record<string, Measure>;
 
-        // And it is the same drawing, not merely a correct one on each page.
-        for (const key of ["markW", "markH", "stampH", "boxW", "boxH", "markTransform", "dx", "dy"])
-          expect(route[key], `${key} differs between the two screens`).toEqual(results[key]);
+      const results = seen[RESULTS];
+      const route = seen[ROUTE];
+      expect(results.missing, "the results page has no pair").toBeUndefined();
+      expect(route.missing, "the route page has no pair").toBeUndefined();
 
-        // The text each stamp carries is its own, and stays its own.
-        expect(results.text).toMatch(/^Record generated[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-        expect(route.text).toMatch(/^Rules read[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-      } finally {
-        server.close();
+      // The promise: the mark's bottom-right corner sits on the middle of the
+      // stamp's top edge.
+      for (const [path, m] of Object.entries(seen)) {
+        expect(Math.abs(m.dx as number), `${path} dx`).toBeLessThan(2);
+        expect(Math.abs(m.dy as number), `${path} dy`).toBeLessThan(2);
       }
+
+      // And it is the same drawing, not merely a correct one on each page.
+      for (const key of ["markW", "markH", "stampH", "boxW", "boxH", "markTransform", "dx", "dy"])
+        expect(route[key], `${key} differs between the two screens`).toEqual(results[key]);
+
+      // The text each stamp carries is its own, and stays its own.
+      expect(results.text).toMatch(/^Record generated[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+      expect(route.text).toMatch(/^Rules read[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
     }, 120000);
   }
 
   for (const { name: stack, force } of STACKS)
   for (const [width, label] of [[1100, "desktop"], [390, "390 px"]] as const) {
     it(`sits in the same place on both screens at ${label}, in ${stack}`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          const out: Record<string, Measure> = {};
-          for (const path of [RESULTS, ROUTE]) {
-            await page.goto(server.url(path));
+      const seen = await withSite(async ({ page, url }) => {
+        const out: Record<string, Measure> = {};
+        for (const path of [RESULTS, ROUTE]) {
+          await page.goto(url(path));
+          if (force) await page.evaluate(FALLBACK_STACK);
+          if (path === RESULTS) {
+            await page.evaluate(SEED_FINISHED_RECORD);
+            await openAtRest(page, url(path));
             if (force) await page.evaluate(FALLBACK_STACK);
-            if (path === RESULTS) {
-              await page.evaluate(SEED_FINISHED_RECORD);
-              await openAtRest(page, server.url(path));
-              if (force) await page.evaluate(FALLBACK_STACK);
-            }
-            out[path] = JSON.parse(await page.evaluate(PLACEMENT)) as Measure;
           }
-          return out;
-        }, { viewport: { width, height: 1000 }, mobile: width < 800 }) as Record<string, Measure>;
-
-        const results = seen[RESULTS];
-        const route = seen[ROUTE];
-        expect(results.missing, "the results masthead does not carry the pair").toBeUndefined();
-        expect(route.missing, "the route masthead does not carry the pair").toBeUndefined();
-
-        // The pair must never push the page sideways. `measure:taps` walks the
-        // results screen before any answers, where the stamp is still hidden,
-        // so this is the only check that sees it (2026-09-08).
-        for (const [path, m] of Object.entries(seen))
-          expect(m.overflow as number, `${path} scrolls sideways`).toBeLessThanOrEqual(0);
-
-        for (const [path, m] of Object.entries(seen)) {
-          if (width > 760) {
-            // A row: the text column stops at 37rem and the pair is centred in
-            // what is left, level with the middle of the text.
-            expect(m.stack, path).toBe("row");
-            expect(m.textWidth, `${path} text column`).toBe(592);
-            expect(Math.abs((m.spaceLeft as number) - (m.spaceRight as number)), `${path} not centred`)
-              .toBeLessThanOrEqual(1);
-            expect(Math.abs(m.centreOffset as number), `${path} not level with the text`)
-              .toBeLessThanOrEqual(1);
-          } else {
-            // A column: the pair sits under the text, right-aligned to it.
-            expect(m.stack, path).toBe("column");
-            expect(Math.abs(m.rightAlign as number), `${path} not right-aligned`).toBeLessThanOrEqual(1);
-            expect(m.belowText as number, `${path} not below the text`).toBeGreaterThanOrEqual(0);
-          }
+          out[path] = JSON.parse(await page.evaluate(PLACEMENT)) as Measure;
         }
+        return out;
+      }, { viewport: { width, height: 1000 }, mobile: width < 800 }) as Record<string, Measure>;
 
-        // The same placement, not merely a correct one on each page.
-        const shared = width > 760
-          ? ["stack", "textWidth", "centreOffset"]
-          : ["stack", "rightAlign", "belowText"];
-        for (const key of shared)
-          expect(route[key], `${key} differs between the two screens`).toEqual(results[key]);
-      } finally {
-        server.close();
+      const results = seen[RESULTS];
+      const route = seen[ROUTE];
+      expect(results.missing, "the results masthead does not carry the pair").toBeUndefined();
+      expect(route.missing, "the route masthead does not carry the pair").toBeUndefined();
+
+      // The pair must never push the page sideways. `measure:taps` walks the
+      // results screen before any answers, where the stamp is still hidden,
+      // so this is the only check that sees it (2026-09-08).
+      for (const [path, m] of Object.entries(seen))
+        expect(m.overflow as number, `${path} scrolls sideways`).toBeLessThanOrEqual(0);
+
+      for (const [path, m] of Object.entries(seen)) {
+        if (width > 760) {
+          // A row: the text column stops at 37rem and the pair is centred in
+          // what is left, level with the middle of the text.
+          expect(m.stack, path).toBe("row");
+          expect(m.textWidth, `${path} text column`).toBe(592);
+          expect(Math.abs((m.spaceLeft as number) - (m.spaceRight as number)), `${path} not centred`)
+            .toBeLessThanOrEqual(1);
+          expect(Math.abs(m.centreOffset as number), `${path} not level with the text`)
+            .toBeLessThanOrEqual(1);
+        } else {
+          // A column: the pair sits under the text, right-aligned to it.
+          expect(m.stack, path).toBe("column");
+          expect(Math.abs(m.rightAlign as number), `${path} not right-aligned`).toBeLessThanOrEqual(1);
+          expect(m.belowText as number, `${path} not below the text`).toBeGreaterThanOrEqual(0);
+        }
       }
+
+      // The same placement, not merely a correct one on each page.
+      const shared = width > 760
+        ? ["stack", "textWidth", "centreOffset"]
+        : ["stack", "rightAlign", "belowText"];
+      for (const key of shared)
+        expect(route[key], `${key} differs between the two screens`).toEqual(results[key]);
     }, 120000);
   }
 
@@ -439,29 +429,24 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
     ["the fallback stack", readStampOnEveryScreenInTheFallbackStack],
   ] as const)
   it(`states the rules-read date on the questions and the record's date on the results, in ${stack}`, async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(
-        (page: BrowserPage) => readStamp(page, server.url),
-        { viewport: { width: 1100, height: 1000 }, mobile: false },
-      ) as Record<string, Measure>;
+    const seen = await withSite(
+      ({ page, url }) => readStamp(page, url),
+      { viewport: { width: 1100, height: 1000 }, mobile: false },
+    ) as Record<string, Measure>;
 
-      const newest = datasetMeta(dataset as unknown as Dataset).newest_retrieved_at;
-      // The questions stand on the dataset's own newest read date.
-      expect(seen.first.text).toBe(`Rules read ${newest}`);
-      expect(seen.first.datetime).toBe(newest);
-      expect(seen.answered.text).toBe(`Rules read ${newest}`);
-      // The results stand on the day the record was made.
-      expect(seen.results.text).toMatch(/^Record generated [0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-      // The box is the same box on every screen, and swapping the words alone moves nothing at all.
-      for (const state of ["answered", "results"])
-        for (const key of ["left", "width", "height"])
-          expect(seen[state][key], `${key} moved on ${state}`).toBe(seen.first[key]);
-      for (const key of ["left", "top", "width", "height"])
-        expect(seen.swapped[key], `${key} moved when only the label changed`).toBe(seen.results[key]);
-    } finally {
-      server.close();
-    }
+    const newest = datasetMeta(dataset as unknown as Dataset).newest_retrieved_at;
+    // The questions stand on the dataset's own newest read date.
+    expect(seen.first.text).toBe(`Rules read ${newest}`);
+    expect(seen.first.datetime).toBe(newest);
+    expect(seen.answered.text).toBe(`Rules read ${newest}`);
+    // The results stand on the day the record was made.
+    expect(seen.results.text).toMatch(/^Record generated [0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+    // The box is the same box on every screen, and swapping the words alone moves nothing at all.
+    for (const state of ["answered", "results"])
+      for (const key of ["left", "width", "height"])
+        expect(seen[state][key], `${key} moved on ${state}`).toBe(seen.first[key]);
+    for (const key of ["left", "top", "width", "height"])
+      expect(seen.swapped[key], `${key} moved when only the label changed`).toBe(seen.results[key]);
   }, 120000);
 
   /**
@@ -469,27 +454,22 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
    */
   for (const { name: stack, force } of STACKS)
   it(`keeps the tagline on a line of its own, at every width, in ${stack}`, async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        const out: Record<string, Measure> = {};
-        for (const [label, path] of [["interview", "/"], ["route", ROUTE]] as const) {
-          await page.goto(server.url(path));
-          if (force) await page.evaluate(FALLBACK_STACK);
-          out[label] = JSON.parse(await page.evaluate(HEADING)) as Measure;
-        }
-        return out;
-      }, { viewport: { width: 320, height: 900 }, mobile: true }) as Record<string, Measure>;
-
-      for (const [where, m] of Object.entries(seen)) {
-        // `display: block` is what keeps it off the question's line; one client
-        // rect is what proves it did not wrap up into it.
-        expect(m.display, `${where}: the tagline is not its own line`).toBe("block");
-        expect(m.rects, `${where}: the tagline wrapped`).toBe(1);
-        expect(m.smaller, `${where}: the tagline is not a step smaller`).toBe(true);
+    const seen = await withSite(async ({ page, url }) => {
+      const out: Record<string, Measure> = {};
+      for (const [label, path] of [["interview", "/"], ["route", ROUTE]] as const) {
+        await page.goto(url(path));
+        if (force) await page.evaluate(FALLBACK_STACK);
+        out[label] = JSON.parse(await page.evaluate(HEADING)) as Measure;
       }
-    } finally {
-      server.close();
+      return out;
+    }, { viewport: { width: 320, height: 900 }, mobile: true }) as Record<string, Measure>;
+
+    for (const [where, m] of Object.entries(seen)) {
+      // `display: block` is what keeps it off the question's line; one client
+      // rect is what proves it did not wrap up into it.
+      expect(m.display, `${where}: the tagline is not its own line`).toBe("block");
+      expect(m.rects, `${where}: the tagline wrapped`).toBe(1);
+      expect(m.smaller, `${where}: the tagline is not a step smaller`).toBe(true);
     }
   }, 120000);
 });
@@ -563,7 +543,6 @@ describe("the identity has one set of elements too", () => {
 });
 
 const { chromePath: chromeAt } = await import("../scripts/browser/browser.mjs");
-const { serve: serveDir, withBrowser: withChrome } = await import("../scripts/browser/browser.mjs");
 
 function whyNotMeasured(): string | null {
   try { chromeAt(); } catch (e) { return (e as Error).message; }
@@ -616,42 +595,37 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
     + ' document.head.appendChild(s); return 1; })()';
 
   it("the interview, the results, a route page, a country page and the data page", async () => {
-    const server = await serveDir(dist);
-    try {
-      const seen = await withChrome(async (page: BrowserPage) => {
-        const at: Record<string, unknown> = {};
-        for (const [name, path] of [
-          ["interview", "/"], ["results", "/"], ["route", "/germany/eu-blue-card-general/"],
-          ["country", "/germany/"], ["data", "/data/"],
-        ] as const) {
-          await page.goto(server.url(path));
-          if (name === "results") {
-            // The screen the stamp is widest on: "Record generated" is longer
-            // than "Rules read".
-            await page.evaluate(SEED_FINISHED_RECORD);
-            await page.goto(server.url(path));
-          }
-          await page.evaluate(FALLBACK_STACK);
-          await page.waitUntilAtRest();
-          at[name] = JSON.parse(await page.evaluate(OVERFLOW));
-          // And again as a wider family would draw it.
-          for (const extra of ["0.055", "0.11"]) {
-            await page.evaluate(WIDER(extra));
-            await page.waitUntilAtRest();
-            at[`${name} at +${extra}em`] = JSON.parse(await page.evaluate(OVERFLOW));
-          }
+    const seen = await withSite(async ({ page, url }) => {
+      const at: Record<string, unknown> = {};
+      for (const [name, path] of [
+        ["interview", "/"], ["results", "/"], ["route", "/germany/eu-blue-card-general/"],
+        ["country", "/germany/"], ["data", "/data/"],
+      ] as const) {
+        await page.goto(url(path));
+        if (name === "results") {
+          // The screen the stamp is widest on: "Record generated" is longer
+          // than "Rules read".
+          await page.evaluate(SEED_FINISHED_RECORD);
+          await page.goto(url(path));
         }
-        return at;
-      }, { viewport: { width: 390, height: 1000 }, mobile: true }) as Record<string, {
-        overflow: number; worst: string[];
-      }>;
+        await page.evaluate(FALLBACK_STACK);
+        await page.waitUntilAtRest();
+        at[name] = JSON.parse(await page.evaluate(OVERFLOW));
+        // And again as a wider family would draw it.
+        for (const extra of ["0.055", "0.11"]) {
+          await page.evaluate(WIDER(extra));
+          await page.waitUntilAtRest();
+          at[`${name} at +${extra}em`] = JSON.parse(await page.evaluate(OVERFLOW));
+        }
+      }
+      return at;
+    }, { viewport: { width: 390, height: 1000 }, mobile: true }) as Record<string, {
+      overflow: number; worst: string[];
+    }>;
 
-      for (const [name, page] of Object.entries(seen))
-        expect(page.overflow, `${name} scrolls sideways by ${page.overflow} px — ${
-          page.worst.join("; ") || "no element found past the edge"}`).toBeLessThanOrEqual(0);
-    } finally {
-      server.close();
-    }
+    for (const [name, page] of Object.entries(seen))
+      expect(page.overflow, `${name} scrolls sideways by ${page.overflow} px — ${
+        page.worst.join("; ") || "no element found past the edge"}`).toBeLessThanOrEqual(0);
   }, 180000);
 
   /**
@@ -663,49 +637,44 @@ describe.skipIf(notMeasured !== null)("no page scrolls sideways at 390 px, whate
    * rather than the design.
    */
   it("keeps its longest label on one line under a font wider than the runner's", async () => {
-    const server = await serveDir(dist);
-    try {
-      const seen = await withChrome(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        await page.evaluate(SEED_FINISHED_RECORD);
-        await page.goto(server.url("/"));
-        await page.evaluate(FALLBACK_STACK);
+    const seen = await withSite(async ({ page, url }) => {
+      await page.goto(url("/"));
+      await page.evaluate(SEED_FINISHED_RECORD);
+      await page.goto(url("/"));
+      await page.evaluate(FALLBACK_STACK);
+      await page.waitUntilAtRest();
+      const box = 'JSON.stringify({ overflow: document.documentElement.scrollWidth'
+        + ' - document.documentElement.clientWidth,'
+        + ' height: document.querySelector(".stamps .stamp").offsetHeight,'
+        + ' width: document.querySelector(".stamps .stamp").offsetWidth,'
+        + ' bound: Math.round(parseFloat(getComputedStyle('
+        + '   document.querySelector(".stamps .stamp")).maxWidth)) })';
+      const at: Record<string, unknown> = { own: JSON.parse(await page.evaluate(box)) };
+      // Extra tracking stands in for a family drawn wider than any here.
+      for (const extra of [".055", ".11", ".22"]) {
+        await page.evaluate(
+          '(() => { const s = document.createElement("style");'
+          + ` s.textContent = ".stamps .stamp{letter-spacing:calc(var(--stamp-tracking) + ${extra}em)}";`
+          + ' document.head.appendChild(s); return 1; })()',
+        );
         await page.waitUntilAtRest();
-        const box = 'JSON.stringify({ overflow: document.documentElement.scrollWidth'
-          + ' - document.documentElement.clientWidth,'
-          + ' height: document.querySelector(".stamps .stamp").offsetHeight,'
-          + ' width: document.querySelector(".stamps .stamp").offsetWidth,'
-          + ' bound: Math.round(parseFloat(getComputedStyle('
-          + '   document.querySelector(".stamps .stamp")).maxWidth)) })';
-        const at: Record<string, unknown> = { own: JSON.parse(await page.evaluate(box)) };
-        // Extra tracking stands in for a family drawn wider than any here.
-        for (const extra of [".055", ".11", ".22"]) {
-          await page.evaluate(
-            '(() => { const s = document.createElement("style");'
-            + ` s.textContent = ".stamps .stamp{letter-spacing:calc(var(--stamp-tracking) + ${extra}em)}";`
-            + ' document.head.appendChild(s); return 1; })()',
-          );
-          await page.waitUntilAtRest();
-          at[extra] = JSON.parse(await page.evaluate(box));
-        }
-        return at;
-      }, { viewport: { width: 390, height: 1000 }, mobile: true }) as Record<string, {
-        overflow: number; height: number; width: number; bound: number;
-      }>;
-
-      // Never a sideways scroll, at any width of glyph.
-      for (const [where, box] of Object.entries(seen))
-        expect(box.overflow, `at +${where}em the page scrolls ${box.overflow} px`).toBeLessThanOrEqual(0);
-      // And up to twice the widening a real fallback costs, the label is still
-      // one line: the box is the height it is with our own fonts.
-      const own = seen.own!;
-      for (const margin of [".055", ".11"]) {
-        expect(seen[margin]!.height, `at +${margin}em the label wrapped`).toBe(own.height);
-        expect(seen[margin]!.width, `at +${margin}em the stamp outgrew its bound`)
-          .toBeLessThanOrEqual(own.bound);
+        at[extra] = JSON.parse(await page.evaluate(box));
       }
-    } finally {
-      server.close();
+      return at;
+    }, { viewport: { width: 390, height: 1000 }, mobile: true }) as Record<string, {
+      overflow: number; height: number; width: number; bound: number;
+    }>;
+
+    // Never a sideways scroll, at any width of glyph.
+    for (const [where, box] of Object.entries(seen))
+      expect(box.overflow, `at +${where}em the page scrolls ${box.overflow} px`).toBeLessThanOrEqual(0);
+    // And up to twice the widening a real fallback costs, the label is still
+    // one line: the box is the height it is with our own fonts.
+    const own = seen.own!;
+    for (const margin of [".055", ".11"]) {
+      expect(seen[margin]!.height, `at +${margin}em the label wrapped`).toBe(own.height);
+      expect(seen[margin]!.width, `at +${margin}em the stamp outgrew its bound`)
+        .toBeLessThanOrEqual(own.bound);
     }
   }, 180000);
 });

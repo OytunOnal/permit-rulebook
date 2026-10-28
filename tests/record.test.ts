@@ -7,7 +7,6 @@ import { RECORD_MAX_LENGTH, RECORD_VERSION,
   clearRecord, loadRecord, restore, saveRecord, serialize, LEGACY_STORAGE_KEY, STORAGE_KEY,
   type RecordStore,
 } from "../src/lib/record.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith } from "./browser-walk.js";
 import { BEACON_ENDPOINT, BEACON_SCRIPT, expectNothingLeft, type Sent } from "./wire.js";
 
@@ -197,7 +196,7 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
  * driven in a real browser with the network watched, and the only thing
  * asserted is what it actually sent (human, 2026-09-08).
  */
-const { chromePath, serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { chromePath, PHONE, walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -227,75 +226,72 @@ const ANSWER_ONE = `(() => {
 
 describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave the device", () => {
   it("a whole walk, and an answer changed after it, sends nothing but this page's own files", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        const answered: string[] = [];
-        for (let step = 0; step < 25; step++) {
-          const state = await page.evaluate('document.querySelector("#app").dataset.state');
-          if (state === "results") break;
-          answered.push(await answerWith(page, ANSWER_ONE));
-        }
-        const reached = await page.evaluate('document.querySelector("#app").dataset.state');
-        const walk = page.requests();
+    const screen = { viewport: { width: 1100, height: 900 }, mobile: false };
+    const { returned } = await walkSite({ site: { folder: dist }, screen, network: true, errorsExpected: true }, async ({ page, url }) => {
+      await page.goto(url("/"));
+      const answered: string[] = [];
+      for (let step = 0; step < 25; step++) {
+        const state = await page.evaluate('document.querySelector("#app").dataset.state');
+        if (state === "results") break;
+        answered.push(await answerWith(page, ANSWER_ONE));
+      }
+      const reached = await page.evaluate('document.querySelector("#app").dataset.state');
+      const walk = page.requests();
 
-        // Now the gesture the promise is most easily broken by: changing an
-        // answer once a verdict is on the screen.
-        page.forgetRequests();
-        await page.evaluate('document.querySelector("#app .done").click()');
-        await answerWith(page, ANSWER_ONE);
-        const afterEdit = page.requests();
+      // Now the gesture the promise is most easily broken by: changing an
+      // answer once a verdict is on the screen.
+      page.forgetRequests();
+      await page.evaluate('document.querySelector("#app .done").click()');
+      await answerWith(page, ANSWER_ONE);
+      const afterEdit = page.requests();
 
-        const declared = await page.evaluate(
-          'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
-        );
-        // Every route the verdict named: none of these may reach the counter
-        // either — which of them fit is the reader's business.
-        const routes = await page.evaluate(
-          'JSON.stringify([...document.querySelectorAll("#app a[href]")]'
-          + '.map((a) => a.getAttribute("href")).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+$/.test(h))'
-          + '.map((h) => h.split("/").pop()))',
-        );
-        return {
-          answered, reached, walk, afterEdit,
-          declared: JSON.parse(declared) as string[], routes: JSON.parse(routes) as string[],
-        };
-      }, { viewport: { width: 1100, height: 900 }, mobile: false, network: true }) as {
-        answered: string[]; reached: string; walk: Sent[]; afterEdit: Sent[];
-        declared: string[]; routes: string[];
+      const declared = await page.evaluate(
+        'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
+      );
+      // Every route the verdict named: none of these may reach the counter
+      // either — which of them fit is the reader's business.
+      const routes = await page.evaluate(
+        'JSON.stringify([...document.querySelectorAll("#app a[href]")]'
+        + '.map((a) => a.getAttribute("href")).filter((h) => /^[/][a-z-]+[/][a-z0-9-]+$/.test(h))'
+        + '.map((h) => h.split("/").pop()))',
+      );
+      return {
+        answered, reached, walk, afterEdit, origin: new URL(url("/")).origin,
+        declared: JSON.parse(declared) as string[], routes: JSON.parse(routes) as string[],
       };
+    });
+    const seen = returned as {
+      answered: string[]; reached: string; walk: Sent[]; afterEdit: Sent[];
+      declared: string[]; routes: string[]; origin: string;
+    };
 
-      expect(seen.reached, `the walk never reached a verdict: ${seen.answered.join(", ")}`).toBe("results");
-      expect(seen.declared.length, "the walk answered nothing").toBeGreaterThan(5);
+    expect(seen.reached, `the walk never reached a verdict: ${seen.answered.join(", ")}`).toBe("results");
+    expect(seen.declared.length, "the walk answered nothing").toBeGreaterThan(5);
 
-      const origin = server.origin as string;
-      // The same assertion the s26 walk makes over its requests (tests/wire.ts).
-      for (const [where, sent] of [["the walk", seen.walk], ["the edit", seen.afterEdit]] as const)
-        expectNothingLeft(sent, { origin, where, declared: seen.declared, routes: seen.routes });
+    const { origin } = seen;
+    // The same assertion the s26 walk makes over its requests (tests/wire.ts).
+    for (const [where, sent] of [["the walk", seen.walk], ["the edit", seen.afterEdit]] as const)
+      expectNothingLeft(sent, { origin, where, declared: seen.declared, routes: seen.routes });
 
-      // The counter was actually running: a blocked beacon would make every
-      // assertion above pass by having nothing to check (Security review).
-      const fetched = seen.walk.filter((r) => r.url.startsWith(BEACON_SCRIPT));
-      const reports = [...seen.walk, ...seen.afterEdit]
-        .filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");
-      expect(fetched.length, "the counter's script was never fetched").toBeGreaterThan(0);
-      expect(reports.length, "the counter sent no report at all").toBeGreaterThan(0);
-      // One report per page LOAD, not per answered question. Cloudflare's
-      // single-page tracking follows every pushState, and this interview pushes
-      // one per answer: seven answers sent thirteen reports until `spa: false`
-      // (Security review, 2026-09-08).
-      expect(reports.length, `${seen.declared.length} answers produced ${reports.length} reports`)
-        .toBeLessThanOrEqual(2);
+    // The counter was actually running: a blocked beacon would make every
+    // assertion above pass by having nothing to check (Security review).
+    const fetched = seen.walk.filter((r) => r.url.startsWith(BEACON_SCRIPT));
+    const reports = [...seen.walk, ...seen.afterEdit]
+      .filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");
+    expect(fetched.length, "the counter's script was never fetched").toBeGreaterThan(0);
+    expect(reports.length, "the counter sent no report at all").toBeGreaterThan(0);
+    // One report per page LOAD, not per answered question. Cloudflare's
+    // single-page tracking follows every pushState, and this interview pushes
+    // one per answer: seven answers sent thirteen reports until `spa: false`
+    // (Security review, 2026-09-08).
+    expect(reports.length, `${seen.declared.length} answers produced ${reports.length} reports`)
+      .toBeLessThanOrEqual(2);
 
-      // The edit repainted the screen without asking THIS SITE anything: the
-      // counter reports a view when the history entry changes, which is the
-      // page's address and nothing else.
-      const ours = seen.afterEdit.filter((r) => r.url.startsWith(origin));
-      expect(ours.length, `the edit sent ${ours.length} requests to this site`).toBeLessThan(3);
-    } finally {
-      server.close();
-    }
+    // The edit repainted the screen without asking THIS SITE anything: the
+    // counter reports a view when the history entry changes, which is the
+    // page's address and nothing else.
+    const ours = seen.afterEdit.filter((r) => r.url.startsWith(origin));
+    expect(ours.length, `the edit sent ${ours.length} requests to this site`).toBeLessThan(3);
   }, 180000);
 });
 
@@ -362,39 +358,33 @@ function expectReportCarriesNoAnswer(request: Sent, declared: string[]): void {
  */
 describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arriving cold", () => {
   it("a walk that starts at /?route=… still sends only the counter's own report", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        await page.evaluate('localStorage.removeItem("permit-rulebook.record.v1")');
-        await page.goto(`${server.url("/")}?route=de-blue-card-general`);
-        for (let step = 0; step < 4; step++) {
-          await answerWith(page, ANSWER_ONE);
-        }
-        const declared = await page.evaluate(
-          'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
-        );
-        return { sent: page.requests(), declared: JSON.parse(declared) as string[] };
-      }, { viewport: { width: 390, height: 844 }, mobile: true, network: true }) as {
-        sent: Sent[]; declared: string[];
-      };
-
-      const origin = server.origin as string;
-      const reports = seen.sent.filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");
-      expect(seen.declared.length, "the pre-scoped walk answered nothing").toBeGreaterThan(3);
-      expect(reports.length, `${reports.length} reports for one page load`).toBeLessThanOrEqual(2);
-
-      for (const request of seen.sent) {
-        if (request.url.startsWith(BEACON_SCRIPT)) continue;
-        if (request.url.startsWith(BEACON_ENDPOINT)) {
-          expectReportCarriesNoAnswer(request, seen.declared);
-          continue;
-        }
-        expect(request.url.startsWith(origin), `a request left this origin — ${request.url}`).toBe(true);
-        expect(request.method, `${request.method} ${request.url}`).toBe("GET");
+    const { returned } = await walkSite({ site: { folder: dist }, screen: PHONE, network: true, errorsExpected: true }, async ({ page, url }) => {
+      await page.goto(url("/"));
+      await page.evaluate('localStorage.removeItem("permit-rulebook.record.v1")');
+      await page.goto(`${url("/")}?route=de-blue-card-general`);
+      for (let step = 0; step < 4; step++) {
+        await answerWith(page, ANSWER_ONE);
       }
-    } finally {
-      server.close();
+      const declared = await page.evaluate(
+        'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
+      );
+      return { sent: page.requests(), declared: JSON.parse(declared) as string[], origin: new URL(url("/")).origin };
+    });
+    const seen = returned as { sent: Sent[]; declared: string[]; origin: string };
+
+    const { origin } = seen;
+    const reports = seen.sent.filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");
+    expect(seen.declared.length, "the pre-scoped walk answered nothing").toBeGreaterThan(3);
+    expect(reports.length, `${reports.length} reports for one page load`).toBeLessThanOrEqual(2);
+
+    for (const request of seen.sent) {
+      if (request.url.startsWith(BEACON_SCRIPT)) continue;
+      if (request.url.startsWith(BEACON_ENDPOINT)) {
+        expectReportCarriesNoAnswer(request, seen.declared);
+        continue;
+      }
+      expect(request.url.startsWith(origin), `a request left this origin — ${request.url}`).toBe(true);
+      expect(request.method, `${request.method} ${request.url}`).toBe("GET");
     }
   }, 180000);
 });

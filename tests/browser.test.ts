@@ -11,7 +11,7 @@ import { skipReason, warnNotWalked } from "./browser-walk.js";
  */
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
+const { PHONE, walkSite } = await import("../scripts/browser/browser.mjs");
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE HARNESS'S WAITS", skipped);
@@ -29,12 +29,9 @@ interface Screen { standIns: number; cover: string; question: string }
 
 /** `run` on a page over the built site, its scripts held back `delayJsMs` when asked. */
 async function onSite<T>(run: (page: BrowserPage, url: (path: string) => string) => Promise<T>, delayJsMs = 0): Promise<T> {
-  const server = await serve(dist, { delayJsMs });
-  try {
-    return await withBrowser((page: BrowserPage) => run(page, server.url)) as T;
-  } finally {
-    server.close();
-  }
+  const site = { folder: dist, delayJsMs };
+  const { returned } = await walkSite({ site, screen: PHONE, errorsExpected: true }, ({ page, url }) => run(page, url));
+  return returned;
 }
 
 describe("the harness's waits, in a real browser", () => {
