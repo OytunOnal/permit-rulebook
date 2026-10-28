@@ -192,7 +192,7 @@ describe("2 — the four-country result's sections, from the verdict", () => {
  * The browser: the four slips a stylesheet decides are measured on the built
  * site at the phone and the desktop the critique named.
  */
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE S27 SLIPS", skipped);

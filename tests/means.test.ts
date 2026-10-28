@@ -110,8 +110,8 @@ describe("the step says what it means, from the verdict", () => {
 });
 
 /** And the page actually shows both, where the reader was standing. */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

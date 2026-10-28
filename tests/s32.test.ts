@@ -174,8 +174,8 @@ describe("s32 — the transferee's ICT card, from the verdict", () => {
  * tenure under "not checked here", and nothing on the card called answered —
  * the card the case above reads, as the phone paints it.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

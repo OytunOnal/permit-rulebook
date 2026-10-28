@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { ask, OUTSIDE, servedFolder } from "./served-folder.js";
 
 /**
- * The test server (`serve`, from `scripts/browser.mjs`) serves only what is
+ * The test server (`serve`, from `scripts/browser/browser.mjs`) serves only what is
  * inside the folder it was given (#245). A page under test asks it for paths,
  * and a path is outside text: no escaped `../` or `..\` in it, and no link
  * inside the folder, may reach a file beside the folder.

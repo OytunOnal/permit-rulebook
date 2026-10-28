@@ -16,8 +16,8 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * header was a different object on the two halves of the product (Standards
  * review, 2026-09-08). identity.css owns it; this measures that it does.
  */
-const { chromePath: chromeAt } = await import("../scripts/chrome.mjs");
-const { serve: serveDir, withBrowser: withChrome } = await import("../scripts/browser.mjs");
+const { chromePath: chromeAt } = await import("../scripts/browser/browser.mjs");
+const { serve: serveDir, withBrowser: withChrome } = await import("../scripts/browser/browser.mjs");
 
 function whyNotMeasured(): string | null {
   try { chromeAt(); } catch (e) { return (e as Error).message; }

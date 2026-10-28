@@ -36,7 +36,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "node
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { chromePath } from "./chrome.mjs";
+import { chromePath } from "./browser/browser.mjs";
 import { decodePngSize } from "./decode-png-size.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));

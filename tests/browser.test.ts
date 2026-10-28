@@ -3,14 +3,14 @@ import { fileURLToPath } from "node:url";
 import { skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
 
 /**
- * The harness's page object (`scripts/browser.mjs`): each wait returns once
+ * The harness's page object (`scripts/browser/browser.mjs`): each wait returns once
  * what it waits for is there, and never before it, since a case reading
  * before then reads an unfinished page. A broken page fails naming what never
  * came.
  */
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE HARNESS'S WAITS", skipped);

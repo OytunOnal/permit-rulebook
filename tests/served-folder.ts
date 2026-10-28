@@ -9,7 +9,7 @@ import { join } from "node:path";
  * case, with a file beside it, and a request that reaches the server as written.
  */
 
-const { serve } = await import("../scripts/browser.mjs");
+const { serve } = await import("../scripts/browser/browser.mjs");
 
 export interface Answer { status: number; body: string }
 

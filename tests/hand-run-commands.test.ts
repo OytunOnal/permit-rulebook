@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { chromePath } from "../scripts/chrome.mjs";
+import { chromePath } from "../scripts/browser/browser.mjs";
 import { dataDir } from "../scripts/data-pin.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 

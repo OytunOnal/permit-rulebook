@@ -65,8 +65,8 @@ describe("the answer is above the fold", () => {
 });
 
 /** And measured where a reader stands: the first screen, at both widths. */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

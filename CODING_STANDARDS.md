@@ -75,7 +75,7 @@ pull request.
 ## Tests
 
 - Browser cases measure geometry and state from the running page, through
-  `scripts/browser.mjs`.
+  the browser harness's entry, `scripts/browser/browser.mjs`.
 
 ## Departures
 
