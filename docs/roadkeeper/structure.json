@@ -11,11 +11,16 @@
    ],
    "files": [
     "scripts/browser/browser.mjs",
+    "scripts/browser/chrome/chrome-launch.mjs",
     "scripts/browser/chrome/chrome.mjs",
+    "scripts/browser/connection/devtools-connection.mjs",
     "scripts/browser/exit-register/owned.mjs",
     "scripts/browser/static-server/html-in-pieces.mjs",
     "scripts/browser/static-server/static-server.mjs",
+    "scripts/browser/tab/open-tab.mjs",
+    "scripts/browser/tab/tab-events.mjs",
     "scripts/browser/tab/tab-gestures.mjs",
+    "scripts/browser/tab/tab-page.mjs",
     "scripts/browser/tab/tab-waits.mjs"
    ]
   },
@@ -126,11 +131,16 @@
   "roadkeeper-lint/rules/constant-reason.mjs": "domain",
   "roadkeeper-lint/rules/named-condition.mjs": "domain",
   "scripts/browser/browser.mjs": "infrastructure",
+  "scripts/browser/chrome/chrome-launch.mjs": "infrastructure",
   "scripts/browser/chrome/chrome.mjs": "infrastructure",
+  "scripts/browser/connection/devtools-connection.mjs": "infrastructure",
   "scripts/browser/exit-register/owned.mjs": "infrastructure",
   "scripts/browser/static-server/html-in-pieces.mjs": "infrastructure",
   "scripts/browser/static-server/static-server.mjs": "infrastructure",
+  "scripts/browser/tab/open-tab.mjs": "infrastructure",
+  "scripts/browser/tab/tab-events.mjs": "infrastructure",
   "scripts/browser/tab/tab-gestures.mjs": "infrastructure",
+  "scripts/browser/tab/tab-page.mjs": "infrastructure",
   "scripts/browser/tab/tab-waits.mjs": "infrastructure",
   "scripts/build-directory-on-disk.mjs": "infrastructure",
   "scripts/carry-assets.mjs": "main",
@@ -274,7 +284,17 @@
   },
   {
    "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/chrome/chrome-launch.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/browser.mjs",
    "to": "scripts/browser/chrome/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/connection/devtools-connection.mjs",
    "kind": "dependency"
   },
   {
@@ -289,12 +309,12 @@
   },
   {
    "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/tab/tab-gestures.mjs",
+   "to": "scripts/browser/tab/open-tab.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/tab/tab-waits.mjs",
+   "from": "scripts/browser/chrome/chrome-launch.mjs",
+   "to": "scripts/browser/chrome/chrome.mjs",
    "kind": "dependency"
   },
   {
@@ -310,6 +330,26 @@
   {
    "from": "scripts/browser/static-server/static-server.mjs",
    "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/tab-events.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/tab-gestures.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/tab-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/tab-waits.mjs",
    "kind": "dependency"
   },
   {
@@ -4236,26 +4276,6 @@
  "declarations": {
   "scripts/browser/browser.mjs": [
    {
-    "name": "nextProfile",
-    "kind": "other",
-    "exported": false
-   },
-   {
-    "name": "PROFILE_PREFIX",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "sweepStaleProfiles",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "LOCAL_BEACON_NOISE",
-    "kind": "const",
-    "exported": false
-   },
-   {
     "name": "withBrowser",
     "kind": "fn",
     "exported": true
@@ -7981,5 +8001,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "365f0d66857c3fcad8d8d9420c3dac119cfbc6b3ad57b0c88649838a6bc6aad0"
+ "digest": "d8564c5e2257153994cab067748b6e6b292d22c729720709a2220e8a51941f16"
 }
