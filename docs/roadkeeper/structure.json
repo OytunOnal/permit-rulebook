@@ -304,11 +304,6 @@
   },
   {
    "from": "scripts/browser/browser.mjs",
-   "to": "scripts/browser/walk/open-browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/browser/browser.mjs",
    "to": "scripts/browser/walk/screens.mjs",
    "kind": "dependency"
   },
@@ -4429,13 +4424,7 @@
   }
  ],
  "declarations": {
-  "scripts/browser/browser.mjs": [
-   {
-    "name": "withBrowser",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
+  "scripts/browser/browser.mjs": [],
   "scripts/carry-assets/carry.mjs": [
    {
     "name": "ORIGIN_VAR",
@@ -8156,5 +8145,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "cf5bf29b8567fd0c2bfcb428ebbf54abc91da7d4b582f983abaee06a5942b982"
+ "digest": "733fac2b4fe9f1d8a379ef2ec429c6d566ccdc1d6b61df7910d10e9f13522bfa"
 }
