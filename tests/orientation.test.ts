@@ -194,8 +194,8 @@ const STATE = 'JSON.stringify({'
 describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
   for (const [width, folded] of [[960, false], [959, true]] as const)
     it(`at ${width} px the nav is ${folded ? "folded behind Menu" : "an open row"}`, async () => {
-      const seen = JSON.parse(await withSite(async ({ page, url: urlOf }) => {
-        await page.goto(urlOf("/germany/"));
+      const seen = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
+        await page.goto(addressOf("/germany/"));
         return page.evaluate(STATE);
       }, { viewport: { width, height: 900 }, mobile: false }) as string) as
         { menuShown: boolean; navShown: boolean };
@@ -204,8 +204,8 @@ describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
     }, 180000);
 
   it("at 390 the menu opens, takes the focus, closes on Escape and on a choice", async () => {
-    const seen = await withSite(async ({ page, url: urlOf }) => {
-      await page.goto(urlOf("/germany/"));
+    const seen = await withSite(async ({ page, url: addressOf }) => {
+      await page.goto(addressOf("/germany/"));
       const closed = JSON.parse(await page.evaluate(STATE));
       await page.evaluate('document.querySelector(".menu").click()');
       const open = JSON.parse(await page.evaluate(STATE));
@@ -251,10 +251,10 @@ describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
   }, 180000);
 
   it("Escape closes it from anywhere on the page, and so does a tap outside", async () => {
-    const seen = await withSite(async ({ page, url: urlOf }) => {
+    const seen = await withSite(async ({ page, url: addressOf }) => {
       const state = async () => JSON.parse(await page.evaluate(STATE)) as
         { expanded: string; navShown: boolean };
-      await page.goto(urlOf("/germany/"));
+      await page.goto(addressOf("/germany/"));
       // Escape pressed on the document, with the focus nowhere near the menu.
       await page.evaluate('document.querySelector(".menu").click()');
       const opened = await state();
@@ -298,8 +298,8 @@ describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
 describe.skipIf(skipped !== null)("the data page's headings sit clear of their lists", () => {
   for (const [width, height] of [[1100, 900], [390, 844]] as const)
     it(`no country heading is overlapped at ${width} px`, async () => {
-      const heads = JSON.parse(await withSite(async ({ page, url: urlOf }) => {
-        await page.goto(urlOf("/data/"));
+      const heads = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
+        await page.goto(addressOf("/data/"));
         return page.evaluate(
           'JSON.stringify([...document.querySelectorAll(".jsonlinks")].map((nav) => {'
           + ' const label = nav.querySelector(".label");'
@@ -328,13 +328,13 @@ describe.skipIf(skipped !== null)("the data page's headings sit clear of their l
 /** And the pages still work under their own policy, in a browser. */
 describe.skipIf(skipped !== null)("nothing the site does is refused by its own policy", () => {
   it("every kind of page loads, renders and opens its menu with no CSP violation", async () => {
-    const seen = await withSite(async ({ page, url: urlOf }) => {
+    const seen = await withSite(async ({ page, url: addressOf }) => {
       const out: Record<string, unknown> = {};
       for (const [name, path] of [
         ["interview", "/"], ["country", "/germany/"], ["data", "/data/"],
         ["route", "/germany/researcher/"], ["error", "/404.html"],
       ] as const) {
-        await page.goto(urlOf(path));
+        await page.goto(addressOf(path));
         // What the policy refused is read once nothing is still loading.
         await page.waitUntilAtRest();
         out[name] = {

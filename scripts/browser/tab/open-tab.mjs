@@ -9,7 +9,7 @@ import { TabWaits } from "./tab-waits.mjs";
  * same way whichever it is, with its own lists of problems and requests, and
  * returns its page.
  *
- * `setup`: the screen (`viewport`, `mobile`), whether to keep the requests
+ * `setup`: the `screen`, whether to keep the requests
  * (`network`), the factor every tab is slowed by (`cpuSlowdown`), and the
  * region whose shifts are marked (`shiftRegion`, a selector or null), and
  * the browser's `WalkLog`, which every tab's errors and fronting reach.
@@ -32,7 +32,7 @@ export async function openTab(connection, setup) {
 }
 
 /** Enables the events the tab is read by, and sets its CPU and its screen. */
-async function setUpTab(sendToTab, { viewport, mobile, cpuSlowdown }) {
+async function setUpTab(sendToTab, { screen, cpuSlowdown }) {
   await sendToTab("Page.enable", {});
   await sendToTab("Runtime.enable", {});
   await sendToTab("Log.enable", {});
@@ -41,6 +41,6 @@ async function setUpTab(sendToTab, { viewport, mobile, cpuSlowdown }) {
   await sendToTab("Network.enable", {});
   if (cpuSlowdown > 1) await sendToTab("Emulation.setCPUThrottlingRate", { rate: cpuSlowdown });
   await sendToTab("Emulation.setDeviceMetricsOverride", {
-    width: viewport.width, height: viewport.height, deviceScaleFactor: 2, mobile,
+    width: screen.viewport.width, height: screen.viewport.height, deviceScaleFactor: 2, mobile: screen.mobile,
   });
 }

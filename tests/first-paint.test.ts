@@ -328,10 +328,10 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
   beforeAll(async () => {
     for (const screen of VIEWPORTS)
       for (const arrival of ARRIVALS)
-        await walkSite({ site: HELD_MODULE, screen, errorsExpected: true, shiftRegion: ABOVE_THE_BOX }, async ({ page, url: urlOf }) => {
+        await walkSite({ site: HELD_MODULE, screen, errorsExpected: true, shiftRegion: ABOVE_THE_BOX }, async ({ page, url: addressOf }) => {
           // Storage belongs to the origin, so it is written from a page of
           // this site — 404 is the cheapest one that runs no interview.
-          await page.goto(urlOf("/404.html"));
+          await page.goto(addressOf("/404.html"));
           // Seeded the way the product writes it: a record that reached a
           // verdict carries the bit that says so (s22).
           await page.evaluate(arrival.record
@@ -342,7 +342,7 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
             : "localStorage.clear()");
           // Read back once the HTML is parsed, with the module still held:
           // what is on the screen at this point is what the build put there.
-          const href = new URL(urlOf(arrival.path)).href;
+          const href = new URL(addressOf(arrival.path)).href;
           await page.navigate(href);
           await page.waitUntil(`location.href === ${JSON.stringify(href)} && document.readyState !== "loading"`,
             `${href} was never parsed`);
@@ -512,8 +512,8 @@ describe.skipIf(skipped !== null)("the page arriving in pieces paints where it s
     it(`${screen.name} · /?country=fr, the HTML split before the ledger: nothing moves`, async () => {
       expect(readFileSync(join(dist, "index.html"), "utf8"), "the page has no ledger to split before").toContain(LEDGER);
       const site = { ...HELD_MODULE, htmlInPieces: { before: LEDGER, heldMs: 300 } };
-      const { returned: m } = await walkSite({ site, screen, errorsExpected: true, shiftRegion: ABOVE_THE_BOX }, async ({ page, url: urlOf }) => {
-        await openAtRest(page, urlOf("/?country=fr"));
+      const { returned: m } = await walkSite({ site, screen, errorsExpected: true, shiftRegion: ABOVE_THE_BOX }, async ({ page, url: addressOf }) => {
+        await openAtRest(page, addressOf("/?country=fr"));
         return readMeasured(page);
       });
       expect(m.cls, `CLS ${m.cls} — ${detail(m)}`).toBe(0);

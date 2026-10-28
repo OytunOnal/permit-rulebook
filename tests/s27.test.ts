@@ -206,6 +206,8 @@ const seed = (answers: Record<string, string>) =>
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
 
 const BUTTON = '(() => { const b = document.querySelector(".menu"); return JSON.stringify({ text: b.textContent.trim(), expanded: b.getAttribute("aria-expanded") }); })()';
+/** The menu button read by `BUTTON` at each step of its walk, and the page's problems. */
+type MenuButtonSeen = Record<"closed" | "open" | "escaped" | "reopened" | "outside", { text: string; expanded: string }> & { problems: string[] };
 
 /**
  * Every country section's summary, measured: the mark's right edge against
@@ -319,7 +321,7 @@ interface Header {
 describe.skipIf(skipped !== null)("s27 — in the browser", () => {
   for (const [name, screen] of SCREENS) {
     it(`${name}: the menu button reads Menu, then Close, then Menu again after Escape and after a tap outside`, async () => {
-      const seen = await withSite(async ({ page, url: addressOf }) => {
+      const seen = await withSite<MenuButtonSeen>(async ({ page, url: addressOf }) => {
         await page.goto(addressOf("/germany/"));
         const closed = JSON.parse(await page.evaluate(BUTTON));
         await page.evaluate('document.querySelector(".menu").click()');
@@ -331,7 +333,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         await page.evaluate('document.querySelector("footer").click()');
         const outside = JSON.parse(await page.evaluate(BUTTON));
         return { closed, open, escaped, reopened, outside, problems: page.problems() };
-      }, screen) as unknown as Record<string, { text: string; expanded: string }> & { problems: string[] };
+      }, screen);
       expect(seen.problems).toEqual([]);
       expect(seen.closed).toEqual({ text: MENU, expanded: "false" });
       expect(seen.open).toEqual({ text: MENU_CLOSE, expanded: "true" });

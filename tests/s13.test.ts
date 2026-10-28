@@ -486,16 +486,16 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
   // <details class="country-sec"> per country shown.
   for (const [name, profile, arrival] of LAYOUTS)
     it(`the line is under the strip on the ${name} layout, and its link is the page`, async () => {
-      const seen = await withSite(async ({ page: page_, url }) => {
-        await page_.goto(url("/"));
-        await page_.evaluate(seed(profile));
-        await openAtRest(page_, url(arrival));
+      const seen = await withSite(async ({ page: tab, url }) => {
+        await tab.goto(url("/"));
+        await tab.evaluate(seed(profile));
+        await openAtRest(tab, url(arrival));
         return {
-          say: JSON.parse(await page_.evaluate(SAY)),
+          say: JSON.parse(await tab.evaluate(SAY)),
           // The record as the page restores it: replayed through the
           // interview, which drops what it would not ask (France never
           // asks the five-year question).
-          painted: JSON.parse(await page_.evaluate(paintedAsComposedScript(
+          painted: JSON.parse(await tab.evaluate(paintedAsComposedScript(
             verdictFor(replayRecord(ds, profile, Object.keys(profile)).answers),
           ))),
         };
@@ -515,13 +515,13 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
     }, 180000);
 
   it("and on /feedback/ reached from that screen the hrefs are the constants, byte for byte", async () => {
-    const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
-      await page_.goto(url("/"));
-      await page_.evaluate(seed(frRecord));
-      await page_.goto(url("/?country=fr"));
-      await page_.evaluate('document.querySelector(".say a").click()');
-      await page_.waitUntilNewDocumentDrawn();
-      return page_.evaluate(
+    const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
+      await tab.goto(url("/"));
+      await tab.evaluate(seed(frRecord));
+      await tab.goto(url("/?country=fr"));
+      await tab.evaluate('document.querySelector(".say a").click()');
+      await tab.waitUntilNewDocumentDrawn();
+      return tab.evaluate(
         'JSON.stringify({ path: location.pathname,'
         + ' mailtos: [...document.querySelectorAll("a[href^=\'mailto:\']")].map((a) => a.getAttribute("href")),'
         + ' gmails: [...document.querySelectorAll("a[href^=\'https://mail.google.com/\']")]'
@@ -543,12 +543,12 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
   }, 180000);
 
   it("no question screen carries it", async () => {
-    const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
-      await openAtRest(page_, url("/"));
-      const first = await page_.evaluate(SAY);
+    const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
+      await openAtRest(tab, url("/"));
+      const first = await tab.evaluate(SAY);
       // One answer in, still a question screen.
-      await answerWith(page_, 'document.querySelector(".qcard .opt").click()');
-      const second = await page_.evaluate(SAY);
+      await answerWith(tab, 'document.querySelector(".qcard .opt").click()');
+      const second = await tab.evaluate(SAY);
       return JSON.stringify({ first: JSON.parse(first), second: JSON.parse(second) });
     }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
       { first: { present: boolean }; second: { present: boolean } };
@@ -618,18 +618,21 @@ interface Opened {
   hits: { text: string; overlap: boolean; box: number[] }[];
 }
 
+/** The list opened, closed on Escape, reopened and closed by a tap outside, and opened on every word the summary can be. */
+interface OpenedListSeen { opened: Opened; escaped: Opened; again: Opened; outside: Opened; words: Record<string, Opened> }
+
 describe.skipIf(skipped !== null)("the header row, measured at the fold", () => {
   it("at 960 px holds its four items on one line with fonts this machine has never seen", async () => {
-    const seen = await withSite(async ({ page: page_, url }) => {
+    const seen = await withSite(async ({ page: tab, url }) => {
       const at: Record<string, unknown> = {};
       for (const [name, path] of [
         ["interview", "/"], ["route", "/germany/eu-blue-card-general/"],
         ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"],
       ] as const) {
-        await page_.goto(url(path));
-        await page_.evaluate(FALLBACK);
-        await page_.waitUntilAtRest();
-        at[name] = JSON.parse(await page_.evaluate(ROW));
+        await tab.goto(url(path));
+        await tab.evaluate(FALLBACK);
+        await tab.waitUntilAtRest();
+        at[name] = JSON.parse(await tab.evaluate(ROW));
       }
       return at;
     }, { viewport: { width: 960, height: 900 }, mobile: false }) as Record<string, {
@@ -652,40 +655,38 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
   }, 180000);
 
   it("the opened list covers no other item on the row, and closes on Escape and on a tap outside", async () => {
-    const seen = await withSite(async ({ page: page_, url }) => {
+    const seen = await withSite<OpenedListSeen>(async ({ page: tab, url }) => {
       // Every word the summary can be, because the list is centred on the
       // word and the shortest word overhangs the most: "Spain" ran 45 px
       // under the separator where "Netherlands" ran 15 (measured, 2026-09-16).
-      const words: Record<string, unknown> = {};
+      const words: Record<string, Opened> = {};
       for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
-        await page_.goto(url(path));
-        await page_.evaluate(FALLBACK);
-        await page_.waitUntilAtRest();
-        await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
-        words[path] = JSON.parse(await page_.evaluate(OPEN_LIST));
+        await tab.goto(url(path));
+        await tab.evaluate(FALLBACK);
+        await tab.waitUntilAtRest();
+        await tab.evaluate('document.querySelector(".site-head .nav details > summary").click()');
+        words[path] = JSON.parse(await tab.evaluate(OPEN_LIST));
       }
-      await page_.goto(url("/germany/"));
-      await page_.evaluate(FALLBACK);
-      await page_.waitUntilAtRest();
-      await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
-      const opened = JSON.parse(await page_.evaluate(OPEN_LIST));
-      await page_.evaluate(
+      await tab.goto(url("/germany/"));
+      await tab.evaluate(FALLBACK);
+      await tab.waitUntilAtRest();
+      await tab.evaluate('document.querySelector(".site-head .nav details > summary").click()');
+      const opened = JSON.parse(await tab.evaluate(OPEN_LIST));
+      await tab.evaluate(
         'document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))',
       );
-      const escaped = JSON.parse(await page_.evaluate(OPEN_LIST));
-      await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
-      const again = JSON.parse(await page_.evaluate(OPEN_LIST));
-      await page_.evaluate('document.querySelector("h1").click()');
-      const outside = JSON.parse(await page_.evaluate(OPEN_LIST));
+      const escaped = JSON.parse(await tab.evaluate(OPEN_LIST));
+      await tab.evaluate('document.querySelector(".site-head .nav details > summary").click()');
+      const again = JSON.parse(await tab.evaluate(OPEN_LIST));
+      await tab.evaluate('document.querySelector("h1").click()');
+      const outside = JSON.parse(await tab.evaluate(OPEN_LIST));
       return { opened, escaped, again, outside, words };
-    }, { viewport: { width: 960, height: 900 }, mobile: false }) as unknown as Record<string, {
-      open: boolean; list: number[]; hits: { text: string; overlap: boolean; box: number[] }[];
-    }> & { words: Record<string, Opened> };
+    }, { viewport: { width: 960, height: 900 }, mobile: false });
 
-    expect(seen.opened!.open, "the disclosure did not open").toBe(true);
+    expect(seen.opened.open, "the disclosure did not open").toBe(true);
     // The list is drawn, under the row: a box of zeros is a hidden list.
-    expect(seen.opened!.list[3]! - seen.opened!.list[1]!, "the open list has no height").toBeGreaterThan(100);
-    expect(seen.opened!.list[2]! - seen.opened!.list[0]!, "the open list has no width").toBeGreaterThan(100);
+    expect(seen.opened.list[3]! - seen.opened.list[1]!, "the open list has no height").toBeGreaterThan(100);
+    expect(seen.opened.list[2]! - seen.opened.list[0]!, "the open list has no width").toBeGreaterThan(100);
     for (const [path, at] of Object.entries(seen.words)) {
       expect(at.open, `${path}: the disclosure did not open`).toBe(true);
       // Not one item, and not the separator, under any part of the list.
@@ -696,18 +697,18 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
       expect(at.clearance, `${path} (${at.word}): the list ends ${at.clearance} px before the separator`)
         .toBeGreaterThanOrEqual(12);
     }
-    expect(seen.escaped!.open, "Escape left the list open").toBe(false);
-    expect(seen.again!.open, "the disclosure would not reopen").toBe(true);
-    expect(seen.outside!.open, "a tap outside left the list open").toBe(false);
+    expect(seen.escaped.open, "Escape left the list open").toBe(false);
+    expect(seen.again.open, "the disclosure would not reopen").toBe(true);
+    expect(seen.outside.open, "a tap outside left the list open").toBe(false);
   }, 180000);
 
   it("at 1240 px, where the human measured it, the list clears the separator on every word", async () => {
-    const seen = await withSite(async ({ page: page_, url }) => {
+    const seen = await withSite(async ({ page: tab, url }) => {
       const words: Record<string, unknown> = {};
       for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
-        await page_.goto(url(path));
-        await page_.evaluate('document.querySelector(".site-head .nav details > summary").click()');
-        words[path] = JSON.parse(await page_.evaluate(OPEN_LIST));
+        await tab.goto(url(path));
+        await tab.evaluate('document.querySelector(".site-head .nav details > summary").click()');
+        words[path] = JSON.parse(await tab.evaluate(OPEN_LIST));
       }
       return words;
     }, { viewport: { width: 1240, height: 900 }, mobile: false }) as Record<string, Opened>;
@@ -722,11 +723,11 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
   }, 180000);
 
   it("at 761 px the header is folded behind Menu, as it has been since 2026-09-08", async () => {
-    const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
-      await page_.goto(url("/"));
-      await page_.evaluate(FALLBACK);
-      await page_.waitUntilAtRest();
-      return page_.evaluate(
+    const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
+      await tab.goto(url("/"));
+      await tab.evaluate(FALLBACK);
+      await tab.waitUntilAtRest();
+      return tab.evaluate(
         'JSON.stringify({ menuShown: getComputedStyle(document.querySelector(".menu")).display !== "none",'
         + ' navShown: getComputedStyle(document.querySelector(".site-head .nav")).display !== "none",'
         + ' overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth })',
@@ -739,11 +740,11 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
   }, 180000);
 
   it("at 390 the menu lists the four countries under their heading, then the three", async () => {
-    const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
-      await page_.goto(url("/france/"));
-      await page_.evaluate('document.querySelector(".menu").click()');
-      await page_.waitUntilAtRest();
-      return page_.evaluate(
+    const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
+      await tab.goto(url("/france/"));
+      await tab.evaluate('document.querySelector(".menu").click()');
+      await tab.waitUntilAtRest();
+      return tab.evaluate(
         'JSON.stringify((() => {'
         + ' const nav = document.querySelector(".site-head .nav");'
         + ' const shown = (el) => el.getBoundingClientRect().height > 0;'
@@ -772,13 +773,13 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
 
 describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
   it("the Copy button puts the address on the clipboard and says so for two seconds", async () => {
-    const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
-      await page_.goto(url("/feedback/"));
+    const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
+      await tab.goto(url("/feedback/"));
       // Headless Chrome may refuse the clipboard: the write is stood in for
       // by a stub that records what it was handed, which is the fact under
       // test — the script hands the clipboard the page's address and nothing
       // else. The button's own words are read off the screen.
-      await page_.evaluate(
+      await tab.evaluate(
         '(() => { window.__copied = []; Object.defineProperty(navigator, "clipboard", { value: {'
         + ' writeText: (t) => { window.__copied.push(t); return Promise.resolve(); } }, configurable: true });'
         + ' return 1; })()',
@@ -788,14 +789,14 @@ describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
       // The word beside the address, at each moment. Two taps: the glyph's
       // own box, and the address text — both are the one button.
       // A tap's word waits on the copy it follows, and the clearing on the word gone.
-      const before = await page_.evaluate(`${word}.textContent`);
-      await page_.evaluate(`${button}.querySelector("svg").dispatchEvent(new MouseEvent("click", { bubbles: true }))`);
-      const afterIcon = await page_.waitUntil(`window.__copied.length === 1 && ${word}.textContent`, "the glyph's tap never said anything");
-      await page_.waitUntil(`${word}.textContent === ""`, "the word never cleared");
-      const later = await page_.evaluate(`${word}.textContent`);
-      await page_.evaluate('document.getElementById("feedback-address").dispatchEvent(new MouseEvent("click", { bubbles: true }))');
-      const afterText = await page_.waitUntil(`window.__copied.length === 2 && ${word}.textContent`, "the address's tap never said anything");
-      return page_.evaluate(
+      const before = await tab.evaluate(`${word}.textContent`);
+      await tab.evaluate(`${button}.querySelector("svg").dispatchEvent(new MouseEvent("click", { bubbles: true }))`);
+      const afterIcon = await tab.waitUntil(`window.__copied.length === 1 && ${word}.textContent`, "the glyph's tap never said anything");
+      await tab.waitUntil(`${word}.textContent === ""`, "the word never cleared");
+      const later = await tab.evaluate(`${word}.textContent`);
+      await tab.evaluate('document.getElementById("feedback-address").dispatchEvent(new MouseEvent("click", { bubbles: true }))');
+      const afterText = await tab.waitUntil(`window.__copied.length === 2 && ${word}.textContent`, "the address's tap never said anything");
+      return tab.evaluate(
         `JSON.stringify({ copied: window.__copied, before: ${JSON.stringify(before)},`
         + ` afterIcon: ${JSON.stringify(afterIcon)}, later: ${JSON.stringify(later)},`
         + ` afterText: ${JSON.stringify(afterText)},`
@@ -828,9 +829,9 @@ describe.skipIf(skipped !== null)("/feedback/ itself, at both widths", () => {
 
   for (const [width, height, mobile] of [[390, 844, true], [1000, 900, false]] as const)
     it(`every button and link reaches the tap floor at ${width} px`, async () => {
-      const seen = JSON.parse(await withSite(async ({ page: page_, url }) => {
-        await page_.goto(url("/feedback/"));
-        return page_.evaluate(
+      const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
+        await tab.goto(url("/feedback/"));
+        return tab.evaluate(
           'JSON.stringify({ overflow: document.documentElement.scrollWidth'
           + ' - document.documentElement.clientWidth,'
           + ' targets: [...document.querySelectorAll("main a, main button")].map((el) => ({'

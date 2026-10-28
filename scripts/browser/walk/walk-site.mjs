@@ -14,7 +14,7 @@ import { openBrowser } from "./open-browser.mjs";
  * A site a walk opens: a folder served for the walk (the built site's `dist/`,
  * or fixture pages), with the static server's options; or a live address.
  *
- * @typedef {{ folder: string, base?: string, delayJsMs?: number, htmlInPieces?: { before: string, heldMs: number } | null }
+ * @typedef {{ folder: string, delayJsMs?: number, htmlInPieces?: { before: string, heldMs: number } | null }
  *   | { address: string }} Site
  */
 
@@ -92,12 +92,12 @@ function failOnErrors(errors) {
   throw new Error(`the walk's pages threw or logged ${errors.length} error(s):\n${listed}`);
 }
 
-/** What the walk measured once `walker` has returned `returned` in `browser`, after its width and errors are checked. */
-async function measuredAtTheEnd(browser, returned, { checkWidth, errorsExpected }) {
-  const onScreen = browser.walkLog.tabOnScreen();
+/** What the walk measured once `walker` has returned `returned`, read from the browser's `walkLog`, after its width and errors are checked. */
+async function measuredAtTheEnd(walkLog, returned, { checkWidth, errorsExpected }) {
+  const onScreen = walkLog.tabOnScreen();
   const widthFailure = await checkWidth(onScreen);
   if (widthFailure) throw widthFailure;
-  const errors = browser.walkLog.errors();
+  const errors = walkLog.errors();
   if (!errorsExpected) failOnErrors(errors);
   return { returned, shifts: await onScreen.readLayoutShifts(), errors };
 }
@@ -105,11 +105,11 @@ async function measuredAtTheEnd(browser, returned, { checkWidth, errorsExpected 
 /** The walk in a browser opened for it, on the site whose addresses `url` makes. */
 async function walkInBrowser(walk, url, walker) {
   const { screen, network = false, scrollbars = false, errorsExpected = false, shiftRegion = null } = walk;
-  const browser = await openBrowser({ ...screen, network, scrollbars, shiftRegion });
+  const browser = await openBrowser({ screen, network, scrollbars, shiftRegion });
   try {
     const checkWidth = widthCheckOn(screen);
     const returned = await walker({ page: checkingWidthOnDraw(browser.page, checkWidth), url });
-    return await measuredAtTheEnd(browser, returned, { checkWidth, errorsExpected });
+    return await measuredAtTheEnd(browser.walkLog, returned, { checkWidth, errorsExpected });
   } finally {
     browser.close();
   }

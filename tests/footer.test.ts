@@ -224,14 +224,14 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
   // is not a design (Spec review, 2026-09-08).
   for (const [width, columns] of [[1100, 3], [761, 3], [760, 2], [600, 2], [481, 2], [390, 1]] as const)
     it(`${columns} column${columns === 1 ? "" : "s"} at ${width} px`, async () => {
-      const seen = await withSite(async ({ page, url: urlOf }) => {
+      const seen = await withSite(async ({ page, url: addressOf }) => {
         const at: Record<string, unknown> = {};
         // The same block on every page, so the count is measured on each.
         for (const [name, path] of [
           ["route", "/germany/eu-blue-card-general/"], ["interview", "/"],
           ["country", "/germany/"], ["data", "/data/"],
         ] as const) {
-          at[name] = await settledLayoutAt(page, urlOf(path), path);
+          at[name] = await settledLayoutAt(page, addressOf(path), path);
         }
         return at;
       }, { viewport: { width, height: 900 }, mobile: width < 500 }) as Record<string, {
@@ -256,8 +256,8 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
     }, 180000);
 
   it("at 390 nothing that cannot break is wider than its column", async () => {
-    const seen = JSON.parse(await withSite(async ({ page, url: urlOf }) => {
-      await page.goto(urlOf("/germany/eu-blue-card-general/"));
+    const seen = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
+      await page.goto(addressOf("/germany/eu-blue-card-general/"));
       // The runner's fonts are wider than this machine's, and a family wider
       // still is only a matter of time: measure the widened case.
       await page.evaluate(
