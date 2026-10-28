@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
-import { PHONE, chromePath, type BrowserPage, type Screen } from "../scripts/browser/browser.mjs";
-import { answerOnce, withSite, type PageOnSite } from "./browser-walk.js";
+import { PHONE, chromePath, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
+import { answerOnce, withSite } from "./browser-walk.js";
 
 /**
  * s37 — Back on a restored record, and the Back gesture, in a real browser:

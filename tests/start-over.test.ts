@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { DESK, PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
-  fieldOnScreen, openAtRest, skipReason, warnNotWalked, withSite, type PageOnSite,
+  fieldOnScreen, openAtRest, skipReason, warnNotWalked, withSite,
 } from "./browser-walk.js";
 
 /**

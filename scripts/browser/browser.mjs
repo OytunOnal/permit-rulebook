@@ -3,7 +3,8 @@
 /**
  * The browser harness's entry. Every browser case, deploy job and live or
  * real-use walk takes its browser from here, as `walkSite` (the browser walk)
- * at `DESK` or `PHONE`; `BrowserPage` is the page a walker is handed.
+ * at `DESK` or `PHONE`; `PageOnSite` is what a walker is handed, `BrowserPage`
+ * the page in it, and `SentRequest` a request that page sent.
  *
  * Beside the walk: `chromePath`, Chrome found for a caller that renders with
  * it, and `serve`, the built site's server for a caller that sends plain HTTP
@@ -22,6 +23,8 @@ export { DESK, PHONE } from "./walk/screens.mjs";
 export { walkSite } from "./walk/walk-site.mjs";
 
 /** @typedef {import("./tab/tab-page.mjs").BrowserPage} BrowserPage */
+/** @typedef {import("./tab/tab-page.mjs").SentRequest} SentRequest */
+/** @typedef {import("./walk/walk-site.mjs").PageOnSite} PageOnSite */
 /** @typedef {import("./walk/screens.mjs").Screen} Screen */
 /** @typedef {import("./layout-shifts/layout-shift-reading.mjs").LayoutShifts} LayoutShifts */
 /** @typedef {import("./walk/walk-log.mjs").WalkError} WalkError */

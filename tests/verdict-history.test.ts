@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
-import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
-  SCREEN_SHOWN, fieldOnScreen, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite, type PageOnSite,
+  SCREEN_SHOWN, fieldOnScreen, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
 } from "./browser-walk.js";
 
 /**

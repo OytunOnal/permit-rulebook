@@ -5,7 +5,8 @@ import { countryPages } from "../src/lib/country-page.js";
 import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePages } from "../src/lib/route-page.js";
-import { recordSeedScript, skipReason, warnNotWalked, withSite, type PageOnSite } from "./browser-walk.js";
+import type { PageOnSite } from "../scripts/browser/browser.mjs";
+import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 
 /**
  * #156 (#151, ruling 8): shorthand is explained the first time each page uses

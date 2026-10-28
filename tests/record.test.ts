@@ -8,7 +8,8 @@ import { RECORD_MAX_LENGTH, RECORD_VERSION,
   type RecordStore,
 } from "../src/lib/record.js";
 import { answerWith } from "./browser-walk.js";
-import { BEACON_ENDPOINT, BEACON_SCRIPT, expectNothingLeft, type Sent } from "./wire.js";
+import { BEACON_ENDPOINT, BEACON_SCRIPT, expectNothingLeft } from "./wire.js";
+import { PHONE, chromePath, walkSite, type SentRequest } from "../scripts/browser/browser.mjs";
 
 const dataset = rawDataset as unknown as Dataset;
 const known = deriveQuestions(dataset);
@@ -196,8 +197,6 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
  * driven in a real browser with the network watched, and the only thing
  * asserted is what it actually sent (human, 2026-09-08).
  */
-const { chromePath, PHONE, walkSite } = await import("../scripts/browser/browser.mjs");
-
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
   if (!existsSync(dist)) return "no dist/ — run npm run build first";
@@ -261,7 +260,7 @@ describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave 
       };
     });
     const seen = returned as {
-      answered: string[]; reached: string; walk: Sent[]; afterEdit: Sent[];
+      answered: string[]; reached: string; walk: SentRequest[]; afterEdit: SentRequest[];
       declared: string[]; routes: string[]; origin: string;
     };
 
@@ -331,7 +330,7 @@ describe("the rename does not cost anybody their answers", () => {
 
 /** One request to the counter's endpoint after a pre-scoped walk: its preflight
  * carries nothing, and its report carries an address and no answer. */
-function expectReportCarriesNoAnswer(request: Sent, declared: string[]): void {
+function expectReportCarriesNoAnswer(request: SentRequest, declared: string[]): void {
   if (request.method === "OPTIONS") return;
   const raw = String(request.postData ?? "");
   // Origin and path masked; the query string left in to be checked.
@@ -370,7 +369,7 @@ describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arrivi
       );
       return { sent: page.requests(), declared: JSON.parse(declared) as string[], origin: new URL(url("/")).origin };
     });
-    const seen = returned as { sent: Sent[]; declared: string[]; origin: string };
+    const seen = returned as { sent: SentRequest[]; declared: string[]; origin: string };
 
     const { origin } = seen;
     const reports = seen.sent.filter((r) => r.url.startsWith(BEACON_ENDPOINT) && r.method === "POST");

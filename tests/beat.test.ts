@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { STORAGE_KEY } from "../src/lib/record.js";
-import { DESK, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { DESK, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
-  BEAT_MS, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite, type PageOnSite,
+  BEAT_MS, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
 } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
 

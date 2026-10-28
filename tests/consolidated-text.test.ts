@@ -10,7 +10,8 @@ import { OFFICIAL_PAGE, consolidatedTextOn } from "../src/lib/copy/quotes.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
-import { recordSeedScript, skipReason, warnNotWalked, withSite, type PageOnSite } from "./browser-walk.js";
+import type { PageOnSite } from "../scripts/browser/browser.mjs";
+import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { builtPages } from "./reader-pages.js";
 import { blocksIn, cardOn, verdictFor, verdictOn } from "./verdict-cards.js";
 

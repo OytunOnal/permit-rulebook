@@ -1,4 +1,4 @@
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import type { BrowserPage, LayoutShifts } from "../scripts/browser/browser.mjs";
 
 /** Everything ABOVE the box: the site's header and the masthead, the region the browser cases mark. */
 export const ABOVE_THE_BOX = ".site-head, .masthead-with-stamps";
@@ -48,7 +48,7 @@ addEventListener("click", () => { moveDown("on the tap"); window.__tapped = true
 </script></head><body><p>above</p><p id="below" style="height:400px">below</p></body></html>`;
 
 export interface ShiftsSeen {
-  every: { value: number; markedAsInput: boolean }[];
+  every: LayoutShifts["reported"];
   counted: number[];
   /** What `shiftScoreSince` reads since the page loaded. */
   score: number;

@@ -4,9 +4,9 @@ import { remainingQuestions, shortLabelOf, type Dataset, type Profile } from "pe
 import { EDIT_LINE } from "../src/lib/copy/interview.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
-  openAtRest, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite, type PageOnSite,
+  openAtRest, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
 } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
 

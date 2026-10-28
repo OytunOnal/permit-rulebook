@@ -7,9 +7,9 @@ import {
   type KeptRecord,
 } from "../src/lib/interview/index.js";
 import { openInterviewHistory, type InterviewHistory } from "../src/lib/interview-history/index.js";
-import { DESK, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { DESK, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
-  fieldOnScreen, recordSeedScript, skipReason, warnNotWalked, withSite, type PageOnSite,
+  fieldOnScreen, recordSeedScript, skipReason, warnNotWalked, withSite,
 } from "./browser-walk.js";
 import { FakeTab, stepOf } from "./fake-browser-history.js";
 

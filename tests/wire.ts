@@ -1,4 +1,5 @@
 import { expect } from "vitest";
+import type { SentRequest } from "../scripts/browser/browser.mjs";
 
 /**
  * What a page sent, read off the wire — and the one assertion the promise
@@ -9,9 +10,9 @@ import { expect } from "vitest";
  * (`all` → a situation → a country). s26 walks that path with the network
  * watched, and the check it makes has to be this one — reused, not re-typed,
  * or the two drift the first time a field is added to the allow-list
- * (Security review of s26, 2026-09-17).
+ * (Security review of s26, 2026-09-17). A request's shape is the harness's
+ * `SentRequest`.
  */
-export interface Sent { url: string; method: string; postData: string; hasPostData: boolean }
 
 /** The two addresses outside this site that a page may talk to, and no others. */
 export const BEACON_SCRIPT = "https://static.cloudflareinsights.com/beacon.min.js";
@@ -48,7 +49,7 @@ const token = (value: string) =>
  * counter either. `where` names the walk in the failure.
  */
 export function expectNothingLeft(
-  sent: Sent[], { origin, where, declared, routes }: { origin: string; where: string; declared: string[]; routes: string[] },
+  sent: SentRequest[], { origin, where, declared, routes }: { origin: string; where: string; declared: string[]; routes: string[] },
 ): void {
   for (const request of sent) {
     // The counter, and only the counter.

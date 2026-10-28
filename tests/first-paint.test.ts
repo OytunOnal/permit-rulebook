@@ -12,7 +12,7 @@ import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/ques
 import { replayRecord } from "../src/lib/scope.js";
 import { FEEDBACK_PATH } from "../src/lib/identity.js";
 import { url } from "../src/lib/site.js";
-import { walkSite, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { walkSite, type BrowserPage, type LayoutShifts } from "../scripts/browser/browser.mjs";
 import { ABOVE_THE_BOX, shiftsBeforeAndAfterATap } from "./layout-shifts.js";
 import { openAtRest, skipReason, warnNotWalked } from "./browser-walk.js";
 
@@ -187,7 +187,7 @@ interface Measured {
   cls: number;
   /** Each shift, with every node it moved: named, how far across and down it
    * went, and whether it is above the box. */
-  shifts: { value: number; sources: { node: string; dx: number; dy: number; inRegion: boolean }[] }[];
+  shifts: Pick<LayoutShifts["counted"][number], "value" | "sources">[];
   /** Whether the node the build drew is still the node on the screen. */
   sameCard: boolean;
   /** Whether the footer takes room once the module has drawn. */

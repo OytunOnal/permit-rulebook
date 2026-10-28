@@ -4,7 +4,7 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { chromePath, walkSite, type BrowserPage, type Screen } from "../scripts/browser/browser.mjs";
+import { chromePath, walkSite, type BrowserPage, type PageOnSite, type Screen } from "../scripts/browser/browser.mjs";
 
 /**
  * The interview walked in headless Chrome over the built page: what the
@@ -34,10 +34,6 @@ export function warnNotWalked(what: string, reason: string): void {
     "",
   ].join(String.fromCharCode(10)));
 }
-
-/** A browser page and the address of the site it is on, which every walk
- * takes together. */
-export interface PageOnSite { page: BrowserPage; url: (path: string) => string }
 
 /** Walks the built site on `screen`, handing `run` the page on the site, and
  * returns what `run` returned. Errors are expected: the browser cases assert

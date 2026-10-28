@@ -14,8 +14,8 @@ import {
 import { url } from "../src/lib/site.js";
 import type { CountrySection, Tally, Verdict, VerdictGroup } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, cardsIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import { expectNothingLeft, type Sent } from "./wire.js";
-import { chromePath, walkSite, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { expectNothingLeft } from "./wire.js";
+import { chromePath, walkSite, type BrowserPage, type SentRequest } from "../scripts/browser/browser.mjs";
 import { PICK_TURKEY, answerWith } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
@@ -368,7 +368,7 @@ interface Result {
   /** Every answer on the record and every route the screen links, for the wire check. */
   declared: string[]; routes: string[];
   /** What the page sent since the walk began. */
-  sent: Sent[];
+  sent: SentRequest[];
 }
 
 /** The results screen, read once it is drawn, against the verdict it should paint. */

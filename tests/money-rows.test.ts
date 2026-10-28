@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveQuestions, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
 import { STORAGE_KEY } from "../src/lib/record.js";
-import { DESK, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { DESK, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
-  QLABEL, answer, middleBandOf, skipReason, walkTo, warnNotWalked, withSite, type PageOnSite,
+  QLABEL, answer, middleBandOf, skipReason, walkTo, warnNotWalked, withSite,
 } from "./browser-walk.js";
 
 /**
