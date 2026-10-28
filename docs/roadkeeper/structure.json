@@ -2174,11 +2174,6 @@
   },
   {
    "from": "tests/browser-walk.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/browser-walk.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
@@ -2191,11 +2186,6 @@
    "from": "tests/browser.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/browser.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
   },
   {
    "from": "tests/browser.test.ts",
@@ -2498,6 +2488,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/chrome-path.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/consolidated-text.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
    "from": "tests/consolidated-text.test.ts",
    "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
@@ -2634,11 +2634,6 @@
   },
   {
    "from": "tests/first-paint.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/first-paint.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
@@ -2706,11 +2701,6 @@
    "from": "tests/footer.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/footer.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
   },
   {
    "from": "tests/footer.test.ts",
@@ -2836,11 +2826,6 @@
    "from": "tests/identity.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/identity.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
   },
   {
    "from": "tests/identity.test.ts",
@@ -3114,6 +3099,11 @@
   },
   {
    "from": "tests/reader-pages.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/reader-pages.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
@@ -3121,11 +3111,6 @@
    "from": "tests/reader-pages.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/reader-pages.ts",
-   "to": "tests/browser-walk.ts",
-   "kind": "type-only"
   },
   {
    "from": "tests/reason.test.ts",
@@ -3529,11 +3514,6 @@
   },
   {
    "from": "tests/s20.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/s20.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
@@ -3669,6 +3649,11 @@
   },
   {
    "from": "tests/s23.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -3691,11 +3676,6 @@
    "from": "tests/s25.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/s25.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
   },
   {
    "from": "tests/s25.test.ts",
@@ -3746,11 +3726,6 @@
    "from": "tests/s26.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/s26.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
   },
   {
    "from": "tests/s26.test.ts",
@@ -3999,6 +3974,11 @@
   },
   {
    "from": "tests/s32.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s32.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -4006,11 +3986,6 @@
    "from": "tests/s37.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/s37.test.ts",
-   "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
   },
   {
    "from": "tests/s37.test.ts",
@@ -4201,6 +4176,11 @@
    "from": "tests/set-aside.test.ts",
    "to": "tests/layout-shifts.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/shorthand.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
   },
   {
    "from": "tests/shorthand.test.ts",
@@ -4421,6 +4401,11 @@
    "from": "tests/walk-site.test.ts",
    "to": "tests/layout-shifts.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/wire.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
   }
  ],
  "declarations": {
@@ -8145,5 +8130,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "733fac2b4fe9f1d8a379ef2ec429c6d566ccdc1d6b61df7910d10e9f13522bfa"
+ "digest": "5ffded3fd8907d344174edb9754a374db1bf3abb191663ca90b3bc69b0386646"
 }
