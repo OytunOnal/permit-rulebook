@@ -41,7 +41,8 @@ import { openBrowser } from "./open-browser.mjs";
  * @typedef {object} Walked
  * @property {T} returned What the walker returned.
  * @property {LayoutShifts} shifts The shifts of the page on screen when the walk ended, with its address.
- * @property {WalkError[]} errors Every error of the walk, across its navigations and tabs, each with its address.
+ * @property {WalkError[]} errors The walk's errors, across its navigations and tabs, each with its address: the first 100.
+ * @property {number} errorsLeftOut How many more errors there were, not kept.
  */
 
 /** The width a page laid out at, or null on a tab that has opened no page yet. */
@@ -88,15 +89,18 @@ function checkingWidthOnDraw(page, checkWidth) {
   };
 }
 
-/** The walk's errors as the lines of a failure, each under its address. */
-function errorReport(errors) {
-  const listed = errors.map((e) => `  ${e.address}: ${e.message}`).join("\n");
-  return `the walk's pages threw or logged ${errors.length} error(s):\n${listed}`;
+/** The errors `walkLog` holds as the lines of a failure: each one kept under its address, then how many more there were. */
+function errorReport(walkLog) {
+  const errors = walkLog.errors();
+  const leftOut = walkLog.errorsLeftOut();
+  const lines = errors.map((e) => `  ${e.address}: ${e.message}`);
+  if (leftOut > 0) lines.push(`  and ${leftOut} more, not kept`);
+  return `the walk's pages threw or logged ${errors.length + leftOut} error(s):\n${lines.join("\n")}`;
 }
 
-/** Fails with every error of the walk, each under its address, unless there is none. */
-function failOnErrors(errors) {
-  if (errors.length > 0) throw new Error(errorReport(errors));
+/** Fails with the errors `walkLog` holds, each under its address, unless there is none. */
+function failOnErrors(walkLog) {
+  if (walkLog.errors().length > 0) throw new Error(errorReport(walkLog));
 }
 
 /**
@@ -105,8 +109,8 @@ function failOnErrors(errors) {
  * that broke the page. The failure keeps its class, so an assertion's diff
  * still shows.
  */
-function addTheWalksErrors(failure, errors) {
-  if (errors.length > 0 && failure instanceof Error) failure.message += `\n${errorReport(errors)}`;
+function addTheWalksErrors(failure, walkLog) {
+  if (walkLog.errors().length > 0 && failure instanceof Error) failure.message += `\n${errorReport(walkLog)}`;
   return failure;
 }
 
@@ -115,7 +119,7 @@ async function returnedBy(walker, site, walkLog) {
   try {
     return await walker(site);
   } catch (failure) {
-    throw addTheWalksErrors(failure, walkLog.errors());
+    throw addTheWalksErrors(failure, walkLog);
   }
 }
 
@@ -123,10 +127,9 @@ async function returnedBy(walker, site, walkLog) {
 async function measuredAtTheEnd(walkLog, returned, { checkWidth, errorsExpected }) {
   const onScreen = walkLog.tabOnScreen();
   const widthFailure = await checkWidth(onScreen);
-  const errors = walkLog.errors();
-  if (widthFailure) throw addTheWalksErrors(widthFailure, errors);
-  if (!errorsExpected) failOnErrors(errors);
-  return { returned, shifts: await onScreen.readLayoutShifts(), errors };
+  if (widthFailure) throw addTheWalksErrors(widthFailure, walkLog);
+  if (!errorsExpected) failOnErrors(walkLog);
+  return { returned, shifts: await onScreen.readLayoutShifts(), errors: walkLog.errors(), errorsLeftOut: walkLog.errorsLeftOut() };
 }
 
 /** The walk in a browser opened for it, on the site whose addresses `url` makes. */

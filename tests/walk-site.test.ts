@@ -25,6 +25,11 @@ const THROWN = "thrown by the first page";
 /** What a walker that gives up throws, so the walk's failure can be looked for it. */
 const WALKER_GAVE_UP = "the walker gave up";
 
+/** How many errors the walk keeps (ruling 6 on #275). */
+const ERRORS_KEPT = 100;
+/** How many a page logs: past the cap by half. */
+const ERRORS_LOGGED = 150;
+
 /** The fixture pages, by file name, and the icon Chrome asks every site for, so its absence is no error. */
 const PAGES = {
   "favicon.ico": "",
@@ -32,6 +37,16 @@ const PAGES = {
   "throws.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><script>throw new Error(${JSON.stringify(THROWN)});</script></body></html>`,
   "quiet.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><p>nothing happens here</p></body></html>`,
   "moves.html": MOVES_EARLY_AND_ON_A_TAP,
+  "logs-many.html": `<!doctype html><html><head>${VIEWPORT_META}</head><body><script>
+for (let i = 0; i < ${ERRORS_LOGGED}; i++) console.error("logged error " + i);
+window.__logged = true;
+</script></body></html>`,
+};
+
+/** A walker that opens the page logging many errors and returns once it has logged them all. */
+const openingTheManyErrors: Parameters<typeof walkSite>[1] = async ({ page, url }) => {
+  await page.goto(url("/logs-many.html"));
+  await page.waitUntil("window.__logged === true", "the page never finished logging");
 };
 
 let folder = "";
@@ -79,6 +94,17 @@ describe.skipIf(skipped !== null)("the browser walk's errors", () => {
     }));
     expect(failure).toContain(WALKER_GAVE_UP);
     expect(failure).toContain(`/throws.html: exception: Error: ${THROWN}`);
+  }, 60000);
+
+  it("the walk keeps the first errors up to its cap and says how many more there were", async () => {
+    const leftOut = ERRORS_LOGGED - ERRORS_KEPT;
+    const failure = await failureOf(walkSite({ site: { folder }, screen: PHONE }, openingTheManyErrors));
+    expect(failure.split("\n").filter((line) => line.includes("logged error")).length).toBe(ERRORS_KEPT);
+    expect(failure).toContain(`${leftOut} more`);
+    const walked = await walkSite({ site: { folder }, screen: PHONE, errorsExpected: true }, openingTheManyErrors);
+    expect(walked.errors.map((e) => e.message)).toEqual(
+      Array.from({ length: ERRORS_KEPT }, (_, i) => `console.error: logged error ${i}`));
+    expect(walked.errorsLeftOut).toBe(leftOut);
   }, 60000);
 
   it("an error on the first page is still in the walk's errors after it navigates to a second", async () => {
