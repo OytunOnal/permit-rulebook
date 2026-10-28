@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PHONE, walkSite } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
-import { MOVES_EARLY_AND_ON_A_TAP } from "./layout-shifts.js";
+import { MOVES_EARLY_AND_ON_A_TAP, tapAndWaitUntilAtRest, waitUntilItsEarlyMoveIsReported } from "./layout-shifts.js";
 
 /**
  * The browser walk (`walkSite`, from `scripts/browser/browser.mjs`), over
@@ -78,11 +78,8 @@ describe.skipIf(skipped !== null)("the browser walk's shifts", () => {
     const { shifts } = await walkSite({ site: { folder }, screen: PHONE }, async ({ page, url }) => {
       address = url("/moves.html");
       await page.goto(address);
-      await page.waitUntil("window.__shiftReported === true", "the page's move in its first frames was never reported as a shift");
-      await page.waitUntilAtRest();
-      await page.tapOn("#below");
-      await page.waitUntil("window.__tapped === true", "the tap never reached the page");
-      await page.waitUntilAtRest();
+      await waitUntilItsEarlyMoveIsReported(page);
+      await tapAndWaitUntilAtRest(page, () => page.tapOn("#below"));
     });
     expect(shifts.address).toBe(address);
     expect(shifts.reported.length, `the tap moved nothing: ${JSON.stringify(shifts.reported)}`).toBe(2);

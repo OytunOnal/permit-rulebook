@@ -59,19 +59,32 @@ const shiftsSeenOn = async (page: Pick<BrowserPage, "readLayoutShifts">): Promis
   return { every: reported, counted: counted.map((e) => e.value), score: await shiftScoreSince(page) };
 };
 
+/** The page that moves early and on a tap, as its steps drive it. */
+type MovingPage = Pick<BrowserPage, "waitUntil" | "waitUntilAtRest">;
+
+/** On the page that moves early and on a tap: returns once its own move has been reported as a shift and it is at rest. */
+export async function waitUntilItsEarlyMoveIsReported(page: MovingPage): Promise<void> {
+  await page.waitUntil("window.__shiftReported === true", "the page's move in its first frames was never reported as a shift");
+  await page.waitUntilAtRest();
+}
+
+/** On the page that moves early and on a tap: makes `tap`, and returns once the tap has reached the page and it is at rest. */
+export async function tapAndWaitUntilAtRest(page: MovingPage, tap: () => Promise<void>): Promise<void> {
+  await tap();
+  await page.waitUntil("window.__tapped === true", "the tap never reached the page");
+  await page.waitUntilAtRest();
+}
+
 /**
  * The page that moves early and on a tap, read once at rest after its own
  * move and again after the tap: what a phone row's measure can see.
  */
 export async function shiftsBeforeAndAfterATap(
-  page: Pick<BrowserPage, "goto" | "readLayoutShifts" | "clickAt" | "waitUntil" | "waitUntilAtRest">,
+  page: Pick<BrowserPage, "goto" | "readLayoutShifts" | "clickAt"> & MovingPage,
 ): Promise<{ before: ShiftsSeen; after: ShiftsSeen }> {
   await page.goto(`data:text/html,${encodeURIComponent(MOVES_EARLY_AND_ON_A_TAP)}`);
-  await page.waitUntil("window.__shiftReported === true", "the page's move in its first frames was never reported as a shift");
-  await page.waitUntilAtRest();
+  await waitUntilItsEarlyMoveIsReported(page);
   const before = await shiftsSeenOn(page);
-  await page.clickAt(100, 300);
-  await page.waitUntil("window.__tapped === true", "the tap never reached the page");
-  await page.waitUntilAtRest();
+  await tapAndWaitUntilAtRest(page, () => page.clickAt(100, 300));
   return { before, after: await shiftsSeenOn(page) };
 }
