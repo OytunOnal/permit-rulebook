@@ -10,7 +10,8 @@ import { routePages } from "../src/lib/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, unreadSourcesAt, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
-import type { BrowserPage } from "./browser-walk.js";
+import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { withSite } from "./browser-walk.js";
 
 /**
  * One footer under every page.
@@ -187,9 +188,6 @@ describe("one footer, every page", () => {
 });
 
 /** And how it lays out, measured at the widths the critique named. */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
-
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
   if (!existsSync(dist)) return "no dist/ — run npm run build first";
@@ -226,114 +224,104 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
   // is not a design (Spec review, 2026-09-08).
   for (const [width, columns] of [[1100, 3], [761, 3], [760, 2], [600, 2], [481, 2], [390, 1]] as const)
     it(`${columns} column${columns === 1 ? "" : "s"} at ${width} px`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          const at: Record<string, unknown> = {};
-          // The same block on every page, so the count is measured on each.
-          for (const [name, path] of [
-            ["route", "/germany/eu-blue-card-general/"], ["interview", "/"],
-            ["country", "/germany/"], ["data", "/data/"],
-          ] as const) {
-            at[name] = await settledLayoutAt(page, server.url(path), path);
-          }
-          return at;
-        }, { viewport: { width, height: 900 }, mobile: width < 500 }) as Record<string, {
-          rows: number; cols: number[];
-          links: { text: string; height: number; underline: string }[];
-          lines: number[];
-        }>;
-
-        for (const [name, page] of Object.entries(seen))
-          expect(page.rows, `${name} at ${width}: columns at ${page.cols.join(", ")}`).toBe(columns);
-        // Every link is a tap target, and looks like a link before it is touched.
-        for (const link of seen.route!.links) {
-          expect(link.height, `"${link.text}" is ${link.height} px at ${width}`).toBeGreaterThanOrEqual(44);
-          // Every column link looks like a link at rest. The one exception is
-          // the action, which is a bordered button and says so that way. (The
-          // address was a second exception for a day; it left the footer on
-          // the s13 walk, and no link here may be one.)
-          expect(link.text.includes("@"), `"${link.text}" is a mail address in the footer`).toBe(false);
-          if (link.text === "Check yours" || link.text.endsWith("Permit Rulebook")) continue;
-          expect(link.underline, `"${link.text}" has no resting underline`).toContain("underline");
+      const seen = await withSite(async ({ page, url: addressOf }) => {
+        const at: Record<string, unknown> = {};
+        // The same block on every page, so the count is measured on each.
+        for (const [name, path] of [
+          ["route", "/germany/eu-blue-card-general/"], ["interview", "/"],
+          ["country", "/germany/"], ["data", "/data/"],
+        ] as const) {
+          at[name] = await settledLayoutAt(page, addressOf(path), path);
         }
-      } finally {
-        server.close();
+        return at;
+      }, { viewport: { width, height: 900 }, mobile: width < 500 }) as Record<string, {
+        rows: number; cols: number[];
+        links: { text: string; height: number; underline: string }[];
+        lines: number[];
+      }>;
+
+      for (const [name, page] of Object.entries(seen))
+        expect(page.rows, `${name} at ${width}: columns at ${page.cols.join(", ")}`).toBe(columns);
+      // Every link is a tap target, and looks like a link before it is touched.
+      for (const link of seen.route!.links) {
+        expect(link.height, `"${link.text}" is ${link.height} px at ${width}`).toBeGreaterThanOrEqual(44);
+        // Every column link looks like a link at rest. The one exception is
+        // the action, which is a bordered button and says so that way. (The
+        // address was a second exception for a day; it left the footer on
+        // the s13 walk, and no link here may be one.)
+        expect(link.text.includes("@"), `"${link.text}" is a mail address in the footer`).toBe(false);
+        if (link.text === "Check yours" || link.text.endsWith("Permit Rulebook")) continue;
+        expect(link.underline, `"${link.text}" has no resting underline`).toContain("underline");
       }
     }, 180000);
 
   it("at 390 nothing that cannot break is wider than its column", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/germany/eu-blue-card-general/"));
-        // The runner's fonts are wider than this machine's, and a family wider
-        // still is only a matter of time: measure the widened case.
-        await page.evaluate(
-          '(() => { const s = document.createElement("style");'
-          + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}"'
-          + ' + "body{letter-spacing:0.11em}";'
-          + ' document.head.appendChild(s); return 1; })()',
-        );
-        await page.waitUntilAtRest();
-        return page.evaluate(
-          // An inline element that wraps sits on more than one line: its
-          // fragments start at more than one top edge. (A count of fragments
-          // would not do, since a token holding a `time` child has one per
-          // child on a single line.)
-          'JSON.stringify({ column: Math.round(document.querySelector(".site-foot .line")'
-          + '.getBoundingClientRect().width),'
-          + ' lines: [...document.querySelectorAll(".site-foot .line > span")]'
-          + '  .map((el) => ({ text: el.textContent.trim().slice(0, 30),'
-          + '    width: Math.round(el.getBoundingClientRect().width) })),'
-          + ' held: [...document.querySelectorAll(".site-foot .line *")]'
-          + '  .filter((el) => getComputedStyle(el).whiteSpace === "nowrap")'
-          + '  .map((el) => ({ text: el.textContent.trim(),'
-          + '    width: Math.round(el.getBoundingClientRect().width),'
-          + '    lines: new Set([...el.getClientRects()]'
-          + '      .map((r) => Math.round(r.top))).size })) })',
-        );
-      }, { viewport: { width: 390, height: 844 }, mobile: true }) as string) as {
-        column: number; lines: { text: string; width: number }[];
-        held: { text: string; width: number; lines: number }[];
-      };
+    const seen = JSON.parse(await withSite(async ({ page, url: addressOf }) => {
+      await page.goto(addressOf("/germany/eu-blue-card-general/"));
+      // The runner's fonts are wider than this machine's, and a family wider
+      // still is only a matter of time: measure the widened case.
+      await page.evaluate(
+        '(() => { const s = document.createElement("style");'
+        + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}"'
+        + ' + "body{letter-spacing:0.11em}";'
+        + ' document.head.appendChild(s); return 1; })()',
+      );
+      await page.waitUntilAtRest();
+      return page.evaluate(
+        // An inline element that wraps sits on more than one line: its
+        // fragments start at more than one top edge. (A count of fragments
+        // would not do, since a token holding a `time` child has one per
+        // child on a single line.)
+        'JSON.stringify({ column: Math.round(document.querySelector(".site-foot .line")'
+        + '.getBoundingClientRect().width),'
+        + ' lines: [...document.querySelectorAll(".site-foot .line > span")]'
+        + '  .map((el) => ({ text: el.textContent.trim().slice(0, 30),'
+        + '    width: Math.round(el.getBoundingClientRect().width) })),'
+        + ' held: [...document.querySelectorAll(".site-foot .line *")]'
+        + '  .filter((el) => getComputedStyle(el).whiteSpace === "nowrap")'
+        + '  .map((el) => ({ text: el.textContent.trim(),'
+        + '    width: Math.round(el.getBoundingClientRect().width),'
+        + '    lines: new Set([...el.getClientRects()]'
+        + '      .map((r) => Math.round(r.top))).size })) })',
+      );
+    }, PHONE) as string) as {
+      column: number; lines: { text: string; width: number }[];
+      held: { text: string; width: number; lines: number }[];
+    };
 
-      // Each of the two lines fits its column: a line that cannot break inside
-      // itself is exactly how the page came to scroll sideways in CI.
-      expect(seen.lines.length, "the data line is missing").toBe(2);
-      for (const line of seen.lines)
-        expect(line.width, `"${line.text}..." is ${line.width} px in a ${seen.column} px column`)
-          .toBeLessThanOrEqual(seen.column);
-      expect(seen.held.length, "the lines hold no token whole").toBeGreaterThan(5);
-      for (const token of seen.held) {
-        // The design rule: nothing may be nowrap wider than the column it sits
-        // in, or the column cannot hold it and the page scrolls sideways.
-        expect(token.width, `"${token.text}" is ${token.width} px in a ${seen.column} px column`)
-          .toBeLessThanOrEqual(seen.column);
-        expect(token.lines, `"${token.text}" wrapped inside itself`).toBeLessThanOrEqual(1);
-      }
-      // The tokens a reader must never see split.
-      const texts = seen.held.map((t) => t.text.split(String.fromCharCode(160)).join(" "));
-      expect(texts.some((t) => t.includes("Oytun Onal")), texts.join(" | ")).toBe(true);
-      // The last-run parenthesis is among them on a clean day. With a count in
-      // it, it is not: it grew to 350 px in this 348 px column on the first
-      // unread day (s15, 2026-09-16, run 35098352421), so it may break at its
-      // separator — after the dot, as the line's other breaks fall — and each
-      // half is held whole and measured above.
-      const state = today();
-      if (state.unread) {
-        expect(texts.some((t) => /^\(last run [0-9]{4}-[0-9]{2}-[0-9]{2} \u00b7$/.test(t)), `${state.day}: ${texts.join(" | ")}`)
-          .toBe(true);
-        expect(texts, `${state.day}: ${texts.join(" | ")}`).toContain(`${unreadLabel(state.unread)})`);
-      } else {
-        expect(texts.some((t) => /^\(last run [0-9]{4}-[0-9]{2}-[0-9]{2}\)$/.test(t)), `${state.day}: ${texts.join(" | ")}`)
-          .toBe(true);
-      }
-      expect(texts.filter((t) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(t)).length,
-        `read dates held whole: ${texts.join(" | ")}`).toBeGreaterThanOrEqual(2);
-    } finally {
-      server.close();
+    // Each of the two lines fits its column: a line that cannot break inside
+    // itself is exactly how the page came to scroll sideways in CI.
+    expect(seen.lines.length, "the data line is missing").toBe(2);
+    for (const line of seen.lines)
+      expect(line.width, `"${line.text}..." is ${line.width} px in a ${seen.column} px column`)
+        .toBeLessThanOrEqual(seen.column);
+    expect(seen.held.length, "the lines hold no token whole").toBeGreaterThan(5);
+    for (const token of seen.held) {
+      // The design rule: nothing may be nowrap wider than the column it sits
+      // in, or the column cannot hold it and the page scrolls sideways.
+      expect(token.width, `"${token.text}" is ${token.width} px in a ${seen.column} px column`)
+        .toBeLessThanOrEqual(seen.column);
+      expect(token.lines, `"${token.text}" wrapped inside itself`).toBeLessThanOrEqual(1);
     }
+    // The tokens a reader must never see split.
+    const texts = seen.held.map((t) => t.text.split(String.fromCharCode(160)).join(" "));
+    expect(texts.some((t) => t.includes("Oytun Onal")), texts.join(" | ")).toBe(true);
+    // The last-run parenthesis is among them on a clean day. With a count in
+    // it, it is not: it grew to 350 px in this 348 px column on the first
+    // unread day (s15, 2026-09-16, run 35098352421), so it may break at its
+    // separator — after the dot, as the line's other breaks fall — and each
+    // half is held whole and measured above.
+    const state = today();
+    if (state.unread) {
+      expect(texts.some((t) => /^\(last run [0-9]{4}-[0-9]{2}-[0-9]{2} \u00b7$/.test(t)), `${state.day}: ${texts.join(" | ")}`)
+        .toBe(true);
+      expect(texts, `${state.day}: ${texts.join(" | ")}`).toContain(`${unreadLabel(state.unread)})`);
+    } else {
+      expect(texts.some((t) => /^\(last run [0-9]{4}-[0-9]{2}-[0-9]{2}\)$/.test(t)), `${state.day}: ${texts.join(" | ")}`)
+        .toBe(true);
+    }
+    expect(texts.filter((t) => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(t)).length,
+      `read dates held whole: ${texts.join(" | ")}`).toBeGreaterThanOrEqual(2);
   }, 180000);
 });
 

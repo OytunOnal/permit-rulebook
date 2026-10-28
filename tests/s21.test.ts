@@ -14,7 +14,7 @@ import { routesNeed, unscoredHeadline, unscoredTallyLine } from "../src/lib/copy
 import { url } from "../src/lib/site.js";
 import { verdictHtml, type Tally } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictOn } from "./verdict-cards.js";
-import { PICK_TURKEY, answerWith, type BrowserPage } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -254,8 +254,7 @@ describe("s21 — the walk's result, from the verdict", () => {
  * The browser: the walk the critique took, with the mark where it was missing
  * and the sentence where "5 not yet" was.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -293,74 +292,71 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
   });
 
   it("all four → research: France is marked at question 3, announced, with an internal link; the walk ends with the sentence on France's line", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        await page.evaluate(seed({ destination: "all", situation: "research" }));
-        await page.goto(server.url("/"));
-        // Nothing thrown is read once the page is at rest.
-        await page.waitUntilAtRest();
-        const q3 = {
-          question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
-          marks: JSON.parse(await page.evaluate(MARKS)),
-          described: JSON.parse(await page.evaluate(DESCRIBED)),
-          problems: page.problems(),
-        };
-        // France, by the button — then the quickest profile to a result that
-        // contradicts nothing: no qualification, a Turkish passport, no Dutch
-        // graduation, no top-200 degree. Seven answers; nothing open, as the
-        // critique's walk ended, with the France line now saying why.
-        await answerWith(page, tap("fr"));
-        const q4 = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
-        await answerWith(page, tap("none"));
-        await answerWith(page, PICK_TURKEY);
-        await answerWith(page, tap("no"));
-        await answerWith(page, tap("no"));
-        const result = {
-          state: await page.evaluate('document.getElementById("app").dataset.state'),
-          glyphs: JSON.parse(await page.evaluate(LINK_GLYPHS)),
-          painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, WALKED)))),
-          problems: page.problems(),
-        };
-        return { q3, q4, result };
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
-        q3: {
-          question: string; problems: string[];
-          marks: { under: string; id: string; text: string; href: string | null; glyph: string | null }[];
-          described: { value: string; by: string | null; resolves: boolean | null }[];
-        };
-        q4: string;
-        result: { state: string; glyphs: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] };
+    const seen = await withSite(async ({ page, url: addressOf }) => {
+      await page.goto(addressOf("/"));
+      await page.evaluate(seed({ destination: "all", situation: "research" }));
+      await page.goto(addressOf("/"));
+      // Nothing thrown is read once the page is at rest.
+      await page.waitUntilAtRest();
+      const q3 = {
+        question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
+        marks: JSON.parse(await page.evaluate(MARKS)),
+        described: JSON.parse(await page.evaluate(DESCRIBED)),
+        problems: page.problems(),
       };
+      // France, by the button — then the quickest profile to a result that
+      // contradicts nothing: no qualification, a Turkish passport, no Dutch
+      // graduation, no top-200 degree. Seven answers; nothing open, as the
+      // critique's walk ended, with the France line now saying why.
+      await answerWith(page, tap("fr"));
+      const q4 = await page.evaluate('document.querySelector(".qlabel").textContent.trim()');
+      await answerWith(page, tap("none"));
+      await answerWith(page, PICK_TURKEY);
+      await answerWith(page, tap("no"));
+      await answerWith(page, tap("no"));
+      const result = {
+        state: await page.evaluate('document.getElementById("app").dataset.state'),
+        glyphs: JSON.parse(await page.evaluate(LINK_GLYPHS)),
+        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, WALKED)))),
+        problems: page.problems(),
+      };
+      return { q3, q4, result };
+    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
+      q3: {
+        question: string; problems: string[];
+        marks: { under: string; id: string; text: string; href: string | null; glyph: string | null }[];
+        described: { value: string; by: string | null; resolves: boolean | null }[];
+      };
+      q4: string;
+      result: { state: string; glyphs: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] };
+    };
 
-      const { q3, q4, result } = seen;
-      expect(q3.problems).toEqual([]);
-      expect(q3.question).toBe(countryQuestion().label);
-      expect(q3.marks).toEqual([{
-        under: "fr",
-        id: q3.marks[0]?.id,
-        text: "Not checked for France yet — Talent — researcher (chercheur) is quoted, not checked: read it here.",
-        href: url("/france/talent-researcher"),
-        glyph: "none",
-      }]);
-      expect(q3.marks[0]!.id).toBeTruthy();
-      expect(q3.described).toEqual([
-        { value: "de", by: null, resolves: null },
-        { value: "fr", by: q3.marks[0]!.id, resolves: true },
-        { value: "es", by: null, resolves: null },
-        { value: "nl", by: null, resolves: null },
-      ]);
-      expect(q4).toBe("Your highest completed qualification?");
+    const { q3, q4, result } = seen;
+    expect(q3.problems).toEqual([]);
+    expect(q3.question).toBe(countryQuestion().label);
+    expect(q3.marks).toEqual([{
+      under: "fr",
+      id: q3.marks[0]?.id,
+      text: "Not checked for France yet — Talent — researcher (chercheur) is quoted, not checked: read it here.",
+      href: url("/france/talent-researcher"),
+      glyph: "none",
+    }]);
+    expect(q3.marks[0]!.id).toBeTruthy();
+    expect(q3.described).toEqual([
+      { value: "de", by: null, resolves: null },
+      { value: "fr", by: q3.marks[0]!.id, resolves: true },
+      { value: "es", by: null, resolves: null },
+      { value: "nl", by: null, resolves: null },
+    ]);
+    expect(q4).toBe("Your highest completed qualification?");
 
-      expect(result.problems).toEqual([]);
-      expect(result.state).toBe("results");
-      // The walk ends on the verdict its answers compose — France's written
-      // state, the sentence with its link on France's line ("s21 — the walk's
-      // result, from the verdict" reads it) — and France's link, the only one
-      // in a line, is drawn with no outbound mark.
-      expect(result.painted).toEqual(PAINTED_AS_COMPOSED);
-      expect(result.glyphs).toEqual(["none"]);
-    } finally { server.close(); }
+    expect(result.problems).toEqual([]);
+    expect(result.state).toBe("results");
+    // The walk ends on the verdict its answers compose — France's written
+    // state, the sentence with its link on France's line ("s21 — the walk's
+    // result, from the verdict" reads it) — and France's link, the only one
+    // in a line, is drawn with no outbound mark.
+    expect(result.painted).toEqual(PAINTED_AS_COMPOSED);
+    expect(result.glyphs).toEqual(["none"]);
   }, 120_000);
 });

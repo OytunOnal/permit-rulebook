@@ -16,7 +16,7 @@ import { CAME_FROM_LINE } from "../src/lib/copy/verdict.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
 import { everyCardIn, verdictOn } from "./verdict-cards.js";
-import type { BrowserPage } from "./browser-walk.js";
+import { withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -99,8 +99,7 @@ describe("a route arrival, from the verdict", () => {
   });
 });
 
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -123,61 +122,51 @@ const CLICK_CHECK_YOURS = '(() => { const a = [...document.querySelectorAll("a")
 
 describe.skipIf(skipped !== null)("the walk the critique took, with a record in the browser", () => {
   it("a German record, /france/, Check yours: French verdicts and a line saying so", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/france/"));
-        await page.evaluate(SEED);
-        await page.evaluate(CLICK_CHECK_YOURS);
-        await page.waitUntilNewDocumentDrawn();
-        return page.evaluate(
-          'JSON.stringify({ url: location.search,'
-          + ' countries: [...document.querySelectorAll("#main .country")].map((c) => c.textContent.trim()),'
-          + ' recorded: [...document.querySelectorAll(".recorded")].map((p) => p.textContent.trim()),'
-          + ' text: (document.getElementById("main").textContent || "").split(/\\s+/).join(" ").slice(0, 300) })',
-        );
-      }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
-        { url: string; countries: string[]; recorded: string[]; text: string };
+    const seen = JSON.parse(await withSite(async ({ page, url }) => {
+      await page.goto(url("/france/"));
+      await page.evaluate(SEED);
+      await page.evaluate(CLICK_CHECK_YOURS);
+      await page.waitUntilNewDocumentDrawn();
+      return page.evaluate(
+        'JSON.stringify({ url: location.search,'
+        + ' countries: [...document.querySelectorAll("#main .country")].map((c) => c.textContent.trim()),'
+        + ' recorded: [...document.querySelectorAll(".recorded")].map((p) => p.textContent.trim()),'
+        + ' text: (document.getElementById("main").textContent || "").split(/\\s+/).join(" ").slice(0, 300) })',
+      );
+    }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
+      { url: string; countries: string[]; recorded: string[]; text: string };
 
-      expect(seen.url).toBe("?country=fr");
-      // Not one German verdict on a screen the reader asked about France.
-      expect(seen.countries.filter((c) => /German/i.test(c)), seen.countries.join(" | ")).toEqual([]);
-      expect(seen.recorded.join(" "), seen.text).toContain("France");
-    } finally {
-      server.close();
-    }
+    expect(seen.url).toBe("?country=fr");
+    // Not one German verdict on a screen the reader asked about France.
+    expect(seen.countries.filter((c) => /German/i.test(c)), seen.countries.join(" | ")).toEqual([]);
+    expect(seen.recorded.join(" "), seen.text).toContain("France");
   }, 180000);
 
   it("a route arrival scrolls to that route's card and marks it", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/germany/researcher/"));
-        await page.evaluate(SEED);
-        await page.evaluate(CLICK_CHECK_YOURS);
-        await page.waitUntilNewDocumentDrawn();
-        // The landing scrolls to the card, after the draw.
-        await page.waitUntilAtRest();
-        return page.evaluate(
-          '(() => { const el = document.querySelector("[data-came-from]");'
-          + ' const r = el ? el.getBoundingClientRect() : null;'
-          + ' const open = el ? [...document.querySelectorAll("details")]'
-          + '   .filter((d) => d.contains(el)).every((d) => d.open) : false;'
-          + ' return JSON.stringify({ found: el ? el.dataset.cameFrom : null,'
-          + '   inView: r ? r.top > -240 && r.top < window.innerHeight : false, open }); })()',
-        );
-      }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
-        { found: string | null; inView: boolean; open: boolean };
+    const seen = JSON.parse(await withSite(async ({ page, url }) => {
+      await page.goto(url("/germany/researcher/"));
+      await page.evaluate(SEED);
+      await page.evaluate(CLICK_CHECK_YOURS);
+      await page.waitUntilNewDocumentDrawn();
+      // The landing scrolls to the card, after the draw.
+      await page.waitUntilAtRest();
+      return page.evaluate(
+        '(() => { const el = document.querySelector("[data-came-from]");'
+        + ' const r = el ? el.getBoundingClientRect() : null;'
+        + ' const open = el ? [...document.querySelectorAll("details")]'
+        + '   .filter((d) => d.contains(el)).every((d) => d.open) : false;'
+        + ' return JSON.stringify({ found: el ? el.dataset.cameFrom : null,'
+        + '   inView: r ? r.top > -240 && r.top < window.innerHeight : false, open }); })()',
+      );
+    }, { viewport: { width: 1100, height: 1000 }, mobile: false }) as string) as
+      { found: string | null; inView: boolean; open: boolean };
 
-      // Which card is marked, and what it says, is the verdict's ("a route
-      // arrival, from the verdict"); the page lands on it: every fold around
-      // it opened, and the card in view.
-      expect(seen.found, "no card is marked as the one the reader came from").toBe("de-researcher");
-      expect(seen.open, "the group holding it is still collapsed").toBe(true);
-      expect(seen.inView, "the card is out of view").toBe(true);
-    } finally {
-      server.close();
-    }
+    // Which card is marked, and what it says, is the verdict's ("a route
+    // arrival, from the verdict"); the page lands on it: every fold around
+    // it opened, and the card in view.
+    expect(seen.found, "no card is marked as the one the reader came from").toBe("de-researcher");
+    expect(seen.open, "the group holding it is still collapsed").toBe(true);
+    expect(seen.inView, "the card is out of view").toBe(true);
   }, 180000);
 });
 

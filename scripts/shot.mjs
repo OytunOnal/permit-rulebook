@@ -15,7 +15,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { serve, withBrowser } from "./browser.mjs";
+import { walkSite } from "./browser/browser.mjs";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.ts";
 
 const root = dirname(fileURLToPath(new URL("../package.json", import.meta.url)));
@@ -39,35 +39,39 @@ const PROFILE = {
   experience_5y: "2plus", experience_7y: "3to5", german: "b1", funds_eur_month: "band_1", salary_eur_year: "band_4",
 };
 
-/** Opens the results screen for `PROFILE` in Chrome, its record written and the page reloaded, and returns its screenshot; a page that reported a problem throws. */
-async function screenshotResultsInChrome(server) {
-  return withBrowser(async (page) => {
-    await page.goto(server.url("/"));
+/** The screen the picture is taken at: the width a README reader looks at it, which is not the walks' `DESK`. */
+const README_SCREEN = { viewport: { width: 1100, height: 1400 }, mobile: false };
+
+/**
+ * Serves `dist/`, opens the results screen for `PROFILE` in Chrome, its record
+ * written and the page reloaded, and returns its screenshot; a page that
+ * reported a problem throws, so the walk returns the pages' errors to it.
+ */
+async function screenshotResultsInChrome() {
+  const walk = { site: { folder: join(root, "dist") }, screen: README_SCREEN, errorsExpected: true };
+  const { returned } = await walkSite(walk, async ({ page, url }) => {
+    await page.goto(url("/"));
     await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
       JSON.stringify(JSON.stringify({
         version: RECORD_VERSION, answers: PROFILE, history: Object.keys(PROFILE),
       }))})`);
-    await page.goto(server.url("/"));
+    await page.goto(url("/"));
     await page.waitUntilAtRest();
     const problems = page.problems();
     if (problems.length) throw new Error(`the page reported ${problems.length}: ${problems[0]}`);
     return page.screenshot();
-  }, { viewport: { width: 1100, height: 1400 }, mobile: false });
+  });
+  return returned;
 }
 
 /**
- * Serves `dist/`, takes the results screen's picture and writes it at `path`
- * (today's record in `docs/media/` when none is given), its folder made.
- * Returns where it wrote and the PNG.
+ * Takes the results screen's picture and writes it at `path` (today's record
+ * in `docs/media/` when none is given), its folder made. Returns where it
+ * wrote and the PNG.
  */
 export async function takeShot({ path = todaysPath() } = {}) {
-  const server = await serve(join(root, "dist"));
-  try {
-    const png = await screenshotResultsInChrome(server);
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, png);
-    return { path, png };
-  } finally {
-    server.close();
-  }
+  const png = await screenshotResultsInChrome();
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, png);
+  return { path, png };
 }

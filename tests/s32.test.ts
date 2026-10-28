@@ -12,7 +12,7 @@ import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import {
   PAINTED_AS_COMPOSED, cardOn, everyCardIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
-import type { BrowserPage } from "./browser-walk.js";
+import { withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -174,8 +174,7 @@ describe("s32 — the transferee's ICT card, from the verdict", () => {
  * tenure under "not checked here", and nothing on the card called answered —
  * the card the case above reads, as the phone paints it.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -191,23 +190,18 @@ const SEED = `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
 
 describe.skipIf(skipped !== null)("s32 — in the browser", () => {
   it("a transferee in Germany reads the tenure under not checked here on the ICT card at 390×844", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/404.html"));
-        await page.evaluate(SEED);
-        await page.goto(server.url("/"));
-        return {
-          state: await page.evaluate('document.getElementById("app").dataset.state'),
-          painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, transferee)))),
-          problems: page.problems(),
-        };
-      }, { viewport: { width: 390, height: 844 }, mobile: true }) as {
-        state: string; painted: typeof PAINTED_AS_COMPOSED; problems: string[];
+    const seen = await withSite(async ({ page, url }) => {
+      await page.goto(url("/404.html"));
+      await page.evaluate(SEED);
+      await page.goto(url("/"));
+      return {
+        state: await page.evaluate('document.getElementById("app").dataset.state'),
+        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, transferee)))) as typeof PAINTED_AS_COMPOSED,
+        problems: page.problems(),
       };
-      expect(seen.problems).toEqual([]);
-      expect(seen.state).toBe("results");
-      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
-    } finally { server.close(); }
+    }, PHONE);
+    expect(seen.problems).toEqual([]);
+    expect(seen.state).toBe("results");
+    expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
   }, 120_000);
 });

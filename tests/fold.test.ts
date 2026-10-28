@@ -5,7 +5,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { routePages } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { isScored, type Dataset } from "permit-rulebook-data";
-import type { BrowserPage } from "./browser-walk.js";
+import { withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -65,8 +65,7 @@ describe("the answer is above the fold", () => {
 });
 
 /** And measured where a reader stands: the first screen, at both widths. */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -86,33 +85,28 @@ if (skipped)
 describe.skipIf(skipped !== null)("measured in a browser", () => {
   for (const [width, height, mobile] of [[1100, 900, false], [390, 844, true]] as const)
     it(`the number, the read date and the way in are in the first screen at ${width} px`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/germany/eu-blue-card-general/"));
-          return page.evaluate(
-            'JSON.stringify((() => {'
-            + ' const box = document.querySelector(".answer");'
-            + ' const number = [...document.querySelectorAll(".answer .mono, .answer b")]'
-            + '   .find((n) => n.textContent.includes("50,700"));'
-            + ' const cta = document.querySelector("a[href*=\\"route=\\"]");'
-            + ' const date = document.querySelector(".answer time");'
-            + ' const y = (el) => el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;'
-            + ' return { box: y(box), number: y(number), cta: y(cta), date: y(date),'
-            + '   page: document.documentElement.scrollHeight };'
-            + '})())',
-          );
-        }, { viewport: { width, height }, mobile }) as string) as
-          { box: number; number: number; cta: number; date: number; page: number };
+      const seen = JSON.parse(await withSite(async ({ page, url }) => {
+        await page.goto(url("/germany/eu-blue-card-general/"));
+        return page.evaluate(
+          'JSON.stringify((() => {'
+          + ' const box = document.querySelector(".answer");'
+          + ' const number = [...document.querySelectorAll(".answer .mono, .answer b")]'
+          + '   .find((n) => n.textContent.includes("50,700"));'
+          + ' const cta = document.querySelector("a[href*=\\"route=\\"]");'
+          + ' const date = document.querySelector(".answer time");'
+          + ' const y = (el) => el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;'
+          + ' return { box: y(box), number: y(number), cta: y(cta), date: y(date),'
+          + '   page: document.documentElement.scrollHeight };'
+          + '})())',
+        );
+      }, { viewport: { width, height }, mobile }) as string) as
+        { box: number; number: number; cta: number; date: number; page: number };
 
-        for (const [what, y] of Object.entries(seen)) {
-          if (what === "page") continue;
-          expect(y, `${what} was not found at ${width} px`).toBeGreaterThanOrEqual(0);
-          expect(y, `${what} sits at y=${y} of a ${seen.page} px page, below the ${height} px fold`)
-            .toBeLessThan(height);
-        }
-      } finally {
-        server.close();
+      for (const [what, y] of Object.entries(seen)) {
+        if (what === "page") continue;
+        expect(y, `${what} was not found at ${width} px`).toBeGreaterThanOrEqual(0);
+        expect(y, `${what} sits at y=${y} of a ${seen.page} px page, below the ${height} px fold`)
+          .toBeLessThan(height);
       }
     }, 180000);
 });
@@ -126,29 +120,24 @@ describe.skipIf(skipped !== null)("measured in a browser", () => {
 describe.skipIf(skipped !== null)("a country page's first route is in the first screen", () => {
   for (const [width, height, mobile] of [[1100, 900, false], [390, 844, true]] as const)
     it(`the first card is above the fold at ${width} px`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = JSON.parse(await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/germany/"));
-          return page.evaluate(
-            'JSON.stringify((() => {'
-            + ' const y = (el) => el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;'
-            + ' const card = document.querySelector(".routes li");'
-            + ' return { head: y(document.querySelector(".site-head")), h1: y(document.querySelector("h1")),'
-            + '   card: y(card), name: y(card && card.querySelector(".name")),'
-            + '   page: document.documentElement.scrollHeight };'
-            + '})())',
-          );
-        }, { viewport: { width, height }, mobile }) as string) as
-          { head: number; h1: number; card: number; name: number; page: number };
+      const seen = JSON.parse(await withSite(async ({ page, url }) => {
+        await page.goto(url("/germany/"));
+        return page.evaluate(
+          'JSON.stringify((() => {'
+          + ' const y = (el) => el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1;'
+          + ' const card = document.querySelector(".routes li");'
+          + ' return { head: y(document.querySelector(".site-head")), h1: y(document.querySelector("h1")),'
+          + '   card: y(card), name: y(card && card.querySelector(".name")),'
+          + '   page: document.documentElement.scrollHeight };'
+          + '})())',
+        );
+      }, { viewport: { width, height }, mobile }) as string) as
+        { head: number; h1: number; card: number; name: number; page: number };
 
-        for (const what of ["head", "h1", "card", "name"] as const) {
-          expect(seen[what], `${what} was not found at ${width} px`).toBeGreaterThanOrEqual(0);
-          expect(seen[what], `${what} sits at y=${seen[what]} of a ${seen.page} px page, below the ${height} px fold`)
-            .toBeLessThan(height);
-        }
-      } finally {
-        server.close();
+      for (const what of ["head", "h1", "card", "name"] as const) {
+        expect(seen[what], `${what} was not found at ${width} px`).toBeGreaterThanOrEqual(0);
+        expect(seen[what], `${what} sits at y=${seen[what]} of a ${seen.page} px page, below the ${height} px fold`)
+          .toBeLessThan(height);
       }
     }, 180000);
 });

@@ -11,7 +11,7 @@ import { routePages } from "../src/lib/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import { PICK_TURKEY, answerWith, type BrowserPage } from "./browser-walk.js";
+import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor, verdictOn,
 } from "./verdict-cards.js";
@@ -223,8 +223,7 @@ describe("4 — the walk's result, from the verdict", () => {
  * rest — a result where the shortage Blue Card is on hold with the door open
  * in its box; and the route page carries the same sentence.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -253,45 +252,40 @@ interface Walk {
 describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
   it("Germany → offer → degree → Türkiye → not sure on the shortage list → … : the box is the sentence as one link; the route page says the same", async () => {
     const door = ds.fields.find((f) => f.id === SHORTAGE)!.learn!;
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        await page.evaluate(seed(WALK_START as Record<string, string>));
-        await page.goto(server.url("/"));
-        await answerWith(page, PICK_TURKEY);
-        // The shortage question is next; its help line is the door.
-        const help = JSON.parse(await page.evaluate(LINKS(".qlearn a"))) as Link[];
-        const helpText = await page.evaluate('document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : ""');
-        for (const value of WALK_TAPS) await answerWith(page, tap(value));
-        const state = await page.evaluate('document.getElementById("app").dataset.state');
-        const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(walked()))));
-        await page.goto(server.url("/germany/eu-blue-card-shortage-occupation/"));
-        // Nothing thrown on the route page is read once it is at rest.
-        await page.waitUntilAtRest();
-        const asks = JSON.parse(await page.evaluate(LINKS(`.asks a[href="${door.url}"]`))) as Link[];
-        // The block that carries the door — the page draws one per unquoted rule.
-        const asksText = await page.evaluate(
-          `(() => { const a = document.querySelector(${JSON.stringify(`.asks a[href="${door.url}"]`)}); return a ? a.closest(".asks").textContent.replace(/\\s+/g, " ").trim() : ""; })()`,
-        );
-        return { help, helpText, state, painted, asks, asksText, problems: page.problems() };
-      }, { viewport: { width: 390, height: 844 }, mobile: true }) as Walk;
+    const seen = await withSite(async ({ page, url }) => {
+      await page.goto(url("/"));
+      await page.evaluate(seed(WALK_START as Record<string, string>));
+      await page.goto(url("/"));
+      await answerWith(page, PICK_TURKEY);
+      // The shortage question is next; its help line is the door.
+      const help = JSON.parse(await page.evaluate(LINKS(".qlearn a"))) as Link[];
+      const helpText = await page.evaluate('document.querySelector(".qlearn") ? document.querySelector(".qlearn").textContent.trim() : ""');
+      for (const value of WALK_TAPS) await answerWith(page, tap(value));
+      const state = await page.evaluate('document.getElementById("app").dataset.state');
+      const painted = JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(walked()))));
+      await page.goto(url("/germany/eu-blue-card-shortage-occupation/"));
+      // Nothing thrown on the route page is read once it is at rest.
+      await page.waitUntilAtRest();
+      const asks = JSON.parse(await page.evaluate(LINKS(`.asks a[href="${door.url}"]`))) as Link[];
+      // The block that carries the door — the page draws one per unquoted rule.
+      const asksText = await page.evaluate(
+        `(() => { const a = document.querySelector(${JSON.stringify(`.asks a[href="${door.url}"]`)}); return a ? a.closest(".asks").textContent.replace(/\\s+/g, " ").trim() : ""; })()`,
+      );
+      return { help, helpText, state, painted, asks, asksText, problems: page.problems() };
+    }, PHONE) as Walk;
 
-      expect(seen.problems).toEqual([]);
-      // Under the question: the sentence as one link, its shorthand explained
-      // in it, and no act around it.
-      expect(seen.help).toEqual([{ text: firstUseLink(door), href: door.url }]);
-      expect(seen.helpText).not.toContain(ACT_EXPANSION);
-      // The result: one box, on the card the unknown still binds, drawn open
-      // ("4 — the walk's result, from the verdict" reads it), as painted.
-      expect(seen.state).toBe("results");
-      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
-      // The route page: the same sentence, the same address.
-      expect(seen.asks.map((a) => ({ text: a.text.replace(/\s*↗$/, ""), href: a.href }))).toEqual([{ text: firstUseLink(door), href: door.url }]);
-      expect(seen.asksText).toContain("You can find this out yourself");
-      expect(seen.asksText).not.toContain(ACT_EXPANSION);
-    } finally {
-      server.close();
-    }
+    expect(seen.problems).toEqual([]);
+    // Under the question: the sentence as one link, its shorthand explained
+    // in it, and no act around it.
+    expect(seen.help).toEqual([{ text: firstUseLink(door), href: door.url }]);
+    expect(seen.helpText).not.toContain(ACT_EXPANSION);
+    // The result: one box, on the card the unknown still binds, drawn open
+    // ("4 — the walk's result, from the verdict" reads it), as painted.
+    expect(seen.state).toBe("results");
+    expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
+    // The route page: the same sentence, the same address.
+    expect(seen.asks.map((a) => ({ text: a.text.replace(/\s*↗$/, ""), href: a.href }))).toEqual([{ text: firstUseLink(door), href: door.url }]);
+    expect(seen.asksText).toContain("You can find this out yourself");
+    expect(seen.asksText).not.toContain(ACT_EXPANSION);
   }, 180000);
 });

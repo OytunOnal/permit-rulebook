@@ -7,7 +7,8 @@ import {
 import { ANY_PATH, EITHER_PATH } from "../src/lib/copy/route-page.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
-import { recordSeedScript, skipReason, warnNotWalked, withSite, DESK, type BrowserPage } from "./browser-walk.js";
+import { DESK, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { walkFrom } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, everyCardIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 

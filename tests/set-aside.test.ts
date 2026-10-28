@@ -4,8 +4,9 @@ import { remainingQuestions, shortLabelOf, type Dataset, type Profile } from "pe
 import { EDIT_LINE } from "../src/lib/copy/interview.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
+import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
-  PHONE, openAtRest, skipReason, tapOn, waitUntilPastTheBeat, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+  openAtRest, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
 } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
 
@@ -166,7 +167,7 @@ const SUMMARY = `JSON.stringify((() => {
 interface Summary { collapsed: boolean; shown: { field: string; inSummary: boolean }[] }
 
 /** A tap that draws a screen, and the screen it draws, out of its beat. */
-const tapToNext = (page: BrowserPage, selector: string): Promise<Seen> => screenAfter(page, () => tapOn(page, selector));
+const tapToNext = (page: BrowserPage, selector: string): Promise<Seen> => screenAfter(page, () => page.tapOn(selector));
 
 describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   it("France → Spain to a question: its panel names the French answers, the screen after does not", async () => {
@@ -241,7 +242,7 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
       const verdict = await openOnVerdict(site, TO_A_QUESTION);
-      await tapOn(page, "#decl > summary");
+      await page.tapOn("#decl > summary");
       await page.waitUntilAtRest();
       const editing = await tapToNext(page, '#decl-list [data-field="destination"]');
       const next = await tapToNext(page, "#main .qcard .opt[data-value='es']");

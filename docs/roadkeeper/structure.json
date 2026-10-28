@@ -2,6 +2,34 @@
  "tool": "dependency-cruiser 18.7.0 + tsc 6.0.3 + @astrojs/compiler 2.13.1",
  "modules": [
   {
+   "path": "scripts/browser",
+   "entries": [
+    {
+     "file": "scripts/browser/browser.mjs",
+     "level": "infrastructure"
+    }
+   ],
+   "files": [
+    "scripts/browser/browser.mjs",
+    "scripts/browser/chrome/chrome-launch.mjs",
+    "scripts/browser/chrome/chrome.mjs",
+    "scripts/browser/connection/devtools-connection.mjs",
+    "scripts/browser/exit-register/owned.mjs",
+    "scripts/browser/layout-shifts/layout-shift-reading.mjs",
+    "scripts/browser/static-server/html-in-pieces.mjs",
+    "scripts/browser/static-server/static-server.mjs",
+    "scripts/browser/tab/open-tab.mjs",
+    "scripts/browser/tab/tab-events.mjs",
+    "scripts/browser/tab/tab-gestures.mjs",
+    "scripts/browser/tab/tab-page.mjs",
+    "scripts/browser/tab/tab-waits.mjs",
+    "scripts/browser/walk/open-browser.mjs",
+    "scripts/browser/walk/screens.mjs",
+    "scripts/browser/walk/walk-log.mjs",
+    "scripts/browser/walk/walk-site.mjs"
+   ]
+  },
+  {
    "path": "scripts/carry-assets",
    "entries": [
     {
@@ -107,7 +135,23 @@
   "roadkeeper-lint/rules/ceiling-paid-off.mjs": "domain",
   "roadkeeper-lint/rules/constant-reason.mjs": "domain",
   "roadkeeper-lint/rules/named-condition.mjs": "domain",
-  "scripts/browser.mjs": "infrastructure",
+  "scripts/browser/browser.mjs": "infrastructure",
+  "scripts/browser/chrome/chrome-launch.mjs": "infrastructure",
+  "scripts/browser/chrome/chrome.mjs": "infrastructure",
+  "scripts/browser/connection/devtools-connection.mjs": "infrastructure",
+  "scripts/browser/exit-register/owned.mjs": "infrastructure",
+  "scripts/browser/layout-shifts/layout-shift-reading.mjs": "infrastructure",
+  "scripts/browser/static-server/html-in-pieces.mjs": "infrastructure",
+  "scripts/browser/static-server/static-server.mjs": "infrastructure",
+  "scripts/browser/tab/open-tab.mjs": "infrastructure",
+  "scripts/browser/tab/tab-events.mjs": "infrastructure",
+  "scripts/browser/tab/tab-gestures.mjs": "infrastructure",
+  "scripts/browser/tab/tab-page.mjs": "infrastructure",
+  "scripts/browser/tab/tab-waits.mjs": "infrastructure",
+  "scripts/browser/walk/open-browser.mjs": "infrastructure",
+  "scripts/browser/walk/screens.mjs": "infrastructure",
+  "scripts/browser/walk/walk-log.mjs": "infrastructure",
+  "scripts/browser/walk/walk-site.mjs": "infrastructure",
   "scripts/build-directory-on-disk.mjs": "infrastructure",
   "scripts/carry-assets.mjs": "main",
   "scripts/carry-assets/carry.mjs": "application",
@@ -120,7 +164,6 @@
   "scripts/carry-assets/outcome/outcome-lines.mjs": "domain",
   "scripts/check-base.mjs": "infrastructure",
   "scripts/child-env.mjs": "infrastructure",
-  "scripts/chrome.mjs": "infrastructure",
   "scripts/cli-check-base.mjs": "presentation",
   "scripts/cli-data-pin.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
@@ -133,7 +176,6 @@
   "scripts/deploy-finding.mjs": "domain",
   "scripts/dev-server.mjs": "infrastructure",
   "scripts/find-option-value.mjs": "presentation",
-  "scripts/html-in-pieces.mjs": "infrastructure",
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
   "scripts/main-check-base.mjs": "main",
@@ -143,15 +185,11 @@
   "scripts/main-shot.mjs": "main",
   "scripts/main-smoke.mjs": "main",
   "scripts/measure-taps.mjs": "infrastructure",
-  "scripts/owned.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
   "scripts/render-assets.mjs": "infrastructure",
   "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure",
-  "scripts/static-server.mjs": "infrastructure",
-  "scripts/tab-gestures.mjs": "infrastructure",
-  "scripts/tab-waits.mjs": "infrastructure",
   "src/lib/arrival-line.ts": "presentation",
   "src/lib/browser-history.ts": "infrastructure",
   "src/lib/clipboard.ts": "presentation",
@@ -255,28 +293,113 @@
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser.mjs",
-   "to": "scripts/chrome.mjs",
+   "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/chrome/chrome.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser.mjs",
-   "to": "scripts/owned.mjs",
+   "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/static-server/static-server.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser.mjs",
-   "to": "scripts/static-server.mjs",
+   "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/walk/screens.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser.mjs",
-   "to": "scripts/tab-gestures.mjs",
+   "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/walk/walk-site.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser.mjs",
-   "to": "scripts/tab-waits.mjs",
+   "from": "scripts/browser/chrome/chrome-launch.mjs",
+   "to": "scripts/browser/chrome/chrome.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/static-server/static-server.mjs",
+   "to": "scripts/browser/exit-register/owned.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/static-server/static-server.mjs",
+   "to": "scripts/browser/static-server/html-in-pieces.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/static-server/static-server.mjs",
+   "to": "scripts/site-base.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/tab-events.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/tab-gestures.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/tab-page.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/open-tab.mjs",
+   "to": "scripts/browser/tab/tab-waits.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/tab/tab-page.mjs",
+   "to": "scripts/browser/layout-shifts/layout-shift-reading.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/chrome/chrome-launch.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/connection/devtools-connection.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/exit-register/owned.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/tab/open-tab.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/open-browser.mjs",
+   "to": "scripts/browser/walk/walk-log.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-log.mjs",
+   "to": "scripts/browser/tab/tab-events.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/browser/static-server/static-server.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/browser/walk/open-browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/walk/walk-site.mjs",
+   "to": "scripts/site-base.mjs",
    "kind": "dependency"
   },
   {
@@ -531,7 +654,7 @@
   },
   {
    "from": "scripts/measure-taps.mjs",
-   "to": "scripts/browser.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -541,7 +664,7 @@
   },
   {
    "from": "scripts/render-assets.mjs",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -551,7 +674,7 @@
   },
   {
    "from": "scripts/shot.mjs",
-   "to": "scripts/browser.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -561,7 +684,7 @@
   },
   {
    "from": "scripts/smoke.mjs",
-   "to": "scripts/browser.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -571,21 +694,6 @@
   },
   {
    "from": "scripts/smoke.mjs",
-   "to": "scripts/site-base.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/static-server.mjs",
-   "to": "scripts/html-in-pieces.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/static-server.mjs",
-   "to": "scripts/owned.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/static-server.mjs",
    "to": "scripts/site-base.mjs",
    "kind": "dependency"
   },
@@ -1886,12 +1994,7 @@
   },
   {
    "from": "tests/answers.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/answers.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -1912,7 +2015,7 @@
   {
    "from": "tests/answers.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "tests/answers.test.ts",
@@ -1926,12 +2029,7 @@
   },
   {
    "from": "tests/arrival.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/arrival.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -1967,7 +2065,7 @@
   {
    "from": "tests/arrival.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "tests/arrival.test.ts",
@@ -1977,6 +2075,11 @@
   {
    "from": "tests/arrival.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/asked-for.test.ts",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -1997,6 +2100,11 @@
   {
    "from": "tests/audit-and-runner.test.ts",
    "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/back-and-keep.test.ts",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2041,6 +2149,11 @@
   },
   {
    "from": "tests/beat.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/beat.test.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
@@ -2056,12 +2169,7 @@
   },
   {
    "from": "tests/browser-walk.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/browser-walk.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2075,13 +2183,8 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/browser-walk.ts",
-   "to": "tests/wire.ts",
-   "kind": "type-only"
-  },
-  {
    "from": "tests/browser.test.ts",
-   "to": "scripts/browser.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2331,6 +2434,11 @@
   },
   {
    "from": "tests/checked-words.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/checked-words.test.ts",
    "to": "src/lib/copy/country-page.ts",
    "kind": "dependency"
   },
@@ -2378,6 +2486,16 @@
    "from": "tests/checked-words.test.ts",
    "to": "tests/reader-pages.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/chrome-path.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/consolidated-text.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
   },
   {
    "from": "tests/consolidated-text.test.ts",
@@ -2511,12 +2629,7 @@
   },
   {
    "from": "tests/first-paint.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/first-paint.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2566,12 +2679,7 @@
   },
   {
    "from": "tests/fold.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/fold.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2587,16 +2695,11 @@
   {
    "from": "tests/fold.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/footer.test.ts",
-   "to": "scripts/browser.mjs",
    "kind": "dependency"
   },
   {
    "from": "tests/footer.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2632,16 +2735,11 @@
   {
    "from": "tests/footer.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "tests/gloss.test.ts",
-   "to": "scripts/browser.mjs",
    "kind": "dependency"
   },
   {
    "from": "tests/gloss.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2672,7 +2770,7 @@
   {
    "from": "tests/gloss.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "tests/gloss.test.ts",
@@ -2686,7 +2784,7 @@
   },
   {
    "from": "tests/hand-run-commands.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2701,18 +2799,13 @@
   },
   {
    "from": "tests/header.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/header.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
    "from": "tests/header.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "tests/history-corners.test.ts",
@@ -2731,12 +2824,7 @@
   },
   {
    "from": "tests/identity.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/identity.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2771,7 +2859,7 @@
   },
   {
    "from": "tests/layout-shifts.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "scripts/browser/browser.mjs",
    "kind": "type-only"
   },
   {
@@ -2791,12 +2879,7 @@
   },
   {
    "from": "tests/means.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/means.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2807,7 +2890,7 @@
   {
    "from": "tests/means.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "tests/means.test.ts",
@@ -2817,6 +2900,11 @@
   {
    "from": "tests/means.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/money-rows.test.ts",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2861,12 +2949,7 @@
   },
   {
    "from": "tests/orientation.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/orientation.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -2912,7 +2995,12 @@
   {
    "from": "tests/orientation.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/paths-named.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
   },
   {
    "from": "tests/paths-named.test.ts",
@@ -2986,6 +3074,11 @@
   },
   {
    "from": "tests/reader-pages.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.test.ts",
    "to": "src/lib/country-page.ts",
    "kind": "dependency"
   },
@@ -3006,6 +3099,11 @@
   },
   {
    "from": "tests/reader-pages.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/reader-pages.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
@@ -3013,11 +3111,6 @@
    "from": "tests/reader-pages.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
-  },
-  {
-   "from": "tests/reader-pages.ts",
-   "to": "tests/browser-walk.ts",
-   "kind": "type-only"
   },
   {
    "from": "tests/reason.test.ts",
@@ -3031,12 +3124,7 @@
   },
   {
    "from": "tests/record.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/record.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3226,12 +3314,7 @@
   },
   {
    "from": "tests/s13.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3351,12 +3434,7 @@
   },
   {
    "from": "tests/s19.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s19.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3431,12 +3509,7 @@
   },
   {
    "from": "tests/s20.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s20.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3466,12 +3539,7 @@
   },
   {
    "from": "tests/s21.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s21.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3521,12 +3589,7 @@
   },
   {
    "from": "tests/s23.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s23.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3587,7 +3650,7 @@
   {
    "from": "tests/s23.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "tests/s23.test.ts",
@@ -3611,12 +3674,7 @@
   },
   {
    "from": "tests/s25.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s25.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3666,12 +3724,7 @@
   },
   {
    "from": "tests/s26.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s26.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3716,7 +3769,7 @@
   },
   {
    "from": "tests/s27.test.ts",
-   "to": "scripts/browser.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3801,12 +3854,7 @@
   },
   {
    "from": "tests/s28.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s28.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3861,7 +3909,7 @@
   },
   {
    "from": "tests/s30.test.ts",
-   "to": "scripts/browser.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3881,12 +3929,7 @@
   },
   {
    "from": "tests/s31.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s31.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3911,12 +3954,7 @@
   },
   {
    "from": "tests/s32.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s32.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -3937,7 +3975,7 @@
   {
    "from": "tests/s32.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "tests/s32.test.ts",
@@ -3946,12 +3984,7 @@
   },
   {
    "from": "tests/s37.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s37.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4111,7 +4144,12 @@
   },
   {
    "from": "tests/served-folder.ts",
-   "to": "scripts/browser.mjs",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/set-aside.test.ts",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4141,6 +4179,11 @@
   },
   {
    "from": "tests/shorthand.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/shorthand.test.ts",
    "to": "src/lib/country-page.ts",
    "kind": "dependency"
   },
@@ -4166,12 +4209,7 @@
   },
   {
    "from": "tests/site-index.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/site-index.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4206,12 +4244,7 @@
   },
   {
    "from": "tests/smoke.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/smoke.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4227,6 +4260,11 @@
   {
    "from": "tests/smoke.test.ts",
    "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/start-over.test.ts",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4247,6 +4285,11 @@
   {
    "from": "tests/static-server.test.ts",
    "to": "tests/served-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/territories.test.ts",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4296,17 +4339,17 @@
   },
   {
    "from": "tests/verdict-history.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-history.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/verdict-look.test.ts",
-   "to": "scripts/browser.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/verdict-look.test.ts",
-   "to": "scripts/chrome.mjs",
+   "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
   },
   {
@@ -4317,7 +4360,7 @@
   {
    "from": "tests/verdict-look.test.ts",
    "to": "tests/browser-walk.ts",
-   "kind": "type-only"
+   "kind": "dependency"
   },
   {
    "from": "tests/verdict-module.test.ts",
@@ -4343,9 +4386,30 @@
    "from": "tests/verdict-steps.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/walk-site.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/walk-site.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/walk-site.test.ts",
+   "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/wire.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
   }
  ],
  "declarations": {
+  "scripts/browser/browser.mjs": [],
   "scripts/carry-assets/carry.mjs": [
    {
     "name": "ORIGIN_VAR",
@@ -4677,33 +4741,6 @@
     "exported": true
    }
   ],
-  "scripts/browser.mjs": [
-   {
-    "name": "nextProfile",
-    "kind": "other",
-    "exported": false
-   },
-   {
-    "name": "PROFILE_PREFIX",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "sweepStaleProfiles",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "LOCAL_BEACON_NOISE",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "withBrowser",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
   "scripts/build-directory-on-disk.mjs": [
    {
     "name": "openBuildDirectoryOnDisk",
@@ -4823,28 +4860,6 @@
   "scripts/child-env.mjs": [
    {
     "name": "childEnv",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/chrome.mjs": [
-   {
-    "name": "CANDIDATES",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "ON_PATH",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "fromPath",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "chromePath",
     "kind": "fn",
     "exported": true
    }
@@ -5102,13 +5117,6 @@
     "exported": true
    }
   ],
-  "scripts/html-in-pieces.mjs": [
-   {
-    "name": "sendBody",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
   "scripts/live-site-over-http.mjs": [
    {
     "name": "fetchLiveAnswerOverHttp",
@@ -5212,11 +5220,6 @@
     "exported": false
    },
    {
-    "name": "VIEWPORT",
-    "kind": "const",
-    "exported": false
-   },
-   {
     "name": "PROBE",
     "kind": "const",
     "exported": false
@@ -5258,33 +5261,6 @@
    },
    {
     "name": "measureTaps",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/owned.mjs": [
-   {
-    "name": "openThings",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "closeEverything",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "hooked",
-    "kind": "other",
-    "exported": false
-   },
-   {
-    "name": "hookExit",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "owned",
     "kind": "fn",
     "exported": true
    }
@@ -5405,6 +5381,11 @@
     "exported": false
    },
    {
+    "name": "README_SCREEN",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "screenshotResultsInChrome",
     "kind": "fn",
     "exported": false
@@ -5451,102 +5432,6 @@
    {
     "name": "smoke",
     "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/static-server.mjs": [
-   {
-    "name": "TYPES",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "isInside",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "realPathOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "fileFor",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "refuse",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "serve",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "scripts/tab-gestures.mjs": [
-   {
-    "name": "TabGestures",
-    "kind": "class",
-    "exported": true
-   }
-  ],
-  "scripts/tab-waits.mjs": [
-   {
-    "name": "WAIT_BACKSTOP",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "DOCUMENT_SHOWN",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "REPLACED_CONTEXT",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "WATCH_SMOOTH_SCROLLS",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "AT_REST",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "isNewDocumentDrawn",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "isFirstInputReportedOrLeft",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "pause",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "answerWithin",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "pollUntil",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "TabWaits",
-    "kind": "class",
     "exported": true
    }
   ],
@@ -8167,12 +8052,10 @@
   "roadkeeper-lint/rules/ceiling-paid-off.mjs",
   "roadkeeper-lint/rules/constant-reason.mjs",
   "roadkeeper-lint/rules/named-condition.mjs",
-  "scripts/browser.mjs",
   "scripts/build-directory-on-disk.mjs",
   "scripts/carry-assets.mjs",
   "scripts/check-base.mjs",
   "scripts/child-env.mjs",
-  "scripts/chrome.mjs",
   "scripts/cli-check-base.mjs",
   "scripts/cli-data-pin.mjs",
   "scripts/cli-deploy-finding.mjs",
@@ -8185,7 +8068,6 @@
   "scripts/deploy-finding.mjs",
   "scripts/dev-server.mjs",
   "scripts/find-option-value.mjs",
-  "scripts/html-in-pieces.mjs",
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
   "scripts/main-check-base.mjs",
@@ -8195,15 +8077,11 @@
   "scripts/main-shot.mjs",
   "scripts/main-smoke.mjs",
   "scripts/measure-taps.mjs",
-  "scripts/owned.mjs",
   "scripts/print-report.mjs",
   "scripts/render-assets.mjs",
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
-  "scripts/static-server.mjs",
-  "scripts/tab-gestures.mjs",
-  "scripts/tab-waits.mjs",
   "src/lib/arrival-line.ts",
   "src/lib/browser-history.ts",
   "src/lib/clipboard.ts",
@@ -8252,5 +8130,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "66aedd12a1ee17beb7b3500e23f6158f5966a2baccfb5546b8361cf4ebf1774b"
+ "digest": "5ffded3fd8907d344174edb9754a374db1bf3abb191663ca90b3bc69b0386646"
 }

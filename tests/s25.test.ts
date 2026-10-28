@@ -14,7 +14,8 @@ import { glossed } from "../src/lib/gloss.js";
 import { declarationHtml, questionCardHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
-import { answerWith, openAtRest, type BrowserPage } from "./browser-walk.js";
+import { chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, paintedAsComposedScript, placed, stepsIn, verdictFor, verdictOn,
 } from "./verdict-cards.js";
@@ -334,9 +335,6 @@ describe("s25 — the walked results, from the verdict", () => {
  * The browser: the two questions answered three ways, by the buttons, to the
  * verdict the cases above read, as painted.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
-
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
   if (!existsSync(dist)) return "no dist/ — run npm run build first";
@@ -379,52 +377,42 @@ async function walk(page: BrowserPage, profile: Profile, painted: string): Promi
 describe.skipIf(skipped !== null)("s25 — in the browser", () => {
   for (const [five, seven, expected] of WAYS)
     it(`${five} / ${seven}: the experienced worker reads ${expected.worker}, the card's tally ${expected.tally ?? "names no experience"}`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/"));
-          await page.evaluate(seed(SEEDED as Record<string, string>));
-          await page.goto(server.url("/"));
-          const resumed = await page.evaluate(RESUMED);
-          const first = await page.evaluate(QLABEL);
-          const walked = await walk(page, withExperience(five, seven), paintedAsComposedScript(verdictFor(walkedTo(five, seven))));
-          return { resumed, first, ...walked };
-        }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
-          { resumed: string; first: string; asked: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] };
-        expect(seen.problems).toEqual([]);
-        expect(seen.resumed).toContain(resumedLine(Object.keys(SEEDED).length));
-        expect(seen.first).toBe(ds.fields.find((f) => f.id === FIVE)!.label);
-        expect(seen.asked.slice(0, 2)).toEqual([FIVE, SEVEN]);
-        // Where the experienced worker stands, its quote and the Opportunity
-        // Card's tally are the verdict's ("s25 — the walked results, from the
-        // verdict"); the walk ends on that verdict, painted.
-        expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
-      } finally {
-        server.close();
-      }
-    }, 120_000);
-
-  it("an old record with y3in7 restores without it and says how many answers were kept", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        await page.evaluate(seed({ ...SEEDED as Record<string, string>, experience: "y3in7", experience_7y: "yes" }));
-        await openAtRest(page, server.url("/"));
-        return {
-          resumed: await page.evaluate(RESUMED),
-          first: await page.evaluate(QLABEL),
-          rows: await page.evaluate('[...document.querySelectorAll("#decl-list [data-field]")].map((r) => r.dataset.field).join(",")'),
-          problems: page.problems(),
-        };
+      const seen = await withSite(async ({ page, url }) => {
+        await page.goto(url("/"));
+        await page.evaluate(seed(SEEDED as Record<string, string>));
+        await page.goto(url("/"));
+        const resumed = await page.evaluate(RESUMED);
+        const first = await page.evaluate(QLABEL);
+        const walked = await walk(page, withExperience(five, seven), paintedAsComposedScript(verdictFor(walkedTo(five, seven))));
+        return { resumed, first, ...walked };
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
-        { resumed: string; first: string; rows: string; problems: string[] };
+        { resumed: string; first: string; asked: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] };
       expect(seen.problems).toEqual([]);
       expect(seen.resumed).toContain(resumedLine(Object.keys(SEEDED).length));
       expect(seen.first).toBe(ds.fields.find((f) => f.id === FIVE)!.label);
-      expect(seen.rows.split(",")).toEqual(Object.keys(SEEDED));
-    } finally {
-      server.close();
-    }
+      expect(seen.asked.slice(0, 2)).toEqual([FIVE, SEVEN]);
+      // Where the experienced worker stands, its quote and the Opportunity
+      // Card's tally are the verdict's ("s25 — the walked results, from the
+      // verdict"); the walk ends on that verdict, painted.
+      expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
+    }, 120_000);
+
+  it("an old record with y3in7 restores without it and says how many answers were kept", async () => {
+    const seen = await withSite(async ({ page, url }) => {
+      await page.goto(url("/"));
+      await page.evaluate(seed({ ...SEEDED as Record<string, string>, experience: "y3in7", experience_7y: "yes" }));
+      await openAtRest(page, url("/"));
+      return {
+        resumed: await page.evaluate(RESUMED),
+        first: await page.evaluate(QLABEL),
+        rows: await page.evaluate('[...document.querySelectorAll("#decl-list [data-field]")].map((r) => r.dataset.field).join(",")'),
+        problems: page.problems(),
+      };
+    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
+      { resumed: string; first: string; rows: string; problems: string[] };
+    expect(seen.problems).toEqual([]);
+    expect(seen.resumed).toContain(resumedLine(Object.keys(SEEDED).length));
+    expect(seen.first).toBe(ds.fields.find((f) => f.id === FIVE)!.label);
+    expect(seen.rows.split(",")).toEqual(Object.keys(SEEDED));
   }, 120_000);
 });

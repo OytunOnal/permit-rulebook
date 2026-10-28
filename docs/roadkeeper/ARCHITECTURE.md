@@ -155,20 +155,28 @@ click on the tracker link. Answers never leave the device.
   to its count until within 400; every other existing breach is a Suppression
   in `eslint-suppressions.json`, whose count per file and rule cannot grow.
   The issues that pay them off carry the deadline on their milestones (#149).
-  The browser cases drive Chrome through `scripts/browser.mjs`, and each waits
-  on what it reads, never a time: the page drawn, the page at rest (no
-  animation, no smooth scroll going, no request in flight), a new document
-  drawn, or a condition, with one 15 s backstop (`scripts/tab-waits.mjs`);
-  the lint refuses a sleep in a test. `BROWSER_CPU_SLOWDOWN` slows every tab,
-  and `serve` can send a page's HTML in two pieces (`scripts/html-in-pieces.mjs`)
-  to test a paint mid-parse (#230). `serve` (`scripts/static-server.mjs`,
-  re-exported by `browser.mjs`) serves only what is inside its folder: an
-  escaped `../` or a link leading out is not found, and a path it cannot
-  decode is a bad request (#245). What a walk opens is closed however the
-  process leaves (`scripts/owned.mjs`). A click or an Enter
-  (`scripts/tab-gestures.mjs`) returns once the page has reported its first
+  The browser harness is the deep module `scripts/browser/`, and its entry,
+  `browser.mjs`, is the one way in. Every browser case, deploy job and
+  real-use check opens the site through `walkSite`, the browser walk: the
+  built site served for it, or a live site's root address, at `DESK` or
+  `PHONE`, in a fresh profile. It returns the walker's result, the layout
+  shifts of the page it ends on (#269's first-input rule, read in
+  `layout-shifts/`) and the pages' errors, each with its address, the first
+  100 kept. It fails when a page it draws is not the screen's width, and on
+  the pages' errors unless the caller expects them. Beside it the entry
+  offers `chromePath` and `serve`, kept for the server's own HTTP tests
+  (#245): `serve` serves only what is inside its folder, so an escaped `../`
+  or a link leading out is not found and a path it cannot decode is a bad
+  request, and it can send a page's HTML in two pieces to test a paint
+  mid-parse (#230). Inside, the page a walk hands over waits on what it
+  reads, never a time: the page drawn, the page at rest (no animation, no
+  smooth scroll going, no request in flight), a new document drawn, or a
+  condition, with one 15 s backstop (`tab/`); the lint refuses a sleep in a
+  test. A click or an Enter returns once the page has reported its first
   input, or another document stands: Chrome reports that input only once its
   frame is presented, after the shifts the measure reads (#269).
+  `BROWSER_CPU_SLOWDOWN` slows every tab, and what a walk opens is closed
+  however the process leaves (`exit-register/`).
   Each command under `scripts/` is three files, one level each: the job
   (`smoke.mjs`, `infrastructure`) does the work and returns what it found, its
   CLI (`cli-smoke.mjs`, `presentation`) reads the arguments and words the

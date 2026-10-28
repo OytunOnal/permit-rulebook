@@ -6,8 +6,9 @@ import {
 } from "permit-rulebook-data";
 import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy/interview.js";
 import { countrySearchOf } from "../src/lib/country-search/index.js";
+import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
-  PHONE, recordSeedScript, skipReason, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+  recordSeedScript, skipReason, warnNotWalked, withSite,
 } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;

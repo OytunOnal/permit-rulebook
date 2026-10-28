@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
+import { DESK, PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
-  DESK, PHONE, fieldOnScreen, openAtRest, skipReason, tapOn, warnNotWalked, withSite, type BrowserPage, type PageOnSite,
+  fieldOnScreen, openAtRest, skipReason, warnNotWalked, withSite,
 } from "./browser-walk.js";
 
 /**
@@ -102,7 +103,7 @@ describe.skipIf(skipped !== null)("a kept verdict at a country's address, and St
   it("from /?country=de: the resumed line is drawn, and Start over asks the question after the destination", async () => {
     const seen = await withSite(async (site) => {
       const returned = await openOnKeptVerdict(site, "/?country=de");
-      await tapOn(site.page, "#restart");
+      await site.page.tapOn("#restart");
       const restarted = await settledAfterStartOver(site.page);
       return { returned, restarted, field: await fieldOnScreen(site.page), problems: site.page.problems() };
     }, DESK);
@@ -122,7 +123,7 @@ describe.skipIf(skipped !== null)("a kept verdict at a country's address, and St
   it("after Start over on /?country=de the stored record is empty, and / then shows question one with no resumed line", async () => {
     const seen = await withSite(async (site) => {
       await openOnKeptVerdict(site, "/?country=de");
-      await tapOn(site.page, "#restart");
+      await site.page.tapOn("#restart");
       const restarted = await settledAfterStartOver(site.page);
       await openAtRest(site.page, site.url("/"));
       const nextReader = await where(site.page);

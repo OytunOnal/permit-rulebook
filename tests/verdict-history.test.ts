@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
+import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
-  PHONE, SCREEN_SHOWN, fieldOnScreen, openCold, skipReason, tapOn, waitUntilPastTheBeat, warnNotWalked, withSite,
-  type BrowserPage, type PageOnSite,
+  SCREEN_SHOWN, fieldOnScreen, openCold, skipReason, waitUntilPastTheBeat, warnNotWalked, withSite,
 } from "./browser-walk.js";
 
 /**
@@ -50,7 +50,7 @@ async function answerByHand(page: BrowserPage, field: string, value: string): Pr
     await page.type(name);
     await page.pressEnter();
   } else {
-    await tapOn(page, `#main .qcard .opt[data-value='${value}']`);
+    await page.tapOn(`#main .qcard .opt[data-value='${value}']`);
   }
   await page.waitUntilAtRest();
 }

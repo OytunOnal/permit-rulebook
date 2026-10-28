@@ -7,7 +7,7 @@ import {
 } from "permit-rulebook-data";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import type { PageOnSite } from "./browser-walk.js";
+import type { PageOnSite } from "../scripts/browser/browser.mjs";
 
 /**
  * Every page the build draws from the shipped dataset, as a reader meets it:

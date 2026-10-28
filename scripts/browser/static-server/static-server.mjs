@@ -3,9 +3,10 @@ import { existsSync, realpathSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { sendBody } from "./html-in-pieces.mjs";
-import { owned } from "./owned.mjs";
-import { at, siteBase } from "./site-base.mjs";
+import { owned } from "../exit-register/owned.mjs";
+import { at, siteBase } from "../../site-base.mjs";
 
+// The content type of each kind of file the built site holds, by extension; any other goes as bytes.
 const TYPES = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css",
   ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png",
@@ -39,6 +40,12 @@ function fileFor(folder, path) {
   return staysInside ? file : null;
 }
 
+/** Whether `path` lies under the site's `base`: the base itself, or a path below it. A site at the root has none. */
+function isUnderBase(path, base) {
+  const isBaseOrBelow = path === base || path.startsWith(`${base}/`);
+  return Boolean(base) && isBaseOrBelow;
+}
+
 /** Answers `status` with a word on why, and nothing of any file. */
 function refuse(res, status, why) {
   res.writeHead(status);
@@ -70,7 +77,7 @@ export async function serve(dir, { base = siteBase(), delayJsMs = 0, htmlInPiece
   const server = createServer((req, res) => {
     let path = "";
     try { path = decodeURIComponent(new URL(req.url, "http://x").pathname); } catch { refuse(res, 400, "bad request"); return; }
-    if (base && (path === base || path.startsWith(`${base}/`))) path = path.slice(base.length) || "/";
+    if (isUnderBase(path, base)) path = path.slice(base.length) || "/";
     const file = fileFor(folder, path);
     if (!file) { refuse(res, 404, "not found"); return; }
     const send = () => {

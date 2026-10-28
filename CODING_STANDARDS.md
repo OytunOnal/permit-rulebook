@@ -21,6 +21,10 @@ pull request.
   `npm run build` (`tsc -p tsconfig.json`) and `npm run typecheck:tests`.
 - Tests: site `npm test` (vitest; browser cases drive headless Chrome over
   `dist/`); data `npm test`.
+- Browser walk: a live walk or a real-use check imports `walkSite` from the
+  harness's entry, `scripts/browser/browser.mjs`, on the built site or a live
+  site's root address, at `DESK` or `PHONE`. It returns the walker's result,
+  the shifts of the page it ends on, and the walk's errors.
 - Structure: in the site's root, Roadkeeper's `structure.mjs`, set up as Roadkeeper's
   `structure-command.md` says, writes `docs/roadkeeper/structure.json` from the
   code, and Roadkeeper's `structure-check.mjs` reads it against
@@ -75,7 +79,7 @@ pull request.
 ## Tests
 
 - Browser cases measure geometry and state from the running page, through
-  `scripts/browser.mjs`.
+  the browser harness's entry, `scripts/browser/browser.mjs`.
 
 ## Departures
 

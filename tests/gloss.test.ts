@@ -10,7 +10,7 @@ import { replayRecord } from "../src/lib/scope.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
-import type { BrowserPage } from "./browser-walk.js";
+import { withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -113,8 +113,7 @@ describe("the results card carries the sign without an explainer, from the verdi
 });
 
 /** And the results card carries the sign bare, in the route names that cite it, as painted. */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -133,24 +132,19 @@ if (skipped)
 
 describe.skipIf(skipped !== null)("the results card carries the sign without an explainer", () => {
   it("prints the § names bare — no explainer, no number restated (amendment 6)", async () => {
-    const server = await serve(dist);
-    try {
-      // What the card says is the verdict's (the case above); the page paints
-      // the verdict the record, as it restores, composes.
-      const painted = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/"));
-        await page.evaluate(`localStorage.setItem("permit-rulebook.record.v1", ${
-          JSON.stringify(JSON.stringify({
-            version: RECORD_VERSION, answers: GERMAN, history: Object.keys(GERMAN),
-          }))})`);
-        await page.goto(server.url("/"));
-        const restored = replayRecord(ds, GERMAN, Object.keys(GERMAN)).answers;
-        return JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(restored))));
-      }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as typeof PAINTED_AS_COMPOSED;
+    // What the card says is the verdict's (the case above); the page paints
+    // the verdict the record, as it restores, composes.
+    const painted = await withSite(async ({ page, url }) => {
+      await page.goto(url("/"));
+      await page.evaluate(`localStorage.setItem("permit-rulebook.record.v1", ${
+        JSON.stringify(JSON.stringify({
+          version: RECORD_VERSION, answers: GERMAN, history: Object.keys(GERMAN),
+        }))})`);
+      await page.goto(url("/"));
+      const restored = replayRecord(ds, GERMAN, Object.keys(GERMAN)).answers;
+      return JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(restored))));
+    }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as typeof PAINTED_AS_COMPOSED;
 
-      expect(painted).toEqual(PAINTED_AS_COMPOSED);
-    } finally {
-      server.close();
-    }
+    expect(painted).toEqual(PAINTED_AS_COMPOSED);
   }, 180000);
 });

@@ -7,7 +7,8 @@ import { resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { answerWith, evaluateAtRest, openAtRest, type BrowserPage } from "./browser-walk.js";
+import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { answerWith, evaluateAtRest, openAtRest, withSite } from "./browser-walk.js";
 
 /**
  * s20 — the correction lands on the question and returns to the verdict.
@@ -81,9 +82,6 @@ describe("the two records the walks seed", () => {
     expect(remainingQuestions(ds, halfDone).length).toBeGreaterThan(0);
   });
 });
-
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -191,119 +189,102 @@ describe.skipIf(skipped !== null)("✎ on a result lands on the question and the
     ["1240x900, where the panel is a sidebar", { width: 1240, height: 900 }, false],
   ] as const)
     it(`at ${name}`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(
-          (page: BrowserPage) => correction(page, server.url), { viewport, mobile },
-        );
-        expect(seen.problems).toEqual([]);
-        expect(seen.result.state, "the finished record did not restore to a result").toBe("results");
+      const seen = await withSite(({ page, url }) => correction(page, url), { viewport, mobile });
+      expect(seen.problems).toEqual([]);
+      expect(seen.result.state, "the finished record did not restore to a result").toBe("results");
 
-        // After ✎: the question is on the screen, from its top, and its first
-        // option holds the focus. It was 1,366 px above the viewport with the
-        // focus on <body> (B2).
-        const q = seen.onQuestion;
-        expect(q.state).toBe("questions");
-        expect(q.cardTop, `the card's top is at ${q.cardTop} px`).not.toBeNull();
-        expect(q.cardTop!, `the card's top is above the viewport (${q.cardTop} px, scrollY ${q.scrollY})`)
-          .toBeGreaterThanOrEqual(0);
-        expect(q.cardTop!, `the card's top is below the viewport (${q.cardTop} px of ${q.viewport})`)
-          .toBeLessThan(q.viewport);
-        // The card is drawn with its contents visible. A finished record that
-        // restored straight to its verdict left the first-paint cover standing,
-        // and the correction drew a card with every child hidden (an s10
-        // defect, found by this walk).
-        expect(q.firstShown, "the question card's first option is invisible").toBe(true);
-        expect(q.activeIsFirst, `the focus is on ${q.active || "nothing"}, not the first option`).toBe(true);
+      // After ✎: the question is on the screen, from its top, and its first
+      // option holds the focus. It was 1,366 px above the viewport with the
+      // focus on <body> (B2).
+      const q = seen.onQuestion;
+      expect(q.state).toBe("questions");
+      expect(q.cardTop, `the card's top is at ${q.cardTop} px`).not.toBeNull();
+      expect(q.cardTop!, `the card's top is above the viewport (${q.cardTop} px, scrollY ${q.scrollY})`)
+        .toBeGreaterThanOrEqual(0);
+      expect(q.cardTop!, `the card's top is below the viewport (${q.cardTop} px of ${q.viewport})`)
+        .toBeLessThan(q.viewport);
+      // The card is drawn with its contents visible. A finished record that
+      // restored straight to its verdict left the first-paint cover standing,
+      // and the correction drew a card with every child hidden (an s10
+      // defect, found by this walk).
+      expect(q.firstShown, "the question card's first option is invisible").toBe(true);
+      expect(q.activeIsFirst, `the focus is on ${q.active || "nothing"}, not the first option`).toBe(true);
 
-        // After the new band: the verdict's headline is on the screen and the
-        // live region says it. It rendered 8,000 px above the reader (B2).
-        const r = seen.back;
-        expect(r.state).toBe("results");
-        expect(r.headline).not.toBe("");
-        expect(r.headTop!, `the masthead's top is at ${r.headTop} px (scrollY ${r.scrollY})`).toBeGreaterThanOrEqual(0);
-        expect(r.h1Bottom!, `the headline's bottom is at ${r.h1Bottom} px of ${r.viewport}`).toBeLessThanOrEqual(r.viewport);
-        expect(r.live, "the live region does not carry the headline").toBe(r.headline);
-        expect(r.headline).not.toBe(seen.result.headline);
-      } finally {
-        server.close();
-      }
+      // After the new band: the verdict's headline is on the screen and the
+      // live region says it. It rendered 8,000 px above the reader (B2).
+      const r = seen.back;
+      expect(r.state).toBe("results");
+      expect(r.headline).not.toBe("");
+      expect(r.headTop!, `the masthead's top is at ${r.headTop} px (scrollY ${r.scrollY})`).toBeGreaterThanOrEqual(0);
+      expect(r.h1Bottom!, `the headline's bottom is at ${r.h1Bottom} px of ${r.viewport}`).toBeLessThanOrEqual(r.viewport);
+      expect(r.live, "the live region does not carry the headline").toBe(r.headline);
+      expect(r.headline).not.toBe(seen.result.headline);
     }, 180000);
 });
 
 describe.skipIf(skipped !== null)("every answer moves the focus to the next question's first control (F6)", () => {
   it("three questions in a row, from a cold /", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/404.html"));
-        await page.evaluate(seed(null));
-        await openAtRest(page, server.url("/"));
-        const steps: Where[] = [JSON.parse(await page.evaluate(WHERE))];
-        for (let i = 0; i < 3; i++) {
-          // A choice: its first button. The country search does not come this
-          // early on any path, and the focus rule for it is v0.7's (the caret in
-          // the box, its text selected).
-          await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
-          steps.push(JSON.parse(await page.evaluate(WHERE)));
-        }
-        return { steps, problems: page.problems() };
-      }, { viewport: { width: 1240, height: 900 }, mobile: false });
-      expect(seen.problems).toEqual([]);
-      // The cold first paint is left alone: nothing takes the focus from a
-      // reader who has not touched anything yet.
-      expect(seen.steps[0].activeInCard, `the first paint focused ${seen.steps[0].active}`).toBe(false);
-      for (const [i, step] of seen.steps.slice(1).entries()) {
-        expect(step.state, `answer ${i + 1} left the interview`).toBe("questions");
-        expect(step.activeIsFirst, `after answer ${i + 1} the focus is on ${step.active || "nothing"}`).toBe(true);
+    const seen = await withSite(async ({ page, url }) => {
+      await page.goto(url("/404.html"));
+      await page.evaluate(seed(null));
+      await openAtRest(page, url("/"));
+      const steps: Where[] = [JSON.parse(await page.evaluate(WHERE))];
+      for (let i = 0; i < 3; i++) {
+        // A choice: its first button. The country search does not come this
+        // early on any path, and the focus rule for it is v0.7's (the caret in
+        // the box, its text selected).
+        await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
+        steps.push(JSON.parse(await page.evaluate(WHERE)));
       }
-    } finally {
-      server.close();
+      return { steps, problems: page.problems() };
+    }, { viewport: { width: 1240, height: 900 }, mobile: false });
+    expect(seen.problems).toEqual([]);
+    // The cold first paint is left alone: nothing takes the focus from a
+    // reader who has not touched anything yet.
+    expect(seen.steps[0].activeInCard, `the first paint focused ${seen.steps[0].active}`).toBe(false);
+    for (const [i, step] of seen.steps.slice(1).entries()) {
+      expect(step.state, `answer ${i + 1} left the interview`).toBe("questions");
+      expect(step.activeIsFirst, `after answer ${i + 1} the focus is on ${step.active || "nothing"}`).toBe(true);
     }
   }, 180000);
 });
 
 describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
   it("a half-done record: the line, its count, and the one Start over control", async () => {
-    const server = await serve(dist);
-    try {
-      const seen = await withBrowser(async (page: BrowserPage) => {
-        await page.goto(server.url("/404.html"));
-        await page.evaluate(seed(halfDone));
-        await openAtRest(page, server.url("/"));
-        const resumed = JSON.parse(await page.evaluate(WHERE)) as Where;
-        // One answer on: the line was for the arrival, not for the screen after it.
-        await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
-        const next = JSON.parse(await page.evaluate(WHERE)) as Where;
-        // Start over from the resumed line: the same control the panel carries.
-        await openAtRest(page, server.url("/"));
-        await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
-        const restarted = JSON.parse(await page.evaluate(WHERE)) as Where;
-        const stored = await page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
-        return { resumed, next, restarted, stored, problems: page.problems() };
-      }, { viewport: { width: 390, height: 844 }, mobile: true });
-      expect(seen.problems).toEqual([]);
-      expect(seen.resumed.state).toBe("questions");
-      // The count is the ledger's own: what the replay keeps of the record,
-      // not what was stored (France never asks situation_country).
-      const kept = replayRecord(ds, halfDone, Object.keys(halfDone)).order.length;
-      expect(kept).toBe(3);
-      expect(seen.resumed.resumed).toBe(`${resumedLine(kept)} Start over`);
-      expect(seen.resumed.resumedRestart, "Start over is not in the line, or not shown").toBe(true);
-      expect(seen.resumed.restartsOnPage, "a second Start over control").toBe(1);
-      // The first paint does not take the focus: the reader has not acted.
-      expect(seen.resumed.activeInCard, `the first paint focused ${seen.resumed.active}`).toBe(false);
-      // The line is the arrival's; the next screen is a question like any other.
-      expect(seen.next.resumed).toBeNull();
-      expect(seen.next.restartsOnPage, "Start over went with the line").toBe(1);
-      expect(seen.next.activeIsFirst).toBe(true);
-      // Start over from the line does what Start over does.
-      expect(seen.restarted.resumed).toBeNull();
-      expect(seen.stored).toBeNull();
-      expect(seen.restarted.restartsOnPage).toBe(1);
-    } finally {
-      server.close();
-    }
+    const seen = await withSite(async ({ page, url }) => {
+      await page.goto(url("/404.html"));
+      await page.evaluate(seed(halfDone));
+      await openAtRest(page, url("/"));
+      const resumed = JSON.parse(await page.evaluate(WHERE)) as Where;
+      // One answer on: the line was for the arrival, not for the screen after it.
+      await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
+      const next = JSON.parse(await page.evaluate(WHERE)) as Where;
+      // Start over from the resumed line: the same control the panel carries.
+      await openAtRest(page, url("/"));
+      await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
+      const restarted = JSON.parse(await page.evaluate(WHERE)) as Where;
+      const stored = await page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
+      return { resumed, next, restarted, stored, problems: page.problems() };
+    }, PHONE);
+    expect(seen.problems).toEqual([]);
+    expect(seen.resumed.state).toBe("questions");
+    // The count is the ledger's own: what the replay keeps of the record,
+    // not what was stored (France never asks situation_country).
+    const kept = replayRecord(ds, halfDone, Object.keys(halfDone)).order.length;
+    expect(kept).toBe(3);
+    expect(seen.resumed.resumed).toBe(`${resumedLine(kept)} Start over`);
+    expect(seen.resumed.resumedRestart, "Start over is not in the line, or not shown").toBe(true);
+    expect(seen.resumed.restartsOnPage, "a second Start over control").toBe(1);
+    // The first paint does not take the focus: the reader has not acted.
+    expect(seen.resumed.activeInCard, `the first paint focused ${seen.resumed.active}`).toBe(false);
+    // The line is the arrival's; the next screen is a question like any other.
+    expect(seen.next.resumed).toBeNull();
+    expect(seen.next.restartsOnPage, "Start over went with the line").toBe(1);
+    expect(seen.next.activeIsFirst).toBe(true);
+    // Start over from the line does what Start over does.
+    expect(seen.restarted.resumed).toBeNull();
+    expect(seen.stored).toBeNull();
+    expect(seen.restarted.restartsOnPage).toBe(1);
   }, 180000);
 
   // A finished record's verdict is the first screen of a return too, and says
@@ -313,20 +294,15 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
     ["a finished record, which restores to the verdict", finished, "results", true],
   ] as const)
     it(`is ${resumes ? "there, with the one Start over control," : "absent"} on ${name}`, async () => {
-      const server = await serve(dist);
-      try {
-        const seen = await withBrowser(async (page: BrowserPage) => {
-          await page.goto(server.url("/404.html"));
-          await page.evaluate(seed(record));
-          await openAtRest(page, server.url("/"));
-          return JSON.parse(await page.evaluate(WHERE)) as Where;
-        }, { viewport: { width: 390, height: 844 }, mobile: true });
-        expect(seen.state).toBe(state);
-        expect(seen.resumed !== null, `the resumed line is ${seen.resumed === null ? "missing" : "there"}`).toBe(resumes);
-        expect(seen.resumedRestart).toBe(resumes);
-        expect(seen.restartsOnPage).toBe(1);
-      } finally {
-        server.close();
-      }
+      const seen = await withSite(async ({ page, url }) => {
+        await page.goto(url("/404.html"));
+        await page.evaluate(seed(record));
+        await openAtRest(page, url("/"));
+        return JSON.parse(await page.evaluate(WHERE)) as Where;
+      }, PHONE);
+      expect(seen.state).toBe(state);
+      expect(seen.resumed !== null, `the resumed line is ${seen.resumed === null ? "missing" : "there"}`).toBe(resumes);
+      expect(seen.resumedRestart).toBe(resumes);
+      expect(seen.restartsOnPage).toBe(1);
     }, 180000);
 });
