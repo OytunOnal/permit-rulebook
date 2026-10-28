@@ -32,7 +32,7 @@ import { answerWith, openAtRest, withSite } from "./browser-walk.js";
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
 const { walkSite } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
@@ -307,7 +307,7 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
         await page.evaluate(seed);
         await openAtRest(page, url(path));
         return { at: JSON.parse(await page.evaluate(FOCUS)) as Focus, problems: page.problems() };
-      }, { viewport: { width: 390, height: 844 }, mobile: true });
+      }, PHONE);
       expect(seen.problems).toEqual([]);
       expect(seen.at.active, `the arrival focused ${seen.at.active}`).toBe("body");
     }, 180000);

@@ -167,7 +167,7 @@ describe("everything is reachable, and not only from a footer", () => {
 });
 
 /** And the folded state, measured rather than read off a media query. */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -227,7 +227,7 @@ describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
       );
       const chosen = JSON.parse(await page.evaluate(STATE));
       return { closed, open, escaped, chosen };
-    }, { viewport: { width: 390, height: 844 }, mobile: true }) as {
+    }, PHONE) as {
       closed: { expanded: string; navShown: boolean };
       open: { expanded: string; navShown: boolean; focused: string; columns: string };
       escaped: { expanded: string; navShown: boolean; onButton: boolean };
@@ -271,7 +271,7 @@ describe.skipIf(skipped !== null)("the nav folds where it says it does", () => {
       await page.evaluate('document.querySelector("main").click()');
       const afterOutside = await state();
       return { opened, afterEscape, reopened, afterOutside };
-    }, { viewport: { width: 390, height: 844 }, mobile: true }) as {
+    }, PHONE) as {
       opened: { expanded: string; navShown: boolean };
       afterEscape: { expanded: string; navShown: boolean; onButton: boolean };
       reopened: { expanded: string; navShown: boolean };
@@ -346,7 +346,7 @@ describe.skipIf(skipped !== null)("nothing the site does is refused by its own p
         };
       }
       return out;
-    }, { viewport: { width: 390, height: 844 }, mobile: true }) as Record<string, {
+    }, PHONE) as Record<string, {
       menu: string; refused: string[];
     }>;
 

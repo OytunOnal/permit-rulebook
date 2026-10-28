@@ -223,7 +223,7 @@ describe("4 — the walk's result, from the verdict", () => {
  * rest — a result where the shortage Blue Card is on hold with the door open
  * in its box; and the route page carries the same sentence.
  */
-const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -272,7 +272,7 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
         `(() => { const a = document.querySelector(${JSON.stringify(`.asks a[href="${door.url}"]`)}); return a ? a.closest(".asks").textContent.replace(/\\s+/g, " ").trim() : ""; })()`,
       );
       return { help, helpText, state, painted, asks, asksText, problems: page.problems() };
-    }, { viewport: { width: 390, height: 844 }, mobile: true }) as Walk;
+    }, PHONE) as Walk;
 
     expect(seen.problems).toEqual([]);
     // Under the question: the sentence as one link, its shorthand explained

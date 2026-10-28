@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { PHONE, type BrowserPage, type Screen } from "../scripts/browser/browser.mjs";
 import { answerOnce, withSite, type PageOnSite } from "./browser-walk.js";
 
 /**
@@ -120,13 +120,11 @@ function walker(page: BrowserPage, url: (path: string) => string) {
 }
 type Walker = ReturnType<typeof walker>;
 
-type Viewport = { viewport: { width: number; height: number }; mobile: boolean };
-/** Two sizes: the desktop the fault was measured at, and a phone's width. */
-const WIDE: Viewport = { viewport: { width: 1100, height: 900 }, mobile: false };
-const PHONE: Viewport = { viewport: { width: 390, height: 844 }, mobile: true };
+/** The desktop the fault was measured at; the phone is the entry's `PHONE`. */
+const WIDE: Screen = { viewport: { width: 1100, height: 900 }, mobile: false };
 
 /** `walk` in a fresh browser of `size` over the built site; the cases assert the tabs' errors themselves. */
-function walkInBrowser<T>(size: Viewport, walk: (w: Walker, site: PageOnSite) => Promise<T>): Promise<T> {
+function walkInBrowser<T>(size: Screen, walk: (w: Walker, site: PageOnSite) => Promise<T>): Promise<T> {
   return withSite((site: PageOnSite) => walk(walker(site.page, site.url), site), size);
 }
 

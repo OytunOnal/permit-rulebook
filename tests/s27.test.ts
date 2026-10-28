@@ -21,7 +21,7 @@ import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
@@ -197,10 +197,7 @@ describe("2 — the four-country result's sections, from the verdict", () => {
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE S27 SLIPS", skipped);
 
-const VIEWPORTS = [
-  ["390x844", { width: 390, height: 844 }, true],
-  ["1280x900", { width: 1280, height: 900 }, false],
-] as const;
+const SCREENS = [["390x844", PHONE], ["1280x900", DESK]] as const;
 
 const seed = (answers: Record<string, string>) =>
   `localStorage.setItem("permit-rulebook.record.v1", ${JSON.stringify(JSON.stringify({
@@ -320,7 +317,7 @@ interface Header {
 }
 
 describe.skipIf(skipped !== null)("s27 — in the browser", () => {
-  for (const [name, viewport, mobile] of VIEWPORTS) {
+  for (const [name, screen] of SCREENS) {
     it(`${name}: the menu button reads Menu, then Close, then Menu again after Escape and after a tap outside`, async () => {
       const seen = await withSite(async ({ page, url: addressOf }) => {
         await page.goto(addressOf("/germany/"));
@@ -334,7 +331,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         await page.evaluate('document.querySelector("footer").click()');
         const outside = JSON.parse(await page.evaluate(BUTTON));
         return { closed, open, escaped, reopened, outside, problems: page.problems() };
-      }, { viewport, mobile }) as unknown as Record<string, { text: string; expanded: string }> & { problems: string[] };
+      }, screen) as unknown as Record<string, { text: string; expanded: string }> & { problems: string[] };
       expect(seen.problems).toEqual([]);
       expect(seen.closed).toEqual({ text: MENU, expanded: "false" });
       expect(seen.open).toEqual({ text: MENU_CLOSE, expanded: "true" });
@@ -351,7 +348,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         await evaluateAtRest(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
         const toggled = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
         return { painted, asDrawn, toggled, problems: page.problems() };
-      }, { viewport, mobile }) as {
+      }, screen) as {
         painted: typeof PAINTED_AS_COMPOSED; asDrawn: Section[]; toggled: Section[]; problems: string[];
       };
       expect(seen.problems).toEqual([]);
@@ -375,12 +372,12 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         // only, wrapped beneath it and left-aligned. One of the two, never a
         // third place.
         const place = tallyPlaceOf(s);
-        if (viewport.width === 1280) expect(place, where).toBe("right, on the name's line");
+        if (screen === DESK) expect(place, where).toBe("right, on the name's line");
         else expect(["right, on the name's line", "beneath, left-aligned"], where).toContain(place);
       }
       // The s21 sentence keeps its own row on the phone.
       const said = seen.asDrawn.find((s) => s.said)!;
-      if (viewport.width === 390) expect(said.tallyTop).toBeGreaterThanOrEqual(said.nameBottom);
+      if (screen === PHONE) expect(said.tallyTop).toBeGreaterThanOrEqual(said.nameBottom);
     }, 180_000);
 
     it(`${name}: the 404 carries the sentence once, as the visible heading its section is labelled by`, async () => {
@@ -396,7 +393,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
             && getComputedStyle(label).position !== "absolute", carriers: carriers.length,
             carrierIsLabel: carriers.length === 1 && carriers[0] === label };
         })())`);
-      }, { viewport, mobile }) as string) as { tag: string; text: string; visible: boolean; carriers: number; carrierIsLabel: boolean };
+      }, screen) as string) as { tag: string; text: string; visible: boolean; carriers: number; carrierIsLabel: boolean };
       expect(seen.tag).toBe("H2");
       expect(seen.text).toBe(NOT_FOUND_START);
       expect(seen.visible).toBe(true);
@@ -414,7 +411,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         await page.goto(addressOf("/germany/"));
         const country = JSON.parse(await page.evaluate(HEADER)) as Header;
         return { route, country, problems: [...routeProblems, ...page.problems()] };
-      }, { viewport, mobile }) as { route: Header; country: Header; problems: string[] };
+      }, screen) as { route: Header; country: Header; problems: string[] };
       expect(seen.problems).toEqual([]);
       // The name alone — and since s32's amendment 6 without the sign's
       // explainer after the citation.
@@ -435,7 +432,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
       await openAtRest(page, addressOf("/"));
       await evaluateAtRest(page, `document.getElementById("decl-list").innerHTML = ${JSON.stringify(rows)}`);
       return { pens: JSON.parse(await page.evaluate(PENS)) as Pen[], problems: page.problems() };
-    }, { viewport: { width: 1280, height: 900 }, mobile: false }) as { pens: Pen[]; problems: string[] };
+    }, DESK) as { pens: Pen[]; problems: string[] };
     expect(seen.problems).toEqual([]);
     expect(seen.pens.length).toBeGreaterThan(200);
     // The measurement is of the real sidebar, at its real width: the 15.5rem
@@ -451,7 +448,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
     }
   }, 180_000);
 
-  for (const [name, viewport, mobile] of VIEWPORTS) {
+  for (const [name, screen] of SCREENS) {
     it(`${name}: under the open card the door is underlined, in the prose-link colour, on a line of its own beneath the scope line, at the tap size`, async () => {
       const seen = await withSite(async ({ page, url: addressOf }) => {
         await page.goto(addressOf("/"));
@@ -474,7 +471,7 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
           decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
         };
         return { door, problems: page.problems() };
-      }, { viewport, mobile }) as {
+      }, screen) as {
         door: { decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number };
         problems: string[];
       };

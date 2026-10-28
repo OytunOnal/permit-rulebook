@@ -452,7 +452,7 @@ describe("the results line, from the verdict", () => {
     });
 });
 
-const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { chromePath, PHONE } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -755,7 +755,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
         + '   taps: [...nav.querySelectorAll("a")].filter(shown)'
         + '     .map((a) => Math.round(a.getBoundingClientRect().height)) }; })())',
       );
-    }, { viewport: { width: 390, height: 844 }, mobile: true }) as string) as
+    }, PHONE) as string) as
       { rows: string[]; heading: string; summaryShown: boolean; taps: number[] };
 
     expect(seen.heading, "no Countries heading over the rows").toBe(COUNTRIES);

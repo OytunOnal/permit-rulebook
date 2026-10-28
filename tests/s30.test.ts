@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 
 /**
@@ -218,7 +218,7 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
       const atOnce = JSON.parse(await answerWith(page, TAP_FIRST_AND_READ)) as Where;
       const later = await where(page);
       return { cold, reduced, atOnce, later, problems: page.problems() };
-    }, { viewport: { width: 390, height: 844 }, mobile: true });
+    }, PHONE);
     expect(seen.problems).toEqual([]);
     expect(seen.reduced, "the browser did not take the reduced-motion preference").toBe(true);
     expectLanded(seen.atOnce, "in the same task as the tap");
@@ -235,7 +235,7 @@ describe.skipIf(skipped !== null)("what does not change", () => {
       await answerWith(page, TAP_FIRST);
       const second = await where(page);
       return { cold, first, second, problems: page.problems() };
-    }, { viewport: { width: 1280, height: 900 }, mobile: false });
+    }, DESK);
     expect(seen.problems).toEqual([]);
     expect(seen.cold.wide, "the breakpoint reads this width as narrow").toBe(true);
     expect(seen.first.state).toBe("questions");
@@ -256,7 +256,7 @@ describe.skipIf(skipped !== null)("what does not change", () => {
       await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
       const corrected = await where(page);
       return { cold, answered, before, corrected, problems: page.problems() };
-    }, { viewport: { width: 1280, height: 900 }, mobile: false });
+    }, DESK);
     expect(seen.problems).toEqual([]);
     // The ledger is beside the card, before and after an answer: the order
     // the grid gives a wide screen does not change.
@@ -296,7 +296,7 @@ describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back u
       await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
       const reset = await where(page);
       return { restored, before, reset, problems: page.problems() };
-    }, { viewport: { width: 390, height: 844 }, mobile: true });
+    }, PHONE);
     expect(seen.problems).toEqual([]);
     // With answers on the device the ledger line is above from the first
     // paint, and the first paint scrolls nothing.
@@ -324,7 +324,7 @@ describe.skipIf(skipped !== null)("a link the page does not know keeps the first
       const landed = await where(page);
       const count = await page.evaluate('document.getElementById("decl-count").textContent');
       return { landed, count, problems: page.problems() };
-    }, { viewport: { width: 390, height: 844 }, mobile: true });
+    }, PHONE);
     expect(seen.problems).toEqual([]);
     // The head wrote the seed for a link it cannot check; the module found
     // no answer in it. Its word stands for the first screen: the line above
@@ -402,7 +402,7 @@ describe.skipIf(skipped !== null)("on a phone the ledger line sits above the res
     }, 180000);
 
   it("at 1280x900 the ledger stays beside the result", async () => {
-    const seen = await withSite(({ page, url }) => verdictWalk(page, url), { viewport: { width: 1280, height: 900 }, mobile: false });
+    const seen = await withSite(({ page, url }) => verdictWalk(page, url), DESK);
     expect(seen.problems).toEqual([]);
     for (const [label, step] of [["on arrival", seen.verdict], ["after the answer", seen.returned]] as const) {
       expect(step.state, label).toBe("results");

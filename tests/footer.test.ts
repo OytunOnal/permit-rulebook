@@ -10,7 +10,7 @@ import { routePages } from "../src/lib/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, unreadSourcesAt, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { withSite } from "./browser-walk.js";
 
 /**
@@ -286,7 +286,7 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
         + '    lines: new Set([...el.getClientRects()]'
         + '      .map((r) => Math.round(r.top))).size })) })',
       );
-    }, { viewport: { width: 390, height: 844 }, mobile: true }) as string) as {
+    }, PHONE) as string) as {
       column: number; lines: { text: string; width: number }[];
       held: { text: string; width: number; lines: number }[];
     };

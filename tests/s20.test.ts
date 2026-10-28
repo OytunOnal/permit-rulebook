@@ -7,7 +7,7 @@ import { resumedLine } from "../src/lib/copy/interview.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
-import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, evaluateAtRest, openAtRest, withSite } from "./browser-walk.js";
 
 /**
@@ -267,7 +267,7 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
       const restarted = JSON.parse(await page.evaluate(WHERE)) as Where;
       const stored = await page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
       return { resumed, next, restarted, stored, problems: page.problems() };
-    }, { viewport: { width: 390, height: 844 }, mobile: true });
+    }, PHONE);
     expect(seen.problems).toEqual([]);
     expect(seen.resumed.state).toBe("questions");
     // The count is the ledger's own: what the replay keeps of the record,
@@ -301,7 +301,7 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
         await page.evaluate(seed(record));
         await openAtRest(page, url("/"));
         return JSON.parse(await page.evaluate(WHERE)) as Where;
-      }, { viewport: { width: 390, height: 844 }, mobile: true });
+      }, PHONE);
       expect(seen.state).toBe(state);
       expect(seen.resumed !== null, `the resumed line is ${seen.resumed === null ? "missing" : "there"}`).toBe(resumes);
       expect(seen.resumedRestart).toBe(resumes);
