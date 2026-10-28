@@ -3,8 +3,8 @@ import { existsSync, realpathSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { sendBody } from "./html-in-pieces.mjs";
-import { owned } from "./owned.mjs";
-import { at, siteBase } from "./site-base.mjs";
+import { owned } from "../exit-register/owned.mjs";
+import { at, siteBase } from "../../site-base.mjs";
 
 const TYPES = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css",

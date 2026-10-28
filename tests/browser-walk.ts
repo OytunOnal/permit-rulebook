@@ -16,8 +16,8 @@ const ds = rawDataset as unknown as Dataset;
 /** The built site the walks are served from. */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 /** Why the browser cannot walk here: no Chrome, or no build. Null when it can. */
 export function skipReason(): string | null {
@@ -38,7 +38,7 @@ export function warnNotWalked(what: string, reason: string): void {
   ].join(String.fromCharCode(10)));
 }
 
-/** The page `scripts/browser.mjs` hands a walk. */
+/** The page `scripts/browser/browser.mjs` hands a walk. */
 export interface BrowserPage {
   /** Navigates and returns once the new document has drawn. */
   goto(url: string): Promise<void>;

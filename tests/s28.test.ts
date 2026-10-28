@@ -223,8 +223,8 @@ describe("4 — the walk's result, from the verdict", () => {
  * rest — a result where the shortage Blue Card is on hold with the door open
  * in its box; and the route page carries the same sentence.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

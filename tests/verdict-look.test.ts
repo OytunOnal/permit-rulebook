@@ -20,8 +20,8 @@ const dist = fileURLToPath(new URL("../dist", import.meta.url));
  * every title length: beside the country's name where the card carries it,
  * alone on that line where it does not.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

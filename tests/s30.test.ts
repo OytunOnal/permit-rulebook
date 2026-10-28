@@ -28,7 +28,7 @@ import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalk
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE QUESTION'S LANDING", skipped);

@@ -20,8 +20,8 @@ import { answerOnce, type BrowserPage, type PageOnSite } from "./browser-walk.js
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 /** Why the walk cannot run here: no Chrome, or no build. Null when it can. */
 function walkSkipReason(): string | null {

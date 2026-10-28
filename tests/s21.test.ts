@@ -254,8 +254,8 @@ describe("s21 — the walk's result, from the verdict", () => {
  * The browser: the walk the critique took, with the mark where it was missing
  * and the sentence where "5 not yet" was.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

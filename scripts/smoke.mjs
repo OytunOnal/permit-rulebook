@@ -26,7 +26,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { serve, withBrowser } from "./browser.mjs";
+import { serve, withBrowser } from "./browser/browser.mjs";
 import { startDev } from "./dev-server.mjs";
 import { siteBase } from "./site-base.mjs";
 

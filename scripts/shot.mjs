@@ -15,7 +15,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { serve, withBrowser } from "./browser.mjs";
+import { serve, withBrowser } from "./browser/browser.mjs";
 import { RECORD_VERSION, STORAGE_KEY } from "../src/lib/record.ts";
 
 const root = dirname(fileURLToPath(new URL("../package.json", import.meta.url)));

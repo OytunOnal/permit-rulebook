@@ -113,8 +113,8 @@ describe("the results card carries the sign without an explainer, from the verdi
 });
 
 /** And the results card carries the sign bare, in the route names that cite it, as painted. */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

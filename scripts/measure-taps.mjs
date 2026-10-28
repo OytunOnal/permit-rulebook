@@ -35,7 +35,7 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { serve, withBrowser } from "./browser.mjs";
+import { serve, withBrowser } from "./browser/browser.mjs";
 // The record module itself, not a copy of its constants: a seed written by
 // hand goes stale the day the format moves, and this script would then
 // measure a screen the reader never sees (Standards review, 2026-09-08).

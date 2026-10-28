@@ -334,8 +334,8 @@ describe("s25 — the walked results, from the verdict", () => {
  * The browser: the two questions answered three ways, by the buttons, to the
  * verdict the cases above read, as painted.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

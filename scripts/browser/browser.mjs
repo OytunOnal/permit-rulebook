@@ -3,13 +3,13 @@ import { spawn } from "node:child_process";
 import { readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { chromePath } from "./chrome.mjs";
-import { owned } from "./owned.mjs";
-import { TabGestures } from "./tab-gestures.mjs";
-import { TabWaits } from "./tab-waits.mjs";
+import { chromePath } from "./chrome/chrome.mjs";
+import { owned } from "./exit-register/owned.mjs";
+import { TabGestures } from "./tab/tab-gestures.mjs";
+import { TabWaits } from "./tab/tab-waits.mjs";
 
 // The built site's server: every walk takes both it and the browser from this module (#245).
-export { serve } from "./static-server.mjs";
+export { serve } from "./static-server/static-server.mjs";
 
 /**
  * A real browser over the built site, shared by everything that needs one.

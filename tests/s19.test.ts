@@ -310,8 +310,8 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
  * The browser: the mark where the reader is standing, the written state where
  * the walk ended, and the Spanish researcher still met.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }

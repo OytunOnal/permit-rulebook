@@ -150,8 +150,8 @@ describe("the identity pair has one definition", () => {
  * is not a shared result: a page can override it, and the promise the human
  * made is geometric — the corner meets the middle of the top edge.
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
@@ -562,8 +562,8 @@ describe("the identity has one set of elements too", () => {
   });
 });
 
-const { chromePath: chromeAt } = await import("../scripts/chrome.mjs");
-const { serve: serveDir, withBrowser: withChrome } = await import("../scripts/browser.mjs");
+const { chromePath: chromeAt } = await import("../scripts/browser/browser.mjs");
+const { serve: serveDir, withBrowser: withChrome } = await import("../scripts/browser/browser.mjs");
 
 function whyNotMeasured(): string | null {
   try { chromeAt(); } catch (e) { return (e as Error).message; }

@@ -196,8 +196,8 @@ describe("the record is kept on the device, and \"Start over\" takes it with it"
  * driven in a real browser with the network watched, and the only thing
  * asserted is what it actually sent (human, 2026-09-08).
  */
-const { chromePath } = await import("../scripts/chrome.mjs");
-const { serve, withBrowser } = await import("../scripts/browser.mjs");
+const { chromePath } = await import("../scripts/browser/browser.mjs");
+const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 function why(): string | null {
   try { chromePath(); } catch (e) { return (e as Error).message; }
