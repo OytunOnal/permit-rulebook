@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossSection, type Glossary } from "../src/lib/gloss.js";
+import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
 import {
-  DESK, PHONE, QLABEL, answer, middleBandOf, skipReason, tapOn, topBandOf, waitUntilPastTheBeat, walkTo,
-  warnNotWalked, withSite, type BrowserPage,
+  QLABEL, answer, middleBandOf, skipReason, topBandOf, waitUntilPastTheBeat, walkTo, warnNotWalked, withSite,
 } from "./browser-walk.js";
 import { shiftScoreSince } from "./layout-shifts.js";
 
@@ -239,7 +239,7 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
       const since = Number(await page.evaluate("performance.now()"));
       // The answer that draws the seven-year card, by a real tap.
       await waitUntilPastTheBeat(page);
-      await tapOn(page, `#main .qcard .opt[data-value='${IT_NO_DEGREE.experience_5y}']`);
+      await page.tapOn(`#main .qcard .opt[data-value='${IT_NO_DEGREE.experience_5y}']`);
       await page.waitUntilAtRest();
       const geometry = JSON.parse(await page.evaluate(LINE_GEOMETRY)) as LineGeometry | null;
       return {

@@ -10,26 +10,38 @@ const LOCAL_BEACON_NOISE = [
 ];
 
 /**
+ * Whether `problem` is one of the two messages a local run always logs about
+ * the traffic counter (`TabEvents.problems` says why they are left out).
+ */
+export const isLocalBeaconNoise = (problem) => LOCAL_BEACON_NOISE.some((rule) => rule.test(problem));
+
+/**
  * What one tab has thrown and asked for, kept from the events it raises: its
  * problems since its last navigation, and its requests when the caller asked
- * to watch the network.
+ * to watch the network. Each problem also goes to the walk's log, with the
+ * address of the page it came from.
  */
 export class TabEvents {
   #sendToTab;
   #network;
+  #walkLog;
+  /** The address of the page the tab shows, from its main frame's navigations. */
+  #address = "about:blank";
   /** Everything the page threw or logged as an error. */
   #problems = [];
   /** Every request the page made, when the caller asked to watch. */
   #requests = [];
 
-  /** `network`: whether the tab keeps the list of its requests. */
-  constructor(sendToTab, { network }) {
+  /** `network`: whether the tab keeps the list of its requests; `walkLog`: the `WalkLog` of the browser it is in. */
+  constructor(sendToTab, { network, walkLog }) {
     this.#sendToTab = sendToTab;
     this.#network = network;
+    this.#walkLog = walkLog;
   }
 
-  /** Keeps what the tab's CDP `message` says it threw, logged or asked for. */
+  /** Keeps what the tab's CDP `message` says it threw, logged or asked for, and where its page is. */
   record = ({ method, params }) => {
+    if (method === "Page.frameNavigated" && !params.frame.parentId) this.#address = params.frame.url;
     if (method === "Runtime.exceptionThrown") this.#recordException(params.exceptionDetails);
     if (method === "Runtime.consoleAPICalled" && params.type === "error") this.#recordConsoleError(params.args);
     if (method === "Network.requestWillBeSent" && this.#network) this.#recordRequest(params);
@@ -55,7 +67,7 @@ export class TabEvents {
    * script was fetched and a report was actually sent, so a page that stopped
    * counting fails there.
    */
-  problems = () => this.#problems.filter((p) => !LOCAL_BEACON_NOISE.some((rule) => rule.test(p)));
+  problems = () => this.#problems.filter((p) => !isLocalBeaconNoise(p));
 
   /** The unfiltered list, for a caller that wants the counter's noise too. */
   allProblems = () => [...this.#problems];
@@ -64,12 +76,18 @@ export class TabEvents {
 
   forgetRequests = () => { this.#requests.length = 0; };
 
+  /** Keeps `problem` as the tab's, and in the walk's log under the page's address. */
+  #keepProblem(problem) {
+    this.#problems.push(problem);
+    this.#walkLog.recordError(this.#address, problem);
+  }
+
   #recordException(details) {
-    this.#problems.push(`exception: ${details.exception?.description ?? details.text}`);
+    this.#keepProblem(`exception: ${details.exception?.description ?? details.text}`);
   }
 
   #recordConsoleError(args) {
-    this.#problems.push(`console.error: ${args.map((a) => a.value ?? a.description ?? "").join(" ")}`);
+    this.#keepProblem(`console.error: ${args.map((a) => a.value ?? a.description ?? "").join(" ")}`);
   }
 
   #recordRequest({ request, type, requestId }) {
@@ -94,6 +112,6 @@ export class TabEvents {
   /** The URL belongs in the message: "Failed to load resource" without it
    * tells a reader of a red run nothing, and a filter nothing either. */
   #recordLogError({ text, url }) {
-    this.#problems.push(`log: ${text}${url ? ` (${url})` : ""}`);
+    this.#keepProblem(`log: ${text}${url ? ` (${url})` : ""}`);
   }
 }

@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { WIDE_QUERY } from "../src/lib/first-paint.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, type BrowserPage } from "./browser-walk.js";
+import { serve, withBrowser, type BrowserPage } from "../scripts/browser/browser.mjs";
+import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
  * s30 — on a phone the next question comes up to meet the reader.
@@ -28,7 +29,6 @@ import { QLABEL, answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalk
  */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-const { serve, withBrowser } = await import("../scripts/browser/browser.mjs");
 
 const skipped = skipReason();
 if (skipped) warnNotWalked("THE QUESTION'S LANDING", skipped);

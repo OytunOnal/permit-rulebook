@@ -1,8 +1,48 @@
 // @level infrastructure
+import { layoutShiftReadingExpression } from "../layout-shifts/layout-shift-reading.mjs";
+
+/**
+ * @typedef {object} SentRequest
+ * @property {string} url
+ * @property {string} method
+ * @property {string} type
+ * @property {string} postData
+ * @property {boolean} hasPostData
+ */
+
+/**
+ * The page a walk is handed: one tab of headless Chrome, attached over CDP.
+ *
+ * @typedef {object} BrowserPage
+ * @property {(url: string) => Promise<void>} goto Navigates and returns once the new document has drawn.
+ * @property {(url: string) => Promise<void>} navigate Navigates and returns at once, for a read before the page's script runs.
+ * @property {(expression: string) => Promise<string>} evaluate Runs an expression in the page and returns its value.
+ * @property {(condition: string, what: string) => Promise<unknown>} waitUntil Reads `condition` in the page until it holds, and returns its value.
+ * @property {() => Promise<void>} waitUntilAtRest Returns once nothing animates, scrolls or loads.
+ * @property {() => Promise<void>} waitUntilNewDocumentDrawn After a gesture that loads a document: once a document other than the one left has drawn.
+ * @property {(features: { name: string, value: string }[]) => Promise<void>} emulateMedia Sets a media feature, such as reduced motion.
+ * @property {(x: number, y: number) => Promise<void>} clickAt A click at a point, returned once the page has reported its first input or another document stands.
+ * @property {(selector: string) => Promise<void>} tapOn A real tap at the centre of the element, scrolled into view first, returned as `clickAt` is.
+ * @property {() => Promise<void>} pressEnter Enter pressed and released, returned as `clickAt` is.
+ * @property {(text: string) => Promise<void>} type Text typed into the focused field.
+ * @property {() => Promise<void>} back The browser's own Back.
+ * @property {() => Promise<void>} forward The browser's own Forward.
+ * @property {(options?: { fullPage?: boolean }) => Promise<Buffer>} screenshot The screen as a PNG.
+ * @property {() => Promise<import("../layout-shifts/layout-shift-reading.mjs").LayoutShifts>} readLayoutShifts The page's layout shifts as the one reading reads them.
+ * @property {() => string[]} problems What this tab has thrown or logged as an error since its last navigation.
+ * @property {() => string[]} allProblems The same, the traffic counter's local noise included.
+ * @property {() => SentRequest[]} requests Every request the page made, when the browser was asked to watch.
+ * @property {() => void} forgetRequests Empties that list.
+ * @property {() => Promise<BrowserPage>} openTab A second tab on the same browser: the same origin's storage, a history of its own.
+ * @property {() => Promise<void>} front Brings this tab to the front.
+ */
+
 /**
  * The page object a walk is handed for one tab: its waits, gestures and
  * events, and the commands that read or drive the page. Every member is its
  * own function, so a caller may take one off the page and call it alone.
+ *
+ * @implements {BrowserPage}
  */
 export class TabPage {
   #sendToTab;
@@ -10,14 +50,22 @@ export class TabPage {
   #gestures;
   #events;
   #openTab;
+  #shiftRegion;
+  #walkLog;
 
-  /** `parts`: the tab's `TabWaits`, `TabGestures` and `TabEvents`, and what opens another tab in its browser. */
+  /**
+   * `parts`: the tab's `TabWaits`, `TabGestures` and `TabEvents`, what opens
+   * another tab in its browser, the region whose shifts are marked, and the
+   * browser's `WalkLog`.
+   */
   constructor(sendToTab, parts) {
     this.#sendToTab = sendToTab;
     this.#waits = parts.waits;
     this.#gestures = parts.gestures;
     this.#events = parts.events;
     this.#openTab = parts.openTab;
+    this.#shiftRegion = parts.shiftRegion;
+    this.#walkLog = parts.walkLog;
   }
 
   /**
@@ -29,8 +77,11 @@ export class TabPage {
    */
   openTab = () => this.#openTab();
 
-  /** Makes this tab the one the browser shows. */
-  front = () => this.#sendToTab("Page.bringToFront", {});
+  /** Makes this tab the one the browser shows, and the walk's tab on screen. */
+  front = async () => {
+    await this.#sendToTab("Page.bringToFront", {});
+    this.#walkLog.showTab(this);
+  };
 
   goto = (url) => this.#waits.goto(url);
   navigate = (url) => this.#waits.navigate(url);
@@ -43,6 +94,9 @@ export class TabPage {
     return result.value;
   };
 
+  /** The page's layout shifts, their sources marked in the region the tab was opened with. */
+  readLayoutShifts = async () => JSON.parse(await this.evaluate(layoutShiftReadingExpression(this.#shiftRegion)));
+
   /**
    * A media feature the reader has set — `prefers-reduced-motion: reduce` is
    * the one asked for — as `matchMedia` and the stylesheet will read it. Set
@@ -54,6 +108,7 @@ export class TabPage {
   };
 
   clickAt = (x, y) => this.#gestures.clickAt(x, y);
+  tapOn = (selector) => this.#gestures.tapOn(selector);
   pressEnter = () => this.#gestures.pressEnter();
 
   /** Text typed into the focused field, as a keyboard commits it: the

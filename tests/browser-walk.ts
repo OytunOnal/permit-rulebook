@@ -4,7 +4,7 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, fieldOptions, fillRouteSlots, type Dataset, type Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import type { Sent } from "./wire.js";
+import type { BrowserPage, Screen } from "../scripts/browser/browser.mjs";
 
 /**
  * The interview walked in headless Chrome over the built page: what the
@@ -38,42 +38,9 @@ export function warnNotWalked(what: string, reason: string): void {
   ].join(String.fromCharCode(10)));
 }
 
-/** The page `scripts/browser/browser.mjs` hands a walk. */
-export interface BrowserPage {
-  /** Navigates and returns once the new document has drawn. */
-  goto(url: string): Promise<void>;
-  /** Navigates and returns at once, for a read before the page's script runs. */
-  navigate(url: string): Promise<void>;
-  evaluate(expression: string): Promise<string>;
-  /** Reads `condition` in the page until it holds, and returns its value. */
-  waitUntil(condition: string, what: string): Promise<unknown>;
-  /** Returns once nothing animates, scrolls or loads. */
-  waitUntilAtRest(): Promise<void>;
-  /** After a gesture that loads a document: once a document other than the one left has drawn. */
-  waitUntilNewDocumentDrawn(): Promise<void>;
-  emulateMedia(features: { name: string; value: string }[]): Promise<void>;
-  /** A click at a point, returned once the page has reported its first input or another document stands. */
-  clickAt(x: number, y: number): Promise<void>;
-  /** Enter pressed and released, returned as `clickAt` is. */
-  pressEnter(): Promise<void>;
-  type(text: string): Promise<void>;
-  back(): Promise<void>;
-  forward(): Promise<void>;
-  /** What this tab has thrown or logged as an error since its last navigation. */
-  problems(): string[];
-  /** Every request the page made, when the browser was asked to watch. */
-  requests(): Sent[];
-  forgetRequests(): void;
-  /** A second tab on the same browser: the same origin's storage, a history of its own. */
-  openTab(): Promise<BrowserPage>;
-  front(): Promise<void>;
-}
-
 /** A browser page and the address of the site it is on, which every walk
  * takes together. */
 export interface PageOnSite { page: BrowserPage; url: (path: string) => string }
-
-interface Screen { viewport: { width: number; height: number }; mobile: boolean }
 
 /** Serves the built site, opens a browser on `screen`, and hands `run` the
  * page on the site; the browser and the server close after it. */
@@ -85,11 +52,6 @@ export async function withSite<T>(run: (site: PageOnSite) => Promise<T>, screen:
     server.close();
   }
 }
-
-/** The desktop, where the declared panel stands open beside the question. */
-export const DESK = { viewport: { width: 1280, height: 900 }, mobile: false };
-/** A phone. */
-export const PHONE = { viewport: { width: 390, height: 844 }, mobile: true };
 
 /** The beat in milliseconds, as the built stylesheet carries it, in either
  * unit (`tokens.css` says why). */
@@ -242,18 +204,4 @@ export async function walkTo(site: PageOnSite, reader: Profile, target: string):
     asked.push(field);
   }
   throw new Error(`${target} was never asked; asked ${asked.join(", ")}`);
-}
-
-/** A real tap at the centre of the element, scrolled into view first: the
- * platform's own input, which CLS does not count a shift after. */
-export async function tapOn(page: BrowserPage, selector: string): Promise<void> {
-  const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
-    const el = document.querySelector(${JSON.stringify(selector)});
-    if (!el) return null;
-    el.scrollIntoView({ block: "center" });
-    const r = el.getBoundingClientRect();
-    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
-  })())`)) as { x: number; y: number } | null;
-  if (!at) throw new Error(`nothing on the page matches ${selector}`);
-  await page.clickAt(at.x, at.y);
 }
