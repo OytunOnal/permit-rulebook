@@ -53,6 +53,15 @@ describe.skipIf(skipped !== null)("the browser walk's width check", () => {
     expect(failure).toContain("390");
     expect(failure).toContain("980");
   }, 60000);
+
+  it("a phone walk that moves from a page with the viewport meta to one without fails, naming both widths", async () => {
+    const failure = await failureOf(walkSite({ site: { folder }, screen: PHONE }, async ({ page, url }) => {
+      await page.goto(url("/quiet.html"));
+      await page.goto(url("/no-viewport-meta.html"));
+    }));
+    expect(failure).toContain("390");
+    expect(failure).toContain("980");
+  }, 60000);
 });
 
 describe.skipIf(skipped !== null)("the browser walk's errors", () => {

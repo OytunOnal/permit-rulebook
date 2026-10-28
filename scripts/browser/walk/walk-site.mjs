@@ -59,29 +59,32 @@ async function openSite(site) {
 }
 
 /**
- * The width check of a walk on `screen`, read once: on the first page drawn,
- * or at the walk's end on the page on screen when the walker drew none with
- * `goto`. It answers the failure naming both widths, or null.
+ * The width check of a walk on `screen`, read on the page a tab shows: the
+ * failure naming both widths when that page laid out at another width, or
+ * null; null too on a tab that has opened no page.
  */
 function widthCheckOn(screen) {
-  let checked = null;
   const failureAt = (width) => (width === null || width === screen.viewport.width ? null
     : new Error(`the page laid out at innerWidth ${width}, not the screen's ${screen.viewport.width}`));
-  return (page) => {
-    checked ??= page.evaluate(LAID_OUT_WIDTH).then(failureAt);
-    return checked;
-  };
+  return async (page) => failureAt(await page.evaluate(LAID_OUT_WIDTH));
 }
 
-/** `page`, its `goto` failing with `checkWidth`'s failure once the page it opens has drawn. */
+/**
+ * `page`, every page it draws checked by `checkWidth`: `goto` and
+ * `waitUntilNewDocumentDrawn` fail with its failure once the page has drawn,
+ * and a tab it opens is checked the same way.
+ */
 function checkingWidthOnDraw(page, checkWidth) {
+  const thenCheckWidth = async (drawn) => {
+    await drawn;
+    const failure = await checkWidth(page);
+    if (failure) throw failure;
+  };
   return {
     ...page,
-    goto: async (url) => {
-      await page.goto(url);
-      const failure = await checkWidth(page);
-      if (failure) throw failure;
-    },
+    goto: (url) => thenCheckWidth(page.goto(url)),
+    waitUntilNewDocumentDrawn: () => thenCheckWidth(page.waitUntilNewDocumentDrawn()),
+    openTab: async () => checkingWidthOnDraw(await page.openTab(), checkWidth),
   };
 }
 
@@ -142,7 +145,7 @@ async function walkInBrowser(walk, url, walker) {
 /**
  * The browser walk: opens `walk.site` at `walk.screen` in a fresh profile,
  * hands `walker` the page and the site's addresses, and returns what it
- * measured. It fails, naming both widths, when the first page drawn is not
+ * measured. It fails, naming both widths, when a page it draws is not
  * the screen's width, and, listing them, on the pages' errors unless
  * `walk.errorsExpected`. A failure of the walker's own, or of the width,
  * lists the pages' errors under its message.
