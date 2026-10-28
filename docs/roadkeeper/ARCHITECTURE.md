@@ -149,7 +149,7 @@ click on the tracker link. Answers never leave the device.
 - **CI** — `pages.yml`: both repositories checked out, data gates, build,
   tests with a real browser over `dist/`, the lint, asset truth, base-path
   check, tap targets at 390 px, the carry, then deploy. The lint
-  (`eslint.config.mjs`) loads Spine's preset from `roadkeeper-lint/`, which holds
+  (`eslint.config.mjs`) loads Roadkeeper's preset from `roadkeeper-lint/`, which holds
   the limits, 400 lines a file and 40 a function with every line counted. The
   files over 400 lines are Ceilings in `docs/roadkeeper/ceilings.json`, each held
   to its count until within 400; every other existing breach is a Suppression

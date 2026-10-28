@@ -110,6 +110,11 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   `pull_request` workflow running the deploy's checks without deploying costs
   about six minutes of CI a push and shows a red on the PR's page before the
   merge (#274, retro of #245, the human's word 2026-10-27). — `untested`
+- **A31 — a stale data clone is refused before the green builds.** A first
+  green step that checks, without the network, that the data clone holds
+  `data.lock`'s commit costs under a second a green and saves a red one
+  whenever the deploy has moved the lock (#286, retro of #269, the human's
+  word 2026-10-28). — `untested`
 
 ## The journey beyond the first permit (candidate bets, human's idea 2026-09-11)
 
