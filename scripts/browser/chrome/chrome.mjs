@@ -1,6 +1,6 @@
 // @level infrastructure
-import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
+import { delimiter, isAbsolute, join } from "node:path";
 
 /**
  * Where Chrome is, asked once.
@@ -24,18 +24,24 @@ const CANDIDATES = [
   "/snap/bin/chromium",
 ];
 
-/** The same names, resolved through PATH where the fixed locations miss. */
+/** The same names, looked for in PATH's folders where the fixed locations miss. */
 const ON_PATH = [
   "google-chrome", "google-chrome-stable", "chromium-browser", "chromium", "chrome",
 ];
 
+/** Whether `path` names a file. */
+const isFile = (path) => existsSync(path) && statSync(path).isFile();
+
+/**
+ * The first of `ON_PATH` found as a file in an absolute folder of PATH, or
+ * undefined. A relative folder is skipped: it names wherever the run happens
+ * to stand. No shell is asked.
+ */
 function fromPath() {
-  if (process.platform === "win32") return undefined;
+  const folders = (process.env.PATH ?? "").split(delimiter).filter((folder) => isAbsolute(folder));
   for (const name of ON_PATH) {
-    try {
-      const found = execFileSync("command", ["-v", name], { encoding: "utf8", shell: "/bin/sh" }).trim();
-      if (found && existsSync(found)) return found;
-    } catch { /* not on PATH */ }
+    const found = folders.map((folder) => join(folder, name)).find(isFile);
+    if (found) return found;
   }
   return undefined;
 }
