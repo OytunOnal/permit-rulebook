@@ -7,10 +7,10 @@ move.
 
 | # | Metric | Target | Kind | Source | Field | Cadence (days) | Next reading |
 |---|---|---|---|---|---|---|---|
-| 1 | Dataset liveness — open source-change flags older than 48 h | 0 | file | `docs/spine/readings/liveness.json` | `value` | 7 | 2026-10-24 |
-| 2 | The daily watch finishes — failures in the last 7 scheduled runs on master | 0 (one single-day failure tolerated) | file | `docs/spine/readings/watch.json` | `value` | 7 | 2026-10-24 |
+| 1 | Dataset liveness — open source-change flags older than 48 h | 0 | file | `docs/roadkeeper/readings/liveness.json` | `value` | 7 | 2026-11-04 |
+| 2 | The daily watch finishes — failures in the last 7 scheduled runs on master | 0 (one single-day failure tolerated) | file | `docs/roadkeeper/readings/watch.json` | `value` | 7 | 2026-11-04 |
 | 3 | Visits from search and referrals, days 8–30 (A2) | ≥ 300 | ask | Cloudflare Web Analytics, last 30 days, bots excluded, referrer not direct | — | 30 | 2026-10-09 |
-| 4 | A stranger touched the data (A7) — issues, pull requests or forks by anyone but the owner | ≥ 1 | file | `docs/spine/readings/stranger.json` | `value` | 30 | 2026-11-16 |
+| 4 | A stranger touched the data (A7) — issues, pull requests or forks by anyone but the owner | ≥ 1 | file | `docs/roadkeeper/readings/stranger.json` | `value` | 30 | 2026-11-16 |
 | 5 | Domains linking to the site (A8) | as pre-registered 2026-09-08 | ask | Google Search Console → Links → Top linking sites | — | 30 | 2026-10-09 |
 | 6 | CLS share of samples "good" (site #8) | > 92 % (the 2026-09-15 reading) | ask | Cloudflare Web Analytics → Core Web Vitals, last 7 days, bots excluded | — | 7 | 2026-09-30 |
 
@@ -24,6 +24,12 @@ writer is #36. Until it lands the session reads them as #36 describes. Rows 3,
 | Date | Metric | Value | Source | n |
 |---|---|---|---|---|
 | 2026-10-17 | 1 | 0 | `gh issue list -R OytunOnal/permit-rulebook-data --label source-change --state open --json number,createdAt`, after #12 walked data #23–#27 | 0 open |
+| 2026-10-28 | 1 | 2 | `gh issue list -R OytunOnal/permit-rulebook-data --state open --label source-change --json number,createdAt` (#36's fallback) | 2 open, both raised 2026-10-23: OytunOnal/permit-rulebook-data#44 and #45, waiting on the human |
+| 2026-10-28 | 2 | 6 | `gh run list -R OytunOnal/permit-rulebook-data --workflow watch.yml --event schedule --branch master --limit 10 --json conclusion,createdAt` (#36's fallback); causes in #283 | 7 runs (10-21 to 10-27), only 10-23 green |
+
+**Trends (third readings, 2026-10-28):**
+- Row 1: 0 (09-22) → 4 (10-17) → 2 (10-28). Off target again: flags wait for a person for days, and get walked in bursts.
+- Row 2: 2 (09-22) → 1 (10-17) → 6 (10-28). Worsening and off target. Bug #283 holds the causes: two sources that fail most mornings, the watch's Chrome failing to start once, and the two unwalked flags.
 
 ### Before the tracker (to 2026-10-17)
 

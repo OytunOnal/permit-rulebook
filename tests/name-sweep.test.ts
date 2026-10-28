@@ -18,7 +18,7 @@ import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "../src/lib/copy/frame.js";
  * someone could otherwise quietly widen:
  *
  *   · `GLOSSARY.md` (named `CONTEXT.md` until 2026-10-17) and everything
- *     under `docs/spine/**` are the project's own record of itself, not
+ *     under `docs/roadkeeper/**` are the project's own record of itself, not
  *     strings a reader of the product ever sees;
  *   · git history itself, which is the point of having it.
  *
@@ -55,7 +55,7 @@ const HISTORY = ["GLOSSARY.md"];
 /** Directory and filename prefixes that are records of what happened, not
  * strings a reader of the product meets. Each is named in the describe() above;
  * the two lists were allowed to drift apart once already. */
-const HISTORY_PREFIXES = ["docs/spine/", "docs/adr/", "data/verify-"];
+const HISTORY_PREFIXES = ["docs/roadkeeper/", "docs/adr/", "data/verify-"];
 
 const isHistory = (file: string): boolean =>
   HISTORY_PREFIXES.some((prefix) => file.startsWith(prefix)) || HISTORY.includes(file);
@@ -145,7 +145,7 @@ const isTheDependencyPath = (file: string, line: string): boolean => {
 const isTheMigratedKey = (file: string, line: string): boolean =>
   file === "src/lib/record.ts" && /^export const LEGACY_STORAGE_KEY = /.test(line.trim());
 
-describe("s6 — the working name is gone from everything a reader can see (ledgers, GLOSSARY.md, docs/spine, docs/adr, data/verify-* and git history excluded by name)", () => {
+describe("s6 — the working name is gone from everything a reader can see (ledgers, GLOSSARY.md, docs/roadkeeper, docs/adr, data/verify-* and git history excluded by name)", () => {
   for (const [name, repo] of Object.entries(REPOS))
     it(`${name}: no tracked file outside the excluded history carries the working name`, () => {
       const offenders: string[] = [];

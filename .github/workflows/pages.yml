@@ -52,7 +52,7 @@ on:
       - "!CODING_STANDARDS.md"
       - "!CLAUDE.md"
       - "!docs/**"
-      - "docs/spine/ceilings.json"
+      - "docs/roadkeeper/ceilings.json"
   schedule:
     - cron: "40 6 * * *" # daily, 06:40 UTC — after the data watch at 05:17 UTC
   repository_dispatch:
@@ -357,7 +357,7 @@ jobs:
   # `{host, key, keyLocation, urlList}` to https://api.indexnow.org/indexnow.
   # No account, no secret: the key is public by the protocol's design, and the
   # worst a stranger can do with it is submit our own addresses to Bing
-  # (docs/spine/threats.md). The key is read from the committed file, never
+  # (docs/roadkeeper/threats.md). The key is read from the committed file, never
   # typed here, so there is one copy of it (s24, 2026-09-17).
   #
   # Only a real deploy is announced — the gate `pin` uses, minus its

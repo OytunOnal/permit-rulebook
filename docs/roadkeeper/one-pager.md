@@ -118,7 +118,7 @@ scanning source).
 
 ## Assumptions
 
-`docs/spine/assumptions.md` (A1-A15; with their research statuses). The most
+`docs/roadkeeper/assumptions.md` (A1-A15; with their research statuses). The most
 critical ones to be verified with a slice: A9 (the value of the gap analysis),
 A10 (6-7 questions are enough), A13 (watch+flag is sustainable solo), A15
 (criteria can be expressed by declaration).

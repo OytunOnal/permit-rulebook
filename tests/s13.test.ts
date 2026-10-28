@@ -364,7 +364,7 @@ describe("the map and the sitemap", () => {
     // header and the footer are two; the results line is a third) and at
     // least one out of it (the mail app, the tracker). Words in a paragraph
     // could say all of that and draw none of it.
-    const map = read("docs/spine/design/site-map.md");
+    const map = read("docs/roadkeeper/design/site-map.md");
     const graph = /```mermaid\n([\s\S]*?)```/.exec(map)?.[1] ?? "";
     const nodes = new Map([...graph.matchAll(/^\s*(\w+)\["([^"]*)"\]\s*$/gm)].map((m) => [m[1]!, m[2]!]));
     const node = [...nodes].find(([, label]) => label.includes("/feedback"))?.[0];

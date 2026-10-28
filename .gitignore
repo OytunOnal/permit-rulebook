@@ -6,9 +6,9 @@ dist/
 !.env.example
 
 # The tracker snapshot The Road is drawn from; written on every draw.
-docs/spine/issues.json
+docs/roadkeeper/issues.json
 
-# Run output and agents' scratch (SPINE_STANDARDS.md, Security).
+# Run output and agents' scratch (ROADKEEPER_STANDARDS.md, Security).
 .run/
 # What a vitest run leaves behind (the retro of #25, #97).
 .vitest/

@@ -1,6 +1,6 @@
 # Coding standards
 
-Spine's general rules, `SPINE_STANDARDS.md` at the Spine plugin's root, hold in
+Roadkeeper's general rules, `ROADKEEPER_STANDARDS.md` at the Roadkeeper plugin's root, hold in
 every section below; a line under `## Departures` wins over the rule it names.
 
 Two repositories, one product: the site (this repository) and the data package
@@ -11,9 +11,9 @@ pull request.
 
 ## Commands
 
-- Lint: site `npm run lint` (ESLint, `eslint.config.mjs`); it loads Spine's
-  rules from `spine-lint/` over `src/`, `scripts/`, `tests/` and the pages'
-  scripts. Existing breaches: Ceilings in `docs/spine/ceilings.json`,
+- Lint: site `npm run lint` (ESLint, `eslint.config.mjs`); it loads Roadkeeper's
+  rules from `roadkeeper-lint/` over `src/`, `scripts/`, `tests/` and the pages'
+  scripts. Existing breaches: Ceilings in `docs/roadkeeper/ceilings.json`,
   Suppressions in `eslint-suppressions.json`. `astro check` and `tsc` carry
   the type rules.
 - Format: none configured.
@@ -21,10 +21,10 @@ pull request.
   `npm run build` (`tsc -p tsconfig.json`) and `npm run typecheck:tests`.
 - Tests: site `npm test` (vitest; browser cases drive headless Chrome over
   `dist/`); data `npm test`.
-- Structure: in the site's root, Spine's `structure.mjs`, set up as Spine's
-  `structure-command.md` says, writes `docs/spine/structure.json` from the
-  code, and Spine's `structure-check.mjs` reads it against
-  `docs/spine/dependency-rules.md`. Every source file carries its `// @level`
+- Structure: in the site's root, Roadkeeper's `structure.mjs`, set up as Roadkeeper's
+  `structure-command.md` says, writes `docs/roadkeeper/structure.json` from the
+  code, and Roadkeeper's `structure-check.mjs` reads it against
+  `docs/roadkeeper/dependency-rules.md`. Every source file carries its `// @level`
   tag as its first comment (an Astro file's, on the line after its first
   `---`). The file is generated and never resolved by hand: a merge
   keeps one side's copy (`.gitattributes`, `merge=ours`; a fresh clone sets
@@ -41,9 +41,9 @@ pull request.
   on the branch, before the merge.
 - Watch: data `npm run watch:sources` is the daily read of every source; it
   is never run in a slice.
-- Spine's tools (the green, red-before, same-cases, the check at write) run
-  the steps of `docs/spine/commands.json`, one in each repository; their
-  commands are in Spine's `briefing.md`.
+- Roadkeeper's tools (the green, red-before, same-cases, the check at write) run
+  the steps of `docs/roadkeeper/commands.json`, one in each repository; their
+  commands are in Roadkeeper's `briefing.md`.
 
 ## Module boundaries
 
@@ -79,9 +79,9 @@ pull request.
 
 ## Departures
 
-Each line names a general rule and its section in `SPINE_STANDARDS.md`, this
+Each line names a general rule and its section in `ROADKEEPER_STANDARDS.md`, this
 product's version, and why. A lint departure also adds its override after
-Spine's preset in `eslint.config.mjs`.
+Roadkeeper's preset in `eslint.config.mjs`.
 
 - A test decides its pass on a state it writes itself (Tests): the quote gate
   is the exception, because it is meant to go red when a source page changes.

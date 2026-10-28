@@ -99,11 +99,11 @@ Belief-based claims coming out of the grill half-round (2026-09-01). Statuses:
   the site's green passes as before (#229, the human's word 2026-10-24).
   — `untested`
 - **A28 — a search never needs The Road.** A root `.ignore` naming
-  `docs/spine/road.html` keeps the generated page out of every repo-wide
+  `docs/roadkeeper/road.html` keeps the generated page out of every repo-wide
   search, and nothing a reviewer or builder looks for lives only there (#260,
   retro of #183, the human's word 2026-10-26). — `untested`
 - **A29 — a stale structure is caught at the commit.** A pre-commit hook that
-  refuses a commit leaving `docs/spine/structure.json` stale costs a few
+  refuses a commit leaving `docs/roadkeeper/structure.json` stale costs a few
   seconds a commit, and no review finds a missing restamp again (#268, retro
   of #230, the human's word 2026-10-27). — `untested`
 - **A30 — a pull request's own checks catch what a local green misses.** A

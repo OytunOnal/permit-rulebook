@@ -1,5 +1,5 @@
 // @level domain
-// Spine's constant-reason rule: a top-level UPPER_CASE const, exported or not, is refused unless a comment sits on its
+// Roadkeeper's constant-reason rule: a top-level UPPER_CASE const, exported or not, is refused unless a comment sits on its
 // line or on its own line directly above it; a comment trailing a constant above is that constant's.
 
 const UPPER = /^[A-Z][A-Z0-9_]*$/;  // a constant's name; a lower-case one names a helper
