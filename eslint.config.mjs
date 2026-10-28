@@ -136,8 +136,7 @@ export default [
     plugins: { "@typescript-eslint": tseslint.plugin },
     rules: { "no-unused-vars": "off", "@typescript-eslint/no-unused-vars": "error" },
   },
-  // The harness's own modules (`scripts/browser/browser.mjs`, `scripts/browser/tab/tab-waits.mjs`) stand outside: their backstop is
-  // the one timer the browser cases keep.
+  // The browser harness (`scripts/browser/`) stands outside: its backstop timers are the ones the browser cases keep.
   {
     files: ["tests/**"],
     plugins: { waits: { rules: { "no-fixed-wait": noFixedWait } } },

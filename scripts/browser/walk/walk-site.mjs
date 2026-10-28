@@ -12,7 +12,9 @@ import { openBrowser } from "./open-browser.mjs";
 
 /**
  * A site a walk opens: a folder served for the walk (the built site's `dist/`,
- * or fixture pages), with the static server's options; or a live address.
+ * or fixture pages), with the static server's options; or a live site's root
+ * address, under which the walk makes every address (`/germany/` given as the
+ * root would make `/germany/france/` of `/france/`).
  *
  * @typedef {{ folder: string, delayJsMs?: number, htmlInPieces?: { before: string, heldMs: number } | null }
  *   | { address: string }} Site

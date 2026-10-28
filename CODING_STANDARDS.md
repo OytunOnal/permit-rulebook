@@ -23,8 +23,8 @@ pull request.
   `dist/`); data `npm test`.
 - Browser walk: a live walk or a real-use check imports `walkSite` from the
   harness's entry, `scripts/browser/browser.mjs`, on the built site or a live
-  address, at `DESK` or `PHONE`. It returns the walker's result, the shifts
-  of the page it ends on, and the walk's errors.
+  site's root address, at `DESK` or `PHONE`. It returns the walker's result,
+  the shifts of the page it ends on, and the walk's errors.
 - Structure: in the site's root, Roadkeeper's `structure.mjs`, set up as Roadkeeper's
   `structure-command.md` says, writes `docs/roadkeeper/structure.json` from the
   code, and Roadkeeper's `structure-check.mjs` reads it against
