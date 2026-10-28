@@ -85,19 +85,43 @@ function checkingWidthOnDraw(page, checkWidth) {
   };
 }
 
+/** The walk's errors as the lines of a failure, each under its address. */
+function errorReport(errors) {
+  const listed = errors.map((e) => `  ${e.address}: ${e.message}`).join("\n");
+  return `the walk's pages threw or logged ${errors.length} error(s):\n${listed}`;
+}
+
 /** Fails with every error of the walk, each under its address, unless there is none. */
 function failOnErrors(errors) {
-  if (errors.length === 0) return;
-  const listed = errors.map((e) => `  ${e.address}: ${e.message}`).join("\n");
-  throw new Error(`the walk's pages threw or logged ${errors.length} error(s):\n${listed}`);
+  if (errors.length > 0) throw new Error(errorReport(errors));
+}
+
+/**
+ * Adds the walk's errors, each under its address, to `failure`'s message: the
+ * walker's own failure, or its width check's, would otherwise hide the error
+ * that broke the page. The failure keeps its class, so an assertion's diff
+ * still shows.
+ */
+function addTheWalksErrors(failure, errors) {
+  if (errors.length > 0 && failure instanceof Error) failure.message += `\n${errorReport(errors)}`;
+  return failure;
+}
+
+/** What `walker` returns on `site`; its failure carries the errors `walkLog` holds. */
+async function returnedBy(walker, site, walkLog) {
+  try {
+    return await walker(site);
+  } catch (failure) {
+    throw addTheWalksErrors(failure, walkLog.errors());
+  }
 }
 
 /** What the walk measured once `walker` has returned `returned`, read from the browser's `walkLog`, after its width and errors are checked. */
 async function measuredAtTheEnd(walkLog, returned, { checkWidth, errorsExpected }) {
   const onScreen = walkLog.tabOnScreen();
   const widthFailure = await checkWidth(onScreen);
-  if (widthFailure) throw widthFailure;
   const errors = walkLog.errors();
+  if (widthFailure) throw addTheWalksErrors(widthFailure, errors);
   if (!errorsExpected) failOnErrors(errors);
   return { returned, shifts: await onScreen.readLayoutShifts(), errors };
 }
@@ -108,7 +132,7 @@ async function walkInBrowser(walk, url, walker) {
   const browser = await openBrowser({ screen, network, scrollbars, shiftRegion });
   try {
     const checkWidth = widthCheckOn(screen);
-    const returned = await walker({ page: checkingWidthOnDraw(browser.page, checkWidth), url });
+    const returned = await returnedBy(walker, { page: checkingWidthOnDraw(browser.page, checkWidth), url }, browser.walkLog);
     return await measuredAtTheEnd(browser.walkLog, returned, { checkWidth, errorsExpected });
   } finally {
     browser.close();
@@ -120,7 +144,8 @@ async function walkInBrowser(walk, url, walker) {
  * hands `walker` the page and the site's addresses, and returns what it
  * measured. It fails, naming both widths, when the first page drawn is not
  * the screen's width, and, listing them, on the pages' errors unless
- * `walk.errorsExpected`.
+ * `walk.errorsExpected`. A failure of the walker's own, or of the width,
+ * lists the pages' errors under its message.
  *
  * @template T
  * @param {Walk} walk

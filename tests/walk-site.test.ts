@@ -22,6 +22,9 @@ const VIEWPORT_META = '<meta name="viewport" content="width=device-width, initia
 /** What a page that throws throws, so the walk's errors can be looked for it. */
 const THROWN = "thrown by the first page";
 
+/** What a walker that gives up throws, so the walk's failure can be looked for it. */
+const WALKER_GAVE_UP = "the walker gave up";
+
 /** The fixture pages, by file name, and the icon Chrome asks every site for, so its absence is no error. */
 const PAGES = {
   "favicon.ico": "",
@@ -58,6 +61,15 @@ describe.skipIf(skipped !== null)("the browser walk's errors", () => {
     expect(failure).toContain(THROWN);
     const { errors } = await walkSite({ site: { folder }, screen: PHONE, errorsExpected: true }, opening("/throws.html"));
     expect(errors.map((e) => e.message).join("\n")).toContain(THROWN);
+  }, 60000);
+
+  it("a walker that throws fails the walk with the pages' errors listed under its own failure, each with its address", async () => {
+    const failure = await failureOf(walkSite({ site: { folder }, screen: PHONE }, async ({ page, url }) => {
+      await page.goto(url("/throws.html"));
+      throw new Error(WALKER_GAVE_UP);
+    }));
+    expect(failure).toContain(WALKER_GAVE_UP);
+    expect(failure).toContain(`/throws.html: exception: Error: ${THROWN}`);
   }, 60000);
 
   it("an error on the first page is still in the walk's errors after it navigates to a second", async () => {
