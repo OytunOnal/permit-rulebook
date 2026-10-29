@@ -131,8 +131,9 @@ click on the tracker link. Answers never leave the device.
   the routes a question is asked for and the open ones; `questions-do-work`
   checks, per destination and per rung, that an answer moves some route's
   decision (#133). `isStepGated` decides which routes wait on a step;
-  `routesAnOfferFrees` counts, per country, the routes a job offer would free
-  for a reader with none; a gap is said once, exact and with its period, and a
+  `routesAJobOfferFrees` counts, per country, the routes a job offer would free
+  for a reader with none, the job offer itself decided once by
+  `findJobOfferAnswer` (#179); a gap is said once, exact and with its period, and a
   band open at the bottom names the line it is under (#167).
 - **Tokens** — `tokens.css` (the design system) and `identity.css` (the
   identity pair: the tilted PR stamp over the read-date stamp; one source,
@@ -227,7 +228,7 @@ click on the tracker link. Answers never leave the device.
   `arrivalOf` (#208). The verdict is one deep module, `src/lib/verdict/`
   (#167): `verdictOf` decides everything the results screen says (the
   headline and masthead, the groups and their order, each card with its rail
-  and gap, the steps, the offer line, the arranged line, the folds) and
+  and gap, the steps, the job offer line, the arranged line, the folds) and
   `verdictHtml` draws it, with its own stylesheet; the interview only paints,
   announces and records one history entry per verdict. Steps are only what
   the reader can do; what a job offer would open and what someone else
