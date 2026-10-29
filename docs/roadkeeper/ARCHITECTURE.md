@@ -237,6 +237,13 @@ click on the tracker link. Answers never leave the device.
   dataset's included: `in-view.ts` and `steps.ts` say which results are in
   view, which steps there are and what each arranged answer or a job offer
   would open, and the presentation files around them name it (#183).
+  A Card is one deep module inside it, `compose/card` (#184): its entry,
+  `cards.ts`, draws a route's card, a Not yet row, a closed row, a step's card
+  and a Notice's card, and its blocks (the route statements, the rail, the
+  provenance) are private behind it. A money shortfall is decided at
+  application, in numbers, by `money-shortfall.ts`; `printed-shortfall.ts`
+  formats its amounts once, and `copy/verdict.ts` says it side by side as the
+  card's note, a step's reach and the headline's emphasis.
   Every word a screen prints lives in `src/lib/copy/`, one file per screen or
   part, read by name. Its first paint is one module, `src/lib/first-paint.ts` (#66).
   An inline head script reads the record, the link and the width before
