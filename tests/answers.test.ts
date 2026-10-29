@@ -7,7 +7,7 @@ import type { Dataset, Profile } from "permit-rulebook-data";
 import { glossed } from "../src/lib/gloss.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { plainTextOf } from "./reader-pages.js";
-import { PAINTED_AS_COMPOSED, everyCardIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
+import { PAINTED_AS_COMPOSED, everyDrawnRouteIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { withSite } from "./browser-walk.js";
 
 /**
@@ -47,7 +47,7 @@ describe("two answers that cannot both be true, from the verdict", () => {
     expect(clash[0]!).toContain("Both cannot be true");
     // It says it beside the verdicts, which are still shown: this reports on
     // the answers, it does not withhold the result.
-    expect(everyCardIn(verdictFor(CONTRADICTED)).filter((c) => c.html.includes('<span class="st ')).length).toBeGreaterThan(0);
+    expect(everyDrawnRouteIn(verdictFor(CONTRADICTED)).filter((c) => c.html.includes('<span class="st ')).length).toBeGreaterThan(0);
     // And a reader whose answers agree is not accused of anything.
     expect(clashesOn(CONSISTENT)).toEqual([]);
   });

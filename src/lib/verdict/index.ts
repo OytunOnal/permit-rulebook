@@ -25,7 +25,7 @@ import type { InterviewSoFar, Verdict } from "./compose/types.js";
 import "./verdict.css";
 
 export type {
-  ArrangedLine, CountrySection, Fold, InterviewSoFar, JobOfferLine, RouteCard, StepCard, Strip, Tally, Verdict,
+  ArrangedLine, CountrySection, DrawnRoute, Fold, InterviewSoFar, JobOfferLine, StepCard, Strip, Tally, Verdict,
   VerdictAction, VerdictGroup, VerdictLayout,
 } from "./compose/types.js";
 

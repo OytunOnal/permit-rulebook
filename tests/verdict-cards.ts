@@ -3,7 +3,7 @@ import type { Dataset, Profile } from "permit-rulebook-data";
 import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
 import {
-  verdictHtml, verdictOf, type CountrySection, type RouteCard, type StepCard, type Verdict, type VerdictGroup,
+  verdictHtml, verdictOf, type CountrySection, type DrawnRoute, type StepCard, type Verdict, type VerdictGroup,
 } from "../src/lib/verdict/index.js";
 
 const ds = dataset as unknown as Dataset;
@@ -19,12 +19,12 @@ export const verdictOn = (data: Dataset, answers: Profile, cameFrom: string | nu
 /** The verdict on the shipped dataset, with no route page behind it. */
 export const verdictFor = (answers: Profile): Verdict => verdictOn(ds, answers);
 
-/** The route cards a group lists, in its order, folded rows included; the
- * steps block and the arranged line list none. */
-export function cardsIn(group: VerdictGroup): RouteCard[] {
+/** The routes a group draws, cards and rows, in its order, folded rows
+ * included; the steps block and the arranged line draw none. */
+export function drawnRoutesIn(group: VerdictGroup): DrawnRoute[] {
   if (group.kind === "steps" || group.kind === "arranged") return [];
-  if (group.kind !== "not-yet") return group.cards;
-  return group.items.flatMap((item) => ("kind" in item ? item.cards : [item]));
+  if (group.kind !== "not-yet") return group.routes;
+  return group.items.flatMap((item) => ("kind" in item ? item.routes : [item]));
 }
 
 /** Every group of a verdict, in the order drawn: the flat layout's, or each
@@ -36,25 +36,25 @@ export function groupsIn(verdict: Verdict): VerdictGroup[] {
 }
 
 /** Where a route is listed on a verdict — the kind of group, and its card's
- * markup — or undefined where the verdict lists it nowhere. */
+ * or row's markup — or undefined where the verdict lists it nowhere. */
 export function placed(verdict: Verdict, route: string): { kind: VerdictGroup["kind"]; html: string } | undefined {
   for (const group of groupsIn(verdict)) {
-    const card = cardsIn(group).find((c) => c.route === route);
+    const card = drawnRoutesIn(group).find((c) => c.route === route);
     if (card) return { kind: group.kind, html: card.html };
   }
   return undefined;
 }
 
-/** The markup of the card a route is drawn with on a verdict; a route the
- * verdict lists nowhere fails the case that asked for it. */
-export function cardOn(verdict: Verdict, route: string): string {
+/** The markup of the card or row a route is drawn with on a verdict; a route
+ * the verdict lists nowhere fails the case that asked for it. */
+export function drawnRouteOn(verdict: Verdict, route: string): string {
   const at = placed(verdict, route);
   if (!at) throw new Error(`${route} is on no group of this verdict`);
   return at.html;
 }
 
-/** Every route card a verdict draws, in order, with its route's id. */
-export const everyCardIn = (verdict: Verdict): RouteCard[] => groupsIn(verdict).flatMap(cardsIn);
+/** Every route a verdict draws, card or row, in order, with its route's id. */
+export const everyDrawnRouteIn = (verdict: Verdict): DrawnRoute[] => groupsIn(verdict).flatMap(drawnRoutesIn);
 
 /** The steps a verdict offers, in the order drawn, every section's in turn. */
 export const stepsIn = (verdict: Verdict): StepCard[] =>

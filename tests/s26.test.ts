@@ -13,7 +13,7 @@ import {
 } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
 import type { CountrySection, Tally, Verdict, VerdictGroup } from "../src/lib/verdict/index.js";
-import { PAINTED_AS_COMPOSED, cardsIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
+import { PAINTED_AS_COMPOSED, drawnRoutesIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { expectNothingLeft } from "./wire.js";
 import { chromePath, walkSite, type BrowserPage, type SentRequest } from "../scripts/browser/browser.mjs";
 import { PICK_TURKEY, answerWith } from "./browser-walk.js";
@@ -234,7 +234,7 @@ describe("s26 — the results the walks end on, from the verdict", () => {
   /** The count a group's heading prints; the steps heading prints none. */
   const countHeaded = (g: VerdictGroup): number | undefined => {
     if (g.kind === "steps") return undefined;
-    return g.kind === "not-yet" ? g.count : cardsIn(g).length;
+    return g.kind === "not-yet" ? g.count : drawnRoutesIn(g).length;
   };
   /** The groups a section draws under a heading, each with the count it
    * prints; the arranged line stands under none. */

@@ -4,7 +4,7 @@ import {
 } from "permit-rulebook-data";
 import { phraseOfAnswer } from "./answer-phrase.js";
 import {
-  closedRowHtml, composeStepTitle, fullCardHtml, hasLiveUnknown, unlockCardHtml, type CardLook, type VerdictScreen,
+  closedRowHtml, composeStepTitle, fullCardHtml, hasLiveUnknown, stepCardHtml, type CardLook, type VerdictScreen,
 } from "./card/cards.js";
 import { seekHintHtml } from "./html.js";
 import { notYetGroupOf } from "./not-yet.js";
@@ -13,7 +13,7 @@ import {
   countRoutesOpenedByArrangedAnswers, type ArrangedAnswerCount, type Step,
 } from "./steps.js";
 import type {
-  ArrangedLine, CountrySection, JobOfferLine, RouteCard, Strip, VerdictGroup, VerdictLayout,
+  ArrangedLine, CountrySection, DrawnRoute, JobOfferLine, Strip, VerdictGroup, VerdictLayout,
 } from "./types.js";
 import { leadCountry, leads, namedFirst, unscoredTally } from "./unscored.js";
 
@@ -36,18 +36,18 @@ interface Section {
   chip: CardLook["chip"];
 }
 
-const cardsOf = (screen: VerdictScreen, rows: RouteResult[], look: CardLook): RouteCard[] =>
+const cardsOf = (screen: VerdictScreen, rows: RouteResult[], look: CardLook): DrawnRoute[] =>
   rows.map((r) => ({ route: r.route.id, html: fullCardHtml(screen, r, look) }));
 
-const routeGroup = (kind: "open" | "unsettled" | "within-reach" | "closed", cards: RouteCard[]): VerdictGroup | null =>
-  cards.length ? { kind, cards } : null;
+const routeGroup = (kind: "open" | "unsettled" | "within-reach" | "closed", routes: DrawnRoute[]): VerdictGroup | null =>
+  routes.length ? { kind, routes } : null;
 
 /** The steps block: the job offer line first, then the steps; it stands, with
  * its heading, wherever either is there (#175). */
 function stepsGroup(screen: VerdictScreen, s: Section): VerdictGroup | null {
   if (!s.steps.length && !s.jobOfferLine) return null;
   const steps = s.steps.map(({ step, routes }) =>
-    ({ title: composeStepTitle(screen, step), html: unlockCardHtml(screen, step, routes) }));
+    ({ title: composeStepTitle(screen, step), html: stepCardHtml(screen, step, routes) }));
   // The job-search sentence, to the reader it is true of — one with no
   // offer yet — and only under steps (s23, F1a).
   return { kind: "steps", jobOfferLine: s.jobOfferLine, steps, hint: seekHintHtml(screen.ds, s.results, screen.answers) };

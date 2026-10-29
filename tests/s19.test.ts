@@ -19,7 +19,7 @@ import { dataPage } from "../src/lib/data-page.js";
 import { routePages } from "../src/lib/route-page.js";
 import { url } from "../src/lib/site.js";
 import {
-  PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
+  PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 
@@ -52,7 +52,7 @@ function unscoredOf(answers: Profile): WrittenState | undefined {
 
 /** What else a route's card on the verdict for these answers says is required. */
 const precondFor = (answers: Profile, route: string): string =>
-  blocksIn(cardOn(verdictFor(answers), route), "precond", "precond asked");
+  blocksIn(drawnRouteOn(verdictFor(answers), route), "precond", "precond asked");
 
 const situationQuestion = () => remainingQuestions(ds, { destination: "fr" }).find((q) => q.field === SITUATION_FIELD)!;
 
@@ -217,7 +217,7 @@ describe("s19 — the two walks' results, from the verdict", () => {
     expect(verdict.action.masthead.announced).toMatch(/^1 route looks open\./);
     expect(groupsIn(verdict)[0]!.kind).toBe("open");
     expect(placed(verdict, "es-researcher")?.kind).toBe("open");
-    expect(cardOn(verdict, "es-researcher")).toContain(`<span class="st met">${STATUS_LABEL.met}</span>`);
+    expect(drawnRouteOn(verdict, "es-researcher")).toContain(`<span class="st met">${STATUS_LABEL.met}</span>`);
     const body = textOf(verdictHtml(verdict));
     expect(body).not.toContain("not checked here: A hosting agreement");
     expect(body).toContain("you declared “I have (or expect) a hosting agreement with a research institution there”");
@@ -248,7 +248,7 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
     // Every country on the screen, so every scored route has its card.
     const answers: Profile = { ...full(), destination: "all" };
     const results = evaluate(ds, answers).filter((r) => isScored(r.route));
-    const cards = everyCardIn(verdictFor(answers));
+    const cards = everyDrawnRouteIn(verdictFor(answers));
     expect(cards.length).toBe(results.length);
     let moved = 0;
     for (const card of cards) {

@@ -6,7 +6,7 @@ import {
   type Dataset, type FieldDef, type Profile, type Route, type RouteResult,
 } from "permit-rulebook-data";
 import {
-  blocksIn, cardOn, cardsIn, everyCardIn, groupsIn, placed, verdictFor, verdictOn, withoutGlosses,
+  blocksIn, drawnRouteOn, drawnRoutesIn, everyDrawnRouteIn, groupsIn, placed, verdictFor, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
 import { OUR_READING_HEADING } from "../src/lib/copy/verdict.js";
 
@@ -14,7 +14,7 @@ const ds = dataset as unknown as Dataset;
 const routes = (): Route[] => ds.countries.flatMap((c) => c.routes);
 let blankVerdict: ReturnType<typeof verdictFor> | undefined;
 /** A route's card on the verdict of a reader who has answered nothing. */
-const blankCard = (id: string): string => cardOn((blankVerdict ??= verdictFor({})), id);
+const blankCard = (id: string): string => drawnRouteOn((blankVerdict ??= verdictFor({})), id);
 const routeOf = (id: string): Route => routes().find((r) => r.id === id)!;
 
 /**
@@ -31,7 +31,7 @@ const routeOf = (id: string): Route => routes().find((r) => r.id === id)!;
  * read as the verdict draws them, never composed here. */
 function* cardsFor(answers: Profile): Generator<{ r: RouteResult; answers: Profile; html: string }> {
   const results = evaluate(ds, answers);
-  for (const card of everyCardIn(verdictFor(answers)))
+  for (const card of everyDrawnRouteIn(verdictFor(answers)))
     yield { r: results.find((x) => x.route.id === card.route)!, answers, html: card.html };
 }
 
@@ -166,7 +166,7 @@ describe("s5e — what is ours says so, in words a stranger understands", () => 
     const altered = structuredClone(ds);
     for (const country of altered.countries)
       country.routes = country.routes.map((r) => (r.id === route.id ? route : r));
-    expect(readingOf(cardOn(verdictOn(altered, {}), route.id))).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
+    expect(readingOf(drawnRouteOn(verdictOn(altered, {}), route.id))).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
   });
 
   it("the page renders the block — on the full card and on a collapsed row alike", () => {
@@ -203,7 +203,7 @@ describe("s5e — the card's source list grew without burying the verdict", () =
    * but the routes the authority closes to the passport, which carry their
    * closing sentence and no source list. */
   const scoredCardsOf = (answers: Profile) =>
-    groupsIn(verdictFor(answers)).filter((g) => g.kind !== "closed").flatMap(cardsIn);
+    groupsIn(verdictFor(answers)).filter((g) => g.kind !== "closed").flatMap(drawnRoutesIn);
 
   it("no card shows an empty source block", () => {
     for (const destination of ["de", "fr", "es", "nl", "all"])
@@ -231,7 +231,7 @@ describe("s5e — the card's source list grew without burying the verdict", () =
       .toContain("Your employment contract is valid for at least 6 months.");
     expect(resultProvenance(blueCard, {}).filter((e) => e.value.quote === "Your employment contract is valid for at least 6 months.").length)
       .toBe(2);
-    expect(sourceLines(sourcesOf(cardOn(verdictFor({ destination: "nl", citizenship: "TR", situation: "offer" }), "nl-blue-card")))
+    expect(sourceLines(sourcesOf(drawnRouteOn(verdictFor({ destination: "nl", citizenship: "TR", situation: "offer" }), "nl-blue-card")))
       .filter((l) => l.includes("valid for at least 6 months")).length).toBe(1);
   });
 

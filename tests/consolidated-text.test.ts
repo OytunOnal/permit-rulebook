@@ -13,7 +13,7 @@ import { routeAddresses } from "../src/lib/slug.js";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
 import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { builtPages } from "./reader-pages.js";
-import { blocksIn, cardOn, verdictFor, verdictOn } from "./verdict-cards.js";
+import { blocksIn, drawnRouteOn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -114,7 +114,7 @@ describe("a card's foot links the route's page by its kind", () => {
     const altered = structuredClone(ds);
     altered.countries.flatMap((c) => c.routes).find((x) => x.id === "fr-ict")!.info_url =
       `https://${CONSOLIDATED_TEXT_HOSTS[0]}/21_AufenthG.htm`;
-    const html = cardOn(verdictOn(altered, answers), "fr-ict");
+    const html = drawnRouteOn(verdictOn(altered, answers), "fr-ict");
     expect(html, "fr-ict is not closed to this reader").not.toBe("");
     expect(checkedConsolidatedLinkCount(linksIn(html, "fr-ict"))).toBe(1);
   });
@@ -170,7 +170,7 @@ describe("no word claims an official page over a consolidated text (#151's fix r
     // Each card as the verdict of a reader who has answered nothing draws it.
     const blank = verdictFor({});
     for (const route of routes) {
-      const heading = /<div class="caveat"><b>([^<]*)<\/b>/.exec(blocksIn(cardOn(blank, route.id), "caveat"))?.[1];
+      const heading = /<div class="caveat"><b>([^<]*)<\/b>/.exec(blocksIn(drawnRouteOn(blank, route.id), "caveat"))?.[1];
       expect(heading, route.id).toBeDefined();
       expect(heading, route.id).not.toMatch(CLAIMS_OFFICIAL);
     }

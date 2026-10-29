@@ -4733,7 +4733,7 @@
     "exported": true
    },
    {
-    "name": "holdRowHtml",
+    "name": "notYetRowHtml",
     "kind": "fn",
     "exported": true
    },
@@ -4753,7 +4753,7 @@
     "exported": true
    },
    {
-    "name": "unlockCardHtml",
+    "name": "stepCardHtml",
     "kind": "fn",
     "exported": true
    },
@@ -8349,5 +8349,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "267d2dac9a15c71127219e03a9464f32f58188b897a48e1996006f6b03490df8"
+ "digest": "95ca43bca07ecd1b905cc957f96a83881e481e927b125492c60e8aa8dd267200"
 }

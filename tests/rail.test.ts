@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, evaluate, forEachCriterion, formatEURPer, type Dataset, type Profile } from "permit-rulebook-data";
 import { ABOVE_THE_AMOUNT, WHAT_THIS_ROUTE_ASKS, YOUR_ANSWER, upToShort } from "../src/lib/copy/verdict.js";
-import { blocksIn, everyCardIn, placed, verdictFor } from "./verdict-cards.js";
+import { blocksIn, everyDrawnRouteIn, placed, verdictFor } from "./verdict-cards.js";
 
 /**
  * The results card's salary rail, after the human's walk of 2026-09-08.
@@ -147,7 +147,7 @@ describe("the rail says where the reader stands", () => {
     // Every route, every band: as many ticks as named amounts, always.
     let drawn = 0;
     for (const country of ds.countries)
-      for (const card of everyCardIn(verdictFor({ ...WALK, destination: country.code.toLowerCase() }))) {
+      for (const card of everyDrawnRouteIn(verdictFor({ ...WALK, destination: country.code.toLowerCase() }))) {
         const html = blocksIn(card.html, "rail");
         if (!html) continue;
         drawn++;

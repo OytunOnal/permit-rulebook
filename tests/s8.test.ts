@@ -10,7 +10,7 @@ import {
   NOTHING_OPEN_HEADLINE, RULES_MET, STATUS_LABEL, UNSETTLED_SECTION_LINE, unsettledHeadline,
 } from "../src/lib/copy/verdict.js";
 import { verdictHtml, type Verdict, type VerdictGroup } from "../src/lib/verdict/index.js";
-import { cardOn, cardsIn, groupsIn, placed, verdictFor, verdictOn } from "./verdict-cards.js";
+import { drawnRouteOn, drawnRoutesIn, groupsIn, placed, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -69,7 +69,7 @@ describe("s8 — a route the authority closes is not a result", () => {
 
   it("says why in the authority's own words, with the sentence and the day it was read", () => {
     const algerian = transferring("DZ");
-    const html = cardOn(verdictFor(algerian), "fr-ict");
+    const html = drawnRouteOn(verdictFor(algerian), "fr-ict");
     const closing = closedBy(resultOf(algerian, "fr-ict"))[0].criterion;
     expect(closing.op).toBe("not-in");
     if (closing.op !== "not-in") throw new Error("unreachable");
@@ -92,7 +92,7 @@ describe("s8 — a route the authority closes is not a result", () => {
     const closing = route.criteria.find((c) => c.op === "not-in")!;
     if (closing.op !== "not-in") throw new Error("unreachable");
     closing.text = "a & b <em>c</em>";
-    expect(cardOn(verdictOn(altered, algerian), "fr-ict")).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
+    expect(drawnRouteOn(verdictOn(altered, algerian), "fr-ict")).toContain("a &amp; b &lt;em&gt;c&lt;/em&gt;");
   });
 
   it("the results page files them apart from the three verdicts, on both card layouts", () => {
@@ -103,7 +103,7 @@ describe("s8 — a route the authority closes is not a result", () => {
     for (const answers of [transferring("DZ"), { ...transferring("DZ"), destination: "all" }]) {
       const verdict = verdictFor(answers);
       expect(placed(verdict, "fr-ict")?.kind, answers.destination).toBe("closed");
-      const filings = groupsIn(verdict).filter((g) => cardsIn(g).some((c) => c.route === "fr-ict"));
+      const filings = groupsIn(verdict).filter((g) => drawnRoutesIn(g).some((c) => c.route === "fr-ict"));
       expect(filings.length, answers.destination).toBe(1);
     }
     const results = evaluate(ds, transferring("DZ"));
@@ -247,7 +247,7 @@ describe("both layouts of the results screen partition the same way", () => {
   it("neither layout counts an unsettled route as open", () => {
     for (const [name, verdict] of layouts) {
       for (const group of groupsIn(verdict).filter((g) => g.kind === "open"))
-        for (const id of UNSETTLED) expect(cardsIn(group).map((c) => c.route), `${name}: ${id}`).not.toContain(id);
+        for (const id of UNSETTLED) expect(drawnRoutesIn(group).map((c) => c.route), `${name}: ${id}`).not.toContain(id);
       if (verdict.layout.kind === "one-country") expect(verdict.layout.strip).toMatchObject({ open: 0, unsettled: 2 });
     }
     if (several.layout.kind !== "countries") throw new Error("the four-country reader drew no country sections");

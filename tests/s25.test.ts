@@ -17,7 +17,7 @@ import { plainTextOf, walkFrom } from "./reader-pages.js";
 import { chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 import {
-  PAINTED_AS_COMPOSED, blocksIn, cardOn, paintedAsComposedScript, placed, stepsIn, verdictFor, verdictOn,
+  PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, paintedAsComposedScript, placed, stepsIn, verdictFor, verdictOn,
 } from "./verdict-cards.js";
 
 const ds = rawDataset as unknown as Dataset;
@@ -57,7 +57,7 @@ const withExperience = (five: string, seven: string): Profile => ({ ...JOB_OFFER
 const resultOf = (profile: Profile, id: string) => evaluate(ds, profile).find((r) => r.route.id === id)!;
 /** The points tally on the Opportunity Card the verdict for these answers draws. */
 const tallyFor = (profile: Profile): string =>
-  blocksIn(cardOn(verdictFor(profile), "de-chancenkarte"), "ptsline met", "ptsline short");
+  blocksIn(drawnRouteOn(verdictFor(profile), "de-chancenkarte"), "ptsline met", "ptsline short");
 /** The titles of the steps the verdict for these answers offers. */
 const stepTitles = (data: Dataset, answers: Profile): string[] => stepsIn(verdictOn(data, answers)).map((s) => s.title);
 
@@ -324,7 +324,7 @@ describe("s25 — the walked results, from the verdict", () => {
       } else {
         expect(worker?.kind).toBe("not-yet");
       }
-      const tally = textOf(blocksIn(cardOn(verdict, "de-chancenkarte"), "ptsline met", "ptsline short"));
+      const tally = textOf(blocksIn(drawnRouteOn(verdict, "de-chancenkarte"), "ptsline met", "ptsline short"));
       expect(tally, "the Opportunity Card has no tally").not.toBe("");
       if (expected.tally) expect(tally).toContain(expected.tally);
       else expect(tally).not.toContain("Experience");

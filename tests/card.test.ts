@@ -8,7 +8,7 @@ import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn } from "../src/lib
 import {
   APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_OFFICIAL_WORDING_HEADING, WHAT_THIS_ROUTE_ASKS,
 } from "../src/lib/copy/verdict.js";
-import { blocksIn, cardOn, everyCardIn, verdictOn } from "./verdict-cards.js";
+import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -16,12 +16,12 @@ const routeOf = (id: string): Route =>
   ds.countries.flatMap((c) => c.routes).find((r) => r.id === id)!;
 
 /** The card a route is drawn with on the verdict these answers read. */
-const cardFor = (answers: Profile, id: string, data: Dataset = ds): string => cardOn(verdictOn(data, answers), id);
+const cardFor = (answers: Profile, id: string, data: Dataset = ds): string => drawnRouteOn(verdictOn(data, answers), id);
 
 /** The verdict of a reader who has answered nothing: every route of every
  * country on the screen, each card drawn for no reader in particular. */
 let blankVerdict: ReturnType<typeof verdictOn> | undefined;
-const blankCard = (id: string): string => cardOn((blankVerdict ??= verdictOn(ds, {})), id);
+const blankCard = (id: string): string => drawnRouteOn((blankVerdict ??= verdictOn(ds, {})), id);
 
 /** A card's blocks, by the piece that draws them: what else is required, and
  * what the source qualifies, sourced or not. */
@@ -274,7 +274,7 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
   const CARRIERS = ["nl-hsm-30plus", "nl-hsm-under30", "de-experienced-worker", "es-blue-card"];
 
   it("no caveat text ever appears under the \"Also required\" heading", () => {
-    const cards = everyCardIn((blankVerdict ??= verdictOn(ds, {})));
+    const cards = everyDrawnRouteIn((blankVerdict ??= verdictOn(ds, {})));
     // Every scored route is on this screen, so every one is read.
     expect(cards.length).toBe(evaluate(ds, {}).length);
     for (const card of cards) {
@@ -301,7 +301,7 @@ describe("nothing that says \"you may qualify for less\" renders as a requiremen
     // harmless right up until the page had to decide the order of the two.
     // Through the verdict: every card draws its sourced caveats first and the
     // unsourced ones straight after them.
-    for (const card of everyCardIn((blankVerdict ??= verdictOn(ds, {}))))
+    for (const card of everyDrawnRouteIn((blankVerdict ??= verdictOn(ds, {}))))
       expect(caveatsOf(card.html), card.route).toBe(sourcedCaveatOf(card.html) + unsourcedCaveatOf(card.html));
     expect(caveatsOf(unsourcedCard())).toContain(NO_OFFICIAL_WORDING_HEADING);
     expect(caveatsOf(blankCard("de-chancenkarte"))).toContain(`${PAGE_ALSO_SAYS}:`);

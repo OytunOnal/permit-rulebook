@@ -142,7 +142,7 @@ export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLo
  * cannot change it (critique #4) — or where it is the route the reader came
  * from.
  */
-export function holdRowHtml(screen: VerdictScreen, r: RouteResult): string {
+export function notYetRowHtml(screen: VerdictScreen, r: RouteResult): string {
   const { ds, answers, glossary } = screen;
   const short = whyHtml(ds, r, answers).split(". ")[0].replace(/\.$/, "");
   const open = hasLiveUnknown(screen, r) || r.route.id === screen.cameFrom;
@@ -190,7 +190,7 @@ export function composeStepTitle(screen: VerdictScreen, step: Step): string {
 }
 
 /** A step, and the routes it opens on this section. */
-export function unlockCardHtml(screen: VerdictScreen, step: Step, routes: RouteResult[]): string {
+export function stepCardHtml(screen: VerdictScreen, step: Step, routes: RouteResult[]): string {
   const means = unlockMeansOf(screen.ds, step.unlock, screen.answers);
   const taken = unlockProfile(step.unlock, screen.answers);
   return `
