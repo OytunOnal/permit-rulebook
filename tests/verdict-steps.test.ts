@@ -141,7 +141,7 @@ describe("#175 — where only an arranged answer would open something", () => {
 });
 
 describe("#175 — the offer line", () => {
-  const jobOfferAnswer = fieldOptions(ds, SITUATION_FIELD).find((o) => !o.is_arranged && !o.is_fallback && !o.is_unknown)!;
+  const jobOfferAnswer = fieldOptions(ds, SITUATION_FIELD).find((o) => o.value === "offer")!;
 
   it("opens the explorer's steps block in each country an offer frees routes in", () => {
     const freed = routesAJobOfferFrees(ds, PRIYA);

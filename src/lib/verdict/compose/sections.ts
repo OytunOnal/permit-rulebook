@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  SITUATION_FIELD, phraseOf, subjectOf, type Country, type Dataset, type RouteResult, type RoutesFreedByAJobOffer,
+  SITUATION_FIELD, findJobOfferAnswer, phraseOf, subjectOf, type Country, type Dataset, type RouteResult, type RoutesFreedByAJobOffer,
 } from "permit-rulebook-data";
 import { phraseOfAnswer } from "./answer-phrase.js";
 import { closedRowHtml } from "./card-blocks.js";
@@ -11,7 +11,7 @@ import { seekHintHtml } from "./html.js";
 import { notYetGroupOf } from "./not-yet.js";
 import { groupedRoutesOf, type Compared, type GroupedRoutes } from "./in-view.js";
 import {
-  countRoutesOpenedByArrangedAnswers, findJobOfferAnswer, type ArrangedAnswerCount, type Step,
+  countRoutesOpenedByArrangedAnswers, type ArrangedAnswerCount, type Step,
 } from "./steps.js";
 import type {
   ArrangedLine, CountrySection, JobOfferLine, RouteCard, Strip, VerdictGroup, VerdictLayout,
