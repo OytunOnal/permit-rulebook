@@ -1,5 +1,5 @@
 // @level presentation
-import { forEachCriterion, resultProvenance, type Route, type RouteResult } from "permit-rulebook-data";
+import { forEachCriterion, resultProvenance, type Dataset, type Route, type RouteResult } from "permit-rulebook-data";
 import { esc, escAttr } from "../../../../reason.js";
 import {
   APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_THRESHOLD_ON_ROUTE, perPeriod,
@@ -38,6 +38,75 @@ function appliesMarkHtml(applied: boolean | undefined): string {
     : ` · <span class="applies-not">${esc(DOES_NOT_APPLY_TO_YOU)}</span>`;
 }
 
+/** One value a route rests on, as `resultProvenance` lists it. */
+type ProvenanceEntry = ReturnType<typeof resultProvenance>[number];
+
+/** What a provenance line is drawn against: the dataset, the route, and
+ * whether a choice of amounts on it was settled. */
+interface ProvenanceFrame {
+  ds: Dataset;
+  route: Route;
+  contested: boolean;
+}
+
+/** The period an amount of this route is stated per, said after its quote;
+ * nothing where the quote carries no amount. */
+function amountPeriodHtml(ds: Dataset, route: Route, amount: number | undefined): string {
+  if (amount === undefined) return "";
+  const c = gteCriteriaOf(route).find((x) => x.threshold.amount === amount);
+  const p = c ? ds.fields.find((f) => f.id === c.field)?.period : undefined;
+  return p ? ` · ${esc(perPeriod(p))}` : "";
+}
+
+/** One value's quote, with whatever citation it is given. */
+function provenanceLineHtml(frame: ProvenanceFrame, entry: ProvenanceEntry, citation?: string): string {
+  const { label, value, amount, applied } = entry;
+  // The same frame the route pages put round a quote: its language, its host,
+  // and the note where the source spells the number its own way.
+  const { lang, host, note } = quoteFrame(value, amount);
+  // Per entry, not per card: one settled disjunction on a route must not put
+  // a ruled-out mark under a second one nobody has decided.
+  const takesMark = frame.contested && amount !== undefined;
+  const mark = takesMark ? appliesMarkHtml(applied) : "";
+  return `<div class="src${takesMark && applied === false ? " unapplied" : ""}"><i${
+    lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
+    label ? ` · ${esc(label)}` : ""}${amountPeriodHtml(frame.ds, frame.route, amount)}${mark}${
+    citation ? ` · ${esc(citation)}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
+    noteHtml(note)}</div>`;
+}
+
+/**
+ * One sentence, one line.
+ *
+ * This IS a change to what a card shows, and nobody asked for it as a
+ * feature: s5f's decision 3 forced it. Attaching a quote to every bare
+ * precondition made eight cards print the same sentence twice, because two
+ * claims may honestly rest on one sentence — the Dutch Blue Card's
+ * `situation` criterion and the "also required" line about the contract's
+ * length are both answered by "Your employment contract is valid for at
+ * least 6 months." Printing it twice is not twice the provenance; it is a
+ * longer list saying the same thing.
+ *
+ * What it does: drops a rendered provenance line that is EXACTLY identical
+ * to one already printed. A quote carrying a different label, amount or
+ * applies-to-you mark differs in the rendered line and still gets its own
+ * row, so nothing a reader needs is deduplicated away. Lines are compared
+ * before the citation is glossed, which only the first of two would be.
+ */
+function distinctProvenanceLines(
+  entries: ProvenanceEntry[], seen: Glossary, lineHtml: (entry: ProvenanceEntry, citation?: string) => string,
+): string[] {
+  const printed = new Set<string>();
+  const lines: string[] = [];
+  for (const entry of entries) {
+    const line = lineHtml(entry, entry.value.legal_basis);
+    if (printed.has(line)) continue;
+    printed.add(line);
+    lines.push(lineHtml(entry, entry.value.legal_basis && glossed(entry.value.legal_basis, seen)));
+  }
+  return lines;
+}
+
 /**
  * Every value this route rests on, quoted and dated. Where a route states two
  * thresholds and only one of them applied to this reader, both still render —
@@ -56,50 +125,8 @@ export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
   // reached the salary question that both of the route's thresholds were
   // against them (review 2026-09-07).
   const contested = entries.some((e) => e.amount !== undefined && e.applied === false);
-  const periodOf = (amount: number | undefined) => {
-    if (amount === undefined) return "";
-    const c = gteCriteriaOf(r.route).find((x) => x.threshold.amount === amount);
-    const p = c ? ds.fields.find((f) => f.id === c.field)?.period : undefined;
-    return p ? ` · ${esc(perPeriod(p))}` : "";
-  };
-  const render = ({ label, value, amount, applied }: (typeof entries)[number], citation?: string): string => {
-    // The same frame the route pages put round a quote: its language, its host,
-    // and the note where the source spells the number its own way.
-    const { lang, host, note } = quoteFrame(value, amount);
-    // Per entry, not per card: one settled disjunction on a route must not put
-    // a ruled-out mark under a second one nobody has decided.
-    const takesMark = contested && amount !== undefined;
-    const mark = takesMark ? appliesMarkHtml(applied) : "";
-    return `<div class="src${takesMark && applied === false ? " unapplied" : ""}"><i${
-      lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
-      label ? ` · ${esc(label)}` : ""}${periodOf(amount)}${mark}${
-      citation ? ` · ${esc(citation)}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
-      noteHtml(note)}</div>`;
-  };
-  // One sentence, one line.
-  //
-  // This IS a change to what a card shows, and nobody asked for it as a
-  // feature: s5f's decision 3 forced it. Attaching a quote to every bare
-  // precondition made eight cards print the same sentence twice, because two
-  // claims may honestly rest on one sentence — the Dutch Blue Card's
-  // `situation` criterion and the "also required" line about the contract's
-  // length are both answered by "Your employment contract is valid for at
-  // least 6 months." Printing it twice is not twice the provenance; it is a
-  // longer list saying the same thing.
-  //
-  // What it does: drops a rendered provenance line that is EXACTLY identical
-  // to one already printed. A quote carrying a different label, amount or
-  // applies-to-you mark differs in the rendered line and still gets its own
-  // row, so nothing a reader needs is deduplicated away. Lines are compared
-  // before the citation is glossed, which only the first of two would be.
-  const printed = new Set<string>();
-  const lines: string[] = [];
-  for (const entry of entries) {
-    const line = render(entry, entry.value.legal_basis);
-    if (printed.has(line)) continue;
-    printed.add(line);
-    lines.push(render(entry, entry.value.legal_basis && glossed(entry.value.legal_basis, seen)));
-  }
+  const lines = distinctProvenanceLines(entries, seen, (entry, citation) =>
+    provenanceLineHtml({ ds, route: r.route, contested }, entry, citation));
 
   // The promise on the first screen is that every value shows its quote and
   // its read date. A route that decides nothing on a number has no AMOUNT to
