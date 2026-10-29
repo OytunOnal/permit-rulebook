@@ -3,9 +3,9 @@ import { joinOr, type Dataset, type Profile, type RouteResult } from "permit-rul
 import {
   CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, SEEK_HINT, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING, SUMMARY_LABEL,
   UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, arrangedLine, notOpenToPassportCount, notYetCount,
-  notYetWithUnknowns, writeJobOfferLine, openCount, resultFeedbackLine, routesInCountryWhereYouToldUs,
+  notYetWithUnknowns, openCount, resultFeedbackLine, routesInCountryWhereYouToldUs,
   routesInCountryYouAreNotLookingAt, routesNeed, routesNeedSeeStepsAbove, unlockingSteps, unsettledCount,
-  withinReachCount,
+  withinReachCount, writeJobOfferLine,
 } from "../../copy/verdict.js";
 import { FEEDBACK } from "../../copy/frame.js";
 import { FEEDBACK_PATH } from "../../identity.js";

@@ -494,7 +494,7 @@ _Avoid_: mutable/immutable, editable
 
 **Job offer** (#179):
 The one situation answer the reader can go and get: neither an Arranged
-answer, nor "none of these yet", nor "I don't know". It is the answer the Job
+answer, nor "no offer yet", nor "I don't know". It is the answer the Job
 offer line counts for a reader who has none.
 _Avoid_: offer (in code, alone or in a longer name)
 

@@ -6,7 +6,7 @@ import {
 } from "permit-rulebook-data";
 import {
   EXPLORE_ONE_COUNTRY, NOTHING_OPEN_HEADLINE, STATUS_LABEL, STEPS_HEADING, WOULD_BE_MET, arrangedLine, nearestLine,
-  writeJobOfferLine, orAbove, stepsWouldChangeHeadline,
+  orAbove, stepsWouldChangeHeadline, writeJobOfferLine,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
 import { verdictHtml, type CountrySection, type Verdict, type VerdictGroup } from "../src/lib/verdict/index.js";
