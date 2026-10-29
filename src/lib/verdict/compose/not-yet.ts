@@ -4,7 +4,7 @@ import {
 } from "permit-rulebook-data";
 import { countryOf } from "../../countries.js";
 import { phraseOfAnswer } from "./answer-phrase.js";
-import { holdRowHtml, type VerdictScreen } from "./cards.js";
+import { holdRowHtml, type VerdictScreen } from "./card/cards.js";
 import type { Fold, RouteCard, VerdictGroup } from "./types.js";
 
 /** The answers a criterion asks for, where it asks for named ones. */

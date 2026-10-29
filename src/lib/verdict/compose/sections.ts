@@ -3,10 +3,9 @@ import {
   SITUATION_FIELD, findJobOfferAnswer, phraseOf, subjectOf, type Country, type Dataset, type RouteResult, type RoutesFreedByAJobOffer,
 } from "permit-rulebook-data";
 import { phraseOfAnswer } from "./answer-phrase.js";
-import { closedRowHtml } from "./card-blocks.js";
 import {
-  composeStepTitle, fullCardHtml, hasLiveUnknown, unlockCardHtml, type CardLook, type VerdictScreen,
-} from "./cards.js";
+  closedRowHtml, composeStepTitle, fullCardHtml, hasLiveUnknown, unlockCardHtml, type CardLook, type VerdictScreen,
+} from "./card/cards.js";
 import { seekHintHtml } from "./html.js";
 import { notYetGroupOf } from "./not-yet.js";
 import { groupedRoutesOf, type Compared, type GroupedRoutes } from "./in-view.js";

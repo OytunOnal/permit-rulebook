@@ -1,21 +1,42 @@
 // @level presentation
 import {
-  liveUnknowns, shortLabelOf, unlockMeansOf, unlockProfile, unlockTitleOf, type Profile, type RouteResult,
+  closedBy, learnLinkOf, liveUnknowns, noticeSources, shortLabelOf, unlockMeansOf, unlockProfile, unlockTitleOf,
+  type Dataset, type Notice, type Profile, type RouteResult,
 } from "permit-rulebook-data";
+import type { CardScreen } from "./blocks/card-screen.js";
+import { provenanceHtml, sourceLinkHtml, srcLine } from "./blocks/provenance.js";
+import { railHtml } from "./blocks/rail.js";
+import { carveOutHtml, caveatHtml, precondHtml, readingHtml, scopedHtml } from "./blocks/route-statements.js";
 import {
-  carveOutHtml, caveatHtml, learnBoxHtml, moneyShortfallOf, pointsLineHtml, precondHtml, provenanceHtml, railHtml,
-  readingHtml, scopedHtml, sourceLinkHtml, type CardScreen,
-} from "./card-blocks.js";
-import {
-  CAME_FROM_LINE, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET,
-  WOULD_COME_WITHIN_REACH, orAbove, pointsMore, shortByPoints, withStepHtml,
-} from "../../copy/verdict.js";
-import { countryOf } from "../../countries.js";
-import { type Glossary, glossSection, glossed } from "../../gloss.js";
-import { esc, escAttr, failDetailHtml, whyHtml } from "../../reason.js";
-import { url } from "../../site.js";
-import { routePath } from "../../slug.js";
-import type { Step } from "./steps.js";
+  CAME_FROM_LINE, FIND_OUT_YOURSELF, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET,
+  WOULD_COME_WITHIN_REACH, orAbove, pointsMore, pointsOfNeeded, shortByPoints, withStepHtml,
+} from "../../../copy/verdict.js";
+import { countryOf } from "../../../countries.js";
+// A symbol a stranger cannot read is explained the first time a screen uses
+// it, on the screen's own memory: the card's citations, statements, readings
+// and learn labels are glossed as the route page's are (#151, ruling 8). Each
+// block takes the screen's memory; one drawn alone is a screen of its own.
+import { type Glossary, glossSection, glossed } from "../../../gloss.js";
+import { glossedLearnLinkText } from "../../../quote.js";
+import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
+import { url } from "../../../site.js";
+import { routePath } from "../../../slug.js";
+import { moneyShortfallOf } from "../money-shortfall.js";
+import type { Step } from "../steps.js";
+
+/**
+ * The blocks of a card that state what the dataset itself says: what else is
+ * required, what the source qualifies, which threshold the person was measured
+ * against, and the quotes behind all of it.
+ *
+ * They live here for the reason `reason.ts` does: what the page renders has to
+ * be readable by a test. The orientation year modelled "you have no job offer
+ * yet" as a rule and failed people the Dutch immigration service does not fail
+ * (2026-09-07); the rail labelled a route met through the €3,122 path with
+ * €4,357 and drew the reader's own band below that line, so one card carried a
+ * verdict and a picture of the same person failing (2026-09-07). Neither is
+ * caught by reading the markup in the page — only by reading the markup.
+ */
 
 /**
  * What every card of one verdict is drawn on: the dataset, the answers, the
@@ -179,4 +200,114 @@ export function unlockCardHtml(screen: VerdictScreen, step: Step, routes: RouteR
           <ul>${routes.map((r) => unlockedRouteHtml(screen, r, taken)).join("")}
           </ul>
         </article>`;
+}
+
+/**
+ * A route the authority closes to this reader's passport.
+ *
+ * It is not a verdict the rules computed and it is not a shortfall, so it gets
+ * neither a card nor a "not yet" row: "not yet" invites a reader back with a
+ * better salary, and this permit will never be theirs however the rest of the
+ * interview goes. What the row owes them is the two things the product exists
+ * for — what the authority decided, and the sentence it decided it in.
+ *
+ * The words are the dataset's. A closure is the one criterion whose reason
+ * cannot be composed from the answers it names, so it carries its own sentence
+ * and this prints it (s8).
+ */
+export function closedRowHtml(r: RouteResult, seen: Glossary = new Set()): string {
+  const closures = closedBy(r);
+  if (!closures.length) return "";
+  return `
+        <article class="closed">
+          <h3><span class="country">${esc(r.country)}</span> ${esc(r.route.name)}</h3>
+          ${closures.map((cr) => {
+    const c = cr.criterion;
+    if (c.op !== "not-in") return "";
+    return `<p class="why">${esc(glossed(c.text, seen))}</p>${srcLine(c.source, seen)}`;
+  }).join("")}
+          <div class="foot">${sourceLinkHtml(r.route.info_url)}</div>
+        </article>`;
+}
+
+/**
+ * A notice, on the results screen.
+ *
+ * It is drawn here for the reason every other block is: a test reads the
+ * markup, and a notice has more to get wrong than a title and a body. A
+ * notice may stand on several authorities —
+ * the Algerian talent question reports two of them disagreeing and a third
+ * page saying what the reader gets instead — so every side is printed, each
+ * quote framed with its own language, and the link at the foot is the page the
+ * notice sends the reader to rather than whichever source it leads with (s8).
+ */
+export function noticeHtml(n: Notice, seen: Glossary = new Set()): string {
+  const title = esc(glossed(n.title, seen));
+  const body = esc(glossed(n.body, seen));
+  const sources = noticeSources(n).map((value) => srcLine(value, seen)).join("");
+  const next = n.learn
+    ? `<a class="next" href="${escAttr(n.learn.url)}" target="_blank" rel="noopener">${
+      esc(glossedLearnLinkText(n.learn, seen))}</a>`
+    : sourceLinkHtml(n.source.source_url);
+  return `
+        <article class="notice ${escAttr(n.kind)}">
+          <h3>${title}</h3>
+          <p class="why">${body}</p>
+          <div class="foot">
+            <div class="srcs">${sources}</div>
+            ${next}
+          </div>
+        </article>`;
+}
+
+/**
+ * The points tally, on every card that scores one (s23, F4).
+ *
+ * The open Opportunity Card printed "6 points — 6 needed · English +1 …" and
+ * the not-yet one printed nothing: the reader nearest to a verdict could not
+ * see how near (v1.1 gate critique, F4). The engine attaches the tally to a
+ * not-yet result as readily as to a met one — the points path stays open
+ * while its unknowns are — so the line is a function of the result, rendered
+ * here once, and the two cards cannot differ on it.
+ */
+function pointsLineHtml(ds: Dataset, r: RouteResult): string {
+  const p = r.points;
+  if (!p) return "";
+  const items = p.items.length
+    ? " · " + p.items.map((i) => `${esc(shortLabelOf(ds, i.field))} +${i.points}`).join(" · ")
+    : "";
+  // The met colour only where the points are met: on a not-yet card the
+  // tally is a count, and the verdict colour would say otherwise.
+  return `<div class="ptsline ${p.scored >= p.required ? "met" : "short"}"><b>${
+    esc(pointsOfNeeded(p.scored, p.required))}</b>${items}</div>`;
+}
+
+/**
+ * The way to look an unknown up, on the card it still binds — the dataset's
+ * own `learn` link, never hardcoded (s3).
+ *
+ * Only where the unknown still binds: on a hard-failed route finding out
+ * changes nothing, and the link sends the reader down a path that cannot open
+ * (critique #4). The box ends on the link, with no full stop after it: the
+ * link is a tap-height box a line cannot break inside, so on a phone a stop
+ * after it wraps onto a line of its own (v1.1 gate critique, P5), as the
+ * route page's own box has it.
+ *
+ * The label is the text of the link: a link says what the reader does there.
+ * It is glossed like the rest of the card's words, on the screen's memory
+ * (#151, ruling 8); the dataset's contract keeps citations out of it, whose
+ * explainer would make a sentence underlined end to end (s28). Where the page
+ * is a consolidated text, the glossed label is followed by what the page is
+ * (#158). Any route the label names is said in full (#159).
+ */
+function learnBoxHtml(screen: CardScreen, r: RouteResult): string {
+  const { ds, answers, glossary: seen = new Set() } = screen;
+  const links = liveUnknowns(r, answers)
+    .map((f) => learnLinkOf(ds, f))
+    .filter((l): l is { label: string; url: string } => !!l);
+  if (!links.length) return "";
+  return `<div class="learn">${esc(FIND_OUT_YOURSELF)} ${links
+    .map((l) => `<a href="${escAttr(l.url)}" target="_blank" rel="noopener">${
+      esc(glossedLearnLinkText(l, seen))}</a>`)
+    .join(" · ")}</div>`;
 }

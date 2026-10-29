@@ -160,7 +160,7 @@
       "count": 1
     }
   },
-  "src/lib/verdict/compose/card-blocks.ts": {
+  "src/lib/verdict/compose/card/blocks/provenance.ts": {
     "max-lines-per-function": {
       "count": 1
     }

@@ -11,10 +11,9 @@
  * markup.
  */
 import { contradictionsIn, unlocks, type Dataset, type Notice, type Profile } from "permit-rulebook-data";
-import { noticeHtml } from "./compose/card-blocks.js";
+import { noticeHtml, type VerdictScreen } from "./compose/card/cards.js";
 import { esc } from "../reason.js";
 import { arrangeSteps, arrangedRowsOf, routesAJobOfferFreesFor } from "./compose/steps.js";
-import type { VerdictScreen } from "./compose/cards.js";
 import { comparedActionOf } from "./compose/headline.js";
 import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from "./compose/html.js";
 import { noticeMastheadOf } from "./compose/masthead.js";

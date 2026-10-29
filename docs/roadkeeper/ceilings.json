@@ -2,9 +2,6 @@
   "src/lib/route-page.ts": {
     "lines": 1071
   },
-  "src/lib/verdict/compose/card-blocks.ts": {
-    "lines": 705
-  },
   "tests/first-paint.test.ts": {
     "lines": 732
   },

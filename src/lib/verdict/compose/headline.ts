@@ -3,8 +3,8 @@ import type { RouteResult } from "permit-rulebook-data";
 import {
   NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, stepsWouldChangeHeadline, unsettledHeadline,
 } from "../../copy/verdict.js";
-import { moneyShortfallOf } from "./card-blocks.js";
-import { composeStepTitle, type VerdictScreen } from "./cards.js";
+import { moneyShortfallOf } from "./money-shortfall.js";
+import { composeStepTitle, type VerdictScreen } from "./card/cards.js";
 import { comparedMastheadOf, type Explore, type Headline } from "./masthead.js";
 import type { Compared } from "./in-view.js";
 import { nearestStep } from "./steps.js";
