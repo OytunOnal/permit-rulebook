@@ -246,11 +246,11 @@ export const STEPS_HEADING = "Steps that would unlock more";
 export const STEPS_HEADING_TAIL = "each re-checked against the rules";
 export const STEPS_HERE_HEADING = "Steps that would unlock more here";
 
-/** The offer line: what a job offer would have checked in one country for an
+/** The job offer line: what a job offer would have checked in one country for an
  * explorer — a check, never a verdict, so never "met" or "within reach". The
  * offer, the country and the fields' subjects are the dataset's words. */
-export const offerLine = (line: { offer: string; country: string; routes: number; fields: string[] }): string =>
-  `With ${line.offer} in ${line.country}: ${line.routes} more route${line.routes === 1 ? "" : "s"} would be checked`
+export const writeJobOfferLine = (line: { jobOffer: string; country: string; routes: number; fields: string[] }): string =>
+  `With ${line.jobOffer} in ${line.country}: ${line.routes} more route${line.routes === 1 ? "" : "s"} would be checked`
   + `${line.fields.length ? ` — on ${joinAnd(line.fields)}` : ""}.`;
 
 /** The arranged line: what an answer someone else arranges would open in one

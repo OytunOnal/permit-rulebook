@@ -48,12 +48,12 @@ const SEVEN = "experience_7y";
  * path and counts nothing, s23) and the experience rows show in the tally.
  * The experienced-worker route never reads recognition.
  */
-const OFFER: Profile = {
+const JOB_OFFER: Profile = {
   destination: "de", situation: "offer", situation_country: "de", citizenship: "TR", qualification: "vocational",
   recognition_de: "not_assessed", occupation_shortage: "yes", occupation_it: "no", salary_eur_year: "band_4",
   german: "a1", english: "none", funds_eur_month: "band_1", age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 };
-const withExperience = (five: string, seven: string): Profile => ({ ...OFFER, [FIVE]: five, [SEVEN]: seven });
+const withExperience = (five: string, seven: string): Profile => ({ ...JOB_OFFER, [FIVE]: five, [SEVEN]: seven });
 const resultOf = (profile: Profile, id: string) => evaluate(ds, profile).find((r) => r.route.id === id)!;
 /** The points tally on the Opportunity Card the verdict for these answers draws. */
 const tallyFor = (profile: Profile): string =>
@@ -105,7 +105,7 @@ describe("the two questions are asked from the dataset, in order, after recognit
     // before them since the shortage Blue Card's IT path reads it (#134), so
     // the reader has answered it too.
     const asked = ["destination", "situation", "qualification", "citizenship", "recognition_de", "occupation_it"];
-    const partial: Profile = Object.fromEntries(asked.map((f) => [f, OFFER[f]!]));
+    const partial: Profile = Object.fromEntries(asked.map((f) => [f, JOB_OFFER[f]!]));
     expect(remainingQuestions(ds, partial)[0]!.field).toBe(FIVE);
     expect(remainingQuestions(ds, { ...partial, [FIVE]: "2plus" })[0]!.field).toBe(SEVEN);
   });
@@ -277,7 +277,7 @@ describe("a record from before this slice loses its experience answers", () => {
     const ahead = remainingQuestions(ds, replayed.answers).map((q) => q.field);
     expect(ahead).toContain(FIVE);
     expect(ahead).toContain(SEVEN);
-    expect(remainingQuestions(ds, { ...replayed.answers, occupation_it: OFFER.occupation_it! })[0]!.field).toBe(FIVE);
+    expect(remainingQuestions(ds, { ...replayed.answers, occupation_it: JOB_OFFER.occupation_it! })[0]!.field).toBe(FIVE);
   });
 });
 
@@ -286,7 +286,7 @@ describe("a record from before this slice loses its experience answers", () => {
  * Blue Card's IT path reads it (#134). */
 const SEEDED: Profile = {
   destination: "de", situation: "offer", qualification: "vocational", citizenship: "TR", recognition_de: "not_assessed",
-  occupation_it: OFFER.occupation_it!,
+  occupation_it: JOB_OFFER.occupation_it!,
 };
 
 /** The three ways the two questions are answered, and what each reads. */

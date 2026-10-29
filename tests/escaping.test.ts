@@ -120,7 +120,7 @@ const middleBandOf = (seen: Dataset, field: string): string => {
   const bands = deriveBands(seen, field);
   return bands[Math.floor(bands.length / 2)]!.id;
 };
-const germanyOffer = (seen: Dataset): Profile => ({
+const germanyJobOffer = (seen: Dataset): Profile => ({
   destination: "de", citizenship: "IN", situation: "offer", qualification: "degree", qualification_recent: "no",
   recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
   occupation_it: "no", salary_eur_year: middleBandOf(seen, "salary_eur_year"), german: "a1", english: "b2",
@@ -131,7 +131,7 @@ const germanyOffer = (seen: Dataset): Profile => ({
 function askedForLineOf(seen: Dataset): string {
   const question = deriveQuestions(seen).find((q) => q.field === "funds_eur_month")!;
   const html = questionCardHtml({
-    dataset: seen, question, answers: germanyOffer(seen), asked: [], editing: null, total: 10, glossary: new Set(),
+    dataset: seen, question, answers: germanyJobOffer(seen), asked: [], editing: null, total: 10, glossary: new Set(),
   });
   return /<p class="asked-for"[^>]*>[\s\S]*?<\/p>/.exec(html)?.[0] ?? "";
 }
@@ -190,7 +190,7 @@ const EXPLORER: Profile = {
   partner_ck: "no",
 };
 /** An offer in Berlin: steps to take, and the arranged line after them. */
-const BERLIN_OFFER: Profile = {
+const BERLIN_JOB_OFFER: Profile = {
   destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
   recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2",
   experience_7y: "3to5", german: "a1", english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5",
@@ -209,14 +209,14 @@ describe("nothing from the dataset reaches the verdict's markup unescaped (#167)
 
   it("the offer line draws the offer and the fields it names as text", () => {
     const html = paintedOf(wreckedForTheVerdict(), EXPLORER);
-    const offer = lineOf(html, "offer-line");
-    expect(offer, "precondition: the explorer reads an offer line").not.toBe("");
-    expect(offer).toContain(TAG_AS_TEXT);
+    const jobOfferLine = lineOf(html, "job-offer-line");
+    expect(jobOfferLine, "precondition: the explorer reads an offer line").not.toBe("");
+    expect(jobOfferLine).toContain(TAG_AS_TEXT);
     expect(html).not.toContain("<img");
   });
 
   it("the arranged line draws the arranged answers as text", () => {
-    const html = paintedOf(wreckedForTheVerdict(), BERLIN_OFFER);
+    const html = paintedOf(wreckedForTheVerdict(), BERLIN_JOB_OFFER);
     const arranged = lineOf(html, "arranged-line");
     expect(arranged, "precondition: the offer-holder reads an arranged line").not.toBe("");
     expect(arranged).toContain(TAG_AS_TEXT);

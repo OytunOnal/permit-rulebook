@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  SITUATION_FIELD, fieldOptions, phraseOf, routesAnOfferFrees, subjectOf, unlockTitleOf, unlocks,
+  SITUATION_FIELD, fieldOptions, phraseOf, routesAJobOfferFrees, subjectOf, unlockTitleOf, unlocks,
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
   EXPLORE_ONE_COUNTRY, NOTHING_OPEN_HEADLINE, STATUS_LABEL, STEPS_HEADING, WOULD_BE_MET, arrangedLine, nearestLine,
-  offerLine, orAbove, stepsWouldChangeHeadline,
+  writeJobOfferLine, orAbove, stepsWouldChangeHeadline,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
 import { verdictHtml, type CountrySection, type Verdict, type VerdictGroup } from "../src/lib/verdict/index.js";
@@ -41,7 +41,7 @@ const PRIYA: Profile = {
 
 /** The hostile walk's offer-holder in Spain with no qualification: nothing
  * open, and nothing but a hosting agreement would open anything. */
-const SPAIN_OFFER: Profile = {
+const SPAIN_JOB_OFFER: Profile = {
   destination: "es", citizenship: "TR", situation: "offer", situation_country: "es", qualification: "none",
 };
 
@@ -123,17 +123,17 @@ describe("#175 — an arranged answer is never a step", () => {
 
 describe("#175 — where only an arranged answer would open something", () => {
   it("the headline is the nothing-open one with its explore sentence, and the arranged line stands alone", () => {
-    expect(arrangedIn(SPAIN_OFFER, "ES").length, "a hosting agreement no longer opens a Spanish route").toBeGreaterThan(0);
-    expect(unlocks(ds, SPAIN_OFFER).every((u) => u.option.is_arranged)).toBe(true);
-    const verdict = verdictFor(SPAIN_OFFER);
+    expect(arrangedIn(SPAIN_JOB_OFFER, "ES").length, "a hosting agreement no longer opens a Spanish route").toBeGreaterThan(0);
+    expect(unlocks(ds, SPAIN_JOB_OFFER).every((u) => u.option.is_arranged)).toBe(true);
+    const verdict = verdictFor(SPAIN_JOB_OFFER);
     const { headline, subline } = verdict.action.masthead;
     expect(headline).toBe(esc(NOTHING_OPEN_HEADLINE));
     expect(subline).toContain(EXPLORE_ONE_COUNTRY);
-    expect(nearestIn(verdict, arrangedTitles(SPAIN_OFFER))).toBeUndefined();
+    expect(nearestIn(verdict, arrangedTitles(SPAIN_JOB_OFFER))).toBeUndefined();
     const groups = groupsIn(verdict);
     expect(groupOf(groups, "steps")).toBeUndefined();
     const line = groupOf(groups, "arranged");
-    expect(line?.answers).toEqual(arrangedIn(SPAIN_OFFER, "ES"));
+    expect(line?.answers).toEqual(arrangedIn(SPAIN_JOB_OFFER, "ES"));
     const html = verdictHtml(verdict);
     expect(html).toContain(esc(arrangedLine(line!)));
     expect(html).not.toContain(esc(STEPS_HEADING));
@@ -141,24 +141,24 @@ describe("#175 — where only an arranged answer would open something", () => {
 });
 
 describe("#175 — the offer line", () => {
-  const offer = fieldOptions(ds, SITUATION_FIELD).find((o) => !o.is_arranged && !o.is_fallback && !o.is_unknown)!;
+  const jobOfferAnswer = fieldOptions(ds, SITUATION_FIELD).find((o) => !o.is_arranged && !o.is_fallback && !o.is_unknown)!;
 
   it("opens the explorer's steps block in each country an offer frees routes in", () => {
-    const freed = routesAnOfferFrees(ds, PRIYA);
+    const freed = routesAJobOfferFrees(ds, PRIYA);
     expect(freed.length, "an offer frees nothing for the explorer").toBeGreaterThan(0);
     const verdict = verdictFor(PRIYA);
     const html = verdictHtml(verdict);
     for (const section of sectionsOf(verdict)) {
       const here = freed.find((f) => f.country === codeOf(section.name));
       const block = groupOf(section.groups, "steps");
-      if (!here) { expect(block?.offer ?? null, section.name).toBeNull(); continue; }
-      expect(block?.offer, section.name).toEqual({
-        offer: offer.short ?? offer.label, country: phraseOf(here.country), routes: here.routes.length,
+      if (!here) { expect(block?.jobOfferLine ?? null, section.name).toBeNull(); continue; }
+      expect(block?.jobOfferLine, section.name).toEqual({
+        jobOffer: jobOfferAnswer.short ?? jobOfferAnswer.label, country: phraseOf(here.country), routes: here.routes.length,
         // Each open field by its subject, the dataset's phrase for running text.
         fields: here.fieldsLeftOpen.map((f) => subjectOf(ds, f)),
       });
       // The line is drawn, and before any step card of its block.
-      const line = esc(offerLine(block!.offer!));
+      const line = esc(writeJobOfferLine(block!.jobOfferLine!));
       expect(html, section.name).toContain(line);
       for (const step of block!.steps) expect(html.indexOf(line)).toBeLessThan(html.indexOf(step.html));
     }
@@ -168,7 +168,7 @@ describe("#175 — the offer line", () => {
     const verdict = verdictFor(PRIYA);
     const lines = sectionsOf(verdict).flatMap((s) => {
       const block = groupOf(s.groups, "steps");
-      return block?.offer ? [offerLine(block.offer)] : [];
+      return block?.jobOfferLine ? [writeJobOfferLine(block.jobOfferLine)] : [];
     });
     expect(lines.length).toBeGreaterThan(0);
     for (const line of lines) {
@@ -190,11 +190,11 @@ describe("#175 — the offer line", () => {
     expect(block?.steps).toEqual([]);
     const html = verdictHtml(verdict);
     expect(html.indexOf(esc(STEPS_HEADING))).toBeGreaterThan(-1);
-    expect(html.indexOf(esc(STEPS_HEADING))).toBeLessThan(html.indexOf(esc(offerLine(block!.offer!))));
+    expect(html.indexOf(esc(STEPS_HEADING))).toBeLessThan(html.indexOf(esc(writeJobOfferLine(block!.jobOfferLine!))));
   });
 
   it("a freed route's open field with no subject is refused, not named by its id", () => {
-    const [first] = routesAnOfferFrees(ds, PRIYA);
+    const [first] = routesAJobOfferFrees(ds, PRIYA);
     const field = first!.fieldsLeftOpen[0]!;
     // A dataset that breaks the contract: the field written without its subject.
     const withoutSubject = (f: Dataset["fields"][number]) =>
@@ -204,9 +204,9 @@ describe("#175 — the offer line", () => {
   });
 
   it("an offer-holder never gets it", () => {
-    for (const answers of [DENIZ, SPAIN_OFFER])
+    for (const answers of [DENIZ, SPAIN_JOB_OFFER])
       for (const group of groupsIn(verdictFor(answers)))
-        if (group.kind === "steps") expect(group.offer ?? null).toBeNull();
+        if (group.kind === "steps") expect(group.jobOfferLine ?? null).toBeNull();
   });
 });
 
@@ -214,7 +214,7 @@ describe("#175 — the not-yet fold points up only at something above it", () =>
   /** Profiles drawing a fold of rows gated on a path answer, some with the
    * steps block, the offer line or the arranged line above it, some with none. */
   const PROFILES: Profile[] = [
-    PRIYA, DENIZ, SPAIN_OFFER,
+    PRIYA, DENIZ, SPAIN_JOB_OFFER,
     { destination: "fr", citizenship: "TR", situation: "none", qualification: "none" },
     { destination: "fr", citizenship: "TR", situation: "research", situation_country: "fr", qualification: "none" },
     { destination: "de", citizenship: "TR", situation: "ict", situation_country: "de", qualification: "none" },
@@ -231,7 +231,7 @@ describe("#175 — the not-yet fold points up only at something above it", () =>
    * group: a step, what an offer frees, or what an arranged answer opens. */
   function standsAbove(answers: Profile, code: string): boolean {
     const opensHere = unlocks(ds, answers).some((u) => u.routes.some((r) => r.country === code));
-    return opensHere || routesAnOfferFrees(ds, answers).some((f) => f.country === code);
+    return opensHere || routesAJobOfferFrees(ds, answers).some((f) => f.country === code);
   }
 
   it("'see the steps above' appears exactly when the steps, the offer line or the arranged line stands above", () => {

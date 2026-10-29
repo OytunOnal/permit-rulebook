@@ -3,7 +3,7 @@ import { joinOr, type Dataset, type Profile, type RouteResult } from "permit-rul
 import {
   CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, SEEK_HINT, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING, SUMMARY_LABEL,
   UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, arrangedLine, notOpenToPassportCount, notYetCount,
-  notYetWithUnknowns, offerLine, openCount, resultFeedbackLine, routesInCountryWhereYouToldUs,
+  notYetWithUnknowns, writeJobOfferLine, openCount, resultFeedbackLine, routesInCountryWhereYouToldUs,
   routesInCountryYouAreNotLookingAt, routesNeed, routesNeedSeeStepsAbove, unlockingSteps, unsettledCount,
   withinReachCount,
 } from "../../copy/verdict.js";
@@ -66,8 +66,8 @@ export function seekHintHtml(ds: Dataset, results: RouteResult[], answers: Profi
 function groupHtml(group: VerdictGroup, stepsHeading: string): string {
   switch (group.kind) {
     case "steps": {
-      const offer = group.offer ? `<p class="offer-line">${esc(offerLine(group.offer))}</p>` : "";
-      return stepsHeading + offer + group.steps.map((s) => s.html).join("") + group.hint;
+      const jobOfferLineHtml = group.jobOfferLine ? `<p class="job-offer-line">${esc(writeJobOfferLine(group.jobOfferLine))}</p>` : "";
+      return stepsHeading + jobOfferLineHtml + group.steps.map((s) => s.html).join("") + group.hint;
     }
     case "arranged":
       // A paragraph of its own, not a step card, under no heading.

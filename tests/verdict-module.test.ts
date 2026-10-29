@@ -8,14 +8,14 @@ import { cardsIn, groupsIn, verdictFor } from "./verdict-cards.js";
  * reach on the monthly salary, and the other four Dutch routes are not yet —
  * none of them gated on a path answer alone, so each keeps its own row.
  */
-const DUTCH_OFFER: Profile = {
+const DUTCH_JOB_OFFER: Profile = {
   destination: "nl", citizenship: "IN", situation: "offer", situation_country: "nl", english: "b1", age_band: "u30",
   qualification: "none", experience_7y: "lt3", occupation_it: "yes", salary_eur_month: "band_0", nl_recent_grad: "yes",
 };
 
 describe("verdictOf — the one-country layout's groups", () => {
   it("a one-country reader's groups come in the order open, within reach, not yet, each listing its routes", () => {
-    const verdict = verdictFor(DUTCH_OFFER);
+    const verdict = verdictFor(DUTCH_JOB_OFFER);
     expect(verdict.layout.kind).toBe("one-country");
     if (verdict.layout.kind !== "one-country") return;
     const routeGroups = verdict.layout.groups.filter((g) => g.kind !== "steps" && g.kind !== "arranged");
@@ -46,13 +46,13 @@ const wholeCardsOf = (answers: Profile): string[] =>
 
 describe("verdictHtml's cards — the badge's one home (#95; ruling 10 on #55)", () => {
   it("on the one-country layout a card's first line is the country's chip and the badge, above the title", () => {
-    const cards = wholeCardsOf(DUTCH_OFFER);
+    const cards = wholeCardsOf(DUTCH_JOB_OFFER);
     expect(cards.length, "precondition: whole cards on the verdict").toBeGreaterThan(0);
     for (const card of cards) expect(firstLineOf(card)).toEqual(["country", "badge"]);
   });
 
   it("in a country's section a card's first line is the badge alone, above the title", () => {
-    const cards = wholeCardsOf({ ...DUTCH_OFFER, destination: "all" });
+    const cards = wholeCardsOf({ ...DUTCH_JOB_OFFER, destination: "all" });
     expect(cards.length, "precondition: whole cards on the verdict").toBeGreaterThan(0);
     for (const card of cards) expect(firstLineOf(card)).toEqual(["badge"]);
   });

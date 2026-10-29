@@ -159,9 +159,9 @@ describe.skipIf(skipped !== null)("the page shows it where the reader was standi
     };
 
     expect(seen.question).toBe("Which best describes your situation?");
-    const offer = seen.options.find((o) => o.label.includes("job offer"))!;
+    const jobOfferAnswer = seen.options.find((o) => o.label.includes("job offer"))!;
     const transfer = seen.options.find((o) => o.label.includes("transferring"))!;
-    expect(offer.means, "the job-offer answer says nothing about what it means")
+    expect(jobOfferAnswer.means, "the job-offer answer says nothing about what it means")
       .toContain("not a transfer to a branch on a contract you hold abroad");
     expect(transfer.means, "the transfer answer says nothing about what it means")
       .toContain("Your contract stays with the company abroad");

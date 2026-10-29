@@ -33,7 +33,7 @@ if (skipped)
 
 /** An offer in Spain, a recognised degree, the middle bands: Spain's two
  * open routes, one titled on one line at 390 and one on two. */
-const SPAIN_OFFER: Profile = {
+const SPAIN_JOB_OFFER: Profile = {
   destination: "es", citizenship: "IN", situation: "offer", qualification: "degree", qualification_recent: "no",
   recognition_de: "recognized", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
   occupation_it: "no", salary_eur_year: "band_5", salary_eur_month: "band_3", german: "a1", english: "b2",
@@ -42,15 +42,15 @@ const SPAIN_OFFER: Profile = {
 
 /** The same reader asking about all four, the offer in Spain: the cards sit in
  * their country's section, which names the country once, on its summary row. */
-const FOUR_SPAIN_OFFER: Profile = {
-  ...SPAIN_OFFER, destination: "all", situation_country: "es", fr_degree: "no", fr_innovative_employer: "no",
+const FOUR_SPAIN_JOB_OFFER: Profile = {
+  ...SPAIN_JOB_OFFER, destination: "all", situation_country: "es", fr_degree: "no", fr_innovative_employer: "no",
   fr_local_contract: "no", nl_recent_grad: "no", top200_grad: "no", de_stay6m: "no", partner_ck: "no",
 };
 
 /** An offer in Berlin (persona P1, s23): steps the reader can take —
  * recognition, experience, German. Spain's reader above has none: what would
  * open more there is a hosting agreement, an arranged answer (#175). */
-const GERMANY_OFFER: Profile = {
+const GERMANY_JOB_OFFER: Profile = {
   destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
   recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2", experience_7y: "3to5", german: "a1",
   english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5", age_band: "a30to35", de_stay6m: "no",
@@ -59,7 +59,7 @@ const GERMANY_OFFER: Profile = {
 
 /** The same Berlin offer asking about all four: Germany's section counts its
  * steps on its summary row. */
-const FOUR_GERMANY_OFFER: Profile = { ...GERMANY_OFFER, destination: "all", nl_recent_grad: "no", top200_grad: "no" };
+const FOUR_GERMANY_JOB_OFFER: Profile = { ...GERMANY_JOB_OFFER, destination: "all", nl_recent_grad: "no", top200_grad: "no" };
 
 /** A finished record, so the page draws its verdict on arrival. */
 const seed = (answers: Profile): string =>
@@ -152,7 +152,7 @@ describe.skipIf(skipped !== null)("verdict look — in the browser", () => {
     ["1280x900", { width: 1280, height: 900 }, false],
   ] as const) {
     it(`${name}: the badge is on the card's first line, above the title — on the country's name's line where the card carries it, alone above the title where it does not`, async () => {
-      const [flat, sections] = await looksAt(viewport, mobile, [SPAIN_OFFER, FOUR_SPAIN_OFFER]);
+      const [flat, sections] = await looksAt(viewport, mobile, [SPAIN_JOB_OFFER, FOUR_SPAIN_JOB_OFFER]);
       for (const look of [flat!, sections!]) expect(look.state).toBe("results");
       // The precondition: cards with the chip, cards without, and at 390 a
       // one-line and a two-line title among the cards with it.
@@ -172,7 +172,7 @@ describe.skipIf(skipped !== null)("verdict look — in the browser", () => {
     }, 120_000);
 
     it(`${name}: a step heading and its step's name are ink, not the link's colour`, async () => {
-      const [look] = await looksAt(viewport, mobile, [GERMANY_OFFER]);
+      const [look] = await looksAt(viewport, mobile, [GERMANY_JOB_OFFER]);
       expect(look!.state).toBe("results");
       // The precondition: steps on the screen, and a link whose colour is not ink.
       expect(look!.steps.length).toBeGreaterThan(0);
@@ -185,14 +185,14 @@ describe.skipIf(skipped !== null)("verdict look — in the browser", () => {
     }, 120_000);
 
     it(`${name}: the strip's counters have no border`, async () => {
-      const [look] = await looksAt(viewport, mobile, [SPAIN_OFFER]);
+      const [look] = await looksAt(viewport, mobile, [SPAIN_JOB_OFFER]);
       expect(look!.state).toBe("results");
       expect(look!.counters.length).toBeGreaterThan(0);
       for (const widths of look!.counters) expect(widths).toEqual([0, 0, 0, 0]);
     }, 120_000);
 
     it(`${name}: a country's tally draws its unlocking-steps count in ink, not the link's colour`, async () => {
-      const [look] = await looksAt(viewport, mobile, [FOUR_GERMANY_OFFER]);
+      const [look] = await looksAt(viewport, mobile, [FOUR_GERMANY_JOB_OFFER]);
       expect(look!.state).toBe("results");
       // The precondition: a tally that counts steps, and a link whose colour is not ink.
       expect(look!.tallySteps.length).toBeGreaterThan(0);
@@ -201,7 +201,7 @@ describe.skipIf(skipped !== null)("verdict look — in the browser", () => {
     }, 120_000);
 
     it(`${name}: a rail's tick carries no margin, so it sits on the amount it marks`, async () => {
-      const [look] = await looksAt(viewport, mobile, [GERMANY_OFFER]);
+      const [look] = await looksAt(viewport, mobile, [GERMANY_JOB_OFFER]);
       expect(look!.state).toBe("results");
       expect(look!.railTicks.length, "precondition: a card draws a rail").toBeGreaterThan(0);
       for (const tick of look!.railTicks) {

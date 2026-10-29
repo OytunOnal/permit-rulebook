@@ -101,7 +101,7 @@ details.route-hold summary::-webkit-details-marker{display:none}
 .unlock-hint{font-size:.8rem;color:var(--color-muted);margin:-.2rem 0 .4rem;max-width:38rem}
 /* #175: the offer line opens the steps block, plain text in ink, not a card;
    the arranged line follows it in the muted text a hint is set in. */
-.offer-line{font-size:.88rem;color:var(--color-ink);margin:0 0 .7rem;max-width:38rem}
+.job-offer-line{font-size:.88rem;color:var(--color-ink);margin:0 0 .7rem;max-width:38rem}
 .arranged-line{font-size:.84rem;color:var(--color-muted);margin:.1rem 0 1rem;max-width:38rem}
 /* s5b: conditions the authority applies that the interview never asked —
    the card must not read as a green light on them (critique #2). */
