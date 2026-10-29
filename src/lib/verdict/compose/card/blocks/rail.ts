@@ -1,13 +1,13 @@
 // @level presentation
 import {
-  decidingCriteria, formatEURPer, type Band, type Dataset, type Profile, type RouteResult,
+  decidingCriteria, type Band, type Dataset, type Profile, type RouteResult,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "../../../../reason.js";
 import {
   ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, RAIL_ROWS_LABEL, WHAT_THIS_ROUTE_ASKS, YOUR_ANSWER, upToShort,
 } from "../../../../copy/verdict.js";
-import { bandOf, measuredCriterionOf, periodOf, type Gte } from "../../money-shortfall.js";
-import { gapAsPrinted } from "../../printed-shortfall.js";
+import { bandOf, measuredCriterionOf, type Gte } from "../../money-shortfall.js";
+import { amountAsPrinted } from "../../printed-shortfall.js";
 
 /**
  * The thresholds this route actually asks of this reader — the amounts on the
@@ -112,12 +112,11 @@ export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string 
     .map((a) => `<span class="rail-tick" style="left:${scale.at(a)}"></span>`)
     .join("");
 
-  const period = periodOf(ds, field);
-  const gapSaid = (gap: number): string => gapAsPrinted(ds, field, gap);
+  const gapSaid = (gap: number): string => amountAsPrinted(ds, field, gap);
   const rows = [
     ...thresholds.map((c) => {
       const label = c.threshold_label ? ` — ${esc(c.threshold_label)}` : "";
-      return `<li><span class="sw sw-asks"></span><b>${esc(formatEURPer(c.threshold.amount, period))}</b>` +
+      return `<li><span class="sw sw-asks"></span><b>${esc(amountAsPrinted(ds, field, c.threshold.amount))}</b>` +
         `<span>${esc(WHAT_THIS_ROUTE_ASKS)}${label} · ${esc(bandStandsAt(band, c.threshold.amount, gapSaid))}</span></li>`;
     }),
     `<li><span class="sw sw-you"></span><b>${esc(band.label)}</b><span>${esc(YOUR_ANSWER)}</span></li>`,

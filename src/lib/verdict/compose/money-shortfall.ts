@@ -20,9 +20,6 @@ export const bandOf = (ds: Dataset, field: string, answers: Profile) =>
 export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profile): Gte | undefined =>
   gapCriterionOf(ds, r, answers) as Gte | undefined;
 
-/** The period a money field's amounts are stated per. */
-export const periodOf = (ds: Dataset, field: string) => ds.fields.find((f) => f.id === field)?.period;
-
 /**
  * What a route within reach on money is short of, decided once and in no
  * words. Where the reader's band has a lower edge, the band's widest gap;

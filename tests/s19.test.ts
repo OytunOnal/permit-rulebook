@@ -248,12 +248,12 @@ describe("s19 — a condition the interview asked is never \"not checked here\""
     // Every country on the screen, so every scored route has its card.
     const answers: Profile = { ...full(), destination: "all" };
     const results = evaluate(ds, answers).filter((r) => isScored(r.route));
-    const cards = everyDrawnRouteIn(verdictFor(answers));
-    expect(cards.length).toBe(results.length);
+    const drawnRoutes = everyDrawnRouteIn(verdictFor(answers));
+    expect(drawnRoutes.length).toBe(results.length);
     let moved = 0;
-    for (const card of cards) {
-      const r = results.find((x) => x.route.id === card.route)!;
-      const html = blocksIn(card.html, "precond", "precond asked");
+    for (const drawnRoute of drawnRoutes) {
+      const r = results.find((x) => x.route.id === drawnRoute.route)!;
+      const html = blocksIn(drawnRoute.html, "precond", "precond asked");
       const notChecked = html.match(new RegExp(`<div class="precond"><b>${NOT_CHECKED_HEADING}</b>([\\s\\S]*?)</div>`))?.[1] ?? "";
       for (const s of (r.route.statements ?? []).filter((x) => x.kind === "precondition")) {
         if (s.field === undefined || answers[s.field] === undefined) continue;

@@ -31,8 +31,8 @@ const routeOf = (id: string): Route => routes().find((r) => r.id === id)!;
  * read as the verdict draws them, never composed here. */
 function* cardsFor(answers: Profile): Generator<{ r: RouteResult; answers: Profile; html: string }> {
   const results = evaluate(ds, answers);
-  for (const card of everyDrawnRouteIn(verdictFor(answers)))
-    yield { r: results.find((x) => x.route.id === card.route)!, answers, html: card.html };
+  for (const drawnRoute of everyDrawnRouteIn(verdictFor(answers)))
+    yield { r: results.find((x) => x.route.id === drawnRoute.route)!, answers, html: drawnRoute.html };
 }
 
 /** The card blocks by the piece that draws them. */

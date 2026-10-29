@@ -1600,6 +1600,11 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/verdict/compose/card/blocks/rail.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -1857,7 +1862,7 @@
   {
    "from": "src/lib/verdict/compose/printed-shortfall.ts",
    "to": "src/lib/verdict/compose/money-shortfall.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/sections.ts",
@@ -6525,6 +6530,21 @@
     "exported": true
    },
    {
+    "name": "shortByUpToLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "needsOrMoreLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "capitalise",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "shortfallNote",
     "kind": "fn",
     "exported": true
@@ -6671,16 +6691,6 @@
    },
    {
     "name": "routesOpenHeadline",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "shortByUpToLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "needsOrMoreLine",
     "kind": "fn",
     "exported": true
    },
@@ -8381,5 +8391,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "b353ccb6afe38c5ce340252396eacf5b4db8ddab0715cc98b8b21abe84a0a18a"
+ "digest": "889bbe4b1a10fd5669461b355110d5a3165e459277d36a516f94988769c4bafa"
 }

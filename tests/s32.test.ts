@@ -138,14 +138,14 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     // Held to the list above, not to the dataset's fields: a reader who has
     // declared a situation, and nothing the employer question could cover.
     const answers: Profile = { destination: "all", citizenship: "TR", situation: "offer", situation_country: "de" };
-    const cards = everyDrawnRouteIn(verdictOn(ds, answers));
-    expect(cards.length).toBe(evaluate(ds, answers).length);
-    for (const card of cards) {
-      const decided = DECIDED.filter((d) => d.route === card.route && d.field !== undefined && answers[d.field] !== undefined);
-      const { asked } = blocksOf(withoutGlosses(card.html));
-      expect(asked.length, card.route).toBe(new Set(decided.map((d) => d.field)).size);
+    const drawnRoutes = everyDrawnRouteIn(verdictOn(ds, answers));
+    expect(drawnRoutes.length).toBe(evaluate(ds, answers).length);
+    for (const drawnRoute of drawnRoutes) {
+      const decided = DECIDED.filter((d) => d.route === drawnRoute.route && d.field !== undefined && answers[d.field] !== undefined);
+      const { asked } = blocksOf(withoutGlosses(drawnRoute.html));
+      expect(asked.length, drawnRoute.route).toBe(new Set(decided.map((d) => d.field)).size);
       for (const d of decided)
-        expect(asked.join(" "), `${card.route}: ${d.statement}`).toContain(esc(statementOf(ds, d.route, d.statement).text));
+        expect(asked.join(" "), `${drawnRoute.route}: ${d.statement}`).toContain(esc(statementOf(ds, d.route, d.statement).text));
     }
   });
 });

@@ -151,17 +151,23 @@ export const asksOrMore = (threshold: string): string => `asks ${threshold} or m
 export type PrintedShortfall =
   | { kind: "bounded"; gap: string }
   | { kind: "open-below"; line: string; band: string };
+/** The headline's emphasis on a bounded gap: "up to", as the card says it. */
+export const shortByUpToLine = (amount: string): string => `One is short by up to ${amount}.`;
+/** The headline's emphasis on a band open at the bottom: the line, not an amount. */
+export const needsOrMoreLine = (threshold: string): string => `One needs ${threshold} or more.`;
+const capitalise = (words: string): string => words.charAt(0).toUpperCase() + words.slice(1);
 /** The card's note on a route within reach on money: its stressed opening, and
  * the rest, which names the field. */
-export const shortfallNote = (s: PrintedShortfall, field: string): { lead: string; rest: string } =>
-  s.kind === "bounded"
-    ? { lead: shortByUpTo(s.gap), rest: `${onField(field)}.` }
-    : { lead: `Asks ${s.line} or more`, rest: `${onField(field)} — your answer is ${s.band}.` };
+export const shortfallNote = (shortfall: PrintedShortfall, field: string): { lead: string; rest: string } =>
+  shortfall.kind === "bounded"
+    ? { lead: shortByUpTo(shortfall.gap), rest: `${onField(field)}.` }
+    : { lead: capitalise(asksOrMore(shortfall.line)), rest: `${onField(field)} — your answer is ${shortfall.band}.` };
 /** How near a step would bring such a route, as its parenthesis says it. */
-export const shortfallReach = (s: PrintedShortfall): string => (s.kind === "bounded" ? s.gap : asksOrMore(s.line));
+export const shortfallReach = (shortfall: PrintedShortfall): string =>
+  (shortfall.kind === "bounded" ? shortfall.gap : asksOrMore(shortfall.line));
 /** The headline's emphasis on the nearest such route. */
-export const shortfallHeadline = (s: PrintedShortfall): string =>
-  (s.kind === "bounded" ? shortByUpToLine(s.gap) : needsOrMoreLine(s.line));
+export const shortfallHeadline = (shortfall: PrintedShortfall): string =>
+  (shortfall.kind === "bounded" ? shortByUpToLine(shortfall.gap) : needsOrMoreLine(shortfall.line));
 /** Where the reader's band stands against one amount, on the rail's row. */
 export const upToShort = (amount: string): string => `up to ${amount} short`;
 export const ABOVE_THE_AMOUNT = "above the amount";
@@ -215,10 +221,6 @@ export const stepsWouldChangeHeadline = (steps: number): string =>
 export const NOTHING_OPEN_HEADLINE = "Nothing open on these answers.";
 export const routesOpenHeadline = (open: number, countries: number): string =>
   `${open} route${open === 1 ? "" : "s"} look${open === 1 ? "s" : ""} open${countries > 1 ? ` across ${countries} countries` : ""}.`;
-/** The headline's emphasis on a bounded gap: "up to", as the card says it. */
-export const shortByUpToLine = (amount: string): string => `One is short by up to ${amount}.`;
-/** The headline's emphasis on a band open at the bottom: the line, not an amount. */
-export const needsOrMoreLine = (threshold: string): string => `One needs ${threshold} or more.`;
 export const pointsAwayLine = (points: number): string => `One is ${points} point${points === 1 ? "" : "s"} away.`;
 
 /**

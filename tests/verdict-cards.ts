@@ -39,8 +39,8 @@ export function groupsIn(verdict: Verdict): VerdictGroup[] {
  * or row's markup — or undefined where the verdict lists it nowhere. */
 export function placed(verdict: Verdict, route: string): { kind: VerdictGroup["kind"]; html: string } | undefined {
   for (const group of groupsIn(verdict)) {
-    const card = drawnRoutesIn(group).find((c) => c.route === route);
-    if (card) return { kind: group.kind, html: card.html };
+    const drawnRoute = drawnRoutesIn(group).find((c) => c.route === route);
+    if (drawnRoute) return { kind: group.kind, html: drawnRoute.html };
   }
   return undefined;
 }

@@ -9,6 +9,7 @@ import { type Glossary, glossed } from "../../../../gloss.js";
 // One frame for every quote the product shows (2026-09-08).
 import { linkLabelOf, noteHtml, quoteFrame } from "../../../../quote.js";
 import type { Gte } from "../../money-shortfall.js";
+import { periodOf } from "../../printed-shortfall.js";
 import type { CardScreen } from "./card-screen.js";
 
 /** Every gte criterion in a route, at any depth. Nested too: NL ICT states its
@@ -43,7 +44,7 @@ type ProvenanceEntry = ReturnType<typeof resultProvenance>[number];
 
 /** What a provenance line is drawn against: the dataset, the route, and
  * whether a choice of amounts on it was settled. */
-interface ProvenanceFrame {
+interface ProvenanceContext {
   ds: Dataset;
   route: Route;
   contested: boolean;
@@ -53,24 +54,24 @@ interface ProvenanceFrame {
  * nothing where the quote carries no amount. */
 function amountPeriodHtml(ds: Dataset, route: Route, amount: number | undefined): string {
   if (amount === undefined) return "";
-  const c = gteCriteriaOf(route).find((x) => x.threshold.amount === amount);
-  const p = c ? ds.fields.find((f) => f.id === c.field)?.period : undefined;
-  return p ? ` · ${esc(perPeriod(p))}` : "";
+  const criterion = gteCriteriaOf(route).find((x) => x.threshold.amount === amount);
+  const period = criterion ? periodOf(ds, criterion.field) : undefined;
+  return period ? ` · ${esc(perPeriod(period))}` : "";
 }
 
 /** One value's quote, with whatever citation it is given. */
-function provenanceLineHtml(frame: ProvenanceFrame, entry: ProvenanceEntry, citation?: string): string {
+function provenanceLineHtml(context: ProvenanceContext, entry: ProvenanceEntry, citation?: string): string {
   const { label, value, amount, applied } = entry;
   // The same frame the route pages put round a quote: its language, its host,
   // and the note where the source spells the number its own way.
   const { lang, host, note } = quoteFrame(value, amount);
   // Per entry, not per card: one settled disjunction on a route must not put
   // a ruled-out mark under a second one nobody has decided.
-  const takesMark = frame.contested && amount !== undefined;
+  const takesMark = context.contested && amount !== undefined;
   const mark = takesMark ? appliesMarkHtml(applied) : "";
   return `<div class="src${takesMark && applied === false ? " unapplied" : ""}"><i${
     lang ? ` lang="${escAttr(lang)}"` : ""}>“${esc(value.quote)}”</i> · ${esc(host)}${
-    label ? ` · ${esc(label)}` : ""}${amountPeriodHtml(frame.ds, frame.route, amount)}${mark}${
+    label ? ` · ${esc(label)}` : ""}${amountPeriodHtml(context.ds, context.route, amount)}${mark}${
     citation ? ` · ${esc(citation)}` : ""} · <b>${esc(readOn(value.retrieved_at))}</b>${
     noteHtml(note)}</div>`;
 }
