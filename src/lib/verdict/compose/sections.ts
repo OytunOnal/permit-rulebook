@@ -26,7 +26,7 @@ interface SectionStep {
 
 /** What one section holds: the whole screen on the one-country layout, one
  * country's on the other. `results` are the routes the job-search sentence
- * reads; `offer` and `arranged` the section's offer line and arranged line;
+ * reads; `jobOfferLine` and `arranged` the section's job offer line and arranged line;
  * `chip` whether its cards carry their country's chip. */
 interface Section {
   grouped: GroupedRoutes;
@@ -55,7 +55,7 @@ function stepsGroup(screen: VerdictScreen, s: Section): VerdictGroup | null {
 }
 
 /** What stands above the not-yet group for its fold to point at: each step,
- * the offer line, the arranged line. */
+ * the job offer line, the arranged line. */
 const standingAbove = (s: Section): number => s.steps.length + (s.jobOfferLine ? 1 : 0) + (s.arranged ? 1 : 0);
 
 /**
@@ -95,7 +95,7 @@ function nameFieldBySubject(ds: Dataset, field: string): string {
 }
 
 /**
- * One country's offer line, or null where an offer frees nothing there: the
+ * One country's job offer line, or null where an offer frees nothing there: the
  * job offer by its phrase, the country by its in-sentence phrase, and the
  * questions the freed routes would ask next by their subjects.
  */
@@ -149,7 +149,7 @@ interface SectionPlace {
  * nothing open anywhere, every section where a step or an arranged answer
  * would open a route opens — announcing "6 steps" and hiding two inside
  * folded sections is the withholding the headline exists to end (critique
- * #4); the offer line, which opens nothing, opens no section — and the
+ * #4); the job offer line, which opens nothing, opens no section — and the
  * country the headline is about leads, open (s26). A country's own closed
  * routes are counted in its tally: a count no summary names is a route the
  * reader never learns exists (s8).

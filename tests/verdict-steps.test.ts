@@ -140,7 +140,7 @@ describe("#175 — where only an arranged answer would open something", () => {
   });
 });
 
-describe("#175 — the offer line", () => {
+describe("#175 — the job offer line", () => {
   const jobOfferAnswer = fieldOptions(ds, SITUATION_FIELD).find((o) => o.value === "offer")!;
 
   it("opens the explorer's steps block in each country an offer frees routes in", () => {
@@ -182,7 +182,7 @@ describe("#175 — the offer line", () => {
     expect(nearestIn(verdict, titles)).toBe(titles[0]);
   });
 
-  it("with no step to take, the steps heading stands over the offer line", () => {
+  it("with no step to take, the steps heading stands over the job offer line", () => {
     const explorer: Profile = { destination: "fr", citizenship: "TR", situation: "none", qualification: "none" };
     expect(unlocks(ds, explorer).filter((u) => !u.option.is_arranged)).toEqual([]);
     const verdict = verdictFor(explorer);
@@ -212,7 +212,7 @@ describe("#175 — the offer line", () => {
 
 describe("#175 — the not-yet fold points up only at something above it", () => {
   /** Profiles drawing a fold of rows gated on a path answer, some with the
-   * steps block, the offer line or the arranged line above it, some with none. */
+   * steps block, the job offer line or the arranged line above it, some with none. */
   const PROFILES: Profile[] = [
     PRIYA, DENIZ, SPAIN_JOB_OFFER,
     { destination: "fr", citizenship: "TR", situation: "none", qualification: "none" },
@@ -234,7 +234,7 @@ describe("#175 — the not-yet fold points up only at something above it", () =>
     return opensHere || routesAJobOfferFrees(ds, answers).some((f) => f.country === code);
   }
 
-  it("'see the steps above' appears exactly when the steps, the offer line or the arranged line stands above", () => {
+  it("'see the steps above' appears exactly when the steps, the job offer line or the arranged line stands above", () => {
     const seen = new Set<boolean>();
     for (const answers of PROFILES)
       for (const [code, groups] of sectionGroups(verdictFor(answers), answers)) {

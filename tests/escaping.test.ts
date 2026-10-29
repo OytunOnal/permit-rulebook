@@ -162,7 +162,7 @@ describe("nothing from the dataset reaches the asked-for line's or the set-aside
 /**
  * The dataset with a tag in every display string the verdict draws from it:
  * each route's and country's name, each field's subject and short label, and
- * each answer's label and short phrase — the offer line names the offer and
+ * each answer's label and short phrase — the job offer line names the offer and
  * the fields' subjects, the arranged line the arranged answers.
  */
 function wreckedForTheVerdict(): Dataset {
@@ -182,7 +182,7 @@ function wreckedForTheVerdict(): Dataset {
   return wrecked;
 }
 
-/** The explorer of s23: all four countries, no offer — the offer line's reader. */
+/** The explorer of s23: all four countries, no offer — the job offer line's reader. */
 const EXPLORER: Profile = {
   destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
   occupation_shortage: "unknown", experience_5y: "2plus", experience_7y: "3to5", german: "none", english: "c1",
@@ -207,10 +207,10 @@ describe("nothing from the dataset reaches the verdict's markup unescaped (#167)
   const lineOf = (html: string, cls: string): string =>
     [...html.matchAll(new RegExp(`<p class="${cls}">[\\s\\S]*?</p>`, "g"))].map((m) => m[0]).join("");
 
-  it("the offer line draws the offer and the fields it names as text", () => {
+  it("the job offer line draws the offer and the fields it names as text", () => {
     const html = paintedOf(wreckedForTheVerdict(), EXPLORER);
     const jobOfferLine = lineOf(html, "job-offer-line");
-    expect(jobOfferLine, "precondition: the explorer reads an offer line").not.toBe("");
+    expect(jobOfferLine, "precondition: the explorer reads a job offer line").not.toBe("");
     expect(jobOfferLine).toContain(TAG_AS_TEXT);
     expect(html).not.toContain("<img");
   });

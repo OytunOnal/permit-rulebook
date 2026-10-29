@@ -83,7 +83,7 @@ export interface ArrangedLine {
 
 /**
  * One group of a section, in the order the screen draws them: open,
- * unsettled, within reach, steps (the offer line first), the arranged line,
+ * unsettled, within reach, steps (the job offer line first), the arranged line,
  * not yet, not open to your passport. A group the reader has nothing in is
  * not there.
  */
