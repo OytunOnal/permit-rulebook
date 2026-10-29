@@ -234,7 +234,7 @@ describe("s21 — the walk's result, from the verdict", () => {
     expect(notYet.count).toBe(5);
     const fold = notYet.items.flatMap((i) => ("kind" in i && i.kind === "needs-path-answers" ? [i] : []))[0];
     if (!fold) throw new Error("France's rows gated on a path answer do not fold");
-    expect(routesNeed(fold.cards.length, joinOr(fold.pathAnswers))).toBe("4 routes need a job offer or an intra-corporate transfer");
+    expect(routesNeed(fold.routes.length, joinOr(fold.pathAnswers))).toBe("4 routes need a job offer or an intra-corporate transfer");
     const ownRows = notYet.items.flatMap((i) => ("kind" in i ? [] : [i.html]));
     expect(ownRows.join("")).toContain("Needs a job offer and a university degree");
     // The other three lines, unchanged: each its not-yet count and nothing else.

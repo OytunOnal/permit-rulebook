@@ -1,12 +1,14 @@
 // @level presentation
 import type { RouteResult } from "permit-rulebook-data";
 import {
-  NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, stepsWouldChangeHeadline, unsettledHeadline,
+  NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, shortfallHeadline, stepsWouldChangeHeadline,
+  unsettledHeadline,
 } from "../../copy/verdict.js";
-import { moneyShortfallOf } from "./card-blocks.js";
-import { composeStepTitle, type VerdictScreen } from "./cards.js";
+import { composeStepTitle, type VerdictScreen } from "./card/cards.js";
 import { comparedMastheadOf, type Explore, type Headline } from "./masthead.js";
 import type { Compared } from "./in-view.js";
+import { moneyShortfallOf } from "./money-shortfall.js";
+import { printedShortfallOf } from "./printed-shortfall.js";
 import { nearestStep } from "./steps.js";
 import type { VerdictAction } from "./types.js";
 import { unscoredVerdict } from "./unscored.js";
@@ -20,7 +22,7 @@ function nearNote(screen: VerdictScreen, near: RouteResult[]): string {
   const first = near[0];
   if (!first) return "";
   const money = moneyShortfallOf(screen.ds, first, screen.answers);
-  if (money) return money.headline;
+  if (money) return shortfallHeadline(printedShortfallOf(screen.ds, money));
   if (first.gap_points) return pointsAwayLine(first.gap_points);
   return "";
 }

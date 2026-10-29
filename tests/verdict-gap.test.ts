@@ -5,11 +5,11 @@ import {
   type Profile,
 } from "permit-rulebook-data";
 import {
-  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_COME_WITHIN_REACH, asksOrMore, asksOrMoreHtml, needsOrMoreLine,
-  pointsAwayLine, shortByUpTo, shortByUpToLine, upToShort,
+  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_COME_WITHIN_REACH, asksOrMore, needsOrMoreLine,
+  pointsAwayLine, shortByUpTo, shortByUpToLine, shortfallNote, upToShort,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
-import { blocksIn, cardOn, everyCardIn, stepsIn, verdictFor } from "./verdict-cards.js";
+import { blocksIn, drawnRouteOn, everyDrawnRouteIn, stepsIn, verdictFor } from "./verdict-cards.js";
 
 /**
  * A gap is said one way and drawn on every rail (#174; rulings 2, 3 and 11 on
@@ -94,7 +94,7 @@ function answerMarkOf(rail: string): { bar?: { left: number; width: number }; po
 
 /** Every rail the verdict on these answers draws, by route. */
 const railsOn = (answers: Profile): [string, string][] =>
-  everyCardIn(verdictFor(answers)).map((c) => [c.route, blocksIn(c.html, "rail")] as [string, string])
+  everyDrawnRouteIn(verdictFor(answers)).map((c) => [c.route, blocksIn(c.html, "rail")] as [string, string])
     .filter(([, rail]) => rail !== "");
 
 describe("a band open at the bottom names the line", () => {
@@ -108,9 +108,10 @@ describe("a band open at the bottom names the line", () => {
   });
 
   it("the card names the line and the reader's band", () => {
-    const note = blocksIn(cardOn(verdictFor(answers), route), "gapnote");
+    const note = blocksIn(drawnRouteOn(verdictFor(answers), route), "gapnote");
     const field = shortLabelOf(ds, SALARY).toLowerCase();
-    expect(note).toContain(asksOrMoreHtml(esc(line), esc(field), esc(lowest.label)));
+    const { lead, rest } = shortfallNote({ kind: "open-below", line, band: lowest.label }, field);
+    expect(note).toContain(`<b>${esc(lead)}</b> ${esc(rest)}`);
     expect(filledIn(shortByUpTo, stressedIn(note))).toBeUndefined();
   });
 
@@ -130,7 +131,7 @@ describe("a bounded band is short by up to one gap, printed one way", () => {
   /** The gap as the headline, the card's note and the rail's row print it. */
   function printedGaps(answers: Profile) {
     const { route } = nearOn(answers);
-    const card = cardOn(verdictFor(answers), route);
+    const card = drawnRouteOn(verdictFor(answers), route);
     const rows = rowsOf(blocksIn(card, "rail"));
     return {
       headline: filledIn(shortByUpToLine, emphasisOf(answers)),

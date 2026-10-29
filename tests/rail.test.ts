@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { deriveBands, evaluate, forEachCriterion, formatEURPer, type Dataset, type Profile } from "permit-rulebook-data";
 import { ABOVE_THE_AMOUNT, WHAT_THIS_ROUTE_ASKS, YOUR_ANSWER, upToShort } from "../src/lib/copy/verdict.js";
-import { blocksIn, everyCardIn, placed, verdictFor } from "./verdict-cards.js";
+import { blocksIn, everyDrawnRouteIn, placed, verdictFor } from "./verdict-cards.js";
 
 /**
  * The results card's salary rail, after the human's walk of 2026-09-08.
@@ -26,9 +26,9 @@ const WALK: Profile = {
 /** The rail a route's card draws on the verdict these answers read, or "" where
  * the card draws none. */
 const railFor = (profile: Profile, id: string): string => {
-  const card = placed(verdictFor(profile), id);
-  if (!card) throw new Error(`${id} is not on this verdict`);
-  return blocksIn(card.html, "rail");
+  const drawnRoute = placed(verdictFor(profile), id);
+  if (!drawnRoute) throw new Error(`${id} is not on this verdict`);
+  return blocksIn(drawnRoute.html, "rail");
 };
 
 const ticksOf = (html: string) => [...html.matchAll(/class="rail-tick" style="left:([^"]+)"/g)].map((m) => m[1]);
@@ -147,14 +147,14 @@ describe("the rail says where the reader stands", () => {
     // Every route, every band: as many ticks as named amounts, always.
     let drawn = 0;
     for (const country of ds.countries)
-      for (const card of everyCardIn(verdictFor({ ...WALK, destination: country.code.toLowerCase() }))) {
-        const html = blocksIn(card.html, "rail");
+      for (const drawnRoute of everyDrawnRouteIn(verdictFor({ ...WALK, destination: country.code.toLowerCase() }))) {
+        const html = blocksIn(drawnRoute.html, "rail");
         if (!html) continue;
         drawn++;
         const ticks = ticksOf(html).length;
-        expect(rowsOf(html).length, `${card.route}: ${ticks} ticks, ${rowsOf(html).length} rows`)
+        expect(rowsOf(html).length, `${drawnRoute.route}: ${ticks} ticks, ${rowsOf(html).length} rows`)
           .toBe(ticks + 1);
-        expect(html, `${card.route} still hides a mark in a title`).not.toContain("title=");
+        expect(html, `${drawnRoute.route} still hides a mark in a title`).not.toContain("title=");
       }
     expect(drawn, "no card on these verdicts draws a rail").toBeGreaterThan(0);
   });

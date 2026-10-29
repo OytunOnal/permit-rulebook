@@ -12,7 +12,7 @@ import { FEEDBACK_PATH } from "../../identity.js";
 import { esc, escAttr } from "../../reason.js";
 import { url } from "../../site.js";
 import { isExploring } from "./steps.js";
-import type { CountrySection, Fold, RouteCard, Strip, Tally, VerdictGroup } from "./types.js";
+import type { CountrySection, DrawnRoute, Fold, Strip, Tally, VerdictGroup } from "./types.js";
 
 /** A group's heading words and the class its colour is read from. */
 const HEAD: Record<"open" | "unsettled" | "within-reach" | "not-yet" | "closed", { title: string; cls: string }> = {
@@ -29,25 +29,25 @@ const HEAD: Record<"open" | "unsettled" | "within-reach" | "not-yet" | "closed",
 const headedGroupHtml = (head: { title: string; cls: string }, inner: string, count: number): string =>
   `<h2 class="ghead ${head.cls}"><b>${esc(head.title)}</b> (${count})</h2><div class="stack">${inner}</div>`;
 
-const cardsHtml = (cards: RouteCard[]): string => cards.map((c) => c.html).join("");
+const drawnRoutesHtml = (routes: DrawnRoute[]): string => routes.map((c) => c.html).join("");
 
 function needsPathAnswersSummary(fold: Extract<Fold, { kind: "needs-path-answers" }>): string {
   const pathAnswers = joinOr(fold.pathAnswers);
-  return fold.pointsUp ? routesNeedSeeStepsAbove(fold.cards.length, pathAnswers) : routesNeed(fold.cards.length, pathAnswers);
+  return fold.pointsUp ? routesNeedSeeStepsAbove(fold.routes.length, pathAnswers) : routesNeed(fold.routes.length, pathAnswers);
 }
 
 function foldHtml(fold: Fold): string {
   if (fold.kind === "needs-path-answers")
     return `<details class="hold-group"${fold.open ? " open" : ""}>
           <summary>${esc(needsPathAnswersSummary(fold))}</summary>
-          <div class="hold-group-body">${cardsHtml(fold.cards)}</div>
+          <div class="hold-group-body">${drawnRoutesHtml(fold.routes)}</div>
         </details>`;
   const summary = fold.told
-    ? routesInCountryWhereYouToldUs(fold.cards.length, fold.country, fold.told)
-    : routesInCountryYouAreNotLookingAt(fold.cards.length, fold.country);
+    ? routesInCountryWhereYouToldUs(fold.routes.length, fold.country, fold.told)
+    : routesInCountryYouAreNotLookingAt(fold.routes.length, fold.country);
   return `<details class="hold-group">
             <summary>${esc(summary)}</summary>
-            <div class="hold-group-body">${cardsHtml(fold.cards)}</div>
+            <div class="hold-group-body">${drawnRoutesHtml(fold.routes)}</div>
           </details>`;
 }
 
@@ -76,9 +76,9 @@ function groupHtml(group: VerdictGroup, stepsHeading: string): string {
       return headedGroupHtml(HEAD["not-yet"], group.items.map((i) => ("kind" in i ? foldHtml(i) : i.html)).join(""), group.count);
     case "unsettled":
       // The line names no country and no passport: the notice above does.
-      return headedGroupHtml(HEAD.unsettled, `<p class="why">${esc(UNSETTLED_SECTION_LINE)}</p>${cardsHtml(group.cards)}`, group.cards.length);
+      return headedGroupHtml(HEAD.unsettled, `<p class="why">${esc(UNSETTLED_SECTION_LINE)}</p>${drawnRoutesHtml(group.routes)}`, group.routes.length);
     default:
-      return headedGroupHtml(HEAD[group.kind], cardsHtml(group.cards), group.cards.length);
+      return headedGroupHtml(HEAD[group.kind], drawnRoutesHtml(group.routes), group.routes.length);
   }
 }
 

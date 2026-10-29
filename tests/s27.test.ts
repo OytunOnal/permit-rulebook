@@ -19,7 +19,7 @@ import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
 import {
-  PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor,
+  PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
 import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
@@ -156,7 +156,7 @@ const OPENED: Profile = {
 describe("8 — the card's door is a door", () => {
   it("the scope line stands alone, no separator after it; the door follows as its own element, the copy's words, an internal href", () => {
     const address = routeAddresses(ds).find((a) => a.route.id === "de-chancenkarte")!;
-    const html = blocksIn(cardOn(verdictFor(OPENED), "de-chancenkarte"), "scoped");
+    const html = blocksIn(drawnRouteOn(verdictFor(OPENED), "de-chancenkarte"), "scoped");
     const m = /^<div class="scoped">([^<]*)<a class="door" href="([^"]+)">([^<]*)<\/a><\/div>$/.exec(html);
     expect(m, html).not.toBeNull();
     const [, scope, href, words] = m!;
@@ -168,7 +168,7 @@ describe("8 — the card's door is a door", () => {
     expect(html).not.toContain(" · <a");
     // And that card is one the walk below draws: the first whole card on its screen.
     expect(evaluate(ds, OPENED).find((r) => r.route.id === "de-chancenkarte")!.status).toBe("met");
-    expect(everyCardIn(verdictFor(OPENED)).find((c) => c.html.includes('<article class="route"'))?.route).toBe("de-chancenkarte");
+    expect(everyDrawnRouteIn(verdictFor(OPENED)).find((c) => c.html.includes('<article class="route"'))?.route).toBe("de-chancenkarte");
   });
 });
 

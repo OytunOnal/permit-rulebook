@@ -6,7 +6,7 @@ import {
 } from "permit-rulebook-data";
 import { NOT_CHECKED_HEADING, NOT_REQUIRED_FOR_YOUR_PASSPORT, ROUTE_DOOR } from "../src/lib/copy/verdict.js";
 import { routePages } from "../src/lib/route-page.js";
-import { blocksIn, cardOn, placed, verdictFor, verdictOn, withoutGlosses } from "./verdict-cards.js";
+import { blocksIn, drawnRouteOn, placed, verdictFor, verdictOn, withoutGlosses } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -32,7 +32,7 @@ const carveOutText = (route: string, statement: string): string =>
 /** A route's card on the verdict these answers read, on the shipped dataset
  * or on one a test writes. */
 const cardFor = (answers: Profile, route: string, data: Dataset = ds): string =>
-  cardOn(verdictOn(data, answers), route);
+  drawnRouteOn(verdictOn(data, answers), route);
 /** What else the card says is required, and what it says the passport is not
  * required to do — each read without the explainers. */
 const precondOf = (answers: Profile, route: string): string =>

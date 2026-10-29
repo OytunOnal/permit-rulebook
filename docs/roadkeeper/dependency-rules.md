@@ -9,6 +9,7 @@
 - `src/lib/interview/draw`
 - `src/lib/interview-history`
 - `src/lib/verdict`
+- `src/lib/verdict/compose/card`
 
 ## Levels
 <!-- innermost first; changing them takes an ADR -->

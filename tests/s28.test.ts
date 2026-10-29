@@ -13,7 +13,7 @@ import { verdictHtml } from "../src/lib/verdict/index.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
 import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
 import {
-  PAINTED_AS_COMPOSED, blocksIn, cardOn, everyCardIn, paintedAsComposedScript, verdictFor, verdictOn,
+  PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, verdictFor, verdictOn,
 } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -91,7 +91,7 @@ describe("2 — link text is glossed on the screen's memory (#151, ruling 8)", (
       const seen = withLabel(field, SYMBOL_LABEL);
       const door = seen.fields.find((f) => f.id === field)!.learn!;
       const verdict = verdictOn(seen, answers);
-      const html = blocksIn(cardOn(verdict, route), "learn");
+      const html = blocksIn(drawnRouteOn(verdict, route), "learn");
       const [link, ...rest] = anchorsOf(html);
       expect(rest, "the box carries more than the one door").toEqual([]);
       // Whether anything above the box on this screen has already named the act.
@@ -182,7 +182,7 @@ describe("3 — the three surfaces agree", () => {
       const result = evaluate(ds, profile).find((r) => r.route.id === route)!;
       expect(result.status, `${route} is not on hold`).toBe("hold");
       const door = ds.fields.find((f) => f.id === field)!.learn!;
-      const box = blocksIn(cardOn(verdictFor(profile), route), "learn");
+      const box = blocksIn(drawnRouteOn(verdictFor(profile), route), "learn");
       expect(anchorsOf(box)).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
     });
   }
@@ -207,7 +207,7 @@ describe("4 — the walk's result, from the verdict", () => {
     const door = ds.fields.find((f) => f.id === SHORTAGE)!.learn!;
     const answers = walked();
     expect(answers[SHORTAGE], "the walk did not answer the shortage question unsure").toBe("unknown");
-    const boxed = everyCardIn(verdictFor(answers)).filter((c) => blocksIn(c.html, "learn") !== "");
+    const boxed = everyDrawnRouteIn(verdictFor(answers)).filter((c) => blocksIn(c.html, "learn") !== "");
     expect(boxed.map((c) => c.route)).toEqual(["de-blue-card-shortage"]);
     // The hold row with the open question is drawn open.
     expect(boxed[0]!.html).toMatch(/^\s*<details class="route-hold"[^>]* open>/);

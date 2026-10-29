@@ -10,7 +10,7 @@ import { NOT_CHECKED_HEADING, STATUS_LABEL, askedHeading } from "../src/lib/copy
 import { esc } from "../src/lib/reason.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import {
-  PAINTED_AS_COMPOSED, cardOn, everyCardIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
+  PAINTED_AS_COMPOSED, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, placed, verdictOn, withoutGlosses,
 } from "./verdict-cards.js";
 import { withSite } from "./browser-walk.js";
 
@@ -24,7 +24,7 @@ const statementOf = (d: Dataset, route: string, id: string): RouteStatement =>
 /** A route's card on the verdict these answers read, its explainers taken
  * out: a card explains a shorthand on its first use on the screen. */
 const cardFor = (d: Dataset, answers: Profile, route: string): string =>
-  withoutGlosses(cardOn(verdictOn(d, answers), route));
+  withoutGlosses(drawnRouteOn(verdictOn(d, answers), route));
 
 /** The blocks a card's precondition markup draws: the not-checked list and
  * every asked block, each as its text. */
@@ -138,14 +138,14 @@ describe("s32 — the card reads the statement's field, not its sentence", () =>
     // Held to the list above, not to the dataset's fields: a reader who has
     // declared a situation, and nothing the employer question could cover.
     const answers: Profile = { destination: "all", citizenship: "TR", situation: "offer", situation_country: "de" };
-    const cards = everyCardIn(verdictOn(ds, answers));
-    expect(cards.length).toBe(evaluate(ds, answers).length);
-    for (const card of cards) {
-      const decided = DECIDED.filter((d) => d.route === card.route && d.field !== undefined && answers[d.field] !== undefined);
-      const { asked } = blocksOf(withoutGlosses(card.html));
-      expect(asked.length, card.route).toBe(new Set(decided.map((d) => d.field)).size);
+    const drawnRoutes = everyDrawnRouteIn(verdictOn(ds, answers));
+    expect(drawnRoutes.length).toBe(evaluate(ds, answers).length);
+    for (const drawnRoute of drawnRoutes) {
+      const decided = DECIDED.filter((d) => d.route === drawnRoute.route && d.field !== undefined && answers[d.field] !== undefined);
+      const { asked } = blocksOf(withoutGlosses(drawnRoute.html));
+      expect(asked.length, drawnRoute.route).toBe(new Set(decided.map((d) => d.field)).size);
       for (const d of decided)
-        expect(asked.join(" "), `${card.route}: ${d.statement}`).toContain(esc(statementOf(ds, d.route, d.statement).text));
+        expect(asked.join(" "), `${drawnRoute.route}: ${d.statement}`).toContain(esc(statementOf(ds, d.route, d.statement).text));
     }
   });
 });

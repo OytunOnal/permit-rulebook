@@ -10,7 +10,7 @@ import { questionCardHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { builtPages, headingsOf, questionCards } from "./reader-pages.js";
-import { blocksIn, cardOn, verdictOn } from "./verdict-cards.js";
+import { blocksIn, drawnRouteOn, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -107,7 +107,7 @@ describe("a slot in a question's label or help is drawn filled", () => {
 
   it("in a results card's learn box", () => {
     const slotted = datasetWithShortageSlots();
-    const html = blocksIn(cardOn(verdictOn(slotted, UNSURE), "de-blue-card-shortage"), "learn");
+    const html = blocksIn(drawnRouteOn(verdictOn(slotted, UNSURE), "de-blue-card-shortage"), "learn");
     expect(html, "the shortage card draws no learn box").not.toBe("");
     expect(html).not.toContain(SLOT_OPENING);
     expect(html).toContain(filled);

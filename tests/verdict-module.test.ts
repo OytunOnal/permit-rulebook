@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
-import { cardsIn, groupsIn, verdictFor } from "./verdict-cards.js";
+import { drawnRoutesIn, groupsIn, verdictFor } from "./verdict-cards.js";
 
 /**
  * A reader of the Netherlands alone, with an offer there: the orientation
@@ -19,7 +19,7 @@ describe("verdictOf — the one-country layout's groups", () => {
     expect(verdict.layout.kind).toBe("one-country");
     if (verdict.layout.kind !== "one-country") return;
     const routeGroups = verdict.layout.groups.filter((g) => g.kind !== "steps" && g.kind !== "arranged");
-    expect(routeGroups.map((g) => ({ kind: g.kind, routes: cardsIn(g).map((c) => c.route) }))).toEqual([
+    expect(routeGroups.map((g) => ({ kind: g.kind, routes: drawnRoutesIn(g).map((c) => c.route) }))).toEqual([
       { kind: "open", routes: ["nl-orientation-year"] },
       { kind: "within-reach", routes: ["nl-hsm-under30"] },
       { kind: "not-yet", routes: ["nl-hsm-30plus", "nl-blue-card", "nl-ict", "nl-researcher"] },
@@ -42,7 +42,7 @@ function firstLineOf(card: string): string[] | null {
 const wholeCardsOf = (answers: Profile): string[] =>
   groupsIn(verdictFor(answers))
     .filter((g) => g.kind === "open" || g.kind === "unsettled" || g.kind === "within-reach")
-    .flatMap((g) => cardsIn(g).map((c) => c.html));
+    .flatMap((g) => drawnRoutesIn(g).map((c) => c.html));
 
 describe("verdictHtml's cards — the badge's one home (#95; ruling 10 on #55)", () => {
   it("on the one-country layout a card's first line is the country's chip and the badge, above the title", () => {

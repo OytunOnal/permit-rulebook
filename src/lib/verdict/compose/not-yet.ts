@@ -4,8 +4,8 @@ import {
 } from "permit-rulebook-data";
 import { countryOf } from "../../countries.js";
 import { phraseOfAnswer } from "./answer-phrase.js";
-import { holdRowHtml, type VerdictScreen } from "./cards.js";
-import type { Fold, RouteCard, VerdictGroup } from "./types.js";
+import { notYetRowHtml, type VerdictScreen } from "./card/cards.js";
+import type { DrawnRoute, Fold, VerdictGroup } from "./types.js";
 
 /** The answers a criterion asks for, where it asks for named ones. */
 function wantedValues(c: Criterion): string[] {
@@ -36,18 +36,18 @@ function pathAnswersNamedFor(ds: Dataset, rows: RouteResult[]): string[] {
   return [...names];
 }
 
-const cardOf = (screen: VerdictScreen, r: RouteResult): RouteCard => ({ route: r.route.id, html: holdRowHtml(screen, r) });
+const notYetRowOf = (screen: VerdictScreen, r: RouteResult): DrawnRoute => ({ route: r.route.id, html: notYetRowHtml(screen, r) });
 
 /**
  * Routes that are simply in another country collapse into one line: a wall
  * of "this route is in Spain" answers a question the reader never asked, on a
  * fact they gave us themselves. One such route keeps its own row.
  */
-function elsewhereItems(screen: VerdictScreen, rows: RouteResult[]): (RouteCard | Fold)[] {
-  const cards = rows.map((r) => cardOf(screen, r));
-  if (rows.length < 2) return cards;
+function elsewhereItems(screen: VerdictScreen, rows: RouteResult[]): (DrawnRoute | Fold)[] {
+  const drawn = rows.map((r) => notYetRowOf(screen, r));
+  if (rows.length < 2) return drawn;
   const country = countryOf(screen.ds, rows[0].country).name;
-  return [{ kind: "elsewhere", country, told: declaredPlace(screen.ds, screen.answers) ?? null, cards }];
+  return [{ kind: "elsewhere", country, told: declaredPlace(screen.ds, screen.answers) ?? null, routes: drawn }];
 }
 
 /**
@@ -68,16 +68,16 @@ export function notYetGroupOf(screen: VerdictScreen, rows: RouteResult[], standi
     else if (isStepGated(screen.ds, r, screen.answers)) gated.push(r);
     else individual.push(r);
   }
-  const items: (RouteCard | Fold)[] = individual.map((r) => cardOf(screen, r));
-  if (gated.length < 3) items.push(...gated.map((r) => cardOf(screen, r)));
+  const items: (DrawnRoute | Fold)[] = individual.map((r) => notYetRowOf(screen, r));
+  if (gated.length < 3) items.push(...gated.map((r) => notYetRowOf(screen, r)));
   else {
     const pathAnswers = pathAnswersNamedFor(screen.ds, gated);
     // Open when it is the only thing on screen: a collapsed group was the
     // whole result for the emptiest profile, and every quote and read date
     // the product exists to show was folded away inside it (F7).
     const alone = individual.length === 0 && elsewhere.length === 0 && standingAbove === 0;
-    const cards = gated.map((r) => cardOf(screen, r));
-    items.push({ kind: "needs-path-answers", pathAnswers, pointsUp: standingAbove > 0, open: alone, cards });
+    const drawn = gated.map((r) => notYetRowOf(screen, r));
+    items.push({ kind: "needs-path-answers", pathAnswers, pointsUp: standingAbove > 0, open: alone, routes: drawn });
   }
   items.push(...elsewhereItems(screen, elsewhere));
   return { kind: "not-yet", items, count: rows.length };

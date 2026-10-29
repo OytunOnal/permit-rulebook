@@ -10,7 +10,7 @@ import { routeAddresses } from "../src/lib/slug.js";
 import { DESK, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { walkFrom } from "./reader-pages.js";
-import { PAINTED_AS_COMPOSED, everyCardIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
+import { PAINTED_AS_COMPOSED, everyDrawnRouteIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 
 /**
  * #155 (rulings 12–13 of #92): a criterion with paths is named by its own
@@ -121,7 +121,7 @@ describe("#155 a results card names a failed criterion with paths by its label, 
 
     // Each card the verdict draws whose title names the route, and its
     // verdict line: a row's reason, or a card's sentence under its title.
-    const lines = everyCardIn(verdictFor(reader))
+    const lines = everyDrawnRouteIn(verdictFor(reader))
       .filter((c) => unescaped(/<(?:h3|span class="hold-name")>([\s\S]*?)<\/(?:h3|span)>/.exec(c.html)?.[1] ?? "").includes(name))
       .map((c) => unescaped(/<(?:span class="hold-why"|p class="why")>([\s\S]*?)<\/(?:span|p)>/.exec(c.html)?.[1] ?? ""));
     expect(lines, "the shortage card is not on the results").toHaveLength(1);

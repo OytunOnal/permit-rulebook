@@ -11,10 +11,9 @@
  * markup.
  */
 import { contradictionsIn, unlocks, type Dataset, type Notice, type Profile } from "permit-rulebook-data";
-import { noticeHtml } from "./compose/card-blocks.js";
+import { noticeHtml, type VerdictScreen } from "./compose/card/cards.js";
 import { esc } from "../reason.js";
 import { arrangeSteps, arrangedRowsOf, routesAJobOfferFreesFor } from "./compose/steps.js";
-import type { VerdictScreen } from "./compose/cards.js";
 import { comparedActionOf } from "./compose/headline.js";
 import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from "./compose/html.js";
 import { noticeMastheadOf } from "./compose/masthead.js";
@@ -26,7 +25,7 @@ import type { InterviewSoFar, Verdict } from "./compose/types.js";
 import "./verdict.css";
 
 export type {
-  ArrangedLine, CountrySection, Fold, InterviewSoFar, JobOfferLine, RouteCard, StepCard, Strip, Tally, Verdict,
+  ArrangedLine, CountrySection, DrawnRoute, Fold, InterviewSoFar, JobOfferLine, StepCard, Strip, Tally, Verdict,
   VerdictAction, VerdictGroup, VerdictLayout,
 } from "./compose/types.js";
 

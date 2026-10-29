@@ -19,7 +19,7 @@ import { dataPage } from "../src/lib/data-page.js";
 import { lastWatchRun, watchState } from "../src/lib/site.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import {
-  PAINTED_AS_COMPOSED, blocksIn, cardOn, hintsIn, paintedAsComposedScript, placed, stepsIn, verdictFor,
+  PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, stepsIn, verdictFor,
 } from "./verdict-cards.js";
 import { withSite } from "./browser-walk.js";
 
@@ -183,7 +183,7 @@ describe("the unlock steps are ordered by what the reader can do", () => {
 describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are one step", () => {
   /** The points tally on the Opportunity Card the verdict for these answers draws. */
   const tallyFor = (answers: Profile): string =>
-    blocksIn(cardOn(verdictFor(answers), "de-chancenkarte"), "ptsline met", "ptsline short");
+    blocksIn(drawnRouteOn(verdictFor(answers), "de-chancenkarte"), "ptsline met", "ptsline short");
 
   it("the not-yet card carries the same tally line the open card does, from the same scorer", () => {
     expect(evaluate(ds, PRIYA).find((r) => r.route.id === "de-chancenkarte")!.status).toBe("hold");
@@ -198,7 +198,7 @@ describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are 
     expect(textOf(tallyFor(partial)).startsWith(`${pointsOfNeeded(card.points!.scored, 6)} · `)).toBe(true);
     expect(tallyFor(partial)).toContain('class="ptsline met"');
     // A route that scores no points has no line.
-    expect(blocksIn(cardOn(verdictFor(DENIZ), "de-experienced-worker"), "ptsline met", "ptsline short")).toBe("");
+    expect(blocksIn(drawnRouteOn(verdictFor(DENIZ), "de-experienced-worker"), "ptsline met", "ptsline short")).toBe("");
   });
 
   it("a ladder is an enum every rule reads as 'this rung or above'", () => {
@@ -352,7 +352,7 @@ describe("a rule with limbs is one sentence", () => {
 
 describe("the curator's note stays in the data", () => {
   it("no card and no page carries it", () => {
-    expect(blocksIn(cardOn(verdictFor(PRIYA), "de-chancenkarte"), "srcs")).not.toContain("times out");
+    expect(blocksIn(drawnRouteOn(verdictFor(PRIYA), "de-chancenkarte"), "srcs")).not.toContain("times out");
     for (const { path, text } of builtPages()) expect(text, path).not.toContain("times out");
   });
 });
@@ -374,13 +374,13 @@ describe("the Anabin link carries no stray full stop", () => {
     // box is left open on it. Out of IT, the degree path's open recognition
     // is the box this case reads.
     const outOfIt: Profile = { ...DENIZ, occupation_it: "no" };
-    const html = blocksIn(cardOn(verdictFor(outOfIt), "de-blue-card-shortage"), "learn");
+    const html = blocksIn(drawnRouteOn(verdictFor(outOfIt), "de-blue-card-shortage"), "learn");
     expect(html).toContain("anabin");
     expect(html).toMatch(/<\/a><\/div>$/);
     expect(textOf(html)).not.toMatch(/↗ ?\.$/);
     expect(textOf(html)).not.toMatch(/\.$/);
     // A route with nothing left open has no box.
-    expect(blocksIn(cardOn(verdictFor(DENIZ), "de-experienced-worker"), "learn")).toBe("");
+    expect(blocksIn(drawnRouteOn(verdictFor(DENIZ), "de-experienced-worker"), "learn")).toBe("");
   });
 });
 

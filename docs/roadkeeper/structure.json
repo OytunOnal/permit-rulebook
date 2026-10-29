@@ -123,19 +123,35 @@
    ],
    "files": [
     "src/lib/verdict/compose/answer-phrase.ts",
-    "src/lib/verdict/compose/card-blocks.ts",
-    "src/lib/verdict/compose/cards.ts",
     "src/lib/verdict/compose/headline.ts",
     "src/lib/verdict/compose/html.ts",
     "src/lib/verdict/compose/in-view.ts",
     "src/lib/verdict/compose/masthead.ts",
+    "src/lib/verdict/compose/money-shortfall.ts",
     "src/lib/verdict/compose/not-yet.ts",
+    "src/lib/verdict/compose/printed-shortfall.ts",
     "src/lib/verdict/compose/sections.ts",
     "src/lib/verdict/compose/steps.ts",
     "src/lib/verdict/compose/types.ts",
     "src/lib/verdict/compose/unscored.ts",
     "src/lib/verdict/index.ts",
     "src/lib/verdict/verdict.css"
+   ]
+  },
+  {
+   "path": "src/lib/verdict/compose/card",
+   "entries": [
+    {
+     "file": "src/lib/verdict/compose/card/cards.ts",
+     "level": "presentation"
+    }
+   ],
+   "files": [
+    "src/lib/verdict/compose/card/blocks/card-screen.ts",
+    "src/lib/verdict/compose/card/blocks/provenance.ts",
+    "src/lib/verdict/compose/card/blocks/rail.ts",
+    "src/lib/verdict/compose/card/blocks/route-statements.ts",
+    "src/lib/verdict/compose/card/cards.ts"
    ]
   }
  ],
@@ -256,13 +272,18 @@
   "src/lib/slug.ts": "presentation",
   "src/lib/social-card.ts": "presentation",
   "src/lib/verdict/compose/answer-phrase.ts": "presentation",
-  "src/lib/verdict/compose/card-blocks.ts": "presentation",
-  "src/lib/verdict/compose/cards.ts": "presentation",
+  "src/lib/verdict/compose/card/blocks/card-screen.ts": "presentation",
+  "src/lib/verdict/compose/card/blocks/provenance.ts": "presentation",
+  "src/lib/verdict/compose/card/blocks/rail.ts": "presentation",
+  "src/lib/verdict/compose/card/blocks/route-statements.ts": "presentation",
+  "src/lib/verdict/compose/card/cards.ts": "presentation",
   "src/lib/verdict/compose/headline.ts": "presentation",
   "src/lib/verdict/compose/html.ts": "presentation",
   "src/lib/verdict/compose/in-view.ts": "application",
   "src/lib/verdict/compose/masthead.ts": "presentation",
+  "src/lib/verdict/compose/money-shortfall.ts": "application",
   "src/lib/verdict/compose/not-yet.ts": "presentation",
+  "src/lib/verdict/compose/printed-shortfall.ts": "presentation",
   "src/lib/verdict/compose/sections.ts": "presentation",
   "src/lib/verdict/compose/steps.ts": "application",
   "src/lib/verdict/compose/types.ts": "presentation",
@@ -1539,72 +1560,167 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "from": "src/lib/verdict/compose/card/blocks/card-screen.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
    "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
    "to": "src/lib/quote.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/compose/card-blocks.ts",
+   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/compose/cards.ts",
+   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
+   "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
+   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/rail.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/compose/cards.ts",
-   "to": "src/lib/countries.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/cards.ts",
-   "to": "src/lib/gloss.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/cards.ts",
+   "from": "src/lib/verdict/compose/card/blocks/rail.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/compose/cards.ts",
+   "from": "src/lib/verdict/compose/card/blocks/rail.ts",
+   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/rail.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/route-statements.ts",
+   "to": "src/lib/copy/quotes.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/route-statements.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/route-statements.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/route-statements.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/route-statements.ts",
+   "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/countries.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/compose/cards.ts",
+   "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/compose/cards.ts",
-   "to": "src/lib/verdict/compose/card-blocks.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/cards.ts",
-   "to": "src/lib/verdict/compose/card-blocks.ts",
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
    "kind": "inheritance"
   },
   {
-   "from": "src/lib/verdict/compose/cards.ts",
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/card/blocks/provenance.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/card/blocks/rail.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/card/blocks/route-statements.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/verdict/compose/steps.ts",
    "kind": "type-only"
   },
@@ -1615,12 +1731,7 @@
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/card-blocks.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/verdict/compose/card/cards.ts",
    "kind": "dependency"
   },
   {
@@ -1631,6 +1742,16 @@
   {
    "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/verdict/compose/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
    "kind": "dependency"
   },
   {
@@ -1725,12 +1846,22 @@
   },
   {
    "from": "src/lib/verdict/compose/not-yet.ts",
-   "to": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/verdict/compose/card/cards.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/not-yet.ts",
    "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/printed-shortfall.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/printed-shortfall.ts",
+   "to": "src/lib/verdict/compose/money-shortfall.ts",
    "kind": "type-only"
   },
   {
@@ -1740,12 +1871,7 @@
   },
   {
    "from": "src/lib/verdict/compose/sections.ts",
-   "to": "src/lib/verdict/compose/card-blocks.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/sections.ts",
-   "to": "src/lib/verdict/compose/cards.ts",
+   "to": "src/lib/verdict/compose/card/cards.ts",
    "kind": "dependency"
   },
   {
@@ -1825,13 +1951,8 @@
   },
   {
    "from": "src/lib/verdict/index.ts",
-   "to": "src/lib/verdict/compose/card-blocks.ts",
+   "to": "src/lib/verdict/compose/card/cards.ts",
    "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/index.ts",
-   "to": "src/lib/verdict/compose/cards.ts",
-   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/index.ts",
@@ -4582,6 +4703,103 @@
     "exported": true
    }
   ],
+  "src/lib/verdict/compose/card/cards.ts": [
+   {
+    "name": "VerdictScreen",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "CardLook",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "routeName",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "hasLiveUnknown",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "cameFromMark",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "cameFromNote",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "scopeFor",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "gapNoteHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pointsNoteHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "fullCardHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "notYetRowHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "reachAmount",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "unlockedRouteHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "composeStepTitle",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "stepCardHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "closedRowHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "noticeHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "pointsLineHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "learnBoxHtml",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
   "astro.config.mjs": [
    {
     "name": "SITE_URL",
@@ -6302,12 +6520,42 @@
     "exported": true
    },
    {
-    "name": "asksOrMoreHtml",
+    "name": "asksOrMore",
     "kind": "fn",
     "exported": true
    },
    {
-    "name": "asksOrMore",
+    "name": "PrintedShortfall",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "shortByUpToLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "needsOrMoreLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "capitalise",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "shortfallNote",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "shortfallReach",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "shortfallHeadline",
     "kind": "fn",
     "exported": true
    },
@@ -6443,16 +6691,6 @@
    },
    {
     "name": "routesOpenHeadline",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "shortByUpToLine",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "needsOrMoreLine",
     "kind": "fn",
     "exported": true
    },
@@ -8153,5 +8391,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "21e1ceca68fbaf78be7757bed68266c4b52f38ad8733cf70512a5e59493cff4f"
+ "digest": "889bbe4b1a10fd5669461b355110d5a3165e459277d36a516f94988769c4bafa"
 }

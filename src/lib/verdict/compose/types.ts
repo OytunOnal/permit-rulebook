@@ -22,8 +22,8 @@ export type VerdictAction =
   /** A published notice answers the person outright, so nothing was compared. */
   | { kind: "answered-outright"; masthead: VerdictMasthead };
 
-/** A route as its group lists it: its id, and its card's markup. */
-export interface RouteCard {
+/** A route as its group draws it: its id, and its card's or row's markup. */
+export interface DrawnRoute {
   route: string;
   html: string;
 }
@@ -49,7 +49,7 @@ export type Fold =
      * for the summary to point at. */
     pointsUp: boolean;
     open: boolean;
-    cards: RouteCard[];
+    routes: DrawnRoute[];
   }
   | {
     kind: "elsewhere";
@@ -57,7 +57,7 @@ export type Fold =
     country: string;
     /** The place the reader declared, in the dataset's words, or null. */
     told: string | null;
-    cards: RouteCard[];
+    routes: DrawnRoute[];
   };
 
 /**
@@ -88,13 +88,13 @@ export interface ArrangedLine {
  * not there.
  */
 export type VerdictGroup =
-  | { kind: "open" | "unsettled" | "within-reach" | "closed"; cards: RouteCard[] }
+  | { kind: "open" | "unsettled" | "within-reach" | "closed"; routes: DrawnRoute[] }
   | { kind: "steps"; jobOfferLine: JobOfferLine | null; steps: StepCard[]; hint: string }
   | ({ kind: "arranged" } & ArrangedLine)
   | {
     kind: "not-yet";
     /** Rows and folds in the order they are drawn. */
-    items: (RouteCard | Fold)[];
+    items: (DrawnRoute | Fold)[];
     /** Every route the group holds, folded or not. */
     count: number;
   };

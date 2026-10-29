@@ -15,7 +15,7 @@ import { RECORD_VERSION, serialize } from "../src/lib/record.js";
 import { CAME_FROM_LINE } from "../src/lib/copy/verdict.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 import { plainTextOf } from "./reader-pages.js";
-import { everyCardIn, verdictOn } from "./verdict-cards.js";
+import { everyDrawnRouteIn, verdictOn } from "./verdict-cards.js";
 import { withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
@@ -91,7 +91,7 @@ describe("a route arrival, from the verdict", () => {
     // The German record arriving from Germany's researcher page: the record
     // stands where it is, and the route the link names is the one marked.
     const verdict = verdictOn(ds, germanRecord, "de-researcher");
-    const marked = everyCardIn(verdict).filter((c) => c.html.includes("data-came-from="));
+    const marked = everyDrawnRouteIn(verdict).filter((c) => c.html.includes("data-came-from="));
     expect(marked.map((c) => c.route), "no card is marked as the one the reader came from").toEqual(["de-researcher"]);
     expect(marked[0]!.html).toContain(`data-came-from="de-researcher"`);
     expect(plainTextOf(marked[0]!.html)).toContain("Researcher");

@@ -406,6 +406,12 @@ permit is open to their passport at all. Never counted as open; its badge
 reads "Rules met".
 _Avoid_: pending, maybe, open (for these)
 
+**Card** (#184):
+What the results screen draws for a route, a step or a Notice, whole: a
+route's card when the route is open, within reach or unsettled, a step's
+card, a Notice's card. A Not yet route and a route closed to the reader's
+passport are drawn as rows, not cards.
+
 **Written state** (s19; UI: "No route we check in France takes a research
 hosting agreement."):
 What a verdict with nothing open says when the reader's situation is one no

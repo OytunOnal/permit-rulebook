@@ -160,11 +160,6 @@
       "count": 1
     }
   },
-  "src/lib/verdict/compose/card-blocks.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "src/lib/verdict/compose/html.ts": {
     "roadkeeper/constant-reason": {
       "count": 2
