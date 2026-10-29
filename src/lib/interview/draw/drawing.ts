@@ -6,11 +6,11 @@
 import type { Dataset, Question } from "permit-rulebook-data";
 import { takeCoversOff } from "../../first-paint.js";
 import type { InterviewStep } from "../flow/interview-after.js";
-import { foldLedgerByWidth, openFoldsForPrint } from "./ledger.js";
-import { setStamp } from "./masthead.js";
-import { interviewPageOf, type GestureHands } from "./page.js";
-import { renderQuestion } from "./question-screen.js";
-import { renderResults } from "./verdict-screen.js";
+import { foldLedgerByWidth, openFoldsForPrint } from "./screen/ledger.js";
+import { setStamp } from "./screen/masthead.js";
+import { interviewPageOf, type GestureHands } from "./screen/interview-page.js";
+import { renderQuestion } from "./screen/question-screen.js";
+import { renderResults } from "./screen/verdict-screen.js";
 
 export interface Drawing {
   /** Takes the first paint's covers off, in the task that draws the first screen. */

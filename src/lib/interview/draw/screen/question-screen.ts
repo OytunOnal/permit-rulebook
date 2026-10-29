@@ -5,15 +5,15 @@
  * there with the scroll the step asks for, the focus and the beat.
  */
 import { remainingQuestions, type Question } from "permit-rulebook-data";
-import { arrivalLineHtml } from "../../arrival-line.js";
-import { countrySearchOf, hasClasses, mountCountrySearch } from "../../country-search/index.js";
-import type { Glossary } from "../../gloss.js";
-import { isLongList, questionCardHtml, questionMastheadOf } from "../../question.js";
-import type { InterviewScreen, InterviewStep } from "../flow/interview-after.js";
+import { arrivalLineHtml } from "../../../arrival-line.js";
+import { countrySearchOf, hasClasses, mountCountrySearch } from "../../../country-search/index.js";
+import type { Glossary } from "../../../gloss.js";
+import { isLongList, questionCardHtml, questionMastheadOf } from "../../../question.js";
+import type { InterviewScreen, InterviewStep } from "../../flow/interview-after.js";
 import { focusFirst, scrollToQuestion } from "./meeting.js";
 import { lendRestartToResumedLine, renderDeclaration } from "./ledger.js";
 import { setStamp, writeMasthead } from "./masthead.js";
-import type { InterviewPage } from "./page.js";
+import type { InterviewPage } from "./interview-page.js";
 import { announce, paint } from "./paint.js";
 
 type QuestionScreen = Extract<InterviewScreen, { kind: "question" }>;

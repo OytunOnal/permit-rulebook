@@ -6,6 +6,7 @@
 - `scripts/carry-assets`
 - `src/lib/country-search`
 - `src/lib/interview`
+- `src/lib/interview/draw`
 - `src/lib/interview-history`
 - `src/lib/verdict`
 

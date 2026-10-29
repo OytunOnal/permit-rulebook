@@ -4,15 +4,15 @@
  * painted under the resumed or the arrival line the step says, announced, and
  * met as the step asks.
  */
-import { arrivalLineHtml } from "../../arrival-line.js";
-import type { Glossary } from "../../gloss.js";
-import { resumedLineHtml } from "../../question.js";
-import { verdictHtml, verdictOf, type Verdict } from "../../verdict/index.js";
-import type { InterviewStep } from "../flow/interview-after.js";
+import { arrivalLineHtml } from "../../../arrival-line.js";
+import type { Glossary } from "../../../gloss.js";
+import { resumedLineHtml } from "../../../question.js";
+import { verdictHtml, verdictOf, type Verdict } from "../../../verdict/index.js";
+import type { InterviewStep } from "../../flow/interview-after.js";
 import { meetVerdict } from "./meeting.js";
 import { lendRestartToResumedLine, renderDeclaration } from "./ledger.js";
 import { setStamp, writeMasthead } from "./masthead.js";
-import type { InterviewPage } from "./page.js";
+import type { InterviewPage } from "./interview-page.js";
 import { announce, unwire } from "./paint.js";
 
 /**

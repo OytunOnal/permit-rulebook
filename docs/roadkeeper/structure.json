@@ -74,15 +74,6 @@
     }
    ],
    "files": [
-    "src/lib/interview/draw/beat.ts",
-    "src/lib/interview/draw/drawing.ts",
-    "src/lib/interview/draw/ledger.ts",
-    "src/lib/interview/draw/masthead.ts",
-    "src/lib/interview/draw/meeting.ts",
-    "src/lib/interview/draw/page.ts",
-    "src/lib/interview/draw/paint.ts",
-    "src/lib/interview/draw/question-screen.ts",
-    "src/lib/interview/draw/verdict-screen.ts",
     "src/lib/interview/flow/interview-after.ts",
     "src/lib/interview/index.ts",
     "src/lib/interview/interview.css"
@@ -100,6 +91,26 @@
     "src/lib/interview-history/index.ts",
     "src/lib/interview-history/list/entry-state.ts",
     "src/lib/interview-history/list/screen-list.ts"
+   ]
+  },
+  {
+   "path": "src/lib/interview/draw",
+   "entries": [
+    {
+     "file": "src/lib/interview/draw/drawing.ts",
+     "level": "presentation"
+    }
+   ],
+   "files": [
+    "src/lib/interview/draw/drawing.ts",
+    "src/lib/interview/draw/screen/beat.ts",
+    "src/lib/interview/draw/screen/interview-page.ts",
+    "src/lib/interview/draw/screen/ledger.ts",
+    "src/lib/interview/draw/screen/masthead.ts",
+    "src/lib/interview/draw/screen/meeting.ts",
+    "src/lib/interview/draw/screen/paint.ts",
+    "src/lib/interview/draw/screen/question-screen.ts",
+    "src/lib/interview/draw/screen/verdict-screen.ts"
    ]
   },
   {
@@ -220,15 +231,15 @@
   "src/lib/interview-history/index.ts": "application",
   "src/lib/interview-history/list/entry-state.ts": "domain",
   "src/lib/interview-history/list/screen-list.ts": "domain",
-  "src/lib/interview/draw/beat.ts": "presentation",
   "src/lib/interview/draw/drawing.ts": "presentation",
-  "src/lib/interview/draw/ledger.ts": "presentation",
-  "src/lib/interview/draw/masthead.ts": "presentation",
-  "src/lib/interview/draw/meeting.ts": "presentation",
-  "src/lib/interview/draw/page.ts": "presentation",
-  "src/lib/interview/draw/paint.ts": "presentation",
-  "src/lib/interview/draw/question-screen.ts": "presentation",
-  "src/lib/interview/draw/verdict-screen.ts": "presentation",
+  "src/lib/interview/draw/screen/beat.ts": "presentation",
+  "src/lib/interview/draw/screen/interview-page.ts": "presentation",
+  "src/lib/interview/draw/screen/ledger.ts": "presentation",
+  "src/lib/interview/draw/screen/masthead.ts": "presentation",
+  "src/lib/interview/draw/screen/meeting.ts": "presentation",
+  "src/lib/interview/draw/screen/paint.ts": "presentation",
+  "src/lib/interview/draw/screen/question-screen.ts": "presentation",
+  "src/lib/interview/draw/screen/verdict-screen.ts": "presentation",
   "src/lib/interview/flow/interview-after.ts": "application",
   "src/lib/interview/index.ts": "main",
   "src/lib/not-found.ts": "presentation",
@@ -1064,27 +1075,27 @@
   },
   {
    "from": "src/lib/interview/draw/drawing.ts",
-   "to": "src/lib/interview/draw/ledger.ts",
+   "to": "src/lib/interview/draw/screen/interview-page.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/interview/draw/drawing.ts",
-   "to": "src/lib/interview/draw/masthead.ts",
+   "to": "src/lib/interview/draw/screen/ledger.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/interview/draw/drawing.ts",
-   "to": "src/lib/interview/draw/page.ts",
+   "to": "src/lib/interview/draw/screen/masthead.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/interview/draw/drawing.ts",
-   "to": "src/lib/interview/draw/question-screen.ts",
+   "to": "src/lib/interview/draw/screen/question-screen.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/interview/draw/drawing.ts",
-   "to": "src/lib/interview/draw/verdict-screen.ts",
+   "to": "src/lib/interview/draw/screen/verdict-screen.ts",
    "kind": "dependency"
   },
   {
@@ -1093,167 +1104,167 @@
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/draw/ledger.ts",
-   "to": "src/lib/interview/draw/page.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/interview/draw/ledger.ts",
-   "to": "src/lib/interview/draw/paint.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/ledger.ts",
-   "to": "src/lib/interview/flow/interview-after.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/interview/draw/ledger.ts",
-   "to": "src/lib/question.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/masthead.ts",
-   "to": "src/lib/copy/frame.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/masthead.ts",
-   "to": "src/lib/interview/draw/page.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/interview/draw/masthead.ts",
-   "to": "src/lib/interview/draw/paint.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/masthead.ts",
-   "to": "src/lib/screen.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/interview/draw/meeting.ts",
-   "to": "src/lib/interview/draw/page.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/interview/draw/meeting.ts",
-   "to": "src/lib/interview/flow/interview-after.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/interview/draw/page.ts",
+   "from": "src/lib/interview/draw/screen/interview-page.ts",
    "to": "src/lib/first-paint.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/draw/page.ts",
-   "to": "src/lib/interview/draw/beat.ts",
+   "from": "src/lib/interview/draw/screen/interview-page.ts",
+   "to": "src/lib/interview/draw/screen/beat.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/draw/page.ts",
+   "from": "src/lib/interview/draw/screen/interview-page.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/draw/question-screen.ts",
+   "from": "src/lib/interview/draw/screen/ledger.ts",
+   "to": "src/lib/interview/draw/screen/interview-page.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/ledger.ts",
+   "to": "src/lib/interview/draw/screen/paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/ledger.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/ledger.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/masthead.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/masthead.ts",
+   "to": "src/lib/interview/draw/screen/interview-page.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/masthead.ts",
+   "to": "src/lib/interview/draw/screen/paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/masthead.ts",
+   "to": "src/lib/screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/meeting.ts",
+   "to": "src/lib/interview/draw/screen/interview-page.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/meeting.ts",
+   "to": "src/lib/interview/flow/interview-after.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/question-screen.ts",
    "to": "src/lib/arrival-line.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/draw/question-screen.ts",
+   "from": "src/lib/interview/draw/screen/question-screen.ts",
    "to": "src/lib/country-search/index.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/draw/question-screen.ts",
+   "from": "src/lib/interview/draw/screen/question-screen.ts",
    "to": "src/lib/gloss.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/draw/question-screen.ts",
-   "to": "src/lib/interview/draw/ledger.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/question-screen.ts",
-   "to": "src/lib/interview/draw/masthead.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/question-screen.ts",
-   "to": "src/lib/interview/draw/meeting.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/question-screen.ts",
-   "to": "src/lib/interview/draw/page.ts",
+   "from": "src/lib/interview/draw/screen/question-screen.ts",
+   "to": "src/lib/interview/draw/screen/interview-page.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/draw/question-screen.ts",
-   "to": "src/lib/interview/draw/paint.ts",
+   "from": "src/lib/interview/draw/screen/question-screen.ts",
+   "to": "src/lib/interview/draw/screen/ledger.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/draw/question-screen.ts",
+   "from": "src/lib/interview/draw/screen/question-screen.ts",
+   "to": "src/lib/interview/draw/screen/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/question-screen.ts",
+   "to": "src/lib/interview/draw/screen/meeting.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/question-screen.ts",
+   "to": "src/lib/interview/draw/screen/paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/question-screen.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/draw/question-screen.ts",
+   "from": "src/lib/interview/draw/screen/question-screen.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "from": "src/lib/interview/draw/screen/verdict-screen.ts",
    "to": "src/lib/arrival-line.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "from": "src/lib/interview/draw/screen/verdict-screen.ts",
    "to": "src/lib/gloss.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
-   "to": "src/lib/interview/draw/ledger.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
-   "to": "src/lib/interview/draw/masthead.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
-   "to": "src/lib/interview/draw/meeting.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
-   "to": "src/lib/interview/draw/page.ts",
+   "from": "src/lib/interview/draw/screen/verdict-screen.ts",
+   "to": "src/lib/interview/draw/screen/interview-page.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
-   "to": "src/lib/interview/draw/paint.ts",
+   "from": "src/lib/interview/draw/screen/verdict-screen.ts",
+   "to": "src/lib/interview/draw/screen/ledger.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "from": "src/lib/interview/draw/screen/verdict-screen.ts",
+   "to": "src/lib/interview/draw/screen/masthead.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/verdict-screen.ts",
+   "to": "src/lib/interview/draw/screen/meeting.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/verdict-screen.ts",
+   "to": "src/lib/interview/draw/screen/paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/interview/draw/screen/verdict-screen.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "from": "src/lib/interview/draw/screen/verdict-screen.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/draw/verdict-screen.ts",
+   "from": "src/lib/interview/draw/screen/verdict-screen.ts",
    "to": "src/lib/verdict/index.ts",
    "kind": "dependency"
   },
@@ -4535,6 +4546,18 @@
     "name": "showBrowserMove",
     "kind": "fn",
     "exported": false
+   }
+  ],
+  "src/lib/interview/draw/drawing.ts": [
+   {
+    "name": "Drawing",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "openDrawing",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "src/lib/verdict/index.ts": [
@@ -8130,5 +8153,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "5ffded3fd8907d344174edb9754a374db1bf3abb191663ca90b3bc69b0386646"
+ "digest": "05e77c0ea857c6d302df346b9dc63ddcd0ad12a9a69fd68dae708d1418c7a56a"
 }

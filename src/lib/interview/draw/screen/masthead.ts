@@ -5,9 +5,9 @@
  * every gesture in every order, so no path back into the interview can leave a
  * claim about a comparison standing (product-critique v0.7, B4).
  */
-import { isoDay, RECORD_GENERATED, RULES_READ } from "../../copy/frame.js";
-import type { Masthead, VerdictMasthead } from "../../screen.js";
-import type { InterviewPage } from "./page.js";
+import { isoDay, RECORD_GENERATED, RULES_READ } from "../../../copy/frame.js";
+import type { Masthead, VerdictMasthead } from "../../../screen.js";
+import type { InterviewPage } from "./interview-page.js";
 import { draw, say } from "./paint.js";
 
 /**

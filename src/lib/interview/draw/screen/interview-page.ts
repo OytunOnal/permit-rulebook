@@ -5,8 +5,8 @@
  * hands a drawn control gives its gesture to.
  */
 import { datasetMeta, type Dataset, type Question } from "permit-rulebook-data";
-import { WIDE_QUERY } from "../../first-paint.js";
-import type { Gesture } from "../flow/interview-after.js";
+import { WIDE_QUERY } from "../../../first-paint.js";
+import type { Gesture } from "../../flow/interview-after.js";
 import { beatOf, type Beat } from "./beat.js";
 
 /** Where a drawn control's gesture goes. */

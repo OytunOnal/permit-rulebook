@@ -9,8 +9,8 @@
  * reader who has touched nothing, and a browser history move keeps the
  * scroll the browser restores.
  */
-import type { Meeting } from "../flow/interview-after.js";
-import type { InterviewPage } from "./page.js";
+import type { Meeting } from "../../flow/interview-after.js";
+import type { InterviewPage } from "./interview-page.js";
 
 /** The motion a scroll of ours makes: none for a reader who asked for none. */
 const motionOf = (page: InterviewPage): ScrollBehavior => (page.reducedMotion.matches ? "auto" : "smooth");
