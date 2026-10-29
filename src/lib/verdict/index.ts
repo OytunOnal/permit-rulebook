@@ -13,7 +13,7 @@
 import { contradictionsIn, unlocks, type Dataset, type Notice, type Profile } from "permit-rulebook-data";
 import { noticeHtml } from "./compose/card-blocks.js";
 import { esc } from "../reason.js";
-import { arrangeSteps, arrangedRowsOf, routesAnOfferFreesFor } from "./compose/steps.js";
+import { arrangeSteps, arrangedRowsOf, routesAJobOfferFreesFor } from "./compose/steps.js";
 import type { VerdictScreen } from "./compose/cards.js";
 import { comparedActionOf } from "./compose/headline.js";
 import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from "./compose/html.js";
@@ -26,7 +26,7 @@ import type { InterviewSoFar, Verdict } from "./compose/types.js";
 import "./verdict.css";
 
 export type {
-  ArrangedLine, CountrySection, Fold, InterviewSoFar, OfferLine, RouteCard, StepCard, Strip, Tally, Verdict,
+  ArrangedLine, CountrySection, Fold, InterviewSoFar, JobOfferLine, RouteCard, StepCard, Strip, Tally, Verdict,
   VerdictAction, VerdictGroup, VerdictLayout,
 } from "./compose/types.js";
 
@@ -74,7 +74,7 @@ export function verdictOf(dataset: Dataset, answers: Profile, interview: Intervi
   const rows = unlocks(dataset, answers);
   const compared = {
     inView, whole, zeroOpen, steps: arrangeSteps(dataset, rows), arranged: arrangedRowsOf(rows),
-    freed: routesAnOfferFreesFor(dataset, answers),
+    freed: routesAJobOfferFreesFor(dataset, answers),
   };
   const notices = noticesAbove(screen, inView);
   return { action: comparedActionOf(screen, compared, interview.answered), notices, layout: layoutOf(screen, compared) };

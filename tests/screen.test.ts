@@ -63,7 +63,7 @@ const openOnto = (answers: Profile): InterviewStep =>
 
 /** A reader of the Netherlands alone, with an offer there: one route open,
  * one within reach, the rest not yet. */
-const DUTCH_OFFER: Profile = {
+const DUTCH_JOB_OFFER: Profile = {
   destination: "nl", citizenship: "IN", situation: "offer", situation_country: "nl", english: "b1", age_band: "u30",
   qualification: "none", experience_7y: "lt3", occupation_it: "yes", salary_eur_month: "band_0", nl_recent_grad: "yes",
 };
@@ -177,7 +177,7 @@ describe("invariant: a screen that has compared nothing claims nothing", () => {
   it("\"Start over\" starts over regardless of what the caller believes", () => {
     // The reset does not take a count on trust: nothing was answered, so the
     // long promise is what a first-time reader gets, every time.
-    const restarted = after(openOnto(DUTCH_OFFER).state, { kind: "restarted", search: "" });
+    const restarted = after(openOnto(DUTCH_JOB_OFFER).state, { kind: "restarted", search: "" });
     expect(restarted.screen).toMatchObject({ kind: "question", started: false });
     expect(mastheadOn(restarted).subline).toBe(INTRO_SUBLINE);
   });
@@ -215,16 +215,16 @@ describe("invariant: a screen that has compared nothing claims nothing", () => {
   });
 
   it("only a result screen states what was compared, and states it exactly", () => {
-    const { subline } = verdictOn(ds, DUTCH_OFFER, 13).action.masthead;
+    const { subline } = verdictOn(ds, DUTCH_JOB_OFFER, 13).action.masthead;
     expect(subline).toContain("13 answers");
-    expect(subline).toContain(`the published rules of ${routesChecked(DUTCH_OFFER)} routes`);
+    expect(subline).toContain(`the published rules of ${routesChecked(DUTCH_JOB_OFFER)} routes`);
     expect(claimsAComparison(subline)).toBe(true);
   });
 
   it("one answer and one route are singular, and the verb agrees with the one answer", () => {
     // The count is the sentence's subject since s17, so the verb follows it:
     // "Your 1 answer was checked", never "were".
-    const { subline } = verdictOn(oneDutchRoute(), DUTCH_OFFER, 1).action.masthead;
+    const { subline } = verdictOn(oneDutchRoute(), DUTCH_JOB_OFFER, 1).action.masthead;
     expect(subline).toContain("Your 1 answer was checked against the published rules of 1 route.");
   });
 
@@ -271,9 +271,9 @@ describe("the comparison has no subject called \"Code\" (s17)", () => {
   // passive: the subject leaves the sentence, the claim (a comparison by code,
   // not a judgement by a person) stays.
   it("the results screen says what was compared, in the passive, with the counts", () => {
-    const { subline } = verdictOn(ds, DUTCH_OFFER, 3).action.masthead;
+    const { subline } = verdictOn(ds, DUTCH_JOB_OFFER, 3).action.masthead;
     expect(subline).toBe(
-      `Your 3 answers were checked against the published rules of ${routesChecked(DUTCH_OFFER)} routes. `
+      `Your 3 answers were checked against the published rules of ${routesChecked(DUTCH_JOB_OFFER)} routes. `
         + "Every value below shows its official quote and the date we read it from the source.",
     );
   });
@@ -290,7 +290,7 @@ describe("the comparison has no subject called \"Code\" (s17)", () => {
     const mastheads: Array<[string, Masthead]> = [
       ["question, fresh", questionMastheadOf({ kind: "question", started: false })],
       ["question, started", questionMastheadOf({ kind: "question", started: true })],
-      ["results, open", verdictOn(ds, DUTCH_OFFER).action.masthead],
+      ["results, open", verdictOn(ds, DUTCH_JOB_OFFER).action.masthead],
       ["results, nearest", verdictOn(ds, PRIYA).action.masthead],
       ["results, explore", verdictOn(ds, FRANCE_NOTHING).action.masthead],
       ["notice", verdictOn(ds, EU_PASSPORT).action.masthead],
@@ -370,7 +370,7 @@ describe("the headline escapes what the dataset says (#25)", () => {
     // dataset's word for the field's amount.
     const data = wrecked();
     data.fields.find((f) => f.id === "salary_eur_month")!.period = HOSTILE as "month";
-    const { headline } = verdictOn(data, DUTCH_OFFER).action.masthead;
+    const { headline } = verdictOn(data, DUTCH_JOB_OFFER).action.masthead;
     expect(headline).toContain("<b>");
     expect(headline).toContain("&lt;meta");
     expect(tagIn(headline)).toBe(false);

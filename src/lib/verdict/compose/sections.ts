@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  SITUATION_FIELD, phraseOf, subjectOf, type Country, type Dataset, type RouteResult, type RoutesFreedByAnOffer,
+  SITUATION_FIELD, findJobOfferAnswer, phraseOf, subjectOf, type Country, type Dataset, type RouteResult, type RoutesFreedByAJobOffer,
 } from "permit-rulebook-data";
 import { phraseOfAnswer } from "./answer-phrase.js";
 import { closedRowHtml } from "./card-blocks.js";
@@ -11,10 +11,10 @@ import { seekHintHtml } from "./html.js";
 import { notYetGroupOf } from "./not-yet.js";
 import { groupedRoutesOf, type Compared, type GroupedRoutes } from "./in-view.js";
 import {
-  countRoutesOpenedByArrangedAnswers, findJobOfferAnswer, type ArrangedAnswerCount, type Step,
+  countRoutesOpenedByArrangedAnswers, type ArrangedAnswerCount, type Step,
 } from "./steps.js";
 import type {
-  ArrangedLine, CountrySection, OfferLine, RouteCard, Strip, VerdictGroup, VerdictLayout,
+  ArrangedLine, CountrySection, JobOfferLine, RouteCard, Strip, VerdictGroup, VerdictLayout,
 } from "./types.js";
 import { leadCountry, leads, namedFirst, unscoredTally } from "./unscored.js";
 
@@ -26,12 +26,12 @@ interface SectionStep {
 
 /** What one section holds: the whole screen on the one-country layout, one
  * country's on the other. `results` are the routes the job-search sentence
- * reads; `offer` and `arranged` the section's offer line and arranged line;
+ * reads; `jobOfferLine` and `arranged` the section's job offer line and arranged line;
  * `chip` whether its cards carry their country's chip. */
 interface Section {
   grouped: GroupedRoutes;
   steps: SectionStep[];
-  offer: OfferLine | null;
+  jobOfferLine: JobOfferLine | null;
   arranged: ArrangedLine | null;
   results: RouteResult[];
   chip: CardLook["chip"];
@@ -43,20 +43,20 @@ const cardsOf = (screen: VerdictScreen, rows: RouteResult[], look: CardLook): Ro
 const routeGroup = (kind: "open" | "unsettled" | "within-reach" | "closed", cards: RouteCard[]): VerdictGroup | null =>
   cards.length ? { kind, cards } : null;
 
-/** The steps block: the offer line first, then the steps; it stands, with
+/** The steps block: the job offer line first, then the steps; it stands, with
  * its heading, wherever either is there (#175). */
 function stepsGroup(screen: VerdictScreen, s: Section): VerdictGroup | null {
-  if (!s.steps.length && !s.offer) return null;
+  if (!s.steps.length && !s.jobOfferLine) return null;
   const steps = s.steps.map(({ step, routes }) =>
     ({ title: composeStepTitle(screen, step), html: unlockCardHtml(screen, step, routes) }));
   // The job-search sentence, to the reader it is true of — one with no
   // offer yet — and only under steps (s23, F1a).
-  return { kind: "steps", offer: s.offer, steps, hint: seekHintHtml(screen.ds, s.results, screen.answers) };
+  return { kind: "steps", jobOfferLine: s.jobOfferLine, steps, hint: seekHintHtml(screen.ds, s.results, screen.answers) };
 }
 
 /** What stands above the not-yet group for its fold to point at: each step,
- * the offer line, the arranged line. */
-const standingAbove = (s: Section): number => s.steps.length + (s.offer ? 1 : 0) + (s.arranged ? 1 : 0);
+ * the job offer line, the arranged line. */
+const standingAbove = (s: Section): number => s.steps.length + (s.jobOfferLine ? 1 : 0) + (s.arranged ? 1 : 0);
 
 /**
  * The one section policy, for both layouts: open, unsettled, within reach,
@@ -90,27 +90,27 @@ function composeArrangedLine(counts: ArrangedAnswerCount[], code: string): Arran
  * refused rather than named by its id. */
 function nameFieldBySubject(ds: Dataset, field: string): string {
   if (ds.fields.find((f) => f.id === field)?.subject === undefined)
-    throw new Error(`"${field}" has no subject for the offer line to name it by`);
+    throw new Error(`"${field}" has no subject for the job offer line to name it by`);
   return subjectOf(ds, field);
 }
 
 /**
- * One country's offer line, or null where an offer frees nothing there: the
+ * One country's job offer line, or null where an offer frees nothing there: the
  * job offer by its phrase, the country by its in-sentence phrase, and the
  * questions the freed routes would ask next by their subjects.
  */
-function composeOfferLine(ds: Dataset, freed: RoutesFreedByAnOffer[], code: string): OfferLine | null {
+function composeJobOfferLine(ds: Dataset, freed: RoutesFreedByAJobOffer[], code: string): JobOfferLine | null {
   const here = freed.find((f) => f.country === code);
   if (!here) return null;
   return {
-    offer: phraseOfAnswer(findJobOfferAnswer(ds)), country: phraseOf(code), routes: here.routes.length,
+    jobOffer: phraseOfAnswer(findJobOfferAnswer(ds)), country: phraseOf(code), routes: here.routes.length,
     fields: here.fieldsLeftOpen.map((f) => nameFieldBySubject(ds, f)),
   };
 }
 
-/** One country's offer line and arranged line. */
-const linesIn = (screen: VerdictScreen, c: Compared, code: string): Pick<Section, "offer" | "arranged"> => ({
-  offer: composeOfferLine(screen.ds, c.freed, code),
+/** One country's job offer line and arranged line. */
+const linesIn = (screen: VerdictScreen, c: Compared, code: string): Pick<Section, "jobOfferLine" | "arranged"> => ({
+  jobOfferLine: composeJobOfferLine(screen.ds, c.freed, code),
   arranged: composeArrangedLine(countRoutesOpenedByArrangedAnswers(c.arranged, code), code),
 });
 
@@ -149,7 +149,7 @@ interface SectionPlace {
  * nothing open anywhere, every section where a step or an arranged answer
  * would open a route opens — announcing "6 steps" and hiding two inside
  * folded sections is the withholding the headline exists to end (critique
- * #4); the offer line, which opens nothing, opens no section — and the
+ * #4); the job offer line, which opens nothing, opens no section — and the
  * country the headline is about leads, open (s26). A country's own closed
  * routes are counted in its tally: a count no summary names is a route the
  * reader never learns exists (s8).

@@ -6577,7 +6577,7 @@
     "exported": true
    },
    {
-    "name": "offerLine",
+    "name": "writeJobOfferLine",
     "kind": "fn",
     "exported": true
    },
@@ -8153,5 +8153,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "05e77c0ea857c6d302df346b9dc63ddcd0ad12a9a69fd68dae708d1418c7a56a"
+ "digest": "21e1ceca68fbaf78be7757bed68266c4b52f38ad8733cf70512a5e59493cff4f"
 }

@@ -57,7 +57,7 @@ function elsewhereItems(screen: VerdictScreen, rows: RouteResult[]): (RouteCard 
  * were noise — critique #5); rows placed in another country fold last. The
  * rows are drawn in the order they are listed, so the first to use an
  * abbreviation explains it. `standingAbove` counts what the section draws
- * above the group for the fold to point at: its steps, its offer line and
+ * above the group for the fold to point at: its steps, its job offer line and
  * its arranged line.
  */
 export function notYetGroupOf(screen: VerdictScreen, rows: RouteResult[], standingAbove: number): VerdictGroup | null {

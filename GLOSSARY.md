@@ -492,6 +492,12 @@ improvable: closable through effort or time (language, funds, experience,
 recognition).
 _Avoid_: mutable/immutable, editable
 
+**Job offer** (#179):
+The one situation answer the reader can go and get: neither an Arranged
+answer, nor "no offer yet", nor "I don't know". It is the answer the Job
+offer line counts for a reader who has none.
+_Avoid_: offer (in code, alone or in a longer name)
+
 **Arranged answer** (#55):
 A path answer someone else arranges for the reader: an intra-corporate
 transfer is the employer's decision, a research hosting agreement the host's.
@@ -515,7 +521,7 @@ and reporting only routes that verifiably turn met or within reach. Nothing
 resting on unanswered questions is ever promised.
 _Avoid_: suggestion, tip, recommendation (unqualified)
 
-**Offer line** (UI: "With a job offer in Germany: 4 more routes would be
+**Job offer line** (UI: "With a job offer in Germany: 4 more routes would be
 checked — on …", #55):
 What a job offer would do for a reader who has none: how many routes it frees
 from their only hard fail, and what those routes would ask next. Never a

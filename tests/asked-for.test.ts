@@ -29,7 +29,7 @@ if (skipped) warnNotWalked("THE ASKED-FOR LINE", skipped);
  * offer: the Opportunity Card stays open beside the work routes, so the
  * interview reaches its questions — funds and age among them (F2).
  */
-const GERMANY_OFFER: Profile = {
+const GERMANY_JOB_OFFER: Profile = {
   destination: "de", citizenship: "IN", situation: "offer", qualification: "degree", qualification_recent: "no",
   recognition_de: "not_assessed", experience_5y: "2plus", experience_7y: "3to5", occupation_shortage: "yes",
   occupation_it: "no", salary_eur_year: middleBandOf("salary_eur_year"), german: "a1", english: "b2",
@@ -119,7 +119,7 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     it(`on a Germany-offer walk, ${field} names the Opportunity Card in Germany`, async () => {
       const seen = await withSite(async (site) => {
         const { page } = site;
-        await walkTo(site, GERMANY_OFFER, field);
+        await walkTo(site, GERMANY_JOB_OFFER, field);
         return { ...(await screenOf(page)), problems: page.problems() };
       }, DESK);
       expect(seen.problems).toEqual([]);
@@ -131,10 +131,10 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
   it("the passport question, which every open route reads, carries no line", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
-      await walkTo(site, GERMANY_OFFER, "citizenship");
+      await walkTo(site, GERMANY_JOB_OFFER, "citizenship");
       const passport = await screenOf(page);
       // The question after it, which only some of the open routes read.
-      await answer(page, "citizenship", GERMANY_OFFER.citizenship!);
+      await answer(page, "citizenship", GERMANY_JOB_OFFER.citizenship!);
       return { passport, next: await screenOf(page), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
@@ -181,7 +181,7 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
   it("a route name in the line reads as its card names it, through the screen's one-time § expansion", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
-      await walkTo(site, GERMANY_OFFER, "funds_eur_month");
+      await walkTo(site, GERMANY_JOB_OFFER, "funds_eur_month");
       return { ...(await screenOf(page)), problems: page.problems() };
     }, DESK);
     expect(seen.problems).toEqual([]);
@@ -200,7 +200,7 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
   it("reopened with the pencil, a question's line names the routes it is asked for without its own answer", async () => {
     const seen = await withSite(async (site) => {
       const { page } = site;
-      await walkTo(site, GERMANY_OFFER, "funds_eur_month");
+      await walkTo(site, GERMANY_JOB_OFFER, "funds_eur_month");
       const at = JSON.parse(await page.evaluate(`JSON.stringify((() => {
         const row = document.querySelector('#decl-list [data-field="experience_5y"]');
         if (!row) return null;

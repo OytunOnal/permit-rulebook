@@ -1,7 +1,7 @@
 // @level application
 import {
-  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, routesAnOfferFrees,
-  type Dataset, type FieldOption, type Profile, type RoutesFreedByAnOffer, type Unlock,
+  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, routesAJobOfferFrees,
+  type Dataset, type FieldOption, type Profile, type RoutesFreedByAJobOffer, type Unlock,
 } from "permit-rulebook-data";
 
 /**
@@ -178,13 +178,5 @@ export function isExploring(ds: Dataset, answers: Profile): boolean {
 
 /** What a job offer would free, per country, from the engine — for an
  * explorer only: an offer-holder is never told to get what they have. */
-export const routesAnOfferFreesFor = (ds: Dataset, answers: Profile): RoutesFreedByAnOffer[] =>
-  isExploring(ds, answers) ? routesAnOfferFrees(ds, answers) : [];
-
-/** The situation answer that is a job offer, as the dataset marks it: neither
- * arranged, the fallback nor "I don't know". */
-export function findJobOfferAnswer(ds: Dataset): FieldOption {
-  const offer = fieldOptions(ds, SITUATION_FIELD).find((o) => !o.is_arranged && !o.is_fallback && !o.is_unknown);
-  if (!offer) throw new Error(`"${SITUATION_FIELD}" offers no job offer to name`);
-  return offer;
-}
+export const routesAJobOfferFreesFor = (ds: Dataset, answers: Profile): RoutesFreedByAJobOffer[] =>
+  isExploring(ds, answers) ? routesAJobOfferFrees(ds, answers) : [];

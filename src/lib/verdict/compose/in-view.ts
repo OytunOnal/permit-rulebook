@@ -1,7 +1,7 @@
 // @level application
 import {
   DESTINATION_FIELD, evaluate, isClosed, notices, type Country, type Dataset, type Notice, type Profile, type RouteResult,
-  type RoutesFreedByAnOffer, type Unlock,
+  type RoutesFreedByAJobOffer, type Unlock,
 } from "permit-rulebook-data";
 import { scopedFirst } from "../../scope.js";
 import type { Step } from "./steps.js";
@@ -77,5 +77,5 @@ export interface Compared {
   zeroOpen: boolean;
   steps: Step[];
   arranged: Unlock[];
-  freed: RoutesFreedByAnOffer[];
+  freed: RoutesFreedByAJobOffer[];
 }

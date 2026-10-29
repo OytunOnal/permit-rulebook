@@ -163,7 +163,7 @@ describe("s26 — the named country's section leads", () => {
   const walk = WALKED_TO_NOTHING_OPEN;
   const opened = WALKED_TO_A_GERMAN_ROUTE;
   /** An offer in Germany, nothing met: zero open, but Germany's routes take an offer. */
-  const offer: Profile = { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "offer", [SITUATION_COUNTRY_FIELD]: "de", citizenship: "TR", qualification: "none" };
+  const readerWithJobOffer: Profile = { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "offer", [SITUATION_COUNTRY_FIELD]: "de", citizenship: "TR", qualification: "none" };
   /** An explorer: no offer, transfer or agreement, so no country named. */
   const explorer: Profile = { [DESTINATION_FIELD]: "all", [SITUATION_FIELD]: "none", citizenship: "TR", qualification: "none" };
 
@@ -199,10 +199,10 @@ describe("s26 — the named country's section leads", () => {
     expect(leadOf(opened)).toBeUndefined();
     expect(order(opened)).toEqual(["DE", "FR", "ES", "NL"]);
     // Zero open, but no written state for Germany: nothing leads.
-    expect(zeroOpen(offer)).toBe(true);
-    expect(unscoredVerdict(offer)).toBeNull();
-    expect(leadOf(offer)).toBeUndefined();
-    expect(order(offer)).toEqual(["DE", "FR", "ES", "NL"]);
+    expect(zeroOpen(readerWithJobOffer)).toBe(true);
+    expect(unscoredVerdict(readerWithJobOffer)).toBeNull();
+    expect(leadOf(readerWithJobOffer)).toBeUndefined();
+    expect(order(readerWithJobOffer)).toEqual(["DE", "FR", "ES", "NL"]);
     // The explorer: nothing named, nothing leads.
     expect(zeroOpen(explorer)).toBe(true);
     expect(leadOf(explorer)).toBeUndefined();
@@ -293,17 +293,17 @@ describe("s26 — the results the walks end on, from the verdict", () => {
       destination: "all", situation: "none", citizenship: "TR", qualification: "none", nl_recent_grad: "no", top200_grad: "no",
     };
     // An offer in Germany, nothing met: Germany's routes take an offer, so no written state; no step.
-    const offer: Profile = {
+    const readerWithJobOffer: Profile = {
       destination: "all", situation: "offer", situation_country: "de", citizenship: "TR", qualification: "none",
       occupation_shortage: "no", experience_5y: "lt2", experience_7y: "lt3", occupation_it: "no", salary_eur_year: "band_0",
       nl_recent_grad: "no", top200_grad: "no",
     };
     // The researcher with a recognised degree and the funds but no German: France leads; Germany holds the language steps.
-    const both: Profile = {
+    const researcher: Profile = {
       destination: "all", situation: "research", situation_country: "fr", citizenship: "TR", qualification: "degree",
       recognition_de: "recognized", nl_recent_grad: "no", top200_grad: "no", german: "none", english: "none", funds_eur_month: "band_1",
     };
-    for (const [name, answers] of Object.entries({ explorer, offer, both })) {
+    for (const [name, answers] of Object.entries({ explorer, readerWithJobOffer, researcher })) {
       const { layout } = verdictFor(answers);
       if (layout.kind !== "countries") throw new Error(`${name}: no country sections`);
       expect(layout.strip, name).toMatchObject({ open: 0, withinReach: 0 });
@@ -318,15 +318,15 @@ describe("s26 — the results the walks end on, from the verdict", () => {
     ]);
     expect(sectionsOf(explorer).every((s) => linkIn(s.tally) === null)).toBe(true);
     // The offer in Germany: the same headline, dataset order, Germany's section open on its arranged line.
-    expect(verdictFor(offer).action.masthead.announced).toBe(NOTHING_OPEN_HEADLINE);
-    expect(sectionsOf(offer).map((s) => [s.name, s.open])).toEqual([
+    expect(verdictFor(readerWithJobOffer).action.masthead.announced).toBe(NOTHING_OPEN_HEADLINE);
+    expect(sectionsOf(readerWithJobOffer).map((s) => [s.name, s.open])).toEqual([
       ["Germany", true], ["France", false], ["Spain", false], ["Netherlands", false],
     ]);
-    expect(sectionsOf(offer).every((s) => linkIn(s.tally) === null)).toBe(true);
+    expect(sectionsOf(readerWithJobOffer).every((s) => linkIn(s.tally) === null)).toBe(true);
     // France leads, open, with its sentence; Germany, second, is open on its steps.
-    expect(verdictFor(both).action.masthead.announced).toBe("No route we check in France takes a research hosting agreement.");
-    const [france, germany] = sectionsOf(both);
-    expect(sectionsOf(both).map((s) => [s.name, s.open])).toEqual([
+    expect(verdictFor(researcher).action.masthead.announced).toBe("No route we check in France takes a research hosting agreement.");
+    const [france, germany] = sectionsOf(researcher);
+    expect(sectionsOf(researcher).map((s) => [s.name, s.open])).toEqual([
       ["France", true], ["Germany", true], ["Spain", false], ["Netherlands", false],
     ]);
     expect(linkIn(france!.tally)).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
