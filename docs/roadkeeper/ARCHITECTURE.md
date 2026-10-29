@@ -215,7 +215,11 @@ click on the tracker link. Answers never leave the device.
   history adapter and the record's store and starts the interview, one deep
   module, `src/lib/interview/`. Every decision a gesture leads to (the screen,
   its lines, how it meets the reader, the beat, the save, the history move)
-  comes from one pure step, `interviewAfter`; the drawing parts only apply it.
+  comes from one pure step, `interviewAfter`; the drawing only applies it.
+  The drawing is a deep module nested in the interview, `draw/`, entered
+  through `drawing.ts`'s `openDrawing` (uncover, drawStep); the screens it
+  draws and their parts (page, masthead, ledger, landing, beat, paint) are
+  private under `draw/screen/` (#261).
   The browser's history is a deep module of its own behind a port,
   `interview-history`, so Back across two tabs is tested in Node; Back names
   where it goes and never the screen it is on. The passport search is a module
