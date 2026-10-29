@@ -4,8 +4,8 @@
  * table, its set-aside line, its count and its "Start over"; its fold on a
  * phone; and its fold for the print.
  */
-import { declarationCount, declarationHtml, setAsideHtml } from "../../question.js";
-import type { InterviewStep } from "../flow/interview-after.js";
+import { declarationCount, declarationHtml, setAsideHtml } from "../../../question.js";
+import type { InterviewStep } from "../../flow/interview-after.js";
 import type { InterviewPage } from "./page.js";
 import { draw, paint, say } from "./paint.js";
 
