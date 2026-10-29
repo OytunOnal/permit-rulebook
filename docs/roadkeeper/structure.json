@@ -129,6 +129,7 @@
     "src/lib/verdict/compose/masthead.ts",
     "src/lib/verdict/compose/money-shortfall.ts",
     "src/lib/verdict/compose/not-yet.ts",
+    "src/lib/verdict/compose/printed-shortfall.ts",
     "src/lib/verdict/compose/sections.ts",
     "src/lib/verdict/compose/steps.ts",
     "src/lib/verdict/compose/types.ts",
@@ -280,8 +281,9 @@
   "src/lib/verdict/compose/html.ts": "presentation",
   "src/lib/verdict/compose/in-view.ts": "application",
   "src/lib/verdict/compose/masthead.ts": "presentation",
-  "src/lib/verdict/compose/money-shortfall.ts": "presentation",
+  "src/lib/verdict/compose/money-shortfall.ts": "application",
   "src/lib/verdict/compose/not-yet.ts": "presentation",
+  "src/lib/verdict/compose/printed-shortfall.ts": "presentation",
   "src/lib/verdict/compose/sections.ts": "presentation",
   "src/lib/verdict/compose/steps.ts": "application",
   "src/lib/verdict/compose/types.ts": "presentation",
@@ -1613,6 +1615,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/verdict/compose/card/blocks/rail.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/verdict/compose/card/blocks/route-statements.ts",
    "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
@@ -1704,6 +1711,11 @@
   },
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/verdict/compose/steps.ts",
    "kind": "type-only"
   },
@@ -1730,6 +1742,11 @@
   {
    "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
    "kind": "dependency"
   },
   {
@@ -1813,16 +1830,6 @@
    "kind": "type-only"
   },
   {
-   "from": "src/lib/verdict/compose/money-shortfall.ts",
-   "to": "src/lib/copy/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/money-shortfall.ts",
-   "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
    "from": "src/lib/verdict/compose/not-yet.ts",
    "to": "src/lib/countries.ts",
    "kind": "dependency"
@@ -1841,6 +1848,16 @@
    "from": "src/lib/verdict/compose/not-yet.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/printed-shortfall.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/printed-shortfall.ts",
+   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/sections.ts",
@@ -6498,12 +6515,27 @@
     "exported": true
    },
    {
-    "name": "asksOrMoreHtml",
+    "name": "asksOrMore",
     "kind": "fn",
     "exported": true
    },
    {
-    "name": "asksOrMore",
+    "name": "PrintedShortfall",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "shortfallNote",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "shortfallReach",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "shortfallHeadline",
     "kind": "fn",
     "exported": true
    },
@@ -8349,5 +8381,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "95ca43bca07ecd1b905cc957f96a83881e481e927b125492c60e8aa8dd267200"
+ "digest": "b353ccb6afe38c5ce340252396eacf5b4db8ddab0715cc98b8b21abe84a0a18a"
 }

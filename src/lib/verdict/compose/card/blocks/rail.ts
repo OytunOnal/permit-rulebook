@@ -6,7 +6,8 @@ import { esc, escAttr } from "../../../../reason.js";
 import {
   ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, RAIL_ROWS_LABEL, WHAT_THIS_ROUTE_ASKS, YOUR_ANSWER, upToShort,
 } from "../../../../copy/verdict.js";
-import { bandOf, gapAsPrinted, measuredCriterionOf, periodOf, type Gte } from "../../money-shortfall.js";
+import { bandOf, measuredCriterionOf, periodOf, type Gte } from "../../money-shortfall.js";
+import { gapAsPrinted } from "../../printed-shortfall.js";
 
 /**
  * The thresholds this route actually asks of this reader — the amounts on the

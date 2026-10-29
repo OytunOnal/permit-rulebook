@@ -9,7 +9,8 @@ import { railHtml } from "./blocks/rail.js";
 import { carveOutHtml, caveatHtml, precondHtml, readingHtml, scopedHtml } from "./blocks/route-statements.js";
 import {
   CAME_FROM_LINE, FIND_OUT_YOURSELF, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET,
-  WOULD_COME_WITHIN_REACH, orAbove, pointsMore, pointsOfNeeded, shortByPoints, withStepHtml,
+  WOULD_COME_WITHIN_REACH, orAbove, pointsMore, pointsOfNeeded, shortByPoints, shortfallNote, shortfallReach,
+  withStepHtml,
 } from "../../../copy/verdict.js";
 import { countryOf } from "../../../countries.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
@@ -22,6 +23,7 @@ import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
 import { moneyShortfallOf } from "../money-shortfall.js";
+import { printedShortfallOf } from "../printed-shortfall.js";
 import type { Step } from "../steps.js";
 
 /**
@@ -95,9 +97,10 @@ function scopeFor(screen: VerdictScreen, r: RouteResult): string {
 function gapNoteHtml(screen: VerdictScreen, r: RouteResult): string {
   const money = r.status === "near" ? moneyShortfallOf(screen.ds, r, screen.answers) : undefined;
   if (!money) return "";
-  const field = esc(shortLabelOf(screen.ds, money.field).toLowerCase());
+  const field = shortLabelOf(screen.ds, money.field).toLowerCase();
+  const { lead, rest } = shortfallNote(printedShortfallOf(screen.ds, money), field);
   const hint = money.field === "salary_eur_year" ? ` ${esc(LOWER_THRESHOLD_HINT)}` : "";
-  return `<div class="gapnote">${money.noteHtml(field)}${hint}</div>`;
+  return `<div class="gapnote"><b>${esc(lead)}</b> ${esc(rest)}${hint}</div>`;
 }
 
 /** The same, for a route within reach on points. */
@@ -169,7 +172,7 @@ export function notYetRowHtml(screen: VerdictScreen, r: RouteResult): string {
  * on the answers as they would stand with the step taken. */
 function reachAmount(screen: VerdictScreen, r: RouteResult, taken: Profile): string {
   const money = moneyShortfallOf(screen.ds, r, taken);
-  if (money) return ` (${esc(money.reach)})`;
+  if (money) return ` (${esc(shortfallReach(printedShortfallOf(screen.ds, money)))})`;
   if (r.gap_points) return ` (${esc(pointsMore(r.gap_points))})`;
   return "";
 }

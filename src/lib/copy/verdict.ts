@@ -139,13 +139,29 @@ export const RULES_MET = "Rules met";
 export const CAME_FROM_LINE = "The route you came from.";
 export const shortByUpTo = (amount: string): string => `Short by up to ${amount}`;
 export const onField = (field: string): string => `on ${field}`;
-/** The card on a band open at the bottom: the line the route asks and the
- * reader's answer, never an amount short — the band has no lower edge to
- * measure from. Each argument is already markup. */
-export const asksOrMoreHtml = (thresholdHtml: string, fieldHtml: string, bandHtml: string): string =>
-  `<b>Asks ${thresholdHtml} or more</b> on ${fieldHtml} — your answer is ${bandHtml}.`;
-/** The same line where a step brings such a route within reach. */
+/** The line a band open at the bottom is said by where a step brings its
+ * route within reach. */
 export const asksOrMore = (threshold: string): string => `asks ${threshold} or more`;
+/**
+ * A route's money shortfall with its amounts printed, as every place says it:
+ * a bounded gap, "up to" an amount; or, on a band open at the bottom, the line
+ * the route asks and the reader's band, never an amount short — the band has
+ * no lower edge to measure from.
+ */
+export type PrintedShortfall =
+  | { kind: "bounded"; gap: string }
+  | { kind: "open-below"; line: string; band: string };
+/** The card's note on a route within reach on money: its stressed opening, and
+ * the rest, which names the field. */
+export const shortfallNote = (s: PrintedShortfall, field: string): { lead: string; rest: string } =>
+  s.kind === "bounded"
+    ? { lead: shortByUpTo(s.gap), rest: `${onField(field)}.` }
+    : { lead: `Asks ${s.line} or more`, rest: `${onField(field)} — your answer is ${s.band}.` };
+/** How near a step would bring such a route, as its parenthesis says it. */
+export const shortfallReach = (s: PrintedShortfall): string => (s.kind === "bounded" ? s.gap : asksOrMore(s.line));
+/** The headline's emphasis on the nearest such route. */
+export const shortfallHeadline = (s: PrintedShortfall): string =>
+  (s.kind === "bounded" ? shortByUpToLine(s.gap) : needsOrMoreLine(s.line));
 /** Where the reader's band stands against one amount, on the rail's row. */
 export const upToShort = (amount: string): string => `up to ${amount} short`;
 export const ABOVE_THE_AMOUNT = "above the amount";

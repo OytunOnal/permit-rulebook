@@ -5,8 +5,8 @@ import {
   type Profile,
 } from "permit-rulebook-data";
 import {
-  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_COME_WITHIN_REACH, asksOrMore, asksOrMoreHtml, needsOrMoreLine,
-  pointsAwayLine, shortByUpTo, shortByUpToLine, upToShort,
+  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_COME_WITHIN_REACH, asksOrMore, needsOrMoreLine,
+  pointsAwayLine, shortByUpTo, shortByUpToLine, shortfallNote, upToShort,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, stepsIn, verdictFor } from "./verdict-cards.js";
@@ -110,7 +110,8 @@ describe("a band open at the bottom names the line", () => {
   it("the card names the line and the reader's band", () => {
     const note = blocksIn(drawnRouteOn(verdictFor(answers), route), "gapnote");
     const field = shortLabelOf(ds, SALARY).toLowerCase();
-    expect(note).toContain(asksOrMoreHtml(esc(line), esc(field), esc(lowest.label)));
+    const { lead, rest } = shortfallNote({ kind: "open-below", line, band: lowest.label }, field);
+    expect(note).toContain(`<b>${esc(lead)}</b> ${esc(rest)}`);
     expect(filledIn(shortByUpTo, stressedIn(note))).toBeUndefined();
   });
 
