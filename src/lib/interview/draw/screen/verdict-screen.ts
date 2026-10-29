@@ -12,7 +12,7 @@ import type { InterviewStep } from "../../flow/interview-after.js";
 import { meetVerdict } from "./meeting.js";
 import { lendRestartToResumedLine, renderDeclaration } from "./ledger.js";
 import { setStamp, writeMasthead } from "./masthead.js";
-import type { InterviewPage } from "./page.js";
+import type { InterviewPage } from "./interview-page.js";
 import { announce, unwire } from "./paint.js";
 
 /**

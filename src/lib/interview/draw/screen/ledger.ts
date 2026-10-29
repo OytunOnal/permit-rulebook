@@ -6,7 +6,7 @@
  */
 import { declarationCount, declarationHtml, setAsideHtml } from "../../../question.js";
 import type { InterviewStep } from "../../flow/interview-after.js";
-import type { InterviewPage } from "./page.js";
+import type { InterviewPage } from "./interview-page.js";
 import { draw, paint, say } from "./paint.js";
 
 /** Hangs the ✎ gesture on each answered row the ledger drew. */

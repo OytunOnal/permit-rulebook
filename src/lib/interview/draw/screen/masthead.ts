@@ -7,7 +7,7 @@
  */
 import { isoDay, RECORD_GENERATED, RULES_READ } from "../../../copy/frame.js";
 import type { Masthead, VerdictMasthead } from "../../../screen.js";
-import type { InterviewPage } from "./page.js";
+import type { InterviewPage } from "./interview-page.js";
 import { draw, say } from "./paint.js";
 
 /**

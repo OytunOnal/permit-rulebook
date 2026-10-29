@@ -13,7 +13,7 @@ import type { InterviewScreen, InterviewStep } from "../../flow/interview-after.
 import { focusFirst, scrollToQuestion } from "./meeting.js";
 import { lendRestartToResumedLine, renderDeclaration } from "./ledger.js";
 import { setStamp, writeMasthead } from "./masthead.js";
-import type { InterviewPage } from "./page.js";
+import type { InterviewPage } from "./interview-page.js";
 import { announce, paint } from "./paint.js";
 
 type QuestionScreen = Extract<InterviewScreen, { kind: "question" }>;
