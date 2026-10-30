@@ -32,7 +32,7 @@ import { rulesRead } from "./identity.js";
  *
  * The pair is drawn by `identity.css`, reached through the route page's own
  * stylesheet. This module states none of its geometry, for the reason
- * `tests/identity.test.ts` gives: a second definition is how one product grows
+ * `tests/identity-written-once.test.ts` gives: a second definition is how one product grows
  * two identities.
  */
 

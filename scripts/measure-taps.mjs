@@ -2,7 +2,7 @@
 /**
  * The tap floor, measured rather than argued.
  *
- * `tests/route-page.test.ts` holds the invariant the way a suite can: every
+ * `tests/route-page-frame.test.ts` holds the invariant the way a suite can: every
  * control carries one of the two declared tap classes, and both classes are
  * written in `--tap-min`. That is a check over markup and stylesheet, and it is
  * honest about being one. This is the other half — real layout, real fonts,

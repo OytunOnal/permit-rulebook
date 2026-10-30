@@ -43,7 +43,7 @@ describe("the answer is above the fold", () => {
       // Before the coverage box and before the rules.
       expect(answer, page.path).toBeLessThan(at('class="scope"'));
       expect(answer, page.path).toBeLessThan(at('class="rules"'));
-      // It carries a way in; what the panel dates is route-page.test's case.
+      // It carries a way in; what the panel dates is route-page-dates.test's case.
       const block = page.html.slice(answer, at('class="scope"'));
       // The page's one call to action sits in the same breath, still before
       // the box: lifted, not duplicated — a route page has one way in.
