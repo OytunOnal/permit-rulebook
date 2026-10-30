@@ -7156,6 +7156,46 @@
     "exported": false
    },
    {
+    "name": "ListedRoutes",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "listedRoutesOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "exclusionsLinkHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryLedeHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryMastheadHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "quotedOnlySectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryCtaHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryMainHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "countryPage",
     "kind": "fn",
     "exported": true
@@ -7198,6 +7238,51 @@
     "exported": true
    },
    {
+    "name": "DataPageFacts",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "dataMastheadHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "dayFactHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "datesFactsHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "holdsSectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "dailyCheckHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "checksSectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryJsonLinksHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "takeSectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "dataPage",
     "kind": "fn",
     "exported": true
@@ -7217,6 +7302,16 @@
    {
     "name": "CC_BY_4",
     "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "coveredPlaces",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "datasetDownloads",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -8545,5 +8640,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "197b48ae6647b51e3652a3115d02cbe2115410a6af5c23f333da64d9da751986"
+ "digest": "d79b55f4f086f3ae97cae8f2c3bb681354cd22206c286d8e93d976ce0d690be3"
 }

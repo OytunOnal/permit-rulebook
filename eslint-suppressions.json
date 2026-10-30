@@ -79,23 +79,8 @@
       "count": 27
     }
   },
-  "src/lib/country-page.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "src/lib/country-search/control/controller.ts": {
     "roadkeeper/constant-reason": {
-      "count": 1
-    }
-  },
-  "src/lib/data-page.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
-  "src/lib/dataset-ld.ts": {
-    "max-lines-per-function": {
       "count": 1
     }
   },

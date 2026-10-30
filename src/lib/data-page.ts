@@ -1,7 +1,7 @@
 // @level presentation
 import {
   phraseOf, countryVocabulary, isScored, proseProvenance, routeProvenance, unreadClause,
-  type Dataset,
+  type Country, type Dataset,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
@@ -79,48 +79,23 @@ export function routeCounts(dataset: Dataset): RouteCounts {
   return { scored, quotedOnly: routes.length - scored, total: routes.length };
 }
 
-/**
- * `run.lastRun` and `run.unread` are the two facts on this page that move
- * without a person: the day the watch last ran, and the sources it could not
- * read that day. They are an argument for the reason the route page's run is
- * one — a render has to be askable about a run other than today's — and what
- * `run` leaves out is read from the live state, which is what the build does.
- */
-export function dataPage(dataset: Dataset, run: WatchRun = {}): DataPage {
-  const { lastRun, unread } = readWatchRun(dataset, run);
-  // The page carries two read dates, and they are not the same date.
-  //
-  // `read` is the dataset's newest read date — the newest quote date ANYWHERE
-  // this site publishes, every sentence of every notice included, since this
-  // page hands the whole dataset over. A notice re-read today is a page read
-  // today, so the RULES READ stamp and the footer's range are right to take
-  // it, and they keep it.
-  //
-  // `changed` is the newest `retrieved_at` among VALUES and nothing else,
-  // which is the only date the word "changed" allows: re-reading a notice is
-  // not a value moving. It is the narrower of the two and can only ever be
-  // older. They coincide on today's dataset, and coinciding today is not a
-  // reason to print either one for the other (Spec review, 2026-09-15).
-  // Decision 12: one date format on a page. `dataset_version` is stamped
-  // 2026.09.10 and printed 2026.09.10, dots among dashes, two spellings of one
-  // day in one list — which is the third format the route-page mock was made to
-  // drop (critique F3). `datasetDay` is what the `datetime` attribute and the
-  // footer have always taken; the visible text takes it too now (human's walk,
-  // 2026-09-15). The version string in the dataset is untouched.
-  const version = datasetDay(dataset.dataset_version);
-  const read = siteReadDate(dataset);
-  const changed = readRange(dataset).newest;
-  const clause = unreadClause(unread);
-  const prose = proseProvenance(dataset);
-  const counts = routeCounts(dataset);
-  const title = `The data · ${PRODUCT_NAME}`;
-  const desc = dataMetaDescription(counts.scored, counts.quotedOnly, dataset.countries.length);
+/** What the data page's sections state: the dataset, its counts, and the watch run it reports. */
+interface DataPageFacts {
+  dataset: Dataset;
+  counts: RouteCounts;
+  prose: ReturnType<typeof proseProvenance>;
+  run: Required<WatchRun>;
+}
 
-  // The one page that IS the dataset says so in the vocabulary a dataset
-  // index reads. It is a data block, not a program — but the policy names it
-  // anyway, so nothing in this site's head is unaccounted for.
-  const ld = datasetLd(dataset, DATA_PATH);
-  const content = `<div class="masthead-with-stamps">
+/**
+ * The masthead: the headline, the lede and the read stamp. The stamp takes the
+ * dataset's newest read date, every sentence of every notice included, since
+ * this page hands the whole dataset over: a notice re-read today is a page read
+ * today, so the RULES READ stamp and the footer's range are right to take it.
+ */
+function dataMastheadHtml(facts: DataPageFacts): string {
+  const { dataset, counts } = facts;
+  return `<div class="masthead-with-stamps">
     <div>
       <h1>The data. <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">${esc(dataLedeOpen(counts.scored, counts.quotedOnly, dataset.countries.length))} ${
@@ -129,27 +104,53 @@ export function dataPage(dataset: Dataset, run: WatchRun = {}): DataPage {
     // s16 preview, 2026-09-16).
     dataLedeClose(`<a class="tap" href="${escAttr(url(FEEDBACK_PATH))}">${esc(DATA_LEDE_CLOSE_TAIL)}</a>`)}</p>
     </div>
-    ${rulesRead(read)}
-  </div>
+    ${rulesRead(siteReadDate(dataset))}
+  </div>`;
+}
 
-  <main>
-    <section class="answer" aria-labelledby="holds-h">
-      <h2 class="label" id="holds-h">What it holds today</h2>
-      <dl class="facts facts-dates">
-        <div><dt>Dataset version</dt><dd><time datetime="${escAttr(version)}">${
-    esc(version)}</time></dd></div>
+/** One fact that is a day: its term, and the day marked up as a date. */
+const dayFactHtml = (term: string, day: string): string =>
+  `<div><dt>${esc(term)}</dt><dd><time datetime="${escAttr(day)}">${esc(day)}</time></dd></div>`;
+
+/**
+ * The dataset's dates: its version, its schema, the newest value changed, and
+ * the watch's last run.
+ *
+ * `changed` is the newest `retrieved_at` among VALUES and nothing else, which
+ * is the only date the word "changed" allows: re-reading a notice is not a
+ * value moving. It is narrower than the masthead's read date and can only ever
+ * be older. They coincide on today's dataset, and coinciding today is not a
+ * reason to print either one for the other (Spec review, 2026-09-15).
+ *
+ * Decision 12: one date format on a page. `dataset_version` is stamped
+ * 2026.09.10 and printed 2026.09.10, dots among dashes, two spellings of one
+ * day in one list — which is the third format the route-page mock was made to
+ * drop (critique F3). `datasetDay` is what the `datetime` attribute and the
+ * footer have always taken; the visible text takes it too now (human's walk,
+ * 2026-09-15). The version string in the dataset is untouched.
+ */
+function datesFactsHtml(dataset: Dataset, lastRun: string): string {
+  const changed = readRange(dataset).newest;
+  return `<dl class="facts facts-dates">
+        ${dayFactHtml("Dataset version", datasetDay(dataset.dataset_version))}
         <div><dt>Schema version</dt><dd>${esc(dataset.schema_version)}</dd></div>
-        <div><dt>${esc(NEWEST_VALUE_CHANGED)}</dt><dd><time datetime="${escAttr(changed)}">${
-    esc(changed)}</time></dd></div>${
+        ${dayFactHtml(NEWEST_VALUE_CHANGED, changed)}${
     // The run, stated as its own fact beside the one it is not — and taken
     // from the same `lastRun` the sentence below prints, so no render can show
     // a page whose list and whose prose disagree about the last check. A run
     // the state does not have prints nothing at all, as that sentence does.
     lastRun ? `
-        <div><dt>${esc(LAST_CHECKED)}</dt><dd><time datetime="${escAttr(lastRun)}">${
-      esc(lastRun)}</time></dd></div>` : ""
+        ${dayFactHtml(LAST_CHECKED, lastRun)}` : ""
   }
-      </dl>
+      </dl>`;
+}
+
+/** What the dataset holds today: its dates, then its counts. */
+function holdsSectionHtml(facts: DataPageFacts): string {
+  const { dataset, counts, prose } = facts;
+  return `<section class="answer" aria-labelledby="holds-h">
+      <h2 class="label" id="holds-h">What it holds today</h2>
+      ${datesFactsHtml(dataset, facts.run.lastRun)}
       <dl class="facts facts-counts">
         <div><dt>Quoted values</dt><dd>${quotedValues(dataset)} with a source and a date</dd></div>
         <div><dt>Sentences of ours</dt><dd>${prose.ours}, ${esc(PROSE_OURS_TAIL)}</dd></div>
@@ -158,9 +159,30 @@ export function dataPage(dataset: Dataset, run: WatchRun = {}): DataPage {
         <div><dt>Routes</dt><dd>${counts.scored} scored, ${counts.quotedOnly} quoted and dated but not scored, in ${
     dataset.countries.length} countries</dd></div>
       </dl>
-    </section>
+    </section>`;
+}
 
-    <section class="rules" aria-labelledby="checks-h">
+/** The daily check's claim, with the watch's last run and, on a day it missed sources, the exception. */
+function dailyCheckHtml(run: Required<WatchRun>): string {
+  const { lastRun } = run;
+  const clause = unreadClause(run.unread);
+  return `${esc(DAILY_CHECK_CLAIM)}${
+    lastRun ? ` — last run <b><time datetime="${escAttr(lastRun)}">${esc(lastRun)}</time></b>` : ""
+  }.${
+    // The exception, on the day there is one and on no other. The claim was
+    // true of 42 sources and false of two for five days in September, and the
+    // two backed values on live pages (s11). The date it names is the
+    // sources', so it is marked up like every other date on the site — which
+    // is why the clause hands it over apart from its words.
+    clause ? ` ${esc(clause.before)}<b><time datetime="${escAttr(clause.since)}">${
+      esc(clause.since)}</time></b>${esc(clause.after)}` : ""
+  } ${esc(FRESHNESS_HUMAN_HAND)}`;
+}
+
+/** What checks the dataset: the four gates, the counter, the translation policy and the daily check. */
+function checksSectionHtml(facts: DataPageFacts): string {
+  const { prose } = facts;
+  return `<section class="rules" aria-labelledby="checks-h">
       <h2 class="label" id="checks-h">What checks it</h2>
       <p>Four gates run on every change, and the build stops on any of them.</p>
       <ul class="checks">
@@ -172,20 +194,23 @@ export function dataPage(dataset: Dataset, run: WatchRun = {}): DataPage {
       </ul>
       <p class="lede">A cookieless counter (Cloudflare Web Analytics) records each page load: the page's address, where you came from, your country, and your browser and operating system versions; nothing you answer, nothing that identifies you, and nothing while you answer.</p>
       <p class="lede">${esc(TRANSLATION_POLICY)}</p>
-      <p class="lede">${esc(DAILY_CHECK_CLAIM)}${
-    lastRun ? ` — last run <b><time datetime="${escAttr(lastRun)}">${esc(lastRun)}</time></b>` : ""
-  }.${
-    // The exception, on the day there is one and on no other. The claim was
-    // true of 42 sources and false of two for five days in September, and the
-    // two backed values on live pages (s11). The date it names is the
-    // sources', so it is marked up like every other date on the site — which
-    // is why the clause hands it over apart from its words.
-    clause ? ` ${esc(clause.before)}<b><time datetime="${escAttr(clause.since)}">${
-      esc(clause.since)}</time></b>${esc(clause.after)}` : ""
-  } ${esc(FRESHNESS_HUMAN_HAND)}</p>
-    </section>
+      <p class="lede">${dailyCheckHtml(facts.run)}</p>
+    </section>`;
+}
 
-    <section class="data" aria-labelledby="take-h">
+/** One country's routes, each as its own JSON with the day it was read. */
+function countryJsonLinksHtml(dataset: Dataset, country: Country): string {
+  return `
+      <nav class="jsonlinks" aria-label="${escAttr(countryAsJsonLabel(phraseOf(country.code)))}">
+        <b class="label">${esc(phraseOf(country.code))}</b>${country.routes.map((route) => `
+        <a class="tap-min" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>${
+    esc(readOn(pageStamp(dataset, route)))}</small></a>`).join("")}
+      </nav>`;
+}
+
+/** Where to take the dataset: the downloads, the licence, and every route's own JSON. */
+function takeSectionHtml(dataset: Dataset): string {
+  return `<section class="data" aria-labelledby="take-h">
       <h2 class="label" id="take-h">Take it</h2>
       <nav aria-label="Downloads">
         <a class="tap-min" href="${escAttr(url(DATASET_JSON_PATH))}">The whole dataset as JSON</a>
@@ -194,15 +219,36 @@ export function dataPage(dataset: Dataset, run: WatchRun = {}): DataPage {
         <a class="tap-min" href="${escAttr(url(FEEDBACK_PATH))}">${esc(WRONG_DOOR_LABEL)}</a>
       </nav>
       <p class="lede">Reuse it under ${esc(DATA_LICENCE_FULL)} — credit and link back. Every route is also served on its own, with the day it was read:</p>
-      ${dataset.countries.map((country) => `
-      <nav class="jsonlinks" aria-label="${escAttr(countryAsJsonLabel(phraseOf(country.code)))}">
-        <b class="label">${esc(phraseOf(country.code))}</b>${country.routes.map((route) => `
-        <a class="tap-min" href="${escAttr(url(routeJsonPath(country, route)))}">${esc(route.name)}<small>${
-    esc(readOn(pageStamp(dataset, route)))}</small></a>`).join("")}
-      </nav>`).join("")}
-    </section>
-  </main>`;
+      ${dataset.countries.map((country) => countryJsonLinksHtml(dataset, country)).join("")}
+    </section>`;
+}
 
+/**
+ * `run.lastRun` and `run.unread` are the two facts on this page that move
+ * without a person: the day the watch last ran, and the sources it could not
+ * read that day. They are an argument for the reason the route page's run is
+ * one — a render has to be askable about a run other than today's — and what
+ * `run` leaves out is read from the live state, which is what the build does.
+ */
+export function dataPage(dataset: Dataset, run: WatchRun = {}): DataPage {
+  const { lastRun, unread } = readWatchRun(dataset, run);
+  const counts = routeCounts(dataset);
+  const facts: DataPageFacts = { dataset, counts, prose: proseProvenance(dataset), run: { lastRun, unread } };
+  const title = `The data · ${PRODUCT_NAME}`;
+  const desc = dataMetaDescription(counts.scored, counts.quotedOnly, dataset.countries.length);
+  // The one page that IS the dataset says so in the vocabulary a dataset
+  // index reads. It is a data block, not a program — but the policy names it
+  // anyway, so nothing in this site's head is unaccounted for.
+  const ld = datasetLd(dataset, DATA_PATH);
+  const content = `${dataMastheadHtml(facts)}
+
+  <main>
+    ${holdsSectionHtml(facts)}
+
+    ${checksSectionHtml(facts)}
+
+    ${takeSectionHtml(dataset)}
+  </main>`;
   const html = framedPageHtml(dataset, {
     title, meta: { description: desc, path: DATA_PATH, kind: "website" },
     headTags: [`<script type="application/ld+json">${ld}</script>`], css: DATA_PAGE_RULES, run: { lastRun, unread }, content,

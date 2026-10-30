@@ -154,63 +154,98 @@ function routeCard(context: CountryCardContext, route: Route): string {
     escAttr(pageStamp(dataset, route))}">${esc(readOn(pageStamp(dataset, route)))}</time></span></p></a></li>`;
 }
 
-export function countryPage(dataset: Dataset, address: CountryAddress): CountryPage {
-  const { country, path } = address;
-  const title = countryPageTitle(phraseOf(country.code));
-  const desc = description(country);
-  const read = countryReadDate(dataset, country);
-  // The two lists this page carries. The routes the checker asks about come
-  // first, in the dataset's own order; the ones it does not ask about come
-  // below them under a heading that offers nothing (s9).
-  const scored = country.routes.filter(isScored);
-  const quotedOnly = country.routes.filter((r) => !isScored(r));
-  /**
-   * The heading counts every route, then the ones the checker asks about: a
-   * single total over a page whose last route has no verdict in it would
-   * promise answers the page does not give. It counts in figures, as every
-   * label on the product does; the ledes below it count in words, because
-   * they are sentences.
-   */
-  const headline = countryHeadline(phraseAtStartOf(country.code), country.routes.length, scored.length);
+/**
+ * The two lists a country page carries. The routes the checker asks about come
+ * first, in the dataset's own order; the ones it does not ask about come below
+ * them under a heading that offers nothing (s9).
+ */
+interface ListedRoutes {
+  scored: Route[];
+  quotedOnly: Route[];
+}
+
+function listedRoutesOf(country: Country): ListedRoutes {
+  return { scored: country.routes.filter(isScored), quotedOnly: country.routes.filter((r) => !isScored(r)) };
+}
+
+/** A link to the list of what the dataset leaves out, in the lede's inline link style. */
+const exclusionsLinkHtml = (label: string): string =>
+  `<a class="tap" href="${escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">${esc(label)}</a>`;
+
+/** The lede under the headline: whom the routes are for, then where the ones not asked about went. */
+function countryLedeHtml(country: Country, quotedOnly: number): string {
+  const leftOut = quotedOnly
+    ? notAskedBelowLine(esc(countedWords(quotedOnly, "route")), exclusionsLinkHtml(LISTED_WITH_THE_REASONS))
+    : discretionLeftOutLine(exclusionsLinkHtml(LISTED_WITH_THEIR_REASONS));
+  return `${esc(countryLedeOpen(phraseOf(country.code)))} ${esc(audienceSentence(country))} ${leftOut}`;
+}
+
+/**
+ * The masthead: the headline, the lede and the read stamp.
+ *
+ * The heading counts every route, then the ones the checker asks about: a
+ * single total over a page whose last route has no verdict in it would promise
+ * answers the page does not give. It counts in figures, as every label on the
+ * product does; the ledes below it count in words, because they are sentences.
+ */
+function countryMastheadHtml(dataset: Dataset, country: Country, routes: ListedRoutes): string {
+  const headline = countryHeadline(phraseAtStartOf(country.code), country.routes.length, routes.scored.length);
+  return `<div class="masthead-with-stamps">
+    <div>
+      <h1>${esc(headline)} <em>${esc(TAGLINE)}</em></h1>
+      <p class="lede">${countryLedeHtml(country, routes.quotedOnly.length)}</p>
+    </div>
+    ${rulesRead(countryReadDate(dataset, country))}
+  </div>`;
+}
+
+/** The section under the routes the checker asks about: the ones it does not. */
+function quotedOnlySectionHtml(context: CountryCardContext, quotedOnly: Route[]): string {
+  return `<section class="quoted-only" aria-labelledby="quoted-only-h">
+      <h2 class="label" id="quoted-only-h">${esc(QUOTED_ONLY_HEADING)}</h2>
+      <p class="lede">${esc(notAskedLede(sentenceCase(countedWords(quotedOnly.length, "route")), quotedOnly.length))}</p>
+      <ul class="routes" aria-label="${escAttr(notAskedRoutesLabel(phraseOf(context.country.code)))}">${
+    quotedOnly.map((route) => routeCard(context, route)).join("")}
+      </ul>
+    </section>`;
+}
+
+/** The way on: the interview, scoped to this country, and what its result names. */
+function countryCtaHtml(country: Country, quotedOnly: number): string {
+  return `<div class="cta cta-country">
+      <a class="btn tap-min" href="${escAttr(`${url("/")}?country=${country.code.toLowerCase()}`)}">Check yours — ${
+    esc(country.name)}</a>
+      <span class="note">Answered on this device only. ${quotedOnly
+    ? RESULT_NAMES_ASKED_ROUTES
+    : RESULT_NAMES_FITTING_ROUTES}</span>
+    </div>`;
+}
+
+/** The page's main: the routes the checker asks about, the ones it does not, and the way on. */
+function countryMainHtml(dataset: Dataset, country: Country, routes: ListedRoutes): string {
+  const { scored, quotedOnly } = routes;
   // One page, one memory of what it has already explained. A stranger meets
   // "§" here as readily as on a route page — this is a landing page too.
   const cardContext: CountryCardContext = { dataset, country, seen: new Set() };
-
-  const content = `<div class="masthead-with-stamps">
-    <div>
-      <h1>${esc(headline)} <em>${esc(TAGLINE)}</em></h1>
-      <p class="lede">${esc(countryLedeOpen(phraseOf(country.code)))} ${
-    esc(audienceSentence(country))} ${quotedOnly.length
-    ? notAskedBelowLine(esc(countedWords(quotedOnly.length, "route")), `<a class="tap" href="${
-      escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">${esc(LISTED_WITH_THE_REASONS)}</a>`)
-    : discretionLeftOutLine(`<a class="tap" href="${
-      escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">${esc(LISTED_WITH_THEIR_REASONS)}</a>`)}</p>
-    </div>
-    ${rulesRead(read)}
-  </div>
-
-  <main>
+  return `<main>
     <ul class="routes" aria-label="${escAttr(askedRoutesLabel(phraseOf(country.code)))}">${
     scored.map((route) => routeCard(cardContext, route)).join("")}
     </ul>${quotedOnly.length ? `
 
-    <section class="quoted-only" aria-labelledby="quoted-only-h">
-      <h2 class="label" id="quoted-only-h">${esc(QUOTED_ONLY_HEADING)}</h2>
-      <p class="lede">${esc(notAskedLede(sentenceCase(countedWords(quotedOnly.length, "route")), quotedOnly.length))}</p>
-      <ul class="routes" aria-label="${escAttr(notAskedRoutesLabel(phraseOf(country.code)))}">${
-    quotedOnly.map((route) => routeCard(cardContext, route)).join("")}
-      </ul>
-    </section>` : ""}
+    ${quotedOnlySectionHtml(cardContext, quotedOnly)}` : ""}
 
-    <div class="cta cta-country">
-      <a class="btn tap-min" href="${escAttr(`${url("/")}?country=${country.code.toLowerCase()}`)}">Check yours — ${
-    esc(country.name)}</a>
-      <span class="note">Answered on this device only. ${quotedOnly.length
-    ? RESULT_NAMES_ASKED_ROUTES
-    : RESULT_NAMES_FITTING_ROUTES}</span>
-    </div>
+    ${countryCtaHtml(country, quotedOnly.length)}
   </main>`;
+}
 
+export function countryPage(dataset: Dataset, address: CountryAddress): CountryPage {
+  const { country, path } = address;
+  const title = countryPageTitle(phraseOf(country.code));
+  const desc = description(country);
+  const routes = listedRoutesOf(country);
+  const content = `${countryMastheadHtml(dataset, country, routes)}
+
+  ${countryMainHtml(dataset, country, routes)}`;
   const html = framedPageHtml(dataset, {
     title, meta: { description: desc, path, kind: "website" }, css: COUNTRY_PAGE_RULES, content,
     place: { countryPath: path, current: "page", checkPath: `/?country=${country.code.toLowerCase()}` },
