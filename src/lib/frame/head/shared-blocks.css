@@ -1,0 +1,61 @@
+/* The blocks several pages draw (the rules list, a quote, the call to action, the data door, the answer panel, a list of links, the footer), after identity.css. */
+/* ---- the rules ---- */
+.rules { margin-top: var(--space-5); display: grid; gap: var(--gap-cards); }
+
+/* Source line: the quote is the proof, so it is framed — language tagged, the
+   separator difference explained once — and its link reaches 44 px. */
+.src { font: var(--text-source); color: var(--color-muted); border-top: var(--rule-dotted); padding-top: var(--space-2); margin-top: var(--space-3); display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
+.src q { font-style: italic; color: var(--color-ink); quotes: "\201C" "\201D"; }
+.src b { color: var(--color-met); font-weight: 600; }
+.src a { white-space: nowrap; display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-2); margin: 0; }
+/* The note reads as part of the line it belongs to, separated the way the
+   rest of that line is (F2). */
+.src .note { display: inline; }
+
+/* ---- check yours ---- */
+.cta { margin: var(--space-5) 0 0; padding: var(--space-4); background: var(--color-card); border: var(--rule-soft); display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+.cta p { margin: 0; }
+/* The 404's second door: its heading is the bold opening sentence and the rest
+   of the paragraph runs on after it, on the same line, as the one paragraph
+   it used to be — so the heading a screen reader lands on is the sentence a
+   sighted reader sees, once (s27). */
+.cta .cta-text h2, .cta .cta-text p { display: inline; font: inherit; margin: 0; }
+.cta .cta-text h2 { font-weight: 700; }
+.cta a.btn { display: inline-flex; align-items: center; justify-content: center; text-align: center; min-height: var(--tap-min); line-height: 1.3; padding: .55rem var(--space-4); background: var(--color-ink); color: var(--color-bg); text-decoration: none; font: 700 .95rem var(--font-sans); }
+
+/* ---- the data behind the page: the developer's door ---- */
+.data { margin: 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-top: var(--rule-card-top); border-bottom: var(--rule-soft); display: grid; gap: var(--space-3); }
+.data p { margin: 0; }
+.data h2 { margin: 0; }
+.data nav { display: grid; gap: var(--space-2); }
+.data nav a { display: inline-flex; align-items: center; min-height: var(--tap-min); padding: 0 var(--space-3); border: var(--rule-soft); text-decoration: none; font: var(--text-value); }
+
+/* ---- the answer ---- */
+/* The number a search visitor came for, in the first screen: quiet furniture,
+   loud number (isolated v1-gate critique 2026-09-08, F1). */
+.answer { margin: 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-bottom: var(--rule-soft); }
+.answer .label { margin: 0 0 var(--space-1); }
+
+footer .ends { display: flex; gap: var(--space-4); flex-wrap: wrap; }
+footer .ends a { color: var(--color-muted); display: inline-flex; align-items: center; min-height: var(--tap-min); }
+
+/* ---- neighbours ---- */
+.neighbours { margin: 0; padding: var(--space-3) var(--space-4) var(--space-2); background: var(--color-card); border-top: var(--rule-card-top); border-bottom: var(--rule-soft); }
+.neighbours h2 { margin: 0; }
+.neighbours ul { list-style: none; padding: 0; margin: var(--space-2) 0 0; display: grid; gap: 0; }
+.neighbours li a { display: block; min-height: var(--tap-min); padding: var(--space-2) 0; border-top: var(--rule-dotted); text-decoration: none; color: var(--color-ink); }
+.neighbours li a small { display: block; font: var(--text-source); color: var(--color-muted); }
+
+footer { margin-top: var(--space-6); border-top: var(--rule-heavy); padding-top: var(--space-4); color: var(--color-muted); }
+footer .health { display: flex; justify-content: space-between; gap: var(--space-3); font: var(--text-source); margin-top: var(--space-3); flex-wrap: wrap; align-items: center; }
+footer .health a { display: inline-flex; align-items: center; min-height: var(--tap-min); }
+
+@media (max-width: 760px) {
+  .src { flex-direction: column; }
+  .src a { padding-left: 0; }
+  /* On a phone the button leads its own section: the sentence about privacy
+     is worth reading, and worth reading second (2026-09-08). */
+  .cta { flex-direction: column; align-items: stretch; }
+  .cta a.btn { order: -1; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

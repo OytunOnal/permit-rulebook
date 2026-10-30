@@ -30,6 +30,8 @@ import { PRODUCT_NAME } from "./copy/frame.js";
 import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn, readOn } from "./copy/quotes.js";
 import { WRONG_DOOR_LABEL } from "./copy/feedback.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
+// The page's own rules, beside its code; the frame's come first (#142).
+import ROUTE_PAGE_RULES from "./route-page.css?raw";
 
 /**
  * One page per route, generated from the dataset and never typed.
@@ -797,11 +799,8 @@ ${neighbours(country, route, seen)}
   </div>`;
 
   const html = framedPageHtml(dataset, {
-    title, meta: { description: desc, path, kind: "article" }, run: watch, content,
-    place: {
-      countryPath: countryPath(country), current: "true", jsonPath,
-      checkPath: `/?country=${country.code.toLowerCase()}`,
-    },
+    title, meta: { description: desc, path, kind: "article" }, css: ROUTE_PAGE_RULES, run: watch, content,
+    place: { countryPath: countryPath(country), current: "true", jsonPath, checkPath: `/?country=${country.code.toLowerCase()}` },
   });
   return {
     path, jsonPath, title, description: desc, readDate: read, html,

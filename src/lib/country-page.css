@@ -1,0 +1,31 @@
+/* A country page's own rules, after the frame's. */
+/* ---- the country index: the whole card is the link ---- */
+/* One target, not three: the name, the gist and the meta line sit inside a
+   single link, so a thumb has the whole card and a reader has one thing to
+   click (nav-mock critique F2, 2026-09-08). The title carries the link colour,
+   because the card itself cannot. */
+.routes { list-style: none; margin: var(--space-4) 0 0; padding: 0; display: grid; gap: var(--gap-cards); }
+.routes li { background: var(--color-card); border: var(--rule-soft); }
+.routes li:hover, .routes li:focus-within { border-color: var(--color-stamp); }
+.routes a.card { display: block; padding: var(--pad-card); color: inherit; text-decoration: none; }
+.routes .name { font: var(--text-route); line-height: 1.3; color: var(--color-stamp); text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: .2em; }
+.routes .gist { margin: .25rem 0 0; color: var(--color-ink); }
+.routes .meta { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: .45rem 0 0; font: 500 .85rem/1.4 var(--font-sans); color: var(--color-muted); }
+.routes .meta b { font-weight: 600; color: var(--color-ink); }
+.routes .meta .read { font: var(--text-source); color: var(--color-met); align-self: center; }
+
+/* The routes a country page lists and the checker does not score. Set off by a
+   rule and a heading, not by a colour: this section is quieter than the one
+   above it, and a tint would read as a state (met / near / hold) on a page whose
+   whole point is that it reaches no state (s9). */
+.quoted-only { margin: var(--space-5) 0 0; padding-top: var(--space-4); border-top: var(--rule-heavy); }
+.quoted-only h2 { margin: 0; }
+.quoted-only .lede { margin: var(--space-2) 0 0; }
+.cta .note { color: var(--color-muted); }
+.cta.cta-country { flex-direction: column; align-items: center; text-align: center; }
+
+@media (max-width: 760px) {
+  /* The button goes full width on a phone, as every other button here
+     does; only the text stays centred. */
+  .cta.cta-country { align-items: stretch; }
+}

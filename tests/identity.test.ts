@@ -119,7 +119,8 @@ describe("the identity pair has one definition", () => {
     // A second definition is the drift this file exists to stop. `tokens.css`
     // holds values, not components; a page holds placement, not geometry.
     // Print is exempt (`withoutPrint`).
-    for (const file of ["tokens.css", "src/lib/route-page.ts", "src/lib/frame/head/frame-sheet.ts", "src/lib/verdict/verdict.css"]) {
+    for (const file of ["tokens.css", "src/lib/route-page.ts", "src/lib/frame/head/frame.css", "src/lib/frame/head/shared-blocks.css",
+      "src/lib/route-page.css", "src/lib/country-page.css", "src/lib/data-page.css", "src/lib/feedback-page.css", "src/lib/verdict/verdict.css"]) {
       const own = withoutPrint(read(file).split("${IDENTITY}").join(" "));
       expect(own, `${file} draws the mark`).not.toMatch(/\.stamps\s+\.mark\s*\{/);
       // And states nothing the pair is made of, only where it goes.

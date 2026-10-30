@@ -82,7 +82,9 @@
     "src/lib/frame/framed-page.ts",
     "src/lib/frame/head/csp.ts",
     "src/lib/frame/head/frame-sheet.ts",
-    "src/lib/frame/head/icon-links.ts"
+    "src/lib/frame/head/frame.css",
+    "src/lib/frame/head/icon-links.ts",
+    "src/lib/frame/head/shared-blocks.css"
    ]
   },
   {
@@ -814,6 +816,11 @@
   },
   {
    "from": "src/lib/country-page.ts",
+   "to": "src/lib/country-page.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
    "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
@@ -954,6 +961,11 @@
   },
   {
    "from": "src/lib/data-page.ts",
+   "to": "src/lib/data-page.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
    "to": "src/lib/dataset-ld.ts",
    "kind": "dependency"
   },
@@ -1030,6 +1042,11 @@
   {
    "from": "src/lib/feedback-page.ts",
    "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/feedback-page.css",
    "kind": "dependency"
   },
   {
@@ -1210,6 +1227,16 @@
   {
    "from": "src/lib/frame/head/frame-sheet.ts",
    "to": "identity.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "src/lib/frame/head/frame.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "src/lib/frame/head/shared-blocks.css",
    "kind": "dependency"
   },
   {
@@ -1630,6 +1657,11 @@
   {
    "from": "src/lib/route-page.ts",
    "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
+   "to": "src/lib/route-page.css",
    "kind": "dependency"
   },
   {
@@ -8473,5 +8505,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "b11e2c719d74abadace4e4bb011582eff415689759c7bdbedbb8d5d5d0bccaee"
+ "digest": "197b48ae6647b51e3652a3115d02cbe2115410a6af5c23f333da64d9da751986"
 }

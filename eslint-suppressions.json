@@ -99,11 +99,6 @@
       "count": 1
     }
   },
-  "src/lib/feedback-page.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "src/lib/first-paint.ts": {
     "roadkeeper/constant-reason": {
       "count": 3

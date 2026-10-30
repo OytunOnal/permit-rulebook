@@ -1,0 +1,52 @@
+/* The data page's own rules, after the frame's. */
+/* ---- the data page ---- */
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: var(--space-3); margin: var(--space-3) 0 0; }
+.facts > div { border-top: var(--rule-dotted); padding-top: var(--space-2); }
+.facts dt { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
+.facts dd { margin: .2rem 0 0; font: var(--text-value); font-size: 1rem; color: var(--color-ink); }
+.checks { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: var(--space-2); }
+.checks li { border-top: var(--rule-dotted); padding-top: var(--space-2); }
+.checks b { color: var(--color-ink); }
+/* The per-route JSON lists. Written as nav.jsonlinks because these navs sit
+   inside section.data, whose own ".data nav a" rule is the route page's boxed
+   data door and outranks a bare ".jsonlinks a". The links are rows here, so
+   they take the tap-target floor as a row height: the inline tap class carries
+   a negative vertical margin, which is right for a link inside a sentence and
+   inside a grid pulled each list up over its own country heading (human, live
+   site, 2026-09-08). */
+nav.jsonlinks { display: grid; gap: 0; margin-top: var(--space-4); }
+nav.jsonlinks .label { display: block; margin: 0 0 var(--space-1); padding: 0; color: var(--color-muted); }
+nav.jsonlinks a { display: flex; justify-content: space-between; gap: var(--space-3); align-items: center; min-height: var(--tap-min); margin: 0; padding: var(--space-2) 0; border: none; border-top: var(--rule-dotted); text-decoration: none; color: var(--color-stamp); font: var(--text-body); }
+nav.jsonlinks a small { font: var(--text-source); color: var(--color-met); white-space: nowrap; }
+/* This page reads as prose more than any other, and two of its sentences end a
+   thought that the next block then sat directly on top of: the masthead's
+   "Take it, check it, or tell us it is wrong." touched <main>, and the checks
+   section's "…never on their own." touched the rule of the Take-it box — 0px
+   measured, both (human's walk, 2026-09-15). The route page's own spacing does
+   not reach these two joins, so this page adds the breath itself, here rather
+   than in the shared sheet, so no other page's bytes move for it. */
+.masthead-with-stamps { margin-bottom: var(--space-5); }
+.rules { margin-bottom: var(--space-5); }
+/* "What it holds today", after the human read it on the live page (2026-09-15).
+   Seven cells in one auto-fit grid came out 3 + 3 + 1, "Sentences of ours"
+   orphaned on a row of its own; the Routes sentence wrapped to three lines, so
+   the middle row stood 84px against 46px neighbours; and dates sat interleaved
+   with counts in no order a reader could name. Three lists instead, each of one
+   kind: the four dates across, the two counts across, and the Routes sentence
+   alone with the width to say itself in one line. Every cell centres its text.
+   Only the dates need telling how many across: the shared sheet's own
+   minmax(13rem, 1fr) already gives two cells two columns and one cell the whole
+   width, and gives a phone the stack. That sheet is not edited here, so no
+   other page's bytes move for this. */
+.facts-dates { grid-template-columns: repeat(4, 1fr); }
+.facts dt, .facts dd { text-align: center; }
+/* And the values sit on one line across a row whichever labels wrapped: at a
+   phone's width NEWEST VALUE CHANGED takes two lines and LAST CHECKED beside
+   it takes one, which left their two dates on different lines of the same row
+   until the cell pushed its value to the foot of itself. */
+.facts > div { display: flex; flex-direction: column; justify-content: space-between; }
+/* A phone takes the four dates two at a time. The counts stack themselves at
+   that width and are better for it — two across at 390 broke each of them over
+   three lines (measured). 760px is the width the shared sheet already turns at,
+   and this page turns with it rather than inventing a second one. */
+@media (max-width: 760px) { .facts-dates { grid-template-columns: repeat(2, 1fr); } }

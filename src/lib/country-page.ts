@@ -25,6 +25,8 @@ import { countryPath, countrySlug, routePath } from "./slug.js";
 // (Standards and Spec review, 2026-09-08).
 import { rulesRead } from "./identity.js";
 import { type Glossary, glossSection, glossed } from "./gloss.js";
+// The page's own rules, beside its code; the frame's come first (#142).
+import COUNTRY_PAGE_RULES from "./country-page.css?raw";
 
 /**
  * One page per country — the address a route page's crumb climbs to.
@@ -210,7 +212,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   </main>`;
 
   const html = framedPageHtml(dataset, {
-    title, meta: { description: desc, path, kind: "website" }, content,
+    title, meta: { description: desc, path, kind: "website" }, css: COUNTRY_PAGE_RULES, content,
     place: { countryPath: path, current: "page", checkPath: `/?country=${country.code.toLowerCase()}` },
   });
   return { path, title, description: desc, html };
