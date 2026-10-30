@@ -8,8 +8,8 @@ import type { FooterFacts } from "./site-footer.js";
 
 /**
  * What the shared footer states, from the dataset and from `site.ts` — never
- * typed into a page. It lives here because it needs the dataset and the footer
- * itself must not: `identity.ts` knows markup, not data.
+ * typed into a page. It lives apart from the footer because it needs the
+ * dataset and the footer must not: `site-footer.ts` knows markup, not data.
  *
  * What `run` leaves out is read from the watch's state rather than being
  * walked per page: the walk behind it is cached on the dataset in the data

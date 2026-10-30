@@ -1107,12 +1107,12 @@
   {
    "from": "src/lib/frame/body/site-footer.ts",
    "to": "src/lib/frame/body/site-header.ts",
-   "kind": "inheritance"
+   "kind": "dependency"
   },
   {
    "from": "src/lib/frame/body/site-footer.ts",
    "to": "src/lib/frame/body/site-header.ts",
-   "kind": "type-only"
+   "kind": "inheritance"
   },
   {
    "from": "src/lib/frame/body/site-footer.ts",
@@ -7166,6 +7166,46 @@
     "exported": false
    },
    {
+    "name": "ListedRoutes",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "listedRoutesOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "exclusionsLinkHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryLedeHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryMastheadHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "quotedOnlySectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryCtaHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryMainHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "countryPage",
     "kind": "fn",
     "exported": true
@@ -7208,6 +7248,51 @@
     "exported": true
    },
    {
+    "name": "DataPageFacts",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "dataMastheadHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "dayFactHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "datesFactsHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "holdsSectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "dailyCheckHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "checksSectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryJsonLinksHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "takeSectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "dataPage",
     "kind": "fn",
     "exported": true
@@ -7227,6 +7312,16 @@
    {
     "name": "CC_BY_4",
     "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "coveredPlaces",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "datasetDownloads",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -8555,5 +8650,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "ac39c0bfa1d2b29537b656eb276bbe33c807880ef41212ba25cb6fc4195f6593"
+ "digest": "1040145dfdb51c8f8942e39b156166fcea25745129160877d7c0b72bd46bc999"
 }

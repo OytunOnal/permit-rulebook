@@ -42,36 +42,52 @@ export interface NavLink {
   action?: boolean;
 }
 
+/**
+ * The `aria-current` a country's link carries on this page, or nothing: the
+ * header's and the footer's mark, so the two cannot disagree.
+ */
+export function countryMarkOf(link: NavLink, place: HeaderPlace): string {
+  const isThisCountry = Boolean(place.countryPath) && link.path === place.countryPath;
+  return isThisCountry && place.current ? ` aria-current="${escAttr(place.current)}"` : "";
+}
+
 /** The `aria-current` a header link carries on this page, or nothing. */
 function currentMarkOf(link: NavLink, place: HeaderPlace): string {
-  const isThisCountry = Boolean(place.countryPath) && link.path === place.countryPath;
-  if (isThisCountry && place.current) return ` aria-current="${escAttr(place.current)}"`;
+  const countryMark = countryMarkOf(link, place);
+  if (countryMark) return countryMark;
   if (place.here && link.path === place.here) return ' aria-current="page"';
   return "";
 }
 
-export function siteHeader(countries: NavLink[], place: HeaderPlace = {}): string {
-  const item = (link: NavLink): string =>
-    `<a class="tap-min${link.action ? " check" : ""}" href="${escAttr(url(link.path))}"${
-      currentMarkOf(link, place)}>${esc(link.label)}</a>`;
-  /**
-   * The four countries under one word (the human's second amendment,
-   * 2026-09-16). The row held seven items and now holds four, and on a page
-   * that belongs to a country the word is that country's own name — so the
-   * header still says where you are, which is what the crumbs were removed in
-   * favour of.
-   *
-   * A `<details>`, so it opens with no script and the keyboard reaches it. The
-   * phone menu shows the same four rows under the heading inside it, which is
-   * why the heading is markup rather than a second nav: one set of links, and
-   * no country name written anywhere twice.
-   */
+/** One link in the header's row or its countries' list, marked where it is this page. */
+function navItemHtml(link: NavLink, place: HeaderPlace): string {
+  return `<a class="tap-min${link.action ? " check" : ""}" href="${escAttr(url(link.path))}"${
+    currentMarkOf(link, place)}>${esc(link.label)}</a>`;
+}
+
+/**
+ * The four countries under one word (the human's second amendment,
+ * 2026-09-16). The row held seven items and now holds four, and on a page
+ * that belongs to a country the word is that country's own name — so the
+ * header still says where you are, which is what the crumbs were removed in
+ * favour of.
+ *
+ * A `<details>`, so it opens with no script and the keyboard reaches it. The
+ * phone menu shows the same four rows under the heading inside it, which is
+ * why the heading is markup rather than a second nav: one set of links, and
+ * no country name written anywhere twice.
+ */
+function countriesDisclosureHtml(countries: NavLink[], place: HeaderPlace): string {
   const here = countries.find((c) => c.path === place.countryPath);
-  const disclosure = `<details class="countries"><summary class="tap-min">${
+  return `<details class="countries"><summary class="tap-min">${
     esc(here ? here.label : COUNTRIES)}</summary><div class="list"><span class="group">${
-    esc(COUNTRIES)}</span>${countries.map(item).join("")}</div></details>`;
+    esc(COUNTRIES)}</span>${countries.map((link) => navItemHtml(link, place)).join("")}</div></details>`;
+}
+
+export function siteHeader(countries: NavLink[], place: HeaderPlace = {}): string {
+  const item = (link: NavLink): string => navItemHtml(link, place);
   const links = [
-    disclosure,
+    countriesDisclosureHtml(countries, place),
     '<span class="sep" aria-hidden="true"></span>',
     // One name for it, the human's own: the header says "Check yours" and so
     // does the footer; the page's own button says which country (footer
