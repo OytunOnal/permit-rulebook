@@ -1,9 +1,7 @@
-/* The frame's own rules: the base, the column, the tap floor and the masthead. The token set comes before them and identity.css after. */
+/* The frame's own rules: the base, the tap floor and the masthead. The token set comes before them and identity.css, with the page's ground and column, after. */
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: var(--text-body); }
 a { color: var(--color-stamp); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.wrap { max-width: var(--max-content); margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-6); }
 .label { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
 /* The two ways an interactive element reaches the token's tap minimum. Every
    structural rule below outranks these on specificity, so they change nothing

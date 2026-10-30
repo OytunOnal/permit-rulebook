@@ -18,6 +18,16 @@
  * and each page states its own.
  */
 
+/* ---- the page's ground and its one column, on every page ----
+ *
+ * The interview set its own body padding and column, so its header stood
+ * further out and lower than on every other page and jumped on the first
+ * click away (v1.2.4 gate critique, finding 10). The column's side padding sits
+ * inside its 56rem only because each page sets `box-sizing: border-box`.
+ */
+body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: var(--text-body); }
+.wrap { max-width: var(--max-content); margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-6); }
+
 /* The box reserves room for the LONGEST label the pair carries, not for the
    shortest. The mark sits at a fixed offset and the stamp is centred on a
    fixed point, so a longer word grows past the box’s right edge: "Record
