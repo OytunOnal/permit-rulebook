@@ -14,7 +14,7 @@ import { declarationHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { glossSection } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
-import { routePage } from "../src/lib/route-page.js";
+import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
 import { frameAlone, headerIn } from "./frame-alone.js";

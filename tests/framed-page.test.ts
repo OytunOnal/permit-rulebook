@@ -6,7 +6,7 @@ import { countryPages } from "../src/lib/country-page.js";
 import { dataPage, statusAlias } from "../src/lib/data-page.js";
 import { feedbackPage } from "../src/lib/feedback-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
-import { routePage, routePages } from "../src/lib/route-page.js";
+import { routePage, routePages } from "../src/lib/route-page/route-page.js";
 import { DATA_PATH, FEEDBACK_PATH, analyticsBeacon, url } from "../src/lib/site.js";
 import { countryPath, routeAddresses } from "../src/lib/slug.js";
 import { footerIn, frameAlone, headerIn, styleIn } from "./frame-alone.js";

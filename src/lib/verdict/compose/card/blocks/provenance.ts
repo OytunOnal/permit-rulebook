@@ -1,5 +1,7 @@
 // @level presentation
-import { forEachCriterion, resultProvenance, type Dataset, type Route, type RouteResult } from "permit-rulebook-data";
+import {
+  forEachCriterion, periodOf, resultProvenance, type Dataset, type Route, type RouteResult, type ThresholdCriterion,
+} from "permit-rulebook-data";
 import { esc, escAttr } from "../../../../reason.js";
 import {
   APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_THRESHOLD_ON_ROUTE, perPeriod,
@@ -8,15 +10,13 @@ import { readOn } from "../../../../copy/quotes.js";
 import { type Glossary, glossed } from "../../../../gloss.js";
 // One frame for every quote the product shows (2026-09-08).
 import { linkLabelOf, noteHtml, quoteFrame } from "../../../../quote.js";
-import type { Gte } from "../../money-shortfall.js";
-import { periodOf } from "../../printed-shortfall.js";
 import type { CardScreen } from "./card-screen.js";
 
 /** Every gte criterion in a route, at any depth. Nested too: NL ICT states its
  * thresholds inside an any-disjunction, and a top-level-only scan drew no rail
  * on exactly those cards (review). */
-function gteCriteriaOf(route: Route): Gte[] {
-  const out: Gte[] = [];
+function gteCriteriaOf(route: Route): ThresholdCriterion[] {
+  const out: ThresholdCriterion[] = [];
   forEachCriterion(route.criteria, (c) => { if (c.op === "gte") out.push(c); });
   return out;
 }

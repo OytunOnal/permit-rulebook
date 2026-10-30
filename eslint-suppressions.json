@@ -104,14 +104,6 @@
       "count": 1
     }
   },
-  "src/lib/route-page.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/named-condition": {
-      "count": 2
-    }
-  },
   "src/lib/site.ts": {
     "roadkeeper/constant-reason": {
       "count": 2

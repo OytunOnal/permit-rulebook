@@ -16,7 +16,7 @@ import { countryHeadline } from "../src/lib/copy/country-page.js";
 import { verdictHtml, verdictOf } from "../src/lib/verdict/index.js";
 import { countryAddresses, countryPage } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import { url } from "../src/lib/site.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, groupsIn, paintedAsComposedScript, placed, verdictFor,

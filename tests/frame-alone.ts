@@ -2,7 +2,7 @@ import type { Dataset } from "permit-rulebook-data";
 import { countryPages } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { framedPageHtml, type PageInFrame } from "../src/lib/frame/framed-page.js";
-import { routePage } from "../src/lib/route-page.js";
+import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 
 /**

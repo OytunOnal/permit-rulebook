@@ -8,7 +8,7 @@ import {
 } from "permit-rulebook-data";
 import { OFFICIAL_PAGE, consolidatedTextOn } from "../src/lib/copy/quotes.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { routePage } from "../src/lib/route-page.js";
+import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
 import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";

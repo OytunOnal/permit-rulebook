@@ -1,6 +1,6 @@
 // @level presentation
 import type { Dataset } from "permit-rulebook-data";
-import { pageStamp } from "./route-page.js";
+import { pageStamp } from "./route-page/route-page.js";
 import { countryAddresses, countryReadDate, siteReadDate } from "./country-page.js";
 import { DATA_PATH, FEEDBACK_PATH, absolute } from "./site.js";
 import { routeAddresses } from "./slug.js";
