@@ -14,7 +14,7 @@ import { proseProvenanceCounts } from "../src/lib/copy/data-page.js";
 import { questionCounter } from "../src/lib/copy/interview.js";
 import { glossSection, glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { routePage, routePages, routeSourceUrls } from "../src/lib/route-page.js";
+import { routePage, routePages, routeSourceUrls } from "../src/lib/route-page/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { lastWatchRun, watchState } from "../src/lib/site.js";
 import { routeAddresses } from "../src/lib/slug.js";

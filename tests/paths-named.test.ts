@@ -5,7 +5,7 @@ import {
   type Criterion, type Dataset, type Profile, type Route,
 } from "permit-rulebook-data";
 import { ANY_PATH, EITHER_PATH } from "../src/lib/copy/route-page.js";
-import { routePage } from "../src/lib/route-page.js";
+import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { DESK, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";

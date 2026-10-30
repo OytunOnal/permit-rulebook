@@ -5,7 +5,7 @@ import {
   type Dataset, type Profile, type Route, type RouteResult,
 } from "permit-rulebook-data";
 import { NOT_CHECKED_HEADING, NOT_REQUIRED_FOR_YOUR_PASSPORT, ROUTE_DOOR } from "../src/lib/copy/verdict.js";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import { blocksIn, drawnRouteOn, placed, verdictFor, verdictOn, withoutGlosses } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;

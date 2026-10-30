@@ -10,7 +10,7 @@ import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
 import {
   audienceSentence, gist, pageStamp, routeFigure,
-} from "./route-page.js";
+} from "./route-page/route-page.js";
 import { TAGLINE, capitalise } from "./copy/frame.js";
 import {
   LISTED_WITH_THEIR_REASONS, LISTED_WITH_THE_REASONS, QUOTED_ONLY_HEADING, RESULT_NAMES_ASKED_ROUTES,

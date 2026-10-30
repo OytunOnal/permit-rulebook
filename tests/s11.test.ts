@@ -7,7 +7,7 @@ import { DAILY_CHECK_CLAIM } from "../src/lib/copy/data-page.js";
 import { dailyCheck } from "../src/lib/copy/route-page.js";
 import { unreadLabel } from "../src/lib/copy/frame.js";
 import { dataPage } from "../src/lib/data-page.js";
-import { ownUnread, routePages, type RoutePage } from "../src/lib/route-page.js";
+import { ownUnread, routePages, type RoutePage } from "../src/lib/route-page/route-page.js";
 import { lastWatchRun, unreadSourcesAt, watchState, type WatchRun } from "../src/lib/site.js";
 import { footerIn, frameAlone } from "./frame-alone.js";
 

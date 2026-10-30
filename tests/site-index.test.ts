@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { countryAddresses, countryLinks, countryPage, countryPages } from "../src/lib/country-page.js";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import { builtPaths, indexedPaths, robotsTxt, sitemapXml } from "../src/lib/sitemap.js";
 import { DATA_PATH, FEEDBACK_PATH, SITE_URL, absolute, url } from "../src/lib/site.js";
 import { countryPath } from "../src/lib/slug.js";

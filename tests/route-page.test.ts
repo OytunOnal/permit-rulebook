@@ -8,7 +8,7 @@ import {
 } from "permit-rulebook-data";
 import {
   TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routeFigure, routePage, routePages,
-} from "../src/lib/route-page.js";
+} from "../src/lib/route-page/route-page.js";
 import { countryAddresses, countryPages } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { feedbackPage } from "../src/lib/feedback-page.js";

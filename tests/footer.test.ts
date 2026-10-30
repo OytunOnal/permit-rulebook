@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { DISCLAIMER, datasetDay, unreadLabel } from "../src/lib/copy/frame.js";
 import { countryLinks } from "../src/lib/country-page.js";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import {
   DATA_PATH, FEEDBACK_PATH, NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, readRange,

@@ -86,7 +86,7 @@ it: [docs/roadkeeper/ARCHITECTURE.md](docs/roadkeeper/ARCHITECTURE.md).
   history and the record's store and starts the interview
 - `src/lib/interview/` — the interview and the results, client-side
 - `src/pages/[country]/[route].astro` — one page per route, generated
-- `src/lib/route-page.ts` — the whole route page, built as a string so a test
+- `src/lib/route-page/` — the whole route page, built as a string so a test
   can read exactly what ships
 - `src/lib/copy/` — every word a reader reads, one file per screen or part;
   the name, the tagline and the disclaimer in `frame.ts`

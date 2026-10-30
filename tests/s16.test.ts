@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { proseProvenance, type Dataset } from "permit-rulebook-data";
 import { dataPage, routeCounts } from "../src/lib/data-page.js";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import {
   DATA_LEDE_CLOSE_TAIL, DATA_LEDE_OPEN, FRESHNESS_HUMAN_HAND, PROSE_OURS_TAIL, dataLedeClose, dataMetaDescription,
 } from "../src/lib/copy/data-page.js";

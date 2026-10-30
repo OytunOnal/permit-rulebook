@@ -3,7 +3,7 @@ import type { APIRoute } from "astro";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { assertValidDataset } from "permit-rulebook-data/validate";
 import { routeAddresses } from "../../lib/slug.js";
-import { routePage } from "../../lib/route-page.js";
+import { routePage } from "../../lib/route-page/route-page.js";
 
 /**
  * The data door, one route wide.

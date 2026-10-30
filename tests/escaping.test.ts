@@ -6,7 +6,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { verdictHtml, verdictOf } from "../src/lib/verdict/index.js";
 import { questionCardHtml, setAsideHtml } from "../src/lib/question.js";
-import { routePage } from "../src/lib/route-page.js";
+import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
 import { deriveBands, deriveQuestions, type Dataset, type Profile } from "permit-rulebook-data";

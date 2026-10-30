@@ -8,7 +8,7 @@ import { dataPage, statusAlias } from "../src/lib/data-page.js";
 import { TRANSLATION_POLICY } from "../src/lib/copy/data-page.js";
 import { hasUnbalancedQuotationMark, quotedSpans, routeProvenance } from "permit-rulebook-data";
 import { notFoundPage } from "../src/lib/not-found.js";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { DATA_PATH, FEEDBACK_PATH, absolute, url } from "../src/lib/site.js";
 import { frameAlone, headerIn } from "./frame-alone.js";
