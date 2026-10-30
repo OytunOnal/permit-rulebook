@@ -3151,6 +3151,11 @@
   },
   {
    "from": "tests/header.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/header.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
@@ -8545,5 +8550,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "197b48ae6647b51e3652a3115d02cbe2115410a6af5c23f333da64d9da751986"
+ "digest": "465e54c6eb87063f179e755e22f3a46395d2733dc8cdd796c13aced3957710c7"
 }
