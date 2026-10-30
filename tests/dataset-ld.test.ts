@@ -5,7 +5,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { datasetLd } from "../src/lib/dataset-ld.js";
 import { siteReadDate } from "../src/lib/country-page.js";
-import { DATA_PATH } from "../src/lib/identity.js";
+import { DATA_PATH } from "../src/lib/site.js";
 import { FLAG_READ_WITHIN, FRESHNESS_HUMAN_HAND } from "../src/lib/copy/data-page.js";
 
 /**

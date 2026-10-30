@@ -3,15 +3,18 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { DISCLAIMER, unreadLabel } from "../src/lib/copy/frame.js";
-import { countryLinks, footerFacts, navCountries } from "../src/lib/country-page.js";
-import { DATA_PATH, FEEDBACK_PATH, siteFooter } from "../src/lib/identity.js";
+import { DISCLAIMER, datasetDay, unreadLabel } from "../src/lib/copy/frame.js";
+import { countryLinks } from "../src/lib/country-page.js";
 import { routePages } from "../src/lib/route-page.js";
 import { dataPage } from "../src/lib/data-page.js";
-import { NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, unreadSourcesAt, url } from "../src/lib/site.js";
+import {
+  DATA_PATH, FEEDBACK_PATH, NEW_NEED_URL, REPO_DATA, SPONSOR_URL, TRACKER_URL, lastWatchRun, readRange,
+  unreadSourcesAt, url,
+} from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
 import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { withSite } from "./browser-walk.js";
+import { footerIn, frameAlone } from "./frame-alone.js";
 
 /**
  * One footer under every page.
@@ -91,7 +94,7 @@ describe("one footer, every page", () => {
 
   it("every built page carries it, and it is the same block on all of them", () => {
     expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
-    const reference = shared(siteFooter(navCountries(ds), footerFacts(ds)));
+    const reference = shared(footerIn(frameAlone(ds)));
     for (const page of pages) {
       const footer = footerOf(page.html);
       expect(footer, `${page.path} has no site footer`).not.toBe("");
@@ -158,7 +161,7 @@ describe("one footer, every page", () => {
   });
 
   it("every outbound link says it leaves, and cannot reach back", () => {
-    const footer = siteFooter(navCountries(ds), footerFacts(ds));
+    const footer = footerIn(frameAlone(ds));
     for (const tag of [...footer.matchAll(/<a [^>]*href="https?:[^"]*"[^>]*>/g)].map((m) => m[0])) {
       expect(tag, tag).toContain('target="_blank"');
       expect(tag, tag).toContain('rel="noopener"');
@@ -167,23 +170,21 @@ describe("one footer, every page", () => {
   });
 
   it("the data line states the span the values were read over, from the dataset", () => {
-    const facts = footerFacts(ds);
-    const footer = siteFooter(navCountries(ds), facts);
-    expect(footer).toContain(`values read between <b><time datetime="${facts.read.oldest}">`);
+    const read = readRange(ds);
+    const footer = footerIn(frameAlone(ds));
+    expect(footer).toContain(`values read between <b><time datetime="${read.oldest}">`);
     // "Re-read daily" is a claim, so the day it last happened is printed with
     // it, from the watch's own state (devils-advocate, 2026-09-08) — and, on
     // a day that run left a source unread, how many (s11).
     const state = today();
     expect(readerSees(footer), state.day).toContain(`re-read daily ${state.parenthesis}`);
-    expect(facts.unread, state.day).toBe(state.unread);
-    expect(facts.lastRun, "the watch has never recorded a run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
-    expect(facts.lastRun).toBe(state.run);
-    expect(footer).toContain(`dataset ${facts.datasetVersion}`);
+    expect(state.run, "the watch has never recorded a run").toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+    expect(footer).toContain(`dataset ${datasetDay(ds.dataset_version)}`);
     // The oldest is really the oldest, and the two ends are different days.
-    expect(facts.read.oldest < facts.read.newest, `${facts.read.oldest}..${facts.read.newest}`).toBe(true);
+    expect(read.oldest < read.newest, `${read.oldest}..${read.newest}`).toBe(true);
     // The schema version belongs to the data page now, not to every page.
     expect(footer).not.toContain(ds.schema_version);
-    expect(footer).toContain(`\u00a9 ${facts.year} Oytun Onal`);
+    expect(footer).toContain(`\u00a9 ${read.newest.slice(0, 4)} Oytun Onal`);
   });
 });
 

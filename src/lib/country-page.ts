@@ -7,29 +7,23 @@ import {
   type Country, type Dataset, type Route,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
-import { contentSecurityPolicy } from "./csp.js";
+import { framedPageHtml } from "./frame/framed-page.js";
 import {
-  PAGE_CSS, audienceSentence, gist, pageStamp, routeFigure,
+  audienceSentence, gist, pageStamp, routeFigure,
 } from "./route-page.js";
-import { DISCLAIMER, TAGLINE, datasetDay } from "./copy/frame.js";
+import { TAGLINE } from "./copy/frame.js";
 import {
   LISTED_WITH_THEIR_REASONS, LISTED_WITH_THE_REASONS, QUOTED_ONLY_HEADING, RESULT_NAMES_ASKED_ROUTES,
   RESULT_NAMES_FITTING_ROUTES, askedRoutesLabel, countryHeadline, countryLedeOpen, countryPageDescription,
   countryPageTitle, discretionLeftOutLine, notAskedBelowLine, notAskedLede, notAskedRoutesLabel,
 } from "./copy/country-page.js";
 import { readOn } from "./copy/quotes.js";
-import {
-  DATA_LICENCE_NAME, DATA_LICENCE_URL, EXCLUSIONS_URL, OWNER, REPO_DATA, analyticsBeacon,
-  SPONSOR_URL, headMeta, readRange, readWatchRun, url, type WatchRun,
-} from "./site.js";
+import { EXCLUSIONS_URL, url } from "./site.js";
 import { countryPath, countrySlug, routePath } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
 // already explained: a country page is a crawl landing page like any other
 // (Standards and Spec review, 2026-09-08).
-import {
-  MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader,
-  type FooterFacts, type NavLink,
-} from "./identity.js";
+import { rulesRead } from "./identity.js";
 import { type Glossary, glossSection, glossed } from "./gloss.js";
 
 /**
@@ -84,11 +78,6 @@ export interface CountryLink {
 
 export function countryLinks(dataset: Dataset): CountryLink[] {
   return countryAddresses(dataset).map(({ country, path }) => ({ path, name: country.name }));
-}
-
-/** The same four, in the shape the shared header's nav takes. */
-export function navCountries(dataset: Dataset): NavLink[] {
-  return countryLinks(dataset).map(({ path, name }) => ({ path, label: name }));
 }
 
 export interface CountryPage {
@@ -185,19 +174,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   // "§" here as readily as on a route page — this is a landing page too.
   const cardContext: CountryCardContext = { dataset, country, seen: new Set() };
 
-  const head = `<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)}</title>
-${contentSecurityPolicy()}
-${iconLinks()}
-${headMeta({ title, description: desc, path, kind: "website" })}
-<style>${PAGE_CSS}</style>`;
-
-  const body = `<div class="wrap">
-
-  ${siteHeader(navCountries(dataset), { countryPath: path, current: "page" })}
-
-  <div class="masthead-with-stamps">
+  const content = `<div class="masthead-with-stamps">
     <div>
       <h1>${esc(headline)} <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">${esc(countryLedeOpen(phraseOf(country.code)))} ${
@@ -230,60 +207,16 @@ ${headMeta({ title, description: desc, path, kind: "website" })}
     ? RESULT_NAMES_ASKED_ROUTES
     : RESULT_NAMES_FITTING_ROUTES}</span>
     </div>
-  </main>
+  </main>`;
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset), {
-    countryPath: path, current: "page", checkPath: `/?country=${country.code.toLowerCase()}`,
-  })}
-
-</div>
-<script>${MENU_SCRIPT}</script>
-${analyticsBeacon()}`;
-
-  return {
-    path, title, description: desc,
-    html: `<!doctype html>\n<html lang="en">\n<head>\n${head}\n</head>\n<body>\n${body}\n</body>\n</html>\n`,
-  };
+  const html = framedPageHtml(dataset, {
+    title, meta: { description: desc, path, kind: "website" }, content,
+    place: { countryPath: path, current: "page", checkPath: `/?country=${country.code.toLowerCase()}` },
+  });
+  return { path, title, description: desc, html };
 }
 
 /** Every country page this dataset produces. */
 export function countryPages(dataset: Dataset): CountryPage[] {
   return countryAddresses(dataset).map((address) => countryPage(dataset, address));
-}
-
-/**
- * What the shared footer states, from the dataset and from `site.ts` — never
- * typed into a page. It lives here because it needs the dataset and the footer
- * itself must not: `identity.ts` knows markup, not data.
- *
- * What `run` leaves out is read from the watch's state rather than being
- * walked per page: the walk behind it is cached on the dataset in the data
- * package, and the route page — the one caller that renders it twice, in its
- * own sentence and in the footer — passes the answer it already has.
- */
-export function footerFacts(dataset: Dataset, run: WatchRun = {}): FooterFacts {
-  const { lastRun, unread } = readWatchRun(dataset, run);
-  // Once: it walks every route's provenance, and the year comes from the same
-  // answer rather than a second walk (Standards review, 2026-09-08).
-  const read = readRange(dataset);
-  return {
-    read,
-    // The version is a date, and this product spells a date one way
-    // (decision 12): "2026.09.07" beside a read date is a second date format on
-    // the same line, which is the thing that rule exists to prevent.
-    datasetVersion: datasetDay(dataset.dataset_version),
-    lastRun,
-    unread: unread.length,
-    disclaimer: DISCLAIMER,
-    licenceUrl: DATA_LICENCE_URL,
-    licenceName: DATA_LICENCE_NAME,
-    repository: REPO_DATA,
-    sponsor: SPONSOR_URL,
-    owner: OWNER,
-    // The year the notice carries, from the newest reading rather than from the
-    // clock: a page built today about values read today says the same year
-    // twice, and a page rebuilt in January must not claim a year the data has
-    // not reached.
-    year: read.newest.slice(0, 4),
-  };
 }

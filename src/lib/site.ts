@@ -68,6 +68,13 @@ const ORIGIN = new URL(SITE_URL).origin;
 /** An absolute URL for an internal path, base included. */
 export const absolute = (path: string): string => `${ORIGIN}${url(path)}`;
 
+/** The on-site data page — the header's destination and the footer's. */
+export const DATA_PATH = "/data";
+
+/** The page that holds the feedback door: the header's word, the footer's row
+ * and the results line all lead here (s13). */
+export const FEEDBACK_PATH = "/feedback";
+
 /**
  * The data repository, by the name decision 1 gives it. It does not exist under
  * that name until the human renames it on GitHub; nothing here can do that, and

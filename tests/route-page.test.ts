@@ -7,7 +7,7 @@ import {
   routeStatements, statementSources, type Dataset, type Route, type UnreadSource,
 } from "permit-rulebook-data";
 import {
-  PAGE_CSS, TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routeFigure, routePage, routePages,
+  TAP_CLASSES, audienceNotice, audienceSentence, noticesOn, routeFigure, routePage, routePages,
 } from "../src/lib/route-page.js";
 import { countryAddresses, countryPages } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
@@ -18,13 +18,13 @@ import { sitemapEntries } from "../src/lib/sitemap.js";
 import { ANSWER_SOURCED, dailyCheck } from "../src/lib/copy/route-page.js";
 import { WRONG_DOOR_LABEL } from "../src/lib/copy/feedback.js";
 import { datasetDay } from "../src/lib/copy/frame.js";
-import { url } from "../src/lib/site.js";
-import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/identity.js";
+import { DATA_PATH, FEEDBACK_PATH, url } from "../src/lib/site.js";
 import { esc } from "../src/lib/reason.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 // The frame round a quote lives with the quote, not with the page that shows
 // one: the results card puts the same words round the same sentence.
 import { separatorNote } from "../src/lib/quote.js";
+import { stringPagesSheet, styleIn } from "./frame-alone.js";
 
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds);
@@ -154,8 +154,8 @@ describe("s6 — one page per route, generated from the dataset", () => {
     // The two uses the tokens define for every screen, and nothing else. The
     // first mock framed a badge in --color-met and the critique called it a
     // verdict delivered without a verdict word (B3).
-    const met = [...PAGE_CSS.matchAll(/([^;{}\n]*var\(--color-met\)[^;{}\n]*)/g)].map((m) => m[1].trim());
-    const near = [...PAGE_CSS.matchAll(/([^;{}\n]*var\(--color-near\)[^;{}\n]*)/g)].map((m) => m[1].trim());
+    const met = [...stringPagesSheet(ds).matchAll(/([^;{}\n]*var\(--color-met\)[^;{}\n]*)/g)].map((m) => m[1].trim());
+    const near = [...stringPagesSheet(ds).matchAll(/([^;{}\n]*var\(--color-near\)[^;{}\n]*)/g)].map((m) => m[1].trim());
     // One declaration each, in the token block's own definitions plus the one
     // place the page uses it.
     // Four uses now, and every one of them is a read date: the quote's own
@@ -169,11 +169,11 @@ describe("s6 — one page per route, generated from the dataset", () => {
     // And they belong to the read-date emphasis and the hero accent — the
     // accent shared by the H1's em and, on a route page, the tagline line
     // under the H1 (s27): one declaration, two selectors.
-    expect(PAGE_CSS).toContain(".src b { color: var(--color-met);");
-    expect(PAGE_CSS).toContain(".masthead-with-stamps h1 em, .masthead-with-stamps .tagline { font-style: normal; color: var(--color-near);");
+    expect(stringPagesSheet(ds)).toContain(".src b { color: var(--color-met);");
+    expect(stringPagesSheet(ds)).toContain(".masthead-with-stamps h1 em, .masthead-with-stamps .tagline { font-style: normal; color: var(--color-near);");
     // The soft verdict tints are never painted at all.
     for (const token of ["--color-met-soft", "--color-near-soft"]) {
-      const uses = [...PAGE_CSS.matchAll(new RegExp(`var\\(${token}\\)`, "g"))];
+      const uses = [...stringPagesSheet(ds).matchAll(new RegExp(`var\\(${token}\\)`, "g"))];
       expect(uses.length, token).toBe(0);
     }
     // Nor are their hex values, anywhere in a page.
@@ -201,7 +201,7 @@ describe("s6 — one page per route, generated from the dataset", () => {
       expect(text.toLowerCase(), page.path).not.toContain("fully modelled");
     }
     // The scope block is ink on card — no new colour, no verdict colour.
-    expect(PAGE_CSS).toContain(".scope { margin: 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-left: 4px solid var(--color-ink); }");
+    expect(styleIn(pages[0]!.html)).toContain(".scope { margin: 0; padding: var(--space-3) var(--space-4); background: var(--color-card); border-left: 4px solid var(--color-ink); }");
   });
 
   /**
@@ -209,7 +209,7 @@ describe("s6 — one page per route, generated from the dataset", () => {
    * tap minimum. This is a build-time check over the rendered markup and the
    * page's own stylesheet, not a computed-style measurement: every control
    * carries one of the two declared tap classes, and each class is defined in
-   * `PAGE_CSS` in terms of `--tap-min`. A real measurement at 390 px is
+   * the page's stylesheet in terms of `--tap-min`. A real measurement at 390 px is
    * `npm run measure:taps`, which drives headless Chrome over the built site.
    */
   it("every interactive element carries a tap rule written in --tap-min", () => {
@@ -221,10 +221,10 @@ describe("s6 — one page per route, generated from the dataset", () => {
         expect(claimed.length, `${page.path}: <a class="${classes.join(" ")}">`).toBe(1);
       }
     }
-    expect(PAGE_CSS).toContain(".tap-min { display: inline-flex; align-items: center; min-height: var(--tap-min); }");
-    expect(PAGE_CSS).toContain("a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0;");
+    expect(styleIn(pages[0]!.html)).toContain(".tap-min { display: inline-flex; align-items: center; min-height: var(--tap-min); }");
+    expect(styleIn(pages[0]!.html)).toContain("a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0;");
     // The token itself, so a rule written against a hard-coded 44px fails.
-    expect(PAGE_CSS).toContain("--tap-min: 44px;");
+    expect(styleIn(pages[0]!.html)).toContain("--tap-min: 44px;");
   });
 
   it("the rail's labels are a list, at every width — they cannot collide", () => {
@@ -353,7 +353,7 @@ describe("s6 — one page per route, generated from the dataset", () => {
   it("inlines the token file itself, not a retyping of it", () => {
     const tokens = readFileSync(new URL("../tokens.css", import.meta.url), "utf8")
       .split("\r\n").join("\n");
-    expect(PAGE_CSS).toContain(tokens);
+    expect(styleIn(pages[0]!.html)).toContain(tokens);
     // And it really is the file: a token only the file carries is on the page.
     expect(tokens).toContain("--tap-min: 44px;");
     for (const page of pages) expect(page.html, page.path).toContain("--tap-min: 44px;");
@@ -597,7 +597,7 @@ describe("s6 — one page per route, generated from the dataset", () => {
       // And the header marks this page's country as the one it sits under.
       expect(page.html, page.path).toContain('aria-current="true"');
     }
-    expect(PAGE_CSS, "the crumb styles outlived the crumbs").not.toContain(".crumbs");
+    expect(stringPagesSheet(ds), "the crumb styles outlived the crumbs").not.toContain(".crumbs");
   });
 
   it("every source on every page can name its language", () => {

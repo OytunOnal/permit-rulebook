@@ -10,8 +10,7 @@ import { COVERS, FIRST_PAINT_SCRIPT, WIDE_FROM_PX, takeCoversOff } from "../src/
 import { RECORD_MAX_LENGTH, STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { questionCardHtml, renderStandInsOverQuestionOne } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { FEEDBACK_PATH } from "../src/lib/identity.js";
-import { url } from "../src/lib/site.js";
+import { FEEDBACK_PATH, url } from "../src/lib/site.js";
 import { walkSite, type BrowserPage, type LayoutShifts } from "../scripts/browser/browser.mjs";
 import { ABOVE_THE_BOX, shiftsBeforeAndAfterATap } from "./layout-shifts.js";
 import { openAtRest, skipReason, warnNotWalked } from "./browser-walk.js";

@@ -7,10 +7,9 @@ import { DAILY_CHECK_CLAIM } from "../src/lib/copy/data-page.js";
 import { dailyCheck } from "../src/lib/copy/route-page.js";
 import { unreadLabel } from "../src/lib/copy/frame.js";
 import { dataPage } from "../src/lib/data-page.js";
-import { footerFacts, navCountries } from "../src/lib/country-page.js";
-import { siteFooter } from "../src/lib/identity.js";
 import { ownUnread, routePages, type RoutePage } from "../src/lib/route-page.js";
 import { lastWatchRun, unreadSourcesAt, watchState, type WatchRun } from "../src/lib/site.js";
+import { footerIn, frameAlone } from "./frame-alone.js";
 
 /**
  * s11 — a partial run says so.
@@ -104,19 +103,19 @@ describe("what /data/ says on a day something went unread", () => {
 
 describe("the footer's short form", () => {
   it("names the count beside the run, in figures, inside the same parenthesis", () => {
-    const footer = siteFooter(navCountries(ds), footerFacts(ds, { lastRun: "2026-09-15", unread: [spain, netherlands] }));
+    const footer = footerIn(frameAlone(ds, { run: { lastRun: "2026-09-15", unread: [spain, netherlands] } }));
     expect(readerSees(footer)).toContain("re-read daily (last run 2026-09-15 · 2 sources unread)");
   });
 
   it("counts one in the singular", () => {
-    const footer = siteFooter(navCountries(ds), footerFacts(ds, { lastRun: "2026-09-15", unread: [spain] }));
+    const footer = footerIn(frameAlone(ds, { run: { lastRun: "2026-09-15", unread: [spain] } }));
     expect(readerSees(footer)).toContain("re-read daily (last run 2026-09-15 · 1 source unread)");
   });
 
   it("says nothing at all when every source answered", () => {
     // The empty list is passed, not read: the default is the real state, and
     // the real state stopped being clean on 2026-09-16 (s15, run 35098352421).
-    const footer = siteFooter(navCountries(ds), footerFacts(ds, { lastRun: lastWatchRun(), unread: [] }));
+    const footer = footerIn(frameAlone(ds, { run: { lastRun: lastWatchRun(), unread: [] } }));
     expect(readerSees(footer)).toContain(`re-read daily (last run ${lastWatchRun()})`);
     expect(footer).not.toContain("unread");
   });
@@ -275,7 +274,7 @@ describe("the state this site is built against", () => {
     everySurfaceSays(watch, routePages(ds, watch), dataPage(ds, watch).html);
     expect(readerSees(dataPage(ds, watch).html)).toContain(
       `A German source did not answer on the last run; the values it backs were read on ${since}.`);
-    expect(readerSees(siteFooter(navCountries(ds), footerFacts(ds, watch))))
+    expect(readerSees(footerIn(frameAlone(ds, { run: watch }))))
       .toContain(`re-read daily (last run ${run} · 1 source unread)`);
   });
 

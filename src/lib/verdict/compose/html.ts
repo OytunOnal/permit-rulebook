@@ -8,9 +8,8 @@ import {
   withinReachCount, writeJobOfferLine,
 } from "../../copy/verdict.js";
 import { FEEDBACK } from "../../copy/frame.js";
-import { FEEDBACK_PATH } from "../../identity.js";
 import { esc, escAttr } from "../../reason.js";
-import { url } from "../../site.js";
+import { FEEDBACK_PATH, url } from "../../site.js";
 import { isExploring } from "./steps.js";
 import type { CountrySection, DrawnRoute, Fold, Strip, Tally, VerdictGroup } from "./types.js";
 

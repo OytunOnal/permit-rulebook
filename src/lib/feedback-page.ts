@@ -1,9 +1,8 @@
 // @level presentation
 import type { Dataset } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
-import { contentSecurityPolicy } from "./csp.js";
-import { PAGE_CSS } from "./route-page.js";
-import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
+import { framedPageHtml } from "./frame/framed-page.js";
+import { siteReadDate } from "./country-page.js";
 import {
   COPIED, COPY_ADDRESS_LABEL, FEEDBACK_DOORS, FEEDBACK_EYEBROW, FEEDBACK_GITHUB_HEADING, FEEDBACK_GITHUB_LINE,
   FEEDBACK_LEDE, FEEDBACK_META_DESCRIPTION, FEEDBACK_NOTE, FEEDBACK_OWN_APP, FEEDBACK_OWN_APP_LEAD, TRACKER_NEW_NEED,
@@ -11,9 +10,9 @@ import {
 } from "./copy/feedback.js";
 import { FEEDBACK, PRODUCT_NAME } from "./copy/frame.js";
 import {
-  FEEDBACK_ADDRESS, GMAIL_COMPOSE_URL, NEW_NEED_URL, TRACKER_URL, analyticsBeacon, headMeta,
+  FEEDBACK_ADDRESS, FEEDBACK_PATH, GMAIL_COMPOSE_URL, NEW_NEED_URL, TRACKER_URL,
 } from "./site.js";
-import { FEEDBACK_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
+import { rulesRead } from "./identity.js";
 import { COPY_SCRIPT } from "./clipboard.js";
 
 /**
@@ -106,13 +105,7 @@ const out = (href: string, label: string): string =>
 export function feedbackPage(dataset: Dataset): FeedbackPage {
   const title = `${FEEDBACK} · ${PRODUCT_NAME}`;
   const desc = FEEDBACK_META_DESCRIPTION;
-  const head = `<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)}</title>
-${contentSecurityPolicy()}
-${iconLinks()}
-${headMeta({ title, description: desc, path: FEEDBACK_PATH, kind: "website" })}
-<style>${PAGE_CSS}
+  const css = `
 /* The page's own three blocks, in the tokens the mock is drawn in. They live
    here rather than in the shared sheet, so no other page's bytes move for
    them — the same reason /data/ keeps its own two rules. */
@@ -156,13 +149,9 @@ ${headMeta({ title, description: desc, path: FEEDBACK_PATH, kind: "website" })}
 .fb .gh a { margin-right: var(--space-4); }
 /* They leave the site, and say so the way the footer's outbound links do. */
 .fb .gh a.out::after { content: " \\2197"; color: var(--color-muted); }
-</style>`;
+`;
 
-  const body = `<div class="wrap">
-
-  ${siteHeader(navCountries(dataset), { here: FEEDBACK_PATH })}
-
-  <div class="masthead-with-stamps">
+  const content = `<div class="masthead-with-stamps">
     <div>
       <p class="label">${esc(FEEDBACK_EYEBROW)}</p>
       <h1>${esc(FEEDBACK)}</h1>
@@ -185,18 +174,11 @@ ${headMeta({ title, description: desc, path: FEEDBACK_PATH, kind: "website" })}
       ${out(TRACKER_URL, TRACKER_WRONG_VALUE)}
       ${out(NEW_NEED_URL, TRACKER_NEW_NEED)}
     </section>
-  </main>
+  </main>`;
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset))}
-</div>
-<script>${MENU_SCRIPT}</script>
-<script>${COPY_SCRIPT}</script>
-${analyticsBeacon()}`;
-
-  return {
-    path: FEEDBACK_PATH,
-    title,
-    description: desc,
-    html: `<!doctype html>\n<html lang="en">\n<head>\n${head}\n</head>\n<body>\n${body}\n</body>\n</html>\n`,
-  };
+  const html = framedPageHtml(dataset, {
+    title, meta: { description: desc, path: FEEDBACK_PATH, kind: "website" }, css,
+    place: { here: FEEDBACK_PATH }, content, scripts: [COPY_SCRIPT],
+  });
+  return { path: FEEDBACK_PATH, title, description: desc, html };
 }
