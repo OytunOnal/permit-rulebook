@@ -300,6 +300,12 @@ question one (s10).
 _Avoid_: skeleton, placeholder headline, loading state, spinner; held (s37's
 held step, a step of the interview the browser holds a history entry for)
 
+**Frame** (#142):
+What every page of the site carries around its own content, the same on
+every page: the head, the header, the footer and the menu. A page's content
+is what differs between pages.
+_Avoid_: chrome, shell, layout, template
+
 **Standing promise** (s10, #8):
 The masthead's line under the headline, saying what the page will do for
 this reader. There are two: one for a reader who has not started, and one for
