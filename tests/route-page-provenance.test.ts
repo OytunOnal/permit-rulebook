@@ -20,7 +20,10 @@ import { textOf } from "./text-of.js";
 const ds = dataset as unknown as Dataset;
 const pages = routePages(ds);
 
-describe("s6 — one page per route, generated from the dataset", () => {
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const ONE_PAGE_PER_ROUTE = "s6 — one page per route, generated from the dataset";
+
+describe(ONE_PAGE_PER_ROUTE, () => {
   it("renders a page for every route, at an address a person can read", () => {
     // 28 since s9: the 23 the product scores, plus the five it quotes, dates
     // and does not score; 29 since s19, when France's researcher card joined
@@ -35,7 +38,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
     expect(new Set(pages.map((p) => p.path)).size).toBe(29);
     for (const p of pages) expect(p.path, p.path).toMatch(/^\/[a-z-]+\/[a-z0-9-]+$/);
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   /**
    * INVARIANT 1 — every amount and every quote on every generated page equals
    * the dataset's, over all routes. The page cannot drift from the source of
@@ -69,7 +74,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
       expect(checked, route.id).toBeGreaterThan(0);
     }
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   it("a changed threshold changes the page — the test only passes when they agree", () => {
     const moved = JSON.parse(JSON.stringify(dataset)) as Dataset;
     const germany = moved.countries.find((c) => c.code === "DE")!;
@@ -105,12 +112,14 @@ describe("s6 — one page per route, generated from the dataset", () => {
     const de = pages.find((p) => p.path === "/germany/eu-blue-card-general")!;
     expect(textOf(de.html)).toContain("The source writes 50.700 where this page writes 50,700");
   });
+});
 
-  /**
-   * INVARIANT 1, the other direction — nothing on a page is a number or a
-   * sentence somebody typed. `toContain` only proves the dataset reached the
-   * page; this proves nothing else did (Standards review, 2026-09-07).
-   */
+/**
+ * INVARIANT 1, the other direction — nothing on a page is a number or a
+ * sentence somebody typed. `toContain` only proves the dataset reached the
+ * page; this proves nothing else did (Standards review, 2026-09-07).
+ */
+describe(ONE_PAGE_PER_ROUTE, () => {
   it("every amount printed on a page is an amount the dataset holds for it", () => {
     for (const address of routeAddresses(ds)) {
       const page = routePage(ds, address);
@@ -145,7 +154,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
       expect(printed.size, page.path).toBeGreaterThanOrEqual(0);
     }
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   it("every quoted sentence on a page is a quote the dataset holds for it", () => {
     for (const address of routeAddresses(ds)) {
       const page = routePage(ds, address);
@@ -175,7 +186,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
         expect(held, `${page.path} quotes a sentence the dataset does not hold for it`).toContain(q);
     }
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   /**
    * S2 — an attribute value carrying a quotation mark does not close the
    * attribute. Nothing in the dataset carries one today, which is exactly why

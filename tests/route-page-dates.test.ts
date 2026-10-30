@@ -60,6 +60,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
   });
 });
 
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const DATES_WHAT_IT_PRINTS = "a route page dates what it prints";
+
 /**
  * A page dates only what it prints (#76). The audience notice carries more
  * sentences than a route page prints: its `sources` stand on the results card,
@@ -68,16 +71,17 @@ describe("s6 — one page per route, generated from the dataset", () => {
  * stamp read from the notice's whole list shows it, a stamp read from the page
  * cannot.
  */
-describe("a route page dates what it prints", () => {
-  // Newer than every read the dataset carries, so only the bent sources can
-  // put it on a stamp: the dataset's newest read is 2026-10-21 since the
-  // German Blue Card's IT path was read (#134), past the 2026-09-30 used before.
-  const NEVER_PRINTED = "2026-11-30";
-  const bent = structuredClone(ds);
-  const audience = (bent.notices ?? []).find((n) => n.kind === "no-permit-needed");
-  for (const value of audience?.sources ?? []) value.retrieved_at = NEVER_PRINTED;
-  const bentPages = routeAddresses(bent).map((a) => ({ route: a.route, page: routePage(bent, a) }));
 
+// Newer than every read the dataset carries, so only the bent sources can
+// put it on a stamp: the dataset's newest read is 2026-10-21 since the
+// German Blue Card's IT path was read (#134), past the 2026-09-30 used before.
+const NEVER_PRINTED = "2026-11-30";
+const bent = structuredClone(ds);
+const audience = (bent.notices ?? []).find((n) => n.kind === "no-permit-needed");
+for (const value of audience?.sources ?? []) value.retrieved_at = NEVER_PRINTED;
+const bentPages = routeAddresses(bent).map((a) => ({ route: a.route, page: routePage(bent, a) }));
+
+describe(DATES_WHAT_IT_PRINTS, () => {
   it("draws the stamp from no source the page leaves out", () => {
     expect(audience?.sources?.length, "the notice no longer carries a source the page leaves out").toBeTruthy();
     for (const { page } of bentPages) {
@@ -102,6 +106,19 @@ describe("a route page dates what it prints", () => {
     for (const page of countryPages(bent)) expect(stampOf(page.html), page.path).not.toBe(NEVER_PRINTED);
   });
 
+  it("a panel with no figure promises no sentence below it and dates nothing", () => {
+    const without = bentPages.filter(({ route }) => isScored(route) && !routeFigure(bent, route).value);
+    expect(without.length, "no scored route is left without a figure").toBeGreaterThan(0);
+    for (const { page } of without) {
+      expect(answerOf(page.html), page.path).not.toContain(ANSWER_SOURCED);
+      expect(answerOf(page.html), page.path).not.toContain("<time");
+    }
+    for (const { route, page } of bentPages)
+      if (routeFigure(bent, route).value) expect(answerOf(page.html), page.path).toContain(ANSWER_SOURCED);
+  });
+});
+
+describe(DATES_WHAT_IT_PRINTS, () => {
   /**
    * The liveness line and the stamp read one set of this page's sources. The
    * citizenship card prints the audience notice's `source`, so a run that
@@ -119,7 +136,9 @@ describe("a route page dates what it prints", () => {
     for (const page of pagesWith)
       expect(page.html.includes(esc(dailyCheck(1))), page.path).toBe(prints(page.html));
   });
+});
 
+describe(DATES_WHAT_IT_PRINTS, () => {
   it("dates each headline figure by its own reading, the date its quote prints", () => {
     const moved = structuredClone(ds);
     const spain = moved.countries.find((c) => c.code === "ES")!;
@@ -143,16 +162,5 @@ describe("a route page dates what it prints", () => {
       expect(quoteDatesOf(page.html), `${day} is not the date a quote prints`).toContain(day);
     }
     expect(answerOf(page.html)).not.toContain(`datetime="${page.readDate}"`);
-  });
-
-  it("a panel with no figure promises no sentence below it and dates nothing", () => {
-    const without = bentPages.filter(({ route }) => isScored(route) && !routeFigure(bent, route).value);
-    expect(without.length, "no scored route is left without a figure").toBeGreaterThan(0);
-    for (const { page } of without) {
-      expect(answerOf(page.html), page.path).not.toContain(ANSWER_SOURCED);
-      expect(answerOf(page.html), page.path).not.toContain("<time");
-    }
-    for (const { route, page } of bentPages)
-      if (routeFigure(bent, route).value) expect(answerOf(page.html), page.path).toContain(ANSWER_SOURCED);
   });
 });

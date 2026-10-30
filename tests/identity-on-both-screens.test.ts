@@ -1,26 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { datasetMeta, type Dataset } from "permit-rulebook-data";
-import { chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
-import { answerWith, openAtRest, withSite } from "./browser-walk.js";
+import type { BrowserPage } from "../scripts/browser/browser.mjs";
+import { answerWith, openAtRest, skipReason, withSite } from "./browser-walk.js";
+import { FALLBACK_STACK } from "./fallback-stack.js";
 import { SEED_FINISHED_RECORD } from "./seed-finished-record.js";
-
-const root = (p: string) => fileURLToPath(new URL(`../${p}`, import.meta.url));
-const dist = root("dist");
 
 /**
  * And the drawing lands in the same place on both screens. A shared stylesheet
  * is not a shared result: a page can override it, and the promise the human
  * made is geometric — the corner meets the middle of the top edge.
  */
-function why(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-const skipped = why();
+const skipped = skipReason();
 if (skipped)
   process.stderr.write([
     "",
@@ -30,19 +21,13 @@ if (skipped)
     "",
   ].join("\n"));
 
-/**
- * A corner of an element after its own transform. `getBoundingClientRect` gives
- * the axis-aligned box of a rotated element, which is not the corner — so the
- * transform matrix is applied to the untransformed corner by hand.
- */
-/**
- * Where the pair sits, relative to the text block beside it.
- *
- * The absolute distances differ between the two screens because their content
- * measures do — the results page puts its padding on the body, the route page
- * on the wrap — so what is asserted is what the rule promises: the pair is
- * CENTRED in the space that remains, and level with the middle of the text.
- */
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const LANDS_IDENTICALLY = "the identity pair lands identically on both screens";
+
+// The results screen once a record is seeded, whose stamp reads "Record generated".
+const RESULTS = "/";
+// A route page, whose stamp reads "Rules read".
+const ROUTE = "/germany/eu-blue-card-general/";
 
 /** What the stamp says, and where its box is. */
 const STAMP_STATE = `(() => {
@@ -72,24 +57,20 @@ const HEADING = `(() => {
   });
 })()`;
 
-/**
- * The fonts the runner has and this machine does not.
- *
- * CI is ubuntu: no Segoe UI, no Cambria, no Consolas. Every case in this file
- * runs twice — once with the fonts here, once with whatever the machine falls
- * back to — because the pair and the header have now been broken twice by a
- * width this machine could not see (CI, 2026-09-08).
- */
-const FALLBACK_STACK = '(() => { const s = document.createElement("style");'
-  + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
-  + ' document.head.appendChild(s); return "forced"; })()';
-
 /** The two runs every browser case in this file makes. */
 const STACKS = [
   { name: "our fonts", force: false },
   { name: "the fallback stack", force: true },
 ] as const;
 
+/**
+ * Where the pair sits, relative to the text block beside it.
+ *
+ * The absolute distances differ between the two screens because their content
+ * measures do — the results page puts its padding on the body, the route page
+ * on the wrap — so what is asserted is what the rule promises: the pair is
+ * CENTRED in the space that remains, and level with the middle of the text.
+ */
 const PLACEMENT = `(() => {
   const head = document.querySelector('.masthead-with-stamps');
   if (!head) return JSON.stringify({ missing: true });
@@ -111,6 +92,11 @@ const PLACEMENT = `(() => {
   });
 })()`;
 
+/**
+ * A corner of an element after its own transform. `getBoundingClientRect` gives
+ * the axis-aligned box of a rotated element, which is not the corner — so the
+ * transform matrix is applied to the untransformed corner by hand.
+ */
 const PROBE = `(() => {
   const box = document.querySelector(".stamps");
   if (!box) return JSON.stringify({ missing: true });
@@ -165,31 +151,53 @@ const readStampOnEveryScreenInTheFallbackStack = (page: BrowserPage, url: (path:
     await page.evaluate(FALLBACK_STACK);
   });
 
-describe.skipIf(skipped !== null)("the identity pair lands identically on both screens", () => {
-  const RESULTS = "/";
-  const ROUTE = "/germany/eu-blue-card-general/";
+/** What `probe` reads on the results page and on a route page, on a screen of `viewport`'s size, in `fonts`. */
+async function measureBothScreens(
+  probe: string, viewport: { width: number; height: number }, fonts: (typeof STACKS)[number],
+): Promise<Record<string, Measure>> {
+  return await withSite(async ({ page, url }) => {
+    const out: Record<string, Measure> = {};
+    for (const path of [RESULTS, ROUTE]) {
+      await page.goto(url(path));
+      if (fonts.force) await page.evaluate(FALLBACK_STACK);
+      if (path === RESULTS) {
+        // The results screen, which is where this page carries the
+        // "Record generated" stamp; unseeded, `/` is question one and
+        // states the rules-read date instead (human, 2026-09-08).
+        await page.evaluate(SEED_FINISHED_RECORD);
+        await openAtRest(page, url(path));
+        if (fonts.force) await page.evaluate(FALLBACK_STACK);
+      }
+      out[path] = JSON.parse(await page.evaluate(probe)) as Measure;
+    }
+    return out;
+  }, { viewport, mobile: viewport.width < 800 }) as Record<string, Measure>;
+}
 
-  for (const { name: stack, force } of STACKS)
+/** Holds the pair's placement on one screen, `m` at `path`, to the rule at `width`. */
+function expectPlacementAt(width: number, path: string, m: Measure): void {
+  if (width > 760) {
+    // A row: the text column stops at 37rem and the pair is centred in
+    // what is left, level with the middle of the text.
+    expect(m.stack, path).toBe("row");
+    expect(m.textWidth, `${path} text column`).toBe(592);
+    expect(Math.abs((m.spaceLeft as number) - (m.spaceRight as number)), `${path} not centred`)
+      .toBeLessThanOrEqual(1);
+    expect(Math.abs(m.centreOffset as number), `${path} not level with the text`)
+      .toBeLessThanOrEqual(1);
+  } else {
+    // A column: the pair sits under the text, right-aligned to it.
+    expect(m.stack, path).toBe("column");
+    expect(Math.abs(m.rightAlign as number), `${path} not right-aligned`).toBeLessThanOrEqual(1);
+    expect(m.belowText as number, `${path} not below the text`).toBeGreaterThanOrEqual(0);
+  }
+}
+
+describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
+  for (const fonts of STACKS)
   for (const [width, label] of [[1100, "desktop"], [390, "390 px"]] as const) {
-    it(`is the same drawing on the results page and a route page at ${label}, in ${stack}`, async () => {
-      const seen = await withSite(async ({ page, url }) => {
-        const out: Record<string, Measure> = {};
-        for (const path of [RESULTS, ROUTE]) {
-          await page.goto(url(path));
-          if (force) await page.evaluate(FALLBACK_STACK);
-          if (path === RESULTS) {
-            // The results screen, which is where this page carries the
-            // "Record generated" stamp; unseeded, `/` is question one and
-            // states the rules-read date instead (human, 2026-09-08).
-            await page.evaluate(SEED_FINISHED_RECORD);
-            await openAtRest(page, url(path));
-            if (force) await page.evaluate(FALLBACK_STACK);
-          }
-          out[path] = JSON.parse(await page.evaluate(PROBE)) as Measure;
-        }
-        return out;
-      }, { viewport: { width, height: 900 }, mobile: width < 800 }) as Record<string, Measure>;
-
+    it(`is the same drawing on the results page and a route page at ${label}, in ${fonts.name}`, async () => {
+      const seen = await measureBothScreens(PROBE, { width, height: 900 }, fonts);
       const results = seen[RESULTS];
       const route = seen[ROUTE];
       expect(results.missing, "the results page has no pair").toBeUndefined();
@@ -211,25 +219,13 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
       expect(route.text).toMatch(/^Rules read[ ]+[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
     }, 120000);
   }
+});
 
-  for (const { name: stack, force } of STACKS)
+describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
+  for (const fonts of STACKS)
   for (const [width, label] of [[1100, "desktop"], [390, "390 px"]] as const) {
-    it(`sits in the same place on both screens at ${label}, in ${stack}`, async () => {
-      const seen = await withSite(async ({ page, url }) => {
-        const out: Record<string, Measure> = {};
-        for (const path of [RESULTS, ROUTE]) {
-          await page.goto(url(path));
-          if (force) await page.evaluate(FALLBACK_STACK);
-          if (path === RESULTS) {
-            await page.evaluate(SEED_FINISHED_RECORD);
-            await openAtRest(page, url(path));
-            if (force) await page.evaluate(FALLBACK_STACK);
-          }
-          out[path] = JSON.parse(await page.evaluate(PLACEMENT)) as Measure;
-        }
-        return out;
-      }, { viewport: { width, height: 1000 }, mobile: width < 800 }) as Record<string, Measure>;
-
+    it(`sits in the same place on both screens at ${label}, in ${fonts.name}`, async () => {
+      const seen = await measureBothScreens(PLACEMENT, { width, height: 1000 }, fonts);
       const results = seen[RESULTS];
       const route = seen[ROUTE];
       expect(results.missing, "the results masthead does not carry the pair").toBeUndefined();
@@ -241,23 +237,7 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
       for (const [path, m] of Object.entries(seen))
         expect(m.overflow as number, `${path} scrolls sideways`).toBeLessThanOrEqual(0);
 
-      for (const [path, m] of Object.entries(seen)) {
-        if (width > 760) {
-          // A row: the text column stops at 37rem and the pair is centred in
-          // what is left, level with the middle of the text.
-          expect(m.stack, path).toBe("row");
-          expect(m.textWidth, `${path} text column`).toBe(592);
-          expect(Math.abs((m.spaceLeft as number) - (m.spaceRight as number)), `${path} not centred`)
-            .toBeLessThanOrEqual(1);
-          expect(Math.abs(m.centreOffset as number), `${path} not level with the text`)
-            .toBeLessThanOrEqual(1);
-        } else {
-          // A column: the pair sits under the text, right-aligned to it.
-          expect(m.stack, path).toBe("column");
-          expect(Math.abs(m.rightAlign as number), `${path} not right-aligned`).toBeLessThanOrEqual(1);
-          expect(m.belowText as number, `${path} not below the text`).toBeGreaterThanOrEqual(0);
-        }
-      }
+      for (const [path, m] of Object.entries(seen)) expectPlacementAt(width, path, m);
 
       // The same placement, not merely a correct one on each page.
       const shared = width > 760
@@ -267,16 +247,18 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
         expect(route[key], `${key} differs between the two screens`).toEqual(results[key]);
     }, 120000);
   }
+});
 
-  /**
-   * The first screen carries the pair too (human, 2026-09-08).
-   *
-   * It was hidden until a record existed, so the one screen every reader sees
-   * first had an empty right-hand side. On the questions it states the fact a
-   * route page states — when the rules were last read — and on the results it
-   * becomes the record's own date. One pair, two states, and the box does not
-   * move between them.
-   */
+/**
+ * The first screen carries the pair too (human, 2026-09-08).
+ *
+ * It was hidden until a record existed, so the one screen every reader sees
+ * first had an empty right-hand side. On the questions it states the fact a
+ * route page states — when the rules were last read — and on the results it
+ * becomes the record's own date. One pair, two states, and the box does not
+ * move between them.
+ */
+describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
   for (const [stack, readStamp] of [
     ["our fonts", readStampOnEveryScreen],
     ["the fallback stack", readStampOnEveryScreenInTheFallbackStack],
@@ -301,7 +283,9 @@ describe.skipIf(skipped !== null)("the identity pair lands identically on both s
     for (const key of ["left", "top", "width", "height"])
       expect(seen.swapped[key], `${key} moved when only the label changed`).toBe(seen.results[key]);
   }, 120000);
+});
 
+describe.skipIf(skipped !== null)(LANDS_IDENTICALLY, () => {
   /**
    * The masthead heading is two lines by design, from one rule.
    */

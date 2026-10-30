@@ -53,7 +53,10 @@ function withoutPrint(css: string): string {
 /** The selectors that make the pair what it is. */
 const PAIR_SELECTORS = [".stamps", ".stamps .mark", ".stamps .stamp"];
 
-describe("the identity pair has one definition", () => {
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const ONE_DEFINITION = "the identity pair has one definition";
+
+describe(ONE_DEFINITION, () => {
   it("identity.css carries the pair, in tokens", () => {
     for (const selector of PAIR_SELECTORS)
       expect(identity, selector).toContain(`${selector} {`);
@@ -74,7 +77,9 @@ describe("the identity pair has one definition", () => {
   it("the route page inlines that file rather than a copy of it", () => {
     expect(styleIn(frameAlone(dataset as unknown as Dataset))).toContain(identity);
   });
+});
 
+describe(ONE_DEFINITION, () => {
   it("the results page links the same file", () => {
     const page = read("src/pages/index.astro");
     expect(page).toContain('import "../../identity.css";');
@@ -110,7 +115,9 @@ describe("the identity pair has one definition", () => {
     expect(read("src/lib/route-page/route-page.ts")).toContain('<header class="masthead masthead-with-stamps">');
     expect(builtStylesheetsOfTheInterview()).not.toContain("header .stamps{position:absolute");
   });
+});
 
+describe(ONE_DEFINITION, () => {
   it("nothing else in the site draws the pair", () => {
     // A second definition is the drift this file exists to stop. `tokens.css`
     // holds values, not components; a page holds placement, not geometry.
@@ -150,25 +157,29 @@ describe("the identity pair has one definition", () => {
  * set of rules that places it; `identity.ts` holds the one set of elements
  * those rules place.
  */
-describe("the identity has one set of elements too", () => {
-  const emitters = (dir: string, out: string[] = []): string[] => {
-    for (const name of readdirSync(root(dir))) {
-      const path = `${dir}/${name}`;
-      if (statSync(root(path)).isDirectory()) emitters(path, out);
-      else if (/[.](ts|astro)$/.test(name)) out.push(path);
-    }
-    return out;
-  };
 
-  /**
-   * The one exception, named rather than left to be discovered: the social card
-   * is a 1,200×630 image rendered by a browser at a fixed size, with its own
-   * geometry in pixels (a 224 px mark, a 404 px pair). It is not a page inside
-   * the shared stylesheet, and giving it the page's markup would make it the
-   * wrong size in a link preview.
-   */
-  const OWN_GEOMETRY = ["src/lib/social-card.ts"];
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const ONE_SET_OF_ELEMENTS = "the identity has one set of elements too";
 
+const emitters = (dir: string, out: string[] = []): string[] => {
+  for (const name of readdirSync(root(dir))) {
+    const path = `${dir}/${name}`;
+    if (statSync(root(path)).isDirectory()) emitters(path, out);
+    else if (/[.](ts|astro)$/.test(name)) out.push(path);
+  }
+  return out;
+};
+
+/**
+ * The one exception, named rather than left to be discovered: the social card
+ * is a 1,200×630 image rendered by a browser at a fixed size, with its own
+ * geometry in pixels (a 224 px mark, a 404 px pair). It is not a page inside
+ * the shared stylesheet, and giving it the page's markup would make it the
+ * wrong size in a link preview.
+ */
+const OWN_GEOMETRY = ["src/lib/social-card.ts"];
+
+describe(ONE_SET_OF_ELEMENTS, () => {
   it("only identity.ts writes the seal, the mark or the pair", () => {
     const offenders: string[] = [];
     for (const file of emitters("src")) {
@@ -188,7 +199,9 @@ describe("the identity has one set of elements too", () => {
     }
     expect(offenders).toEqual([]);
   });
+});
 
+describe(ONE_SET_OF_ELEMENTS, () => {
   /**
    * Four links, and each is a size somebody actually asks for: the .ico for the
    * tab, the SVG for a display that can scale it, a 96px PNG because a search

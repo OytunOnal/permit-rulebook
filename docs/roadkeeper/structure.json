@@ -3305,11 +3305,16 @@
   {
    "from": "tests/identity-on-both-screens.test.ts",
    "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "tests/identity-on-both-screens.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "tests/fallback-stack.ts",
    "kind": "dependency"
   },
   {
@@ -3409,12 +3414,12 @@
   },
   {
    "from": "tests/no-sideways-scroll.test.ts",
-   "to": "scripts/browser/browser.mjs",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/no-sideways-scroll.test.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "tests/fallback-stack.ts",
    "kind": "dependency"
   },
   {

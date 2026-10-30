@@ -25,7 +25,10 @@ const unscoredPaths = new Set(
   routeAddresses(ds).filter((a) => !isScored(a.route)).map((a) => a.path),
 );
 
-describe("s6 — one page per route, generated from the dataset", () => {
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const ONE_PAGE_PER_ROUTE = "s6 — one page per route, generated from the dataset";
+
+describe(ONE_PAGE_PER_ROUTE, () => {
   /**
    * INVARIANT 2 — no generated page contains a verdict word, and no element
    * outside the read-date emphasis and the hero accent resolves to a verdict
@@ -54,7 +57,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
         expect(said, `${page.path}: "${word}"`).not.toContain(word);
     }
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   it("no page rules on the reader, in colour", () => {
     // The two uses the tokens define for every screen, and nothing else. The
     // first mock framed a badge in --color-met and the critique called it a
@@ -88,7 +93,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
         expect(body.toLowerCase(), `${page.path}: ${hex}`).not.toContain(hex);
       }
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   /**
    * INVARIANT 3 — every route carries exactly one scope statement, and the page
    * says it in the plain words rather than the dataset's key.
@@ -119,7 +126,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
       expect(ctas, page.path).toEqual(isScored(address.route) ? [address.route.id] : []);
     }
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   it("says who the page is for before the first rule", () => {
     for (const address of routeAddresses(ds)) {
       const page = routePage(ds, address);
@@ -149,7 +158,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
       );
     }
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   it("no modelling vocabulary reaches a reader, in our own words", () => {
     // A verbatim quote is the authority's sentence and may not be edited — the
     // Dutch immigration service writes "the reduced salary criterion applies in
@@ -162,7 +173,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
         expect(ours, `${page.path}: ${word}`).not.toContain(word);
     }
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   /**
    * A reader on a phone asked what "§" means (human walk, 2026-09-08). It is
    * in the name of every German route, so it greets a stranger before any
@@ -197,7 +210,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
     expect(textOf(academic.html)).not.toContain("(§ 18b (section");
     expect(textOf(academic.html)).toContain("Skilled worker — vocational (§ 18a)");
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   /**
    * R8 — no abbreviation goes unexplained on first use.
    */
@@ -230,7 +245,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
       expect(page.html, page.path).toContain('aria-label="Permit Rulebook"');
     }
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   /**
    * R9 — a rule card never restates its own heading and stops.
    */
@@ -252,6 +269,16 @@ describe("s6 — one page per route, generated from the dataset", () => {
     expect(textOf(de.html)).toContain("Which best describes your situation?");
   });
 
+  it("the rail's labels are a list, at every width — they cannot collide", () => {
+    const withRail = pages.filter((p) => p.html.includes("rail-list"));
+    expect(withRail.length).toBeGreaterThan(10);
+    // No positioned label survives anywhere: the class the collision lived on
+    // is not rendered and not styled.
+    for (const page of pages) expect(page.html, page.path).not.toContain('class="lbl"');
+  });
+});
+
+describe(ONE_PAGE_PER_ROUTE, () => {
   /**
    * A quoted card whose disjunction has an unquoted path lists that path's
    * question under "What the checker asks": a quote on one path does not
@@ -274,13 +301,5 @@ describe("s6 — one page per route, generated from the dataset", () => {
       // The card that asks it is quoted: the block speaks for its path.
       expect(asking[0]!.includes("<q") || asking[0]!.includes("rail-list"), path).toBe(true);
     }
-  });
-
-  it("the rail's labels are a list, at every width — they cannot collide", () => {
-    const withRail = pages.filter((p) => p.html.includes("rail-list"));
-    expect(withRail.length).toBeGreaterThan(10);
-    // No positioned label survives anywhere: the class the collision lived on
-    // is not rendered and not styled.
-    for (const page of pages) expect(page.html, page.path).not.toContain('class="lbl"');
   });
 });

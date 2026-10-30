@@ -21,7 +21,10 @@ const controlsOf = (html: string): string[][] =>
   [...html.matchAll(/<(?:a|button)\b([^>]*)>/g)]
     .map((m) => (/class="([^"]*)"/.exec(m[1])?.[1] ?? "").split(/\s+/).filter(Boolean));
 
-describe("s6 — one page per route, generated from the dataset", () => {
+// The title these cases have always sat under; every block below repeats it, so each case keeps its id.
+const ONE_PAGE_PER_ROUTE = "s6 — one page per route, generated from the dataset";
+
+describe(ONE_PAGE_PER_ROUTE, () => {
   /**
    * INVARIANT 4 — every interactive element on every generated page reaches the
    * tap minimum. This is a build-time check over the rendered markup and the
@@ -57,7 +60,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
       expect(page.json.route, page.path).toBeDefined();
     }
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   it("the head carries the card a pasted link renders", () => {
     for (const page of pages) {
       for (const tag of [
@@ -80,7 +85,9 @@ describe("s6 — one page per route, generated from the dataset", () => {
     expect(tokens).toContain("--tap-min: 44px;");
     for (const page of pages) expect(page.html, page.path).toContain("--tap-min: 44px;");
   });
+});
 
+describe(ONE_PAGE_PER_ROUTE, () => {
   /**
    * R12 — a crumb separator cannot be left behind when the last crumb wraps.
    */
