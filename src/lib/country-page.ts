@@ -11,7 +11,7 @@ import { framedPageHtml } from "./frame/framed-page.js";
 import {
   audienceSentence, gist, pageStamp, routeFigure,
 } from "./route-page.js";
-import { TAGLINE } from "./copy/frame.js";
+import { TAGLINE, capitalise } from "./copy/frame.js";
 import {
   LISTED_WITH_THEIR_REASONS, LISTED_WITH_THE_REASONS, QUOTED_ONLY_HEADING, RESULT_NAMES_ASKED_ROUTES,
   RESULT_NAMES_FITTING_ROUTES, askedRoutesLabel, countryHeadline, countryLedeOpen, countryPageDescription,
@@ -124,10 +124,6 @@ function description(country: Country): string {
   return countryPageDescription(names.length, phraseOf(country.code), listed);
 }
 
-/** A composed phrase starting a sentence. `countedWords` spells a number for
- * the middle of one ("one route"), and a heading's line begins with it. */
-const sentenceCase = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
-
 /** What every card on one country index shares: the dataset, the country,
  * and the page's memory of what it has already explained. */
 interface CountryCardContext {
@@ -196,7 +192,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
 
     <section class="quoted-only" aria-labelledby="quoted-only-h">
       <h2 class="label" id="quoted-only-h">${esc(QUOTED_ONLY_HEADING)}</h2>
-      <p class="lede">${esc(notAskedLede(sentenceCase(countedWords(quotedOnly.length, "route")), quotedOnly.length))}</p>
+      <p class="lede">${esc(notAskedLede(capitalise(countedWords(quotedOnly.length, "route")), quotedOnly.length))}</p>
       <ul class="routes" aria-label="${escAttr(notAskedRoutesLabel(phraseOf(country.code)))}">${
     quotedOnly.map((route) => routeCard(cardContext, route)).join("")}
       </ul>

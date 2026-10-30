@@ -796,6 +796,11 @@
   },
   {
    "from": "src/lib/copy/verdict.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/copy/verdict.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
@@ -1763,16 +1768,6 @@
    "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
    "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
    "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
-   "to": "src/lib/verdict/compose/printed-shortfall.ts",
-   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/rail.ts",
@@ -6267,6 +6262,11 @@
     "exported": true
    },
    {
+    "name": "capitalise",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "FEEDBACK",
     "kind": "const",
     "exported": true
@@ -6787,11 +6787,6 @@
     "exported": true
    },
    {
-    "name": "capitalise",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "shortfallNote",
     "kind": "fn",
     "exported": true
@@ -7137,11 +7132,6 @@
    },
    {
     "name": "description",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "sentenceCase",
     "kind": "fn",
     "exported": false
    },
@@ -7682,21 +7672,6 @@
    {
     "name": "tapInline",
     "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "capitalise",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "periodOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "Gte",
-    "kind": "type",
     "exported": false
    },
    {
@@ -8545,5 +8520,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "197b48ae6647b51e3652a3115d02cbe2115410a6af5c23f333da64d9da751986"
+ "digest": "f98ca362a11ec3a35471a15d2e7c24de4ec423de14bbb461129d1bc17cb9ddf7"
 }

@@ -9,6 +9,7 @@
  * part (CODING_STANDARDS.md, Rules).
  */
 import { joinAnd } from "permit-rulebook-data";
+import { capitalise } from "./frame.js";
 import { IS_QUOTED_NOT_CHECKED } from "./interview.js";
 
 /**
@@ -155,7 +156,6 @@ export type PrintedShortfall =
 export const shortByUpToLine = (amount: string): string => `One is short by up to ${amount}.`;
 /** The headline's emphasis on a band open at the bottom: the line, not an amount. */
 export const needsOrMoreLine = (threshold: string): string => `One needs ${threshold} or more.`;
-const capitalise = (words: string): string => words.charAt(0).toUpperCase() + words.slice(1);
 /** The card's note on a route within reach on money: its stressed opening, and
  * the rest, which names the field. */
 export const shortfallNote = (shortfall: PrintedShortfall, field: string): { lead: string; rest: string } =>

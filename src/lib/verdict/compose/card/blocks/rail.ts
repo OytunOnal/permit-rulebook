@@ -1,12 +1,12 @@
 // @level presentation
 import {
-  decidingCriteria, type Band, type Dataset, type Profile, type RouteResult,
+  decidingCriteria, type Band, type Dataset, type Profile, type RouteResult, type ThresholdCriterion,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "../../../../reason.js";
 import {
   ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, RAIL_ROWS_LABEL, WHAT_THIS_ROUTE_ASKS, YOUR_ANSWER, upToShort,
 } from "../../../../copy/verdict.js";
-import { bandOf, measuredCriterionOf, type Gte } from "../../money-shortfall.js";
+import { bandOf, measuredCriterionOf } from "../../money-shortfall.js";
 import { amountAsPrinted } from "../../printed-shortfall.js";
 
 /**
@@ -19,7 +19,7 @@ import { amountAsPrinted } from "../../printed-shortfall.js";
  * (human walk, 2026-09-08). Neighbouring amounts are context, and the route
  * page's own rail is where context belongs.
  */
-function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile): Gte[] {
+function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile): ThresholdCriterion[] {
   const measured = measuredCriterionOf(ds, r, answers);
   if (!measured) return [];
   const decided = decidingCriteria(r.criteria)

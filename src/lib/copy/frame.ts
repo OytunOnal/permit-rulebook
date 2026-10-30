@@ -1,7 +1,8 @@
 // @level presentation
 /**
  * The frame every page draws: the product's name and tagline, the header's
- * and the footer's words, the disclaimer, and the one way a date prints.
+ * and the footer's words, the disclaimer, the one way a date prints, and the
+ * one way a sentence opens.
  *
  * Every word a reader reads lives in this folder, one file per screen or
  * part (CODING_STANDARDS.md, Rules).
@@ -99,6 +100,13 @@ export function isoDay(date: Date): string {
 export function datasetDay(version: string): string {
   return /^\d{4}\.\d{2}\.\d{2}$/.test(version) ? version.replace(/\./g, "-") : version;
 }
+
+/**
+ * Words set to open a sentence or a heading: the first letter a capital. A
+ * phrase composed for the middle of a sentence ("one route", a field's own
+ * noun) opens one on every screen this one way.
+ */
+export const capitalise = (words: string): string => words.charAt(0).toUpperCase() + words.slice(1);
 
 /**
  * The feedback door, in the one word that opens it.

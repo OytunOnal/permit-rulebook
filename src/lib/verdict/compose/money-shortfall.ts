@@ -1,7 +1,7 @@
 // @level application
-import { deriveBands, gapCriterionOf, type Band, type Criterion, type Dataset, type Profile, type RouteResult } from "permit-rulebook-data";
-
-export type Gte = Extract<Criterion, { op: "gte" }>;
+import {
+  deriveBands, gapCriterionOf, type Band, type Dataset, type Profile, type RouteResult, type ThresholdCriterion,
+} from "permit-rulebook-data";
 
 export const bandOf = (ds: Dataset, field: string, answers: Profile) =>
   deriveBands(ds, field).find((b) => b.id === answers[field]);
@@ -17,8 +17,8 @@ export const bandOf = (ds: Dataset, field: string, answers: Profile) =>
  * here, they disagreed — a reader with a good salary and too little in the bank
  * was told her salary was short (isolated v1-gate critique, 2026-09-08).
  */
-export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profile): Gte | undefined =>
-  gapCriterionOf(ds, r, answers) as Gte | undefined;
+export const measuredCriterionOf = (ds: Dataset, r: RouteResult, answers: Profile): ThresholdCriterion | undefined =>
+  gapCriterionOf(ds, r, answers) as ThresholdCriterion | undefined;
 
 /**
  * What a route within reach on money is short of, decided once and in no

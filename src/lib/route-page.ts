@@ -2,9 +2,9 @@
 import {
   scopeLine, phraseOf, possessiveAtStartOf, criterionPhrase, deriveQuestions, formatEURPer, forEachCriterion,
   fillRouteSlots, isLocalization, isScored, joinAnd, learnLinkOf, noticeSources, provenancedValuesOf,
-  referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
+  periodOf, referencedFields, routeReadings, routeStatements, shortLabelOf, statementSources, subjectOf,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
-  type UnreadSource,
+  type ThresholdCriterion, type UnreadSource,
   type StatementException, type UnsourcedReason,
 } from "permit-rulebook-data";
 // One module explains an abbreviation, so the route page and the results card
@@ -26,7 +26,7 @@ import {
   NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription,
   audienceLine, dailyCheck, everyConditionQuoted, everyNumberQuoted, notAskedRouteDescription, pointsFigure,
 } from "./copy/route-page.js";
-import { PRODUCT_NAME } from "./copy/frame.js";
+import { PRODUCT_NAME, capitalise } from "./copy/frame.js";
 import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn, readOn } from "./copy/quotes.js";
 import { WRONG_DOOR_LABEL } from "./copy/feedback.js";
 import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "./slug.js";
@@ -76,14 +76,6 @@ const tapInline = (extra = ""): string => `class="${escAttr(extra ? `${extra} ` 
 // Small helpers over the dataset
 // ---------------------------------------------------------------------------
 
-
-const capitalise = (s: string): string => (s ? s[0].toUpperCase() + s.slice(1) : s);
-
-const periodOf = (dataset: Dataset, field: string) =>
-  dataset.fields.find((f) => f.id === field)?.period;
-
-type Gte = Extract<Criterion, { op: "gte" }>;
-
 /**
  * Every provenanced value under one criterion, its paths included.
  *
@@ -110,8 +102,8 @@ function valuesUnder(c: Criterion): ProvenanceEntry[] {
 }
 
 /** The thresholds a criterion states, its paths included. */
-function gteUnder(c: Criterion): Gte[] {
-  const out: Gte[] = [];
+function gteUnder(c: Criterion): ThresholdCriterion[] {
+  const out: ThresholdCriterion[] = [];
   forEachCriterion([c], (x) => { if (x.op === "gte") out.push(x); });
   return out;
 }
@@ -264,7 +256,7 @@ interface RailRow { amount: number; text: string; own: boolean }
  * put ten ticks under a German salary, half of them Spanish; this route's alone
  * would be a scale with one mark and nothing to read it against (critique P2).
  */
-function railRows(country: Country, route: Route, own: Gte): RailRow[] {
+function railRows(country: Country, route: Route, own: ThresholdCriterion): RailRow[] {
   const byAmount = new Map<number, { routes: Route[]; label?: string }>();
   for (const r of country.routes)
     forEachCriterion(r.criteria, (c) => {
@@ -306,7 +298,7 @@ interface RulePage {
   notice?: Notice;
 }
 
-function railHtml(page: RulePage, own: Gte): string {
+function railHtml(page: RulePage, own: ThresholdCriterion): string {
   const { dataset, country, route } = page;
   const rows = railRows(country, route, own);
   if (rows.length < 2) return "";
@@ -584,7 +576,7 @@ type Points = Extract<Criterion, { op: "points" }>;
  * both print: its thresholds, one per amount and lowest first, or failing
  * those its points total.
  */
-function figuresOf(dataset: Dataset, route: Route): { amounts: Gte[]; points?: Points } {
+function figuresOf(dataset: Dataset, route: Route): { amounts: ThresholdCriterion[]; points?: Points } {
   const seen = new Set<number>();
   const amounts = ruleCriteria(dataset, route).flatMap(gteUnder)
     .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
@@ -596,7 +588,6 @@ export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
   const { amounts, points } = figuresOf(dataset, route);
   if (amounts.length) {
     const own = amounts[0]!;
-    const field = dataset.fields.find((f) => f.id === own.field);
     // "Salary threshold" and "funds to show" are the two things money means on
     // these routes, and the field says which: one is what a job pays you, the
     // other is what you must be able to show you have.
@@ -604,7 +595,7 @@ export function routeFigure(dataset: Dataset, route: Route): RouteFigure {
     const from = amounts.length > 1 ? "from " : "";
     return {
       label,
-      value: `${from}${formatEURPer(own.threshold.amount, field?.period)}`,
+      value: `${from}${formatEURPer(own.threshold.amount, periodOf(dataset, own.field))}`,
     };
   }
   if (points) return { label: "points needed", value: String(points.required.value) };
