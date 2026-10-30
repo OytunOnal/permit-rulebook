@@ -6,8 +6,9 @@ import { countryPages } from "../src/lib/country-page.js";
 import { dataPage, statusAlias } from "../src/lib/data-page.js";
 import { feedbackPage } from "../src/lib/feedback-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
-import { routePages } from "../src/lib/route-page.js";
-import { analyticsBeacon } from "../src/lib/site.js";
+import { routePage, routePages } from "../src/lib/route-page.js";
+import { DATA_PATH, FEEDBACK_PATH, analyticsBeacon, url } from "../src/lib/site.js";
+import { countryPath, routeAddresses } from "../src/lib/slug.js";
 import { footerIn, frameAlone, headerIn, styleIn } from "./frame-alone.js";
 
 /**
@@ -52,11 +53,36 @@ describe("the frame, at its entry", () => {
 
   it("gives the interview the same pieces it draws around a page", () => {
     const frame = interviewFrameOf(ds);
-    const html = frameAlone(ds);
+    const html = frameAlone(ds, { place: { here: "/" } });
     expect(headerIn(html)).toBe(frame.header);
     expect(footerIn(html)).toBe(frame.footer);
   });
 
+});
+
+/** The header's links that carry `aria-current`, each as its address and its value. */
+const headerMarksOf = (header: string): string[] =>
+  [...header.matchAll(/<a [^>]*href="([^"]*)" aria-current="([^"]*)"/g)].map((mark) => `${mark[1]} ${mark[2]}`);
+
+describe("the header marks the page it is on", () => {
+  it("marks each header destination on its own page, a route page's country as its section, and nothing else", () => {
+    const address = routeAddresses(ds)[0]!;
+    const countries = countryPages(ds);
+    expect(countries.length, "precondition: a page for each country").toBe(ds.countries.length);
+    const marksOn: [string, string, string[]][] = [
+      ["the interview", interviewFrameOf(ds).header, [`${url("/")} page`]],
+      ["the data page", headerIn(dataPage(ds).html), [`${url(DATA_PATH)} page`]],
+      ["the feedback page", headerIn(feedbackPage(ds).html), [`${url(FEEDBACK_PATH)} page`]],
+      ...countries.map((page): [string, string, string[]] => [page.path, headerIn(page.html), [`${url(page.path)} page`]]),
+      ["a route page", headerIn(routePage(ds, address).html), [`${url(countryPath(address.country))} true`]],
+      ["the 404", headerIn(notFoundPage(ds).html), []],
+      ["the status page", headerIn(statusAlias(ds).html), []],
+    ];
+    for (const [where, header, marks] of marksOn) {
+      expect(header, `precondition: ${where} has a header`).toContain('<header class="site-head">');
+      expect(headerMarksOf(header), where).toEqual(marks);
+    }
+  });
 });
 
 describe("what a page hands the frame lands where the interface puts it", () => {

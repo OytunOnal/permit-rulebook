@@ -118,6 +118,9 @@
 .site-head .nav a[aria-current] { border-bottom-color: var(--color-stamp); color: var(--color-stamp); }
 .site-head .nav .sep { width: 1px; height: 1.1rem; background: var(--color-line); margin: 0 .3rem; }
 .site-head .nav a.check { border: 1.5px solid var(--color-ink); padding: 0 .6rem; }
+/* The bordered item's shorthand above outranks the mark's underline, so the
+   interview's "Check yours" takes the underline again here. */
+.site-head .nav a.check[aria-current] { border-bottom-color: var(--color-stamp); }
 .site-head .menu { display: none; }
 
 /* The four countries under one word (human's amendment, 2026-09-16). A

@@ -111,7 +111,7 @@ export const CHECKS = [
       heading: document.querySelector("h1")?.textContent?.trim() ?? "",
       facts: document.querySelectorAll(".facts div").length,
       downloads: [...document.querySelectorAll("nav[aria-label='Downloads'] a")].map((a) => a.getAttribute("href")),
-      marked: document.querySelectorAll('.site-head .nav a[aria-current]').length,
+      marked: [...document.querySelectorAll('.site-head .nav a[aria-current]')].map((a) => a.textContent.trim()),
     })`,
     expect(v) {
       const problems = [];
@@ -119,8 +119,8 @@ export const CHECKS = [
       if (v.facts < 5) problems.push(`only ${v.facts} facts about the dataset`);
       if (!v.downloads.some((h) => h.endsWith("/dataset.json")))
         problems.push("the whole dataset is not offered");
-      // Nothing is marked here: this page belongs to no country.
-      if (v.marked !== 0) problems.push(`${v.marked} nav items are marked current on a page under no country`);
+      // The header marks this page's own word, and nothing else (#303).
+      if (v.marked.join() !== "The data") problems.push(`the header marks "${v.marked.join(", ")}", not The data`);
       return problems;
     },
   },

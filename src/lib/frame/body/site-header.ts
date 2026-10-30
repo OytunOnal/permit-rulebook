@@ -25,8 +25,9 @@ export interface HeaderPlace {
   /** `page` on the country page itself, `true` on a route page under it. */
   current?: "page" | "true";
   /**
-   * The page's own address, where the row itself holds it — `/feedback/` marks
-   * its own word the way a country page marks its country. A country's path
+   * The page's own address, where the row itself holds it — the interview,
+   * `/data/` and `/feedback/` each mark their own word the way a country page
+   * marks its country. A country's path
    * never goes here: that one lives inside the disclosure and is marked by
    * `countryPath` (s13).
    */

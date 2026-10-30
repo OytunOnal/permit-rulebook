@@ -96,11 +96,15 @@ describe("one header, every page", () => {
     }
   });
 
-  it("nothing is marked on the interview or the data page — they belong to no country", () => {
-    for (const html of [dataPage(ds).html, statusAlias(ds).html, notFoundPage(ds).html])
+  it("the interview and the data page mark their own word, and the 404 and the old data address nothing", () => {
+    expect(headerOf(dataPage(ds).html)).toContain(`href="${url(DATA_PATH)}" aria-current="page"`);
+    for (const html of [statusAlias(ds).html, notFoundPage(ds).html])
       expect(headerOf(html)).not.toContain("aria-current");
+    // The interview as built: its Astro page places the frame's header itself.
     const home = `${dist}/index.html`;
-    if (existsSync(home)) expect(headerOf(read(home))).not.toContain("aria-current");
+    if (existsSync(home))
+      expect([...headerOf(read(home)).matchAll(/href="([^"]*)" aria-current="([^"]*)"/g)].map((m) => `${m[1]} ${m[2]}`))
+        .toEqual([`${url("/")} page`]);
   });
 
   it("from every page, the other three countries, the checker and the data page are one link away", () => {
