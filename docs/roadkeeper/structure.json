@@ -3081,6 +3081,11 @@
   },
   {
    "from": "tests/framed-page.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
    "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
@@ -8545,5 +8550,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "197b48ae6647b51e3652a3115d02cbe2115410a6af5c23f333da64d9da751986"
+ "digest": "f2da9cb81d138ff58fec6795cda0344afadb19d7df96d21581c199b96ba5a1e0"
 }

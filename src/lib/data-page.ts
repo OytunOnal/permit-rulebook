@@ -205,7 +205,8 @@ export function dataPage(dataset: Dataset, run: WatchRun = {}): DataPage {
 
   const html = framedPageHtml(dataset, {
     title, meta: { description: desc, path: DATA_PATH, kind: "website" },
-    headTags: [`<script type="application/ld+json">${ld}</script>`], css: DATA_PAGE_RULES, run: { lastRun, unread }, content,
+    headTags: [`<script type="application/ld+json">${ld}</script>`], css: DATA_PAGE_RULES,
+    place: { here: DATA_PATH }, run: { lastRun, unread }, content,
   });
   return { path: DATA_PATH, title, description: desc, html };
 }

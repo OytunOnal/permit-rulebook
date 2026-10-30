@@ -53,7 +53,7 @@ describe("the frame, at its entry", () => {
 
   it("gives the interview the same pieces it draws around a page", () => {
     const frame = interviewFrameOf(ds);
-    const html = frameAlone(ds);
+    const html = frameAlone(ds, { place: { here: "/" } });
     expect(headerIn(html)).toBe(frame.header);
     expect(footerIn(html)).toBe(frame.footer);
   });

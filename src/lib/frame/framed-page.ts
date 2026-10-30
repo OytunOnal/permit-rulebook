@@ -87,7 +87,8 @@ export function interviewFrameOf(dataset: Dataset): InterviewFrame {
   return {
     policy: contentSecurityPolicy(),
     icons: iconLinks(),
-    header: siteHeader(countries),
+    // The interview stands at the root, where "Check yours" leads.
+    header: siteHeader(countries, { here: "/" }),
     footer: siteFooter(countries, footerFacts(dataset)),
     menuScript: MENU_SCRIPT,
   };
