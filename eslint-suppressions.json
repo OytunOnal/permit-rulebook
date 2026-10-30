@@ -89,19 +89,6 @@
       "count": 3
     }
   },
-  "src/lib/frame/body/site-footer.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
-  "src/lib/frame/body/site-header.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "src/lib/interview-history/list/entry-state.ts": {
     "roadkeeper/named-condition": {
       "count": 1

@@ -3,7 +3,7 @@ import { FEEDBACK, FEEDBACK_FOOTER_ROW, PRODUCT_NAME, unreadLabel } from "../../
 import { seal } from "../../identity.js";
 import { esc, escAttr } from "../../reason.js";
 import { DATA_PATH, FEEDBACK_PATH, url } from "../../site.js";
-import type { HeaderPlace, NavLink } from "./site-header.js";
+import { countryMarkOf, type HeaderPlace, type NavLink } from "./site-header.js";
 
 /**
  * The site footer: the same block under every page.
@@ -80,16 +80,14 @@ const SEP = String.fromCharCode(160, 183) + " ";
  */
 const SEP_BREAK = `${SEP.trimEnd()}</span> <span class="keep">`;
 
-export function siteFooter(
-  countries: NavLink[], facts: FooterFacts, place: FooterPlace = {},
-): string {
-  const here = (link: NavLink): string => {
-    const marked = place.countryPath && link.path === place.countryPath && place.current
-      ? ` aria-current="${escAttr(place.current)}"`
-      : "";
-    return `<li><a class="tap-min" href="${escAttr(url(link.path))}"${marked}>${esc(link.label)}</a></li>`;
-  };
-  const data = [
+/** One country's row in the footer's first column, marked where it is this page. */
+function countryRowHtml(link: NavLink, place: FooterPlace): string {
+  return `<li><a class="tap-min" href="${escAttr(url(link.path))}"${countryMarkOf(link, place)}>${esc(link.label)}</a></li>`;
+}
+
+/** The rows of the footer's data column: the data page, the route's own JSON, the repository and the licence. */
+function dataRowsHtml(facts: FooterFacts, place: FooterPlace): string {
+  return [
     `<li><a class="tap-min" href="${escAttr(url(DATA_PATH))}">The data — status, versions, downloads</a></li>`,
     // Only where there is a route to serve: the other pages render the column
     // without it rather than linking a file that is not theirs.
@@ -97,20 +95,43 @@ export function siteFooter(
     `<li>${out(facts.repository, "The repository")}</li>`,
     `<li>${out(facts.licenceUrl, `Licence · ${facts.licenceName}`)}</li>`,
   ].filter(Boolean).join("");
+}
 
+/** The watch's last run, in its held parenthesis, with the unread count where there is one; nothing where it never ran. */
+function lastRunHtml(facts: FooterFacts): string {
+  if (!facts.lastRun) return "";
+  return ` <span class="keep">(last run <time datetime="${escAttr(facts.lastRun)}">${esc(facts.lastRun)}</time>${
+    facts.unread ? `${SEP_BREAK}${esc(unreadLabel(facts.unread))}` : ""})</span>`;
+}
+
+/** The footer's last line: the mark, the licences and the owner, then the health signal. */
+function footerLineHtml(facts: FooterFacts): string {
+  return `<div class="line">
+      <span><a class="mark tap-min" href="${escAttr(url("/"))}">${seal()}${esc(PRODUCT_NAME)}</a>${SEP}<span class="keep">code MIT</span>${SEP}<span class="keep">data ${
+    esc(facts.licenceName)}</span>${SEP}<span class="keep">© ${esc(facts.year)} ${esc(facts.owner)}</span></span>
+      <span>values read between <b><time datetime="${
+    escAttr(facts.read.oldest)}">${esc(facts.read.oldest)}</time></b> and <b><time datetime="${
+    escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b>${SEP}re-read daily${lastRunHtml(facts)}${SEP}<span class="keep">dataset ${
+    esc(facts.datasetVersion)}</span></span>
+    </div>`;
+}
+
+export function siteFooter(
+  countries: NavLink[], facts: FooterFacts, place: FooterPlace = {},
+): string {
   return `<footer class="site-foot">
     <p class="disclaimer">${esc(facts.disclaimer)}</p>
     <div class="cols">
       <div class="col">
         <h3>Countries</h3>
-        <ul>${countries.map(here).join("")}
+        <ul>${countries.map((link) => countryRowHtml(link, place)).join("")}
           <li class="act"><a class="tap-min" href="${
     escAttr(url(place.checkPath ?? "/"))}">Check yours</a></li>
         </ul>
       </div>
       <div class="col">
         <h3>The data</h3>
-        <ul>${data}</ul>
+        <ul>${dataRowsHtml(facts, place)}</ul>
       </div>
       <div class="col">
         <h3>${esc(FEEDBACK)}</h3>
@@ -120,15 +141,6 @@ export function siteFooter(
         </ul>
       </div>
     </div>
-    <div class="line">
-      <span><a class="mark tap-min" href="${escAttr(url("/"))}">${seal()}${esc(PRODUCT_NAME)}</a>${SEP}<span class="keep">code MIT</span>${SEP}<span class="keep">data ${
-    esc(facts.licenceName)}</span>${SEP}<span class="keep">© ${esc(facts.year)} ${esc(facts.owner)}</span></span>
-      <span>values read between <b><time datetime="${
-    escAttr(facts.read.oldest)}">${esc(facts.read.oldest)}</time></b> and <b><time datetime="${
-    escAttr(facts.read.newest)}">${esc(facts.read.newest)}</time></b>${SEP}re-read daily${facts.lastRun ? ` <span class="keep">(last run <time datetime="${
-    escAttr(facts.lastRun)}">${esc(facts.lastRun)}</time>${
-    facts.unread ? `${SEP_BREAK}${esc(unreadLabel(facts.unread))}` : ""})</span>` : ""}${SEP}<span class="keep">dataset ${
-    esc(facts.datasetVersion)}</span></span>
-    </div>
+    ${footerLineHtml(facts)}
   </footer>`;
 }

@@ -1107,12 +1107,12 @@
   {
    "from": "src/lib/frame/body/site-footer.ts",
    "to": "src/lib/frame/body/site-header.ts",
-   "kind": "inheritance"
+   "kind": "dependency"
   },
   {
    "from": "src/lib/frame/body/site-footer.ts",
    "to": "src/lib/frame/body/site-header.ts",
-   "kind": "type-only"
+   "kind": "inheritance"
   },
   {
    "from": "src/lib/frame/body/site-footer.ts",
@@ -8640,5 +8640,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "d79b55f4f086f3ae97cae8f2c3bb681354cd22206c286d8e93d976ce0d690be3"
+ "digest": "311969958bbedac56467e7862557972ae23eee028511bea9e347a141e2b36e09"
 }
