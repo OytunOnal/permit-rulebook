@@ -66,6 +66,28 @@
    ]
   },
   {
+   "path": "src/lib/frame",
+   "entries": [
+    {
+     "file": "src/lib/frame/framed-page.ts",
+     "level": "presentation"
+    }
+   ],
+   "files": [
+    "src/lib/frame/body/footer-facts.ts",
+    "src/lib/frame/body/menu-script.ts",
+    "src/lib/frame/body/nav-countries.ts",
+    "src/lib/frame/body/site-footer.ts",
+    "src/lib/frame/body/site-header.ts",
+    "src/lib/frame/framed-page.ts",
+    "src/lib/frame/head/csp.ts",
+    "src/lib/frame/head/frame-sheet.ts",
+    "src/lib/frame/head/frame.css",
+    "src/lib/frame/head/icon-links.ts",
+    "src/lib/frame/head/shared-blocks.css"
+   ]
+  },
+  {
    "path": "src/lib/interview",
    "entries": [
     {
@@ -237,11 +259,19 @@
   "src/lib/country-search/control/mount.ts": "presentation",
   "src/lib/country-search/control/view.ts": "presentation",
   "src/lib/country-search/index.ts": "presentation",
-  "src/lib/csp.ts": "presentation",
   "src/lib/data-page.ts": "presentation",
   "src/lib/dataset-ld.ts": "presentation",
   "src/lib/feedback-page.ts": "presentation",
   "src/lib/first-paint.ts": "presentation",
+  "src/lib/frame/body/footer-facts.ts": "presentation",
+  "src/lib/frame/body/menu-script.ts": "presentation",
+  "src/lib/frame/body/nav-countries.ts": "presentation",
+  "src/lib/frame/body/site-footer.ts": "presentation",
+  "src/lib/frame/body/site-header.ts": "presentation",
+  "src/lib/frame/framed-page.ts": "presentation",
+  "src/lib/frame/head/csp.ts": "presentation",
+  "src/lib/frame/head/frame-sheet.ts": "presentation",
+  "src/lib/frame/head/icon-links.ts": "presentation",
   "src/lib/gloss.ts": "presentation",
   "src/lib/identity.ts": "presentation",
   "src/lib/interview-history/index.ts": "application",
@@ -786,7 +816,12 @@
   },
   {
    "from": "src/lib/country-page.ts",
-   "to": "src/lib/csp.ts",
+   "to": "src/lib/country-page.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -900,31 +935,6 @@
    "kind": "type-only"
   },
   {
-   "from": "src/lib/csp.ts",
-   "to": "src/lib/clipboard.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/csp.ts",
-   "to": "src/lib/first-paint.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/csp.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/csp.ts",
-   "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/csp.ts",
-   "to": "src/lib/site.ts",
-   "kind": "dependency"
-  },
-  {
    "from": "src/lib/data-page.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -951,12 +961,17 @@
   },
   {
    "from": "src/lib/data-page.ts",
-   "to": "src/lib/csp.ts",
+   "to": "src/lib/data-page.css",
    "kind": "dependency"
   },
   {
    "from": "src/lib/data-page.ts",
    "to": "src/lib/dataset-ld.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -1031,7 +1046,12 @@
   },
   {
    "from": "src/lib/feedback-page.ts",
-   "to": "src/lib/csp.ts",
+   "to": "src/lib/feedback-page.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -1046,17 +1066,192 @@
   },
   {
    "from": "src/lib/feedback-page.ts",
-   "to": "src/lib/route-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/feedback-page.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/first-paint.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/footer-facts.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/footer-facts.ts",
+   "to": "src/lib/frame/body/site-footer.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/frame/body/footer-facts.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/nav-countries.ts",
+   "to": "src/lib/frame/body/site-header.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/frame/body/nav-countries.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/frame/body/site-header.ts",
+   "kind": "inheritance"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/frame/body/site-header.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-header.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-header.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-header.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-header.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/body/footer-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/body/menu-script.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/body/nav-countries.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/body/site-footer.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/body/site-header.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/head/csp.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/head/frame-sheet.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/head/icon-links.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/csp.ts",
+   "to": "src/lib/clipboard.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/csp.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/csp.ts",
+   "to": "src/lib/frame/body/menu-script.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/csp.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/csp.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "identity.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "src/lib/frame/head/frame.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "src/lib/frame/head/shared-blocks.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "tokens.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/icon-links.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/icon-links.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -1067,11 +1262,6 @@
   {
    "from": "src/lib/identity.ts",
    "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/identity.ts",
-   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -1351,7 +1541,7 @@
   },
   {
    "from": "src/lib/not-found.ts",
-   "to": "src/lib/csp.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -1362,11 +1552,6 @@
   {
    "from": "src/lib/not-found.ts",
    "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/not-found.ts",
-   "to": "src/lib/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -1431,11 +1616,6 @@
   },
   {
    "from": "src/lib/route-page.ts",
-   "to": "identity.css",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
    "to": "src/lib/copy/feedback.ts",
    "kind": "dependency"
   },
@@ -1456,12 +1636,7 @@
   },
   {
    "from": "src/lib/route-page.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
-   "to": "src/lib/csp.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -1486,17 +1661,17 @@
   },
   {
    "from": "src/lib/route-page.ts",
+   "to": "src/lib/route-page.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/route-page.ts",
    "to": "src/lib/slug.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
-   "to": "tokens.css",
    "kind": "dependency"
   },
   {
@@ -1512,11 +1687,6 @@
   {
    "from": "src/lib/sitemap.ts",
    "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/sitemap.ts",
-   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -1777,11 +1947,6 @@
   {
    "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/copy/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/html.ts",
-   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -2061,22 +2226,17 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/csp.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
   {
    "from": "src/pages/index.astro",
    "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -2676,17 +2836,12 @@
   },
   {
    "from": "tests/csp.test.ts",
-   "to": "src/lib/csp.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/csp.test.ts",
    "to": "src/lib/first-paint.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/csp.test.ts",
-   "to": "src/lib/identity.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -2711,7 +2866,7 @@
   },
   {
    "from": "tests/dataset-ld.test.ts",
-   "to": "src/lib/identity.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -2772,11 +2927,6 @@
   {
    "from": "tests/first-paint.test.ts",
    "to": "src/lib/first-paint.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/first-paint.test.ts",
-   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -2851,11 +3001,6 @@
   },
   {
    "from": "tests/footer.test.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/footer.test.ts",
    "to": "src/lib/route-page.ts",
    "kind": "dependency"
   },
@@ -2867,6 +3012,76 @@
   {
    "from": "tests/footer.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/frame/framed-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/frame/framed-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -2966,12 +3181,12 @@
   },
   {
    "from": "tests/identity.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/identity.test.ts",
-   "to": "tests/browser-walk.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -3071,12 +3286,12 @@
   },
   {
    "from": "tests/not-found.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/not-found.test.ts",
-   "to": "src/lib/site.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -3097,11 +3312,6 @@
   {
    "from": "tests/orientation.test.ts",
    "to": "src/lib/data-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/orientation.test.ts",
-   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -3127,6 +3337,11 @@
   {
    "from": "tests/orientation.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -3311,11 +3526,6 @@
   },
   {
    "from": "tests/route-page.test.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/route-page.test.ts",
    "to": "src/lib/not-found.ts",
    "kind": "dependency"
   },
@@ -3347,6 +3557,11 @@
   {
    "from": "tests/route-page.test.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -3396,17 +3611,7 @@
   },
   {
    "from": "tests/s11.test.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s11.test.ts",
    "to": "src/lib/data-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s11.test.ts",
-   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -3417,6 +3622,11 @@
   {
    "from": "tests/s11.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -3486,7 +3696,7 @@
   },
   {
    "from": "tests/s13.test.ts",
-   "to": "src/lib/identity.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -3526,6 +3736,11 @@
   },
   {
    "from": "tests/s13.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -3542,11 +3757,6 @@
   {
    "from": "tests/s16.test.ts",
    "to": "src/lib/data-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s16.test.ts",
-   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -3926,17 +4136,12 @@
   },
   {
    "from": "tests/s27.test.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s27.test.ts",
    "to": "src/lib/gloss.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s27.test.ts",
-   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -3977,6 +4182,11 @@
   {
    "from": "tests/s27.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -4351,11 +4561,6 @@
   },
   {
    "from": "tests/site-index.test.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/site-index.test.ts",
    "to": "src/lib/route-page.ts",
    "kind": "dependency"
   },
@@ -4372,6 +4577,11 @@
   {
    "from": "tests/site-index.test.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -4590,6 +4800,43 @@
    }
   ],
   "src/lib/country-search/index.ts": [],
+  "src/lib/frame/framed-page.ts": [
+   {
+    "name": "PagePlace",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "PageInFrame",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "headOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "bodyOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "framedPageHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "InterviewFrame",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "interviewFrameOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "src/lib/interview/index.ts": [
    {
     "name": "InterviewPorts",
@@ -6874,11 +7121,6 @@
     "exported": true
    },
    {
-    "name": "navCountries",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "CountryPage",
     "kind": "type",
     "exported": true
@@ -6920,28 +7162,6 @@
    },
    {
     "name": "countryPages",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "footerFacts",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "src/lib/csp.ts": [
-   {
-    "name": "INLINE_SCRIPTS",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "sha256",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "contentSecurityPolicy",
     "kind": "fn",
     "exported": true
    }
@@ -7178,11 +7398,6 @@
   ],
   "src/lib/identity.ts": [
    {
-    "name": "iconLinks",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "seal",
     "kind": "fn",
     "exported": true
@@ -7194,71 +7409,6 @@
    },
    {
     "name": "rulesRead",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "HeaderPlace",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "NavLink",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "currentMarkOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "siteHeader",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "DATA_PATH",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "FEEDBACK_PATH",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "MENU_SCRIPT",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "FooterPlace",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "FooterFacts",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "out",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "SEP",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "SEP_BREAK",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "siteFooter",
     "kind": "fn",
     "exported": true
    }
@@ -7520,11 +7670,6 @@
   ],
   "src/lib/route-page.ts": [
    {
-    "name": "lf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "TAP_CLASSES",
     "kind": "const",
     "exported": true
@@ -7773,11 +7918,6 @@
     "name": "routePages",
     "kind": "fn",
     "exported": true
-   },
-   {
-    "name": "PAGE_CSS",
-    "kind": "const",
-    "exported": true
    }
   ],
   "src/lib/scope.ts": [
@@ -7888,6 +8028,16 @@
    {
     "name": "absolute",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "DATA_PATH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_PATH",
+    "kind": "const",
     "exported": true
    },
    {
@@ -8275,6 +8425,11 @@
     "name": "holdLine",
     "kind": "const",
     "exported": false
+   },
+   {
+    "name": "frame",
+    "kind": "const",
+    "exported": false
    }
   ],
   "src/pages/robots.txt.ts": [
@@ -8357,7 +8512,6 @@
   "src/lib/copy/verdict.ts",
   "src/lib/countries.ts",
   "src/lib/country-page.ts",
-  "src/lib/csp.ts",
   "src/lib/data-page.ts",
   "src/lib/dataset-ld.ts",
   "src/lib/feedback-page.ts",
@@ -8391,5 +8545,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "889bbe4b1a10fd5669461b355110d5a3165e459277d36a516f94988769c4bafa"
+ "digest": "197b48ae6647b51e3652a3115d02cbe2115410a6af5c23f333da64d9da751986"
 }

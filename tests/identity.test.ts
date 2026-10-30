@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { PAGE_CSS } from "../src/lib/route-page.js";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { datasetMeta, type Dataset } from "permit-rulebook-data";
 import { chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
+import { frameAlone, styleIn } from "./frame-alone.js";
 
 /**
  * The identity pair is one drawing, used twice.
@@ -76,7 +76,7 @@ describe("the identity pair has one definition", () => {
   });
 
   it("the route page inlines that file rather than a copy of it", () => {
-    expect(PAGE_CSS).toContain(identity);
+    expect(styleIn(frameAlone(dataset as unknown as Dataset))).toContain(identity);
   });
 
   it("the results page links the same file", () => {
@@ -119,7 +119,8 @@ describe("the identity pair has one definition", () => {
     // A second definition is the drift this file exists to stop. `tokens.css`
     // holds values, not components; a page holds placement, not geometry.
     // Print is exempt (`withoutPrint`).
-    for (const file of ["tokens.css", "src/lib/route-page.ts", "src/lib/verdict/verdict.css"]) {
+    for (const file of ["tokens.css", "src/lib/route-page.ts", "src/lib/frame/head/frame.css", "src/lib/frame/head/shared-blocks.css",
+      "src/lib/route-page.css", "src/lib/country-page.css", "src/lib/data-page.css", "src/lib/feedback-page.css", "src/lib/verdict/verdict.css"]) {
       const own = withoutPrint(read(file).split("${IDENTITY}").join(" "));
       expect(own, `${file} draws the mark`).not.toMatch(/\.stamps\s+\.mark\s*\{/);
       // And states nothing the pair is made of, only where it goes.
@@ -509,10 +510,10 @@ describe("the identity has one set of elements too", () => {
     expect(offenders, "the identity is being written out a second time").toEqual([]);
   });
 
-  it("and only identity.ts writes the icon links", () => {
+  it("and only the frame writes the icon links", () => {
     const offenders: string[] = [];
     for (const file of emitters("src")) {
-      if (file === "src/lib/identity.ts") continue;
+      if (file === "src/lib/frame/head/icon-links.ts") continue;
       if (read(file).includes('rel="apple-touch-icon"')) offenders.push(file);
     }
     expect(offenders).toEqual([]);

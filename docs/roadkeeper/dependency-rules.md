@@ -5,6 +5,7 @@
 - `scripts/browser`
 - `scripts/carry-assets`
 - `src/lib/country-search`
+- `src/lib/frame`
 - `src/lib/interview`
 - `src/lib/interview/draw`
 - `src/lib/interview-history`

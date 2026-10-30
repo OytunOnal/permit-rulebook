@@ -10,13 +10,13 @@ import {
 import { COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW } from "../src/lib/copy/frame.js";
 import { RESULT_FEEDBACK_ASK, resultFeedbackLine } from "../src/lib/copy/verdict.js";
 import {
-  FEEDBACK_ADDRESS, GMAIL_COMPOSE_URL, NEW_NEED_URL, SPONSOR_URL, TRACKER_URL, absolute, url,
+  FEEDBACK_ADDRESS, FEEDBACK_PATH, GMAIL_COMPOSE_URL, NEW_NEED_URL, SPONSOR_URL, TRACKER_URL, absolute, url,
 } from "../src/lib/site.js";
-import { FEEDBACK_PATH, MENU_SCRIPT, siteFooter, siteHeader } from "../src/lib/identity.js";
+import { interviewFrameOf } from "../src/lib/frame/framed-page.js";
 import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
 import { feedbackGmail, feedbackMailto, feedbackPage } from "../src/lib/feedback-page.js";
-import { countryLinks, footerFacts, navCountries } from "../src/lib/country-page.js";
+import { countryLinks } from "../src/lib/country-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
@@ -24,6 +24,7 @@ import { esc, escAttr } from "../src/lib/reason.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
+import { footerIn, frameAlone, headerIn } from "./frame-alone.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
 /**
@@ -271,7 +272,7 @@ describe("the header: four countries under one word", () => {
   };
 
   it("on a page that belongs to no country the word is Countries, and the list is closed", () => {
-    const header = siteHeader(navCountries(ds));
+    const header = headerIn(frameAlone(ds));
     expect(header).toContain(`<summary class="tap-min">${COUNTRIES}</summary>`);
     expect(header).not.toContain("<details open");
     // The four are in the list, and the row itself holds four items.
@@ -285,7 +286,7 @@ describe("the header: four countries under one word", () => {
 
   it("on a country's page the word is that country, and its row is marked", () => {
     const france = countryLinks(ds).find((l) => l.name === "France")!;
-    const header = siteHeader(navCountries(ds), { countryPath: france.path, current: "page" });
+    const header = headerIn(frameAlone(ds, { place: { countryPath: france.path, current: "page" } }));
     expect(header).toContain(`<summary class="tap-min">France</summary>`);
     expect(header).toContain(`href="${url(france.path)}" aria-current="page"`);
     // And only that one.
@@ -299,7 +300,7 @@ describe("the header: four countries under one word", () => {
   });
 
   it("the phone menu groups the four under a small Countries heading, then the three", () => {
-    const header = siteHeader(navCountries(ds));
+    const header = headerIn(frameAlone(ds));
     // The heading is markup the phone shows and the desktop hides: one nav,
     // one set of links, no second copy of a country name anywhere.
     expect(header).toContain(`<span class="group">${COUNTRIES}</span>`);
@@ -309,14 +310,14 @@ describe("the header: four countries under one word", () => {
   });
 
   it("no country name enters any inline script, and the scripts remember nothing", () => {
-    for (const script of [MENU_SCRIPT, FIRST_PAINT_SCRIPT, COPY_SCRIPT])
+    for (const script of [interviewFrameOf(ds).menuScript, FIRST_PAINT_SCRIPT, COPY_SCRIPT])
       for (const link of countryLinks(ds))
         expect(script.includes(link.name), `an inline script names ${link.name}`).toBe(false);
     // The disclosure is not remembered: no storage key mentions it, and the
     // menu script writes nothing at all. The copy script likewise — and it
     // names no address either: the text it copies is the page's, read at the
     // click, and its "done" word is the button's own attribute.
-    for (const script of [MENU_SCRIPT, COPY_SCRIPT]) {
+    for (const script of [interviewFrameOf(ds).menuScript, COPY_SCRIPT]) {
       expect(script).not.toContain("localStorage");
       expect(script).not.toContain("sessionStorage");
       expect(script).not.toContain("cookie");
@@ -328,7 +329,7 @@ describe("the header: four countries under one word", () => {
 });
 
 describe("the footer's Feedback column", () => {
-  const footer = siteFooter(navCountries(ds), footerFacts(ds));
+  const footer = footerIn(frameAlone(ds));
 
   it("is exactly two rows: the page, then the sponsorship", () => {
     // The address was a third row for a day; the human took it out on the
@@ -376,7 +377,7 @@ describe("the map and the sitemap", () => {
   });
 
   it("it is reachable from the header on every built page, not only from a footer", () => {
-    expect(siteHeader(navCountries(ds))).toContain(`href="${url(FEEDBACK_PATH)}"`);
+    expect(headerIn(frameAlone(ds))).toContain(`href="${url(FEEDBACK_PATH)}"`);
   });
 });
 

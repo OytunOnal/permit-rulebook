@@ -5,8 +5,8 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { countryLinks } from "../src/lib/country-page.js";
-import { PAGE_CSS } from "../src/lib/route-page.js";
 import { url } from "../src/lib/site.js";
+import { frameAlone, styleIn } from "./frame-alone.js";
 
 /**
  * B4 — a wrong URL landed the visitor on GitHub's own error page.
@@ -26,6 +26,8 @@ import { url } from "../src/lib/site.js";
 
 const ds = dataset as unknown as Dataset;
 const page = notFoundPage(ds);
+/** The frame's own stylesheet, the one every page built as a string opens with. */
+const frameSheet = styleIn(frameAlone(ds));
 const built = fileURLToPath(new URL("../dist/404.html", import.meta.url));
 const missing = existsSync(built) ? null : "no dist/404.html — run npm run build first";
 
@@ -47,11 +49,11 @@ describe("a wrong URL lands on a page of this product's own", () => {
 
   it("carries the masthead with the identity pair, from the one shared rule", () => {
     // The pair is drawn by identity.css, which the page inlines through the
-    // route page's stylesheet — never by a second copy of the geometry.
+    // frame's stylesheet — never by a second copy of the geometry.
     expect(page.html).toContain('<header class="masthead masthead-with-stamps">');
     expect(page.html).toContain('<div class="stamps">');
     expect(page.html).toContain('class="mark"');
-    expect(page.html).toContain(`<style>${PAGE_CSS}</style>`);
+    expect(page.html).toContain(`<style>${frameSheet}</style>`);
     // The geometry comes from that stylesheet and from nowhere else. Read off
     // what ships: the page's own <style> is the shared sheet, and the pair's
     // rules appear in it exactly as often as they appear there (Standards
@@ -60,7 +62,7 @@ describe("a wrong URL lands on a page of this product's own", () => {
     for (const selector of [".stamps {", ".stamps .mark {", ".stamps .stamp {"]) {
       expect(own, selector).toContain(selector);
       expect(own.split(selector).length - 1, `${selector} is declared twice`)
-        .toBe(PAGE_CSS.split(selector).length - 1);
+        .toBe(frameSheet.split(selector).length - 1);
     }
     // And it says the product's name where the mark stands.
     expect(page.html).toContain('title="Permit Rulebook"');

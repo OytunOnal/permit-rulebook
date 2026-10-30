@@ -4,9 +4,9 @@ import {
   type Dataset,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
-import { contentSecurityPolicy } from "./csp.js";
-import { PAGE_CSS, pageStamp } from "./route-page.js";
-import { footerFacts, navCountries, siteReadDate } from "./country-page.js";
+import { framedPageHtml } from "./frame/framed-page.js";
+import { pageStamp } from "./route-page.js";
+import { siteReadDate } from "./country-page.js";
 import {
   DAILY_CHECK_CLAIM, DATA_LEDE_CLOSE_TAIL, FRESHNESS_HUMAN_HAND, LAST_CHECKED, NEWEST_VALUE_CHANGED, PROSE_OURS_TAIL,
   TRANSLATION_POLICY, countryAsJsonLabel, dataLedeClose, dataLedeOpen, dataMetaDescription, proseProvenanceCounts,
@@ -15,12 +15,14 @@ import { PRODUCT_NAME, TAGLINE, datasetDay } from "./copy/frame.js";
 import { WRONG_DOOR_LABEL } from "./copy/feedback.js";
 import { readOn } from "./copy/quotes.js";
 import {
-  DATA_LICENCE_FULL, REPO_DATA, absolute, analyticsBeacon, headMeta, readRange, readWatchRun, url,
+  DATA_LICENCE_FULL, DATA_PATH, FEEDBACK_PATH, REPO_DATA, absolute, readRange, readWatchRun, url,
   type WatchRun,
 } from "./site.js";
-import { DATA_PATH, FEEDBACK_PATH, MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
+import { rulesRead } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
 import { datasetLd } from "./dataset-ld.js";
+// The page's own rules, beside its code; the frame's come first (#142).
+import DATA_PAGE_RULES from "./data-page.css?raw";
 
 /**
  * The data page — the header's "The data", and the footer's.
@@ -118,53 +120,7 @@ export function dataPage(dataset: Dataset, run: WatchRun = {}): DataPage {
   // index reads. It is a data block, not a program — but the policy names it
   // anyway, so nothing in this site's head is unaccounted for.
   const ld = datasetLd(dataset, DATA_PATH);
-  const head = `<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)}</title>
-${contentSecurityPolicy()}
-<script type="application/ld+json">${ld}</script>
-${iconLinks()}
-${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
-<style>${PAGE_CSS}
-/* This page reads as prose more than any other, and two of its sentences end a
-   thought that the next block then sat directly on top of: the masthead's
-   "Take it, check it, or tell us it is wrong." touched <main>, and the checks
-   section's "…never on their own." touched the rule of the Take-it box — 0px
-   measured, both (human's walk, 2026-09-15). The route page's own spacing does
-   not reach these two joins, so this page adds the breath itself, here rather
-   than in the shared sheet, so no other page's bytes move for it. */
-.masthead-with-stamps { margin-bottom: var(--space-5); }
-.rules { margin-bottom: var(--space-5); }
-/* "What it holds today", after the human read it on the live page (2026-09-15).
-   Seven cells in one auto-fit grid came out 3 + 3 + 1, "Sentences of ours"
-   orphaned on a row of its own; the Routes sentence wrapped to three lines, so
-   the middle row stood 84px against 46px neighbours; and dates sat interleaved
-   with counts in no order a reader could name. Three lists instead, each of one
-   kind: the four dates across, the two counts across, and the Routes sentence
-   alone with the width to say itself in one line. Every cell centres its text.
-   Only the dates need telling how many across: the shared sheet's own
-   minmax(13rem, 1fr) already gives two cells two columns and one cell the whole
-   width, and gives a phone the stack. That sheet is not edited here, so no
-   other page's bytes move for this. */
-.facts-dates { grid-template-columns: repeat(4, 1fr); }
-.facts dt, .facts dd { text-align: center; }
-/* And the values sit on one line across a row whichever labels wrapped: at a
-   phone's width NEWEST VALUE CHANGED takes two lines and LAST CHECKED beside
-   it takes one, which left their two dates on different lines of the same row
-   until the cell pushed its value to the foot of itself. */
-.facts > div { display: flex; flex-direction: column; justify-content: space-between; }
-/* A phone takes the four dates two at a time. The counts stack themselves at
-   that width and are better for it — two across at 390 broke each of them over
-   three lines (measured). 760px is the width the shared sheet already turns at,
-   and this page turns with it rather than inventing a second one. */
-@media (max-width: 760px) { .facts-dates { grid-template-columns: repeat(2, 1fr); } }
-</style>`;
-
-  const body = `<div class="wrap">
-
-  ${siteHeader(navCountries(dataset))}
-
-  <div class="masthead-with-stamps">
+  const content = `<div class="masthead-with-stamps">
     <div>
       <h1>The data. <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">${esc(dataLedeOpen(counts.scored, counts.quotedOnly, dataset.countries.length))} ${
@@ -245,20 +201,13 @@ ${headMeta({ title, description: desc, path: DATA_PATH, kind: "website" })}
     esc(readOn(pageStamp(dataset, route)))}</small></a>`).join("")}
       </nav>`).join("")}
     </section>
-  </main>
+  </main>`;
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset, { lastRun, unread }))}
-
-</div>
-<script>${MENU_SCRIPT}</script>
-${analyticsBeacon()}`;
-
-  return {
-    path: DATA_PATH,
-    title,
-    description: desc,
-    html: `<!doctype html>\n<html lang="en">\n<head>\n${head}\n</head>\n<body>\n${body}\n</body>\n</html>\n`,
-  };
+  const html = framedPageHtml(dataset, {
+    title, meta: { description: desc, path: DATA_PATH, kind: "website" },
+    headTags: [`<script type="application/ld+json">${ld}</script>`], css: DATA_PAGE_RULES, run: { lastRun, unread }, content,
+  });
+  return { path: DATA_PATH, title, description: desc, html };
 }
 
 /**
@@ -273,41 +222,23 @@ ${analyticsBeacon()}`;
 export function statusAlias(dataset: Dataset): DataPage {
   const target = url(DATA_PATH);
   const title = `Moved to The data · ${PRODUCT_NAME}`;
-  const body = `<div class="wrap">
-  ${siteHeader(navCountries(dataset))}
-  <header class="masthead masthead-with-stamps">
+  const content = `<header class="masthead masthead-with-stamps">
     <div>
       <h1>This page is now <a class="tap" href="${escAttr(target)}">The data</a>. <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">Same page, a better name: what the dataset holds today, what checks it, and where to download it. Your browser should be on its way; if it is not, the link above is it.</p>
     </div>
     ${rulesRead(siteReadDate(dataset))}
-  </header>
-  ${siteFooter(navCountries(dataset), footerFacts(dataset))}
-</div>
-<script>${MENU_SCRIPT}</script>
-${analyticsBeacon()}`;
+  </header>`;
+  const headTags = [
+    `<meta http-equiv="refresh" content="0; url=${escAttr(target)}">`,
+    `<link rel="canonical" href="${escAttr(absolute(DATA_PATH))}">`,
+    '<meta name="robots" content="noindex, follow">',
+  ];
   return {
     path: "/status",
     title,
     description: `This page is now called The data, at ${absolute(DATA_PATH)}.`,
-    html: `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)}</title>
-<meta http-equiv="refresh" content="0; url=${escAttr(target)}">
-<link rel="canonical" href="${escAttr(absolute(DATA_PATH))}">
-<meta name="robots" content="noindex, follow">
-${contentSecurityPolicy()}
-${iconLinks()}
-<style>${PAGE_CSS}</style>
-</head>
-<body>
-${body}
-</body>
-</html>
-`,
+    html: framedPageHtml(dataset, { title, headTags, content }),
   };
 }
 

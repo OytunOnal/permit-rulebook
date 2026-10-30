@@ -99,21 +99,21 @@
       "count": 1
     }
   },
-  "src/lib/feedback-page.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    }
-  },
   "src/lib/first-paint.ts": {
     "roadkeeper/constant-reason": {
       "count": 3
     }
   },
-  "src/lib/identity.ts": {
+  "src/lib/frame/body/site-footer.ts": {
     "max-lines-per-function": {
-      "count": 2
+      "count": 1
     },
     "roadkeeper/named-condition": {
+      "count": 1
+    }
+  },
+  "src/lib/frame/body/site-header.ts": {
+    "max-lines-per-function": {
       "count": 1
     }
   },
@@ -125,11 +125,6 @@
   "src/lib/interview/flow/interview-after.ts": {
     "roadkeeper/constant-reason": {
       "count": 2
-    }
-  },
-  "src/lib/not-found.ts": {
-    "max-lines-per-function": {
-      "count": 1
     }
   },
   "src/lib/quote.ts": {

@@ -4,11 +4,11 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import { countryAddresses, countryLinks, countryPage, countryPages } from "../src/lib/country-page.js";
-import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/identity.js";
-import { PAGE_CSS, routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page.js";
 import { builtPaths, indexedPaths, robotsTxt, sitemapXml } from "../src/lib/sitemap.js";
-import { SITE_URL, absolute, url } from "../src/lib/site.js";
+import { DATA_PATH, FEEDBACK_PATH, SITE_URL, absolute, url } from "../src/lib/site.js";
 import { countryPath } from "../src/lib/slug.js";
+import { frameAlone, styleIn } from "./frame-alone.js";
 
 /**
  * B2 — every route page was orphaned; the site could not be indexed or browsed.
@@ -233,8 +233,8 @@ describe("the site can be crawled and browsed", () => {
       expect(page.html, page.path).toContain('aria-current="page"');
       expect(page.html, page.path).toContain(`href="${url("/")}"`);
       expect(text, page.path).toContain("Permit Rulebook makes no immigration decision");
-      // The page's own stylesheet is the route page's, not a second one.
-      expect(page.html, page.path).toContain(`<style>${PAGE_CSS}</style>`);
+      // The page's stylesheet opens with the frame's, not a second copy of it.
+      expect(page.html, page.path).toContain(`<style>${styleIn(frameAlone(ds))}`);
     }
   });
 

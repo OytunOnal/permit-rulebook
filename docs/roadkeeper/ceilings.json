@@ -1,6 +1,6 @@
 {
   "src/lib/route-page.ts": {
-    "lines": 1071
+    "lines": 823
   },
   "tests/first-paint.test.ts": {
     "lines": 732
