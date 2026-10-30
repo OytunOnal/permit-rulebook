@@ -3045,6 +3045,46 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/frame/framed-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/gloss.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
