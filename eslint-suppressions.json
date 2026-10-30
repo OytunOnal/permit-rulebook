@@ -132,19 +132,6 @@
       "count": 1
     }
   },
-  "src/lib/route-page/blocks/rule-card.ts": {
-    "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
-  "src/lib/route-page/route-page.ts": {
-    "max-lines-per-function": {
-      "count": 1
-    },
-    "roadkeeper/named-condition": {
-      "count": 1
-    }
-  },
   "src/lib/site.ts": {
     "roadkeeper/constant-reason": {
       "count": 2

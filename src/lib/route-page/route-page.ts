@@ -2,7 +2,7 @@
 import {
   scopeLine, phraseOf, possessiveAtStartOf, criterionPhrase, formatEURPer, forEachCriterion,
   isScored, joinAnd, periodOf, shortLabelOf,
-  type Country, type Dataset, type Route,
+  type Country, type Dataset, type Route, type UnreadSource,
 } from "permit-rulebook-data";
 // One module explains an abbreviation, so the route page and the results card
 // say the same words for the same token (2026-09-08).
@@ -104,7 +104,8 @@ function description(dataset: Dataset, country: Country, route: Route): string {
   });
   for (const c of ruleCriteria(dataset, route)) {
     if (bits.length >= 3) break;
-    if (c.op === "gte" || (("field" in c) && c.field === "citizenship")) continue;
+    const isThresholdOrCitizenship = c.op === "gte" || ("field" in c && c.field === "citizenship");
+    if (isThresholdOrCitizenship) continue;
     bits.push(criterionPhrase(dataset, c));
   }
   return askedRouteDescription(possessiveAtStartOf(country.code), route.name, joinAnd(bits));
@@ -125,17 +126,11 @@ function description(dataset: Dataset, country: Country, route: Route): string {
 export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun = {}): RoutePage {
   const watch = readWatchRun(dataset, run);
   const { country, route } = address;
-  const notice = audienceNotice(dataset);
-  const about = printedNotices(dataset, route);
   const read = pageStamp(dataset, route);
   const title = `${route.name} · ${country.name} · ${PRODUCT_NAME}`;
   const desc = description(dataset, country, route);
   const path = address.path;
   const jsonPath = routeJsonPath(country, route);
-  const rules = ruleCriteria(dataset, route);
-  // The footer counts every unread source a reader is looking at (s11); the
-  // sentence under the scope heading speaks for this page's own (s23, F3).
-  const missed = ownUnread(dataset, route, watch.unread).length;
   // One page, one memory of which abbreviations it has already expanded. The
   // heading claims the section symbol before any citation can: it is where the
   // page states its own name, and a German route's name carries "§" whether
@@ -143,9 +138,29 @@ export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun
   // above it repeats the name for navigation and is not a use; a neighbouring
   // route's name is a cross-reference and keeps the short form.
   const seen: Glossary = new Set();
-  const heading = glossSection(route.name, seen);
-  const rulePage: RulePage = { dataset, country, route, seen, notice };
+  const page: RulePage = { dataset, country, route, seen, notice: audienceNotice(dataset) };
+  const content = `${mastheadHtml(page, read)}
 
+  <div class="page">
+  ${mainHtml(page, watch.unread)}
+  ${asideHtml(page, jsonPath)}
+  </div>`;
+  const html = framedPageHtml(dataset, {
+    title, meta: { description: desc, path, kind: "article" }, css: ROUTE_PAGE_RULES, run: watch, content,
+    place: { countryPath: countryPath(country), current: "true", jsonPath, checkPath: `/?country=${country.code.toLowerCase()}` },
+  });
+  return { path, jsonPath, title, description: desc, readDate: read, html, json: routeRecord(dataset, address, read) };
+}
+
+/** Every route page this dataset produces. 23 at launch. */
+export function routePages(dataset: Dataset, run: WatchRun = {}): RoutePage[] {
+  return routeAddresses(dataset).map((a) => routePage(dataset, a, run));
+}
+
+/** The masthead: the route's name, the tagline, the lede and the read stamp. */
+function mastheadHtml(page: RulePage, read: string): string {
+  const { country, route, seen } = page;
+  const heading = glossSection(route.name, seen);
   const scored = isScored(route);
   // The H1 is the name and nothing after it. It carried the tagline as an
   // `<em>` behind a full stop — "…(§ 19c / § 6 BeschV). The rules,
@@ -153,7 +168,7 @@ export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun
   // one heading (v1.1 gate critique, P8 — s27). The tagline is its own line
   // under it now, in the type the `<em>` had; the <title> and the social
   // card never carried it and do not move.
-  const content = `<header class="masthead masthead-with-stamps">
+  return `<header class="masthead masthead-with-stamps">
     <div>
       <h1>${esc(heading)}</h1>
       <p class="tagline">${esc(ROUTE_TAGLINE)}</p>
@@ -162,11 +177,36 @@ export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun
     esc(audienceSentence(country))} ${esc(scored ? ROUTE_PAGE_ADDENDUM : ROUTE_PAGE_UNSCORED_ADDENDUM)}</p>
     </div>
     ${rulesRead(read)}
-  </header>
+  </header>`;
+}
 
-  <div class="page">
-  <main>${scored ? `
-${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join("")}
+/** The main column: what sits above the rules, then the rules and the blocks stated beside them. */
+function mainHtml(page: RulePage, unread: UnreadSource[]): string {
+  const { dataset, route, seen } = page;
+  // The footer counts every unread source a reader is looking at (s11); the
+  // sentence under the scope heading speaks for this page's own (s23, F3).
+  const missed = ownUnread(dataset, route, unread).length;
+  return `<main>${aboveTheRulesHtml(page, missed)}
+
+  <section class="rules" aria-labelledby="rules-h">
+    <h2 class="visually-hidden" id="rules-h">The rules of this route</h2>${
+    ruleCriteria(dataset, route).map((c) => ruleCard(page, c)).join("")}${
+    statedBlocks(route, seen)}
+  </section>
+
+
+  </main>`;
+}
+
+/**
+ * What a reader meets before the rules: on a route the checker scores, the
+ * answer block, the notices, the way into the checker and the scope; on one it
+ * does not, the scope alone.
+ */
+function aboveTheRulesHtml(page: RulePage, missed: number): string {
+  const { dataset, country, route, seen } = page;
+  return isScored(route) ? `
+${answerBlock(dataset, route)}${printedNotices(dataset, route).map((n) => noticeSection(n, seen)).join("")}
   <section class="cta" aria-labelledby="cta-h">
     <h2 class="visually-hidden" id="cta-h">Check your own situation</h2>
     <p><strong>Where do you stand on this route?</strong> The questions are answered on this device only — nothing is sent anywhere. You get each rule against what you declared, the gap if there is one, and which single change would open more routes.</p>
@@ -182,17 +222,13 @@ ${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join(""
   <section class="scope" aria-labelledby="scope-h">
     <b id="scope-h">${esc(NOT_ASKED_SCOPE_HEADING)}</b>
     <p><strong>${esc(scopeLine(route, { reader: "not-answered" }))}</strong>. ${esc(route.scope.reason)} ${esc(everyConditionQuoted(dailyCheck(missed)))}</p>
-  </section>`}
+  </section>`;
+}
 
-  <section class="rules" aria-labelledby="rules-h">
-    <h2 class="visually-hidden" id="rules-h">The rules of this route</h2>${
-    rules.map((c) => ruleCard(rulePage, c)).join("")}${
-    statedBlocks(route, seen)}
-  </section>
-
-
-  </main>
-  <aside aria-label="Beside the rules">
+/** The aside: the data behind the page, and the country's other routes. */
+function asideHtml(page: RulePage, jsonPath: string): string {
+  const { country, route, seen } = page;
+  return `<aside aria-label="Beside the rules">
   <section class="data" aria-labelledby="data-h">
     <h2 class="label" id="data-h">The data behind this page</h2>
     <p>This page is generated from an open dataset: every number and quote above is a record in it, with its source and read date. Reuse it under ${
@@ -204,29 +240,20 @@ ${answerBlock(dataset, route)}${about.map((n) => noticeSection(n, seen)).join(""
     </nav>
   </section>
 ${neighbours(country, route, seen)}
-  </aside>
-  </div>`;
-
-  const html = framedPageHtml(dataset, {
-    title, meta: { description: desc, path, kind: "article" }, css: ROUTE_PAGE_RULES, run: watch, content,
-    place: { countryPath: countryPath(country), current: "true", jsonPath, checkPath: `/?country=${country.code.toLowerCase()}` },
-  });
-  return {
-    path, jsonPath, title, description: desc, readDate: read, html,
-    json: {
-      country: { code: country.code, name: country.name },
-      route,
-      page: absolute(path),
-      dataset_version: dataset.dataset_version,
-      schema_version: dataset.schema_version,
-      licence: DATA_LICENCE_NAME,
-      source: REPO_DATA,
-      rules_read: read,
-    },
-  };
+  </aside>`;
 }
 
-/** Every route page this dataset produces. 23 at launch. */
-export function routePages(dataset: Dataset, run: WatchRun = {}): RoutePage[] {
-  return routeAddresses(dataset).map((a) => routePage(dataset, a, run));
+/** The route as the dataset holds it, plus where it came from: what the data door hands over. */
+function routeRecord(dataset: Dataset, address: RouteAddress, read: string): Record<string, unknown> {
+  const { country, route } = address;
+  return {
+    country: { code: country.code, name: country.name },
+    route,
+    page: absolute(address.path),
+    dataset_version: dataset.dataset_version,
+    schema_version: dataset.schema_version,
+    licence: DATA_LICENCE_NAME,
+    source: REPO_DATA,
+    rules_read: read,
+  };
 }

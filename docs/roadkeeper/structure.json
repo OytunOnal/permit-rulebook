@@ -5081,6 +5081,31 @@
     "name": "routePages",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "mastheadHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "mainHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "aboveTheRulesHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "asideHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "routeRecord",
+    "kind": "fn",
+    "exported": false
    }
   ],
   "src/lib/verdict/index.ts": [
@@ -8442,5 +8467,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "618ffc6378ffd284d45f6001542c23ba03aa286e2132fc0eaba1774b0bf7b0c8"
+ "digest": "49732ec08684cbf4ffe4fa3f6018649fb3434f31d034de76a6787179871180ab"
 }

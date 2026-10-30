@@ -231,7 +231,8 @@ export function cardValues(c: Criterion, notice?: Notice): ProvenanceEntry[] {
   // A closure names the same field and makes the opposite claim, so it is not
   // the audience card and never borrows the free-movement notice's words.
   const isAudience = "field" in c && c.field === "citizenship" && c.op !== "not-in";
-  if (isAudience && notice && !values.length) values.push({ value: notice.source });
+  const isUnquotedAudience = isAudience && values.length === 0;
+  if (isUnquotedAudience && notice) values.push({ value: notice.source });
   return values;
 }
 
