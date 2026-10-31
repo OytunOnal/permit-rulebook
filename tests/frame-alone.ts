@@ -15,19 +15,22 @@ import { routeAddresses } from "../src/lib/slug.js";
 export const frameAlone = (dataset: Dataset, page: Partial<PageInFrame> = {}): string =>
   framedPageHtml(dataset, { title: "", content: "", ...page });
 
-/** The part of `html` from `open` to the end of the first `close` after it, or "" where there is none. */
+/** The part of `html` from `open` to the end of the first `close` after it. Throws, naming the tag, where either is missing. */
 function partOf(html: string, open: string, close: string): string {
   const start = html.indexOf(open);
-  return start < 0 ? "" : html.slice(start, html.indexOf(close, start) + close.length);
+  if (start < 0) throw new Error(`the page has no ${open}`);
+  const end = html.indexOf(close, start);
+  if (end < 0) throw new Error(`the page's ${open} has no ${close} after it`);
+  return html.slice(start, end + close.length);
 }
 
-/** The site header in a page's HTML, or "" where it has none. */
+/** The site header in a page's HTML. Throws where it has none. */
 export const headerIn = (html: string): string => partOf(html, '<header class="site-head">', "</header>");
 
-/** The site footer in a page's HTML, or "" where it has none. */
+/** The site footer in a page's HTML. Throws where it has none. */
 export const footerIn = (html: string): string => partOf(html, '<footer class="site-foot">', "</footer>");
 
-/** The rules of a page's first `<style>`, or "" where it has none. */
+/** The rules of a page's first `<style>`. Throws where it has none. */
 export const styleIn = (html: string): string => partOf(html, "<style>", "</style>").slice("<style>".length, -"</style>".length);
 
 /**
