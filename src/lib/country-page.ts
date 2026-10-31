@@ -169,9 +169,9 @@ const exclusionsLinkHtml = (label: string): string =>
   `<a class="tap" href="${escAttr(EXCLUSIONS_URL)}" target="_blank" rel="noopener">${esc(label)}</a>`;
 
 /** The lede under the headline: whom the routes are for, then where the ones not asked about went. */
-function countryLedeHtml(country: Country, quotedOnly: number): string {
-  const leftOut = quotedOnly
-    ? notAskedBelowLine(esc(countedWords(quotedOnly, "route")), exclusionsLinkHtml(LISTED_WITH_THE_REASONS))
+function countryLedeHtml(country: Country, quotedOnlyCount: number): string {
+  const leftOut = quotedOnlyCount
+    ? notAskedBelowLine(esc(countedWords(quotedOnlyCount, "route")), exclusionsLinkHtml(LISTED_WITH_THE_REASONS))
     : discretionLeftOutLine(exclusionsLinkHtml(LISTED_WITH_THEIR_REASONS));
   return `${esc(countryLedeOpen(phraseOf(country.code)))} ${esc(audienceSentence(country))} ${leftOut}`;
 }
@@ -207,11 +207,11 @@ function quotedOnlySectionHtml(context: CountryCardContext, quotedOnly: Route[])
 }
 
 /** The way on: the interview, scoped to this country, and what its result names. */
-function countryCtaHtml(country: Country, quotedOnly: number): string {
+function countryCtaHtml(country: Country, quotedOnlyCount: number): string {
   return `<div class="cta cta-country">
       <a class="btn tap-min" href="${escAttr(`${url("/")}?country=${country.code.toLowerCase()}`)}">Check yours — ${
     esc(country.name)}</a>
-      <span class="note">Answered on this device only. ${quotedOnly
+      <span class="note">Answered on this device only. ${quotedOnlyCount
     ? RESULT_NAMES_ASKED_ROUTES
     : RESULT_NAMES_FITTING_ROUTES}</span>
     </div>`;
