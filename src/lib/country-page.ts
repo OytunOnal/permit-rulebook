@@ -19,7 +19,7 @@ import {
 } from "./copy/country-page.js";
 import { readOn } from "./copy/quotes.js";
 import { EXCLUSIONS_URL, url } from "./site.js";
-import { countryPath, countrySlug, routePath } from "./slug.js";
+import { countryCheckPath, countryPath, countrySlug, routePath } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
 // already explained: a country page is a crawl landing page like any other
 // (Standards and Spec review, 2026-09-08).
@@ -209,7 +209,7 @@ function quotedOnlySectionHtml(context: CountryCardContext, quotedOnly: Route[])
 /** The way on: the interview, scoped to this country, and what its result names. */
 function countryCtaHtml(country: Country, quotedOnlyCount: number): string {
   return `<div class="cta cta-country">
-      <a class="btn tap-min" href="${escAttr(`${url("/")}?country=${country.code.toLowerCase()}`)}">Check yours — ${
+      <a class="btn tap-min" href="${escAttr(url(countryCheckPath(country)))}">Check yours — ${
     esc(country.name)}</a>
       <span class="note">Answered on this device only. ${quotedOnlyCount
     ? RESULT_NAMES_ASKED_ROUTES
@@ -244,7 +244,7 @@ export function countryPage(dataset: Dataset, address: CountryAddress): CountryP
   ${countryMainHtml(dataset, country, routes)}`;
   const html = framedPageHtml(dataset, {
     title, meta: { description: desc, path, kind: "website" }, css: COUNTRY_PAGE_RULES, content,
-    place: { countryPath: path, current: "page", checkPath: `/?country=${country.code.toLowerCase()}` },
+    place: { countryPath: path, current: "page", checkPath: countryCheckPath(country) },
   });
   return { path, title, description: desc, html };
 }

@@ -22,7 +22,9 @@ import {
 } from "../copy/route-page.js";
 import { PRODUCT_NAME } from "../copy/frame.js";
 import { WRONG_DOOR_LABEL } from "../copy/feedback.js";
-import { countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress } from "../slug.js";
+import {
+  countryCheckPath, countryPath, routeAddresses, routeJsonPath, routePath, type RouteAddress,
+} from "../slug.js";
 import { audienceNotice, noticeSection, ownUnread, pageStamp, printedNotices } from "./blocks/notices.js";
 import { answerBlock, gist } from "./blocks/route-figure.js";
 import { ruleCard, ruleCriteria, tapMin, type RulePage } from "./blocks/rule-card.js";
@@ -147,7 +149,7 @@ export function routePage(dataset: Dataset, address: RouteAddress, run: WatchRun
   </div>`;
   const html = framedPageHtml(dataset, {
     title, meta: { description: desc, path, kind: "article" }, css: ROUTE_PAGE_RULES, run: watch, content,
-    place: { countryPath: countryPath(country), current: "true", jsonPath, checkPath: `/?country=${country.code.toLowerCase()}` },
+    place: { countryPath: countryPath(country), current: "true", jsonPath, checkPath: countryCheckPath(country) },
   });
   return { path, jsonPath, title, description: desc, readDate: read, html, json: routeRecord(dataset, address, read) };
 }

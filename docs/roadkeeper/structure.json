@@ -8380,6 +8380,11 @@
     "exported": true
    },
    {
+    "name": "countryCheckPath",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "routeJsonPath",
     "kind": "fn",
     "exported": true
@@ -8657,5 +8662,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "e100323417108c43a0b8ceecab655ea8b801bea3343b04b4d7c7a6f26f0bc609"
+ "digest": "5869048652498a6f635013a872b0362af1f45ae004f81e63a02a5775a0114c6d"
 }

@@ -70,6 +70,9 @@ export const routePath = (country: Country, route: Route): string =>
  */
 export const countryPath = (country: Country): string => `/${countrySlug(country)}`;
 
+/** The interview's address scoped to this country: where "Check yours" leads from its pages. */
+export const countryCheckPath = (country: Country): string => `/?country=${country.code.toLowerCase()}`;
+
 /** The data door: this one route, as the dataset holds it. */
 export const routeJsonPath = (country: Country, route: Route): string =>
   `${routePath(country, route)}.json`;
