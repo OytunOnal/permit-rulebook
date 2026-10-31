@@ -60,9 +60,19 @@ describe("the frame, at its entry", () => {
 
 });
 
-/** The header's links that carry `aria-current`, each as its address and its value. */
+/** An attribute's value on one tag, in whatever order the tag writes its attributes; none where it has no such attribute. */
+const attributeOf = (tag: string, name: string): string | undefined =>
+  new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1];
+
+/** The header's links that carry `aria-current`, each as its address and its value. Throws on a marked link with no address. */
 const headerMarksOf = (header: string): string[] =>
-  [...header.matchAll(/<a [^>]*href="([^"]*)" aria-current="([^"]*)"/g)].map((mark) => `${mark[1]} ${mark[2]}`);
+  [...header.matchAll(/<a\s[^>]*>/g)].flatMap(([tag]) => {
+    const mark = attributeOf(tag, "aria-current");
+    if (mark === undefined) return [];
+    const href = attributeOf(tag, "href");
+    if (href === undefined) throw new Error(`a marked header link has no address: ${tag}`);
+    return [`${href} ${mark}`];
+  });
 
 describe("the header marks the page it is on", () => {
   it("marks each header destination on its own page, a route page's country as its section, and nothing else", () => {
