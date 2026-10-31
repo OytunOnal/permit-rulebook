@@ -57,12 +57,18 @@ function headOf(page: PageInFrame): string {
   ].join("\n");
 }
 
+/** The header and the footer a page stands between, both marked for where it stands. */
+function headerAndFooterOf(dataset: Dataset, place: PagePlace, run?: WatchRun): { header: string; footer: string } {
+  const countries = navCountries(dataset);
+  return {
+    header: siteHeader(countries, place),
+    footer: siteFooter(countries, footerFacts(dataset, run), place),
+  };
+}
+
 /** The document's body: the page's content between the header and the footer, then the scripts. */
 function bodyOf(dataset: Dataset, page: PageInFrame): string {
-  const countries = navCountries(dataset);
-  const place = page.place ?? {};
-  const header = siteHeader(countries, place);
-  const footer = siteFooter(countries, footerFacts(dataset, page.run), place);
+  const { header, footer } = headerAndFooterOf(dataset, page.place ?? {}, page.run);
   const scripts = [MENU_SCRIPT, ...(page.scripts ?? [])].map((source) => `<script>${source}</script>\n`).join("");
   return `<div class="wrap">\n\n  ${header}\n\n  ${page.content}\n\n  ${footer}\n\n</div>\n${scripts}${analyticsBeacon()}`;
 }
@@ -83,13 +89,11 @@ export interface InterviewFrame {
 
 /** The interview page's frame: its policy, icon links, header, footer and menu script. */
 export function interviewFrameOf(dataset: Dataset): InterviewFrame {
-  const countries = navCountries(dataset);
   return {
     policy: contentSecurityPolicy(),
     icons: iconLinks(),
     // The interview stands at the root, where "Check yours" leads.
-    header: siteHeader(countries, { here: "/" }),
-    footer: siteFooter(countries, footerFacts(dataset)),
+    ...headerAndFooterOf(dataset, { here: "/" }),
     menuScript: MENU_SCRIPT,
   };
 }

@@ -5035,6 +5035,11 @@
     "exported": false
    },
    {
+    "name": "headerAndFooterOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "bodyOf",
     "kind": "fn",
     "exported": false
@@ -8662,5 +8667,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "5869048652498a6f635013a872b0362af1f45ae004f81e63a02a5775a0114c6d"
+ "digest": "4c83717cae136a5d1d70d7928489b556bd3c1c3d084e5fb473154643d5976e25"
 }
