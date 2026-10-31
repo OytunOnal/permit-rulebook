@@ -20,10 +20,10 @@
 
 /* ---- the page's ground and its one column, on every page ----
  *
- * The interview set its own body padding and column, so its header stood
- * further out and lower than on every other page and jumped on the first
- * click away (v1.2.4 gate critique, finding 10). The column's side padding sits
- * inside its 56rem only because each page sets `box-sizing: border-box`.
+ * Here, in the one file the interview links and every page built as a string
+ * inlines, so the header stands at the same place on every page and does not
+ * move on the first click away. The column's side padding sits inside its
+ * 56rem only because each page sets `box-sizing: border-box`.
  */
 body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: var(--text-body); }
 .wrap { max-width: var(--max-content); margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-6); }

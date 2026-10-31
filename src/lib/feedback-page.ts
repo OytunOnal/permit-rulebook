@@ -14,7 +14,6 @@ import {
 } from "./site.js";
 import { rulesRead } from "./identity.js";
 import { COPY_SCRIPT } from "./clipboard.js";
-// The page's own rules, beside its code; the frame's come first (#142).
 import FEEDBACK_PAGE_RULES from "./feedback-page.css?raw";
 
 /**

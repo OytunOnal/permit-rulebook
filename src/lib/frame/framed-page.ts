@@ -15,9 +15,8 @@ import { siteHeader } from "./body/site-header.js";
  * The frame: what every page of the site carries around its own content, the
  * same on every page — the head, the header, the footer and the menu.
  *
- * The six pages built as strings (route, country, data, feedback, 404 and the
- * `/status` redirect) each typed it out on their own, so a change to it was six
- * edits and a page could drift from the others unseen (#142). Here a page
+ * It is drawn here alone, so no page can drift from the others: a page built
+ * as a string (route, country, data, feedback, 404 and the `/status` redirect)
  * hands over what differs and gets back the whole document; the interview,
  * which Astro builds, takes the frame's pieces and places them itself.
  */

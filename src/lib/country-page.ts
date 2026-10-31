@@ -25,7 +25,6 @@ import { countryCheckPath, countryPath, countrySlug, routePath } from "./slug.js
 // (Standards and Spec review, 2026-09-08).
 import { rulesRead } from "./identity.js";
 import { type Glossary, glossSection, glossed } from "./gloss.js";
-// The page's own rules, beside its code; the frame's come first (#142).
 import COUNTRY_PAGE_RULES from "./country-page.css?raw";
 
 /**
@@ -39,10 +38,10 @@ import COUNTRY_PAGE_RULES from "./country-page.css?raw";
  * one click from the home page's footer, one click from here to any route.
  *
  * It is built as a string for the reason `route-page.ts` is: what ships has to
- * be readable by a test. It is the same document that page is, minus everything
+ * be readable by a test. It wears the frame that page wears, minus everything
  * a country has no business claiming — no stamp of its own, no rules, no
- * verdict vocabulary — and it links `route-page.ts`'s own stylesheet rather
- * than growing a second one, so the two screens cannot drift apart.
+ * verdict vocabulary — and its own few rules sit beside it, in
+ * `country-page.css`.
  *
  * A stranger arrives here from a search result, so this page explains what it
  * prints: the first "§" in its list of routes is glossed the way a route page

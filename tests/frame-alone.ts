@@ -32,8 +32,8 @@ export const styleIn = (html: string): string => partOf(html, "<style>", "</styl
 
 /**
  * Every rule a route page, a country page and the data page carry, each line
- * once: the one sheet those three shared until #142 gave each page its own
- * rules beside the frame's.
+ * once: the frame's sheet and each of the three pages' own rules, for a case
+ * about what those pages draw between them.
  */
 export function stringPagesSheet(dataset: Dataset): string {
   const pages = [routePage(dataset, routeAddresses(dataset)[0]!), countryPages(dataset)[0]!, dataPage(dataset)];

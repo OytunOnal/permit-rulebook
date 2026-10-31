@@ -29,7 +29,6 @@ import { audienceNotice, noticeSection, ownUnread, pageStamp, printedNotices } f
 import { answerBlock, gist } from "./blocks/route-figure.js";
 import { ruleCard, ruleCriteria, tapMin, type RulePage } from "./blocks/rule-card.js";
 import { statedBlocks } from "./blocks/stated-blocks.js";
-// The page's own rules, beside its code; the frame's come first (#142).
 import ROUTE_PAGE_RULES from "./route-page.css?raw";
 
 export { TAP_CLASSES } from "./blocks/rule-card.js";

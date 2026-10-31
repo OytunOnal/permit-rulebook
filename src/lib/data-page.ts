@@ -21,7 +21,6 @@ import {
 import { rulesRead } from "./identity.js";
 import { routeJsonPath } from "./slug.js";
 import { datasetLd } from "./dataset-ld.js";
-// The page's own rules, beside its code; the frame's come first (#142).
 import DATA_PAGE_RULES from "./data-page.css?raw";
 
 /**

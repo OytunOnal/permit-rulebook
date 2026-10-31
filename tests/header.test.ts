@@ -47,9 +47,8 @@ type MarkPlace = { left: number; top: number };
 
 /**
  * Where the wordmark stands on the interview and on a route page, on `screen`
- * under the browser's device emulation. The interview set its own body padding
- * and column, so its header stood further out and lower than on every other
- * page, and jumped on the first click away (v1.2.4 gate critique, finding 10).
+ * under the browser's device emulation: the interview is built by Astro and the
+ * route page as a string, so these two are where the header could stand apart.
  * The platform's scrollbars are drawn: the interview keeps a scrollbar's room
  * whether or not one is drawn (s31), and a hidden bar on the long route page
  * would take none. Throws when a page laid out at another width than the
