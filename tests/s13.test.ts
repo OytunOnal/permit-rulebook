@@ -25,6 +25,7 @@ import { verdictHtml } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 import { footerIn, frameAlone, headerIn } from "./frame-alone.js";
+import { FALLBACK_STACK } from "./fallback-stack.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
 /**
@@ -576,9 +577,6 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
  * IS a row, 960 px, where the header's container is at its tightest; 761 is
  * asserted for what it actually is there, the folded header.
  */
-const FALLBACK = '(() => { const s = document.createElement("style");'
-  + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
-  + ' document.head.appendChild(s); return "forced"; })()';
 
 /** The row's own items: the disclosure's word and the three links beside it. */
 const ROW = 'JSON.stringify((() => {'
@@ -631,7 +629,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
         ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"],
       ] as const) {
         await tab.goto(url(path));
-        await tab.evaluate(FALLBACK);
+        await tab.evaluate(FALLBACK_STACK);
         await tab.waitUntilAtRest();
         at[name] = JSON.parse(await tab.evaluate(ROW));
       }
@@ -663,13 +661,13 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
       const words: Record<string, Opened> = {};
       for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
         await tab.goto(url(path));
-        await tab.evaluate(FALLBACK);
+        await tab.evaluate(FALLBACK_STACK);
         await tab.waitUntilAtRest();
         await tab.evaluate('document.querySelector(".site-head .nav details > summary").click()');
         words[path] = JSON.parse(await tab.evaluate(OPEN_LIST));
       }
       await tab.goto(url("/germany/"));
-      await tab.evaluate(FALLBACK);
+      await tab.evaluate(FALLBACK_STACK);
       await tab.waitUntilAtRest();
       await tab.evaluate('document.querySelector(".site-head .nav details > summary").click()');
       const opened = JSON.parse(await tab.evaluate(OPEN_LIST));
@@ -726,7 +724,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
   it("at 761 px the header is folded behind Menu, as it has been since 2026-09-08", async () => {
     const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
       await tab.goto(url("/"));
-      await tab.evaluate(FALLBACK);
+      await tab.evaluate(FALLBACK_STACK);
       await tab.waitUntilAtRest();
       return tab.evaluate(
         'JSON.stringify({ menuShown: getComputedStyle(document.querySelector(".menu")).display !== "none",'

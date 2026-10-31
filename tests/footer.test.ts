@@ -15,6 +15,7 @@ import type { Dataset } from "permit-rulebook-data";
 import { PHONE, chromePath, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { withSite } from "./browser-walk.js";
 import { footerIn, frameAlone } from "./frame-alone.js";
+import { FALLBACK_STACK } from "./fallback-stack.js";
 
 /**
  * One footer under every page.
@@ -205,6 +206,11 @@ const LAYOUT = 'JSON.stringify((() => {'
   + ' const lines = [...foot.querySelectorAll(".line > span")].map((s) => Math.round(s.getBoundingClientRect().height));'
   + ' return { rows: new Set(cols).size, cols, links, lines }; })())';
 
+/** The page's text tracked 0.11em wider, standing in for a family drawn wider than the fallback stack. */
+const WIDER_TRACKING = '(() => { const s = document.createElement("style");'
+  + ' s.textContent = "body{letter-spacing:0.11em}";'
+  + ' document.head.appendChild(s); return 1; })()';
+
 /** Whether the page has loaded with its fonts, which the layout is drawn in. */
 const LOADED_WITH_FONTS = 'document.readyState === "complete" && document.fonts.status === "loaded"';
 
@@ -261,12 +267,8 @@ describe.skipIf(skipped !== null)("the footer lays out where it says it does", (
       await page.goto(addressOf("/germany/eu-blue-card-general/"));
       // The runner's fonts are wider than this machine's, and a family wider
       // still is only a matter of time: measure the widened case.
-      await page.evaluate(
-        '(() => { const s = document.createElement("style");'
-        + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}"'
-        + ' + "body{letter-spacing:0.11em}";'
-        + ' document.head.appendChild(s); return 1; })()',
-      );
+      await page.evaluate(FALLBACK_STACK);
+      await page.evaluate(WIDER_TRACKING);
       await page.waitUntilAtRest();
       return page.evaluate(
         // An inline element that wraps sits on more than one line: its

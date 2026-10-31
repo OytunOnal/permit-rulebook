@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { withSite } from "./browser-walk.js";
+import { FALLBACK_STACK } from "./fallback-stack.js";
 import type { Screen } from "../scripts/browser/browser.mjs";
 
 /**
@@ -122,11 +123,6 @@ describe.skipIf(notMeasured !== null)("the header is one object, measured", () =
  * back to — and asks for room to spare on the narrowest page the site builds.
  */
 describe.skipIf(notMeasured !== null)("the header holds on a machine with none of our fonts", () => {
-  /** Drop the named families: what is left is the generic fallback. */
-  const FALLBACK = '(() => { const s = document.createElement("style");'
-    + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
-    + ' document.head.appendChild(s); return "forced"; })()';
-
   /**
    * The row's own items. Since s13 the four countries sit INSIDE a closed
    * disclosure and are not on the row at all — a hidden link's box is at 0,0,
@@ -151,7 +147,7 @@ describe.skipIf(notMeasured !== null)("the header holds on a machine with none o
         ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"], ["error", "/404.html"],
       ] as const) {
         await page.goto(url(path));
-        await page.evaluate(FALLBACK);
+        await page.evaluate(FALLBACK_STACK);
         await page.waitUntilAtRest();
         at[name] = JSON.parse(await page.evaluate(ROW));
       }
