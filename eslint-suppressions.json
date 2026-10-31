@@ -307,14 +307,6 @@
       "count": 3
     }
   },
-  "tests/identity.test.ts": {
-    "max-lines-per-function": {
-      "count": 6
-    },
-    "roadkeeper/constant-reason": {
-      "count": 2
-    }
-  },
   "tests/interview.test.ts": {
     "max-lines-per-function": {
       "count": 1
@@ -407,11 +399,6 @@
   "tests/record.test.ts": {
     "max-lines-per-function": {
       "count": 4
-    }
-  },
-  "tests/route-page.test.ts": {
-    "max-lines-per-function": {
-      "count": 2
     }
   },
   "tests/route-slot.test.ts": {

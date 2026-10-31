@@ -2,12 +2,6 @@
   "tests/first-paint.test.ts": {
     "lines": 732
   },
-  "tests/identity.test.ts": {
-    "lines": 680
-  },
-  "tests/route-page.test.ts": {
-    "lines": 709
-  },
   "tests/s13.test.ts": {
     "lines": 901
   },

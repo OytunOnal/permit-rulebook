@@ -173,7 +173,7 @@ describe("the page, and the three doors on it", () => {
   });
 
   it("every control on it claims a tap rule written in --tap-min, as on every other page", () => {
-    // The rule route-page.test.ts and site-index.test.ts hold every other
+    // The rule route-page-frame.test.ts and site-index.test.ts hold every other
     // built page to: a control's height is a token, and the class says so.
     for (const m of page.html.matchAll(/<(?:a|button)\b([^>]*)>/g)) {
       const classes = (/class="([^"]*)"/.exec(m[1]!)?.[1] ?? "").split(/\s+/).filter(Boolean);
@@ -648,7 +648,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
       expect(row.rows, `${name}: the row wrapped onto ${row.rows} lines — ${
         row.items.map((i) => `${i.text} ${i.width}px`).join(", ")}`).toBe(1);
       // And room for a stack wider still than this machine's fallback — the
-      // same 12% the 1100-px case in identity.test.ts asks for.
+      // same 12% the 1100-px case in header.test.ts asks for.
       const headroom = (row.have - row.need) / row.have;
       expect(headroom, `${name}: ${row.need} px of row in ${row.have} px — ${
         Math.round(headroom * 100)}% spare`).toBeGreaterThan(0.12);

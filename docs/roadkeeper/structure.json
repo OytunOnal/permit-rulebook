@@ -3303,22 +3303,27 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/identity.test.ts",
+   "from": "tests/identity-on-both-screens.test.ts",
    "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
-   "from": "tests/identity.test.ts",
-   "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/identity.test.ts",
+   "from": "tests/identity-on-both-screens.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/identity.test.ts",
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "tests/fallback-stack.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "tests/seed-finished-record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-written-once.test.ts",
    "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
@@ -3405,6 +3410,21 @@
   {
    "from": "tests/name-sweep.test.ts",
    "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/no-sideways-scroll.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/no-sideways-scroll.test.ts",
+   "to": "tests/fallback-stack.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/no-sideways-scroll.test.ts",
+   "to": "tests/seed-finished-record.ts",
    "kind": "dependency"
   },
   {
@@ -3623,78 +3643,138 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
-   "to": "src/lib/copy/feedback.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/country-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/dataset-ld.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/feedback-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/not-found.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
-   "to": "src/lib/quote.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/sitemap.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
+   "to": "tests/text-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/text-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "tests/text-of.ts",
    "kind": "dependency"
   },
   {
@@ -4615,6 +4695,11 @@
   {
    "from": "tests/screen.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/seed-finished-record.ts",
+   "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
@@ -8572,5 +8657,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "2f86c9be6767eca372a6ff03f847c5c1f7b4de45a80316ee91095a03acdf4084"
+ "digest": "7507b690b3078af44590ddf42d2dea9a75c7887f9559a8c413e04fc8cb1d6be6"
 }
