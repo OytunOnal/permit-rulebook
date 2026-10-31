@@ -23,7 +23,7 @@ import SHARED_BLOCKS from "./shared-blocks.css?raw";
  * drift went red on the machine the human walks from (2026-09-10). The line
  * ending is the checkout's business; the page is ours.
  */
-export const lf = (css: string): string => css.split("\r\n").join("\n");
+export const withLineFeedEndings = (css: string): string => css.split("\r\n").join("\n");
 
 // ---------------------------------------------------------------------------
 // The stylesheet
@@ -40,7 +40,7 @@ export const lf = (css: string): string => css.split("\r\n").join("\n");
  * kilobytes of custom properties buys nothing.
  */
 export const FRAME_SHEET = `
-${lf(TOKENS)}
-${lf(FRAME_RULES)}
-${lf(IDENTITY)}
-${lf(SHARED_BLOCKS)}`;
+${withLineFeedEndings(TOKENS)}
+${withLineFeedEndings(FRAME_RULES)}
+${withLineFeedEndings(IDENTITY)}
+${withLineFeedEndings(SHARED_BLOCKS)}`;

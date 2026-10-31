@@ -4,7 +4,7 @@ import { esc } from "../reason.js";
 import { analyticsBeacon, headMeta, type WatchRun } from "../site.js";
 import { contentSecurityPolicy } from "./head/csp.js";
 import { footerFacts } from "./body/footer-facts.js";
-import { FRAME_SHEET, lf } from "./head/frame-sheet.js";
+import { FRAME_SHEET, withLineFeedEndings } from "./head/frame-sheet.js";
 import { iconLinks } from "./head/icon-links.js";
 import { MENU_SCRIPT } from "./body/menu-script.js";
 import { navCountries } from "./body/nav-countries.js";
@@ -53,7 +53,7 @@ function headOf(page: PageInFrame): string {
     ...(page.headTags ?? []),
     iconLinks(),
     ...(page.meta ? [headMeta({ title: page.title, ...page.meta })] : []),
-    `<style>${FRAME_SHEET}${lf(page.css ?? "")}</style>`,
+    `<style>${FRAME_SHEET}${withLineFeedEndings(page.css ?? "")}</style>`,
   ].join("\n");
 }
 
