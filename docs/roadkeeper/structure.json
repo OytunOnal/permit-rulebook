@@ -3139,6 +3139,11 @@
   },
   {
    "from": "tests/footer.test.ts",
+   "to": "tests/fallback-stack.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
    "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
@@ -3285,6 +3290,11 @@
   {
    "from": "tests/header.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/header.test.ts",
+   "to": "tests/fallback-stack.ts",
    "kind": "dependency"
   },
   {
@@ -3945,6 +3955,11 @@
   {
    "from": "tests/s13.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "tests/fallback-stack.ts",
    "kind": "dependency"
   },
   {
