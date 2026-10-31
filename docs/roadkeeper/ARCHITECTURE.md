@@ -134,10 +134,24 @@ click on the tracker link. Answers never leave the device.
   `routesAJobOfferFrees` counts, per country, the routes a job offer would free
   for a reader with none, the job offer itself decided once by
   `findJobOfferAnswer` (#179); a gap is said once, exact and with its period, and a
-  band open at the bottom names the line it is under (#167).
+  band open at the bottom names the line it is under (#167). The package also
+  gives the site the dataset's own small lookups, each written once:
+  `periodOf` (the period a field's amount is stated per),
+  `ThresholdCriterion` and `thresholdsUnder` (every threshold under a
+  criterion) (#299).
 - **Tokens** — `tokens.css` (the design system) and `identity.css` (the
-  identity pair: the tilted PR stamp over the read-date stamp; one source,
-  inlined by the route page, linked by the interview).
+  identity pair: the tilted PR stamp over the read-date stamp, and the body
+  and column every page lays out in; one source, inlined by the frame, linked
+  by the interview).
+- **Frame** — what every page wears around its own content: the head (the
+  CSP, the icon links, the stylesheet), the header, the footer and the menu.
+  One deep module, `src/lib/frame/` (#299). Its entry, `framed-page.ts`,
+  draws the six pages built as strings (route, country, data, feedback, 404,
+  status) through `framedPageHtml`, a page handing over only what differs:
+  its title, preview lines, own head lines, own style rules, place and
+  content. It gives the interview its pieces through `interviewFrameOf`. It
+  marks the header item for the page it draws, and imports no page. Each
+  page's own style rules sit beside its code, in a `.css` file read raw.
 - **Build** — Astro, `base` derived from `SITE_URL`, the site's address, which
   is one literal line in `pages.yml`: the deploy reads no repository variable
   (#110). An invalid dataset breaks
@@ -211,6 +225,10 @@ click on the tracker link. Answers never leave the device.
   date, and the stamp, the country cards and the liveness line read one set,
   the quotes the page prints. A site-wide page (/data/, /feedback/, the 404,
   the sitemap) dates the whole dataset, as the interview does (#76).
+  It is one deep module, `src/lib/route-page/` (#299): its entry,
+  `route-page.ts`, composes the masthead, the rules and the aside, and its
+  blocks (the rule card with its asks box, the rail, the stated blocks, the
+  notices, the route figure) are private behind it.
 - **Interview** — questions by information gain, then the verdict; runs
   entirely in the browser. The page is wiring alone: it builds the browser's
   history adapter and the record's store and starts the interview, one deep
