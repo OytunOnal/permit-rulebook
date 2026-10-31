@@ -3,15 +3,15 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { countryLinks, countryPages, navCountries } from "../src/lib/country-page.js";
+import { countryLinks, countryPages } from "../src/lib/country-page.js";
 import { dataPage, statusAlias } from "../src/lib/data-page.js";
 import { TRANSLATION_POLICY } from "../src/lib/copy/data-page.js";
 import { hasUnbalancedQuotationMark, quotedSpans, routeProvenance } from "permit-rulebook-data";
-import { DATA_PATH, FEEDBACK_PATH, siteHeader } from "../src/lib/identity.js";
 import { notFoundPage } from "../src/lib/not-found.js";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
-import { absolute, url } from "../src/lib/site.js";
+import { DATA_PATH, FEEDBACK_PATH, absolute, url } from "../src/lib/site.js";
+import { frameAlone, headerIn } from "./frame-alone.js";
 import type { Dataset } from "permit-rulebook-data";
 import { withSite } from "./browser-walk.js";
 
@@ -69,7 +69,7 @@ describe("one header, every page", () => {
 
   it("every built page carries the header, and it is the same markup on all of them", () => {
     expect(pages.length, "nothing is built — run npm run build").toBeGreaterThan(25);
-    const reference = unmarked(siteHeader(navCountries(ds)));
+    const reference = unmarked(headerIn(frameAlone(ds)));
     for (const page of pages) {
       const header = headerOf(page.html);
       expect(header, `${page.path} has no site header`).not.toBe("");
@@ -96,11 +96,15 @@ describe("one header, every page", () => {
     }
   });
 
-  it("nothing is marked on the interview or the data page — they belong to no country", () => {
-    for (const html of [dataPage(ds).html, statusAlias(ds).html, notFoundPage(ds).html])
+  it("the interview and the data page mark their own word, and the 404 and the old data address nothing", () => {
+    expect(headerOf(dataPage(ds).html)).toContain(`href="${url(DATA_PATH)}" aria-current="page"`);
+    for (const html of [statusAlias(ds).html, notFoundPage(ds).html])
       expect(headerOf(html)).not.toContain("aria-current");
+    // The interview as built: its Astro page places the frame's header itself.
     const home = `${dist}/index.html`;
-    if (existsSync(home)) expect(headerOf(read(home))).not.toContain("aria-current");
+    if (existsSync(home))
+      expect([...headerOf(read(home)).matchAll(/href="([^"]*)" aria-current="([^"]*)"/g)].map((m) => `${m[1]} ${m[2]}`))
+        .toEqual([`${url("/")} page`]);
   });
 
   it("from every page, the other three countries, the checker and the data page are one link away", () => {
@@ -140,7 +144,7 @@ describe("everything is reachable, and not only from a footer", () => {
     // Every country page, the data page and the feedback page are in the
     // header, which is above the fold on every screen: the footer is a second
     // way, never the only one.
-    const header = siteHeader(navCountries(ds));
+    const header = headerIn(frameAlone(ds));
     for (const link of [...countryLinks(ds).map((l) => l.path), "/", DATA_PATH, FEEDBACK_PATH])
       expect(header, `${link} is only reachable from a footer`).toContain(`href="${url(link)}"`);
   });

@@ -1,6 +1,6 @@
 // @level presentation
 /**
- * A route page's own words (`lib/route-page.ts`).
+ * A route page's own words (`lib/route-page/`).
  *
  * Every word a reader reads lives in this folder, one file per screen or
  * part (CODING_STANDARDS.md, Rules).

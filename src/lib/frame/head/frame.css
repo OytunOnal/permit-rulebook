@@ -1,0 +1,15 @@
+/* The frame's own rules: the base, the tap floor and the masthead. The token set comes before them and identity.css, with the page's ground and column, after. */
+* { box-sizing: border-box; }
+a { color: var(--color-stamp); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.label { font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-muted); }
+/* The two ways an interactive element reaches the token's tap minimum. Every
+   structural rule below outranks these on specificity, so they change nothing
+   that is already tall enough and catch anything that is not. */
+.tap-min { display: inline-flex; align-items: center; min-height: var(--tap-min); }
+a.tap { display: inline-block; padding: calc((var(--tap-min) - 1.6em) / 2) 0; margin: calc((1.6em - var(--tap-min)) / 2) 0; }
+
+/* ---- masthead ---- */
+.masthead { border-bottom: var(--rule-heavy); padding-bottom: var(--space-4); }
+h1 { font: var(--text-hero); margin: var(--space-2) 0 var(--space-2); }
+.lede { margin: 0; color: var(--color-muted); }

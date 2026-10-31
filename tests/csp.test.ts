@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sha256 } from "../src/lib/csp.js";
-import { MENU_SCRIPT } from "../src/lib/identity.js";
+import dataset from "permit-rulebook-data/data/dataset.json";
+import type { Dataset } from "permit-rulebook-data";
+import { interviewFrameOf } from "../src/lib/frame/framed-page.js";
 import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
 import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "../src/lib/site.js";
@@ -18,6 +20,13 @@ import { ANALYTICS_BEACON, ANALYTICS_SCRIPT } from "../src/lib/site.js";
  * GitHub Pages sets none on a custom domain. HSTS is in the same position.
  * Those are the human's to add at the edge if the site ever moves behind one.
  */
+
+/** The menu script, read through the frame's entry: the frame keeps it private. */
+const MENU_SCRIPT = interviewFrameOf(dataset as unknown as Dataset).menuScript;
+
+/** A script's hash as a policy names it: CSP's `'sha256-…'` source, over the script's UTF-8 bytes. */
+const sha256 = (source: string): string =>
+  `'sha256-${createHash("sha256").update(source, "utf8").digest("base64")}'`;
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 const read = (path: string): string => readFileSync(path, "utf8").split("\r\n").join("\n");

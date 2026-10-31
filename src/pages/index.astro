@@ -23,12 +23,11 @@ import {
 import { FIRST_PAINT_SCRIPT, FIRST_PAINT_STYLE } from "../lib/first-paint.js";
 // The seal, the icon links and the pair: one set of elements, four screens
 // (Standards review, 2026-09-08).
-import { MENU_SCRIPT, iconLinks, siteFooter, siteHeader, stamps } from "../lib/identity.js";
-// The policy is computed where node:crypto lives — never in the client bundle.
-import { contentSecurityPolicy } from "../lib/csp.js";
-// The four country pages, generated beside the route pages they list, and the
-// four links the shared header carries (product critique B2; site map, 2026-09-08).
-import { footerFacts, navCountries } from "../lib/country-page.js";
+import { stamps } from "../lib/identity.js";
+// The frame's pieces, the policy among them, computed where node:crypto
+// lives — never in the client bundle: the policy, the icon links, the header,
+// the footer and the menu script every other page wears (#142).
+import { interviewFrameOf } from "../lib/frame/framed-page.js";
 // The product's own words, in one place: the name, the tagline and the
 // disclaimer are said here, on 23 route pages and in both READMEs (decision 9).
 import {
@@ -75,6 +74,7 @@ const firstStandIns = renderStandInsOverQuestionOne();
  * while the interview draws (s31).
  */
 const holdLine = holdLineHtml();
+const frame = interviewFrameOf(dataset);
 console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundary", ...meta }));
 ---
 <!doctype html>
@@ -82,11 +82,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <Fragment set:html={contentSecurityPolicy()} />
+  <Fragment set:html={frame.policy} />
   <script is:inline set:html={FIRST_PAINT_SCRIPT}></script>
   <style is:inline set:html={FIRST_PAINT_STYLE}></style>
   <title>{HOME_TITLE}</title>
-  <Fragment set:html={iconLinks()} />
+  <Fragment set:html={frame.icons} />
   <Fragment set:html={headMeta({
     title: HOME_PREVIEW_TITLE,
     description: HOME_DESCRIPTION,
@@ -97,7 +97,7 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
 </head>
 <body>
   <div class="wrap">
-    <Fragment set:html={siteHeader(navCountries(dataset))} />
+    <Fragment set:html={frame.header} />
 
     <header class="masthead-with-stamps">
       <div>
@@ -134,11 +134,11 @@ console.log(JSON.stringify({ level: "info", msg: "dataset valid at build boundar
       </details>
     </div>
 
-    <Fragment set:html={siteFooter(navCountries(dataset), footerFacts(dataset))} />
+    <Fragment set:html={frame.footer} />
   </div>
 
   <!-- The header's menu, from the same source the generated pages inline. -->
-  <script is:inline set:html={MENU_SCRIPT}></script>
+  <script is:inline set:html={frame.menuScript}></script>
 
   <script>
     // The page's one job: build the interview's two ports and start it. The

@@ -18,6 +18,16 @@
  * and each page states its own.
  */
 
+/* ---- the page's ground and its one column, on every page ----
+ *
+ * Here, in the one file the interview links and every page built as a string
+ * inlines, so the header stands at the same place on every page and does not
+ * move on the first click away. The column's side padding sits inside its
+ * 56rem only because each page sets `box-sizing: border-box`.
+ */
+body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: var(--text-body); }
+.wrap { max-width: var(--max-content); margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-6); }
+
 /* The box reserves room for the LONGEST label the pair carries, not for the
    shortest. The mark sits at a fixed offset and the stamp is centred on a
    fixed point, so a longer word grows past the box’s right edge: "Record
@@ -118,6 +128,9 @@
 .site-head .nav a[aria-current] { border-bottom-color: var(--color-stamp); color: var(--color-stamp); }
 .site-head .nav .sep { width: 1px; height: 1.1rem; background: var(--color-line); margin: 0 .3rem; }
 .site-head .nav a.check { border: 1.5px solid var(--color-ink); padding: 0 .6rem; }
+/* The bordered item's shorthand above outranks the mark's underline, so the
+   interview's "Check yours" takes the underline again here. */
+.site-head .nav a.check[aria-current] { border-bottom-color: var(--color-stamp); }
 .site-head .menu { display: none; }
 
 /* The four countries under one word (human's amendment, 2026-09-16). A

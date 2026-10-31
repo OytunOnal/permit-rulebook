@@ -32,9 +32,9 @@
    target in its own right (s13; moved here from under the strip on the
    human's walk, 2026-09-16). */
 .say{margin:var(--space-5) 0 0;padding-top:var(--space-3);border-top:var(--rule-soft);font-size:.88rem;color:var(--color-muted);line-height:1.6}
-/* The word reaches the tap floor the way the route page's inline links do
-   (PAGE_CSS a.tap): padding out, margin back, so the line box the sentence
-   wraps in does not grow with it. */
+/* The word reaches the tap floor the way an inline link on a page built as a
+   string does (the frame's a.tap, in frame/head/frame.css): padding out,
+   margin back, so the line box the sentence wraps in does not grow with it. */
 .say a{color:var(--color-ink);display:inline-block;padding:calc((var(--tap-min) - 1.6em) / 2) 0;margin:calc((1.6em - var(--tap-min)) / 2) 0}
 /* A heading element, sized as the section label it always looked like. */
 h2.ghead{font:700 .74rem var(--font-sans);letter-spacing:.3em;text-transform:uppercase;color:var(--color-muted);

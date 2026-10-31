@@ -5,7 +5,7 @@ import {
   closedBy, deriveBands, evaluate, isClosed, noticeSources, notices,
   type Dataset, type Notice, type Profile, type RouteResult,
 } from "permit-rulebook-data";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import {
   NOTHING_OPEN_HEADLINE, RULES_MET, STATUS_LABEL, UNSETTLED_SECTION_LINE, unsettledHeadline,
 } from "../src/lib/copy/verdict.js";

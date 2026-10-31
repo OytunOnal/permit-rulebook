@@ -1,5 +1,7 @@
 // @level presentation
-import { forEachCriterion, resultProvenance, type Dataset, type Route, type RouteResult } from "permit-rulebook-data";
+import {
+  forEachCriterion, periodOf, resultProvenance, thresholdsUnder, type Dataset, type Route, type RouteResult,
+} from "permit-rulebook-data";
 import { esc, escAttr } from "../../../../reason.js";
 import {
   APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_THRESHOLD_ON_ROUTE, perPeriod,
@@ -8,18 +10,7 @@ import { readOn } from "../../../../copy/quotes.js";
 import { type Glossary, glossed } from "../../../../gloss.js";
 // One frame for every quote the product shows (2026-09-08).
 import { linkLabelOf, noteHtml, quoteFrame } from "../../../../quote.js";
-import type { Gte } from "../../money-shortfall.js";
-import { periodOf } from "../../printed-shortfall.js";
 import type { CardScreen } from "./card-screen.js";
-
-/** Every gte criterion in a route, at any depth. Nested too: NL ICT states its
- * thresholds inside an any-disjunction, and a top-level-only scan drew no rail
- * on exactly those cards (review). */
-function gteCriteriaOf(route: Route): Gte[] {
-  const out: Gte[] = [];
-  forEachCriterion(route.criteria, (c) => { if (c.op === "gte") out.push(c); });
-  return out;
-}
 
 /** Does anything on this route turn on a number — a salary rail or a points
  * score? A route where nothing does has no threshold to fall short of, and the
@@ -54,7 +45,8 @@ interface ProvenanceContext {
  * nothing where the quote carries no amount. */
 function amountPeriodHtml(ds: Dataset, route: Route, amount: number | undefined): string {
   if (amount === undefined) return "";
-  const criterion = gteCriteriaOf(route).find((x) => x.threshold.amount === amount);
+  // At any depth: NL ICT states its thresholds inside a choice of paths.
+  const criterion = route.criteria.flatMap(thresholdsUnder).find((x) => x.threshold.amount === amount);
   const period = criterion ? periodOf(ds, criterion.field) : undefined;
   return period ? ` · ${esc(perPeriod(period))}` : "";
 }

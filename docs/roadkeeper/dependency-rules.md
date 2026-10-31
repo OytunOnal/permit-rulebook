@@ -5,9 +5,11 @@
 - `scripts/browser`
 - `scripts/carry-assets`
 - `src/lib/country-search`
+- `src/lib/frame`
 - `src/lib/interview`
 - `src/lib/interview/draw`
 - `src/lib/interview-history`
+- `src/lib/route-page`
 - `src/lib/verdict`
 - `src/lib/verdict/compose/card`
 

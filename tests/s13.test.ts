@@ -10,13 +10,13 @@ import {
 import { COUNTRIES, FEEDBACK, FEEDBACK_FOOTER_ROW } from "../src/lib/copy/frame.js";
 import { RESULT_FEEDBACK_ASK, resultFeedbackLine } from "../src/lib/copy/verdict.js";
 import {
-  FEEDBACK_ADDRESS, GMAIL_COMPOSE_URL, NEW_NEED_URL, SPONSOR_URL, TRACKER_URL, absolute, url,
+  FEEDBACK_ADDRESS, FEEDBACK_PATH, GMAIL_COMPOSE_URL, NEW_NEED_URL, SPONSOR_URL, TRACKER_URL, absolute, url,
 } from "../src/lib/site.js";
-import { FEEDBACK_PATH, MENU_SCRIPT, siteFooter, siteHeader } from "../src/lib/identity.js";
+import { interviewFrameOf } from "../src/lib/frame/framed-page.js";
 import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
 import { feedbackGmail, feedbackMailto, feedbackPage } from "../src/lib/feedback-page.js";
-import { countryLinks, footerFacts, navCountries } from "../src/lib/country-page.js";
+import { countryLinks } from "../src/lib/country-page.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
@@ -24,6 +24,8 @@ import { esc, escAttr } from "../src/lib/reason.js";
 import { verdictHtml } from "../src/lib/verdict/index.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
+import { footerIn, frameAlone, headerIn } from "./frame-alone.js";
+import { FALLBACK_STACK } from "./fallback-stack.js";
 import type { Dataset, Profile } from "permit-rulebook-data";
 
 /**
@@ -172,7 +174,7 @@ describe("the page, and the three doors on it", () => {
   });
 
   it("every control on it claims a tap rule written in --tap-min, as on every other page", () => {
-    // The rule route-page.test.ts and site-index.test.ts hold every other
+    // The rule route-page-frame.test.ts and site-index.test.ts hold every other
     // built page to: a control's height is a token, and the class says so.
     for (const m of page.html.matchAll(/<(?:a|button)\b([^>]*)>/g)) {
       const classes = (/class="([^"]*)"/.exec(m[1]!)?.[1] ?? "").split(/\s+/).filter(Boolean);
@@ -271,7 +273,7 @@ describe("the header: four countries under one word", () => {
   };
 
   it("on a page that belongs to no country the word is Countries, and the list is closed", () => {
-    const header = siteHeader(navCountries(ds));
+    const header = headerIn(frameAlone(ds));
     expect(header).toContain(`<summary class="tap-min">${COUNTRIES}</summary>`);
     expect(header).not.toContain("<details open");
     // The four are in the list, and the row itself holds four items.
@@ -285,7 +287,7 @@ describe("the header: four countries under one word", () => {
 
   it("on a country's page the word is that country, and its row is marked", () => {
     const france = countryLinks(ds).find((l) => l.name === "France")!;
-    const header = siteHeader(navCountries(ds), { countryPath: france.path, current: "page" });
+    const header = headerIn(frameAlone(ds, { place: { countryPath: france.path, current: "page" } }));
     expect(header).toContain(`<summary class="tap-min">France</summary>`);
     expect(header).toContain(`href="${url(france.path)}" aria-current="page"`);
     // And only that one.
@@ -299,7 +301,7 @@ describe("the header: four countries under one word", () => {
   });
 
   it("the phone menu groups the four under a small Countries heading, then the three", () => {
-    const header = siteHeader(navCountries(ds));
+    const header = headerIn(frameAlone(ds));
     // The heading is markup the phone shows and the desktop hides: one nav,
     // one set of links, no second copy of a country name anywhere.
     expect(header).toContain(`<span class="group">${COUNTRIES}</span>`);
@@ -309,14 +311,14 @@ describe("the header: four countries under one word", () => {
   });
 
   it("no country name enters any inline script, and the scripts remember nothing", () => {
-    for (const script of [MENU_SCRIPT, FIRST_PAINT_SCRIPT, COPY_SCRIPT])
+    for (const script of [interviewFrameOf(ds).menuScript, FIRST_PAINT_SCRIPT, COPY_SCRIPT])
       for (const link of countryLinks(ds))
         expect(script.includes(link.name), `an inline script names ${link.name}`).toBe(false);
     // The disclosure is not remembered: no storage key mentions it, and the
     // menu script writes nothing at all. The copy script likewise — and it
     // names no address either: the text it copies is the page's, read at the
     // click, and its "done" word is the button's own attribute.
-    for (const script of [MENU_SCRIPT, COPY_SCRIPT]) {
+    for (const script of [interviewFrameOf(ds).menuScript, COPY_SCRIPT]) {
       expect(script).not.toContain("localStorage");
       expect(script).not.toContain("sessionStorage");
       expect(script).not.toContain("cookie");
@@ -328,7 +330,7 @@ describe("the header: four countries under one word", () => {
 });
 
 describe("the footer's Feedback column", () => {
-  const footer = siteFooter(navCountries(ds), footerFacts(ds));
+  const footer = footerIn(frameAlone(ds));
 
   it("is exactly two rows: the page, then the sponsorship", () => {
     // The address was a third row for a day; the human took it out on the
@@ -376,7 +378,7 @@ describe("the map and the sitemap", () => {
   });
 
   it("it is reachable from the header on every built page, not only from a footer", () => {
-    expect(siteHeader(navCountries(ds))).toContain(`href="${url(FEEDBACK_PATH)}"`);
+    expect(headerIn(frameAlone(ds))).toContain(`href="${url(FEEDBACK_PATH)}"`);
   });
 });
 
@@ -575,9 +577,6 @@ describe.skipIf(skipped !== null)("the walk: a record, a results screen, the lin
  * IS a row, 960 px, where the header's container is at its tightest; 761 is
  * asserted for what it actually is there, the folded header.
  */
-const FALLBACK = '(() => { const s = document.createElement("style");'
-  + ' s.textContent = ":root{--font-serif:serif;--font-sans:sans-serif;--font-mono:monospace}";'
-  + ' document.head.appendChild(s); return "forced"; })()';
 
 /** The row's own items: the disclosure's word and the three links beside it. */
 const ROW = 'JSON.stringify((() => {'
@@ -630,7 +629,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
         ["country", "/germany/"], ["data", "/data/"], ["feedback", "/feedback/"],
       ] as const) {
         await tab.goto(url(path));
-        await tab.evaluate(FALLBACK);
+        await tab.evaluate(FALLBACK_STACK);
         await tab.waitUntilAtRest();
         at[name] = JSON.parse(await tab.evaluate(ROW));
       }
@@ -647,7 +646,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
       expect(row.rows, `${name}: the row wrapped onto ${row.rows} lines — ${
         row.items.map((i) => `${i.text} ${i.width}px`).join(", ")}`).toBe(1);
       // And room for a stack wider still than this machine's fallback — the
-      // same 12% the 1100-px case in identity.test.ts asks for.
+      // same 12% the 1100-px case in header.test.ts asks for.
       const headroom = (row.have - row.need) / row.have;
       expect(headroom, `${name}: ${row.need} px of row in ${row.have} px — ${
         Math.round(headroom * 100)}% spare`).toBeGreaterThan(0.12);
@@ -662,13 +661,13 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
       const words: Record<string, Opened> = {};
       for (const path of ["/", ...countryLinks(ds).map((l) => `${l.path}/`)]) {
         await tab.goto(url(path));
-        await tab.evaluate(FALLBACK);
+        await tab.evaluate(FALLBACK_STACK);
         await tab.waitUntilAtRest();
         await tab.evaluate('document.querySelector(".site-head .nav details > summary").click()');
         words[path] = JSON.parse(await tab.evaluate(OPEN_LIST));
       }
       await tab.goto(url("/germany/"));
-      await tab.evaluate(FALLBACK);
+      await tab.evaluate(FALLBACK_STACK);
       await tab.waitUntilAtRest();
       await tab.evaluate('document.querySelector(".site-head .nav details > summary").click()');
       const opened = JSON.parse(await tab.evaluate(OPEN_LIST));
@@ -725,7 +724,7 @@ describe.skipIf(skipped !== null)("the header row, measured at the fold", () => 
   it("at 761 px the header is folded behind Menu, as it has been since 2026-09-08", async () => {
     const seen = JSON.parse(await withSite(async ({ page: tab, url }) => {
       await tab.goto(url("/"));
-      await tab.evaluate(FALLBACK);
+      await tab.evaluate(FALLBACK_STACK);
       await tab.waitUntilAtRest();
       return tab.evaluate(
         'JSON.stringify({ menuShown: getComputedStyle(document.querySelector(".menu")).display !== "none",'

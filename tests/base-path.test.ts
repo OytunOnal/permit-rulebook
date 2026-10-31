@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import { absolute, url } from "../src/lib/site.js";
 import type { Dataset } from "permit-rulebook-data";
 import { pagesYaml } from "./workflow-text.js";

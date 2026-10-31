@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { phraseAtStartOf, isScored, scopeLine, scopeWords, routeStatements, type Dataset } from "permit-rulebook-data";
-import { routePage, routePages } from "../src/lib/route-page.js";
+import { routePage, routePages } from "../src/lib/route-page/route-page.js";
 import { countryPage, countryAddresses } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { indexedPaths } from "../src/lib/sitemap.js";

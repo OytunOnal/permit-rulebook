@@ -4,7 +4,7 @@ import { deriveQuestions, type Dataset, type Profile } from "permit-rulebook-dat
 import { countryPages } from "../src/lib/country-page.js";
 import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import type { PageOnSite } from "../scripts/browser/browser.mjs";
 import { recordSeedScript, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 

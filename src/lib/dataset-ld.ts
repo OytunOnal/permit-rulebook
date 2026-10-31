@@ -28,6 +28,37 @@ import { datasetDescription } from "./copy/data-page.js";
  */
 const CC_BY_4 = "https://creativecommons.org/licenses/by/4.0/";
 
+/**
+ * The countries the dataset covers, as places. `Place`, not `Country`.
+ * `Country` is the exact schema.org type and a `Place` by inheritance, but
+ * Google's Dataset parser reads `spatialCoverage` as Text or as
+ * `{"@type": "Place"}` and drops anything else — Search Console flagged the
+ * field as an invalid object type every day since 2026-09-11 (export of
+ * 2026-09-16, site #11). A type the reader discards takes the only geographic
+ * fact here with it; `Place` keeps the name a name (s18).
+ */
+function coveredPlaces(countries: string[]): { "@type": "Place"; name: string }[] {
+  return countries.map((name) => ({ "@type": "Place", name }));
+}
+
+/** The two endpoints the build emits, as downloads of the dataset. */
+function datasetDownloads(): Record<string, string>[] {
+  return [
+    {
+      "@type": "DataDownload",
+      name: `The whole dataset (${DATA_LICENCE_NAME})`,
+      encodingFormat: "application/json",
+      contentUrl: absolute("/dataset.json"),
+    },
+    {
+      "@type": "DataDownload",
+      name: "The countries and their routes",
+      encodingFormat: "application/json",
+      contentUrl: absolute("/countries.json"),
+    },
+  ];
+}
+
 export function datasetLd(dataset: Dataset, path: string): string {
   const read = siteReadDate(dataset);
   const countries = dataset.countries.map((c) => c.name);
@@ -55,27 +86,8 @@ export function datasetLd(dataset: Dataset, path: string): string {
       "work permit", "residence permit", "immigration", "eligibility", "open data",
       ...countries,
     ],
-    // `Place`, not `Country`. `Country` is the exact schema.org type and a
-    // `Place` by inheritance, but Google's Dataset parser reads `spatialCoverage`
-    // as Text or as `{"@type": "Place"}` and drops anything else — Search Console
-    // flagged the field as an invalid object type every day since 2026-09-11
-    // (export of 2026-09-16, site #11). A type the reader discards takes the
-    // only geographic fact here with it; `Place` keeps the name a name (s18).
-    spatialCoverage: countries.map((name) => ({ "@type": "Place", name })),
-    distribution: [
-      {
-        "@type": "DataDownload",
-        name: `The whole dataset (${DATA_LICENCE_NAME})`,
-        encodingFormat: "application/json",
-        contentUrl: absolute("/dataset.json"),
-      },
-      {
-        "@type": "DataDownload",
-        name: "The countries and their routes",
-        encodingFormat: "application/json",
-        contentUrl: absolute("/countries.json"),
-      },
-    ],
+    spatialCoverage: coveredPlaces(countries),
+    distribution: datasetDownloads(),
   };
   // Two characters can end a script element early from inside a string; the
   // dataset's own text is a stranger to this file (Standards review's escaping

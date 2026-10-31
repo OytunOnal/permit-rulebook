@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { evaluate, notices, type Dataset, type Profile } from "permit-rulebook-data";
 import { arrivalOf, scopedFirst } from "../src/lib/scope.js";
-import { audienceNotice, routePage } from "../src/lib/route-page.js";
+import { audienceNotice, routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { datasetDay, isoDay } from "../src/lib/copy/frame.js";
 

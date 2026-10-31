@@ -66,6 +66,28 @@
    ]
   },
   {
+   "path": "src/lib/frame",
+   "entries": [
+    {
+     "file": "src/lib/frame/framed-page.ts",
+     "level": "presentation"
+    }
+   ],
+   "files": [
+    "src/lib/frame/body/footer-facts.ts",
+    "src/lib/frame/body/menu-script.ts",
+    "src/lib/frame/body/nav-countries.ts",
+    "src/lib/frame/body/site-footer.ts",
+    "src/lib/frame/body/site-header.ts",
+    "src/lib/frame/framed-page.ts",
+    "src/lib/frame/head/csp.ts",
+    "src/lib/frame/head/frame-sheet.ts",
+    "src/lib/frame/head/frame.css",
+    "src/lib/frame/head/icon-links.ts",
+    "src/lib/frame/head/shared-blocks.css"
+   ]
+  },
+  {
    "path": "src/lib/interview",
    "entries": [
     {
@@ -111,6 +133,24 @@
     "src/lib/interview/draw/screen/paint.ts",
     "src/lib/interview/draw/screen/question-screen.ts",
     "src/lib/interview/draw/screen/verdict-screen.ts"
+   ]
+  },
+  {
+   "path": "src/lib/route-page",
+   "entries": [
+    {
+     "file": "src/lib/route-page/route-page.ts",
+     "level": "presentation"
+    }
+   ],
+   "files": [
+    "src/lib/route-page/blocks/notices.ts",
+    "src/lib/route-page/blocks/rail.ts",
+    "src/lib/route-page/blocks/route-figure.ts",
+    "src/lib/route-page/blocks/rule-card.ts",
+    "src/lib/route-page/blocks/stated-blocks.ts",
+    "src/lib/route-page/route-page.css",
+    "src/lib/route-page/route-page.ts"
    ]
   },
   {
@@ -237,11 +277,19 @@
   "src/lib/country-search/control/mount.ts": "presentation",
   "src/lib/country-search/control/view.ts": "presentation",
   "src/lib/country-search/index.ts": "presentation",
-  "src/lib/csp.ts": "presentation",
   "src/lib/data-page.ts": "presentation",
   "src/lib/dataset-ld.ts": "presentation",
   "src/lib/feedback-page.ts": "presentation",
   "src/lib/first-paint.ts": "presentation",
+  "src/lib/frame/body/footer-facts.ts": "presentation",
+  "src/lib/frame/body/menu-script.ts": "presentation",
+  "src/lib/frame/body/nav-countries.ts": "presentation",
+  "src/lib/frame/body/site-footer.ts": "presentation",
+  "src/lib/frame/body/site-header.ts": "presentation",
+  "src/lib/frame/framed-page.ts": "presentation",
+  "src/lib/frame/head/csp.ts": "presentation",
+  "src/lib/frame/head/frame-sheet.ts": "presentation",
+  "src/lib/frame/head/icon-links.ts": "presentation",
   "src/lib/gloss.ts": "presentation",
   "src/lib/identity.ts": "presentation",
   "src/lib/interview-history/index.ts": "application",
@@ -263,7 +311,12 @@
   "src/lib/quote.ts": "presentation",
   "src/lib/reason.ts": "presentation",
   "src/lib/record.ts": "application",
-  "src/lib/route-page.ts": "presentation",
+  "src/lib/route-page/blocks/notices.ts": "presentation",
+  "src/lib/route-page/blocks/rail.ts": "presentation",
+  "src/lib/route-page/blocks/route-figure.ts": "presentation",
+  "src/lib/route-page/blocks/rule-card.ts": "presentation",
+  "src/lib/route-page/blocks/stated-blocks.ts": "presentation",
+  "src/lib/route-page/route-page.ts": "presentation",
   "src/lib/scope.ts": "application",
   "src/lib/screen.ts": "application",
   "src/lib/site.ts": "presentation",
@@ -766,6 +819,11 @@
   },
   {
    "from": "src/lib/copy/verdict.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/copy/verdict.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
   },
@@ -786,7 +844,12 @@
   },
   {
    "from": "src/lib/country-page.ts",
-   "to": "src/lib/csp.ts",
+   "to": "src/lib/country-page.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/country-page.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -806,7 +869,7 @@
   },
   {
    "from": "src/lib/country-page.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -900,31 +963,6 @@
    "kind": "type-only"
   },
   {
-   "from": "src/lib/csp.ts",
-   "to": "src/lib/clipboard.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/csp.ts",
-   "to": "src/lib/first-paint.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/csp.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/csp.ts",
-   "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/csp.ts",
-   "to": "src/lib/site.ts",
-   "kind": "dependency"
-  },
-  {
    "from": "src/lib/data-page.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -951,12 +989,17 @@
   },
   {
    "from": "src/lib/data-page.ts",
-   "to": "src/lib/csp.ts",
+   "to": "src/lib/data-page.css",
    "kind": "dependency"
   },
   {
    "from": "src/lib/data-page.ts",
    "to": "src/lib/dataset-ld.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/data-page.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -971,7 +1014,7 @@
   },
   {
    "from": "src/lib/data-page.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -1031,7 +1074,12 @@
   },
   {
    "from": "src/lib/feedback-page.ts",
-   "to": "src/lib/csp.ts",
+   "to": "src/lib/feedback-page.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/feedback-page.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -1046,17 +1094,192 @@
   },
   {
    "from": "src/lib/feedback-page.ts",
-   "to": "src/lib/route-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/feedback-page.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/first-paint.ts",
    "to": "src/lib/record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/footer-facts.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/footer-facts.ts",
+   "to": "src/lib/frame/body/site-footer.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/frame/body/footer-facts.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/nav-countries.ts",
+   "to": "src/lib/frame/body/site-header.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/frame/body/nav-countries.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/frame/body/site-header.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/frame/body/site-header.ts",
+   "kind": "inheritance"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-footer.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-header.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-header.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-header.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/body/site-header.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/body/footer-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/body/menu-script.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/body/nav-countries.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/body/site-footer.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/body/site-header.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/head/csp.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/head/frame-sheet.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/frame/head/icon-links.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/framed-page.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/csp.ts",
+   "to": "src/lib/clipboard.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/csp.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/csp.ts",
+   "to": "src/lib/frame/body/menu-script.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/csp.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/csp.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "identity.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "src/lib/frame/head/frame.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "src/lib/frame/head/shared-blocks.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "tokens.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/icon-links.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/icon-links.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -1067,11 +1290,6 @@
   {
    "from": "src/lib/identity.ts",
    "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/identity.ts",
-   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -1351,7 +1569,7 @@
   },
   {
    "from": "src/lib/not-found.ts",
-   "to": "src/lib/csp.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -1362,11 +1580,6 @@
   {
    "from": "src/lib/not-found.ts",
    "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/not-found.ts",
-   "to": "src/lib/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -1430,73 +1643,168 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/route-page.ts",
-   "to": "identity.css",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
-   "to": "src/lib/copy/feedback.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
-   "to": "src/lib/copy/frame.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
-   "to": "src/lib/copy/quotes.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
-   "to": "src/lib/copy/route-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
-   "to": "src/lib/csp.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
+   "from": "src/lib/route-page/blocks/notices.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/route-page.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
+   "from": "src/lib/route-page/blocks/notices.ts",
    "to": "src/lib/quote.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/route-page.ts",
+   "from": "src/lib/route-page/blocks/notices.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/route-page.ts",
+   "from": "src/lib/route-page/blocks/notices.ts",
+   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rail.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/route-figure.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/route-figure.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/route-figure.ts",
+   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/copy/quotes.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/route-page/blocks/rail.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/stated-blocks.ts",
+   "to": "src/lib/copy/quotes.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/stated-blocks.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/stated-blocks.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/stated-blocks.ts",
+   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/frame/framed-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/identity.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/route-page/blocks/notices.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/route-page/blocks/route-figure.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/route-page/blocks/stated-blocks.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/route-page/route-page.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/route-page.ts",
+   "from": "src/lib/route-page/route-page.ts",
    "to": "src/lib/slug.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page.ts",
-   "to": "tokens.css",
    "kind": "dependency"
   },
   {
@@ -1516,12 +1824,7 @@
   },
   {
    "from": "src/lib/sitemap.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/sitemap.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -1593,16 +1896,6 @@
    "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
    "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
    "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
-   "to": "src/lib/verdict/compose/printed-shortfall.ts",
-   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/rail.ts",
@@ -1777,11 +2070,6 @@
   {
    "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/copy/verdict.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/html.ts",
-   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -2001,7 +2289,7 @@
   },
   {
    "from": "src/pages/[country]/[route].astro",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -2011,7 +2299,7 @@
   },
   {
    "from": "src/pages/[country]/[route].json.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -2061,22 +2349,17 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
-   "to": "src/lib/csp.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/pages/index.astro",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
   {
    "from": "src/pages/index.astro",
    "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/pages/index.astro",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -2266,7 +2549,7 @@
   },
   {
    "from": "tests/base-path.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -2641,7 +2924,7 @@
   },
   {
    "from": "tests/consolidated-text.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -2676,17 +2959,12 @@
   },
   {
    "from": "tests/csp.test.ts",
-   "to": "src/lib/csp.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/csp.test.ts",
    "to": "src/lib/first-paint.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/csp.test.ts",
-   "to": "src/lib/identity.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -2711,7 +2989,7 @@
   },
   {
    "from": "tests/dataset-ld.test.ts",
-   "to": "src/lib/identity.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -2731,7 +3009,7 @@
   },
   {
    "from": "tests/escaping.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -2776,11 +3054,6 @@
   },
   {
    "from": "tests/first-paint.test.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/first-paint.test.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
@@ -2816,7 +3089,7 @@
   },
   {
    "from": "tests/fold.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -2851,12 +3124,7 @@
   },
   {
    "from": "tests/footer.test.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/footer.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -2867,6 +3135,86 @@
   {
    "from": "tests/footer.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "tests/fallback-stack.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/frame/framed-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/frame-alone.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/frame/framed-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/not-found.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/framed-page.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -2936,7 +3284,17 @@
   },
   {
    "from": "tests/header.test.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/header.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/header.test.ts",
+   "to": "tests/fallback-stack.ts",
    "kind": "dependency"
   },
   {
@@ -2955,23 +3313,28 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/identity.test.ts",
+   "from": "tests/identity-on-both-screens.test.ts",
    "to": "scripts/browser/browser.mjs",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
-   "from": "tests/identity.test.ts",
-   "to": "src/lib/record.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/identity.test.ts",
-   "to": "src/lib/route-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/identity.test.ts",
+   "from": "tests/identity-on-both-screens.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "tests/fallback-stack.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-on-both-screens.test.ts",
+   "to": "tests/seed-finished-record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-written-once.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -3056,7 +3419,22 @@
   },
   {
    "from": "tests/name-sweep.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/no-sideways-scroll.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/no-sideways-scroll.test.ts",
+   "to": "tests/fallback-stack.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/no-sideways-scroll.test.ts",
+   "to": "tests/seed-finished-record.ts",
    "kind": "dependency"
   },
   {
@@ -3071,12 +3449,12 @@
   },
   {
    "from": "tests/not-found.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/not-found.test.ts",
-   "to": "src/lib/site.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -3101,17 +3479,12 @@
   },
   {
    "from": "tests/orientation.test.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/orientation.test.ts",
    "to": "src/lib/not-found.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/orientation.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -3130,6 +3503,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/orientation.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/paths-named.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -3141,7 +3519,7 @@
   },
   {
    "from": "tests/paths-named.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -3275,78 +3653,138 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
-   "to": "src/lib/copy/feedback.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/country-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/dataset-ld.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/feedback-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/not-found.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
-   "to": "src/lib/quote.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
-   "to": "src/lib/route-page.ts",
+   "from": "tests/route-page-dates.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/sitemap.ts",
    "kind": "dependency"
   },
   {
-   "from": "tests/route-page.test.ts",
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-dates.test.ts",
+   "to": "tests/text-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
+   "to": "src/lib/copy/feedback.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-provenance.test.ts",
+   "to": "tests/text-of.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "tests/text-of.ts",
    "kind": "dependency"
   },
   {
@@ -3361,7 +3799,7 @@
   },
   {
    "from": "tests/route-slot.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -3396,27 +3834,22 @@
   },
   {
    "from": "tests/s11.test.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s11.test.ts",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s11.test.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s11.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s11.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s11.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -3486,7 +3919,7 @@
   },
   {
    "from": "tests/s13.test.ts",
-   "to": "src/lib/identity.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
@@ -3526,6 +3959,16 @@
   },
   {
    "from": "tests/s13.test.ts",
+   "to": "tests/fallback-stack.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -3546,12 +3989,7 @@
   },
   {
    "from": "tests/s16.test.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s16.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -3611,7 +4049,7 @@
   },
   {
    "from": "tests/s19.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -3766,7 +4204,7 @@
   },
   {
    "from": "tests/s23.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -3926,17 +4364,12 @@
   },
   {
    "from": "tests/s27.test.ts",
-   "to": "src/lib/country-page.ts",
+   "to": "src/lib/frame/framed-page.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/s27.test.ts",
    "to": "src/lib/gloss.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s27.test.ts",
-   "to": "src/lib/identity.ts",
    "kind": "dependency"
   },
   {
@@ -3961,7 +4394,7 @@
   },
   {
    "from": "tests/s27.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -3977,6 +4410,11 @@
   {
    "from": "tests/s27.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s27.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -4016,7 +4454,7 @@
   },
   {
    "from": "tests/s28.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -4146,7 +4584,7 @@
   },
   {
    "from": "tests/s6-edges.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -4166,7 +4604,7 @@
   },
   {
    "from": "tests/s7.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -4186,7 +4624,7 @@
   },
   {
    "from": "tests/s8.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -4221,7 +4659,7 @@
   },
   {
    "from": "tests/s9.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -4272,6 +4710,11 @@
   {
    "from": "tests/screen.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/seed-finished-record.ts",
+   "to": "src/lib/record.ts",
    "kind": "dependency"
   },
   {
@@ -4331,7 +4774,7 @@
   },
   {
    "from": "tests/shorthand.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -4351,12 +4794,7 @@
   },
   {
    "from": "tests/site-index.test.ts",
-   "to": "src/lib/identity.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/site-index.test.ts",
-   "to": "src/lib/route-page.ts",
+   "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
   {
@@ -4372,6 +4810,11 @@
   {
    "from": "tests/site-index.test.ts",
    "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/site-index.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -4590,6 +5033,48 @@
    }
   ],
   "src/lib/country-search/index.ts": [],
+  "src/lib/frame/framed-page.ts": [
+   {
+    "name": "PagePlace",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "PageInFrame",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "headOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "headerAndFooterOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "bodyOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "framedPageHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "InterviewFrame",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "interviewFrameOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "src/lib/interview/index.ts": [
    {
     "name": "InterviewPorts",
@@ -4679,6 +5164,63 @@
     "name": "openDrawing",
     "kind": "fn",
     "exported": true
+   }
+  ],
+  "src/lib/route-page/route-page.ts": [
+   {
+    "name": "audienceSentence",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "neighbours",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "RoutePage",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "description",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "routePage",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routePages",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "mastheadHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "mainHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "aboveTheRulesHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "asideHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "routeRecord",
+    "kind": "fn",
+    "exported": false
    }
   ],
   "src/lib/verdict/index.ts": [
@@ -6020,6 +6562,11 @@
     "exported": true
    },
    {
+    "name": "capitalise",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "FEEDBACK",
     "kind": "const",
     "exported": true
@@ -6540,11 +7087,6 @@
     "exported": true
    },
    {
-    "name": "capitalise",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "shortfallNote",
     "kind": "fn",
     "exported": true
@@ -6874,11 +7416,6 @@
     "exported": true
    },
    {
-    "name": "navCountries",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "CountryPage",
     "kind": "type",
     "exported": true
@@ -6899,11 +7436,6 @@
     "exported": false
    },
    {
-    "name": "sentenceCase",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "CountryCardContext",
     "kind": "type",
     "exported": false
@@ -6914,34 +7446,52 @@
     "exported": false
    },
    {
+    "name": "ListedRoutes",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "listedRoutesOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "exclusionsLinkHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryLedeHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryMastheadHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "quotedOnlySectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryCtaHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryMainHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "countryPage",
     "kind": "fn",
     "exported": true
    },
    {
     "name": "countryPages",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "footerFacts",
-    "kind": "fn",
-    "exported": true
-   }
-  ],
-  "src/lib/csp.ts": [
-   {
-    "name": "INLINE_SCRIPTS",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "sha256",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "contentSecurityPolicy",
     "kind": "fn",
     "exported": true
    }
@@ -6978,6 +7528,51 @@
     "exported": true
    },
    {
+    "name": "DataPageFacts",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "dataMastheadHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "dayFactHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "datesFactsHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "holdsSectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "dailyCheckHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "checksSectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "countryJsonLinksHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "takeSectionHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "dataPage",
     "kind": "fn",
     "exported": true
@@ -6997,6 +7592,16 @@
    {
     "name": "CC_BY_4",
     "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "coveredPlaces",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "datasetDownloads",
+    "kind": "fn",
     "exported": false
    },
    {
@@ -7178,11 +7783,6 @@
   ],
   "src/lib/identity.ts": [
    {
-    "name": "iconLinks",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "seal",
     "kind": "fn",
     "exported": true
@@ -7194,71 +7794,6 @@
    },
    {
     "name": "rulesRead",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "HeaderPlace",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "NavLink",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "currentMarkOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "siteHeader",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "DATA_PATH",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "FEEDBACK_PATH",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "MENU_SCRIPT",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "FooterPlace",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "FooterFacts",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "out",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "SEP",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "SEP_BREAK",
-    "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "siteFooter",
     "kind": "fn",
     "exported": true
    }
@@ -7518,268 +8053,6 @@
     "exported": true
    }
   ],
-  "src/lib/route-page.ts": [
-   {
-    "name": "lf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "TAP_CLASSES",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "tapMin",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "tapInline",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "capitalise",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "periodOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "Gte",
-    "kind": "type",
-    "exported": false
-   },
-   {
-    "name": "valuesUnder",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "gteUnder",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "audienceSentence",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "routeSourceUrls",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "ownUnread",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "noticesOn",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "noticeSection",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "printedNotices",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "printedSources",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "pageStamp",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "audienceNotice",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "QuoteOptions",
-    "kind": "type",
-    "exported": false
-   },
-   {
-    "name": "readDateTime",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "quoteBlock",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "RailRow",
-    "kind": "type",
-    "exported": false
-   },
-   {
-    "name": "railRows",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "railRowText",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "RulePage",
-    "kind": "type",
-    "exported": false
-   },
-   {
-    "name": "railHtml",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "ruleHeading",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "ruleKind",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "rulePlain",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "plainHtml",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "asksBlock",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "isUnquoted",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "unquotedInPaths",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "cardValues",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "ruleCard",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "ruleCriteria",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "unsourcedSaid",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "carveOutBlock",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "statedBlocks",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "RouteFigure",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "Points",
-    "kind": "type",
-    "exported": false
-   },
-   {
-    "name": "figuresOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "routeFigure",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "gist",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "headlineFigures",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "answerBlock",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "neighbours",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "RoutePage",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "description",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "routePage",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "routePages",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "PAGE_CSS",
-    "kind": "const",
-    "exported": true
-   }
-  ],
   "src/lib/scope.ts": [
    {
     "name": "ScopedArrival",
@@ -7888,6 +8161,16 @@
    {
     "name": "absolute",
     "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "DATA_PATH",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "FEEDBACK_PATH",
+    "kind": "const",
     "exported": true
    },
    {
@@ -8117,6 +8400,11 @@
     "exported": true
    },
    {
+    "name": "countryCheckPath",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "routeJsonPath",
     "kind": "fn",
     "exported": true
@@ -8275,6 +8563,11 @@
     "name": "holdLine",
     "kind": "const",
     "exported": false
+   },
+   {
+    "name": "frame",
+    "kind": "const",
+    "exported": false
    }
   ],
   "src/pages/robots.txt.ts": [
@@ -8357,7 +8650,6 @@
   "src/lib/copy/verdict.ts",
   "src/lib/countries.ts",
   "src/lib/country-page.ts",
-  "src/lib/csp.ts",
   "src/lib/data-page.ts",
   "src/lib/dataset-ld.ts",
   "src/lib/feedback-page.ts",
@@ -8369,7 +8661,6 @@
   "src/lib/quote.ts",
   "src/lib/reason.ts",
   "src/lib/record.ts",
-  "src/lib/route-page.ts",
   "src/lib/scope.ts",
   "src/lib/screen.ts",
   "src/lib/site.ts",
@@ -8391,5 +8682,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "889bbe4b1a10fd5669461b355110d5a3165e459277d36a516f94988769c4bafa"
+ "digest": "8bc7650864103860fcbbc382312210eb320a7d35bcce2f83ca6d77ed13f8557f"
 }

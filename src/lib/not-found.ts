@@ -1,14 +1,13 @@
 // @level presentation
 import type { Dataset } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
-import { contentSecurityPolicy } from "./csp.js";
-import { PAGE_CSS } from "./route-page.js";
-import { countryLinks, footerFacts, navCountries, siteReadDate } from "./country-page.js";
+import { framedPageHtml } from "./frame/framed-page.js";
+import { countryLinks, siteReadDate } from "./country-page.js";
 import { NOT_FOUND_START, NOT_FOUND_START_NOTE } from "./copy/not-found.js";
 import { PRODUCT_NAME, TAGLINE } from "./copy/frame.js";
-import { analyticsBeacon, url } from "./site.js";
+import { url } from "./site.js";
 // One set of elements for the identity the shared CSS places (2026-09-08).
-import { MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./identity.js";
+import { rulesRead } from "./identity.js";
 
 /**
  * The page a wrong address lands on.
@@ -33,7 +32,7 @@ import { MENU_SCRIPT, iconLinks, rulesRead, siteFooter, siteHeader } from "./ide
  *
  * The pair is drawn by `identity.css`, reached through the route page's own
  * stylesheet. This module states none of its geometry, for the reason
- * `tests/identity.test.ts` gives: a second definition is how one product grows
+ * `tests/identity-written-once.test.ts` gives: a second definition is how one product grows
  * two identities.
  */
 
@@ -48,19 +47,7 @@ export function notFoundPage(dataset: Dataset): NotFoundPage {
   const read = siteReadDate(dataset);
   const countries = countryLinks(dataset);
 
-  const head = `<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)}</title>
-<meta name="robots" content="noindex">
-${contentSecurityPolicy()}
-${iconLinks()}
-<style>${PAGE_CSS}</style>`;
-
-  const body = `<div class="wrap">
-
-  ${siteHeader(navCountries(dataset))}
-
-  <header class="masthead masthead-with-stamps">
+  const content = `<header class="masthead masthead-with-stamps">
     <div>
       <h1>This page does not exist. <em>${esc(TAGLINE)}</em></h1>
       <p class="lede">Nothing is published at that address — a link may have lost a character, or a page may have been renamed since it was shared.</p>
@@ -83,17 +70,8 @@ ${iconLinks()}
       </div>
       <a class="btn tap-min" href="${escAttr(url("/"))}">Check your own situation</a>
     </section>
-  </main>
+  </main>`;
 
-  ${siteFooter(navCountries(dataset), footerFacts(dataset))}
-
-</div>
-<script>${MENU_SCRIPT}</script>
-${analyticsBeacon()}`;
-
-  return {
-    path: "/404",
-    title,
-    html: `<!doctype html>\n<html lang="en">\n<head>\n${head}\n</head>\n<body>\n${body}\n</body>\n</html>\n`,
-  };
+  const html = framedPageHtml(dataset, { title, headTags: ['<meta name="robots" content="noindex">'], content });
+  return { path: "/404", title, html };
 }

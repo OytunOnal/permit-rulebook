@@ -8,16 +8,16 @@ import { MENU, MENU_CLOSE, PRODUCT_NAME } from "../src/lib/copy/frame.js";
 import { NOT_FOUND_START, NOT_FOUND_START_NOTE } from "../src/lib/copy/not-found.js";
 import { ROUTE_DOOR } from "../src/lib/copy/verdict.js";
 import { ROUTE_TAGLINE } from "../src/lib/copy/route-page.js";
-import { MENU_SCRIPT, siteHeader } from "../src/lib/identity.js";
-import { navCountries } from "../src/lib/country-page.js";
+import { interviewFrameOf } from "../src/lib/frame/framed-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { declarationHtml } from "../src/lib/question.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
 import { glossSection } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
-import { routePage } from "../src/lib/route-page.js";
+import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
+import { frameAlone, headerIn } from "./frame-alone.js";
 import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
@@ -52,7 +52,8 @@ describe("1 — the menu button says what it does", () => {
   it("the two words live in the copy module and reach the button as attributes; the script carries neither", () => {
     expect(MENU).toBe("Menu");
     expect(MENU_CLOSE).toBe("Close");
-    const header = siteHeader(navCountries(ds));
+    const header = headerIn(frameAlone(ds));
+    const menuScript = interviewFrameOf(ds).menuScript;
     const button = /<button class="menu[^"]*"([^>]*)>([^<]*)<\/button>/.exec(header);
     expect(button, "no menu button in the header").not.toBeNull();
     // Closed at rest, and says so.
@@ -62,10 +63,10 @@ describe("1 — the menu button says what it does", () => {
     expect(button![1]).toContain(`data-word-open="${MENU_CLOSE}"`);
     // The script reads the words off the button: no user-facing string is
     // typed into it, so a change of word is one edit in the copy module.
-    expect(MENU_SCRIPT).toContain("dataset.wordOpen");
-    expect(MENU_SCRIPT).toContain("dataset.wordClosed");
+    expect(menuScript).toContain("dataset.wordOpen");
+    expect(menuScript).toContain("dataset.wordClosed");
     for (const word of [MENU, MENU_CLOSE])
-      expect(MENU_SCRIPT, `the script carries the word ${word}`).not.toMatch(new RegExp(`\\b${word}\\b`));
+      expect(menuScript, `the script carries the word ${word}`).not.toMatch(new RegExp(`\\b${word}\\b`));
   });
 });
 

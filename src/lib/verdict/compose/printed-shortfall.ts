@@ -1,10 +1,7 @@
 // @level presentation
-import { formatEURPer, type Dataset } from "permit-rulebook-data";
+import { formatEURPer, periodOf, type Dataset } from "permit-rulebook-data";
 import type { PrintedShortfall } from "../../copy/verdict.js";
 import type { MoneyShortfall } from "./money-shortfall.js";
-
-/** The period a money field's amounts are stated per. */
-export const periodOf = (ds: Dataset, field: string) => ds.fields.find((f) => f.id === field)?.period;
 
 /**
  * An amount on a money field as the verdict prints it, a gap in the headline,

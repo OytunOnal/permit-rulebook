@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
-import { routePages } from "../src/lib/route-page.js";
+import { routePages } from "../src/lib/route-page/route-page.js";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DISCLAIMER, PRODUCT_NAME, TAGLINE } from "../src/lib/copy/frame.js";
