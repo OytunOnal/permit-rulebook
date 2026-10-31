@@ -1,12 +1,13 @@
 // @level presentation
 import {
-  formatEURPer, periodOf, scopeLine, type Criterion, type Dataset, type Route, type ThresholdCriterion,
+  formatEURPer, periodOf, scopeLine, thresholdsUnder,
+  type Criterion, type Dataset, type Route, type ThresholdCriterion,
 } from "permit-rulebook-data";
 import { esc } from "../../reason.js";
 import {
   ANSWER_SOURCED, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, pointsFigure,
 } from "../../copy/route-page.js";
-import { gteUnder, readDateTime, ruleCriteria } from "./rule-card.js";
+import { readDateTime, ruleCriteria } from "./rule-card.js";
 
 /**
  * A route in one line, for the list of the country's other routes. The summary's
@@ -37,7 +38,7 @@ type Points = Extract<Criterion, { op: "points" }>;
  */
 function figuresOf(dataset: Dataset, route: Route): { amounts: ThresholdCriterion[]; points?: Points } {
   const seen = new Set<number>();
-  const amounts = ruleCriteria(dataset, route).flatMap(gteUnder)
+  const amounts = ruleCriteria(dataset, route).flatMap(thresholdsUnder)
     .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
     .sort((a, b) => a.threshold.amount - b.threshold.amount);
   return { amounts, points: route.criteria.find((c): c is Points => c.op === "points") };

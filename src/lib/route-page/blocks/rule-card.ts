@@ -1,9 +1,8 @@
 // @level presentation
 import {
   criterionPhrase, deriveQuestions, fillRouteSlots, forEachCriterion, formatEURPer, isLocalization, joinAnd,
-  learnLinkOf, periodOf, provenancedValuesOf, referencedFields, shortLabelOf, subjectOf,
+  learnLinkOf, periodOf, provenancedValuesOf, referencedFields, shortLabelOf, subjectOf, thresholdsUnder,
   type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
-  type ThresholdCriterion,
 } from "permit-rulebook-data";
 import { type Glossary, glossed } from "../../gloss.js";
 // One frame for every quote the product shows, so the results card and these
@@ -64,13 +63,6 @@ function valuesUnder(c: Criterion): ProvenanceEntry[] {
   });
 }
 
-/** The thresholds a criterion states, its paths included. */
-export function gteUnder(c: Criterion): ThresholdCriterion[] {
-  const out: ThresholdCriterion[] = [];
-  forEachCriterion([c], (x) => { if (x.op === "gte") out.push(x); });
-  return out;
-}
-
 // ---------------------------------------------------------------------------
 // The quote block
 // ---------------------------------------------------------------------------
@@ -125,7 +117,7 @@ function ruleHeading(dataset: Dataset, c: Criterion): string {
   // A rule that turns on a number is named by the fact it measures, whether it
   // states one amount or a choice of them; naming a two-amount rule by its own
   // phrase produced a heading two lines long carrying both figures.
-  const thresholds = gteUnder(c);
+  const thresholds = thresholdsUnder(c);
   if (thresholds.length) return capitalise(shortLabelOf(dataset, thresholds[0].field));
   // Named by who it shuts out, said as the answer they gave: "Algeria" is a
   // country and "an Algerian passport" is the thing this rule reads.
@@ -137,7 +129,7 @@ function ruleHeading(dataset: Dataset, c: Criterion): string {
 }
 
 function ruleKind(c: Criterion): string {
-  if (gteUnder(c).length) return "Threshold";
+  if (thresholdsUnder(c).length) return "Threshold";
   if (c.op === "points") return "Points";
   // A closure is the opposite claim from the criterion beside it, and the two
   // sit on the same page: one says who the permit is for, the other who the
@@ -211,7 +203,7 @@ function asksBlock(dataset: Dataset, criteria: Criterion[], seen: Glossary): str
 }
 
 /** A rule with no quote and no figure under it, its paths included. */
-const isUnquoted = (c: Criterion): boolean => valuesUnder(c).length === 0 && gteUnder(c).length === 0;
+const isUnquoted = (c: Criterion): boolean => valuesUnder(c).length === 0 && thresholdsUnder(c).length === 0;
 
 /**
  * The unquoted rules inside a quoted card's disjunction, which the asks block
@@ -239,7 +231,7 @@ export function cardValues(c: Criterion, notice?: Notice): ProvenanceEntry[] {
 export function ruleCard(page: RulePage, c: Criterion): string {
   const { dataset, seen, notice } = page;
   const values = cardValues(c, notice);
-  const thresholds = gteUnder(c);
+  const thresholds = thresholdsUnder(c);
   const year = thresholds.length ? thresholds[0].threshold.retrieved_at.slice(0, 4) : "";
   // A card with no evidence and no scale is one sentence restating its own
   // heading; it says instead what the interview will ask. A quoted card says
