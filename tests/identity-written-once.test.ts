@@ -117,22 +117,65 @@ describe(ONE_DEFINITION, () => {
   });
 });
 
+/** Every built page under `dist/`, by its path from the root. */
+function builtPages(dir = "dist", out: string[] = []): string[] {
+  for (const name of readdirSync(root(dir))) {
+    const path = `${dir}/${name}`;
+    if (statSync(root(path)).isDirectory()) builtPages(path, out);
+    else if (name.endsWith(".html")) out.push(path);
+  }
+  return out;
+}
+
+/** A built page's stylesheets as the browser receives them, the inline ones and the ones it links, print taken out. */
+function builtSheetsOf(page: string): string {
+  const html = read(page);
+  const inline = [...html.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]!);
+  const linked = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)]
+    .map((m) => read(`dist/${m[1]!.replace(/^.*\/_astro\//, "_astro/")}`));
+  return withoutPrint([...inline, ...linked].join("\n"));
+}
+
+/** Each rule a stylesheet writes on the pair: its selector, spaces collapsed, and the properties it sets. */
+const pairRulesOf = (css: string): { selector: string; properties: string[] }[] =>
+  [...css.matchAll(/(^|[ ,}])([.]stamps[^{;]*)[{]([^}]*)[}]/gm)].map((rule) => ({
+    selector: rule[2]!.trim().replace(/\s+/g, " "),
+    properties: rule[3]!.split(";").map((d) => d.split(":")[0]!.trim()).filter(Boolean),
+  }));
+
+/** How many times a stylesheet draws the mark or the stamp. */
+const drawingsOf = (css: string): number => (css.match(/\.stamps\s+\.(mark|stamp)\s*\{/g) ?? []).length;
+
+/** What a page may say about the pair: where it goes, never what it is made of. */
+const PLACEMENT = ["position", "margin", "right", "left", "top", "bottom", "display", "flex", "align-self", "z-index"];
+
+/** The site's own pages, beside one per route and one per country. */
+const SITE_PAGES = ["dist/index.html", "dist/404.html", "dist/data/index.html", "dist/feedback/index.html", "dist/status/index.html"];
+
 describe(ONE_DEFINITION, () => {
   it("nothing else in the site draws the pair", () => {
-    // A second definition is the drift this file exists to stop. `tokens.css`
-    // holds values, not components; a page holds placement, not geometry.
+    // A second definition is the drift this file exists to stop. Every built
+    // page's stylesheets draw the pair exactly as often as identity.css does,
+    // and set on it only where it goes or what identity.css itself sets.
     // Print is exempt (`withoutPrint`).
-    for (const file of ["tokens.css", "src/lib/route-page/route-page.ts", "src/lib/frame/head/frame.css", "src/lib/frame/head/shared-blocks.css",
-      "src/lib/route-page/route-page.css", "src/lib/country-page.css", "src/lib/data-page.css", "src/lib/feedback-page.css", "src/lib/verdict/verdict.css"]) {
-      const own = withoutPrint(read(file).split("${IDENTITY}").join(" "));
-      expect(own, `${file} draws the mark`).not.toMatch(/\.stamps\s+\.mark\s*\{/);
-      // And states nothing the pair is made of, only where it goes.
-      for (const rule of [...own.matchAll(/(^|[ ,])([.]stamps[^{;]*)[{]([^}]*)[}]/gm)]) {
-        const properties = rule[3].split(";").map((d) => d.split(":")[0].trim()).filter(Boolean);
-        for (const property of properties)
-          expect(["position", "margin", "right", "left", "top", "bottom", "display", "flex", "align-self", "z-index"],
-            `${file}: "${rule[2].trim()}" sets ${property}, which is the pair's own`).toContain(property);
-      }
+    const own = withoutPrint(identity);
+    const ownProperties = new Map<string, Set<string>>();
+    for (const rule of pairRulesOf(own))
+      ownProperties.set(rule.selector, new Set([...ownProperties.get(rule.selector) ?? [], ...rule.properties]));
+    expect(drawingsOf(own), "precondition: identity.css draws the pair").toBeGreaterThan(0);
+    const pages = builtPages();
+    const ds = dataset as unknown as Dataset;
+    const routes = ds.countries.flatMap((country) => country.routes).length;
+    expect(pages, "precondition: the site's own pages are built").toEqual(expect.arrayContaining(SITE_PAGES));
+    expect(pages.length, "precondition: every page is read, the site's, one per route and one per country")
+      .toBe(SITE_PAGES.length + routes + ds.countries.length);
+    for (const page of pages) {
+      const css = builtSheetsOf(page);
+      expect(drawingsOf(css), `${page} draws the pair as often as identity.css does`).toBe(drawingsOf(own));
+      for (const rule of pairRulesOf(css))
+        for (const property of rule.properties)
+          expect(PLACEMENT.includes(property) || ownProperties.get(rule.selector)?.has(property),
+            `${page}: "${rule.selector}" sets ${property}, which is the pair's own`).toBe(true);
     }
   });
 
