@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { UNKNOWN_BAND, type Profile } from "permit-rulebook-data";
+import type { Profile } from "permit-rulebook-data";
 import { layoutPinOf, verdictFor, type LayoutPin } from "./verdict-cards.js";
 
 /**
@@ -11,13 +11,16 @@ import { layoutPinOf, verdictFor, type LayoutPin } from "./verdict-cards.js";
  * into one file; a change of rule moves an expectation here, by its ruling.
  */
 
+/** The money answer that is not an amount: "Doesn't apply to me, or I don't know". */
+const NO_AMOUNT = "unknown";
+
 /** Persona A of the v1.2.2 critique (W1): a Turkish passport, a German offer,
  * a degree not yet assessed, IT, five years in seven, on the shortage list,
- * €45,934.20–€50,700. */
+ * €45,934.20–€50,700, funds "Doesn't apply". */
 const PERSONA_A: Profile = {
   destination: "de", situation: "offer", qualification: "degree", citizenship: "TR", recognition_de: "not_assessed",
   experience_5y: "2plus", experience_7y: "5plus", occupation_shortage: "yes", occupation_it: "yes",
-  salary_eur_year: "band_5", german: "a1", english: "c1", age_band: "a30to35", funds_eur_month: UNKNOWN_BAND,
+  salary_eur_year: "band_5", german: "a1", english: "c1", age_band: "a30to35", funds_eur_month: NO_AMOUNT,
 };
 
 /** Persona C of the v1.2.2 critique (W3): a Colombian passport, all four
@@ -59,13 +62,13 @@ const GERMAN_NOT_YET = [
 /** The arranged line of a transfer and a hosting agreement, one route each. */
 const ARRANGED = { kind: "arranged", arranged: [1, 1] };
 
-/** Persona A on €45,934.20–€50,700: two open, one step, the arranged line, six not yet. */
+/** Persona A on €45,934.20–€50,700: two open, two steps, the arranged line, six not yet. */
 const PERSONA_A_PIN: LayoutPin = {
   kind: "one-country", headline: { kind: "open", ...NO_NAMED },
-  strip: { open: 2, withinReach: 0, unsettled: 0, closed: 0, notYet: 6, openUnknowns: 0 },
+  strip: { open: 2, withinReach: 0, unsettled: 0, closed: 0, notYet: 6, openUnknowns: 1 },
   groups: [
     { kind: "open", routes: ["de-blue-card-shortage", "de-experienced-worker"] },
-    { kind: "steps", steps: ["full German recognition"], jobOfferLine: false },
+    { kind: "steps", steps: ["full German recognition", "at least €1,091/month — monthly funds"], jobOfferLine: false },
     ARRANGED,
     { kind: "not-yet", count: 6, items: GERMAN_NOT_YET },
   ],
@@ -74,10 +77,13 @@ const PERSONA_A_PIN: LayoutPin = {
 /** Persona A on the lowest band: both routes within reach, the headline measuring the first. */
 const PERSONA_A_LOWEST_PIN: LayoutPin = {
   kind: "one-country", headline: { kind: "open", route: "de-blue-card-shortage", step: null },
-  strip: { open: 0, withinReach: 2, unsettled: 0, closed: 0, notYet: 6, openUnknowns: 0 },
+  strip: { open: 0, withinReach: 2, unsettled: 0, closed: 0, notYet: 6, openUnknowns: 1 },
   groups: [
     { kind: "within-reach", routes: ["de-blue-card-shortage", "de-experienced-worker"] },
-    { kind: "steps", steps: ["full German recognition", "at least €45,630/year — yearly salary"], jobOfferLine: false },
+    {
+      kind: "steps", jobOfferLine: false,
+      steps: ["full German recognition", "at least €45,630/year — yearly salary", "at least €1,091/month — monthly funds"],
+    },
     ARRANGED,
     { kind: "not-yet", count: 6, items: GERMAN_NOT_YET },
   ],
