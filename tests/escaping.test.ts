@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { esc, escAttr } from "../src/lib/reason.js";
-import { verdictHtml, verdictOf } from "../src/lib/verdict/index.js";
+import { verdictHtml, verdictOf } from "../src/lib/verdict/verdict.js";
 import { questionCardHtml, setAsideHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";

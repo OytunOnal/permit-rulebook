@@ -8,7 +8,7 @@ import {
 } from "../src/lib/interview/index.js";
 import { questionMastheadOf } from "../src/lib/question.js";
 import type { Masthead } from "../src/lib/screen.js";
-import { verdictOf, type Verdict } from "../src/lib/verdict/index.js";
+import { verdictOf, type Verdict } from "../src/lib/verdict/verdict.js";
 import { groupsIn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;

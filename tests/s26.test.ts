@@ -12,7 +12,7 @@ import {
   NOTHING_OPEN_HEADLINE, READ_ITS_RULES, unscoredNamedRestLine, unscoredRestLine,
 } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
-import type { CountrySection, Tally, Verdict, VerdictGroup } from "../src/lib/verdict/index.js";
+import type { CountrySection, Tally, Verdict, VerdictGroup } from "../src/lib/verdict/verdict.js";
 import { PAINTED_AS_COMPOSED, drawnRoutesIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { expectNothingLeft } from "./wire.js";
 import { chromePath, walkSite, type BrowserPage, type SentRequest } from "../scripts/browser/browser.mjs";

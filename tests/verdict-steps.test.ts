@@ -9,7 +9,7 @@ import {
   orAbove, stepsWouldChangeHeadline, writeJobOfferLine,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
-import { verdictHtml, type CountrySection, type Verdict, type VerdictGroup } from "../src/lib/verdict/index.js";
+import { verdictHtml, type CountrySection, type Verdict, type VerdictGroup } from "../src/lib/verdict/verdict.js";
 import { groupsIn, stepsIn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;

@@ -12,7 +12,7 @@ import { SITUATION_COUNTRY_FIELD, markUnder, notScoredFor, notScoredMarkHtml } f
 import { IS_QUOTED_NOT_CHECKED, READ_IT_HERE, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
 import { routesNeed, unscoredHeadline, unscoredTallyLine } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
-import { verdictHtml, type Tally } from "../src/lib/verdict/index.js";
+import { verdictHtml, type Tally } from "../src/lib/verdict/verdict.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictOn } from "./verdict-cards.js";
 import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
 

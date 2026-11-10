@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { DESTINATION_FIELD, SITUATION_FIELD, phraseOf, type Dataset, type Profile } from "permit-rulebook-data";
-import { verdictHtml } from "../src/lib/verdict/index.js";
+import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf, questionCards, walks } from "./reader-pages.js";
 import { verdictFor } from "./verdict-cards.js";
 
