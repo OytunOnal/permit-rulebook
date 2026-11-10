@@ -16,6 +16,7 @@ import { glossedLearnLinkText } from "./quote.js";
 import { countrySearchHtml } from "./country-search/index.js";
 import type { Masthead, Screen } from "./screen.js";
 import { url } from "./site.js";
+import { routePath } from "./slug.js";
 // Which situation answers a country's scored routes take, and the quoted
 // route that would have asked otherwise — derived, never typed (s19); keyed
 // by the situation under a declared country, or by the country under a
@@ -234,8 +235,9 @@ function optionsHtml(screen: QuestionScreen & { glossary: Glossary }): string {
 /** The mark as the question screen draws it: the copy's line, with the door
  * on the last three words where there is a page to open. */
 export function notScoredMarkHtml(mark: NotScoredMark): string {
-  if (!mark.route) return esc(notCheckedLine(mark.country));
-  return sentenceWithLinkHtml(notCheckedQuotedLine(mark.country, mark.route.name), READ_IT_HERE, url(mark.route.path));
+  if (!mark.quoted) return esc(notCheckedLine(mark.country));
+  const { country, route } = mark.quoted;
+  return sentenceWithLinkHtml(notCheckedQuotedLine(mark.country, route.name), READ_IT_HERE, url(routePath(country, route)));
 }
 
 /** Where the interview stands: the answers, the fields in the order they were

@@ -1,8 +1,8 @@
-// @level presentation
+// @level application
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, phraseOf, fieldOptions, isScored, situationsAsked, type Dataset, type Profile,
+  DESTINATION_FIELD, SITUATION_FIELD, phraseOf, fieldOptions, isScored, situationsAsked, type Country, type Dataset,
+  type Profile, type Route,
 } from "permit-rulebook-data";
-import { routePath } from "./slug.js";
 
 /**
  * A situation no scored route in the chosen country takes (s19).
@@ -32,8 +32,9 @@ import { routePath } from "./slug.js";
 export interface NotScoredMark {
   /** The country's phrase within a sentence, the data package's. */
   country: string;
-  /** The quoted route that carries this situation, when one does. */
-  route?: { name: string; path: string };
+  /** The quoted route that carries this situation, when one does, and its
+   * country; the page that draws the mark builds its address (ruling 19). */
+  quoted?: { country: Country; route: Route };
 }
 
 const countryOf = (ds: Dataset, destination: string) =>
@@ -55,7 +56,7 @@ export function notScoredFor(ds: Dataset, destination: string | undefined, situa
   const quoted = country.routes.find((r) => !isScored(r) && r.situations?.includes(situation));
   return {
     country: phraseOf(country.code),
-    ...(quoted ? { route: { name: quoted.name, path: routePath(country, quoted) } } : {}),
+    ...(quoted ? { quoted: { country, route: quoted } } : {}),
   };
 }
 

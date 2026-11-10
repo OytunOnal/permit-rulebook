@@ -87,8 +87,8 @@ describe("s19 — the interview knows which situations a destination's scored ro
     const mark = notScoredFor(ds, "fr", "research");
     expect(mark).not.toBeNull();
     expect(mark!.country).toBe("France");
-    expect(mark!.route?.name).toBe("Talent — researcher (chercheur)");
-    expect(mark!.route?.path).toBe("/france/talent-researcher");
+    expect(mark!.quoted?.route.name).toBe("Talent — researcher (chercheur)"); // ruling 19: the route, not its address
+    expect(mark!.quoted?.country.code).toBe("FR"); // ruling 19: and its country, the address the drawing's to build
     // The route is the dataset's own: quoted, not scored, and carrying the answer it would have asked about.
     const route = ds.countries.find((c) => c.code === "FR")!.routes.find((r) => r.id === "fr-talent-chercheur")!;
     expect(isScored(route)).toBe(false);
@@ -147,7 +147,8 @@ describe("s19 — the interview knows which situations a destination's scored ro
   });
 
   it("escapes the names it prints", () => {
-    const html = notScoredMarkHtml({ country: "A & B", route: { name: "<x>", path: "/a/b?c=d&e" } });
+    const { country: fr, route: chercheur } = notScoredFor(ds, "fr", "research")!.quoted!; // ruling 19: route and country
+    const html = notScoredMarkHtml({ country: "A & B", quoted: { country: { ...fr, name: "A" }, route: { ...chercheur, name: "<x>", slug: "b?c=d&e" } } });
     expect(html).toContain("A &amp; B");
     expect(html).toContain("&lt;x&gt;");
     // Through `url`, like every internal link: the page's slash, then the query.

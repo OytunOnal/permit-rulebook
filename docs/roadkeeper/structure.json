@@ -321,7 +321,7 @@
   "src/lib/screen.ts": "application",
   "src/lib/site.ts": "presentation",
   "src/lib/sitemap.ts": "presentation",
-  "src/lib/situations.ts": "presentation",
+  "src/lib/situations.ts": "application",
   "src/lib/slug.ts": "presentation",
   "src/lib/social-card.ts": "presentation",
   "src/lib/verdict/compose/answer-phrase.ts": "presentation",
@@ -1633,6 +1633,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/question.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/quote.ts",
    "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
@@ -1839,11 +1844,6 @@
   },
   {
    "from": "src/lib/sitemap.ts",
-   "to": "src/lib/slug.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/situations.ts",
    "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
@@ -2210,6 +2210,11 @@
   {
    "from": "src/lib/verdict/compose/unscored.ts",
    "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -8672,5 +8677,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a88ea8536d035babbdaebbfc74e30994a98a8f854a99b80a4e08e9130baba345"
+ "digest": "e3764c1cefa56b17922601f69ef8653831e3ac7039a977fdef43390a32619347"
 }
