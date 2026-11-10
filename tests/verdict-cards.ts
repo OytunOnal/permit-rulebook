@@ -1,5 +1,6 @@
 import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset, Profile } from "permit-rulebook-data";
+import { nearestLine } from "../src/lib/copy/verdict.js";
 import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
 import {
@@ -70,6 +71,78 @@ export function sectionNamed(verdict: Verdict, name: string): CountrySection {
   const section = verdict.layout.sections.find((s) => s.name === name);
   if (!section) throw new Error(`no section named ${name}`);
   return section;
+}
+
+/** A not-yet item as a pin reads it: a route's id, or a fold with its rows. */
+type PinnedItem = string | { fold: string; open: boolean; routes: string[] };
+
+/** A group as a pin reads it: its kind, and what it holds, by id. */
+interface PinnedGroup {
+  kind: string;
+  routes?: string[];
+  steps?: string[];
+  jobOfferLine?: boolean;
+  arranged?: number[];
+  count?: number;
+  items?: PinnedItem[];
+}
+
+/** What the layout decides, read off a verdict, with no words but a step's title. */
+export interface LayoutPin {
+  kind: string;
+  strip: Record<string, number>;
+  headline: { kind: string; route: string | null; step: string | null };
+  lead?: string | null;
+  groups?: PinnedGroup[];
+  sections?: { country: string; open: boolean; tally: Record<string, number | boolean>; groups: PinnedGroup[] }[];
+}
+
+function pinnedGroupOf(group: VerdictGroup): PinnedGroup {
+  switch (group.kind) {
+    case "steps": return { kind: group.kind, steps: group.steps.map((s) => s.title), jobOfferLine: group.jobOfferLine !== null };
+    case "arranged": return { kind: group.kind, arranged: group.answers.map((a) => a.routes) };
+    case "not-yet": return {
+      kind: group.kind, count: group.count,
+      items: group.items.map((i) => ("kind" in i
+        ? { fold: i.kind, open: i.kind === "needs-path-answers" && i.open, routes: i.routes.map((r) => r.route) }
+        : i.route)),
+    };
+    default: return { kind: group.kind, routes: group.routes.map((r) => r.route) };
+  }
+}
+
+/** The headline's kind and what its second sentence names: the route within
+ * reach it measures, or the step it calls nearest. */
+function pinnedHeadlineOf(verdict: Verdict, strip: Record<string, number>): LayoutPin["headline"] {
+  const m = verdict.action.masthead;
+  const none = { route: null, step: null };
+  if (strip.open! + strip.withinReach! > 0) {
+    const near = groupsIn(verdict).find((g) => g.kind === "within-reach");
+    return { kind: "open", route: near ? drawnRoutesIn(near)[0]!.route : null, step: null };
+  }
+  if (m.sublineHtml !== undefined) return { kind: "written-state", ...none };
+  if (strip.unsettled) return { kind: "unsettled", ...none };
+  const nearest = stepsIn(verdict).find((s) => m.subline.includes(nearestLine(s.title)));
+  if (nearest) return { kind: "steps", route: null, step: nearest.title };
+  return { kind: "nothing-open", ...none };
+}
+
+/** What the layout of a comparison decides, as data: the strip, the
+ * headline, and each section's place, tally and groups. */
+export function layoutPinOf(verdict: Verdict): LayoutPin {
+  const { layout } = verdict;
+  if (layout.kind === "notice") throw new Error("a notice screen has no layout to pin");
+  const strip = { ...layout.strip };
+  const headline = pinnedHeadlineOf(verdict, strip);
+  if (layout.kind === "one-country") return { kind: layout.kind, strip, headline, groups: layout.groups.map(pinnedGroupOf) };
+  return {
+    kind: layout.kind, strip, headline,
+    lead: headline.kind === "written-state" ? layout.sections[0]!.name : null,
+    sections: layout.sections.map((s) => ({
+      country: s.name, open: s.open, tally: { ...s.tally, closedTo: s.tally.closedTo !== null },
+      groups: s.groups.map(pinnedGroupOf),
+    })),
+  };
 }
 
 /**
