@@ -50,7 +50,7 @@ export function writtenStateKeyOf(ds: Dataset, answers: Profile): WrittenStateKe
   return mark ? { key, named, mark, situation } : null;
 }
 
-/** A step's key among the screen's steps:the answer its row is for, and
+/** A step's key among the screen's steps: the answer its row is for, and
  * the answer it is qualified by, where it is. */
 export function stepKeyOf(step: Step): string {
   const { unlock } = step;
