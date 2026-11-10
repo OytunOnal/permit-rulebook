@@ -1,8 +1,9 @@
 # Permit Rulebook
 
-[![The results screen: three German routes open and one short by up to
-€304.20/year, each rule checked against what the reader declared, every value
-carrying the authority's quote and the day it was read](docs/media/results-2026-10-23.png)](https://permitrulebook.com)
+[![The results screen: three German routes open and two short on a figure,
+the nearest by up to €304.20/year; each card says the path it was met
+through, every rule is checked against what the reader declared, and every
+value carries the authority's quote and the day it was read](docs/media/results-2026-11-10.png)](https://permitrulebook.com)
 
 **Every route, quoted and dated.** A person answers a few questions and
 [permitrulebook.com](https://permitrulebook.com) shows which work-permit routes
@@ -19,23 +20,23 @@ them. This repository is the site; that one is the ruleset.
 wants the rules rather than an opinion — and anyone who needs the ruleset
 itself.
 
-**What it does now** — v1.2.2, from its
-[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.2):
+**What it does now** — v1.2.5, from its
+[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.5):
 
 > Public at https://permitrulebook.com: 29 routes across Germany, France,
 > Spain and the Netherlands — 23 checked against a reader's answers, 6 quoted
-> and dated but not checked, each with a page of its own — and 208 quotes,
-> each carrying the authority's sentence, its page and the day it was read.
-> The watch re-reads the sources every morning. What changed since v1.2.1:
-> every answer the reader gives shows up, and the verdict says only what it
-> knows — a gap is said one way, exact and with its period; steps are only
-> what the reader can do, with a job offer's routes and an arranged path said
-> beside them; Back lands on the last question answered. Every screen speaks
-> the reader's words, Germany's Blue Card has its IT path, and a fast second
-> click answers nothing. The isolated walk: 39/50 on RUBRIC 1.3, one blocker
-> shipped with its reason
-> ([#185](https://github.com/OytunOnal/permit-rulebook/issues/185)).
-> 1115 + 1321 tests. (2026-10-23)
+> and dated but not checked, each with a page of its own — and 189 quoted
+> values, each carrying the authority's sentence, its page and the day it was
+> read. The watch re-reads the sources every morning. What changed since
+> v1.2.2: a result card says the path its route was met through, and why the
+> other path did not count, in the reader's own answer; a condition that
+> belongs to another path leaves the card. A route short only on salary,
+> funds or points sits under "Short on a figure", its badge saying which. A
+> country with anything to act on opens, and its row counts each action. The
+> headline names the nearest route, and a step offers only what a reader can
+> do. Under it, the verdict's layout, the page frame, the route page and the
+> card are each one module. The isolated walk: 39/50 on RUBRIC 1.3, no
+> blocker. 1276 + 1343 tests. (2026-11-10)
 
 **How to run it.** Both repositories side by side — the site reads the dataset
 package from the sibling directory its manifest names. Tried from a fresh clone
