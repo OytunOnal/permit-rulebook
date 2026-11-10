@@ -1,7 +1,6 @@
 // @level presentation
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, joinOr, possessiveAtStartOf, situationsAsked,
-  type Country, type Dataset, type Profile,
+  SITUATION_FIELD, fieldOptions, joinOr, possessiveAtStartOf, situationsAsked, type Country, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
   READ_ITS_RULES, unscoredHeadline, unscoredNamedRestLine, unscoredRestLine, unscoredRouteLine, unscoredTallyLine,
@@ -9,17 +8,17 @@ import {
 import { esc, sentenceWithLinkHtml } from "../../reason.js";
 import { url } from "../../site.js";
 import { routePath } from "../../slug.js";
-import { type NotScoredMark, SITUATION_COUNTRY_FIELD, notScoredFor } from "../../situations.js";
+import type { NotScoredMark } from "../../situations.js";
 import { phraseOfAnswer } from "./answer-phrase.js";
-import { EVERY_COUNTRY_ANSWER, type SituationMarks } from "./in-view.js";
+import { countryMarkOf, writtenStateKeyOf } from "./layout.js";
 
 /**
  * What the verdict says where the declared situation is one no scored route
  * in a country takes (s19): the country's line on the four-country result,
- * and the written state a zero-open result reads — and, with no words, what
- * the layout reads of the same marks. The mark itself — which situation a
- * country's scored routes do not take — is the question card's as much as
- * the verdict's, and stays beside it.
+ * and the written state a zero-open result reads. Where the marks stand is
+ * the layout's (`countryMarkOf`, `writtenStateKeyOf`); this words them. The
+ * mark itself — which situation a country's scored routes do not take — is
+ * the question card's as much as the verdict's, and stays beside it.
  */
 
 /** Where the quoted route's page is: the mark names the route and its
@@ -51,11 +50,6 @@ export interface UnscoredTally {
   html: string;
 }
 
-/** The s19 mark on one country of the four-country result, for the declared
- * situation, or none. */
-const countryMarkOf = (ds: Dataset, country: Country, situation: string | undefined): NotScoredMark | null =>
-  situation === undefined ? null : notScoredFor(ds, country.code.toLowerCase(), situation);
-
 export function unscoredTally(ds: Dataset, country: Country, situation: string | undefined): UnscoredTally | null {
   const mark = countryMarkOf(ds, country, situation);
   if (!mark || situation === undefined) return null;
@@ -77,30 +71,6 @@ export interface UnscoredVerdict {
   door?: { text: string; href: string };
 }
 
-/** Where a written state stands: the answer it is keyed by, the destination
- * answer of the country the reader named at question 3 on the four-country
- * path only — the country whose section leads the result, open (s26); the
- * direct path has no list of countries to lead — the mark, and the situation. */
-interface WrittenStateKey {
-  key: string;
-  named: string | undefined;
-  mark: NotScoredMark;
-  situation: string;
-}
-
-function writtenStateKeyOf(ds: Dataset, answers: Profile): WrittenStateKey | null {
-  const destination = answers[DESTINATION_FIELD];
-  const situation = answers[SITUATION_FIELD];
-  if (destination === undefined || situation === undefined) return null;
-  // Keyed by the named country where the destination is all four, and by the
-  // destination itself everywhere else — the direct path never asks question
-  // 3, so a country answer under a one-country destination is not a key.
-  const named = destination === EVERY_COUNTRY_ANSWER ? answers[SITUATION_COUNTRY_FIELD] : undefined;
-  const key = named ?? destination;
-  const mark = notScoredFor(ds, key, situation);
-  return mark ? { key, named, mark, situation } : null;
-}
-
 /**
  * The written state itself, in place of "Nothing open", never in addition to
  * it (s19, point 3).
@@ -119,8 +89,7 @@ function writtenStateKeyOf(ds: Dataset, answers: Profile): WrittenStateKey | nul
  * copy — the direct path and the four-country path read the same headline
  * for the same answers, and only the rest sentence names the country, since
  * "the routes below" are four countries' here. Which country the
- * four-country result leads with is the layout's, read from the same key
- * (`situationMarksOf`).
+ * four-country result leads with is the layout's, read from the same key.
  */
 export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict | null {
   const keyed = writtenStateKeyOf(ds, answers);
@@ -137,21 +106,5 @@ export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict 
     headline: unscoredHeadline(mark.country, phrase),
     subline: mark.quoted ? `${unscoredRouteLine(opening, phrase, mark.quoted.route.name)} ${rest}` : rest,
     ...(mark.quoted ? { door: { text: READ_ITS_RULES, href: quotedHref(mark.quoted) } } : {}),
-  };
-}
-
-/**
- * What the s19 mark decides for these answers, with no words, for the layout
- * to read: every country whose scored routes do not take the declared
- * situation, and whether the declared destination reads a written state,
- * with the country it names at question 3. One derivation with the words
- * above, so the layout and the words cannot decide it two ways.
- */
-export function situationMarksOf(ds: Dataset, answers: Profile): SituationMarks {
-  const situation = answers[SITUATION_FIELD];
-  const keyed = writtenStateKeyOf(ds, answers);
-  return {
-    notTakenIn: new Set(ds.countries.filter((c) => countryMarkOf(ds, c, situation) !== null).map((c) => c.code)),
-    writtenState: keyed ? { lead: keyed.named } : null,
   };
 }

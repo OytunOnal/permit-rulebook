@@ -2160,6 +2160,11 @@
   },
   {
    "from": "src/lib/verdict/compose/layout.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/layout.ts",
    "to": "src/lib/verdict/compose/in-view.ts",
    "kind": "dependency"
   },
@@ -2286,7 +2291,7 @@
   {
    "from": "src/lib/verdict/compose/unscored.ts",
    "to": "src/lib/situations.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/unscored.ts",
@@ -2300,7 +2305,7 @@
   },
   {
    "from": "src/lib/verdict/compose/unscored.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
+   "to": "src/lib/verdict/compose/layout.ts",
    "kind": "dependency"
   },
   {
@@ -2352,11 +2357,6 @@
    "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/verdict.ts",
-   "to": "src/lib/verdict/compose/unscored.ts",
-   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/verdict.ts",
@@ -8803,5 +8803,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "964eaee11734a19500671db37f5ee9e5bffc11332c57460669708c559fb049d3"
+ "digest": "8d6073ffcb7677db3fd4a7c0067466fd8950846aede1b3696c3bc0eb40848e2c"
 }

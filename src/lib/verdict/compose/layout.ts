@@ -1,6 +1,9 @@
 // @level application
-import { liveUnknowns, type Country, type RouteResult } from "permit-rulebook-data";
-import { groupedRoutesOf, routeIdsOf, type Compared, type GroupedRoutes } from "./in-view.js";
+import {
+  DESTINATION_FIELD, SITUATION_FIELD, liveUnknowns, type Country, type Dataset, type Profile, type RouteResult,
+} from "permit-rulebook-data";
+import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../../situations.js";
+import { EVERY_COUNTRY_ANSWER, groupedRoutesOf, routeIdsOf, type Compared, type GroupedRoutes } from "./in-view.js";
 import { notYetGroupOf } from "./not-yet-group.js";
 import { countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, type Step } from "./steps.js";
 import type {
@@ -15,7 +18,38 @@ import type {
  * has. The files that draw word it; none of them decides it.
  */
 
-/** A step's key among the screen's steps: the answer its row is for, and
+/** The s19 mark on one country of the four-country result, for the declared
+ * situation, or none: the one predicate its tally and its words read. */
+export const countryMarkOf = (ds: Dataset, country: Country, situation: string | undefined): NotScoredMark | null =>
+  situation === undefined ? null : notScoredFor(ds, country.code.toLowerCase(), situation);
+
+/** Where a written state stands: the answer it is keyed by, the destination
+ * answer of the country the reader named at question 3 on the four-country
+ * path only — the country whose section leads the result, open (s26); the
+ * direct path has no list of countries to lead — the mark, and the situation. */
+export interface WrittenStateKey {
+  key: string;
+  named: string | undefined;
+  mark: NotScoredMark;
+  situation: string;
+}
+
+/** The written state's key for these answers, or none: the one derivation the
+ * headline's kind, the lead country and the written state's words read. */
+export function writtenStateKeyOf(ds: Dataset, answers: Profile): WrittenStateKey | null {
+  const destination = answers[DESTINATION_FIELD];
+  const situation = answers[SITUATION_FIELD];
+  if (destination === undefined || situation === undefined) return null;
+  // Keyed by the named country where the destination is all four, and by the
+  // destination itself everywhere else — the direct path never asks question
+  // 3, so a country answer under a one-country destination is not a key.
+  const named = destination === EVERY_COUNTRY_ANSWER ? answers[SITUATION_COUNTRY_FIELD] : undefined;
+  const key = named ?? destination;
+  const mark = notScoredFor(ds, key, situation);
+  return mark ? { key, named, mark, situation } : null;
+}
+
+/** A step's key among the screen's steps:the answer its row is for, and
  * the answer it is qualified by, where it is. */
 export function stepKeyOf(step: Step): string {
   const { unlock } = step;
@@ -128,9 +162,9 @@ function stripOf(answeredDataset: AnsweredDataset, c: Compared): Strip {
  * with neither, nothing open, pointing at country sections only where there
  * are some (F7). Something open: the open routes, and the nearest within reach.
  */
-function headlineOf(c: Compared): HeadlineLayout {
+function headlineOf(answeredDataset: AnsweredDataset, c: Compared): HeadlineLayout {
   if (c.zeroOpen) {
-    if (c.marks.writtenState) return { kind: "written-state" };
+    if (writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)) return { kind: "written-state" };
     const unsettled = c.whole.unsettled.length;
     if (unsettled) return { kind: "unsettled", routes: unsettled };
     const nearest = nearestStep(c.steps);
@@ -146,7 +180,9 @@ function oneCountry(answeredDataset: AnsweredDataset, c: Compared): ComparedLayo
   const code = c.inView.visible[0]!.code;
   const steps = stepPlacesOf(c.steps, code, (step) => step.unlock.routes);
   const groups = groupsOf(answeredDataset, { grouped: c.whole, steps, ...linesIn(c, code), results: c.inView.results });
-  return { kind: "one-country", country: code, strip: stripOf(answeredDataset, c), headline: headlineOf(c), groups };
+  return {
+    kind: "one-country", country: code, strip: stripOf(answeredDataset, c), headline: headlineOf(answeredDataset, c), groups,
+  };
 }
 
 /** Whether this country is the one that leads: the one predicate the order
@@ -193,7 +229,7 @@ function countrySection(answeredDataset: AnsweredDataset, c: Compared, at: Secti
   const tally = {
     open: grouped.met.length, unsettled: grouped.unsettled.length, withinReach: grouped.near.length, notYet: grouped.hold.length,
     openUnknowns: openUnknownsIn(answeredDataset, rs), closed: grouped.closed.length, steps: steps.length,
-    situationNotTaken: c.marks.notTakenIn.has(code),
+    situationNotTaken: countryMarkOf(answeredDataset.ds, at.country, answeredDataset.answers[SITUATION_FIELD]) !== null,
   };
   const hopeful = grouped.met.length + grouped.unsettled.length + grouped.near.length > 0;
   const open = hopeful || (c.zeroOpen && at.wouldOpen.has(code)) || leads(at.country, at.lead);
@@ -213,11 +249,11 @@ function countrySection(answeredDataset: AnsweredDataset, c: Compared, at: Secti
 function countries(answeredDataset: AnsweredDataset, c: Compared): ComparedLayout {
   const rows = [...c.steps.map((s) => s.unlock), ...c.arranged];
   const wouldOpen = new Set(rows.flatMap((u) => u.routes.map((r) => r.country)));
-  const lead = c.zeroOpen ? c.marks.writtenState?.lead : undefined;
+  const lead = c.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)?.named : undefined;
   const sections = namedFirst(c.inView.visible, lead)
     .map((country) => countrySection(answeredDataset, c, { country, lead, wouldOpen }));
   return {
-    kind: "countries", strip: stripOf(answeredDataset, c), headline: headlineOf(c),
+    kind: "countries", strip: stripOf(answeredDataset, c), headline: headlineOf(answeredDataset, c),
     lead: c.inView.visible.find((country) => leads(country, lead))?.code ?? null, sections,
   };
 }

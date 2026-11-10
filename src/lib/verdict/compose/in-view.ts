@@ -70,21 +70,10 @@ export function groupedRoutesOf(results: RouteResult[], closed: RouteResult[], u
   };
 }
 
-/**
- * What the s19 mark decides for this reader, with no words: the countries,
- * by code, whose scored routes do not take the declared situation, and,
- * where a written state stands for the declared destination, the destination
- * answer of the country it names at question 3 on the four-country path.
- */
-export interface SituationMarks {
-  notTakenIn: Set<string>;
-  writtenState: { lead: string | undefined } | null;
-}
-
 /** What a comparison is drawn from: the results in view, the whole screen's
  * groups, whether nothing is open anywhere, the steps in the order the screen
- * offers them (s23), the rows of the arranged answers, what a job offer would
- * free for an explorer (#175), and what the s19 mark decides (s21, s26). */
+ * offers them (s23), the rows of the arranged answers, and what a job offer
+ * would free for an explorer (#175). */
 export interface Compared {
   inView: ResultsInView;
   whole: GroupedRoutes;
@@ -92,5 +81,4 @@ export interface Compared {
   steps: Step[];
   arranged: Unlock[];
   freed: RoutesFreedByAJobOffer[];
-  marks: SituationMarks;
 }

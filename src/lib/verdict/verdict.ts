@@ -22,7 +22,6 @@ import { comparedMastheadOf, noticeMastheadOf } from "./compose/masthead.js";
 import { groupedRoutesOf, resultsInViewOf, type Compared, type ResultsInView } from "./compose/in-view.js";
 import { layoutOf } from "./compose/layout.js";
 import type { InterviewSoFar, Verdict } from "./compose/types.js";
-import { situationMarksOf } from "./compose/unscored.js";
 // The verdict's look travels with its markup: the page that paints a verdict
 // links this stylesheet in its <head>.
 import "./verdict.css";
@@ -91,7 +90,7 @@ export function verdictOf(dataset: Dataset, answers: Profile, interview: Intervi
   const rows = unlocks(dataset, answers);
   return comparedVerdictOf(screen, {
     inView, whole, zeroOpen, steps: arrangeSteps(dataset, rows), arranged: arrangedRowsOf(rows),
-    freed: routesAJobOfferFreesFor(dataset, answers), marks: situationMarksOf(dataset, answers),
+    freed: routesAJobOfferFreesFor(dataset, answers),
   }, interview);
 }
 
