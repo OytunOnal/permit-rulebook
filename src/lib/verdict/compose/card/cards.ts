@@ -9,9 +9,9 @@ import { provenanceHtml, sourceLinkHtml, srcLine } from "./blocks/provenance.js"
 import { railHtml } from "./blocks/rail.js";
 import { carveOutHtml, caveatHtml, precondHtml, readingHtml, scopedHtml } from "./blocks/route-statements.js";
 import {
-  CAME_FROM_LINE, FIND_OUT_YOURSELF, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET,
-  WOULD_COME_WITHIN_REACH, orAbove, pointsMore, pointsOfNeeded, shortByPoints, shortfallNote, shortfallReach,
-  withStepHtml, type PathTakenFrame,
+  CAME_FROM_LINE, FIND_OUT_YOURSELF, LOWER_THRESHOLD_HINT, POINTS_FIGURE, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL,
+  WOULD_BE_MET, figureGapSentence, orAbove, pointsOfNeeded, shortByPoints, shortOn, shortfallNote, upToTitle,
+  withStepHtml, wouldThenBeShortOnly, type PathTakenFrame,
 } from "../../../copy/verdict.js";
 import { countryOf } from "../../../countries.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
@@ -23,9 +23,10 @@ import { glossedLearnLinkText } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
+import { figureGapsOf } from "../figure-gaps.js";
 import { hasLiveUnknown } from "../layout.js";
-import { moneyShortfallOf } from "../money-shortfall.js";
-import { printedShortfallOf } from "../printed-shortfall.js";
+import { bandOf, measuredCriterionOf, moneyShortfallOf } from "../money-shortfall.js";
+import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js";
 import type { Step } from "../steps.js";
 
 /**
@@ -114,6 +115,40 @@ function pathFrameOf(r: RouteResult, look: CardLook): PathTakenFrame {
   return r.status === "met" ? "met" : "short";
 }
 
+/** Each figure a route is short on, printed on the answers given. */
+const printedFigureGapsOf = (screen: VerdictScreen, r: RouteResult, answers: Profile) =>
+  figureGapsOf(r).map((gap) => printedFigureGapOf(screen.ds, gap, answers));
+
+/** What a route within reach is short on, as its badge names it: each amount
+ * by its field's short label, then points (ruling 9 on #187). */
+function shortOnBadge(screen: VerdictScreen, r: RouteResult): string {
+  const gaps = figureGapsOf(r);
+  if (!gaps.length) throw new Error(`${r.route.id} is within reach and its results carry no figure gap`);
+  const amounts = gaps.flatMap((g) => (g.kind === "money" ? [shortLabelOf(screen.ds, g.criterion.field).toLowerCase()] : []));
+  const points = gaps.some((g) => g.kind === "points") ? [POINTS_FIGURE] : [];
+  return shortOn([...new Set(amounts), ...points]);
+}
+
+/** A full card's badge: "Rules met" under "unsettled for your passport", what
+ * a route within reach is short on, or the route's own status. */
+function badgeOf(screen: VerdictScreen, r: RouteResult, look: CardLook): string {
+  if (look.badge === "rules-met") return RULES_MET;
+  return r.status === "near" ? shortOnBadge(screen, r) : STATUS_LABEL[r.status];
+}
+
+/**
+ * The line a full card leads with: the engine's reason, except on a route
+ * within reach on points or on no amount it measured, whose engine line names
+ * the group's old words; that card says each figure it is short on instead
+ * (ruling 9 on #187).
+ */
+function leadLineHtml(screen: VerdictScreen, r: RouteResult): string {
+  const { ds, answers } = screen;
+  const shortOnMeasuredMoneyAlone = r.gap_points === undefined && measuredCriterionOf(ds, r, answers) !== undefined;
+  if (r.status !== "near" || shortOnMeasuredMoneyAlone) return whyHtml(ds, r, answers);
+  return esc(printedFigureGapsOf(screen, r, answers).map(figureGapSentence).join(" "));
+}
+
 /**
  * A route that is open, within reach or unsettled, as a whole card. Its first
  * line is the country's chip and the badge, or the badge alone, above the
@@ -126,12 +161,12 @@ export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLo
   return `
         <article class="route"${cameFromMark(screen, r)}>
           <div class="top">${look.chip === "country" ? `<span class="country">${esc(countryOf(ds, r.country).name)}</span>` : ""}
-            <span class="st ${rulesMet ? "unsettled" : r.status}">${esc(rulesMet ? RULES_MET : STATUS_LABEL[r.status])}</span>
+            <span class="st ${rulesMet ? "unsettled" : r.status}">${esc(badgeOf(screen, r, look))}</span>
           </div>
           <h3>${esc(routeName(screen, r))}</h3>
           ${pathLinesHtml(screen, r, pathFrameOf(r, look))}
           ${cameFromNote(screen, r)}
-          <p class="why">${whyHtml(ds, r, screen.answers)}</p>
+          <p class="why">${leadLineHtml(screen, r)}</p>
           ${scopeFor(screen, r)}
           ${precondHtml(screen, r.route, pathsNotTakenOf(r))}
           ${carveOutHtml(screen, r.route)}
@@ -147,6 +182,17 @@ export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLo
 }
 
 /**
+ * The gap a not-yet row gives before its unknown, where its misses are a
+ * figure gap and a live unknown: in the card's words, and the row stays under
+ * "Not yet", since the unknown may already meet the route (ruling 10 on #187).
+ */
+function gapFirstHtml(screen: VerdictScreen, r: RouteResult): string {
+  if (r.hard_fail || !hasLiveUnknown(screen, r)) return "";
+  const gaps = printedFigureGapsOf(screen, r, screen.answers);
+  return gaps.length ? `${esc(gaps.map(figureGapSentence).join(" "))} ` : "";
+}
+
+/**
  * A not-yet route, as a row that unfolds. It opens by itself only where an
  * unknown still binds — a row opened on a dead route promises an answer that
  * cannot change it (critique #4) — or where it is the route the reader came
@@ -154,7 +200,7 @@ export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLo
  */
 export function notYetRowHtml(screen: VerdictScreen, r: RouteResult): string {
   const { ds, answers, glossary } = screen;
-  const short = whyHtml(ds, r, answers).split(". ")[0].replace(/\.$/, "");
+  const short = `${gapFirstHtml(screen, r)}${whyHtml(ds, r, answers).split(". ")[0].replace(/\.$/, "")}`;
   const open = hasLiveUnknown(screen, r) || r.route.id === screen.cameFrom;
   return `
         <details class="route-hold"${cameFromMark(screen, r)}${open ? " open" : ""}>
@@ -175,27 +221,33 @@ export function notYetRowHtml(screen: VerdictScreen, r: RouteResult): string {
         </details>`;
 }
 
-/** How far a step would bring a route that it brings within reach, measured
- * on the answers as they would stand with the step taken. */
-function reachAmount(screen: VerdictScreen, r: RouteResult, taken: Profile): string {
-  const money = moneyShortfallOf(screen.ds, r, taken);
-  if (money) return ` (${esc(shortfallReach(printedShortfallOf(screen.ds, money)))})`;
-  if (r.gap_points) return ` (${esc(pointsMore(r.gap_points))})`;
-  return "";
+/** One route a step opens, and how: met, or short only on the figures it
+ * would still miss by, measured on the answers as they would stand with the
+ * step taken, each as a bound (ruling 9 on #187). */
+function unlockedRouteHtml(screen: VerdictScreen, r: RouteResult, taken: Profile): string {
+  if (r.status === "met") return `<li>${esc(routeName(screen, r))} — <b>${esc(WOULD_BE_MET)}</b></li>`;
+  const gaps = printedFigureGapsOf(screen, r, taken);
+  if (!gaps.length) throw new Error(`a step lists ${r.route.id}, which it neither meets nor leaves short on a figure`);
+  return `<li>${esc(routeName(screen, r))} — <i>${esc(wouldThenBeShortOnly(gaps))}</i></li>`;
 }
 
-/** One route a step opens, and how. */
-function unlockedRouteHtml(screen: VerdictScreen, r: RouteResult, taken: Profile): string {
-  const how = r.status === "met"
-    ? `<b>${esc(WOULD_BE_MET)}</b>`
-    : `<i>${esc(WOULD_COME_WITHIN_REACH)}${reachAmount(screen, r, taken)}</i>`;
-  return `<li>${esc(routeName(screen, r))} — ${how}</li>`;
+/** Whether a step's title is a distance on a money field from a band with a
+ * floor, "€304.20/year more": the reader sits anywhere in their band, so the
+ * distance is a bound. From a band open at the bottom the title is the line
+ * itself, "at least €45,630/year", and no distance. */
+function titlesABoundedGap(screen: VerdictScreen, step: Step): boolean {
+  const { field } = step.unlock;
+  if (screen.ds.fields.find((f) => f.id === field)?.type !== "money_band") return false;
+  const fromFloor = bandOf(screen.ds, field, screen.answers)?.min !== undefined;
+  return fromFloor && bandOf(screen.ds, field, unlockProfile(step.unlock, screen.answers))?.min !== undefined;
 }
 
 /** A step's title, as its card, the steps group and the headline's Nearest
- * say it: the row's own, "… or above" where higher rungs folded into it. */
+ * say it: the row's own, "up to …" on a bounded gap (ruling 1 on #187,
+ * leftover 2), "… or above" where higher rungs folded into it. */
 export function composeStepTitle(screen: VerdictScreen, step: Step): string {
-  const title = unlockTitleOf(screen.ds, step.unlock, screen.answers);
+  const row = unlockTitleOf(screen.ds, step.unlock, screen.answers);
+  const title = titlesABoundedGap(screen, step) ? upToTitle(row) : row;
   return step.folded.length ? orAbove(title) : title;
 }
 

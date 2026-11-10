@@ -171,13 +171,19 @@ const PERSONA_C_PIN: LayoutPin = {
   ],
 };
 
+/**
+ * A salary step from a band with a floor, titled by its bound: "up to" since
+ * ruling 1 on #187, leftover 2 (#316).
+ */
+const salaryStepUpTo = (title: string) => ({ kind: "steps", steps: [`up to ${title}`], jobOfferLine: false });
+
 /** Priya: the Dutch Blue Card within reach and named by the headline, five not yet. */
 const PRIYA_PIN: LayoutPin = {
   kind: "one-country", headline: { kind: "open", route: "nl-blue-card", step: null },
   strip: { open: 0, withinReach: 1, unsettled: 0, closed: 0, notYet: 5, openUnknowns: 2 },
   groups: [
     { kind: "within-reach", routes: ["nl-blue-card"] },
-    { kind: "steps", steps: ["€1,585/month more — monthly salary"], jobOfferLine: false },
+    salaryStepUpTo("€1,585/month more — monthly salary"),
     ARRANGED,
     { kind: "not-yet", count: 5, items: ["nl-hsm-30plus", "nl-hsm-under30", "nl-ict", "nl-orientation-year", "nl-researcher"] },
   ],
@@ -189,7 +195,7 @@ const NIGERIAN_PIN: LayoutPin = {
   strip: { open: 0, withinReach: 1, unsettled: 0, closed: 0, notYet: 7, openUnknowns: 0 },
   groups: [
     { kind: "within-reach", routes: ["de-experienced-worker"] },
-    { kind: "steps", steps: ["€4,273.64/year more — yearly salary"], jobOfferLine: false },
+    salaryStepUpTo("€4,273.64/year more — yearly salary"),
     ARRANGED,
     { kind: "not-yet", count: 7, items: ["de-blue-card-shortage", ...GERMAN_NOT_YET] },
   ],
@@ -204,7 +210,7 @@ const ALGERIAN_PIN: LayoutPin = {
   groups: [
     { kind: "unsettled", routes: ["fr-talent-qualifie"] },
     { kind: "within-reach", routes: ["fr-talent-blue-card"] },
-    { kind: "steps", steps: ["€8,673/year more — yearly salary"], jobOfferLine: false },
+    salaryStepUpTo("€8,673/year more — yearly salary"),
     { kind: "not-yet", count: 2, items: ["fr-talent-innovante", "fr-talent-mission"] },
     { kind: "closed", routes: ["fr-ict"] },
   ],

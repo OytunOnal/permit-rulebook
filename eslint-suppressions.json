@@ -76,7 +76,7 @@
   },
   "src/lib/copy/verdict.ts": {
     "roadkeeper/constant-reason": {
-      "count": 27
+      "count": 25
     }
   },
   "src/lib/country-search/control/controller.ts": {

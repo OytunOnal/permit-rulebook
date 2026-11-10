@@ -164,6 +164,7 @@
    "files": [
     "src/lib/verdict/compose/answer-phrase.ts",
     "src/lib/verdict/compose/drawn-cards.ts",
+    "src/lib/verdict/compose/figure-gaps.ts",
     "src/lib/verdict/compose/headline.ts",
     "src/lib/verdict/compose/html.ts",
     "src/lib/verdict/compose/in-view.ts",
@@ -336,6 +337,7 @@
   "src/lib/verdict/compose/card/blocks/route-statements.ts": "presentation",
   "src/lib/verdict/compose/card/cards.ts": "presentation",
   "src/lib/verdict/compose/drawn-cards.ts": "presentation",
+  "src/lib/verdict/compose/figure-gaps.ts": "application",
   "src/lib/verdict/compose/headline.ts": "presentation",
   "src/lib/verdict/compose/html.ts": "presentation",
   "src/lib/verdict/compose/in-view.ts": "application",
@@ -2032,6 +2034,11 @@
   },
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/figure-gaps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/verdict/compose/layout.ts",
    "kind": "dependency"
   },
@@ -2292,8 +2299,13 @@
   },
   {
    "from": "src/lib/verdict/compose/printed-shortfall.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "to": "src/lib/verdict/compose/figure-gaps.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/printed-shortfall.ts",
+   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/types.ts",
@@ -5121,6 +5133,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/verdict-short-on-a-figure.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-short-on-a-figure.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/verdict-steps.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -5475,9 +5497,34 @@
     "exported": false
    },
    {
+    "name": "printedFigureGapsOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "shortOnBadge",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "badgeOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "leadLineHtml",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "fullCardHtml",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "gapFirstHtml",
+    "kind": "fn",
+    "exported": false
    },
    {
     "name": "notYetRowHtml",
@@ -5485,12 +5532,12 @@
     "exported": true
    },
    {
-    "name": "reachAmount",
+    "name": "unlockedRouteHtml",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "unlockedRouteHtml",
+    "name": "titlesABoundedGap",
     "kind": "fn",
     "exported": false
    },
@@ -7230,6 +7277,21 @@
     "exported": true
    },
    {
+    "name": "shortOn",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "POINTS_FIGURE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "pointsCount",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "RULES_MET",
     "kind": "const",
     "exported": true
@@ -7275,7 +7337,32 @@
     "exported": true
    },
    {
-    "name": "shortfallReach",
+    "name": "PrintedFigureGap",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "figureGapSentence",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "leftShortBy",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "WOULD_THEN_BE_SHORT_ONLY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "wouldThenBeShortOnly",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "upToTitle",
     "kind": "fn",
     "exported": true
    },
@@ -7322,16 +7409,6 @@
    {
     "name": "WOULD_BE_MET",
     "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "WOULD_COME_WITHIN_REACH",
-    "kind": "const",
-    "exported": true
-   },
-   {
-    "name": "pointsMore",
-    "kind": "fn",
     "exported": true
    },
    {
@@ -7495,7 +7572,7 @@
     "exported": true
    },
    {
-    "name": "withinReachCount",
+    "name": "shortOnAFigureCount",
     "kind": "fn",
     "exported": true
    },
@@ -7550,7 +7627,7 @@
     "exported": true
    },
    {
-    "name": "WITHIN_REACH_HEADING",
+    "name": "SHORT_ON_A_FIGURE_HEADING",
     "kind": "const",
     "exported": true
    },
@@ -8905,5 +8982,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "2fc162bd53c45fcc0a9dd473a5b9aeac86e5aca70166e09fa176924fbe324941"
+ "digest": "0344855bba8968579b81f9588693bf7b8c04f217f6c0643774f750619647c90c"
 }

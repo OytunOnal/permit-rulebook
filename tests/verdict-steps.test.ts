@@ -5,8 +5,8 @@ import {
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
-  EXPLORE_ONE_COUNTRY, NOTHING_OPEN_HEADLINE, STATUS_LABEL, STEPS_HEADING, WOULD_BE_MET, arrangedLine, nearestLine,
-  orAbove, stepsWouldChangeHeadline, writeJobOfferLine,
+  EXPLORE_ONE_COUNTRY, NOTHING_OPEN_HEADLINE, SHORT_ON_A_FIGURE_HEADING, STATUS_LABEL, STEPS_HEADING, WOULD_BE_MET,
+  arrangedLine, nearestLine, orAbove, stepsWouldChangeHeadline, writeJobOfferLine,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
 import {
@@ -184,7 +184,8 @@ describe("#175 — the job offer line", () => {
     }
   });
 
-  it("never says met or within reach, and is in neither the headline's count nor Nearest", () => {
+  // The group's words were "within reach" until ruling 9 on #187 (#316).
+  it("never says met or short on a figure, and is in neither the headline's count nor Nearest", () => {
     const verdict = verdictFor(PRIYA);
     const lines = sectionsOf(verdict).flatMap((s) => {
       const block = groupOf(s.groups, "steps");
@@ -193,7 +194,7 @@ describe("#175 — the job offer line", () => {
     expect(lines.length).toBeGreaterThan(0);
     for (const line of lines) {
       expect(line).not.toContain(WOULD_BE_MET);
-      expect(line.toLowerCase()).not.toContain(STATUS_LABEL.near.toLowerCase());
+      expect(line.toLowerCase()).not.toContain(SHORT_ON_A_FIGURE_HEADING.toLowerCase());
       expect(line.toLowerCase()).not.toContain(STATUS_LABEL.met.toLowerCase());
       expect(verdict.action.masthead.subline).not.toContain(line);
     }
