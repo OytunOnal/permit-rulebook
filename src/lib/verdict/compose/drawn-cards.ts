@@ -16,12 +16,20 @@ export interface DrawnCards {
 }
 
 /** What the cards are drawn on: the screen, the comparison the layout was
- * reckoned from, its results by route id, and the cards drawn so far. */
+ * reckoned from, and its results by route id. */
 interface Drawing {
   screen: VerdictScreen;
   compared: Compared;
   results: Map<string, RouteResult>;
-  cards: DrawnCards;
+}
+
+/** One drawn card: the id it is drawn by, and what is drawn. */
+type DrawnEntry<T> = [id: string, drawn: T];
+
+/** One group's drawn cards, in the order it lists them. */
+interface GroupCards {
+  routes: DrawnEntry<string>[];
+  steps: DrawnEntry<StepCard>[];
 }
 
 /** A route the layout places, from the comparison; one it does not hold is refused. */
@@ -31,44 +39,51 @@ function resultOf(at: Drawing, id: string): RouteResult {
   return r;
 }
 
-function drawRoute(at: Drawing, id: string, html: (r: RouteResult) => string): void {
-  if (Object.hasOwn(at.cards.routes, id)) throw new Error(`the layout places ${id} twice`);
-  at.cards.routes[id] = html(resultOf(at, id));
-}
+const drawRoute = (at: Drawing, id: string, html: (r: RouteResult) => string): DrawnEntry<string> =>
+  [id, html(resultOf(at, id))];
 
 /** A step's card, with the routes it opens in its section, in the order its
  * row lists them. */
-function drawStep(at: Drawing, place: StepPlace): void {
-  if (Object.hasOwn(at.cards.steps, place.id)) throw new Error(`the layout places the step ${place.id} twice`);
+function drawStep(at: Drawing, place: StepPlace): DrawnEntry<StepCard> {
   const step = stepKeyed(at.compared.steps, place.step);
   const routes = step.unlock.routes.filter((r) => place.routes.includes(r.route.id));
-  at.cards.steps[place.id] = { title: composeStepTitle(at.screen, step), html: stepCardHtml(at.screen, step, routes) };
+  return [place.id, { title: composeStepTitle(at.screen, step), html: stepCardHtml(at.screen, step, routes) }];
 }
 
+/** A group's routes, each drawn by `html`, and no step. */
+const routeCards = (at: Drawing, ids: string[], html: (r: RouteResult) => string): GroupCards =>
+  ({ routes: ids.map((id) => drawRoute(at, id, html)), steps: [] });
+
 /** One group's cards, as it lists them. */
-function drawGroup(at: Drawing, group: VerdictGroup, chip: CardLook["chip"]): void {
+function drawGroup(at: Drawing, group: VerdictGroup, chip: CardLook["chip"]): GroupCards {
   const { screen } = at;
   switch (group.kind) {
     case "open":
     case "within-reach":
-      for (const id of group.routes) drawRoute(at, id, (r) => fullCardHtml(screen, r, { chip, badge: "status" }));
-      return;
+      return routeCards(at, group.routes, (r) => fullCardHtml(screen, r, { chip, badge: "status" }));
     case "unsettled":
-      for (const id of group.routes) drawRoute(at, id, (r) => fullCardHtml(screen, r, { chip, badge: "rules-met" }));
-      return;
+      return routeCards(at, group.routes, (r) => fullCardHtml(screen, r, { chip, badge: "rules-met" }));
     case "steps":
-      for (const place of group.steps) drawStep(at, place);
-      return;
+      return { routes: [], steps: group.steps.map((place) => drawStep(at, place)) };
     case "not-yet":
-      for (const id of group.items.flatMap((item) => (typeof item === "string" ? [item] : item.routes)))
-        drawRoute(at, id, (r) => notYetRowHtml(screen, r));
-      return;
+      return routeCards(at, group.items.flatMap((item) => (typeof item === "string" ? [item] : item.routes)),
+        (r) => notYetRowHtml(screen, r));
     case "closed":
-      for (const id of group.routes) drawRoute(at, id, (r) => closedRowHtml(r, screen.glossary));
-      return;
+      return routeCards(at, group.routes, (r) => closedRowHtml(r, screen.glossary));
     case "arranged":
-      return;
+      return { routes: [], steps: [] };
   }
+}
+
+/** Drawn cards by id; an id the layout places twice is refused with the
+ * message `placedTwice` writes for it. */
+function cardsById<T>(entries: DrawnEntry<T>[], placedTwice: (id: string) => string): Record<string, T> {
+  const byId: Record<string, T> = {};
+  for (const [id, drawn] of entries) {
+    if (Object.hasOwn(byId, id)) throw new Error(placedTwice(id));
+    byId[id] = drawn;
+  }
+  return byId;
 }
 
 /**
@@ -79,12 +94,17 @@ function drawGroup(at: Drawing, group: VerdictGroup, chip: CardLook["chip"]): vo
  */
 export function drawnCardsOf(screen: VerdictScreen, compared: Compared, layout: VerdictLayout): DrawnCards {
   const at: Drawing = {
-    screen, compared, cards: { routes: {}, steps: {} },
+    screen, compared,
     results: new Map([...compared.inView.results, ...compared.inView.closed].map((r) => [r.route.id, r])),
   };
-  if (layout.kind === "one-country") for (const g of layout.groups) drawGroup(at, g, "country");
-  if (layout.kind === "countries") for (const section of layout.sections) for (const g of section.groups) drawGroup(at, g, "none");
-  return at.cards;
+  const drawn: GroupCards[] = [];
+  if (layout.kind === "one-country") drawn.push(...layout.groups.map((g) => drawGroup(at, g, "country")));
+  if (layout.kind === "countries")
+    drawn.push(...layout.sections.flatMap((section) => section.groups.map((g) => drawGroup(at, g, "none"))));
+  return {
+    routes: cardsById(drawn.flatMap((g) => g.routes), (id) => `the layout places ${id} twice`),
+    steps: cardsById(drawn.flatMap((g) => g.steps), (id) => `the layout places the step ${id} twice`),
+  };
 }
 
 /** A route's drawn markup, by its id; one the verdict did not draw is refused. */
