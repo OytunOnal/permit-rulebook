@@ -3433,6 +3433,21 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/not-checked-mark-markup.test.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/not-checked-mark-markup.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/not-checked-mark-markup.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/not-found.test.ts",
    "to": "src/lib/country-page.ts",
    "kind": "dependency"

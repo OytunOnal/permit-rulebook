@@ -128,12 +128,6 @@ describe("s19 — the interview knows which situations a destination's scored ro
     expect(html.match(/<button class="opt"/g)!.length).toBe(4);
   });
 
-  it("the mark's markup on question 2, whole, and the written state's door to the same page (guard, ruling 19)", () => {
-    expect(marksOn(situationScreen("fr")).research).toBe("Not checked for France yet — Talent — researcher (chercheur) is "
-      + `quoted, not checked: <a href="${url("/france/talent-researcher")}">read it here</a>.`);
-    expect(unscoredOf({ destination: "fr", situation: "research" })?.door?.href).toBe(url("/france/talent-researcher"));
-  });
-
   it("question 2 for Germany, Spain, the Netherlands and all four draws no mark", () => {
     for (const destination of ["de", "es", "nl", "all"])
       expect(marksOn(situationScreen(destination)), destination).toEqual({});
@@ -147,8 +141,14 @@ describe("s19 — the interview knows which situations a destination's scored ro
   });
 
   it("escapes the names it prints", () => {
-    const { country: fr, route: chercheur } = notScoredFor(ds, "fr", "research")!.quoted!; // ruling 19: route and country
-    const html = notScoredMarkHtml({ country: "A & B", quoted: { country: { ...fr, name: "A" }, route: { ...chercheur, name: "<x>", slug: "b?c=d&e" } } });
+    // Ruling 19: the mark carries a route and its country, and the address is
+    // built from them. France's quoted route, renamed, its address a query.
+    const { country, route } = notScoredFor(ds, "fr", "research")!.quoted!;
+    const quoted = {
+      country: { ...country, name: "A" },
+      route: { ...route, name: "<x>", slug: "b?c=d&e" },
+    };
+    const html = notScoredMarkHtml({ country: "A & B", quoted });
     expect(html).toContain("A &amp; B");
     expect(html).toContain("&lt;x&gt;");
     // Through `url`, like every internal link: the page's slash, then the query.
