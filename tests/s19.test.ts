@@ -128,6 +128,12 @@ describe("s19 — the interview knows which situations a destination's scored ro
     expect(html.match(/<button class="opt"/g)!.length).toBe(4);
   });
 
+  it("the mark's markup on question 2, whole, and the written state's door to the same page (guard, ruling 19)", () => {
+    expect(marksOn(situationScreen("fr")).research).toBe("Not checked for France yet — Talent — researcher (chercheur) is "
+      + `quoted, not checked: <a href="${url("/france/talent-researcher")}">read it here</a>.`);
+    expect(unscoredOf({ destination: "fr", situation: "research" })?.door?.href).toBe(url("/france/talent-researcher"));
+  });
+
   it("question 2 for Germany, Spain, the Netherlands and all four draws no mark", () => {
     for (const destination of ["de", "es", "nl", "all"])
       expect(marksOn(situationScreen(destination)), destination).toEqual({});
