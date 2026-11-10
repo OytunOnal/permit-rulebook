@@ -18,12 +18,18 @@ import type { HeadlineLayout } from "./verdict-layout.js";
  * it asks, never that line as the reader's shortfall; or its points.
  */
 function nearNote(screen: VerdictScreen, c: Compared, nearest: string | null): string {
-  const first = c.inView.results.find((r) => r.route.id === nearest);
-  if (!first) return "";
-  const money = moneyShortfallOf(screen.ds, first, screen.answers);
+  const named = c.inView.results.find((r) => r.route.id === nearest);
+  if (!named) return "";
+  const money = moneyShortfallOf(screen.ds, named, screen.answers);
   if (money) return shortfallHeadline(printedShortfallOf(screen.ds, money));
-  if (first.gap_points) return pointsAwayLine(first.gap_points);
+  if (named.gap_points) return pointsAwayLine(named.gap_points);
   return "";
+}
+
+/** A headline's words with the nearest route's gap stressed after them, where
+ * there is one. */
+function withNearNote(headline: string, note: string): Headline {
+  return note ? { headline, emphasis: note } : { headline };
 }
 
 /** The written state's words, which the layout says stand. */
@@ -36,26 +42,25 @@ function writtenStateHeadline(screen: VerdictScreen): Headline {
 /**
  * The headline of a comparison, in words, of the kind the layout reckoned
  * (#314): the written state (s19); their rules met under an open question,
- * which is not "nothing open" — the doubt is the notice's business; the
- * steps, and the step the list offers first by its card's title (s23);
- * nothing open, with what to do next as part of the one line (review J2);
- * or the open routes, the nearest within reach stressed.
+ * which is not "nothing open" — the doubt is the notice's business — the
+ * nearest within reach stressed; the steps, and the step the list offers
+ * first by its card's title (s23); nothing open, with what to do next as part
+ * of the one line (review J2); or the open routes, the nearest within reach
+ * stressed.
  */
 export function comparedHeadlineOf(screen: VerdictScreen, c: Compared, reckoned: HeadlineLayout): Headline {
   switch (reckoned.kind) {
     case "written-state":
       return writtenStateHeadline(screen);
     case "unsettled":
-      return { headline: unsettledHeadline(reckoned.routes) };
+      return withNearNote(unsettledHeadline(reckoned.routes), nearNote(screen, c, reckoned.nearest));
     case "steps": {
       const nearest = composeStepTitle(screen, stepKeyed(c.steps, reckoned.nearest));
       return { headline: stepsWouldChangeHeadline(reckoned.steps), nearest };
     }
     case "nothing-open":
       return { headline: NOTHING_OPEN_HEADLINE, explore: reckoned.explore };
-    case "open": {
-      const note = nearNote(screen, c, reckoned.nearest);
-      return { headline: routesOpenHeadline(reckoned.routes, reckoned.countries), ...(note ? { emphasis: note } : {}) };
-    }
+    case "open":
+      return withNearNote(routesOpenHeadline(reckoned.routes, reckoned.countries), nearNote(screen, c, reckoned.nearest));
   }
 }

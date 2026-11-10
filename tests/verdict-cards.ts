@@ -183,7 +183,7 @@ function stepTitleKeyed(verdict: Verdict, key: string): string {
 /** The headline's kind and what its second sentence names: the route within
  * reach it measures, or the step it calls nearest. */
 function pinnedHeadlineOf(verdict: Verdict, headline: HeadlineLayout): LayoutPin["headline"] {
-  if (headline.kind === "open") return { kind: headline.kind, route: headline.nearest, step: null };
+  if (headline.kind === "open" || headline.kind === "unsettled") return { kind: headline.kind, route: headline.nearest, step: null };
   if (headline.kind === "steps") return { kind: headline.kind, route: null, step: stepTitleKeyed(verdict, headline.nearest) };
   return { kind: headline.kind, route: null, step: null };
 }
