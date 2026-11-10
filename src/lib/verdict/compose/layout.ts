@@ -258,7 +258,7 @@ interface SectionPlace {
 
 /** The routes in one country some arranged answer would open, each counted
  * once, however many answers would open it. */
-const countRoutesOpenedByArrangedAnswersIn = (compared: Compared, code: string): number =>
+const countDistinctRoutesOpenedByArrangedAnswers = (compared: Compared, code: string): number =>
   new Set(compared.arranged.flatMap((u) => routeIdsOf(u.routes.filter((r) => r.country === code)))).size;
 
 /** Whether a section holds anything the reader can act on (ruling 6 of
@@ -293,7 +293,7 @@ function countrySection(answeredDataset: AnsweredDataset, compared: Compared, at
     open: grouped.met.length, unsettled: grouped.unsettled.length, withinReach: grouped.near.length, notYet: grouped.hold.length,
     openUnknowns: openUnknownsIn(answeredDataset, countryResults), closed: grouped.closed.length, steps: steps.length,
     checkedWithJobOffer: section.jobOfferLine?.routes ?? 0,
-    openedByArrangedAnswers: countRoutesOpenedByArrangedAnswersIn(compared, code),
+    openedByArrangedAnswers: countDistinctRoutesOpenedByArrangedAnswers(compared, code),
     situationNotTaken: countryMarkOf(answeredDataset.ds, country, answeredDataset.answers[SITUATION_FIELD]) !== null,
   };
   const open = holdsSomethingToActOn(section, tally) || leads(country, lead);
