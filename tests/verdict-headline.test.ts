@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Criterion, type Dataset, type Profile, type Route } from "permit-rulebook-data";
+import { shortByUpToLine, unsettledHeadline } from "../src/lib/copy/verdict.js";
 import { ALGERIAN } from "./personas.js";
 import { groupsIn, layoutPinOf, verdictFor, verdictOn } from "./verdict-cards.js";
 
@@ -76,9 +77,7 @@ describe("with nothing open, a route whose rules are met leads the headline", ()
   it("the Algerian reader in France on €50,700–€59,373: the unsettled route first, the nearest gap second", () => {
     const verdict = verdictFor(ALGERIAN);
     expect(layoutPinOf(verdict).headline).toEqual({ kind: "unsettled", route: "fr-talent-blue-card", step: null });
-    expect(verdict.action.masthead.announced).toBe(
-      "1 route meets the rules — whether your passport can use it is unsettled. One is short by up to €8,673/year.",
-    );
+    expect(verdict.action.masthead.announced).toBe(`${unsettledHeadline(1)} ${shortByUpToLine("€8,673/year")}`);
   });
 });
 

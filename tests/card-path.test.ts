@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { routeStatements, type Dataset, type Profile } from "permit-rulebook-data";
+import { fieldOptions, routeStatements, type Dataset, type Profile } from "permit-rulebook-data";
+import { otherPathNeedsLine, pathTakenLine } from "../src/lib/copy/verdict.js";
 import { PERSONA_A } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import { blocksIn, drawnRouteOn, placed, verdictFor, verdictOn, withoutGlosses } from "./verdict-cards.js";
@@ -30,13 +31,30 @@ function linkedItemsOf(route: string, path: string): string[] {
   return items;
 }
 
+/** The paths the cases name, by the dataset's words. */
+const IT_PATH = "the IT-specialist path";
+const RECOGNISED_PATH = "the recognised-degree path";  // the shortage Blue Card's other way in
+const DUTCH_PATH = "the Dutch-institution path";  // the orientation year's first way in
+const DESIGNATED_PATH = "the designated-foreign-institution path";  // its second
+const VOCATIONAL_PATH = "the vocational path";  // the third path a written dataset adds
+
 /** The two items the shortage Blue Card links to its IT-specialist path. */
-const IT_PATH_ITEMS = linkedItemsOf(SHORTAGE, "the IT-specialist path");
+const IT_PATH_ITEMS = linkedItemsOf(SHORTAGE, IT_PATH);
 /** The orientation year's one item for designated foreign institutions. */
-const [DESIGNATED_ITEM] = linkedItemsOf(ORIENTATION, "the designated-foreign-institution path");
+const [DESIGNATED_ITEM] = linkedItemsOf(ORIENTATION, DESIGNATED_PATH);
+
+/** An answer's words, from the dataset: its button's label, and its short
+ * phrase where it has one. */
+function answerOf(field: string, value: string): { label: string; short: string } {
+  const option = fieldOptions(ds, field).find((o) => o.value === value);
+  if (!option?.short) throw new Error(`${field} has no answer ${value} with a short phrase`);
+  return { label: option.label, short: option.short };
+}
 
 /** The recognised-degree path's unmet rule for a degree not yet assessed, in the not-yet row's form. */
-const RECOGNISED_PATH_UNMET = "The recognised-degree path needs full German recognition — you declared Not assessed yet.";
+const RECOGNISED_PATH_UNMET = otherPathNeedsLine(RECOGNISED_PATH, [
+  { asks: answerOf("recognition_de", "recognized").short, declared: answerOf("recognition_de", "not_assessed").label },
+]);
 
 /** A card's markup, without the abbreviations' explainers. */
 const cardOn = (data: Dataset, answers: Profile, route: string): string =>
@@ -56,7 +74,7 @@ function withThirdShortagePath(): Dataset {
   const marked = route.criteria.find((c) => c.op === "any" && c.paths.some((p) => p.subject !== undefined));
   if (marked?.op !== "any") throw new Error("the shortage Blue Card has no marked criterion");
   marked.paths.push({
-    label: "vocational qualification", subject: "the vocational path",
+    label: "vocational qualification", subject: VOCATIONAL_PATH,
     criteria: [{ field: "qualification", op: "eq", value: "vocational" }],
   });
   return written;
@@ -80,7 +98,7 @@ describe("a card under \"unsettled for your passport\" names its path in the bad
     const written = withOpenQuestionOverShortage();
     expect(placed(verdictOn(written, PERSONA_A), SHORTAGE)?.kind).toBe("unsettled");
     expect(pathLinesOf(cardOn(written, PERSONA_A, SHORTAGE))).toEqual([
-      `Rules met through the IT-specialist path. ${RECOGNISED_PATH_UNMET}`,
+      `${pathTakenLine("rules-met", IT_PATH)} ${RECOGNISED_PATH_UNMET}`,
     ]);
   });
 });
@@ -89,7 +107,7 @@ describe("a full card says the path it went through", () => {
   it("persona A, not yet assessed, on the met band: met through the IT-specialist path, the recognised-degree path's unmet rule after it, the two IT items kept", () => {
     const card = cardOn(ds, PERSONA_A, SHORTAGE);
     expect(placed(verdictFor(PERSONA_A), SHORTAGE)?.kind).toBe("open");
-    expect(pathLinesOf(card)).toEqual([`Met through the IT-specialist path. ${RECOGNISED_PATH_UNMET}`]);
+    expect(pathLinesOf(card)).toEqual([`${pathTakenLine("met", IT_PATH)} ${RECOGNISED_PATH_UNMET}`]);
     for (const item of IT_PATH_ITEMS) expect(alsoRequiredOf(card)).toContain(item);
     // Under the title, ahead of the route's summary.
     expect(card.indexOf('<div class="path">')).toBeGreaterThan(card.indexOf("</h3>"));
@@ -100,22 +118,22 @@ describe("a full card says the path it went through", () => {
     const answers = { ...PERSONA_A, recognition_de: "recognized" };
     const card = cardOn(ds, answers, SHORTAGE);
     for (const item of IT_PATH_ITEMS) expect(plainTextOf(card)).not.toContain(item);
-    expect(pathLinesOf(card)).toEqual(["Met through the recognised-degree path."]);
+    expect(pathLinesOf(card)).toEqual([pathTakenLine("met", RECOGNISED_PATH)]);
   });
 
   it("persona A on the lowest band, a card short on a figure: \"Through …\", whatever its badge says", () => {
     const answers = { ...PERSONA_A, salary_eur_year: "band_0" };
     const card = cardOn(ds, answers, SHORTAGE);
     expect(placed(verdictFor(answers), SHORTAGE)?.kind).toBe("within-reach");
-    expect(pathLinesOf(card)).toEqual([`Through the IT-specialist path. ${RECOGNISED_PATH_UNMET}`]);
+    expect(pathLinesOf(card)).toEqual([`${pathTakenLine("short", IT_PATH)} ${RECOGNISED_PATH_UNMET}`]);
   });
 
   it("a criterion with three paths, on a written dataset: each other path states its unmet rule in turn", () => {
     const card = cardOn(withThirdShortagePath(), PERSONA_A, SHORTAGE);
-    expect(pathLinesOf(card)).toEqual([
-      `Met through the IT-specialist path. ${RECOGNISED_PATH_UNMET} `
-      + "The vocational path needs vocational training of 2+ years — you declared University degree.",
+    const vocationalUnmet = otherPathNeedsLine(VOCATIONAL_PATH, [
+      { asks: answerOf("qualification", "vocational").short, declared: answerOf("qualification", "degree").label },
     ]);
+    expect(pathLinesOf(card)).toEqual([`${pathTakenLine("met", IT_PATH)} ${RECOGNISED_PATH_UNMET} ${vocationalUnmet}`]);
   });
 });
 
@@ -124,14 +142,14 @@ describe("an \"Also required\" item linked to a path shows only when that path d
     const reader: Profile = { destination: "nl", citizenship: "IN", nl_recent_grad: "no", top200_grad: "yes" };
     const dutch = cardOn(ds, { ...reader, nl_recent_grad: "yes" }, ORIENTATION);
     expect(plainTextOf(dutch)).not.toContain(DESIGNATED_ITEM);
-    expect(pathLinesOf(dutch)).toEqual(["Met through the Dutch-institution path."]);
+    expect(pathLinesOf(dutch)).toEqual([pathTakenLine("met", DUTCH_PATH)]);
 
     const designated = cardOn(ds, reader, ORIENTATION);
     expect(alsoRequiredOf(designated)).toContain(DESIGNATED_ITEM);
-    expect(pathLinesOf(designated)).toEqual([
-      "Met through the designated-foreign-institution path. "
-      + "The Dutch-institution path needs a degree from a Dutch university or research institution, from the last 3 years — you declared No.",
+    const dutchUnmet = otherPathNeedsLine(DUTCH_PATH, [
+      { asks: answerOf("nl_recent_grad", "yes").short, declared: answerOf("nl_recent_grad", "no").label },
     ]);
+    expect(pathLinesOf(designated)).toEqual([`${pathTakenLine("met", DESIGNATED_PATH)} ${dutchUnmet}`]);
   });
 
   it("a not-yet row carries no path line, and keeps a path-linked item as written", () => {

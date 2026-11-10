@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
-import { moreWithDifferentSituationCount, moreWithJobOfferCount, notYetCount } from "../src/lib/copy/verdict.js";
+import {
+  moreWithDifferentSituationCount, moreWithJobOfferCount, notYetCount, upToTitle,
+} from "../src/lib/copy/verdict.js";
 import { ALGERIAN, PERSONA_A, PERSONA_C, PRIYA } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import { layoutPinOf, sectionNamed, summaryRowOf, verdictFor, type LayoutPin } from "./verdict-cards.js";
@@ -142,7 +144,7 @@ const PERSONA_C_PIN: LayoutPin = {
  * A salary step from a band with a floor, titled by its bound: "up to" since
  * ruling 1 on #187, leftover 2 (#316).
  */
-const salaryStepUpTo = (title: string) => ({ kind: "steps", steps: [`up to ${title}`], jobOfferLine: false });
+const salaryStepUpTo = (title: string) => ({ kind: "steps", steps: [upToTitle(title)], jobOfferLine: false });
 
 /** Priya: the Dutch Blue Card within reach and named by the headline, five not yet. */
 const PRIYA_PIN: LayoutPin = {

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { evaluate, reasonFor, type Criterion, type Dataset, type Profile } from "permit-rulebook-data";
+import { evaluate, reasonFor, shortLabelOf, type Criterion, type Dataset, type Profile } from "permit-rulebook-data";
+import {
+  POINTS_FIGURE, SHORT_ON_A_FIGURE_HEADING, figureGapSentence, shortOn, shortOnAFigureCount, upToTitle, withStepHtml,
+  wouldThenBeShortOnly,
+} from "../src/lib/copy/verdict.js";
 import { PERSONA_A, PRIYA } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import {
@@ -29,6 +33,14 @@ const PERSONA_A_LOWEST: Profile = { ...PERSONA_A, salary_eur_year: "band_0" };
  * shortage Blue Card and the experienced worker. */
 const BOTH_SHORT_ON_SALARY = ["de-blue-card-shortage", "de-experienced-worker"];
 
+/** A money field as a badge and a gap name it: its short label, in lower case. */
+const figureNamed = (field: string): string => shortLabelOf(ds, field).toLowerCase();
+const YEARLY_SALARY = figureNamed("salary_eur_year");  // persona A's figure
+const MONTHLY_SALARY = figureNamed("salary_eur_month");  // Priya's figure
+
+/** The general Blue Card's name, as a step's route line opens on it. */
+const GENERAL_BLUE_CARD = ds.countries.flatMap((c) => c.routes).find((r) => r.id === "de-blue-card-general")!.name;
+
 describe("the lowest band: the group says what is missing (rulings 8 and 9)", () => {
   const verdict = verdictFor(PERSONA_A_LOWEST);
   /** The same reader on all four countries, the offer in Germany. */
@@ -36,13 +48,13 @@ describe("the lowest band: the group says what is missing (rulings 8 and 9)", ()
 
   it("both routes sit under \"Short on a figure\", each badged \"Short on yearly salary\"", () => {
     for (const route of BOTH_SHORT_ON_SALARY) expect(placed(verdict, route)?.kind, route).toBe("within-reach");
-    expect(groupHeadingsIn(verdict)).toContain("Short on a figure");
-    for (const route of BOTH_SHORT_ON_SALARY) expect(badgeOf(drawnRouteOn(verdict, route)), route).toBe("Short on yearly salary");
+    expect(groupHeadingsIn(verdict)).toContain(SHORT_ON_A_FIGURE_HEADING);
+    for (const route of BOTH_SHORT_ON_SALARY) expect(badgeOf(drawnRouteOn(verdict, route)), route).toBe(shortOn([YEARLY_SALARY]));
   });
 
   it("the strip and a country's summary row count \"2 short on a figure\"", () => {
-    expect(stripTextOf(verdict)).toContain("2 short on a figure");
-    expect(plainTextOf(summaryRowOf(everywhere, "Germany"))).toContain("2 short on a figure");
+    expect(stripTextOf(verdict)).toContain(shortOnAFigureCount(2));
+    expect(plainTextOf(summaryRowOf(everywhere, "Germany"))).toContain(shortOnAFigureCount(2));
   });
 
   it("no screen says within reach", () => {
@@ -80,7 +92,7 @@ describe("a route short on two figures names both (ruling 9)", () => {
     expect(card.gap_max, "precondition: a salary gap").toBeGreaterThan(0);
     expect(card.gap_points, "precondition: a points gap").toBeGreaterThan(0);
     const verdict = verdictOn(written, POINTS_AND_SALARY_SHORT);
-    expect(badgeOf(drawnRouteOn(verdict, "de-chancenkarte"))).toBe("Short on yearly salary and points");
+    expect(badgeOf(drawnRouteOn(verdict, "de-chancenkarte"))).toBe(shortOn([YEARLY_SALARY, POINTS_FIGURE]));
     expect(plainTextOf(verdict.body).toLowerCase()).not.toContain("within reach");
   });
 });
@@ -93,20 +105,25 @@ describe("a step states the gap it leaves as a bound (ruling 9; ruling 1, leftov
   it("a step's route line: \"would then be short only by up to\" the gap", () => {
     const recognition = steps.find((s) => s.title === "full German recognition");
     expect(recognition, "precondition: the recognition step").toBeDefined();
-    expect(plainTextOf(recognition!.html)).toContain("EU Blue Card — general — would then be short only by up to €5,070/year");
+    const leftShort = wouldThenBeShortOnly([
+      { kind: "money", shortfall: { kind: "bounded", gap: "€5,070/year" }, field: YEARLY_SALARY },
+    ]);
+    expect(plainTextOf(recognition!.html)).toContain(`${GENERAL_BLUE_CARD} — ${leftShort}`);
   });
 
   it("a step title on a bounded gap keeps its bound: \"With up to €304.20/year more\"", () => {
     const salary = steps.find((s) => s.title.includes("€304.20/year"));
     expect(salary, "precondition: the salary step").toBeDefined();
-    expect(plainTextOf(salary!.html)).toContain("With up to €304.20/year more");
+    expect(plainTextOf(salary!.html)).toContain(plainTextOf(withStepHtml(upToTitle("€304.20/year more"))));
   });
 
   it("from a band open at the bottom, the route line names the line it asks (ruling 27)", () => {
     const recognition = stepsIn(verdictFor(PERSONA_A_LOWEST)).find((s) => s.title === "full German recognition");
     expect(recognition, "precondition: the recognition step").toBeDefined();
-    expect(plainTextOf(recognition!.html))
-      .toContain("EU Blue Card — general — would then be short only on yearly salary: it asks €50,700/year or more");
+    const leftShort = wouldThenBeShortOnly([
+      { kind: "money", shortfall: { kind: "open-below", line: "€50,700/year", band: "" }, field: YEARLY_SALARY },
+    ]);
+    expect(plainTextOf(recognition!.html)).toContain(`${GENERAL_BLUE_CARD} — ${leftShort}`);
   });
 });
 
@@ -119,7 +136,8 @@ describe("Priya's not-yet row gives its gap before its unknown (ruling 10)", () 
     const result = evaluate(ds, PRIYA).find((r) => r.route.id === ROUTE)!;
     const unknown = reasonFor(ds, result, PRIYA).line.replace(/\.$/, "");
     const line = foldedLineOf(drawnRouteOn(verdict, ROUTE));
-    expect(line.startsWith("Up to €1,585/month short of the monthly salary this route asks for.")).toBe(true);
+    const gap = figureGapSentence({ kind: "money", shortfall: { kind: "bounded", gap: "€1,585/month" }, field: MONTHLY_SALARY });
+    expect(line.startsWith(gap)).toBe(true);
     expect(line.indexOf(unknown), "the unknown follows the gap").toBeGreaterThan(0);
   });
 });
