@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Criterion, type Dataset, type Profile, type Route } from "permit-rulebook-data";
 import { shortByUpToLine, unsettledHeadline } from "../src/lib/copy/verdict.js";
-import { ALGERIAN, PERSONA_C } from "./personas.js";
+import { ALGERIAN, PERSONA_A, PERSONA_C } from "./personas.js";
 import { groupsIn, layoutPinOf, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -66,7 +66,13 @@ describe("the headline names the nearest route short on a figure", () => {
     expect(headlineRouteOf({ ...PRIYA_EVERYWHERE, salary_eur_year: "band_3" }, data)).toBe("de-blue-card-general");
   });
 
-  it("a tie on the share goes to the dataset's order", () => {
+  it("a tie on the share goes to the smaller amount: persona A on a band open at the bottom, the experienced worker, as the first salary step (ruling 29)", () => {
+    // On a band open at the bottom every share is the whole amount: the
+    // shortage Blue Card asks €45,934.20 and the experienced worker €45,630.
+    expect(headlineRouteOf({ ...PERSONA_A, salary_eur_year: "band_0" })).toBe("de-experienced-worker");
+  });
+
+  it("a tie on the share and the amount goes to the dataset's order", () => {
     // The shortage Blue Card, first, moved far away; the general Blue Card and
     // the experienced-worker route both asking €50,700, so equally short.
     const data = datasetWithRewrittenCriteria({ "de-blue-card-shortage": yearlySalaryAt(60_000), "de-experienced-worker": yearlySalaryAt(50_700) });

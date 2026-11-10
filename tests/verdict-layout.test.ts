@@ -45,9 +45,11 @@ const PERSONA_A_PIN: LayoutPin = {
   ],
 };
 
-/** Persona A on the lowest band: both routes within reach, the headline measuring the first. */
+/** Persona A on the lowest band: both routes within reach, each missing its
+ * whole amount, the headline measuring the one asking less, the experienced
+ * worker's €45,630, as the salary step does (ruling 29 on #310). */
 const PERSONA_A_LOWEST_PIN: LayoutPin = {
-  kind: "one-country", headline: { kind: "open", route: "de-blue-card-shortage", step: null },
+  kind: "one-country", headline: { kind: "open", route: "de-experienced-worker", step: null },
   strip: { open: 0, withinReach: 2, unsettled: 0, closed: 0, notYet: 6, openUnknowns: 1 },
   groups: [
     { kind: "within-reach", routes: ["de-blue-card-shortage", "de-experienced-worker"] },

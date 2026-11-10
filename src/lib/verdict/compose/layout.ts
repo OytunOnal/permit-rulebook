@@ -1,6 +1,6 @@
 // @level application
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, liveUnknowns, type Country, type Dataset, type Profile, type RouteResult,
+  DESTINATION_FIELD, SITUATION_FIELD, liveUnknowns, periodOf, type Country, type Dataset, type Profile, type RouteResult,
 } from "permit-rulebook-data";
 import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../../situations.js";
 import { EVERY_COUNTRY_ANSWER, groupedRoutesOf, routeIdsOf, type Compared, type GroupedRoutes } from "./in-view.js";
@@ -179,14 +179,34 @@ function shareStillMissingOf(answeredDataset: AnsweredDataset, r: RouteResult): 
   return Math.max(...shares);
 }
 
+/** How many times a year an amount stated per each of the dataset's periods is paid. */
+const TIMES_A_YEAR = { year: 1, month: 12 } as const;
+
+/**
+ * The amount a route within reach is measured against, per year so a monthly
+ * and a yearly line compare: its money threshold. A route short on points
+ * alone asks no amount, and ranks after one that does.
+ */
+function yearlyAmountAskedOf(answeredDataset: AnsweredDataset, r: RouteResult): number {
+  if (r.gap_max === undefined) return Infinity;
+  const measured = measuredCriterionOf(answeredDataset.ds, r, answeredDataset.answers);
+  if (!measured) throw new Error(`${r.route.id} is short on money against no threshold`);
+  const period = periodOf(answeredDataset.ds, measured.field);
+  if (period === undefined) throw new Error(`${measured.field} is a money question with no period`);
+  return measured.threshold.amount * TIMES_A_YEAR[period];
+}
+
 /** The route within reach with the smallest share of its amount still
- * missing, ties to the dataset's order (ruling 11 on #187); none where no
- * route is within reach. */
+ * missing (ruling 11 on #187); on a tie, the smaller amount, then the
+ * dataset's order (ruling 29 on #310); none where no route is within reach. */
 function nearestRouteWithinReach(answeredDataset: AnsweredDataset, near: RouteResult[]): string | null {
   const order = answeredDataset.ds.countries.flatMap((country) => country.routes.map((route) => route.id));
   const ranked = near
-    .map((r) => ({ id: r.route.id, share: shareStillMissingOf(answeredDataset, r), at: order.indexOf(r.route.id) }))
-    .sort((a, b) => a.share - b.share || a.at - b.at);
+    .map((r) => ({
+      id: r.route.id, share: shareStillMissingOf(answeredDataset, r), amount: yearlyAmountAskedOf(answeredDataset, r),
+      at: order.indexOf(r.route.id),
+    }))
+    .sort((a, b) => a.share - b.share || a.amount - b.amount || a.at - b.at);
   return ranked[0]?.id ?? null;
 }
 
