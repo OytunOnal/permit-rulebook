@@ -109,7 +109,7 @@ function stripHtml(s: Strip): string {
 
 /** The s19 sentence that stands in a country's not-yet count, where the
  * layout says its scored routes do not take the reader's situation (s21). */
-function closedToHtml(screen: VerdictScreen, code: string): string {
+function situationNotTakenHtml(screen: VerdictScreen, code: string): string {
   const said = unscoredTally(screen.ds, countryOf(screen.ds, code), screen.answers[SITUATION_FIELD]);
   if (!said) throw new Error(`the layout says ${code} does not take the situation, and its mark says nothing`);
   return said.html;
@@ -119,7 +119,7 @@ function closedToHtml(screen: VerdictScreen, code: string): string {
  * (s21). */
 function notYetPart(screen: VerdictScreen, section: CountrySection): string {
   const { tally } = section;
-  if (tally.situationNotTaken) return closedToHtml(screen, section.country);
+  if (tally.situationNotTaken) return situationNotTakenHtml(screen, section.country);
   if (!tally.notYet) return "";
   return esc(tally.openUnknowns ? notYetWithUnknowns(tally.notYet, tally.openUnknowns) : notYetCount(tally.notYet));
 }

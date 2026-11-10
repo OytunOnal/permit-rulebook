@@ -104,7 +104,7 @@ interface NotYetCounts {
 
 /** A section's tally of not-yet rows only, as persona C's are. */
 const notYetTally = (counts: NotYetCounts) =>
-  ({ open: 0, unsettled: 0, withinReach: 0, closed: 0, ...counts, closedTo: false });
+  ({ open: 0, unsettled: 0, withinReach: 0, closed: 0, ...counts, situationNotTaken: false });
 
 /** A fold of rows gated on a path answer alone, collapsed. */
 const gatedFold = (routes: string[]) => ({ fold: "needs-path-answers", open: false, routes });

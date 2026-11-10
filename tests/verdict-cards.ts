@@ -225,10 +225,9 @@ export function layoutPinOf(verdict: Verdict): LayoutPin {
   return {
     kind: layout.kind, strip, headline,
     lead: layout.lead === null ? null : countryNamed(layout.lead),
-    sections: layout.sections.map((s) => {
-      const { situationNotTaken, ...counts } = s.tally;
-      return { country: countryNamed(s.country), open: s.open, tally: { ...counts, closedTo: situationNotTaken }, groups: groupsOf(s.groups) };
-    }),
+    sections: layout.sections.map((s) => (
+      { country: countryNamed(s.country), open: s.open, tally: { ...s.tally }, groups: groupsOf(s.groups) }
+    )),
   };
 }
 
