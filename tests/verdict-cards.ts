@@ -1,5 +1,5 @@
 import dataset from "permit-rulebook-data/data/dataset.json";
-import type { Dataset, Profile } from "permit-rulebook-data";
+import { fieldOptions, type Dataset, type Profile } from "permit-rulebook-data";
 import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
 import { plainTextOf } from "./reader-pages.js";
@@ -19,6 +19,15 @@ export const verdictOn = (data: Dataset, answers: Profile, cameFrom: string | nu
 
 /** The verdict on the shipped dataset, with no route page behind it. */
 export const verdictFor = (answers: Profile): Verdict => verdictOn(ds, answers);
+
+/** The words a sentence names an answer by, from the shipped dataset: the
+ * option's short phrase, or its label where it has none; an answer the
+ * question does not offer fails the case. */
+export function answerWordsOf(field: string, value: string): string {
+  const option = fieldOptions(ds, field).find((o) => o.value === value);
+  if (!option) throw new Error(`${field} offers no answer ${value}`);
+  return option.short ?? option.label;
+}
 
 /** A route as a verdict draws it: its id, and its card's or row's markup. */
 export interface DrawnRoute {

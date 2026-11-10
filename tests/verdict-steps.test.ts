@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  SITUATION_FIELD, fieldOptions, phraseOf, routesAJobOfferFrees, subjectOf, unlockTitleOf, unlocks,
+  SITUATION_FIELD, phraseOf, routesAJobOfferFrees, subjectOf, unlockTitleOf, unlocks,
   type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
@@ -12,7 +12,7 @@ import { esc } from "../src/lib/reason.js";
 import {
   verdictHtml, type ArrangedLine, type CountrySection, type JobOfferLine, type Verdict, type VerdictGroup,
 } from "../src/lib/verdict/verdict.js";
-import { groupsIn, stepsIn, verdictFor, verdictOn } from "./verdict-cards.js";
+import { answerWordsOf, groupsIn, stepsIn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -63,14 +63,8 @@ function arrangedIn(answers: Profile, code: string): { field: string; value: str
   return [...out.values()];
 }
 
-/** An answer as a sentence reads it: the option's own words. */
-function phraseOfAnswer(field: string, value: string): string {
-  const option = fieldOptions(ds, field).find((o) => o.value === value)!;
-  return option.short ?? option.label;
-}
-
 /** The job offer, as the line names it. */
-const JOB_OFFER = phraseOfAnswer(SITUATION_FIELD, "offer");
+const JOB_OFFER = answerWordsOf(SITUATION_FIELD, "offer");
 
 /** A job offer line's words, from the layout's data: the dataset's phrases. */
 const jobOfferWordsOf = (line: JobOfferLine) => ({
@@ -79,7 +73,7 @@ const jobOfferWordsOf = (line: JobOfferLine) => ({
 
 /** An arranged line's words, from the layout's data: the dataset's phrases. */
 const arrangedWordsOf = (line: ArrangedLine) => ({
-  country: phraseOf(line.country), answers: line.answers.map((a) => ({ answer: phraseOfAnswer(a.field, a.value), routes: a.routes })),
+  country: phraseOf(line.country), answers: line.answers.map((a) => ({ answer: answerWordsOf(a.field, a.value), routes: a.routes })),
 });
 
 const groupOf = <K extends VerdictGroup["kind"]>(groups: VerdictGroup[], kind: K) =>

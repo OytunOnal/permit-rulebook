@@ -14,7 +14,7 @@ import { routesNeed, unscoredHeadline, unscoredTallyLine } from "../src/lib/copy
 import { url } from "../src/lib/site.js";
 import { verdictHtml, type Tally } from "../src/lib/verdict/verdict.js";
 import {
-  PAINTED_AS_COMPOSED, countryNamed, paintedAsComposedScript, saidLineOf, verdictOn, type SaidLine,
+  PAINTED_AS_COMPOSED, answerWordsOf, countryNamed, paintedAsComposedScript, saidLineOf, verdictOn, type SaidLine,
 } from "./verdict-cards.js";
 import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
 
@@ -237,10 +237,7 @@ describe("s21 — the walk's result, from the verdict", () => {
     expect(notYet.count).toBe(5);
     const fold = notYet.items.flatMap((i) => (typeof i !== "string" && i.kind === "needs-path-answers" ? [i] : []))[0];
     if (!fold) throw new Error("France's rows gated on a path answer do not fold");
-    const named = fold.pathAnswers.map((a) => {
-      const option = fieldOptions(ds, a.field).find((o) => o.value === a.value)!;
-      return option.short ?? option.label;
-    });
+    const named = fold.pathAnswers.map((a) => answerWordsOf(a.field, a.value));
     expect(routesNeed(fold.routes.length, joinOr(named))).toBe("4 routes need a job offer or an intra-corporate transfer");
     const ownRows = notYet.items.flatMap((i) => (typeof i === "string" ? [verdict.cards.routes[i]!] : []));
     expect(ownRows.join("")).toContain("Needs a job offer and a university degree");
