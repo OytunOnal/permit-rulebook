@@ -19,10 +19,15 @@ import type { CardScreen } from "./card-screen.js";
  * sentence: the reader is being told what else they must satisfy, not where
  * the dataset keeps it. The kind is `precondition`, the glossary's word;
  * "condition" is on Criterion's Avoid list (review 2026-09-07).
+ *
+ * A precondition linked to a path (`path`) drops where that path is one the
+ * card's route did not take (`notTaken`), and stays as written wherever no
+ * path has decided: a not-yet row, or a page with no reader (#315, ruling 5).
  */
-export function precondHtml(screen: CardScreen, route: Route): string {
+export function precondHtml(screen: CardScreen, route: Route, notTaken: ReadonlySet<string> = new Set()): string {
   const { ds, answers, glossary: seen = new Set() } = screen;
-  const statements = binding(route, answers).filter((s) => s.kind === "precondition");
+  const statements = binding(route, answers)
+    .filter((s) => s.kind === "precondition" && (s.path === undefined || !notTaken.has(s.path)));
   // The ones the interview asked, by the field it asked them on, in the order
   // the statements name those fields.
   const asked = new Map<string, RouteStatement[]>();
