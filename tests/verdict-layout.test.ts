@@ -193,7 +193,7 @@ const GUARDED: [string, Profile, LayoutPin][] = [
   ["the Algerian reader in France on €50,700–€59,373", ALGERIAN, ALGERIAN_PIN],
 ];
 
-describe("the verdict's layout, as data, at its entry (#314)", () => {
+describe("the verdict's layout, as data, at its entry", () => {
   for (const [reader, answers, pin] of GUARDED)
     it(`${reader}: the layout is today's`, () => {
       expect(layoutPinOf(verdictFor(answers))).toEqual(pin);
