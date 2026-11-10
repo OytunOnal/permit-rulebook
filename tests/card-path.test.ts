@@ -70,6 +70,29 @@ function withThirdShortagePath(): Dataset {
   return written;
 }
 
+/** The shipped dataset with the open question the Algerian talent routes
+ * carry put over the shortage Blue Card for persona A's Turkish passport. */
+function withOpenQuestionOverShortage(): Dataset {
+  const written = structuredClone(ds);
+  const shipped = written.notices?.find((n) => n.kind === "open-question");
+  if (!shipped) throw new Error("the dataset carries no open question to copy");
+  written.notices?.push({
+    ...structuredClone(shipped), id: "written-open-question",
+    when: { field: "citizenship", op: "eq", value: "TR" }, routes: [SHORTAGE],
+  });
+  return written;
+}
+
+describe("a card under \"unsettled for your passport\" names its path in the badge's words", () => {
+  it("an open question over the shortage Blue Card, on a written dataset: \"Rules met through …\"", () => {
+    const written = withOpenQuestionOverShortage();
+    expect(placed(verdictOn(written, PERSONA_A), SHORTAGE)?.kind).toBe("unsettled");
+    expect(pathLinesOf(cardOn(written, PERSONA_A, SHORTAGE))).toEqual([
+      `Rules met through the IT-specialist path. ${RECOGNISED_PATH_UNMET}`,
+    ]);
+  });
+});
+
 describe("a full card says the path it went through", () => {
   it("persona A, not yet assessed, on the met band: met through the IT-specialist path, the recognised-degree path's unmet rule after it, the two IT items kept", () => {
     const card = cardOn(ds, PERSONA_A, SHORTAGE);
