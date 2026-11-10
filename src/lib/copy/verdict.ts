@@ -191,12 +191,14 @@ export const figureGapSentence = (gap: PrintedFigureGap): string => {
     ? `Up to ${gap.shortfall.gap} short of the ${gap.field} this route asks for.`
     : `Needs ${gap.shortfall.line} or more ${onField(gap.field)}.`;
 };
-/** How a step's route line says one figure the step would leave short. */
+/** How a step's route line says one figure the step would leave short; from
+ * a band open at the bottom, the field, then the line it asks: "on yearly
+ * salary: it asks €50,700/year or more" (ruling 27). */
 const leftShortBy = (gap: PrintedFigureGap): string => {
   if (gap.kind === "points") return `by ${pointsCount(gap.points)}`;
   return gap.shortfall.kind === "bounded"
     ? `by up to ${gap.shortfall.gap}`
-    : `${onField(gap.field)}, which it ${asksOrMore(gap.shortfall.line)}`;
+    : `${onField(gap.field)}: it ${asksOrMore(gap.shortfall.line)}`;
 };
 /** A step's route line for a route the step leaves short on a figure, as a
  * bound: "would then be short only by up to €4,765.80/year" (ruling 9). */

@@ -115,6 +115,13 @@ describe("a step states the gap it leaves as a bound (ruling 9; ruling 1, leftov
     expect(salary, "precondition: the salary step").toBeDefined();
     expect(plainTextOf(salary!.html)).toContain("With up to €304.20/year more");
   });
+
+  it("from a band open at the bottom, the route line names the line it asks (ruling 27)", () => {
+    const recognition = stepsIn(verdictFor(PERSONA_A_LOWEST)).find((s) => s.title === "full German recognition");
+    expect(recognition, "precondition: the recognition step").toBeDefined();
+    expect(plainTextOf(recognition!.html))
+      .toContain("EU Blue Card — general — would then be short only on yearly salary: it asks €50,700/year or more");
+  });
 });
 
 describe("Priya's not-yet row gives its gap before its unknown (ruling 10)", () => {
