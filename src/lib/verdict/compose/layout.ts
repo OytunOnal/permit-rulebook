@@ -4,6 +4,7 @@ import {
 } from "permit-rulebook-data";
 import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../../situations.js";
 import { EVERY_COUNTRY_ANSWER, groupedRoutesOf, routeIdsOf, type Compared, type GroupedRoutes } from "./in-view.js";
+import { measuredCriterionOf } from "./money-shortfall.js";
 import { notYetGroupOf } from "./not-yet-group.js";
 import { countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, type Step } from "./steps.js";
 import type {
@@ -152,27 +153,65 @@ function stripOf(answeredDataset: AnsweredDataset, c: Compared): Strip {
 }
 
 /**
+ * The share of its own amount a route within reach still misses: the
+ * engine's money gap over the threshold it was measured against, or the
+ * points short over the points required; short on both, the larger. A band
+ * open at the bottom is measured from nothing, so its gap is the whole amount.
+ */
+function shareStillMissingOf(answeredDataset: AnsweredDataset, r: RouteResult): number {
+  const shares: number[] = [];
+  if (r.gap_max !== undefined) {
+    const measured = measuredCriterionOf(answeredDataset.ds, r, answeredDataset.answers);
+    if (!measured) throw new Error(`${r.route.id} is short on money against no threshold`);
+    shares.push(r.gap_max / measured.threshold.amount);
+  }
+  if (r.gap_points !== undefined) {
+    if (!r.points) throw new Error(`${r.route.id} is short on points with no points required`);
+    shares.push(r.gap_points / r.points.required);
+  }
+  if (!shares.length) throw new Error(`${r.route.id} is within reach with no gap`);
+  return Math.max(...shares);
+}
+
+/** The route within reach with the smallest share of its amount still
+ * missing, ties to the dataset's order (ruling 11 on #187); none where no
+ * route is within reach. */
+function nearestRouteWithinReach(answeredDataset: AnsweredDataset, near: RouteResult[]): string | null {
+  const order = answeredDataset.ds.countries.flatMap((country) => country.routes.map((route) => route.id));
+  const ranked = near
+    .map((r) => ({ id: r.route.id, share: shareStillMissingOf(answeredDataset, r), at: order.indexOf(r.route.id) }))
+    .sort((a, b) => a.share - b.share || a.at - b.at);
+  return ranked[0]?.id ?? null;
+}
+
+/** The headline's kind with nothing open, none unsettled and none within
+ * reach. With steps, the step worth naming is the first the list offers
+ * (s23) — an arranged answer or the job offer line is no step, so neither is
+ * counted or named (#175); with neither, nothing open, pointing at country
+ * sections only where there are some (F7). */
+function stepsOrNothingOpenHeadlineOf(c: Compared): HeadlineLayout {
+  const nearest = nearestStep(c.steps);
+  if (nearest) return { kind: "steps", steps: c.steps.length, nearest: stepKeyOf(nearest) };
+  return { kind: "nothing-open", explore: c.inView.visible.length === 1 ? "one-country" : "several-countries" };
+}
+
+/**
  * The headline's kind. A situation no scored route in the declared country
  * takes reads its written state (s19) — keyed, on the four-country path, by
  * the country the reader named at question 3 (s26) — in place of the
  * zero-open headlines. Nothing open otherwise: their rules met under an open
- * question is not "nothing open" (human's walk, 2026-09-10); with steps, the
- * step worth naming is the first the list offers (s23) — an arranged answer
- * or the job offer line is no step, so neither is counted or named (#175);
- * with neither, nothing open, pointing at country sections only where there
- * are some (F7). Something open: the open routes, and the nearest within reach.
+ * question is not "nothing open" (human's walk, 2026-09-10), and they lead
+ * whatever else is on screen, the route nearest within reach second (ruling
+ * 12 on #187). Something open: the open routes, and that nearest route.
  */
 function headlineOf(answeredDataset: AnsweredDataset, c: Compared): HeadlineLayout {
-  if (c.zeroOpen) {
-    if (writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)) return { kind: "written-state" };
-    const unsettled = c.whole.unsettled.length;
-    if (unsettled) return { kind: "unsettled", routes: unsettled };
-    const nearest = nearestStep(c.steps);
-    if (nearest) return { kind: "steps", steps: c.steps.length, nearest: stepKeyOf(nearest) };
-    return { kind: "nothing-open", explore: c.inView.visible.length === 1 ? "one-country" : "several-countries" };
-  }
+  if (c.zeroOpen && writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)) return { kind: "written-state" };
+  const nearest = nearestRouteWithinReach(answeredDataset, c.whole.near);
+  const unsettled = c.whole.unsettled.length;
+  if (!c.whole.met.length && unsettled) return { kind: "unsettled", routes: unsettled, nearest };
+  if (c.zeroOpen) return stepsOrNothingOpenHeadlineOf(c);
   const countries = new Set(c.whole.met.map((r) => r.country)).size;
-  return { kind: "open", routes: c.whole.met.length, countries, nearest: c.whole.near[0]?.route.id ?? null };
+  return { kind: "open", routes: c.whole.met.length, countries, nearest };
 }
 
 /** Single destination: the flat layout, no country chrome. */

@@ -174,9 +174,11 @@ const NIGERIAN_PIN: LayoutPin = {
   ],
 };
 
-/** The Algerian reader: one unsettled, one within reach, the transfer closed. */
+/** The Algerian reader: one unsettled, one within reach, the transfer closed.
+ * With nothing open, the unsettled route leads the headline and the route
+ * within reach is its second sentence (ruling 12 on #187). */
 const ALGERIAN_PIN: LayoutPin = {
-  kind: "one-country", headline: { kind: "open", route: "fr-talent-blue-card", step: null },
+  kind: "one-country", headline: { kind: "unsettled", route: "fr-talent-blue-card", step: null },
   strip: { open: 0, withinReach: 1, unsettled: 1, closed: 1, notYet: 2, openUnknowns: 0 },
   groups: [
     { kind: "unsettled", routes: ["fr-talent-qualifie"] },

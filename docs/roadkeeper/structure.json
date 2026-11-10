@@ -2170,6 +2170,11 @@
   },
   {
    "from": "src/lib/verdict/compose/layout.ts",
+   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/layout.ts",
    "to": "src/lib/verdict/compose/not-yet-group.ts",
    "kind": "dependency"
   },
@@ -5025,6 +5030,11 @@
   },
   {
    "from": "tests/verdict-gap.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-headline.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -8803,5 +8813,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8d6073ffcb7677db3fd4a7c0067466fd8950846aede1b3696c3bc0eb40848e2c"
+ "digest": "57c0823a21b4a999d13b29e3f4036c93798e372dcd4fe0910293608bf4024f14"
 }

@@ -124,7 +124,7 @@ export type Explore = "one-country" | "several-countries";
  */
 export type HeadlineLayout =
   | { kind: "written-state" }
-  | { kind: "unsettled"; routes: number }
+  | { kind: "unsettled"; routes: number; nearest: string | null }
   | { kind: "steps"; steps: number; nearest: string }
   | { kind: "nothing-open"; explore: Explore }
   | { kind: "open"; routes: number; countries: number; nearest: string | null };
