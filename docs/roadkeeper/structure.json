@@ -5492,11 +5492,6 @@
     "exported": false
    },
    {
-    "name": "pathFrameOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "printedFigureGapsOf",
     "kind": "fn",
     "exported": false
@@ -5507,7 +5502,12 @@
     "exported": false
    },
    {
-    "name": "badgeOf",
+    "name": "BadgeFrame",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "badgeFrameOf",
     "kind": "fn",
     "exported": false
    },
@@ -8982,5 +8982,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "feefd49c91c13b5d50411fdcc8386bb35eb7cfc15f512b9eb8bb96099d92aab2"
+ "digest": "e70f6ff02eab7f71861e758f9f055d0f3096ccded0f1ed19d9c181ebc1f994d7"
 }

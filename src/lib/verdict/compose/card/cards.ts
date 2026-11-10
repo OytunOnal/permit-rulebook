@@ -109,12 +109,6 @@ function pointsNoteHtml(r: RouteResult): string {
   return `<div class="gapnote"><b>${esc(shortByPoints(r.gap_points))}</b> ${esc(POINTS_TABLE_HINT)}</div>`;
 }
 
-/** The frame of a full card's path line: its badge's words (#315, rulings 4 and 18). */
-function pathFrameOf(r: RouteResult, look: CardLook): PathTakenFrame {
-  if (look.badge === "rules-met") return "rules-met";
-  return r.status === "met" ? "met" : "short";
-}
-
 /** Each figure a route is short on, printed on the answers given. */
 const printedFigureGapsOf = (screen: VerdictScreen, r: RouteResult, answers: Profile) =>
   figureGapsOf(r).map((gap) => printedFigureGapOf(screen.ds, gap, answers));
@@ -129,11 +123,21 @@ function shortOnBadge(screen: VerdictScreen, r: RouteResult): string {
   return shortOn([...new Set(amounts), ...points]);
 }
 
+/** A full card's badge: the class its colour is read from, its words, and
+ * the frame its path line is said in, which follows the badge's words (#315,
+ * rulings 4 and 18). */
+interface BadgeFrame {
+  frame: PathTakenFrame;
+  cls: string;
+  words: string;
+}
+
 /** A full card's badge: "Rules met" under "unsettled for your passport", what
  * a route within reach is short on, or the route's own status. */
-function badgeOf(screen: VerdictScreen, r: RouteResult, look: CardLook): string {
-  if (look.badge === "rules-met") return RULES_MET;
-  return r.status === "near" ? shortOnBadge(screen, r) : STATUS_LABEL[r.status];
+function badgeFrameOf(screen: VerdictScreen, r: RouteResult, look: CardLook): BadgeFrame {
+  if (look.badge === "rules-met") return { frame: "rules-met", cls: "unsettled", words: RULES_MET };
+  if (r.status === "near") return { frame: "short", cls: r.status, words: shortOnBadge(screen, r) };
+  return { frame: r.status === "met" ? "met" : "short", cls: r.status, words: STATUS_LABEL[r.status] };
 }
 
 /**
@@ -157,14 +161,14 @@ function leadLineHtml(screen: VerdictScreen, r: RouteResult): string {
  */
 export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLook): string {
   const { ds } = screen;
-  const rulesMet = look.badge === "rules-met";
+  const badge = badgeFrameOf(screen, r, look);
   return `
         <article class="route"${cameFromMark(screen, r)}>
           <div class="top">${look.chip === "country" ? `<span class="country">${esc(countryOf(ds, r.country).name)}</span>` : ""}
-            <span class="st ${rulesMet ? "unsettled" : r.status}">${esc(badgeOf(screen, r, look))}</span>
+            <span class="st ${badge.cls}">${esc(badge.words)}</span>
           </div>
           <h3>${esc(routeName(screen, r))}</h3>
-          ${pathLinesHtml(screen, r, pathFrameOf(r, look))}
+          ${pathLinesHtml(screen, r, badge.frame)}
           ${cameFromNote(screen, r)}
           <p class="why">${leadLineHtml(screen, r)}</p>
           ${scopeFor(screen, r)}
