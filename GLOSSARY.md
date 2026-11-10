@@ -76,13 +76,18 @@ the gate optional by writing. The card says in the open that it has no quote
 and why; a neighbouring quote is never borrowed to cover it.
 _Avoid_: undocumented, unverified, missing source, TODO, "no source found"
 
-**Deciding path**:
+**Deciding path** (UI: a full card's path line, "Met through the IT-specialist
+path."; #315):
 The single path of a disjunction an outcome actually rested on — the one that
 passed, or, where none did, the nearest reachable one the gap was measured to,
 or, where no gap was measured, the Open path with the fewest unmet rules (ties
 go to the order the paths are written in; #133). It names the threshold the
 reader was measured against, and other paths are marked as not theirs. **Where nothing has decided, no path is claimed and
 nothing is marked either way** — a card that has decided nothing marks nothing.
+A full card names it under its title, for each criterion whose paths the
+dataset words, in its badge's words: "Met through …", "Rules met through …",
+or "Through …" under a badge that already says what is short; then why each
+other path did not count, in the reader's own answers.
 _Avoid_: matched path, winning branch, chosen path, first path
 
 **Route reading**:
