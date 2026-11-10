@@ -7,7 +7,7 @@ import { countryOf } from "../../countries.js";
 import { esc } from "../../reason.js";
 import { phraseOfAnswerRef } from "./answer-phrase.js";
 import type { VerdictScreen } from "./card/cards.js";
-import { drawnRouteHtml, type DrawnCards } from "./drawn-cards.js";
+import { drawnRouteHtml, drawnRoutesHtml, type DrawnCards } from "./drawn-cards.js";
 import type { AnswerRef, Fold } from "./verdict-layout.js";
 
 /** The path answers a fold's rows ask for, named by the dataset, each name
@@ -30,9 +30,6 @@ function elsewhereSummary(screen: VerdictScreen, fold: Extract<Fold, { kind: "el
     ? routesInCountryWhereYouToldUs(fold.routes.length, country, told)
     : routesInCountryYouAreNotLookingAt(fold.routes.length, country);
 }
-
-const drawnRoutesHtml = (cards: DrawnCards, routes: string[]): string =>
-  routes.map((id) => drawnRouteHtml(cards, id)).join("");
 
 function foldHtml(screen: VerdictScreen, fold: Fold, cards: DrawnCards): string {
   if (fold.kind === "needs-path-answers")

@@ -12,7 +12,7 @@ import { esc, escAttr } from "../../reason.js";
 import { FEEDBACK_PATH, url } from "../../site.js";
 import { phraseOfAnswer, phraseOfAnswerRef } from "./answer-phrase.js";
 import type { VerdictScreen } from "./card/cards.js";
-import { drawnRouteHtml, drawnStepCard, type DrawnCards } from "./drawn-cards.js";
+import { drawnRoutesHtml, drawnStepCard, type DrawnCards } from "./drawn-cards.js";
 import { notYetItemsHtml } from "./not-yet.js";
 import { unscoredTally } from "./unscored.js";
 import type {
@@ -40,9 +40,6 @@ const HEAD: Record<"open" | "unsettled" | "within-reach" | "not-yet" | "closed",
  * H3 (critique F16). */
 const headedGroupHtml = (head: { title: string; cls: string }, inner: string, count: number): string =>
   `<h2 class="ghead ${head.cls}"><b>${esc(head.title)}</b> (${count})</h2><div class="stack">${inner}</div>`;
-
-const drawnRoutesHtml = (cards: DrawnCards, routes: string[]): string =>
-  routes.map((id) => drawnRouteHtml(cards, id)).join("");
 
 /** A field as running text names it: its `subject`. A field with none is
  * refused rather than named by its id. */

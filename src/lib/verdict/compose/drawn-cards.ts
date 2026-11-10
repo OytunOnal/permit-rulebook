@@ -93,6 +93,10 @@ export function drawnRouteHtml(cards: DrawnCards, id: string): string {
   return cards.routes[id]!;
 }
 
+/** The drawn markup of each route, by id, in the order given, joined. */
+export const drawnRoutesHtml = (cards: DrawnCards, routes: string[]): string =>
+  routes.map((id) => drawnRouteHtml(cards, id)).join("");
+
 /** A step's drawn card, by its id; one the verdict did not draw is refused. */
 export function drawnStepCard(cards: DrawnCards, id: string): StepCard {
   if (!Object.hasOwn(cards.steps, id)) throw new Error(`no step card is drawn for ${id}`);
