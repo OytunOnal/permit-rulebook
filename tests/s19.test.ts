@@ -8,8 +8,8 @@ import {
 } from "permit-rulebook-data";
 import { esc } from "../src/lib/reason.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { questionCardHtml } from "../src/lib/question.js";
-import { notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
+import { notScoredMarkHtml, questionCardHtml } from "../src/lib/question.js";
+import { notScoredFor } from "../src/lib/situations.js";
 import { NOT_CHECKED_HEADING, READ_ITS_RULES, STATUS_LABEL } from "../src/lib/copy/verdict.js";
 import { READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
 import { countryHeadline } from "../src/lib/copy/country-page.js";

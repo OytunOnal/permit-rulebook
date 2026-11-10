@@ -269,7 +269,7 @@
   "src/lib/copy/quotes.ts": "presentation",
   "src/lib/copy/route-page.ts": "presentation",
   "src/lib/copy/verdict.ts": "presentation",
-  "src/lib/countries.ts": "presentation",
+  "src/lib/countries.ts": "domain",
   "src/lib/country-page.ts": "presentation",
   "src/lib/country-search/control/controller.ts": "presentation",
   "src/lib/country-search/control/listbox.ts": "presentation",
@@ -1624,6 +1624,11 @@
   },
   {
    "from": "src/lib/question.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/question.ts",
    "to": "src/lib/situations.ts",
    "kind": "dependency"
   },
@@ -1835,21 +1840,6 @@
   {
    "from": "src/lib/sitemap.ts",
    "to": "src/lib/slug.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/situations.ts",
-   "to": "src/lib/copy/interview.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/situations.ts",
-   "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/situations.ts",
-   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -7882,6 +7872,11 @@
     "exported": false
    },
    {
+    "name": "notScoredMarkHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "InterviewProgress",
     "kind": "type",
     "exported": true
@@ -8356,11 +8351,6 @@
     "name": "markUnder",
     "kind": "fn",
     "exported": true
-   },
-   {
-    "name": "notScoredMarkHtml",
-    "kind": "fn",
-    "exported": true
    }
   ],
   "src/lib/slug.ts": [
@@ -8682,5 +8672,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a9c77b7396a7ddcb1d939d72bbc66fc75e7cb7cdf96a16adc0f6f4af17cb17f4"
+ "digest": "a88ea8536d035babbdaebbfc74e30994a98a8f854a99b80a4e08e9130baba345"
 }

@@ -1,4 +1,4 @@
-// @level presentation
+// @level domain
 import type { Country, Dataset } from "permit-rulebook-data";
 
 /**

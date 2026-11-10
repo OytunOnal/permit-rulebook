@@ -7,8 +7,8 @@ import {
   type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { questionCardHtml } from "../src/lib/question.js";
-import { SITUATION_COUNTRY_FIELD, markUnder, notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
+import { notScoredMarkHtml, questionCardHtml } from "../src/lib/question.js";
+import { SITUATION_COUNTRY_FIELD, markUnder, notScoredFor } from "../src/lib/situations.js";
 import { IS_QUOTED_NOT_CHECKED, READ_IT_HERE, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
 import { routesNeed, unscoredHeadline, unscoredTallyLine } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
