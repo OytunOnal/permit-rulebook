@@ -183,8 +183,8 @@ describe("a step prints the gap it leaves the same way", () => {
     funds_eur_month: "band_0",
   };
 
-  /** What the verdict's steps print after "would then be short only", the
-   * words "would come within reach" took before ruling 9 on #187 (#316). */
+  /** What the verdict's steps print after "would then be short only" (ruling
+   * 9 on #187). */
   const leftShortLinesIn = (answers: Profile): string[] =>
     stepsIn(verdictFor(answers)).flatMap((s) =>
       [...s.html.matchAll(new RegExp(`${WOULD_THEN_BE_SHORT_ONLY} ([^<]*)`, "g"))].map((m) => m[1]!));

@@ -184,7 +184,7 @@ describe("#175 — the job offer line", () => {
     }
   });
 
-  // The group's words were "within reach" until ruling 9 on #187 (#316).
+  // A job offer line promises a check, never a verdict: no group's words (ruling 9 on #187).
   it("never says met or short on a figure, and is in neither the headline's count nor Nearest", () => {
     const verdict = verdictFor(PRIYA);
     const lines = sectionsOf(verdict).flatMap((s) => {

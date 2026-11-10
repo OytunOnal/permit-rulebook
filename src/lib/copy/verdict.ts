@@ -137,9 +137,9 @@ export const STATUS_LABEL = { met: "Criteria met", hold: "Not yet" } as const;
 /**
  * The badge of a route short on a figure: what it is short on, each figure by
  * the dataset's short label or as points, two joined by "and" ("Short on
- * yearly salary and points"). The group once read "Within reach", which told a
- * reader €12,849 a year away that they were nearly there; the badge says what
- * is missing and the gap below it says how far (rulings 8 and 9 on #187).
+ * yearly salary and points"). The badge says what is missing and the gap
+ * below it says how far, so a reader €12,849 a year away is not told they are
+ * nearly there (rulings 8 and 9 on #187).
  */
 export const shortOn = (figures: string[]): string => `Short on ${joinAnd(figures)}`;
 /** The figure a points route is short on, as the badge names it. */

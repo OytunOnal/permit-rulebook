@@ -106,7 +106,7 @@ const PERSONA_C_GERMANY = {
 
 /** Persona C on all four countries: every section open, each holding something
  * to act on — France and the Netherlands their job offer line, the
- * Netherlands its live unknown too (ruling 6 of #187; collapsed before). Each
+ * Netherlands its live unknown too (ruling 6 of #187). Each
  * tally counts the routes its job offer line and arranged line would check or
  * open (ruling 7). */
 const PERSONA_C_PIN: LayoutPin = {
@@ -140,10 +140,8 @@ const PERSONA_C_PIN: LayoutPin = {
   ],
 };
 
-/**
- * A salary step from a band with a floor, titled by its bound: "up to" since
- * ruling 1 on #187, leftover 2 (#316).
- */
+/** A salary step from a band with a floor, titled by its bound, "up to"
+ * (ruling 1 on #187, leftover 2). */
 const salaryStepUpTo = (title: string) => ({ kind: "steps", steps: [upToTitle(title)], jobOfferLine: false });
 
 /** Priya: the Dutch Blue Card within reach and named by the headline, five not yet. */

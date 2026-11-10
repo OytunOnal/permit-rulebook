@@ -3,10 +3,9 @@ import { url } from "../src/lib/site.js";
 import { marksOn, situationScreen, unscoredOf } from "./situation-marks.js";
 
 /**
- * The guard ruling 19 changed the mark's shape under: the not-checked mark's
- * markup as question 2 draws it, whole, and the written state's door to the
- * same page. It sat in s19 and has its own file since ruling 21, under the
- * same name.
+ * The not-checked mark's markup as question 2 draws it, whole, and the
+ * written state's door to the same page: the guard the mark's data shape
+ * stands under (ruling 19).
  */
 describe("s19 — the interview knows which situations a destination's scored routes ask", () => {
   it("the mark's markup on question 2, whole, and the written state's door to the same page (guard, ruling 19)", () => {

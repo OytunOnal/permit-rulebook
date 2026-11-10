@@ -315,7 +315,7 @@ describe("s26 — the results the walks end on, from the verdict", () => {
     // is a transfer or a hosting agreement — arranged answers, no step (#175)
     // — so the nothing-open headline; the two sections where one would open
     // a route open on it (critique #4). France and the Netherlands open on
-    // their job offer lines (ruling 6 of #187; collapsed before).
+    // their job offer lines (ruling 6 of #187).
     expect(verdictFor(explorer).action.masthead.announced).toBe(NOTHING_OPEN_HEADLINE);
     expect(sectionsOf(explorer).map((s) => [s.name, s.open])).toEqual([
       ["Germany", true], ["France", true], ["Spain", true], ["Netherlands", true],
