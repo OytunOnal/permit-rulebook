@@ -272,7 +272,7 @@
   "src/lib/copy/quotes.ts": "presentation",
   "src/lib/copy/route-page.ts": "presentation",
   "src/lib/copy/verdict.ts": "presentation",
-  "src/lib/countries.ts": "presentation",
+  "src/lib/countries.ts": "domain",
   "src/lib/country-page.ts": "presentation",
   "src/lib/country-search/control/controller.ts": "presentation",
   "src/lib/country-search/control/listbox.ts": "presentation",
@@ -324,7 +324,7 @@
   "src/lib/screen.ts": "application",
   "src/lib/site.ts": "presentation",
   "src/lib/sitemap.ts": "presentation",
-  "src/lib/situations.ts": "presentation",
+  "src/lib/situations.ts": "application",
   "src/lib/slug.ts": "presentation",
   "src/lib/social-card.ts": "presentation",
   "src/lib/verdict/compose/answer-phrase.ts": "presentation",
@@ -1630,7 +1630,17 @@
   },
   {
    "from": "src/lib/question.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/question.ts",
    "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/question.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -1840,26 +1850,6 @@
   },
   {
    "from": "src/lib/sitemap.ts",
-   "to": "src/lib/slug.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/situations.ts",
-   "to": "src/lib/copy/interview.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/situations.ts",
-   "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/situations.ts",
-   "to": "src/lib/site.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/situations.ts",
    "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
@@ -2296,6 +2286,11 @@
   {
    "from": "src/lib/verdict/compose/unscored.ts",
    "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/unscored.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -3529,6 +3524,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/not-checked-mark-markup.test.ts",
+   "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/not-checked-mark-markup.test.ts",
+   "to": "tests/situation-marks.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/not-found.test.ts",
    "to": "src/lib/country-page.ts",
    "kind": "dependency"
@@ -4161,6 +4166,11 @@
   {
    "from": "tests/s19.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "tests/situation-marks.ts",
    "kind": "dependency"
   },
   {
@@ -4906,6 +4916,16 @@
   {
    "from": "tests/site-index.test.ts",
    "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/situation-marks.ts",
+   "to": "src/lib/question.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/situation-marks.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -7983,6 +8003,11 @@
     "exported": false
    },
    {
+    "name": "notScoredMarkHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "InterviewProgress",
     "kind": "type",
     "exported": true
@@ -8457,11 +8482,6 @@
     "name": "markUnder",
     "kind": "fn",
     "exported": true
-   },
-   {
-    "name": "notScoredMarkHtml",
-    "kind": "fn",
-    "exported": true
    }
   ],
   "src/lib/slug.ts": [
@@ -8783,5 +8803,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "34190198fa7ef83552c73213786d2ef39e30bbc672650c50f577e66dbad253a9"
+ "digest": "964eaee11734a19500671db37f5ee9e5bffc11332c57460669708c559fb049d3"
 }

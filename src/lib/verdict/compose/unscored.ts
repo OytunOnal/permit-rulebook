@@ -8,7 +8,8 @@ import {
 } from "../../copy/verdict.js";
 import { esc, sentenceWithLinkHtml } from "../../reason.js";
 import { url } from "../../site.js";
-import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../../situations.js";
+import { routePath } from "../../slug.js";
+import { type NotScoredMark, SITUATION_COUNTRY_FIELD, notScoredFor } from "../../situations.js";
 import { phraseOfAnswer } from "./answer-phrase.js";
 import { EVERY_COUNTRY_ANSWER, type SituationMarks } from "./in-view.js";
 
@@ -20,6 +21,10 @@ import { EVERY_COUNTRY_ANSWER, type SituationMarks } from "./in-view.js";
  * country's scored routes do not take — is the question card's as much as
  * the verdict's, and stays beside it.
  */
+
+/** Where the quoted route's page is: the mark names the route and its
+ * country, and the verdict builds the address (ruling 19). */
+const quotedHref = (quoted: NonNullable<NotScoredMark["quoted"]>): string => url(routePath(quoted.country, quoted.route));
 
 /** The situation option's `short`, the words a sentence reads it in. */
 const situationPhrase = (ds: Dataset, value: string): string => {
@@ -54,8 +59,8 @@ const countryMarkOf = (ds: Dataset, country: Country, situation: string | undefi
 export function unscoredTally(ds: Dataset, country: Country, situation: string | undefined): UnscoredTally | null {
   const mark = countryMarkOf(ds, country, situation);
   if (!mark || situation === undefined) return null;
-  const text = unscoredTallyLine(mark.country, situationPhrase(ds, situation), mark.route?.name);
-  const html = mark.route ? sentenceWithLinkHtml(text, mark.route.name, url(mark.route.path)) : esc(text);
+  const text = unscoredTallyLine(mark.country, situationPhrase(ds, situation), mark.quoted?.route.name);
+  const html = mark.quoted ? sentenceWithLinkHtml(text, mark.quoted.route.name, quotedHref(mark.quoted)) : esc(text);
   return { text, html };
 }
 
@@ -130,8 +135,8 @@ export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict 
   const rest = named ? unscoredNamedRestLine(opening, steps) : unscoredRestLine(steps);
   return {
     headline: unscoredHeadline(mark.country, phrase),
-    subline: mark.route ? `${unscoredRouteLine(opening, phrase, mark.route.name)} ${rest}` : rest,
-    ...(mark.route ? { door: { text: READ_ITS_RULES, href: url(mark.route.path) } } : {}),
+    subline: mark.quoted ? `${unscoredRouteLine(opening, phrase, mark.quoted.route.name)} ${rest}` : rest,
+    ...(mark.quoted ? { door: { text: READ_ITS_RULES, href: quotedHref(mark.quoted) } } : {}),
   };
 }
 

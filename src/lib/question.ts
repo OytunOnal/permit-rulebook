@@ -5,20 +5,23 @@ import {
 } from "permit-rulebook-data";
 import {
   ASKED_FOR, ASKED_FOR_COUNTS_JOIN, EDIT_LINE, INTRO_HEADLINE, INTRO_SUBLINE, LINK_ARRIVAL_LINE, NO_SCRIPT_LINE,
-  RETURNING_LINE, SHORT_SUBLINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, backToLine,
-  justRecordedLineHtml, keepNextLine, keepToResultLine, questionCounter, resumedLine, setAsideLead, setAsideLineHtml,
+  READ_IT_HERE, RETURNING_LINE, SHORT_SUBLINE, askedForFirstCount, askedForNextCount, askedForRouteHtml, backToLine,
+  justRecordedLineHtml, keepNextLine, keepToResultLine, notCheckedLine, notCheckedQuotedLine, questionCounter,
+  resumedLine, setAsideLead, setAsideLineHtml,
 } from "./copy/interview.js";
 import { countryOf } from "./countries.js";
 import { type Glossary, glossSection, glossed } from "./gloss.js";
-import { esc, escAttr } from "./reason.js";
+import { esc, escAttr, sentenceWithLinkHtml } from "./reason.js";
 import { glossedLearnLinkText } from "./quote.js";
 import { countrySearchHtml } from "./country-search/index.js";
 import type { Masthead, Screen } from "./screen.js";
+import { url } from "./site.js";
+import { routePath } from "./slug.js";
 // Which situation answers a country's scored routes take, and the quoted
 // route that would have asked otherwise — derived, never typed (s19); keyed
 // by the situation under a declared country, or by the country under a
 // declared situation (s21).
-import { markUnder, notScoredMarkHtml } from "./situations.js";
+import { type NotScoredMark, markUnder } from "./situations.js";
 
 /**
  * The interview's question screen, rendered — the one copy of that markup.
@@ -227,6 +230,14 @@ function optionsHtml(screen: QuestionScreen & { glossary: Glossary }): string {
                 mark ? `<small class="opt-mark" id="mark-${escAttr(o.value)}" data-for="${escAttr(o.value)}">${notScoredMarkHtml(mark)}</small>` : ""}`;
             }).join("")}
           </div>`;
+}
+
+/** The mark as the question screen draws it: the copy's line, with the door
+ * on the last three words where there is a page to open. */
+export function notScoredMarkHtml(mark: NotScoredMark): string {
+  if (!mark.quoted) return esc(notCheckedLine(mark.country));
+  const { country, route } = mark.quoted;
+  return sentenceWithLinkHtml(notCheckedQuotedLine(mark.country, route.name), READ_IT_HERE, url(routePath(country, route)));
 }
 
 /** Where the interview stands: the answers, the fields in the order they were
