@@ -90,7 +90,11 @@ click on the tracker link. Answers never leave the device.
   only through a `{route:<id>}` slot, filled with the route's `what_it_is`
   (#151). A path answer someone else arranges (a transfer, a hosting
   agreement) is marked `is_arranged`, and only the path question may carry
-  the mark (schema 0.8.3, #167). Beside it `data/countries.json` (199 passport issuers, labels,
+  the mark (schema 0.8.3, #167). A path a card names carries its words in
+  `subject` ("the IT-specialist path"), on every path of its criterion or on
+  none; a precondition that binds one path names it by those words in `path`;
+  an improvable question marks the answers a reader can reach by acting
+  `is_attainable`, and only those make a step (schema 0.8.5, #310). Beside it `data/countries.json` (199 passport issuers, labels,
   aliases, the article a name takes; `classes.eu_eea_ch` is a rule with four
   sourced legs; and 11 territories, none a row, each with the passport its
   people hold and an official sentence that says so) and
@@ -112,7 +116,10 @@ click on the tracker link. Answers never leave the device.
   learn link, on an https host on the authority list or the
   consolidated-text list · labels on paths · words on an ordered range ·
   route names only in slots · each territory's passport on the list with an
-  https source (#151) · the arranged mark only on the path question (#167). A failing gate fails the build downstream.
+  https source (#151) · the arranged mark only on the path question (#167) ·
+  a path's words on every path of its criterion or none, distinct within a
+  route, and a precondition's path one of them · an improvable question with
+  answers marks some attainable, never "I don't know" (#310). A failing gate fails the build downstream.
   The data repository runs them on every push to master, every pull request
   and after every watch run (`check.yml`); a red check after a watch run keeps
   `check failed on master`, and the next green one closes it (#117).
@@ -244,21 +251,33 @@ click on the tracker link. Answers never leave the device.
   where it goes and never the screen it is on. The passport search is a module
   whose controller holds no DOM, `country-search`, and an arrival is one call,
   `arrivalOf` (#208). The verdict is one deep module, `src/lib/verdict/`
-  (#167): `verdictOf` decides everything the results screen says (the
-  headline and masthead, the groups and their order, each card with its rail
-  and gap, the steps, the job offer line, the arranged line, the folds) and
-  `verdictHtml` draws it, with its own stylesheet; the interview only paints,
+  (#167), entered through `verdict.ts` (#310): `verdictOf` decides everything
+  the results screen says (the headline and masthead, the groups and their
+  order, each card with its rail and gap, the steps, the job offer line, the
+  arranged line, the folds) and `verdictHtml` draws it, with its own
+  stylesheet; the interview only paints,
   announces and records one history entry per verdict. Steps are only what
   the reader can do; what a job offer would open and what someone else
   arranges are said beside them, never counted as steps.
   Inside the verdict, its reckoning is `application` and makes no word, the
   dataset's included: `in-view.ts` and `steps.ts` say which results are in
   view, which steps there are and what each arranged answer or a job offer
-  would open, and the presentation files around them name it (#183).
+  would open, and the presentation files around them name it (#183). The
+  layout is reckoned once, as data, by `layout.ts`'s `layoutOf` (#310): each
+  section's groups in order, each fold's rows, which country sections open (any
+  holding something the reader can act on), the strip's and each tally's
+  numbers, the lead country, and the headline's kind and nearest route (the
+  smallest share of its amount still missing); `not-yet-group.ts` sorts the
+  Not yet rows and `figure-gaps.ts` says which figures a route is short on.
+  The files that draw read that layout and hold only words and cards;
+  `drawn-cards.ts` draws each route's and step's card once, by its id.
   A Card is one deep module inside it, `compose/card` (#184): its entry,
   `cards.ts`, draws a route's card, a Not yet row, a closed row, a step's card
   and a Notice's card, and its blocks (the route statements, the rail, the
-  provenance) are private behind it. A money shortfall is decided at
+  provenance, the path line) are private behind it. A full card says the
+  path it was met through, and each other path's unmet rule in the reader's
+  own answer; a precondition bound to a path the card did not take is left
+  off it, its count and its sources (#310). A money shortfall is decided at
   application, in numbers, by `money-shortfall.ts`; `printed-shortfall.ts`
   formats its amounts once, and `copy/verdict.ts` says it side by side as the
   card's note, a step's reach and the headline's emphasis.
