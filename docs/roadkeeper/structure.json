@@ -3159,6 +3159,11 @@
   },
   {
    "from": "tests/escaping.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
@@ -3185,6 +3190,11 @@
   {
    "from": "tests/escaping.test.ts",
    "to": "src/lib/verdict/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/escaping.test.ts",
+   "to": "tests/personas.ts",
    "kind": "dependency"
   },
   {
