@@ -8,7 +8,7 @@ import { notYetGroupOf } from "./not-yet-group.js";
 import { countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, type Step } from "./steps.js";
 import type {
   AnsweredDataset, ArrangedLine, ComparedLayout, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
-  StepPlace, Strip, VerdictGroup,
+  StepPlace, Strip, Tally, VerdictGroup,
 } from "./verdict-layout.js";
 
 /**
@@ -201,40 +201,53 @@ function namedFirst<T extends { code: string }>(countries: readonly T[], lead: s
   return [...countries].sort((a, b) => Number(leads(b, lead)) - Number(leads(a, lead)));
 }
 
-/** A country's place among the others: which country leads, and which
- * countries some step or arranged answer would open a route in. */
+/** A country's place among the others: the country, and which country leads. */
 interface SectionPlace {
   country: Country;
   lead: string | undefined;
-  wouldOpen: Set<string>;
 }
 
+/** The routes in one country some arranged answer would open, each counted
+ * once, however many answers would open it. */
+const countRoutesOpenedByArrangedAnswersIn = (c: Compared, code: string): number =>
+  new Set(c.arranged.flatMap((u) => routeIdsOf(u.routes.filter((r) => r.country === code)))).size;
+
+/** Whether a section holds anything the reader can act on (ruling 6 of
+ * #187): an open, unsettled or short-on-a-figure route, a step, an arranged
+ * line, a job offer line, or a live unknown. */
+const holdsSomethingToActOn = (s: Section, tally: Tally): boolean =>
+  tally.open + tally.unsettled + tally.withinReach + tally.openUnknowns + s.steps.length > 0
+  || s.jobOfferLine !== null || s.arranged !== null;
+
 /**
- * One country's section: collapsible, with its tally on the summary row.
- * Hopeful countries open; all-hold ones fold with the tally visible. With
- * nothing open anywhere, every section where a step or an arranged answer
- * would open a route opens — announcing "6 steps" and hiding two inside
- * folded sections is the withholding the headline exists to end (critique
- * #4); the job offer line, which opens nothing, opens no section — and the
- * country the headline is about leads, open (s26). A country's own closed
- * routes are counted in its tally: a count no summary names is a route the
- * reader never learns exists (s8).
+ * One country's section: collapsible, with its tally on the summary row. A
+ * section opens whenever it holds something the reader can act on — a
+ * collapsed France hid what a job offer would check there, and a collapsed
+ * Netherlands the reader's own "I don't know" (v1.2.2 critique F8; ruling 6
+ * of #187); a section of not-yet rows with nothing to act on stays
+ * collapsed, its tally visible. The country the headline is about leads,
+ * open (s26). The tally names every action inside: its steps, and the routes
+ * its job offer line would check and its arranged line would open (ruling
+ * 7). A country's own closed routes are counted in its tally: a count no
+ * summary names is a route the reader never learns exists (s8).
  */
 function countrySection(answeredDataset: AnsweredDataset, c: Compared, at: SectionPlace): CountrySection {
-  const code = at.country.code;
+  const { country, lead } = at;
+  const code = country.code;
   const rs = c.inView.results.filter((r) => r.country === code);
   const grouped = groupedRoutesOf(rs, c.inView.closed.filter((r) => r.country === code), c.inView.unsettledIds);
   const steps = stepPlacesOf(c.steps, code, (step) => step.unlock.routes.filter((r) => r.country === code))
     .filter((place) => place.routes.length);
-  const tally = {
+  const section: Section = { grouped, steps, ...linesIn(c, code), results: rs };
+  const tally: Tally = {
     open: grouped.met.length, unsettled: grouped.unsettled.length, withinReach: grouped.near.length, notYet: grouped.hold.length,
     openUnknowns: openUnknownsIn(answeredDataset, rs), closed: grouped.closed.length, steps: steps.length,
-    situationNotTaken: countryMarkOf(answeredDataset.ds, at.country, answeredDataset.answers[SITUATION_FIELD]) !== null,
+    checkedWithJobOffer: section.jobOfferLine?.routes ?? 0,
+    openedByArrangedAnswers: countRoutesOpenedByArrangedAnswersIn(c, code),
+    situationNotTaken: countryMarkOf(answeredDataset.ds, country, answeredDataset.answers[SITUATION_FIELD]) !== null,
   };
-  const hopeful = grouped.met.length + grouped.unsettled.length + grouped.near.length > 0;
-  const open = hopeful || (c.zeroOpen && at.wouldOpen.has(code)) || leads(at.country, at.lead);
-  const groups = groupsOf(answeredDataset, { grouped, steps, ...linesIn(c, code), results: rs });
-  return { country: code, open, tally, groups };
+  const open = holdsSomethingToActOn(section, tally) || leads(country, lead);
+  return { country: code, open, tally, groups: groupsOf(answeredDataset, section) };
 }
 
 /**
@@ -247,11 +260,8 @@ function countrySection(answeredDataset: AnsweredDataset, c: Compared, at: Secti
  * or a written state for nobody, the sections keep the dataset's order.
  */
 function countries(answeredDataset: AnsweredDataset, c: Compared): ComparedLayout {
-  const rows = [...c.steps.map((s) => s.unlock), ...c.arranged];
-  const wouldOpen = new Set(rows.flatMap((u) => u.routes.map((r) => r.country)));
   const lead = c.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)?.named : undefined;
-  const sections = namedFirst(c.inView.visible, lead)
-    .map((country) => countrySection(answeredDataset, c, { country, lead, wouldOpen }));
+  const sections = namedFirst(c.inView.visible, lead).map((country) => countrySection(answeredDataset, c, { country, lead }));
   return {
     kind: "countries", strip: stripOf(answeredDataset, c), headline: headlineOf(answeredDataset, c),
     lead: c.inView.visible.find((country) => leads(country, lead))?.code ?? null, sections,

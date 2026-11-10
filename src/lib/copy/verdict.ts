@@ -250,6 +250,10 @@ export const notYetCount = (n: number): string => `${n} not yet`;
 export const notYetWithUnknowns = (n: number, unknowns: number): string =>
   `${notYetCount(n)} — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown`;
 export const unlockingSteps = (n: number): string => `${n} unlocking step${n === 1 ? "" : "s"}`;
+/** A country's summary row also names its job offer line and its arranged
+ * line by the routes each would check or open (ruling 7 of #187). */
+export const moreWithJobOfferCount = (n: number): string => `${n} more with a job offer`;
+export const moreWithDifferentSituationCount = (n: number): string => `${n} more with a different situation`;
 
 /** The section headings, and the unsettled section's line, which names no
  * country and no passport: the notice above it does. */

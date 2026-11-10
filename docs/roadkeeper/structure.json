@@ -7433,6 +7433,16 @@
     "exported": true
    },
    {
+    "name": "moreWithJobOfferCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "moreWithDifferentSituationCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "OPEN_HEADING",
     "kind": "const",
     "exported": true
@@ -8803,5 +8813,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8d6073ffcb7677db3fd4a7c0067466fd8950846aede1b3696c3bc0eb40848e2c"
+ "digest": "6ff323386df0c948e7bdf263d3f4f3c8ae7a4e11db6805f810b93a31ad8e44de"
 }

@@ -244,9 +244,12 @@ describe("s21 — the walk's result, from the verdict", () => {
     expect(routesNeed(fold.routes.length, joinOr(named))).toBe("4 routes need a job offer or an intra-corporate transfer");
     const ownRows = notYet.items.flatMap((i) => (typeof i === "string" ? [verdict.routes[i]!] : []));
     expect(ownRows.join("")).toContain("Needs a job offer and a university degree");
-    // The other three lines, unchanged: each its not-yet count and nothing else.
+    // The other three lines, unchanged: each its not-yet count and nothing
+    // else — no job offer line and no arranged line for them to name either
+    // (ruling 7 of #187).
     const countOnly = (notYetCount: number): Tally => ({
-      open: 0, withinReach: 0, unsettled: 0, closed: 0, notYet: notYetCount, openUnknowns: 0, steps: 0, situationNotTaken: false,
+      open: 0, withinReach: 0, unsettled: 0, closed: 0, notYet: notYetCount, openUnknowns: 0, steps: 0,
+      checkedWithJobOffer: 0, openedByArrangedAnswers: 0, situationNotTaken: false,
     });
     expect(germany!.tally).toEqual(countOnly(8));
     expect(spain!.tally).toEqual(countOnly(4));
