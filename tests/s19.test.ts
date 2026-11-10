@@ -3,12 +3,12 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  SITUATION_FIELD, deriveBands, evaluate, fieldOptions, isScored, phraseAtStartOf, remainingQuestions, scopeWords,
-  situationsAsked, type Dataset, type Profile,
+  SITUATION_FIELD, deriveBands, evaluate, fieldOptions, isScored, phraseAtStartOf, scopeWords, situationsAsked,
+  type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { esc } from "../src/lib/reason.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { notScoredMarkHtml, questionCardHtml } from "../src/lib/question.js";
+import { notScoredMarkHtml } from "../src/lib/question.js";
 import { notScoredFor } from "../src/lib/situations.js";
 import { NOT_CHECKED_HEADING, READ_ITS_RULES, STATUS_LABEL } from "../src/lib/copy/verdict.js";
 import { READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
@@ -22,6 +22,7 @@ import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
+import { marksOn, situationScreen, unscoredOf } from "./situation-marks.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -30,48 +31,9 @@ const textOf = (html: string): string =>
   html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, "\"")
     .replace(/\s+/g, " ").trim();
 
-/** The written state as a reader meets it: the headline, the subline as
- * text, and the words of the subline that are its door, with where it goes. */
-interface WrittenState {
-  headline: string;
-  subline: string;
-  door?: { text: string; href: string };
-}
-
-/**
- * The written state the verdict for these answers reads, where it reads one:
- * its masthead is the only one whose subline is drawn in markup, for the door
- * in it.
- */
-function unscoredOf(answers: Profile): WrittenState | undefined {
-  const m = verdictFor(answers).action.masthead;
-  if (m.sublineHtml === undefined) return undefined;
-  const door = /<a href="([^"]*)">([^<]*)<\/a>/.exec(m.sublineHtml);
-  return { headline: m.announced, subline: m.subline, ...(door ? { door: { text: door[2]!, href: door[1]! } } : {}) };
-}
-
 /** What else a route's card on the verdict for these answers says is required. */
 const precondFor = (answers: Profile, route: string): string =>
   blocksIn(drawnRouteOn(verdictFor(answers), route), "precond", "precond asked");
-
-const situationQuestion = () => remainingQuestions(ds, { destination: "fr" }).find((q) => q.field === SITUATION_FIELD)!;
-
-/** The situation screen, drawn by the one renderer, for a reader who declared this destination. */
-const situationScreen = (destination: string): string =>
-  questionCardHtml({
-    dataset: ds, question: situationQuestion(), answers: { destination }, asked: ["destination"],
-    editing: null, total: 12,
-  });
-
-/** The marks on a drawn situation screen, keyed by the option they sit under.
- * The mark carries an id since s21 (its button is described by it); what is
- * read here is the mark, whatever else it carries. */
-function marksOn(html: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  const re = /<small class="opt-mark"[^>]*data-for="([^"]+)"[^>]*>([\s\S]*?)<\/small>/g;
-  for (let m = re.exec(html); m; m = re.exec(html)) out[m[1]!] = m[2]!;
-  return out;
-}
 
 /**
  * s19 — a situation no scored route asks.
