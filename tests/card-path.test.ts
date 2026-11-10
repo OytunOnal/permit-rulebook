@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { routeStatements, type Dataset, type Profile } from "permit-rulebook-data";
+import { PERSONA_A } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import { blocksIn, drawnRouteOn, placed, verdictFor, verdictOn, withoutGlosses } from "./verdict-cards.js";
 
@@ -13,15 +14,6 @@ import { blocksIn, drawnRouteOn, placed, verdictFor, verdictOn, withoutGlosses }
  */
 
 const ds = dataset as unknown as Dataset;
-
-/** Persona A of the v1.2.2 critique (W1): a Turkish passport, a German offer,
- * a degree not yet assessed, IT, five years in seven, on the shortage list,
- * €45,934.20–€50,700. */
-const PERSONA_A: Profile = {
-  destination: "de", situation: "offer", qualification: "degree", citizenship: "TR", recognition_de: "not_assessed",
-  experience_5y: "2plus", experience_7y: "5plus", occupation_shortage: "yes", occupation_it: "yes",
-  salary_eur_year: "band_5", german: "a1", english: "c1", age_band: "a30to35", funds_eur_month: "unknown",
-};
 
 /** The shortage Blue Card: degree or IT, persona A's met route. */
 const SHORTAGE = "de-blue-card-shortage";

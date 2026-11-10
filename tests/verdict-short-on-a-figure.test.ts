@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { evaluate, reasonFor, type Criterion, type Dataset, type Profile } from "permit-rulebook-data";
+import { PERSONA_A, PRIYA } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
 import {
   badgeOf, drawnRouteOn, foldedLineOf, groupHeadingsIn, placed, stepsIn, stripTextOf, summaryRowOf, verdictFor,
@@ -21,23 +22,8 @@ import {
 
 const ds = dataset as unknown as Dataset;
 
-/** Persona A of the v1.2.2 critique (W1): a Turkish passport, a German offer,
- * a degree not yet assessed, IT, five years in seven, on the shortage list. */
-const PERSONA_A: Profile = {
-  destination: "de", situation: "offer", qualification: "degree", citizenship: "TR", recognition_de: "not_assessed",
-  experience_5y: "2plus", experience_7y: "5plus", occupation_shortage: "yes", occupation_it: "yes",
-  salary_eur_year: "band_5", german: "a1", english: "c1", age_band: "a30to35", funds_eur_month: "unknown",
-};
-
 /** Persona A's W5 profile: the lowest salary band. */
 const PERSONA_A_LOWEST: Profile = { ...PERSONA_A, salary_eur_year: "band_0" };
-
-/** Priya: an Indian passport, a Dutch offer at €4,357–€4,754/month, 30–35, no
- * Dutch study, a designated institution she does not know. */
-const PRIYA: Profile = {
-  destination: "nl", situation: "offer", age_band: "a30to35", citizenship: "IN", qualification: "degree",
-  salary_eur_month: "band_4", nl_recent_grad: "no", top200_grad: "unknown",
-};
 
 /** The two routes persona A's lowest band leaves short on salary: the
  * shortage Blue Card and the experienced worker. */

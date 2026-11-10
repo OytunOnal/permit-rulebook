@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Criterion, type Dataset, type Profile, type Route } from "permit-rulebook-data";
+import { ALGERIAN } from "./personas.js";
 import { groupsIn, layoutPinOf, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -18,13 +19,6 @@ const ds = dataset as unknown as Dataset;
 const QUALIFIED_NIGERIAN: Profile = {
   destination: "de", citizenship: "NG", situation: "offer", situation_country: "de", qualification: "degree",
   recognition_de: "recognized", occupation_shortage: "yes", occupation_it: "no", experience_5y: "2plus", salary_eur_year: "band_3",
-};
-
-/** The Algerian reader with a French offer, on €50,700–€59,373. */
-const ALGERIAN: Profile = {
-  destination: "fr", citizenship: "DZ", situation: "offer", situation_country: "fr",
-  qualification: "degree", fr_degree: "yes", fr_innovative_employer: "no", fr_local_contract: "no",
-  experience_5y: "2plus", experience_7y: "5plus", salary_eur_year: "band_6",
 };
 
 /** Priya with a Dutch offer at €4,357–€4,754/month, looking at all four

@@ -2744,6 +2744,11 @@
   },
   {
    "from": "tests/card-path.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/card-path.test.ts",
    "to": "tests/reader-pages.ts",
    "kind": "dependency"
   },
@@ -5089,6 +5094,11 @@
   },
   {
    "from": "tests/verdict-headline.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-headline.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -5105,6 +5115,11 @@
   {
    "from": "tests/verdict-layout.test.ts",
    "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-layout.test.ts",
+   "to": "tests/personas.ts",
    "kind": "dependency"
   },
   {
@@ -5135,6 +5150,11 @@
   {
    "from": "tests/verdict-module.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-short-on-a-figure.test.ts",
+   "to": "tests/personas.ts",
    "kind": "dependency"
   },
   {
