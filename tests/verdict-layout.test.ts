@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Profile } from "permit-rulebook-data";
-import { layoutPinOf, verdictFor, type LayoutPin } from "./verdict-cards.js";
+import { moreWithDifferentSituationCount, moreWithJobOfferCount, notYetCount } from "../src/lib/copy/verdict.js";
+import { plainTextOf } from "./reader-pages.js";
+import { layoutPinOf, sectionNamed, summaryRowOf, verdictFor, type LayoutPin } from "./verdict-cards.js";
 
 /**
  * Today's layout, held as data at the verdict's entry (#314, seam 1 of #310):
@@ -89,9 +91,20 @@ const PERSONA_A_LOWEST_PIN: LayoutPin = {
   ],
 };
 
+/** What a tally of not-yet rows only counts besides them: its unknowns, its
+ * steps, and the routes its job offer line and arranged line would check or
+ * open (ruling 7 of #187). */
+interface NotYetCounts {
+  notYet: number;
+  openUnknowns: number;
+  steps: number;
+  checkedWithJobOffer: number;
+  openedByArrangedAnswers: number;
+}
+
 /** A section's tally of not-yet rows only, as persona C's are. */
-const notYetTally = (notYet: number, openUnknowns: number, steps: number) =>
-  ({ open: 0, unsettled: 0, withinReach: 0, notYet, openUnknowns, closed: 0, steps, closedTo: false });
+const notYetTally = (counts: NotYetCounts) =>
+  ({ open: 0, unsettled: 0, withinReach: 0, closed: 0, ...counts, closedTo: false });
 
 /** A fold of rows gated on a path answer alone, collapsed. */
 const gatedFold = (routes: string[]) => ({ fold: "needs-path-answers", open: false, routes });
@@ -101,7 +114,8 @@ const JOB_OFFER_LINE_ONLY = { kind: "steps", steps: [], jobOfferLine: true };
 
 /** Persona C's German section: five steps, the arranged line, two rows and a fold of six. */
 const PERSONA_C_GERMANY = {
-  country: "Germany", open: true, tally: notYetTally(8, 1, 5),
+  country: "Germany", open: true,
+  tally: notYetTally({ notYet: 8, openUnknowns: 1, steps: 5, checkedWithJobOffer: 4, openedByArrangedAnswers: 2 }),
   groups: [
     {
       kind: "steps", jobOfferLine: true,
@@ -121,27 +135,34 @@ const PERSONA_C_GERMANY = {
   ],
 };
 
-/** Persona C on all four countries: Germany and Spain open, France and the Netherlands collapsed. */
+/** Persona C on all four countries: every section open, each holding something
+ * to act on — France and the Netherlands their job offer line, the
+ * Netherlands its live unknown too (ruling 6 of #187; collapsed before). Each
+ * tally counts the routes its job offer line and arranged line would check or
+ * open (ruling 7). */
 const PERSONA_C_PIN: LayoutPin = {
   kind: "countries", headline: { kind: "steps", route: null, step: "full German recognition" }, lead: null,
   strip: { open: 0, withinReach: 0, unsettled: 0, closed: 0, notYet: 23, openUnknowns: 2 },
   sections: [
     PERSONA_C_GERMANY,
     {
-      country: "France", open: false, tally: notYetTally(5, 0, 0),
+      country: "France", open: true,
+      tally: notYetTally({ notYet: 5, openUnknowns: 0, steps: 0, checkedWithJobOffer: 3, openedByArrangedAnswers: 0 }),
       groups: [JOB_OFFER_LINE_ONLY, {
         kind: "not-yet", count: 5,
         items: [gatedFold(["fr-talent-qualifie", "fr-talent-blue-card", "fr-ict", "fr-talent-innovante", "fr-talent-mission"])],
       }],
     },
     {
-      country: "Spain", open: true, tally: notYetTally(4, 0, 0),
+      country: "Spain", open: true,
+      tally: notYetTally({ notYet: 4, openUnknowns: 0, steps: 0, checkedWithJobOffer: 2, openedByArrangedAnswers: 2 }),
       groups: [JOB_OFFER_LINE_ONLY, ARRANGED, {
         kind: "not-yet", count: 4, items: [gatedFold(["es-blue-card", "es-highly-qualified", "es-ict", "es-researcher"])],
       }],
     },
     {
-      country: "Netherlands", open: false, tally: notYetTally(6, 1, 0),
+      country: "Netherlands", open: true,
+      tally: notYetTally({ notYet: 6, openUnknowns: 1, steps: 0, checkedWithJobOffer: 2, openedByArrangedAnswers: 0 }),
       groups: [JOB_OFFER_LINE_ONLY, {
         kind: "not-yet", count: 6,
         items: ["nl-hsm-under30", "nl-orientation-year", gatedFold(["nl-hsm-30plus", "nl-blue-card", "nl-ict", "nl-researcher"])],
@@ -208,4 +229,50 @@ describe("the verdict's layout, as data, at its entry (#314)", () => {
     it(`${reader}: the layout is today's`, () => {
       expect(layoutPinOf(verdictFor(answers))).toEqual(pin);
     });
+});
+
+/** Each country section's name and whether it opens, in the order drawn. */
+function sectionsOpenIn(answers: Profile): [string, boolean][] {
+  const { sections } = layoutPinOf(verdictFor(answers));
+  if (!sections) throw new Error("this verdict draws no country sections");
+  return sections.map((s) => [s.country, s.open]);
+}
+
+/** Persona C with a German offer, a recognised degree and no top-200 degree:
+ * France, Spain and the Netherlands hold only not-yet rows placed elsewhere. */
+const PERSONA_C_WITH_GERMAN_OFFER: Profile = {
+  ...PERSONA_C, situation: "offer", situation_country: "de", recognition_de: "recognized", top200_grad: "no",
+};
+
+/** A country's summary row as the reader reads it, without its markup. */
+const summaryRowTextOf = (answers: Profile, name: string): string => plainTextOf(summaryRowOf(verdictFor(answers), name));
+
+describe("a country with something to act on opens, and its row names each action", () => {
+  // Ruling 6 of #187: France opens on its job offer line, the Netherlands on
+  // its job offer line and persona C's own "I don't know".
+  it("persona C: all four sections open", () => {
+    expect(sectionsOpenIn(PERSONA_C)).toEqual([
+      ["Germany", true], ["France", true], ["Spain", true], ["Netherlands", true],
+    ]);
+  });
+
+  // Ruling 6 of #187: rows placed in another country, with no step, line or
+  // live unknown beside them, are nothing to act on.
+  it("a section of not-yet rows with nothing to act on stays collapsed", () => {
+    expect(sectionsOpenIn(PERSONA_C_WITH_GERMAN_OFFER)).toEqual([
+      ["Germany", true], ["France", false], ["Spain", false], ["Netherlands", false],
+    ]);
+  });
+
+  // Ruling 7 of #187: the row counts the routes the job offer line would
+  // check and the routes the arranged line would open — Spain's transfer and
+  // hosting agreement open one route each.
+  it("persona C: France's and Spain's summary rows count the job offer line's and the arranged line's routes", () => {
+    const verdict = verdictFor(PERSONA_C);
+    expect(sectionNamed(verdict, "France").tally).toMatchObject({ checkedWithJobOffer: 3, openedByArrangedAnswers: 0 });
+    expect(sectionNamed(verdict, "Spain").tally).toMatchObject({ checkedWithJobOffer: 2, openedByArrangedAnswers: 2 });
+    expect(summaryRowTextOf(PERSONA_C, "France")).toBe([notYetCount(5), moreWithJobOfferCount(3)].join(" · "));
+    expect(summaryRowTextOf(PERSONA_C, "Spain"))
+      .toBe([notYetCount(4), moreWithJobOfferCount(2), moreWithDifferentSituationCount(2)].join(" · "));
+  });
 });

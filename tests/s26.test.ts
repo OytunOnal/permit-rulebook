@@ -314,10 +314,11 @@ describe("s26 — the results the walks end on, from the verdict", () => {
     // The explorer: dataset order. What would open more in Germany and Spain
     // is a transfer or a hosting agreement — arranged answers, no step (#175)
     // — so the nothing-open headline; the two sections where one would open
-    // a route open on it (critique #4).
+    // a route open on it (critique #4). France and the Netherlands open on
+    // their job offer lines (ruling 6 of #187; collapsed before).
     expect(verdictFor(explorer).action.masthead.announced).toBe(NOTHING_OPEN_HEADLINE);
     expect(sectionsOf(explorer).map((s) => [s.name, s.open])).toEqual([
-      ["Germany", true], ["France", false], ["Spain", true], ["Netherlands", false],
+      ["Germany", true], ["France", true], ["Spain", true], ["Netherlands", true],
     ]);
     expect(sectionsOf(explorer).every((s) => linkIn(s) === null)).toBe(true);
     // The offer in Germany: the same headline, dataset order, Germany's section open on its arranged line.

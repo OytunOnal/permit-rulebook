@@ -103,6 +103,11 @@ export interface Strip {
  * situation. */
 export interface Tally extends Strip {
   steps: number;
+  /** The routes the country's job offer line would check (ruling 7 of #187). */
+  checkedWithJobOffer: number;
+  /** The routes the country's arranged line would open, each counted once
+   * (ruling 7 of #187). */
+  openedByArrangedAnswers: number;
   situationNotTaken: boolean;
 }
 
