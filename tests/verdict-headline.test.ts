@@ -1,0 +1,151 @@
+import { describe, expect, it } from "vitest";
+import dataset from "permit-rulebook-data/data/dataset.json";
+import { fieldOptions, type Criterion, type Dataset, type Profile, type Route } from "permit-rulebook-data";
+import { shortByUpToLine, unsettledHeadline } from "../src/lib/copy/verdict.js";
+import { ALGERIAN, PERSONA_A, PERSONA_C } from "./personas.js";
+import { groupsIn, layoutPinOf, verdictFor, verdictOn } from "./verdict-cards.js";
+
+const ds = dataset as unknown as Dataset;
+
+/**
+ * What the headline speaks of, read from the layout at the verdict's entry:
+ * the nearest route short on a figure, by the share of its own amount still
+ * missing (ruling 11 on #187), and, with nothing open, the routes whose rules
+ * are met leading it (ruling 12). And no step offers an answer that is no
+ * action (ruling 13): on a question a reader can improve, only an answer the
+ * dataset marks as one a reader can reach by acting (ruling 28 on #310).
+ */
+
+/** The hostile walk's qualified Nigerian reader: a recognised degree, a
+ * shortage occupation, a German offer, on €41,356.36–€45,630. */
+const QUALIFIED_NIGERIAN: Profile = {
+  destination: "de", citizenship: "NG", situation: "offer", situation_country: "de", qualification: "degree",
+  recognition_de: "recognized", occupation_shortage: "yes", occupation_it: "no", experience_5y: "2plus", salary_eur_year: "band_3",
+};
+
+/** Priya with a Dutch offer at €4,357–€4,754/month, looking at all four
+ * countries, with a recognised degree and a yearly salary declared too. */
+const PRIYA_EVERYWHERE: Profile = {
+  destination: "all", situation: "offer", situation_country: "nl", age_band: "a30to35", citizenship: "IN",
+  qualification: "degree", salary_eur_month: "band_4", nl_recent_grad: "no", top200_grad: "unknown",
+  recognition_de: "recognized",
+};
+
+/** The route a headline's second sentence names, from the layout. */
+const headlineRouteOf = (answers: Profile, data: Dataset = ds): string | null =>
+  layoutPinOf(verdictOn(data, answers)).headline.route;
+
+/** A copy of the shipped dataset with each named route's criteria rewritten. */
+function datasetWithRewrittenCriteria(rewrites: Record<string, (criteria: Criterion[]) => Criterion[]>): Dataset {
+  const routeOf = (route: Route): Route =>
+    (rewrites[route.id] ? { ...route, criteria: rewrites[route.id]!(route.criteria) } : route);
+  return { ...ds, countries: ds.countries.map((c) => ({ ...c, routes: c.routes.map(routeOf) })) };
+}
+
+/** A route's yearly salary threshold moved to another amount. */
+const yearlySalaryAt = (amount: number) => (criteria: Criterion[]): Criterion[] =>
+  criteria.map((c) => (c.op === "gte" && c.field === "salary_eur_year" ? { ...c, threshold: { ...c.threshold, amount } } : c));
+
+/** A German route that takes an offer in any country: its rule on where the
+ * offer is left out. */
+const offerAnywhere = (criteria: Criterion[]): Criterion[] =>
+  criteria.filter((c) => !(c.op === "any" && c.paths.some((p) => p.criteria.some((x) => "field" in x && x.field === "situation_country"))));
+
+describe("the headline names the nearest route short on a figure", () => {
+  it("the qualified Nigerian reader on €41,356.36–€45,630: the experienced-worker route, nearer by share than the first", () => {
+    expect(headlineRouteOf(QUALIFIED_NIGERIAN)).toBe("de-experienced-worker");
+  });
+
+  it("Priya with a German route on screen too: a monthly gap beside a yearly one, nearest by share", () => {
+    // The German Blue Card asks €50,700/year. On €33,085.09–€39,582 it is
+    // €17,614.91 short, 35% of its amount; the Dutch Blue Card is €1,585/month
+    // short of €5,942, 27%. On €41,356.36–€45,630 the German one is €9,343.64
+    // short, 18%: nearer by share though further in euros.
+    const data = datasetWithRewrittenCriteria({ "de-blue-card-general": offerAnywhere });
+    expect(headlineRouteOf({ ...PRIYA_EVERYWHERE, salary_eur_year: "band_1" }, data)).toBe("nl-blue-card");
+    expect(headlineRouteOf({ ...PRIYA_EVERYWHERE, salary_eur_year: "band_3" }, data)).toBe("de-blue-card-general");
+  });
+
+  it("a tie on the share goes to the smaller amount: persona A on a band open at the bottom, the experienced worker, as the first salary step (ruling 29)", () => {
+    // On a band open at the bottom every share is the whole amount: the
+    // shortage Blue Card asks €45,934.20 and the experienced worker €45,630.
+    expect(headlineRouteOf({ ...PERSONA_A, salary_eur_year: "band_0" })).toBe("de-experienced-worker");
+  });
+
+  it("a tie on the share and the amount goes to the dataset's order", () => {
+    // The shortage Blue Card, first, moved far away; the general Blue Card and
+    // the experienced-worker route both asking €50,700, so equally short.
+    const data = datasetWithRewrittenCriteria({ "de-blue-card-shortage": yearlySalaryAt(60_000), "de-experienced-worker": yearlySalaryAt(50_700) });
+    expect(headlineRouteOf(QUALIFIED_NIGERIAN, data)).toBe("de-blue-card-general");
+  });
+});
+
+describe("with nothing open, a route whose rules are met leads the headline", () => {
+  it("the Algerian reader in France on €50,700–€59,373: the unsettled route first, the nearest gap second", () => {
+    const verdict = verdictFor(ALGERIAN);
+    expect(layoutPinOf(verdict).headline).toEqual({ kind: "unsettled", route: "fr-talent-blue-card", step: null });
+    expect(verdict.action.masthead.announced).toBe(`${unsettledHeadline(1)} ${shortByUpToLine("€8,673/year")}`);
+  });
+});
+
+/** A refusal is an outcome, not something a reader can go and do. */
+const REFUSAL = "recognition_de=not_recognised";
+
+/** Each profile of `base` across every answer of each of `fields`. */
+function acrossAnswers(base: Profile, fields: string[]): Profile[] {
+  let profiles: Profile[] = [base];
+  for (const field of fields) {
+    const values = fieldOptions(ds, field).map((o) => o.value);
+    profiles = profiles.flatMap((p) => values.map((v) => ({ ...p, [field]: v })));
+  }
+  return profiles;
+}
+
+/** German offer-holders across their qualification, recognition, occupation
+ * and experience answers, on €41,356.36–€45,630. */
+const germanOfferHolders = (): Profile[] => acrossAnswers(
+  { destination: "de", citizenship: "NG", situation: "offer", situation_country: "de", salary_eur_year: "band_3" },
+  ["qualification", "recognition_de", "occupation_shortage", "occupation_it", "experience_5y", "experience_7y"],
+);
+
+/** Persona C, an explorer on all four countries, across their qualification,
+ * recognition, experience and German answers (ruling 28 on #310). */
+const explorersOnAllFour = (): Profile[] =>
+  acrossAnswers(PERSONA_C, ["qualification", "recognition_de", "experience_5y", "experience_7y", "german"]);
+
+/** The answers that are no action, each as a step's key writes it: every
+ * answer of a question a reader can improve that the dataset does not mark as
+ * one a reader can reach by acting, and every "I don't know" (ruling 28 on
+ * #310). */
+const noActionAnswers = (): string[] => ds.fields.flatMap((f) => fieldOptions(ds, f.id)
+  .filter((o) => o.is_unknown || (f.kind === "improvable" && !o.is_attainable))
+  .map((o) => `${f.id}=${o.value}`));
+
+/** How many steps the profiles were offered, each checked to offer no answer
+ * that is no action. */
+function stepsReadAcross(profiles: Profile[], noAction: string[]): number {
+  let stepsRead = 0;
+  for (const answers of profiles)
+    for (const group of groupsIn(verdictFor(answers))) {
+      if (group.kind !== "steps") continue;
+      for (const place of group.steps) {
+        stepsRead++;
+        const offered = place.step.split("+");
+        expect(offered.filter((answer) => noAction.includes(answer)), JSON.stringify(answers)).toEqual([]);
+      }
+    }
+  return stepsRead;
+}
+
+describe("no step offers an answer that is no action", () => {
+  it("across 540 German offer-holder profiles and 450 explorers on all four countries", () => {
+    const noAction = noActionAnswers();
+    expect(noAction, "the dataset no longer has the refusal").toContain(REFUSAL);
+    expect(noAction, "the dataset no longer has an unknown recognition").toContain(`recognition_de=${PERSONA_C.recognition_de}`);
+    const offerHolders = germanOfferHolders();
+    const explorers = explorersOnAllFour();
+    expect([offerHolders.length, explorers.length]).toEqual([540, 450]);
+    expect(stepsReadAcross(offerHolders, noAction), "the offer-holders were offered no step at all").toBeGreaterThan(0);
+    expect(stepsReadAcross(explorers, noAction), "the explorers were offered no step at all").toBeGreaterThan(0);
+  });
+});

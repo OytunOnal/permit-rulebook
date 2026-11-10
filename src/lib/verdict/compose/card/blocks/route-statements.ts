@@ -12,6 +12,22 @@ import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn } from "../../../.
 import { type Glossary, glossed } from "../../../../gloss.js";
 import type { CardScreen } from "./card-screen.js";
 
+/** Whether a statement is a precondition linked to a path the card's route did not take. */
+const isLinkedToAPathNotTaken = (s: RouteStatement, notTaken: ReadonlySet<string>): boolean =>
+  s.kind === "precondition" && s.path !== undefined && notTaken.has(s.path);
+
+/**
+ * The route as a card states it: without the preconditions linked to a path
+ * the card's route did not take, which bind no reader of that card (#315,
+ * ruling 5). The "Also required" block, the scope line's count and the source
+ * list all read it, so none of them states, counts or quotes an item the card
+ * dropped.
+ */
+export function routeAsStated(route: Route, notTaken: ReadonlySet<string>): Route {
+  if (!notTaken.size) return route;
+  return { ...route, statements: routeStatements(route).filter((s) => !isLinkedToAPathNotTaken(s, notTaken)) };
+}
+
 /**
  * Preconditions the authority applies that the interview never asked — stated
  * on every card so "criteria met" cannot overpromise. A precondition statement
@@ -19,10 +35,14 @@ import type { CardScreen } from "./card-screen.js";
  * sentence: the reader is being told what else they must satisfy, not where
  * the dataset keeps it. The kind is `precondition`, the glossary's word;
  * "condition" is on Criterion's Avoid list (review 2026-09-07).
+ *
+ * A precondition linked to a path (`path`) drops where that path is one the
+ * card's route did not take (`notTaken`), and stays as written wherever no
+ * path has decided: a not-yet row, or a page with no reader (#315, ruling 5).
  */
-export function precondHtml(screen: CardScreen, route: Route): string {
+export function precondHtml(screen: CardScreen, route: Route, notTaken: ReadonlySet<string> = new Set()): string {
   const { ds, answers, glossary: seen = new Set() } = screen;
-  const statements = binding(route, answers).filter((s) => s.kind === "precondition");
+  const statements = binding(routeAsStated(route, notTaken), answers).filter((s) => s.kind === "precondition");
   // The ones the interview asked, by the field it asked them on, in the order
   // the statements name those fields.
   const asked = new Map<string, RouteStatement[]>();

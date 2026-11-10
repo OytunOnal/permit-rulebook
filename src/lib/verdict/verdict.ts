@@ -7,27 +7,31 @@
  * announcement, the landing and the focus, recording the screen — and asks
  * this module everything a verdict decides: which screen it is (a
  * comparison, or a notice that answers outright), that screen's whole masthead with the sentence the live region
- * announces, and the layout, each group's routes in order with each card's
- * markup.
+ * announces, and the layout as data — each group's routes in order, which
+ * sections open, what each fold holds and what is counted — with each drawn
+ * route's and step's markup by its id (#314).
  */
 import { contradictionsIn, unlocks, type Dataset, type Notice, type Profile } from "permit-rulebook-data";
 import { noticeHtml, type VerdictScreen } from "./compose/card/cards.js";
 import { esc } from "../reason.js";
+import { drawnCardsOf } from "./compose/drawn-cards.js";
 import { arrangeSteps, arrangedRowsOf, routesAJobOfferFreesFor } from "./compose/steps.js";
-import { comparedActionOf } from "./compose/headline.js";
-import { countrySectionHtml, feedbackLineHtml, flatGroupsHtml, stripHtml } from "./compose/html.js";
-import { noticeMastheadOf } from "./compose/masthead.js";
-import { groupedRoutesOf, resultsInViewOf, type ResultsInView } from "./compose/in-view.js";
-import { layoutOf } from "./compose/sections.js";
+import { comparedHeadlineOf } from "./compose/headline.js";
+import { bodyHtml } from "./compose/html.js";
+import { comparedMastheadOf, noticeMastheadOf } from "./compose/masthead.js";
+import { groupedRoutesOf, resultsInViewOf, type Compared, type ResultsInView } from "./compose/in-view.js";
+import { layoutOf } from "./compose/layout.js";
 import type { InterviewSoFar, Verdict } from "./compose/types.js";
 // The verdict's look travels with its markup: the page that paints a verdict
 // links this stylesheet in its <head>.
 import "./verdict.css";
 
+export type { InterviewSoFar, Verdict, VerdictAction } from "./compose/types.js";
+export type { StepCard } from "./compose/drawn-cards.js";
 export type {
-  ArrangedLine, CountrySection, DrawnRoute, Fold, InterviewSoFar, JobOfferLine, StepCard, Strip, Tally, Verdict,
-  VerdictAction, VerdictGroup, VerdictLayout,
-} from "./compose/types.js";
+  AnswerRef, ArrangedLine, ComparedLayout, CountrySection, Explore, Fold, HeadlineLayout, JobOfferLine, RouteGroupKind,
+  StepPlace, Strip, Tally, VerdictGroup, VerdictLayout,
+} from "./compose/verdict-layout.js";
 
 /**
  * The screen no route can produce: this passport needs no permit at all, and
@@ -40,7 +44,7 @@ function answeredOutright(screen: VerdictScreen, inView: ResultsInView, outright
   return {
     action: { kind: "answered-outright", masthead: noticeMastheadOf(outright[0].title) },
     notices: [...outright, ...others].map((n) => noticeHtml(n, screen.glossary)).join(""),
-    layout: { kind: "notice" },
+    layout: { kind: "notice" }, cards: { routes: {}, steps: {} }, body: "",
   };
 }
 
@@ -57,6 +61,20 @@ function noticesAbove(screen: VerdictScreen, inView: ResultsInView): string {
   return clash + inView.notices.map((n) => noticeHtml(n, screen.glossary)).join("");
 }
 
+/**
+ * A comparison: the layout reckoned once, then drawn — the notices first,
+ * the masthead, then every card in the order the screen lists them, so a
+ * screen explains an abbreviation on its first use.
+ */
+function comparedVerdictOf(screen: VerdictScreen, compared: Compared, interview: InterviewSoFar): Verdict {
+  const notices = noticesAbove(screen, compared.inView);
+  const layout = layoutOf(screen, compared);
+  const headline = comparedHeadlineOf(screen, compared, layout.headline);
+  const masthead = comparedMastheadOf(headline, interview.answered, compared.inView.results.length);
+  const cards = drawnCardsOf(screen, compared, layout);
+  return { action: { kind: "compare", masthead }, notices, layout, cards, body: bodyHtml(screen, layout, cards) };
+}
+
 export function verdictOf(dataset: Dataset, answers: Profile, interview: InterviewSoFar): Verdict {
   const screen: VerdictScreen = { ds: dataset, answers, glossary: new Set(), cameFrom: interview.cameFrom };
   const inView = resultsInViewOf(dataset, answers, interview.cameFrom);
@@ -71,24 +89,11 @@ export function verdictOf(dataset: Dataset, answers: Profile, interview: Intervi
   // ordered by what the reader can do, each ladder one step (s3b, s23); the
   // arranged answers' rows and what an offer would free, said apart (#175).
   const rows = unlocks(dataset, answers);
-  const compared = {
+  return comparedVerdictOf(screen, {
     inView, whole, zeroOpen, steps: arrangeSteps(dataset, rows), arranged: arrangedRowsOf(rows),
     freed: routesAJobOfferFreesFor(dataset, answers),
-  };
-  const notices = noticesAbove(screen, inView);
-  return { action: comparedActionOf(screen, compared, interview.answered), notices, layout: layoutOf(screen, compared) };
+  }, interview);
 }
 
 /** The body the interview paints for a verdict, under its arrival line. */
-export function verdictHtml(verdict: Verdict): string {
-  const { layout } = verdict;
-  switch (layout.kind) {
-    case "notice":
-      return verdict.notices;
-    case "one-country":
-      return verdict.notices + stripHtml(layout.strip) + flatGroupsHtml(layout.groups) + feedbackLineHtml();
-    case "countries":
-      return verdict.notices + stripHtml(layout.strip) + layout.sections.map(countrySectionHtml).join("")
-        + feedbackLineHtml();
-  }
-}
+export const verdictHtml = (verdict: Verdict): string => verdict.notices + verdict.body;

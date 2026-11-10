@@ -76,13 +76,18 @@ the gate optional by writing. The card says in the open that it has no quote
 and why; a neighbouring quote is never borrowed to cover it.
 _Avoid_: undocumented, unverified, missing source, TODO, "no source found"
 
-**Deciding path**:
+**Deciding path** (UI: a full card's path line, "Met through the IT-specialist
+path."; #315):
 The single path of a disjunction an outcome actually rested on — the one that
 passed, or, where none did, the nearest reachable one the gap was measured to,
 or, where no gap was measured, the Open path with the fewest unmet rules (ties
 go to the order the paths are written in; #133). It names the threshold the
 reader was measured against, and other paths are marked as not theirs. **Where nothing has decided, no path is claimed and
 nothing is marked either way** — a card that has decided nothing marks nothing.
+A full card names it under its title, for each criterion whose paths the
+dataset words, in its badge's words: "Met through …", "Rules met through …",
+or "Through …" under a badge that already says what is short; then why each
+other path did not count, in the reader's own answers.
 _Avoid_: matched path, winning branch, chosen path, first path
 
 **Route reading**:
@@ -397,10 +402,13 @@ _Avoid_: decision, ruling (no authority is deciding anything)
 **Met** (UI: "criteria met"):
 Every criterion of the route passes on the declarations given.
 
-**Within reach**:
-The route misses only by bounded gaps — a known maximum distance ("up to
-€4,766", "2 points short").
-_Avoid_: almost, partial match
+**Within reach** (UI: "Short on a figure"; its badge, what it is short on:
+"Short on yearly salary", "Short on yearly salary and points"; #316):
+The route misses only by gaps on an amount or on points — bounded gaps, each
+a known maximum distance ("up to €4,766", "2 points short"). The screen says
+what is missing, not how near it is: the gap stays printed, and the reader
+judges the distance (rulings 8 and 9 on #187).
+_Avoid_: almost, partial match, within reach (on screen)
 
 **Not yet**:
 The route has a hard fail or an open unknown.
@@ -427,9 +435,11 @@ In place of "Nothing open", never beside it.
 _Avoid_: empty state, error
 
 **Bounded gap**:
-A shortfall with a known ceiling (adjacent band below a threshold, points
-short on a completed ladder). Bounded gaps keep the interview going and
-become the gap story, never a death sentence.
+A shortfall with a known ceiling: any declared band whose ceiling is at or
+below the threshold, whether or not it is the band just below (its gap is the
+threshold less the band's floor, or the threshold itself where the band has
+no floor), and points short on a completed ladder. Bounded gaps keep the
+interview going and become the gap story, never a death sentence.
 _Avoid_: soft fail, near miss
 
 **Hard fail**:
@@ -481,15 +491,16 @@ Step-gated rows, named by the path answers they ask for, or the rows in a
 country the reader is not looking at.
 _Avoid_: group (a fold sits inside the not-yet group)
 
-**Strip** (UI: "1 open · 0 within reach · 7 not yet"):
+**Strip** (UI: "1 open · 0 short on a figure · 7 not yet"):
 The plain line under the notices counting a verdict's routes by group. It
 reads as a summary, never as a control.
 _Avoid_: tabs, pills, counters
 
-**Tally** (UI: a country's summary row, "2 open · 3 not yet · 2 unlocking
-steps"):
+**Tally** (UI: a country's summary row, "5 not yet · 3 more with a job
+offer · 1 more with a different situation"):
 One country's count on the several-country verdict, beside its name: its
-groups, and its Leverage steps alone. Where the country's checked routes do
+groups, its Leverage steps, and the routes its Job offer line would check and
+its Arranged line would open (#317). Where the country's checked routes do
 not take the reader's situation, the Written state's sentence stands in for
 its not-yet count.
 _Avoid_: score
@@ -522,8 +533,9 @@ alone — the situation question's answers include the job offer
 **Arranged line** (UI: "With a different situation: an intra-corporate
 transfer would open 1 route in Germany"):
 The one line after the steps saying what each Arranged answer would open in a
-country. Never a Leverage step: not counted in the headline or a Tally, never
-named as the nearest.
+country. Never a Leverage step: not counted in the headline or among a
+Tally's steps, never named as the nearest; the Tally names the routes it
+would open apart, as "more with a different situation" (#317).
 _Avoid_: step card
 
 **Leverage step** (UI: "steps that would unlock more"):

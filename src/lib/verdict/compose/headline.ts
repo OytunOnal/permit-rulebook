@@ -1,75 +1,66 @@
 // @level presentation
-import type { RouteResult } from "permit-rulebook-data";
 import {
   NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, shortfallHeadline, stepsWouldChangeHeadline,
   unsettledHeadline,
 } from "../../copy/verdict.js";
 import { composeStepTitle, type VerdictScreen } from "./card/cards.js";
-import { comparedMastheadOf, type Explore, type Headline } from "./masthead.js";
+import type { Headline } from "./masthead.js";
 import type { Compared } from "./in-view.js";
+import { stepKeyed } from "./layout.js";
 import { moneyShortfallOf } from "./money-shortfall.js";
 import { printedShortfallOf } from "./printed-shortfall.js";
-import { nearestStep } from "./steps.js";
-import type { VerdictAction } from "./types.js";
 import { unscoredVerdict } from "./unscored.js";
+import type { HeadlineLayout } from "./verdict-layout.js";
 
 /**
  * How near the nearest route within reach is, or nothing: "up to" its gap on
  * a bounded band, as the card says it; on a band open at the bottom, the line
  * it asks, never that line as the reader's shortfall; or its points.
  */
-function nearNote(screen: VerdictScreen, near: RouteResult[]): string {
-  const first = near[0];
-  if (!first) return "";
-  const money = moneyShortfallOf(screen.ds, first, screen.answers);
+function nearNote(screen: VerdictScreen, compared: Compared, nearest: string | null): string {
+  const named = compared.inView.results.find((r) => r.route.id === nearest);
+  if (!named) return "";
+  const money = moneyShortfallOf(screen.ds, named, screen.answers);
   if (money) return shortfallHeadline(printedShortfallOf(screen.ds, money));
-  if (first.gap_points) return pointsAwayLine(first.gap_points);
+  if (named.gap_points) return pointsAwayLine(named.gap_points);
   return "";
 }
 
-/**
- * Nothing open: their rules met under an open question is not "nothing
- * open" — the doubt is the notice's business (human's walk, 2026-09-10);
- * with steps, the steps are the news, and the step worth naming is the first
- * the list offers (s23) — an arranged answer or the job offer line is no step, so
- * neither is counted or named (#175); with neither, no false hope, and what
- * to do next is part of the one line (review J2), pointing at country
- * sections only where there are some (F7).
- */
-function zeroOpenHeadline(screen: VerdictScreen, c: Compared): Headline {
-  const unsettled = c.whole.unsettled.length;
-  if (unsettled) return { headline: unsettledHeadline(unsettled) };
-  const nearest = nearestStep(c.steps);
-  if (nearest) return { headline: stepsWouldChangeHeadline(c.steps.length), nearest: composeStepTitle(screen, nearest) };
-  const explore: Explore = c.inView.visible.length === 1 ? "one-country" : "several-countries";
-  return { headline: NOTHING_OPEN_HEADLINE, explore };
+/** A headline's words with the nearest route's gap stressed after them, where
+ * there is one. */
+function withNearNote(headline: string, note: string): Headline {
+  return note ? { headline, emphasis: note } : { headline };
 }
 
-function openHeadline(screen: VerdictScreen, c: Compared): Headline {
-  const countries = new Set(c.whole.met.map((r) => r.country)).size;
-  const note = nearNote(screen, c.whole.near);
-  return { headline: routesOpenHeadline(c.whole.met.length, countries), ...(note ? { emphasis: note } : {}) };
+/** The written state's words, which the layout says stand. */
+function writtenStateHeadline(screen: VerdictScreen): Headline {
+  const unscored = unscoredVerdict(screen.ds, screen.answers);
+  if (!unscored) throw new Error("the layout reads a written state these answers have none of");
+  return { headline: unscored.headline, unscored };
 }
 
 /**
- * The headline of a comparison. A situation no scored route in the declared
- * country takes reads its written state (s19) — keyed, on the four-country
- * path, by the country the reader named at question 3 (s26) — in place of
- * the two zero-open headlines, and for exactly that case. The other branch —
- * every visible country closed to the situation — is not drawn, because on
- * this dataset it cannot occur (tests/s21: "every situation the interview
- * offers is taken by a scored route in some country"); the day that goes
- * red, it needs a written state of its own, here.
+ * The headline of a comparison, in words, of the kind the layout reckoned
+ * (#314): the written state (s19); their rules met under an open question,
+ * which is not "nothing open" — the doubt is the notice's business — the
+ * nearest within reach stressed; the steps, and the step the list offers
+ * first by its card's title (s23); nothing open, with what to do next as part
+ * of the one line (review J2); or the open routes, the nearest within reach
+ * stressed.
  */
-function comparedHeadline(screen: VerdictScreen, c: Compared): Headline {
-  const unscored = c.zeroOpen ? unscoredVerdict(screen.ds, screen.answers) : null;
-  if (unscored) return { headline: unscored.headline, unscored };
-  if (c.zeroOpen) return zeroOpenHeadline(screen, c);
-  return openHeadline(screen, c);
-}
-
-/** The flow's move to a comparison, carrying its whole masthead: the subline
- * counts the reader's answers and the routes checked. */
-export function comparedActionOf(screen: VerdictScreen, c: Compared, answered: number): VerdictAction {
-  return { kind: "compare", masthead: comparedMastheadOf(comparedHeadline(screen, c), answered, c.inView.results.length) };
+export function comparedHeadlineOf(screen: VerdictScreen, compared: Compared, reckoned: HeadlineLayout): Headline {
+  switch (reckoned.kind) {
+    case "written-state":
+      return writtenStateHeadline(screen);
+    case "unsettled":
+      return withNearNote(unsettledHeadline(reckoned.routes), nearNote(screen, compared, reckoned.nearest));
+    case "steps": {
+      const nearest = composeStepTitle(screen, stepKeyed(compared.steps, reckoned.nearest));
+      return { headline: stepsWouldChangeHeadline(reckoned.steps), nearest };
+    }
+    case "nothing-open":
+      return { headline: NOTHING_OPEN_HEADLINE, explore: reckoned.explore };
+    case "open":
+      return withNearNote(routesOpenHeadline(reckoned.routes, reckoned.countries), nearNote(screen, compared, reckoned.nearest));
+  }
 }

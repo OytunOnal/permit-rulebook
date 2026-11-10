@@ -3,17 +3,17 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  SITUATION_FIELD, deriveBands, evaluate, fieldOptions, isScored, phraseAtStartOf, remainingQuestions, scopeWords,
-  situationsAsked, type Dataset, type Profile,
+  SITUATION_FIELD, deriveBands, evaluate, fieldOptions, isScored, phraseAtStartOf, scopeWords, situationsAsked,
+  type Dataset, type Profile,
 } from "permit-rulebook-data";
 import { esc } from "../src/lib/reason.js";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { questionCardHtml } from "../src/lib/question.js";
-import { notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
+import { notScoredMarkHtml } from "../src/lib/question.js";
+import { notScoredFor } from "../src/lib/situations.js";
 import { NOT_CHECKED_HEADING, READ_ITS_RULES, STATUS_LABEL } from "../src/lib/copy/verdict.js";
 import { READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
 import { countryHeadline } from "../src/lib/copy/country-page.js";
-import { verdictHtml, verdictOf } from "../src/lib/verdict/index.js";
+import { verdictHtml, verdictOf } from "../src/lib/verdict/verdict.js";
 import { countryAddresses, countryPage } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
@@ -22,6 +22,7 @@ import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, groupsIn, paintedAsComposedScript, placed, verdictFor,
 } from "./verdict-cards.js";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
+import { marksOn, situationScreen, unscoredOf } from "./situation-marks.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -30,48 +31,9 @@ const textOf = (html: string): string =>
   html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, "\"")
     .replace(/\s+/g, " ").trim();
 
-/** The written state as a reader meets it: the headline, the subline as
- * text, and the words of the subline that are its door, with where it goes. */
-interface WrittenState {
-  headline: string;
-  subline: string;
-  door?: { text: string; href: string };
-}
-
-/**
- * The written state the verdict for these answers reads, where it reads one:
- * its masthead is the only one whose subline is drawn in markup, for the door
- * in it.
- */
-function unscoredOf(answers: Profile): WrittenState | undefined {
-  const m = verdictFor(answers).action.masthead;
-  if (m.sublineHtml === undefined) return undefined;
-  const door = /<a href="([^"]*)">([^<]*)<\/a>/.exec(m.sublineHtml);
-  return { headline: m.announced, subline: m.subline, ...(door ? { door: { text: door[2]!, href: door[1]! } } : {}) };
-}
-
 /** What else a route's card on the verdict for these answers says is required. */
 const precondFor = (answers: Profile, route: string): string =>
   blocksIn(drawnRouteOn(verdictFor(answers), route), "precond", "precond asked");
-
-const situationQuestion = () => remainingQuestions(ds, { destination: "fr" }).find((q) => q.field === SITUATION_FIELD)!;
-
-/** The situation screen, drawn by the one renderer, for a reader who declared this destination. */
-const situationScreen = (destination: string): string =>
-  questionCardHtml({
-    dataset: ds, question: situationQuestion(), answers: { destination }, asked: ["destination"],
-    editing: null, total: 12,
-  });
-
-/** The marks on a drawn situation screen, keyed by the option they sit under.
- * The mark carries an id since s21 (its button is described by it); what is
- * read here is the mark, whatever else it carries. */
-function marksOn(html: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  const re = /<small class="opt-mark"[^>]*data-for="([^"]+)"[^>]*>([\s\S]*?)<\/small>/g;
-  for (let m = re.exec(html); m; m = re.exec(html)) out[m[1]!] = m[2]!;
-  return out;
-}
 
 /**
  * s19 — a situation no scored route asks.
@@ -87,8 +49,8 @@ describe("s19 — the interview knows which situations a destination's scored ro
     const mark = notScoredFor(ds, "fr", "research");
     expect(mark).not.toBeNull();
     expect(mark!.country).toBe("France");
-    expect(mark!.route?.name).toBe("Talent — researcher (chercheur)");
-    expect(mark!.route?.path).toBe("/france/talent-researcher");
+    expect(mark!.quoted?.route.name).toBe("Talent — researcher (chercheur)"); // ruling 19: the route, not its address
+    expect(mark!.quoted?.country.code).toBe("FR"); // ruling 19: and its country, the address the drawing's to build
     // The route is the dataset's own: quoted, not scored, and carrying the answer it would have asked about.
     const route = ds.countries.find((c) => c.code === "FR")!.routes.find((r) => r.id === "fr-talent-chercheur")!;
     expect(isScored(route)).toBe(false);
@@ -141,7 +103,14 @@ describe("s19 — the interview knows which situations a destination's scored ro
   });
 
   it("escapes the names it prints", () => {
-    const html = notScoredMarkHtml({ country: "A & B", route: { name: "<x>", path: "/a/b?c=d&e" } });
+    // Ruling 19: the mark carries a route and its country, and the address is
+    // built from them. France's quoted route, renamed, its address a query.
+    const { country, route } = notScoredFor(ds, "fr", "research")!.quoted!;
+    const quoted = {
+      country: { ...country, name: "A" },
+      route: { ...route, name: "<x>", slug: "b?c=d&e" },
+    };
+    const html = notScoredMarkHtml({ country: "A & B", quoted });
     expect(html).toContain("A &amp; B");
     expect(html).toContain("&lt;x&gt;");
     // Through `url`, like every internal link: the page's slash, then the query.
@@ -294,12 +263,15 @@ describe("s19 — the quoted route, the counts and the data page follow", () => 
     expect(textOf(researcher!.html)).toContain("Avoir une convention d'accueil souscrite");
   });
 
-  it("/data/ says schema 0.8.3, and counts 23 scored and 6 quoted", () => {
+  it("/data/ says schema 0.8.5, and counts 23 scored and 6 quoted", () => {
     // 0.8.0 was s19's (`not_asked`); 0.8.1 is s25's, the points item with
     // rows on two fields; 0.8.2 is s32's, a statement naming its question;
-    // 0.8.3 is #169's, an option marked an arranged answer (`is_arranged`).
+    // 0.8.3 is #169's, an option marked an arranged answer (`is_arranged`);
+    // 0.8.4 is #313's, a path's words (`subject`) and a precondition's path;
+    // 0.8.5 is ruling 28's on #310, an answer a reader can reach by acting
+    // (`is_attainable`).
     const text = textOf(dataPage(ds).html);
-    expect(text).toContain("0.8.3");
+    expect(text).toContain("0.8.5");
     expect(text).toContain("2026-09-16");
     expect(text).toContain("23 routes scored against your answers");
     expect(text).toContain("6 more quoted and dated but not scored");

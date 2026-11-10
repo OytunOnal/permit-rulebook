@@ -7,13 +7,15 @@ import {
   type Profile,
 } from "permit-rulebook-data";
 import { RECORD_VERSION } from "../src/lib/record.js";
-import { questionCardHtml } from "../src/lib/question.js";
-import { SITUATION_COUNTRY_FIELD, markUnder, notScoredFor, notScoredMarkHtml } from "../src/lib/situations.js";
+import { notScoredMarkHtml, questionCardHtml } from "../src/lib/question.js";
+import { SITUATION_COUNTRY_FIELD, markUnder, notScoredFor } from "../src/lib/situations.js";
 import { IS_QUOTED_NOT_CHECKED, READ_IT_HERE, notCheckedQuotedLine } from "../src/lib/copy/interview.js";
 import { routesNeed, unscoredHeadline, unscoredTallyLine } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
-import { verdictHtml, type Tally } from "../src/lib/verdict/index.js";
-import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictOn } from "./verdict-cards.js";
+import { verdictHtml, type Tally } from "../src/lib/verdict/verdict.js";
+import {
+  PAINTED_AS_COMPOSED, answerWordsOf, countryNamed, paintedAsComposedScript, saidLineOf, verdictOn, type SaidLine,
+} from "./verdict-cards.js";
 import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
 
 const ds = dataset as unknown as Dataset;
@@ -26,11 +28,11 @@ const researcher = france.routes.find((r) => r.id === "fr-talent-chercheur")!;
  * Each country's line on the four-country verdict for a declared situation,
  * by the country's name: the s19 sentence where the line carries one, or null.
  */
-function tallyLinesFor(situation: string | undefined, data: Dataset = ds): Map<string, Tally["closedTo"]> {
+function tallyLinesFor(situation: string | undefined, data: Dataset = ds): Map<string, SaidLine | null> {
   const answers = { [DESTINATION_FIELD]: "all", ...(situation === undefined ? {} : { [SITUATION_FIELD]: situation }) };
-  const { layout } = verdictOn(data, answers);
-  if (layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
-  return new Map(layout.sections.map((s) => [s.name, s.tally.closedTo]));
+  const verdict = verdictOn(data, answers);
+  if (verdict.layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
+  return new Map(verdict.layout.sections.map((s) => [countryNamed(s.country), saidLineOf(verdict, s)]));
 }
 
 /** The country question, as the four-country path reaches it: third, after the situation. */
@@ -218,12 +220,13 @@ describe("s21 — the walk's result, from the verdict", () => {
     expect(verdict.action.masthead.announced).toBe("No route we check in France takes a research hosting agreement.");
     if (verdict.layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
     const sections = verdict.layout.sections;
-    expect(sections.map((s) => s.name)).toEqual(["France", "Germany", "Spain", "Netherlands"]);
+    expect(sections.map((s) => countryNamed(s.country))).toEqual(["France", "Germany", "Spain", "Netherlands"]);
     const [fr, germany, spain, netherlands] = sections;
-    expect(fr!.tally.closedTo!.text).toBe(
+    const said = saidLineOf(verdict, fr!);
+    expect(said!.text).toBe(
       "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
-    const link = /<a ([^>]*)href="([^"]*)">([^<]*)<\/a>/.exec(fr!.tally.closedTo!.html);
+    const link = /<a ([^>]*)href="([^"]*)">([^<]*)<\/a>/.exec(said!.html);
     expect({ text: link?.[3], href: link?.[2] }).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
     expect(link?.[1]).not.toMatch(/class="[^"]*\bout\b/);
     // The body stays: the not-yet rows, as before. One of the five also lacks
@@ -232,14 +235,18 @@ describe("s21 — the walk's result, from the verdict", () => {
     const notYet = fr!.groups.find((g) => g.kind === "not-yet");
     if (notYet?.kind !== "not-yet") throw new Error("France draws no not-yet group");
     expect(notYet.count).toBe(5);
-    const fold = notYet.items.flatMap((i) => ("kind" in i && i.kind === "needs-path-answers" ? [i] : []))[0];
+    const fold = notYet.items.flatMap((i) => (typeof i !== "string" && i.kind === "needs-path-answers" ? [i] : []))[0];
     if (!fold) throw new Error("France's rows gated on a path answer do not fold");
-    expect(routesNeed(fold.routes.length, joinOr(fold.pathAnswers))).toBe("4 routes need a job offer or an intra-corporate transfer");
-    const ownRows = notYet.items.flatMap((i) => ("kind" in i ? [] : [i.html]));
+    const named = fold.pathAnswers.map((a) => answerWordsOf(a.field, a.value));
+    expect(routesNeed(fold.routes.length, joinOr(named))).toBe("4 routes need a job offer or an intra-corporate transfer");
+    const ownRows = notYet.items.flatMap((i) => (typeof i === "string" ? [verdict.cards.routes[i]!] : []));
     expect(ownRows.join("")).toContain("Needs a job offer and a university degree");
-    // The other three lines, unchanged: each its not-yet count and nothing else.
+    // The other three lines, unchanged: each its not-yet count and nothing
+    // else — no job offer line and no arranged line for them to name either
+    // (ruling 7 of #187).
     const countOnly = (notYetCount: number): Tally => ({
-      open: 0, withinReach: 0, unsettled: 0, closed: 0, notYet: notYetCount, openUnknowns: 0, steps: 0, closedTo: null,
+      open: 0, withinReach: 0, unsettled: 0, closed: 0, notYet: notYetCount, openUnknowns: 0, steps: 0,
+      checkedWithJobOffer: 0, openedByArrangedAnswers: 0, situationNotTaken: false,
     });
     expect(germany!.tally).toEqual(countOnly(8));
     expect(spain!.tally).toEqual(countOnly(4));

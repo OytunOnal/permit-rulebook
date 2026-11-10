@@ -168,6 +168,9 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .st.hold{background:var(--color-hold-soft);color:var(--color-hold)}
 .st.unsettled{background:var(--color-hold-soft);color:var(--color-ink)}
 .why{color:var(--color-prose);font-size:.88rem;max-width:var(--max-prose)}
+/* The path a card went through, under its title (#315): the reader's own
+   answers, so it reads as the card's prose does. */
+.path{color:var(--color-ink);font-size:.88rem;max-width:var(--max-prose);margin:0 0 .35rem}
 
 .rail{margin:.95rem 0 .2rem;max-width:34rem}
 .bar{position:relative;height:var(--rail-h);background:var(--rail-track);border-radius:99px}

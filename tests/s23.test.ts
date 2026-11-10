@@ -110,10 +110,10 @@ describe("the job-search sentence reaches only a reader without an offer", () =>
     if (layout.kind !== "countries") throw new Error("the explorer of all four drew no country sections");
     for (const section of layout.sections) {
       const steps = section.groups.find((g) => g.kind === "steps");
-      const hint = steps?.kind === "steps" ? steps.hint : "";
+      const hint = steps?.kind === "steps" && steps.hint;
       const seeks = evaluate(ds, explorer).some((r) => r.route.kind === "seek" && r.status !== "hold"
-        && ds.countries.find((c) => c.code === r.country)!.name === section.name);
-      if (!steps || !seeks) expect(hint, section.name).toBe("");
+        && r.country === section.country);
+      if (!steps || !seeks) expect(hint, section.country).toBe(false);
     }
     expect(hintsIn(verdictFor(PRIYA))).toBe("");
   });

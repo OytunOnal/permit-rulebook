@@ -7,7 +7,7 @@ import type { Dataset, Profile } from "permit-rulebook-data";
 import { type Glossary, glossSection, glossed } from "../src/lib/gloss.js";
 import { declarationHtml } from "../src/lib/question.js";
 import { replayRecord } from "../src/lib/scope.js";
-import { verdictHtml } from "../src/lib/verdict/index.js";
+import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf } from "./reader-pages.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { withSite } from "./browser-walk.js";

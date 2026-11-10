@@ -133,15 +133,26 @@ export const orAbove = (title: string): string => `${title} or above`;
  * the steps. The numbers, names and amounts are the verdict's; these are the
  * words around them.
  */
-export const STATUS_LABEL = { met: "Criteria met", near: "Within reach", hold: "Not yet" } as const;
+export const STATUS_LABEL = { met: "Criteria met", hold: "Not yet" } as const;
+/**
+ * The badge of a route short on a figure: what it is short on, each figure by
+ * the dataset's short label or as points, two joined by "and" ("Short on
+ * yearly salary and points"). The badge says what is missing and the gap
+ * below it says how far, so a reader €12,849 a year away is not told they are
+ * nearly there (rulings 8 and 9 on #187).
+ */
+export const shortOn = (figures: string[]): string => `Short on ${joinAnd(figures)}`;
+/** The figure a points route is short on, as the badge names it. */
+export const POINTS_FIGURE = "points";
+const pointsCount = (points: number): string => `${points} point${points === 1 ? "" : "s"}`;
 /** The badge under "unsettled for your passport": the rules are met, and
  * whether the route is the reader's at all is the notice's question (s8). */
 export const RULES_MET = "Rules met";
 export const CAME_FROM_LINE = "The route you came from.";
 export const shortByUpTo = (amount: string): string => `Short by up to ${amount}`;
 export const onField = (field: string): string => `on ${field}`;
-/** The line a band open at the bottom is said by where a step brings its
- * route within reach. */
+/** The line a band open at the bottom is said by where a step leaves its
+ * route short on a figure. */
 export const asksOrMore = (threshold: string): string => `asks ${threshold} or more`;
 /**
  * A route's money shortfall with its amounts printed, as every place says it:
@@ -156,15 +167,48 @@ export type PrintedShortfall =
 export const shortByUpToLine = (amount: string): string => `One is short by up to ${amount}.`;
 /** The headline's emphasis on a band open at the bottom: the line, not an amount. */
 export const needsOrMoreLine = (threshold: string): string => `One needs ${threshold} or more.`;
-/** The card's note on a route within reach on money: its stressed opening, and
- * the rest, which names the field. */
+/** The card's note on a route short on money: its stressed opening, and the
+ * rest, which names the field. */
 export const shortfallNote = (shortfall: PrintedShortfall, field: string): { lead: string; rest: string } =>
   shortfall.kind === "bounded"
     ? { lead: shortByUpTo(shortfall.gap), rest: `${onField(field)}.` }
     : { lead: capitalise(asksOrMore(shortfall.line)), rest: `${onField(field)} — your answer is ${shortfall.band}.` };
-/** How near a step would bring such a route, as its parenthesis says it. */
-export const shortfallReach = (shortfall: PrintedShortfall): string =>
-  (shortfall.kind === "bounded" ? shortfall.gap : asksOrMore(shortfall.line));
+/** One figure a route is short on, with its amounts printed: money on a field
+ * the copy names by its short label, or points. */
+export type PrintedFigureGap =
+  | { kind: "money"; shortfall: PrintedShortfall; field: string }
+  | { kind: "points"; points: number };
+/**
+ * One figure gap as a sentence: the line a card short on a figure leads with
+ * where the engine's own line would not say it, and the line a not-yet row
+ * gives first when it is short on a figure and has an unknown too ("Up to
+ * €1,585/month short of the monthly salary this route asks for."; ruling 10
+ * on #187).
+ */
+export const figureGapSentence = (gap: PrintedFigureGap): string => {
+  if (gap.kind === "points") return `${capitalise(pointsCount(gap.points))} short of the total this route asks for.`;
+  return gap.shortfall.kind === "bounded"
+    ? `Up to ${gap.shortfall.gap} short of the ${gap.field} this route asks for.`
+    : `Needs ${gap.shortfall.line} or more ${onField(gap.field)}.`;
+};
+/** How a step's route line says one figure the step would leave short; from
+ * a band open at the bottom, the field, then the line it asks: "on yearly
+ * salary: it asks €50,700/year or more" (ruling 27). */
+const leftShortBy = (gap: PrintedFigureGap): string => {
+  if (gap.kind === "points") return `by ${pointsCount(gap.points)}`;
+  return gap.shortfall.kind === "bounded"
+    ? `by up to ${gap.shortfall.gap}`
+    : `${onField(gap.field)}: it ${asksOrMore(gap.shortfall.line)}`;
+};
+/** A step's route line for a route the step leaves short on a figure, as a
+ * bound: "would then be short only by up to €4,765.80/year" (ruling 9). */
+export const WOULD_THEN_BE_SHORT_ONLY = "would then be short only";
+export const wouldThenBeShortOnly = (gaps: PrintedFigureGap[]): string =>
+  `${WOULD_THEN_BE_SHORT_ONLY} ${joinAnd(gaps.map(leftShortBy))}`;
+/** A step's title on a bounded gap keeps its bound: the reader sits anywhere
+ * in their band, so "€304.20/year more" is at most that (ruling 1 on #187,
+ * leftover 2). */
+export const upToTitle = (title: string): string => `up to ${title}`;
 /** The headline's emphasis on the nearest such route. */
 export const shortfallHeadline = (shortfall: PrintedShortfall): string =>
   (shortfall.kind === "bounded" ? shortByUpToLine(shortfall.gap) : needsOrMoreLine(shortfall.line));
@@ -173,14 +217,12 @@ export const upToShort = (amount: string): string => `up to ${amount} short`;
 export const ABOVE_THE_AMOUNT = "above the amount";
 export const BELOW_THE_AMOUNT = "below the amount";
 export const LOWER_THRESHOLD_HINT = "A route with a lower threshold may already apply — check the other cards.";
-export const shortByPoints = (points: number): string => `Short by ${points} point${points === 1 ? "" : "s"}.`;
+export const shortByPoints = (points: number): string => `Short by ${pointsCount(points)}.`;
 export const POINTS_TABLE_HINT =
   "The sourced points table shows where more can come from — language level, experience and age all score.";
 /** A step's heading; `titleHtml` is the step's title, already markup. */
 export const withStepHtml = (titleHtml: string): string => `With <b>${titleHtml}</b>`;
 export const WOULD_BE_MET = "would be met";
-export const WOULD_COME_WITHIN_REACH = "would come within reach";
-export const pointsMore = (points: number): string => `${points} pt${points === 1 ? "" : "s"} more`;
 
 /** The rail's rows: what each amount is, what the reader's own row is, and
  * the list's name for a screen reader. */
@@ -210,6 +252,32 @@ export const pointsOfNeeded = (scored: number, required: number): string =>
 
 /** The lead of the box that links where an open unknown can be looked up. */
 export const FIND_OUT_YOURSELF = "You can find out yourself:";
+
+/**
+ * The path line's frame (#315): which badge the card wears, and so which
+ * words name the path it went through — "Met through", "Rules met through",
+ * or "Through" under a badge that already says what is short (rulings 4, 18).
+ */
+export type PathTakenFrame = "met" | "rules-met" | "short";
+const PATH_TAKEN_OPENING = { met: "Met through", "rules-met": "Rules met through", short: "Through" } as const;  // each frame's opening words
+/** The path line's first sentence: "Met through the IT-specialist path." */
+export const pathTakenLine = (frame: PathTakenFrame, path: string): string => `${PATH_TAKEN_OPENING[frame]} ${path}.`;
+/** One unmet rule of a path that did not count: what it asks, and what the
+ * reader declared where the rule reads an answer. */
+export interface UnmetRule {
+  asks: string;
+  declared?: string;
+}
+/** A path that did not count, its unmet rules in the not-yet row's form:
+ * "The recognised-degree path needs full German recognition — you declared
+ * Not assessed yet." */
+export const otherPathNeedsLine = (path: string, rules: UnmetRule[]): string =>
+  `${capitalise(path)} needs ${rules.map((r) => (r.declared === undefined ? r.asks : `${r.asks} — you declared ${r.declared}`))
+    .join("; and ")}.`;
+/** A path that did not count on an answer of "I don't know", in the unknown
+ * row's form. */
+export const otherPathUnknownLine = (path: string, answer: string, about: string): string =>
+  `On ${path}, you answered “${answer}” about ${about}.`;
 
 /** The notice screen's headline: the notice's own title, closed. */
 export const noticeHeadline = (title: string): string => `${title}.`;
@@ -243,13 +311,17 @@ export const NOTHING_TO_COMPARE = "Nothing to compare: the published rule below 
 /** The summary line under the notices, and a country's summary row. */
 export const SUMMARY_LABEL = "Summary";
 export const openCount = (n: number): string => `${n} open`;
-export const withinReachCount = (n: number): string => `${n} within reach`;
+export const shortOnAFigureCount = (n: number): string => `${n} short on a figure`;
 export const unsettledCount = (n: number): string => `${n} unsettled for your passport`;
 export const notOpenToPassportCount = (n: number): string => `${n} not open to your passport`;
 export const notYetCount = (n: number): string => `${n} not yet`;
 export const notYetWithUnknowns = (n: number, unknowns: number): string =>
   `${notYetCount(n)} — ${unknowns} ${unknowns === 1 ? "has" : "have"} an open unknown`;
 export const unlockingSteps = (n: number): string => `${n} unlocking step${n === 1 ? "" : "s"}`;
+/** A country's summary row also names its job offer line and its arranged
+ * line by the routes each would check or open (ruling 7 of #187). */
+export const moreWithJobOfferCount = (n: number): string => `${n} more with a job offer`;
+export const moreWithDifferentSituationCount = (n: number): string => `${n} more with a different situation`;
 
 /** The section headings, and the unsettled section's line, which names no
  * country and no passport: the notice above it does. */
@@ -257,7 +329,9 @@ export const OPEN_HEADING = "Open — criteria met";
 export const UNSETTLED_HEADING = "Open on the rules — unsettled for your passport";
 export const UNSETTLED_SECTION_LINE = "The rules below are met by what you declared. Whether this permit "
   + "is open to your passport at all is the question in the note above.";
-export const WITHIN_REACH_HEADING = "Within reach";
+/** The group of routes that miss only by a gap on an amount or on points:
+ * what is missing, not how near it is (ruling 9 on #187). */
+export const SHORT_ON_A_FIGURE_HEADING = "Short on a figure";
 export const NOT_YET_HEADING = "Not yet";
 export const CLOSED_HEADING = "Not open to your passport";
 export const STEPS_HEADING = "Steps that would unlock more";
@@ -265,7 +339,7 @@ export const STEPS_HEADING_TAIL = "each re-checked against the rules";
 export const STEPS_HERE_HEADING = "Steps that would unlock more here";
 
 /** The job offer line: what a job offer would have checked in one country for an
- * explorer — a check, never a verdict, so never "met" or "within reach". The
+ * explorer — a check, never a verdict, so never "met" or "short". The
  * offer, the country and the fields' subjects are the dataset's words. */
 export const writeJobOfferLine = (line: { jobOffer: string; country: string; routes: number; fields: string[] }): string =>
   `With ${line.jobOffer} in ${line.country}: ${line.routes} more route${line.routes === 1 ? "" : "s"} would be checked`

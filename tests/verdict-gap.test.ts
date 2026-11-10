@@ -5,7 +5,7 @@ import {
   type Profile,
 } from "permit-rulebook-data";
 import {
-  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_COME_WITHIN_REACH, asksOrMore, needsOrMoreLine,
+  ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_THEN_BE_SHORT_ONLY, asksOrMore, needsOrMoreLine,
   pointsAwayLine, shortByUpTo, shortByUpToLine, shortfallNote, upToShort,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
@@ -183,10 +183,13 @@ describe("a step prints the gap it leaves the same way", () => {
     funds_eur_month: "band_0",
   };
 
-  /** The amounts the verdict's steps print after "would come within reach". */
-  const reachedIn = (answers: Profile): string[] =>
+  /** What the verdict's steps print after "would then be short only" (ruling
+   * 9 on #187). */
+  const leftShortLinesIn = (answers: Profile): string[] =>
     stepsIn(verdictFor(answers)).flatMap((s) =>
-      [...s.html.matchAll(new RegExp(`${WOULD_COME_WITHIN_REACH} \\(([^)]*)\\)`, "g"))].map((m) => m[1]!));
+      [...s.html.matchAll(new RegExp(`${WOULD_THEN_BE_SHORT_ONLY} ([^<]*)`, "g"))].map((m) => m[1]!));
+  /** Whether one of the steps' printed gaps carries these words. */
+  const printsAmong = (printed: string[], words: string): boolean => printed.some((p) => p.includes(words));
 
   /** The routes the engine's steps bring within reach on a money gap, with the
    * answers as they would stand with each step taken. */
@@ -200,11 +203,11 @@ describe("a step prints the gap it leaves the same way", () => {
     const answers: Profile = { ...STEPPER, [SALARY]: band.id };
     const reached = moneyReached(answers);
     expect(reached.length, "precondition: a step brings a route within reach on money").toBeGreaterThan(0);
-    const printed = reachedIn(answers);
+    const printed = leftShortLinesIn(answers);
     for (const { r, taken } of reached) {
       const measured = gapCriterionOf(ds, r, taken)!;
       const exact = formatEURPer(measured.threshold.amount - band.min!, period);
-      expect(printed, r.route.id).toContain(esc(exact));
+      expect(printsAmong(printed, esc(exact)), r.route.id).toBe(true);
     }
     expect(printed.some((p) => /\.\d\d\//.test(p)), "precondition: a gap with cents").toBe(true);
   });
@@ -213,10 +216,10 @@ describe("a step prints the gap it leaves the same way", () => {
     const answers: Profile = { ...STEPPER, [SALARY]: lowest.id };
     const reached = moneyReached(answers);
     expect(reached.length, "precondition: a step brings a route within reach on money").toBeGreaterThan(0);
-    const printed = reachedIn(answers);
+    const printed = leftShortLinesIn(answers);
     for (const { r, taken } of reached) {
       const line = formatEURPer(gapCriterionOf(ds, r, taken)!.threshold.amount, period);
-      expect(printed, r.route.id).toContain(esc(asksOrMore(line)));
+      expect(printsAmong(printed, esc(asksOrMore(line))), r.route.id).toBe(true);
     }
   });
 });

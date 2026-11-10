@@ -1,6 +1,7 @@
 // @level presentation
 import type { VerdictMasthead } from "../../screen.js";
-import type { UnscoredTally } from "./unscored.js";
+import type { DrawnCards } from "./drawn-cards.js";
+import type { VerdictLayout } from "./verdict-layout.js";
 
 /**
  * The interview as the verdict reads it: the questions answered so far, which
@@ -22,123 +23,19 @@ export type VerdictAction =
   /** A published notice answers the person outright, so nothing was compared. */
   | { kind: "answered-outright"; masthead: VerdictMasthead };
 
-/** A route as its group draws it: its id, and its card's or row's markup. */
-export interface DrawnRoute {
-  route: string;
-  html: string;
-}
-
-/** A step as the steps group offers it: its title, and its card's markup. */
-export interface StepCard {
-  title: string;
-  html: string;
-}
-
-/**
- * Not-yet rows folded under one summary line: the rows that need only a path
- * answer, named by the answers they ask for, or the rows placed in a country
- * the reader is not looking at.
- */
-export type Fold =
-  | {
-    kind: "needs-path-answers";
-    /** The path answers the folded rows ask for, arranged ones included, in
-     * the dataset's words. */
-    pathAnswers: string[];
-    /** Whether the steps, the job offer line or the arranged line stands above,
-     * for the summary to point at. */
-    pointsUp: boolean;
-    open: boolean;
-    routes: DrawnRoute[];
-  }
-  | {
-    kind: "elsewhere";
-    /** The name of the country the rows are in. */
-    country: string;
-    /** The place the reader declared, in the dataset's words, or null. */
-    told: string | null;
-    routes: DrawnRoute[];
-  };
-
-/**
- * The job offer line: for a reader exploring with no offer, what a job offer in
- * one country would free — routes that would then be checked, never met. In
- * the dataset's words: the job offer's, the country's in-sentence phrase, the
- * fields' subjects.
- */
-export interface JobOfferLine {
-  jobOffer: string;
-  country: string;
-  routes: number;
-  /** What the freed routes would ask next, each field by its subject. */
-  fields: string[];
-}
-
-/** The arranged line: what each arranged answer would open in one country,
- * the answer and the country in the dataset's words. */
-export interface ArrangedLine {
-  country: string;
-  answers: { answer: string; routes: number }[];
-}
-
-/**
- * One group of a section, in the order the screen draws them: open,
- * unsettled, within reach, steps (the job offer line first), the arranged line,
- * not yet, not open to your passport. A group the reader has nothing in is
- * not there.
- */
-export type VerdictGroup =
-  | { kind: "open" | "unsettled" | "within-reach" | "closed"; routes: DrawnRoute[] }
-  | { kind: "steps"; jobOfferLine: JobOfferLine | null; steps: StepCard[]; hint: string }
-  | ({ kind: "arranged" } & ArrangedLine)
-  | {
-    kind: "not-yet";
-    /** Rows and folds in the order they are drawn. */
-    items: (DrawnRoute | Fold)[];
-    /** Every route the group holds, folded or not. */
-    count: number;
-  };
-
-/** What the summary line under the notices counts. */
-export interface Strip {
-  open: number;
-  withinReach: number;
-  unsettled: number;
-  closed: number;
-  notYet: number;
-  /** Routes with an unknown the reader can still act on. */
-  openUnknowns: number;
-}
-
-/** What one country's summary row counts, and the s19 sentence that stands
- * in for its not-yet count where its scored routes do not take the reader's
- * situation. */
-export interface Tally extends Strip {
-  steps: number;
-  closedTo: UnscoredTally | null;
-}
-
-/** One country's section on the several-country layout. */
-export interface CountrySection {
-  name: string;
-  open: boolean;
-  tally: Tally;
-  groups: VerdictGroup[];
-}
-
-/** The screen's body as data: the notice screen, one country flat, or a
- * section per country. */
-export type VerdictLayout =
-  | { kind: "notice" }
-  | { kind: "one-country"; strip: Strip; groups: VerdictGroup[] }
-  | { kind: "countries"; strip: Strip; sections: CountrySection[] };
-
-/** The whole verdict. */
+/** The whole verdict: the layout as data, and each thing drawn from it. */
 export interface Verdict {
   /** How the verdict ends the interview, with the screen's masthead in it. */
   action: VerdictAction;
   /** The clash lines and the notice cards' markup, above everything; on the
    * notice screen, the whole body. */
   notices: string;
+  /** Where everything stands, with no words and no markup (#314). */
   layout: VerdictLayout;
+  /** Each drawn route's card or row markup, and each drawn step's title and
+   * card markup, by the id the layout gives it; none on the notice screen. */
+  cards: DrawnCards;
+  /** The body under the notices, drawn from the layout: the strip, the groups
+   * or a section per country, and the offer; empty on the notice screen. */
+  body: string;
 }

@@ -1,24 +1,29 @@
 // @level presentation
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, joinOr, possessiveAtStartOf, situationsAsked,
-  type Country, type Dataset, type Profile,
+  SITUATION_FIELD, fieldOptions, joinOr, possessiveAtStartOf, situationsAsked, type Country, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
   READ_ITS_RULES, unscoredHeadline, unscoredNamedRestLine, unscoredRestLine, unscoredRouteLine, unscoredTallyLine,
 } from "../../copy/verdict.js";
 import { esc, sentenceWithLinkHtml } from "../../reason.js";
 import { url } from "../../site.js";
-import { SITUATION_COUNTRY_FIELD, notScoredFor } from "../../situations.js";
+import { routePath } from "../../slug.js";
+import type { NotScoredMark } from "../../situations.js";
 import { phraseOfAnswer } from "./answer-phrase.js";
-import { EVERY_COUNTRY_ANSWER } from "./in-view.js";
+import { countryMarkOf, writtenStateKeyOf } from "./layout.js";
 
 /**
  * What the verdict says where the declared situation is one no scored route
  * in a country takes (s19): the country's line on the four-country result,
- * the written state a zero-open result reads, and which country leads. The
+ * and the written state a zero-open result reads. Where the marks stand is
+ * the layout's (`countryMarkOf`, `writtenStateKeyOf`); this words them. The
  * mark itself — which situation a country's scored routes do not take — is
  * the question card's as much as the verdict's, and stays beside it.
  */
+
+/** Where the quoted route's page is: the mark names the route and its
+ * country, and the verdict builds the address (ruling 19). */
+const quotedHref = (quoted: NonNullable<NotScoredMark["quoted"]>): string => url(routePath(quoted.country, quoted.route));
 
 /** The situation option's `short`, the words a sentence reads it in. */
 const situationPhrase = (ds: Dataset, value: string): string => {
@@ -46,18 +51,17 @@ export interface UnscoredTally {
 }
 
 export function unscoredTally(ds: Dataset, country: Country, situation: string | undefined): UnscoredTally | null {
-  if (situation === undefined) return null;
-  const mark = notScoredFor(ds, country.code.toLowerCase(), situation);
-  if (!mark) return null;
-  const text = unscoredTallyLine(mark.country, situationPhrase(ds, situation), mark.route?.name);
-  const html = mark.route ? sentenceWithLinkHtml(text, mark.route.name, url(mark.route.path)) : esc(text);
+  const mark = countryMarkOf(ds, country, situation);
+  if (!mark || situation === undefined) return null;
+  const text = unscoredTallyLine(mark.country, situationPhrase(ds, situation), mark.quoted?.route.name);
+  const html = mark.quoted ? sentenceWithLinkHtml(text, mark.quoted.route.name, quotedHref(mark.quoted)) : esc(text);
   return { text, html };
 }
 
 /**
  * The written state a zero-open result reads when the declared situation is
- * marked for the declared destination (s19): its headline, its subline with
- * the one door in it, and the country whose section leads.
+ * marked for the declared destination (s19): its headline, and its subline
+ * with the one door in it.
  */
 export interface UnscoredVerdict {
   headline: string;
@@ -65,12 +69,6 @@ export interface UnscoredVerdict {
   subline: string;
   /** The words of the subline that are the link, and where it goes. */
   door?: { text: string; href: string };
-  /**
-   * The destination answer of the country the reader named at question 3, on
-   * the four-country path only: the country whose section leads the result,
-   * open (s26). The direct path has no list of countries to lead.
-   */
-  lead?: string;
 }
 
 /**
@@ -90,21 +88,13 @@ export interface UnscoredVerdict {
  * explained it third in France's line, under Germany's. One function, one
  * copy — the direct path and the four-country path read the same headline
  * for the same answers, and only the rest sentence names the country, since
- * "the routes below" are four countries' here. The four-country verdict also
- * says which country it is about, so the result can lead with that
- * country's section.
+ * "the routes below" are four countries' here. Which country the
+ * four-country result leads with is the layout's, read from the same key.
  */
 export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict | null {
-  const destination = answers[DESTINATION_FIELD];
-  const situation = answers[SITUATION_FIELD];
-  if (destination === undefined || situation === undefined) return null;
-  // Keyed by the named country where the destination is all four, and by the
-  // destination itself everywhere else — the direct path never asks question
-  // 3, so a country answer under a one-country destination is not a key.
-  const named = destination === EVERY_COUNTRY_ANSWER ? answers[SITUATION_COUNTRY_FIELD] : undefined;
-  const key = named ?? destination;
-  const mark = notScoredFor(ds, key, situation);
-  if (!mark) return null;
+  const keyed = writtenStateKeyOf(ds, answers);
+  if (!keyed) return null;
+  const { key, named, mark, situation } = keyed;
   const asked = situationsAsked(ds).get(key) ?? new Set<string>();
   const steps = joinOr(fieldOptions(ds, SITUATION_FIELD)
     .filter((o) => asked.has(o.value) && !o.is_fallback && !o.is_unknown)
@@ -114,37 +104,7 @@ export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict 
   const rest = named ? unscoredNamedRestLine(opening, steps) : unscoredRestLine(steps);
   return {
     headline: unscoredHeadline(mark.country, phrase),
-    subline: mark.route ? `${unscoredRouteLine(opening, phrase, mark.route.name)} ${rest}` : rest,
-    ...(mark.route ? { door: { text: READ_ITS_RULES, href: url(mark.route.path) } } : {}),
-    ...(named ? { lead: named } : {}),
+    subline: mark.quoted ? `${unscoredRouteLine(opening, phrase, mark.quoted.route.name)} ${rest}` : rest,
+    ...(mark.quoted ? { door: { text: READ_ITS_RULES, href: quotedHref(mark.quoted) } } : {}),
   };
-}
-
-/**
- * Which country leads the four-country result, open — the one the reader
- * named at question 3, when nothing is open anywhere and its scored routes
- * do not take the declared situation — or none (s26). The decision is the
- * headline's: the written state is drawn only on a zero-open result, and the
- * country it names is the country that leads; with something open anywhere,
- * or a written state for nobody, the sections keep the dataset's order. One
- * function, so the sections and the headline cannot decide it two ways.
- */
-export function leadCountry(ds: Dataset, answers: Profile, zeroOpen: boolean): string | undefined {
-  return zeroOpen ? unscoredVerdict(ds, answers)?.lead : undefined;
-}
-
-/** Whether this country is the one that leads: the one predicate the order
- * and the section's open state read. */
-export const leads = (country: { code: string }, lead: string | undefined): boolean =>
-  lead !== undefined && country.code.toLowerCase() === lead;
-
-/**
- * The country sections of the four-country result, the named country's
- * first (s26): the section the headline is about leads the list, and the
- * others keep the dataset's order. `sort` is stable, so nothing else moves;
- * with no country to lead, or one the list does not hold, the order is the
- * dataset's.
- */
-export function namedFirst<T extends { code: string }>(countries: readonly T[], lead: string | undefined): T[] {
-  return [...countries].sort((a, b) => Number(leads(b, lead)) - Number(leads(a, lead)));
 }

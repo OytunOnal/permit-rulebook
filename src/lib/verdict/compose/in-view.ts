@@ -44,6 +44,9 @@ export function resultsInViewOf(ds: Dataset, answers: Profile, cameFrom: string 
   };
 }
 
+/** The routes of these results, by id, in their order. */
+export const routeIdsOf = (results: RouteResult[]): string[] => results.map((r) => r.route.id);
+
 /** One section's routes, sorted into the groups it draws. */
 export interface GroupedRoutes {
   /** Met, with no open question over them. */

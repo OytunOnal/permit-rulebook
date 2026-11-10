@@ -12,8 +12,10 @@ import {
   NOTHING_OPEN_HEADLINE, READ_ITS_RULES, unscoredNamedRestLine, unscoredRestLine,
 } from "../src/lib/copy/verdict.js";
 import { url } from "../src/lib/site.js";
-import type { CountrySection, Tally, Verdict, VerdictGroup } from "../src/lib/verdict/index.js";
-import { PAINTED_AS_COMPOSED, drawnRoutesIn, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
+import type { CountrySection, Verdict, VerdictGroup } from "../src/lib/verdict/verdict.js";
+import {
+  PAINTED_AS_COMPOSED, countryNamed, paintedAsComposedScript, routeIdsIn, saidLineOf, verdictFor,
+} from "./verdict-cards.js";
 import { expectNothingLeft } from "./wire.js";
 import { chromePath, walkSite, type BrowserPage, type SentRequest } from "../scripts/browser/browser.mjs";
 import { PICK_TURKEY, answerWith } from "./browser-walk.js";
@@ -49,7 +51,7 @@ function unscoredVerdict(answers: Profile): WrittenState | null {
   const m = action.masthead;
   if (m.sublineHtml === undefined) return null;
   const door = /<a href="([^"]*)">([^<]*)<\/a>/.exec(m.sublineHtml);
-  const first = layout.kind === "countries" ? ds.countries.find((c) => c.name === layout.sections[0]!.name) : undefined;
+  const first = layout.kind === "countries" ? ds.countries.find((c) => c.code === layout.sections[0]!.country) : undefined;
   return {
     headline: m.announced, subline: m.subline,
     ...(door ? { door: { text: door[2]!, href: door[1]! } } : {}),
@@ -174,8 +176,7 @@ describe("s26 — the named country's section leads", () => {
     return layout.sections;
   };
   /** The order the result draws, by country code. */
-  const order = (answers: Profile): string[] =>
-    sectionsOf(answers).map((s) => ds.countries.find((c) => c.name === s.name)!.code);
+  const order = (answers: Profile): string[] => sectionsOf(answers).map((s) => s.country);
   /** The country the verdict leads with, where its headline names one. */
   const leadOf = (answers: Profile): string | undefined => unscoredVerdict(answers)?.lead;
 
@@ -185,10 +186,10 @@ describe("s26 — the named country's section leads", () => {
     expect(order(walk)).toEqual(["FR", "DE", "ES", "NL"]);
     // The one predicate: the named country leads, and it is the only one that does.
     const first = sectionsOf(walk)[0]!;
-    expect(ds.countries.map((c) => c.name === first.name)).toEqual([false, true, false, false]);
+    expect(ds.countries.map((c) => c.code === first.country)).toEqual([false, true, false, false]);
     expect(first.open).toBe(true);
     // Its line keeps s21's sentence and link.
-    expect(first.tally.closedTo!.text).toBe(
+    expect(saidLineOf(verdictFor(walk), first)!.text).toBe(
       "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
   });
@@ -221,20 +222,22 @@ describe("s26 — the named country's section leads", () => {
  * what each country's line and headings say.
  */
 describe("s26 — the results the walks end on, from the verdict", () => {
-  const sectionsOf = (answers: Profile): CountrySection[] => {
-    const { layout } = verdictFor(answers);
-    if (layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
-    return layout.sections;
+  /** A section with its country's name and the s19 sentence its drawn line carries. */
+  type ReadSection = CountrySection & { name: string; said: { text: string; html: string } | null };
+  const sectionsOf = (answers: Profile): ReadSection[] => {
+    const verdict = verdictFor(answers);
+    if (verdict.layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
+    return verdict.layout.sections.map((s) => ({ ...s, name: countryNamed(s.country), said: saidLineOf(verdict, s) }));
   };
   /** The link in a country's line, where its line carries one. */
-  const linkIn = (tally: Tally): { text: string; href: string } | null => {
-    const a = tally.closedTo ? /<a href="([^"]*)">([^<]*)<\/a>/.exec(tally.closedTo.html) : null;
+  const linkIn = (section: ReadSection): { text: string; href: string } | null => {
+    const a = section.said ? /<a href="([^"]*)">([^<]*)<\/a>/.exec(section.said.html) : null;
     return a ? { text: a[2]!, href: a[1]! } : null;
   };
   /** The count a group's heading prints; the steps heading prints none. */
   const countHeaded = (g: VerdictGroup): number | undefined => {
     if (g.kind === "steps") return undefined;
-    return g.kind === "not-yet" ? g.count : drawnRoutesIn(g).length;
+    return g.kind === "not-yet" ? g.count : routeIdsIn(g).length;
   };
   /** The groups a section draws under a heading, each with the count it
    * prints; the arranged line stands under none. */
@@ -261,15 +264,15 @@ describe("s26 — the results the walks end on, from the verdict", () => {
       ["France", true], ["Germany", false], ["Spain", false], ["Netherlands", false],
     ]);
     const [fr, germany] = sections;
-    expect(fr!.tally.closedTo!.text).toBe(
+    expect(fr!.said!.text).toBe(
       "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
-    expect(linkIn(fr!.tally)).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
+    expect(linkIn(fr!)).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
     expect(headed(fr!)).toEqual([{ kind: "not-yet", count: 5 }]);
     expect(germany!.tally).toMatchObject({
-      open: 0, unsettled: 0, withinReach: 0, notYet: 8, openUnknowns: 0, closed: 0, steps: 0, closedTo: null,
+      open: 0, unsettled: 0, withinReach: 0, notYet: 8, openUnknowns: 0, closed: 0, steps: 0, situationNotTaken: false,
     });
-    expect(linkIn(germany!.tally)).toBeNull();
+    expect(linkIn(germany!)).toBeNull();
   });
 
   it("the walk that opens a German route reads the open headline, Germany first and open, France's line doing the saying", () => {
@@ -281,10 +284,10 @@ describe("s26 — the results the walks end on, from the verdict", () => {
     expect(sections.map((s) => [s.name, s.open])).toEqual([
       ["Germany", true], ["France", false], ["Spain", false], ["Netherlands", false],
     ]);
-    expect(sections[1]!.tally.closedTo!.text).toBe(
+    expect(sections[1]!.said!.text).toBe(
       "No route we check in France takes a research hosting agreement — Talent — researcher (chercheur) is quoted, not checked.",
     );
-    expect(linkIn(sections[1]!.tally)).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
+    expect(linkIn(sections[1]!)).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
   });
 
   it("the other four-country results: the explorer and the offer in Germany keep the dataset's order, open where an arranged answer would open a route; a leading France and a Germany with steps are both open", () => {
@@ -311,25 +314,26 @@ describe("s26 — the results the walks end on, from the verdict", () => {
     // The explorer: dataset order. What would open more in Germany and Spain
     // is a transfer or a hosting agreement — arranged answers, no step (#175)
     // — so the nothing-open headline; the two sections where one would open
-    // a route open on it (critique #4).
+    // a route open on it (critique #4). France and the Netherlands open on
+    // their job offer lines (ruling 6 of #187).
     expect(verdictFor(explorer).action.masthead.announced).toBe(NOTHING_OPEN_HEADLINE);
     expect(sectionsOf(explorer).map((s) => [s.name, s.open])).toEqual([
-      ["Germany", true], ["France", false], ["Spain", true], ["Netherlands", false],
+      ["Germany", true], ["France", true], ["Spain", true], ["Netherlands", true],
     ]);
-    expect(sectionsOf(explorer).every((s) => linkIn(s.tally) === null)).toBe(true);
+    expect(sectionsOf(explorer).every((s) => linkIn(s) === null)).toBe(true);
     // The offer in Germany: the same headline, dataset order, Germany's section open on its arranged line.
     expect(verdictFor(readerWithJobOffer).action.masthead.announced).toBe(NOTHING_OPEN_HEADLINE);
     expect(sectionsOf(readerWithJobOffer).map((s) => [s.name, s.open])).toEqual([
       ["Germany", true], ["France", false], ["Spain", false], ["Netherlands", false],
     ]);
-    expect(sectionsOf(readerWithJobOffer).every((s) => linkIn(s.tally) === null)).toBe(true);
+    expect(sectionsOf(readerWithJobOffer).every((s) => linkIn(s) === null)).toBe(true);
     // France leads, open, with its sentence; Germany, second, is open on its steps.
     expect(verdictFor(researcher).action.masthead.announced).toBe("No route we check in France takes a research hosting agreement.");
     const [france, germany] = sectionsOf(researcher);
     expect(sectionsOf(researcher).map((s) => [s.name, s.open])).toEqual([
       ["France", true], ["Germany", true], ["Spain", false], ["Netherlands", false],
     ]);
-    expect(linkIn(france!.tally)).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
+    expect(linkIn(france!)).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
     expect(germany!.tally.steps).toBeGreaterThan(0);
     expect(headed(germany!).some((h) => h.kind === "steps")).toBe(true);
   });

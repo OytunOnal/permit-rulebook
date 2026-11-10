@@ -9,7 +9,7 @@ import { RECORD_VERSION } from "../src/lib/record.js";
 import { esc, escAttr } from "../src/lib/reason.js";
 import { routePages } from "../src/lib/route-page/route-page.js";
 import { learnLinkTextOf } from "../src/lib/quote.js";
-import { verdictHtml } from "../src/lib/verdict/index.js";
+import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
 import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
 import {

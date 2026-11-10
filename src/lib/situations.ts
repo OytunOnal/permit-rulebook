@@ -1,11 +1,8 @@
-// @level presentation
+// @level application
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, phraseOf, fieldOptions, isScored, situationsAsked, type Dataset, type Profile,
+  DESTINATION_FIELD, SITUATION_FIELD, phraseOf, fieldOptions, isScored, situationsAsked, type Country, type Dataset,
+  type Profile, type Route,
 } from "permit-rulebook-data";
-import { READ_IT_HERE, notCheckedLine, notCheckedQuotedLine } from "./copy/interview.js";
-import { esc, sentenceWithLinkHtml } from "./reason.js";
-import { routePath } from "./slug.js";
-import { url } from "./site.js";
 
 /**
  * A situation no scored route in the chosen country takes (s19).
@@ -35,8 +32,9 @@ import { url } from "./site.js";
 export interface NotScoredMark {
   /** The country's phrase within a sentence, the data package's. */
   country: string;
-  /** The quoted route that carries this situation, when one does. */
-  route?: { name: string; path: string };
+  /** The quoted route that carries this situation, when one does, and its
+   * country; the page that draws the mark builds its address (ruling 19). */
+  quoted?: { country: Country; route: Route };
 }
 
 const countryOf = (ds: Dataset, destination: string) =>
@@ -58,7 +56,7 @@ export function notScoredFor(ds: Dataset, destination: string | undefined, situa
   const quoted = country.routes.find((r) => !isScored(r) && r.situations?.includes(situation));
   return {
     country: phraseOf(country.code),
-    ...(quoted ? { route: { name: quoted.name, path: routePath(country, quoted) } } : {}),
+    ...(quoted ? { quoted: { country, route: quoted } } : {}),
   };
 }
 
@@ -92,11 +90,4 @@ export function markUnder(ds: Dataset, option: QuestionOption, answers: Profile)
     return situation === undefined ? null : notScoredFor(ds, value, situation);
   }
   return null;
-}
-
-/** The mark as the question screen draws it: the copy's line, with the door
- * on the last three words where there is a page to open. */
-export function notScoredMarkHtml(mark: NotScoredMark): string {
-  if (!mark.route) return esc(notCheckedLine(mark.country));
-  return sentenceWithLinkHtml(notCheckedQuotedLine(mark.country, mark.route.name), READ_IT_HERE, url(mark.route.path));
 }

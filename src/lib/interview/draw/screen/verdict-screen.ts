@@ -7,7 +7,7 @@
 import { arrivalLineHtml } from "../../../arrival-line.js";
 import type { Glossary } from "../../../gloss.js";
 import { resumedLineHtml } from "../../../question.js";
-import { verdictHtml, verdictOf, type Verdict } from "../../../verdict/index.js";
+import { verdictHtml, verdictOf, type Verdict } from "../../../verdict/verdict.js";
 import type { InterviewStep } from "../../flow/interview-after.js";
 import { meetVerdict } from "./meeting.js";
 import { lendRestartToResumedLine, renderDeclaration } from "./ledger.js";

@@ -11,6 +11,7 @@ import { type Glossary, glossed } from "../../../../gloss.js";
 // One frame for every quote the product shows (2026-09-08).
 import { linkLabelOf, noteHtml, quoteFrame } from "../../../../quote.js";
 import type { CardScreen } from "./card-screen.js";
+import { routeAsStated } from "./route-statements.js";
 
 /** Does anything on this route turn on a number — a salary rail or a points
  * score? A route where nothing does has no threshold to fall short of, and the
@@ -105,11 +106,13 @@ function distinctProvenanceLines(
  * thresholds and only one of them applied to this reader, both still render —
  * they may want to know the other exists — but each says which it is. Printing
  * both unmarked left a reader free to take the lower one for theirs when they
- * do not qualify for it (human catch 2026-09-07).
+ * do not qualify for it (human catch 2026-09-07). An item the card dropped,
+ * linked to a path its route did not take (`notTaken`), is not quoted either
+ * (#315, ruling 5).
  */
-export function provenanceHtml(screen: CardScreen, r: RouteResult): string {
+export function provenanceHtml(screen: CardScreen, r: RouteResult, notTaken: ReadonlySet<string> = new Set()): string {
   const { ds, answers, glossary: seen = new Set() } = screen;
-  const entries = resultProvenance(r, answers);
+  const entries = resultProvenance({ ...r, route: routeAsStated(r.route, notTaken) }, answers);
   // A lone threshold needs no telling apart from anything, and a losing path
   // that quotes no amount leaves nothing for the reader to mistake for theirs.
   // Only where a choice of NUMBERS was actually settled ONE WAY OR THE OTHER.

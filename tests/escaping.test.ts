@@ -4,12 +4,16 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { esc, escAttr } from "../src/lib/reason.js";
-import { verdictHtml, verdictOf } from "../src/lib/verdict/index.js";
+import { verdictHtml, verdictOf } from "../src/lib/verdict/verdict.js";
 import { questionCardHtml, setAsideHtml } from "../src/lib/question.js";
 import { routePage } from "../src/lib/route-page/route-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
-import { deriveBands, deriveQuestions, type Dataset, type Profile } from "permit-rulebook-data";
+import {
+  deriveBands, deriveQuestions, forEachCriterion, shortLabelOf, type Dataset, type Profile,
+} from "permit-rulebook-data";
+import { figureGapSentence, shortOn } from "../src/lib/copy/verdict.js";
+import { PERSONA_A, PRIYA } from "./personas.js";
 
 /**
  * A value going into an attribute has to be escaped for an attribute.
@@ -197,13 +201,14 @@ const BERLIN_JOB_OFFER: Profile = {
   age_band: "a30to35", de_stay6m: "no", partner_ck: "no",
 };
 
+/** Everything a verdict paints from these answers: its masthead and its body. */
+const paintedOf = (seen: Dataset, answers: Profile): string => {
+  const verdict = verdictOf(seen, answers, { cameFrom: null, answered: Object.keys(answers).length });
+  const m = verdict.action.masthead;
+  return [m.headline, m.sublineHtml ?? esc(m.subline), verdictHtml(verdict)].join("");
+};
+
 describe("nothing from the dataset reaches the verdict's markup unescaped (#167)", () => {
-  /** Everything a verdict paints from these answers: its masthead and its body. */
-  const paintedOf = (seen: Dataset, answers: Profile): string => {
-    const verdict = verdictOf(seen, answers, { cameFrom: null, answered: Object.keys(answers).length });
-    const m = verdict.action.masthead;
-    return [m.headline, m.sublineHtml ?? esc(m.subline), verdictHtml(verdict)].join("");
-  };
   const lineOf = (html: string, cls: string): string =>
     [...html.matchAll(new RegExp(`<p class="${cls}">[\\s\\S]*?</p>`, "g"))].map((m) => m[0]).join("");
 
@@ -223,6 +228,38 @@ describe("nothing from the dataset reaches the verdict's markup unescaped (#167)
     expect(html).not.toContain("<img");
   });
 });
+
+describe("nothing from the dataset reaches a card's path line, badge or gap sentence unescaped", () => {
+  it("a full card's path line, its badge's short label and a not-yet row's gap sentence draw the dataset's words as text", () => {
+    const seen = wreckedWithPathWords();
+    const lowest = paintedOf(seen, { ...PERSONA_A, salary_eur_year: "band_0" });
+    const pathLines = [...lowest.matchAll(/<div class="path">[\s\S]*?<\/div>/g)].map((m) => m[0]).join("");
+    const badges = [...lowest.matchAll(/<span class="st [^"]*">[\s\S]*?<\/span>/g)].map((m) => m[0]).join("");
+    expect(pathLines).toContain(esc(`the IT-specialist path ${TAG}`));
+    expect(badges).toContain(esc(shortOn([figureOn(seen, "salary_eur_year")])));
+    const priya = paintedOf(seen, PRIYA);
+    const gap = figureGapSentence({
+      kind: "money", shortfall: { kind: "bounded", gap: "€1,585/month" }, field: figureOn(seen, "salary_eur_month"),
+    });
+    expect(priya).toContain(esc(gap));
+    expect(lowest + priya).not.toContain("<img");
+  });
+});
+
+/** The verdict's written dataset with a tag in every path's words too, which a
+ * full card's path line names. */
+function wreckedWithPathWords(): Dataset {
+  const wrecked = wreckedForTheVerdict();
+  for (const route of wrecked.countries.flatMap((c) => c.routes))
+    forEachCriterion(route.criteria, (c) => {
+      if (c.op !== "any") return;
+      for (const path of c.paths) if (path.subject) path.subject = `${path.subject} ${TAG}`;
+    });
+  return wrecked;
+}
+
+/** A money field as a badge and a gap sentence name it, on a dataset. */
+const figureOn = (seen: Dataset, field: string): string => shortLabelOf(seen, field).toLowerCase();
 
 describe("nothing from the dataset reaches the social card's markup (#25)", () => {
   it("a country's name with a tag in it is drawn as text", () => {

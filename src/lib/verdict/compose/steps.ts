@@ -86,14 +86,25 @@ function isLadder(ds: Dataset, field: string): boolean {
 }
 const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
 
+/** Whether a row's answer, on a question the reader can improve, is one the
+ * dataset marks as reachable by acting (`is_attainable`); an answer of any
+ * other question is not judged here. */
+function isAttainableWhereImprovable(ds: Dataset, u: Unlock): boolean {
+  const kind = ds.fields.find((f) => f.id === u.field)?.kind;
+  return kind !== "improvable" || u.option.is_attainable === true;
+}
+
 /**
  * The steps, ordered by what the reader can do, each ladder one step.
  *
  * Only what the reader can do is a step: a row whose answer the dataset marks
  * arranged — a transfer, a hosting agreement, which the employer or the host
  * decides — is left out, and said apart: counted by
- * `countRoutesOpenedByArrangedAnswers`, whose words `composeArrangedLine`
- * makes (#175).
+ * `countRoutesOpenedByArrangedAnswers`, and worded where the arranged
+ * line is drawn (#175). On a question the reader can improve, only an answer
+ * the dataset marks as reachable by acting is a step: a recognition refused
+ * or not yet assessed is an outcome, not something to go and do, and is left
+ * out entirely (ruling 28 on #310).
  *
  * Order: a step within the reader's own situation — recognition, language,
  * experience, funds: the fields the dataset marks `improvable` — before a
@@ -113,7 +124,7 @@ const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
 export function arrangeSteps(ds: Dataset, rows: Unlock[]): Step[] {
   const rungOf = (u: Unlock) => fieldOptions(ds, u.field).findIndex((o) => o.value === u.option.value);
   const ids = (u: Unlock) => new Set(u.routes.map((r) => r.route.id));
-  const stepRows = rows.filter((u) => !u.option.is_arranged);
+  const stepRows = rows.filter((u) => !u.option.is_arranged && isAttainableWhereImprovable(ds, u));
   // A higher rung on the same ladder that opens nothing the lower one does not.
   const foldsInto = (above: Unlock, u: Unlock): boolean =>
     above !== u && above.field === u.field && !above.qualifier && rungOf(above) > rungOf(u)
@@ -147,8 +158,10 @@ export const nearestStep = (steps: Step[]): Step | undefined => steps[0];
 /** The rows of the answers the dataset marks arranged, in the engine's order. */
 export const arrangedRowsOf = (rows: Unlock[]): Unlock[] => rows.filter((u) => u.option.is_arranged);
 
-/** An arranged answer, and how many routes it opens in one country. */
+/** An arranged answer, the field it answers, and how many routes it opens in
+ * one country. */
 export interface ArrangedAnswerCount {
+  field: string;
   answer: FieldOption;
   routes: number;
 }
@@ -163,7 +176,7 @@ export function countRoutesOpenedByArrangedAnswers(arranged: Unlock[], code: str
   for (const u of arranged) {
     const routes = u.routes.filter((r) => r.country === code).length;
     if (!routes) continue;
-    const counted = opened.get(u.option.value) ?? { answer: u.option, routes: 0 };
+    const counted = opened.get(u.option.value) ?? { field: u.field, answer: u.option, routes: 0 };
     opened.set(u.option.value, { ...counted, routes: counted.routes + routes });
   }
   return [...opened.values()];
