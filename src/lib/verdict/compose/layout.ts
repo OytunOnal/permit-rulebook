@@ -87,14 +87,18 @@ const drawsSeekHint = (answeredDataset: AnsweredDataset, results: RouteResult[])
 
 /** The steps block: the job offer line first, then the steps; it stands, with
  * its heading, wherever either is there (#175). */
-function stepsGroup(answeredDataset: AnsweredDataset, s: Section): VerdictGroup | null {
-  if (!s.steps.length && !s.jobOfferLine) return null;
-  return { kind: "steps", jobOfferLine: s.jobOfferLine, steps: s.steps, hint: drawsSeekHint(answeredDataset, s.results) };
+function stepsGroup(answeredDataset: AnsweredDataset, section: Section): VerdictGroup | null {
+  if (!section.steps.length && !section.jobOfferLine) return null;
+  return {
+    kind: "steps", jobOfferLine: section.jobOfferLine, steps: section.steps,
+    hint: drawsSeekHint(answeredDataset, section.results),
+  };
 }
 
 /** What stands above the not-yet group for its fold to point at: each step,
  * the job offer line, the arranged line. */
-const standingAbove = (s: Section): number => s.steps.length + (s.jobOfferLine ? 1 : 0) + (s.arranged ? 1 : 0);
+const standingAbove = (section: Section): number =>
+  section.steps.length + (section.jobOfferLine ? 1 : 0) + (section.arranged ? 1 : 0);
 
 /**
  * The one section policy, for both layouts: open, unsettled, within reach,
@@ -103,24 +107,25 @@ const standingAbove = (s: Section): number => s.steps.length + (s.jobOfferLine ?
  * they are drawn, and each card as it is listed, so a screen explains an
  * abbreviation on its first use (human, 2026-09-08).
  */
-function groupsOf(answeredDataset: AnsweredDataset, s: Section): VerdictGroup[] {
+function groupsOf(answeredDataset: AnsweredDataset, section: Section): VerdictGroup[] {
+  const { grouped } = section;
   const groups = [
-    routeGroup("open", s.grouped.met),
-    routeGroup("unsettled", s.grouped.unsettled),
-    routeGroup("within-reach", s.grouped.near),
-    stepsGroup(answeredDataset, s),
-    s.arranged ? { kind: "arranged" as const, ...s.arranged } : null,
-    notYetGroupOf(answeredDataset, s.grouped.hold, standingAbove(s)),
-    routeGroup("closed", s.grouped.closed),
+    routeGroup("open", grouped.met),
+    routeGroup("unsettled", grouped.unsettled),
+    routeGroup("within-reach", grouped.near),
+    stepsGroup(answeredDataset, section),
+    section.arranged ? { kind: "arranged" as const, ...section.arranged } : null,
+    notYetGroupOf(answeredDataset, grouped.hold, standingAbove(section)),
+    routeGroup("closed", grouped.closed),
   ];
   return groups.filter((g): g is VerdictGroup => g !== null);
 }
 
 /** One country's job offer line and arranged line, or null where an offer
  * frees nothing there, or no arranged answer opens a route there. */
-function linesIn(c: Compared, code: string): Pick<Section, "jobOfferLine" | "arranged"> {
-  const here = c.freed.find((f) => f.country === code);
-  const counts = countRoutesOpenedByArrangedAnswers(c.arranged, code);
+function linesIn(compared: Compared, code: string): Pick<Section, "jobOfferLine" | "arranged"> {
+  const here = compared.freed.find((f) => f.country === code);
+  const counts = countRoutesOpenedByArrangedAnswers(compared.arranged, code);
   return {
     jobOfferLine: here ? { country: code, routes: here.routes.length, fields: here.fieldsLeftOpen } : null,
     arranged: counts.length
@@ -144,11 +149,12 @@ export const hasLiveUnknown = (answeredDataset: AnsweredDataset, r: RouteResult)
 const openUnknownsIn = (answeredDataset: AnsweredDataset, rows: RouteResult[]): number =>
   rows.filter((r) => hasLiveUnknown(answeredDataset, r)).length;
 
-function stripOf(answeredDataset: AnsweredDataset, c: Compared): Strip {
-  const { whole } = c;
+function stripOf(answeredDataset: AnsweredDataset, compared: Compared): Strip {
+  const { whole } = compared;
   return {
     open: whole.met.length, withinReach: whole.near.length, unsettled: whole.unsettled.length,
-    closed: whole.closed.length, notYet: whole.hold.length, openUnknowns: openUnknownsIn(answeredDataset, c.inView.results),
+    closed: whole.closed.length, notYet: whole.hold.length,
+    openUnknowns: openUnknownsIn(answeredDataset, compared.inView.results),
   };
 }
 
@@ -189,10 +195,10 @@ function nearestRouteWithinReach(answeredDataset: AnsweredDataset, near: RouteRe
  * (s23) — an arranged answer or the job offer line is no step, so neither is
  * counted or named (#175); with neither, nothing open, pointing at country
  * sections only where there are some (F7). */
-function stepsOrNothingOpenHeadlineOf(c: Compared): HeadlineLayout {
-  const nearest = nearestStep(c.steps);
-  if (nearest) return { kind: "steps", steps: c.steps.length, nearest: stepKeyOf(nearest) };
-  return { kind: "nothing-open", explore: c.inView.visible.length === 1 ? "one-country" : "several-countries" };
+function stepsOrNothingOpenHeadlineOf(compared: Compared): HeadlineLayout {
+  const nearest = nearestStep(compared.steps);
+  if (nearest) return { kind: "steps", steps: compared.steps.length, nearest: stepKeyOf(nearest) };
+  return { kind: "nothing-open", explore: compared.inView.visible.length === 1 ? "one-country" : "several-countries" };
 }
 
 /**
@@ -204,23 +210,27 @@ function stepsOrNothingOpenHeadlineOf(c: Compared): HeadlineLayout {
  * whatever else is on screen, the route nearest within reach second (ruling
  * 12 on #187). Something open: the open routes, and that nearest route.
  */
-function headlineOf(answeredDataset: AnsweredDataset, c: Compared): HeadlineLayout {
-  if (c.zeroOpen && writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)) return { kind: "written-state" };
-  const nearest = nearestRouteWithinReach(answeredDataset, c.whole.near);
-  const unsettled = c.whole.unsettled.length;
-  if (!c.whole.met.length && unsettled) return { kind: "unsettled", routes: unsettled, nearest };
-  if (c.zeroOpen) return stepsOrNothingOpenHeadlineOf(c);
-  const countries = new Set(c.whole.met.map((r) => r.country)).size;
-  return { kind: "open", routes: c.whole.met.length, countries, nearest };
+function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): HeadlineLayout {
+  const { whole } = compared;
+  if (compared.zeroOpen && writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)) return { kind: "written-state" };
+  const nearest = nearestRouteWithinReach(answeredDataset, whole.near);
+  const unsettled = whole.unsettled.length;
+  if (!whole.met.length && unsettled) return { kind: "unsettled", routes: unsettled, nearest };
+  if (compared.zeroOpen) return stepsOrNothingOpenHeadlineOf(compared);
+  const countries = new Set(whole.met.map((r) => r.country)).size;
+  return { kind: "open", routes: whole.met.length, countries, nearest };
 }
 
 /** Single destination: the flat layout, no country chrome. */
-function oneCountry(answeredDataset: AnsweredDataset, c: Compared): ComparedLayout {
-  const code = c.inView.visible[0]!.code;
-  const steps = stepPlacesOf(c.steps, code, (step) => step.unlock.routes);
-  const groups = groupsOf(answeredDataset, { grouped: c.whole, steps, ...linesIn(c, code), results: c.inView.results });
+function oneCountry(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+  const code = compared.inView.visible[0]!.code;
+  const steps = stepPlacesOf(compared.steps, code, (step) => step.unlock.routes);
+  const groups = groupsOf(answeredDataset, {
+    grouped: compared.whole, steps, ...linesIn(compared, code), results: compared.inView.results,
+  });
   return {
-    kind: "one-country", country: code, strip: stripOf(answeredDataset, c), headline: headlineOf(answeredDataset, c), groups,
+    kind: "one-country", country: code, strip: stripOf(answeredDataset, compared),
+    headline: headlineOf(answeredDataset, compared), groups,
   };
 }
 
@@ -248,15 +258,15 @@ interface SectionPlace {
 
 /** The routes in one country some arranged answer would open, each counted
  * once, however many answers would open it. */
-const countRoutesOpenedByArrangedAnswersIn = (c: Compared, code: string): number =>
-  new Set(c.arranged.flatMap((u) => routeIdsOf(u.routes.filter((r) => r.country === code)))).size;
+const countRoutesOpenedByArrangedAnswersIn = (compared: Compared, code: string): number =>
+  new Set(compared.arranged.flatMap((u) => routeIdsOf(u.routes.filter((r) => r.country === code)))).size;
 
 /** Whether a section holds anything the reader can act on (ruling 6 of
  * #187): an open, unsettled or short-on-a-figure route, a step, an arranged
  * line, a job offer line, or a live unknown. */
-const holdsSomethingToActOn = (s: Section, tally: Tally): boolean =>
-  tally.open + tally.unsettled + tally.withinReach + tally.openUnknowns + s.steps.length > 0
-  || s.jobOfferLine !== null || s.arranged !== null;
+const holdsSomethingToActOn = (section: Section, tally: Tally): boolean =>
+  tally.open + tally.unsettled + tally.withinReach + tally.openUnknowns + section.steps.length > 0
+  || section.jobOfferLine !== null || section.arranged !== null;
 
 /**
  * One country's section: collapsible, with its tally on the summary row. A
@@ -270,19 +280,20 @@ const holdsSomethingToActOn = (s: Section, tally: Tally): boolean =>
  * 7). A country's own closed routes are counted in its tally: a count no
  * summary names is a route the reader never learns exists (s8).
  */
-function countrySection(answeredDataset: AnsweredDataset, c: Compared, at: SectionPlace): CountrySection {
+function countrySection(answeredDataset: AnsweredDataset, compared: Compared, at: SectionPlace): CountrySection {
   const { country, lead } = at;
   const code = country.code;
-  const rs = c.inView.results.filter((r) => r.country === code);
-  const grouped = groupedRoutesOf(rs, c.inView.closed.filter((r) => r.country === code), c.inView.unsettledIds);
-  const steps = stepPlacesOf(c.steps, code, (step) => step.unlock.routes.filter((r) => r.country === code))
+  const { inView } = compared;
+  const countryResults = inView.results.filter((r) => r.country === code);
+  const grouped = groupedRoutesOf(countryResults, inView.closed.filter((r) => r.country === code), inView.unsettledIds);
+  const steps = stepPlacesOf(compared.steps, code, (step) => step.unlock.routes.filter((r) => r.country === code))
     .filter((place) => place.routes.length);
-  const section: Section = { grouped, steps, ...linesIn(c, code), results: rs };
+  const section: Section = { grouped, steps, ...linesIn(compared, code), results: countryResults };
   const tally: Tally = {
     open: grouped.met.length, unsettled: grouped.unsettled.length, withinReach: grouped.near.length, notYet: grouped.hold.length,
-    openUnknowns: openUnknownsIn(answeredDataset, rs), closed: grouped.closed.length, steps: steps.length,
+    openUnknowns: openUnknownsIn(answeredDataset, countryResults), closed: grouped.closed.length, steps: steps.length,
     checkedWithJobOffer: section.jobOfferLine?.routes ?? 0,
-    openedByArrangedAnswers: countRoutesOpenedByArrangedAnswersIn(c, code),
+    openedByArrangedAnswers: countRoutesOpenedByArrangedAnswersIn(compared, code),
     situationNotTaken: countryMarkOf(answeredDataset.ds, country, answeredDataset.answers[SITUATION_FIELD]) !== null,
   };
   const open = holdsSomethingToActOn(section, tally) || leads(country, lead);
@@ -298,15 +309,16 @@ function countrySection(answeredDataset: AnsweredDataset, c: Compared, at: Secti
  * country it names is the country that leads; with something open anywhere,
  * or a written state for nobody, the sections keep the dataset's order.
  */
-function countries(answeredDataset: AnsweredDataset, c: Compared): ComparedLayout {
-  const lead = c.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)?.named : undefined;
-  const sections = namedFirst(c.inView.visible, lead).map((country) => countrySection(answeredDataset, c, { country, lead }));
+function countries(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+  const { visible } = compared.inView;
+  const lead = compared.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)?.named : undefined;
+  const sections = namedFirst(visible, lead).map((country) => countrySection(answeredDataset, compared, { country, lead }));
   return {
-    kind: "countries", strip: stripOf(answeredDataset, c), headline: headlineOf(answeredDataset, c),
-    lead: c.inView.visible.find((country) => leads(country, lead))?.code ?? null, sections,
+    kind: "countries", strip: stripOf(answeredDataset, compared), headline: headlineOf(answeredDataset, compared),
+    lead: visible.find((country) => leads(country, lead))?.code ?? null, sections,
   };
 }
 
-export function layoutOf(answeredDataset: AnsweredDataset, c: Compared): ComparedLayout {
-  return c.inView.visible.length === 1 ? oneCountry(answeredDataset, c) : countries(answeredDataset, c);
+export function layoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+  return compared.inView.visible.length === 1 ? oneCountry(answeredDataset, compared) : countries(answeredDataset, compared);
 }

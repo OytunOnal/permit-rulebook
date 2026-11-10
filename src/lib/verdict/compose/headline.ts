@@ -17,8 +17,8 @@ import type { HeadlineLayout } from "./verdict-layout.js";
  * a bounded band, as the card says it; on a band open at the bottom, the line
  * it asks, never that line as the reader's shortfall; or its points.
  */
-function nearNote(screen: VerdictScreen, c: Compared, nearest: string | null): string {
-  const named = c.inView.results.find((r) => r.route.id === nearest);
+function nearNote(screen: VerdictScreen, compared: Compared, nearest: string | null): string {
+  const named = compared.inView.results.find((r) => r.route.id === nearest);
   if (!named) return "";
   const money = moneyShortfallOf(screen.ds, named, screen.answers);
   if (money) return shortfallHeadline(printedShortfallOf(screen.ds, money));
@@ -48,19 +48,19 @@ function writtenStateHeadline(screen: VerdictScreen): Headline {
  * of the one line (review J2); or the open routes, the nearest within reach
  * stressed.
  */
-export function comparedHeadlineOf(screen: VerdictScreen, c: Compared, reckoned: HeadlineLayout): Headline {
+export function comparedHeadlineOf(screen: VerdictScreen, compared: Compared, reckoned: HeadlineLayout): Headline {
   switch (reckoned.kind) {
     case "written-state":
       return writtenStateHeadline(screen);
     case "unsettled":
-      return withNearNote(unsettledHeadline(reckoned.routes), nearNote(screen, c, reckoned.nearest));
+      return withNearNote(unsettledHeadline(reckoned.routes), nearNote(screen, compared, reckoned.nearest));
     case "steps": {
-      const nearest = composeStepTitle(screen, stepKeyed(c.steps, reckoned.nearest));
+      const nearest = composeStepTitle(screen, stepKeyed(compared.steps, reckoned.nearest));
       return { headline: stepsWouldChangeHeadline(reckoned.steps), nearest };
     }
     case "nothing-open":
       return { headline: NOTHING_OPEN_HEADLINE, explore: reckoned.explore };
     case "open":
-      return withNearNote(routesOpenHeadline(reckoned.routes, reckoned.countries), nearNote(screen, c, reckoned.nearest));
+      return withNearNote(routesOpenHeadline(reckoned.routes, reckoned.countries), nearNote(screen, compared, reckoned.nearest));
   }
 }

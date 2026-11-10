@@ -35,12 +35,12 @@ interface DecidedNamedPaths {
  * paths carry no words. An evaluated disjunction always carries every
  * path's results; one without them is refused by name. */
 function namedPathsOf(cr: CriterionResult): NamedPath[] {
-  const c = cr.criterion;
-  if (c.op !== "any") return [];
-  const subjects = c.paths.flatMap((p) => (p.subject === undefined ? [] : [p.subject]));
-  if (subjects.length !== c.paths.length) return [];
+  const { criterion } = cr;
+  if (criterion.op !== "any") return [];
+  const subjects = criterion.paths.flatMap((p) => (p.subject === undefined ? [] : [p.subject]));
+  if (subjects.length !== criterion.paths.length) return [];
   const results = cr.path_results;
-  if (results === undefined) throw new Error(`"${c.label}" was decided with no path results to name its paths by`);
+  if (results === undefined) throw new Error(`"${criterion.label}" was decided with no path results to name its paths by`);
   return subjects.map((subject, i) => ({ subject, results: results[i] }));
 }
 
@@ -80,15 +80,16 @@ function otherPathSentences(screen: CardScreen, path: string, results: Criterion
   const { ds, answers } = screen;
   const rules = namedRulesOf(results);
   const unmet: UnmetRule[] = rules.filter((cr) => cr.outcome === "fail").map((cr) => {
-    const c = cr.criterion;
-    const asks = criterionPhrase(ds, c);
-    return "field" in c ? { asks, declared: answerLabel(ds, c.field, answers[c.field]) } : { asks };
+    const { criterion } = cr;
+    const asks = criterionPhrase(ds, criterion);
+    return "field" in criterion ? { asks, declared: answerLabel(ds, criterion.field, answers[criterion.field]) } : { asks };
   });
   const unknown = rules.flatMap((cr) => {
-    const c = cr.criterion;
-    if (cr.outcome !== "unknown" || !("field" in c)) return [];
-    const answered = answers[c.field] !== undefined;  // an unasked question is no answer of "I don't know"
-    return answered ? [otherPathUnknownLine(path, answerLabel(ds, c.field, answers[c.field]), subjectOf(ds, c.field))] : [];
+    const { criterion } = cr;
+    if (cr.outcome !== "unknown" || !("field" in criterion)) return [];
+    const { field } = criterion;
+    const answered = answers[field] !== undefined;  // an unasked question is no answer of "I don't know"
+    return answered ? [otherPathUnknownLine(path, answerLabel(ds, field, answers[field]), subjectOf(ds, field))] : [];
   });
   return [...(unmet.length ? [otherPathNeedsLine(path, unmet)] : []), ...unknown];
 }

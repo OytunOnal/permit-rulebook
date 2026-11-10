@@ -65,12 +65,12 @@ function noticesAbove(screen: VerdictScreen, inView: ResultsInView): string {
  * the masthead, then every card in the order the screen lists them, so a
  * screen explains an abbreviation on its first use.
  */
-function comparedVerdictOf(screen: VerdictScreen, c: Compared, interview: InterviewSoFar): Verdict {
-  const notices = noticesAbove(screen, c.inView);
-  const layout = layoutOf(screen, c);
-  const headline = comparedHeadlineOf(screen, c, layout.headline);
-  const masthead = comparedMastheadOf(headline, interview.answered, c.inView.results.length);
-  const cards = drawnCardsOf(screen, c, layout);
+function comparedVerdictOf(screen: VerdictScreen, compared: Compared, interview: InterviewSoFar): Verdict {
+  const notices = noticesAbove(screen, compared.inView);
+  const layout = layoutOf(screen, compared);
+  const headline = comparedHeadlineOf(screen, compared, layout.headline);
+  const masthead = comparedMastheadOf(headline, interview.answered, compared.inView.results.length);
+  const cards = drawnCardsOf(screen, compared, layout);
   return { action: { kind: "compare", masthead }, notices, layout, ...cards, body: bodyHtml(screen, layout, cards) };
 }
 

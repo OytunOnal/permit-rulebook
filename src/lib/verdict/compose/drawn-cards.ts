@@ -19,7 +19,7 @@ export interface DrawnCards {
  * reckoned from, its results by route id, and the cards drawn so far. */
 interface Drawing {
   screen: VerdictScreen;
-  c: Compared;
+  compared: Compared;
   results: Map<string, RouteResult>;
   cards: DrawnCards;
 }
@@ -40,7 +40,7 @@ function drawRoute(at: Drawing, id: string, html: (r: RouteResult) => string): v
  * row lists them. */
 function drawStep(at: Drawing, place: StepPlace): void {
   if (Object.hasOwn(at.cards.steps, place.id)) throw new Error(`the layout places the step ${place.id} twice`);
-  const step = stepKeyed(at.c.steps, place.step);
+  const step = stepKeyed(at.compared.steps, place.step);
   const routes = step.unlock.routes.filter((r) => place.routes.includes(r.route.id));
   at.cards.steps[place.id] = { title: composeStepTitle(at.screen, step), html: stepCardHtml(at.screen, step, routes) };
 }
@@ -77,13 +77,13 @@ function drawGroup(at: Drawing, group: VerdictGroup, chip: CardLook["chip"]): vo
  * the one-country layout a card carries its country's chip; a country's own
  * section names its country once, on its summary row.
  */
-export function drawnCardsOf(screen: VerdictScreen, c: Compared, layout: VerdictLayout): DrawnCards {
+export function drawnCardsOf(screen: VerdictScreen, compared: Compared, layout: VerdictLayout): DrawnCards {
   const at: Drawing = {
-    screen, c, cards: { routes: {}, steps: {} },
-    results: new Map([...c.inView.results, ...c.inView.closed].map((r) => [r.route.id, r])),
+    screen, compared, cards: { routes: {}, steps: {} },
+    results: new Map([...compared.inView.results, ...compared.inView.closed].map((r) => [r.route.id, r])),
   };
   if (layout.kind === "one-country") for (const g of layout.groups) drawGroup(at, g, "country");
-  if (layout.kind === "countries") for (const s of layout.sections) for (const g of s.groups) drawGroup(at, g, "none");
+  if (layout.kind === "countries") for (const section of layout.sections) for (const g of section.groups) drawGroup(at, g, "none");
   return at.cards;
 }
 
