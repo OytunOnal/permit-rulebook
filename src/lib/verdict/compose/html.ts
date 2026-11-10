@@ -2,8 +2,9 @@
 import { SITUATION_FIELD, findJobOfferAnswer, phraseOf, subjectOf, type Dataset } from "permit-rulebook-data";
 import {
   CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, SEEK_HINT, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING, SUMMARY_LABEL,
-  UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, arrangedLine, notOpenToPassportCount, notYetCount,
-  notYetWithUnknowns, openCount, resultFeedbackLine, unlockingSteps, unsettledCount, withinReachCount, writeJobOfferLine,
+  UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, arrangedLine, moreWithDifferentSituationCount,
+  moreWithJobOfferCount, notOpenToPassportCount, notYetCount, notYetWithUnknowns, openCount, resultFeedbackLine,
+  unlockingSteps, unsettledCount, withinReachCount, writeJobOfferLine,
 } from "../../copy/verdict.js";
 import { FEEDBACK } from "../../copy/frame.js";
 import { countryOf } from "../../countries.js";
@@ -135,6 +136,8 @@ function tallyHtml(screen: VerdictScreen, section: CountrySection): string {
     notYetPart(screen, section),
     tally.closed ? esc(notOpenToPassportCount(tally.closed)) : "",
     tally.steps ? `<i>${esc(unlockingSteps(tally.steps))}</i>` : "",
+    tally.checkedWithJobOffer ? `<i>${esc(moreWithJobOfferCount(tally.checkedWithJobOffer))}</i>` : "",
+    tally.openedByArrangedAnswers ? `<i>${esc(moreWithDifferentSituationCount(tally.openedByArrangedAnswers))}</i>` : "",
   ].filter(Boolean).join(" · ");
 }
 

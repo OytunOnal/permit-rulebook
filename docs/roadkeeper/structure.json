@@ -5077,6 +5077,16 @@
   },
   {
    "from": "tests/verdict-layout.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-layout.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-layout.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -7505,6 +7515,16 @@
     "exported": true
    },
    {
+    "name": "moreWithJobOfferCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "moreWithDifferentSituationCount",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "OPEN_HEADING",
     "kind": "const",
     "exported": true
@@ -8875,5 +8895,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "30708fe01d30700c8d44607231019c14f6a4ab59ba859ba13a887448910cbe98"
+ "digest": "af9f2fc6399bf9b950933a27f74117f9e779747f92ba4a005f6334b047d34e9d"
 }

@@ -486,10 +486,11 @@ The plain line under the notices counting a verdict's routes by group. It
 reads as a summary, never as a control.
 _Avoid_: tabs, pills, counters
 
-**Tally** (UI: a country's summary row, "2 open · 3 not yet · 2 unlocking
-steps"):
+**Tally** (UI: a country's summary row, "5 not yet · 3 more with a job
+offer · 1 more with a different situation"):
 One country's count on the several-country verdict, beside its name: its
-groups, and its Leverage steps alone. Where the country's checked routes do
+groups, its Leverage steps, and the routes its Job offer line would check and
+its Arranged line would open (#317). Where the country's checked routes do
 not take the reader's situation, the Written state's sentence stands in for
 its not-yet count.
 _Avoid_: score
@@ -522,8 +523,9 @@ alone — the situation question's answers include the job offer
 **Arranged line** (UI: "With a different situation: an intra-corporate
 transfer would open 1 route in Germany"):
 The one line after the steps saying what each Arranged answer would open in a
-country. Never a Leverage step: not counted in the headline or a Tally, never
-named as the nearest.
+country. Never a Leverage step: not counted in the headline or among a
+Tally's steps, never named as the nearest; the Tally names the routes it
+would open apart, as "more with a different situation" (#317).
 _Avoid_: step card
 
 **Leverage step** (UI: "steps that would unlock more"):
