@@ -22,6 +22,7 @@ import { glossedLearnLinkText } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
+import { hasLiveUnknown } from "../layout.js";
 import { moneyShortfallOf } from "../money-shortfall.js";
 import { printedShortfallOf } from "../printed-shortfall.js";
 import type { Step } from "../steps.js";
@@ -63,9 +64,6 @@ export interface CardLook {
 
 const routeName = (screen: VerdictScreen, r: RouteResult): string => glossSection(r.route.name, screen.glossary);
 
-/** Whether an unknown on this route is one the reader can still act on. */
-export const hasLiveUnknown = (screen: VerdictScreen, r: RouteResult): boolean =>
-  liveUnknowns(r, screen.answers).length > 0;
 
 /**
  * The route the reader arrived from, marked and findable: the mark is on the

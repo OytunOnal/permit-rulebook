@@ -9,7 +9,7 @@ import {
 import { questionMastheadOf } from "../src/lib/question.js";
 import type { Masthead } from "../src/lib/screen.js";
 import { verdictOf, type Verdict } from "../src/lib/verdict/verdict.js";
-import { groupsIn } from "./verdict-cards.js";
+import { stepsIn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -255,7 +255,7 @@ describe("the masthead has exactly one author", () => {
   it("a nearest near-miss and an explore hint never fight over the same sentence", () => {
     const verdict = verdictOn(ds, PRIYA);
     const { subline } = verdict.action.masthead;
-    const steps = groupsIn(verdict).flatMap((g) => (g.kind === "steps" ? g.steps.map((s) => s.title) : []));
+    const steps = stepsIn(verdict).map((s) => s.title);
     expect(steps.length, "precondition: the explorer is offered steps").toBeGreaterThan(0);
     expect(steps.some((title) => subline.endsWith(nearestLine(title))), subline).toBe(true);
     expect(subline).not.toMatch(/Change an answer to explore/);

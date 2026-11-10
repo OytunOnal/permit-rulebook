@@ -9,7 +9,9 @@ import {
   orAbove, stepsWouldChangeHeadline, writeJobOfferLine,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
-import { verdictHtml, type CountrySection, type Verdict, type VerdictGroup } from "../src/lib/verdict/verdict.js";
+import {
+  verdictHtml, type ArrangedLine, type CountrySection, type JobOfferLine, type Verdict, type VerdictGroup,
+} from "../src/lib/verdict/verdict.js";
 import { groupsIn, stepsIn, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -50,24 +52,41 @@ const arrangedTitles = (answers: Profile): string[] =>
   unlocks(ds, answers).filter((u) => u.option.is_arranged).map((u) => unlockTitleOf(ds, u, answers));
 
 /** What an arranged answer would open in one country, from the engine's rows:
- * each answer's own words and its count of routes there. */
-function arrangedIn(answers: Profile, code: string): { answer: string; routes: number }[] {
-  const out = new Map<string, number>();
+ * each answer by its field and value, and its count of routes there. */
+function arrangedIn(answers: Profile, code: string): { field: string; value: string; routes: number }[] {
+  const out = new Map<string, { field: string; value: string; routes: number }>();
   for (const u of unlocks(ds, answers).filter((x) => x.option.is_arranged)) {
     const n = u.routes.filter((r) => r.country === code).length;
-    const answer = u.option.short ?? u.option.label;
-    if (n) out.set(answer, (out.get(answer) ?? 0) + n);
+    const counted = out.get(u.option.value) ?? { field: u.field, value: u.option.value, routes: 0 };
+    if (n) out.set(u.option.value, { ...counted, routes: counted.routes + n });
   }
-  return [...out].map(([answer, routes]) => ({ answer, routes }));
+  return [...out.values()];
 }
+
+/** An answer as a sentence reads it: the option's own words. */
+function phraseOfAnswer(field: string, value: string): string {
+  const option = fieldOptions(ds, field).find((o) => o.value === value)!;
+  return option.short ?? option.label;
+}
+
+/** The job offer, as the line names it. */
+const JOB_OFFER = phraseOfAnswer(SITUATION_FIELD, "offer");
+
+/** A job offer line's words, from the layout's data: the dataset's phrases. */
+const jobOfferWordsOf = (line: JobOfferLine) => ({
+  jobOffer: JOB_OFFER, country: phraseOf(line.country), routes: line.routes, fields: line.fields.map((f) => subjectOf(ds, f)),
+});
+
+/** An arranged line's words, from the layout's data: the dataset's phrases. */
+const arrangedWordsOf = (line: ArrangedLine) => ({
+  country: phraseOf(line.country), answers: line.answers.map((a) => ({ answer: phraseOfAnswer(a.field, a.value), routes: a.routes })),
+});
 
 const groupOf = <K extends VerdictGroup["kind"]>(groups: VerdictGroup[], kind: K) =>
   groups.find((g): g is Extract<VerdictGroup, { kind: K }> => g.kind === kind);
 
 const sectionsOf = (verdict: Verdict): CountrySection[] =>
   verdict.layout.kind === "countries" ? verdict.layout.sections : [];
-
-const codeOf = (name: string): string => ds.countries.find((c) => c.name === name)!.code;
 
 /** The step the masthead names, where it names one: the title in "Nearest: …". */
 const nearestIn = (verdict: Verdict, titles: string[]): string | undefined =>
@@ -83,7 +102,7 @@ describe("#175 — an arranged answer is never a step", () => {
     expect(nearestIn(verdict, arranged)).toBeUndefined();
     for (const section of sectionsOf(verdict)) {
       const block = groupOf(section.groups, "steps");
-      expect(section.tally.steps, section.name).toBe(block?.steps.length ?? 0);
+      expect(section.tally.steps, section.country).toBe(block?.steps.length ?? 0);
     }
   });
 
@@ -93,15 +112,16 @@ describe("#175 — an arranged answer is never a step", () => {
     expect(sections.length).toBeGreaterThan(1);
     let drawn = 0;
     for (const section of sections) {
-      const expected = arrangedIn(PRIYA, codeOf(section.name));
+      const expected = arrangedIn(PRIYA, section.country);
       const line = groupOf(section.groups, "arranged");
-      if (!expected.length) { expect(line, section.name).toBeUndefined(); continue; }
+      if (!expected.length) { expect(line, section.country).toBeUndefined(); continue; }
       drawn++;
-      expect(line?.answers, section.name).toEqual(expected);
-      expect(line?.country).toBe(phraseOf(codeOf(section.name)));
+      expect(line?.answers, section.country).toEqual(expected);
+      expect(line?.country).toBe(section.country);
+      expect(verdictHtml(verdict)).toContain(esc(arrangedLine(arrangedWordsOf(line!))));
       // Nothing is open anywhere, and here a different situation would open a
       // route: the section opens on it, as it did on the steps (critique #4).
-      expect(section.open, section.name).toBe(true);
+      expect(section.open, section.country).toBe(true);
     }
     expect(drawn, "no section drew an arranged line").toBeGreaterThan(0);
   });
@@ -117,7 +137,7 @@ describe("#175 — an arranged answer is never a step", () => {
     expect(kinds.indexOf("arranged")).toBe(kinds.indexOf("steps") + 1);
     const line = groupOf(groups, "arranged");
     expect(line?.answers).toEqual(arrangedIn(DENIZ, "DE"));
-    expect(verdictHtml(verdict)).toContain(esc(arrangedLine(line!)));
+    expect(verdictHtml(verdict)).toContain(esc(arrangedLine(arrangedWordsOf(line!))));
   });
 });
 
@@ -135,32 +155,32 @@ describe("#175 — where only an arranged answer would open something", () => {
     const line = groupOf(groups, "arranged");
     expect(line?.answers).toEqual(arrangedIn(SPAIN_JOB_OFFER, "ES"));
     const html = verdictHtml(verdict);
-    expect(html).toContain(esc(arrangedLine(line!)));
+    expect(html).toContain(esc(arrangedLine(arrangedWordsOf(line!))));
     expect(html).not.toContain(esc(STEPS_HEADING));
   });
 });
 
 describe("#175 — the job offer line", () => {
-  const jobOfferAnswer = fieldOptions(ds, SITUATION_FIELD).find((o) => o.value === "offer")!;
-
   it("opens the explorer's steps block in each country an offer frees routes in", () => {
     const freed = routesAJobOfferFrees(ds, PRIYA);
     expect(freed.length, "an offer frees nothing for the explorer").toBeGreaterThan(0);
     const verdict = verdictFor(PRIYA);
     const html = verdictHtml(verdict);
     for (const section of sectionsOf(verdict)) {
-      const here = freed.find((f) => f.country === codeOf(section.name));
+      const here = freed.find((f) => f.country === section.country);
       const block = groupOf(section.groups, "steps");
-      if (!here) { expect(block?.jobOfferLine ?? null, section.name).toBeNull(); continue; }
-      expect(block?.jobOfferLine, section.name).toEqual({
-        jobOffer: jobOfferAnswer.short ?? jobOfferAnswer.label, country: phraseOf(here.country), routes: here.routes.length,
-        // Each open field by its subject, the dataset's phrase for running text.
-        fields: here.fieldsLeftOpen.map((f) => subjectOf(ds, f)),
+      if (!here) { expect(block?.jobOfferLine ?? null, section.country).toBeNull(); continue; }
+      expect(block?.jobOfferLine, section.country).toEqual({
+        country: here.country, routes: here.routes.length, fields: here.fieldsLeftOpen,
       });
-      // The line is drawn, and before any step card of its block.
-      const line = esc(writeJobOfferLine(block!.jobOfferLine!));
-      expect(html, section.name).toContain(line);
-      for (const step of block!.steps) expect(html.indexOf(line)).toBeLessThan(html.indexOf(step.html));
+      // The line is drawn in the dataset's words — the job offer's phrase, the
+      // country's, each open field by its subject — and before any step card of its block.
+      const line = esc(writeJobOfferLine({
+        jobOffer: JOB_OFFER, country: phraseOf(here.country), routes: here.routes.length,
+        fields: here.fieldsLeftOpen.map((f) => subjectOf(ds, f)),
+      }));
+      expect(html, section.country).toContain(line);
+      for (const step of block!.steps) expect(html.indexOf(line)).toBeLessThan(html.indexOf(verdict.steps[step.id]!.html));
     }
   });
 
@@ -168,7 +188,7 @@ describe("#175 — the job offer line", () => {
     const verdict = verdictFor(PRIYA);
     const lines = sectionsOf(verdict).flatMap((s) => {
       const block = groupOf(s.groups, "steps");
-      return block?.jobOfferLine ? [writeJobOfferLine(block.jobOfferLine)] : [];
+      return block?.jobOfferLine ? [writeJobOfferLine(jobOfferWordsOf(block.jobOfferLine))] : [];
     });
     expect(lines.length).toBeGreaterThan(0);
     for (const line of lines) {
@@ -190,7 +210,7 @@ describe("#175 — the job offer line", () => {
     expect(block?.steps).toEqual([]);
     const html = verdictHtml(verdict);
     expect(html.indexOf(esc(STEPS_HEADING))).toBeGreaterThan(-1);
-    expect(html.indexOf(esc(STEPS_HEADING))).toBeLessThan(html.indexOf(esc(writeJobOfferLine(block!.jobOfferLine!))));
+    expect(html.indexOf(esc(STEPS_HEADING))).toBeLessThan(html.indexOf(esc(writeJobOfferLine(jobOfferWordsOf(block!.jobOfferLine!)))));
   });
 
   it("a freed route's open field with no subject is refused, not named by its id", () => {
@@ -225,7 +245,7 @@ describe("#175 — the not-yet fold points up only at something above it", () =>
   const sectionGroups = (verdict: Verdict, answers: Profile): [string, VerdictGroup[]][] =>
     verdict.layout.kind === "one-country"
       ? [[String(answers.destination).toUpperCase(), verdict.layout.groups]]
-      : sectionsOf(verdict).map((s) => [codeOf(s.name), s.groups]);
+      : sectionsOf(verdict).map((s) => [s.country, s.groups]);
 
   /** Whether the engine has something to stand above a country's not-yet
    * group: a step, what an offer frees, or what an arranged answer opens. */
@@ -239,8 +259,8 @@ describe("#175 — the not-yet fold points up only at something above it", () =>
     for (const answers of PROFILES)
       for (const [code, groups] of sectionGroups(verdictFor(answers), answers)) {
         const notYet = groupOf(groups, "not-yet");
-        const fold = notYet?.items.find((i) => "kind" in i && i.kind === "needs-path-answers");
-        if (!fold || !("kind" in fold) || fold.kind !== "needs-path-answers") continue;
+        const fold = notYet?.items.find((i) => typeof i !== "string" && i.kind === "needs-path-answers");
+        if (!fold || typeof fold === "string" || fold.kind !== "needs-path-answers") continue;
         const above = standsAbove(answers, code);
         expect(fold.pointsUp, `${code} ${JSON.stringify(answers)}`).toBe(above);
         seen.add(above);

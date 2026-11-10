@@ -6,9 +6,7 @@ import {
 import { esc, sentenceWithLinkHtml } from "../../reason.js";
 import type { VerdictMasthead } from "../../screen.js";
 import type { UnscoredVerdict } from "./unscored.js";
-
-/** How many countries the results screen is showing. */
-export type Explore = "one-country" | "several-countries";
+import type { Explore } from "./verdict-layout.js";
 
 /** What the masthead says of a comparison: the verdict in words, the words
  * after it the headline stresses, the next step it names, the nothing-open

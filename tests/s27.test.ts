@@ -19,7 +19,7 @@ import { routeAddresses, routePath } from "../src/lib/slug.js";
 import { url } from "../src/lib/site.js";
 import { frameAlone, headerIn } from "./frame-alone.js";
 import {
-  PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, verdictFor,
+  PAINTED_AS_COMPOSED, blocksIn, countryNamed, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, verdictFor,
 } from "./verdict-cards.js";
 import { DESK, PHONE, type BrowserPage } from "../scripts/browser/browser.mjs";
 import { answerWith, evaluateAtRest, openAtRest, skipReason, warnNotWalked, withSite } from "./browser-walk.js";
@@ -185,8 +185,8 @@ describe("2 — the four-country result's sections, from the verdict", () => {
   it("France leads, then the others in the dataset's order; France's line is the one that says the s21 sentence", () => {
     const { layout } = verdictFor(WALKED_TO_FOUR);
     if (layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
-    expect(layout.sections.map((s) => s.name)).toEqual(["France", "Germany", "Spain", "Netherlands"]);
-    expect(layout.sections.filter((s) => s.tally.closedTo !== null).map((s) => s.name)).toEqual(["France"]);
+    expect(layout.sections.map((s) => countryNamed(s.country))).toEqual(["France", "Germany", "Spain", "Netherlands"]);
+    expect(layout.sections.filter((s) => s.tally.situationNotTaken).map((s) => countryNamed(s.country))).toEqual(["France"]);
   });
 });
 

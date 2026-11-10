@@ -1,84 +1,52 @@
 // @level presentation
+import { declaredPlace, joinOr, type Dataset } from "permit-rulebook-data";
 import {
-  declaredPlace, fieldOptions, isPlacedElsewhere, isStepGated, type Criterion, type Dataset, type RouteResult,
-} from "permit-rulebook-data";
+  routesInCountryWhereYouToldUs, routesInCountryYouAreNotLookingAt, routesNeed, routesNeedSeeStepsAbove,
+} from "../../copy/verdict.js";
 import { countryOf } from "../../countries.js";
-import { phraseOfAnswer } from "./answer-phrase.js";
-import { notYetRowHtml, type VerdictScreen } from "./card/cards.js";
-import type { DrawnRoute, Fold, VerdictGroup } from "./types.js";
+import { esc } from "../../reason.js";
+import { phraseOfAnswerRef } from "./answer-phrase.js";
+import type { VerdictScreen } from "./card/cards.js";
+import { drawnRouteHtml, type DrawnCards } from "./drawn-cards.js";
+import type { AnswerRef, Fold } from "./verdict-layout.js";
 
-/** The answers a criterion asks for, where it asks for named ones. */
-function wantedValues(c: Criterion): string[] {
-  if (c.op === "eq") return [c.value];
-  if (c.op === "in") return c.values;
-  return [];
+/** The path answers a fold's rows ask for, named by the dataset, each name
+ * once. Fixed copy ("a job offer, transfer or hosting agreement") told a user
+ * who had declared a transfer that they needed one (review). */
+const pathAnswersNamed = (ds: Dataset, answers: AnswerRef[]): string[] =>
+  [...new Set(answers.map((a) => phraseOfAnswerRef(ds, a)))];
+
+function needsPathAnswersSummary(ds: Dataset, fold: Extract<Fold, { kind: "needs-path-answers" }>): string {
+  const pathAnswers = joinOr(pathAnswersNamed(ds, fold.pathAnswers));
+  return fold.pointsUp ? routesNeedSeeStepsAbove(fold.routes.length, pathAnswers) : routesNeed(fold.routes.length, pathAnswers);
 }
 
-/** The path answers a failed criterion asks for, in the dataset's words; the
- * fallback answer is never one. */
-function pathAnswersAskedBy(ds: Dataset, c: Criterion): string[] {
-  if (!("field" in c) || ds.fields.find((f) => f.id === c.field)?.kind !== "path") return [];
-  const options = fieldOptions(ds, c.field);
-  return wantedValues(c).flatMap((v) => {
-    const option = options.find((o) => o.value === v);
-    return option && !option.is_fallback ? [phraseOfAnswer(option)] : [];
-  });
+/** The rows placed in another country, said by the country's name and, where
+ * the reader declared one, the place they told us. */
+function elsewhereSummary(screen: VerdictScreen, fold: Extract<Fold, { kind: "elsewhere" }>): string {
+  const told = declaredPlace(screen.ds, screen.answers) ?? null;
+  const country = countryOf(screen.ds, fold.country).name;
+  return told
+    ? routesInCountryWhereYouToldUs(fold.routes.length, country, told)
+    : routesInCountryYouAreNotLookingAt(fold.routes.length, country);
 }
 
-/** The path answers a set of gated rows actually asks for, arranged ones
- * included, named by the dataset. Fixed copy ("a job offer, transfer or
- * hosting agreement") told a user who had declared a transfer that they
- * needed one (review). */
-function pathAnswersNamedFor(ds: Dataset, rows: RouteResult[]): string[] {
-  const names = new Set<string>();
-  for (const cr of rows.flatMap((r) => r.criteria.filter((c) => c.outcome === "fail")))
-    for (const name of pathAnswersAskedBy(ds, cr.criterion)) names.add(name);
-  return [...names];
+const drawnRoutesHtml = (cards: DrawnCards, routes: string[]): string =>
+  routes.map((id) => drawnRouteHtml(cards, id)).join("");
+
+function foldHtml(screen: VerdictScreen, fold: Fold, cards: DrawnCards): string {
+  if (fold.kind === "needs-path-answers")
+    return `<details class="hold-group"${fold.open ? " open" : ""}>
+          <summary>${esc(needsPathAnswersSummary(screen.ds, fold))}</summary>
+          <div class="hold-group-body">${drawnRoutesHtml(cards, fold.routes)}</div>
+        </details>`;
+  return `<details class="hold-group">
+            <summary>${esc(elsewhereSummary(screen, fold))}</summary>
+            <div class="hold-group-body">${drawnRoutesHtml(cards, fold.routes)}</div>
+          </details>`;
 }
 
-const notYetRowOf = (screen: VerdictScreen, r: RouteResult): DrawnRoute => ({ route: r.route.id, html: notYetRowHtml(screen, r) });
-
-/**
- * Routes that are simply in another country collapse into one line: a wall
- * of "this route is in Spain" answers a question the reader never asked, on a
- * fact they gave us themselves. One such route keeps its own row.
- */
-function elsewhereItems(screen: VerdictScreen, rows: RouteResult[]): (DrawnRoute | Fold)[] {
-  const drawn = rows.map((r) => notYetRowOf(screen, r));
-  if (rows.length < 2) return drawn;
-  const country = countryOf(screen.ds, rows[0].country).name;
-  return [{ kind: "elsewhere", country, told: declaredPlace(screen.ds, screen.answers) ?? null, routes: drawn }];
-}
-
-/**
- * The not-yet group: each route with its own reason keeps its own row; rows
- * gated on a path answer alone collapse into one fold when there are three or
- * more (one "needs a job offer" row per country was information, sixteen
- * were noise — critique #5); rows placed in another country fold last. The
- * rows are drawn in the order they are listed, so the first to use an
- * abbreviation explains it. `standingAbove` counts what the section draws
- * above the group for the fold to point at: its steps, its job offer line and
- * its arranged line.
- */
-export function notYetGroupOf(screen: VerdictScreen, rows: RouteResult[], standingAbove: number): VerdictGroup | null {
-  if (!rows.length) return null;
-  const gated: RouteResult[] = [], elsewhere: RouteResult[] = [], individual: RouteResult[] = [];
-  for (const r of rows) {
-    if (isPlacedElsewhere(r, screen.answers)) elsewhere.push(r);
-    else if (isStepGated(screen.ds, r, screen.answers)) gated.push(r);
-    else individual.push(r);
-  }
-  const items: (DrawnRoute | Fold)[] = individual.map((r) => notYetRowOf(screen, r));
-  if (gated.length < 3) items.push(...gated.map((r) => notYetRowOf(screen, r)));
-  else {
-    const pathAnswers = pathAnswersNamedFor(screen.ds, gated);
-    // Open when it is the only thing on screen: a collapsed group was the
-    // whole result for the emptiest profile, and every quote and read date
-    // the product exists to show was folded away inside it (F7).
-    const alone = individual.length === 0 && elsewhere.length === 0 && standingAbove === 0;
-    const drawn = gated.map((r) => notYetRowOf(screen, r));
-    items.push({ kind: "needs-path-answers", pathAnswers, pointsUp: standingAbove > 0, open: alone, routes: drawn });
-  }
-  items.push(...elsewhereItems(screen, elsewhere));
-  return { kind: "not-yet", items, count: rows.length };
-}
+/** The not-yet group's rows and folds, in the order the layout lists them:
+ * each row its own drawn card, each fold under its summary line. */
+export const notYetItemsHtml = (screen: VerdictScreen, items: (string | Fold)[], cards: DrawnCards): string =>
+  items.map((item) => (typeof item === "string" ? drawnRouteHtml(cards, item) : foldHtml(screen, item, cards))).join("");

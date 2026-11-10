@@ -202,8 +202,10 @@ describe("s5e — the card's source list grew without burying the verdict", () =
   /** The cards of the routes the rules scored for these answers: every group
    * but the routes the authority closes to the passport, which carry their
    * closing sentence and no source list. */
-  const scoredCardsOf = (answers: Profile) =>
-    groupsIn(verdictFor(answers)).filter((g) => g.kind !== "closed").flatMap(drawnRoutesIn);
+  const scoredCardsOf = (answers: Profile) => {
+    const verdict = verdictFor(answers);
+    return groupsIn(verdict).filter((g) => g.kind !== "closed").flatMap((g) => drawnRoutesIn(verdict, g));
+  };
 
   it("no card shows an empty source block", () => {
     for (const destination of ["de", "fr", "es", "nl", "all"])

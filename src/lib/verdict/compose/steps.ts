@@ -92,8 +92,8 @@ const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
  * Only what the reader can do is a step: a row whose answer the dataset marks
  * arranged — a transfer, a hosting agreement, which the employer or the host
  * decides — is left out, and said apart: counted by
- * `countRoutesOpenedByArrangedAnswers`, whose words `composeArrangedLine`
- * makes (#175).
+ * `countRoutesOpenedByArrangedAnswers`, and worded where the arranged
+ * line is drawn (#175).
  *
  * Order: a step within the reader's own situation — recognition, language,
  * experience, funds: the fields the dataset marks `improvable` — before a
@@ -147,8 +147,10 @@ export const nearestStep = (steps: Step[]): Step | undefined => steps[0];
 /** The rows of the answers the dataset marks arranged, in the engine's order. */
 export const arrangedRowsOf = (rows: Unlock[]): Unlock[] => rows.filter((u) => u.option.is_arranged);
 
-/** An arranged answer, and how many routes it opens in one country. */
+/** An arranged answer, the field it answers, and how many routes it opens in
+ * one country. */
 export interface ArrangedAnswerCount {
+  field: string;
   answer: FieldOption;
   routes: number;
 }
@@ -163,7 +165,7 @@ export function countRoutesOpenedByArrangedAnswers(arranged: Unlock[], code: str
   for (const u of arranged) {
     const routes = u.routes.filter((r) => r.country === code).length;
     if (!routes) continue;
-    const counted = opened.get(u.option.value) ?? { answer: u.option, routes: 0 };
+    const counted = opened.get(u.option.value) ?? { field: u.field, answer: u.option, routes: 0 };
     opened.set(u.option.value, { ...counted, routes: counted.routes + routes });
   }
   return [...opened.values()];
