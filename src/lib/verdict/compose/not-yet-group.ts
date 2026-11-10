@@ -1,4 +1,4 @@
-﻿// @level application
+// @level application
 import {
   fieldOptions, isPlacedElsewhere, isStepGated, type Criterion, type Dataset, type RouteResult,
 } from "permit-rulebook-data";
