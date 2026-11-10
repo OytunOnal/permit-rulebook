@@ -12,6 +12,22 @@ import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn } from "../../../.
 import { type Glossary, glossed } from "../../../../gloss.js";
 import type { CardScreen } from "./card-screen.js";
 
+/** Whether a statement is a precondition linked to a path the card's route did not take. */
+const isLinkedToAPathNotTaken = (s: RouteStatement, notTaken: ReadonlySet<string>): boolean =>
+  s.kind === "precondition" && s.path !== undefined && notTaken.has(s.path);
+
+/**
+ * The route as a card states it: without the preconditions linked to a path
+ * the card's route did not take, which bind no reader of that card (#315,
+ * ruling 5). The "Also required" block, the scope line's count and the source
+ * list all read it, so none of them states, counts or quotes an item the card
+ * dropped.
+ */
+export function routeAsStated(route: Route, notTaken: ReadonlySet<string>): Route {
+  if (!notTaken.size) return route;
+  return { ...route, statements: routeStatements(route).filter((s) => !isLinkedToAPathNotTaken(s, notTaken)) };
+}
+
 /**
  * Preconditions the authority applies that the interview never asked — stated
  * on every card so "criteria met" cannot overpromise. A precondition statement
@@ -26,8 +42,7 @@ import type { CardScreen } from "./card-screen.js";
  */
 export function precondHtml(screen: CardScreen, route: Route, notTaken: ReadonlySet<string> = new Set()): string {
   const { ds, answers, glossary: seen = new Set() } = screen;
-  const statements = binding(route, answers)
-    .filter((s) => s.kind === "precondition" && (s.path === undefined || !notTaken.has(s.path)));
+  const statements = binding(routeAsStated(route, notTaken), answers).filter((s) => s.kind === "precondition");
   // The ones the interview asked, by the field it asked them on, in the order
   // the statements name those fields.
   const asked = new Map<string, RouteStatement[]>();

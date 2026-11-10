@@ -7,7 +7,9 @@ import type { CardScreen } from "./blocks/card-screen.js";
 import { pathLinesHtml, pathsNotTakenOf } from "./blocks/path-line.js";
 import { provenanceHtml, sourceLinkHtml, srcLine } from "./blocks/provenance.js";
 import { railHtml } from "./blocks/rail.js";
-import { carveOutHtml, caveatHtml, precondHtml, readingHtml, scopedHtml } from "./blocks/route-statements.js";
+import {
+  carveOutHtml, caveatHtml, precondHtml, readingHtml, routeAsStated, scopedHtml,
+} from "./blocks/route-statements.js";
 import {
   CAME_FROM_LINE, FIND_OUT_YOURSELF, LOWER_THRESHOLD_HINT, POINTS_FIGURE, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL,
   WOULD_BE_MET, figureGapSentence, orAbove, pointsOfNeeded, shortByPoints, shortOn, shortfallNote, upToTitle,
@@ -82,10 +84,12 @@ const cameFromNote = (screen: VerdictScreen, r: RouteResult): string =>
 /**
  * What the interview asks of this route, in the plain words the route page
  * shows, and the door to the page itself: the same declared fact in both
- * places (route-page critique B3).
+ * places (route-page critique B3). An item the card dropped, linked to a path
+ * its route did not take (`notTaken`), is not counted (#315, ruling 5).
  */
-function scopeFor(screen: VerdictScreen, r: RouteResult): string {
-  return scopedHtml(r.route, screen.answers, url(routePath(countryOf(screen.ds, r.country), r.route)));
+function scopeFor(screen: VerdictScreen, r: RouteResult, notTaken: ReadonlySet<string> = new Set()): string {
+  const href = url(routePath(countryOf(screen.ds, r.country), r.route));
+  return scopedHtml(routeAsStated(r.route, notTaken), screen.answers, href);
 }
 
 /**
@@ -157,11 +161,13 @@ function leadLineHtml(screen: VerdictScreen, r: RouteResult): string {
  * A route that is open, within reach or unsettled, as a whole card. Its first
  * line is the country's chip and the badge, or the badge alone, above the
  * title: one home for the badge at every width and every title length (#95).
- * Under the title, the path it went through (#315).
+ * Under the title, the path it went through (#315); an item linked to a path
+ * it did not take is dropped, from its count and its quotes too (ruling 5).
  */
 export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLook): string {
   const { ds } = screen;
   const badge = badgeFrameOf(screen, r, look);
+  const notTaken = pathsNotTakenOf(r);
   return `
         <article class="route"${cameFromMark(screen, r)}>
           <div class="top">${look.chip === "country" ? `<span class="country">${esc(countryOf(ds, r.country).name)}</span>` : ""}
@@ -171,8 +177,8 @@ export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLo
           ${pathLinesHtml(screen, r, badge.frame)}
           ${cameFromNote(screen, r)}
           <p class="why">${leadLineHtml(screen, r)}</p>
-          ${scopeFor(screen, r)}
-          ${precondHtml(screen, r.route, pathsNotTakenOf(r))}
+          ${scopeFor(screen, r, notTaken)}
+          ${precondHtml(screen, r.route, notTaken)}
           ${carveOutHtml(screen, r.route)}
           ${caveatHtml(screen, r.route)}
           ${readingHtml(r.route, screen.glossary)}
@@ -181,7 +187,7 @@ export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLo
           ${gapNoteHtml(screen, r)}
           ${pointsNoteHtml(r)}
           ${learnBoxHtml(screen, r)}
-          <div class="foot">${provenanceHtml(screen, r)}${sourceLinkHtml(r.route.info_url)}</div>
+          <div class="foot">${provenanceHtml(screen, r, notTaken)}${sourceLinkHtml(r.route.info_url)}</div>
         </article>`;
 }
 

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { fieldOptions, routeStatements, type Dataset, type Profile } from "permit-rulebook-data";
+import {
+  fieldOptions, routeStatements, scopeLine, type Dataset, type Profile, type Route, type RouteStatement,
+} from "permit-rulebook-data";
 import { otherPathNeedsLine, pathTakenLine } from "../src/lib/copy/verdict.js";
 import { PERSONA_A } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
@@ -21,15 +23,23 @@ const SHORTAGE = "de-blue-card-shortage";
 /** The orientation year: where you studied, with one path-linked item. */
 const ORIENTATION = "nl-orientation-year";
 
-/** The "Also required" items a route links to one of its paths, by the path's
- * words, as the dataset writes them; a route with none fails the case. */
-function linkedItemsOf(route: string, path: string): string[] {
-  const found = ds.countries.flatMap((c) => c.routes).find((r) => r.id === route);
-  if (!found) throw new Error(`no route ${route} in the dataset`);
-  const items = routeStatements(found).filter((s) => s.path === path).map((s) => s.text);
-  if (!items.length) throw new Error(`${route} links no item to ${path}`);
-  return items;
+/** A route of the shipped dataset, by its id; one it lacks fails the case. */
+function shippedRouteOf(id: string): Route {
+  const found = ds.countries.flatMap((c) => c.routes).find((r) => r.id === id);
+  if (!found) throw new Error(`no route ${id} in the dataset`);
+  return found;
 }
+
+/** The statements a route links to one of its paths, by the path's words; a
+ * route with none fails the case. */
+function linkedStatementsOf(route: string, path: string): RouteStatement[] {
+  const linked = routeStatements(shippedRouteOf(route)).filter((s) => s.path === path);
+  if (!linked.length) throw new Error(`${route} links no item to ${path}`);
+  return linked;
+}
+
+/** The "Also required" items a route links to one of its paths, as the dataset writes them. */
+const linkedItemsOf = (route: string, path: string): string[] => linkedStatementsOf(route, path).map((s) => s.text);
 
 /** The paths the cases name, by the dataset's words. */
 const IT_PATH = "the IT-specialist path";
@@ -158,5 +168,35 @@ describe("an \"Also required\" item linked to a path shows only when that path d
     const row = cardOn(ds, answers, SHORTAGE);
     expect(pathLinesOf(row)).toEqual([]);
     for (const item of IT_PATH_ITEMS) expect(alsoRequiredOf(row)).toContain(item);
+  });
+});
+
+/** A card's scope line, as text. */
+const scopeOf = (card: string): string => plainTextOf(blocksIn(card, "scoped"));
+/** A card's source list, as text. */
+const sourcesOf = (card: string): string => plainTextOf(blocksIn(card, "srcs"));
+
+describe("an item a card drops is gone from its scope line's count and its source list too (ruling 5)", () => {
+  const shortage = shippedRouteOf(SHORTAGE);
+  const dropped = linkedStatementsOf(SHORTAGE, IT_PATH);
+  const quotes = dropped.map((s) => s.source?.quote ?? "");
+  /** The shortage Blue Card as a card met through the recognised-degree path states it. */
+  const asStated: Route = { ...shortage, statements: routeStatements(shortage).filter((s) => !dropped.includes(s)) };
+
+  it("persona A, not yet assessed: the IT path decided, so its items' count and quotes stand", () => {
+    expect(quotes.every((q) => q !== ""), "precondition: each IT item stands on a quote").toBe(true);
+    const card = cardOn(ds, PERSONA_A, SHORTAGE);
+    expect(scopeOf(card)).toContain(scopeLine(shortage, { reader: "answered", profile: PERSONA_A }));
+    for (const quote of quotes) expect(sourcesOf(card)).toContain(quote);
+  });
+
+  it("persona A, fully recognised: the scope line does not count the dropped IT items, and the source list carries none of their quotes", () => {
+    const recognised = { ...PERSONA_A, recognition_de: "recognized" };
+    const counted = scopeLine(asStated, { reader: "answered", profile: recognised });
+    expect(counted, "precondition: the IT items are counted on the route")
+      .not.toBe(scopeLine(shortage, { reader: "answered", profile: recognised }));
+    const card = cardOn(ds, recognised, SHORTAGE);
+    expect(scopeOf(card)).toContain(counted);
+    for (const quote of quotes) expect(sourcesOf(card)).not.toContain(quote);
   });
 });

@@ -1923,6 +1923,11 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
+   "to": "src/lib/verdict/compose/card/blocks/route-statements.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/verdict/compose/card/blocks/rail.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
@@ -9022,5 +9027,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "4cc149ed8838895b872997b700bb7bb27d1303c7b136a71f3810ea644f7b8733"
+ "digest": "0bf954406bef11a929c2fef3b456997bb65658defaa8a99a2d2ca90214b64d4b"
 }
