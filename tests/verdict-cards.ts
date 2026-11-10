@@ -4,7 +4,7 @@ import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
 import {
   verdictHtml, verdictOf, type CountrySection, type DrawnRoute, type StepCard, type Verdict, type VerdictGroup,
-} from "../src/lib/verdict/index.js";
+} from "../src/lib/verdict/verdict.js";
 
 const ds = dataset as unknown as Dataset;
 

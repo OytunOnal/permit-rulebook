@@ -157,7 +157,7 @@
    "path": "src/lib/verdict",
    "entries": [
     {
-     "file": "src/lib/verdict/index.ts",
+     "file": "src/lib/verdict/verdict.ts",
      "level": "presentation"
     }
    ],
@@ -174,8 +174,8 @@
     "src/lib/verdict/compose/steps.ts",
     "src/lib/verdict/compose/types.ts",
     "src/lib/verdict/compose/unscored.ts",
-    "src/lib/verdict/index.ts",
-    "src/lib/verdict/verdict.css"
+    "src/lib/verdict/verdict.css",
+    "src/lib/verdict/verdict.ts"
    ]
   },
   {
@@ -341,7 +341,7 @@
   "src/lib/verdict/compose/steps.ts": "application",
   "src/lib/verdict/compose/types.ts": "presentation",
   "src/lib/verdict/compose/unscored.ts": "presentation",
-  "src/lib/verdict/index.ts": "presentation",
+  "src/lib/verdict/verdict.ts": "presentation",
   "src/pages/404.astro": "presentation",
   "src/pages/[country]/[route].astro": "presentation",
   "src/pages/[country]/[route].json.ts": "presentation",
@@ -1504,7 +1504,7 @@
   },
   {
    "from": "src/lib/interview/draw/screen/verdict-screen.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -2233,52 +2233,52 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/index.ts",
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/index.ts",
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/card/cards.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/index.ts",
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/headline.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/index.ts",
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/html.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/index.ts",
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/in-view.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/index.ts",
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/masthead.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/index.ts",
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/sections.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/index.ts",
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/steps.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/verdict/index.ts",
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/verdict/index.ts",
+   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/verdict.css",
    "kind": "dependency"
   },
@@ -3024,7 +3024,7 @@
   },
   {
    "from": "tests/escaping.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -3244,7 +3244,7 @@
   },
   {
    "from": "tests/gloss.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -3559,7 +3559,7 @@
   },
   {
    "from": "tests/place-slot.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -3949,7 +3949,7 @@
   },
   {
    "from": "tests/s13.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -4064,7 +4064,7 @@
   },
   {
    "from": "tests/s19.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -4144,7 +4144,7 @@
   },
   {
    "from": "tests/s21.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -4319,7 +4319,7 @@
   },
   {
    "from": "tests/s26.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "type-only"
   },
   {
@@ -4459,7 +4459,7 @@
   },
   {
    "from": "tests/s28.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -4629,7 +4629,7 @@
   },
   {
    "from": "tests/s8.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -4704,7 +4704,7 @@
   },
   {
    "from": "tests/screen.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -4894,7 +4894,7 @@
   },
   {
    "from": "tests/verdict-cards.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -4954,7 +4954,7 @@
   },
   {
    "from": "tests/verdict-steps.test.ts",
-   "to": "src/lib/verdict/index.ts",
+   "to": "src/lib/verdict/verdict.ts",
    "kind": "dependency"
   },
   {
@@ -5223,7 +5223,7 @@
     "exported": false
    }
   ],
-  "src/lib/verdict/index.ts": [
+  "src/lib/verdict/verdict.ts": [
    {
     "name": "answeredOutright",
     "kind": "fn",
@@ -8682,5 +8682,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "8bc7650864103860fcbbc382312210eb320a7d35bcce2f83ca6d77ed13f8557f"
+ "digest": "a9c77b7396a7ddcb1d939d72bbc66fc75e7cb7cdf96a16adc0f6f4af17cb17f4"
 }

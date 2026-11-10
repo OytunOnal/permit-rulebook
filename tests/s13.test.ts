@@ -21,7 +21,7 @@ import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
 import { esc, escAttr } from "../src/lib/reason.js";
-import { verdictHtml } from "../src/lib/verdict/index.js";
+import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { PAINTED_AS_COMPOSED, paintedAsComposedScript, verdictFor } from "./verdict-cards.js";
 import { answerWith, openAtRest, withSite } from "./browser-walk.js";
 import { footerIn, frameAlone, headerIn } from "./frame-alone.js";

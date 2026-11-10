@@ -9,7 +9,7 @@ import { routePages } from "../src/lib/route-page/route-page.js";
 import {
   NOTHING_OPEN_HEADLINE, RULES_MET, STATUS_LABEL, UNSETTLED_SECTION_LINE, unsettledHeadline,
 } from "../src/lib/copy/verdict.js";
-import { verdictHtml, type Verdict, type VerdictGroup } from "../src/lib/verdict/index.js";
+import { verdictHtml, type Verdict, type VerdictGroup } from "../src/lib/verdict/verdict.js";
 import { drawnRouteOn, drawnRoutesIn, groupsIn, placed, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
