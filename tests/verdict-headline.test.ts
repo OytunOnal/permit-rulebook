@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import { fieldOptions, type Criterion, type Dataset, type Profile, type Route } from "permit-rulebook-data";
 import { shortByUpToLine, unsettledHeadline } from "../src/lib/copy/verdict.js";
-import { ALGERIAN } from "./personas.js";
+import { ALGERIAN, PERSONA_C } from "./personas.js";
 import { groupsIn, layoutPinOf, verdictFor, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -12,7 +12,8 @@ const ds = dataset as unknown as Dataset;
  * the nearest route short on a figure, by the share of its own amount still
  * missing (ruling 11 on #187), and, with nothing open, the routes whose rules
  * are met leading it (ruling 12). And no step offers an answer that is no
- * action (ruling 13).
+ * action (ruling 13): on a question a reader can improve, only an answer the
+ * dataset marks as one a reader can reach by acting (ruling 28 on #310).
  */
 
 /** The hostile walk's qualified Nigerian reader: a recognised degree, a
@@ -84,42 +85,61 @@ describe("with nothing open, a route whose rules are met leads the headline", ()
 /** A refusal is an outcome, not something a reader can go and do. */
 const REFUSAL = "recognition_de=not_recognised";
 
-/** German offer-holders across their qualification, recognition, occupation
- * and experience answers, on €41,356.36–€45,630. */
-function germanOfferHolders(): Profile[] {
-  let profiles: Profile[] = [{}];
-  for (const field of ["qualification", "recognition_de", "occupation_shortage", "occupation_it", "experience_5y", "experience_7y"]) {
+/** Each profile of `base` across every answer of each of `fields`. */
+function acrossAnswers(base: Profile, fields: string[]): Profile[] {
+  let profiles: Profile[] = [base];
+  for (const field of fields) {
     const values = fieldOptions(ds, field).map((o) => o.value);
     profiles = profiles.flatMap((p) => values.map((v) => ({ ...p, [field]: v })));
   }
-  const offerHolder = { destination: "de", citizenship: "NG", situation: "offer", situation_country: "de", salary_eur_year: "band_3" };
-  return profiles.map((p) => ({ ...offerHolder, ...p }));
+  return profiles;
 }
 
-/** The answers that are no action, each as a step's key writes it: the
- * refusal, and every "I don't know". */
-const noActionAnswers = (): string[] => [
-  REFUSAL,
-  ...ds.fields.flatMap((f) => fieldOptions(ds, f.id).filter((o) => o.is_unknown).map((o) => `${f.id}=${o.value}`)),
-];
+/** German offer-holders across their qualification, recognition, occupation
+ * and experience answers, on €41,356.36–€45,630. */
+const germanOfferHolders = (): Profile[] => acrossAnswers(
+  { destination: "de", citizenship: "NG", situation: "offer", situation_country: "de", salary_eur_year: "band_3" },
+  ["qualification", "recognition_de", "occupation_shortage", "occupation_it", "experience_5y", "experience_7y"],
+);
+
+/** Persona C, an explorer on all four countries, across their qualification,
+ * recognition, experience and German answers (ruling 28 on #310). */
+const explorersOnAllFour = (): Profile[] =>
+  acrossAnswers(PERSONA_C, ["qualification", "recognition_de", "experience_5y", "experience_7y", "german"]);
+
+/** The answers that are no action, each as a step's key writes it: every
+ * answer of a question a reader can improve that the dataset does not mark as
+ * one a reader can reach by acting, and every "I don't know" (ruling 28 on
+ * #310). */
+const noActionAnswers = (): string[] => ds.fields.flatMap((f) => fieldOptions(ds, f.id)
+  .filter((o) => o.is_unknown || (f.kind === "improvable" && !o.is_attainable))
+  .map((o) => `${f.id}=${o.value}`));
+
+/** How many steps the profiles were offered, each checked to offer no answer
+ * that is no action. */
+function stepsReadAcross(profiles: Profile[], noAction: string[]): number {
+  let stepsRead = 0;
+  for (const answers of profiles)
+    for (const group of groupsIn(verdictFor(answers))) {
+      if (group.kind !== "steps") continue;
+      for (const place of group.steps) {
+        stepsRead++;
+        const offered = place.step.split("+");
+        expect(offered.filter((answer) => noAction.includes(answer)), JSON.stringify(answers)).toEqual([]);
+      }
+    }
+  return stepsRead;
+}
 
 describe("no step offers an answer that is no action", () => {
-  it("across 540 German offer-holder profiles", () => {
-    const [field, value] = REFUSAL.split("=");
-    expect(fieldOptions(ds, field!).map((o) => o.value), "the dataset no longer has the refusal").toContain(value);
-    const profiles = germanOfferHolders();
-    expect(profiles.length).toBe(540);
+  it("across 540 German offer-holder profiles and 450 explorers on all four countries", () => {
     const noAction = noActionAnswers();
-    let stepsRead = 0;
-    for (const answers of profiles)
-      for (const group of groupsIn(verdictFor(answers))) {
-        if (group.kind !== "steps") continue;
-        for (const place of group.steps) {
-          stepsRead++;
-          const offered = place.step.split("+");
-          expect(offered.filter((answer) => noAction.includes(answer)), JSON.stringify(answers)).toEqual([]);
-        }
-      }
-    expect(stepsRead, "the profiles were offered no step at all").toBeGreaterThan(0);
+    expect(noAction, "the dataset no longer has the refusal").toContain(REFUSAL);
+    expect(noAction, "the dataset no longer has an unknown recognition").toContain(`recognition_de=${PERSONA_C.recognition_de}`);
+    const offerHolders = germanOfferHolders();
+    const explorers = explorersOnAllFour();
+    expect([offerHolders.length, explorers.length]).toEqual([540, 450]);
+    expect(stepsReadAcross(offerHolders, noAction), "the offer-holders were offered no step at all").toBeGreaterThan(0);
+    expect(stepsReadAcross(explorers, noAction), "the explorers were offered no step at all").toBeGreaterThan(0);
   });
 });

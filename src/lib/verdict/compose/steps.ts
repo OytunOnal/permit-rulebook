@@ -86,6 +86,14 @@ function isLadder(ds: Dataset, field: string): boolean {
 }
 const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
 
+/** Whether a row's answer, on a question the reader can improve, is one the
+ * dataset marks as reachable by acting (`is_attainable`); an answer of any
+ * other question is not judged here. */
+function isAttainableWhereImprovable(ds: Dataset, u: Unlock): boolean {
+  const kind = ds.fields.find((f) => f.id === u.field)?.kind;
+  return kind !== "improvable" || u.option.is_attainable === true;
+}
+
 /**
  * The steps, ordered by what the reader can do, each ladder one step.
  *
@@ -93,7 +101,10 @@ const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
  * arranged — a transfer, a hosting agreement, which the employer or the host
  * decides — is left out, and said apart: counted by
  * `countRoutesOpenedByArrangedAnswers`, and worded where the arranged
- * line is drawn (#175).
+ * line is drawn (#175). On a question the reader can improve, only an answer
+ * the dataset marks as reachable by acting is a step: a recognition refused
+ * or not yet assessed is an outcome, not something to go and do, and is left
+ * out entirely (ruling 28 on #310).
  *
  * Order: a step within the reader's own situation — recognition, language,
  * experience, funds: the fields the dataset marks `improvable` — before a
@@ -113,7 +124,7 @@ const ladderCache = new WeakMap<Dataset, Map<string, boolean>>();
 export function arrangeSteps(ds: Dataset, rows: Unlock[]): Step[] {
   const rungOf = (u: Unlock) => fieldOptions(ds, u.field).findIndex((o) => o.value === u.option.value);
   const ids = (u: Unlock) => new Set(u.routes.map((r) => r.route.id));
-  const stepRows = rows.filter((u) => !u.option.is_arranged);
+  const stepRows = rows.filter((u) => !u.option.is_arranged && isAttainableWhereImprovable(ds, u));
   // A higher rung on the same ladder that opens nothing the lower one does not.
   const foldsInto = (above: Unlock, u: Unlock): boolean =>
     above !== u && above.field === u.field && !above.qualifier && rungOf(above) > rungOf(u)

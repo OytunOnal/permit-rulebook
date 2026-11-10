@@ -81,17 +81,16 @@ const gatedFold = (routes: string[]) => ({ fold: "needs-path-answers", open: fal
 /** A steps block that holds the job offer line and no step. */
 const JOB_OFFER_LINE_ONLY = { kind: "steps", steps: [], jobOfferLine: true };
 
-/** Persona C's German section: five steps, the arranged line, two rows and a fold of six. */
+/** Persona C's German section: three steps, the arranged line, two rows and a
+ * fold of six. A recognition not yet assessed or refused is no step: only the
+ * answers the dataset marks as reachable by acting are (ruling 28 on #310). */
 const PERSONA_C_GERMANY = {
   country: "Germany", open: true,
-  tally: notYetTally({ notYet: 8, openUnknowns: 1, steps: 5, checkedWithJobOffer: 4, openedByArrangedAnswers: 2 }),
+  tally: notYetTally({ notYet: 8, openUnknowns: 1, steps: 3, checkedWithJobOffer: 4, openedByArrangedAnswers: 2 }),
   groups: [
     {
       kind: "steps", jobOfferLine: true,
-      steps: [
-        "full German recognition", "a partial recognition decision", "German at B1 (intermediate) or above",
-        "a qualification not yet assessed in Germany", "a qualification Germany assessed and did not recognise",
-      ],
+      steps: ["full German recognition", "a partial recognition decision", "German at B1 (intermediate) or above"],
     },
     ARRANGED,
     {
