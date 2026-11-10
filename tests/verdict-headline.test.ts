@@ -40,7 +40,7 @@ const headlineRouteOf = (answers: Profile, data: Dataset = ds): string | null =>
   layoutPinOf(verdictOn(data, answers)).headline.route;
 
 /** A copy of the shipped dataset with each named route's criteria rewritten. */
-function rewritten(rewrites: Record<string, (criteria: Criterion[]) => Criterion[]>): Dataset {
+function datasetWithRewrittenCriteria(rewrites: Record<string, (criteria: Criterion[]) => Criterion[]>): Dataset {
   const routeOf = (route: Route): Route =>
     (rewrites[route.id] ? { ...route, criteria: rewrites[route.id]!(route.criteria) } : route);
   return { ...ds, countries: ds.countries.map((c) => ({ ...c, routes: c.routes.map(routeOf) })) };
@@ -65,7 +65,7 @@ describe("the headline names the nearest route short on a figure", () => {
     // €17,614.91 short, 35% of its amount; the Dutch Blue Card is €1,585/month
     // short of €5,942, 27%. On €41,356.36–€45,630 the German one is €9,343.64
     // short, 18%: nearer by share though further in euros.
-    const data = rewritten({ "de-blue-card-general": offerAnywhere });
+    const data = datasetWithRewrittenCriteria({ "de-blue-card-general": offerAnywhere });
     expect(headlineRouteOf({ ...PRIYA_EVERYWHERE, salary_eur_year: "band_1" }, data)).toBe("nl-blue-card");
     expect(headlineRouteOf({ ...PRIYA_EVERYWHERE, salary_eur_year: "band_3" }, data)).toBe("de-blue-card-general");
   });
@@ -73,7 +73,7 @@ describe("the headline names the nearest route short on a figure", () => {
   it("a tie on the share goes to the dataset's order", () => {
     // The shortage Blue Card, first, moved far away; the general Blue Card and
     // the experienced-worker route both asking €50,700, so equally short.
-    const data = rewritten({ "de-blue-card-shortage": yearlySalaryAt(60_000), "de-experienced-worker": yearlySalaryAt(50_700) });
+    const data = datasetWithRewrittenCriteria({ "de-blue-card-shortage": yearlySalaryAt(60_000), "de-experienced-worker": yearlySalaryAt(50_700) });
     expect(headlineRouteOf(QUALIFIED_NIGERIAN, data)).toBe("de-blue-card-general");
   });
 });

@@ -222,7 +222,7 @@ function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): Headl
 }
 
 /** Single destination: the flat layout, no country chrome. */
-function oneCountry(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
   const code = compared.inView.visible[0]!.code;
   const steps = stepPlacesOf(compared.steps, code, (step) => step.unlock.routes);
   const groups = groupsOf(answeredDataset, {
@@ -309,7 +309,7 @@ function countrySection(answeredDataset: AnsweredDataset, compared: Compared, at
  * country it names is the country that leads; with something open anywhere,
  * or a written state for nobody, the sections keep the dataset's order.
  */
-function countries(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+function countrySectionsLayoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
   const { visible } = compared.inView;
   const lead = compared.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)?.named : undefined;
   const sections = namedFirst(visible, lead).map((country) => countrySection(answeredDataset, compared, { country, lead }));
@@ -320,5 +320,7 @@ function countries(answeredDataset: AnsweredDataset, compared: Compared): Compar
 }
 
 export function layoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
-  return compared.inView.visible.length === 1 ? oneCountry(answeredDataset, compared) : countries(answeredDataset, compared);
+  return compared.inView.visible.length === 1
+    ? oneCountryLayoutOf(answeredDataset, compared)
+    : countrySectionsLayoutOf(answeredDataset, compared);
 }

@@ -185,7 +185,7 @@ describe("a step prints the gap it leaves the same way", () => {
 
   /** What the verdict's steps print after "would then be short only", the
    * words "would come within reach" took before ruling 9 on #187 (#316). */
-  const reachedIn = (answers: Profile): string[] =>
+  const leftShortLinesIn = (answers: Profile): string[] =>
     stepsIn(verdictFor(answers)).flatMap((s) =>
       [...s.html.matchAll(new RegExp(`${WOULD_THEN_BE_SHORT_ONLY} ([^<]*)`, "g"))].map((m) => m[1]!));
   /** Whether one of the steps' printed gaps carries these words. */
@@ -203,7 +203,7 @@ describe("a step prints the gap it leaves the same way", () => {
     const answers: Profile = { ...STEPPER, [SALARY]: band.id };
     const reached = moneyReached(answers);
     expect(reached.length, "precondition: a step brings a route within reach on money").toBeGreaterThan(0);
-    const printed = reachedIn(answers);
+    const printed = leftShortLinesIn(answers);
     for (const { r, taken } of reached) {
       const measured = gapCriterionOf(ds, r, taken)!;
       const exact = formatEURPer(measured.threshold.amount - band.min!, period);
@@ -216,7 +216,7 @@ describe("a step prints the gap it leaves the same way", () => {
     const answers: Profile = { ...STEPPER, [SALARY]: lowest.id };
     const reached = moneyReached(answers);
     expect(reached.length, "precondition: a step brings a route within reach on money").toBeGreaterThan(0);
-    const printed = reachedIn(answers);
+    const printed = leftShortLinesIn(answers);
     for (const { r, taken } of reached) {
       const line = formatEURPer(gapCriterionOf(ds, r, taken)!.threshold.amount, period);
       expect(printsAmong(printed, esc(asksOrMore(line))), r.route.id).toBe(true);
