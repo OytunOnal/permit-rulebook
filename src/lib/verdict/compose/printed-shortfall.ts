@@ -1,7 +1,8 @@
 // @level presentation
-import { formatEURPer, periodOf, type Dataset } from "permit-rulebook-data";
-import type { PrintedShortfall } from "../../copy/verdict.js";
-import type { MoneyShortfall } from "./money-shortfall.js";
+import { formatEURPer, periodOf, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
+import type { PrintedFigureGap, PrintedShortfall } from "../../copy/verdict.js";
+import type { FigureGap } from "./figure-gaps.js";
+import { bandOf, type MoneyShortfall } from "./money-shortfall.js";
 
 /**
  * An amount on a money field as the verdict prints it, a gap in the headline,
@@ -18,4 +19,17 @@ export function printedShortfallOf(ds: Dataset, shortfall: MoneyShortfall): Prin
   if (shortfall.kind === "open-below")
     return { kind: "open-below", line: amountAsPrinted(ds, shortfall.field, shortfall.line), band: shortfall.band.label };
   return { kind: "bounded", gap: amountAsPrinted(ds, shortfall.field, shortfall.gap) };
+}
+
+/** A figure a route is short on, printed on these answers: an amount as a
+ * bounded gap, or, from a band open at the bottom, as the line it asks; the
+ * field by its short label; points as they are. */
+export function printedFigureGapOf(ds: Dataset, gap: FigureGap, answers: Profile): PrintedFigureGap {
+  if (gap.kind === "points") return gap;
+  const { field, threshold } = gap.criterion;
+  const band = bandOf(ds, field, answers);
+  const shortfall: MoneyShortfall = band && band.min === undefined
+    ? { kind: "open-below", field, line: threshold.amount, band }
+    : { kind: "bounded", field, gap: gap.gap };
+  return { kind: "money", shortfall: printedShortfallOf(ds, shortfall), field: shortLabelOf(ds, field).toLowerCase() };
 }

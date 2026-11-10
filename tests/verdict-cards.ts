@@ -119,6 +119,31 @@ export function summaryRowOf(verdict: Verdict, name: string): string {
   return row[1]!;
 }
 
+/** The headings of a verdict's route groups, as text, in the order drawn. */
+export const groupHeadingsIn = (verdict: Verdict): string[] =>
+  [...verdict.body.matchAll(/<h2 class="ghead[^"]*"><b>([\s\S]*?)<\/b>/g)].map((m) => plainTextOf(m[1]!));
+
+/** The strip under the notices, as text. */
+export function stripTextOf(verdict: Verdict): string {
+  const strip = /<div class="strip"[^>]*>([\s\S]*?)<\/div>/.exec(verdict.body);
+  if (!strip) throw new Error("this verdict draws no strip");
+  return plainTextOf(strip[1]!);
+}
+
+/** The badge a full card wears, as text; a card with none fails the case. */
+export function badgeOf(card: string): string {
+  const badge = /<span class="st [^"]*">([\s\S]*?)<\/span>/.exec(card);
+  if (!badge) throw new Error("this card wears no badge");
+  return plainTextOf(badge[1]!);
+}
+
+/** The line a not-yet row shows folded, as text. */
+export function foldedLineOf(row: string): string {
+  const line = /<span class="hold-why">([\s\S]*?)<\/span><\/summary>/.exec(row);
+  if (!line) throw new Error("this row has no folded line");
+  return plainTextOf(line[1]!);
+}
+
 /** The s19 sentence a country's line carries: as text, and as the markup drawn. */
 export interface SaidLine {
   text: string;

@@ -1,9 +1,10 @@
 // @level presentation
 import { SITUATION_FIELD, findJobOfferAnswer, phraseOf, subjectOf, type Dataset } from "permit-rulebook-data";
 import {
-  CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, SEEK_HINT, STEPS_HEADING, STEPS_HEADING_TAIL, STEPS_HERE_HEADING, SUMMARY_LABEL,
-  UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, WITHIN_REACH_HEADING, arrangedLine, notOpenToPassportCount, notYetCount,
-  notYetWithUnknowns, openCount, resultFeedbackLine, unlockingSteps, unsettledCount, withinReachCount, writeJobOfferLine,
+  CLOSED_HEADING, NOT_YET_HEADING, OPEN_HEADING, SEEK_HINT, SHORT_ON_A_FIGURE_HEADING, STEPS_HEADING, STEPS_HEADING_TAIL,
+  STEPS_HERE_HEADING, SUMMARY_LABEL, UNSETTLED_HEADING, UNSETTLED_SECTION_LINE, arrangedLine, notOpenToPassportCount,
+  notYetCount, notYetWithUnknowns, openCount, resultFeedbackLine, shortOnAFigureCount, unlockingSteps, unsettledCount,
+  writeJobOfferLine,
 } from "../../copy/verdict.js";
 import { FEEDBACK } from "../../copy/frame.js";
 import { countryOf } from "../../countries.js";
@@ -29,7 +30,7 @@ interface BodyDrawing {
 const HEAD: Record<"open" | "unsettled" | "within-reach" | "not-yet" | "closed", { title: string; cls: string }> = {
   "open": { title: OPEN_HEADING, cls: "" },
   "unsettled": { title: UNSETTLED_HEADING, cls: "unsettled" },
-  "within-reach": { title: WITHIN_REACH_HEADING, cls: "near" },
+  "within-reach": { title: SHORT_ON_A_FIGURE_HEADING, cls: "near" },
   "not-yet": { title: NOT_YET_HEADING, cls: "hold" },
   "closed": { title: CLOSED_HEADING, cls: "closed" },
 };
@@ -102,7 +103,7 @@ function stripHtml(s: Strip): string {
   const hold = s.openUnknowns ? notYetWithUnknowns(s.notYet, s.openUnknowns) : notYetCount(s.notYet);
   return `<div class="strip" aria-label="${escAttr(SUMMARY_LABEL)}">
           <span class="s-met">${esc(openCount(s.open))}</span>
-          <span class="s-near">${esc(withinReachCount(s.withinReach))}</span>
+          <span class="s-near">${esc(shortOnAFigureCount(s.withinReach))}</span>
           ${s.unsettled ? `<span class="s-unsettled">${esc(unsettledCount(s.unsettled))}</span>` : ""}
           ${s.closed ? `<span class="s-closed">${esc(notOpenToPassportCount(s.closed))}</span>` : ""}
           <span class="s-hold">${esc(hold)}</span>
@@ -131,7 +132,7 @@ function tallyHtml(screen: VerdictScreen, section: CountrySection): string {
   return [
     tally.open ? esc(openCount(tally.open)) : "",
     tally.unsettled ? esc(unsettledCount(tally.unsettled)) : "",
-    tally.withinReach ? esc(withinReachCount(tally.withinReach)) : "",
+    tally.withinReach ? esc(shortOnAFigureCount(tally.withinReach)) : "",
     notYetPart(screen, section),
     tally.closed ? esc(notOpenToPassportCount(tally.closed)) : "",
     tally.steps ? `<i>${esc(unlockingSteps(tally.steps))}</i>` : "",

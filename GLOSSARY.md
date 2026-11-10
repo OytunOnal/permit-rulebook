@@ -397,10 +397,13 @@ _Avoid_: decision, ruling (no authority is deciding anything)
 **Met** (UI: "criteria met"):
 Every criterion of the route passes on the declarations given.
 
-**Within reach**:
-The route misses only by bounded gaps — a known maximum distance ("up to
-€4,766", "2 points short").
-_Avoid_: almost, partial match
+**Within reach** (UI: "Short on a figure"; its badge, what it is short on:
+"Short on yearly salary", "Short on yearly salary and points"; #316):
+The route misses only by gaps on an amount or on points — bounded gaps, each
+a known maximum distance ("up to €4,766", "2 points short"). The screen says
+what is missing, not how near it is: the gap stays printed, and the reader
+judges the distance (rulings 8 and 9 on #187).
+_Avoid_: almost, partial match, within reach (on screen)
 
 **Not yet**:
 The route has a hard fail or an open unknown.
@@ -427,9 +430,11 @@ In place of "Nothing open", never beside it.
 _Avoid_: empty state, error
 
 **Bounded gap**:
-A shortfall with a known ceiling (adjacent band below a threshold, points
-short on a completed ladder). Bounded gaps keep the interview going and
-become the gap story, never a death sentence.
+A shortfall with a known ceiling: any declared band whose ceiling is at or
+below the threshold, whether or not it is the band just below (its gap is the
+threshold less the band's floor, or the threshold itself where the band has
+no floor), and points short on a completed ladder. Bounded gaps keep the
+interview going and become the gap story, never a death sentence.
 _Avoid_: soft fail, near miss
 
 **Hard fail**:
@@ -481,7 +486,7 @@ Step-gated rows, named by the path answers they ask for, or the rows in a
 country the reader is not looking at.
 _Avoid_: group (a fold sits inside the not-yet group)
 
-**Strip** (UI: "1 open · 0 within reach · 7 not yet"):
+**Strip** (UI: "1 open · 0 short on a figure · 7 not yet"):
 The plain line under the notices counting a verdict's routes by group. It
 reads as a summary, never as a control.
 _Avoid_: tabs, pills, counters
