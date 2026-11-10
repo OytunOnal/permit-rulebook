@@ -5,8 +5,13 @@ import {
 } from "./card/cards.js";
 import type { Compared } from "./in-view.js";
 import { stepKeyed } from "./layout.js";
-import type { StepCard } from "./types.js";
 import type { StepPlace, VerdictGroup, VerdictLayout } from "./verdict-layout.js";
+
+/** A step as the steps group offers it: its title, and its card's markup. */
+export interface StepCard {
+  title: string;
+  html: string;
+}
 
 /** Each card a verdict draws: each route's card or row markup by the route's
  * id, and each step's title and card markup by the id the layout gives it. */

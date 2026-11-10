@@ -37,7 +37,7 @@ export function routeIdsIn(group: VerdictGroup): string[] {
 /** The markup a verdict draws a route with, by the route's id; a route it
  * draws none for fails the case that asked for it. */
 function routeHtmlOn(verdict: Verdict, route: string): string {
-  const html = verdict.routes[route];
+  const html = verdict.cards.routes[route];
   if (html === undefined) throw new Error(`${route} has no card on this verdict`);
   return html;
 }
@@ -75,7 +75,7 @@ export const everyDrawnRouteIn = (verdict: Verdict): DrawnRoute[] =>
 
 /** The card a verdict draws a step with, by the id the layout gives it. */
 function stepCardOn(verdict: Verdict, id: string): StepCard {
-  const card = verdict.steps[id];
+  const card = verdict.cards.steps[id];
   if (!card) throw new Error(`the step ${id} has no card on this verdict`);
   return card;
 }

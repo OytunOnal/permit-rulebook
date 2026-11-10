@@ -242,7 +242,7 @@ describe("s21 — the walk's result, from the verdict", () => {
       return option.short ?? option.label;
     });
     expect(routesNeed(fold.routes.length, joinOr(named))).toBe("4 routes need a job offer or an intra-corporate transfer");
-    const ownRows = notYet.items.flatMap((i) => (typeof i === "string" ? [verdict.routes[i]!] : []));
+    const ownRows = notYet.items.flatMap((i) => (typeof i === "string" ? [verdict.cards.routes[i]!] : []));
     expect(ownRows.join("")).toContain("Needs a job offer and a university degree");
     // The other three lines, unchanged: each its not-yet count and nothing
     // else — no job offer line and no arranged line for them to name either

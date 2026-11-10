@@ -2074,11 +2074,6 @@
   },
   {
    "from": "src/lib/verdict/compose/drawn-cards.ts",
-   "to": "src/lib/verdict/compose/types.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/drawn-cards.ts",
    "to": "src/lib/verdict/compose/verdict-layout.ts",
    "kind": "type-only"
   },
@@ -2314,6 +2309,11 @@
   },
   {
    "from": "src/lib/verdict/compose/types.ts",
+   "to": "src/lib/verdict/compose/drawn-cards.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/types.ts",
    "to": "src/lib/verdict/compose/verdict-layout.ts",
    "kind": "type-only"
   },
@@ -2366,6 +2366,11 @@
    "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/drawn-cards.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/verdict.ts",
+   "to": "src/lib/verdict/compose/drawn-cards.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/verdict.ts",
@@ -8982,5 +8987,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "e70f6ff02eab7f71861e758f9f055d0f3096ccded0f1ed19d9c181ebc1f994d7"
+ "digest": "16eab84c0062e62725171ee1042a825eca70b1aa93c710937898f7053daa4e97"
 }

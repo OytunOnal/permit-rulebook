@@ -180,7 +180,7 @@ describe("#175 — the job offer line", () => {
         fields: here.fieldsLeftOpen.map((f) => subjectOf(ds, f)),
       }));
       expect(html, section.country).toContain(line);
-      for (const step of block!.steps) expect(html.indexOf(line)).toBeLessThan(html.indexOf(verdict.steps[step.id]!.html));
+      for (const step of block!.steps) expect(html.indexOf(line)).toBeLessThan(html.indexOf(verdict.cards.steps[step.id]!.html));
     }
   });
 

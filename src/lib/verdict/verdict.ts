@@ -26,7 +26,8 @@ import type { InterviewSoFar, Verdict } from "./compose/types.js";
 // links this stylesheet in its <head>.
 import "./verdict.css";
 
-export type { InterviewSoFar, StepCard, Verdict, VerdictAction } from "./compose/types.js";
+export type { InterviewSoFar, Verdict, VerdictAction } from "./compose/types.js";
+export type { StepCard } from "./compose/drawn-cards.js";
 export type {
   AnswerRef, ArrangedLine, ComparedLayout, CountrySection, Explore, Fold, HeadlineLayout, JobOfferLine, RouteGroupKind,
   StepPlace, Strip, Tally, VerdictGroup, VerdictLayout,
@@ -43,7 +44,7 @@ function answeredOutright(screen: VerdictScreen, inView: ResultsInView, outright
   return {
     action: { kind: "answered-outright", masthead: noticeMastheadOf(outright[0].title) },
     notices: [...outright, ...others].map((n) => noticeHtml(n, screen.glossary)).join(""),
-    layout: { kind: "notice" }, routes: {}, steps: {}, body: "",
+    layout: { kind: "notice" }, cards: { routes: {}, steps: {} }, body: "",
   };
 }
 
@@ -71,7 +72,7 @@ function comparedVerdictOf(screen: VerdictScreen, compared: Compared, interview:
   const headline = comparedHeadlineOf(screen, compared, layout.headline);
   const masthead = comparedMastheadOf(headline, interview.answered, compared.inView.results.length);
   const cards = drawnCardsOf(screen, compared, layout);
-  return { action: { kind: "compare", masthead }, notices, layout, ...cards, body: bodyHtml(screen, layout, cards) };
+  return { action: { kind: "compare", masthead }, notices, layout, cards, body: bodyHtml(screen, layout, cards) };
 }
 
 export function verdictOf(dataset: Dataset, answers: Profile, interview: InterviewSoFar): Verdict {
