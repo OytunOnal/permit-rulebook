@@ -181,7 +181,10 @@ describe("the ladder fold reads a two-field points item through its rows", () =>
       schema_version: "0.8.1", dataset_version: "2026.01.01", notices: [], contradictions: [],
       fields: [{
         id: "x", label: "x?", short_label: "X", type: "enum", kind: "improvable",
-        options: [{ value: "a", label: "a" }, { value: "b", label: "b" }, { value: "c", label: "c" }],
+        // b and c are the rungs a reader reaches by acting (ruling 28 on #310).
+        options: [
+          { value: "a", label: "a" }, { value: "b", label: "b", is_attainable: true }, { value: "c", label: "c", is_attainable: true },
+        ],
       }],
       countries: [{
         code: "ZZ", name: "Nowhere", routes: [{
