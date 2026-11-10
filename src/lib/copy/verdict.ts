@@ -211,6 +211,32 @@ export const pointsOfNeeded = (scored: number, required: number): string =>
 /** The lead of the box that links where an open unknown can be looked up. */
 export const FIND_OUT_YOURSELF = "You can find out yourself:";
 
+/**
+ * The path line's frame (#315): which badge the card wears, and so which
+ * words name the path it went through — "Met through", "Rules met through",
+ * or "Through" under a badge that already says what is short (rulings 4, 18).
+ */
+export type PathTakenFrame = "met" | "rules-met" | "short";
+const PATH_TAKEN_OPENING = { met: "Met through", "rules-met": "Rules met through", short: "Through" } as const;  // each frame's opening words
+/** The path line's first sentence: "Met through the IT-specialist path." */
+export const pathTakenLine = (frame: PathTakenFrame, path: string): string => `${PATH_TAKEN_OPENING[frame]} ${path}.`;
+/** One unmet rule of a path that did not count: what it asks, and what the
+ * reader declared where the rule reads an answer. */
+export interface UnmetRule {
+  asks: string;
+  declared?: string;
+}
+/** A path that did not count, its unmet rules in the not-yet row's form:
+ * "The recognised-degree path needs full German recognition — you declared
+ * Not assessed yet." */
+export const otherPathNeedsLine = (path: string, rules: UnmetRule[]): string =>
+  `${capitalise(path)} needs ${rules.map((r) => (r.declared === undefined ? r.asks : `${r.asks} — you declared ${r.declared}`))
+    .join("; and ")}.`;
+/** A path that did not count on an answer of "I don't know", in the unknown
+ * row's form. */
+export const otherPathUnknownLine = (path: string, answer: string, about: string): string =>
+  `On ${path}, you answered “${answer}” about ${about}.`;
+
 /** The notice screen's headline: the notice's own title, closed. */
 export const noticeHeadline = (title: string): string => `${title}.`;
 export const unsettledHeadline = (n: number): string =>

@@ -191,6 +191,7 @@
    ],
    "files": [
     "src/lib/verdict/compose/card/blocks/card-screen.ts",
+    "src/lib/verdict/compose/card/blocks/path-line.ts",
     "src/lib/verdict/compose/card/blocks/provenance.ts",
     "src/lib/verdict/compose/card/blocks/rail.ts",
     "src/lib/verdict/compose/card/blocks/route-statements.ts",
@@ -329,6 +330,7 @@
   "src/lib/social-card.ts": "presentation",
   "src/lib/verdict/compose/answer-phrase.ts": "presentation",
   "src/lib/verdict/compose/card/blocks/card-screen.ts": "presentation",
+  "src/lib/verdict/compose/card/blocks/path-line.ts": "presentation",
   "src/lib/verdict/compose/card/blocks/provenance.ts": "presentation",
   "src/lib/verdict/compose/card/blocks/rail.ts": "presentation",
   "src/lib/verdict/compose/card/blocks/route-statements.ts": "presentation",
@@ -1869,6 +1871,26 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/verdict/compose/card/blocks/path-line.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/path-line.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/path-line.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/blocks/path-line.ts",
+   "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
    "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
@@ -1987,6 +2009,11 @@
    "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/card/blocks/path-line.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
@@ -2696,6 +2723,16 @@
   {
    "from": "tests/browser.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/card-path.test.ts",
+   "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/card-path.test.ts",
+   "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
   {
@@ -5433,6 +5470,11 @@
     "exported": false
    },
    {
+    "name": "pathFrameOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "fullCardHtml",
     "kind": "fn",
     "exported": true
@@ -7353,6 +7395,36 @@
     "exported": true
    },
    {
+    "name": "PathTakenFrame",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "PATH_TAKEN_OPENING",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "pathTakenLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "UnmetRule",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "otherPathNeedsLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "otherPathUnknownLine",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "noticeHeadline",
     "kind": "fn",
     "exported": true
@@ -8833,5 +8905,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "86b7e15d063371c473284ed837c824f26a8307d5684513ef1ef572999e26eb37"
+ "digest": "2fc162bd53c45fcc0a9dd473a5b9aeac86e5aca70166e09fa176924fbe324941"
 }

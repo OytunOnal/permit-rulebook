@@ -4,13 +4,14 @@ import {
   type Dataset, type Notice, type Profile, type RouteResult,
 } from "permit-rulebook-data";
 import type { CardScreen } from "./blocks/card-screen.js";
+import { pathLinesHtml, pathsNotTakenOf } from "./blocks/path-line.js";
 import { provenanceHtml, sourceLinkHtml, srcLine } from "./blocks/provenance.js";
 import { railHtml } from "./blocks/rail.js";
 import { carveOutHtml, caveatHtml, precondHtml, readingHtml, scopedHtml } from "./blocks/route-statements.js";
 import {
   CAME_FROM_LINE, FIND_OUT_YOURSELF, LOWER_THRESHOLD_HINT, POINTS_TABLE_HINT, RULES_MET, STATUS_LABEL, WOULD_BE_MET,
   WOULD_COME_WITHIN_REACH, orAbove, pointsMore, pointsOfNeeded, shortByPoints, shortfallNote, shortfallReach,
-  withStepHtml,
+  withStepHtml, type PathTakenFrame,
 } from "../../../copy/verdict.js";
 import { countryOf } from "../../../countries.js";
 // A symbol a stranger cannot read is explained the first time a screen uses
@@ -107,10 +108,17 @@ function pointsNoteHtml(r: RouteResult): string {
   return `<div class="gapnote"><b>${esc(shortByPoints(r.gap_points))}</b> ${esc(POINTS_TABLE_HINT)}</div>`;
 }
 
+/** The frame of a full card's path line: its badge's words (#315, rulings 4 and 18). */
+function pathFrameOf(r: RouteResult, look: CardLook): PathTakenFrame {
+  if (look.badge === "rules-met") return "rules-met";
+  return r.status === "met" ? "met" : "short";
+}
+
 /**
  * A route that is open, within reach or unsettled, as a whole card. Its first
  * line is the country's chip and the badge, or the badge alone, above the
  * title: one home for the badge at every width and every title length (#95).
+ * Under the title, the path it went through (#315).
  */
 export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLook): string {
   const { ds } = screen;
@@ -121,10 +129,11 @@ export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLo
             <span class="st ${rulesMet ? "unsettled" : r.status}">${esc(rulesMet ? RULES_MET : STATUS_LABEL[r.status])}</span>
           </div>
           <h3>${esc(routeName(screen, r))}</h3>
+          ${pathLinesHtml(screen, r, pathFrameOf(r, look))}
           ${cameFromNote(screen, r)}
           <p class="why">${whyHtml(ds, r, screen.answers)}</p>
           ${scopeFor(screen, r)}
-          ${precondHtml(screen, r.route)}
+          ${precondHtml(screen, r.route, pathsNotTakenOf(r))}
           ${carveOutHtml(screen, r.route)}
           ${caveatHtml(screen, r.route)}
           ${readingHtml(r.route, screen.glossary)}
