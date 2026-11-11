@@ -3,20 +3,20 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { dataDir } from "../scripts/data-pin.mjs";
+import { dataClonePath } from "../scripts/data-pin.mjs";
 
 /**
  * Every copy of the site finds the same data clone: the one beside the site's
  * main checkout, which the build reads. A builder's worktree under
- * `.claude/worktrees/` has no data clone beside it, so `dataDir()` finds the
- * clone from the main checkout. The pipeline's lock cases and
+ * `.claude/worktrees/` has no data clone beside it, so `dataClonePath()` finds
+ * the clone from the main checkout. The pipeline's lock cases and
  * `npm run data:pin` read the real one through it; these call it on a
  * throwaway repository of the OS temp folder, removed after.
  */
 
 /** `body` run on a fresh folder of the OS temp folder, by its real path, removed after. */
 function inThrowawayFolder(body: (folder: string) => void): void {
-  const folder = realpathSync.native(mkdtempSync(join(tmpdir(), "permit-rulebook-data-dir-")));
+  const folder = realpathSync.native(mkdtempSync(join(tmpdir(), "permit-rulebook-data-clone-path-")));
   try {
     body(folder);
   } finally {
@@ -46,14 +46,14 @@ describe("every copy of the site finds the same data clone", () => {
       const worktree = join(site, "nested", "copy");
       siteWithWorktree(site, worktree);
       const mainCheckoutsClone = resolve(folder, "permit-rulebook-data");
-      expect(dataDir(worktree)).toBe(mainCheckoutsClone);
-      expect(dataDir(site)).toBe(mainCheckoutsClone);
+      expect(dataClonePath(worktree)).toBe(mainCheckoutsClone);
+      expect(dataClonePath(site)).toBe(mainCheckoutsClone);
     });
   });
 
   it("outside a git repository, refuses with a sentence naming the folder", () => {
     inThrowawayFolder((folder) => {
-      expect(() => dataDir(folder)).toThrow(folder);
+      expect(() => dataClonePath(folder)).toThrow(folder);
     });
   });
 });

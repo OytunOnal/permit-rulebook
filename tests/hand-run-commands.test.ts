@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/browser/browser.mjs";
-import { dataDir } from "../scripts/data-pin.mjs";
+import { dataClonePath } from "../scripts/data-pin.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
@@ -27,7 +27,7 @@ import { skipReason, warnNotWalked } from "./browser-walk.js";
 const root = fileURLToPath(new URL("..", import.meta.url));
 
 /** The data clone beside the site's main checkout, where `package.json`'s `file:` link points from there. */
-const dataClone = dataDir();
+const dataClone = dataClonePath();
 
 /** Why the commands that walk the built site cannot run here: no Chrome, or no build. Null when they can. */
 const walkSkipReason = skipReason();

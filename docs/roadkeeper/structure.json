@@ -3161,7 +3161,7 @@
    "kind": "dependency"
   },
   {
-   "from": "tests/data-dir.test.ts",
+   "from": "tests/data-clone-path.test.ts",
    "to": "scripts/data-pin.mjs",
    "kind": "dependency"
   },
@@ -6154,7 +6154,7 @@
     "exported": false
    },
    {
-    "name": "dataDir",
+    "name": "dataClonePath",
     "kind": "fn",
     "exported": true
    },
@@ -9164,5 +9164,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "783f7b7175e568fa3152c4157a814da96a3e70610db1c7894907e112ea67468f"
+ "digest": "ae3af3d9541c0278173fe6faac56c6f5eec23625b2fd776c58efe742df9264bb"
 }

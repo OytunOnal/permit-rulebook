@@ -18,7 +18,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { dataDir, readLock } from "./data-pin.mjs";
+import { dataClonePath, readLock } from "./data-pin.mjs";
 
 /** A full commit sha, the only form a lock names. */
 const FULL_SHA = /^[0-9a-f]{40}$/;
@@ -55,7 +55,7 @@ function hasCommit(clonePath, sha) {
 export function lockAndCloneOf({ lockPath, clonePath } = {}) {
   return {
     lockSha: readLock(lockPath === undefined ? undefined : readFileSync(resolve(lockPath), "utf8")).sha,
-    clonePath: clonePath === undefined ? dataDir() : resolve(clonePath),
+    clonePath: clonePath === undefined ? dataClonePath() : resolve(clonePath),
   };
 }
 

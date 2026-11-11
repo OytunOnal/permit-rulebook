@@ -7,9 +7,9 @@
  * who has just moved the data repository forward runs this to say so.
  *
  * The data clone is found from the site's main checkout, never from the
- * folder the code runs in: `dataDir()` asks git for the git directory every
- * copy of the site shares, and resolves the manifest's `file:` path from its
- * parent, so a worktree under `.claude/worktrees/` finds the same clone the
+ * folder the code runs in: `dataClonePath()` asks git for the git directory
+ * every copy of the site shares, and resolves the manifest's `file:` path from
+ * its parent, so a worktree under `.claude/worktrees/` finds the same clone the
  * main checkout does. Outside a git repository it refuses, naming the folder.
  *
  * It reads the manifest, git's answer, the data clone's HEAD and dataset
@@ -52,7 +52,7 @@ function mainCheckoutOf(siteDir) {
  * site's main checkout, the same folder from every worktree of it — never
  * typed twice.
  */
-export function dataDir(siteDir = root) {
+export function dataClonePath(siteDir = root) {
   const mainCheckout = mainCheckoutOf(siteDir);
   const manifest = JSON.parse(readFileSync(join(siteDir, "package.json"), "utf8"));
   return resolve(mainCheckout, manifest.dependencies["permit-rulebook-data"].replace(/^file:/, ""));
@@ -72,7 +72,7 @@ export function readLock(text = readFileSync(siteLockPath, "utf8")) {
  */
 export function pinData({ lockPath = siteLockPath } = {}) {
   const target = resolve(lockPath);
-  const dir = dataDir();
+  const dir = dataClonePath();
   const sha = at(dir, "rev-parse", "HEAD");
   const datasetVersion = JSON.parse(readFileSync(join(dir, "data", "dataset.json"), "utf8")).dataset_version;
   const lockText = readFileSync(target, "utf8");
