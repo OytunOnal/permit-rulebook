@@ -320,6 +320,13 @@ describe("a red deploy nobody watches keeps deploy run failed", () => {
     expect(report).toMatch(/^\s+run: npm run build:kept-issue$/m);
     expect(report).not.toMatch(/npm run (build|check)$/m);
   });
+
+  /** A red deploy reaches the repository's owner, named by the run and never typed here (ruling 3 on #283). */
+  it("names the run's owner in every call that keeps an issue", () => {
+    const keeping = workflowPaths.flatMap((file) => readText(file).split(LF).filter((line) => /^\s+run: .*cli-kept-issue\.js /.test(line)));
+    expect(keeping, "no workflow keeps an issue").toHaveLength(1);
+    for (const line of keeping) expect(line).toContain('--owner "${{ github.repository_owner }}"');
+  });
 });
 
 /**
