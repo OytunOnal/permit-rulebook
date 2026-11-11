@@ -6040,17 +6040,17 @@
     "exported": true
    },
    {
+    "name": "LACK_WORDS",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "REMEDY_WORDS",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "remedyOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "lackOf",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "commandOf",
     "kind": "fn",
     "exported": false
    },
@@ -6371,7 +6371,7 @@
   ],
   "scripts/main-data-check.mjs": [
    {
-    "name": "checked",
+    "name": "lockAndClone",
     "kind": "const",
     "exported": false
    },
@@ -9223,5 +9223,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "b8de985a9785c295d8ad6ab18aad53a0c38905ee696bffd0d90959ea035bd725"
+ "digest": "45940bc3dd3c5bf809bda82acfe8acbccb80b393152763178dd5cca4ecd3fe0d"
 }

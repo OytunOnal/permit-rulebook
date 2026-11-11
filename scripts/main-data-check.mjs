@@ -9,7 +9,7 @@ import { dataCheckOptionsOf, dataCheckReportOf } from "./cli-data-check.mjs";
 import { cloneShortfallOf, lockAndCloneOf } from "./clone-shortfall.mjs";
 import { printReport } from "./print-report.mjs";
 
-const checked = lockAndCloneOf(dataCheckOptionsOf(process.argv.slice(2)));
-const report = dataCheckReportOf(checked, cloneShortfallOf(checked));
+const lockAndClone = lockAndCloneOf(dataCheckOptionsOf(process.argv.slice(2)));
+const report = dataCheckReportOf(lockAndClone, cloneShortfallOf(lockAndClone));
 printReport(report);
 process.exit(report.exitCode);

@@ -40,10 +40,20 @@ function hasCommit(clonePath, sha) {
  */
 export function lockAndCloneOf({ lockPath, clonePath } = {}) {
   return {
-    lockSha: readLock(lockPath === undefined ? undefined : readFileSync(resolve(lockPath), "utf8")).sha,
+    lockSha: (lockPath === undefined ? readLock() : readLock(readFileSync(resolve(lockPath), "utf8"))).sha,
     clonePath: clonePath === undefined ? dataClonePath() : resolve(clonePath),
   };
 }
+
+/**
+ * How the data clone falls short of the lock.
+ * @typedef {object} CloneShortfall
+ * @property {"no-clone" | "commit-missing" | "head-lacks-commit"} kind
+ * @property {string} clonePath
+ * @property {string} lockSha
+ * @property {string} [head] the clone's HEAD, where it has one
+ * @property {string | null} [branch] the clone's branch, null when HEAD is detached
+ */
 
 /**
  * How the clone at `clonePath` falls short of `lockSha`, or null when it holds
@@ -52,6 +62,8 @@ export function lockAndCloneOf({ lockPath, clonePath } = {}) {
  * the lock's commit) or `head-lacks-commit` (the clone has it, but its HEAD
  * does not contain it). The last two also carry the clone's `head` and its
  * `branch`, null when HEAD is detached.
+ * @param {{ lockSha: string, clonePath: string }} [lockAndClone]
+ * @returns {CloneShortfall | null}
  */
 export function cloneShortfallOf({ lockSha, clonePath } = lockAndCloneOf()) {
   if (!FULL_SHA.test(lockSha)) throw new Error(`the lock names ${JSON.stringify(lockSha)}, not a 40-hex commit sha`);

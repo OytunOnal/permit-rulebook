@@ -27,31 +27,31 @@ export function dataCheckOptionsOf(argv) {
   };
 }
 
-/** The one thing a shortfall's red tells the maintainer to do: `clone`, `switch-to-master`, `pull` or `merge-master`. */
-function remedyOf(shortfall) {
-  if (shortfall.kind === "no-clone") return "clone";
-  if (shortfall.branch === null) return "switch-to-master";
-  return shortfall.branch === "master" ? "pull" : "merge-master";
-}
+/** What the clone lacks, in words, by the shortfall's kind: the first half of the red's sentence. */
+const LACK_WORDS = {
+  "no-clone": ({ clonePath, lockSha }) => `There is no data clone at ${clonePath}, so the lock's commit ${lockSha} cannot be read`,
+  "commit-missing": ({ clonePath, lockSha, head }) => `The data clone at ${clonePath} (HEAD ${head}) does not have the lock's commit ${lockSha}`,
+  "head-lacks-commit": ({ clonePath, lockSha, head }) => `The data clone at ${clonePath} is at ${head}, behind the lock's commit ${lockSha}`,
+};
 
-/** What the clone lacks, in words: the first half of the red's sentence. */
-function lackOf({ kind, clonePath, lockSha, head }) {
-  if (kind === "no-clone") return `There is no data clone at ${clonePath}, so the lock's commit ${lockSha} cannot be read`;
-  if (kind === "commit-missing") return `The data clone at ${clonePath} (HEAD ${head}) does not have the lock's commit ${lockSha}`;
-  return `The data clone at ${clonePath} is at ${head}, behind the lock's commit ${lockSha}`;
-}
+/** The command each remedy runs on the clone, in words, by remedy: the second half of the red's sentence. */
+const REMEDY_WORDS = {
+  clone: ({ clonePath }) => `run git clone ${DATA_REPOSITORY_URL} ${clonePath}`,
+  "switch-to-master": ({ clonePath }) => `switch it to master and pull: git -C ${clonePath} switch master, then git -C ${clonePath} pull --ff-only`,
+  pull: ({ clonePath }) => `pull it forward: git -C ${clonePath} pull --ff-only`,
+  "merge-master": ({ clonePath, branch }) => `merge the data master into ${branch}: git -C ${clonePath} fetch, then git -C ${clonePath} merge origin/master`,
+};
 
-/** The command a remedy runs on the clone at `clonePath`, in words. */
-function commandOf(remedy, { clonePath, branch }) {
-  if (remedy === "clone") return `run git clone ${DATA_REPOSITORY_URL} ${clonePath}`;
-  if (remedy === "switch-to-master") return `switch it to master and pull: git -C ${clonePath} switch master, then git -C ${clonePath} pull --ff-only`;
-  if (remedy === "pull") return `pull it forward: git -C ${clonePath} pull --ff-only`;
-  return `merge the data master into ${branch}: git -C ${clonePath} fetch, then git -C ${clonePath} merge origin/master`;
+/** The one thing a shortfall's red tells the maintainer to do, a key of `REMEDY_WORDS`, picked by its kind and the clone's branch. */
+function remedyOf({ kind, branch }) {
+  if (kind === "no-clone") return "clone";
+  if (branch === null) return "switch-to-master";
+  return branch === "master" ? "pull" : "merge-master";
 }
 
 /** The red's one sentence for `shortfall`: what the clone lacks and the one thing to run. */
 export function shortfallSentenceOf(shortfall) {
-  return `${lackOf(shortfall)}; ${commandOf(remedyOf(shortfall), shortfall)}.`;
+  return `${LACK_WORDS[shortfall.kind](shortfall)}; ${REMEDY_WORDS[remedyOf(shortfall)](shortfall)}.`;
 }
 
 /**

@@ -38,7 +38,7 @@ function mainCheckoutOf(siteDir) {
   } catch (error) {
     // No exit code: git itself did not run, which is not the folder's fault.
     if (typeof error.status !== "number") throw error;
-    throw new Error(`${siteDir} is not in a git repository, so the site's main checkout, and the data clone beside it, cannot be found.`);
+    throw new Error(`${siteDir} is not in a git repository, so the site's main checkout, and the data clone beside it, cannot be found.`, { cause: error });
   }
 }
 
