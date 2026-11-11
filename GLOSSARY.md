@@ -679,10 +679,9 @@ _Avoid_: blip, hiccup (the cause, not the state), transient (a Failure class)
 **Outage**:
 A source the run could not read on two or more mornings of the last seven,
 however those mornings fell — a source that goes quiet every other day is an
-outage on the second one. The run is **red** — one of the two things a red
-run means; the other is an **Overdue flag**. A refusal by us is red on its
-first morning instead, because waiting a day changes nothing about an address
-the watch will not request.
+outage on the second one. The run is **red**; an **Overdue flag** never makes
+it so. A refusal by us is red on its first morning instead, because waiting a
+day changes nothing about an address the watch will not request.
 _Avoid_: downtime, failure, persistent lapse
 
 **Flag**:
@@ -705,10 +704,11 @@ _Avoid_: quote, diff, context, snippet
 **Overdue flag**:
 A flag no person has walked by the second morning after the day it was
 raised, counted in UTC days — a flag raised on the 16th is overdue on the
-18th, whatever hour either run kept. The run that finds one is **red** on that
-first overdue morning, as a refusal by us is: waiting a day changes nothing
-about a flag nobody is reading. It stops being overdue when it is walked, and
-not before.
+18th, whatever hour either run kept. From that first overdue morning it is
+named in the kept issue `overdue flags`, which reaches the owner; the run
+stays the colour of its reading, because a flag nobody has walked is the
+person's to do, not the watch's failure. It stops being overdue when it is
+walked, and not before.
 _Avoid_: stale flag, unwalked flag, open flag; clock (what counts the days,
 not what is overdue)
 
@@ -716,8 +716,11 @@ not what is overdue)
 One issue a run opens, comments on, reopens and closes by itself, because what
 it says is the run's own state: `overdue flags`, `watch run failed`, `deploy
 run failed`, `check failed on master`. A red run with nobody at the other end
-says so there; the first green run of the same kind closes it with a line
-naming that run. A person reads it, and never has to close it.
+says so there, and each time it does, the issue is assigned to the
+repository's owner and its words open with their @mention, so it reaches them;
+the first green run of the same kind closes it with a line naming that run,
+which assigns and mentions no one. A person reads it, and never has to close
+it.
 _Avoid_: alarm, status issue, notification
 
 **Finding**:

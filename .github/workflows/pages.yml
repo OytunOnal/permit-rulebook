@@ -480,4 +480,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: node data-at-lock/dist/kept-issue-cli/src/watch/cli-kept-issue.js --title "deploy run failed" --label deploy --label-color b60205 --label-description "The daily deploy itself" --finding-file "$RUNNER_TEMP/deploy-finding.json"
+          OWNER: ${{ github.repository_owner }}
+        run: node data-at-lock/dist/kept-issue-cli/src/watch/cli-kept-issue.js --title "deploy run failed" --label deploy --label-color b60205 --label-description "The daily deploy itself" --owner "$OWNER" --finding-file "$RUNNER_TEMP/deploy-finding.json"

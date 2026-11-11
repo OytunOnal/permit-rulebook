@@ -60,9 +60,10 @@ click on the tracker link. Answers never leave the device.
   corrections are declared data; `human_tier: 2` since 2026-09-10 (two sources a browser reads and this fetcher cannot — see the glossary); runs daily in GitHub
   Actions and, after its state is pushed, files an issue (`source-change`) per
   flag this run created or changed; a flag still open on
-  the second UTC morning after it was raised turns the run red and is named
-  in one issue the run keeps, `overdue flags` (#62). A red run on master keeps
-  `watch run failed`, and the first green one closes it (#117). Every kept
+  the second UTC morning after it was raised is overdue and is named in one
+  issue the run keeps, `overdue flags` (#62); it never makes the run red
+  (#283). A red run on master keeps `watch run failed`, and the first green
+  one closes it (#117). Every kept
   issue is decided in one module, `kept-issue`, and carried to the tracker by
   one CLI, built on its own so a broken build cannot silence it, that runs
   `gh` with no shell (#117). Two readers, a

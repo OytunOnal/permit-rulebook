@@ -320,6 +320,24 @@ describe("a red deploy nobody watches keeps deploy run failed", () => {
     expect(report).toMatch(/^\s+run: npm run build:kept-issue$/m);
     expect(report).not.toMatch(/npm run (build|check)$/m);
   });
+
+  /**
+   * A red deploy reaches the repository's owner, named by the run and never
+   * typed here (ruling 3 on #283), through the step's `env:` like every other
+   * value, so no `run:` line writes an expression (ruling 11 on #341).
+   */
+  it("hands every call that keeps an issue the run's owner through its step's environment", () => {
+    const keptIssueSteps = workflowPaths.flatMap((file) =>
+      readText(file).split(/^(?= *- )/m).filter((step) => /^\s+-?\s*run: .*cli-kept-issue\.js /m.test(step)));
+    expect(keptIssueSteps, "the deploy keeps one issue, deploy run failed: none is a call this case no longer finds, two or more a call it does not know")
+      .toHaveLength(1);
+    for (const step of keptIssueSteps) {
+      expect(step).toMatch(/^\s+OWNER: \$\{\{ github\.repository_owner \}\}$/m);
+      const command = /^\s+-?\s*run: (.*)$/m.exec(step)![1]!;
+      expect(command).toContain('--owner "$OWNER"');
+      expect(command).not.toContain("${{");
+    }
+  });
 });
 
 /**

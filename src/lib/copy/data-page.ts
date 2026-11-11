@@ -80,7 +80,8 @@ export const dataLedeClose = (door: string): string => `Take it, check it, and i
  * How soon a person reads a flag, as the site promises it. It is the time the
  * data repository's clock keeps (`OVERDUE_AFTER_DAYS` in permit-rulebook-data's
  * `src/watch/overdue.ts`): a flag still open on the second UTC morning after
- * the day it was raised turns the watch red (#62). Typed here and not read
+ * the day it was raised is overdue, and is named in the data repository's kept
+ * issue `overdue flags` (#62, #283). Typed here and not read
  * from there, by the human's decision on the review of #64: it is a promise to
  * a reader, not a threshold the site computes with, and changing the clock is
  * a #62-sized decision that changes this with it. Both sentences that make the
