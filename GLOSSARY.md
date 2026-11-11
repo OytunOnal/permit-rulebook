@@ -732,6 +732,18 @@ The first recorded snapshot of a source, against which change is measured.
 
 ### The deploy
 
+**The lock** (`data.lock`):
+The one data commit the site is built and tested against. A push builds
+against it; the daily and dispatched builds build against the newest data and,
+when green, move the lock to it.
+_Avoid_: pin (as a noun), data version, lockfile
+
+**The data clone**:
+The checkout of the data repository the site reads, beside the site's own
+checkout — the same one from every working copy of the site. It may be ahead
+of the lock, never behind it.
+_Avoid_: sibling, data folder, data repo (for the checkout)
+
 **The site's address**:
 The one URL the site is published under, and the only origin the deploy reads
 the live site from. It is decided in reviewed code, never in a setting, because
