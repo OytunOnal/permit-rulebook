@@ -9,19 +9,14 @@
  * absolute folder of PATH holds git.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, statSync } from "node:fs";
-import { delimiter, isAbsolute, join } from "node:path";
+import { findOnPath } from "./find-on-path.mjs";
 
 /** git's file name on this platform; with no shell, Windows completes no `.exe`. */
 const GIT_FILE_NAME = process.platform === "win32" ? "git.exe" : "git";
 
-/** Whether `path` names a file. */
-const isFile = (path) => existsSync(path) && statSync(path).isFile();
-
 /** git's path: the first absolute folder of PATH that holds it. None throws. */
 function gitPath() {
-  const folders = (process.env.PATH ?? "").split(delimiter).filter((folder) => isAbsolute(folder));
-  const found = folders.map((folder) => join(folder, GIT_FILE_NAME)).find(isFile);
+  const found = findOnPath(GIT_FILE_NAME);
   if (found === undefined) throw new Error(`no absolute folder of PATH holds ${GIT_FILE_NAME}, so git cannot be run`);
   return found;
 }
