@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { execFile, execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/browser/browser.mjs";
 import { dataDir } from "../scripts/data-pin.mjs";
@@ -10,9 +10,12 @@ import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 /**
  * The commands a person runs by hand, run the way they run them: `data:pin`,
- * the assets' render, the README's picture and the smoke command. No other
- * case runs them, so these pin what each does from outside: what it writes,
- * prints and exits with.
+ * `data:check` (the green's first step), the assets' render, the README's
+ * picture and the smoke command. No other case runs them, so these pin what
+ * each does from outside: what it writes, prints and exits with.
+ * `data:check`'s cases read its decision (the exit code, the remedy, the
+ * branch), never its sentence's wording; its throwaway clones are built in
+ * the OS temp folder with `git init` and empty commits.
  *
  * Each runs the command line `package.json` gives its script, so a script
  * whose file moves keeps these cases as they are; `shot` has no script and is
@@ -113,6 +116,122 @@ describe("npm run data:pin", () => {
       expect(lockValueOf(written, "dataset_version")).toBe(version);
     });
     expect(statSync(join(root, "data.lock")).mtimeMs, "the site's data.lock was written").toBe(siteLock);
+  }, 60000);
+});
+
+/** A newline, spelled so no editor can eat it. */
+const LF = String.fromCharCode(10);
+
+/** git run in a throwaway clone, its output trimmed. */
+const gitIn = (folder: string, ...args: string[]): string =>
+  execFileSync("git", ["-C", folder, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+
+/** A throwaway data clone at `clone` on master, with `count` empty commits; their shas, oldest first. */
+function cloneWithCommits(clone: string, count: number): string[] {
+  execFileSync("git", ["init", "--quiet", "--initial-branch=master", clone], { stdio: "ignore" });
+  for (let n = 1; n <= count; n++)
+    gitIn(clone, "-c", "user.name=throwaway", "-c", "user.email=throwaway@example.invalid", "commit", "--quiet", "--allow-empty", "-m", `commit ${n}`);
+  return gitIn(clone, "rev-list", "--reverse", "HEAD").split(LF);
+}
+
+/** The site's lock copied into `folder`, naming `sha`; its path. */
+function lockNaming(folder: string, sha: string): string {
+  const lock = join(folder, "data.lock");
+  writeFileSync(lock, readFileSync(join(root, "data.lock"), "utf8").replace(/^sha=.*$/m, `sha=${sha}`));
+  return lock;
+}
+
+type CheckReport = { level: string; remedy?: string; branch?: string };
+type CheckRun = { status: number; report: CheckReport; out: string };
+
+/** `npm run data:check` run with its words after it, its exit code and the report line it printed. */
+async function dataCheckRun(...args: string[]): Promise<CheckRun> {
+  const run = await nodeRun([...scriptArgumentsOf("data:check"), ...args]);
+  const reportLine = run.out.split(LF).filter((line) => line.startsWith("{")).at(-1);
+  expect(reportLine, `data:check printed no report line: ${run.out}`).toBeDefined();
+  return { status: run.status, report: JSON.parse(reportLine!), out: run.out };
+}
+
+/**
+ * `body` run on a throwaway data clone with `count` commits, its path and
+ * shas; the site's own lock is asserted unwritten after.
+ */
+async function onThrowawayClone(count: number, body: (clone: string, shas: string[]) => Promise<void>): Promise<void> {
+  const siteLock = statSync(join(root, "data.lock")).mtimeMs;
+  await inThrowawayFolder(async (folder) => {
+    const clone = join(folder, "permit-rulebook-data");
+    await body(clone, cloneWithCommits(clone, count));
+  });
+  expect(statSync(join(root, "data.lock")).mtimeMs, "the site's data.lock was written").toBe(siteLock);
+}
+
+/** The exit code and report of data:check on the clone at `checkedPath`, against a lock beside `clone` naming `lockSha`. */
+const checkAgainst = (clone: string, lockSha: string, checkedPath = clone) =>
+  dataCheckRun("--lock", lockNaming(dirname(clone), lockSha), "--clone", checkedPath);
+
+/** The report of a data:check run that must stop, its exit code asserted 1. */
+async function stoppedReportOf(run: Promise<CheckRun>): Promise<CheckReport> {
+  const { status, report, out } = await run;
+  expect(status, out).toBe(1);
+  return report;
+}
+
+describe("npm run data:check passes", () => {
+  it("when the clone's HEAD is the lock's commit", async () => {
+    await onThrowawayClone(2, async (clone, [, second]) => {
+      const run = await checkAgainst(clone, second!);
+      expect([run.status, run.report.level], run.out).toEqual([0, "info"]);
+    });
+  }, 60000);
+
+  it("when the clone is ahead of the lock", async () => {
+    await onThrowawayClone(2, async (clone, [first]) => {
+      const run = await checkAgainst(clone, first!);
+      expect([run.status, run.report.level], run.out).toEqual([0, "info"]);
+    });
+  }, 60000);
+
+  it("on the real data clone against the site's own lock", async () => {
+    const siteLock = statSync(join(root, "data.lock")).mtimeMs;
+    const run = await dataCheckRun();
+    expect([run.status, run.report.level], run.out).toEqual([0, "info"]);
+    expect(statSync(join(root, "data.lock")).mtimeMs, "the site's data.lock was written").toBe(siteLock);
+  }, 60000);
+});
+
+describe("npm run data:check stops, naming one remedy", () => {
+  it("behind the lock on master: pull", async () => {
+    await onThrowawayClone(2, async (clone, [, second]) => {
+      gitIn(clone, "reset", "--quiet", "--hard", "HEAD~1");
+      expect((await stoppedReportOf(checkAgainst(clone, second!))).remedy).toBe("pull");
+    });
+  }, 60000);
+
+  it("behind the lock on a data branch: merge the data master into that branch", async () => {
+    await onThrowawayClone(2, async (clone, [first, second]) => {
+      gitIn(clone, "switch", "--quiet", "--create", "data-slice", first!);
+      expect(await stoppedReportOf(checkAgainst(clone, second!))).toMatchObject({ remedy: "merge-master", branch: "data-slice" });
+    });
+  }, 60000);
+
+  it("without the lock's commit, on master: pull", async () => {
+    await onThrowawayClone(2, async (clone) => {
+      // A well-formed sha no commit of the throwaway clone has.
+      expect((await stoppedReportOf(checkAgainst(clone, "1".repeat(40)))).remedy).toBe("pull");
+    });
+  }, 60000);
+
+  it("with no clone at the path: clone it", async () => {
+    await onThrowawayClone(1, async (clone, [first]) => {
+      expect((await stoppedReportOf(checkAgainst(clone, first!, join(dirname(clone), "no-clone-here")))).remedy).toBe("clone");
+    });
+  }, 60000);
+
+  it("on no branch, behind the lock: switch to master", async () => {
+    await onThrowawayClone(2, async (clone, [first, second]) => {
+      gitIn(clone, "switch", "--quiet", "--detach", first!);
+      expect((await stoppedReportOf(checkAgainst(clone, second!))).remedy).toBe("switch-to-master");
+    });
   }, 60000);
 });
 

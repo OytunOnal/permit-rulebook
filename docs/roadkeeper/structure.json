@@ -237,12 +237,14 @@
   "scripts/check-base.mjs": "infrastructure",
   "scripts/child-env.mjs": "infrastructure",
   "scripts/cli-check-base.mjs": "presentation",
+  "scripts/cli-data-check.mjs": "presentation",
   "scripts/cli-data-pin.mjs": "presentation",
   "scripts/cli-deploy-finding.mjs": "presentation",
   "scripts/cli-measure-taps.mjs": "presentation",
   "scripts/cli-render-assets.mjs": "presentation",
   "scripts/cli-shot.mjs": "presentation",
   "scripts/cli-smoke.mjs": "presentation",
+  "scripts/clone-shortfall.mjs": "infrastructure",
   "scripts/data-pin.mjs": "infrastructure",
   "scripts/decode-png-size.mjs": "domain",
   "scripts/deploy-finding.mjs": "domain",
@@ -251,6 +253,7 @@
   "scripts/live-site-over-http.mjs": "infrastructure",
   "scripts/log-wording.mjs": "domain",
   "scripts/main-check-base.mjs": "main",
+  "scripts/main-data-check.mjs": "main",
   "scripts/main-data-pin.mjs": "main",
   "scripts/main-measure-taps.mjs": "main",
   "scripts/main-render-assets.mjs": "main",
@@ -613,6 +616,11 @@
    "kind": "dependency"
   },
   {
+   "from": "scripts/cli-data-check.mjs",
+   "to": "scripts/find-option-value.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "scripts/cli-data-pin.mjs",
    "to": "scripts/find-option-value.mjs",
    "kind": "dependency"
@@ -630,6 +638,11 @@
   {
    "from": "scripts/cli-shot.mjs",
    "to": "scripts/decode-png-size.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/clone-shortfall.mjs",
+   "to": "scripts/data-pin.mjs",
    "kind": "dependency"
   },
   {
@@ -659,6 +672,21 @@
   },
   {
    "from": "scripts/main-check-base.mjs",
+   "to": "scripts/print-report.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-check.mjs",
+   "to": "scripts/cli-data-check.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-check.mjs",
+   "to": "scripts/clone-shortfall.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/main-data-check.mjs",
    "to": "scripts/print-report.mjs",
    "kind": "dependency"
   },
@@ -3734,6 +3762,16 @@
   },
   {
    "from": "tests/pipeline.test.ts",
+   "to": "scripts/cli-data-check.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pipeline.test.ts",
+   "to": "scripts/clone-shortfall.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pipeline.test.ts",
    "to": "scripts/data-pin.mjs",
    "kind": "dependency"
   },
@@ -5949,6 +5987,43 @@
     "exported": true
    }
   ],
+  "scripts/cli-data-check.mjs": [
+   {
+    "name": "DATA_REPOSITORY_URL",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "dataCheckOptionsOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "remedyOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "lackOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "commandOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "shortfallSentenceOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "dataCheckReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "scripts/cli-data-pin.mjs": [
    {
     "name": "pinOptionsOf",
@@ -6026,6 +6101,33 @@
    },
    {
     "name": "smokeReportOf",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/clone-shortfall.mjs": [
+   {
+    "name": "FULL_SHA",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "answerAt",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "hasCommit",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "lockAndCloneOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "cloneShortfallOf",
     "kind": "fn",
     "exported": true
    }
@@ -6230,6 +6332,18 @@
    }
   ],
   "scripts/main-check-base.mjs": [
+   {
+    "name": "report",
+    "kind": "const",
+    "exported": false
+   }
+  ],
+  "scripts/main-data-check.mjs": [
+   {
+    "name": "checked",
+    "kind": "const",
+    "exported": false
+   },
    {
     "name": "report",
     "kind": "const",
@@ -8976,12 +9090,14 @@
   "scripts/check-base.mjs",
   "scripts/child-env.mjs",
   "scripts/cli-check-base.mjs",
+  "scripts/cli-data-check.mjs",
   "scripts/cli-data-pin.mjs",
   "scripts/cli-deploy-finding.mjs",
   "scripts/cli-measure-taps.mjs",
   "scripts/cli-render-assets.mjs",
   "scripts/cli-shot.mjs",
   "scripts/cli-smoke.mjs",
+  "scripts/clone-shortfall.mjs",
   "scripts/data-pin.mjs",
   "scripts/decode-png-size.mjs",
   "scripts/deploy-finding.mjs",
@@ -8990,6 +9106,7 @@
   "scripts/live-site-over-http.mjs",
   "scripts/log-wording.mjs",
   "scripts/main-check-base.mjs",
+  "scripts/main-data-check.mjs",
   "scripts/main-data-pin.mjs",
   "scripts/main-measure-taps.mjs",
   "scripts/main-render-assets.mjs",
@@ -9047,5 +9164,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a9bd19294ad1f53398f7c28987a26140a42fe04eccfc31add530b6203b2e8d0c"
+ "digest": "783f7b7175e568fa3152c4157a814da96a3e70610db1c7894907e112ea67468f"
 }
