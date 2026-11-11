@@ -262,6 +262,7 @@
   "scripts/measure-taps.mjs": "infrastructure",
   "scripts/print-report.mjs": "presentation",
   "scripts/render-assets.mjs": "infrastructure",
+  "scripts/run-git.mjs": "infrastructure",
   "scripts/shot.mjs": "infrastructure",
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure",
@@ -643,6 +644,16 @@
   {
    "from": "scripts/clone-shortfall.mjs",
    "to": "scripts/data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/clone-shortfall.mjs",
+   "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/data-pin.mjs",
+   "to": "scripts/run-git.mjs",
    "kind": "dependency"
   },
   {
@@ -6112,11 +6123,6 @@
     "exported": false
    },
    {
-    "name": "answerAt",
-    "kind": "fn",
-    "exported": false
-   },
-   {
     "name": "hasCommit",
     "kind": "fn",
     "exported": false
@@ -6141,11 +6147,6 @@
    {
     "name": "siteLockPath",
     "kind": "const",
-    "exported": false
-   },
-   {
-    "name": "at",
-    "kind": "fn",
     "exported": false
    },
    {
@@ -6552,6 +6553,33 @@
    },
    {
     "name": "checkAssets",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
+  "scripts/run-git.mjs": [
+   {
+    "name": "GIT_FILE_NAME",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "isFile",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "gitPath",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "runGit",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "runGitOrNull",
     "kind": "fn",
     "exported": true
    }
@@ -9115,6 +9143,7 @@
   "scripts/measure-taps.mjs",
   "scripts/print-report.mjs",
   "scripts/render-assets.mjs",
+  "scripts/run-git.mjs",
   "scripts/shot.mjs",
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
@@ -9164,5 +9193,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "ae3af3d9541c0278173fe6faac56c6f5eec23625b2fd776c58efe742df9264bb"
+ "digest": "b8de985a9785c295d8ad6ab18aad53a0c38905ee696bffd0d90959ea035bd725"
 }

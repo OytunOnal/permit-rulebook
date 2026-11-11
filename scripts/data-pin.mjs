@@ -20,17 +20,13 @@
  * `pinData` returns what it found and prints nothing: the report line is
  * `cli-data-pin.mjs`'s, and `main-data-pin.mjs` runs the two.
  */
-import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runGit } from "./run-git.mjs";
 
 const root = dirname(fileURLToPath(new URL("../package.json", import.meta.url)));
 const siteLockPath = join(root, "data.lock");
-
-/** git's answer in `dir`; a failure throws with git's own words in its message. */
-const at = (dir, ...args) =>
-  execFileSync("git", ["-C", dir, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 
 /**
  * The site's main checkout: the parent of the git directory every copy of the
@@ -38,7 +34,7 @@ const at = (dir, ...args) =>
  */
 function mainCheckoutOf(siteDir) {
   try {
-    return dirname(at(siteDir, "rev-parse", "--path-format=absolute", "--git-common-dir"));
+    return dirname(runGit(siteDir, "rev-parse", "--path-format=absolute", "--git-common-dir"));
   } catch (error) {
     // No exit code: git itself did not run, which is not the folder's fault.
     if (typeof error.status !== "number") throw error;
@@ -73,7 +69,7 @@ export function readLock(text = readFileSync(siteLockPath, "utf8")) {
 export function pinData({ lockPath = siteLockPath } = {}) {
   const target = resolve(lockPath);
   const dir = dataClonePath();
-  const sha = at(dir, "rev-parse", "HEAD");
+  const sha = runGit(dir, "rev-parse", "HEAD");
   const datasetVersion = JSON.parse(readFileSync(join(dir, "data", "dataset.json"), "utf8")).dataset_version;
   const lockText = readFileSync(target, "utf8");
   const pinned = lockText

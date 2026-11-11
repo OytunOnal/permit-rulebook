@@ -15,32 +15,18 @@
  * It returns what fell short and prints nothing: the sentence and the remedy
  * are `cli-data-check.mjs`'s, and `main-data-check.mjs` runs the two.
  */
-import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { dataClonePath, readLock } from "./data-pin.mjs";
+import { runGit, runGitOrNull } from "./run-git.mjs";
 
 /** A full commit sha, the only form a lock names. */
 const FULL_SHA = /^[0-9a-f]{40}$/;
 
-/**
- * git's answer in `dir`, or null when git answered with exit code 1 (a "no",
- * such as `--is-ancestor`'s or a detached HEAD's); any other failure throws
- * with git's own words.
- */
-function answerAt(dir, ...args) {
-  try {
-    return execFileSync("git", ["-C", dir, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
-  } catch (error) {
-    if (error.status === 1) return null;
-    throw error;
-  }
-}
-
 /** Whether the clone at `clonePath` has `sha` as a commit; git says "no" there with exit code 128. */
 function hasCommit(clonePath, sha) {
   try {
-    return answerAt(clonePath, "cat-file", "-t", sha) === "commit";
+    return runGit(clonePath, "cat-file", "-t", sha) === "commit";
   } catch (error) {
     if (error.status === 128) return false;
     throw error;
@@ -70,10 +56,10 @@ export function lockAndCloneOf({ lockPath, clonePath } = {}) {
 export function cloneShortfallOf({ lockSha, clonePath } = lockAndCloneOf()) {
   if (!FULL_SHA.test(lockSha)) throw new Error(`the lock names ${JSON.stringify(lockSha)}, not a 40-hex commit sha`);
   if (!existsSync(join(clonePath, ".git"))) return { kind: "no-clone", clonePath, lockSha };
-  const head = answerAt(clonePath, "rev-parse", "HEAD");
-  const branch = answerAt(clonePath, "symbolic-ref", "--quiet", "--short", "HEAD");
+  const head = runGit(clonePath, "rev-parse", "HEAD");
+  const branch = runGitOrNull(clonePath, "symbolic-ref", "--quiet", "--short", "HEAD");
   if (!hasCommit(clonePath, lockSha)) return { kind: "commit-missing", clonePath, lockSha, head, branch };
   // A commit is its own ancestor, so HEAD at the lock answers yes too.
-  if (answerAt(clonePath, "merge-base", "--is-ancestor", lockSha, head) !== null) return null;
+  if (runGitOrNull(clonePath, "merge-base", "--is-ancestor", lockSha, head) !== null) return null;
   return { kind: "head-lacks-commit", clonePath, lockSha, head, branch };
 }
