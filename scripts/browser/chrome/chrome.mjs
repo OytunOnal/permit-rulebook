@@ -1,6 +1,6 @@
 // @level infrastructure
-import { existsSync, statSync } from "node:fs";
-import { delimiter, isAbsolute, join } from "node:path";
+import { existsSync } from "node:fs";
+import { findOnPath } from "../../find-on-path.mjs";
 
 /**
  * Where Chrome is, asked once.
@@ -29,18 +29,14 @@ const ON_PATH = [
   "google-chrome", "google-chrome-stable", "chromium-browser", "chromium", "chrome",
 ];
 
-/** Whether `path` names a file. */
-const isFile = (path) => existsSync(path) && statSync(path).isFile();
-
 /**
  * The first of `ON_PATH` found as a file in an absolute folder of PATH, or
  * undefined. A relative folder is skipped: it names wherever the run happens
  * to stand. No shell is asked.
  */
 function fromPath() {
-  const folders = (process.env.PATH ?? "").split(delimiter).filter((folder) => isAbsolute(folder));
   for (const name of ON_PATH) {
-    const found = folders.map((folder) => join(folder, name)).find(isFile);
+    const found = findOnPath(name);
     if (found) return found;
   }
   return undefined;

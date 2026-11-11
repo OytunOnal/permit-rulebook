@@ -37,7 +37,9 @@ pull request.
   structure command is rerun
   and its result committed. GitHub's merge ignores local drivers, so on its
   conflict: merge master into the branch locally, rerun, push.
-- Green means: the site — the deploy's checks, in its order: `npm run build`
+- Green means: the site — `npm run data:check` first (the data clone holds
+  the lock's commit; local only, not a deploy step), then the deploy's checks,
+  in its order: `npm run build`
   with 0 errors, `npm test`, `npm run lint` with 0 problems,
   `npm run assets:check` true, `npm run check:base` and
   `npm run measure:taps`; the data — `npm run check`
