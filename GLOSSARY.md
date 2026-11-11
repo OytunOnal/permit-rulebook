@@ -717,8 +717,11 @@ not what is overdue)
 One issue a run opens, comments on, reopens and closes by itself, because what
 it says is the run's own state: `overdue flags`, `watch run failed`, `deploy
 run failed`, `check failed on master`. A red run with nobody at the other end
-says so there; the first green run of the same kind closes it with a line
-naming that run. A person reads it, and never has to close it.
+says so there, and each time it does, the issue is assigned to the
+repository's owner and its words open with their @mention, so it reaches them;
+the first green run of the same kind closes it with a line naming that run,
+which assigns and mentions no one. A person reads it, and never has to close
+it.
 _Avoid_: alarm, status issue, notification
 
 **Finding**:
