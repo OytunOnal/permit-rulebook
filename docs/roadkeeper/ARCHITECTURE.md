@@ -66,8 +66,10 @@ click on the tracker link. Answers never leave the device.
   one closes it (#117). Every kept
   issue is decided in one module, `kept-issue`, and carried to the tracker by
   one CLI, built on its own so a broken build cannot silence it, that runs
-  `gh` with no shell (#117). Two readers, a
-  fetcher and a browser (Chrome over its own protocol), and the coverage gate
+  `gh` with no shell (#117); a red one is assigned to the repository's owner,
+  handed in by the run, and opens with their @mention (#337). Two readers, a
+  fetcher (30 s per source) and a browser (Chrome over its own protocol, 60 s
+  per try, #337), and the coverage gate
   ask one module, `trust-line`, where the watch may go: the entry address, a
   redirect target, every address a name resolves to (the fetcher's; a name
   Chrome resolves for itself is the stated gap) and the page a reader lands
