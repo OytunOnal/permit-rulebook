@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { basename, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { dataDir, readLock } from "../scripts/data-pin.mjs";
+import { readLock } from "../scripts/data-pin.mjs";
+import { cloneShortfallOf } from "../scripts/clone-shortfall.mjs";
+import { shortfallSentenceOf } from "../scripts/cli-data-check.mjs";
 import { readAssetNames } from "../scripts/carry-assets/carry.mjs";
 import { jobKeyValueOf, jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
@@ -75,42 +76,22 @@ const LF = String.fromCharCode(10);
 
 describe("the data commit is pinned, and the pin is a commit that exists", () => {
   const lock = readLock();
-  const data = dataDir();
-  /** git, with its own failure turned into something a reader can act on. */
-  const git = (...args: string[]): { ok: boolean; out: string } => {
-    try {
-      return { ok: true, out: execFileSync("git", ["-C", data, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim() };
-    } catch (e) {
-      return { ok: false, out: (e as { stderr?: Buffer }).stderr?.toString().trim() ?? String(e) };
-    }
-  };
 
   it("data.lock names a 40-hex sha and the dataset version it carried", () => {
     expect(lock.sha, "data.lock has no sha").toMatch(/^[0-9a-f]{40}$/);
     expect(lock.datasetVersion, "data.lock has no dataset version").toMatch(/^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$/);
   });
 
+  // Both ask the rule the green's first step asks, `npm run data:check`, so
+  // the step and the suite never disagree; a red reads as the step's sentence.
   it("the commit exists in the data repository beside this one", () => {
-    const type = git("cat-file", "-t", lock.sha);
-    expect(
-      type.ok && type.out === "commit",
-      `data.lock names ${lock.sha}, which is not a commit in ${data} — pull the data repository, or run npm run data:pin`,
-    ).toBe(true);
+    const shortfall = cloneShortfallOf();
+    expect(shortfall, shortfall ? shortfallSentenceOf(shortfall) : undefined).toBeNull();
   });
 
   it("the sibling on this machine is not behind the lock", () => {
-    const head = git("rev-parse", "HEAD");
-    expect(head.ok, `cannot read the data repository's HEAD in ${data}: ${head.out}`).toBe(true);
-    if (head.out === lock.sha) return;
-    // Ahead is fine — a developer moves the data first and pins it after. Behind
-    // is not: this build would be testing code against data it has never seen.
-    // `--is-ancestor` answers with its exit code, so a false answer must read as
-    // the sentence below and never as a raw throw (Standards review).
-    const merged = git("merge-base", "--is-ancestor", lock.sha, head.out).ok;
-    expect(
-      merged,
-      `data.lock names ${lock.sha}, which the sibling's HEAD ${head.out} does not contain — pull the data repository, or run npm run data:pin`,
-    ).toBe(true);
+    const shortfall = cloneShortfallOf();
+    expect(shortfall, shortfall ? shortfallSentenceOf(shortfall) : undefined).toBeNull();
   });
 
   it("the workflow builds a push against the lock, and the daily runs against the newest", () => {
