@@ -118,8 +118,10 @@ describe("npm run data:pin", () => {
 /** A throwaway data clone at `clone` on master, with `count` empty commits; their shas, oldest first. */
 function cloneWithCommits(clone: string, count: number): string[] {
   initThrowawayRepository(clone);
-  for (let n = 1; n <= count; n++) commitInThrowaway(clone, "--allow-empty", "-m", `commit ${n}`);
-  return runGit(clone, "rev-list", "--reverse", "HEAD").split(LF);
+  return Array.from({ length: count }, (_, n) => {
+    commitInThrowaway(clone, "--allow-empty", "-m", `commit ${n + 1}`);
+    return runGit(clone, "rev-parse", "HEAD");
+  });
 }
 
 /** The site's lock copied into `folder`, naming `sha`; its path. */
@@ -217,6 +219,30 @@ describe("npm run data:check stops, naming one remedy", () => {
     await onThrowawayClone(2, async (clone, [first, second]) => {
       runGit(clone, "switch", "--quiet", "--detach", first!);
       expect((await stoppedReportOf(checkAgainst(clone, second!))).remedy).toBe("switch-to-master");
+    });
+  }, 60000);
+});
+
+describe("npm run data:check stops on a clone with no commit yet, or diverged, naming one remedy", () => {
+  it("with no commit yet, on master: pull", async () => {
+    await onThrowawayClone(0, async (clone) => {
+      expect(await stoppedReportOf(checkAgainst(clone, "1".repeat(40)))).toMatchObject({ remedy: "pull", branch: "master" });
+    });
+  }, 60000);
+
+  it("diverged from the lock's commit on master, neither ahead of it nor behind it: merge the data master", async () => {
+    await onThrowawayClone(2, async (clone, [first, second]) => {
+      runGit(clone, "reset", "--quiet", "--hard", first!);
+      commitInThrowaway(clone, "--allow-empty", "-m", "a commit of its own");
+      expect(await stoppedReportOf(checkAgainst(clone, second!))).toMatchObject({ remedy: "merge-master", branch: "master" });
+    });
+  }, 60000);
+
+  it("without the lock's commit, on a master holding a commit its origin/master lacks: merge the data master", async () => {
+    await onThrowawayClone(2, async (clone, [first]) => {
+      // A paired slice's data master merged locally, its push refused: origin/master, read offline, is one commit behind.
+      runGit(clone, "update-ref", "refs/remotes/origin/master", first!);
+      expect(await stoppedReportOf(checkAgainst(clone, "1".repeat(40)))).toMatchObject({ remedy: "merge-master", branch: "master" });
     });
   }, 60000);
 });

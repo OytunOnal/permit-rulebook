@@ -9,8 +9,9 @@
  *
  * Both options exist for the cases; with neither, the site's own lock and its
  * data clone are checked. A red names one thing to run, picked by the clone's
- * branch, and never `data:pin`: when the clone is behind, pinning it would
- * move the site back onto older data.
+ * branch and by whether its master has diverged from the lock's line, and
+ * never `data:pin`: when the clone is behind, pinning it would move the site
+ * back onto older data.
  */
 import { findOptionValue } from "./find-option-value.mjs";
 
@@ -30,8 +31,10 @@ export function dataCheckOptionsOf(argv) {
 /** What the clone lacks, in words, by the shortfall's kind: the first half of the red's sentence. */
 const LACK_WORDS = {
   "no-clone": ({ clonePath, lockSha }) => `There is no data clone at ${clonePath}, so the lock's commit ${lockSha} cannot be read`,
-  "commit-missing": ({ clonePath, lockSha, head }) => `The data clone at ${clonePath} (HEAD ${head}) does not have the lock's commit ${lockSha}`,
+  "commit-missing": ({ clonePath, lockSha, head }) =>
+    `The data clone at ${clonePath} (${head === null ? "no commit yet" : `HEAD ${head}`}) does not have the lock's commit ${lockSha}`,
   "head-lacks-commit": ({ clonePath, lockSha, head }) => `The data clone at ${clonePath} is at ${head}, behind the lock's commit ${lockSha}`,
+  diverged: ({ clonePath, lockSha, head }) => `The data clone at ${clonePath} (HEAD ${head}) has diverged from the lock's line, at ${lockSha}`,
 };
 
 /** The command each remedy runs on the clone, in words, by remedy: the second half of the red's sentence. */
@@ -42,9 +45,14 @@ const REMEDY_WORDS = {
   "merge-master": ({ clonePath, branch }) => `merge the data master into ${branch}: git -C ${clonePath} fetch, then git -C ${clonePath} merge origin/master`,
 };
 
-/** The one thing a shortfall's red tells the maintainer to do, a key of `REMEDY_WORDS`, picked by its kind and the clone's branch. */
+/**
+ * The one thing a shortfall's red tells the maintainer to do, a key of
+ * `REMEDY_WORDS`, picked by its kind and the clone's branch: a diverged
+ * master merges, since git refuses to pull it forward.
+ */
 function remedyOf({ kind, branch }) {
   if (kind === "no-clone") return "clone";
+  if (kind === "diverged") return "merge-master";
   if (branch === null) return "switch-to-master";
   return branch === "master" ? "pull" : "merge-master";
 }

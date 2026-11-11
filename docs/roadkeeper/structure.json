@@ -6163,6 +6163,26 @@
     "exported": true
    },
    {
+    "name": "isAncestor",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "isAheadOfOriginMaster",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "headShortfallKindOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "hasDiverged",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "cloneShortfallOf",
     "kind": "fn",
     "exported": true
@@ -9223,5 +9243,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "45940bc3dd3c5bf809bda82acfe8acbccb80b393152763178dd5cca4ecd3fe0d"
+ "digest": "5e5605fa2f1f192c3c362efc11a2bebb8330eb7caaa7d9f2a5264e8b4d64ba32"
 }
