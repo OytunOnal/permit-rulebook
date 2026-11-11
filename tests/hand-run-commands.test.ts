@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { execFile, execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { execFile } from "node:child_process";
+import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromePath } from "../scripts/browser/browser.mjs";
 import { dataClonePath } from "../scripts/data-pin.mjs";
+import { runGit } from "../scripts/run-git.mjs";
 import { skipReason, warnNotWalked } from "./browser-walk.js";
+import { commitInThrowaway, initThrowawayRepository, inThrowawayFolder, LF } from "./throwaway-folder.js";
 
 /**
  * The commands a person runs by hand, run the way they run them: `data:pin`,
@@ -74,16 +75,6 @@ function nodeRun(args: string[], env: NodeJS.ProcessEnv = process.env): Promise<
   });
 }
 
-/** `body` run on a fresh folder of the OS temp folder, removed after whatever it did. */
-async function inThrowawayFolder(body: (folder: string) => Promise<void>): Promise<void> {
-  const folder = mkdtempSync(join(tmpdir(), "permit-rulebook-hand-run-"));
-  try {
-    await body(folder);
-  } finally {
-    rmSync(folder, { recursive: true, force: true });
-  }
-}
-
 /** When each file of the site's `folder` was last written, so a case can say none was. */
 const writtenTimesIn = (folder: string): Record<string, number> =>
   Object.fromEntries(readdirSync(join(root, folder)).map((name) => [name, statSync(join(root, folder, name)).mtimeMs]));
@@ -99,12 +90,18 @@ function pngSizeOf(file: string): string {
 const lockValueOf = (text: string, key: string): string | undefined =>
   new RegExp(`^${key}=(.+)$`, "m").exec(text)?.[1]?.trim();
 
+/** `body` run, then the site's own `data.lock` asserted unwritten by it. */
+async function expectSiteLockUnwrittenBy(body: () => Promise<void>): Promise<void> {
+  const siteLock = statSync(join(root, "data.lock")).mtimeMs;
+  await body();
+  expect(statSync(join(root, "data.lock")).mtimeMs, "the site's data.lock was written").toBe(siteLock);
+}
+
 describe("npm run data:pin", () => {
   it("writes the data clone's HEAD and its dataset version into the lock it is given", async () => {
-    const siteLock = statSync(join(root, "data.lock")).mtimeMs;
-    const head = execFileSync("git", ["-C", dataClone, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+    const head = runGit(dataClone, "rev-parse", "HEAD");
     const version = JSON.parse(readFileSync(join(dataClone, "data", "dataset.json"), "utf8")).dataset_version;
-    await inThrowawayFolder(async (folder) => {
+    await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
       // The site's lock, copied, its pin moved off the clone so the write shows.
       const lock = join(folder, "data.lock");
       writeFileSync(lock, readFileSync(join(root, "data.lock"), "utf8")
@@ -114,24 +111,15 @@ describe("npm run data:pin", () => {
       const written = readFileSync(lock, "utf8");
       expect(lockValueOf(written, "sha")).toBe(head);
       expect(lockValueOf(written, "dataset_version")).toBe(version);
-    });
-    expect(statSync(join(root, "data.lock")).mtimeMs, "the site's data.lock was written").toBe(siteLock);
+    }));
   }, 60000);
 });
 
-/** A newline, spelled so no editor can eat it. */
-const LF = String.fromCharCode(10);
-
-/** git run in a throwaway clone, its output trimmed. */
-const gitIn = (folder: string, ...args: string[]): string =>
-  execFileSync("git", ["-C", folder, ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
-
 /** A throwaway data clone at `clone` on master, with `count` empty commits; their shas, oldest first. */
 function cloneWithCommits(clone: string, count: number): string[] {
-  execFileSync("git", ["init", "--quiet", "--initial-branch=master", clone], { stdio: "ignore" });
-  for (let n = 1; n <= count; n++)
-    gitIn(clone, "-c", "user.name=throwaway", "-c", "user.email=throwaway@example.invalid", "commit", "--quiet", "--allow-empty", "-m", `commit ${n}`);
-  return gitIn(clone, "rev-list", "--reverse", "HEAD").split(LF);
+  initThrowawayRepository(clone);
+  for (let n = 1; n <= count; n++) commitInThrowaway(clone, "--allow-empty", "-m", `commit ${n}`);
+  return runGit(clone, "rev-list", "--reverse", "HEAD").split(LF);
 }
 
 /** The site's lock copied into `folder`, naming `sha`; its path. */
@@ -157,12 +145,10 @@ async function dataCheckRun(...args: string[]): Promise<CheckRun> {
  * shas; the site's own lock is asserted unwritten after.
  */
 async function onThrowawayClone(count: number, body: (clone: string, shas: string[]) => Promise<void>): Promise<void> {
-  const siteLock = statSync(join(root, "data.lock")).mtimeMs;
-  await inThrowawayFolder(async (folder) => {
+  await expectSiteLockUnwrittenBy(() => inThrowawayFolder(async (folder) => {
     const clone = join(folder, "permit-rulebook-data");
     await body(clone, cloneWithCommits(clone, count));
-  });
-  expect(statSync(join(root, "data.lock")).mtimeMs, "the site's data.lock was written").toBe(siteLock);
+  }));
 }
 
 /** The exit code and report of data:check on the clone at `checkedPath`, against a lock beside `clone` naming `lockSha`. */
@@ -192,24 +178,24 @@ describe("npm run data:check passes", () => {
   }, 60000);
 
   it("on the real data clone against the site's own lock", async () => {
-    const siteLock = statSync(join(root, "data.lock")).mtimeMs;
-    const run = await dataCheckRun();
-    expect([run.status, run.report.level], run.out).toEqual([0, "info"]);
-    expect(statSync(join(root, "data.lock")).mtimeMs, "the site's data.lock was written").toBe(siteLock);
+    await expectSiteLockUnwrittenBy(async () => {
+      const run = await dataCheckRun();
+      expect([run.status, run.report.level], run.out).toEqual([0, "info"]);
+    });
   }, 60000);
 });
 
 describe("npm run data:check stops, naming one remedy", () => {
   it("behind the lock on master: pull", async () => {
     await onThrowawayClone(2, async (clone, [, second]) => {
-      gitIn(clone, "reset", "--quiet", "--hard", "HEAD~1");
+      runGit(clone, "reset", "--quiet", "--hard", "HEAD~1");
       expect((await stoppedReportOf(checkAgainst(clone, second!))).remedy).toBe("pull");
     });
   }, 60000);
 
   it("behind the lock on a data branch: merge the data master into that branch", async () => {
     await onThrowawayClone(2, async (clone, [first, second]) => {
-      gitIn(clone, "switch", "--quiet", "--create", "data-slice", first!);
+      runGit(clone, "switch", "--quiet", "--create", "data-slice", first!);
       expect(await stoppedReportOf(checkAgainst(clone, second!))).toMatchObject({ remedy: "merge-master", branch: "data-slice" });
     });
   }, 60000);
@@ -229,7 +215,7 @@ describe("npm run data:check stops, naming one remedy", () => {
 
   it("on no branch, behind the lock: switch to master", async () => {
     await onThrowawayClone(2, async (clone, [first, second]) => {
-      gitIn(clone, "switch", "--quiet", "--detach", first!);
+      runGit(clone, "switch", "--quiet", "--detach", first!);
       expect((await stoppedReportOf(checkAgainst(clone, second!))).remedy).toBe("switch-to-master");
     });
   }, 60000);

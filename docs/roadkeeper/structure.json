@@ -3177,6 +3177,16 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/data-clone-path.test.ts",
+   "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-clone-path.test.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/dataset-ld.test.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -3488,7 +3498,17 @@
   },
   {
    "from": "tests/hand-run-commands.test.ts",
+   "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/hand-run-commands.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/hand-run-commands.test.ts",
+   "to": "tests/throwaway-folder.ts",
    "kind": "dependency"
   },
   {
@@ -3784,6 +3804,11 @@
   {
    "from": "tests/pipeline.test.ts",
    "to": "scripts/data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/pipeline.test.ts",
+   "to": "tests/throwaway-folder.ts",
    "kind": "dependency"
   },
   {
@@ -5129,6 +5154,11 @@
   {
    "from": "tests/territories.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/throwaway-folder.ts",
+   "to": "scripts/run-git.mjs",
    "kind": "dependency"
   },
   {

@@ -6,6 +6,7 @@ import { readLock } from "../scripts/data-pin.mjs";
 import { cloneShortfallOf } from "../scripts/clone-shortfall.mjs";
 import { shortfallSentenceOf } from "../scripts/cli-data-check.mjs";
 import { readAssetNames } from "../scripts/carry-assets/carry.mjs";
+import { LF } from "./throwaway-folder.js";
 import { jobKeyValueOf, jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
 /**
@@ -71,9 +72,6 @@ describe("every action is pinned to a commit, and every job asks for the least i
 });
 
 /** Which data commit the site is built against, and whether it is real. */
-/** A newline, spelled so no editor can eat it. */
-const LF = String.fromCharCode(10);
-
 describe("the data commit is pinned, and the pin is a commit that exists", () => {
   const lock = readLock();
 
