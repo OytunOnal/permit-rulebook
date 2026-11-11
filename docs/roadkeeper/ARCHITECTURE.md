@@ -205,6 +205,18 @@ click on the tracker link. Answers never leave the device.
   result, and its entry (`main-smoke.mjs`, `main`) wires the two and is what
   `package.json` runs. The dev server knows the server it started is this
   project's by `/countries.json`, and reaches no screen word (#247).
+  The data clone is found in one place, `dataClonePath()` in `data-pin.mjs`:
+  beside the site's main checkout, which git names from any worktree, so a
+  builder's copy under `.claude/worktrees/` reads the clone the build reads.
+  `npm run data:check`, the local green's first step and never a deploy step,
+  asks offline whether that clone holds `data.lock`'s commit
+  (`cloneShortfallOf()` in `clone-shortfall.mjs`: nothing, or no clone · the
+  commit missing · HEAD behind · diverged) and stops with one remedy chosen
+  by the clone's branch: pull, merge the data master, switch to master, or
+  clone; never `data:pin`, which would move the lock back (#332). Every script
+  asks git through `run-git.mjs`, an argument list with no shell, and finds
+  git, as `chromePath` finds Chrome, through `findOnPath()`: PATH's absolute
+  folders only, never the folder a run stands in.
   The carry (`scripts/carry-assets`)
   copies the live generation's assets into `dist/`, only from the site's own
   address and only bytes the previous build's digest list attests; it is a
