@@ -3133,6 +3133,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/data-dir.test.ts",
+   "to": "scripts/data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/dataset-ld.test.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -6037,6 +6042,16 @@
     "exported": false
    },
    {
+    "name": "at",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "mainCheckoutOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "dataDir",
     "kind": "fn",
     "exported": true
@@ -6045,11 +6060,6 @@
     "name": "readLock",
     "kind": "fn",
     "exported": true
-   },
-   {
-    "name": "at",
-    "kind": "fn",
-    "exported": false
    },
    {
     "name": "pinData",
@@ -9037,5 +9047,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "0bf954406bef11a929c2fef3b456997bb65658defaa8a99a2d2ca90214b64d4b"
+ "digest": "a9bd19294ad1f53398f7c28987a26140a42fe04eccfc31add530b6203b2e8d0c"
 }

@@ -23,7 +23,7 @@ import { skipReason, warnNotWalked } from "./browser-walk.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 
-/** The data clone beside the site, where `package.json`'s `file:` link points. */
+/** The data clone beside the site's main checkout, where `package.json`'s `file:` link points from there. */
 const dataClone = dataDir();
 
 /** Why the commands that walk the built site cannot run here: no Chrome, or no build. Null when they can. */
