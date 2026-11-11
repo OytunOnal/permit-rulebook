@@ -679,10 +679,9 @@ _Avoid_: blip, hiccup (the cause, not the state), transient (a Failure class)
 **Outage**:
 A source the run could not read on two or more mornings of the last seven,
 however those mornings fell — a source that goes quiet every other day is an
-outage on the second one. The run is **red**: a red run means the watch did
-not read its sources, and an **Overdue flag** does not make it so. A refusal by us is red on its
-first morning instead, because waiting a day changes nothing about an address
-the watch will not request.
+outage on the second one. The run is **red**; an **Overdue flag** never makes
+it so. A refusal by us is red on its first morning instead, because waiting a
+day changes nothing about an address the watch will not request.
 _Avoid_: downtime, failure, persistent lapse
 
 **Flag**:

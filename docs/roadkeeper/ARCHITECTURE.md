@@ -61,9 +61,9 @@ click on the tracker link. Answers never leave the device.
   Actions and, after its state is pushed, files an issue (`source-change`) per
   flag this run created or changed; a flag still open on
   the second UTC morning after it was raised is overdue and is named in one
-  issue the run keeps, `overdue flags` (#62); it reddens nothing, since a red
-  run means the watch did not read its sources (#283). A red run on master keeps
-  `watch run failed`, and the first green one closes it (#117). Every kept
+  issue the run keeps, `overdue flags` (#62); it never makes the run red
+  (#283). A red run on master keeps `watch run failed`, and the first green
+  one closes it (#117). Every kept
   issue is decided in one module, `kept-issue`, and carried to the tracker by
   one CLI, built on its own so a broken build cannot silence it, that runs
   `gh` with no shell (#117). Two readers, a
