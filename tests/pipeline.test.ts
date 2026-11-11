@@ -82,14 +82,9 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
     expect(lock.datasetVersion, "data.lock has no dataset version").toMatch(/^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$/);
   });
 
-  // Both ask the rule the green's first step asks, `npm run data:check`, so
-  // the step and the suite never disagree; a red reads as the step's sentence.
-  it("the commit exists in the data repository beside this one", () => {
-    const shortfall = cloneShortfallOf();
-    expect(shortfall, shortfall ? shortfallSentenceOf(shortfall) : undefined).toBeNull();
-  });
-
-  it("the sibling on this machine is not behind the lock", () => {
+  // The rule the green's first step asks, `npm run data:check`, so the step
+  // and the suite never disagree; a red reads as the step's sentence.
+  it("the data clone holds the lock's commit", () => {
     const shortfall = cloneShortfallOf();
     expect(shortfall, shortfall ? shortfallSentenceOf(shortfall) : undefined).toBeNull();
   });
