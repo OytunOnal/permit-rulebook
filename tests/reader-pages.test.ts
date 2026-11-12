@@ -10,7 +10,7 @@ import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { isArrowOnLastWordLine, isAsWideAsTextAndArrow, type CardLink } from "./card-link.js";
 import {
   DEFAULT_PASSPORT, EVERY_DESTINATION, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf,
-  learnLinksOf, noticePassports, noticesDrawnOnNone, questionCards, sentencesOf, unknowingWalks, walks,
+  learnLinksOf, noticePassports, noticesDrawnOnNone, openWithRecord, questionCards, resultsWhere, sentencesOf, unknowingWalks, walks,
   type CardLinkOnScreen, type ReaderPage,
 } from "./reader-pages.js";
 
@@ -140,6 +140,33 @@ const failureLineOf = (link: CardLinkOnScreen): string => {
 const isLaidOutForTheDesk = (link: CardLink): boolean =>
   link.lines === 1 && isArrowOnLastWordLine(link) && isAsWideAsTextAndArrow(link);
 
+/** One word longer than a phone's line, as a label holding a URL would be. */
+const LONG_WORD = "Unbreakable".repeat(12);
+
+/** Reads, in the page, how results drawing a Learn link lay out once every
+ * card link's label is LONG_WORD: the page's width and scroll width, how many
+ * foot and Learn links took it, and the furthest right edge among them. A
+ * screen with no Learn link is left as it is and counts none. */
+const WITH_LONG_LABELS = `(() => {
+  for (const folded of document.querySelectorAll("#main details:not([open])")) folded.open = true;
+  const foot = [...document.querySelectorAll("#main .foot > a.next")];
+  const learn = [...document.querySelectorAll("#main .learn a")];
+  if (learn.length === 0) return JSON.stringify({ innerWidth, scrollWidth: 0, foot: 0, learn: 0, furthestRight: 0 });
+  for (const link of [...foot, ...learn]) link.textContent = ${JSON.stringify(LONG_WORD)};
+  const furthestRight = Math.max(...[...foot, ...learn].map((link) => link.getBoundingClientRect().right));
+  return JSON.stringify({ innerWidth, scrollWidth: document.documentElement.scrollWidth, foot: foot.length, learn: learn.length, furthestRight });
+})()`;
+
+/** How a results screen laid out with LONG_WORD for every card link's label. */
+interface LongLabelsLaidOut {
+  where: string;
+  innerWidth: number;
+  scrollWidth: number;
+  foot: number;
+  learn: number;
+  furthestRight: number;
+}
+
 const notWalked = skipReason();
 if (notWalked) warnNotWalked("the results and the arrival line", notWalked);
 
@@ -179,4 +206,19 @@ describe.skipIf(notWalked !== null)("every screen the module draws, on a phone",
     expect(wrappedLearnLinks, "no screen draws a Learn link that wraps").not.toEqual([]);
     expect.soft(wrappedLearnLinks.filter((link) => !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
   }, 900000);
+
+  it("breaks a label of one word longer than the line within the screen, at a card's foot and in its Learn box", async () => {
+    const laidOut = await withSite(async (site) => {
+      const screens: LongLabelsLaidOut[] = [];
+      for (const walk of unknowingWalks()) {
+        await openWithRecord(site, "/", walk);
+        screens.push({ where: resultsWhere(walk), ...(JSON.parse(await site.page.evaluate(WITH_LONG_LABELS)) as Omit<LongLabelsLaidOut, "where">) });
+      }
+      return screens;
+    }, PHONE);
+    const withBoth = laidOut.filter((s) => s.foot > 0 && s.learn > 0);
+    expect(withBoth, "no screen draws a foot link and a Learn link").not.toEqual([]);
+    const phone = PHONE.viewport.width;
+    expect(withBoth.filter((s) => s.innerWidth !== phone || s.scrollWidth > phone || s.furthestRight > phone)).toEqual([]);
+  }, 600000);
 });
