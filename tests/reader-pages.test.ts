@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
-import { phraseOf, phraseAtStartOf, countryVocabulary, type Dataset } from "permit-rulebook-data";
+import { phraseOf, phraseAtStartOf, countryVocabulary, type Dataset, type Notice } from "permit-rulebook-data";
 import { countryAddresses } from "../src/lib/country-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { DESK, PHONE } from "../scripts/browser/browser.mjs";
@@ -116,12 +116,13 @@ describe("every question card the interview draws", () => {
 
 /** The passport whose Notice carries a foot link too long for a phone's line. */
 const ALGERIAN_PASSPORT = "DZ";
-/** The Notice that passport draws, read from the dataset so its title and label stay the data's. */
-const ALGERIAN_NOTICE = (() => {
-  const notice = (ds.notices ?? []).find((n) => n.when.value === ALGERIAN_PASSPORT);
-  if (!notice) throw new Error(`precondition: a Notice names the passport ${ALGERIAN_PASSPORT}`);
+/** The Notice that names `passport`, read from the dataset so its title and
+ * label stay the data's. Throws where none does. */
+function noticeNaming(passport: string): Notice {
+  const notice = (ds.notices ?? []).find((n) => n.when.value === passport);
+  if (!notice) throw new Error(`precondition: a Notice names the passport ${passport}`);
   return notice;
-})();
+}
 
 /** A foot link as a failure names it: where, on which card, and how it lays out. */
 const failureLineOf = (link: FootLinkOnScreen): string =>
@@ -145,7 +146,7 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     const guarded = [...walks(ALGERIAN_PASSPORT), ...everyDestination];
     const screens = await withSite((site) => drawnResults(site, guarded), DESK);
     expect(failuresOf(screens)).toEqual([]);
-    expect(footLinksOf(screens, ALGERIAN_NOTICE), "the Algerian notice's foot link is on none of the screens").not.toEqual([]);
+    expect(footLinksOf(screens, noticeNaming(ALGERIAN_PASSPORT)), "the Algerian notice's foot link is on none of the screens").not.toEqual([]);
     expect(footLinksOf(screens).filter((link) => link.lines !== 1 || !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
   }, 600000);
 });
@@ -155,7 +156,7 @@ describe.skipIf(notWalked !== null)("every screen the module draws, on a phone",
     const screens = await withSite((site) => drawnScreens(site, [DEFAULT_PASSPORT, ...noticePassports()]), PHONE);
     expect(noticesDrawnOnNone(screens), "a Notice no screen draws").toEqual([]);
     expect.soft(failuresOf(screens)).toEqual([]);
-    const algerianLinks = footLinksOf(screens, ALGERIAN_NOTICE);
+    const algerianLinks = footLinksOf(screens, noticeNaming(ALGERIAN_PASSPORT));
     expect(algerianLinks).not.toEqual([]);
     expect.soft(algerianLinks.filter((link) => link.lines < 2 || !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
   }, 900000);
