@@ -103,7 +103,18 @@ describe("a pull request runs the build and the audit, and both only read", () =
     const audit = jobOf(pages, "audit");
     expect(audit, "pages.yml has no audit job").not.toBe("");
     expect(jobConditionOf(audit)).toBe("");
-    expect(stepsOf(audit).map(stepConditionOf).filter((condition) => condition !== "")).toEqual([]);
+    const steps = stepsOf(audit);
+    expect(steps, "the audit job has no steps this case can read").not.toEqual([]);
+    expect(steps.map(stepConditionOf).filter((condition) => condition !== "")).toEqual([]);
+  });
+
+  // Both of a pull request's checks speak of the one commit reviewed, and
+  // neither leaves the run's token on disk for a stranger's code to read.
+  it("audit checks out the pull request's head and leaves no token on disk", () => {
+    const checkouts = stepsOf(jobOf(pages, "audit")).filter((step) => step.includes("uses: actions/checkout@"));
+    expect(checkouts, "the audit no longer checks out the site alone, so this case would not read it").toHaveLength(1);
+    expect(checkoutRefOf(checkouts[0]!)).toBe("${{ github.event.pull_request.head.sha }}");
+    expect(checkouts[0]).toMatch(/^ {10}persist-credentials: false$/m);
   });
 
   // A stranger's pull request runs its own code in these jobs.

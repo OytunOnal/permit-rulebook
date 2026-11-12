@@ -334,6 +334,13 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
+        with:
+          # The pull request's own head, as the build's site checkout: both
+          # of a pull request's checks speak of the commit reviewed. Empty on
+          # every other event.
+          ref: ${{ github.event.pull_request.head.sha }}
+          # A pull request's lockfile is a stranger's: no token on disk.
+          persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
         with: { node-version: 22 }
       - name: Audit the dependencies
