@@ -9,6 +9,7 @@ import type { Dataset } from "permit-rulebook-data";
 import { sitemapEntries, sitemapXml } from "../src/lib/sitemap.js";
 import { absolute } from "../src/lib/site.js";
 import { jobOf, pagesYaml as pages, readText } from "./workflow-text.js";
+import { posixShellPath } from "./posix-shell.js";
 
 /**
  * s24 — the deploy tells Bing what changed (IndexNow).
@@ -117,21 +118,9 @@ describe("one job after a green deploy (points 2 and 3)", () => {
 
 /**
  * The extraction is the workflow's own `grep | sed`, run over a real sitemap,
- * against the list the site builds it from. Needs a POSIX shell with grep and
- * sed: the CI runner has one; on Windows, Git's own bash serves, if present.
+ * against the list the site builds it from, in a POSIX shell.
  */
-const bash = (() => {
-  const candidates = ["C:\\Program Files\\Git\\bin\\bash.exe", "bash"];
-  for (const candidate of candidates) {
-    try {
-      if (execFileSync(candidate, ["-c", "echo ok"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim() === "ok")
-        return candidate;
-    } catch { /* try the next */ }
-  }
-  return null;
-})();
-
-describe.skipIf(!bash)("the workflow's own extraction reads every <loc> and nothing else", () => {
+describe.skipIf(!posixShellPath)("the workflow's own extraction reads every <loc> and nothing else", () => {
   it("grep | sed over the built sitemap yields exactly the sitemap's addresses", () => {
     const line = pages.split("\n").find((l) => l.includes("grep -o '<loc>"));
     expect(line, "the build job does not extract <loc> from the sitemap").toBeDefined();
@@ -140,7 +129,7 @@ describe.skipIf(!bash)("the workflow's own extraction reads every <loc> and noth
     const expression = line!.trim().replace(/^\w+=\$\(/, "").split("| jq")[0]!.replace("dist/sitemap.xml", "sitemap.xml");
     const dir = mkdtempSync(join(tmpdir(), "s24-"));
     writeFileSync(join(dir, "sitemap.xml"), sitemapXml(ds));
-    const out = execFileSync(bash!, ["-c", expression], { cwd: dir, encoding: "utf8" }).trim().split("\n");
+    const out = execFileSync(posixShellPath!,["-c", expression], { cwd: dir, encoding: "utf8" }).trim().split("\n");
     expect(out).toEqual(sitemapEntries(ds).map((e) => absolute(e.path)));
     expect(out.length).toBeGreaterThan(20);
   });

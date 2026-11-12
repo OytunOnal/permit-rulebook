@@ -7,8 +7,8 @@
  * @typedef {import("permit-rulebook-data/kept-issue").RunFinding} RunFinding
  */
 
-/** The jobs whose red counts, in the order the body names them. IndexNow never reddens the run. */
-const DEPLOY_JOBS = ["build", "deploy", "pin", "audit"];
+/** The jobs whose red counts, in the order the body names them: the run's order. IndexNow never reddens the run. */
+const DEPLOY_JOBS = ["data-commit", "data-check", "build", "deploy", "pin", "audit"];
 
 /** `pin` is skipped whenever the run built the data commit the lock already names. */
 const SKIPPED_BY_DESIGN = ["pin"];
@@ -16,7 +16,7 @@ const SKIPPED_BY_DESIGN = ["pin"];
 /** Every result GitHub gives a job; anything else is results not read. */
 const GITHUB_JOB_RESULT_WORDS = ["success", "failure", "cancelled", "skipped"];
 
-/** Four job names and their results are well under this; longer text is not theirs. */
+/** Six job names and their results are well under this; longer text is not theirs. */
 const JOB_RESULTS_LIMIT = 1024;
 
 /** The issue's words. `jobsNotPassed` leads the one line that names the jobs. */
@@ -40,7 +40,7 @@ export const DEPLOY_FINDING_WORDS = {
 };
 
 /**
- * The deploy's finding for its four jobs' results: green only when each passed
+ * The deploy's finding for its jobs' results: green only when each passed
  * or was skipped by design; red naming the others, saying whether today's page
  * was published, and red too when the results cannot be read. A run with no
  * address is red as well: a green must link the run that closed the issue.

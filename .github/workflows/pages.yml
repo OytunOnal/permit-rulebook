@@ -13,7 +13,7 @@ name: deploy
 # live site from, and which host the canonical links, the sitemap and IndexNow
 # name (`tests/pipeline.test.ts` holds it).
 
-# What triggers a rebuild, and why there are four of them.
+# What triggers a run, and why there are five of them.
 #
 # The pages bake "RULES READ <date>" and the social card says "checked daily".
 # Both of those are claims about the DATA repository, and the daily source watch
@@ -31,12 +31,23 @@ name: deploy
 # `repository_dispatch` is the fast path: the watch fires a `dataset-updated`
 # event the moment it actually commits new state, so a real change reaches the
 # published page in minutes instead of waiting for tomorrow's cron.
+#
+# `pull_request` is a check, never a deploy: the deploy's own checks (the
+# data commit's choice, the data's check and the build's) and the audit run
+# on the pull request's head, so a red shows on its page before anyone is
+# asked to merge it, from the same list of steps a deploy runs. What only a
+# deploy may do (publish, pin `data.lock`, announce to IndexNow, read the
+# live site, seal the Pages artifact, file an issue) either names the events
+# it serves, a pull request not among them, or refuses a pull request by
+# name. Its paths are the push's, so a pull request is checked exactly when
+# its merge would rebuild (`tests/pull-request-check.test.ts` holds both).
 
 # The one issue this workflow files: `deploy run failed`, under the `deploy`
 # label, kept by the `report` job (below). A red scheduled or dispatched run
 # opens it, or comments on it, reopening it when closed; the first green run
 # of those two kinds closes it with a line linking that run. Only a first
-# attempt counts; a re-run, a push and a hand dispatch file nothing (#117).
+# attempt counts; a re-run, a push, a hand dispatch and a pull request file
+# nothing (#117).
 on:
   push:
     branches: [master]
@@ -46,6 +57,15 @@ on:
     # only (steward-48).
     # The Ceilings file is let back in last: the lint reads it, so a push
     # changing only it must still run the Lint step (#149).
+    paths:
+      - "**"
+      - "!GLOSSARY.md"
+      - "!CODING_STANDARDS.md"
+      - "!CLAUDE.md"
+      - "!docs/**"
+      - "docs/roadkeeper/ceilings.json"
+  # The push's paths, in the push's order.
+  pull_request:
     paths:
       - "**"
       - "!GLOSSARY.md"
@@ -69,15 +89,136 @@ permissions:
 
 # One deploy at a time, and a run already in flight finishes rather than being
 # cancelled: a half-deployed static site is worse than a slightly stale one.
+# A pull request's runs wait in a group of their own, one per pull request, so
+# a check never queues behind a deploy nor displaces one waiting in `pages`;
+# a newer push to the pull request cancels the check still running on its
+# older head.
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('pull-request-{0}', github.event.pull_request.number) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   SITE_URL: https://permitrulebook.com/
 
 jobs:
+  # Which data commit this run builds, chosen once and handed on as one 40-hex
+  # sha: `data-check` checks the data at it and `build` builds the site against
+  # it. Chosen in each job, the schedule's newest could be two commits, when
+  # the watch commits between them.
+  data-commit:
+    runs-on: ubuntu-26.04 # named, never -latest: the build job says why
+    # Reads the site's manifest and lock, and the data repository's master.
+    permissions:
+      contents: read
+    outputs:
+      dir: ${{ steps.data.outputs.dir }}
+      locked: ${{ steps.data.outputs.locked }}
+      sha: ${{ steps.data.outputs.sha }}
+    steps:
+      - name: Check out the site
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
+        with:
+          # A pull request's own head, as the build's: its data.lock names the
+          # data commit the pull request is checked against. Empty on every
+          # other event.
+          ref: ${{ github.event.pull_request.head.sha }}
+          # No token on disk for a stranger's pull request to read.
+          persist-credentials: false
+
+      # Where the data has to end up is a fact the site's own manifest already
+      # holds. It is read from there rather than typed here: the directory still
+      # carries the working name — the folders are the human's to rename — and a
+      # workflow that spells it out is one more place to keep in step.
+      #
+      # Every value this step writes to its outputs comes from a file a pull
+      # request may change or from an event's payload, and a second line in one
+      # would be a second output: each is checked for its shape first, on every
+      # event (`tests/data-commit.test.ts` runs this script).
+      - name: Where the manifest expects the data, and which commit of it
+        id: data
+        env:
+          # Through the environment, never interpolated into the script body.
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          PAYLOAD_SHA: ${{ github.event.client_payload.sha }}
+          DATA_REPOSITORY_URL: https://github.com/OytunOnal/permit-rulebook-data.git
+        run: |
+          is_commit() {
+            case "$1" in
+              [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) return 0 ;;
+              *) return 1 ;;
+            esac
+          }
+          path=$(node -p "require('./package.json').dependencies['permit-rulebook-data'].replace(/^file:/, '')")
+          dir=$(basename "$path")
+          # The folder becomes the build's checkout path and working directory.
+          case "$dir" in
+            "" | *[!a-z0-9-]*) echo "::error::the manifest names no plain folder for the data — refusing to check anything out."; exit 1 ;;
+          esac
+          # `data.lock` names the data commit this site is built against, and a
+          # push, a pull request or a manual run builds against exactly that:
+          # re-running a green deploy rebuilds what deployed, and no data commit
+          # can break a deploy that changed nothing here.
+          #
+          # The daily schedule and the watch's dispatch are the deliberate
+          # exception — they exist to build against the newest data — and they
+          # write the SHA they used back into the lock when the run goes green,
+          # so the lock always names a combination that actually deployed.
+          locked=$(sed -n 's/^sha=//p' data.lock)
+          if ! is_commit "$locked"; then
+            echo "::error::data.lock names no 40-hex sha — run npm run data:pin and commit it."
+            exit 1
+          fi
+          # A RERUN of a scheduled or dispatched run keeps its event name, so it
+          # would build against today's data and then pin it — the float this
+          # lock exists to end, on the trigger that fires daily. Only a first
+          # attempt may advance the lock (Spec review, 2026-09-08).
+          first_attempt=$([ "$RUN_ATTEMPT" = "1" ] && echo yes || echo no)
+          case "$EVENT_NAME:$first_attempt" in
+            schedule:yes)            sha=$(git ls-remote "$DATA_REPOSITORY_URL" refs/heads/master | cut -f1) ;;
+            repository_dispatch:yes) sha="$PAYLOAD_SHA" ;;
+            *)                       sha="$locked" ;;
+          esac
+          # The dispatch's payload is a stranger's string until it is checked,
+          # and the data repository's answer is checked as the lock is.
+          if ! is_commit "$sha"; then
+            echo "::error::the $EVENT_NAME run chose no 40-hex data commit — refusing to check anything out."
+            exit 1
+          fi
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          echo "locked=$locked" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+  # The data package's own whole check, at the commit `data-commit` chose. A
+  # job of its own beside the build: the data's check and the site's tests
+  # take minutes each, and side by side a run takes the longer of the two, not
+  # their sum. The deploy waits on both, so a pull request and a deploy still
+  # run the same checks.
+  data-check:
+    needs: data-commit
+    runs-on: ubuntu-26.04 # named, never -latest: the build job says why
+    # Runs a pull request's data commit, a stranger's included: it only reads.
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the data at the chosen commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
+        with:
+          repository: OytunOnal/permit-rulebook-data
+          ref: ${{ needs.data-commit.outputs.sha }}
+          # No token on disk, as every checkout a pull request runs.
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
+        with: { node-version: 22 }
+
+      - name: Build and check the dataset package
+        run: |
+          npm ci
+          npm run check
+
   build:
+    needs: data-commit
     runs-on: ubuntu-26.04 # named, never -latest: the image changes only when this file does, and the browser cases drive the image's own Chrome (#24)
     # Reads two repositories and writes nothing: the one line that records which
     # data commit deployed is written by the `pin` job, which is the only job
@@ -88,8 +229,6 @@ jobs:
     outputs:
       built: ${{ steps.built.outputs.sha }}
       version: ${{ steps.built.outputs.version }}
-      locked: ${{ steps.data.outputs.locked }}
-      first_attempt: ${{ steps.data.outputs.first_attempt }}
       urls: ${{ steps.urls.outputs.urls }}
     steps:
       # The site reads the dataset as a `file:` dependency, so the two have to
@@ -99,90 +238,56 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
         with:
           path: site
+          # A pull request's own head, the commit reviewed and the one the
+          # merge guard reads, not GitHub's merge commit. Empty on every other
+          # event, which checks out that event's own commit.
+          ref: ${{ github.event.pull_request.head.sha }}
+          # This job runs a stranger's pull request's code: no checkout of it
+          # leaves the run's token on disk for that code to read.
+          persist-credentials: false
 
-      # Where the data has to end up is a fact the site's own manifest already
-      # holds. It is read from there rather than typed here: the directory still
-      # carries the working name — the folders are the human's to rename — and a
-      # workflow that spells it out is one more place to keep in step.
-      - name: Where the manifest expects the data, and which commit of it
-        id: data
-        working-directory: site
-        env:
-          # Through the environment, never interpolated into the script body.
-          EVENT_NAME: ${{ github.event_name }}
-          RUN_ATTEMPT: ${{ github.run_attempt }}
-          PAYLOAD_SHA: ${{ github.event.client_payload.sha }}
-        run: |
-          path=$(node -p "require('./package.json').dependencies['permit-rulebook-data'].replace(/^file:/, '')")
-          echo "dir=$(basename "$path")" >> "$GITHUB_OUTPUT"
-          # `data.lock` names the data commit this site is built against, and a
-          # push or a manual run builds against exactly that. The sibling used
-          # to float at its own origin HEAD, which broke the rollback: re-running
-          # the last green deploy tested old site code against new data and
-          # failed, and any data commit could break this deploy without a single
-          # change here (found by trying it, 2026-09-08).
-          #
-          # The daily schedule and the watch's dispatch are the deliberate
-          # exception — they exist to build against the newest data — and they
-          # write the SHA they used back into the lock when the run goes green,
-          # so the lock always names a combination that actually deployed.
-          locked=$(sed -n 's/^sha=//p' data.lock)
-          # A RERUN of a scheduled or dispatched run keeps its event name, so it
-          # would build against today's data and then pin it — the float this
-          # lock exists to end, on the trigger that fires daily. Only a first
-          # attempt may advance the lock (Spec review, 2026-09-08).
-          first_attempt=$([ "$RUN_ATTEMPT" = "1" ] && echo yes || echo no)
-          case "$EVENT_NAME:$first_attempt" in
-            schedule:yes)            ref="" ;;
-            repository_dispatch:yes) ref="$PAYLOAD_SHA" ;;
-            *)                       ref="$locked" ;;
-          esac
-          # The dispatch's payload is a stranger's string until it is checked.
-          if [ "$EVENT_NAME:$first_attempt" = "repository_dispatch:yes" ]; then
-            case "$ref" in
-              [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
-              *) echo "::error::the dispatch carried no 40-hex commit — refusing to check anything out."; exit 1 ;;
-            esac
-          fi
-          if [ -z "$ref" ] && [ "$EVENT_NAME:$first_attempt" != "schedule:yes" ]; then
-            echo "::error::data.lock names no sha — run npm run data:pin and commit it."
-            exit 1
-          fi
-          echo "locked=$locked" >> "$GITHUB_OUTPUT"
-          echo "ref=$ref" >> "$GITHUB_OUTPUT"
-          echo "first_attempt=$first_attempt" >> "$GITHUB_OUTPUT"
-
-      - name: Check out the data
+      - name: Check out the data at the chosen commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
         with:
           repository: OytunOnal/permit-rulebook-data
-          path: ${{ steps.data.outputs.dir }}
-          # Empty on the daily schedule, which means the default branch.
-          ref: ${{ steps.data.outputs.ref }}
-          # The whole history, because the suite proves the built data contains
-          # the pinned commit — an ancestry question, unanswerable in a shallow
-          # clone. A push builds the lock itself and never noticed; the first
-          # dispatch built a newer commit and the guard failed on the missing
-          # object rather than on a real gap (CI 2026-09-09).
+          path: ${{ needs.data-commit.outputs.dir }}
+          ref: ${{ needs.data-commit.outputs.sha }}
+          # The whole history: the site's suite proves the data checked out
+          # contains the lock's commit, an ancestry question a shallow clone
+          # cannot answer.
           fetch-depth: 0
+          # No token on disk, as the site's checkout above.
+          persist-credentials: false
 
+      # The dataset version is read from the data's own file, and the pin
+      # writes it into data.lock: it is checked for its shape before it
+      # becomes an output, as data-commit's values are.
       - name: Which data commit this run is building
         id: built
+        env:
+          DATA_DIR: ${{ needs.data-commit.outputs.dir }}
+          LOCKED: ${{ needs.data-commit.outputs.locked }}
         run: |
-          dir="${{ steps.data.outputs.dir }}"
-          sha=$(git -C "$dir" rev-parse HEAD)
+          sha=$(git -C "$DATA_DIR" rev-parse HEAD)
+          version=$(node -p "require('./$DATA_DIR/data/dataset.json').dataset_version")
+          case "$version" in
+            [0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]) ;;
+            *) echo "::error::the data names no YYYY.MM.DD dataset version."; exit 1 ;;
+          esac
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "version=$(node -p "require('./$dir/data/dataset.json').dataset_version")" >> "$GITHUB_OUTPUT"
-          echo "Building against data $sha (lock says ${{ steps.data.outputs.locked }})"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Building against data $sha (lock says $LOCKED)"
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
         with: { node-version: 22 }
 
-      - name: Build and check the dataset package
-        working-directory: ${{ steps.data.outputs.dir }}
+      # Only what the site's `file:` dependency reads: the package built. Its
+      # whole check is `data-check`'s, beside this job.
+      - name: Build the dataset package
+        working-directory: ${{ needs.data-commit.outputs.dir }}
         run: |
           npm ci
-          npm run check
+          npm run build
 
       - name: Install
         working-directory: site
@@ -238,8 +343,12 @@ jobs:
       # sitemap the build just wrote, and travels as a job output: one JSON
       # array of a few kilobytes, well under the megabyte outputs allow, and no
       # second artifact to upload and fetch.
+      #
+      # This step, the carry and the upload serve only the deploy, and a pull
+      # request deploys nothing: all three skip it.
       - name: The addresses the deploy will announce
         id: urls
+        if: github.event_name != 'pull_request'
         working-directory: site
         run: |
           urls=$(grep -o '<loc>[^<]*' dist/sitemap.xml | sed 's/<loc>//' | jq -R . | jq -sc .)
@@ -272,12 +381,14 @@ jobs:
       # reason `tests/pipeline.test.ts` keeps beside its verbatim pin of this
       # block.
       - name: Carry the live site's assets forward, so a cached page still finds them
+        if: github.event_name != 'pull_request'
         working-directory: site
         env:
           CARRY_ORIGIN: ${{ env.SITE_URL }}
         run: node scripts/carry-assets.mjs
 
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0 (upload-artifact v7, node24)
+        if: github.event_name != 'pull_request'
         with:
           path: site/dist
 
@@ -287,13 +398,21 @@ jobs:
   # whatever its result, so the deploy still publishes the day's values (#47).
   # `npm audit` reads the lockfile alone, so this job installs nothing and
   # checks out only the site. The data's own dependencies are audited by its
-  # watch.
+  # watch. It runs on a pull request too, so a dependency the pull request
+  # adds with a high advisory is red on its page.
   audit:
     runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
+        with:
+          # The pull request's own head, as the build's site checkout: both
+          # of a pull request's checks speak of the commit reviewed. Empty on
+          # every other event.
+          ref: ${{ github.event.pull_request.head.sha }}
+          # A pull request's lockfile is a stranger's: no token on disk.
+          persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (node24)
         with: { node-version: 22 }
       - name: Audit the dependencies
@@ -305,11 +424,11 @@ jobs:
   # whatever the data repository happens to be at today (Spec review,
   # 2026-09-08).
   pin:
-    needs: [build, deploy]
+    needs: [data-commit, build, deploy]
     if: |
       github.run_attempt == 1
       && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
-      && needs.build.outputs.built != needs.build.outputs.locked
+      && needs.build.outputs.built != needs.data-commit.outputs.locked
     runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     permissions:
       contents: write
@@ -335,7 +454,10 @@ jobs:
           git push
 
   deploy:
-    needs: build
+    # A red data check, like a red build, publishes nothing.
+    needs: [build, data-check]
+    # A pull request is checked, never published.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     # The only job that publishes: an artifact upload and the OIDC token Pages
     # signs the deployment with.
@@ -410,10 +532,10 @@ jobs:
   # A scheduled or dispatched deploy has nobody at the other end, so its red
   # keeps one issue, `deploy run failed`, and its first green closes it, with
   # a line linking the run (#117, decisions 3 to 6 and 13). A push, a hand
-  # dispatch and a re-run have a person watching: they keep nothing, and a
-  # push's or a re-run's green proves nothing about the daily page, since both
-  # build against data.lock's data. IndexNow is not among the needs: it cannot
-  # redden the run, so it cannot raise the alarm either.
+  # dispatch, a re-run and a pull request have a person watching: they keep
+  # nothing, and a push's or a re-run's green proves nothing about the daily
+  # page, since both build against data.lock's data. IndexNow is not among the
+  # needs: it cannot redden the run, so it cannot raise the alarm either.
   #
   # `always()`, because a red or cancelled job is what it is here to say. What
   # the run found is `scripts/deploy-finding.mjs`'s; the tracker is kept by the
@@ -421,7 +543,7 @@ jobs:
   # names: that commit has built and deployed once, so neither a broken data
   # master nor a dispatch naming no data commit can silence this job.
   report:
-    needs: [build, deploy, pin, audit]
+    needs: [data-commit, data-check, build, deploy, pin, audit]
     if: ${{ always() && github.run_attempt == 1 && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch') }}
     runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     permissions:
@@ -467,12 +589,13 @@ jobs:
         working-directory: data-at-lock
         run: npm run build:kept-issue
 
-      # The four results as one JSON object; each is one of GitHub's own words
-      # for a job's result, and the module refuses anything else.
+      # The results of the jobs above as one JSON object; each is one of
+      # GitHub's own words for a job's result, and the module refuses anything
+      # else.
       - name: What the run found
         working-directory: site
         env:
-          JOB_RESULTS: '{"build":"${{ needs.build.result }}","deploy":"${{ needs.deploy.result }}","pin":"${{ needs.pin.result }}","audit":"${{ needs.audit.result }}"}'
+          JOB_RESULTS: '{"data-commit":"${{ needs.data-commit.result }}","data-check":"${{ needs.data-check.result }}","build":"${{ needs.build.result }}","deploy":"${{ needs.deploy.result }}","pin":"${{ needs.pin.result }}","audit":"${{ needs.audit.result }}"}'
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node scripts/cli-deploy-finding.mjs > "$RUNNER_TEMP/deploy-finding.json"
 
