@@ -98,6 +98,11 @@ const DRAWN = [
     recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
     german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
   }],
+  // The Algerian notice's Learn link, the longest foot link the data holds, wraps here.
+  ["/ (results, France, Algerian passport)", {
+    destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "yes", citizenship: "DZ",
+    experience_7y: "lt3", salary_eur_year: "band_0",
+  }],
 ];
 
 const seedFor = (answers) =>
