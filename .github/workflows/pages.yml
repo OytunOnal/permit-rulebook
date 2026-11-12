@@ -126,6 +126,9 @@ jobs:
           # merge guard reads, not GitHub's merge commit. Empty on every other
           # event, which checks out that event's own commit.
           ref: ${{ github.event.pull_request.head.sha }}
+          # This job runs a stranger's pull request's code: no checkout of it
+          # leaves the run's token on disk for that code to read.
+          persist-credentials: false
 
       # Where the data has to end up is a fact the site's own manifest already
       # holds. It is read from there rather than typed here: the directory still
@@ -193,6 +196,8 @@ jobs:
           # dispatch built a newer commit and the guard failed on the missing
           # object rather than on a real gap (CI 2026-09-09).
           fetch-depth: 0
+          # No token on disk, as the site's checkout above.
+          persist-credentials: false
 
       - name: Which data commit this run is building
         id: built

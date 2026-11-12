@@ -65,6 +65,14 @@ describe("a pull request is checked on its own head, through a trigger of its ow
     expect(siteCheckout, "the build checks out no site").toBeDefined();
     expect(/^ {10}ref:\s*(.+)$/m.exec(siteCheckout!)?.[1]).toBe("${{ github.event.pull_request.head.sha }}");
   });
+
+  // The build runs a stranger's pull request's code, so no checkout leaves
+  // the run's token in a repository's git config for that code to read.
+  it("the build's two checkouts, the site and the data, leave no token on disk", () => {
+    const checkouts = stepsOf(build).filter((step) => step.includes("uses: actions/checkout@"));
+    expect(checkouts, "the build no longer checks out the site and the data, so this case would not read them").toHaveLength(2);
+    for (const checkout of checkouts) expect(checkout).toMatch(/^ {10}persist-credentials: false$/m);
+  });
 });
 
 describe("a pull request deploys, pins, announces and files nothing", () => {
