@@ -4,7 +4,9 @@
  * The browser harness's entry. Every browser case, deploy job and live or
  * real-use walk takes its browser from here, as `walkSite` (the browser walk)
  * at `DESK` or `PHONE`; `PageOnSite` is what a walker is handed, `BrowserPage`
- * the page in it, and `SentRequest` a request that page sent.
+ * the page in it, and `SentRequest` a request that page sent. `WidthFailure`
+ * is what the walk's page fails with when a page lays out wider or narrower
+ * than the screen, so a walker can keep that failure and throw any other.
  *
  * Beside the walk: `chromePath`, Chrome found for a caller that renders with
  * it, and `serve`, the built site's server for a caller that sends plain HTTP
@@ -20,7 +22,7 @@
 export { chromePath } from "./chrome/chrome.mjs";
 export { serve } from "./static-server/static-server.mjs";
 export { DESK, PHONE } from "./walk/screens.mjs";
-export { walkSite } from "./walk/walk-site.mjs";
+export { WidthFailure, walkSite } from "./walk/walk-site.mjs";
 
 /** @typedef {import("./tab/tab-page.mjs").BrowserPage} BrowserPage */
 /** @typedef {import("./tab/tab-page.mjs").SentRequest} SentRequest */

@@ -154,7 +154,9 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
 describe.skipIf(notWalked !== null)("every screen the module draws, on a phone", () => {
   it("draws every Notice, lays out every screen at the phone's width, and wraps the Algerian notice's foot link with its ↗ on its last word's line", async () => {
     const screens = await withSite((site) => drawnScreens(site, [DEFAULT_PASSPORT, ...noticePassports()]), PHONE);
-    expect(noticesDrawnOnNone(screens), "a Notice no screen draws").toEqual([]);
+    // Soft, so a Notice drawn only on screens wider than the phone, which are
+    // read for nothing, is named beside those screens' failures.
+    expect.soft(noticesDrawnOnNone(screens), "a Notice no screen draws").toEqual([]);
     expect.soft(failuresOf(screens)).toEqual([]);
     const algerianLinks = footLinksOf(screens, noticeNaming(ALGERIAN_PASSPORT));
     expect(algerianLinks).not.toEqual([]);

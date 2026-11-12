@@ -9,7 +9,7 @@ import {
 import { glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import type { PageOnSite } from "../scripts/browser/browser.mjs";
+import { WidthFailure, type PageOnSite } from "../scripts/browser/browser.mjs";
 
 /**
  * Every page the build draws from the shipped dataset, as a reader meets it:
@@ -158,7 +158,8 @@ export interface FootLink {
 }
 
 /** A screen the module drew: its masthead and box, the heading of each Notice
- * on it, its foot links, and the harness's failure on opening it, or null. */
+ * on it, its foot links, and the harness's width failure on opening it, or
+ * null. A screen that failed it holds nothing else. */
 export interface DrawnScreen extends ReaderPage {
   noticeHeadings: string[];
   footLinks: FootLink[];
@@ -189,15 +190,21 @@ const DRAWN = `JSON.stringify({
 const seed = (walk: Walk) =>
   `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(walk.answers, walk.order, true))})`;
 
-/** The screen the module draws at `path` for `record`. The harness's failure
- * on opening it, a width wider than the screen's among them, is kept on the
- * screen rather than thrown, so a case names every such screen, not the first. */
+/** The screen the module draws at `path` for `record`. The harness's width
+ * failure on opening it is kept on the screen rather than thrown, so a case
+ * names every screen laid out at another width, not the first; nothing more is
+ * read from that screen. Any other failure is thrown as it is. */
 async function screenDrawnAt(site: PageOnSite, path: string, record: Walk | null): Promise<Omit<DrawnScreen, "where">> {
   const { page, url } = site;
   await page.goto(url("/404.html"));
   await page.evaluate(record ? seed(record) : "localStorage.clear()");
-  const failure = await page.goto(url(path)).then(() => null, (e: unknown) => (e instanceof Error ? e.message : String(e)));
-  return { ...(JSON.parse(await page.evaluate(DRAWN)) as Omit<DrawnScreen, "where" | "failure">), failure };
+  try {
+    await page.goto(url(path));
+  } catch (e) {
+    if (e instanceof WidthFailure) return { html: "", noticeHeadings: [], footLinks: [], failure: e.message };
+    throw e;
+  }
+  return { ...(JSON.parse(await page.evaluate(DRAWN)) as Omit<DrawnScreen, "where" | "failure">), failure: null };
 }
 
 /** Where the results at the end of `walk` were read, as a drawn screen names it. */
@@ -236,7 +243,7 @@ export async function drawnScreens(site: PageOnSite, passports = [DEFAULT_PASSPO
   return screens;
 }
 
-/** Each screen of `screens` the harness failed on opening, with its failure. */
+/** Each screen of `screens` the harness's width check failed on opening, with its failure. */
 export const failuresOf = (screens: DrawnScreen[]): string[] =>
   screens.flatMap((s) => (s.failure === null ? [] : [`${s.where}: ${s.failure}`]));
 
