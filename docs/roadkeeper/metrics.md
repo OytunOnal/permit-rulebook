@@ -7,8 +7,8 @@ move.
 
 | # | Metric | Target | Kind | Source | Field | Cadence (days) | Next reading |
 |---|---|---|---|---|---|---|---|
-| 1 | Dataset liveness — open source-change flags older than 48 h | 0 | file | `docs/roadkeeper/readings/liveness.json` | `value` | 7 | 2026-11-04 |
-| 2 | The daily watch finishes — failures in the last 7 scheduled runs on master | 0 (one single-day failure tolerated) | file | `docs/roadkeeper/readings/watch.json` | `value` | 7 | 2026-11-04 |
+| 1 | Dataset liveness — open source-change flags older than 48 h | 0 | file | `docs/roadkeeper/readings/liveness.json` | `value` | 7 | 2026-11-19 |
+| 2 | The daily watch finishes — failures in the last 7 scheduled runs on master | 0 (one single-day failure tolerated) | file | `docs/roadkeeper/readings/watch.json` | `value` | 7 | 2026-11-19 |
 | 3 | Visits from search and referrals, days 8–30 (A2) | ≥ 300 | ask | Cloudflare Web Analytics, last 30 days, bots excluded, referrer not direct | — | 30 | 2026-10-09 |
 | 4 | A stranger touched the data (A7) — issues, pull requests or forks by anyone but the owner | ≥ 1 | file | `docs/roadkeeper/readings/stranger.json` | `value` | 30 | 2026-11-16 |
 | 5 | Domains linking to the site (A8) | as pre-registered 2026-09-08 | ask | Google Search Console → Links → Top linking sites | — | 30 | 2026-10-09 |
@@ -26,6 +26,12 @@ writer is #36. Until it lands the session reads them as #36 describes. Rows 3,
 | 2026-10-17 | 1 | 0 | `gh issue list -R OytunOnal/permit-rulebook-data --label source-change --state open --json number,createdAt`, after #12 walked data #23–#27 | 0 open |
 | 2026-10-28 | 1 | 2 | `gh issue list -R OytunOnal/permit-rulebook-data --state open --label source-change --json number,createdAt` (#36's fallback) | 2 open, both raised 2026-10-23: OytunOnal/permit-rulebook-data#44 and #45, waiting on the human |
 | 2026-10-28 | 2 | 6 | `gh run list -R OytunOnal/permit-rulebook-data --workflow watch.yml --event schedule --branch master --limit 10 --json conclusion,createdAt` (#36's fallback); causes in #283 | 7 runs (10-21 to 10-27), only 10-23 green |
+| 2026-11-12 | 1 | 13 | `gh issue list -R OytunOnal/permit-rulebook-data --state open --label source-change --json number,createdAt` (#36's fallback) | 15 open, 13 raised before 2026-11-10; the oldest, OytunOnal/permit-rulebook-data#44 and #45, 20 days. Named in OytunOnal/permit-rulebook-data#47, assigned to the owner since #337 |
+| 2026-11-12 | 2 | 7 | `gh run list -R OytunOnal/permit-rulebook-data --workflow watch.yml --event schedule --branch master --limit 7 --json conclusion,createdAt` (#36's fallback) | 7 runs (11-05 to 11-11), all red, all before #337 merged (2026-11-11): the overdue flags and `de-bmi-chancenkarte`'s outage; real use #342 reads the first run after it |
+
+**Trends (fourth readings, 2026-11-12):**
+- Row 1: 4 (10-17) → 2 (10-28) → 13 (11-12). Worsening and off target: flags are raised faster than they are walked; walking them is the owner's, and the overdue ones now reach the owner through OytunOnal/permit-rulebook-data#47's assignment (#337).
+- Row 2: 1 (10-17) → 6 (10-28) → 7 (11-12). Worsening and off target, every run of the window from before #337's merge; #337 removed both causes (an overdue flag no longer reddens the run, and `de-bmi-chancenkarte` left the runner, ruling 14 on #342). The next reading is the first of a window after the fix.
 
 **Trends (third readings, 2026-10-28):**
 - Row 1: 0 (09-22) → 4 (10-17) → 2 (10-28). Off target again: flags wait for a person for days, and get walked in bursts.
