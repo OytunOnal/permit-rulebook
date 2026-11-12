@@ -9,7 +9,7 @@ import { DESK, PHONE } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {
   DEFAULT_PASSPORT, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf, isArrowOnLastWordLine,
-  noticePassports, noticesDrawnOnNone, questionCards, sentencesOf, walks, type FootLink, type ReaderPage,
+  noticePassports, noticesDrawnOnNone, questionCards, sentencesOf, walks, type FootLinkOnScreen, type ReaderPage,
 } from "./reader-pages.js";
 
 /**
@@ -124,7 +124,7 @@ const ALGERIAN_NOTICE = (() => {
 })();
 
 /** A foot link as a failure names it: where, on which card, and how it lays out. */
-const failureLineOf = (link: FootLink & { where: string }): string =>
+const failureLineOf = (link: FootLinkOnScreen): string =>
   `${link.where}, "${link.label}" on "${link.card}": ${link.lines} line(s), ${
     link.spaceAbove.toFixed(1)} px over its text and ${link.spaceBelow.toFixed(1)} px under it`;
 
@@ -144,9 +144,8 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     const guarded = [...walks(ALGERIAN_PASSPORT), ...walks().filter((w) => w.answers["destination"] === "all")];
     const screens = await withSite((site) => drawnResults(site, guarded), DESK);
     expect(failuresOf(screens)).toEqual([]);
-    const links = screens.flatMap((s) => s.footLinks.map((link) => ({ ...link, where: s.where })));
-    expect(footLinksOf(ALGERIAN_NOTICE, screens), "the Algerian notice's foot link is on none of the screens").not.toEqual([]);
-    expect(links.filter((link) => link.lines !== 1 || !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
+    expect(footLinksOf(screens, ALGERIAN_NOTICE), "the Algerian notice's foot link is on none of the screens").not.toEqual([]);
+    expect(footLinksOf(screens).filter((link) => link.lines !== 1 || !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
   }, 600000);
 });
 
@@ -155,7 +154,7 @@ describe.skipIf(notWalked !== null)("every screen the module draws, on a phone",
     const screens = await withSite((site) => drawnScreens(site, [DEFAULT_PASSPORT, ...noticePassports()]), PHONE);
     expect(noticesDrawnOnNone(screens), "a Notice no screen draws").toEqual([]);
     expect.soft(failuresOf(screens)).toEqual([]);
-    const algerianLinks = footLinksOf(ALGERIAN_NOTICE, screens);
+    const algerianLinks = footLinksOf(screens, ALGERIAN_NOTICE);
     expect(algerianLinks).not.toEqual([]);
     expect.soft(algerianLinks.filter((link) => link.lines < 2 || !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
   }, 900000);

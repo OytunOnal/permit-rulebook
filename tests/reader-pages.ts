@@ -248,9 +248,17 @@ export const noticesDrawnOnNone = (screens: DrawnScreen[]): string[] =>
     .filter((notice) => !screens.some((s) => s.noticeHeadings.some((heading) => isHeadingOf(notice, heading))))
     .map((notice) => notice.id);
 
-/** Every foot link of `screens` on `notice`'s card, with the screen it is on. */
-export const footLinksOf = (notice: Notice, screens: DrawnScreen[]): (FootLink & { where: string })[] =>
-  screens.flatMap((s) => s.footLinks.filter((link) => isHeadingOf(notice, link.card)).map((link) => ({ ...link, where: s.where })));
+/** A foot link with where it was read: the screen it is on. */
+export interface FootLinkOnScreen extends FootLink {
+  where: string;
+}
+
+/** Every foot link of `screens`, with the screen it is on; only those on
+ * `notice`'s card where a notice is given. */
+export const footLinksOf = (screens: DrawnScreen[], notice?: Notice): FootLinkOnScreen[] =>
+  screens.flatMap((s) => s.footLinks
+    .filter((link) => notice === undefined || isHeadingOf(notice, link.card))
+    .map((link) => ({ ...link, where: s.where })));
 
 /** Whether a foot link's ↗ lays out on its last word's line: the link's box
  * centres what it holds, so a ↗ on a line of its own leaves more space under
