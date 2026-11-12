@@ -3919,6 +3919,11 @@
   },
   {
    "from": "tests/reader-pages.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.ts",
    "to": "src/lib/question.ts",
    "kind": "dependency"
   },
@@ -9302,5 +9307,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "84d0c0af97e28cb1adf819f25a28d5664bb6c562df1123b4e0d3d3d0b4c94465"
+ "digest": "749c5a3892ce6b3bded3ca0708190ce395bdadfb1f610912873bb211e970d8c1"
 }

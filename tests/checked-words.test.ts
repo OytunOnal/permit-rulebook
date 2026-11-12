@@ -17,7 +17,7 @@ import { socialCardFacts, socialCardHtml } from "../src/lib/social-card.js";
 import { DESK } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {
-  builtPages, drawnScreens, headingsOf, plainTextOf, questionCards, walks, type ReaderPage,
+  builtPages, drawnScreens, failuresOf, headingsOf, plainTextOf, questionCards, resultsWhere, walks, type ReaderPage,
 } from "./reader-pages.js";
 
 /**
@@ -191,6 +191,7 @@ const countSentence = (): RegExp => new RegExp(answersCheckedLine(1001, 1002)
 describe.skipIf(notWalked !== null)("every screen the module draws", () => {
   it("carries no avoid-list word; only a results card says checked against your answers; the masthead counts routes from the dataset", async () => {
     const screens = await withSite(drawnScreens, DESK);
+    expect(failuresOf(screens)).toEqual([]);
     expect(avoidListOffences(screens)).toEqual([]);
 
     // A results card says the answered form; nothing else on any screen does.
@@ -203,7 +204,7 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     expect(cards, "no results card drew a scope line").toBeGreaterThan(0);
     expect(answeredLinesOn(screens.map((s) => ({ where: s.where, html: withoutScopedLines(s.html) })))).toEqual([]);
 
-    const results = new Map(walks().map((w) => [`results for ${JSON.stringify(w.answers)}`, w]));
+    const results = new Map(walks().map((w) => [resultsWhere(w), w]));
     let counted = 0;
     for (const screen of screens.filter((s) => results.has(s.where))) {
       const walk = results.get(screen.where)!;

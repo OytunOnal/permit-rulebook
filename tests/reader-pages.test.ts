@@ -5,10 +5,11 @@ import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { phraseOf, phraseAtStartOf, countryVocabulary, type Dataset } from "permit-rulebook-data";
 import { countryAddresses } from "../src/lib/country-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
-import { DESK } from "../scripts/browser/browser.mjs";
+import { DESK, PHONE } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {
-  builtPages, drawnScreens, headingsOf, questionCards, sentencesOf, walks, type ReaderPage,
+  DEFAULT_PASSPORT, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf, isArrowOnLastWordLine,
+  noticePassports, noticesDrawnOnNone, questionCards, sentencesOf, walks, type FootLink, type ReaderPage,
 } from "./reader-pages.js";
 
 /**
@@ -65,6 +66,14 @@ describe("the walk's own precondition", () => {
     expect(articleDropped([{ where: "a page", html: "<p>The Netherlands' route, in the Netherlands.</p>" }])).toEqual([]);
   });
 
+  it("names each Notice no screen draws, so the phone case's precondition can fail", () => {
+    const ids = (ds.notices ?? []).map((n) => n.id);
+    expect(ids.length).toBeGreaterThan(1);
+    expect(noticesDrawnOnNone([])).toEqual(ids);
+    const first = { where: "a screen", html: "", noticeHeadings: [ds.notices![0]!.title], footLinks: [], failure: null };
+    expect(noticesDrawnOnNone([first])).toEqual(ids.slice(1));
+  });
+
   it("walks every interview a reader can give, for every destination answer", () => {
     expect(new Set(walks().map((w) => w.answers["destination"])).size).toBe(ds.countries.length + 1);
   });
@@ -105,14 +114,49 @@ describe("every question card the interview draws", () => {
   });
 });
 
+/** The passport whose Notice carries the longest foot link the data holds. */
+const ALGERIAN_PASSPORT = "DZ";
+/** The Notice that passport draws, read from the dataset so its title and label stay the data's. */
+const ALGERIAN_NOTICE = (() => {
+  const notice = (ds.notices ?? []).find((n) => n.when.value === ALGERIAN_PASSPORT);
+  if (!notice) throw new Error(`precondition: a Notice names the passport ${ALGERIAN_PASSPORT}`);
+  return notice;
+})();
+
+/** A foot link as a failure names it: where, on which card, and how it lays out. */
+const failureLineOf = (link: FootLink & { where: string }): string =>
+  `${link.where}, "${link.label}" on "${link.card}": ${link.lines} line(s), ${
+    link.spaceAbove.toFixed(1)} px over its text and ${link.spaceBelow.toFixed(1)} px under it`;
+
 const notWalked = skipReason();
 if (notWalked) warnNotWalked("the results and the arrival line", notWalked);
 
 describe.skipIf(notWalked !== null)("every screen the module draws", () => {
   it("opens every heading and sentence led by a country's name with a capital, and names it with its article, on the results and the arrival line", async () => {
     const screens = await withSite(drawnScreens, DESK);
+    expect(failuresOf(screens)).toEqual([]);
     expect(screens.every((s) => s.html.includes('id="main"')), "a screen drew no box").toBe(true);
     expect(lowerOpened(screens)).toEqual([]);
     expect(articleDropped(screens)).toEqual([]);
   }, 600000);
+
+  it("lays out every foot link on one line at the desk, the Algerian reader's and the all-four-countries results", async () => {
+    const guarded = [...walks(ALGERIAN_PASSPORT), ...walks().filter((w) => w.answers["destination"] === "all")];
+    const screens = await withSite((site) => drawnResults(site, guarded), DESK);
+    expect(failuresOf(screens)).toEqual([]);
+    const links = screens.flatMap((s) => s.footLinks.map((link) => ({ ...link, where: s.where })));
+    expect(footLinksOf(ALGERIAN_NOTICE, screens), "the Algerian notice's foot link is on none of the screens").not.toEqual([]);
+    expect(links.filter((link) => link.lines !== 1 || !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
+  }, 600000);
+});
+
+describe.skipIf(notWalked !== null)("every screen the module draws, on a phone", () => {
+  it("draws every Notice, lays out every screen at the phone's width, and wraps the Algerian notice's foot link with its ↗ on its last word's line", async () => {
+    const screens = await withSite((site) => drawnScreens(site, [DEFAULT_PASSPORT, ...noticePassports()]), PHONE);
+    expect(noticesDrawnOnNone(screens), "a Notice no screen draws").toEqual([]);
+    expect.soft(failuresOf(screens)).toEqual([]);
+    const algerianLinks = footLinksOf(ALGERIAN_NOTICE, screens);
+    expect(algerianLinks).not.toEqual([]);
+    expect.soft(algerianLinks.filter((link) => link.lines < 2 || !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
+  }, 900000);
 });
