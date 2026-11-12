@@ -159,12 +159,14 @@ details.hold-group[open] > summary::before{content:"▾ "}
 .stack{display:grid;gap:var(--gap-cards)}
 .route{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:var(--pad-card)}
 /* The card's first line: the country's chip and the badge beside it, or the
-   badge alone, above the title. Both are short and never wrap, so the line
-   is the same at every width and for every title (#95). */
+   badge alone, above the title, the same for every title (#95). The badge
+   may say what the reader is short on in the data's words, and a font wider
+   than this machine's lays it out wider still: where it does not fit beside
+   the chip, it wraps onto a second line between its words. */
 .top{display:flex;gap:.6rem;align-items:center;margin-bottom:.3rem}
 .country{font:700 .68rem var(--font-sans);letter-spacing:.22em;text-transform:uppercase;color:var(--color-muted)}
 h3{font:var(--text-route);margin:.15rem 0 .25rem}
-.st{font:700 .66rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;padding:.3rem .65rem;white-space:nowrap}
+.st{font:700 .66rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;padding:.3rem .65rem}
 .st.met{background:var(--color-met-soft);color:var(--color-met)}
 .st.near{background:var(--color-near-soft);color:var(--color-near)}
 .st.hold{background:var(--color-hold-soft);color:var(--color-hold)}
