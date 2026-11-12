@@ -3,11 +3,14 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, remainingQuestions, type Dataset, type Profile, type Question,
+  DESTINATION_FIELD, SITUATION_FIELD, fieldOptions, remainingQuestions,
+  type Dataset, type Notice, type Profile, type Question,
 } from "permit-rulebook-data";
+import { glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
-import type { PageOnSite } from "../scripts/browser/browser.mjs";
+import { WidthFailure, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { CARD_LINK, type CardLink } from "./card-link.js";
 
 /**
  * Every page the build draws from the shipped dataset, as a reader meets it:
@@ -44,12 +47,46 @@ export function builtPages(): ReaderPage[] {
   return pages;
 }
 
-/** The answer a walk gives a question: a real passport, and otherwise the
- * first option that is neither "I don't know" nor the fallback. */
-function answerFor(field: string, values: { value: string; is_unknown?: boolean; is_fallback?: boolean }[]): string {
-  if (field === "citizenship") return "IN";
-  return (values.find((o) => !o.is_unknown && !o.is_fallback) ?? values[0]!).value;
+/** The destination answer that asks for every country at once. */
+export const EVERY_DESTINATION = "all";
+
+/** The field the interview asks the reader's passport on. */
+const PASSPORT_FIELD = "citizenship";
+
+/** The passport a walk takes unless it is given another: a real one that no
+ * Notice names, so its results are the routes' alone. */
+export const DEFAULT_PASSPORT = "IN";
+
+/** The passport a reader gives that meets `named`: that passport, or, where
+ * `named` is a class of passports, the first passport in it. */
+function passportMeeting(named: string): string {
+  const options = fieldOptions(ds, PASSPORT_FIELD);
+  const option = options.find((o) => o.value === named) ?? options.find((o) => o.implies?.includes(named));
+  if (!option) throw new Error(`precondition: a passport meets "${named}", which a Notice names`);
+  return option.value;
 }
+
+/** A passport for each passport or class a Notice's condition names, read
+ * from the dataset, each once. */
+export function noticePassports(): string[] {
+  const named = (ds.notices ?? [])
+    .filter((notice) => notice.when.field === PASSPORT_FIELD)
+    .flatMap((notice) => (notice.when.value === undefined ? notice.when.values ?? [] : [notice.when.value]));
+  return [...new Set(named.map(passportMeeting))];
+}
+
+/** The answer a walk gives a question: `passport` for the passport, and
+ * otherwise the first option that is neither "I don't know" nor the fallback. */
+const walkAnswerWith = (passport: string) => (question: Question): string => {
+  if (question.field === PASSPORT_FIELD) return passport;
+  return (question.options.find((o) => !o.is_unknown && !o.is_fallback) ?? question.options[0]!).value;
+};
+
+/** The answer a reader gives who knows their passport and nothing else they are
+ * asked: "I don't know" wherever the question offers it, the walk's answer
+ * elsewhere. */
+const unknowingAnswer = (question: Question): string =>
+  question.options.find((o) => o.is_unknown)?.value ?? walkAnswerWith(DEFAULT_PASSPORT)(question);
 
 /** One reader's whole interview, in the order it is asked. */
 export interface Walk {
@@ -76,18 +113,30 @@ export function walkFrom(start: Profile, answerOf: (question: Question) => strin
 }
 
 /** A whole interview for every destination answer under every situation a
- * reader can hold: each question card and each results screen the dataset
- * can draw for them. */
-export function walks(): Walk[] {
+ * reader can hold, each question after them answered by `answerOf`. */
+function walksAnsweredBy(answerOf: (question: Question) => string): Walk[] {
   const out: Walk[] = [];
   const situations = fieldOptions(ds, SITUATION_FIELD).filter((o) => !o.is_unknown);
   for (const destination of fieldOptions(ds, DESTINATION_FIELD))
     for (const situation of situations) {
       const start: Profile = { [DESTINATION_FIELD]: destination.value, [SITUATION_FIELD]: situation.value };
-      const rest = walkFrom(start, (q) => answerFor(q.field, q.options));
+      const rest = walkFrom(start, answerOf);
       out.push({ answers: rest.answers, order: [DESTINATION_FIELD, SITUATION_FIELD, ...rest.order] });
     }
   return out;
+}
+
+/** A whole interview for every destination answer under every situation a
+ * reader can hold, taken with `passport`: each question card and each results
+ * screen the dataset can draw for them. */
+export function walks(passport = DEFAULT_PASSPORT): Walk[] {
+  return walksAnsweredBy(walkAnswerWith(passport));
+}
+
+/** The same interviews, taken by a reader who answers "I don't know" wherever
+ * a question offers it: the results that draw a card's Learn links. */
+export function unknowingWalks(): Walk[] {
+  return walksAnsweredBy(unknowingAnswer);
 }
 
 /** A question card, with its question's field and the answers given before it. */
@@ -116,50 +165,137 @@ export function questionCards(): QuestionCard[] {
   return cards;
 }
 
-/** What the module drew: the masthead and the box under it. */
-const DRAWN = 'JSON.stringify({ html: [".masthead-with-stamps", "#main"]'
-  + '.map((s) => { const el = document.querySelector(s); return el ? el.outerHTML : ""; }).join("\\n") })';
+/** A screen the module drew: its masthead and box, the heading of each Notice
+ * on it, its foot links and its Learn links, and the harness's width failure
+ * on opening it, or null. A screen that failed it holds nothing else. */
+export interface DrawnScreen extends ReaderPage {
+  noticeHeadings: string[];
+  footLinks: CardLink[];
+  learnLinks: CardLink[];
+  failure: string | null;
+}
+
+/** What the module drew, read from the running page: the masthead and the box
+ * under it, each Notice's heading, and each card link's layout. The links are
+ * read with every folded section open, as a reader opens one to reach them. */
+const DRAWN = `(() => {
+  const html = [".masthead-with-stamps", "#main"].map((s) => { const el = document.querySelector(s); return el ? el.outerHTML : ""; }).join("\\n");
+  const noticeHeadings = [...document.querySelectorAll("#main article.notice h3")].map((h) => h.textContent.trim());
+  for (const folded of document.querySelectorAll("#main details:not([open])")) folded.open = true;
+  const footLinks = [...document.querySelectorAll("#main .foot > a.next")].map(${CARD_LINK});
+  const learnLinks = [...document.querySelectorAll("#main .learn a")].map(${CARD_LINK});
+  return JSON.stringify({ html, noticeHeadings, footLinks, learnLinks });
+})()`;
 
 const seed = (walk: Walk) =>
   `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(walk.answers, walk.order, true))})`;
 
-async function screenHtmlOf(site: PageOnSite, path: string, record: Walk | null): Promise<string> {
-  const { page, url } = site;
+/** The screen the module draws at `path` for `record`. The harness's width
+ * failure on opening it is kept on the screen rather than thrown, so a case
+ * names every screen laid out at another width, not the first; nothing more is
+ * read from that screen. Any other failure is thrown as it is. */
+async function screenDrawnAt(site: PageOnSite, path: string, record: Walk | null): Promise<Omit<DrawnScreen, "where">> {
+  try {
+    await openWithRecord(site, path, record);
+  } catch (e) {
+    if (e instanceof WidthFailure) return { html: "", noticeHeadings: [], footLinks: [], learnLinks: [], failure: e.message };
+    throw e;
+  }
+  return { ...(JSON.parse(await site.page.evaluate(DRAWN)) as Omit<DrawnScreen, "where" | "failure">), failure: null };
+}
+
+/** Opens `path` on a device whose record is `record`'s answers, or that holds
+ * no record. */
+export async function openWithRecord({ page, url }: PageOnSite, path: string, record: Walk | null): Promise<void> {
   await page.goto(url("/404.html"));
   await page.evaluate(record ? seed(record) : "localStorage.clear()");
   await page.goto(url(path));
-  return (JSON.parse(await page.evaluate(DRAWN)) as { html: string }).html;
 }
 
-/** The results — masthead and cards — the module draws at the end of every walk. */
-async function drawnResults(site: PageOnSite): Promise<ReaderPage[]> {
-  const results: ReaderPage[] = [];
-  for (const walk of walks())
-    results.push({ where: `results for ${JSON.stringify(walk.answers)}`, html: await screenHtmlOf(site, "/", walk) });
+/** Where the results at the end of `walk` were read, as a drawn screen names
+ * it: its destination, situation and passport, and each field it answered
+ * "I don't know". */
+export function resultsWhere({ answers }: Walk): string {
+  const passport = answers[PASSPORT_FIELD] ?? "never asked";
+  const unknown = Object.keys(answers)
+    .filter((field) => fieldOptions(ds, field).some((o) => o.is_unknown && o.value === answers[field]));
+  const notKnowing = unknown.length > 0 ? `, not knowing ${unknown.join(", ")}` : "";
+  return `results for ${answers[DESTINATION_FIELD]}/${answers[SITUATION_FIELD]} with passport ${passport}${notKnowing}`;
+}
+
+/** The results — masthead and cards — the module draws at the end of each of `walksTaken`. */
+export async function drawnResults(site: PageOnSite, walksTaken: Walk[]): Promise<DrawnScreen[]> {
+  const results: DrawnScreen[] = [];
+  for (const walk of walksTaken) results.push({ where: resultsWhere(walk), ...(await screenDrawnAt(site, "/", walk)) });
   return results;
+}
+
+/** A screen the walk opens: the name it is read under, its path, and the
+ * walk whose record the device holds, or null for none. */
+export interface ScreenToOpen {
+  where: string;
+  path: string;
+  record: Walk | null;
 }
 
 /**
  * The screens the module draws in the browser: the results — masthead and
- * cards — at the end of every walk, and the arrival line from each country
- * page and each country's first route page, for a reader with no record and
- * for one whose record is another country's.
+ * cards — at the end of each of `walksTaken`, and the arrival line from each
+ * country page and each country's first route page, for a reader with no
+ * record and for one whose record is another country's.
  */
-export async function drawnScreens(site: PageOnSite): Promise<ReaderPage[]> {
-  const screens: ReaderPage[] = await drawnResults(site);
+export function screensToOpen(walksTaken = walks()): ScreenToOpen[] {
+  const screens: ScreenToOpen[] = walksTaken.map((walk) => ({ where: resultsWhere(walk), path: "/", record: walk }));
   const all = walks();
   for (const country of ds.countries) {
     const code = country.code.toLowerCase();
-    const elsewhere = all.find((w) => w.answers[DESTINATION_FIELD] !== code && w.answers[DESTINATION_FIELD] !== "all")!;
+    const elsewhere = all.find((w) => w.answers[DESTINATION_FIELD] !== code && w.answers[DESTINATION_FIELD] !== EVERY_DESTINATION)!;
     for (const record of [null, elsewhere]) {
       const recorded = record ? "with another country's record" : "with no record";
-      screens.push({ where: `/?country=${code} ${recorded}`, html: await screenHtmlOf(site, `/?country=${code}`, record) });
-      const route = country.routes[0]!.id;
-      screens.push({ where: `/?route=${route} ${recorded}`, html: await screenHtmlOf(site, `/?route=${route}`, record) });
+      screens.push({ where: `/?country=${code} ${recorded}`, path: `/?country=${code}`, record });
+      screens.push({ where: `/?route=${country.routes[0]!.id} ${recorded}`, path: `/?route=${country.routes[0]!.id}`, record });
     }
   }
   return screens;
 }
+
+/** Each of the screens `screensToOpen` names for `walksTaken`, as the module draws it. */
+export async function drawnScreens(site: PageOnSite, walksTaken = walks()): Promise<DrawnScreen[]> {
+  const screens: DrawnScreen[] = [];
+  for (const { where, path, record } of screensToOpen(walksTaken)) screens.push({ where, ...(await screenDrawnAt(site, path, record)) });
+  return screens;
+}
+
+/** Each screen of `screens` the harness's width check failed on opening, with its failure. */
+export const failuresOf = (screens: DrawnScreen[]): string[] =>
+  screens.flatMap((s) => (s.failure === null ? [] : [`${s.where}: ${s.failure}`]));
+
+/** Whether `heading` is `notice`'s title as a card draws it: bare, or glossed
+ * where the screen glosses it first. */
+const isHeadingOf = (notice: Notice, heading: string): boolean =>
+  heading === notice.title || heading === glossed(notice.title, new Set());
+
+/** The id of each Notice in the dataset that no screen of `screens` draws. */
+export const noticesDrawnOnNone = (screens: DrawnScreen[]): string[] =>
+  (ds.notices ?? [])
+    .filter((notice) => !screens.some((s) => s.noticeHeadings.some((heading) => isHeadingOf(notice, heading))))
+    .map((notice) => notice.id);
+
+/** A card link with where it was read: the screen it is on. */
+export interface CardLinkOnScreen extends CardLink {
+  where: string;
+}
+
+/** Every foot link of `screens`, with the screen it is on; only those on
+ * `notice`'s card where a notice is given. */
+export const footLinksOf = (screens: DrawnScreen[], notice?: Notice): CardLinkOnScreen[] =>
+  screens.flatMap((s) => s.footLinks
+    .filter((link) => notice === undefined || isHeadingOf(notice, link.card))
+    .map((link) => ({ ...link, where: s.where })));
+
+/** Every Learn link of `screens`, with the screen it is on. */
+export const learnLinksOf = (screens: DrawnScreen[]): CardLinkOnScreen[] =>
+  screens.flatMap((s) => s.learnLinks.map((link) => ({ ...link, where: s.where })));
 
 const decode = (text: string): string => text
   .replace(/&nbsp;|&#160;/g, " ")

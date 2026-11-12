@@ -3909,13 +3909,28 @@
   },
   {
    "from": "tests/reader-pages.test.ts",
+   "to": "tests/card-link.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.test.ts",
    "to": "tests/reader-pages.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.test.ts",
+   "to": "tests/widened-screen.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/reader-pages.ts",
    "to": "scripts/browser/browser.mjs",
-   "kind": "type-only"
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "dependency"
   },
   {
    "from": "tests/reader-pages.ts",
@@ -3926,6 +3941,16 @@
    "from": "tests/reader-pages.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.ts",
+   "to": "tests/card-link.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.ts",
+   "to": "tests/card-link.ts",
+   "kind": "inheritance"
   },
   {
    "from": "tests/reason.test.ts",
@@ -5365,6 +5390,16 @@
   {
    "from": "tests/walk-site.test.ts",
    "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/widened-screen.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/widened-screen.ts",
+   "to": "tests/reader-pages.ts",
    "kind": "dependency"
   },
   {
@@ -9302,5 +9337,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "84d0c0af97e28cb1adf819f25a28d5664bb6c562df1123b4e0d3d3d0b4c94465"
+ "digest": "6e19b36ebdaa21b46d934caaae7f098344ce8e6a5c3e18898593e96a4418826f"
 }

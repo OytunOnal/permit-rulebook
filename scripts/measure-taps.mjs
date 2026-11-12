@@ -98,6 +98,17 @@ const DRAWN = [
     recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "lt2", experience_7y: "3to5",
     german: "b1", english: "c1", nl_recent_grad: "no", top200_grad: "no", age_band: "a30to35",
   }],
+  // The Algerian notice's Learn link, a foot link longer than a phone's line, wraps here.
+  ["/ (results, France, Algerian passport)", {
+    destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "yes", citizenship: "DZ",
+    experience_7y: "lt3", salary_eur_year: "band_0",
+  }],
+  // A reader who does not know whether the employer is innovative meets the
+  // talent card's Learn link, which wraps here.
+  ["/ (results, France, a Learn link)", {
+    destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "unknown", citizenship: "IN",
+    experience_7y: "lt3", salary_eur_year: "unknown",
+  }],
 ];
 
 const seedFor = (answers) =>

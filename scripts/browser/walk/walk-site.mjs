@@ -61,6 +61,9 @@ async function openSite(site) {
   return { url: server.url, close: server.close };
 }
 
+/** The width check's failure: a page laid out at another width than its screen's, both named. */
+export class WidthFailure extends Error {}
+
 /**
  * The width check of a walk on `screen`, read on the page a tab shows: the
  * failure naming both widths when that page laid out at another width, or
@@ -68,7 +71,7 @@ async function openSite(site) {
  */
 function widthCheckOn(screen) {
   const failureAt = (width) => (width === null || width === screen.viewport.width ? null
-    : new Error(`the page laid out at innerWidth ${width}, not the screen's ${screen.viewport.width}`));
+    : new WidthFailure(`the page laid out at innerWidth ${width}, not the screen's ${screen.viewport.width}`));
   return async (page) => failureAt(await page.evaluate(LAID_OUT_WIDTH));
 }
 

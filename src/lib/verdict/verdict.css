@@ -149,20 +149,24 @@ details.hold-group[open] > summary::before{content:"▾ "}
 .faildetail li.moot::before,.faildetail li.where::before{content:"— ";color:var(--color-muted)}
 .faildetail li.moot{color:var(--color-met)}
 .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
+/* A Learn link carries the data's label, which may be longer than a phone's
+   line: it wraps as a card's foot link does (.next, below). */
 .learn a{color:var(--color-band);font-weight:600;text-decoration:none;
-  display:inline-flex;align-items:center;min-height:var(--tap-min)}
-.learn a::after{content:" ↗"}
+  display:inline-block;align-content:center;min-height:var(--tap-min);overflow-wrap:anywhere}
+.learn a::after{content:"\2060↗"}
 
 /* Result cards */
 .stack{display:grid;gap:var(--gap-cards)}
 .route{background:var(--color-card);border:var(--rule-soft);border-top:var(--rule-card-top);padding:var(--pad-card)}
 /* The card's first line: the country's chip and the badge beside it, or the
-   badge alone, above the title. Both are short and never wrap, so the line
-   is the same at every width and for every title (#95). */
+   badge alone, above the title, the same for every title (#95). The badge
+   may say what the reader is short on in the data's words, and a font wider
+   than this machine's lays it out wider still: where it does not fit beside
+   the chip, it wraps onto a second line between its words. */
 .top{display:flex;gap:.6rem;align-items:center;margin-bottom:.3rem}
 .country{font:700 .68rem var(--font-sans);letter-spacing:.22em;text-transform:uppercase;color:var(--color-muted)}
 h3{font:var(--text-route);margin:.15rem 0 .25rem}
-.st{font:700 .66rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;padding:.3rem .65rem;white-space:nowrap}
+.st{font:700 .66rem var(--font-sans);letter-spacing:.14em;text-transform:uppercase;padding:.3rem .65rem}
 .st.met{background:var(--color-met-soft);color:var(--color-met)}
 .st.near{background:var(--color-near-soft);color:var(--color-near)}
 .st.hold{background:var(--color-hold-soft);color:var(--color-hold)}
@@ -220,12 +224,16 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .src .applies{color:var(--color-met)}
 .src.unapplied{opacity:.72}
 .src .applies-not{font-style:italic}
-/* The link that proves the quote was the hardest thing on the page to tap:
-   84×16 px against a floor of 44 (isolated v1-gate critique, 2026-09-08,
-   F6). Its box is the floor now, and the tail keeps its own line height. */
-.next{font:600 .78rem var(--font-sans);text-decoration:none;white-space:nowrap;
-  display:inline-flex;align-items:center;min-height:var(--tap-min)}
-.next::after{content:" ↗"}
+/* The link at a card's foot: its box is at least the tap floor, its text
+   centred in it at its own line height. A label longer than the screen is
+   wide wraps (a Notice's Learn link carries the data's label), so the link is
+   a block whose lines hold its text and its ↗ together; the word joiner
+   (U+2060) keeps the ↗ on its last word's line and, having no width, touches
+   it as a label that fits shows it. A single word longer than the line, such
+   as an address, breaks anywhere rather than run past the screen. */
+.next{font:600 .78rem var(--font-sans);text-decoration:none;
+  display:inline-block;align-content:center;min-height:var(--tap-min);overflow-wrap:anywhere}
+.next::after{content:"\2060↗"}
 
 @media (max-width:760px){
   details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
