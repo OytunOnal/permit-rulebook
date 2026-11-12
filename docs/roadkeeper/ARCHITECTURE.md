@@ -336,6 +336,12 @@ click on the tracker link. Answers never leave the device.
   paths is headed by its label with one line per path; the passport search
   answers a territory with the passport its people hold. One walk over every
   page the build draws (`tests/reader-pages.ts`) holds these (#151).
+  Every screen fits a phone's width whatever the data writes. A card's foot
+  link, its Learn links and its status label wrap. A link's ↗ is joined to
+  its last word, and a single word longer than the line breaks. The same
+  walk draws every screen at 390 px, every walk once per passport a Notice
+  names, and a second time with its text widened, so text that cannot wrap
+  goes red on any machine's fonts (#349).
 - **Record** — localStorage (legacy key migrated) or nothing; a print
   stylesheet for a paper copy. A record longer than any the page writes
   (8 KB) is no record, and is never parsed (#25). Start over clears it on
