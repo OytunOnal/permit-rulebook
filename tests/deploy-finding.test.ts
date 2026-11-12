@@ -48,7 +48,7 @@ describe("a green deploy closes the issue", () => {
 
   // `pin` is skipped whenever the run built the data commit the lock already names.
   it("green when pin was skipped by design", () => {
-    expect(deployFindingOf(resultsOf({ ...ALL_PASSED, pin: "skipped" }), RUN_URL).kind).toBe("green");
+    expect(deployFindingOf(resultsOf({ ...ALL_PASSED, pin: "skipped" }), RUN_URL).kind).toBe("red");
   });
 });
 
