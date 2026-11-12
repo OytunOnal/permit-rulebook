@@ -8,7 +8,7 @@ import { routeAddresses } from "../src/lib/slug.js";
 import { DESK, PHONE } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {
-  DEFAULT_PASSPORT, EVERY_DESTINATION, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf, isArrowOnLastWordLine,
+  DEFAULT_PASSPORT, EVERY_DESTINATION, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf, isArrowOnLastWordLine, isAsWideAsTextAndArrow,
   noticePassports, noticesDrawnOnNone, questionCards, sentencesOf, walks, type FootLinkOnScreen, type ReaderPage,
 } from "./reader-pages.js";
 
@@ -127,7 +127,8 @@ function noticeNaming(passport: string): Notice {
 /** A foot link as a failure names it: where, on which card, and how it lays out. */
 const failureLineOf = (link: FootLinkOnScreen): string =>
   `${link.where}, "${link.label}" on "${link.card}": ${link.lines} line(s), ${
-    link.spaceAbove.toFixed(1)} px over its text and ${link.spaceBelow.toFixed(1)} px under it`;
+    link.spaceAbove.toFixed(1)} px over its text and ${link.spaceBelow.toFixed(1)} px under it, ${
+    link.width.toFixed(2)} px wide for ${link.textWidth.toFixed(2)} px of text and a ${link.loneArrowWidth.toFixed(2)} px ↗`;
 
 const notWalked = skipReason();
 if (notWalked) warnNotWalked("the results and the arrival line", notWalked);
@@ -141,13 +142,14 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     expect(articleDropped(screens)).toEqual([]);
   }, 600000);
 
-  it("lays out every foot link on one line at the desk, on the Algerian reader's results and on the results for every destination at once", async () => {
+  it("lays out every foot link on one line at the desk, as wide as its text and a lone ↗, on the Algerian reader's results and on the results for every destination at once", async () => {
     const everyDestination = walks().filter((w) => w.answers["destination"] === EVERY_DESTINATION);
     const guarded = [...walks(ALGERIAN_PASSPORT), ...everyDestination];
     const screens = await withSite((site) => drawnResults(site, guarded), DESK);
     expect(failuresOf(screens)).toEqual([]);
     expect(footLinksOf(screens, noticeNaming(ALGERIAN_PASSPORT)), "the Algerian notice's foot link is on none of the screens").not.toEqual([]);
-    expect(footLinksOf(screens).filter((link) => link.lines !== 1 || !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
+    const isLaidOutForTheDesk = (link: FootLinkOnScreen) => link.lines === 1 && isArrowOnLastWordLine(link) && isAsWideAsTextAndArrow(link);
+    expect(footLinksOf(screens).filter((link) => !isLaidOutForTheDesk(link)).map(failureLineOf)).toEqual([]);
   }, 600000);
 });
 

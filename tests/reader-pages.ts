@@ -147,14 +147,18 @@ export function questionCards(): QuestionCard[] {
 }
 
 /** A card's foot link as it lays out: its card's heading, its label, how many
- * lines its text takes, and the space in its box above its text's first line
- * and below its text's last. */
+ * lines its text takes, the space in its box above its text's first line and
+ * below its text's last, its box's width, its text's width, and the width of a
+ * lone ↗ in its font. */
 export interface FootLink {
   card: string;
   label: string;
   lines: number;
   spaceAbove: number;
   spaceBelow: number;
+  width: number;
+  textWidth: number;
+  loneArrowWidth: number;
 }
 
 /** A screen the module drew: its masthead and box, the heading of each Notice
@@ -165,6 +169,19 @@ export interface DrawnScreen extends ReaderPage {
   footLinks: FootLink[];
   failure: string | null;
 }
+
+/** The width of a lone ↗ set in `link`'s font, laid out on the page apart from
+ * any link. */
+const LONE_ARROW_WIDTH = `((link) => {
+  const arrow = document.createElement("span");
+  arrow.textContent = "\\u2197";
+  arrow.style.cssText = "position:absolute;white-space:nowrap";
+  arrow.style.font = getComputedStyle(link).font;
+  document.body.append(arrow);
+  const width = arrow.getBoundingClientRect().width;
+  arrow.remove();
+  return width;
+})`;
 
 /** What the module drew, read from the running page: the masthead and the box
  * under it, each Notice's heading, and each foot link's layout. */
@@ -183,6 +200,9 @@ const DRAWN = `JSON.stringify({
       lines: new Set([...text.getClientRects()].map((r) => Math.round(r.top))).size,
       spaceAbove: span.top - box.top,
       spaceBelow: box.bottom - span.bottom,
+      width: box.width,
+      textWidth: span.width,
+      loneArrowWidth: ${LONE_ARROW_WIDTH}(link),
     };
   }),
 })`;
@@ -274,6 +294,11 @@ export const footLinksOf = (screens: DrawnScreen[], notice?: Notice): FootLinkOn
  * centres what it holds, so a ↗ on a line of its own leaves more space under
  * the text than over it. */
 export const isArrowOnLastWordLine = (link: FootLink): boolean => Math.abs(link.spaceAbove - link.spaceBelow) < 1;
+
+/** Whether a one-line foot link's box is its text's width and a lone ↗'s,
+ * with no space between them, within half a pixel. */
+export const isAsWideAsTextAndArrow = (link: FootLink): boolean =>
+  Math.abs(link.width - (link.textWidth + link.loneArrowWidth)) < 0.5;
 
 const decode = (text: string): string => text
   .replace(/&nbsp;|&#160;/g, " ")

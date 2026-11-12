@@ -223,11 +223,12 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 /* The link at a card's foot: its box is at least the tap floor, its text
    centred in it at its own line height. A label longer than the screen is
    wide wraps (a Notice's Learn link carries the data's label), so the link is
-   a block whose lines hold its text and its ↗ together; the no-break space
-   keeps the ↗ on its last word's line. */
+   a block whose lines hold its text and its ↗ together; the word joiner
+   (U+2060) keeps the ↗ on its last word's line and, having no width, touches
+   it as a label that fits shows it. */
 .next{font:600 .78rem var(--font-sans);text-decoration:none;
   display:inline-block;align-content:center;min-height:var(--tap-min)}
-.next::after{content:"\a0↗"}
+.next::after{content:"\2060↗"}
 
 @media (max-width:760px){
   details.country-sec > summary{flex-wrap:wrap;letter-spacing:.18em}
