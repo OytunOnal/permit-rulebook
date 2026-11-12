@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { basename } from "node:path";
 import {
-  concurrencyOf, jobConditionOf, jobNamesOf, jobOf, jobPermissionsOf, pagesYaml as pages, readText,
+  checkoutRefOf, concurrencyOf, jobConditionOf, jobNamesOf, jobOf, jobPermissionsOf, pagesYaml as pages, readText,
   stepConditionOf, stepsOf, triggerPathsOf, workflowPaths,
 } from "./workflow-text.js";
 
@@ -31,16 +31,16 @@ function conjunctsOf(condition: string): string[] {
 }
 
 /** A condition part naming the events it runs on: `github.event_name == '…'` alone, or several joined by `||` in parentheses. */
-const EVENT_LIST = /^\(?github\.event_name == '[a-z_]+'(?: \|\| github\.event_name == '[a-z_]+')*\)?$/;
+const PART_NAMING_EVENTS = /^\(?github\.event_name == '[a-z_]+'(?: \|\| github\.event_name == '[a-z_]+')*\)?$/;
 
 /** Whether a condition part names the events it runs on, and a pull request is not among them. */
-const namesOnlyOtherEvents = (part: string): boolean => EVENT_LIST.test(part) && !part.includes("'pull_request'");
+const namesOnlyOtherEvents = (part: string): boolean => PART_NAMING_EVENTS.test(part) && !part.includes("'pull_request'");
 
 /** Whether a condition is false on every pull request: one of its `&&` parts refuses the event, or names only others. */
 const shutsOutPullRequest = (condition: string): boolean =>
   conjunctsOf(condition).some((part) => part === "github.event_name != 'pull_request'" || namesOnlyOtherEvents(part));
 
-const build = jobOf(pages, "build");
+const buildJob = jobOf(pages, "build");
 
 describe("a pull request is checked on its own head, through a trigger of its own", () => {
   it("the pull_request trigger carries the push trigger's paths, in the same order", () => {
@@ -61,15 +61,15 @@ describe("a pull request is checked on its own head, through a trigger of its ow
   // the merge guard does not read. On every other event the expression is
   // empty, which checks out that event's own commit.
   it("on a pull request the build checks out the pull request's head", () => {
-    const siteCheckout = stepsOf(build).find((step) => /^ {10}path: site$/m.test(step) && step.includes("uses: actions/checkout@"));
+    const siteCheckout = stepsOf(buildJob).find((step) => /^ {10}path: site$/m.test(step) && step.includes("uses: actions/checkout@"));
     expect(siteCheckout, "the build checks out no site").toBeDefined();
-    expect(/^ {10}ref:\s*(.+)$/m.exec(siteCheckout!)?.[1]).toBe("${{ github.event.pull_request.head.sha }}");
+    expect(checkoutRefOf(siteCheckout!)).toBe("${{ github.event.pull_request.head.sha }}");
   });
 
   // The build runs a stranger's pull request's code, so no checkout leaves
   // the run's token in a repository's git config for that code to read.
   it("the build's two checkouts, the site and the data, leave no token on disk", () => {
-    const checkouts = stepsOf(build).filter((step) => step.includes("uses: actions/checkout@"));
+    const checkouts = stepsOf(buildJob).filter((step) => step.includes("uses: actions/checkout@"));
     expect(checkouts, "the build no longer checks out the site and the data, so this case would not read them").toHaveLength(2);
     for (const checkout of checkouts) expect(checkout).toMatch(/^ {10}persist-credentials: false$/m);
   });
@@ -85,7 +85,7 @@ describe("a pull request deploys, pins, announces and files nothing", () => {
   });
 
   it("the build's addresses, carry and upload steps skip a pull request", () => {
-    const steps = stepsOf(build);
+    const steps = stepsOf(buildJob);
     const deployOnlySteps = {
       addresses: steps.find((step) => /^ {8}id: urls$/m.test(step)),
       carry: steps.find((step) => /^ {8}run: node scripts\/carry-assets\.mjs$/m.test(step)),

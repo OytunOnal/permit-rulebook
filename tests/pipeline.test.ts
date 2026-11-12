@@ -7,7 +7,9 @@ import { cloneShortfallOf } from "../scripts/clone-shortfall.mjs";
 import { shortfallSentenceOf } from "../scripts/cli-data-check.mjs";
 import { readAssetNames } from "../scripts/carry-assets/carry.mjs";
 import { LF } from "./throwaway-folder.js";
-import { jobKeyValueOf, jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
+import {
+  checkoutRefOf, jobConditionOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, stepsOf, workflowPaths,
+} from "./workflow-text.js";
 
 /**
  * The pipeline's own security and the data it builds against (Spine
@@ -275,8 +277,7 @@ describe("a red deploy nobody watches keeps deploy run failed", () => {
 
   it("report needs build, deploy, pin and audit", () => {
     expect(report, "pages.yml has no report job").not.toBe("");
-    const needs = /^\[(.*)\]$/.exec(jobKeyValueOf(report, "needs"))?.[1]?.split(",").map((job) => job.trim()) ?? [];
-    expect(needs.sort()).toEqual(["audit", "build", "deploy", "pin"]);
+    expect(jobNeedsOf(report).sort()).toEqual(["audit", "build", "deploy", "pin"]);
   });
 
   it("report runs whatever their result, on a scheduled or dispatched run's first attempt only", () => {
@@ -285,8 +286,8 @@ describe("a red deploy nobody watches keeps deploy run failed", () => {
     // set past those two. A re-run builds against data.lock's old data and
     // has a person watching, so only a first attempt keeps the issue, as
     // `pin` and `indexnow` ask.
-    expect(jobKeyValueOf(report, "if")).toBe(
-      "${{ always() && github.run_attempt == 1 && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch') }}",
+    expect(jobConditionOf(report)).toBe(
+      "always() && github.run_attempt == 1 && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch')",
     );
   });
 
@@ -306,11 +307,10 @@ describe("a red deploy nobody watches keeps deploy run failed", () => {
    * silence the report (#117, decision 2).
    */
   it("report builds the kept-issue CLI from the data commit data.lock names", () => {
-    const steps = report.split(/^ {6}- /m);
+    const steps = stepsOf(report);
     const dataCheckout = steps.find((step) => /^\s{10}repository: OytunOnal\/permit-rulebook-data$/m.test(step)) ?? "";
     expect(dataCheckout, "report checks out no data").toMatch(/^(?:name:.*\n\s{8})?uses: actions\/checkout@/);
-    const ref = /^\s{10}ref:\s*(.+)$/m.exec(dataCheckout)?.[1]?.trim();
-    expect(ref).toBe("${{ steps.lock.outputs.sha }}");
+    expect(checkoutRefOf(dataCheckout)).toBe("${{ steps.lock.outputs.sha }}");
     // The step that gives that sha reads it out of data.lock.
     const lockStep = steps.find((step) => /^ {8}id: lock$/m.test(step)) ?? "";
     expect(lockStep, "no step reads the sha out of data.lock").toMatch(/^ {10}.*\bdata\.lock\b/m);

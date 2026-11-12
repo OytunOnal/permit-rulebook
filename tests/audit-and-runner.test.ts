@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { basename } from "node:path";
-import { jobKeyValueOf, jobNamesOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
+import { jobConditionOf, jobNamesOf, jobNeedsOf, jobOf, pagesYaml as pages, readText, workflowPaths } from "./workflow-text.js";
 
 /**
  * The toolchain the deploy runs on (#24).
@@ -31,11 +31,10 @@ describe("the dependencies are audited on every run (#47)", () => {
     const { name, body } = auditJob();
     for (const job of jobNamesOf(pages)) {
       const body = jobOf(pages, job);
-      const needs = jobKeyValueOf(body, "needs");
       // The report waits on the audit to say its red, and runs whatever the
       // audit's result (#117, decision 13): a red audit stops nothing there.
-      if (/^\$\{\{\s*always\(\)/.test(jobKeyValueOf(body, "if"))) continue;
-      expect(needs, `${job} waits on the audit`).not.toMatch(new RegExp(`\\b${name}\\b`));
+      if (/^always\(\)/.test(jobConditionOf(body))) continue;
+      expect(jobNeedsOf(body), `${job} waits on the audit`).not.toContain(name);
     }
     // A job allowed to fail would turn green over a known advisory.
     expect(body).not.toContain("continue-on-error");

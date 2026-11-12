@@ -29,8 +29,15 @@ const jobHeadersOf = (yaml: string): { jobs: string; headers: RegExpMatchArray[]
 export const jobNamesOf = (yaml: string): string[] => jobHeadersOf(yaml).headers.map((m) => m[1]!);
 
 /** A key's value on its own line in a job's text, at the job's own indent; "" if absent. */
-export const jobKeyValueOf = (job: string, key: string): string =>
+const jobKeyValueOf = (job: string, key: string): string =>
   new RegExp(`^ {4}${key}:\\s*(.+)$`, "m").exec(job)?.[1]?.trim() ?? "";
+
+/** The jobs a job's `needs:` names, as one name or a `[a, b]` list; [] when it has none. */
+export const jobNeedsOf = (job: string): string[] => {
+  const needs = jobKeyValueOf(job, "needs");
+  if (needs === "") return [];
+  return needs.replace(/^\[(.*)\]$/, "$1").split(",").map((name) => name.trim());
+};
 
 /** One job's text: from its name to the next job's; "" if absent. */
 export const jobOf = (yaml: string, name: string): string => {
@@ -55,7 +62,7 @@ const blockLinesOf = (text: string, indent: number, key: string): string[] => {
 };
 
 /** A key's value at `indent` spaces: its line's, or a `|` block's lines joined by spaces, with a `${{ }}` around the whole taken off; "" if absent. */
-const expressionAt = (text: string, indent: number, key: string): string => {
+const keyExpressionOf = (text: string, indent: number, key: string): string => {
   const [keyLine, ...under] = blockLinesOf(text, indent, key);
   if (keyLine === undefined) return "";
   const inline = keyLine.slice(indent + key.length + 1).trim();
@@ -64,13 +71,16 @@ const expressionAt = (text: string, indent: number, key: string): string => {
 };
 
 /** A job's `if:`, as one line with no `${{ }}` around it; "" when the job has none. */
-export const jobConditionOf = (job: string): string => expressionAt(job, 4, "if");
+export const jobConditionOf = (job: string): string => keyExpressionOf(job, 4, "if");
 
 /** Each step of a job, as its text from after its `- `. */
 export const stepsOf = (job: string): string[] => job.split(/^ {6}- /m).slice(1);
 
 /** A step's `if:` on a line of its own, as one line with no `${{ }}` around it; "" when the step has none. */
-export const stepConditionOf = (step: string): string => expressionAt(step, 8, "if");
+export const stepConditionOf = (step: string): string => keyExpressionOf(step, 8, "if");
+
+/** A checkout step's `ref:` under its `with:`, trimmed; "" when it has none. */
+export const checkoutRefOf = (step: string): string => /^ {10}ref:\s*(.+)$/m.exec(step)?.[1]?.trim() ?? "";
 
 /** The scopes a job's `permissions:` block grants, each as `scope: level`; [] when it has no such block. */
 export const jobPermissionsOf = (job: string): string[] =>
@@ -87,5 +97,5 @@ export const triggerPathsOf = (yaml: string, trigger: string): string[] => {
 /** The workflow's own `concurrency:`: its group and whether it cancels a run in progress, each with no `${{ }}` around it. */
 export const concurrencyOf = (yaml: string): { group: string; cancelInProgress: string } => {
   const block = blockLinesOf(yaml, 0, "concurrency").join("\n");
-  return { group: expressionAt(block, 2, "group"), cancelInProgress: expressionAt(block, 2, "cancel-in-progress") };
+  return { group: keyExpressionOf(block, 2, "group"), cancelInProgress: keyExpressionOf(block, 2, "cancel-in-progress") };
 };
