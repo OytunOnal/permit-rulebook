@@ -10,6 +10,7 @@ import { glossed } from "../src/lib/gloss.js";
 import { questionCardHtml } from "../src/lib/question.js";
 import { STORAGE_KEY, serialize } from "../src/lib/record.js";
 import { WidthFailure, type PageOnSite } from "../scripts/browser/browser.mjs";
+import { CARD_LINK, type CardLink } from "./card-link.js";
 
 /**
  * Every page the build draws from the shipped dataset, as a reader meets it:
@@ -81,6 +82,12 @@ const walkAnswerWith = (passport: string) => (question: Question): string => {
   return (question.options.find((o) => !o.is_unknown && !o.is_fallback) ?? question.options[0]!).value;
 };
 
+/** The answer a reader gives who knows their passport and nothing else they are
+ * asked: "I don't know" wherever the question offers it, the walk's answer
+ * elsewhere. */
+const unknowingAnswer = (question: Question): string =>
+  question.options.find((o) => o.is_unknown)?.value ?? walkAnswerWith(DEFAULT_PASSPORT)(question);
+
 /** One reader's whole interview, in the order it is asked. */
 export interface Walk {
   answers: Profile;
@@ -106,18 +113,30 @@ export function walkFrom(start: Profile, answerOf: (question: Question) => strin
 }
 
 /** A whole interview for every destination answer under every situation a
- * reader can hold, taken with `passport`: each question card and each results
- * screen the dataset can draw for them. */
-export function walks(passport = DEFAULT_PASSPORT): Walk[] {
+ * reader can hold, each question after them answered by `answerOf`. */
+function walksAnsweredBy(answerOf: (question: Question) => string): Walk[] {
   const out: Walk[] = [];
   const situations = fieldOptions(ds, SITUATION_FIELD).filter((o) => !o.is_unknown);
   for (const destination of fieldOptions(ds, DESTINATION_FIELD))
     for (const situation of situations) {
       const start: Profile = { [DESTINATION_FIELD]: destination.value, [SITUATION_FIELD]: situation.value };
-      const rest = walkFrom(start, walkAnswerWith(passport));
+      const rest = walkFrom(start, answerOf);
       out.push({ answers: rest.answers, order: [DESTINATION_FIELD, SITUATION_FIELD, ...rest.order] });
     }
   return out;
+}
+
+/** A whole interview for every destination answer under every situation a
+ * reader can hold, taken with `passport`: each question card and each results
+ * screen the dataset can draw for them. */
+export function walks(passport = DEFAULT_PASSPORT): Walk[] {
+  return walksAnsweredBy(walkAnswerWith(passport));
+}
+
+/** The same interviews, taken by a reader who answers "I don't know" wherever
+ * a question offers it: the results that draw a card's Learn links. */
+export function unknowingWalks(): Walk[] {
+  return walksAnsweredBy(unknowingAnswer);
 }
 
 /** A question card, with its question's field and the answers given before it. */
@@ -146,66 +165,27 @@ export function questionCards(): QuestionCard[] {
   return cards;
 }
 
-/** A card's foot link as it lays out: its card's heading, its label, how many
- * lines its text takes, the space in its box above its text's first line and
- * below its text's last, its box's width, its text's width, and the width of a
- * lone ↗ in its font. */
-export interface FootLink {
-  card: string;
-  label: string;
-  lines: number;
-  spaceAbove: number;
-  spaceBelow: number;
-  width: number;
-  textWidth: number;
-  loneArrowWidth: number;
-}
-
 /** A screen the module drew: its masthead and box, the heading of each Notice
- * on it, its foot links, and the harness's width failure on opening it, or
- * null. A screen that failed it holds nothing else. */
+ * on it, its foot links and its Learn links, and the harness's width failure
+ * on opening it, or null. A screen that failed it holds nothing else. */
 export interface DrawnScreen extends ReaderPage {
   noticeHeadings: string[];
-  footLinks: FootLink[];
+  footLinks: CardLink[];
+  learnLinks: CardLink[];
   failure: string | null;
 }
 
-/** The width of a lone ↗ set in `link`'s font, laid out on the page apart from
- * any link. */
-const LONE_ARROW_WIDTH = `((link) => {
-  const arrow = document.createElement("span");
-  arrow.textContent = "\\u2197";
-  arrow.style.cssText = "position:absolute;white-space:nowrap";
-  arrow.style.font = getComputedStyle(link).font;
-  document.body.append(arrow);
-  const width = arrow.getBoundingClientRect().width;
-  arrow.remove();
-  return width;
-})`;
-
 /** What the module drew, read from the running page: the masthead and the box
- * under it, each Notice's heading, and each foot link's layout. */
-const DRAWN = `JSON.stringify({
-  html: [".masthead-with-stamps", "#main"].map((s) => { const el = document.querySelector(s); return el ? el.outerHTML : ""; }).join("\\n"),
-  noticeHeadings: [...document.querySelectorAll("#main article.notice h3")].map((h) => h.textContent.trim()),
-  footLinks: [...document.querySelectorAll("#main .foot > a.next")].map((link) => {
-    const text = document.createRange();
-    text.selectNodeContents(link);
-    const box = link.getBoundingClientRect();
-    const span = text.getBoundingClientRect();
-    const heading = link.closest("article")?.querySelector("h3");
-    return {
-      card: heading ? heading.textContent.trim() : "",
-      label: link.textContent.trim(),
-      lines: new Set([...text.getClientRects()].map((r) => Math.round(r.top))).size,
-      spaceAbove: span.top - box.top,
-      spaceBelow: box.bottom - span.bottom,
-      width: box.width,
-      textWidth: span.width,
-      loneArrowWidth: ${LONE_ARROW_WIDTH}(link),
-    };
-  }),
-})`;
+ * under it, each Notice's heading, and each card link's layout. The links are
+ * read with every folded section open, as a reader opens one to reach them. */
+const DRAWN = `(() => {
+  const html = [".masthead-with-stamps", "#main"].map((s) => { const el = document.querySelector(s); return el ? el.outerHTML : ""; }).join("\\n");
+  const noticeHeadings = [...document.querySelectorAll("#main article.notice h3")].map((h) => h.textContent.trim());
+  for (const folded of document.querySelectorAll("#main details:not([open])")) folded.open = true;
+  const footLinks = [...document.querySelectorAll("#main .foot > a.next")].map(${CARD_LINK});
+  const learnLinks = [...document.querySelectorAll("#main .learn a")].map(${CARD_LINK});
+  return JSON.stringify({ html, noticeHeadings, footLinks, learnLinks });
+})()`;
 
 const seed = (walk: Walk) =>
   `localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${JSON.stringify(serialize(walk.answers, walk.order, true))})`;
@@ -221,16 +201,21 @@ async function screenDrawnAt(site: PageOnSite, path: string, record: Walk | null
   try {
     await page.goto(url(path));
   } catch (e) {
-    if (e instanceof WidthFailure) return { html: "", noticeHeadings: [], footLinks: [], failure: e.message };
+    if (e instanceof WidthFailure) return { html: "", noticeHeadings: [], footLinks: [], learnLinks: [], failure: e.message };
     throw e;
   }
   return { ...(JSON.parse(await page.evaluate(DRAWN)) as Omit<DrawnScreen, "where" | "failure">), failure: null };
 }
 
-/** Where the results at the end of `walk` were read, as a drawn screen names it. */
+/** Where the results at the end of `walk` were read, as a drawn screen names
+ * it: its destination, situation and passport, and each field it answered
+ * "I don't know". */
 export function resultsWhere({ answers }: Walk): string {
   const passport = answers[PASSPORT_FIELD] ?? "never asked";
-  return `results for ${answers[DESTINATION_FIELD]}/${answers[SITUATION_FIELD]} with passport ${passport}`;
+  const unknown = Object.keys(answers)
+    .filter((field) => fieldOptions(ds, field).some((o) => o.is_unknown && o.value === answers[field]));
+  const notKnowing = unknown.length > 0 ? `, not knowing ${unknown.join(", ")}` : "";
+  return `results for ${answers[DESTINATION_FIELD]}/${answers[SITUATION_FIELD]} with passport ${passport}${notKnowing}`;
 }
 
 /** The results — masthead and cards — the module draws at the end of each of `walksTaken`. */
@@ -242,13 +227,12 @@ export async function drawnResults(site: PageOnSite, walksTaken: Walk[]): Promis
 
 /**
  * The screens the module draws in the browser: the results — masthead and
- * cards — at the end of every walk, taken once with each of `passports`, and
- * the arrival line from each country page and each country's first route
- * page, for a reader with no record and for one whose record is another
- * country's.
+ * cards — at the end of each of `walksTaken`, and the arrival line from each
+ * country page and each country's first route page, for a reader with no
+ * record and for one whose record is another country's.
  */
-export async function drawnScreens(site: PageOnSite, passports = [DEFAULT_PASSPORT]): Promise<DrawnScreen[]> {
-  const screens = await drawnResults(site, passports.flatMap((passport) => walks(passport)));
+export async function drawnScreens(site: PageOnSite, walksTaken = walks()): Promise<DrawnScreen[]> {
+  const screens = await drawnResults(site, walksTaken);
   const all = walks();
   for (const country of ds.countries) {
     const code = country.code.toLowerCase();
@@ -278,27 +262,21 @@ export const noticesDrawnOnNone = (screens: DrawnScreen[]): string[] =>
     .filter((notice) => !screens.some((s) => s.noticeHeadings.some((heading) => isHeadingOf(notice, heading))))
     .map((notice) => notice.id);
 
-/** A foot link with where it was read: the screen it is on. */
-export interface FootLinkOnScreen extends FootLink {
+/** A card link with where it was read: the screen it is on. */
+export interface CardLinkOnScreen extends CardLink {
   where: string;
 }
 
 /** Every foot link of `screens`, with the screen it is on; only those on
  * `notice`'s card where a notice is given. */
-export const footLinksOf = (screens: DrawnScreen[], notice?: Notice): FootLinkOnScreen[] =>
+export const footLinksOf = (screens: DrawnScreen[], notice?: Notice): CardLinkOnScreen[] =>
   screens.flatMap((s) => s.footLinks
     .filter((link) => notice === undefined || isHeadingOf(notice, link.card))
     .map((link) => ({ ...link, where: s.where })));
 
-/** Whether a foot link's ↗ lays out on its last word's line: the link's box
- * centres what it holds, so a ↗ on a line of its own leaves more space under
- * the text than over it. */
-export const isArrowOnLastWordLine = (link: FootLink): boolean => Math.abs(link.spaceAbove - link.spaceBelow) < 1;
-
-/** Whether a one-line foot link's box is its text's width and a lone ↗'s,
- * with no space between them, within half a pixel. */
-export const isAsWideAsTextAndArrow = (link: FootLink): boolean =>
-  Math.abs(link.width - (link.textWidth + link.loneArrowWidth)) < 0.5;
+/** Every Learn link of `screens`, with the screen it is on. */
+export const learnLinksOf = (screens: DrawnScreen[]): CardLinkOnScreen[] =>
+  screens.flatMap((s) => s.learnLinks.map((link) => ({ ...link, where: s.where })));
 
 const decode = (text: string): string => text
   .replace(/&nbsp;|&#160;/g, " ")

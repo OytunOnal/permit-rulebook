@@ -7,9 +7,11 @@ import { countryAddresses } from "../src/lib/country-page.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { DESK, PHONE } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
+import { isArrowOnLastWordLine, isAsWideAsTextAndArrow, type CardLink } from "./card-link.js";
 import {
-  DEFAULT_PASSPORT, EVERY_DESTINATION, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf, isArrowOnLastWordLine, isAsWideAsTextAndArrow,
-  noticePassports, noticesDrawnOnNone, questionCards, sentencesOf, walks, type FootLinkOnScreen, type ReaderPage,
+  DEFAULT_PASSPORT, EVERY_DESTINATION, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf,
+  learnLinksOf, noticePassports, noticesDrawnOnNone, questionCards, sentencesOf, unknowingWalks, walks,
+  type CardLinkOnScreen, type ReaderPage,
 } from "./reader-pages.js";
 
 /**
@@ -70,7 +72,7 @@ describe("the walk's own precondition", () => {
     const ids = (ds.notices ?? []).map((n) => n.id);
     expect(ids.length).toBeGreaterThan(1);
     expect(noticesDrawnOnNone([])).toEqual(ids);
-    const first = { where: "a screen", html: "", noticeHeadings: [ds.notices![0]!.title], footLinks: [], failure: null };
+    const first = { where: "a screen", html: "", noticeHeadings: [ds.notices![0]!.title], footLinks: [], learnLinks: [], failure: null };
     expect(noticesDrawnOnNone([first])).toEqual(ids.slice(1));
   });
 
@@ -124,11 +126,19 @@ function noticeNaming(passport: string): Notice {
   return notice;
 }
 
-/** A foot link as a failure names it: where, on which card, and how it lays out. */
-const failureLineOf = (link: FootLinkOnScreen): string =>
-  `${link.where}, "${link.label}" on "${link.card}": ${link.lines} line(s), ${
-    link.spaceAbove.toFixed(1)} px over its text and ${link.spaceBelow.toFixed(1)} px under it, ${
+/** A card link as a failure names it: where, on which card, and how it lays out. */
+const failureLineOf = (link: CardLinkOnScreen): string => {
+  const arrow = link.arrowFromLastWord;
+  const arrowAt = arrow === null ? "its ↗ nowhere"
+    : `its ↗ ${arrow.right.toFixed(1)} px right of its last word and ${arrow.down.toFixed(1)} px down from its line`;
+  return `${link.where}, "${link.label}" on "${link.card}": ${link.lines} line(s), ${arrowAt}, ${
     link.width.toFixed(2)} px wide for ${link.textWidth.toFixed(2)} px of text and a ${link.loneArrowWidth.toFixed(2)} px ↗`;
+};
+
+/** Whether a link lays out as the desk draws it where its label fits: one
+ * line, its ↗ right after its last word, as wide as its text and a lone ↗. */
+const isLaidOutForTheDesk = (link: CardLink): boolean =>
+  link.lines === 1 && isArrowOnLastWordLine(link) && isAsWideAsTextAndArrow(link);
 
 const notWalked = skipReason();
 if (notWalked) warnNotWalked("the results and the arrival line", notWalked);
@@ -142,20 +152,22 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     expect(articleDropped(screens)).toEqual([]);
   }, 600000);
 
-  it("lays out every foot link on one line at the desk, as wide as its text and a lone ↗, on the Algerian reader's results and on the results for every destination at once", async () => {
+  it("lays out every foot link and Learn link on one line at the desk, as wide as its text and a lone ↗, on the Algerian reader's results, on the results for every destination at once and on the results of a reader who does not know", async () => {
     const everyDestination = walks().filter((w) => w.answers["destination"] === EVERY_DESTINATION);
-    const guarded = [...walks(ALGERIAN_PASSPORT), ...everyDestination];
+    const guarded = [...walks(ALGERIAN_PASSPORT), ...everyDestination, ...unknowingWalks()];
     const screens = await withSite((site) => drawnResults(site, guarded), DESK);
     expect(failuresOf(screens)).toEqual([]);
     expect(footLinksOf(screens, noticeNaming(ALGERIAN_PASSPORT)), "the Algerian notice's foot link is on none of the screens").not.toEqual([]);
-    const isLaidOutForTheDesk = (link: FootLinkOnScreen) => link.lines === 1 && isArrowOnLastWordLine(link) && isAsWideAsTextAndArrow(link);
-    expect(footLinksOf(screens).filter((link) => !isLaidOutForTheDesk(link)).map(failureLineOf)).toEqual([]);
+    expect(learnLinksOf(screens), "no screen draws a Learn link").not.toEqual([]);
+    const links = [...footLinksOf(screens), ...learnLinksOf(screens)];
+    expect(links.filter((link) => !isLaidOutForTheDesk(link)).map(failureLineOf)).toEqual([]);
   }, 600000);
 });
 
 describe.skipIf(notWalked !== null)("every screen the module draws, on a phone", () => {
-  it("draws every Notice, lays out every screen at the phone's width, and wraps the Algerian notice's foot link with its ↗ on its last word's line", async () => {
-    const screens = await withSite((site) => drawnScreens(site, [DEFAULT_PASSPORT, ...noticePassports()]), PHONE);
+  it("draws every Notice, lays out every screen at the phone's width, and wraps the Algerian notice's foot link and a Learn link with each ↗ on its last word's line", async () => {
+    const walksTaken = [...[DEFAULT_PASSPORT, ...noticePassports()].flatMap((passport) => walks(passport)), ...unknowingWalks()];
+    const screens = await withSite((site) => drawnScreens(site, walksTaken), PHONE);
     // Soft, so a Notice drawn only on screens wider than the phone, which are
     // read for nothing, is named beside those screens' failures.
     expect.soft(noticesDrawnOnNone(screens), "a Notice no screen draws").toEqual([]);
@@ -163,5 +175,8 @@ describe.skipIf(notWalked !== null)("every screen the module draws, on a phone",
     const algerianLinks = footLinksOf(screens, noticeNaming(ALGERIAN_PASSPORT));
     expect(algerianLinks).not.toEqual([]);
     expect.soft(algerianLinks.filter((link) => link.lines < 2 || !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
+    const wrappedLearnLinks = learnLinksOf(screens).filter((link) => link.lines > 1);
+    expect(wrappedLearnLinks, "no screen draws a Learn link that wraps").not.toEqual([]);
+    expect.soft(wrappedLearnLinks.filter((link) => !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);
   }, 900000);
 });

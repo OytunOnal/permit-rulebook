@@ -149,9 +149,11 @@ details.hold-group[open] > summary::before{content:"▾ "}
 .faildetail li.moot::before,.faildetail li.where::before{content:"— ";color:var(--color-muted)}
 .faildetail li.moot{color:var(--color-met)}
 .learn{font-size:.83rem;background:var(--color-band-soft);border-left:3px solid var(--color-band);padding:.5rem .75rem;margin-top:.55rem;max-width:34rem}
+/* A Learn link carries the data's label, which may be longer than a phone's
+   line: it wraps as a card's foot link does (.next, below). */
 .learn a{color:var(--color-band);font-weight:600;text-decoration:none;
-  display:inline-flex;align-items:center;min-height:var(--tap-min)}
-.learn a::after{content:" ↗"}
+  display:inline-block;align-content:center;min-height:var(--tap-min)}
+.learn a::after{content:"\2060↗"}
 
 /* Result cards */
 .stack{display:grid;gap:var(--gap-cards)}

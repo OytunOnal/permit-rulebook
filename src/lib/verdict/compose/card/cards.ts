@@ -361,7 +361,8 @@ function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  * Only where the unknown still binds: on a hard-failed route finding out
  * changes nothing, and the link sends the reader down a path that cannot open
  * (critique #4). The box ends on the link, with no full stop after it: the
- * link is a tap-height box a line cannot break inside, so on a phone a stop
+ * link is a tap-height box the line it sits on cannot break inside (its own
+ * label wraps within it), so on a phone a stop
  * after it wraps onto a line of its own (v1.1 gate critique, P5), as the
  * route page's own box has it.
  *

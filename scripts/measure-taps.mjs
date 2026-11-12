@@ -103,6 +103,12 @@ const DRAWN = [
     destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "yes", citizenship: "DZ",
     experience_7y: "lt3", salary_eur_year: "band_0",
   }],
+  // A reader who does not know whether the employer is innovative meets the
+  // talent card's Learn link, which wraps here.
+  ["/ (results, France, a Learn link)", {
+    destination: "fr", situation: "offer", qualification: "none", fr_innovative_employer: "unknown", citizenship: "IN",
+    experience_7y: "lt3", salary_eur_year: "unknown",
+  }],
 ];
 
 const seedFor = (answers) =>

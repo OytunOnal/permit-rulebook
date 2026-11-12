@@ -3909,6 +3909,11 @@
   },
   {
    "from": "tests/reader-pages.test.ts",
+   "to": "tests/card-link.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.test.ts",
    "to": "tests/reader-pages.ts",
    "kind": "dependency"
   },
@@ -3931,6 +3936,16 @@
    "from": "tests/reader-pages.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.ts",
+   "to": "tests/card-link.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/reader-pages.ts",
+   "to": "tests/card-link.ts",
+   "kind": "inheritance"
   },
   {
    "from": "tests/reason.test.ts",
@@ -9307,5 +9322,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a4cdcd172a44bdc490247a544240ac0534c3c8ddf06f028c8ed187b4a0f93f32"
+ "digest": "303d8d5ba3bfe2f6b081869611a962d778b479c738780f45bd95f437936066ef"
 }
