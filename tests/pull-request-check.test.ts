@@ -42,6 +42,9 @@ const shutsOutPullRequest = (condition: string): boolean =>
 
 const buildJob = jobOf(pages, "build");
 
+/** The jobs a pull request runs: each whose `if:` does not shut it out. */
+const pullRequestJobNames = jobNamesOf(pages).filter((name) => !shutsOutPullRequest(jobConditionOf(jobOf(pages, name))));
+
 describe("a pull request is checked on its own head, through a trigger of its own", () => {
   it("the pull_request trigger carries the push trigger's paths, in the same order", () => {
     const pushPaths = triggerPathsOf(pages, "push");
@@ -66,12 +69,15 @@ describe("a pull request is checked on its own head, through a trigger of its ow
     expect(checkoutRefOf(siteCheckout!)).toBe("${{ github.event.pull_request.head.sha }}");
   });
 
-  // The build runs a stranger's pull request's code, so no checkout leaves
+  // These jobs run a stranger's pull request's code, so no checkout leaves
   // the run's token in a repository's git config for that code to read.
-  it("the build's two checkouts, the site and the data, leave no token on disk", () => {
-    const checkouts = stepsOf(buildJob).filter((step) => step.includes("uses: actions/checkout@"));
-    expect(checkouts, "the build no longer checks out the site and the data, so this case would not read them").toHaveLength(2);
-    for (const checkout of checkouts) expect(checkout).toMatch(/^ {10}persist-credentials: false$/m);
+  it("every checkout in the jobs a pull request runs leaves no token on disk", () => {
+    const checkoutsOf = (name: string): string[] => stepsOf(jobOf(pages, name)).filter((step) => step.includes("uses: actions/checkout@"));
+    const checkoutCounts = Object.fromEntries(pullRequestJobNames.map((name) => [name, checkoutsOf(name).length]));
+    expect(checkoutCounts, "the checkouts this case reads are not the ones it expects")
+      .toEqual({ "data-commit": 1, "data-check": 1, build: 2, audit: 1 });
+    for (const name of pullRequestJobNames)
+      for (const checkout of checkoutsOf(name)) expect(checkout, name).toMatch(/^ {10}persist-credentials: false$/m);
   });
 });
 
@@ -98,7 +104,7 @@ describe("a pull request deploys, pins, announces and files nothing", () => {
   });
 });
 
-describe("a pull request runs the build and the audit, and both only read", () => {
+describe("a pull request runs the deploy's checks and the audit, and each only reads", () => {
   it("audit carries no condition that skips a pull request", () => {
     const audit = jobOf(pages, "audit");
     expect(audit, "pages.yml has no audit job").not.toBe("");
@@ -118,10 +124,9 @@ describe("a pull request runs the build and the audit, and both only read", () =
   });
 
   // A stranger's pull request runs its own code in these jobs.
-  it("the jobs a pull request runs are the build and the audit, and neither raises its permissions past reading", () => {
-    const pullRequestJobs = jobNamesOf(pages).filter((name) => !shutsOutPullRequest(jobConditionOf(jobOf(pages, name))));
-    expect(pullRequestJobs.sort()).toEqual(["audit", "build"]);
-    for (const name of pullRequestJobs) {
+  it("the jobs a pull request runs are data-commit, data-check, build and audit, and none raises its permissions past reading", () => {
+    expect([...pullRequestJobNames].sort()).toEqual(["audit", "build", "data-check", "data-commit"]);
+    for (const name of pullRequestJobNames) {
       const granted = jobPermissionsOf(jobOf(pages, name));
       expect(granted, `${name} states no permissions block`).not.toEqual([]);
       expect(granted.filter((scope) => !scope.endsWith(": read")), `${name} runs on a pull request with more than reading`)

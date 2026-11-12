@@ -110,3 +110,5 @@ Roadkeeper's preset in `eslint.config.mjs`.
   The inside check runs on real paths, every link followed: the file's
   against the folder's, so a link in the folder that leads out of it is
   refused too.
+- A value a workflow reads from a file or an event is checked for its shape
+  before it is written to the run's outputs.

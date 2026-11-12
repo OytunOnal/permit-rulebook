@@ -79,6 +79,17 @@ export const stepsOf = (job: string): string[] => job.split(/^ {6}- /m).slice(1)
 /** A step's `if:` on a line of its own, as one line with no `${{ }}` around it; "" when the step has none. */
 export const stepConditionOf = (step: string): string => keyExpressionOf(step, 8, "if");
 
+/**
+ * A step's `run: |` block as the runner gets it: its lines up to the first one, a comment's too, written left of
+ * the block's indent, each without that indent, and no blank lines after the last; "" when the step has no such block.
+ */
+export const stepScriptOf = (step: string): string => {
+  const [keyLine, ...under] = blockLinesOf(step, 8, "run");
+  if (keyLine?.trimEnd() !== `${" ".repeat(8)}run: |`) return "";
+  const end = under.findIndex((line) => line.trim() !== "" && !line.startsWith(" ".repeat(10)));
+  return under.slice(0, end < 0 ? undefined : end).map((line) => line.slice(10)).join("\n").trimEnd();
+};
+
 /** A checkout step's `ref:` under its `with:`, trimmed; "" when it has none. */
 export const checkoutRefOf = (step: string): string => /^ {10}ref:\s*(.+)$/m.exec(step)?.[1]?.trim() ?? "";
 

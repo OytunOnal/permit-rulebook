@@ -3198,6 +3198,31 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/data-commit.test.ts",
+   "to": "scripts/data-pin.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-commit.test.ts",
+   "to": "scripts/run-git.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-commit.test.ts",
+   "to": "tests/posix-shell.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-commit.test.ts",
+   "to": "tests/throwaway-folder.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/data-commit.test.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/dataset-ld.test.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -3220,6 +3245,11 @@
   {
    "from": "tests/deploy-finding.test.ts",
    "to": "scripts/deploy-finding.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/deploy-finding.test.ts",
+   "to": "tests/workflow-text.ts",
    "kind": "dependency"
   },
   {
@@ -4515,6 +4545,11 @@
   {
    "from": "tests/s24.test.ts",
    "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s24.test.ts",
+   "to": "tests/posix-shell.ts",
    "kind": "dependency"
   },
   {
@@ -9267,5 +9302,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "c042a193681edcc7ad49fe6077b5c1b9cc3bcd0509ca2a5d6a4f575a6ecae56d"
+ "digest": "84d0c0af97e28cb1adf819f25a28d5664bb6c562df1123b4e0d3d3d0b4c94465"
 }

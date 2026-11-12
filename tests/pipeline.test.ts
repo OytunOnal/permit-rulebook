@@ -91,13 +91,14 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
 
   it("the workflow builds a push against the lock, and the daily runs against the newest", () => {
     expect(pages).toContain("locked=$(sed -n 's/^sha=//p' data.lock)");
-    expect(pages).toContain("ref: ${{ steps.data.outputs.ref }}");
+    expect(pages).toContain("ref: ${{ needs.data-commit.outputs.sha }}");
     // The payload is a stranger's string: it arrives through the environment,
     // never interpolated into the script body, and is checked for 40 hex
     // characters before anything is checked out (Security review, 2026-09-08).
+    expect(pages.match(/client_payload/g), "the payload is read anywhere but the step's environment")
+      .toEqual(["client_payload"]);
     expect(pages).toContain("PAYLOAD_SHA: ${{ github.event.client_payload.sha }}");
-    expect(pages).toContain('repository_dispatch:yes) ref="$PAYLOAD_SHA"');
-    expect(pages).not.toContain('ref="${{ github.event.client_payload.sha }}"');
+    expect(pages).toContain('repository_dispatch:yes) sha="$PAYLOAD_SHA"');
     expect(pages).toContain("refusing to check anything out");
   });
 
@@ -108,7 +109,7 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
    * 2026-09-08).
    */
   it("only a first attempt of the two newest-data triggers may advance the lock", () => {
-    // The build's choice of ref reads the attempt.
+    // data-commit's choice of the data commit reads the attempt.
     expect(pages).toContain("RUN_ATTEMPT: ${{ github.run_attempt }}");
     expect(pages).toContain('first_attempt=$([ "$RUN_ATTEMPT" = "1" ] && echo yes || echo no)');
     expect(pages).toContain('case "$EVENT_NAME:$first_attempt" in');
@@ -119,7 +120,7 @@ describe("the data commit is pinned, and the pin is a commit that exists", () =>
     expect(pin, "no job writes the lock back").not.toBe("");
     expect(pin).toContain("github.run_attempt == 1");
     expect(pin).toContain("github.event_name == 'schedule' || github.event_name == 'repository_dispatch'");
-    expect(pin).toContain("needs.build.outputs.built != needs.build.outputs.locked");
+    expect(pin).toContain("needs.build.outputs.built != needs.data-commit.outputs.locked");
     // It is the only job with a write token, and the build has none.
     expect(pin).toContain("permissions:");
     expect(pin).toContain("contents: write");
@@ -275,9 +276,11 @@ describe("a cached page still finds its assets", () => {
 describe("a red deploy nobody watches keeps deploy run failed", () => {
   const report = jobOf(pages, "report");
 
-  it("report needs build, deploy, pin and audit", () => {
+  it("report needs every job whose red counts, and hands each one's result to the finding", () => {
     expect(report, "pages.yml has no report job").not.toBe("");
-    expect(jobNeedsOf(report).sort()).toEqual(["audit", "build", "deploy", "pin"]);
+    const needs = jobNeedsOf(report);
+    expect([...needs].sort()).toEqual(["audit", "build", "data-check", "data-commit", "deploy", "pin"]);
+    for (const job of needs) expect(report).toContain(`"${job}":"\${{ needs.${job}.result }}"`);
   });
 
   it("report runs whatever their result, on a scheduled or dispatched run's first attempt only", () => {
