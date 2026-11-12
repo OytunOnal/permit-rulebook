@@ -195,16 +195,21 @@ const seed = (walk: Walk) =>
  * names every screen laid out at another width, not the first; nothing more is
  * read from that screen. Any other failure is thrown as it is. */
 async function screenDrawnAt(site: PageOnSite, path: string, record: Walk | null): Promise<Omit<DrawnScreen, "where">> {
-  const { page, url } = site;
-  await page.goto(url("/404.html"));
-  await page.evaluate(record ? seed(record) : "localStorage.clear()");
   try {
-    await page.goto(url(path));
+    await openWithRecord(site, path, record);
   } catch (e) {
     if (e instanceof WidthFailure) return { html: "", noticeHeadings: [], footLinks: [], learnLinks: [], failure: e.message };
     throw e;
   }
-  return { ...(JSON.parse(await page.evaluate(DRAWN)) as Omit<DrawnScreen, "where" | "failure">), failure: null };
+  return { ...(JSON.parse(await site.page.evaluate(DRAWN)) as Omit<DrawnScreen, "where" | "failure">), failure: null };
+}
+
+/** Opens `path` on a device whose record is `record`'s answers, or that holds
+ * no record. */
+export async function openWithRecord({ page, url }: PageOnSite, path: string, record: Walk | null): Promise<void> {
+  await page.goto(url("/404.html"));
+  await page.evaluate(record ? seed(record) : "localStorage.clear()");
+  await page.goto(url(path));
 }
 
 /** Where the results at the end of `walk` were read, as a drawn screen names
