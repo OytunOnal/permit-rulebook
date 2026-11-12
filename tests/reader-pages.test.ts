@@ -114,7 +114,7 @@ describe("every question card the interview draws", () => {
   });
 });
 
-/** The passport whose Notice carries the longest foot link the data holds. */
+/** The passport whose Notice carries a foot link too long for a phone's line. */
 const ALGERIAN_PASSPORT = "DZ";
 /** The Notice that passport draws, read from the dataset so its title and label stay the data's. */
 const ALGERIAN_NOTICE = (() => {
