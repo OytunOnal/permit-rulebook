@@ -132,14 +132,19 @@ const failureLineOf = (link: CardLinkOnScreen): string => {
   const arrow = link.arrowFromLastWord;
   const arrowAt = arrow === null ? "its ↗ nowhere"
     : `its ↗ ${arrow.right.toFixed(1)} px right of its last word and ${arrow.down.toFixed(1)} px down from its line`;
-  return `${link.where}, "${link.label}" on "${link.card}": ${link.lines} line(s), ${arrowAt}, ${
+  const fits = link.fitsItsLine ? "its label fits its line" : "its label does not fit its line";
+  return `${link.where}, "${link.label}" on "${link.card}": ${fits}, ${link.lines} line(s), ${arrowAt}, ${
     link.width.toFixed(2)} px wide for ${link.textWidth.toFixed(2)} px of text and a ${link.loneArrowWidth.toFixed(2)} px ↗`;
 };
 
-/** Whether a link lays out as the desk draws it where its label fits: one
- * line, its ↗ right after its last word, as wide as its text and a lone ↗. */
+/** Whether a link lays out as the desk draws it. Where its label fits its
+ * line: on one line, its ↗ right after its last word, as wide as its text and
+ * a lone ↗. Where it does not, as in a wider font than this machine's: its ↗
+ * on its last word's line. */
 const isLaidOutForTheDesk = (link: CardLink): boolean =>
-  link.lines === 1 && isArrowOnLastWordLine(link) && isAsWideAsTextAndArrow(link);
+  link.fitsItsLine
+    ? link.lines === 1 && isArrowOnLastWordLine(link) && isAsWideAsTextAndArrow(link)
+    : isArrowOnLastWordLine(link);
 
 /** One word longer than a phone's line, as a label holding a URL would be. */
 const LONG_WORD = "Unbreakable".repeat(12);
@@ -180,7 +185,7 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     expect(articleDropped(screens)).toEqual([]);
   }, 600000);
 
-  it("lays out every foot link and Learn link on one line at the desk, as wide as its text and a lone ↗, on the Algerian reader's results, on the results for every destination at once and on the results of a reader who does not know", async () => {
+  it("lays out every foot link and Learn link whose label fits its line on one line at the desk, as wide as its text and a lone ↗, and every other with its ↗ on its last word's line, on the Algerian reader's results, on the results for every destination at once and on the results of a reader who does not know", async () => {
     const everyDestination = walks().filter((w) => w.answers["destination"] === EVERY_DESTINATION);
     const guarded = [...walks(ALGERIAN_PASSPORT), ...everyDestination, ...unknowingWalks()];
     const screens = await withSite((site) => drawnResults(site, guarded), DESK);
@@ -188,6 +193,7 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     expect(footLinksOf(screens, noticeNaming(ALGERIAN_PASSPORT)), "the Algerian notice's foot link is on none of the screens").not.toEqual([]);
     expect(learnLinksOf(screens), "no screen draws a Learn link").not.toEqual([]);
     const links = [...footLinksOf(screens), ...learnLinksOf(screens)];
+    expect(links.filter((link) => link.fitsItsLine), "no link's label fits its line").not.toEqual([]);
     expect(links.filter((link) => !isLaidOutForTheDesk(link)).map(failureLineOf)).toEqual([]);
   }, 600000);
 });

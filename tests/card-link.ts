@@ -8,7 +8,8 @@
 
 /** A card's link out as it lays out: its card's heading, its label, how many
  * lines its text takes, its box's width, its text's width, the width of a lone
- * ↗ in its font, and where its ↗ lays out from the end of its text's last line
+ * ↗ in its font, whether its label and a lone ↗ fit on one line in the box it
+ * sits in, and where its ↗ lays out from the end of its text's last line
  * (right of it, and down from that line's top), or null where its ↗ lays out
  * nowhere. */
 export interface CardLink {
@@ -18,20 +19,31 @@ export interface CardLink {
   width: number;
   textWidth: number;
   loneArrowWidth: number;
+  fitsItsLine: boolean;
   arrowFromLastWord: { right: number; down: number } | null;
 }
 
-/** Reads, in the page, the width of a lone ↗ set in a link's font, laid out
- * apart from any link. */
-const LONE_ARROW_WIDTH = `((link) => {
-  const arrow = document.createElement("span");
-  arrow.textContent = "\\u2197";
-  arrow.style.cssText = "position:absolute;white-space:nowrap";
-  arrow.style.font = getComputedStyle(link).font;
-  document.body.append(arrow);
-  const width = arrow.getBoundingClientRect().width;
-  arrow.remove();
+/** Reads, in the page, the width of a text set on one line in a link's font
+ * and letter spacing, laid out apart from any link. */
+const UNWRAPPED_WIDTH = `((link, text) => {
+  const style = getComputedStyle(link);
+  const probe = document.createElement("span");
+  probe.textContent = text;
+  probe.style.cssText = "position:absolute;white-space:nowrap";
+  probe.style.font = style.font;
+  probe.style.letterSpacing = style.letterSpacing;
+  document.body.append(probe);
+  const width = probe.getBoundingClientRect().width;
+  probe.remove();
   return width;
+})`;
+
+/** Reads, in the page, the width a link has to lay out in: the content width
+ * of the box it sits in. */
+const ROOM = `((link) => {
+  const box = link.parentElement;
+  const style = getComputedStyle(box);
+  return box.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
 })`;
 
 /** Reads, in the page, the box a link's ↗ lays out in, or null: the read names
@@ -63,13 +75,15 @@ export const CARD_LINK = `((link) => {
   const last = lines[lines.length - 1];
   const arrow = ${ARROW_BOX}(link);
   const heading = link.closest("article")?.querySelector("h3");
+  const loneArrowWidth = ${UNWRAPPED_WIDTH}(link, "\\u2197");
   return {
     card: heading ? heading.textContent.trim() : "",
     label: link.textContent.trim(),
     lines: new Set(lines.map((r) => Math.round(r.top))).size,
     width: link.getBoundingClientRect().width,
     textWidth: text.getBoundingClientRect().width,
-    loneArrowWidth: ${LONE_ARROW_WIDTH}(link),
+    loneArrowWidth,
+    fitsItsLine: ${UNWRAPPED_WIDTH}(link, link.textContent) + loneArrowWidth <= ${ROOM}(link) + 0.5,
     arrowFromLastWord: arrow && last ? { right: arrow.left - last.right, down: arrow.top - last.top } : null,
   };
 })`;
