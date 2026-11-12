@@ -171,9 +171,17 @@ click on the tracker link. Answers never leave the device.
   page, the 404, 4 country pages, 29 route pages generated from the dataset,
   never typed) plus 29 route JSON endpoints, the dataset and the countries as
   JSON, the sitemap, favicons, the social card.
-- **CI** — `pages.yml`: both repositories checked out, data gates, build,
-  tests with a real browser over `dist/`, the lint, asset truth, base-path
-  check, tap targets at 390 px, the carry, then deploy. The lint
+- **CI** — `pages.yml`: `data-commit` chooses the data commit once (the
+  lock, the newest, or the dispatch's) and hands one 40-hex sha to the jobs
+  after it; beside each other, `data-check` runs the data package's whole
+  check at it, and `build` builds it, then the site: build, tests with a real
+  browser over `dist/`, the lint, asset truth, base-path check, tap targets
+  at 390 px, the carry; `deploy` waits on both. Every pull request runs the
+  same checks on its own head, on the push's paths, in a concurrency group
+  of its own, and shows them on its page; it never deploys, pins, announces
+  or files an issue. Every checkout leaves no token on disk, and a value read
+  from a file or an event is checked for its shape before it reaches the
+  run's outputs (#343). The lint
   (`eslint.config.mjs`) loads Roadkeeper's preset from `roadkeeper-lint/`, which holds
   the limits, 400 lines a file and 40 a function with every line counted. The
   files over 400 lines are Ceilings in `docs/roadkeeper/ceilings.json`, each held
@@ -230,8 +238,8 @@ click on the tracker link. Answers never leave the device.
   fails the deploy (#110, #199). Beside the build, the audit job reads the
   site's lockfile: an advisory reddens the run, never holds the deploy; only
   `report` waits on it, and runs whatever its result. `report` runs last, on
-  a scheduled or dispatched run's first attempt, after the build, the deploy,
-  the pin and the audit: a red keeps one issue, `deploy run failed`, and the
+  a scheduled or dispatched run's first attempt, after every other job but
+  IndexNow: a red keeps one issue, `deploy run failed`, and the
   first green closes it, through the data package's kept-issue CLI built from
   the commit `data.lock` names (#117). Both workflows run on a named image,
   `ubuntu-26.04`, never `-latest` (#24).
