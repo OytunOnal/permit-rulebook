@@ -3843,6 +3843,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/pull-request-check.test.ts",
+   "to": "tests/workflow-text.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/rail.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"

@@ -44,7 +44,10 @@ pull request.
   `npm run assets:check` true, `npm run check:base` and
   `npm run measure:taps`; the data — `npm run check`
   end to end (build, typecheck:tests, validate, watch:coverage, tests). Both,
-  on the branch, before the merge.
+  on the branch, before the merge. A pull request to the site also runs the
+  deploy's checks and its audit on GitHub, on the pull request's own head, and
+  its page shows them; that check stands beside both repositories' local
+  green, never in its place.
 - Watch: data `npm run watch:sources` is the daily read of every source; it
   is never run in a slice.
 - Roadkeeper's tools (the green, red-before, same-cases, the check at write) run

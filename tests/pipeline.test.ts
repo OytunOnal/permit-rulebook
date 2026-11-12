@@ -251,6 +251,7 @@ describe("a cached page still finds its assets", () => {
       + " edit here when the step is meant to change.",
     ).toContain(
       `      - name: Carry the live site's assets forward, so a cached page still finds them${LF}`
+      + `        if: github.event_name != 'pull_request'${LF}`
       + `        working-directory: site${LF}`
       + `        env:${LF}`
       + `          CARRY_ORIGIN: \${{ env.SITE_URL }}${LF}`

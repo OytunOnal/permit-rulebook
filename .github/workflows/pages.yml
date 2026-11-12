@@ -13,7 +13,7 @@ name: deploy
 # live site from, and which host the canonical links, the sitemap and IndexNow
 # name (`tests/pipeline.test.ts` holds it).
 
-# What triggers a rebuild, and why there are four of them.
+# What triggers a run, and why there are five of them.
 #
 # The pages bake "RULES READ <date>" and the social card says "checked daily".
 # Both of those are claims about the DATA repository, and the daily source watch
@@ -31,12 +31,22 @@ name: deploy
 # `repository_dispatch` is the fast path: the watch fires a `dataset-updated`
 # event the moment it actually commits new state, so a real change reaches the
 # published page in minutes instead of waiting for tomorrow's cron.
+#
+# `pull_request` is a check, never a deploy: the build's own checks and the
+# audit run on the pull request's head, so a red shows on its page before
+# anyone is asked to merge it, from the same list of steps a deploy runs.
+# What only a deploy may do (publish, pin `data.lock`, announce to IndexNow,
+# read the live site, seal the Pages artifact, file an issue) names the
+# events it serves, and a pull request is not among them. Its paths are the
+# push's, so a pull request is checked exactly when its merge would rebuild
+# (`tests/pull-request-check.test.ts` holds both).
 
 # The one issue this workflow files: `deploy run failed`, under the `deploy`
 # label, kept by the `report` job (below). A red scheduled or dispatched run
 # opens it, or comments on it, reopening it when closed; the first green run
 # of those two kinds closes it with a line linking that run. Only a first
-# attempt counts; a re-run, a push and a hand dispatch file nothing (#117).
+# attempt counts; a re-run, a push, a hand dispatch and a pull request file
+# nothing (#117).
 on:
   push:
     branches: [master]
@@ -46,6 +56,15 @@ on:
     # only (steward-48).
     # The Ceilings file is let back in last: the lint reads it, so a push
     # changing only it must still run the Lint step (#149).
+    paths:
+      - "**"
+      - "!GLOSSARY.md"
+      - "!CODING_STANDARDS.md"
+      - "!CLAUDE.md"
+      - "!docs/**"
+      - "docs/roadkeeper/ceilings.json"
+  # The push's paths, in the push's order.
+  pull_request:
     paths:
       - "**"
       - "!GLOSSARY.md"
@@ -69,9 +88,13 @@ permissions:
 
 # One deploy at a time, and a run already in flight finishes rather than being
 # cancelled: a half-deployed static site is worse than a slightly stale one.
+# A pull request's runs wait in a group of their own, one per pull request, so
+# a check never queues behind a deploy nor displaces one waiting in `pages`;
+# a newer push to the pull request cancels the check still running on its
+# older head.
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('pull-request-{0}', github.event.pull_request.number) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   SITE_URL: https://permitrulebook.com/
@@ -99,6 +122,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (node24)
         with:
           path: site
+          # A pull request's own head, the commit reviewed and the one the
+          # merge guard reads, not GitHub's merge commit. Empty on every other
+          # event, which checks out that event's own commit.
+          ref: ${{ github.event.pull_request.head.sha }}
 
       # Where the data has to end up is a fact the site's own manifest already
       # holds. It is read from there rather than typed here: the directory still
@@ -116,11 +143,12 @@ jobs:
           path=$(node -p "require('./package.json').dependencies['permit-rulebook-data'].replace(/^file:/, '')")
           echo "dir=$(basename "$path")" >> "$GITHUB_OUTPUT"
           # `data.lock` names the data commit this site is built against, and a
-          # push or a manual run builds against exactly that. The sibling used
-          # to float at its own origin HEAD, which broke the rollback: re-running
-          # the last green deploy tested old site code against new data and
-          # failed, and any data commit could break this deploy without a single
-          # change here (found by trying it, 2026-09-08).
+          # push, a pull request or a manual run builds against exactly that.
+          # The sibling used to float at its own origin HEAD, which broke the
+          # rollback: re-running the last green deploy tested old site code
+          # against new data and failed, and any data commit could break this
+          # deploy without a single change here (found by trying it,
+          # 2026-09-08).
           #
           # The daily schedule and the watch's dispatch are the deliberate
           # exception — they exist to build against the newest data — and they
@@ -238,8 +266,12 @@ jobs:
       # sitemap the build just wrote, and travels as a job output: one JSON
       # array of a few kilobytes, well under the megabyte outputs allow, and no
       # second artifact to upload and fetch.
+      #
+      # This step, the carry and the upload serve only the deploy, and a pull
+      # request deploys nothing: all three skip it.
       - name: The addresses the deploy will announce
         id: urls
+        if: github.event_name != 'pull_request'
         working-directory: site
         run: |
           urls=$(grep -o '<loc>[^<]*' dist/sitemap.xml | sed 's/<loc>//' | jq -R . | jq -sc .)
@@ -272,12 +304,14 @@ jobs:
       # reason `tests/pipeline.test.ts` keeps beside its verbatim pin of this
       # block.
       - name: Carry the live site's assets forward, so a cached page still finds them
+        if: github.event_name != 'pull_request'
         working-directory: site
         env:
           CARRY_ORIGIN: ${{ env.SITE_URL }}
         run: node scripts/carry-assets.mjs
 
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0 (upload-artifact v7, node24)
+        if: github.event_name != 'pull_request'
         with:
           path: site/dist
 
@@ -287,7 +321,8 @@ jobs:
   # whatever its result, so the deploy still publishes the day's values (#47).
   # `npm audit` reads the lockfile alone, so this job installs nothing and
   # checks out only the site. The data's own dependencies are audited by its
-  # watch.
+  # watch. It runs on a pull request too, so a dependency the pull request
+  # adds with a high advisory is red on its page.
   audit:
     runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     permissions:
@@ -336,6 +371,8 @@ jobs:
 
   deploy:
     needs: build
+    # A pull request is checked, never published.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-26.04 # named, never -latest: the build job says why
     # The only job that publishes: an artifact upload and the OIDC token Pages
     # signs the deployment with.
@@ -410,10 +447,10 @@ jobs:
   # A scheduled or dispatched deploy has nobody at the other end, so its red
   # keeps one issue, `deploy run failed`, and its first green closes it, with
   # a line linking the run (#117, decisions 3 to 6 and 13). A push, a hand
-  # dispatch and a re-run have a person watching: they keep nothing, and a
-  # push's or a re-run's green proves nothing about the daily page, since both
-  # build against data.lock's data. IndexNow is not among the needs: it cannot
-  # redden the run, so it cannot raise the alarm either.
+  # dispatch, a re-run and a pull request have a person watching: they keep
+  # nothing, and a push's or a re-run's green proves nothing about the daily
+  # page, since both build against data.lock's data. IndexNow is not among the
+  # needs: it cannot redden the run, so it cannot raise the alarm either.
   #
   # `always()`, because a red or cancelled job is what it is here to say. What
   # the run found is `scripts/deploy-finding.mjs`'s; the tracker is kept by the

@@ -39,3 +39,53 @@ export const jobOf = (yaml: string, name: string): string => {
   if (at < 0) return "";
   return jobs.slice(headers[at]!.index, headers[at + 1]?.index);
 };
+
+/** Whether a line is YAML that counts: not blank, not a comment. */
+const isContentLine = (line: string): boolean => line.trim() !== "" && !line.trimStart().startsWith("#");
+
+/** A key's block: its own line at `indent` spaces and every line under it, up to the next content line at that indent or less; [] if absent. */
+const blockLinesOf = (text: string, indent: number, key: string): string[] => {
+  const lines = text.split("\n");
+  const at = lines.findIndex((line) => line.startsWith(`${" ".repeat(indent)}${key}:`));
+  if (at < 0) return [];
+  const isPastBlock = (line: string, i: number): boolean =>
+    i > at && isContentLine(line) && line.length - line.trimStart().length <= indent;
+  const end = lines.findIndex(isPastBlock);
+  return lines.slice(at, end < 0 ? undefined : end);
+};
+
+/** A key's value at `indent` spaces: its line's, or a `|` block's lines joined by spaces, with a `${{ }}` around the whole taken off; "" if absent. */
+const expressionAt = (text: string, indent: number, key: string): string => {
+  const [keyLine, ...under] = blockLinesOf(text, indent, key);
+  if (keyLine === undefined) return "";
+  const inline = keyLine.slice(indent + key.length + 1).trim();
+  const parts = /^[|>][-+]?$/.test(inline) ? under.filter(isContentLine).map((line) => line.trim()) : [inline];
+  return parts.join(" ").replace(/^\$\{\{\s*(.*?)\s*\}\}$/, "$1");
+};
+
+/** A job's `if:`, as one line with no `${{ }}` around it; "" when the job has none. */
+export const jobConditionOf = (job: string): string => expressionAt(job, 4, "if");
+
+/** Each step of a job, as its text from after its `- `. */
+export const stepsOf = (job: string): string[] => job.split(/^ {6}- /m).slice(1);
+
+/** A step's `if:` on a line of its own, as one line with no `${{ }}` around it; "" when the step has none. */
+export const stepConditionOf = (step: string): string => expressionAt(step, 8, "if");
+
+/** The scopes a job's `permissions:` block grants, each as `scope: level`; [] when it has no such block. */
+export const jobPermissionsOf = (job: string): string[] =>
+  blockLinesOf(job, 4, "permissions").slice(1).filter(isContentLine).map((line) => line.trim());
+
+/** A trigger's `paths:` list under `on:`, each entry without its quotes, in the file's order; [] when it has none. */
+export const triggerPathsOf = (yaml: string, trigger: string): string[] => {
+  const triggers = blockLinesOf(yaml, 0, "on").join("\n");
+  const triggerBlock = blockLinesOf(triggers, 2, trigger).join("\n");
+  return blockLinesOf(triggerBlock, 4, "paths").slice(1).filter(isContentLine)
+    .map((line) => line.trim().replace(/^- "?(.*?)"?$/, "$1"));
+};
+
+/** The workflow's own `concurrency:`: its group and whether it cancels a run in progress, each with no `${{ }}` around it. */
+export const concurrencyOf = (yaml: string): { group: string; cancelInProgress: string } => {
+  const block = blockLinesOf(yaml, 0, "concurrency").join("\n");
+  return { group: expressionAt(block, 2, "group"), cancelInProgress: expressionAt(block, 2, "cancel-in-progress") };
+};
