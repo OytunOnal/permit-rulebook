@@ -10,9 +10,10 @@ import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import { isArrowOnLastWordLine, isAsWideAsTextAndArrow, type CardLink } from "./card-link.js";
 import {
   DEFAULT_PASSPORT, EVERY_DESTINATION, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf,
-  learnLinksOf, noticePassports, noticesDrawnOnNone, openWithRecord, questionCards, resultsWhere, sentencesOf, unknowingWalks, walks,
-  type CardLinkOnScreen, type ReaderPage,
+  learnLinksOf, noticePassports, noticesDrawnOnNone, openWithRecord, questionCards, resultsWhere, sentencesOf, unknowingWalks,
+  walks, type CardLinkOnScreen, type ReaderPage,
 } from "./reader-pages.js";
+import { widenedFailuresOf, widenedScreens } from "./widened-screen.js";
 
 /**
  * A country's name opens a sentence with a capital (#152; #151, ruling 6).
@@ -192,13 +193,18 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
 });
 
 describe.skipIf(notWalked !== null)("every screen the module draws, on a phone", () => {
-  it("draws every Notice, lays out every screen at the phone's width, and wraps the Algerian notice's foot link and a Learn link with each ↗ on its last word's line", async () => {
+  it("draws every Notice, lays out every screen at the phone's width, its text as drawn and widened, and wraps the Algerian notice's foot link and a Learn link with each ↗ on its last word's line", async () => {
     const walksTaken = [...[DEFAULT_PASSPORT, ...noticePassports()].flatMap((passport) => walks(passport)), ...unknowingWalks()];
-    const screens = await withSite((site) => drawnScreens(site, walksTaken), PHONE);
+    const { screens, widened } = await withSite(async (site) => ({
+      screens: await drawnScreens(site, walksTaken),
+      widened: await widenedScreens(site, walksTaken),
+    }), PHONE);
     // Soft, so a Notice drawn only on screens wider than the phone, which are
     // read for nothing, is named beside those screens' failures.
     expect.soft(noticesDrawnOnNone(screens), "a Notice no screen draws").toEqual([]);
     expect.soft(failuresOf(screens)).toEqual([]);
+    expect(widened.length, "the wide pass drew another set of screens").toBe(screens.length);
+    expect.soft(widenedFailuresOf(widened, PHONE.viewport.width)).toEqual([]);
     const algerianLinks = footLinksOf(screens, noticeNaming(ALGERIAN_PASSPORT));
     expect(algerianLinks).not.toEqual([]);
     expect.soft(algerianLinks.filter((link) => link.lines < 2 || !isArrowOnLastWordLine(link)).map(failureLineOf)).toEqual([]);

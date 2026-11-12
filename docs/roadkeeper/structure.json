@@ -3918,6 +3918,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/reader-pages.test.ts",
+   "to": "tests/widened-screen.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/reader-pages.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -5385,6 +5390,16 @@
   {
    "from": "tests/walk-site.test.ts",
    "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/widened-screen.ts",
+   "to": "scripts/browser/browser.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/widened-screen.ts",
+   "to": "tests/reader-pages.ts",
    "kind": "dependency"
   },
   {

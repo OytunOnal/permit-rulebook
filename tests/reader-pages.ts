@@ -230,25 +230,39 @@ export async function drawnResults(site: PageOnSite, walksTaken: Walk[]): Promis
   return results;
 }
 
+/** A screen the walk opens: the name it is read under, its path, and the
+ * walk whose record the device holds, or null for none. */
+export interface ScreenToOpen {
+  where: string;
+  path: string;
+  record: Walk | null;
+}
+
 /**
  * The screens the module draws in the browser: the results — masthead and
  * cards — at the end of each of `walksTaken`, and the arrival line from each
  * country page and each country's first route page, for a reader with no
  * record and for one whose record is another country's.
  */
-export async function drawnScreens(site: PageOnSite, walksTaken = walks()): Promise<DrawnScreen[]> {
-  const screens = await drawnResults(site, walksTaken);
+export function screensToOpen(walksTaken = walks()): ScreenToOpen[] {
+  const screens: ScreenToOpen[] = walksTaken.map((walk) => ({ where: resultsWhere(walk), path: "/", record: walk }));
   const all = walks();
   for (const country of ds.countries) {
     const code = country.code.toLowerCase();
     const elsewhere = all.find((w) => w.answers[DESTINATION_FIELD] !== code && w.answers[DESTINATION_FIELD] !== EVERY_DESTINATION)!;
     for (const record of [null, elsewhere]) {
       const recorded = record ? "with another country's record" : "with no record";
-      screens.push({ where: `/?country=${code} ${recorded}`, ...(await screenDrawnAt(site, `/?country=${code}`, record)) });
-      const route = country.routes[0]!.id;
-      screens.push({ where: `/?route=${route} ${recorded}`, ...(await screenDrawnAt(site, `/?route=${route}`, record)) });
+      screens.push({ where: `/?country=${code} ${recorded}`, path: `/?country=${code}`, record });
+      screens.push({ where: `/?route=${country.routes[0]!.id} ${recorded}`, path: `/?route=${country.routes[0]!.id}`, record });
     }
   }
+  return screens;
+}
+
+/** Each of the screens `screensToOpen` names for `walksTaken`, as the module draws it. */
+export async function drawnScreens(site: PageOnSite, walksTaken = walks()): Promise<DrawnScreen[]> {
+  const screens: DrawnScreen[] = [];
+  for (const { where, path, record } of screensToOpen(walksTaken)) screens.push({ where, ...(await screenDrawnAt(site, path, record)) });
   return screens;
 }
 
