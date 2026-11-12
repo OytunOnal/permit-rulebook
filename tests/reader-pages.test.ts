@@ -8,7 +8,7 @@ import { routeAddresses } from "../src/lib/slug.js";
 import { DESK, PHONE } from "../scripts/browser/browser.mjs";
 import { skipReason, warnNotWalked, withSite } from "./browser-walk.js";
 import {
-  DEFAULT_PASSPORT, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf, isArrowOnLastWordLine,
+  DEFAULT_PASSPORT, EVERY_DESTINATION, builtPages, drawnResults, drawnScreens, failuresOf, footLinksOf, headingsOf, isArrowOnLastWordLine,
   noticePassports, noticesDrawnOnNone, questionCards, sentencesOf, walks, type FootLinkOnScreen, type ReaderPage,
 } from "./reader-pages.js";
 
@@ -140,8 +140,9 @@ describe.skipIf(notWalked !== null)("every screen the module draws", () => {
     expect(articleDropped(screens)).toEqual([]);
   }, 600000);
 
-  it("lays out every foot link on one line at the desk, the Algerian reader's and the all-four-countries results", async () => {
-    const guarded = [...walks(ALGERIAN_PASSPORT), ...walks().filter((w) => w.answers["destination"] === "all")];
+  it("lays out every foot link on one line at the desk, on the Algerian reader's results and on the results for every destination at once", async () => {
+    const everyDestination = walks().filter((w) => w.answers["destination"] === EVERY_DESTINATION);
+    const guarded = [...walks(ALGERIAN_PASSPORT), ...everyDestination];
     const screens = await withSite((site) => drawnResults(site, guarded), DESK);
     expect(failuresOf(screens)).toEqual([]);
     expect(footLinksOf(screens, ALGERIAN_NOTICE), "the Algerian notice's foot link is on none of the screens").not.toEqual([]);

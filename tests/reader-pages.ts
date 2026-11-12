@@ -46,6 +46,9 @@ export function builtPages(): ReaderPage[] {
   return pages;
 }
 
+/** The destination answer that asks for every country at once. */
+export const EVERY_DESTINATION = "all";
+
 /** The field the interview asks the reader's passport on. */
 const PASSPORT_FIELD = "citizenship";
 
@@ -222,7 +225,7 @@ export async function drawnScreens(site: PageOnSite, passports = [DEFAULT_PASSPO
   const all = walks();
   for (const country of ds.countries) {
     const code = country.code.toLowerCase();
-    const elsewhere = all.find((w) => w.answers[DESTINATION_FIELD] !== code && w.answers[DESTINATION_FIELD] !== "all")!;
+    const elsewhere = all.find((w) => w.answers[DESTINATION_FIELD] !== code && w.answers[DESTINATION_FIELD] !== EVERY_DESTINATION)!;
     for (const record of [null, elsewhere]) {
       const recorded = record ? "with another country's record" : "with no record";
       screens.push({ where: `/?country=${code} ${recorded}`, ...(await screenDrawnAt(site, `/?country=${code}`, record)) });
