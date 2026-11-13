@@ -150,10 +150,10 @@ const noErrorsExpected = {
 export const walksPlugin = { rules: { "no-errors-expected": noErrorsExpected } };
 
 /** The code and the scripts, where a file is named for its main export; a page named `index` is a route, outside them. */
-const NAMED_FOR_THEIR_EXPORT = ["src/lib/**/*.ts", "src/lib/**/*.mjs", "scripts/**/*.ts", "scripts/**/*.mjs"];
+const FILES_NAMED_FOR_THEIR_EXPORT = ["src/lib/**/*.ts", "src/lib/**/*.mjs", "scripts/**/*.ts", "scripts/**/*.mjs"];
 
-/** A file named `index`, whatever its extension. */
-const AN_INDEX_FILE = /(^|[\\/])index\.[^\\/]+$/;
+/** The name `index`, with any extension, read off a path's last part: the name that says nothing of what a file does. */
+const INDEX_FILE_NAME = /(^|[\\/])index\.[^\\/]+$/;
 
 /**
  * A file is named for its main export (`ROADKEEPER_STANDARDS.md`, Names; #309,
@@ -163,7 +163,7 @@ const AN_INDEX_FILE = /(^|[\\/])index\.[^\\/]+$/;
 const noIndexFile = {
   create: (context) => ({
     Program(node) {
-      if (AN_INDEX_FILE.test(context.filename))
+      if (INDEX_FILE_NAME.test(context.filename))
         context.report({ node, message: "Name the file for its main export, not `index` (ROADKEEPER_STANDARDS.md › Names)." });
     },
   }),
@@ -205,7 +205,7 @@ export default [
     rules: { "walks/no-errors-expected": "error" },
   },
   {
-    files: NAMED_FOR_THEIR_EXPORT,
+    files: FILES_NAMED_FOR_THEIR_EXPORT,
     plugins: { names: { rules: { "no-index-file": noIndexFile } } },
     rules: { "names/no-index-file": "error" },
   },

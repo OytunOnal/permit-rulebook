@@ -5959,12 +5959,12 @@
     "exported": true
    },
    {
-    "name": "NAMED_FOR_THEIR_EXPORT",
+    "name": "FILES_NAMED_FOR_THEIR_EXPORT",
     "kind": "const",
     "exported": false
    },
    {
-    "name": "AN_INDEX_FILE",
+    "name": "INDEX_FILE_NAME",
     "kind": "const",
     "exported": false
    },
@@ -9460,5 +9460,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "ea1dc3d5c3ef206f8a30033051b74c0acd162d3ea1e8f09b0fe0d7c6ce755c35"
+ "digest": "b7fb325f2951d688c367138cf43413ca9b9af05d0348753762786eb6769ff7ca"
 }
