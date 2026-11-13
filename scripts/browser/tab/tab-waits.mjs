@@ -166,12 +166,10 @@ async function pollUntil(read, what) {
 
 /**
  * The waits of the tab that `sendToTab` sends CDP commands to. The tab's
- * events go through `watch`, so the waits know the requests in flight; a
- * navigation calls `forgetProblems`, so the tab's problems are its page's.
+ * events go through `watch`, so the waits know the requests in flight.
  */
 export class TabWaits {
   #sendToTab;
-  #forgetProblems;
   /** The tab's requests in flight by their ids: each one's address, and the document load it belongs to. */
   #inFlight = new Map();
   /** The document the last wait read the tab on, the first input's wait aside: the one a gesture leaves. */
@@ -179,9 +177,8 @@ export class TabWaits {
   /** Chrome's reply once every document the tab opens from here on counts its smooth scrolls. */
   #smoothScrollsWatched = null;
 
-  constructor(sendToTab, forgetProblems) {
+  constructor(sendToTab) {
     this.#sendToTab = sendToTab;
-    this.#forgetProblems = forgetProblems;
   }
 
   /**
@@ -205,7 +202,6 @@ export class TabWaits {
 
   /** Sends the navigation and returns at once, for a read before the page's script runs. */
   navigate = async (url) => {
-    this.#forgetProblems();
     this.#documentSeen = null;
     await this.#watchSmoothScrolls();
     const { errorText } = await this.#sendToTab("Page.navigate", { url });

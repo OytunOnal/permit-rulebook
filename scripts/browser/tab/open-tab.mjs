@@ -6,8 +6,8 @@ import { TabWaits } from "./tab-waits.mjs";
 
 /**
  * Opens a tab in the browser `connection` drives, attached and set up the
- * same way whichever it is, with its own lists of problems and requests, and
- * returns its page.
+ * same way whichever it is, with its own list of requests, and returns its
+ * page.
  *
  * `setup`: the `screen`, whether to keep the requests
  * (`network`), the factor every tab is slowed by (`cpuSlowdown`), and the
@@ -19,7 +19,7 @@ export async function openTab(connection, setup) {
   const { sessionId } = await connection.send("Target.attachToTarget", { targetId, flatten: true });
   const sendToTab = (method, params) => connection.send(method, params, sessionId);
   const events = new TabEvents(sendToTab, { network: setup.network, walkLog: setup.walkLog });
-  const waits = new TabWaits(sendToTab, events.forgetProblems);
+  const waits = new TabWaits(sendToTab);
   const gestures = new TabGestures(sendToTab, waits);
   connection.listenToTab(sessionId, (message) => {
     waits.watch(message);

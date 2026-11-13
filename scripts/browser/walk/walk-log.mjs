@@ -12,9 +12,8 @@ const ERRORS_KEPT = 100;
 
 /**
  * What one browser keeps across a whole walk, every tab and navigation of it:
- * each error with the address of the page it came from, which a tab's own
- * `problems()` forgets at its next navigation, up to `ERRORS_KEPT` and a count
- * of the rest; and the tab on screen.
+ * the walk's one list of errors, each with the address of the page it came
+ * from, up to `ERRORS_KEPT` and a count of the rest; and the tab on screen.
  */
 export class WalkLog {
   /** @type {WalkError[]} */
@@ -25,7 +24,7 @@ export class WalkLog {
   /**
    * Keeps `message`, thrown or logged by the page at `address`, while fewer
    * than `ERRORS_KEPT` are kept, and counts it otherwise; the traffic
-   * counter's two local-only messages are neither (`TabEvents`).
+   * counter's two local-only messages are neither (`isLocalBeaconNoise`).
    */
   recordError = (address, message) => {
     if (isLocalBeaconNoise(message)) return;
