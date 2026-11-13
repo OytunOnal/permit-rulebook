@@ -3,7 +3,7 @@ import dataset from "permit-rulebook-data/data/dataset.json";
 import type { Dataset } from "permit-rulebook-data";
 import {
   EMPTY_INTERVIEW, interviewAfter, type Gesture, type InterviewState, type InterviewStep, type KeptRecord,
-} from "../src/lib/interview/index.js";
+} from "../src/lib/interview/start-interview.js";
 
 const ds = dataset as unknown as Dataset;
 

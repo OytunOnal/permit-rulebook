@@ -5,7 +5,7 @@ import { backToLine, keepNextLine, keepToResultLine } from "../src/lib/copy/inte
 import {
   EMPTY_INTERVIEW, interviewAfter, type Gesture, type HistoryCall, type InterviewState, type InterviewStep,
   type KeptRecord,
-} from "../src/lib/interview/index.js";
+} from "../src/lib/interview/start-interview.js";
 import { openInterviewHistory, type InterviewHistory } from "../src/lib/interview-history/interview-history.js";
 import { DESK, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {

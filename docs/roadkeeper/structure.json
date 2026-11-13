@@ -102,14 +102,14 @@
    "path": "src/lib/interview",
    "entries": [
     {
-     "file": "src/lib/interview/index.ts",
+     "file": "src/lib/interview/start-interview.ts",
      "level": "main"
     }
    ],
    "files": [
     "src/lib/interview/flow/interview-after.ts",
-    "src/lib/interview/index.ts",
-    "src/lib/interview/interview.css"
+    "src/lib/interview/interview.css",
+    "src/lib/interview/start-interview.ts"
    ]
   },
   {
@@ -326,7 +326,7 @@
   "src/lib/interview/draw/screen/question-screen.ts": "presentation",
   "src/lib/interview/draw/screen/verdict-screen.ts": "presentation",
   "src/lib/interview/flow/interview-after.ts": "application",
-  "src/lib/interview/index.ts": "main",
+  "src/lib/interview/start-interview.ts": "main",
   "src/lib/not-found.ts": "presentation",
   "src/lib/question.ts": "presentation",
   "src/lib/quote.ts": "presentation",
@@ -1594,32 +1594,32 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/interview-history/interview-history.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/interview/draw/drawing.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/interview/interview.css",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
@@ -2570,7 +2570,7 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/start-interview.ts",
    "kind": "dependency"
   },
   {
@@ -2735,7 +2735,7 @@
   },
   {
    "from": "tests/back-and-keep.test.ts",
-   "to": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/start-interview.ts",
    "kind": "dependency"
   },
   {
@@ -3635,7 +3635,7 @@
   },
   {
    "from": "tests/interview.test.ts",
-   "to": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/start-interview.ts",
    "kind": "dependency"
   },
   {
@@ -5045,7 +5045,7 @@
   },
   {
    "from": "tests/screen.test.ts",
-   "to": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/start-interview.ts",
    "kind": "dependency"
   },
   {
@@ -5538,7 +5538,7 @@
     "exported": true
    }
   ],
-  "src/lib/interview/index.ts": [
+  "src/lib/interview/start-interview.ts": [
    {
     "name": "InterviewPorts",
     "kind": "type",
@@ -9445,5 +9445,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "ed4dc400a814a65ecc09de70f3b9b07bf170e35fb83e6e4bfde9a3d5dfdb7deb"
+ "digest": "89a20194b317208c8338b904b441e3acc3bffab7785af2d874f49e764b77527f"
 }
