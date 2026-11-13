@@ -5,7 +5,7 @@ import {
   type Dataset,
 } from "permit-rulebook-data";
 import { NO_COUNTRY_MATCHES, NO_COUNTRY_MATCHES_STATUS, territoryLine } from "../src/lib/copy/interview.js";
-import { countrySearchOf } from "../src/lib/country-search/index.js";
+import { countrySearchOf } from "../src/lib/country-search/country-search.js";
 import { PHONE, type BrowserPage, type PageOnSite } from "../scripts/browser/browser.mjs";
 import {
   recordSeedScript, skipReason, warnNotWalked, withSite,

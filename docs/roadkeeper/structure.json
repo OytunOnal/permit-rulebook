@@ -63,7 +63,7 @@
    "path": "src/lib/country-search",
    "entries": [
     {
-     "file": "src/lib/country-search/index.ts",
+     "file": "src/lib/country-search/country-search.ts",
      "level": "presentation"
     }
    ],
@@ -73,7 +73,7 @@
     "src/lib/country-search/control/markup.ts",
     "src/lib/country-search/control/mount.ts",
     "src/lib/country-search/control/view.ts",
-    "src/lib/country-search/index.ts"
+    "src/lib/country-search/country-search.ts"
    ]
   },
   {
@@ -297,7 +297,7 @@
   "src/lib/country-search/control/markup.ts": "presentation",
   "src/lib/country-search/control/mount.ts": "presentation",
   "src/lib/country-search/control/view.ts": "presentation",
-  "src/lib/country-search/index.ts": "presentation",
+  "src/lib/country-search/country-search.ts": "presentation",
   "src/lib/data-page.ts": "presentation",
   "src/lib/dataset-ld.ts": "presentation",
   "src/lib/feedback-page.ts": "presentation",
@@ -1009,27 +1009,27 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/country-search/index.ts",
+   "from": "src/lib/country-search/country-search.ts",
    "to": "src/lib/country-search/control/controller.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/country-search/index.ts",
+   "from": "src/lib/country-search/country-search.ts",
    "to": "src/lib/country-search/control/listbox.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/country-search/index.ts",
+   "from": "src/lib/country-search/country-search.ts",
    "to": "src/lib/country-search/control/markup.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/country-search/index.ts",
+   "from": "src/lib/country-search/country-search.ts",
    "to": "src/lib/country-search/control/mount.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/country-search/index.ts",
+   "from": "src/lib/country-search/country-search.ts",
    "to": "src/lib/country-search/control/view.ts",
    "kind": "type-only"
   },
@@ -1485,7 +1485,7 @@
   },
   {
    "from": "src/lib/interview/draw/screen/question-screen.ts",
-   "to": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/country-search.ts",
    "kind": "dependency"
   },
   {
@@ -1670,7 +1670,7 @@
   },
   {
    "from": "src/lib/question.ts",
-   "to": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/country-search.ts",
    "kind": "dependency"
   },
   {
@@ -3650,7 +3650,7 @@
   },
   {
    "from": "tests/listbox.test.ts",
-   "to": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/country-search.ts",
    "kind": "dependency"
   },
   {
@@ -5250,7 +5250,7 @@
   },
   {
    "from": "tests/territories.test.ts",
-   "to": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/country-search.ts",
    "kind": "dependency"
   },
   {
@@ -5495,7 +5495,7 @@
     "exported": false
    }
   ],
-  "src/lib/country-search/index.ts": [],
+  "src/lib/country-search/country-search.ts": [],
   "src/lib/frame/framed-page.ts": [
    {
     "name": "PagePlace",
@@ -9445,5 +9445,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7ae1bf19e95d1e41a269f6ac56efdbd1ccc1f6b48a49b0db269e50e19b7319ee"
+ "digest": "4ac201185704c435631b287dabd6aae22b1d3910df8c031c9064259b8fc979d1"
 }

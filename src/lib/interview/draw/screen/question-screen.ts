@@ -6,7 +6,7 @@
  */
 import { remainingQuestions, type Question } from "permit-rulebook-data";
 import { arrivalLineHtml } from "../../../arrival-line.js";
-import { countrySearchOf, hasClasses, mountCountrySearch } from "../../../country-search/index.js";
+import { countrySearchOf, hasClasses, mountCountrySearch } from "../../../country-search/country-search.js";
 import type { Glossary } from "../../../gloss.js";
 import { isLongList, questionCardHtml, questionMastheadOf } from "../../../question.js";
 import type { InterviewScreen, InterviewStep } from "../../flow/interview-after.js";

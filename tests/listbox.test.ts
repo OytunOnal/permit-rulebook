@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { fieldOptions, matchOptions, remainingQuestions, type Dataset } from "permit-rulebook-data";
 import rawDataset from "permit-rulebook-data/data/dataset.json";
 import { matchesHighlightedLine } from "../src/lib/copy/interview.js";
-import { QUERY_MAX_LENGTH, countrySearchOf, type SearchView } from "../src/lib/country-search/index.js";
+import { QUERY_MAX_LENGTH, countrySearchOf, type SearchView } from "../src/lib/country-search/country-search.js";
 import { questionCardHtml } from "../src/lib/question.js";
 
 const dataset = rawDataset as unknown as Dataset;
