@@ -175,6 +175,18 @@ describe.skipIf(noChrome !== null)("smoke's results over fixture pages", () => {
     expect(interview?.failures.join("\n")).toContain(`the page threw — exception: Error: ${thrown}`);
     expect(results.filter((r) => r.path !== "/").flatMap((r) => r.thrown)).toEqual([]);
   }, 60000);
+
+  it("a page that throws after sending the reader to an address no check opens fails smoke in a line of its own, naming that address and the error", async () => {
+    const thrown = "the page the reader was sent to broke";
+    // The interview's stand-in line keeps the first page from counting as
+    // drawn, so the walk waits on the page it sends the reader to.
+    const sendsTheReaderOn = `<!doctype html><html><head>${VIEWPORT_META}<script>location.replace("moved/");</script></head><body><p class="stand-in">…</p></body></html>`;
+    const results = await smokeOver({ ...QUIET_SITE, "index.html": sendsTheReaderOn, "moved/index.html": throwing(thrown) });
+    const unplaced = results.filter((r) => r.path.endsWith("/moved/"));
+    expect(unplaced.map((r) => r.failures.length)).toEqual([1]);
+    expect(unplaced[0]?.failures[0]).toContain(`the page threw — exception: Error: ${thrown}`);
+    expect(results.filter((r) => !r.path.endsWith("/moved/")).flatMap((r) => r.failures).join("\n")).not.toContain(thrown);
+  }, 60000);
 });
 
 /**
