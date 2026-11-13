@@ -420,6 +420,11 @@
   },
   {
    "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/walk/walk-log.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/browser.mjs",
    "to": "scripts/browser/walk/walk-site.mjs",
    "kind": "dependency"
   },
@@ -9415,5 +9420,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "0d61d25a7015e0bd22ae97e540bf012a1388494c2ee0bc7d0195063fe73e4e19"
+ "digest": "4c1b44eae5a2b91583c1a86b7c88d75e950fce669c00fe02a19dd49f23f6693a"
 }

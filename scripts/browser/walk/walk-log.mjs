@@ -34,7 +34,7 @@ const isLocalBeaconNoise = (problem) => LOCAL_BEACON_NOISE.some((rule) => rule.t
  */
 
 /** How many errors a walk keeps: a page throwing in a loop would otherwise fill a failure with thousands of lines. */
-const ERRORS_KEPT = 100;
+export const ERRORS_KEPT = 100;
 
 /**
  * What one browser keeps across a whole walk, every tab and navigation of it:

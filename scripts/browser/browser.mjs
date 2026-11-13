@@ -7,6 +7,7 @@
  * the page in it, and `SentRequest` a request that page sent. `WidthFailure`
  * is what the walk's page fails with when a page lays out wider or narrower
  * than the screen, so a walker can keep that failure and throw any other.
+ * `ERRORS_KEPT` is how many errors a walk keeps; it counts the rest.
  *
  * Beside the walk: `chromePath`, Chrome found for a caller that renders with
  * it, and `serve`, the built site's server for a caller that sends plain HTTP
@@ -22,6 +23,7 @@
 export { chromePath } from "./chrome/chrome.mjs";
 export { serve } from "./static-server/static-server.mjs";
 export { DESK, PHONE } from "./walk/screens.mjs";
+export { ERRORS_KEPT } from "./walk/walk-log.mjs";
 export { WidthFailure, walkSite } from "./walk/walk-site.mjs";
 
 /** @typedef {import("./tab/open-tab.mjs").BrowserPage} BrowserPage */
