@@ -181,7 +181,7 @@ function pageLoadOf({ check, value, unreadable }, surface, thrown) {
 }
 
 /** A page load of its own for `thrown`, the errors at `address`, which none of the checks opened. */
-function unplacedLoadOf(address, thrown, surface) {
+function unplacedLoadOf(address, surface, thrown) {
   return { surface, path: address, what: UNPLACED, value: {}, thrown, failures: thrown.map(threwLineOf) };
 }
 
@@ -215,7 +215,7 @@ async function walk(site, surface) {
   const unplaced = [...thrownAt].filter(([address]) => !opened.has(address));
   return [
     ...reads.map((read) => pageLoadOf(read, surface, thrownAt.get(read.address) ?? [])),
-    ...unplaced.map(([address, thrown]) => unplacedLoadOf(address, thrown, surface)),
+    ...unplaced.map(([address, thrown]) => unplacedLoadOf(address, surface, thrown)),
     ...(errorsLeftOut > 0 ? [pastTheCapLoadOf(errorsLeftOut, surface)] : []),
   ];
 }
