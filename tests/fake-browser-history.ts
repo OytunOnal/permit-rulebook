@@ -1,4 +1,4 @@
-import type { BrowserHistory } from "../src/lib/interview-history/index.js";
+import type { BrowserHistory } from "../src/lib/interview-history/interview-history.js";
 
 /**
  * A browser tab's history, in memory: the `BrowserHistory` the interview's

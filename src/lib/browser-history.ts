@@ -3,7 +3,7 @@
  * The browser's history behind the interview history's port: every call the
  * site makes to `window.history`, and its one `popstate` listener, are here.
  */
-import type { BrowserHistory } from "./interview-history/index.js";
+import type { BrowserHistory } from "./interview-history/interview-history.js";
 
 export function browserHistoryOf(win: Window): BrowserHistory {
   return {

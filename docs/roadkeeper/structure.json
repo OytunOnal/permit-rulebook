@@ -116,12 +116,12 @@
    "path": "src/lib/interview-history",
    "entries": [
     {
-     "file": "src/lib/interview-history/index.ts",
+     "file": "src/lib/interview-history/interview-history.ts",
      "level": "application"
     }
    ],
    "files": [
-    "src/lib/interview-history/index.ts",
+    "src/lib/interview-history/interview-history.ts",
     "src/lib/interview-history/list/entry-state.ts",
     "src/lib/interview-history/list/screen-list.ts"
    ]
@@ -313,7 +313,7 @@
   "src/lib/frame/head/icon-links.ts": "presentation",
   "src/lib/gloss.ts": "presentation",
   "src/lib/identity.ts": "presentation",
-  "src/lib/interview-history/index.ts": "application",
+  "src/lib/interview-history/interview-history.ts": "application",
   "src/lib/interview-history/list/entry-state.ts": "domain",
   "src/lib/interview-history/list/screen-list.ts": "domain",
   "src/lib/interview/draw/drawing.ts": "presentation",
@@ -875,7 +875,7 @@
   },
   {
    "from": "src/lib/browser-history.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "type-only"
   },
   {
@@ -1364,12 +1364,12 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview-history/index.ts",
+   "from": "src/lib/interview-history/interview-history.ts",
    "to": "src/lib/interview-history/list/entry-state.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview-history/index.ts",
+   "from": "src/lib/interview-history/interview-history.ts",
    "to": "src/lib/interview-history/list/screen-list.ts",
    "kind": "dependency"
   },
@@ -1580,7 +1580,7 @@
   },
   {
    "from": "src/lib/interview/flow/interview-after.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "type-only"
   },
   {
@@ -1595,7 +1595,7 @@
   },
   {
    "from": "src/lib/interview/index.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "dependency"
   },
   {
@@ -2730,7 +2730,7 @@
   },
   {
    "from": "tests/back-and-keep.test.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "dependency"
   },
   {
@@ -3305,12 +3305,12 @@
   },
   {
    "from": "tests/fake-browser-history.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "implements"
   },
   {
    "from": "tests/fake-browser-history.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "type-only"
   },
   {
@@ -3590,7 +3590,7 @@
   },
   {
    "from": "tests/history.test.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "dependency"
   },
   {
@@ -3625,7 +3625,7 @@
   },
   {
    "from": "tests/interview-tab.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "dependency"
   },
   {
@@ -5555,7 +5555,7 @@
     "exported": true
    }
   ],
-  "src/lib/interview-history/index.ts": [
+  "src/lib/interview-history/interview-history.ts": [
    {
     "name": "BrowserHistory",
     "kind": "type",
@@ -9445,5 +9445,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "4ac201185704c435631b287dabd6aae22b1d3910df8c031c9064259b8fc979d1"
+ "digest": "ed4dc400a814a65ecc09de70f3b9b07bf170e35fb83e6e4bfde9a3d5dfdb7deb"
 }
