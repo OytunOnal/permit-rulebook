@@ -269,7 +269,8 @@ click on the tracker link. Answers never leave the device.
 - **Interview** — questions by information gain, then the verdict; runs
   entirely in the browser. The page is wiring alone: it builds the browser's
   history adapter and the record's store and starts the interview, one deep
-  module, `src/lib/interview/`. Every decision a gesture leads to (the screen,
+  module, `src/lib/interview/`, entered through `start-interview.ts`'s
+  `startInterview` (#309). Every decision a gesture leads to (the screen,
   its lines, how it meets the reader, the beat, the save, the history move)
   comes from one pure step, `interviewAfter`; the drawing only applies it.
   The drawing is a deep module nested in the interview, `draw/`, entered
@@ -277,9 +278,11 @@ click on the tracker link. Answers never leave the device.
   draws and their parts (page, masthead, ledger, landing, beat, paint) are
   private under `draw/screen/` (#261).
   The browser's history is a deep module of its own behind a port,
-  `interview-history`, so Back across two tabs is tested in Node; Back names
-  where it goes and never the screen it is on. The passport search is a module
-  whose controller holds no DOM, `country-search`, and an arrival is one call,
+  `interview-history`, entered through `interview-history.ts`'s
+  `openInterviewHistory` (#309), so Back across two tabs is tested in Node;
+  Back names where it goes and never the screen it is on. The passport search
+  is a module whose controller holds no DOM, `country-search`, entered through
+  `country-search.ts` (#309), and an arrival is one call,
   `arrivalOf` (#208). The verdict is one deep module, `src/lib/verdict/`
   (#167), entered through `verdict.ts` (#310): `verdictOf` decides everything
   the results screen says (the headline and masthead, the groups and their
