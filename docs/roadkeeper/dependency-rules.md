@@ -3,6 +3,7 @@
 ## Modules
 <!-- a deep module's folder per line, or none; `folder/*` declares every folder directly under it -->
 - `scripts/browser`
+- `scripts/browser/tab`
 - `scripts/carry-assets`
 - `src/lib/country-search`
 - `src/lib/frame`
@@ -47,7 +48,7 @@
 
 ## Relations
 <!-- association, aggregation or composition, where the code cannot show them -->
-- association: `scripts/browser/tab/tab-gestures.mjs` → `scripts/browser/tab/tab-waits.mjs`
-- association: `scripts/browser/tab/tab-page.mjs` → `scripts/browser/tab/tab-waits.mjs`
-- association: `scripts/browser/tab/tab-page.mjs` → `scripts/browser/tab/tab-gestures.mjs`
-- association: `scripts/browser/tab/tab-page.mjs` → `scripts/browser/tab/tab-events.mjs`
+- association: `scripts/browser/tab/page/tab-gestures.mjs` → `scripts/browser/tab/page/tab-waits.mjs`
+- association: `scripts/browser/tab/page/tab-page.mjs` → `scripts/browser/tab/page/tab-waits.mjs`
+- association: `scripts/browser/tab/page/tab-page.mjs` → `scripts/browser/tab/page/tab-gestures.mjs`
+- association: `scripts/browser/tab/page/tab-page.mjs` → `scripts/browser/tab/page/tab-events.mjs`
