@@ -226,7 +226,7 @@ const ANSWER_ONE = `(() => {
 describe.skipIf(skipped !== null)("the one-pager's promise: answers never leave the device", () => {
   it("a whole walk, and an answer changed after it, sends nothing but this page's own files", async () => {
     const screen = { viewport: { width: 1100, height: 900 }, mobile: false };
-    const { returned } = await walkSite({ site: { folder: dist }, screen, network: true, errorsExpected: true }, async ({ page, url }) => {
+    const { returned } = await walkSite({ site: { folder: dist }, screen, network: true }, async ({ page, url }) => {
       await page.goto(url("/"));
       const answered: string[] = [];
       for (let step = 0; step < 25; step++) {
@@ -357,7 +357,7 @@ function expectReportCarriesNoAnswer(request: SentRequest, declared: string[]): 
  */
 describe.skipIf(skipped !== null)("arriving pre-scoped sends no more than arriving cold", () => {
   it("a walk that starts at /?route=… still sends only the counter's own report", async () => {
-    const { returned } = await walkSite({ site: { folder: dist }, screen: PHONE, network: true, errorsExpected: true }, async ({ page, url }) => {
+    const { returned } = await walkSite({ site: { folder: dist }, screen: PHONE, network: true }, async ({ page, url }) => {
       await page.goto(url("/"));
       await page.evaluate('localStorage.removeItem("permit-rulebook.record.v1")');
       await page.goto(`${url("/")}?route=de-blue-card-general`);

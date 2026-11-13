@@ -1,0 +1,60 @@
+import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { ESLint } from "eslint";
+
+/**
+ * The lint refuses `errorsExpected` in a test (#353, ruling 7 on #288): the
+ * walk fails on any page's error by itself, and only the walk's own suite
+ * turns that off, to read its error cases. Read through ESLint's own API with
+ * the project's config, so the rule cannot go quiet when its files drift.
+ */
+
+const root = fileURLToPath(new URL("..", import.meta.url));
+const eslint = new ESLint({ cwd: root });
+
+/** The rule's id in the project's config, which every case reads its messages by. */
+const RULE = "walks/no-errors-expected";
+
+/** A test file's path, as the project's config sees one. */
+const A_TEST = "tests/a-browser-case.test.ts";
+
+/** The walk's own suite, the one test file that reads the walk's errors on purpose. */
+const THE_WALKS_SUITE = "tests/walk-site.test.ts";
+
+/** The rule's setting in the project's config for the file at `filePath`, or undefined when it runs none there. */
+async function ruleSettingFor(filePath: string): Promise<unknown> {
+  const config = await eslint.calculateConfigForFile(filePath) as { rules?: Record<string, unknown> };
+  return config.rules?.[RULE];
+}
+
+/** The rule's messages on `code` linted as the file at `filePath`. */
+async function refusalsOf(code: string, filePath: string): Promise<string[]> {
+  const [result] = await eslint.lintText(code, { filePath });
+  return result!.messages.filter((m) => m.ruleId === RULE).map((m) => m.message);
+}
+
+const lines = (...code: string[]) => code.join("\n");
+
+describe("the lint on errorsExpected", () => {
+  it("errorsExpected in a test file, as an object's key or as a member, is an error naming the walk's own suite", async () => {
+    expect(await ruleSettingFor(A_TEST), `the config runs no ${RULE} on ${A_TEST}`).toEqual([2]);
+    const refused = await refusalsOf(lines(
+      "declare function walkSite(walk: object, walker: () => Promise<void>): Promise<void>;",
+      "export const quoted = () => walkSite({ \"errorsExpected\": true }, async () => {});",
+      "export const walk = { screen: 390, errorsExpected: true };",
+      "export const errorsExpected = false;",
+      "export const shorthand = { errorsExpected };",
+      "export const set = (w: { errorsExpected?: boolean }) => { w.errorsExpected = true; };",
+    ), A_TEST);
+    expect(refused).toHaveLength(4);
+    expect(refused[0]).toContain("tests/walk-site.test.ts");
+  });
+
+  it("the walk's own suite may pass it", async () => {
+    expect(await ruleSettingFor(THE_WALKS_SUITE), `the config runs ${RULE} on ${THE_WALKS_SUITE}`).toBeUndefined();
+    const code = readFileSync(new URL(`../${THE_WALKS_SUITE}`, import.meta.url), "utf8");
+    expect(code, "the walk's own suite no longer passes errorsExpected").toContain("errorsExpected: true");
+    expect(await refusalsOf(code, THE_WALKS_SUITE)).toEqual([]);
+  });
+});

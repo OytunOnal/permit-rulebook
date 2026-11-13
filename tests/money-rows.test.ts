@@ -122,9 +122,8 @@ describe.skipIf(skipped !== null)("a money row answered with its open unknown is
       const seen = await withSite(async (site) => {
         const { page } = site;
         await walkToUnknown(site, readerFor(destination), field);
-        return { recorded: await page.evaluate(RECORDED(field)), row: await rowOf(page, field), problems: page.problems() };
-      }, DESK) as { recorded: string; row: Row | null; problems: string[] };
-      expect(seen.problems).toEqual([]);
+        return { recorded: await page.evaluate(RECORDED(field)), row: await rowOf(page, field) };
+      }, DESK) as { recorded: string; row: Row | null };
       expect(seen.recorded, `${field} was not recorded as the open unknown`).toBe(UNKNOWN);
       expectAnsweredWithItsPencil(seen.row, field);
     }, 120_000);
@@ -137,7 +136,7 @@ describe.skipIf(skipped !== null)("a money row answered with its open unknown is
         const before = await rowOf(page, field);
         // A row with no pencil is no edit point: the case stops on its
         // state rather than on a click that reopens nothing.
-        if (!before?.pencil) return { before, reopened: "", chosen: "", recorded: "", after: null, problems: page.problems() };
+        if (!before?.pencil) return { before, reopened: "", chosen: "", recorded: "", after: null };
         const next = await page.evaluate(QLABEL);
         await page.clickAt(before.at.x, before.at.y);
         const reopened = await questionAfter(page, next);
@@ -145,10 +144,9 @@ describe.skipIf(skipped !== null)("a money row answered with its open unknown is
         await answer(page, field, band);
         return {
           before, reopened, chosen,
-          recorded: await page.evaluate(RECORDED(field)), after: await rowOf(page, field), problems: page.problems(),
+          recorded: await page.evaluate(RECORDED(field)), after: await rowOf(page, field),
         };
-      }, DESK) as { before: Row | null; reopened: string; chosen: string; recorded: string; after: Row | null; problems: string[] };
-      expect(seen.problems).toEqual([]);
+      }, DESK) as { before: Row | null; reopened: string; chosen: string; recorded: string; after: Row | null };
       expectAnsweredWithItsPencil(seen.before, field);
       expect(seen.reopened, "the pencil did not reopen the question").toBe(ds.fields.find((f) => f.id === field)!.label);
       expect(seen.chosen, "the reopened question does not hold the answer on file").toBe(UNKNOWN);

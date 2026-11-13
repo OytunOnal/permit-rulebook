@@ -29,7 +29,7 @@ interface Screen { standIns: number; cover: string; question: string }
 /** `run` on a page over the built site, its scripts held back `delayJsMs` when asked. */
 async function onSite<T>(run: (page: BrowserPage, url: (path: string) => string) => Promise<T>, delayJsMs = 0): Promise<T> {
   const site = { folder: dist, delayJsMs };
-  const { returned } = await walkSite({ site, screen: PHONE, errorsExpected: true }, ({ page, url }) => run(page, url));
+  const { returned } = await walkSite({ site, screen: PHONE }, ({ page, url }) => run(page, url));
   return returned;
 }
 

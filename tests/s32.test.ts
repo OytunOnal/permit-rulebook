@@ -197,10 +197,8 @@ describe.skipIf(skipped !== null)("s32 — in the browser", () => {
       return {
         state: await page.evaluate('document.getElementById("app").dataset.state'),
         painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, transferee)))) as typeof PAINTED_AS_COMPOSED,
-        problems: page.problems(),
       };
     }, PHONE);
-    expect(seen.problems).toEqual([]);
     expect(seen.state).toBe("results");
     expect(seen.painted).toEqual(PAINTED_AS_COMPOSED);
   }, 120_000);

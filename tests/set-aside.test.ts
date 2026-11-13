@@ -175,9 +175,8 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
       const { page } = site;
       const moved = await moveDestination(site, TO_A_QUESTION, "es");
       const after = await act(page, TAP("yes"));
-      return { ...moved, after, problems: page.problems() };
-    }, DESKTOP) as { verdict: Seen; editing: Seen; next: Seen; after: Seen; problems: string[] };
-    expect(seen.problems).toEqual([]);
+      return { ...moved, after };
+    }, DESKTOP) as { verdict: Seen; editing: Seen; next: Seen; after: Seen };
     expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
     expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
     expect(seen.next.field, "Spain did not ask its own question next").toBe("qualification_recent");
@@ -189,10 +188,7 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   }, 180_000);
 
   it("a change that leads straight to the result names the set-aside answers in its panel", async () => {
-    const seen = await withSite(async (site) => ({
-      ...await moveDestination(site, TO_THE_RESULT, "es"), problems: site.page.problems(),
-    }), DESKTOP) as { verdict: Seen; editing: Seen; next: Seen; problems: string[] };
-    expect(seen.problems).toEqual([]);
+    const seen = await withSite((site) => moveDestination(site, TO_THE_RESULT, "es"), DESKTOP);
     expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
     expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
     expect(seen.next.state, "Spain asked another question").toBe("results");
@@ -201,10 +197,7 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   }, 180_000);
 
   it("a change that sets nothing aside draws no set-aside line", async () => {
-    const seen = await withSite(async (site) => ({
-      ...await moveDestination(site, NOTHING_SET_ASIDE, "es"), problems: site.page.problems(),
-    }), DESKTOP) as { verdict: Seen; editing: Seen; next: Seen; problems: string[] };
-    expect(seen.problems).toEqual([]);
+    const seen = await withSite((site) => moveDestination(site, NOTHING_SET_ASIDE, "es"), DESKTOP);
     expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
     expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
     expect(seen.next.state, "the change did not lead to the verdict").toBe("results");
@@ -219,9 +212,8 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
       const inSpain = await act(page, TAP("yes"));
       const editing = await act(page, PENCIL("destination"));
       const back = await act(page, TAP("fr"));
-      return { moved, inSpain, editing, back, problems: page.problems() };
-    }, DESKTOP) as { moved: { next: Seen }; inSpain: Seen; editing: Seen; back: Seen; problems: string[] };
-    expect(seen.problems).toEqual([]);
+      return { moved, inSpain, editing, back };
+    }, DESKTOP) as { moved: { next: Seen }; inSpain: Seen; editing: Seen; back: Seen };
     expect(seen.moved.next.field, "Spain did not ask its own question next").toBe("qualification_recent");
     expect(seen.inSpain.state, "Spain's answer did not lead to the verdict").toBe("results");
     expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
@@ -229,10 +221,7 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
   }, 180_000);
 
   it("the edit line's words come from the copy module", async () => {
-    const seen = await withSite(async (site) => ({
-      ...await moveDestination(site, NOTHING_SET_ASIDE, "es"), problems: site.page.problems(),
-    }), DESKTOP) as { editing: Seen; problems: string[] };
-    expect(seen.problems).toEqual([]);
+    const seen = await withSite((site) => moveDestination(site, NOTHING_SET_ASIDE, "es"), DESKTOP);
     expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
     expect(EDIT_LINE, "the copy module holds no edit line").toBeTypeOf("string");
     expect(seen.editing.meta).toBe(EDIT_LINE);
@@ -250,12 +239,11 @@ describe.skipIf(skipped !== null)("the set-aside line, walked", () => {
       const after = await tapToNext(page, "#main .qcard .opt[data-value='yes']");
       const afterRow = JSON.parse(await page.evaluate(SUMMARY)) as Summary;
       const cls = await shiftScoreSince(page);
-      return { verdict, editing, next, nextRow, after, afterRow, cls, problems: page.problems() };
+      return { verdict, editing, next, nextRow, after, afterRow, cls };
     }, PHONE) as {
       verdict: Seen; editing: Seen; next: Seen; nextRow: Summary; after: Seen; afterRow: Summary;
-      cls: number; problems: string[];
+      cls: number;
     };
-    expect(seen.problems).toEqual([]);
     expect(seen.verdict.state, "the France record did not restore to its verdict").toBe("results");
     expect(seen.editing.field, "the pencil did not reopen the destination").toBe("destination");
     expect(seen.next.field, "Spain did not ask its own question next").toBe("qualification_recent");

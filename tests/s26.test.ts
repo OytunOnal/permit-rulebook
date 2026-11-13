@@ -366,7 +366,7 @@ const seed = (answers: Record<string, string>) =>
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
 
 interface Result {
-  state: string; status: string; problems: string[];
+  state: string; status: string;
   /** Whether the page painted the verdict the walk's answers compose. */
   painted: typeof PAINTED_AS_COMPOSED;
   /** Every answer on the record and every route the screen links, for the wire check. */
@@ -379,7 +379,6 @@ interface Result {
 const readResult = async (page: BrowserPage, verdict: Verdict): Promise<Result> => ({
   state: await page.evaluate('document.getElementById("app").dataset.state'),
   status: await page.evaluate('document.getElementById("cstatus").textContent'),
-  problems: page.problems(),
   painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdict))),
   declared: JSON.parse(await page.evaluate(
     'JSON.stringify(Object.values(JSON.parse(localStorage.getItem("permit-rulebook.record.v1") || "{}").answers || {}))',
@@ -418,7 +417,7 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
     ["1280x900", { width: 1280, height: 900 }, false],
   ] as const) {
     it(`${name}: all four → research → France → nothing open reads France's written state, France's section first and open; a German route opening reads the open headline; nothing leaves the device`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, errorsExpected: true, network: true }, async ({ page, url: addressOf }) => ({
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile }, network: true }, async ({ page, url: addressOf }) => ({
         nothingOpen: await walkFrom(page, addressOf("/"), { taps: ["none", "TR", "no", "no"], reader: WALKED_TO_NOTHING_OPEN }),
         opened: await walkFrom(page, addressOf("/"), {
           taps: ["degree", "TR", "recognized", "no", "no", "a1", "band_1"], reader: WALKED_TO_A_GERMAN_ROUTE,
@@ -427,14 +426,12 @@ describe.skipIf(skipped !== null)("s26 — in the browser", () => {
       }))).returned;
 
       const { nothingOpen, opened } = seen;
-      expect(nothingOpen.problems).toEqual([]);
       expect(nothingOpen.state).toBe("results");
       // The live region says France's written state.
       expect(nothingOpen.status).toBe("No route we check in France takes a research hosting agreement.");
       // The page paints what the verdict composed: the cases above read it.
       expect(nothingOpen.painted).toEqual(PAINTED_AS_COMPOSED);
 
-      expect(opened.problems).toEqual([]);
       expect(opened.state).toBe("results");
       expect(opened.painted).toEqual(PAINTED_AS_COMPOSED);
 

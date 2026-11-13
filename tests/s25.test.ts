@@ -359,7 +359,7 @@ const RESUMED = '(() => { const p = document.querySelector("#main .resumed"); re
 
 /** Answer whatever question is on the screen from the profile, until the
  * verdict; then whether the page painted the verdict `painted` reads. */
-async function walk(page: BrowserPage, profile: Profile, painted: string): Promise<{ asked: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] }> {
+async function walk(page: BrowserPage, profile: Profile, painted: string): Promise<{ asked: string[]; painted: typeof PAINTED_AS_COMPOSED }> {
   // Each label as its card draws it: the first words on the card, glossed
   // (#156), with any route it names said in full (#159).
   const byLabel = new Map(ds.fields.map((f) => [glossed(fillRouteSlots(f.label, ds), new Set()), f.id]));
@@ -374,7 +374,7 @@ async function walk(page: BrowserPage, profile: Profile, painted: string): Promi
     // in the task that handles it; the page is read once it is at rest.
     await answerWith(page, tap(profile[field]!));
   }
-  return { asked, painted: JSON.parse(await page.evaluate(painted)), problems: page.problems() };
+  return { asked, painted: JSON.parse(await page.evaluate(painted)) };
 }
 
 describe.skipIf(skipped !== null)("s25 — in the browser", () => {
@@ -389,8 +389,7 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
         const walked = await walk(page, withExperience(five, seven), paintedAsComposedScript(verdictFor(walkedTo(five, seven))));
         return { resumed, first, ...walked };
       }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
-        { resumed: string; first: string; asked: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] };
-      expect(seen.problems).toEqual([]);
+        { resumed: string; first: string; asked: string[]; painted: typeof PAINTED_AS_COMPOSED };
       expect(seen.resumed).toContain(resumedLine(Object.keys(SEEDED).length));
       expect(seen.first).toBe(ds.fields.find((f) => f.id === FIVE)!.label);
       expect(seen.asked.slice(0, 2)).toEqual([FIVE, SEVEN]);
@@ -409,11 +408,9 @@ describe.skipIf(skipped !== null)("s25 — in the browser", () => {
         resumed: await page.evaluate(RESUMED),
         first: await page.evaluate(QLABEL),
         rows: await page.evaluate('[...document.querySelectorAll("#decl-list [data-field]")].map((r) => r.dataset.field).join(",")'),
-        problems: page.problems(),
       };
     }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
-      { resumed: string; first: string; rows: string; problems: string[] };
-    expect(seen.problems).toEqual([]);
+      { resumed: string; first: string; rows: string };
     expect(seen.resumed).toContain(resumedLine(Object.keys(SEEDED).length));
     expect(seen.first).toBe(ds.fields.find((f) => f.id === FIVE)!.label);
     expect(seen.rows.split(",")).toEqual(Object.keys(SEEDED));

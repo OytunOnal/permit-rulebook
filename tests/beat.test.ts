@@ -134,7 +134,7 @@ const readSpanAndBeat = async (page: BrowserPage): Promise<SpanAndBeat> => JSON.
 
 const pressFirstOption = (page: BrowserPage) => clickOn(page, FIRST_OPTION);
 
-interface AroundTheBeat<T> extends SpanAndBeat { walked: T; drawn: Where; within: Where; after: Where; problems: string[] }
+interface AroundTheBeat<T> extends SpanAndBeat { walked: T; drawn: Where; within: Where; after: Where }
 
 type Step<T> = (page: BrowserPage) => Promise<T>;
 interface Walk<T> { walkUp: Step<T>; gesture: Step<void>; press?: Step<void> }
@@ -161,14 +161,13 @@ async function pressedAroundTheBeat<T>(site: PageOnSite, { walkUp, gesture, pres
     await waitUntilPastTheBeat(page);
     await press(page);
     await page.waitUntilAtRest();
-    return { ...timed, walked, drawn, within, after: await where(page), problems: page.problems() };
+    return { ...timed, walked, drawn, within, after: await where(page) };
   }
 }
 
 /** What a gesture's beat must hold: the press inside it answers nothing,
  * and the press after it answers. */
 function expectTheBeatHeld(seen: AroundTheBeat<unknown>): void {
-  expect(seen.problems).toEqual([]);
   expect(seen.spanMs, "the press meant for inside the beat came after it").toBeLessThan(seen.beatMs);
   expect(seen.within.question, "a click inside the beat answered the card the gesture drew").toBe(seen.drawn.question);
   expect(seen.within.answers).toBe(seen.drawn.answers);
@@ -222,10 +221,7 @@ async function doubleClickOnAnOption(site: PageOnSite): Promise<DoubleClick | nu
 
 describe.skipIf(skipped !== null)("a question card a gesture draws takes no click for a beat (#86)", () => {
   it("two clicks at the same point within the beat leave one answer", async () => {
-    const seen = await withSite(async (site) => ({
-      twice: await doubleClickOnAnOption(site), problems: site.page.problems(),
-    }), DESK) as { twice: DoubleClick | null; problems: string[] };
-    expect(seen.problems).toEqual([]);
+    const seen = await withSite(async (site) => ({ twice: await doubleClickOnAnOption(site) }), DESK);
     expect(seen.twice, "no option's centre lands on an option of the card its click draws").not.toBeNull();
     const { cold, drawn, under, spanMs, beatMs, after } = seen.twice!;
     expect(drawn.answers, "the first click did not answer").toBe(1);
@@ -240,9 +236,8 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       const { page } = site;
       await coldStart(site);
       const first = await answerFirstOptions(page, 1);
-      return { first, second: await answerFirstOptions(page, 1), problems: page.problems() };
+      return { first, second: await answerFirstOptions(page, 1) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.first.answers).toBe(1);
     expect(seen.second.answers, "the guard did not lift after the beat").toBe(2);
     expect(seen.second.question).not.toBe(seen.first.question);
@@ -259,9 +254,8 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       await page.pressEnter();
       await page.pressEnter();
       await page.waitUntilAtRest();
-      return { ready, after: await where(page), problems: page.problems() };
+      return { ready, after: await where(page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.ready.focusOnFirst, "the focus was not on the first option to press Enter on").toBe(true);
     expect(seen.after.answers, "the second Enter answered the question it landed on").toBe(2);
     expect(seen.after.question).not.toBe(seen.ready.question);
@@ -281,7 +275,6 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       gesture: (page) => clickOn(page, "#back"),
       press: (page) => page.pressEnter(),
     }), DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.walked.search.search, "the walk never reached the search").toBe(true);
     expect(seen.walked.past.question, "Enter in the search did not commit").not.toBe(seen.walked.search.question);
     expect(seen.drawn.search, "← Back did not draw the search").toBe(true);
@@ -328,9 +321,8 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       const drawn = await waitUntilAnotherQuestionDrawn(page, resumed.question);
       await clickOn(page, FIRST_OPTION);
       await page.waitUntilAtRest();
-      return { drawn, after: await where(page), problems: page.problems() };
+      return { drawn, after: await where(page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.drawn.answers, "Start over did not clear the record").toBe(0);
     expect(seen.after.answers, "the card Start over drew refused the first click").toBe(1);
   }, 120000);
@@ -347,9 +339,8 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       const at = await coldStart(site);
       await page.clickAt(at.x, at.y);
       await page.waitUntilAtRest();
-      return { after: await where(page), problems: page.problems() };
+      return { after: await where(page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.after.answers).toBe(1);
     expect(seen.after.focusOnFirst).toBe(true);
   }, 120000);
@@ -364,9 +355,8 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       const drawn = await where(page);
       await page.clickAt(at.x, at.y);
       await page.waitUntilAtRest();
-      return { reduced, drawn, after: await where(page), problems: page.problems() };
+      return { reduced, drawn, after: await where(page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.reduced, "the browser did not take the reduced-motion preference").toBe(true);
     expect(seen.drawn.cardAnimations, "the card animated for a reader who asked for no motion").toBe(0);
     expect(seen.after.answers, "without motion the second click answered").toBe(1);
@@ -377,9 +367,8 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       const { page } = site;
       await coldStart(site);
       await answerFirstOptions(page, 2);
-      return { cls: await shiftScoreSince(page), after: await where(page), problems: page.problems() };
+      return { cls: await shiftScoreSince(page), after: await where(page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.after.answers).toBe(2);
     expect(seen.cls).toBe(0);
   }, 120000);
@@ -390,9 +379,8 @@ describe.skipIf(skipped !== null)("a question card a gesture draws takes no clic
       const at = await coldStart(site);
       const cold = await where(page);
       await page.clickAt(at.x, at.y);
-      return { cold, after: await where(page), problems: page.problems() };
+      return { cold, after: await where(page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.cold.answers).toBe(0);
     expect(seen.after.answers, "the first paint's option did not answer").toBe(1);
   }, 120000);

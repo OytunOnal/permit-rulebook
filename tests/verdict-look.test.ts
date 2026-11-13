@@ -136,7 +136,6 @@ async function looksAt(viewport: { width: number; height: number }, mobile: bool
       await page.goto(url("/"));
       await page.evaluate(seed(answers));
       await page.goto(url("/"));
-      expect(page.problems()).toEqual([]);
       out.push(JSON.parse(await page.evaluate(READ_LOOK)) as Look);
     }
     return out;

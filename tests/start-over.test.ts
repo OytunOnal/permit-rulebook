@@ -87,9 +87,8 @@ describe.skipIf(skipped !== null)("Start over lands at the page's top (P8/P9)", 
         await site.page.waitUntilAtRest();
         const atFoot = await where(site.page);
         await site.page.pressEnter();
-        return { verdict, focused, atFoot, after: await settledAfterStartOver(site.page), problems: site.page.problems() };
+        return { verdict, focused, atFoot, after: await settledAfterStartOver(site.page) };
       }, screen);
-      expect(seen.problems).toEqual([]);
       expect(seen.verdict.state, "precondition: the kept record opens on the verdict").toBe("results");
       expect(seen.focused, "precondition: Start over took the focus").toBe("focused");
       expect(seen.atFoot.scrollY, "precondition: the reader stands at the verdict's foot").toBeGreaterThan(0);
@@ -105,9 +104,8 @@ describe.skipIf(skipped !== null)("a kept verdict at a country's address, and St
       const returned = await openOnKeptVerdict(site, "/?country=de");
       await site.page.tapOn("#restart");
       const restarted = await settledAfterStartOver(site.page);
-      return { returned, restarted, field: await fieldOnScreen(site.page), problems: site.page.problems() };
+      return { returned, restarted, field: await fieldOnScreen(site.page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.returned.state, "precondition: the kept record opens on the verdict").toBe("results");
     expect(seen.returned.resumed, "the returned-to verdict does not say it is from earlier").toBe(true);
     expect(seen.returned.resumedHoldsRestart, "the resumed line does not end in Start over").toBe(true);
@@ -127,9 +125,8 @@ describe.skipIf(skipped !== null)("a kept verdict at a country's address, and St
       const restarted = await settledAfterStartOver(site.page);
       await openAtRest(site.page, site.url("/"));
       const nextReader = await where(site.page);
-      return { restarted, nextReader, field: await fieldOnScreen(site.page), problems: site.page.problems() };
+      return { restarted, nextReader, field: await fieldOnScreen(site.page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.restarted.storedAnswers, "the device kept something after Start over").toBeNull();
     expect([seen.nextReader.state, seen.field]).toEqual(["questions", "destination"]);
     expect(seen.nextReader.resumed, "the next reader is told they are continuing").toBe(false);

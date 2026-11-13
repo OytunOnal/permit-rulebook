@@ -107,15 +107,14 @@ describe.skipIf(skipped !== null)("the browser walk's errors", () => {
     expect(walked.errorsLeftOut).toBe(leftOut);
   }, 60000);
 
-  it("an error on the first page is still in the walk's errors after it navigates to a second", async () => {
-    const walked = await walkSite({ site: { folder }, screen: PHONE, errorsExpected: true }, async ({ page, url }) => {
-      await page.goto(url("/throws.html"));
+  it("a walk that throws on its first page and navigates to a quiet second fails, naming the first page's address and the error", async () => {
+    let first = "";
+    const failure = await failureOf(walkSite({ site: { folder }, screen: PHONE }, async ({ page, url }) => {
+      first = url("/throws.html");
+      await page.goto(first);
       await page.goto(url("/quiet.html"));
-      return { problemsOfTheSecond: page.problems() };
-    });
-    expect(walked.returned.problemsOfTheSecond, "the second page's own problems hold the first page's").toEqual([]);
-    const thrown = walked.errors.filter((e) => e.message.includes(THROWN));
-    expect(thrown.map((e) => new URL(e.address).pathname)).toEqual(["/throws.html"]);
+    }));
+    expect(failure).toContain(`${first}: exception: Error: ${THROWN}`);
   }, 60000);
 });
 
