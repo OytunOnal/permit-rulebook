@@ -194,9 +194,14 @@ click on the tracker link. Answers never leave the device.
   built site served for it, or a live site's root address, at `DESK` or
   `PHONE`, in a fresh profile. It returns the walker's result, the layout
   shifts of the page it ends on (#269's first-input rule, read in
-  `layout-shifts/`) and the pages' errors, each with its address, the first
+  `tab/layout-shifts/`) and the pages' errors, each with its address, the first
   100 kept. It fails when a page it draws is not the screen's width, and on
-  the pages' errors unless the caller expects them. Beside it the entry
+  any page's error, on every page and tab it opened, so a test writes no
+  error check of its own. Only the walk's own error cases and smoke expect
+  errors: the lint refuses `errorsExpected` in any other test, and smoke
+  words each page's errors from the walk's one list, failing on an error it
+  cannot place or one past the 100. The walk's log drops exactly the
+  traffic counter's two local CORS lines (#353). Beside it the entry
   offers `chromePath` and `serve`, kept for the server's own HTTP tests
   (#245): `serve` serves only what is inside its folder, so an escaped `../`
   or a link leading out is not found and a path it cannot decode is a bad
@@ -204,8 +209,10 @@ click on the tracker link. Answers never leave the device.
   mid-parse (#230). Inside, the page a walk hands over waits on what it
   reads, never a time: the page drawn, the page at rest (no animation, no
   smooth scroll going, no request in flight), a new document drawn, or a
-  condition, with one 15 s backstop (`tab/`); the lint refuses a sleep in a
-  test. A click or an Enter returns once the page has reported its first
+  condition, with one 15 s backstop. That tab is a deep module of its own,
+  `tab/`, entered only through `open-tab.mjs`, so no other part of the
+  harness builds its waits or gestures itself (#353). The lint refuses a
+  sleep in a test. A click or an Enter returns once the page has reported its first
   input, or another document stands: Chrome reports that input only once its
   frame is presented, after the shifts the measure reads (#269).
   `BROWSER_CPU_SLOWDOWN` slows every tab, and what a walk opens is closed
