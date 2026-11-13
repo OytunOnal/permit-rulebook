@@ -20,27 +20,24 @@ them. This repository is the site; that one is the ruleset.
 wants the rules rather than an opinion — and anyone who needs the ruleset
 itself.
 
-**What it does now** — v1.2.5, from its
-[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.5):
+**What it does now** — v1.2.6, from its
+[release](https://github.com/OytunOnal/permit-rulebook/releases/tag/v1.2.6):
 
 > Public at https://permitrulebook.com: 29 routes across Germany, France,
 > Spain and the Netherlands — 23 checked against a reader's answers, 6 quoted
 > and dated but not checked, each with a page of its own — and 189 quoted
 > values, each carrying the authority's sentence, its page and the day it was
 > read. The watch re-reads the sources every morning. What changed since
-> v1.2.2: a result card says the path its route was met through, and why the
-> other path did not count, in the reader's own answer; a condition that
-> belongs to another path leaves the card. A route short only on salary,
-> funds or points sits under "Short on a figure", its badge saying which. A
-> country with anything to act on opens, and its row counts each action. The
-> headline names the nearest route, and a step offers only what a reader can
-> do. Under it, the verdict's layout, the page frame, the route page and the
-> card are each one module. The isolated walk: 39/50 on RUBRIC 1.3, no
-> blocker. 1276 + 1343 tests. (2026-11-10)
+> v1.2.5: a red morning now means the watch could not read its sources, and
+> it reaches the owner by name; every pull request shows the deploy's own
+> checks before it is merged; every results screen fits a phone, however long
+> a card's link is; and a browser test fails on an error on any page it
+> opened, not only the last. The isolated walk: 38/50 on RUBRIC 1.3, no
+> blocker. 1338 + 1361 tests. (2026-11-13)
 
 **How to run it.** Both repositories side by side — the site reads the dataset
 package from the sibling directory its manifest names. Tried from a fresh clone
-on 2026-10-23:
+on 2026-11-13:
 
 ```
 git clone https://github.com/OytunOnal/permit-rulebook-data.git && git clone https://github.com/OytunOnal/permit-rulebook.git && cd permit-rulebook-data && npm ci && npm run build && cd ../permit-rulebook && npm ci && npm run build
