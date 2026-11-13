@@ -56,7 +56,7 @@ type MarkPlace = { left: number; top: number };
  * screen's, or drew no wordmark set in from its edge.
  */
 async function wordmarkPlacesAt(screen: Screen): Promise<{ interview: MarkPlace; route: MarkPlace }> {
-  const walk = { site: { folder: dist }, screen, errorsExpected: true, scrollbars: true };
+  const walk = { site: { folder: dist }, screen, scrollbars: true };
   const { returned } = await walkSite(walk, async ({ page, url }) => {
     const at: Record<string, MarkPlace> = {};
     for (const [name, path] of [["interview", "/"], ["route", "/germany/eu-blue-card-general/"]] as const) {

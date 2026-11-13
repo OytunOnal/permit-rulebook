@@ -246,7 +246,7 @@ const LINKS = (selector: string) =>
   `JSON.stringify([...document.querySelectorAll(${JSON.stringify(selector)})].map((a) => ({ text: a.textContent.trim(), href: a.getAttribute("href") })))`;
 interface Walk {
   help: Link[]; helpText: string; state: string; painted: typeof PAINTED_AS_COMPOSED;
-  asks: Link[]; asksText: string; problems: string[];
+  asks: Link[]; asksText: string;
 }
 
 describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
@@ -271,10 +271,9 @@ describe.skipIf(skipped !== null)("s28 — in the browser at 390×844", () => {
       const asksText = await page.evaluate(
         `(() => { const a = document.querySelector(${JSON.stringify(`.asks a[href="${door.url}"]`)}); return a ? a.closest(".asks").textContent.replace(/\\s+/g, " ").trim() : ""; })()`,
       );
-      return { help, helpText, state, painted, asks, asksText, problems: page.problems() };
+      return { help, helpText, state, painted, asks, asksText };
     }, PHONE) as Walk;
 
-    expect(seen.problems).toEqual([]);
     // Under the question: the sentence as one link, its shorthand explained
     // in it, and no act around it.
     expect(seen.help).toEqual([{ text: firstUseLink(door), href: door.url }]);

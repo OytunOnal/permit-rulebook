@@ -309,7 +309,6 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
         question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
         marks: JSON.parse(await page.evaluate(MARKS)),
         described: JSON.parse(await page.evaluate(DESCRIBED)),
-        problems: page.problems(),
       };
       // France, by the button — then the quickest profile to a result that
       // contradicts nothing: no qualification, a Turkish passport, no Dutch
@@ -325,21 +324,19 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
         state: await page.evaluate('document.getElementById("app").dataset.state'),
         glyphs: JSON.parse(await page.evaluate(LINK_GLYPHS)),
         painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictOn(ds, WALKED)))),
-        problems: page.problems(),
       };
       return { q3, q4, result };
     }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as {
       q3: {
-        question: string; problems: string[];
+        question: string;
         marks: { under: string; id: string; text: string; href: string | null; glyph: string | null }[];
         described: { value: string; by: string | null; resolves: boolean | null }[];
       };
       q4: string;
-      result: { state: string; glyphs: string[]; painted: typeof PAINTED_AS_COMPOSED; problems: string[] };
+      result: { state: string; glyphs: string[]; painted: typeof PAINTED_AS_COMPOSED };
     };
 
     const { q3, q4, result } = seen;
-    expect(q3.problems).toEqual([]);
     expect(q3.question).toBe(countryQuestion().label);
     expect(q3.marks).toEqual([{
       under: "fr",
@@ -357,7 +354,6 @@ describe.skipIf(skipped !== null)("s21 — in the browser", () => {
     ]);
     expect(q4).toBe("Your highest completed qualification?");
 
-    expect(result.problems).toEqual([]);
     expect(result.state).toBe("results");
     // The walk ends on the verdict its answers compose — France's written
     // state, the sentence with its link on France's line ("s21 — the walk's

@@ -231,9 +231,8 @@ describe.skipIf(skipped !== null)("Back and Keep this answer go where their labe
       await tapAndWait(page, "#main #back");
       const backedOnto = { screen: await screenOf(page), exits: await exitsOf(page) };
       await tapAndWait(page, "#main #done");
-      return { editing, backedOnto, kept: await screenOf(page), problems: page.problems() };
+      return { editing, backedOnto, kept: await screenOf(page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.editing.keep, "the ✎ did not open an edit screen").not.toBeNull();
     // Back in place from the situation: the question asked before it.
     expect([fieldNamedBy(backToLine, seen.editing.back), seen.backedOnto.screen]).toEqual(["citizenship", "citizenship"]);
@@ -245,9 +244,8 @@ describe.skipIf(skipped !== null)("Back and Keep this answer go where their labe
     const seen = await withSite(async (site) => {
       const editing = await editingOnRecord(site, { destination: "de", citizenship: "PL" }, "citizenship");
       await tapAndWait(site.page, "#main #done");
-      return { editing, kept: await screenOf(site.page), problems: site.page.problems() };
+      return { editing, kept: await screenOf(site.page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect([keepNames(seen.editing.keep), seen.kept]).toEqual([RESULT, RESULT]);
   }, 180_000);
 
@@ -261,9 +259,8 @@ describe.skipIf(skipped !== null)("Back and Keep this answer go where their labe
       await tapAndWait(page, '#decl-list [data-field="citizenship"]');
       const again = { screen: await screenOf(page), exits: await exitsOf(page) };
       await tapAndWait(page, "#main #back");
-      return { kept, again, backedOnto: await screenOf(page), problems: page.problems() };
+      return { kept, again, backedOnto: await screenOf(page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect([seen.kept, seen.again.screen], "precondition: Keep showed the result, and the ✎ reopened the row")
       .toEqual([RESULT, "citizenship"]);
     expect([fieldNamedBy(backToLine, seen.again.exits.back), seen.backedOnto]).toEqual(["destination", "destination"]);

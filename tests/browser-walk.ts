@@ -36,10 +36,11 @@ export function warnNotWalked(what: string, reason: string): void {
 }
 
 /** Walks the built site on `screen`, handing `run` the page on the site, and
- * returns what `run` returned. Errors are expected: the browser cases assert
- * the page's `problems()` themselves. */
+ * returns what `run` returned. The walk fails on an error thrown or logged on
+ * any page it opened, in any tab, naming that page's address and the error,
+ * so a browser case writes no check of its own for it. */
 export async function withSite<T>(run: (site: PageOnSite) => Promise<T>, screen: Screen): Promise<T> {
-  const { returned } = await walkSite({ site: { folder: dist }, screen, errorsExpected: true }, run);
+  const { returned } = await walkSite({ site: { folder: dist }, screen }, run);
   return returned;
 }
 

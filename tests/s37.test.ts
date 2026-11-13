@@ -156,13 +156,12 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
   /** At a phone's width, where the rule this bends was written: three screen Backs from an
    * outside entrance, each a question back, none of them off the site, and nothing thrown. */
   it("the same walk on a phone, where the rule this bends was written", async () => {
-    const seen = await walkInBrowser(PHONE, async (w, { page }) => {
+    const seen = await walkInBrowser(PHONE, async (w) => {
       const entrance = await w.openFromOutside();
       const backs: Where[] = [];
       for (let i = 0; i < 3; i++) backs.push(await w.act(SCREEN_BACK));
-      return { entrance, backs, problems: page.problems() };
+      return { entrance, backs };
     });
-    expect(seen.problems, "a tab threw").toEqual([]);
     expect(seen.entrance.question, "the record did not restore to the fourth question").toBe(asks("qualification"));
     expect(seen.backs.map((s) => s.question), "a tap is not the question before")
       .toEqual(["situation", "citizenship", "destination"].map(asks));
@@ -183,9 +182,8 @@ describe.skipIf(skipped !== null)("Back on a restored record", () => {
       await page.front();
       const reloaded = await a.actAcross(RELOAD);
       const back = await a.act(SCREEN_BACK);
-      return { entrance, inB, reloaded, back, problems: { a: page.problems(), b: tabB.problems() } };
+      return { entrance, inB, reloaded, back };
     });
-    expect(seen.problems, "a tab threw").toEqual({ a: [], b: [] });
     expect(seen.inB[0]!.question, "tab B did not open on the stored record").toBe(seen.entrance.question);
     expect(new Set(seen.inB.map((s) => s.question)).size, "tab B's answers did not move it on").toBe(3);
     expect(seen.reloaded.question, "the reload did not restore what tab B left").toBe(seen.inB[2]!.question);

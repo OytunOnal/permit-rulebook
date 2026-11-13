@@ -327,7 +327,7 @@ describe.skipIf(skipped !== null)("the page as it first paints is already the pa
   beforeAll(async () => {
     for (const screen of VIEWPORTS)
       for (const arrival of ARRIVALS)
-        await walkSite({ site: HELD_MODULE, screen, errorsExpected: true, shiftRegion: ABOVE_THE_BOX }, async ({ page, url: addressOf }) => {
+        await walkSite({ site: HELD_MODULE, screen, shiftRegion: ABOVE_THE_BOX }, async ({ page, url: addressOf }) => {
           // Storage belongs to the origin, so it is written from a page of
           // this site — 404 is the cheapest one that runs no interview.
           await page.goto(addressOf("/404.html"));
@@ -511,7 +511,7 @@ describe.skipIf(skipped !== null)("the page arriving in pieces paints where it s
     it(`${screen.name} · /?country=fr, the HTML split before the ledger: nothing moves`, async () => {
       expect(readFileSync(join(dist, "index.html"), "utf8"), "the page has no ledger to split before").toContain(LEDGER);
       const site = { ...HELD_MODULE, htmlInPieces: { before: LEDGER, heldMs: 300 } };
-      const { returned: m } = await walkSite({ site, screen, errorsExpected: true, shiftRegion: ABOVE_THE_BOX }, async ({ page, url: addressOf }) => {
+      const { returned: m } = await walkSite({ site, screen, shiftRegion: ABOVE_THE_BOX }, async ({ page, url: addressOf }) => {
         await openAtRest(page, addressOf("/?country=fr"));
         return readMeasured(page);
       });
@@ -519,7 +519,7 @@ describe.skipIf(skipped !== null)("the page arriving in pieces paints where it s
     }, 120000);
   for (const screen of VIEWPORTS.filter((s) => s.mobile))
     it(`${screen.name} · the measure counts a shift Chrome marks as input until a tap reaches the page`, async () => {
-      const { returned: { before, after } } = await walkSite({ site: { folder: dist }, screen, errorsExpected: true }, ({ page }) => shiftsBeforeAndAfterATap(page));
+      const { returned: { before, after } } = await walkSite({ site: { folder: dist }, screen }, ({ page }) => shiftsBeforeAndAfterATap(page));
       expect(before.every.map((s) => s.markedAsInput), `none marked as input, so no subject: ${JSON.stringify(before)}`).toEqual([true]);
       expect(before.counted, "the page's own shift in its first frames went uncounted").toEqual(before.every.map((s) => s.value));
       expect(after.every.map((s) => s.markedAsInput), `the tap moved nothing: ${JSON.stringify(after)}`).toEqual([true, true]);
