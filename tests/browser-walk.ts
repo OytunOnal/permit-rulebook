@@ -16,9 +16,16 @@ const ds = rawDataset as unknown as Dataset;
 /** The built site the walks are served from. */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
+/** Why Chrome cannot open a page here, or null when it can. */
+export function whyNoChrome(): string | null {
+  try { chromePath(); } catch (e) { return (e as Error).message; }
+  return null;
+}
+
 /** Why the browser cannot walk here: no Chrome, or no build. Null when it can. */
 export function skipReason(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
+  const noChrome = whyNoChrome();
+  if (noChrome !== null) return noChrome;
   if (!existsSync(dist)) return "no dist/ — run npm run build first";
   return null;
 }

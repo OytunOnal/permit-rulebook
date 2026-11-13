@@ -25,23 +25,14 @@ import { fileURLToPath } from "node:url";
  * cannot open the site must not report that the site is fine.
  */
 
-const { chromePath, serve, ERRORS_KEPT } = await import("../scripts/browser/browser.mjs");
+const { serve, ERRORS_KEPT } = await import("../scripts/browser/browser.mjs");
 const { smoke, CHECKS, DEFAULT_SURFACES } = await import("../scripts/smoke.mjs");
 const { notOurDevServer } = await import("../scripts/dev-server.mjs");
+const { skipReason, whyNoChrome } = await import("./browser-walk.js");
 
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
-function why(): string | null {
-  try {
-    chromePath();
-  } catch (e) {
-    return (e as Error).message;
-  }
-  if (!existsSync(dist)) return "no dist/ — run npm run build first";
-  return null;
-}
-
-const skipped = why();
+const skipped = skipReason();
 
 /**
  * Announced on the process's own stderr, before any test runs.
@@ -118,16 +109,6 @@ describe("the site, in a real browser", () => {
     180000,
   );
 });
-
-/** Why Chrome cannot open the fixture pages here, or null when it can. */
-function whyNoChrome(): string | null {
-  try {
-    chromePath();
-  } catch (e) {
-    return (e as Error).message;
-  }
-  return null;
-}
 
 /** A phone's viewport, as every fixture page declares it, so the walk's width check holds. */
 const VIEWPORT_META = '<meta name="viewport" content="width=device-width, initial-scale=1">';

@@ -5199,6 +5199,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/smoke.test.ts",
+   "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/start-over.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
