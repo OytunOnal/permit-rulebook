@@ -131,44 +131,77 @@ export const CHECKS = [
  *
  * @typedef {object} PageLoad
  * @property {string} surface "dev" or "dist".
- * @property {string} path The check's path.
+ * @property {string} path The check's path; for errors at an address no check opened, that address.
  * @property {string} what What the page is, in words.
  * @property {Record<string, any>} value What the check's probe read; its fields are the probe's own, so they differ per check.
- * @property {string[]} thrown What the page threw or logged since it was opened.
+ * @property {string[]} thrown What the page threw or logged: the walk's errors at its address.
  * @property {string[]} failures Every reason the check failed; none when it passed.
  */
 
+/** What a page load is, in words, when its errors came at an address none of the checks opened. */
+const UNPLACED = "an address none of smoke's checks opens";
+
+/** The failure line for `message`, an error the page threw or logged. */
+const threwLineOf = (message) => `the page threw — ${message}`;
+
+/** What `check`'s probe read on the page `page` shows, or why the page could not be read. */
+async function probeRead(page, check) {
+  try {
+    return { value: JSON.parse(await page.evaluate(check.probe)), unreadable: [] };
+  } catch (e) {
+    return { value: {}, unreadable: [`the page could not even be read — ${e.message}`] };
+  }
+}
+
+/** Each check's address and what its probe read there, opened on the walk's page in the order of `CHECKS`. */
+async function probeEveryCheck({ page, url }) {
+  const reads = [];
+  for (const check of CHECKS) {
+    const address = new URL(url(check.path)).href;
+    await page.goto(address);
+    await page.waitUntilAtRest();
+    reads.push({ check, address, ...await probeRead(page, check) });
+  }
+  return reads;
+}
+
+/** The messages of `errors`, each address with the messages that came at it. */
+function messagesByAddress(errors) {
+  const byAddress = new Map();
+  for (const { address, message } of errors) byAddress.set(address, [...(byAddress.get(address) ?? []), message]);
+  return byAddress;
+}
+
+/** The page load of a check on `surface`, judged on what its probe read and on `thrown`, its page's errors. */
+function pageLoadOf({ check, value, unreadable }, surface, thrown) {
+  return {
+    surface, path: check.path, what: check.what, value, thrown,
+    failures: [...unreadable, ...(unreadable.length ? [] : check.expect(value)), ...thrown.map(threwLineOf)],
+  };
+}
+
+/** A page load of its own for `thrown`, the errors at `address`, which none of the checks opened. */
+function unplacedLoadOf(address, thrown, surface) {
+  return { surface, path: address, what: UNPLACED, value: {}, thrown, failures: thrown.map(threwLineOf) };
+}
+
 /**
- * Every check on `site`, named `surface` in its results; the checks judge the pages' errors, so the walk returns them.
+ * Every check on `site`, named `surface` in its results. Each page's errors
+ * are the walk's at its address; errors at an address no check opened (a
+ * redirect, the blank tab before the first page) are a page load of their
+ * own, so none is dropped and no check is blamed for one.
  *
  * @returns {Promise<PageLoad[]>}
  */
 async function walk(site, surface) {
-  const { returned } = await walkSite({ site, screen: PHONE, errorsExpected: true }, async ({ page, url }) => {
-    const results = /** @type {PageLoad[]} */ ([]);
-    for (const check of CHECKS) {
-      await page.goto(url(check.path));
-      await page.waitUntilAtRest();
-      let value = {};
-      let unreadable = [];
-      try {
-        value = JSON.parse(await page.evaluate(check.probe));
-      } catch (e) {
-        unreadable = [`the page could not even be read — ${e.message}`];
-      }
-      const thrown = page.problems();
-      results.push({
-        surface, path: check.path, what: check.what, value, thrown,
-        failures: [
-          ...unreadable,
-          ...(unreadable.length ? [] : check.expect(value)),
-          ...thrown.map((t) => `the page threw — ${t}`),
-        ],
-      });
-    }
-    return results;
-  });
-  return returned;
+  const { returned: reads, errors } = await walkSite({ site, screen: PHONE, errorsExpected: true }, probeEveryCheck);
+  const thrownAt = messagesByAddress(errors);
+  const opened = new Set(reads.map((read) => read.address));
+  const unplaced = [...thrownAt].filter(([address]) => !opened.has(address));
+  return [
+    ...reads.map((read) => pageLoadOf(read, surface, thrownAt.get(read.address) ?? [])),
+    ...unplaced.map(([address, thrown]) => unplacedLoadOf(address, thrown, surface)),
+  ];
 }
 
 /**

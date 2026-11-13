@@ -1,25 +1,9 @@
 // @level infrastructure
 /**
- * The two messages a local run always logs about the traffic counter, and
- * nothing else. Both name the beacon endpoint AND the reason, so a different
- * failure about the same host is not swallowed with them.
- */
-const LOCAL_BEACON_NOISE = [
-  /blocked by CORS policy[\s\S]*cloudflareinsights\.com|cloudflareinsights\.com[\s\S]*blocked by CORS policy/,
-  /Failed to load resource: net::ERR_FAILED \(https:\/\/cloudflareinsights\.com\//,
-];
-
-/**
- * Whether `problem` is one of the two messages a local run always logs about
- * the traffic counter (`TabEvents.problems` says why they are left out).
- */
-export const isLocalBeaconNoise = (problem) => LOCAL_BEACON_NOISE.some((rule) => rule.test(problem));
-
-/**
- * What one tab has thrown and asked for, kept from the events it raises: its
- * problems since its last navigation, and its requests when the caller asked
- * to watch the network. Each problem also goes to the walk's log, with the
- * address of the page it came from.
+ * What one tab has thrown and asked for, kept from the events it raises:
+ * each error it throws or logs goes to the walk's log, unfiltered, with the
+ * address of the page it came from; and its requests are kept when the
+ * caller asked to watch the network.
  */
 export class TabEvents {
   #sendToTab;
@@ -27,8 +11,6 @@ export class TabEvents {
   #walkLog;
   /** The address of the page the tab shows, from its main frame's navigations. */
   #address = "about:blank";
-  /** Everything the page threw or logged as an error. */
-  #problems = [];
   /** Every request the page made, when the caller asked to watch. */
   #requests = [];
 
@@ -48,46 +30,21 @@ export class TabEvents {
     if (method === "Log.entryAdded" && params.entry.level === "error") this.#recordLogError(params.entry);
   };
 
-  /** Empties the problems: a navigation calls it, so they are its page's. */
-  forgetProblems = () => { this.#problems.length = 0; };
-
-  /**
-   * Everything the page threw or logged as an error — except the traffic
-   * counter's two local-only failures.
-   *
-   * Cloudflare's beacon endpoint answers `Access-Control-Allow-Origin:
-   * http://127.0.0.1`, without the port a local static server has to use, so
-   * every local run logs a preflight refusal and the load failure that
-   * follows it — for a request that is fine in production (2026-09-08).
-   * Exactly those two messages are dropped, not every line that mentions the
-   * host: a script error thrown BY the beacon, or any other complaint naming
-   * it, still fails the run (Spec review, 2026-09-08).
-   *
-   * The counter is not silenced either. `tests/record.test.ts` asserts the
-   * script was fetched and a report was actually sent, so a page that stopped
-   * counting fails there.
-   */
-  problems = () => this.#problems.filter((p) => !isLocalBeaconNoise(p));
-
-  /** The unfiltered list, for a caller that wants the counter's noise too. */
-  allProblems = () => [...this.#problems];
-
   requests = () => this.#requests.map((r) => ({ ...r }));
 
   forgetRequests = () => { this.#requests.length = 0; };
 
-  /** Keeps `problem` as the tab's, and in the walk's log under the page's address. */
-  #keepProblem(problem) {
-    this.#problems.push(problem);
+  /** Passes `problem` on to the walk's log, under the address of the page it came from. */
+  #passOn(problem) {
     this.#walkLog.recordError(this.#address, problem);
   }
 
   #recordException(details) {
-    this.#keepProblem(`exception: ${details.exception?.description ?? details.text}`);
+    this.#passOn(`exception: ${details.exception?.description ?? details.text}`);
   }
 
   #recordConsoleError(args) {
-    this.#keepProblem(`console.error: ${args.map((a) => a.value ?? a.description ?? "").join(" ")}`);
+    this.#passOn(`console.error: ${args.map((a) => a.value ?? a.description ?? "").join(" ")}`);
   }
 
   #recordRequest({ request, type, requestId }) {
@@ -112,6 +69,6 @@ export class TabEvents {
   /** The URL belongs in the message: "Failed to load resource" without it
    * tells a reader of a red run nothing, and a filter nothing either. */
   #recordLogError({ text, url }) {
-    this.#keepProblem(`log: ${text}${url ? ` (${url})` : ""}`);
+    this.#passOn(`log: ${text}${url ? ` (${url})` : ""}`);
   }
 }

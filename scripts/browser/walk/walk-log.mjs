@@ -1,5 +1,31 @@
 // @level infrastructure
-import { isLocalBeaconNoise } from "../tab/tab-events.mjs";
+/**
+ * The two messages a local run always logs about the traffic counter, and
+ * nothing else. Both name the beacon endpoint AND the reason, so a different
+ * failure about the same host is not swallowed with them.
+ */
+const LOCAL_BEACON_NOISE = [
+  /blocked by CORS policy[\s\S]*cloudflareinsights\.com|cloudflareinsights\.com[\s\S]*blocked by CORS policy/,
+  /Failed to load resource: net::ERR_FAILED \(https:\/\/cloudflareinsights\.com\//,
+];
+
+/**
+ * Whether `problem` is one of the two messages a local run always logs about
+ * the traffic counter, which the walk's log leaves out.
+ *
+ * Cloudflare's beacon endpoint answers `Access-Control-Allow-Origin:
+ * http://127.0.0.1`, without the port a local static server has to use, so
+ * every local run logs a preflight refusal and the load failure that
+ * follows it — for a request that is fine in production (2026-09-08).
+ * Exactly those two messages are dropped, not every line that mentions the
+ * host: a script error thrown BY the beacon, or any other complaint naming
+ * it, still fails the run (Spec review, 2026-09-08).
+ *
+ * The counter is not silenced either. `tests/record.test.ts` asserts the
+ * script was fetched and a report was actually sent, so a page that stopped
+ * counting fails there.
+ */
+const isLocalBeaconNoise = (problem) => LOCAL_BEACON_NOISE.some((rule) => rule.test(problem));
 
 /**
  * @typedef {object} WalkError
@@ -12,9 +38,8 @@ const ERRORS_KEPT = 100;
 
 /**
  * What one browser keeps across a whole walk, every tab and navigation of it:
- * each error with the address of the page it came from, which a tab's own
- * `problems()` forgets at its next navigation, up to `ERRORS_KEPT` and a count
- * of the rest; and the tab on screen.
+ * the walk's one list of errors, each with the address of the page it came
+ * from, up to `ERRORS_KEPT` and a count of the rest; and the tab on screen.
  */
 export class WalkLog {
   /** @type {WalkError[]} */
@@ -25,7 +50,7 @@ export class WalkLog {
   /**
    * Keeps `message`, thrown or logged by the page at `address`, while fewer
    * than `ERRORS_KEPT` are kept, and counts it otherwise; the traffic
-   * counter's two local-only messages are neither (`TabEvents`).
+   * counter's two local-only messages are neither (`isLocalBeaconNoise`).
    */
   recordError = (address, message) => {
     if (isLocalBeaconNoise(message)) return;
