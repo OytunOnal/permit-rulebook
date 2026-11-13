@@ -14,7 +14,7 @@
  * the verdict's.
  */
 import { remainingQuestions, type Dataset, type Profile, type Question } from "permit-rulebook-data";
-import type { BrowserMove } from "../../interview-history/index.js";
+import type { BrowserMove } from "../../interview-history/interview-history.js";
 import type { RecordToKeep, StoredRecord } from "../../record.js";
 import { arrivalOf, replayRecord, type ArrivalFacts, type RecordOnArrival } from "../../scope.js";
 

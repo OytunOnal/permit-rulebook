@@ -13,7 +13,7 @@ import { countryOf } from "./countries.js";
 import { type Glossary, glossSection, glossed } from "./gloss.js";
 import { esc, escAttr, sentenceWithLinkHtml } from "./reason.js";
 import { glossedLearnLinkText } from "./quote.js";
-import { countrySearchHtml } from "./country-search/index.js";
+import { countrySearchHtml } from "./country-search/country-search.js";
 import type { Masthead, Screen } from "./screen.js";
 import { url } from "./site.js";
 import { routePath } from "./slug.js";

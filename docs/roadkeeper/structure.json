@@ -63,7 +63,7 @@
    "path": "src/lib/country-search",
    "entries": [
     {
-     "file": "src/lib/country-search/index.ts",
+     "file": "src/lib/country-search/country-search.ts",
      "level": "presentation"
     }
    ],
@@ -73,7 +73,7 @@
     "src/lib/country-search/control/markup.ts",
     "src/lib/country-search/control/mount.ts",
     "src/lib/country-search/control/view.ts",
-    "src/lib/country-search/index.ts"
+    "src/lib/country-search/country-search.ts"
    ]
   },
   {
@@ -102,26 +102,26 @@
    "path": "src/lib/interview",
    "entries": [
     {
-     "file": "src/lib/interview/index.ts",
+     "file": "src/lib/interview/start-interview.ts",
      "level": "main"
     }
    ],
    "files": [
     "src/lib/interview/flow/interview-after.ts",
-    "src/lib/interview/index.ts",
-    "src/lib/interview/interview.css"
+    "src/lib/interview/interview.css",
+    "src/lib/interview/start-interview.ts"
    ]
   },
   {
    "path": "src/lib/interview-history",
    "entries": [
     {
-     "file": "src/lib/interview-history/index.ts",
+     "file": "src/lib/interview-history/interview-history.ts",
      "level": "application"
     }
    ],
    "files": [
-    "src/lib/interview-history/index.ts",
+    "src/lib/interview-history/interview-history.ts",
     "src/lib/interview-history/list/entry-state.ts",
     "src/lib/interview-history/list/screen-list.ts"
    ]
@@ -297,7 +297,7 @@
   "src/lib/country-search/control/markup.ts": "presentation",
   "src/lib/country-search/control/mount.ts": "presentation",
   "src/lib/country-search/control/view.ts": "presentation",
-  "src/lib/country-search/index.ts": "presentation",
+  "src/lib/country-search/country-search.ts": "presentation",
   "src/lib/data-page.ts": "presentation",
   "src/lib/dataset-ld.ts": "presentation",
   "src/lib/feedback-page.ts": "presentation",
@@ -313,7 +313,7 @@
   "src/lib/frame/head/icon-links.ts": "presentation",
   "src/lib/gloss.ts": "presentation",
   "src/lib/identity.ts": "presentation",
-  "src/lib/interview-history/index.ts": "application",
+  "src/lib/interview-history/interview-history.ts": "application",
   "src/lib/interview-history/list/entry-state.ts": "domain",
   "src/lib/interview-history/list/screen-list.ts": "domain",
   "src/lib/interview/draw/drawing.ts": "presentation",
@@ -326,7 +326,7 @@
   "src/lib/interview/draw/screen/question-screen.ts": "presentation",
   "src/lib/interview/draw/screen/verdict-screen.ts": "presentation",
   "src/lib/interview/flow/interview-after.ts": "application",
-  "src/lib/interview/index.ts": "main",
+  "src/lib/interview/start-interview.ts": "main",
   "src/lib/not-found.ts": "presentation",
   "src/lib/question.ts": "presentation",
   "src/lib/quote.ts": "presentation",
@@ -875,7 +875,7 @@
   },
   {
    "from": "src/lib/browser-history.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "type-only"
   },
   {
@@ -1009,27 +1009,27 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/country-search/index.ts",
+   "from": "src/lib/country-search/country-search.ts",
    "to": "src/lib/country-search/control/controller.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/country-search/index.ts",
+   "from": "src/lib/country-search/country-search.ts",
    "to": "src/lib/country-search/control/listbox.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/country-search/index.ts",
+   "from": "src/lib/country-search/country-search.ts",
    "to": "src/lib/country-search/control/markup.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/country-search/index.ts",
+   "from": "src/lib/country-search/country-search.ts",
    "to": "src/lib/country-search/control/mount.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/country-search/index.ts",
+   "from": "src/lib/country-search/country-search.ts",
    "to": "src/lib/country-search/control/view.ts",
    "kind": "type-only"
   },
@@ -1364,12 +1364,12 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview-history/index.ts",
+   "from": "src/lib/interview-history/interview-history.ts",
    "to": "src/lib/interview-history/list/entry-state.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview-history/index.ts",
+   "from": "src/lib/interview-history/interview-history.ts",
    "to": "src/lib/interview-history/list/screen-list.ts",
    "kind": "dependency"
   },
@@ -1485,7 +1485,7 @@
   },
   {
    "from": "src/lib/interview/draw/screen/question-screen.ts",
-   "to": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/country-search.ts",
    "kind": "dependency"
   },
   {
@@ -1580,7 +1580,7 @@
   },
   {
    "from": "src/lib/interview/flow/interview-after.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "type-only"
   },
   {
@@ -1594,32 +1594,32 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/index.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/interview/draw/drawing.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/interview/flow/interview-after.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/interview/interview.css",
    "kind": "dependency"
   },
   {
-   "from": "src/lib/interview/index.ts",
+   "from": "src/lib/interview/start-interview.ts",
    "to": "src/lib/record.ts",
    "kind": "dependency"
   },
@@ -1670,7 +1670,7 @@
   },
   {
    "from": "src/lib/question.ts",
-   "to": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/country-search.ts",
    "kind": "dependency"
   },
   {
@@ -2570,7 +2570,7 @@
   },
   {
    "from": "src/pages/index.astro",
-   "to": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/start-interview.ts",
    "kind": "dependency"
   },
   {
@@ -2730,12 +2730,12 @@
   },
   {
    "from": "tests/back-and-keep.test.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/back-and-keep.test.ts",
-   "to": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/start-interview.ts",
    "kind": "dependency"
   },
   {
@@ -3305,12 +3305,12 @@
   },
   {
    "from": "tests/fake-browser-history.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "implements"
   },
   {
    "from": "tests/fake-browser-history.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "type-only"
   },
   {
@@ -3590,7 +3590,7 @@
   },
   {
    "from": "tests/history.test.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "dependency"
   },
   {
@@ -3625,7 +3625,7 @@
   },
   {
    "from": "tests/interview-tab.ts",
-   "to": "src/lib/interview-history/index.ts",
+   "to": "src/lib/interview-history/interview-history.ts",
    "kind": "dependency"
   },
   {
@@ -3635,7 +3635,7 @@
   },
   {
    "from": "tests/interview.test.ts",
-   "to": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/start-interview.ts",
    "kind": "dependency"
   },
   {
@@ -3650,7 +3650,7 @@
   },
   {
    "from": "tests/listbox.test.ts",
-   "to": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/country-search.ts",
    "kind": "dependency"
   },
   {
@@ -5045,7 +5045,7 @@
   },
   {
    "from": "tests/screen.test.ts",
-   "to": "src/lib/interview/index.ts",
+   "to": "src/lib/interview/start-interview.ts",
    "kind": "dependency"
   },
   {
@@ -5250,7 +5250,7 @@
   },
   {
    "from": "tests/territories.test.ts",
-   "to": "src/lib/country-search/index.ts",
+   "to": "src/lib/country-search/country-search.ts",
    "kind": "dependency"
   },
   {
@@ -5495,7 +5495,7 @@
     "exported": false
    }
   ],
-  "src/lib/country-search/index.ts": [],
+  "src/lib/country-search/country-search.ts": [],
   "src/lib/frame/framed-page.ts": [
    {
     "name": "PagePlace",
@@ -5538,7 +5538,7 @@
     "exported": true
    }
   ],
-  "src/lib/interview/index.ts": [
+  "src/lib/interview/start-interview.ts": [
    {
     "name": "InterviewPorts",
     "kind": "type",
@@ -5555,7 +5555,7 @@
     "exported": true
    }
   ],
-  "src/lib/interview-history/index.ts": [
+  "src/lib/interview-history/interview-history.ts": [
    {
     "name": "BrowserHistory",
     "kind": "type",
@@ -5957,6 +5957,21 @@
     "name": "walksPlugin",
     "kind": "const",
     "exported": true
+   },
+   {
+    "name": "FILES_NAMED_FOR_THEIR_EXPORT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "INDEX_FILE_NAME",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "noIndexFile",
+    "kind": "const",
+    "exported": false
    },
    {
     "name": "default",
@@ -9445,5 +9460,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7ae1bf19e95d1e41a269f6ac56efdbd1ccc1f6b48a49b0db269e50e19b7319ee"
+ "digest": "b7fb325f2951d688c367138cf43413ca9b9af05d0348753762786eb6769ff7ca"
 }

@@ -19,7 +19,7 @@ import "./interview.css";
 import { deriveQuestions, type Dataset } from "permit-rulebook-data";
 import {
   openInterviewHistory, type BrowserHistory, type InterviewHistory,
-} from "../interview-history/index.js";
+} from "../interview-history/interview-history.js";
 import { clearRecord, loadRecord, saveRecord, type RecordStore } from "../record.js";
 import { openDrawing } from "./draw/drawing.js";
 import {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { openInterviewHistory, type InterviewHistory } from "../src/lib/interview-history/index.js";
+import { openInterviewHistory, type InterviewHistory } from "../src/lib/interview-history/interview-history.js";
 import { FakeTab, stepOf } from "./fake-browser-history.js";
 
 /**

@@ -149,6 +149,26 @@ const noErrorsExpected = {
 /** The plugin `walks`: its one rule refuses `errorsExpected` in a test. */
 export const walksPlugin = { rules: { "no-errors-expected": noErrorsExpected } };
 
+/** The code and the scripts, where a file is named for its main export; a page named `index` is a route, outside them. */
+const FILES_NAMED_FOR_THEIR_EXPORT = ["src/lib/**/*.ts", "src/lib/**/*.mjs", "scripts/**/*.ts", "scripts/**/*.mjs"];
+
+/** The name `index`, with any extension, read off a path's last part: the name that says nothing of what a file does. */
+const INDEX_FILE_NAME = /(^|[\\/])index\.[^\\/]+$/;
+
+/**
+ * A file is named for its main export (`ROADKEEPER_STANDARDS.md`, Names; #309,
+ * rulings 2 and 3): one named `index` says nothing of what it does, so it is
+ * refused, once, at its first line.
+ */
+const noIndexFile = {
+  create: (context) => ({
+    Program(node) {
+      if (INDEX_FILE_NAME.test(context.filename))
+        context.report({ node, message: "Name the file for its main export, not `index` (ROADKEEPER_STANDARDS.md › Names)." });
+    },
+  }),
+};
+
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   { ignores: IGNORED },
@@ -183,5 +203,10 @@ export default [
     ignores: [THE_WALKS_SUITE],
     plugins: { walks: walksPlugin },
     rules: { "walks/no-errors-expected": "error" },
+  },
+  {
+    files: FILES_NAMED_FOR_THEIR_EXPORT,
+    plugins: { names: { rules: { "no-index-file": noIndexFile } } },
+    rules: { "names/no-index-file": "error" },
   },
 ];

@@ -5,7 +5,7 @@ import { INTRO_SUBLINE, SHORT_SUBLINE } from "../src/lib/copy/interview.js";
 import { answersCheckedLine, nearestLine } from "../src/lib/copy/verdict.js";
 import {
   EMPTY_INTERVIEW, interviewAfter, type Gesture, type InterviewState, type InterviewStep,
-} from "../src/lib/interview/index.js";
+} from "../src/lib/interview/start-interview.js";
 import { questionMastheadOf } from "../src/lib/question.js";
 import type { Masthead } from "../src/lib/screen.js";
 import { verdictOf, type Verdict } from "../src/lib/verdict/verdict.js";
