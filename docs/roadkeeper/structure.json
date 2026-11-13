@@ -3709,6 +3709,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/no-errors-expected.test.ts",
+   "to": "eslint.config.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/no-sideways-scroll.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
@@ -5921,7 +5926,7 @@
    {
     "name": "THE_WALKS_SUITE",
     "kind": "const",
-    "exported": false
+    "exported": true
    },
    {
     "name": "ERRORS_EXPECTED",
@@ -9430,5 +9435,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7326d94af3321ab8cec9d1411681e3f815d800ba2c56610ff790d85bbdd9cdbe"
+ "digest": "faabd7f15a4b419913fb3d419b9af150002b4019e3ceeafff0099a5f63b796e8"
 }

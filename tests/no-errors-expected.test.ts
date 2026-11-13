@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { ESLint } from "eslint";
+import { THE_WALKS_SUITE } from "../eslint.config.mjs";
 
 /**
  * The lint refuses `errorsExpected` in a test (#353, ruling 7 on #288): the
@@ -18,9 +19,6 @@ const RULE = "walks/no-errors-expected";
 
 /** A test file's path, as the project's config sees one. */
 const A_TEST = "tests/a-browser-case.test.ts";
-
-/** The walk's own suite, the one test file that reads the walk's errors on purpose. */
-const THE_WALKS_SUITE = "tests/walk-site.test.ts";
 
 /** The rule's setting in the project's config for the file at `filePath`, or undefined when it runs none there. */
 async function ruleSettingFor(filePath: string): Promise<unknown> {
@@ -48,7 +46,7 @@ describe("the lint on errorsExpected", () => {
       "export const set = (w: { errorsExpected?: boolean }) => { w.errorsExpected = true; };",
     ), A_TEST);
     expect(refused).toHaveLength(4);
-    expect(refused[0]).toContain("tests/walk-site.test.ts");
+    expect(refused[0]).toContain(THE_WALKS_SUITE);
   });
 
   it("the walk's own suite may pass it", async () => {

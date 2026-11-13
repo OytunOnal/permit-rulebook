@@ -114,7 +114,7 @@ const noFixedWait = {
 };
 
 /** The walk's own suite, the one test file that reads the walk's errors on purpose. */
-const THE_WALKS_SUITE = "tests/walk-site.test.ts";
+export const THE_WALKS_SUITE = "tests/walk-site.test.ts";
 
 /** The option that turns the walk's check of its pages' errors off. */
 const ERRORS_EXPECTED = "errorsExpected";
