@@ -16,9 +16,16 @@ const ds = rawDataset as unknown as Dataset;
 /** The built site the walks are served from. */
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
 
+/** Why Chrome cannot open a page here, or null when it can. */
+export function whyNoChrome(): string | null {
+  try { chromePath(); } catch (e) { return (e as Error).message; }
+  return null;
+}
+
 /** Why the browser cannot walk here: no Chrome, or no build. Null when it can. */
 export function skipReason(): string | null {
-  try { chromePath(); } catch (e) { return (e as Error).message; }
+  const noChrome = whyNoChrome();
+  if (noChrome !== null) return noChrome;
   if (!existsSync(dist)) return "no dist/ — run npm run build first";
   return null;
 }
@@ -36,10 +43,11 @@ export function warnNotWalked(what: string, reason: string): void {
 }
 
 /** Walks the built site on `screen`, handing `run` the page on the site, and
- * returns what `run` returned. Errors are expected: the browser cases assert
- * the page's `problems()` themselves. */
+ * returns what `run` returned. The walk fails on an error thrown or logged on
+ * any page it opened, in any tab, naming that page's address and the error,
+ * so a browser case writes no check of its own for it. */
 export async function withSite<T>(run: (site: PageOnSite) => Promise<T>, screen: Screen): Promise<T> {
-  const { returned } = await walkSite({ site: { folder: dist }, screen, errorsExpected: true }, run);
+  const { returned } = await walkSite({ site: { folder: dist }, screen }, run);
   return returned;
 }
 

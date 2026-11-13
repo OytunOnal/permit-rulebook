@@ -318,15 +318,13 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
         out[destination] = {
           question: await page.evaluate('document.querySelector(".qlabel").textContent.trim()'),
           marks: JSON.parse(await page.evaluate(MARKS)),
-          problems: page.problems(),
         };
       }
       return out;
     }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string,
-      { question: string; marks: { under: string; text: string; href: string | null }[]; problems: string[] }>;
+      { question: string; marks: { under: string; text: string; href: string | null }[] }>;
     for (const [destination, s] of Object.entries(seen)) {
       expect(s.question, destination).toBe("Which best describes your situation?");
-      expect(s.problems, destination).toEqual([]);
     }
     expect(seen.fr!.marks).toEqual([{
       under: "research",
@@ -343,7 +341,6 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
         status: await page.evaluate('document.getElementById("cstatus").textContent'),
         painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(answers)))),
         state: await page.evaluate('document.getElementById("app").dataset.state'),
-        problems: page.problems(),
       });
       // France, by the buttons: the destination on the record, then the marked answer tapped.
       await page.goto(addressOf("/"));
@@ -358,18 +355,16 @@ describe.skipIf(skipped !== null)("s19 — in the browser", () => {
       const spain = await read(SPAIN_RESEARCH);
       return { france, spain };
     }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as Record<string, {
-      status: string; painted: typeof PAINTED_AS_COMPOSED; state: string; problems: string[];
+      status: string; painted: typeof PAINTED_AS_COMPOSED; state: string;
     }>;
 
     // What each screen says is the verdict's ("s19 — the two walks' results,
     // from the verdict"); the page paints it, and says France's written state.
     const { france, spain } = seen;
-    expect(france!.problems).toEqual([]);
     expect(france!.state).toBe("results");
     expect(france!.status).toBe("No route we check in France takes a research hosting agreement.");
     expect(france!.painted).toEqual(PAINTED_AS_COMPOSED);
 
-    expect(spain!.problems).toEqual([]);
     expect(spain!.painted).toEqual(PAINTED_AS_COMPOSED);
   }, 120_000);
 });

@@ -174,9 +174,8 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
         const third = await where(page);
         await pressBack(page);
         const backFromScrolled = await where(page);
-        return { cold, first, second, back, readOn, third, backFromScrolled, problems: page.problems() };
+        return { cold, first, second, back, readOn, third, backFromScrolled };
       }, { viewport, mobile: true });
-      expect(seen.problems).toEqual([]);
       expect(seen.cold.wide, "the breakpoint reads this width as wide").toBe(false);
       // The first paint is not a gesture: the cold load scrolls nothing, and
       // with nothing declared the question comes first (F8).
@@ -217,9 +216,8 @@ describe.skipIf(skipped !== null)("on a phone every question after the first com
       // moved by then, so a landing that kept going is caught.
       const atOnce = JSON.parse(await answerWith(page, TAP_FIRST_AND_READ)) as Where;
       const later = await where(page);
-      return { cold, reduced, atOnce, later, problems: page.problems() };
+      return { cold, reduced, atOnce, later };
     }, PHONE);
-    expect(seen.problems).toEqual([]);
     expect(seen.reduced, "the browser did not take the reduced-motion preference").toBe(true);
     expectLanded(seen.atOnce, "in the same task as the tap");
     expect(seen.later.scrollY, "the page kept moving after the instant landing").toBe(seen.atOnce.scrollY);
@@ -234,9 +232,8 @@ describe.skipIf(skipped !== null)("what does not change", () => {
       const first = await where(page);
       await answerWith(page, TAP_FIRST);
       const second = await where(page);
-      return { cold, first, second, problems: page.problems() };
+      return { cold, first, second };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.cold.wide, "the breakpoint reads this width as narrow").toBe(true);
     expect(seen.first.state).toBe("questions");
     expect(seen.first.scrollY, "the first answer moved a desktop reader").toBe(0);
@@ -255,9 +252,8 @@ describe.skipIf(skipped !== null)("what does not change", () => {
       const before = await where(page);
       await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
       const corrected = await where(page);
-      return { cold, answered, before, corrected, problems: page.problems() };
+      return { cold, answered, before, corrected };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     // The ledger is beside the card, before and after an answer: the order
     // the grid gives a wide screen does not change.
     for (const [label, step] of [["cold", seen.cold], ["after an answer", seen.answered]] as const) {
@@ -295,9 +291,8 @@ describe.skipIf(skipped !== null)("Start over on a phone: the ledger goes back u
       const before = await where(page);
       await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
       const reset = await where(page);
-      return { restored, before, reset, problems: page.problems() };
+      return { restored, before, reset };
     }, PHONE);
-    expect(seen.problems).toEqual([]);
     // With answers on the device the ledger line is above from the first
     // paint, and the first paint scrolls nothing.
     expect(seen.restored.answered).toBe(true);
@@ -323,9 +318,8 @@ describe.skipIf(skipped !== null)("a link the page does not know keeps the first
       await openAtRest(page, url("/?country=zz"));
       const landed = await where(page);
       const count = await page.evaluate('document.getElementById("decl-count").textContent');
-      return { landed, count, problems: page.problems() };
+      return { landed, count };
     }, PHONE);
-    expect(seen.problems).toEqual([]);
     // The head wrote the seed for a link it cannot check; the module found
     // no answer in it. Its word stands for the first screen: the line above
     // question one says "nothing yet", which is true, and nothing moves
@@ -362,7 +356,7 @@ describe.skipIf(skipped !== null)("on a phone the ledger line sits above the res
     const corrected = await where(page);
     await answerWith(page, ANSWER_ANOTHER_BAND);
     const returned = await where(page);
-    return { verdict, corrected, returned, problems: page.problems() };
+    return { verdict, corrected, returned };
   }
 
   /** The line under the masthead and above the strip: the way back to any
@@ -382,7 +376,6 @@ describe.skipIf(skipped !== null)("on a phone the ledger line sits above the res
   ] as const)
     it(`at ${name}: the verdict, ✎ from it, and the way back`, async () => {
       const seen = await withSite(({ page, url }) => verdictWalk(page, url), { viewport, mobile: true });
-      expect(seen.problems).toEqual([]);
       expect(seen.verdict.answered).toBe(true);
       expectLedgerAboveResult(seen.verdict, "on arrival");
       // ✎ from the verdict: the correction landing (amendment 6).
@@ -403,7 +396,6 @@ describe.skipIf(skipped !== null)("on a phone the ledger line sits above the res
 
   it("at 1280x900 the ledger stays beside the result", async () => {
     const seen = await withSite(({ page, url }) => verdictWalk(page, url), DESK);
-    expect(seen.problems).toEqual([]);
     for (const [label, step] of [["on arrival", seen.verdict], ["after the answer", seen.returned]] as const) {
       expect(step.state, label).toBe("results");
       expect(step.declLeft, `${label}: the ledger is not to the left of the result`).toBeLessThan(step.mainLeft);
@@ -425,9 +417,8 @@ describe.skipIf(skipped !== null)("on a phone a correction lands too (amendment 
         const answered = await where(page);
         await evaluateAtRest(page, OPEN_AND_TAP_DESTINATION);
         const corrected = await where(page);
-        return { answered, corrected, problems: page.problems() };
+        return { answered, corrected };
       }, { viewport, mobile: true });
-      expect(seen.problems).toEqual([]);
       expect(seen.corrected.question, "the correction did not reopen the first question").not.toBe(seen.answered.question);
       expect(seen.corrected.declOpen, "the ledger stayed open above the reopened question").toBe(false);
       expectLanded(seen.corrected, "after ✎");

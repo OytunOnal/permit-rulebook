@@ -198,11 +198,9 @@ describe.skipIf(skipped !== null)("the results screen, as drawn", () => {
       return {
         state: await page.evaluate('document.getElementById("app").dataset.state'),
         links: (JSON.parse(await page.evaluate(RESULT_LINKS)) as Link[]).map((l) => ({ ...l, where: "results" })),
-        problems: page.problems(),
       };
     }, { viewport: { width: 1100, height: 1200 }, mobile: false });
 
-    expect(seen.problems).toEqual([]);
     expect(seen.state).toBe("results");
     expect(checkedConsolidatedLinkCount(seen.links), "the results screen links to no consolidated text").toBeGreaterThan(0);
   }, 180000);

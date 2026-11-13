@@ -15,18 +15,29 @@
     "scripts/browser/chrome/chrome.mjs",
     "scripts/browser/connection/devtools-connection.mjs",
     "scripts/browser/exit-register/owned.mjs",
-    "scripts/browser/layout-shifts/layout-shift-reading.mjs",
     "scripts/browser/static-server/html-in-pieces.mjs",
     "scripts/browser/static-server/static-server.mjs",
-    "scripts/browser/tab/open-tab.mjs",
-    "scripts/browser/tab/tab-events.mjs",
-    "scripts/browser/tab/tab-gestures.mjs",
-    "scripts/browser/tab/tab-page.mjs",
-    "scripts/browser/tab/tab-waits.mjs",
     "scripts/browser/walk/open-browser.mjs",
     "scripts/browser/walk/screens.mjs",
     "scripts/browser/walk/walk-log.mjs",
     "scripts/browser/walk/walk-site.mjs"
+   ]
+  },
+  {
+   "path": "scripts/browser/tab",
+   "entries": [
+    {
+     "file": "scripts/browser/tab/open-tab.mjs",
+     "level": "infrastructure"
+    }
+   ],
+   "files": [
+    "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs",
+    "scripts/browser/tab/open-tab.mjs",
+    "scripts/browser/tab/page/tab-events.mjs",
+    "scripts/browser/tab/page/tab-gestures.mjs",
+    "scripts/browser/tab/page/tab-page.mjs",
+    "scripts/browser/tab/page/tab-waits.mjs"
    ]
   },
   {
@@ -212,14 +223,14 @@
   "scripts/browser/chrome/chrome.mjs": "infrastructure",
   "scripts/browser/connection/devtools-connection.mjs": "infrastructure",
   "scripts/browser/exit-register/owned.mjs": "infrastructure",
-  "scripts/browser/layout-shifts/layout-shift-reading.mjs": "infrastructure",
   "scripts/browser/static-server/html-in-pieces.mjs": "infrastructure",
   "scripts/browser/static-server/static-server.mjs": "infrastructure",
+  "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs": "infrastructure",
   "scripts/browser/tab/open-tab.mjs": "infrastructure",
-  "scripts/browser/tab/tab-events.mjs": "infrastructure",
-  "scripts/browser/tab/tab-gestures.mjs": "infrastructure",
-  "scripts/browser/tab/tab-page.mjs": "infrastructure",
-  "scripts/browser/tab/tab-waits.mjs": "infrastructure",
+  "scripts/browser/tab/page/tab-events.mjs": "infrastructure",
+  "scripts/browser/tab/page/tab-gestures.mjs": "infrastructure",
+  "scripts/browser/tab/page/tab-page.mjs": "infrastructure",
+  "scripts/browser/tab/page/tab-waits.mjs": "infrastructure",
   "scripts/browser/walk/open-browser.mjs": "infrastructure",
   "scripts/browser/walk/screens.mjs": "infrastructure",
   "scripts/browser/walk/walk-log.mjs": "infrastructure",
@@ -409,6 +420,11 @@
   },
   {
    "from": "scripts/browser/browser.mjs",
+   "to": "scripts/browser/walk/walk-log.mjs",
+   "kind": "dependency"
+  },
+  {
+   "from": "scripts/browser/browser.mjs",
    "to": "scripts/browser/walk/walk-site.mjs",
    "kind": "dependency"
   },
@@ -439,27 +455,27 @@
   },
   {
    "from": "scripts/browser/tab/open-tab.mjs",
-   "to": "scripts/browser/tab/tab-events.mjs",
+   "to": "scripts/browser/tab/page/tab-events.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/browser/tab/open-tab.mjs",
-   "to": "scripts/browser/tab/tab-gestures.mjs",
+   "to": "scripts/browser/tab/page/tab-gestures.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/browser/tab/open-tab.mjs",
-   "to": "scripts/browser/tab/tab-page.mjs",
+   "to": "scripts/browser/tab/page/tab-page.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/browser/tab/open-tab.mjs",
-   "to": "scripts/browser/tab/tab-waits.mjs",
+   "to": "scripts/browser/tab/page/tab-waits.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/tab/tab-page.mjs",
-   "to": "scripts/browser/layout-shifts/layout-shift-reading.mjs",
+   "from": "scripts/browser/tab/page/tab-page.mjs",
+   "to": "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs",
    "kind": "dependency"
   },
   {
@@ -485,11 +501,6 @@
   {
    "from": "scripts/browser/walk/open-browser.mjs",
    "to": "scripts/browser/walk/walk-log.mjs",
-   "kind": "dependency"
-  },
-  {
-   "from": "scripts/browser/walk/walk-log.mjs",
-   "to": "scripts/browser/tab/tab-events.mjs",
    "kind": "dependency"
   },
   {
@@ -3698,6 +3709,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/no-errors-expected.test.ts",
+   "to": "eslint.config.mjs",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/no-sideways-scroll.test.ts",
    "to": "tests/browser-walk.ts",
    "kind": "dependency"
@@ -5184,7 +5200,17 @@
   },
   {
    "from": "tests/smoke.test.ts",
+   "to": "scripts/smoke.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/smoke.test.ts",
    "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/smoke.test.ts",
+   "to": "tests/browser-walk.ts",
    "kind": "dependency"
   },
   {
@@ -5410,6 +5436,18 @@
  ],
  "declarations": {
   "scripts/browser/browser.mjs": [],
+  "scripts/browser/tab/open-tab.mjs": [
+   {
+    "name": "openTab",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "setUpTab",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
   "scripts/carry-assets/carry.mjs": [
    {
     "name": "ORIGIN_VAR",
@@ -5889,6 +5927,36 @@
     "name": "noFixedWait",
     "kind": "const",
     "exported": false
+   },
+   {
+    "name": "THE_WALKS_SUITE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ERRORS_EXPECTED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "ERRORS_EXPECTED_REFUSED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "findKeyName",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "noErrorsExpected",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "walksPlugin",
+    "kind": "const",
+    "exported": true
    },
    {
     "name": "default",
@@ -6781,6 +6849,46 @@
     "name": "CHECKS",
     "kind": "const",
     "exported": true
+   },
+   {
+    "name": "UNPLACED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "threwLineOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "probeRead",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "probeEveryCheck",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "messagesByAddress",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pageLoadOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "unplacedLoadOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pastTheCapLoadOf",
+    "kind": "fn",
+    "exported": false
    },
    {
     "name": "walk",
@@ -9337,5 +9445,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "6e19b36ebdaa21b46d934caaae7f098344ce8e6a5c3e18898593e96a4418826f"
+ "digest": "7ae1bf19e95d1e41a269f6ac56efdbd1ccc1f6b48a49b0db269e50e19b7319ee"
 }

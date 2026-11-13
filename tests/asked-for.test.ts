@@ -120,9 +120,8 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
       const seen = await withSite(async (site) => {
         const { page } = site;
         await walkTo(site, GERMANY_JOB_OFFER, field);
-        return { ...(await screenOf(page)), problems: page.problems() };
+        return screenOf(page);
       }, DESK);
-      expect(seen.problems).toEqual([]);
       expectTheCardWithALine(seen, field);
       expect(namedRoutes(seen.line)).toEqual([["de-chancenkarte", "DE"]]);
       expect(seen.line.counted).toEqual([]);
@@ -135,9 +134,8 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
       const passport = await screenOf(page);
       // The question after it, which only some of the open routes read.
       await answer(page, "citizenship", GERMANY_JOB_OFFER.citizenship!);
-      return { passport, next: await screenOf(page), problems: page.problems() };
+      return { passport, next: await screenOf(page) };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expect(seen.passport.question, "the passport question is not on the screen").toBe(labelOf("citizenship"));
     expect(seen.passport.line).toBeNull();
     // A line on the next card, so the passport's has no line of its own
@@ -152,9 +150,8 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
       const graduate = await screenOf(page);
       await answer(page, "nl_recent_grad", FOUR_SPAIN.nl_recent_grad!);
       const designated = await screenOf(page);
-      return { graduate, designated, problems: page.problems() };
+      return { graduate, designated };
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expectTheCardWithALine(seen.graduate, "nl_recent_grad");
     expect(namedRoutes(seen.graduate.line)).toEqual([["nl-orientation-year", "NL"]]);
     expectTheCardWithALine(seen.designated, "top200_grad");
@@ -165,9 +162,8 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     const seen = await withSite(async (site) => {
       const { page } = site;
       await walkTo(site, FOUR_SPAIN, "situation");
-      return { ...(await screenOf(page)), problems: page.problems() };
+      return screenOf(page);
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expectTheCardWithALine(seen, "situation");
     // 21 of the 23 open routes read the situation; the Opportunity Card
     // and the orientation year do not.
@@ -182,9 +178,8 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     const seen = await withSite(async (site) => {
       const { page } = site;
       await walkTo(site, GERMANY_JOB_OFFER, "funds_eur_month");
-      return { ...(await screenOf(page)), problems: page.problems() };
+      return screenOf(page);
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expectTheCardWithALine(seen, "funds_eur_month");
     expect(namedRoutes(seen.line)).toEqual([["de-chancenkarte", "DE"]]);
     // Each name the line marks reads as its card's name through the screen's
@@ -211,9 +206,8 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
       if (!at) throw new Error("no experience_5y row in the declared panel");
       await page.clickAt(at.x, at.y);
       await page.waitUntilAtRest();
-      return { ...(await screenOf(page)), problems: page.problems() };
+      return screenOf(page);
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expectTheCardWithALine(seen, "experience_5y");
     // With its own answer the question decides nothing more and would name
     // no route; without it, the experienced worker and the Opportunity Card.
@@ -224,9 +218,8 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
     const seen = await withSite(async (site) => {
       const { page } = site;
       await walkTo(site, IT_NO_DEGREE, "experience_7y");
-      return { ...(await screenOf(page)), problems: page.problems() };
+      return screenOf(page);
     }, DESK);
-    expect(seen.problems).toEqual([]);
     expectTheCardWithALine(seen, "experience_7y");
     expect(namedRoutes(seen.line)).toEqual([["de-blue-card-shortage", "DE"], ["de-chancenkarte", "DE"]]);
   }, 120_000);
@@ -243,10 +236,9 @@ describe.skipIf(skipped !== null)("a question says which routes ask it: the aske
       await page.waitUntilAtRest();
       const geometry = JSON.parse(await page.evaluate(LINE_GEOMETRY)) as LineGeometry | null;
       return {
-        ...(await screenOf(page)), geometry, cls: await shiftScoreSince(page, since), problems: page.problems(),
+        ...(await screenOf(page)), geometry, cls: await shiftScoreSince(page, since),
       };
     }, PHONE);
-    expect(seen.problems).toEqual([]);
     expectTheCardWithALine(seen, "experience_7y");
     expect(namedRoutes(seen.line)).toEqual([["de-blue-card-shortage", "DE"], ["de-chancenkarte", "DE"]]);
     const g = seen.geometry!;

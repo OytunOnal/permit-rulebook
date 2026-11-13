@@ -207,8 +207,8 @@ const seed = (answers: Record<string, string>) =>
 const tap = (value: string) => `document.querySelector(".qcard .opt[data-value=${value}]").click()`;
 
 const BUTTON = '(() => { const b = document.querySelector(".menu"); return JSON.stringify({ text: b.textContent.trim(), expanded: b.getAttribute("aria-expanded") }); })()';
-/** The menu button read by `BUTTON` at each step of its walk, and the page's problems. */
-type MenuButtonSeen = Record<"closed" | "open" | "escaped" | "reopened" | "outside", { text: string; expanded: string }> & { problems: string[] };
+/** The menu button read by `BUTTON` at each step of its walk. */
+type MenuButtonSeen = Record<"closed" | "open" | "escaped" | "reopened" | "outside", { text: string; expanded: string }>;
 
 /**
  * Every country section's summary, measured: the mark's right edge against
@@ -333,9 +333,8 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         const reopened = JSON.parse(await page.evaluate(BUTTON));
         await page.evaluate('document.querySelector("footer").click()');
         const outside = JSON.parse(await page.evaluate(BUTTON));
-        return { closed, open, escaped, reopened, outside, problems: page.problems() };
+        return { closed, open, escaped, reopened, outside };
       }, screen);
-      expect(seen.problems).toEqual([]);
       expect(seen.closed).toEqual({ text: MENU, expanded: "false" });
       expect(seen.open).toEqual({ text: MENU_CLOSE, expanded: "true" });
       expect(seen.escaped).toEqual({ text: MENU, expanded: "false" });
@@ -350,11 +349,10 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         const asDrawn = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
         await evaluateAtRest(page, 'document.querySelectorAll(".country-sec").forEach((d) => { d.open = !d.open; })');
         const toggled = JSON.parse(await page.evaluate(SECTIONS)) as Section[];
-        return { painted, asDrawn, toggled, problems: page.problems() };
+        return { painted, asDrawn, toggled };
       }, screen) as {
-        painted: typeof PAINTED_AS_COMPOSED; asDrawn: Section[]; toggled: Section[]; problems: string[];
+        painted: typeof PAINTED_AS_COMPOSED; asDrawn: Section[]; toggled: Section[];
       };
-      expect(seen.problems).toEqual([]);
       // The sections, their order and which line says the sentence are the
       // verdict's ("2 — the four-country result's sections, from the
       // verdict"); the walk ends on that verdict, painted.
@@ -409,13 +407,11 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
       const seen = await withSite(async ({ page, url: addressOf }) => {
         await page.goto(addressOf(EXPERIENCED));
         const route = JSON.parse(await page.evaluate(HEADER)) as Header;
-        const routeProblems = page.problems();
         // The country page keeps the em: the type the tagline must match.
         await page.goto(addressOf("/germany/"));
         const country = JSON.parse(await page.evaluate(HEADER)) as Header;
-        return { route, country, problems: [...routeProblems, ...page.problems()] };
-      }, screen) as { route: Header; country: Header; problems: string[] };
-      expect(seen.problems).toEqual([]);
+        return { route, country };
+      }, screen) as { route: Header; country: Header };
       // The name alone — and since s32's amendment 6 without the sign's
       // explainer after the citation.
       expect(seen.route.h1).toBe("Experienced worker (§ 19c / § 6 BeschV)");
@@ -434,9 +430,8 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
     const seen = await withSite(async ({ page, url: addressOf }) => {
       await openAtRest(page, addressOf("/"));
       await evaluateAtRest(page, `document.getElementById("decl-list").innerHTML = ${JSON.stringify(rows)}`);
-      return { pens: JSON.parse(await page.evaluate(PENS)) as Pen[], problems: page.problems() };
-    }, DESK) as { pens: Pen[]; problems: string[] };
-    expect(seen.problems).toEqual([]);
+      return { pens: JSON.parse(await page.evaluate(PENS)) as Pen[] };
+    }, DESK) as { pens: Pen[] };
     expect(seen.pens.length).toBeGreaterThan(200);
     // The measurement is of the real sidebar, at its real width: the 15.5rem
     // column less the panel's padding, and no wider.
@@ -473,12 +468,10 @@ describe.skipIf(skipped !== null)("s27 — in the browser", () => {
         })())`)) as {
           decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number;
         };
-        return { door, problems: page.problems() };
+        return { door };
       }, screen) as {
         door: { decoration: string; color: string; band: string; beneath: boolean; left: number; height: number; tapMin: number };
-        problems: string[];
       };
-      expect(seen.problems).toEqual([]);
       // The door's words and its internal href are the verdict's ("8 — the
       // card's door is a door"); here, how it is drawn.
       const { door } = seen;

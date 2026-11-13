@@ -29,8 +29,6 @@ import { layoutShiftReadingExpression } from "../layout-shifts/layout-shift-read
  * @property {() => Promise<void>} forward The browser's own Forward.
  * @property {(options?: { fullPage?: boolean }) => Promise<Buffer>} screenshot The screen as a PNG.
  * @property {() => Promise<import("../layout-shifts/layout-shift-reading.mjs").LayoutShifts>} readLayoutShifts The page's layout shifts as the one reading reads them.
- * @property {() => string[]} problems What this tab has thrown or logged as an error since its last navigation.
- * @property {() => string[]} allProblems The same, the traffic counter's local noise included.
  * @property {() => SentRequest[]} requests Every request the page made, when the browser was asked to watch.
  * @property {() => void} forgetRequests Empties that list.
  * @property {() => Promise<BrowserPage>} openTab A second tab on the same browser: the same origin's storage, a history of its own.
@@ -72,8 +70,8 @@ export class TabPage {
    * A second tab in the same browser — the same profile, so the same
    * origin's storage — for what one tab does to another (s37: a record
    * grown in another tab). It is not brought to the front; `front()` does.
-   * What it throws and asks for is its own: `problems()` and `requests()`
-   * on each tab read that tab alone.
+   * What it asks for is its own: `requests()` on each tab reads that tab
+   * alone. What it throws goes to the walk's one list, under its address.
    */
   openTab = () => this.#openTab();
 
@@ -138,9 +136,6 @@ export class TabPage {
     return Buffer.from(data, "base64");
   };
 
-  /** Everything the page threw or logged as an error, the traffic counter's local noise aside (`TabEvents`). */
-  problems = () => this.#events.problems();
-  allProblems = () => this.#events.allProblems();
   requests = () => this.#events.requests();
   forgetRequests = () => this.#events.forgetRequests();
 }

@@ -157,7 +157,7 @@ describe.skipIf(skipped !== null)("the hold state is one line under the eyebrow 
     ["1280x900", { width: 1280, height: 900 }, false],
   ] as const)
     it(`at ${name}: header, eyebrow, the line, and nothing else — then the verdict where it stays`, async () => {
-      const seen = (await walkSite({ site: { folder: dist, delayJsMs: HELD_MS }, screen: { viewport, mobile }, errorsExpected: true }, async ({ page, url }) => {
+      const seen = (await walkSite({ site: { folder: dist, delayJsMs: HELD_MS }, screen: { viewport, mobile } }, async ({ page, url }) => {
         await page.goto(url("/404.html"));
         await page.evaluate(SEED_FINISHED);
         await page.navigate(url("/"));
@@ -172,9 +172,8 @@ describe.skipIf(skipped !== null)("the hold state is one line under the eyebrow 
         await page.waitUntil('!document.querySelector(".stand-in")', "the module never drew its first screen");
         await page.waitUntilAtRest();
         const drawn = JSON.parse(await page.evaluate(HOLD)) as Hold;
-        return { held, drawn, problems: page.problems() };
+        return { held, drawn };
       })).returned;
-      expect(seen.problems).toEqual([]);
       const h = seen.held;
       expect(h.cover, "the pre-paint script did not name a reader owed a verdict").toBe("verdict");
       expect(h.state, "the module had already drawn — the hold was not held").toBe("questions");
@@ -272,9 +271,8 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
         const onQuestion = JSON.parse(await page.evaluate(FOCUS)) as Focus;
         await answerWith(page, ANSWER_ANOTHER_BAND);
         const back = JSON.parse(await page.evaluate(FOCUS)) as Focus;
-        return { arrived, onQuestion, back, problems: page.problems() };
+        return { arrived, onQuestion, back };
       }, { viewport, mobile });
-      expect(seen.problems).toEqual([]);
       // The arrival keeps s10's rule: a reader who touched nothing has
       // nothing taken from them.
       expect(seen.arrived.state).toBe("results");
@@ -305,9 +303,8 @@ describe.skipIf(skipped !== null)("focus follows the verdict (point 2)", () => {
         await page.goto(url("/404.html"));
         await page.evaluate(seed);
         await openAtRest(page, url(path));
-        return { at: JSON.parse(await page.evaluate(FOCUS)) as Focus, problems: page.problems() };
+        return { at: JSON.parse(await page.evaluate(FOCUS)) as Focus };
       }, PHONE);
-      expect(seen.problems).toEqual([]);
       expect(seen.at.active, `the arrival focused ${seen.at.active}`).toBe("body");
     }, 180000);
 });
@@ -351,7 +348,7 @@ describe.skipIf(skipped !== null)("the gutter is stable (point 3)", () => {
     ["1280x1400, where the question page fits without a scrollbar", { width: 1280, height: 1400 }],
   ] as const)
     it(`at ${name}: the column's left edge is the same before and after the verdict`, async () => {
-      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: false }, errorsExpected: true, scrollbars: true }, async ({ page, url }) => {
+      const seen = (await walkSite({ site: { folder: dist }, screen: { viewport, mobile: false }, scrollbars: true }, async ({ page, url }) => {
         await page.goto(url("/404.html"));
         await page.evaluate("localStorage.clear()");
         await openAtRest(page, url("/"));
@@ -360,9 +357,8 @@ describe.skipIf(skipped !== null)("the gutter is stable (point 3)", () => {
         await page.evaluate(SEED_FINISHED);
         await openAtRest(page, url("/"));
         const verdict = JSON.parse(await page.evaluate(EDGE)) as Edge;
-        return { question, verdict, problems: page.problems() };
+        return { question, verdict };
       })).returned;
-      expect(seen.problems).toEqual([]);
       expect(seen.question.state).toBe("questions");
       expect(seen.verdict.state).toBe("results");
       // The browser draws classic scrollbars, or the case measures nothing.

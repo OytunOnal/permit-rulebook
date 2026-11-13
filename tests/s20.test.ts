@@ -180,7 +180,7 @@ async function correction(page: BrowserPage, origin: (p: string) => string) {
   const onQuestion = JSON.parse(await page.evaluate(WHERE)) as Where;
   await answerWith(page, ANSWER_ANOTHER_BAND);
   const back = JSON.parse(await page.evaluate(WHERE)) as Where;
-  return { result, onQuestion, back, problems: page.problems() };
+  return { result, onQuestion, back };
 }
 
 describe.skipIf(skipped !== null)("✎ on a result lands on the question and the answer returns to the verdict", () => {
@@ -190,7 +190,6 @@ describe.skipIf(skipped !== null)("✎ on a result lands on the question and the
   ] as const)
     it(`at ${name}`, async () => {
       const seen = await withSite(({ page, url }) => correction(page, url), { viewport, mobile });
-      expect(seen.problems).toEqual([]);
       expect(seen.result.state, "the finished record did not restore to a result").toBe("results");
 
       // After ✎: the question is on the screen, from its top, and its first
@@ -236,9 +235,8 @@ describe.skipIf(skipped !== null)("every answer moves the focus to the next ques
         await answerWith(page, 'document.querySelector("#main .qcard .opt").click()');
         steps.push(JSON.parse(await page.evaluate(WHERE)));
       }
-      return { steps, problems: page.problems() };
+      return { steps };
     }, { viewport: { width: 1240, height: 900 }, mobile: false });
-    expect(seen.problems).toEqual([]);
     // The cold first paint is left alone: nothing takes the focus from a
     // reader who has not touched anything yet.
     expect(seen.steps[0].activeInCard, `the first paint focused ${seen.steps[0].active}`).toBe(false);
@@ -264,9 +262,8 @@ describe.skipIf(skipped !== null)("a resumed interview says so (F5)", () => {
       await evaluateAtRest(page, 'document.querySelector("#main .resumed #restart").click()');
       const restarted = JSON.parse(await page.evaluate(WHERE)) as Where;
       const stored = await page.evaluate(`localStorage.getItem(${JSON.stringify(STORAGE_KEY)})`);
-      return { resumed, next, restarted, stored, problems: page.problems() };
+      return { resumed, next, restarted, stored };
     }, PHONE);
-    expect(seen.problems).toEqual([]);
     expect(seen.resumed.state).toBe("questions");
     // The count is the ledger's own: what the replay keeps of the record,
     // not what was stored (France never asks situation_country).

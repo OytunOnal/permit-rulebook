@@ -76,7 +76,6 @@ interface AroundTheVerdict {
   lastAnswered: string;
   afterBack: { state: string; field: string };
   afterForward: { state: string };
-  problems: string[];
 }
 
 /** The screen a history move draws: once the browser has taken its turn and
@@ -96,12 +95,11 @@ async function backAndForward(reader: Profile): Promise<AroundTheVerdict> {
     const asked = await walkToTheVerdict(site, reader);
     const afterBack = await screenAfterMove(page, () => page.back());
     const afterForward = await screenAfterMove(page, () => page.forward());
-    return { lastAnswered: asked.at(-1)!, afterBack, afterForward, problems: page.problems() };
+    return { lastAnswered: asked.at(-1)!, afterBack, afterForward };
   }, PHONE);
 }
 
 function expectBackLandsOnTheLastAnswer(seen: AroundTheVerdict): void {
-  expect(seen.problems).toEqual([]);
   expect(seen.afterBack.state, "Back left the verdict for no question").toBe("questions");
   expect(seen.afterBack.field, "Back skipped the last question answered").toBe(seen.lastAnswered);
   expect(seen.afterForward.state, "Forward did not return to the verdict").toBe("results");

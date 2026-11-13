@@ -44,11 +44,12 @@ const README_SCREEN = { viewport: { width: 1100, height: 1400 }, mobile: false }
 
 /**
  * Serves `dist/`, opens the results screen for `PROFILE` in Chrome, its record
- * written and the page reloaded, and returns its screenshot; a page that
- * reported a problem throws, so the walk returns the pages' errors to it.
+ * written and the page reloaded, and returns its screenshot. The walk fails
+ * on an error on any page it opened, listing each with its address, so a
+ * broken page never reaches the picture.
  */
 async function screenshotResultsInChrome() {
-  const walk = { site: { folder: join(root, "dist") }, screen: README_SCREEN, errorsExpected: true };
+  const walk = { site: { folder: join(root, "dist") }, screen: README_SCREEN };
   const { returned } = await walkSite(walk, async ({ page, url }) => {
     await page.goto(url("/"));
     await page.evaluate(`localStorage.setItem(${JSON.stringify(STORAGE_KEY)}, ${
@@ -57,8 +58,6 @@ async function screenshotResultsInChrome() {
       }))})`);
     await page.goto(url("/"));
     await page.waitUntilAtRest();
-    const problems = page.problems();
-    if (problems.length) throw new Error(`the page reported ${problems.length}: ${problems[0]}`);
     return page.screenshot();
   });
   return returned;
