@@ -5959,6 +5959,21 @@
     "exported": true
    },
    {
+    "name": "NAMED_FOR_THEIR_EXPORT",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "AN_INDEX_FILE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "noIndexFile",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "default",
     "kind": "other",
     "exported": true
@@ -9445,5 +9460,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "89a20194b317208c8338b904b441e3acc3bffab7785af2d874f49e764b77527f"
+ "digest": "ea1dc3d5c3ef206f8a30033051b74c0acd162d3ea1e8f09b0fe0d7c6ce755c35"
 }
