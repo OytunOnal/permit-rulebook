@@ -25,7 +25,7 @@ const LOCAL_BEACON_NOISE = [
  * script was fetched and a report was actually sent, so a page that stopped
  * counting fails there.
  */
-export const isLocalBeaconNoise = (problem) => LOCAL_BEACON_NOISE.some((rule) => rule.test(problem));
+const isLocalBeaconNoise = (problem) => LOCAL_BEACON_NOISE.some((rule) => rule.test(problem));
 
 /**
  * @typedef {object} WalkError
