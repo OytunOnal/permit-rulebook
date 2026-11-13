@@ -113,6 +113,39 @@ const noFixedWait = {
   },
 };
 
+/** The walk's own suite, the one test file that reads the walk's errors on purpose. */
+const THE_WALKS_SUITE = "tests/walk-site.test.ts";
+
+/** The option that turns the walk's check of its pages' errors off. */
+const ERRORS_EXPECTED = "errorsExpected";
+
+/** What a refused `errorsExpected` says instead. */
+const ERRORS_EXPECTED_REFUSED =
+  `${ERRORS_EXPECTED}: the walk fails on any page's error by itself, naming the page's address; `
+  + `only the walk's own suite (${THE_WALKS_SUITE}) reads the errors on purpose`;
+
+/** The name a property's key or a member's property gives, written as a name or a string; null when computed. */
+function findKeyName(key, computed) {
+  if (key.type === "Identifier" && !computed) return key.name;
+  return key.type === "Literal" ? key.value : null;
+}
+
+/**
+ * The walk checks every page it opened for errors (#353, ruling 7 on #288): a
+ * test that names `errorsExpected` as an object's key or as a member is refused.
+ */
+const noErrorsExpected = {
+  create: (context) => {
+    const refuseIfItIsTheOption = (node, name) => {
+      if (name === ERRORS_EXPECTED) context.report({ node, message: ERRORS_EXPECTED_REFUSED });
+    };
+    return {
+      Property(node) { refuseIfItIsTheOption(node, findKeyName(node.key, node.computed)); },
+      MemberExpression(node) { refuseIfItIsTheOption(node, findKeyName(node.property, node.computed)); },
+    };
+  },
+};
+
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   { ignores: IGNORED },
@@ -141,5 +174,11 @@ export default [
     files: ["tests/**"],
     plugins: { waits: { rules: { "no-fixed-wait": noFixedWait } } },
     rules: { "waits/no-fixed-wait": "error" },
+  },
+  {
+    files: ["tests/**"],
+    ignores: [THE_WALKS_SUITE],
+    plugins: { walks: { rules: { "no-errors-expected": noErrorsExpected } } },
+    rules: { "walks/no-errors-expected": "error" },
   },
 ];
