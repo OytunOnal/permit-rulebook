@@ -488,11 +488,6 @@
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/walk/walk-log.mjs",
-   "to": "scripts/browser/tab/tab-events.mjs",
-   "kind": "dependency"
-  },
-  {
    "from": "scripts/browser/walk/walk-site.mjs",
    "to": "scripts/browser/static-server/static-server.mjs",
    "kind": "dependency"
@@ -5891,6 +5886,31 @@
     "exported": false
    },
    {
+    "name": "THE_WALKS_SUITE",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "ERRORS_EXPECTED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "ERRORS_EXPECTED_REFUSED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "findKeyName",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "noErrorsExpected",
+    "kind": "const",
+    "exported": false
+   },
+   {
     "name": "default",
     "kind": "other",
     "exported": true
@@ -6781,6 +6801,41 @@
     "name": "CHECKS",
     "kind": "const",
     "exported": true
+   },
+   {
+    "name": "UNPLACED",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "threwLineOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "probeRead",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "probeEveryCheck",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "messagesByAddress",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "pageLoadOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "unplacedLoadOf",
+    "kind": "fn",
+    "exported": false
    },
    {
     "name": "walk",
@@ -9337,5 +9392,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "6e19b36ebdaa21b46d934caaae7f098344ce8e6a5c3e18898593e96a4418826f"
+ "digest": "7ee5831c4651dc11a17d4813982f837b91852e9621bb9d4d4d733f5df79795c3"
 }

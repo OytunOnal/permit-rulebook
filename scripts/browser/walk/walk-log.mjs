@@ -1,5 +1,31 @@
 // @level infrastructure
-import { isLocalBeaconNoise } from "../tab/tab-events.mjs";
+/**
+ * The two messages a local run always logs about the traffic counter, and
+ * nothing else. Both name the beacon endpoint AND the reason, so a different
+ * failure about the same host is not swallowed with them.
+ */
+const LOCAL_BEACON_NOISE = [
+  /blocked by CORS policy[\s\S]*cloudflareinsights\.com|cloudflareinsights\.com[\s\S]*blocked by CORS policy/,
+  /Failed to load resource: net::ERR_FAILED \(https:\/\/cloudflareinsights\.com\//,
+];
+
+/**
+ * Whether `problem` is one of the two messages a local run always logs about
+ * the traffic counter, which the walk's log leaves out.
+ *
+ * Cloudflare's beacon endpoint answers `Access-Control-Allow-Origin:
+ * http://127.0.0.1`, without the port a local static server has to use, so
+ * every local run logs a preflight refusal and the load failure that
+ * follows it — for a request that is fine in production (2026-09-08).
+ * Exactly those two messages are dropped, not every line that mentions the
+ * host: a script error thrown BY the beacon, or any other complaint naming
+ * it, still fails the run (Spec review, 2026-09-08).
+ *
+ * The counter is not silenced either. `tests/record.test.ts` asserts the
+ * script was fetched and a report was actually sent, so a page that stopped
+ * counting fails there.
+ */
+export const isLocalBeaconNoise = (problem) => LOCAL_BEACON_NOISE.some((rule) => rule.test(problem));
 
 /**
  * @typedef {object} WalkError
