@@ -5200,6 +5200,11 @@
   },
   {
    "from": "tests/smoke.test.ts",
+   "to": "scripts/smoke.mjs",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/smoke.test.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
   },

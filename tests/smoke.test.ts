@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { PageLoad } from "../scripts/smoke.mjs";
 
 /**
  * Does the site actually run in a browser?
@@ -128,9 +129,6 @@ const QUIET_SITE: Record<string, string> = {
   "germany/index.html": QUIET,
   "data/index.html": QUIET,
 };
-
-/** What smoke returns for one page load, as these cases read it. */
-type PageLoad = { surface: string; path: string; thrown: string[]; failures: string[] };
 
 /** Smoke's results on the `dist` surface over `pages`, served from a folder made for this walk alone and removed after it. */
 async function smokeOver(pages: Record<string, string>): Promise<PageLoad[]> {
