@@ -34,17 +34,17 @@ export class TabEvents {
 
   forgetRequests = () => { this.#requests.length = 0; };
 
-  /** Passes `problem` on to the walk's log, under the address of the page it came from. */
-  #passOn(problem) {
-    this.#walkLog.recordError(this.#address, problem);
+  /** Records `error` in the walk's log, under the address of the page it came from. */
+  #recordInWalkLog(error) {
+    this.#walkLog.recordError(this.#address, error);
   }
 
   #recordException(details) {
-    this.#passOn(`exception: ${details.exception?.description ?? details.text}`);
+    this.#recordInWalkLog(`exception: ${details.exception?.description ?? details.text}`);
   }
 
   #recordConsoleError(args) {
-    this.#passOn(`console.error: ${args.map((a) => a.value ?? a.description ?? "").join(" ")}`);
+    this.#recordInWalkLog(`console.error: ${args.map((a) => a.value ?? a.description ?? "").join(" ")}`);
   }
 
   #recordRequest({ request, type, requestId }) {
@@ -69,6 +69,6 @@ export class TabEvents {
   /** The URL belongs in the message: "Failed to load resource" without it
    * tells a reader of a red run nothing, and a filter nothing either. */
   #recordLogError({ text, url }) {
-    this.#passOn(`log: ${text}${url ? ` (${url})` : ""}`);
+    this.#recordInWalkLog(`log: ${text}${url ? ` (${url})` : ""}`);
   }
 }

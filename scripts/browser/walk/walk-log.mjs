@@ -10,7 +10,7 @@ const LOCAL_BEACON_NOISE = [
 ];
 
 /**
- * Whether `problem` is one of the two messages a local run always logs about
+ * Whether `error` is one of the two messages a local run always logs about
  * the traffic counter, which the walk's log leaves out.
  *
  * Cloudflare's beacon endpoint answers `Access-Control-Allow-Origin:
@@ -25,7 +25,7 @@ const LOCAL_BEACON_NOISE = [
  * script was fetched and a report was actually sent, so a page that stopped
  * counting fails there.
  */
-const isLocalBeaconNoise = (problem) => LOCAL_BEACON_NOISE.some((rule) => rule.test(problem));
+const isLocalBeaconNoise = (error) => LOCAL_BEACON_NOISE.some((rule) => rule.test(error));
 
 /**
  * @typedef {object} WalkError
