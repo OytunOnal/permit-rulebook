@@ -131,7 +131,7 @@ export const CHECKS = [
  *
  * @typedef {object} PageLoad
  * @property {string} surface "dev" or "dist".
- * @property {string} path The check's path; for errors at an address no check opened, that address.
+ * @property {string} path The check's path; for errors at an address no check opened, that address; for errors past the walk's cap, which keep no address, `*`.
  * @property {string} what What the page is, in words.
  * @property {Record<string, any>} value What the check's probe read; its fields are the probe's own, so they differ per check.
  * @property {string[]} thrown What the page threw or logged: the walk's errors at its address.
@@ -186,21 +186,37 @@ function unplacedLoadOf(address, thrown, surface) {
 }
 
 /**
+ * A page load of its own for the `leftOut` errors that came after the walk had
+ * kept its cap: the walk counts them but keeps neither their messages nor their
+ * addresses, so a page whose errors all fell past the cap would otherwise read
+ * as having thrown none.
+ */
+function pastTheCapLoadOf(leftOut, surface) {
+  return {
+    surface, path: "*", what: "errors past the walk's cap", value: {}, thrown: [],
+    failures: [`and ${leftOut} more errors past the walk's cap, not placed on any page`],
+  };
+}
+
+/**
  * Every check on `site`, named `surface` in its results. Each page's errors
  * are the walk's at its address; errors at an address no check opened (a
  * redirect, the blank tab before the first page) are a page load of their
- * own, so none is dropped and no check is blamed for one.
+ * own, so none is dropped and no check is blamed for one; so are the errors
+ * past the walk's cap, which no page can be named for.
  *
  * @returns {Promise<PageLoad[]>}
  */
 async function walk(site, surface) {
-  const { returned: reads, errors } = await walkSite({ site, screen: PHONE, errorsExpected: true }, probeEveryCheck);
+  const { returned: reads, errors, errorsLeftOut } =
+    await walkSite({ site, screen: PHONE, errorsExpected: true }, probeEveryCheck);
   const thrownAt = messagesByAddress(errors);
   const opened = new Set(reads.map((read) => read.address));
   const unplaced = [...thrownAt].filter(([address]) => !opened.has(address));
   return [
     ...reads.map((read) => pageLoadOf(read, surface, thrownAt.get(read.address) ?? [])),
     ...unplaced.map(([address, thrown]) => unplacedLoadOf(address, thrown, surface)),
+    ...(errorsLeftOut > 0 ? [pastTheCapLoadOf(errorsLeftOut, surface)] : []),
   ];
 }
 

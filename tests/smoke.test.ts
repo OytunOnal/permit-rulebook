@@ -25,7 +25,7 @@ import { fileURLToPath } from "node:url";
  * cannot open the site must not report that the site is fine.
  */
 
-const { chromePath, serve } = await import("../scripts/browser/browser.mjs");
+const { chromePath, serve, ERRORS_KEPT } = await import("../scripts/browser/browser.mjs");
 const { smoke, CHECKS, DEFAULT_SURFACES } = await import("../scripts/smoke.mjs");
 const { notOurDevServer } = await import("../scripts/dev-server.mjs");
 
@@ -186,6 +186,17 @@ describe.skipIf(noChrome !== null)("smoke's results over fixture pages", () => {
     expect(unplaced.map((r) => r.failures.length)).toEqual([1]);
     expect(unplaced[0]?.failures[0]).toContain(`the page threw — exception: Error: ${thrown}`);
     expect(results.filter((r) => !r.path.endsWith("/moved/")).flatMap((r) => r.failures).join("\n")).not.toContain(thrown);
+  }, 60000);
+
+  it("errors past the walk's cap fail smoke in a line of their own, saying how many came, placed on no page", async () => {
+    expect(ERRORS_KEPT, "the harness's entry gives no cap").toBeGreaterThan(0);
+    const pastTheCap = 7;
+    const logsPastTheCap = `<!doctype html><html><head>${VIEWPORT_META}</head><body><script>
+for (let i = 0; i < ${ERRORS_KEPT + pastTheCap}; i++) console.error("logged error " + i);
+</script></body></html>`;
+    const results = await smokeOver({ ...QUIET_SITE, "index.html": logsPastTheCap });
+    const capLines = results.flatMap((r) => r.failures).filter((f) => f.includes("past the walk's cap"));
+    expect(capLines).toEqual([`and ${pastTheCap} more errors past the walk's cap, not placed on any page`]);
   }, 60000);
 });
 

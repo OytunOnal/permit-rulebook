@@ -6866,6 +6866,11 @@
     "exported": false
    },
    {
+    "name": "pastTheCapLoadOf",
+    "kind": "fn",
+    "exported": false
+   },
+   {
     "name": "walk",
     "kind": "fn",
     "exported": false
@@ -9420,5 +9425,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "4c1b44eae5a2b91583c1a86b7c88d75e950fce669c00fe02a19dd49f23f6693a"
+ "digest": "d62fa24a2a300e13bf753aeeb231ed9ed3af4ceb8ee9c7eebeb1a1d68337fab4"
 }
