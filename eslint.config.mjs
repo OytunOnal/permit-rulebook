@@ -146,6 +146,9 @@ const noErrorsExpected = {
   },
 };
 
+/** The plugin `walks`: its one rule refuses `errorsExpected` in a test. */
+export const walksPlugin = { rules: { "no-errors-expected": noErrorsExpected } };
+
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   { ignores: IGNORED },
@@ -178,7 +181,7 @@ export default [
   {
     files: ["tests/**"],
     ignores: [THE_WALKS_SUITE],
-    plugins: { walks: { rules: { "no-errors-expected": noErrorsExpected } } },
+    plugins: { walks: walksPlugin },
     rules: { "walks/no-errors-expected": "error" },
   },
 ];

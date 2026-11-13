@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { ESLint } from "eslint";
-import { THE_WALKS_SUITE } from "../eslint.config.mjs";
+import { THE_WALKS_SUITE, walksPlugin } from "../eslint.config.mjs";
 
 /**
  * The lint refuses `errorsExpected` in a test (#353, ruling 7 on #288): the
@@ -26,9 +26,15 @@ async function ruleSettingFor(filePath: string): Promise<unknown> {
   return config.rules?.[RULE];
 }
 
-/** The rule's messages on `code` linted as the file at `filePath`. */
-async function refusalsOf(code: string, filePath: string): Promise<string[]> {
-  const [result] = await eslint.lintText(code, { filePath });
+/** The project's config with the rule forced on for the walk's own suite too. */
+const forcedOnTheWalksSuite = new ESLint({
+  cwd: root,
+  overrideConfig: { files: [THE_WALKS_SUITE], plugins: { walks: walksPlugin }, rules: { [RULE]: "error" } },
+});
+
+/** The rule's messages on `code` linted by `linter` as the file at `filePath`. */
+async function refusalsOf(code: string, filePath: string, linter = eslint): Promise<string[]> {
+  const [result] = await linter.lintText(code, { filePath });
   return result!.messages.filter((m) => m.ruleId === RULE).map((m) => m.message);
 }
 
@@ -52,7 +58,8 @@ describe("the lint on errorsExpected", () => {
   it("the walk's own suite may pass it", async () => {
     expect(await ruleSettingFor(THE_WALKS_SUITE), `the config runs ${RULE} on ${THE_WALKS_SUITE}`).toBeUndefined();
     const code = readFileSync(new URL(`../${THE_WALKS_SUITE}`, import.meta.url), "utf8");
-    expect(code, "the walk's own suite no longer passes errorsExpected").toContain("errorsExpected: true");
+    expect(await refusalsOf(code, THE_WALKS_SUITE, forcedOnTheWalksSuite),
+      "the rule, forced on, finds no errorsExpected in the walk's own suite").not.toEqual([]);
     expect(await refusalsOf(code, THE_WALKS_SUITE)).toEqual([]);
   });
 });

@@ -5954,6 +5954,11 @@
     "exported": false
    },
    {
+    "name": "walksPlugin",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "default",
     "kind": "other",
     "exported": true
@@ -9440,5 +9445,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "571176a0172e9ba69e0c869950d40d17c1af9b9ab4af602e1c7125402559062b"
+ "digest": "7ae1bf19e95d1e41a269f6ac56efdbd1ccc1f6b48a49b0db269e50e19b7319ee"
 }
