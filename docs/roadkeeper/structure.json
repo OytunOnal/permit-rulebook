@@ -15,18 +15,29 @@
     "scripts/browser/chrome/chrome.mjs",
     "scripts/browser/connection/devtools-connection.mjs",
     "scripts/browser/exit-register/owned.mjs",
-    "scripts/browser/layout-shifts/layout-shift-reading.mjs",
     "scripts/browser/static-server/html-in-pieces.mjs",
     "scripts/browser/static-server/static-server.mjs",
-    "scripts/browser/tab/open-tab.mjs",
-    "scripts/browser/tab/tab-events.mjs",
-    "scripts/browser/tab/tab-gestures.mjs",
-    "scripts/browser/tab/tab-page.mjs",
-    "scripts/browser/tab/tab-waits.mjs",
     "scripts/browser/walk/open-browser.mjs",
     "scripts/browser/walk/screens.mjs",
     "scripts/browser/walk/walk-log.mjs",
     "scripts/browser/walk/walk-site.mjs"
+   ]
+  },
+  {
+   "path": "scripts/browser/tab",
+   "entries": [
+    {
+     "file": "scripts/browser/tab/open-tab.mjs",
+     "level": "infrastructure"
+    }
+   ],
+   "files": [
+    "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs",
+    "scripts/browser/tab/open-tab.mjs",
+    "scripts/browser/tab/page/tab-events.mjs",
+    "scripts/browser/tab/page/tab-gestures.mjs",
+    "scripts/browser/tab/page/tab-page.mjs",
+    "scripts/browser/tab/page/tab-waits.mjs"
    ]
   },
   {
@@ -212,14 +223,14 @@
   "scripts/browser/chrome/chrome.mjs": "infrastructure",
   "scripts/browser/connection/devtools-connection.mjs": "infrastructure",
   "scripts/browser/exit-register/owned.mjs": "infrastructure",
-  "scripts/browser/layout-shifts/layout-shift-reading.mjs": "infrastructure",
   "scripts/browser/static-server/html-in-pieces.mjs": "infrastructure",
   "scripts/browser/static-server/static-server.mjs": "infrastructure",
+  "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs": "infrastructure",
   "scripts/browser/tab/open-tab.mjs": "infrastructure",
-  "scripts/browser/tab/tab-events.mjs": "infrastructure",
-  "scripts/browser/tab/tab-gestures.mjs": "infrastructure",
-  "scripts/browser/tab/tab-page.mjs": "infrastructure",
-  "scripts/browser/tab/tab-waits.mjs": "infrastructure",
+  "scripts/browser/tab/page/tab-events.mjs": "infrastructure",
+  "scripts/browser/tab/page/tab-gestures.mjs": "infrastructure",
+  "scripts/browser/tab/page/tab-page.mjs": "infrastructure",
+  "scripts/browser/tab/page/tab-waits.mjs": "infrastructure",
   "scripts/browser/walk/open-browser.mjs": "infrastructure",
   "scripts/browser/walk/screens.mjs": "infrastructure",
   "scripts/browser/walk/walk-log.mjs": "infrastructure",
@@ -439,27 +450,27 @@
   },
   {
    "from": "scripts/browser/tab/open-tab.mjs",
-   "to": "scripts/browser/tab/tab-events.mjs",
+   "to": "scripts/browser/tab/page/tab-events.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/browser/tab/open-tab.mjs",
-   "to": "scripts/browser/tab/tab-gestures.mjs",
+   "to": "scripts/browser/tab/page/tab-gestures.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/browser/tab/open-tab.mjs",
-   "to": "scripts/browser/tab/tab-page.mjs",
+   "to": "scripts/browser/tab/page/tab-page.mjs",
    "kind": "dependency"
   },
   {
    "from": "scripts/browser/tab/open-tab.mjs",
-   "to": "scripts/browser/tab/tab-waits.mjs",
+   "to": "scripts/browser/tab/page/tab-waits.mjs",
    "kind": "dependency"
   },
   {
-   "from": "scripts/browser/tab/tab-page.mjs",
-   "to": "scripts/browser/layout-shifts/layout-shift-reading.mjs",
+   "from": "scripts/browser/tab/page/tab-page.mjs",
+   "to": "scripts/browser/tab/layout-shifts/layout-shift-reading.mjs",
    "kind": "dependency"
   },
   {
@@ -5405,6 +5416,18 @@
  ],
  "declarations": {
   "scripts/browser/browser.mjs": [],
+  "scripts/browser/tab/open-tab.mjs": [
+   {
+    "name": "openTab",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "setUpTab",
+    "kind": "fn",
+    "exported": false
+   }
+  ],
   "scripts/carry-assets/carry.mjs": [
    {
     "name": "ORIGIN_VAR",
@@ -9392,5 +9415,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "9ed7af4e768ced96748cf276b07552c2842ace2fe1095acdcdba7da5ef9997e4"
+ "digest": "0d61d25a7015e0bd22ae97e540bf012a1388494c2ee0bc7d0195063fe73e4e19"
 }

@@ -1,8 +1,17 @@
 // @level infrastructure
-import { TabEvents } from "./tab-events.mjs";
-import { TabGestures } from "./tab-gestures.mjs";
-import { TabPage } from "./tab-page.mjs";
-import { TabWaits } from "./tab-waits.mjs";
+import { TabEvents } from "./page/tab-events.mjs";
+import { TabGestures } from "./page/tab-gestures.mjs";
+import { TabPage } from "./page/tab-page.mjs";
+import { TabWaits } from "./page/tab-waits.mjs";
+
+/**
+ * The tab's entry, the one way into it: `openTab`, and the types a caller
+ * reads off what it returns.
+ *
+ * @typedef {import("./page/tab-page.mjs").BrowserPage} BrowserPage
+ * @typedef {import("./page/tab-page.mjs").SentRequest} SentRequest
+ * @typedef {import("./layout-shifts/layout-shift-reading.mjs").LayoutShifts} LayoutShifts
+ */
 
 /**
  * Opens a tab in the browser `connection` drives, attached and set up the

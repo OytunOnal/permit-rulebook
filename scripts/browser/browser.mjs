@@ -24,9 +24,9 @@ export { serve } from "./static-server/static-server.mjs";
 export { DESK, PHONE } from "./walk/screens.mjs";
 export { WidthFailure, walkSite } from "./walk/walk-site.mjs";
 
-/** @typedef {import("./tab/tab-page.mjs").BrowserPage} BrowserPage */
-/** @typedef {import("./tab/tab-page.mjs").SentRequest} SentRequest */
+/** @typedef {import("./tab/open-tab.mjs").BrowserPage} BrowserPage */
+/** @typedef {import("./tab/open-tab.mjs").SentRequest} SentRequest */
 /** @typedef {import("./walk/walk-site.mjs").PageOnSite} PageOnSite */
 /** @typedef {import("./walk/screens.mjs").Screen} Screen */
-/** @typedef {import("./layout-shifts/layout-shift-reading.mjs").LayoutShifts} LayoutShifts */
+/** @typedef {import("./tab/open-tab.mjs").LayoutShifts} LayoutShifts */
 /** @typedef {import("./walk/walk-log.mjs").WalkError} WalkError */

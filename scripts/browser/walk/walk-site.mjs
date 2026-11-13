@@ -4,10 +4,10 @@ import { at, siteBase } from "../../site-base.mjs";
 import { openBrowser } from "./open-browser.mjs";
 
 /**
- * @typedef {import("../tab/tab-page.mjs").BrowserPage} BrowserPage
+ * @typedef {import("../tab/open-tab.mjs").BrowserPage} BrowserPage
  * @typedef {import("./screens.mjs").Screen} Screen
  * @typedef {import("./walk-log.mjs").WalkError} WalkError
- * @typedef {import("../layout-shifts/layout-shift-reading.mjs").LayoutShifts} LayoutShifts
+ * @typedef {import("../tab/open-tab.mjs").LayoutShifts} LayoutShifts
  */
 
 /**
