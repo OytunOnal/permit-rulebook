@@ -116,13 +116,13 @@ const printedFigureGapsOf = (screen: VerdictScreen, gaps: FigureGap[]) =>
   gaps.map((gap) => printedFigureGapOf(screen.ds, gap));
 
 /** What a route within reach is short on, as its badge names it: each amount
- * by its field's short label, then points, as its standing orders them
- * (ruling 9 on #187). */
+ * by its field's short label, then points (ruling 9 on #187). */
 function shortOnBadge(screen: VerdictScreen, { result: r, standing }: RouteWithStanding): string {
   const gaps = standing.figureGaps;
   if (!gaps.length) throw new Error(`${r.route.id} is within reach and its standing carries no figure gap`);
-  const figures = gaps.map((g) => (g.kind === "money" ? shortLabelOf(screen.ds, g.shortfall.field).toLowerCase() : POINTS_FIGURE));
-  return shortOn([...new Set(figures)]);
+  const amounts = gaps.flatMap((g) => (g.kind === "money" ? [shortLabelOf(screen.ds, g.shortfall.field).toLowerCase()] : []));
+  const points = gaps.some((g) => g.kind === "points") ? [POINTS_FIGURE] : [];
+  return shortOn([...new Set(amounts), ...points]);
 }
 
 /** A full card's badge: the class its colour is read from, its words, and

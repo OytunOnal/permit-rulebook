@@ -111,7 +111,7 @@ describe("a route short on two figures names both (ruling 9)", () => {
     expect(plainTextOf(verdict.body).toLowerCase()).not.toContain("within reach");
   });
 
-  it("its standing carries both figure gaps, the amount first, the salary's a bounded gap (#375)", () => {
+  it("its standing carries both figure gaps in the dataset's order, the salary's a bounded gap (#375)", () => {
     const written = salaryOnTheOpportunityCard();
     const card = evaluate(written, POINTS_AND_SALARY_SHORT).find((r) => r.route.id === "de-chancenkarte")!;
     const salary = written.countries.flatMap((c) => c.routes).find((r) => r.id === "de-chancenkarte")!.criteria.at(-1)!;
@@ -119,9 +119,11 @@ describe("a route short on two figures names both (ruling 9)", () => {
     const line = salary.op === "gte" ? salary.threshold.amount : NaN;
     const band = deriveBands(written, SALARY).find((b) => b.id === POINTS_AND_SALARY_SHORT[SALARY])!;
     expect(band.min, "precondition: a band with a lower edge").toBeDefined();
+    // The route's points come before the salary the written dataset appends;
+    // the card's lead line says them in that order, the badge amounts first.
     expect(standingOn(verdictOn(written, POINTS_AND_SALARY_SHORT), "de-chancenkarte").figureGaps).toEqual([
-      { kind: "money", shortfall: { kind: "bounded", field: SALARY, gap: expect.closeTo(line - band.min!, 2) } },
       { kind: "points", points: card.gap_points },
+      { kind: "money", shortfall: { kind: "bounded", field: SALARY, gap: expect.closeTo(line - band.min!, 2) } },
     ]);
   });
 });
