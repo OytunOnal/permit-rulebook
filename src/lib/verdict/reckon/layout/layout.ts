@@ -2,7 +2,7 @@
 import {
   DESTINATION_FIELD, SITUATION_FIELD, liveUnknowns, periodOf, type Country, type Dataset, type Profile, type RouteResult,
 } from "permit-rulebook-data";
-import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../../situations.js";
+import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../../../situations.js";
 import { EVERY_COUNTRY_ANSWER, groupedRoutesOf, routeIdsOf, type Compared, type GroupedRoutes } from "./in-view.js";
 import { measuredCriterionOf } from "./money-shortfall.js";
 import { notYetGroupOf } from "./not-yet-group.js";

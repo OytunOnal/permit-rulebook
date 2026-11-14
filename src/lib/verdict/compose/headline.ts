@@ -3,21 +3,21 @@ import {
   NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, shortfallHeadline, stepsWouldChangeHeadline,
   unsettledHeadline,
 } from "../../copy/verdict.js";
-import { composeStepTitle, type VerdictScreen } from "./card/cards.js";
+import { composeStepTitle } from "./card/cards.js";
 import type { Headline } from "./masthead.js";
-import type { Compared } from "./in-view.js";
-import { stepKeyed } from "./layout.js";
-import { moneyShortfallOf } from "./money-shortfall.js";
+import {
+  moneyShortfallOf, stepKeyed, type HeadlineLayout, type ReckonedComparison,
+} from "../reckon/reckon-verdict.js";
 import { printedShortfallOf } from "./printed-shortfall.js";
+import type { VerdictScreen } from "./types.js";
 import { unscoredVerdict } from "./unscored.js";
-import type { HeadlineLayout } from "./verdict-layout.js";
 
 /**
  * How near the nearest route within reach is, or nothing: "up to" its gap on
  * a bounded band, as the card says it; on a band open at the bottom, the line
  * it asks, never that line as the reader's shortfall; or its points.
  */
-function nearNote(screen: VerdictScreen, compared: Compared, nearest: string | null): string {
+function nearNote(screen: VerdictScreen, compared: ReckonedComparison, nearest: string | null): string {
   const named = compared.inView.results.find((r) => r.route.id === nearest);
   if (!named) return "";
   const money = moneyShortfallOf(screen.ds, named, screen.answers);
@@ -48,7 +48,7 @@ function writtenStateHeadline(screen: VerdictScreen): Headline {
  * of the one line (review J2); or the open routes, the nearest within reach
  * stressed.
  */
-export function comparedHeadlineOf(screen: VerdictScreen, compared: Compared, reckoned: HeadlineLayout): Headline {
+export function comparedHeadlineOf(screen: VerdictScreen, compared: ReckonedComparison, reckoned: HeadlineLayout): Headline {
   switch (reckoned.kind) {
     case "written-state":
       return writtenStateHeadline(screen);

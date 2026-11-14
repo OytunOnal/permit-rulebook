@@ -1,8 +1,7 @@
 // @level presentation
 import { formatEURPer, periodOf, shortLabelOf, type Dataset, type Profile } from "permit-rulebook-data";
 import type { PrintedFigureGap, PrintedShortfall } from "../../copy/verdict.js";
-import type { FigureGap } from "./figure-gaps.js";
-import { bandOf, type MoneyShortfall } from "./money-shortfall.js";
+import { bandOf, type FigureGap, type MoneyShortfall } from "../reckon/reckon-verdict.js";
 
 /**
  * An amount on a money field as the verdict prints it, a gap in the headline,

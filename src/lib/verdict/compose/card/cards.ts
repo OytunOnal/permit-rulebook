@@ -25,11 +25,13 @@ import { glossedLearnLinkText } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
-import { figureGapsOf } from "../figure-gaps.js";
-import { hasLiveUnknown } from "../layout.js";
-import { bandOf, measuredCriterionOf, moneyShortfallOf } from "../money-shortfall.js";
+import {
+  bandOf, figureGapsOf, hasLiveUnknown, measuredCriterionOf, moneyShortfallOf, type Step,
+} from "../../reckon/reckon-verdict.js";
 import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js";
-import type { Step } from "../steps.js";
+import type { VerdictScreen } from "../types.js";
+
+export type { CardScreen } from "./blocks/card-screen.js";
 
 /**
  * The blocks of a card that state what the dataset itself says: what else is
@@ -44,17 +46,6 @@ import type { Step } from "../steps.js";
  * verdict and a picture of the same person failing (2026-09-07). Neither is
  * caught by reading the markup in the page — only by reading the markup.
  */
-
-/**
- * What every card of one verdict is drawn on: the dataset, the answers, the
- * route the reader came from, and the screen's one memory of which
- * abbreviations it has explained — a card drawn first explains, the ones
- * after it do not.
- */
-export interface VerdictScreen extends CardScreen {
-  glossary: Glossary;
-  cameFrom: string | null;
-}
 
 /** How a full card is drawn, each value named for what it draws. */
 export interface CardLook {

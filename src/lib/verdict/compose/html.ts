@@ -11,13 +11,13 @@ import { countryOf } from "../../countries.js";
 import { esc, escAttr } from "../../reason.js";
 import { FEEDBACK_PATH, url } from "../../site.js";
 import { phraseOfAnswer, phraseOfAnswerRef } from "./answer-phrase.js";
-import type { VerdictScreen } from "./card/cards.js";
 import { drawnRoutesHtml, drawnStepCard, type DrawnCards } from "./drawn-cards.js";
 import { notYetItemsHtml } from "./not-yet.js";
+import type { VerdictScreen } from "./types.js";
 import { unscoredTally } from "./unscored.js";
 import type {
   ArrangedLine, CountrySection, JobOfferLine, Strip, Tally, VerdictGroup, VerdictLayout,
-} from "./verdict-layout.js";
+} from "../reckon/reckon-verdict.js";
 
 /** What the body is drawn from: the screen it words things on, and the cards
  * already drawn, by id. */

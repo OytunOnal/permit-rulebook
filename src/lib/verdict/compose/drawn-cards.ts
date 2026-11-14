@@ -1,11 +1,12 @@
 // @level presentation
 import type { RouteResult } from "permit-rulebook-data";
 import {
-  closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook, type VerdictScreen,
+  closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook,
 } from "./card/cards.js";
-import type { Compared } from "./in-view.js";
-import { stepKeyed } from "./layout.js";
-import type { StepPlace, VerdictGroup, VerdictLayout } from "./verdict-layout.js";
+import {
+  stepKeyed, type ReckonedComparison, type StepPlace, type VerdictGroup, type VerdictLayout,
+} from "../reckon/reckon-verdict.js";
+import type { VerdictScreen } from "./types.js";
 
 /** A step as the steps group offers it: its title, and its card's markup. */
 export interface StepCard {
@@ -24,7 +25,7 @@ export interface DrawnCards {
  * reckoned from, and its results by route id. */
 interface Drawing {
   screen: VerdictScreen;
-  compared: Compared;
+  compared: ReckonedComparison;
   results: Map<string, RouteResult>;
 }
 
@@ -97,7 +98,7 @@ function cardsById<T>(entries: DrawnEntry<T>[], placedTwice: (id: string) => str
  * the one-country layout a card carries its country's chip; a country's own
  * section names its country once, on its summary row.
  */
-export function drawnCardsOf(screen: VerdictScreen, compared: Compared, layout: VerdictLayout): DrawnCards {
+export function drawnCardsOf(screen: VerdictScreen, compared: ReckonedComparison, layout: VerdictLayout): DrawnCards {
   const at: Drawing = {
     screen, compared,
     results: new Map([...compared.inView.results, ...compared.inView.closed].map((r) => [r.route.id, r])),

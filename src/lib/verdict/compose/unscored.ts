@@ -10,7 +10,7 @@ import { url } from "../../site.js";
 import { routePath } from "../../slug.js";
 import type { NotScoredMark } from "../../situations.js";
 import { phraseOfAnswer } from "./answer-phrase.js";
-import { countryMarkOf, writtenStateKeyOf } from "./layout.js";
+import { countryMarkOf, writtenStateKeyOf } from "../reckon/reckon-verdict.js";
 
 /**
  * What the verdict says where the declared situation is one no scored route
