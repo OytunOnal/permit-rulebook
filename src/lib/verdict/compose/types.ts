@@ -1,7 +1,7 @@
 // @level presentation
-import type { Dataset, Profile } from "permit-rulebook-data";
 import type { Glossary } from "../../gloss.js";
 import type { VerdictMasthead } from "../../screen.js";
+import type { CardScreen } from "./card/cards.js";
 import type { DrawnCards } from "./drawn-cards.js";
 import type { VerdictLayout } from "../reckon/reckon-verdict.js";
 
@@ -9,14 +9,12 @@ import type { VerdictLayout } from "../reckon/reckon-verdict.js";
  * What every card of one verdict is drawn on: the dataset, the answers, the
  * route the reader came from, and the screen's one memory of which
  * abbreviations it has explained — a card drawn first explains, the ones
- * after it do not. A card's blocks take it as their `CardScreen`.
+ * after it do not.
  */
-export interface VerdictScreen {
-  ds: Dataset;
-  answers: Profile;
+export type VerdictScreen = CardScreen & {
   glossary: Glossary;
   cameFrom: string | null;
-}
+};
 
 /**
  * The interview as the verdict reads it: the questions answered so far, which

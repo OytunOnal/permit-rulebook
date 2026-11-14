@@ -31,6 +31,8 @@ import {
 import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js";
 import type { VerdictScreen } from "../types.js";
 
+export type { CardScreen } from "./blocks/card-screen.js";
+
 /**
  * The blocks of a card that state what the dataset itself says: what else is
  * required, what the source qualifies, which threshold the person was measured
