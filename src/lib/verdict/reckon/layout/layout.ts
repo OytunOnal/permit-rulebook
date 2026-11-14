@@ -51,11 +51,16 @@ export function stepKeyOf(step: Step): string {
   return unlock.qualifier ? `${own}+${unlock.qualifier.field}=${unlock.qualifier.option.value}` : own;
 }
 
-/** The step a key names among the screen's steps; a key no step has is refused. */
-export function stepKeyed(steps: Step[], key: string): Step {
-  const step = steps.find((s) => stepKeyOf(s) === key);
-  if (!step) throw new Error(`no step is keyed ${key}`);
-  return step;
+/** The screen's steps by the key each step's places name it by; two steps
+ * under one key are refused, since a place could name only one of them. */
+export function indexStepsByKey(steps: Step[]): Record<string, Step> {
+  const byKey: Record<string, Step> = {};
+  for (const step of steps) {
+    const key = stepKeyOf(step);
+    if (Object.hasOwn(byKey, key)) throw new Error(`two steps are keyed ${key}`);
+    byKey[key] = step;
+  }
+  return byKey;
 }
 
 /** What one section holds: the whole screen on the one-country layout, one

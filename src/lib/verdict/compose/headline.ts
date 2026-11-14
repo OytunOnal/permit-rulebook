@@ -4,11 +4,9 @@ import {
   unsettledHeadline,
 } from "../../copy/verdict.js";
 import { composeStepTitle } from "./card/cards.js";
-import { firstPlaceOfStep, standingOn } from "./drawn-cards.js";
+import { findStep, firstPlaceOfStep, standingOn } from "./drawn-cards.js";
 import type { Headline } from "./masthead.js";
-import {
-  stepKeyed, type HeadlineLayout, type ReckonedComparison, type WrittenStateKey,
-} from "../reckon/reckon-verdict.js";
+import type { HeadlineLayout, ReckonedComparison, WrittenStateKey } from "../reckon/reckon-verdict.js";
 import { printedShortfallOf } from "./printed-shortfall.js";
 import type { VerdictScreen } from "./types.js";
 import { unscoredVerdict } from "./unscored.js";
@@ -56,7 +54,7 @@ export function comparedHeadlineOf(screen: VerdictScreen, compared: ReckonedComp
     case "unsettled":
       return withNearNote(unsettledHeadline(reckoned.routes), nearNote(screen, compared, reckoned.nearest));
     case "steps": {
-      const step = stepKeyed(compared.steps, reckoned.nearest);
+      const step = findStep(compared, reckoned.nearest);
       const nearest = composeStepTitle(screen, { step, place: firstPlaceOfStep(compared.layout, reckoned.nearest) });
       return { headline: stepsWouldChangeHeadline(reckoned.steps), nearest };
     }

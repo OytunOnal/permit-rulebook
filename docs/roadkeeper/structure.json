@@ -2136,7 +2136,7 @@
   {
    "from": "src/lib/verdict/compose/drawn-cards.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
@@ -2176,7 +2176,7 @@
   {
    "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
@@ -9587,5 +9587,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "32f9a8f49de413fa9bf16183f28157190dae2fcde740be99c23ff396648029d3"
+ "digest": "0e579d852d1df0453cca9a528f7be680811f3fda10fbfef46247861430f3bb81"
 }
