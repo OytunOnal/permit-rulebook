@@ -39,6 +39,15 @@ const QUALIFIED: Profile = {
   experience_7y: "3to5", german: "b1", english: "none", funds_eur_month: "band_1",
 };
 
+/** A vocational qualification in Germany with an offer and a partner: one
+ * route open, and one within reach on its points alone. */
+const POINTS_SHORT: Profile = {
+  destination: "de", citizenship: "IN", situation: "offer", qualification: "vocational", occupation_it: "yes",
+  recognition_de: "not_recognised", experience_5y: "lt2", experience_7y: "3to5", occupation_shortage: "no",
+  salary_eur_year: "band_6", german: "b1", english: "none", age_band: "a35to40", de_stay6m: "no", partner_ck: "yes",
+  funds_eur_month: "band_1",
+};
+
 const SALARY = "salary_eur_year";
 const bands = deriveBands(ds, SALARY);
 const lowest = bands.find((b) => b.min === undefined)!;
@@ -225,15 +234,6 @@ describe("a step prints the gap it leaves the same way", () => {
 });
 
 describe("a route within reach on points is said in points (#174)", () => {
-  /** A vocational qualification in Germany with an offer and a partner: one
-   * route open, and one within reach on its points alone. */
-  const POINTS_SHORT: Profile = {
-    destination: "de", citizenship: "IN", situation: "offer", qualification: "vocational", occupation_it: "yes",
-    recognition_de: "not_recognised", experience_5y: "lt2", experience_7y: "3to5", occupation_shortage: "no",
-    salary_eur_year: "band_6", german: "b1", english: "none", age_band: "a35to40", de_stay6m: "no", partner_ck: "yes",
-    funds_eur_month: "band_1",
-  };
-
   it("the headline says how many points away the route within reach is", () => {
     const results = evaluate(ds, POINTS_SHORT);
     const near = results.filter((r) => r.status === "near");
