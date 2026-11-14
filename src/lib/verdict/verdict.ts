@@ -11,13 +11,12 @@
  * sections open, what each fold holds and what is counted — with each drawn
  * route's and step's markup by its id (#314).
  */
-import { contradictionsIn, unlocks, type Dataset, type Notice, type Profile } from "permit-rulebook-data";
+import { contradictionsIn, type Dataset, type Profile } from "permit-rulebook-data";
 import { noticeHtml } from "./compose/card/cards.js";
 import { esc } from "../reason.js";
 import { drawnCardsOf } from "./compose/drawn-cards.js";
 import {
-  arrangeSteps, arrangedRowsOf, groupedRoutesOf, layoutOf, resultsInViewOf, routesAJobOfferFreesFor, type Compared,
-  type ResultsInView,
+  reckonVerdict, type ReckonedComparison, type ReckonedNoticeScreen, type ResultsInView,
 } from "./reckon/reckon-verdict.js";
 import { comparedHeadlineOf } from "./compose/headline.js";
 import { bodyHtml } from "./compose/html.js";
@@ -40,8 +39,8 @@ export type {
  * of the routes takes the screen; any other notice still stands on it, after
  * (review).
  */
-function answeredOutright(screen: VerdictScreen, inView: ResultsInView, outright: Notice[]): Verdict {
-  const others = inView.notices.filter((n) => !outright.includes(n));
+function answeredOutright(screen: VerdictScreen, reckoned: ReckonedNoticeScreen): Verdict {
+  const { outright, others } = reckoned;
   return {
     action: { kind: "answered-outright", masthead: noticeMastheadOf(outright[0].title) },
     notices: [...outright, ...others].map((n) => noticeHtml(n, screen.glossary)).join(""),
@@ -63,37 +62,26 @@ function noticesAbove(screen: VerdictScreen, inView: ResultsInView): string {
 }
 
 /**
- * A comparison: the layout reckoned once, then drawn — the notices first,
- * the masthead, then every card in the order the screen lists them, so a
- * screen explains an abbreviation on its first use.
+ * A comparison: the layout as the reckoning hands it, drawn — the notices
+ * first, the masthead, then every card in the order the screen lists them, so
+ * a screen explains an abbreviation on its first use.
  */
-function comparedVerdictOf(screen: VerdictScreen, compared: Compared, interview: InterviewSoFar): Verdict {
+function comparedVerdictOf(screen: VerdictScreen, compared: ReckonedComparison, interview: InterviewSoFar): Verdict {
   const notices = noticesAbove(screen, compared.inView);
-  const layout = layoutOf(screen, compared);
+  const { layout } = compared;
   const headline = comparedHeadlineOf(screen, compared, layout.headline);
   const masthead = comparedMastheadOf(headline, interview.answered, compared.inView.results.length);
   const cards = drawnCardsOf(screen, compared, layout);
   return { action: { kind: "compare", masthead }, notices, layout, cards, body: bodyHtml(screen, layout, cards) };
 }
 
+/** The verdict on these answers: the reckoning's, drawn. */
 export function verdictOf(dataset: Dataset, answers: Profile, interview: InterviewSoFar): Verdict {
   const screen: VerdictScreen = { ds: dataset, answers, glossary: new Set(), cameFrom: interview.cameFrom };
-  const inView = resultsInViewOf(dataset, answers, interview.cameFrom);
-  const whole = groupedRoutesOf(inView.results, inView.closed, inView.unsettledIds);
-  const zeroOpen = whole.met.length + whole.near.length === 0;
-  // An extra-rights notice adds to a verdict the rules computed, so it never
-  // takes the screen; the zero-open screen keeps its headline and its steps
-  // (s5c).
-  const outright = inView.notices.filter((n) => n.kind === "no-permit-needed");
-  if (outright.length && zeroOpen) return answeredOutright(screen, inView, outright);
-  // Counterfactual leverage: what each other answer would unlock, the steps
-  // ordered by what the reader can do, each ladder one step (s3b, s23); the
-  // arranged answers' rows and what an offer would free, said apart (#175).
-  const rows = unlocks(dataset, answers);
-  return comparedVerdictOf(screen, {
-    inView, whole, zeroOpen, steps: arrangeSteps(dataset, rows), arranged: arrangedRowsOf(rows),
-    freed: routesAJobOfferFreesFor(dataset, answers),
-  }, interview);
+  const reckoned = reckonVerdict(dataset, answers, interview.cameFrom);
+  return reckoned.kind === "answered-outright"
+    ? answeredOutright(screen, reckoned)
+    : comparedVerdictOf(screen, reckoned, interview);
 }
 
 /** The body the interview paints for a verdict, under its arrival line. */

@@ -2413,6 +2413,11 @@
   },
   {
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
    "to": "src/lib/verdict/reckon/layout/layout.ts",
    "kind": "dependency"
   },
@@ -2425,6 +2430,11 @@
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
    "to": "src/lib/verdict/reckon/layout/steps.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/steps.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
@@ -5833,7 +5843,28 @@
     "exported": false
    }
   ],
-  "src/lib/verdict/reckon/reckon-verdict.ts": [],
+  "src/lib/verdict/reckon/reckon-verdict.ts": [
+   {
+    "name": "ReckonedNoticeScreen",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "ReckonedComparison",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "ReckonedVerdict",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "reckonVerdict",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "astro.config.mjs": [
    {
     "name": "SITE_URL",
@@ -9459,5 +9490,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "ed8293ebf8c0e725d309a2c70d4a9df20582c4150adc3e4f13b2bd811136bd92"
+ "digest": "bc5efaa29bcbe3d071defbeb96bc1400fc476f78bf2faf13e6d3535d3b68abf2"
 }
