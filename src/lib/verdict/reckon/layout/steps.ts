@@ -176,7 +176,7 @@ export function titlesABoundedGap(answeredDataset: AnsweredDataset, step: Step):
  * only on the figures it would still miss by, measured on the answers with the
  * step taken (ruling 9 on #187); a route it neither meets nor leaves short on
  * a figure is refused. `r` is the route's result with the step taken. */
-export function routeWithStepTakenOf(answeredDataset: AnsweredDataset, step: Step, r: RouteResult): RouteWithStepTaken {
+export function reckonRouteWithStepTaken(answeredDataset: AnsweredDataset, step: Step, r: RouteResult): RouteWithStepTaken {
   if (r.status === "met") return { kind: "met" };
   const { ds, answers } = answeredDataset;
   const figureGaps = figureGapsOf(ds, r, unlockProfile(step.unlock, answers));

@@ -17,7 +17,7 @@ type MeasuredGap = ({ kind: "money" } & MoneyGap) | { kind: "points"; points: nu
 export type FigureGap = { kind: "money"; shortfall: MoneyShortfall } | { kind: "points"; points: number };
 
 /** A criterion that failed only by a bounded gap, as the figure it is short on. */
-function measuredGapOf(r: CriterionResult): MeasuredGap[] {
+function measureCriterionGap(r: CriterionResult): MeasuredGap[] {
   if (r.outcome !== "fail") return [];
   if (r.criterion.op === "gte" && r.gap_max !== undefined) return [{ kind: "money", criterion: r.criterion, gap: r.gap_max }];
   if (r.gap_points !== undefined) return [{ kind: "points", points: r.gap_points }];
@@ -46,14 +46,14 @@ function isNearer(a: MeasuredGap[], b: MeasuredGap[]): boolean {
  * €1,585/month short on its full-salary path while her designated institution
  * is unknown (ruling 10 on #187).
  */
-function measuredGapsIn(results: CriterionResult[]): MeasuredGap[] {
+function gatherMeasuredGaps(results: CriterionResult[]): MeasuredGap[] {
   return results.flatMap((r) => {
-    if (r.criterion.op !== "any") return measuredGapOf(r);
-    if (r.path) return measuredGapsIn(r.path.criteria);
+    if (r.criterion.op !== "any") return measureCriterionGap(r);
+    if (r.path) return gatherMeasuredGaps(r.path.criteria);
     let nearest: MeasuredGap[] = [];
     for (const path of r.path_results ?? []) {
       if (!failsOnlyByGaps(path)) continue;
-      const gaps = measuredGapsIn(path);
+      const gaps = gatherMeasuredGaps(path);
       if (!nearest.length || isNearer(gaps, nearest)) nearest = gaps;
     }
     return nearest;
@@ -69,4 +69,4 @@ const decideFigureGap = (ds: Dataset, gap: MeasuredGap, answers: Profile): Figur
  * money gap's shortfall decided; in the dataset's order; none where it misses
  * by nothing an amount or points can close. */
 export const figureGapsOf = (ds: Dataset, r: RouteResult, answers: Profile): FigureGap[] =>
-  measuredGapsIn(r.criteria).map((gap) => decideFigureGap(ds, gap, answers));
+  gatherMeasuredGaps(r.criteria).map((gap) => decideFigureGap(ds, gap, answers));

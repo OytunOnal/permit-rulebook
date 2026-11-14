@@ -4,7 +4,7 @@ import {
   unsettledHeadline,
 } from "../../copy/verdict.js";
 import { composeStepTitle } from "./card/cards.js";
-import { findStep, firstPlaceOfStep, standingOn } from "./drawn-cards.js";
+import { findFirstPlaceOfStep, findRouteStanding, findStep } from "./drawn-cards.js";
 import type { Headline } from "./masthead.js";
 import type { ReckonedComparison, WrittenStateKey } from "../reckon/reckon-verdict.js";
 import { printedShortfallOf } from "./printed-shortfall.js";
@@ -20,7 +20,7 @@ import { unscoredVerdict } from "./unscored.js";
 function nearNote(screen: VerdictScreen, compared: ReckonedComparison, nearest: string | null): string {
   const named = compared.inView.results.find((r) => r.route.id === nearest);
   if (!named) return "";
-  const money = standingOn(compared.layout, named.route.id).shortfall;
+  const money = findRouteStanding(compared.layout, named.route.id).shortfall;
   if (money) return shortfallHeadline(printedShortfallOf(screen.ds, money));
   if (named.gap_points) return pointsAwayLine(named.gap_points);
   return "";
@@ -56,7 +56,7 @@ export function comparedHeadlineOf(screen: VerdictScreen, compared: ReckonedComp
       return withNearNote(unsettledHeadline(reckoned.routes), nearNote(screen, compared, reckoned.nearest));
     case "steps": {
       const step = findStep(compared, reckoned.nearest);
-      const nearest = composeStepTitle(screen, { step, place: firstPlaceOfStep(compared.layout, reckoned.nearest) });
+      const nearest = composeStepTitle(screen, { step, place: findFirstPlaceOfStep(compared.layout, reckoned.nearest) });
       return { headline: stepsWouldChangeHeadline(reckoned.steps), nearest };
     }
     case "nothing-open":

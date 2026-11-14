@@ -40,7 +40,7 @@ interface GroupCards {
 
 /** A route's standing on a comparison's layout, by its id; a route the
  * layout stands nowhere is refused. */
-export function standingOn(layout: ComparedLayout, id: string): RouteStanding {
+export function findRouteStanding(layout: ComparedLayout, id: string): RouteStanding {
   const standing = layout.standings[id];
   if (!standing) throw new Error(`the layout gives ${id} no standing`);
   return standing;
@@ -55,28 +55,28 @@ export function findStep(compared: ReckonedComparison, key: string): Step {
 
 /** The groups of a comparison's layout, in the order drawn: the flat
  * layout's, or each country section's in turn. */
-const groupsOn = (layout: ComparedLayout): VerdictGroup[] =>
+const listGroups = (layout: ComparedLayout): VerdictGroup[] =>
   (layout.kind === "one-country" ? layout.groups : layout.sections.flatMap((section) => section.groups));
 
 /** The first place a comparison's layout gives the step a key names: whether
  * a step's title is a bounded gap is reckoned the same in every section it is
  * placed in; a step the layout places nowhere is refused. */
-export function firstPlaceOfStep(layout: ComparedLayout, key: string): StepPlace {
-  const place = groupsOn(layout).flatMap((g) => (g.kind === "steps" ? g.steps : [])).find((s) => s.step === key);
+export function findFirstPlaceOfStep(layout: ComparedLayout, key: string): StepPlace {
+  const place = listGroups(layout).flatMap((g) => (g.kind === "steps" ? g.steps : [])).find((s) => s.step === key);
   if (!place) throw new Error(`the layout places no step keyed ${key}`);
   return place;
 }
 
 /** A route the layout places, from the comparison, with its standing; one the
  * comparison does not hold is refused. */
-function routeOf(at: Drawing, id: string): RouteWithStanding {
+function findPlacedRoute(at: Drawing, id: string): RouteWithStanding {
   const result = at.results.get(id);
   if (!result) throw new Error(`the layout places ${id}, which the comparison does not hold`);
-  return { result, standing: standingOn(at.compared.layout, id) };
+  return { result, standing: findRouteStanding(at.compared.layout, id) };
 }
 
 const drawRoute = (at: Drawing, id: string, html: (route: RouteWithStanding) => string): DrawnEntry<string> =>
-  [id, html(routeOf(at, id))];
+  [id, html(findPlacedRoute(at, id))];
 
 /** A step's card, with the routes it opens in its section, in the order its
  * row lists them. */
@@ -136,7 +136,7 @@ export function drawnCardsOf(screen: VerdictScreen, compared: ReckonedComparison
   };
   const { layout } = compared;
   const chip = layout.kind === "one-country" ? "country" : "none";
-  const drawn = groupsOn(layout).map((g) => drawGroup(at, g, chip));
+  const drawn = listGroups(layout).map((g) => drawGroup(at, g, chip));
   return {
     routes: cardsById(drawn.flatMap((g) => g.routes), (id) => `the layout places ${id} twice`),
     steps: cardsById(drawn.flatMap((g) => g.steps), (id) => `the layout places the step ${id} twice`),

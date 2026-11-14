@@ -240,7 +240,7 @@ export interface StepWithPlace {
 
 /** How a route a step opens would stand with the step taken, as the step's
  * place says; a route the place does not hold is refused. */
-function withStepTakenOf(place: StepPlace, r: RouteResult): RouteWithStepTaken {
+function findRouteWithStepTaken(place: StepPlace, r: RouteResult): RouteWithStepTaken {
   const standing = place.withStepTaken[r.route.id];
   if (!standing) throw new Error(`the step ${place.id} holds no ${r.route.id}`);
   return standing;
@@ -273,7 +273,7 @@ export function stepCardHtml(screen: VerdictScreen, placed: StepWithPlace, route
         <article class="unlock">
           <h3>${withStepHtml(esc(composeStepTitle(screen, placed)))}</h3>
           ${means ? `<p class="unlock-means">${esc(means)}</p>` : ""}
-          <ul>${routes.map((r) => unlockedRouteHtml(screen, r, withStepTakenOf(place, r))).join("")}
+          <ul>${routes.map((r) => unlockedRouteHtml(screen, r, findRouteWithStepTaken(place, r))).join("")}
           </ul>
         </article>`;
 }

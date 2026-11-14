@@ -6,9 +6,9 @@ import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../..
 import { EVERY_COUNTRY_ANSWER, groupedRoutesOf, routeIdsOf, type Compared, type GroupedRoutes } from "./in-view.js";
 import { measuredCriterionOf } from "./money-shortfall.js";
 import { notYetGroupOf } from "./not-yet-group.js";
-import { routeStandingsOf } from "./route-standing.js";
+import { reckonRouteStandings } from "./route-standing.js";
 import {
-  countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, routeWithStepTakenOf, titlesABoundedGap, type Step,
+  countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, reckonRouteWithStepTaken, titlesABoundedGap, type Step,
 } from "./steps.js";
 import type {
   AnsweredDataset, ArrangedLine, ComparedLayout, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
@@ -148,7 +148,7 @@ function stepPlacesOf(answeredDataset: AnsweredDataset, steps: Step[], section: 
     return {
       id: `${section.code}/${stepKeyOf(step)}`, step: stepKeyOf(step), routes: routeIdsOf(routes),
       titleIsBoundedGap: titlesABoundedGap(answeredDataset, step),
-      withStepTaken: Object.fromEntries(routes.map((r) => [r.route.id, routeWithStepTakenOf(answeredDataset, step, r)])),
+      withStepTaken: Object.fromEntries(routes.map((r) => [r.route.id, reckonRouteWithStepTaken(answeredDataset, step, r)])),
     };
   });
 }
@@ -363,7 +363,7 @@ function countrySectionsLayoutOf(answeredDataset: AnsweredDataset, compared: Com
 /** The layout, one country flat or a section per country, with each route's
  * standing by its id: every route the groups list, closed ones included. */
 export function layoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
-  const withStandings: ComparedWithStandings = { ...compared, standings: routeStandingsOf(answeredDataset, compared.inView) };
+  const withStandings: ComparedWithStandings = { ...compared, standings: reckonRouteStandings(answeredDataset, compared.inView) };
   return compared.inView.visible.length === 1
     ? oneCountryLayoutOf(answeredDataset, withStandings)
     : countrySectionsLayoutOf(answeredDataset, withStandings);
