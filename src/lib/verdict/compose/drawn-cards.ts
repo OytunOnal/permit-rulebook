@@ -1,11 +1,12 @@
 // @level presentation
 import type { RouteResult } from "permit-rulebook-data";
 import {
-  closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook, type VerdictScreen,
+  closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook, type RouteWithStanding,
 } from "./card/cards.js";
-import type { Compared } from "./in-view.js";
-import { stepKeyed } from "./layout.js";
-import type { StepPlace, VerdictGroup, VerdictLayout } from "./verdict-layout.js";
+import type {
+  ComparedLayout, ReckonedComparison, RouteStanding, Step, StepPlace, VerdictGroup, VerdictLayout,
+} from "../reckon/reckon-verdict.js";
+import type { VerdictScreen } from "./types.js";
 
 /** A step as the steps group offers it: its title, and its card's markup. */
 export interface StepCard {
@@ -24,7 +25,7 @@ export interface DrawnCards {
  * reckoned from, and its results by route id. */
 interface Drawing {
   screen: VerdictScreen;
-  compared: Compared;
+  compared: ReckonedComparison;
   results: Map<string, RouteResult>;
 }
 
@@ -37,26 +38,57 @@ interface GroupCards {
   steps: DrawnEntry<StepCard>[];
 }
 
-/** A route the layout places, from the comparison; one it does not hold is refused. */
-function resultOf(at: Drawing, id: string): RouteResult {
-  const r = at.results.get(id);
-  if (!r) throw new Error(`the layout places ${id}, which the comparison does not hold`);
-  return r;
+/** A route's standing on a comparison's layout, by its id; a route the
+ * layout stands nowhere is refused. */
+export function standingOn(layout: ComparedLayout, id: string): RouteStanding {
+  const standing = layout.standings[id];
+  if (!standing) throw new Error(`the layout gives ${id} no standing`);
+  return standing;
 }
 
-const drawRoute = (at: Drawing, id: string, html: (r: RouteResult) => string): DrawnEntry<string> =>
-  [id, html(resultOf(at, id))];
+/** The step a key names on a comparison; a key the comparison holds no step
+ * under is refused. */
+export function findStep(compared: ReckonedComparison, key: string): Step {
+  if (!Object.hasOwn(compared.steps, key)) throw new Error(`no step is keyed ${key}`);
+  return compared.steps[key]!;
+}
+
+/** The groups of a comparison's layout, in the order drawn: the flat
+ * layout's, or each country section's in turn. */
+const groupsOn = (layout: ComparedLayout): VerdictGroup[] =>
+  (layout.kind === "one-country" ? layout.groups : layout.sections.flatMap((section) => section.groups));
+
+/** The first place a comparison's layout gives the step a key names: whether
+ * a step's title is a bounded gap is reckoned the same in every section it is
+ * placed in; a step the layout places nowhere is refused. */
+export function firstPlaceOfStep(layout: ComparedLayout, key: string): StepPlace {
+  const place = groupsOn(layout).flatMap((g) => (g.kind === "steps" ? g.steps : [])).find((s) => s.step === key);
+  if (!place) throw new Error(`the layout places no step keyed ${key}`);
+  return place;
+}
+
+/** A route the layout places, from the comparison, with its standing; one the
+ * comparison does not hold is refused. */
+function routeOf(at: Drawing, id: string): RouteWithStanding {
+  const result = at.results.get(id);
+  if (!result) throw new Error(`the layout places ${id}, which the comparison does not hold`);
+  return { result, standing: standingOn(at.compared.layout, id) };
+}
+
+const drawRoute = (at: Drawing, id: string, html: (route: RouteWithStanding) => string): DrawnEntry<string> =>
+  [id, html(routeOf(at, id))];
 
 /** A step's card, with the routes it opens in its section, in the order its
  * row lists them. */
 function drawStep(at: Drawing, place: StepPlace): DrawnEntry<StepCard> {
-  const step = stepKeyed(at.compared.steps, place.step);
+  const step = findStep(at.compared, place.step);
   const routes = step.unlock.routes.filter((r) => place.routes.includes(r.route.id));
-  return [place.id, { title: composeStepTitle(at.screen, step), html: stepCardHtml(at.screen, step, routes) }];
+  const placed = { step, place };
+  return [place.id, { title: composeStepTitle(at.screen, placed), html: stepCardHtml(at.screen, placed, routes) }];
 }
 
 /** A group's routes, each drawn by `html`, and no step. */
-const routeCards = (at: Drawing, ids: string[], html: (r: RouteResult) => string): GroupCards =>
+const routeCards = (at: Drawing, ids: string[], html: (route: RouteWithStanding) => string): GroupCards =>
   ({ routes: ids.map((id) => drawRoute(at, id, html)), steps: [] });
 
 /** One group's cards, as it lists them. */
@@ -65,16 +97,16 @@ function drawGroup(at: Drawing, group: VerdictGroup, chip: CardLook["chip"]): Gr
   switch (group.kind) {
     case "open":
     case "within-reach":
-      return routeCards(at, group.routes, (r) => fullCardHtml(screen, r, { chip, badge: "status" }));
+      return routeCards(at, group.routes, (route) => fullCardHtml(screen, route, { chip, badge: "status" }));
     case "unsettled":
-      return routeCards(at, group.routes, (r) => fullCardHtml(screen, r, { chip, badge: "rules-met" }));
+      return routeCards(at, group.routes, (route) => fullCardHtml(screen, route, { chip, badge: "rules-met" }));
     case "steps":
       return { routes: [], steps: group.steps.map((place) => drawStep(at, place)) };
     case "not-yet":
       return routeCards(at, group.items.flatMap((item) => (typeof item === "string" ? [item] : item.routes)),
-        (r) => notYetRowHtml(screen, r));
+        (route) => notYetRowHtml(screen, route));
     case "closed":
-      return routeCards(at, group.routes, (r) => closedRowHtml(r, screen.glossary));
+      return routeCards(at, group.routes, ({ result }) => closedRowHtml(result, screen.glossary));
     case "arranged":
       return { routes: [], steps: [] };
   }
@@ -97,7 +129,7 @@ function cardsById<T>(entries: DrawnEntry<T>[], placedTwice: (id: string) => str
  * the one-country layout a card carries its country's chip; a country's own
  * section names its country once, on its summary row.
  */
-export function drawnCardsOf(screen: VerdictScreen, compared: Compared, layout: VerdictLayout): DrawnCards {
+export function drawnCardsOf(screen: VerdictScreen, compared: ReckonedComparison, layout: VerdictLayout): DrawnCards {
   const at: Drawing = {
     screen, compared,
     results: new Map([...compared.inView.results, ...compared.inView.closed].map((r) => [r.route.id, r])),

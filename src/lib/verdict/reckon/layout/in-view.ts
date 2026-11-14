@@ -3,7 +3,7 @@ import {
   DESTINATION_FIELD, evaluate, isClosed, notices, type Country, type Dataset, type Notice, type Profile, type RouteResult,
   type RoutesFreedByAJobOffer, type Unlock,
 } from "permit-rulebook-data";
-import { scopedFirst } from "../../scope.js";
+import { scopedFirst } from "../../../scope.js";
 import type { Step } from "./steps.js";
 
 /** The results a verdict is drawn from, before any of them is placed. */
@@ -23,6 +23,8 @@ export interface ResultsInView {
    * the permit is open to the passport at all is the notice's question (s8). */
   unsettledIds: Set<string>;
   notices: Notice[];
+  /** The route the reader came from, by its id, or none. */
+  cameFrom: string | null;
 }
 
 /** The destination answer that asks about every country at once. */
@@ -41,6 +43,7 @@ export function resultsInViewOf(ds: Dataset, answers: Profile, cameFrom: string 
     closed: scored.filter(isClosed),
     unsettledIds: new Set(applicable.filter((n) => n.kind === "open-question").flatMap((n) => n.routes ?? [])),
     notices: applicable,
+    cameFrom,
   };
 }
 

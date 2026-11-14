@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  deriveBands, evaluate, formatEURPer, gapCriterionOf, shortLabelOf, unlockProfile, unlocks, type Dataset,
-  type Profile,
+  deriveBands, evaluate, formatEURPer, gapCriterionOf, periodOf, shortLabelOf, unlockProfile, unlocks, type Dataset,
+  type Profile, type RouteResult,
 } from "permit-rulebook-data";
 import {
   ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, WOULD_THEN_BE_SHORT_ONLY, asksOrMore, needsOrMoreLine,
   pointsAwayLine, shortByUpTo, shortByUpToLine, shortfallNote, upToShort,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
-import { blocksIn, drawnRouteOn, everyDrawnRouteIn, stepsIn, verdictFor } from "./verdict-cards.js";
+import { blocksIn, drawnRouteOn, everyDrawnRouteIn, standingOn, stepsIn, verdictFor } from "./verdict-cards.js";
 
 /**
  * A gap is said one way and drawn on every rail (#174; rulings 2, 3 and 11 on
@@ -37,6 +37,15 @@ const QUALIFIED: Profile = {
   destination: "de", citizenship: "NG", situation: "offer", situation_country: "de", qualification: "degree",
   recognition_de: "recognized", occupation_shortage: "yes", occupation_it: "no", experience_5y: "2plus",
   experience_7y: "3to5", german: "b1", english: "none", funds_eur_month: "band_1",
+};
+
+/** A vocational qualification in Germany with an offer and a partner: one
+ * route open, and one within reach on its points alone. */
+const POINTS_SHORT: Profile = {
+  destination: "de", citizenship: "IN", situation: "offer", qualification: "vocational", occupation_it: "yes",
+  recognition_de: "not_recognised", experience_5y: "lt2", experience_7y: "3to5", occupation_shortage: "no",
+  salary_eur_year: "band_6", german: "b1", english: "none", age_band: "a35to40", de_stay6m: "no", partner_ck: "yes",
+  funds_eur_month: "band_1",
 };
 
 const SALARY = "salary_eur_year";
@@ -108,11 +117,15 @@ describe("a band open at the bottom names the line", () => {
   });
 
   it("the card names the line and the reader's band", () => {
-    const note = blocksIn(drawnRouteOn(verdictFor(answers), route), "gapnote");
+    const verdict = verdictFor(answers);
+    // The reckoning: the route is short of the line, with the reader's band,
+    // never of a bounded gap (ruling 7 on #322).
+    expect(standingOn(verdict, route).shortfall).toEqual({ kind: "open-below", field: SALARY, line: threshold, band: lowest });
+    // The words: the card's note says it in the copy's.
+    const note = blocksIn(drawnRouteOn(verdict, route), "gapnote");
     const field = shortLabelOf(ds, SALARY).toLowerCase();
     const { lead, rest } = shortfallNote({ kind: "open-below", line, band: lowest.label }, field);
     expect(note).toContain(`<b>${esc(lead)}</b> ${esc(rest)}`);
-    expect(filledIn(shortByUpTo, stressedIn(note))).toBeUndefined();
   });
 
   it("every rail says below the amount and draws a point at its left edge", () => {
@@ -225,15 +238,6 @@ describe("a step prints the gap it leaves the same way", () => {
 });
 
 describe("a route within reach on points is said in points (#174)", () => {
-  /** A vocational qualification in Germany with an offer and a partner: one
-   * route open, and one within reach on its points alone. */
-  const POINTS_SHORT: Profile = {
-    destination: "de", citizenship: "IN", situation: "offer", qualification: "vocational", occupation_it: "yes",
-    recognition_de: "not_recognised", experience_5y: "lt2", experience_7y: "3to5", occupation_shortage: "no",
-    salary_eur_year: "band_6", german: "b1", english: "none", age_band: "a35to40", de_stay6m: "no", partner_ck: "yes",
-    funds_eur_month: "band_1",
-  };
-
   it("the headline says how many points away the route within reach is", () => {
     const results = evaluate(ds, POINTS_SHORT);
     const near = results.filter((r) => r.status === "near");
@@ -257,5 +261,88 @@ describe("a band open at the top is a point at the right edge", () => {
       for (const row of amounts) expect(row.endsWith(ABOVE_THE_AMOUNT), `${id}: ${row}`).toBe(true);
       expect(answerMarkOf(rail), id).toEqual({ point: "right" });
     }
+  });
+});
+
+/** A bounded band under the line the hostile walk's route within reach asks. */
+const boundedBelowTheLine = () => bands.find((b) => b.min !== undefined && b.max !== undefined && b.max <= asked())!;
+
+/** Readers whose screens hold routes open, within reach on money, within
+ * reach on points alone, not yet and closed, between them. */
+const READERS = (): Profile[] => [
+  { ...HOSTILE, [SALARY]: lowest.id }, { ...QUALIFIED, [SALARY]: highest.id }, POINTS_SHORT,
+  { ...QUALIFIED, [SALARY]: boundedBelowTheLine().id },
+];
+
+/** Each route a verdict on these answers draws, with its answers and the
+ * engine's result for it. */
+function drawnResultsOn(answers: Profile): { answers: Profile; r: RouteResult }[] {
+  const results = new Map(evaluate(ds, answers).map((r) => [r.route.id, r]));
+  return everyDrawnRouteIn(verdictFor(answers)).map(({ route }) => {
+    const r = results.get(route);
+    if (!r) throw new Error(`the verdict draws ${route}, which the engine did not evaluate`);
+    return { answers, r };
+  });
+}
+
+/** Whether the engine puts a route within reach on a money gap. */
+const shortOnMoney = (r: RouteResult): boolean => r.status === "near" && r.gap_max !== undefined;
+
+/** Whether a route's standing is measured on the engine's deciding criterion
+ * and the reader's band there; and, where its card draws a rail, whether the
+ * rail draws that criterion's line and that band. Returns whether a rail was drawn. */
+function railDrawsMeasuredOn(answers: Profile, r: RouteResult): boolean {
+  const verdict = verdictFor(answers);
+  const criterion = gapCriterionOf(ds, r, answers);
+  const band = criterion && deriveBands(ds, criterion.field).find((b) => b.id === answers[criterion.field]);
+  const { measuredOn } = standingOn(verdict, r.route.id);
+  expect(measuredOn, r.route.id).toEqual(criterion ? { criterion, band: band ?? null } : null);
+  const rail = blocksIn(drawnRouteOn(verdict, r.route.id), "rail");
+  if (!rail || !measuredOn?.band) return false;
+  const line = formatEURPer(measuredOn.criterion.threshold.amount, periodOf(ds, measuredOn.criterion.field));
+  expect(rail, r.route.id).toContain(`<b>${esc(line)}</b>`);
+  expect(rail, r.route.id).toContain(`<b>${esc(measuredOn.band.label)}</b>`);
+  return true;
+}
+
+describe("a route standing carries its money shortfall and what it is measured on (#374)", () => {
+  it("a route within reach on money from a bounded band carries its bounded gap", () => {
+    const band = boundedBelowTheLine();
+    const answers: Profile = { ...HOSTILE, [SALARY]: band.id };
+    const { route, threshold } = nearOn(answers);
+    expect(standingOn(verdictFor(answers), route).shortfall)
+      .toEqual({ kind: "bounded", field: SALARY, gap: expect.closeTo(threshold - band.min!, 2) });
+  });
+
+  it("a route not short on money carries no shortfall", () => {
+    const notShort = READERS().flatMap(drawnResultsOn).filter(({ r }) => !shortOnMoney(r));
+    expect(new Set(notShort.map(({ r }) => r.status)), "precondition: open, within reach on points, not yet")
+      .toEqual(new Set(["met", "near", "hold"]));
+    for (const { answers, r } of notShort)
+      expect(standingOn(verdictFor(answers), r.route.id).shortfall, r.route.id).toBeNull();
+  });
+
+  it("each route is measured on the engine's deciding criterion and the reader's band there, which its rail draws", () => {
+    const drawn = READERS().flatMap(drawnResultsOn).filter(({ answers, r }) => railDrawsMeasuredOn(answers, r));
+    expect(drawn.length, "precondition: rails are drawn").toBeGreaterThan(1);
+  });
+});
+
+describe("a route standing's money gap carries its shortfall decided (#375)", () => {
+  it("from a bounded band, its figure gap is the bounded gap", () => {
+    const band = boundedBelowTheLine();
+    const answers: Profile = { ...HOSTILE, [SALARY]: band.id };
+    const { route, threshold } = nearOn(answers);
+    expect(standingOn(verdictFor(answers), route).figureGaps).toEqual([
+      { kind: "money", shortfall: { kind: "bounded", field: SALARY, gap: expect.closeTo(threshold - band.min!, 2) } },
+    ]);
+  });
+
+  it("from a band open at the bottom, its figure gap is the line, with the reader's band", () => {
+    const answers: Profile = { ...HOSTILE, [SALARY]: lowest.id };
+    const { route, threshold } = nearOn(answers);
+    expect(standingOn(verdictFor(answers), route).figureGaps).toEqual([
+      { kind: "money", shortfall: { kind: "open-below", field: SALARY, line: threshold, band: lowest } },
+    ]);
   });
 });

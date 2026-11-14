@@ -175,20 +175,13 @@
    "files": [
     "src/lib/verdict/compose/answer-phrase.ts",
     "src/lib/verdict/compose/drawn-cards.ts",
-    "src/lib/verdict/compose/figure-gaps.ts",
     "src/lib/verdict/compose/headline.ts",
     "src/lib/verdict/compose/html.ts",
-    "src/lib/verdict/compose/in-view.ts",
-    "src/lib/verdict/compose/layout.ts",
     "src/lib/verdict/compose/masthead.ts",
-    "src/lib/verdict/compose/money-shortfall.ts",
-    "src/lib/verdict/compose/not-yet-group.ts",
     "src/lib/verdict/compose/not-yet.ts",
     "src/lib/verdict/compose/printed-shortfall.ts",
-    "src/lib/verdict/compose/steps.ts",
     "src/lib/verdict/compose/types.ts",
     "src/lib/verdict/compose/unscored.ts",
-    "src/lib/verdict/compose/verdict-layout.ts",
     "src/lib/verdict/verdict.css",
     "src/lib/verdict/verdict.ts"
    ]
@@ -208,6 +201,26 @@
     "src/lib/verdict/compose/card/blocks/rail.ts",
     "src/lib/verdict/compose/card/blocks/route-statements.ts",
     "src/lib/verdict/compose/card/cards.ts"
+   ]
+  },
+  {
+   "path": "src/lib/verdict/reckon",
+   "entries": [
+    {
+     "file": "src/lib/verdict/reckon/reckon-verdict.ts",
+     "level": "application"
+    }
+   ],
+   "files": [
+    "src/lib/verdict/reckon/layout/figure-gaps.ts",
+    "src/lib/verdict/reckon/layout/in-view.ts",
+    "src/lib/verdict/reckon/layout/layout.ts",
+    "src/lib/verdict/reckon/layout/money-shortfall.ts",
+    "src/lib/verdict/reckon/layout/not-yet-group.ts",
+    "src/lib/verdict/reckon/layout/route-standing.ts",
+    "src/lib/verdict/reckon/layout/steps.ts",
+    "src/lib/verdict/reckon/layout/verdict-layout.ts",
+    "src/lib/verdict/reckon/reckon-verdict.ts"
    ]
   }
  ],
@@ -353,20 +366,22 @@
   "src/lib/verdict/compose/card/blocks/route-statements.ts": "presentation",
   "src/lib/verdict/compose/card/cards.ts": "presentation",
   "src/lib/verdict/compose/drawn-cards.ts": "presentation",
-  "src/lib/verdict/compose/figure-gaps.ts": "application",
   "src/lib/verdict/compose/headline.ts": "presentation",
   "src/lib/verdict/compose/html.ts": "presentation",
-  "src/lib/verdict/compose/in-view.ts": "application",
-  "src/lib/verdict/compose/layout.ts": "application",
   "src/lib/verdict/compose/masthead.ts": "presentation",
-  "src/lib/verdict/compose/money-shortfall.ts": "application",
-  "src/lib/verdict/compose/not-yet-group.ts": "application",
   "src/lib/verdict/compose/not-yet.ts": "presentation",
   "src/lib/verdict/compose/printed-shortfall.ts": "presentation",
-  "src/lib/verdict/compose/steps.ts": "application",
   "src/lib/verdict/compose/types.ts": "presentation",
   "src/lib/verdict/compose/unscored.ts": "presentation",
-  "src/lib/verdict/compose/verdict-layout.ts": "application",
+  "src/lib/verdict/reckon/layout/figure-gaps.ts": "application",
+  "src/lib/verdict/reckon/layout/in-view.ts": "application",
+  "src/lib/verdict/reckon/layout/layout.ts": "application",
+  "src/lib/verdict/reckon/layout/money-shortfall.ts": "application",
+  "src/lib/verdict/reckon/layout/not-yet-group.ts": "application",
+  "src/lib/verdict/reckon/layout/route-standing.ts": "application",
+  "src/lib/verdict/reckon/layout/steps.ts": "application",
+  "src/lib/verdict/reckon/layout/verdict-layout.ts": "application",
+  "src/lib/verdict/reckon/reckon-verdict.ts": "application",
   "src/lib/verdict/verdict.ts": "presentation",
   "src/pages/404.astro": "presentation",
   "src/pages/[country]/[route].astro": "presentation",
@@ -1925,7 +1940,7 @@
   },
   {
    "from": "src/lib/verdict/compose/answer-phrase.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2000,13 +2015,13 @@
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/rail.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/rail.ts",
-   "to": "src/lib/verdict/compose/printed-shortfall.ts",
-   "kind": "dependency"
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/route-statements.ts",
@@ -2071,11 +2086,6 @@
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
-   "kind": "inheritance"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/cards.ts",
-   "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
    "kind": "type-only"
   },
   {
@@ -2100,27 +2110,17 @@
   },
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
-   "to": "src/lib/verdict/compose/figure-gaps.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/cards.ts",
-   "to": "src/lib/verdict/compose/layout.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/cards.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/verdict/compose/printed-shortfall.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
-   "to": "src/lib/verdict/compose/steps.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2130,17 +2130,12 @@
   },
   {
    "from": "src/lib/verdict/compose/drawn-cards.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
+   "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/drawn-cards.ts",
-   "to": "src/lib/verdict/compose/layout.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/drawn-cards.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2155,12 +2150,7 @@
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/layout.ts",
+   "to": "src/lib/verdict/compose/drawn-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2170,13 +2160,13 @@
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/printed-shortfall.ts",
-   "kind": "dependency"
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
@@ -2185,7 +2175,7 @@
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2215,13 +2205,13 @@
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
-   "to": "src/lib/verdict/compose/answer-phrase.ts",
-   "kind": "dependency"
+   "to": "src/lib/situations.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
-   "to": "src/lib/verdict/compose/card/cards.ts",
-   "kind": "type-only"
+   "to": "src/lib/verdict/compose/answer-phrase.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
@@ -2235,52 +2225,17 @@
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/verdict/compose/unscored.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/in-view.ts",
-   "to": "src/lib/scope.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/in-view.ts",
-   "to": "src/lib/verdict/compose/steps.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/situations.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/verdict/compose/not-yet-group.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/verdict/compose/steps.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2305,17 +2260,7 @@
   },
   {
    "from": "src/lib/verdict/compose/masthead.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/not-yet-group.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/not-yet-group.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2340,17 +2285,17 @@
   },
   {
    "from": "src/lib/verdict/compose/not-yet.ts",
-   "to": "src/lib/verdict/compose/card/cards.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/not-yet.ts",
    "to": "src/lib/verdict/compose/drawn-cards.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/not-yet.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/not-yet.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2360,17 +2305,22 @@
   },
   {
    "from": "src/lib/verdict/compose/printed-shortfall.ts",
-   "to": "src/lib/verdict/compose/figure-gaps.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
-   "from": "src/lib/verdict/compose/printed-shortfall.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
-   "kind": "dependency"
+   "from": "src/lib/verdict/compose/types.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/types.ts",
    "to": "src/lib/screen.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/types.ts",
+   "to": "src/lib/verdict/compose/card/cards.ts",
    "kind": "type-only"
   },
   {
@@ -2380,7 +2330,7 @@
   },
   {
    "from": "src/lib/verdict/compose/types.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2415,8 +2365,163 @@
   },
   {
    "from": "src/lib/verdict/compose/unscored.ts",
-   "to": "src/lib/verdict/compose/layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/figure-gaps.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/in-view.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/in-view.ts",
+   "to": "src/lib/verdict/reckon/layout/steps.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "inheritance"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/not-yet-group.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/route-standing.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/not-yet-group.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/not-yet-group.ts",
+   "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/route-standing.ts",
+   "to": "src/lib/verdict/reckon/layout/figure-gaps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/route-standing.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/route-standing.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/route-standing.ts",
+   "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/steps.ts",
+   "to": "src/lib/verdict/reckon/layout/figure-gaps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/steps.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/steps.ts",
+   "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/layout/figure-gaps.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/figure-gaps.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/layout.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/steps.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/verdict.ts",
@@ -2450,22 +2555,7 @@
   },
   {
    "from": "src/lib/verdict/verdict.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/verdict.ts",
-   "to": "src/lib/verdict/compose/layout.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/masthead.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/verdict.ts",
-   "to": "src/lib/verdict/compose/steps.ts",
    "kind": "dependency"
   },
   {
@@ -2475,7 +2565,12 @@
   },
   {
    "from": "src/lib/verdict/verdict.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/verdict.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -5370,6 +5465,11 @@
   },
   {
    "from": "tests/verdict-short-on-a-figure.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/verdict-short-on-a-figure.test.ts",
    "to": "tests/personas.ts",
    "kind": "dependency"
   },
@@ -5715,11 +5815,6 @@
   ],
   "src/lib/verdict/compose/card/cards.ts": [
    {
-    "name": "VerdictScreen",
-    "kind": "type",
-    "exported": true
-   },
-   {
     "name": "CardLook",
     "kind": "type",
     "exported": true
@@ -5743,6 +5838,11 @@
     "name": "scopeFor",
     "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "RouteWithStanding",
+    "kind": "type",
+    "exported": true
    },
    {
     "name": "gapNoteHtml",
@@ -5795,12 +5895,17 @@
     "exported": true
    },
    {
-    "name": "unlockedRouteHtml",
+    "name": "StepWithPlace",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "withStepTakenOf",
     "kind": "fn",
     "exported": false
    },
    {
-    "name": "titlesABoundedGap",
+    "name": "unlockedRouteHtml",
     "kind": "fn",
     "exported": false
    },
@@ -5833,6 +5938,28 @@
     "name": "learnBoxHtml",
     "kind": "fn",
     "exported": false
+   }
+  ],
+  "src/lib/verdict/reckon/reckon-verdict.ts": [
+   {
+    "name": "ReckonedNoticeScreen",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "ReckonedComparison",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "ReckonedVerdict",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "reckonVerdict",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "astro.config.mjs": [
@@ -9460,5 +9587,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "b7fb325f2951d688c367138cf43413ca9b9af05d0348753762786eb6769ff7ca"
+ "digest": "0e579d852d1df0453cca9a528f7be680811f3fda10fbfef46247861430f3bb81"
 }

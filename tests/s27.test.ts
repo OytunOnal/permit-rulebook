@@ -186,7 +186,7 @@ describe("2 — the four-country result's sections, from the verdict", () => {
     const { layout } = verdictFor(WALKED_TO_FOUR);
     if (layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
     expect(layout.sections.map((s) => countryNamed(s.country))).toEqual(["France", "Germany", "Spain", "Netherlands"]);
-    expect(layout.sections.filter((s) => s.tally.situationNotTaken).map((s) => countryNamed(s.country))).toEqual(["France"]);
+    expect(layout.sections.filter((s) => s.tally.mark !== null).map((s) => countryNamed(s.country))).toEqual(["France"]);
   });
 });
 

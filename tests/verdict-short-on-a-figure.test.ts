@@ -1,15 +1,18 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { evaluate, reasonFor, shortLabelOf, type Criterion, type Dataset, type Profile } from "permit-rulebook-data";
+import {
+  deriveBands, evaluate, reasonFor, shortLabelOf, type Band, type Criterion, type Dataset, type Profile,
+} from "permit-rulebook-data";
 import {
   POINTS_FIGURE, SHORT_ON_A_FIGURE_HEADING, figureGapSentence, shortOn, shortOnAFigureCount, upToTitle, withStepHtml,
   wouldThenBeShortOnly,
 } from "../src/lib/copy/verdict.js";
 import { PERSONA_A, PRIYA } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
+import type { RouteStanding, StepPlace, Verdict } from "../src/lib/verdict/verdict.js";
 import {
-  badgeOf, drawnRouteOn, foldedLineOf, groupHeadingsIn, placed, stepsIn, stripTextOf, summaryRowOf, verdictFor,
-  verdictOn,
+  badgeOf, drawnRouteOn, foldedLineOf, groupHeadingsIn, groupsIn, placed, standingOn, stepsIn, stripTextOf,
+  summaryRowOf, verdictFor, verdictOn,
 } from "./verdict-cards.js";
 
 /**
@@ -33,6 +36,15 @@ const PERSONA_A_LOWEST: Profile = { ...PERSONA_A, salary_eur_year: "band_0" };
  * shortage Blue Card and the experienced worker. */
 const BOTH_SHORT_ON_SALARY = ["de-blue-card-shortage", "de-experienced-worker"];
 
+/** The yearly salary's field: the money figure persona A is short on. */
+const SALARY = "salary_eur_year";
+
+/** One figure a route's standing says it is short on. */
+type FigureGap = RouteStanding["figureGaps"][number];
+
+/** The figure a gap is on: a money gap's field, or points. */
+const figureOf = (gap: FigureGap): string => (gap.kind === "money" ? gap.shortfall.field : gap.kind);
+
 /** A money field as a badge and a gap name it: its short label, in lower case. */
 const figureNamed = (field: string): string => shortLabelOf(ds, field).toLowerCase();
 const YEARLY_SALARY = figureNamed("salary_eur_year");  // persona A's figure
@@ -49,7 +61,10 @@ describe("the lowest band: the group says what is missing (rulings 8 and 9)", ()
   it("both routes sit under \"Short on a figure\", each badged \"Short on yearly salary\"", () => {
     for (const route of BOTH_SHORT_ON_SALARY) expect(placed(verdict, route)?.kind, route).toBe("within-reach");
     expect(groupHeadingsIn(verdict)).toContain(SHORT_ON_A_FIGURE_HEADING);
-    for (const route of BOTH_SHORT_ON_SALARY) expect(badgeOf(drawnRouteOn(verdict, route)), route).toBe(shortOn([YEARLY_SALARY]));
+    // The reckoning: each route is short on yearly salary alone, as its
+    // standing's figure gaps say (ruling 7 on #322); the badge words them.
+    for (const route of BOTH_SHORT_ON_SALARY)
+      expect(standingOn(verdict, route).figureGaps.map(figureOf), route).toEqual([SALARY]);
   });
 
   it("the strip and a country's summary row count \"2 short on a figure\"", () => {
@@ -95,6 +110,22 @@ describe("a route short on two figures names both (ruling 9)", () => {
     expect(badgeOf(drawnRouteOn(verdict, "de-chancenkarte"))).toBe(shortOn([YEARLY_SALARY, POINTS_FIGURE]));
     expect(plainTextOf(verdict.body).toLowerCase()).not.toContain("within reach");
   });
+
+  it("its standing carries both figure gaps in the dataset's order, the salary's a bounded gap (#375)", () => {
+    const written = salaryOnTheOpportunityCard();
+    const card = evaluate(written, POINTS_AND_SALARY_SHORT).find((r) => r.route.id === "de-chancenkarte")!;
+    const salary = written.countries.flatMap((c) => c.routes).find((r) => r.id === "de-chancenkarte")!.criteria.at(-1)!;
+    expect(salary.op, "precondition: the salary the written dataset adds").toBe("gte");
+    const line = salary.op === "gte" ? salary.threshold.amount : NaN;
+    const band = deriveBands(written, SALARY).find((b) => b.id === POINTS_AND_SALARY_SHORT[SALARY])!;
+    expect(band.min, "precondition: a band with a lower edge").toBeDefined();
+    // The route's points come before the salary the written dataset appends;
+    // the card's lead line says them in that order, the badge amounts first.
+    expect(standingOn(verdictOn(written, POINTS_AND_SALARY_SHORT), "de-chancenkarte").figureGaps).toEqual([
+      { kind: "points", points: card.gap_points },
+      { kind: "money", shortfall: { kind: "bounded", field: SALARY, gap: expect.closeTo(line - band.min!, 2) } },
+    ]);
+  });
 });
 
 describe("a step states the gap it leaves as a bound (ruling 9; ruling 1, leftover 2)", () => {
@@ -124,6 +155,63 @@ describe("a step states the gap it leaves as a bound (ruling 9; ruling 1, leftov
       { kind: "money", shortfall: { kind: "open-below", line: "€50,700/year", band: "" }, field: YEARLY_SALARY },
     ]);
     expect(plainTextOf(recognition!.html)).toContain(`${GENERAL_BLUE_CARD} — ${leftShort}`);
+  });
+});
+
+/** The one step a verdict places on a question, by the question's field;
+ * none, or more than one, fails the case. */
+function stepPlaceOn(verdict: Verdict, field: string): StepPlace {
+  const places = groupsIn(verdict).flatMap((g) => (g.kind === "steps" ? g.steps : []))
+    .filter((place) => place.step.startsWith(`${field}=`));
+  if (places.length !== 1) throw new Error(`${places.length} steps on ${field} on this verdict`);
+  return places[0]!;
+}
+
+/** A yearly salary band of the shipped dataset, by its id. */
+function salaryBand(id: string): Band {
+  const band = deriveBands(ds, SALARY).find((b) => b.id === id);
+  if (!band) throw new Error(`no salary band ${id}`);
+  return band;
+}
+
+/** The question a recognition step answers. */
+const RECOGNITION = "recognition_de";
+
+describe("a step's place says whether its title is a bounded gap, and how each route it opens would stand (#378)", () => {
+  /** €45,630–€45,934.20: a band with a floor. */
+  const fromAFloor = verdictFor({ ...PERSONA_A, salary_eur_year: "band_4" });
+
+  it("a salary step from a band with a floor to a band with a floor has a bounded-gap title", () => {
+    expect(salaryBand("band_4").min, "precondition: the reader's band has a floor").toBeDefined();
+    const place = stepPlaceOn(fromAFloor, SALARY);
+    expect(salaryBand(place.step.split("=")[1]!).min, "precondition: the band the step asks has a floor").toBeDefined();
+    expect(place.titleIsBoundedGap).toBe(true);
+  });
+
+  it("a salary step from a band open at the bottom has not", () => {
+    expect(salaryBand(PERSONA_A_LOWEST[SALARY]!).min, "precondition: the band is open at the bottom").toBeUndefined();
+    expect(stepPlaceOn(verdictFor(PERSONA_A_LOWEST), SALARY).titleIsBoundedGap).toBe(false);
+  });
+
+  it("each route a step opens says met, or its figure gaps with the step taken", () => {
+    const place = stepPlaceOn(fromAFloor, RECOGNITION);
+    expect(place.withStepTaken).toEqual({
+      "de-blue-card-general": {
+        kind: "short", figureGaps: [{ kind: "money", shortfall: { kind: "bounded", field: SALARY, gap: expect.closeTo(5070, 2) } }],
+      },
+      "de-skilled-academic": { kind: "met" },
+    });
+    expect(Object.keys(place.withStepTaken), "each route the step opens, in its order").toEqual(place.routes);
+  });
+
+  it("from a band open at the bottom, a route the step leaves short carries the line it asks", () => {
+    const place = stepPlaceOn(verdictFor(PERSONA_A_LOWEST), RECOGNITION);
+    expect(place.withStepTaken).toMatchObject({
+      "de-blue-card-general": {
+        kind: "short",
+        figureGaps: [{ kind: "money", shortfall: { kind: "open-below", field: SALARY, line: 50700, band: salaryBand("band_0") } }],
+      },
+    });
   });
 });
 

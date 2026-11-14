@@ -1,12 +1,17 @@
 // @level application
-import type { Dataset, Profile } from "permit-rulebook-data";
+import type { Band, Dataset, Profile, ThresholdCriterion } from "permit-rulebook-data";
+import type { NotScoredMark } from "../../../situations.js";
+import type { FigureGap } from "./figure-gaps.js";
+import type { MoneyShortfall } from "./money-shortfall.js";
 
 /**
  * The results screen's layout as data: where each route stands, which
  * sections open, what each fold holds, what the strip and each summary row
- * count, which country leads, and what kind of headline it has. No words and
- * no markup: a route is its id, a country its code, an answer its field and
- * value, and the files that draw read this to word and draw it (#314).
+ * count, which country leads, and what kind of headline it has. No copy
+ * words and no markup: where it places a route, the route is its id; a
+ * country is its code, an answer its field and value; a country's mark is as
+ * the data package gives it, the country's phrase and the quoted route,
+ * dataset values. The files that draw read this to word and draw it (#314).
  */
 
 /** The dataset and the answers given to it: what the layout is reckoned on. */
@@ -61,12 +66,24 @@ export interface ArrangedLine {
   answers: (AnswerRef & { routes: number })[];
 }
 
+/** A route a step opens, as it would stand with the step taken: met, or still
+ * short on the figure gaps it would miss by, each money gap's shortfall
+ * decided on the answers with the step taken. */
+export type RouteWithStepTaken = { kind: "met" } | { kind: "short"; figureGaps: FigureGap[] };
+
 /** A step as one section offers it: the id its card is drawn under, the step's
- * key among the screen's steps, and the routes it opens in that section. */
+ * key among the screen's steps, the routes it opens in that section, and the
+ * step's own reckonings, which its card, the steps group and the headline's
+ * Nearest word (ruling 5 on #322). */
 export interface StepPlace {
   id: string;
   step: string;
   routes: string[];
+  /** Whether the step's title is a bounded gap, "up to …": a distance on a
+   * money question from a band with a floor to a band with a floor. */
+  titleIsBoundedGap: boolean;
+  /** Each route in `routes`, by its id, as it would stand with the step taken. */
+  withStepTaken: Record<string, RouteWithStepTaken>;
 }
 
 /**
@@ -98,9 +115,8 @@ export interface Strip {
   openUnknowns: number;
 }
 
-/** What one country's summary row counts, and whether the s19 sentence stands
- * in for its not-yet count: its scored routes do not take the reader's
- * situation. */
+/** What one country's summary row counts, and the country's mark, where the
+ * s19 sentence stands in for its not-yet count. */
 export interface Tally extends Strip {
   steps: number;
   /** The routes the country's job offer line would check (ruling 7 of #187). */
@@ -108,7 +124,10 @@ export interface Tally extends Strip {
   /** The routes the country's arranged line would open, each counted once
    * (ruling 7 of #187). */
   openedByArrangedAnswers: number;
-  situationNotTaken: boolean;
+  /** The s19 mark for the declared situation, where the country's scored
+   * routes do not take it, which its line words; null where they do, or no
+   * situation is declared (ruling 3 on #322). */
+  mark: NotScoredMark | null;
 }
 
 /** One country's section on the several-country layout, by the country's code. */
@@ -122,28 +141,83 @@ export interface CountrySection {
 /** How many countries the results screen is showing. */
 export type Explore = "one-country" | "several-countries";
 
+/** Where a written state stands: the answer it is keyed by, the destination
+ * answer of the country the reader named at question 3 on the four-country
+ * path only — the country whose section leads the result, open (s26); the
+ * direct path has no list of countries to lead — the mark, and the situation. */
+export interface WrittenStateKey {
+  key: string;
+  named: string | undefined;
+  mark: NotScoredMark;
+  situation: string;
+}
+
 /**
  * The headline's kind, with the numbers it counts and what its second
  * sentence names: the route nearest within reach, by id, or the nearest step,
- * by key. The written state is s19's; the others are a comparison's own.
+ * by key. The written state is s19's, with its key, once for the screen
+ * (ruling 3 on #322); the others are a comparison's own.
  */
 export type HeadlineLayout =
-  | { kind: "written-state" }
+  | { kind: "written-state"; writtenStateKey: WrittenStateKey }
   | { kind: "unsettled"; routes: number; nearest: string | null }
   | { kind: "steps"; steps: number; nearest: string }
   | { kind: "nothing-open"; explore: Explore }
   | { kind: "open"; routes: number; countries: number; nearest: string | null };
 
+/** What a route is measured on: the deciding criterion, and the reader's
+ * band on its field, or null where the reader gave no answer there. */
+export interface MeasuredOn {
+  criterion: ThresholdCriterion;
+  band: Band | null;
+}
+
+/**
+ * A route's standing on the reader's own answers (#372, ruling 4 on #322):
+ * what the card, the headline and the rail draw, decided once. A route's
+ * points gap is not here: the engine hands it on the result.
+ */
+export interface RouteStanding {
+  /** On a route within reach on money, what it is short of, unprinted: a
+   * bounded gap, or, from a band open at the bottom, the line with the
+   * reader's band. Null on any other route. */
+  shortfall: MoneyShortfall | null;
+  /** The deciding criterion and the reader's band there, which the rail
+   * draws; null where no amount decides the route. */
+  measuredOn: MeasuredOn | null;
+  /** Each figure the route is short on, in the dataset's order, as the card's
+   * lead line and the not-yet row's gap line say them: an amount with its
+   * shortfall decided as `shortfall` is, or points; none where it misses by
+   * nothing an amount or points can close. */
+  figureGaps: FigureGap[];
+  /** The questions whose unknown still binds on this route, by field, which
+   * its learn box links and the counts count; none on a hard-failed route,
+   * where nothing the reader finds out can change it, and none means no live
+   * unknown. */
+  liveUnknowns: string[];
+  /** Whether its row opens by itself: on a live unknown, or because it is the
+   * route the reader came from. */
+  rowOpens: boolean;
+}
+
+/** Each route's standing, by the route's id. */
+export type RouteStandings = Record<string, RouteStanding>;
+
 /** A comparison's layout: one country flat, or a section per country, the
- * country the headline is about first where it names one. */
+ * country the headline is about first where it names one; and each route's
+ * standing by its id, beside the groups that list those ids. */
 export type ComparedLayout =
-  | { kind: "one-country"; country: string; strip: Strip; headline: HeadlineLayout; groups: VerdictGroup[] }
+  | {
+    kind: "one-country"; country: string; strip: Strip; headline: HeadlineLayout; groups: VerdictGroup[];
+    standings: RouteStandings;
+  }
   | {
     kind: "countries"; strip: Strip; headline: HeadlineLayout;
     /** The country whose section leads, open, by its code; null where the
      * sections keep the dataset's order. */
     lead: string | null;
     sections: CountrySection[];
+    standings: RouteStandings;
   };
 
 /** The screen's body as data: the notice screen, or a comparison's. */

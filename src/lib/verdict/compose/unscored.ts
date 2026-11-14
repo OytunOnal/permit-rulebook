@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  SITUATION_FIELD, fieldOptions, joinOr, possessiveAtStartOf, situationsAsked, type Country, type Dataset, type Profile,
+  SITUATION_FIELD, fieldOptions, joinOr, possessiveAtStartOf, situationsAsked, type Dataset,
 } from "permit-rulebook-data";
 import {
   READ_ITS_RULES, unscoredHeadline, unscoredNamedRestLine, unscoredRestLine, unscoredRouteLine, unscoredTallyLine,
@@ -10,15 +10,17 @@ import { url } from "../../site.js";
 import { routePath } from "../../slug.js";
 import type { NotScoredMark } from "../../situations.js";
 import { phraseOfAnswer } from "./answer-phrase.js";
-import { countryMarkOf, writtenStateKeyOf } from "./layout.js";
+import type { WrittenStateKey } from "../reckon/reckon-verdict.js";
 
 /**
  * What the verdict says where the declared situation is one no scored route
  * in a country takes (s19): the country's line on the four-country result,
  * and the written state a zero-open result reads. Where the marks stand is
- * the layout's (`countryMarkOf`, `writtenStateKeyOf`); this words them. The
- * mark itself — which situation a country's scored routes do not take — is
- * the question card's as much as the verdict's, and stays beside it.
+ * the layout's: a country's mark rides on its tally, the written state's key
+ * on the written-state headline (ruling 3 on #322); this only words what it
+ * is handed. The mark itself — which situation a country's scored routes do
+ * not take — is the question card's as much as the verdict's, and stays
+ * beside it.
  */
 
 /** Where the quoted route's page is: the mark names the route and its
@@ -50,9 +52,7 @@ export interface UnscoredTally {
   html: string;
 }
 
-export function unscoredTally(ds: Dataset, country: Country, situation: string | undefined): UnscoredTally | null {
-  const mark = countryMarkOf(ds, country, situation);
-  if (!mark || situation === undefined) return null;
+export function unscoredTally(ds: Dataset, mark: NotScoredMark, situation: string): UnscoredTally {
   const text = unscoredTallyLine(mark.country, situationPhrase(ds, situation), mark.quoted?.route.name);
   const html = mark.quoted ? sentenceWithLinkHtml(text, mark.quoted.route.name, quotedHref(mark.quoted)) : esc(text);
   return { text, html };
@@ -91,9 +91,7 @@ export interface UnscoredVerdict {
  * "the routes below" are four countries' here. Which country the
  * four-country result leads with is the layout's, read from the same key.
  */
-export function unscoredVerdict(ds: Dataset, answers: Profile): UnscoredVerdict | null {
-  const keyed = writtenStateKeyOf(ds, answers);
-  if (!keyed) return null;
+export function unscoredVerdict(ds: Dataset, keyed: WrittenStateKey): UnscoredVerdict {
   const { key, named, mark, situation } = keyed;
   const asked = situationsAsked(ds).get(key) ?? new Set<string>();
   const steps = joinOr(fieldOptions(ds, SITUATION_FIELD)

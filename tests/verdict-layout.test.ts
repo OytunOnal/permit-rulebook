@@ -75,7 +75,7 @@ interface NotYetCounts {
 
 /** A section's tally of not-yet rows only, as persona C's are. */
 const notYetTally = (counts: NotYetCounts) =>
-  ({ open: 0, unsettled: 0, withinReach: 0, closed: 0, ...counts, situationNotTaken: false });
+  ({ open: 0, unsettled: 0, withinReach: 0, closed: 0, ...counts, mark: null });
 
 /** A fold of rows gated on a path answer alone, collapsed. */
 const gatedFold = (routes: string[]) => ({ fold: "needs-path-answers", open: false, routes });
@@ -244,5 +244,50 @@ describe("a country with something to act on opens, and its row names each actio
     expect(summaryRowTextOf(PERSONA_C, "France")).toBe([notYetCount(5), moreWithJobOfferCount(3)].join(" · "));
     expect(summaryRowTextOf(PERSONA_C, "Spain"))
       .toBe([notYetCount(4), moreWithJobOfferCount(2), moreWithDifferentSituationCount(2)].join(" · "));
+  });
+});
+
+/** A researcher with a French hosting agreement on the direct path: nothing open. */
+const FRENCH_RESEARCHER_DIRECT: Profile = { destination: "fr", situation: "research" };
+/** The same researcher on all four, France named at question 3, nothing open anywhere (s26's walk). */
+const FRENCH_RESEARCHER_ON_FOUR: Profile = {
+  destination: "all", situation: "research", situation_country: "fr", citizenship: "TR", qualification: "none",
+  nl_recent_grad: "no", top200_grad: "no",
+};
+/** The same walk with a recognised degree, some German and the funds: Germany's Opportunity Card opens. */
+const FRENCH_RESEARCHER_WITH_A_GERMAN_ROUTE: Profile = {
+  ...FRENCH_RESEARCHER_ON_FOUR, qualification: "degree", recognition_de: "recognized", german: "a1", funds_eur_month: "band_1",
+};
+/** France's mark for a research hosting agreement: its phrase, and the quoted route that takes it. */
+const FRANCE_RESEARCH_MARK = { country: "France", quoted: { country: { code: "FR" }, route: { id: "fr-talent-chercheur" } } };
+
+// Ruling 3 on #322: the written state's key holds once for the screen, on the
+// written-state headline; a country's mark per country, on its tally.
+describe("the written state's key and each country's mark ride on the layout", () => {
+  it("on the direct path, the written-state headline carries its key: the destination, no named country, the mark and the situation", () => {
+    const { layout } = verdictFor(FRENCH_RESEARCHER_DIRECT);
+    if (layout.kind === "notice") throw new Error("the direct verdict draws a notice screen");
+    expect(layout.headline).toMatchObject({
+      kind: "written-state",
+      writtenStateKey: { key: "fr", named: undefined, situation: "research", mark: FRANCE_RESEARCH_MARK },
+    });
+  });
+
+  it("on the four-country path, the written-state headline carries the named country as its key", () => {
+    const { layout } = verdictFor(FRENCH_RESEARCHER_ON_FOUR);
+    if (layout.kind !== "countries") throw new Error("the four-country verdict draws no country sections");
+    expect(layout.headline).toMatchObject({
+      kind: "written-state",
+      writtenStateKey: { key: "fr", named: "fr", situation: "research", mark: FRANCE_RESEARCH_MARK },
+    });
+  });
+
+  it("a country whose scored routes do not take the reader's situation carries its mark on its tally; one whose routes take it carries none", () => {
+    for (const answers of [FRENCH_RESEARCHER_ON_FOUR, FRENCH_RESEARCHER_WITH_A_GERMAN_ROUTE]) {
+      const verdict = verdictFor(answers);
+      expect(sectionNamed(verdict, "France").tally).toMatchObject({ mark: FRANCE_RESEARCH_MARK });
+      for (const name of ["Germany", "Spain", "Netherlands"])
+        expect(sectionNamed(verdict, name).tally.mark, name).toBeNull();
+    }
   });
 });

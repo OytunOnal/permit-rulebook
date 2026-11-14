@@ -1,15 +1,18 @@
 // @level application
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, liveUnknowns, periodOf, type Country, type Dataset, type Profile, type RouteResult,
+  DESTINATION_FIELD, SITUATION_FIELD, periodOf, type Country, type Dataset, type Profile, type RouteResult,
 } from "permit-rulebook-data";
-import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../../situations.js";
+import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../../../situations.js";
 import { EVERY_COUNTRY_ANSWER, groupedRoutesOf, routeIdsOf, type Compared, type GroupedRoutes } from "./in-view.js";
 import { measuredCriterionOf } from "./money-shortfall.js";
 import { notYetGroupOf } from "./not-yet-group.js";
-import { countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, type Step } from "./steps.js";
+import { routeStandingsOf } from "./route-standing.js";
+import {
+  countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, routeWithStepTakenOf, titlesABoundedGap, type Step,
+} from "./steps.js";
 import type {
   AnsweredDataset, ArrangedLine, ComparedLayout, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
-  StepPlace, Strip, Tally, VerdictGroup,
+  RouteStanding, RouteStandings, StepPlace, Strip, Tally, VerdictGroup, WrittenStateKey,
 } from "./verdict-layout.js";
 
 /**
@@ -20,24 +23,14 @@ import type {
  */
 
 /** The s19 mark on one country of the four-country result, for the declared
- * situation, or none: the one predicate its tally and its words read. */
-export const countryMarkOf = (ds: Dataset, country: Country, situation: string | undefined): NotScoredMark | null =>
+ * situation, or none: reckoned once, onto its tally, which its words read. */
+const countryMarkOf = (ds: Dataset, country: Country, situation: string | undefined): NotScoredMark | null =>
   situation === undefined ? null : notScoredFor(ds, country.code.toLowerCase(), situation);
 
-/** Where a written state stands: the answer it is keyed by, the destination
- * answer of the country the reader named at question 3 on the four-country
- * path only — the country whose section leads the result, open (s26); the
- * direct path has no list of countries to lead — the mark, and the situation. */
-export interface WrittenStateKey {
-  key: string;
-  named: string | undefined;
-  mark: NotScoredMark;
-  situation: string;
-}
-
-/** The written state's key for these answers, or none: the one derivation the
- * headline's kind, the lead country and the written state's words read. */
-export function writtenStateKeyOf(ds: Dataset, answers: Profile): WrittenStateKey | null {
+/** The written state's key for these answers, or none: reckoned once, onto
+ * the written-state headline, which the lead country and the written state's
+ * words read. */
+function writtenStateKeyOf(ds: Dataset, answers: Profile): WrittenStateKey | null {
   const destination = answers[DESTINATION_FIELD];
   const situation = answers[SITUATION_FIELD];
   if (destination === undefined || situation === undefined) return null;
@@ -58,11 +51,16 @@ export function stepKeyOf(step: Step): string {
   return unlock.qualifier ? `${own}+${unlock.qualifier.field}=${unlock.qualifier.option.value}` : own;
 }
 
-/** The step a key names among the screen's steps; a key no step has is refused. */
-export function stepKeyed(steps: Step[], key: string): Step {
-  const step = steps.find((s) => stepKeyOf(s) === key);
-  if (!step) throw new Error(`no step is keyed ${key}`);
-  return step;
+/** The screen's steps by the key each step's places name it by; two steps
+ * under one key are refused, since a place could name only one of them. */
+export function indexStepsByKey(steps: Step[]): Record<string, Step> {
+  const byKey: Record<string, Step> = {};
+  for (const step of steps) {
+    const key = stepKeyOf(step);
+    if (Object.hasOwn(byKey, key)) throw new Error(`two steps are keyed ${key}`);
+    byKey[key] = step;
+  }
+  return byKey;
 }
 
 /** What one section holds: the whole screen on the one-country layout, one
@@ -134,27 +132,52 @@ function linesIn(compared: Compared, code: string): Pick<Section, "jobOfferLine"
   };
 }
 
-/** Each step, placed in one section with the routes it opens there, under the
- * id its card is drawn by. */
-const stepPlacesOf = (steps: Step[], code: string, routesOf: (step: Step) => RouteResult[]): StepPlace[] =>
-  steps.map((step) => ({ id: `${code}/${stepKeyOf(step)}`, step: stepKeyOf(step), routes: routeIdsOf(routesOf(step)) }));
+/** Which steps one section offers: the section's country, and the routes
+ * each step opens there. */
+interface StepsIn {
+  code: string;
+  routesOf: (step: Step) => RouteResult[];
+}
 
-/** Whether an unknown on this route is one the reader can still act on: the
- * one predicate the counts and the row that opens on it read. */
-export const hasLiveUnknown = (answeredDataset: AnsweredDataset, r: RouteResult): boolean =>
-  liveUnknowns(r, answeredDataset.answers).length > 0;
+/** Each step, placed in one section under the id its card is drawn by, with
+ * the routes it opens there, whether its title is a bounded gap, and how each
+ * of those routes would stand with the step taken (ruling 5 on #322). */
+function stepPlacesOf(answeredDataset: AnsweredDataset, steps: Step[], section: StepsIn): StepPlace[] {
+  return steps.map((step) => {
+    const routes = section.routesOf(step);
+    return {
+      id: `${section.code}/${stepKeyOf(step)}`, step: stepKeyOf(step), routes: routeIdsOf(routes),
+      titleIsBoundedGap: titlesABoundedGap(answeredDataset, step),
+      withStepTaken: Object.fromEntries(routes.map((r) => [r.route.id, routeWithStepTakenOf(answeredDataset, step, r)])),
+    };
+  });
+}
 
-/** Counted the way the rows read: an unknown on a hard-failed route is moot,
- * and no learn box offers to resolve it (critique #4). */
-const openUnknownsIn = (answeredDataset: AnsweredDataset, rows: RouteResult[]): number =>
-  rows.filter((r) => hasLiveUnknown(answeredDataset, r)).length;
+/** A comparison with each route's standing by its id: what the layout is
+ * reckoned from. */
+interface ComparedWithStandings extends Compared {
+  standings: RouteStandings;
+}
 
-function stripOf(answeredDataset: AnsweredDataset, compared: Compared): Strip {
+/** A route's standing on the comparison; a route it stands nowhere is refused. */
+function standingOf(compared: ComparedWithStandings, r: RouteResult): RouteStanding {
+  const standing = compared.standings[r.route.id];
+  if (!standing) throw new Error(`${r.route.id} has no standing`);
+  return standing;
+}
+
+/** Counted the way the rows read, from each route's live unknowns: an unknown
+ * on a hard-failed route is moot, and no learn box offers to resolve it
+ * (critique #4). */
+const openUnknownsIn = (compared: ComparedWithStandings, rows: RouteResult[]): number =>
+  rows.filter((r) => standingOf(compared, r).liveUnknowns.length > 0).length;
+
+function stripOf(compared: ComparedWithStandings): Strip {
   const { whole } = compared;
   return {
     open: whole.met.length, withinReach: whole.near.length, unsettled: whole.unsettled.length,
     closed: whole.closed.length, notYet: whole.hold.length,
-    openUnknowns: openUnknownsIn(answeredDataset, compared.inView.results),
+    openUnknowns: openUnknownsIn(compared, compared.inView.results),
   };
 }
 
@@ -232,7 +255,8 @@ function stepsOrNothingOpenHeadlineOf(compared: Compared): HeadlineLayout {
  */
 function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): HeadlineLayout {
   const { whole } = compared;
-  if (compared.zeroOpen && writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)) return { kind: "written-state" };
+  const writtenStateKey = compared.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers) : null;
+  if (writtenStateKey) return { kind: "written-state", writtenStateKey };
   const nearest = nearestRouteWithinReach(answeredDataset, whole.near);
   const unsettled = whole.unsettled.length;
   if (!whole.met.length && unsettled) return { kind: "unsettled", routes: unsettled, nearest };
@@ -242,15 +266,15 @@ function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): Headl
 }
 
 /** Single destination: the flat layout, no country chrome. */
-function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: ComparedWithStandings): ComparedLayout {
   const code = compared.inView.visible[0]!.code;
-  const steps = stepPlacesOf(compared.steps, code, (step) => step.unlock.routes);
+  const steps = stepPlacesOf(answeredDataset, compared.steps, { code, routesOf: (step) => step.unlock.routes });
   const groups = groupsOf(answeredDataset, {
     grouped: compared.whole, steps, ...linesIn(compared, code), results: compared.inView.results,
   });
   return {
-    kind: "one-country", country: code, strip: stripOf(answeredDataset, compared),
-    headline: headlineOf(answeredDataset, compared), groups,
+    kind: "one-country", country: code, strip: stripOf(compared),
+    headline: headlineOf(answeredDataset, compared), groups, standings: compared.standings,
   };
 }
 
@@ -300,21 +324,21 @@ const holdsSomethingToActOn = (section: Section, tally: Tally): boolean =>
  * 7). A country's own closed routes are counted in its tally: a count no
  * summary names is a route the reader never learns exists (s8).
  */
-function countrySection(answeredDataset: AnsweredDataset, compared: Compared, at: SectionPlace): CountrySection {
+function countrySection(answeredDataset: AnsweredDataset, compared: ComparedWithStandings, at: SectionPlace): CountrySection {
   const { country, lead } = at;
   const code = country.code;
   const { inView } = compared;
   const countryResults = inView.results.filter((r) => r.country === code);
   const grouped = groupedRoutesOf(countryResults, inView.closed.filter((r) => r.country === code), inView.unsettledIds);
-  const steps = stepPlacesOf(compared.steps, code, (step) => step.unlock.routes.filter((r) => r.country === code))
-    .filter((place) => place.routes.length);
+  const routesOf = (step: Step) => step.unlock.routes.filter((r) => r.country === code);
+  const steps = stepPlacesOf(answeredDataset, compared.steps, { code, routesOf }).filter((place) => place.routes.length);
   const section: Section = { grouped, steps, ...linesIn(compared, code), results: countryResults };
   const tally: Tally = {
     open: grouped.met.length, unsettled: grouped.unsettled.length, withinReach: grouped.near.length, notYet: grouped.hold.length,
-    openUnknowns: openUnknownsIn(answeredDataset, countryResults), closed: grouped.closed.length, steps: steps.length,
+    openUnknowns: openUnknownsIn(compared, countryResults), closed: grouped.closed.length, steps: steps.length,
     checkedWithJobOffer: section.jobOfferLine?.routes ?? 0,
     openedByArrangedAnswers: countDistinctRoutesOpenedByArrangedAnswers(compared, code),
-    situationNotTaken: countryMarkOf(answeredDataset.ds, country, answeredDataset.answers[SITUATION_FIELD]) !== null,
+    mark: countryMarkOf(answeredDataset.ds, country, answeredDataset.answers[SITUATION_FIELD]),
   };
   const open = holdsSomethingToActOn(section, tally) || leads(country, lead);
   return { country: code, open, tally, groups: groupsOf(answeredDataset, section) };
@@ -329,18 +353,22 @@ function countrySection(answeredDataset: AnsweredDataset, compared: Compared, at
  * country it names is the country that leads; with something open anywhere,
  * or a written state for nobody, the sections keep the dataset's order.
  */
-function countrySectionsLayoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+function countrySectionsLayoutOf(answeredDataset: AnsweredDataset, compared: ComparedWithStandings): ComparedLayout {
   const { visible } = compared.inView;
-  const lead = compared.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)?.named : undefined;
+  const headline = headlineOf(answeredDataset, compared);
+  const lead = headline.kind === "written-state" ? headline.writtenStateKey.named : undefined;
   const sections = namedFirst(visible, lead).map((country) => countrySection(answeredDataset, compared, { country, lead }));
   return {
-    kind: "countries", strip: stripOf(answeredDataset, compared), headline: headlineOf(answeredDataset, compared),
-    lead: visible.find((country) => leads(country, lead))?.code ?? null, sections,
+    kind: "countries", strip: stripOf(compared), headline,
+    lead: visible.find((country) => leads(country, lead))?.code ?? null, sections, standings: compared.standings,
   };
 }
 
+/** The layout, one country flat or a section per country, with each route's
+ * standing by its id: every route the groups list, closed ones included. */
 export function layoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+  const withStandings: ComparedWithStandings = { ...compared, standings: routeStandingsOf(answeredDataset, compared.inView) };
   return compared.inView.visible.length === 1
-    ? oneCountryLayoutOf(answeredDataset, compared)
-    : countrySectionsLayoutOf(answeredDataset, compared);
+    ? oneCountryLayoutOf(answeredDataset, withStandings)
+    : countrySectionsLayoutOf(answeredDataset, withStandings);
 }
