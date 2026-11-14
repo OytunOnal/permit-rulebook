@@ -175,6 +175,7 @@
    "files": [
     "src/lib/verdict/compose/answer-phrase.ts",
     "src/lib/verdict/compose/drawn-cards.ts",
+    "src/lib/verdict/compose/find-route-standing.ts",
     "src/lib/verdict/compose/headline.ts",
     "src/lib/verdict/compose/html.ts",
     "src/lib/verdict/compose/masthead.ts",
@@ -366,6 +367,7 @@
   "src/lib/verdict/compose/card/blocks/route-statements.ts": "presentation",
   "src/lib/verdict/compose/card/cards.ts": "presentation",
   "src/lib/verdict/compose/drawn-cards.ts": "presentation",
+  "src/lib/verdict/compose/find-route-standing.ts": "presentation",
   "src/lib/verdict/compose/headline.ts": "presentation",
   "src/lib/verdict/compose/html.ts": "presentation",
   "src/lib/verdict/compose/masthead.ts": "presentation",
@@ -2130,11 +2132,21 @@
   },
   {
    "from": "src/lib/verdict/compose/drawn-cards.ts",
+   "to": "src/lib/verdict/compose/find-route-standing.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/drawn-cards.ts",
    "to": "src/lib/verdict/compose/types.ts",
    "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/drawn-cards.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/find-route-standing.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
@@ -2150,7 +2162,7 @@
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/drawn-cards.ts",
+   "to": "src/lib/verdict/compose/find-route-standing.ts",
    "kind": "dependency"
   },
   {
@@ -9592,5 +9604,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "a39152143f3a2739699f84912b73f39edb0535ef5b3d278d774ecd72fa191ca0"
+ "digest": "56008a20c3829dae42cf2a79c93a637295bd3b38b59538aa3cc4d1d32d07bc6d"
 }
