@@ -1,0 +1,243 @@
+// @level application
+import type { Band, Dataset, Profile, ThresholdCriterion } from "permit-rulebook-data";
+import type { NotScoredMark } from "../../../situations.js";
+import type { FigureGap } from "./figure-gaps.js";
+import type { MoneyShortfall } from "./money-shortfall.js";
+
+/**
+ * The results screen's layout as data: where each route stands, which
+ * sections open, what each fold holds, what the strip and each summary row
+ * count, which country leads, and what kind of headline it has. No copy
+ * words and no markup: where it places a route, the route is its id; a
+ * country is its code, an answer its field and value; a country's mark is as
+ * the data package gives it, the country's phrase and the quoted route,
+ * dataset values. The files that draw read this to word and draw it (#314).
+ */
+
+/** The dataset and the answers given to it: what the layout is reckoned on. */
+export interface AnsweredDataset {
+  ds: Dataset;
+  answers: Profile;
+}
+
+/** One answer to one question: the question's field and the option's value. */
+export interface AnswerRef {
+  field: string;
+  value: string;
+}
+
+/** The groups that list routes, each route by its id. */
+export type RouteGroupKind = "open" | "unsettled" | "within-reach" | "closed";
+
+/**
+ * Not-yet rows folded under one summary line: the rows that need only a path
+ * answer, with the answers they ask for, or the rows placed in a country the
+ * reader is not looking at, with that country's code.
+ */
+export type Fold =
+  | {
+    kind: "needs-path-answers";
+    /** The path answers the folded rows ask for, arranged ones included, in
+     * the order the rows first ask them. */
+    pathAnswers: AnswerRef[];
+    /** Whether the steps, the job offer line or the arranged line stands above,
+     * for the summary to point at. */
+    pointsUp: boolean;
+    open: boolean;
+    routes: string[];
+  }
+  | { kind: "elsewhere"; country: string; routes: string[] };
+
+/**
+ * The job offer line: for a reader exploring with no offer, what a job offer
+ * in one country would free — routes that would then be checked, never met:
+ * the country's code, how many routes, and the fields they would ask next.
+ */
+export interface JobOfferLine {
+  country: string;
+  routes: number;
+  fields: string[];
+}
+
+/** The arranged line: each arranged answer that opens a route in one country,
+ * with how many it opens there. */
+export interface ArrangedLine {
+  country: string;
+  answers: (AnswerRef & { routes: number })[];
+}
+
+/** A route a step opens, as it would stand with the step taken: met, or still
+ * short on the figure gaps it would miss by, each money gap's shortfall
+ * decided on the answers with the step taken. */
+export type RouteWithStepTaken = { kind: "met" } | { kind: "short"; figureGaps: FigureGap[] };
+
+/** A step as one section offers it: the id its card is drawn under, the step's
+ * key among the screen's steps, the routes it opens in that section, and the
+ * step's own reckonings, which its card, the steps group and the headline's
+ * Nearest word (ruling 5 on #322). */
+export interface StepPlace {
+  id: string;
+  step: string;
+  routes: string[];
+  /** Whether the step's title is a bounded gap, "up to …": a distance on a
+   * money question from a band with a floor to a band with a floor. */
+  titleIsBoundedGap: boolean;
+  /** Each route in `routes`, by its id, as it would stand with the step taken. */
+  withStepTaken: Record<string, RouteWithStepTaken>;
+}
+
+/**
+ * One group of a section, in the order the screen draws them: open,
+ * unsettled, within reach, steps (the job offer line first), the arranged line,
+ * not yet, not open to your passport. A group the reader has nothing in is
+ * not there.
+ */
+export type VerdictGroup =
+  | { kind: RouteGroupKind; routes: string[] }
+  | { kind: "steps"; jobOfferLine: JobOfferLine | null; steps: StepPlace[]; hint: boolean }
+  | ({ kind: "arranged" } & ArrangedLine)
+  | {
+    kind: "not-yet";
+    /** Rows, by route id, and folds, in the order they are drawn. */
+    items: (string | Fold)[];
+    /** Every route the group holds, folded or not. */
+    count: number;
+  };
+
+/** What the summary line under the notices counts. */
+export interface Strip {
+  open: number;
+  withinReach: number;
+  unsettled: number;
+  closed: number;
+  notYet: number;
+  /** Routes with an unknown the reader can still act on. */
+  openUnknowns: number;
+}
+
+/** What one country's summary row counts, and the country's mark, where the
+ * s19 sentence stands in for its not-yet count. */
+export interface Tally extends Strip {
+  steps: number;
+  /** The routes the country's job offer line would check (ruling 7 of #187). */
+  checkedWithJobOffer: number;
+  /** The routes the country's arranged line would open, each counted once
+   * (ruling 7 of #187). */
+  openedByArrangedAnswers: number;
+  /** The s19 mark for the declared situation, where the country's scored
+   * routes do not take it, which its line words; null where they do, or no
+   * situation is declared (ruling 3 on #322). */
+  mark: NotScoredMark | null;
+}
+
+/** One country's section on the several-country layout, by the country's code. */
+export interface CountrySection {
+  country: string;
+  open: boolean;
+  tally: Tally;
+  groups: VerdictGroup[];
+}
+
+/** How many countries the results screen is showing. */
+export type Explore = "one-country" | "several-countries";
+
+/** Where a written state stands: the answer it is keyed by, the destination
+ * answer of the country the reader named at question 3 on the four-country
+ * path only — the country whose section leads the result, open (s26); the
+ * direct path has no list of countries to lead — the mark, and the situation. */
+export interface WrittenStateKey {
+  key: string;
+  named: string | undefined;
+  mark: NotScoredMark;
+  situation: string;
+}
+
+/**
+ * The headline's kind, with the numbers it counts and what its second
+ * sentence names: the route nearest within reach, by id, or the nearest step,
+ * by key. The written state is s19's, with its key, once for the screen
+ * (ruling 3 on #322); the others are a comparison's own.
+ */
+export type HeadlineLayout =
+  | { kind: "written-state"; writtenStateKey: WrittenStateKey }
+  | { kind: "unsettled"; routes: number; nearest: string | null }
+  | { kind: "steps"; steps: number; nearest: string }
+  | { kind: "nothing-open"; explore: Explore }
+  | { kind: "open"; routes: number; countries: number; nearest: string | null };
+
+/** Where the reader's band stands against one threshold: above it; below it,
+ * from a band open at the bottom, with no gap to name; or short of it by up to
+ * `gap`, the threshold less the band's floor. No band straddles a threshold:
+ * the dataset's bands are cut at every amount it states. */
+export type BandAgainstThreshold = { kind: "above" } | { kind: "below" } | { kind: "short"; gap: number };
+
+/** One threshold the rail draws, as its criterion, and where the reader's
+ * band stands against it. */
+export interface ThresholdAsked {
+  criterion: ThresholdCriterion;
+  bandStands: BandAgainstThreshold;
+}
+
+/** What a route is measured on: the deciding criterion, and the reader's
+ * band on its field, or null where the reader gave no answer there; and the
+ * thresholds the rail draws against that band (ruling 22 on #372). */
+export interface MeasuredOn {
+  criterion: ThresholdCriterion;
+  band: Band | null;
+  /** The thresholds the route asks of this reader on that field: the deciding
+   * path's, each amount once, lowest first, or the deciding criterion's alone
+   * where no deciding path asks one; each with where the band stands against
+   * it. None where the reader gave no answer there. */
+  thresholds: ThresholdAsked[];
+}
+
+/**
+ * A route's standing on the reader's own answers (#372, ruling 4 on #322):
+ * what the card, the headline and the rail draw, decided once. A route's
+ * points gap is not here: the engine hands it on the result.
+ */
+export interface RouteStanding {
+  /** On a route within reach on money, what it is short of, unprinted: a
+   * bounded gap, or, from a band open at the bottom, the line with the
+   * reader's band. Null on any other route. */
+  shortfall: MoneyShortfall | null;
+  /** The deciding criterion and the reader's band there, which the rail
+   * draws; null where no amount decides the route. */
+  measuredOn: MeasuredOn | null;
+  /** Each figure the route is short on, in the dataset's order, as the card's
+   * lead line and the not-yet row's gap line say them: an amount with its
+   * shortfall decided as `shortfall` is, or points; none where it misses by
+   * nothing an amount or points can close. */
+  figureGaps: FigureGap[];
+  /** The questions whose unknown still binds on this route, by field, which
+   * its learn box links and the counts count; none on a hard-failed route,
+   * where nothing the reader finds out can change it, and none means no live
+   * unknown. */
+  liveUnknowns: string[];
+  /** Whether its row opens by itself: on a live unknown, or because it is the
+   * route the reader came from. */
+  rowOpens: boolean;
+}
+
+/** Each route's standing, by the route's id. */
+export type RouteStandings = Record<string, RouteStanding>;
+
+/** A comparison's layout: one country flat, or a section per country, the
+ * country the headline is about first where it names one; and each route's
+ * standing by its id, beside the groups that list those ids. */
+export type ComparedLayout =
+  | {
+    kind: "one-country"; country: string; strip: Strip; headline: HeadlineLayout; groups: VerdictGroup[];
+    standings: RouteStandings;
+  }
+  | {
+    kind: "countries"; strip: Strip; headline: HeadlineLayout;
+    /** The country whose section leads, open, by its code; null where the
+     * sections keep the dataset's order. */
+    lead: string | null;
+    sections: CountrySection[];
+    standings: RouteStandings;
+  };
+
+/** The screen's body as data: the notice screen, or a comparison's. */
+export type VerdictLayout = { kind: "notice" } | ComparedLayout;

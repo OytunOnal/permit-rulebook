@@ -246,7 +246,7 @@ describe("s21 — the walk's result, from the verdict", () => {
     // (ruling 7 of #187).
     const countOnly = (notYetCount: number): Tally => ({
       open: 0, withinReach: 0, unsettled: 0, closed: 0, notYet: notYetCount, openUnknowns: 0, steps: 0,
-      checkedWithJobOffer: 0, openedByArrangedAnswers: 0, situationNotTaken: false,
+      checkedWithJobOffer: 0, openedByArrangedAnswers: 0, mark: null,
     });
     expect(germany!.tally).toEqual(countOnly(8));
     expect(spain!.tally).toEqual(countOnly(4));

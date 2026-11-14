@@ -6,7 +6,7 @@ import {
 import { esc, sentenceWithLinkHtml } from "../../reason.js";
 import type { VerdictMasthead } from "../../screen.js";
 import type { UnscoredVerdict } from "./unscored.js";
-import type { Explore } from "./verdict-layout.js";
+import type { Explore } from "../reckon/reckon-verdict.js";
 
 /** What the masthead says of a comparison: the verdict in words, the words
  * after it the headline stresses, the next step it names, the nothing-open

@@ -13,7 +13,8 @@ import { verdictHtml } from "../src/lib/verdict/verdict.js";
 import { plainTextOf, walkFrom } from "./reader-pages.js";
 import { PICK_TURKEY, answerWith, withSite } from "./browser-walk.js";
 import {
-  PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, verdictFor, verdictOn,
+  PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, everyDrawnRouteIn, paintedAsComposedScript, standingOn, verdictFor,
+  verdictOn,
 } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
@@ -207,13 +208,43 @@ describe("4 — the walk's result, from the verdict", () => {
     const door = ds.fields.find((f) => f.id === SHORTAGE)!.learn!;
     const answers = walked();
     expect(answers[SHORTAGE], "the walk did not answer the shortage question unsure").toBe("unknown");
-    const boxed = everyDrawnRouteIn(verdictFor(answers)).filter((c) => blocksIn(c.html, "learn") !== "");
-    expect(boxed.map((c) => c.route)).toEqual(["de-blue-card-shortage"]);
-    // The hold row with the open question is drawn open.
-    expect(boxed[0]!.html).toMatch(/^\s*<details class="route-hold"[^>]* open>/);
-    const box = blocksIn(boxed[0]!.html, "learn");
+    const verdict = verdictFor(answers);
+    // The one route the unknown still binds, and its row opens on it (#376,
+    // ruling 7 on #322).
+    const live = everyDrawnRouteIn(verdict).filter((c) => standingOn(verdict, c.route).liveUnknowns.length > 0);
+    expect(live.map((c) => c.route)).toEqual(["de-blue-card-shortage"]);
+    expect(standingOn(verdict, "de-blue-card-shortage").rowOpens).toBe(true);
+    const box = blocksIn(drawnRouteOn(verdict, "de-blue-card-shortage"), "learn");
     expect(anchorsOf(box)).toEqual([{ href: escAttr(door.url), text: esc(firstUseLink(door)) }]);
     expect(plainTextOf(box)).not.toContain(ACT_EXPANSION);
+  });
+});
+
+/** Deniz with no offer, still unsure of the shortage list: the shortage Blue
+ * Card fails on her situation, which nothing she finds out can change. */
+const NO_OFFER: Profile = { ...UNSURE, situation: "none" };
+
+describe("a route standing carries its live unknowns and whether its row opens (#376)", () => {
+  const route = "de-blue-card-shortage";
+
+  it("an unknown on a hard-failed route is not live", () => {
+    const result = evaluate(ds, NO_OFFER).find((r) => r.route.id === route)!;
+    expect(result.hard_fail, `${route} is not hard-failed`).toBe(true);
+    expect(result.unknown_fields, `${route} leaves the shortage answer unknown`).toContain(SHORTAGE);
+    expect(standingOn(verdictFor(NO_OFFER), route).liveUnknowns).toEqual([]);
+  });
+
+  it("the route the reader came from opens with no live unknown", () => {
+    const standing = standingOn(verdictOn(ds, NO_OFFER, route), route);
+    expect(standing.liveUnknowns).toEqual([]);
+    expect(standing.rowOpens).toBe(true);
+    expect(standingOn(verdictFor(NO_OFFER), route).rowOpens, "it opens with no arrival behind it").toBe(false);
+  });
+
+  it("a route with a live unknown opens", () => {
+    const standing = standingOn(verdictFor(UNSURE), route);
+    expect(standing.liveUnknowns).toEqual([SHORTAGE]);
+    expect(standing.rowOpens).toBe(true);
   });
 });
 

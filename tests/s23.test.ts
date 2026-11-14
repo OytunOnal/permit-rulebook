@@ -19,7 +19,7 @@ import { dataPage } from "../src/lib/data-page.js";
 import { lastWatchRun, watchState } from "../src/lib/site.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import {
-  PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, stepsIn, verdictFor,
+  PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
 } from "./verdict-cards.js";
 import { withSite } from "./browser-walk.js";
 
@@ -379,8 +379,9 @@ describe("the Anabin link carries no stray full stop", () => {
     expect(html).toMatch(/<\/a><\/div>$/);
     expect(textOf(html)).not.toMatch(/↗ ?\.$/);
     expect(textOf(html)).not.toMatch(/\.$/);
-    // A route with nothing left open has no box.
-    expect(blocksIn(drawnRouteOn(verdictFor(DENIZ), "de-experienced-worker"), "learn")).toBe("");
+    // A route with nothing left open has no live unknown, so no box links one
+    // (#376, ruling 7 on #322).
+    expect(standingOn(verdictFor(DENIZ), "de-experienced-worker").liveUnknowns).toEqual([]);
   });
 });
 

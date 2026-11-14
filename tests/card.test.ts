@@ -8,7 +8,7 @@ import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn } from "../src/lib
 import {
   APPLIES_TO_YOU, DOES_NOT_APPLY_TO_YOU, NO_OFFICIAL_WORDING_HEADING, WHAT_THIS_ROUTE_ASKS,
 } from "../src/lib/copy/verdict.js";
-import { blocksIn, drawnRouteOn, everyDrawnRouteIn, verdictOn } from "./verdict-cards.js";
+import { blocksIn, drawnRouteOn, everyDrawnRouteIn, standingOn, verdictOn } from "./verdict-cards.js";
 
 const ds = dataset as unknown as Dataset;
 
@@ -40,6 +40,11 @@ const withRoute = (route: Route): Dataset => {
     country.routes = country.routes.map((r) => (r.id === route.id ? route : r));
   return altered;
 };
+
+/** The amounts a route's rail asks of a reader with these answers, as its
+ * route standing carries them; none where it is measured on no band. */
+const amountsTheRailAsks = (answers: Profile, id: string): number[] =>
+  standingOn(verdictOn(ds, answers), id).measuredOn?.thresholds.map((t) => t.criterion.threshold.amount) ?? [];
 
 function bandFor(field: string, amount: number): string {
   return deriveBands(ds, field).find(
@@ -120,9 +125,11 @@ describe("the rail names the threshold the reader was measured against", () => {
 
   it("met through the reduced path: the rail says €3,122, and never labels €4,357", () => {
     expect(evaluate(ds, dutchGraduate).find((r) => r.route.id === "nl-hsm-under30")!.status).toBe("met");
+    // The reckoning: the one amount the rail asks is the reduced path's, as
+    // the route standing carries it (ruling 7 on #322).
+    expect(amountsTheRailAsks(dutchGraduate, "nl-hsm-under30")).toEqual([3122]);
+    // The words: the rail captions it with the reduced path's label alone.
     const html = railOf(drawnRouteFor(dutchGraduate, "nl-hsm-under30"));
-    expect(html).toContain("€3,122/month");
-    expect(html).not.toContain("€4,357/month</b>");
     expect(html).toContain("lower amount for a recent graduate");
     expect(html).not.toContain("under 30, 2026");
   });
@@ -135,9 +142,8 @@ describe("the rail names the threshold the reader was measured against", () => {
   it("not met, with the reduced path out of reach: the rail says €4,357", () => {
     const profile = { ...dutchGraduate, nl_recent_grad: "no" };
     expect(evaluate(ds, profile).find((r) => r.route.id === "nl-hsm-under30")!.status).toBe("near");
-    const html = railOf(drawnRouteFor(profile, "nl-hsm-under30"));
-    expect(html).toContain("€4,357/month");
-    expect(html).toContain("under 30, 2026");
+    expect(amountsTheRailAsks(profile, "nl-hsm-under30")).toEqual([4357]);
+    expect(railOf(drawnRouteFor(profile, "nl-hsm-under30"))).toContain("under 30, 2026");
   });
 
   it("a route with one threshold is unaffected", () => {
@@ -146,7 +152,7 @@ describe("the rail names the threshold the reader was measured against", () => {
       recognition_de: "recognized", occupation_shortage: "yes", experience_5y: "2plus", experience_7y: "3to5",
       salary_eur_year: bandFor("salary_eur_year", 48000),
     };
-    expect(railOf(drawnRouteFor(profile, "de-experienced-worker"))).toContain("€45,630/year");
+    expect(amountsTheRailAsks(profile, "de-experienced-worker")).toEqual([45630]);
   });
 });
 

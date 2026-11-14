@@ -1,46 +1,18 @@
 // @level presentation
-import {
-  decidingCriteria, type Band, type Dataset, type Profile, type RouteResult, type ThresholdCriterion,
-} from "permit-rulebook-data";
+import type { Band, Dataset } from "permit-rulebook-data";
 import { esc, escAttr } from "../../../../reason.js";
 import {
   ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, RAIL_ROWS_LABEL, WHAT_THIS_ROUTE_ASKS, YOUR_ANSWER, upToShort,
 } from "../../../../copy/verdict.js";
-import { bandOf, measuredCriterionOf } from "../../money-shortfall.js";
+import type { BandAgainstThreshold, MeasuredOn } from "../../../reckon/reckon-verdict.js";
 import { amountAsPrinted } from "../../printed-shortfall.js";
 
-/**
- * The thresholds this route actually asks of this reader — the amounts on the
- * deciding path, deduplicated, in order.
- *
- * Not every threshold in the dataset on the same field: the card drew six ticks
- * for a Dutch salary, five of them belonging to other routes and carrying
- * nothing but a hover title, which is invisible to a reader and to a finger
- * (human walk, 2026-09-08). Neighbouring amounts are context, and the route
- * page's own rail is where context belongs.
- */
-function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile): ThresholdCriterion[] {
-  const measured = measuredCriterionOf(ds, r, answers);
-  if (!measured) return [];
-  const decided = decidingCriteria(r.criteria)
-    .flatMap((cr) => (cr.criterion.op === "gte" ? [cr.criterion] : []))
-    .filter((c) => c.field === measured.field);
-  const all = decided.length ? decided : [measured];
-  const seen = new Set<number>();
-  return all
-    .filter((c) => (seen.has(c.threshold.amount) ? false : seen.add(c.threshold.amount)))
-    .sort((a, b) => a.threshold.amount - b.threshold.amount);
-}
-
-/**
- * Where the reader's band stands against one amount, in the words the card
- * already uses elsewhere: a band open at the bottom is below it, with no gap
- * to name. No band straddles an amount: the dataset's bands are cut at every
- * amount it states, so a band not above an amount is below it.
- */
-function bandStandsAt(band: Band, amount: number, gapSaid: (gap: number) => string): string {
-  if (band.min !== undefined && band.min >= amount) return ABOVE_THE_AMOUNT;
-  return band.min === undefined ? BELOW_THE_AMOUNT : upToShort(gapSaid(amount - band.min));
+/** Where the reader's band stands against one threshold, as the route
+ * standing says, in the words the card already uses elsewhere; a gap printed
+ * by `gapSaid`. */
+function bandStandsSaid(stands: BandAgainstThreshold, gapSaid: (gap: number) => string): string {
+  if (stands.kind === "above") return ABOVE_THE_AMOUNT;
+  return stands.kind === "below" ? BELOW_THE_AMOUNT : upToShort(gapSaid(stands.gap));
 }
 
 /** One scale and one rounding for everything on the bar. */
@@ -92,14 +64,16 @@ function answerMarkHtml(band: Band, scale: RailScale): string {
  * picture disagreed with itself. And it will not position labels absolutely:
  * they wrapped into a three-line stack at the right edge, which is the same
  * collision the route page's rail was rebuilt to end (critique B1).
+ *
+ * It draws what the route standing says it is measured on: the reader's band
+ * there, and each threshold the route asks with where the band stands against
+ * it; with no band, no rail.
  */
-export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string {
-  const thresholds = decidingThresholds(ds, r, answers);
-  if (!thresholds.length) return "";
-  const field = thresholds[0].field;
-  const band = bandOf(ds, field, answers);
-  if (!band) return "";
-  const amounts = thresholds.map((c) => c.threshold.amount);
+export function railHtml(ds: Dataset, measuredOn: MeasuredOn | null): string {
+  if (!measuredOn?.band) return "";
+  const { band, thresholds } = measuredOn;
+  const { field } = measuredOn.criterion;
+  const amounts = thresholds.map((t) => t.criterion.threshold.amount);
   const scale = railScale(amounts, band);
 
   // `rail-tick`, not `tick`: the results screen already used `.tick` for the
@@ -114,10 +88,10 @@ export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string 
 
   const gapSaid = (gap: number): string => amountAsPrinted(ds, field, gap);
   const rows = [
-    ...thresholds.map((c) => {
+    ...thresholds.map(({ criterion: c, bandStands }) => {
       const label = c.threshold_label ? ` — ${esc(c.threshold_label)}` : "";
       return `<li><span class="sw sw-asks"></span><b>${esc(amountAsPrinted(ds, field, c.threshold.amount))}</b>` +
-        `<span>${esc(WHAT_THIS_ROUTE_ASKS)}${label} · ${esc(bandStandsAt(band, c.threshold.amount, gapSaid))}</span></li>`;
+        `<span>${esc(WHAT_THIS_ROUTE_ASKS)}${label} · ${esc(bandStandsSaid(bandStands, gapSaid))}</span></li>`;
     }),
     `<li><span class="sw sw-you"></span><b>${esc(band.label)}</b><span>${esc(YOUR_ANSWER)}</span></li>`,
   ].join("");

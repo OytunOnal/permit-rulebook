@@ -33,13 +33,27 @@ export type MoneyShortfall =
   /** The field, the amount the route asks, and the reader's band. */
   | { kind: "open-below"; field: string; line: number; band: Band };
 
+/** A gap on money as the engine measures it: the criterion it was measured
+ * against, and the widest gap of the reader's band. */
+export interface MoneyGap {
+  criterion: ThresholdCriterion;
+  gap: number;
+}
+
+/** A gap on money decided on the reader's band: from a band open at the
+ * bottom, the line the criterion asks, with the band; otherwise the bounded
+ * gap. The one place a money gap is decided. */
+export function decideMoneyShortfall(ds: Dataset, { criterion, gap }: MoneyGap, answers: Profile): MoneyShortfall {
+  const { field } = criterion;
+  const band = bandOf(ds, field, answers);
+  if (band && band.min === undefined) return { kind: "open-below", field, line: criterion.threshold.amount, band };
+  return { kind: "bounded", field, gap };
+}
+
 /** The money shortfall of a result on the answers it was evaluated on, or
  * undefined where it has no money gap. */
 export function moneyShortfallOf(ds: Dataset, r: RouteResult, answers: Profile): MoneyShortfall | undefined {
   const measured = measuredCriterionOf(ds, r, answers);
   if (!r.gap_max || !measured) return undefined;
-  const { field } = measured;
-  const band = bandOf(ds, field, answers);
-  if (band && band.min === undefined) return { kind: "open-below", field, line: measured.threshold.amount, band };
-  return { kind: "bounded", field, gap: r.gap_max };
+  return decideMoneyShortfall(ds, { criterion: measured, gap: r.gap_max }, answers);
 }

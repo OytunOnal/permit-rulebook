@@ -270,7 +270,7 @@ describe("s26 — the results the walks end on, from the verdict", () => {
     expect(linkIn(fr!)).toEqual({ text: "Talent — researcher (chercheur)", href: url("/france/talent-researcher") });
     expect(headed(fr!)).toEqual([{ kind: "not-yet", count: 5 }]);
     expect(germany!.tally).toMatchObject({
-      open: 0, unsettled: 0, withinReach: 0, notYet: 8, openUnknowns: 0, closed: 0, steps: 0, situationNotTaken: false,
+      open: 0, unsettled: 0, withinReach: 0, notYet: 8, openUnknowns: 0, closed: 0, steps: 0, mark: null,
     });
     expect(linkIn(germany!)).toBeNull();
   });

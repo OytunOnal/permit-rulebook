@@ -455,6 +455,13 @@ a route that has not hard-failed. Only live unknowns are counted, auto-opened
 and offered a learn box.
 _Avoid_: open question, missing answer
 
+**Route standing** (#322):
+Where one route stands on the results screen, decided once before anything is
+drawn: what it is short of and on which figures, whether an unknown on it is
+still live, and whether its row opens by itself. Every place the screen speaks
+of the route reads its standing; none decides it again.
+_Avoid_: "standing" alone, which reads as the masthead's *standing promise*
+
 **Notice**:
 A dataset-level, provenanced statement that answers a person no route can
 answer ("no work permit needed" for an EU passport). It sits beside routes,

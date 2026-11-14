@@ -1,6 +1,6 @@
 // @level presentation
 import { fieldOptions, type Dataset, type FieldOption } from "permit-rulebook-data";
-import type { AnswerRef } from "./verdict-layout.js";
+import type { AnswerRef } from "../reckon/reckon-verdict.js";
 
 /** An answer as a sentence reads it: its `short` noun phrase ("a job offer"),
  * or its label where the dataset gives it none. */
