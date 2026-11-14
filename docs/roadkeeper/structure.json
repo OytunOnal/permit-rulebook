@@ -2121,7 +2121,7 @@
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/drawn-cards.ts",
@@ -2455,6 +2455,11 @@
   },
   {
    "from": "src/lib/verdict/reckon/layout/steps.ts",
+   "to": "src/lib/verdict/reckon/layout/figure-gaps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/steps.ts",
    "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
    "kind": "dependency"
   },
@@ -2481,7 +2486,7 @@
   {
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
    "to": "src/lib/verdict/reckon/layout/figure-gaps.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
@@ -2501,12 +2506,17 @@
   {
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
    "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
    "to": "src/lib/verdict/reckon/layout/steps.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/steps.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
@@ -5883,6 +5893,16 @@
     "name": "notYetRowHtml",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "StepWithPlace",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "withStepTakenOf",
+    "kind": "fn",
+    "exported": false
    },
    {
     "name": "unlockedRouteHtml",
@@ -9567,5 +9587,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "d9c6507e0a2852b214f26a5c6ecb1c1160f0af58cf71053d75c6bca968a21817"
+ "digest": "32f9a8f49de413fa9bf16183f28157190dae2fcde740be99c23ff396648029d3"
 }

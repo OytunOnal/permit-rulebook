@@ -7,7 +7,9 @@ import { EVERY_COUNTRY_ANSWER, groupedRoutesOf, routeIdsOf, type Compared, type 
 import { measuredCriterionOf } from "./money-shortfall.js";
 import { notYetGroupOf } from "./not-yet-group.js";
 import { routeStandingsOf } from "./route-standing.js";
-import { countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, type Step } from "./steps.js";
+import {
+  countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, routeWithStepTakenOf, titlesABoundedGap, type Step,
+} from "./steps.js";
 import type {
   AnsweredDataset, ArrangedLine, ComparedLayout, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
   RouteStanding, RouteStandings, StepPlace, Strip, Tally, VerdictGroup, WrittenStateKey,
@@ -125,10 +127,26 @@ function linesIn(compared: Compared, code: string): Pick<Section, "jobOfferLine"
   };
 }
 
-/** Each step, placed in one section with the routes it opens there, under the
- * id its card is drawn by. */
-const stepPlacesOf = (steps: Step[], code: string, routesOf: (step: Step) => RouteResult[]): StepPlace[] =>
-  steps.map((step) => ({ id: `${code}/${stepKeyOf(step)}`, step: stepKeyOf(step), routes: routeIdsOf(routesOf(step)) }));
+/** Which steps one section offers: the section's country, and the routes
+ * each step opens there. */
+interface StepsIn {
+  code: string;
+  routesOf: (step: Step) => RouteResult[];
+}
+
+/** Each step, placed in one section under the id its card is drawn by, with
+ * the routes it opens there, whether its title is a bounded gap, and how each
+ * of those routes would stand with the step taken (ruling 5 on #322). */
+function stepPlacesOf(answeredDataset: AnsweredDataset, steps: Step[], section: StepsIn): StepPlace[] {
+  return steps.map((step) => {
+    const routes = section.routesOf(step);
+    return {
+      id: `${section.code}/${stepKeyOf(step)}`, step: stepKeyOf(step), routes: routeIdsOf(routes),
+      titleIsBoundedGap: titlesABoundedGap(answeredDataset, step),
+      withStepTaken: Object.fromEntries(routes.map((r) => [r.route.id, routeWithStepTakenOf(answeredDataset, step, r)])),
+    };
+  });
+}
 
 /** A comparison with each route's standing by its id: what the layout is
  * reckoned from. */
@@ -245,7 +263,7 @@ function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): Headl
 /** Single destination: the flat layout, no country chrome. */
 function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: ComparedWithStandings): ComparedLayout {
   const code = compared.inView.visible[0]!.code;
-  const steps = stepPlacesOf(compared.steps, code, (step) => step.unlock.routes);
+  const steps = stepPlacesOf(answeredDataset, compared.steps, { code, routesOf: (step) => step.unlock.routes });
   const groups = groupsOf(answeredDataset, {
     grouped: compared.whole, steps, ...linesIn(compared, code), results: compared.inView.results,
   });
@@ -307,8 +325,8 @@ function countrySection(answeredDataset: AnsweredDataset, compared: ComparedWith
   const { inView } = compared;
   const countryResults = inView.results.filter((r) => r.country === code);
   const grouped = groupedRoutesOf(countryResults, inView.closed.filter((r) => r.country === code), inView.unsettledIds);
-  const steps = stepPlacesOf(compared.steps, code, (step) => step.unlock.routes.filter((r) => r.country === code))
-    .filter((place) => place.routes.length);
+  const routesOf = (step: Step) => step.unlock.routes.filter((r) => r.country === code);
+  const steps = stepPlacesOf(answeredDataset, compared.steps, { code, routesOf }).filter((place) => place.routes.length);
   const section: Section = { grouped, steps, ...linesIn(compared, code), results: countryResults };
   const tally: Tally = {
     open: grouped.met.length, unsettled: grouped.unsettled.length, withinReach: grouped.near.length, notYet: grouped.hold.length,
