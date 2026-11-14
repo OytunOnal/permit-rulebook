@@ -5845,7 +5845,7 @@
     "exported": false
    },
    {
-    "name": "RouteWithStanding",
+    "name": "ResultWithRouteStanding",
     "kind": "type",
     "exported": true
    },
@@ -9592,5 +9592,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "adc6d4657aed5f2673d0df651f6010fc6414dab5beb08f5955d38c62fe859ef1"
+ "digest": "a33a4420841f5ab73fbdcef77a555c8abbe5260c4496797b8641f7c727f86763"
 }

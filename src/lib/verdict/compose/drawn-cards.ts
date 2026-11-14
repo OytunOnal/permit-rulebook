@@ -1,7 +1,8 @@
 // @level presentation
 import type { RouteResult } from "permit-rulebook-data";
 import {
-  closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook, type RouteWithStanding,
+  closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook,
+  type ResultWithRouteStanding,
 } from "./card/cards.js";
 import type {
   ComparedLayout, ReckonedComparison, RouteStanding, Step, StepPlace, VerdictGroup,
@@ -41,9 +42,9 @@ interface GroupCards {
 /** A route's standing on a comparison's layout, by its id; a route the
  * layout stands nowhere is refused. */
 export function findRouteStanding(layout: ComparedLayout, id: string): RouteStanding {
-  const standing = layout.standings[id];
-  if (!standing) throw new Error(`the layout gives ${id} no standing`);
-  return standing;
+  const routeStanding = layout.standings[id];
+  if (!routeStanding) throw new Error(`the layout gives ${id} no standing`);
+  return routeStanding;
 }
 
 /** The step a key names on a comparison; a key the comparison holds no step
@@ -69,13 +70,13 @@ export function findFirstPlaceOfStep(layout: ComparedLayout, key: string): StepP
 
 /** A route the layout places, from the comparison, with its standing; one the
  * comparison does not hold is refused. */
-function findPlacedRoute(at: Drawing, id: string): RouteWithStanding {
+function findPlacedRoute(at: Drawing, id: string): ResultWithRouteStanding {
   const result = at.results.get(id);
   if (!result) throw new Error(`the layout places ${id}, which the comparison does not hold`);
-  return { result, standing: findRouteStanding(at.compared.layout, id) };
+  return { result, routeStanding: findRouteStanding(at.compared.layout, id) };
 }
 
-const drawRoute = (at: Drawing, id: string, html: (route: RouteWithStanding) => string): DrawnEntry<string> =>
+const drawRoute = (at: Drawing, id: string, html: (route: ResultWithRouteStanding) => string): DrawnEntry<string> =>
   [id, html(findPlacedRoute(at, id))];
 
 /** A step's card, with the routes it opens in its section, in the order its
@@ -88,7 +89,7 @@ function drawStep(at: Drawing, place: StepPlace): DrawnEntry<StepCard> {
 }
 
 /** A group's routes, each drawn by `html`, and no step. */
-const routeCards = (at: Drawing, ids: string[], html: (route: RouteWithStanding) => string): GroupCards =>
+const routeCards = (at: Drawing, ids: string[], html: (route: ResultWithRouteStanding) => string): GroupCards =>
   ({ routes: ids.map((id) => drawRoute(at, id, html)), steps: [] });
 
 /** One group's cards, as it lists them. */

@@ -85,9 +85,9 @@ function scopeFor(screen: VerdictScreen, r: RouteResult, notTaken: ReadonlySet<s
 
 /** A route as a card draws it: the engine's result, and the route's standing
  * the layout carries (#372). */
-export interface RouteWithStanding {
+export interface ResultWithRouteStanding {
   result: RouteResult;
-  standing: RouteStanding;
+  routeStanding: RouteStanding;
 }
 
 /**
@@ -96,8 +96,8 @@ export interface RouteWithStanding {
  * line it asks and the reader's answer. Where the gap is a salary, the hint
  * that a lower threshold may already apply follows either.
  */
-function gapNoteHtml(screen: VerdictScreen, standing: RouteStanding): string {
-  const money = standing.shortfall;
+function gapNoteHtml(screen: VerdictScreen, routeStanding: RouteStanding): string {
+  const money = routeStanding.shortfall;
   if (!money) return "";
   const field = shortLabelOf(screen.ds, money.field).toLowerCase();
   const { lead, rest } = shortfallNote(printedShortfallOf(screen.ds, money), field);
@@ -117,8 +117,8 @@ const printedFigureGapsOf = (screen: VerdictScreen, gaps: FigureGap[]) =>
 
 /** What a route within reach is short on, as its badge names it: each amount
  * by its field's short label, then points (ruling 9 on #187). */
-function shortOnBadge(screen: VerdictScreen, { result: r, standing }: RouteWithStanding): string {
-  const gaps = standing.figureGaps;
+function shortOnBadge(screen: VerdictScreen, { result: r, routeStanding }: ResultWithRouteStanding): string {
+  const gaps = routeStanding.figureGaps;
   if (!gaps.length) throw new Error(`${r.route.id} is within reach and its standing carries no figure gap`);
   const amounts = gaps.flatMap((g) => (g.kind === "money" ? [shortLabelOf(screen.ds, g.shortfall.field).toLowerCase()] : []));
   const points = gaps.some((g) => g.kind === "points") ? [POINTS_FIGURE] : [];
@@ -136,7 +136,7 @@ interface BadgeFrame {
 
 /** A full card's badge: "Rules met" under "unsettled for your passport", what
  * a route within reach is short on, or the route's own status. */
-function badgeFrameOf(screen: VerdictScreen, route: RouteWithStanding, look: CardLook): BadgeFrame {
+function badgeFrameOf(screen: VerdictScreen, route: ResultWithRouteStanding, look: CardLook): BadgeFrame {
   const { result: r } = route;
   if (look.badge === "rules-met") return { frame: "rules-met", cls: "unsettled", words: RULES_MET };
   if (r.status === "near") return { frame: "short", cls: r.status, words: shortOnBadge(screen, route) };
@@ -149,11 +149,11 @@ function badgeFrameOf(screen: VerdictScreen, route: RouteWithStanding, look: Car
  * the group's old words; that card says each figure it is short on instead
  * (ruling 9 on #187).
  */
-function leadLineHtml(screen: VerdictScreen, { result: r, standing }: RouteWithStanding): string {
+function leadLineHtml(screen: VerdictScreen, { result: r, routeStanding }: ResultWithRouteStanding): string {
   const { ds, answers } = screen;
-  const shortOnMeasuredMoneyAlone = r.gap_points === undefined && standing.measuredOn !== null;
+  const shortOnMeasuredMoneyAlone = r.gap_points === undefined && routeStanding.measuredOn !== null;
   if (r.status !== "near" || shortOnMeasuredMoneyAlone) return whyHtml(ds, r, answers);
-  return esc(printedFigureGapsOf(screen, standing.figureGaps).map(figureGapSentence).join(" "));
+  return esc(printedFigureGapsOf(screen, routeStanding.figureGaps).map(figureGapSentence).join(" "));
 }
 
 /**
@@ -163,9 +163,9 @@ function leadLineHtml(screen: VerdictScreen, { result: r, standing }: RouteWithS
  * Under the title, the path it went through (#315); an item linked to a path
  * it did not take is dropped, from its count and its quotes too (ruling 5).
  */
-export function fullCardHtml(screen: VerdictScreen, route: RouteWithStanding, look: CardLook): string {
+export function fullCardHtml(screen: VerdictScreen, route: ResultWithRouteStanding, look: CardLook): string {
   const { ds } = screen;
-  const { result: r, standing } = route;
+  const { result: r, routeStanding } = route;
   const badge = badgeFrameOf(screen, route, look);
   const notTaken = pathsNotTakenOf(r);
   return `
@@ -183,10 +183,10 @@ export function fullCardHtml(screen: VerdictScreen, route: RouteWithStanding, lo
           ${caveatHtml(screen, r.route)}
           ${readingHtml(r.route, screen.glossary)}
           ${pointsLineHtml(ds, r)}
-          ${r.status !== "hold" ? railHtml(ds, standing.measuredOn) : ""}
-          ${gapNoteHtml(screen, standing)}
+          ${r.status !== "hold" ? railHtml(ds, routeStanding.measuredOn) : ""}
+          ${gapNoteHtml(screen, routeStanding)}
           ${pointsNoteHtml(r)}
-          ${learnBoxHtml(screen, standing)}
+          ${learnBoxHtml(screen, routeStanding)}
           <div class="foot">${provenanceHtml(screen, r, notTaken)}${sourceLinkHtml(r.route.info_url)}</div>
         </article>`;
 }
@@ -196,9 +196,9 @@ export function fullCardHtml(screen: VerdictScreen, route: RouteWithStanding, lo
  * figure gap and a live unknown: in the card's words, and the row stays under
  * "Not yet", since the unknown may already meet the route (ruling 10 on #187).
  */
-function gapFirstHtml(screen: VerdictScreen, standing: RouteStanding): string {
-  if (!standing.liveUnknowns.length) return "";
-  const gaps = printedFigureGapsOf(screen, standing.figureGaps);
+function gapFirstHtml(screen: VerdictScreen, routeStanding: RouteStanding): string {
+  if (!routeStanding.liveUnknowns.length) return "";
+  const gaps = printedFigureGapsOf(screen, routeStanding.figureGaps);
   return gaps.length ? `${esc(gaps.map(figureGapSentence).join(" "))} ` : "";
 }
 
@@ -208,12 +208,12 @@ function gapFirstHtml(screen: VerdictScreen, standing: RouteStanding): string {
  * route promises an answer that cannot change it (critique #4) — or where it
  * is the route the reader came from.
  */
-export function notYetRowHtml(screen: VerdictScreen, route: RouteWithStanding): string {
+export function notYetRowHtml(screen: VerdictScreen, route: ResultWithRouteStanding): string {
   const { ds, answers, glossary } = screen;
-  const { result: r, standing } = route;
-  const short = `${gapFirstHtml(screen, standing)}${whyHtml(ds, r, answers).split(". ")[0].replace(/\.$/, "")}`;
+  const { result: r, routeStanding } = route;
+  const short = `${gapFirstHtml(screen, routeStanding)}${whyHtml(ds, r, answers).split(". ")[0].replace(/\.$/, "")}`;
   return `
-        <details class="route-hold"${cameFromMark(screen, r)}${standing.rowOpens ? " open" : ""}>
+        <details class="route-hold"${cameFromMark(screen, r)}${routeStanding.rowOpens ? " open" : ""}>
           <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(routeName(screen, r))}</span><span class="hold-why">${short}</span></summary>
           <div class="hold-body">
             ${cameFromNote(screen, r)}
@@ -225,7 +225,7 @@ export function notYetRowHtml(screen: VerdictScreen, route: RouteWithStanding): 
             ${readingHtml(r.route, glossary)}
             ${pointsLineHtml(ds, r)}
             ${failDetailHtml(ds, r, answers)}
-            ${learnBoxHtml(screen, standing)}
+            ${learnBoxHtml(screen, routeStanding)}
             <div class="foot">${provenanceHtml(screen, r)}${sourceLinkHtml(r.route.info_url)}</div>
           </div>
         </details>`;
@@ -241,9 +241,9 @@ export interface StepWithPlace {
 /** How a route a step opens would stand with the step taken, as the step's
  * place says; a route the place does not hold is refused. */
 function findRouteWithStepTaken(place: StepPlace, r: RouteResult): RouteWithStepTaken {
-  const standing = place.withStepTaken[r.route.id];
-  if (!standing) throw new Error(`the step ${place.id} holds no ${r.route.id}`);
-  return standing;
+  const withStepTaken = place.withStepTaken[r.route.id];
+  if (!withStepTaken) throw new Error(`the step ${place.id} holds no ${r.route.id}`);
+  return withStepTaken;
 }
 
 /** One route a step opens, and how, as the step's place says: met, or short
@@ -377,9 +377,9 @@ function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  * is a consolidated text, the glossed label is followed by what the page is
  * (#158). Any route the label names is said in full (#159).
  */
-function learnBoxHtml(screen: CardScreen, standing: RouteStanding): string {
+function learnBoxHtml(screen: CardScreen, routeStanding: RouteStanding): string {
   const { ds, glossary: seen = new Set() } = screen;
-  const links = standing.liveUnknowns
+  const links = routeStanding.liveUnknowns
     .map((f) => learnLinkOf(ds, f))
     .filter((l): l is { label: string; url: string } => !!l);
   if (!links.length) return "";
