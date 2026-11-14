@@ -289,22 +289,31 @@ function drawnResultsOn(answers: Profile): { answers: Profile; result: RouteResu
 /** Whether the engine puts a route within reach on a money gap. */
 const shortOnMoney = (r: RouteResult): boolean => r.status === "near" && r.gap_max !== undefined;
 
-/** Whether a route's standing is measured on the engine's deciding criterion
- * and the reader's band there; and, where its card draws a rail, whether the
- * rail draws that criterion's line and that band. Returns whether a rail was drawn. */
-function railDrawsMeasuredOn(answers: Profile, r: RouteResult): boolean {
+/** What a route standing says a route is measured on. */
+type MeasuredOn = NonNullable<RouteStanding["measuredOn"]>;
+
+/** A route a verdict draws: what its route standing says it is measured on,
+ * what the engine measures it on (its deciding criterion and the reader's band
+ * there), and the rail its card draws, empty where none. */
+interface MeasuredRoute {
+  route: string;
+  measuredOn: MeasuredOn | null;
+  byTheEngine: Pick<MeasuredOn, "criterion" | "band"> | null;
+  rail: string;
+}
+
+/** Each route the verdict on these answers draws, as `MeasuredRoute` says. */
+function measuredRoutesOn(answers: Profile): MeasuredRoute[] {
   const verdict = verdictFor(answers);
-  const criterion = gapCriterionOf(ds, r, answers);
-  const band = criterion && deriveBands(ds, criterion.field).find((b) => b.id === answers[criterion.field]);
-  const { measuredOn } = standingOn(verdict, r.route.id);
-  const reckoned = measuredOn && { criterion: measuredOn.criterion, band: measuredOn.band };
-  expect(reckoned, r.route.id).toEqual(criterion ? { criterion, band: band ?? null } : null);
-  const rail = blocksIn(drawnRouteOn(verdict, r.route.id), "rail");
-  if (!rail || !measuredOn?.band) return false;
-  const line = formatEURPer(measuredOn.criterion.threshold.amount, periodOf(ds, measuredOn.criterion.field));
-  expect(rail, r.route.id).toContain(`<b>${esc(line)}</b>`);
-  expect(rail, r.route.id).toContain(`<b>${esc(measuredOn.band.label)}</b>`);
-  return true;
+  return drawnResultsOn(answers).map(({ result }) => {
+    const criterion = gapCriterionOf(ds, result, answers);
+    const band = criterion && deriveBands(ds, criterion.field).find((b) => b.id === answers[criterion.field]);
+    return {
+      route: result.route.id, measuredOn: standingOn(verdict, result.route.id).measuredOn,
+      byTheEngine: criterion ? { criterion, band: band ?? null } : null,
+      rail: blocksIn(drawnRouteOn(verdict, result.route.id), "rail"),
+    };
+  });
 }
 
 describe("a route standing carries its money shortfall and what it is measured on (#374)", () => {
@@ -325,8 +334,16 @@ describe("a route standing carries its money shortfall and what it is measured o
   });
 
   it("each route is measured on the engine's deciding criterion and the reader's band there, which its rail draws", () => {
-    const drawn = READERS().flatMap(drawnResultsOn).filter(({ answers, result }) => railDrawsMeasuredOn(answers, result));
-    expect(drawn.length, "precondition: rails are drawn").toBeGreaterThan(1);
+    const measured = READERS().flatMap(measuredRoutesOn);
+    for (const { route, measuredOn, byTheEngine } of measured)
+      expect(measuredOn && { criterion: measuredOn.criterion, band: measuredOn.band }, route).toEqual(byTheEngine);
+    const railed = measured.flatMap(({ route, measuredOn, rail }) =>
+      (rail && measuredOn?.band ? [{ route, rail, criterion: measuredOn.criterion, band: measuredOn.band }] : []));
+    expect(railed.length, "precondition: rails are drawn").toBeGreaterThan(1);
+    for (const { route, rail, criterion, band } of railed) {
+      expect(rail, route).toContain(`<b>${esc(formatEURPer(criterion.threshold.amount, periodOf(ds, criterion.field)))}</b>`);
+      expect(rail, route).toContain(`<b>${esc(band.label)}</b>`);
+    }
   });
 });
 
@@ -349,26 +366,13 @@ describe("a route standing's money gap carries its shortfall decided (#375)", ()
   });
 });
 
-/** What a route standing says a route is measured on. */
-type MeasuredOn = NonNullable<RouteStanding["measuredOn"]>;
-
-/** Each route a verdict on these answers measures on a band, with what its
- * route standing says it is measured on. */
-function measuredOnABandIn(answers: Profile): [string, MeasuredOn][] {
-  const verdict = verdictFor(answers);
-  return everyDrawnRouteIn(verdict).flatMap(({ route }): [string, MeasuredOn][] => {
-    const { measuredOn } = standingOn(verdict, route);
-    return measuredOn?.band ? [[route, measuredOn]] : [];
-  });
-}
-
 describe("a route standing says where the reader's band stands against each threshold its rail draws (ruling 22)", () => {
   /** Every route measured on a band asks a threshold, and the band stands as `stands` against each. */
   function expectEveryBandStands(answers: Profile, stands: MeasuredOn["thresholds"][number]["bandStands"]): void {
-    const measured = measuredOnABandIn(answers);
+    const measured = measuredRoutesOn(answers).filter(({ measuredOn }) => measuredOn?.band);
     expect(measured.length, "precondition: routes measured on a band").toBeGreaterThan(1);
-    for (const [route, measuredOn] of measured) {
-      const thresholds = measuredOn.thresholds ?? [];
+    for (const { route, measuredOn } of measured) {
+      const thresholds = measuredOn?.thresholds ?? [];
       expect(thresholds.length, route).toBeGreaterThan(0);
       for (const { bandStands } of thresholds) expect(bandStands, route).toEqual(stands);
     }
