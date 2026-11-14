@@ -5390,6 +5390,11 @@
   },
   {
    "from": "tests/verdict-gap.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "tests/verdict-gap.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -9587,5 +9592,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "0e579d852d1df0453cca9a528f7be680811f3fda10fbfef46247861430f3bb81"
+ "digest": "0f3fdfd1bd901f6d85a466074c3db77afa15a508d92e5315dbf654da321e2d19"
 }

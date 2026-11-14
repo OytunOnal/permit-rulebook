@@ -165,11 +165,30 @@ export type HeadlineLayout =
   | { kind: "nothing-open"; explore: Explore }
   | { kind: "open"; routes: number; countries: number; nearest: string | null };
 
+/** Where the reader's band stands against one threshold: above it; below it,
+ * from a band open at the bottom, with no gap to name; or short of it by up to
+ * `gap`, the threshold less the band's floor. No band straddles a threshold:
+ * the dataset's bands are cut at every amount it states. */
+export type BandAgainstThreshold = { kind: "above" } | { kind: "below" } | { kind: "short"; gap: number };
+
+/** One threshold the rail draws, as its criterion, and where the reader's
+ * band stands against it. */
+export interface ThresholdAsked {
+  criterion: ThresholdCriterion;
+  bandStands: BandAgainstThreshold;
+}
+
 /** What a route is measured on: the deciding criterion, and the reader's
- * band on its field, or null where the reader gave no answer there. */
+ * band on its field, or null where the reader gave no answer there; and the
+ * thresholds the rail draws against that band (ruling 22 on #372). */
 export interface MeasuredOn {
   criterion: ThresholdCriterion;
   band: Band | null;
+  /** The thresholds the route asks of this reader on that field: the deciding
+   * path's, each amount once, lowest first, or the deciding criterion's alone
+   * where no deciding path asks one; each with where the band stands against
+   * it. None where the reader gave no answer there. */
+  thresholds: ThresholdAsked[];
 }
 
 /**

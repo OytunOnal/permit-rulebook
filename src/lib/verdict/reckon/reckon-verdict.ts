@@ -16,9 +16,9 @@ import type { ComparedLayout } from "./layout/verdict-layout.js";
 
 export type { ResultsInView } from "./layout/in-view.js";
 export type {
-  AnswerRef, ArrangedLine, ComparedLayout, CountrySection, Explore, Fold, HeadlineLayout, JobOfferLine, MeasuredOn,
-  RouteGroupKind, RouteStanding, RouteStandings, RouteWithStepTaken, StepPlace, Strip, Tally, VerdictGroup,
-  VerdictLayout, WrittenStateKey,
+  AnswerRef, ArrangedLine, BandAgainstThreshold, ComparedLayout, CountrySection, Explore, Fold, HeadlineLayout,
+  JobOfferLine, MeasuredOn, RouteGroupKind, RouteStanding, RouteStandings, RouteWithStepTaken, StepPlace, Strip, Tally,
+  ThresholdAsked, VerdictGroup, VerdictLayout, WrittenStateKey,
 } from "./layout/verdict-layout.js";
 export type { MoneyShortfall } from "./layout/money-shortfall.js";
 export type { FigureGap } from "./layout/figure-gaps.js";

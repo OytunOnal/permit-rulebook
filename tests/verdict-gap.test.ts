@@ -9,6 +9,7 @@ import {
   pointsAwayLine, shortByUpTo, shortByUpToLine, shortfallNote, upToShort,
 } from "../src/lib/copy/verdict.js";
 import { esc } from "../src/lib/reason.js";
+import type { RouteStanding } from "../src/lib/verdict/verdict.js";
 import { blocksIn, drawnRouteOn, everyDrawnRouteIn, standingOn, stepsIn, verdictFor } from "./verdict-cards.js";
 
 /**
@@ -296,7 +297,8 @@ function railDrawsMeasuredOn(answers: Profile, r: RouteResult): boolean {
   const criterion = gapCriterionOf(ds, r, answers);
   const band = criterion && deriveBands(ds, criterion.field).find((b) => b.id === answers[criterion.field]);
   const { measuredOn } = standingOn(verdict, r.route.id);
-  expect(measuredOn, r.route.id).toEqual(criterion ? { criterion, band: band ?? null } : null);
+  const reckoned = measuredOn && { criterion: measuredOn.criterion, band: measuredOn.band };
+  expect(reckoned, r.route.id).toEqual(criterion ? { criterion, band: band ?? null } : null);
   const rail = blocksIn(drawnRouteOn(verdict, r.route.id), "rail");
   if (!rail || !measuredOn?.band) return false;
   const line = formatEURPer(measuredOn.criterion.threshold.amount, periodOf(ds, measuredOn.criterion.field));
@@ -344,5 +346,49 @@ describe("a route standing's money gap carries its shortfall decided (#375)", ()
     expect(standingOn(verdictFor(answers), route).figureGaps).toEqual([
       { kind: "money", shortfall: { kind: "open-below", field: SALARY, line: threshold, band: lowest } },
     ]);
+  });
+});
+
+/** What a route standing says a route is measured on. */
+type MeasuredOn = NonNullable<RouteStanding["measuredOn"]>;
+
+/** Each route a verdict on these answers measures on a band, with what its
+ * route standing says it is measured on. */
+function measuredOnABandIn(answers: Profile): [string, MeasuredOn][] {
+  const verdict = verdictFor(answers);
+  return everyDrawnRouteIn(verdict).flatMap(({ route }): [string, MeasuredOn][] => {
+    const { measuredOn } = standingOn(verdict, route);
+    return measuredOn?.band ? [[route, measuredOn]] : [];
+  });
+}
+
+describe("a route standing says where the reader's band stands against each threshold its rail draws (ruling 22)", () => {
+  /** Every route measured on a band asks a threshold, and the band stands as `stands` against each. */
+  function expectEveryBandStands(answers: Profile, stands: MeasuredOn["thresholds"][number]["bandStands"]): void {
+    const measured = measuredOnABandIn(answers);
+    expect(measured.length, "precondition: routes measured on a band").toBeGreaterThan(1);
+    for (const [route, measuredOn] of measured) {
+      const thresholds = measuredOn.thresholds ?? [];
+      expect(thresholds.length, route).toBeGreaterThan(0);
+      for (const { bandStands } of thresholds) expect(bandStands, route).toEqual(stands);
+    }
+  }
+
+  it("a band open at the bottom stands below every threshold, with no gap to name", () => {
+    expectEveryBandStands({ ...HOSTILE, [SALARY]: lowest.id }, { kind: "below" });
+  });
+
+  it("a band open at the top stands above every threshold", () => {
+    expectEveryBandStands({ ...QUALIFIED, [SALARY]: highest.id }, { kind: "above" });
+  });
+
+  it("a bounded band under a threshold is short of it by up to the threshold less the band's floor", () => {
+    const band = boundedBelowTheLine();
+    const answers: Profile = { ...HOSTILE, [SALARY]: band.id };
+    const { route, threshold } = nearOn(answers);
+    expect(standingOn(verdictFor(answers), route).measuredOn?.thresholds).toEqual([{
+      criterion: expect.objectContaining({ field: SALARY, threshold: expect.objectContaining({ amount: threshold }) }),
+      bandStands: { kind: "short", gap: expect.closeTo(threshold - band.min!, 2) },
+    }]);
   });
 });

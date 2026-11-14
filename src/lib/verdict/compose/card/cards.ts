@@ -183,7 +183,7 @@ export function fullCardHtml(screen: VerdictScreen, route: RouteWithStanding, lo
           ${caveatHtml(screen, r.route)}
           ${readingHtml(r.route, screen.glossary)}
           ${pointsLineHtml(ds, r)}
-          ${r.status !== "hold" ? railHtml(ds, r, standing.measuredOn) : ""}
+          ${r.status !== "hold" ? railHtml(ds, standing.measuredOn) : ""}
           ${gapNoteHtml(screen, standing)}
           ${pointsNoteHtml(r)}
           ${learnBoxHtml(screen, standing)}
