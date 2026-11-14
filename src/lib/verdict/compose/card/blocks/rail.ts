@@ -1,17 +1,17 @@
 // @level presentation
 import {
-  decidingCriteria, type Band, type Dataset, type Profile, type RouteResult, type ThresholdCriterion,
+  decidingCriteria, type Band, type Dataset, type RouteResult, type ThresholdCriterion,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "../../../../reason.js";
 import {
   ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, RAIL_ROWS_LABEL, WHAT_THIS_ROUTE_ASKS, YOUR_ANSWER, upToShort,
 } from "../../../../copy/verdict.js";
-import { bandOf, measuredCriterionOf } from "../../../reckon/reckon-verdict.js";
+import type { MeasuredOn } from "../../../reckon/reckon-verdict.js";
 import { amountAsPrinted } from "../../printed-shortfall.js";
 
 /**
  * The thresholds this route actually asks of this reader — the amounts on the
- * deciding path, deduplicated, in order.
+ * deciding path on the field it is measured on, deduplicated, in order.
  *
  * Not every threshold in the dataset on the same field: the card drew six ticks
  * for a Dutch salary, five of them belonging to other routes and carrying
@@ -19,9 +19,7 @@ import { amountAsPrinted } from "../../printed-shortfall.js";
  * (human walk, 2026-09-08). Neighbouring amounts are context, and the route
  * page's own rail is where context belongs.
  */
-function decidingThresholds(ds: Dataset, r: RouteResult, answers: Profile): ThresholdCriterion[] {
-  const measured = measuredCriterionOf(ds, r, answers);
-  if (!measured) return [];
+function decidingThresholds(r: RouteResult, measured: ThresholdCriterion): ThresholdCriterion[] {
   const decided = decidingCriteria(r.criteria)
     .flatMap((cr) => (cr.criterion.op === "gte" ? [cr.criterion] : []))
     .filter((c) => c.field === measured.field);
@@ -92,13 +90,16 @@ function answerMarkHtml(band: Band, scale: RailScale): string {
  * picture disagreed with itself. And it will not position labels absolutely:
  * they wrapped into a three-line stack at the right edge, which is the same
  * collision the route page's rail was rebuilt to end (critique B1).
+ *
+ * It draws what the route's standing says it is measured on: the deciding
+ * criterion, and the reader's band there; with neither, no rail.
  */
-export function railHtml(ds: Dataset, r: RouteResult, answers: Profile): string {
-  const thresholds = decidingThresholds(ds, r, answers);
-  if (!thresholds.length) return "";
-  const field = thresholds[0].field;
-  const band = bandOf(ds, field, answers);
-  if (!band) return "";
+export function railHtml(ds: Dataset, r: RouteResult, measuredOn: MeasuredOn | null): string {
+  if (!measuredOn?.band) return "";
+  const band = measuredOn.band;
+  const { criterion } = measuredOn;
+  const thresholds = decidingThresholds(r, criterion);
+  const { field } = criterion;
   const amounts = thresholds.map((c) => c.threshold.amount);
   const scale = railScale(amounts, band);
 

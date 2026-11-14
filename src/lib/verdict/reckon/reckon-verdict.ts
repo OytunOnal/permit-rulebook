@@ -14,14 +14,14 @@ import type { ComparedLayout } from "./layout/verdict-layout.js";
 
 export type { ResultsInView } from "./layout/in-view.js";
 export type {
-  AnswerRef, ArrangedLine, ComparedLayout, CountrySection, Explore, Fold, HeadlineLayout, JobOfferLine, RouteGroupKind,
-  StepPlace, Strip, Tally, VerdictGroup, VerdictLayout,
+  AnswerRef, ArrangedLine, ComparedLayout, CountrySection, Explore, Fold, HeadlineLayout, JobOfferLine, MeasuredOn,
+  RouteGroupKind, RouteStanding, RouteStandings, StepPlace, Strip, Tally, VerdictGroup, VerdictLayout,
 } from "./layout/verdict-layout.js";
 // For now, the helpers the drawing still calls (#373, Q15 on #372): the
 // tickets after it stop calling each, and #379 takes them away.
 export type { Step } from "./layout/steps.js";
 export { countryMarkOf, hasLiveUnknown, stepKeyed, writtenStateKeyOf } from "./layout/layout.js";
-export { bandOf, measuredCriterionOf, moneyShortfallOf, type MoneyShortfall } from "./layout/money-shortfall.js";
+export { bandOf, type MoneyShortfall } from "./layout/money-shortfall.js";
 export { figureGapsOf, type FigureGap } from "./layout/figure-gaps.js";
 
 /** The screen no route can produce: a notice answers instead of the routes,

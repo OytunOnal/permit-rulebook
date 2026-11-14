@@ -1,5 +1,6 @@
 // @level application
-import type { Dataset, Profile } from "permit-rulebook-data";
+import type { Band, Dataset, Profile, ThresholdCriterion } from "permit-rulebook-data";
+import type { MoneyShortfall } from "./money-shortfall.js";
 
 /**
  * The results screen's layout as data: where each route stands, which
@@ -134,16 +135,46 @@ export type HeadlineLayout =
   | { kind: "nothing-open"; explore: Explore }
   | { kind: "open"; routes: number; countries: number; nearest: string | null };
 
+/** What a route is measured on: the deciding criterion, and the reader's
+ * band on its field, or null where the reader gave no answer there. */
+export interface MeasuredOn {
+  criterion: ThresholdCriterion;
+  band: Band | null;
+}
+
+/**
+ * A route's standing on the reader's own answers (#372, ruling 4 on #322):
+ * what the card, the headline and the rail draw, decided once. A route's
+ * points gap is not here: the engine hands it on the result.
+ */
+export interface RouteStanding {
+  /** On a route within reach on money, what it is short of, unprinted: a
+   * bounded gap, or, from a band open at the bottom, the line with the
+   * reader's band. Null on any other route. */
+  shortfall: MoneyShortfall | null;
+  /** The deciding criterion and the reader's band there, which the rail
+   * draws; null where no amount decides the route. */
+  measuredOn: MeasuredOn | null;
+}
+
+/** Each route's standing, by the route's id. */
+export type RouteStandings = Record<string, RouteStanding>;
+
 /** A comparison's layout: one country flat, or a section per country, the
- * country the headline is about first where it names one. */
+ * country the headline is about first where it names one; and each route's
+ * standing by its id, beside the groups that list those ids. */
 export type ComparedLayout =
-  | { kind: "one-country"; country: string; strip: Strip; headline: HeadlineLayout; groups: VerdictGroup[] }
+  | {
+    kind: "one-country"; country: string; strip: Strip; headline: HeadlineLayout; groups: VerdictGroup[];
+    standings: RouteStandings;
+  }
   | {
     kind: "countries"; strip: Strip; headline: HeadlineLayout;
     /** The country whose section leads, open, by its code; null where the
      * sections keep the dataset's order. */
     lead: string | null;
     sections: CountrySection[];
+    standings: RouteStandings;
   };
 
 /** The screen's body as data: the notice screen, or a comparison's. */

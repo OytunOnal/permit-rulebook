@@ -25,9 +25,7 @@ import { glossedLearnLinkText } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
-import {
-  bandOf, figureGapsOf, hasLiveUnknown, measuredCriterionOf, moneyShortfallOf, type Step,
-} from "../../reckon/reckon-verdict.js";
+import { bandOf, figureGapsOf, hasLiveUnknown, type RouteStanding, type Step } from "../../reckon/reckon-verdict.js";
 import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js";
 import type { VerdictScreen } from "../types.js";
 
@@ -83,14 +81,21 @@ function scopeFor(screen: VerdictScreen, r: RouteResult, notTaken: ReadonlySet<s
   return scopedHtml(routeAsStated(r.route, notTaken), screen.answers, href);
 }
 
+/** A route as a card draws it: the engine's result, and the route's standing
+ * the layout carries (#372). */
+export interface RouteWithStanding {
+  result: RouteResult;
+  standing: RouteStanding;
+}
+
 /**
- * What a route within reach on money is short of: "Short by up to …" on a
- * bounded gap, or, on a band open at the bottom, the line it asks and the
- * reader's answer. Where the gap is a salary, the hint that a lower threshold
- * may already apply follows either.
+ * What a route within reach on money is short of, as its standing says:
+ * "Short by up to …" on a bounded gap, or, on a band open at the bottom, the
+ * line it asks and the reader's answer. Where the gap is a salary, the hint
+ * that a lower threshold may already apply follows either.
  */
-function gapNoteHtml(screen: VerdictScreen, r: RouteResult): string {
-  const money = r.status === "near" ? moneyShortfallOf(screen.ds, r, screen.answers) : undefined;
+function gapNoteHtml(screen: VerdictScreen, standing: RouteStanding): string {
+  const money = standing.shortfall;
   if (!money) return "";
   const field = shortLabelOf(screen.ds, money.field).toLowerCase();
   const { lead, rest } = shortfallNote(printedShortfallOf(screen.ds, money), field);
@@ -141,9 +146,9 @@ function badgeFrameOf(screen: VerdictScreen, r: RouteResult, look: CardLook): Ba
  * the group's old words; that card says each figure it is short on instead
  * (ruling 9 on #187).
  */
-function leadLineHtml(screen: VerdictScreen, r: RouteResult): string {
+function leadLineHtml(screen: VerdictScreen, { result: r, standing }: RouteWithStanding): string {
   const { ds, answers } = screen;
-  const shortOnMeasuredMoneyAlone = r.gap_points === undefined && measuredCriterionOf(ds, r, answers) !== undefined;
+  const shortOnMeasuredMoneyAlone = r.gap_points === undefined && standing.measuredOn !== null;
   if (r.status !== "near" || shortOnMeasuredMoneyAlone) return whyHtml(ds, r, answers);
   return esc(printedFigureGapsOf(screen, r, answers).map(figureGapSentence).join(" "));
 }
@@ -155,8 +160,9 @@ function leadLineHtml(screen: VerdictScreen, r: RouteResult): string {
  * Under the title, the path it went through (#315); an item linked to a path
  * it did not take is dropped, from its count and its quotes too (ruling 5).
  */
-export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLook): string {
+export function fullCardHtml(screen: VerdictScreen, route: RouteWithStanding, look: CardLook): string {
   const { ds } = screen;
+  const { result: r, standing } = route;
   const badge = badgeFrameOf(screen, r, look);
   const notTaken = pathsNotTakenOf(r);
   return `
@@ -167,15 +173,15 @@ export function fullCardHtml(screen: VerdictScreen, r: RouteResult, look: CardLo
           <h3>${esc(routeName(screen, r))}</h3>
           ${pathLinesHtml(screen, r, badge.frame)}
           ${cameFromNote(screen, r)}
-          <p class="why">${leadLineHtml(screen, r)}</p>
+          <p class="why">${leadLineHtml(screen, route)}</p>
           ${scopeFor(screen, r, notTaken)}
           ${precondHtml(screen, r.route, notTaken)}
           ${carveOutHtml(screen, r.route)}
           ${caveatHtml(screen, r.route)}
           ${readingHtml(r.route, screen.glossary)}
           ${pointsLineHtml(ds, r)}
-          ${r.status !== "hold" ? railHtml(ds, r, screen.answers) : ""}
-          ${gapNoteHtml(screen, r)}
+          ${r.status !== "hold" ? railHtml(ds, r, standing.measuredOn) : ""}
+          ${gapNoteHtml(screen, standing)}
           ${pointsNoteHtml(r)}
           ${learnBoxHtml(screen, r)}
           <div class="foot">${provenanceHtml(screen, r, notTaken)}${sourceLinkHtml(r.route.info_url)}</div>

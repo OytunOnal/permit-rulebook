@@ -217,6 +217,7 @@
     "src/lib/verdict/reckon/layout/layout.ts",
     "src/lib/verdict/reckon/layout/money-shortfall.ts",
     "src/lib/verdict/reckon/layout/not-yet-group.ts",
+    "src/lib/verdict/reckon/layout/route-standing.ts",
     "src/lib/verdict/reckon/layout/steps.ts",
     "src/lib/verdict/reckon/layout/verdict-layout.ts",
     "src/lib/verdict/reckon/reckon-verdict.ts"
@@ -377,6 +378,7 @@
   "src/lib/verdict/reckon/layout/layout.ts": "application",
   "src/lib/verdict/reckon/layout/money-shortfall.ts": "application",
   "src/lib/verdict/reckon/layout/not-yet-group.ts": "application",
+  "src/lib/verdict/reckon/layout/route-standing.ts": "application",
   "src/lib/verdict/reckon/layout/steps.ts": "application",
   "src/lib/verdict/reckon/layout/verdict-layout.ts": "application",
   "src/lib/verdict/reckon/reckon-verdict.ts": "application",
@@ -2019,7 +2021,7 @@
   {
    "from": "src/lib/verdict/compose/card/blocks/rail.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/route-statements.ts",
@@ -2144,6 +2146,11 @@
   {
    "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/verdict/compose/card/cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/drawn-cards.ts",
    "kind": "dependency"
   },
   {
@@ -2388,6 +2395,11 @@
   },
   {
    "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/route-standing.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
    "to": "src/lib/verdict/reckon/layout/steps.ts",
    "kind": "dependency"
   },
@@ -2404,6 +2416,21 @@
   {
    "from": "src/lib/verdict/reckon/layout/not-yet-group.ts",
    "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/route-standing.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/route-standing.ts",
+   "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
    "kind": "type-only"
   },
   {
@@ -5756,6 +5783,11 @@
     "name": "scopeFor",
     "kind": "fn",
     "exported": false
+   },
+   {
+    "name": "RouteWithStanding",
+    "kind": "type",
+    "exported": true
    },
    {
     "name": "gapNoteHtml",
@@ -9495,5 +9527,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "516326dc087dc93c8bc6ab52f435019de62778fb0b47ea8fbf5072e2965bb54c"
+ "digest": "6cabaa24e1b90eaddf332da4faca48e4c8aa523647eabd826dc59e7ba76d5322"
 }
