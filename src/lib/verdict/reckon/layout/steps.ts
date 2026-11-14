@@ -175,12 +175,15 @@ export function titlesABoundedGap(answeredDataset: AnsweredDataset, step: Step):
 /** A route a step opens, as it would stand with the step taken: met, or short
  * only on the figures it would still miss by, measured on the answers with the
  * step taken (ruling 9 on #187); a route it neither meets nor leaves short on
- * a figure is refused. `r` is the route's result with the step taken. */
-export function reckonRouteWithStepTaken(answeredDataset: AnsweredDataset, step: Step, r: RouteResult): RouteWithStepTaken {
-  if (r.status === "met") return { kind: "met" };
+ * a figure is refused. */
+export function reckonRouteWithStepTaken(
+  answeredDataset: AnsweredDataset, step: Step, resultWithStepTaken: RouteResult,
+): RouteWithStepTaken {
+  if (resultWithStepTaken.status === "met") return { kind: "met" };
   const { ds, answers } = answeredDataset;
-  const figureGaps = figureGapsOf(ds, r, unlockProfile(step.unlock, answers));
-  if (!figureGaps.length) throw new Error(`a step lists ${r.route.id}, which it neither meets nor leaves short on a figure`);
+  const figureGaps = figureGapsOf(ds, resultWithStepTaken, unlockProfile(step.unlock, answers));
+  if (!figureGaps.length)
+    throw new Error(`a step lists ${resultWithStepTaken.route.id}, which it neither meets nor leaves short on a figure`);
   return { kind: "short", figureGaps };
 }
 

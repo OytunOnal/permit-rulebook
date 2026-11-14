@@ -277,12 +277,12 @@ const READERS = (): Profile[] => [
 
 /** Each route a verdict on these answers draws, with its answers and the
  * engine's result for it. */
-function drawnResultsOn(answers: Profile): { answers: Profile; r: RouteResult }[] {
+function drawnResultsOn(answers: Profile): { answers: Profile; result: RouteResult }[] {
   const results = new Map(evaluate(ds, answers).map((r) => [r.route.id, r]));
   return everyDrawnRouteIn(verdictFor(answers)).map(({ route }) => {
-    const r = results.get(route);
-    if (!r) throw new Error(`the verdict draws ${route}, which the engine did not evaluate`);
-    return { answers, r };
+    const result = results.get(route);
+    if (!result) throw new Error(`the verdict draws ${route}, which the engine did not evaluate`);
+    return { answers, result };
   });
 }
 
@@ -317,15 +317,15 @@ describe("a route standing carries its money shortfall and what it is measured o
   });
 
   it("a route not short on money carries no shortfall", () => {
-    const notShort = READERS().flatMap(drawnResultsOn).filter(({ r }) => !shortOnMoney(r));
-    expect(new Set(notShort.map(({ r }) => r.status)), "precondition: open, within reach on points, not yet")
+    const notShort = READERS().flatMap(drawnResultsOn).filter(({ result }) => !shortOnMoney(result));
+    expect(new Set(notShort.map(({ result }) => result.status)), "precondition: open, within reach on points, not yet")
       .toEqual(new Set(["met", "near", "hold"]));
-    for (const { answers, r } of notShort)
-      expect(standingOn(verdictFor(answers), r.route.id).shortfall, r.route.id).toBeNull();
+    for (const { answers, result } of notShort)
+      expect(standingOn(verdictFor(answers), result.route.id).shortfall, result.route.id).toBeNull();
   });
 
   it("each route is measured on the engine's deciding criterion and the reader's band there, which its rail draws", () => {
-    const drawn = READERS().flatMap(drawnResultsOn).filter(({ answers, r }) => railDrawsMeasuredOn(answers, r));
+    const drawn = READERS().flatMap(drawnResultsOn).filter(({ answers, result }) => railDrawsMeasuredOn(answers, result));
     expect(drawn.length, "precondition: rails are drawn").toBeGreaterThan(1);
   });
 });
