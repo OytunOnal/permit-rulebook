@@ -2390,6 +2390,11 @@
   },
   {
    "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "inheritance"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
    "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
    "kind": "dependency"
   },
@@ -2427,6 +2432,11 @@
    "from": "src/lib/verdict/reckon/layout/route-standing.ts",
    "to": "src/lib/verdict/reckon/layout/figure-gaps.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/route-standing.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/reckon/layout/route-standing.ts",
@@ -9547,5 +9557,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "d73001e4384375443ed7b4a98dff2640b6f953814195a5674d6669811c4f7c78"
+ "digest": "4302ccd000927b50f59575b9f77404719935d8ff7d81e1f8d272d85b4b15623d"
 }

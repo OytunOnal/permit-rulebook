@@ -1,6 +1,6 @@
 // @level application
 import {
-  DESTINATION_FIELD, SITUATION_FIELD, liveUnknowns, periodOf, type Country, type Dataset, type Profile, type RouteResult,
+  DESTINATION_FIELD, SITUATION_FIELD, periodOf, type Country, type Dataset, type Profile, type RouteResult,
 } from "permit-rulebook-data";
 import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../../../situations.js";
 import { EVERY_COUNTRY_ANSWER, groupedRoutesOf, routeIdsOf, type Compared, type GroupedRoutes } from "./in-view.js";
@@ -10,7 +10,7 @@ import { routeStandingsOf } from "./route-standing.js";
 import { countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, type Step } from "./steps.js";
 import type {
   AnsweredDataset, ArrangedLine, ComparedLayout, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
-  RouteStandings, StepPlace, Strip, Tally, VerdictGroup,
+  RouteStanding, RouteStandings, StepPlace, Strip, Tally, VerdictGroup,
 } from "./verdict-layout.js";
 
 /**
@@ -140,22 +140,31 @@ function linesIn(compared: Compared, code: string): Pick<Section, "jobOfferLine"
 const stepPlacesOf = (steps: Step[], code: string, routesOf: (step: Step) => RouteResult[]): StepPlace[] =>
   steps.map((step) => ({ id: `${code}/${stepKeyOf(step)}`, step: stepKeyOf(step), routes: routeIdsOf(routesOf(step)) }));
 
-/** Whether an unknown on this route is one the reader can still act on: the
- * one predicate the counts and the row that opens on it read. */
-export const hasLiveUnknown = (answeredDataset: AnsweredDataset, r: RouteResult): boolean =>
-  liveUnknowns(r, answeredDataset.answers).length > 0;
+/** A comparison with each route's standing by its id: what the layout is
+ * reckoned from. */
+interface ComparedWithStandings extends Compared {
+  standings: RouteStandings;
+}
 
-/** Counted the way the rows read: an unknown on a hard-failed route is moot,
- * and no learn box offers to resolve it (critique #4). */
-const openUnknownsIn = (answeredDataset: AnsweredDataset, rows: RouteResult[]): number =>
-  rows.filter((r) => hasLiveUnknown(answeredDataset, r)).length;
+/** A route's standing on the comparison; a route it stands nowhere is refused. */
+function standingOf(compared: ComparedWithStandings, r: RouteResult): RouteStanding {
+  const standing = compared.standings[r.route.id];
+  if (!standing) throw new Error(`${r.route.id} has no standing`);
+  return standing;
+}
 
-function stripOf(answeredDataset: AnsweredDataset, compared: Compared): Strip {
+/** Counted the way the rows read, from each route's live unknowns: an unknown
+ * on a hard-failed route is moot, and no learn box offers to resolve it
+ * (critique #4). */
+const openUnknownsIn = (compared: ComparedWithStandings, rows: RouteResult[]): number =>
+  rows.filter((r) => standingOf(compared, r).liveUnknowns.length > 0).length;
+
+function stripOf(compared: ComparedWithStandings): Strip {
   const { whole } = compared;
   return {
     open: whole.met.length, withinReach: whole.near.length, unsettled: whole.unsettled.length,
     closed: whole.closed.length, notYet: whole.hold.length,
-    openUnknowns: openUnknownsIn(answeredDataset, compared.inView.results),
+    openUnknowns: openUnknownsIn(compared, compared.inView.results),
   };
 }
 
@@ -243,15 +252,15 @@ function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): Headl
 }
 
 /** Single destination: the flat layout, no country chrome. */
-function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: Compared, standings: RouteStandings): ComparedLayout {
+function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: ComparedWithStandings): ComparedLayout {
   const code = compared.inView.visible[0]!.code;
   const steps = stepPlacesOf(compared.steps, code, (step) => step.unlock.routes);
   const groups = groupsOf(answeredDataset, {
     grouped: compared.whole, steps, ...linesIn(compared, code), results: compared.inView.results,
   });
   return {
-    kind: "one-country", country: code, strip: stripOf(answeredDataset, compared),
-    headline: headlineOf(answeredDataset, compared), groups, standings,
+    kind: "one-country", country: code, strip: stripOf(compared),
+    headline: headlineOf(answeredDataset, compared), groups, standings: compared.standings,
   };
 }
 
@@ -301,7 +310,7 @@ const holdsSomethingToActOn = (section: Section, tally: Tally): boolean =>
  * 7). A country's own closed routes are counted in its tally: a count no
  * summary names is a route the reader never learns exists (s8).
  */
-function countrySection(answeredDataset: AnsweredDataset, compared: Compared, at: SectionPlace): CountrySection {
+function countrySection(answeredDataset: AnsweredDataset, compared: ComparedWithStandings, at: SectionPlace): CountrySection {
   const { country, lead } = at;
   const code = country.code;
   const { inView } = compared;
@@ -312,7 +321,7 @@ function countrySection(answeredDataset: AnsweredDataset, compared: Compared, at
   const section: Section = { grouped, steps, ...linesIn(compared, code), results: countryResults };
   const tally: Tally = {
     open: grouped.met.length, unsettled: grouped.unsettled.length, withinReach: grouped.near.length, notYet: grouped.hold.length,
-    openUnknowns: openUnknownsIn(answeredDataset, countryResults), closed: grouped.closed.length, steps: steps.length,
+    openUnknowns: openUnknownsIn(compared, countryResults), closed: grouped.closed.length, steps: steps.length,
     checkedWithJobOffer: section.jobOfferLine?.routes ?? 0,
     openedByArrangedAnswers: countDistinctRoutesOpenedByArrangedAnswers(compared, code),
     situationNotTaken: countryMarkOf(answeredDataset.ds, country, answeredDataset.answers[SITUATION_FIELD]) !== null,
@@ -330,24 +339,21 @@ function countrySection(answeredDataset: AnsweredDataset, compared: Compared, at
  * country it names is the country that leads; with something open anywhere,
  * or a written state for nobody, the sections keep the dataset's order.
  */
-function countrySectionsLayoutOf(
-  answeredDataset: AnsweredDataset, compared: Compared, standings: RouteStandings,
-): ComparedLayout {
+function countrySectionsLayoutOf(answeredDataset: AnsweredDataset, compared: ComparedWithStandings): ComparedLayout {
   const { visible } = compared.inView;
   const lead = compared.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)?.named : undefined;
   const sections = namedFirst(visible, lead).map((country) => countrySection(answeredDataset, compared, { country, lead }));
   return {
-    kind: "countries", strip: stripOf(answeredDataset, compared), headline: headlineOf(answeredDataset, compared),
-    lead: visible.find((country) => leads(country, lead))?.code ?? null, sections, standings,
+    kind: "countries", strip: stripOf(compared), headline: headlineOf(answeredDataset, compared),
+    lead: visible.find((country) => leads(country, lead))?.code ?? null, sections, standings: compared.standings,
   };
 }
 
 /** The layout, one country flat or a section per country, with each route's
  * standing by its id: every route the groups list, closed ones included. */
 export function layoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
-  const { results, closed } = compared.inView;
-  const standings = routeStandingsOf(answeredDataset, [...results, ...closed]);
+  const withStandings: ComparedWithStandings = { ...compared, standings: routeStandingsOf(answeredDataset, compared.inView) };
   return compared.inView.visible.length === 1
-    ? oneCountryLayoutOf(answeredDataset, compared, standings)
-    : countrySectionsLayoutOf(answeredDataset, compared, standings);
+    ? oneCountryLayoutOf(answeredDataset, withStandings)
+    : countrySectionsLayoutOf(answeredDataset, withStandings);
 }
