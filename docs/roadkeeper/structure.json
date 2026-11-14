@@ -2205,6 +2205,11 @@
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/verdict/compose/answer-phrase.ts",
    "kind": "dependency"
   },
@@ -2361,7 +2366,7 @@
   {
    "from": "src/lib/verdict/compose/unscored.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/reckon/layout/figure-gaps.ts",
@@ -2446,6 +2451,11 @@
   {
    "from": "src/lib/verdict/reckon/layout/route-standing.ts",
    "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "to": "src/lib/situations.ts",
    "kind": "type-only"
   },
   {
@@ -9557,5 +9567,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "4302ccd000927b50f59575b9f77404719935d8ff7d81e1f8d272d85b4b15623d"
+ "digest": "3b4274c1aeb3f1382c16fd00f710594fd71110c554f646f7198749049af318aa"
 }

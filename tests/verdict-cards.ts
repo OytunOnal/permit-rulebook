@@ -4,8 +4,8 @@ import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
 import { plainTextOf } from "./reader-pages.js";
 import {
-  verdictHtml, verdictOf, type CountrySection, type HeadlineLayout, type RouteStanding, type StepCard, type Verdict,
-  type VerdictGroup,
+  verdictHtml, verdictOf, type CountrySection, type HeadlineLayout, type RouteStanding, type StepCard, type Tally,
+  type Verdict, type VerdictGroup,
 } from "../src/lib/verdict/verdict.js";
 
 const ds = dataset as unknown as Dataset;
@@ -174,7 +174,7 @@ export interface SaidLine {
 /** The s19 sentence on a country's line, where the layout says the line
  * carries one, read from the summary row the verdict draws; or null. */
 export function saidLineOf(verdict: Verdict, section: CountrySection): SaidLine | null {
-  if (!section.tally.situationNotTaken) return null;
+  if (section.tally.mark === null) return null;
   const html = summaryRowOf(verdict, countryNamed(section.country));
   return { text: plainTextOf(html), html };
 }
@@ -200,7 +200,7 @@ export interface LayoutPin {
   headline: { kind: string; route: string | null; step: string | null };
   lead?: string | null;
   groups?: PinnedGroup[];
-  sections?: { country: string; open: boolean; tally: Record<string, number | boolean>; groups: PinnedGroup[] }[];
+  sections?: { country: string; open: boolean; tally: Tally; groups: PinnedGroup[] }[];
 }
 
 function pinnedGroupOf(verdict: Verdict, group: VerdictGroup): PinnedGroup {

@@ -6,7 +6,9 @@ import {
 import { composeStepTitle } from "./card/cards.js";
 import { standingOn } from "./drawn-cards.js";
 import type { Headline } from "./masthead.js";
-import { stepKeyed, type HeadlineLayout, type ReckonedComparison } from "../reckon/reckon-verdict.js";
+import {
+  stepKeyed, type HeadlineLayout, type ReckonedComparison, type WrittenStateKey,
+} from "../reckon/reckon-verdict.js";
 import { printedShortfallOf } from "./printed-shortfall.js";
 import type { VerdictScreen } from "./types.js";
 import { unscoredVerdict } from "./unscored.js";
@@ -32,10 +34,9 @@ function withNearNote(headline: string, note: string): Headline {
   return note ? { headline, emphasis: note } : { headline };
 }
 
-/** The written state's words, which the layout says stand. */
-function writtenStateHeadline(screen: VerdictScreen): Headline {
-  const unscored = unscoredVerdict(screen.ds, screen.answers);
-  if (!unscored) throw new Error("the layout reads a written state these answers have none of");
+/** The written state's words, for the key the layout's headline carries. */
+function writtenStateHeadline(screen: VerdictScreen, writtenStateKey: WrittenStateKey): Headline {
+  const unscored = unscoredVerdict(screen.ds, writtenStateKey);
   return { headline: unscored.headline, unscored };
 }
 
@@ -51,7 +52,7 @@ function writtenStateHeadline(screen: VerdictScreen): Headline {
 export function comparedHeadlineOf(screen: VerdictScreen, compared: ReckonedComparison, reckoned: HeadlineLayout): Headline {
   switch (reckoned.kind) {
     case "written-state":
-      return writtenStateHeadline(screen);
+      return writtenStateHeadline(screen, reckoned.writtenStateKey);
     case "unsettled":
       return withNearNote(unsettledHeadline(reckoned.routes), nearNote(screen, compared, reckoned.nearest));
     case "steps": {

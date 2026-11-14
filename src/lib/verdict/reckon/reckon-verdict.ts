@@ -15,12 +15,12 @@ import type { ComparedLayout } from "./layout/verdict-layout.js";
 export type { ResultsInView } from "./layout/in-view.js";
 export type {
   AnswerRef, ArrangedLine, ComparedLayout, CountrySection, Explore, Fold, HeadlineLayout, JobOfferLine, MeasuredOn,
-  RouteGroupKind, RouteStanding, RouteStandings, StepPlace, Strip, Tally, VerdictGroup, VerdictLayout,
+  RouteGroupKind, RouteStanding, RouteStandings, StepPlace, Strip, Tally, VerdictGroup, VerdictLayout, WrittenStateKey,
 } from "./layout/verdict-layout.js";
 // For now, the helpers the drawing still calls (#373, Q15 on #372): the
 // tickets after it stop calling each, and #379 takes them away.
 export type { Step } from "./layout/steps.js";
-export { countryMarkOf, stepKeyed, writtenStateKeyOf } from "./layout/layout.js";
+export { stepKeyed } from "./layout/layout.js";
 export { bandOf, type MoneyShortfall } from "./layout/money-shortfall.js";
 // The step card's route list alone still calls the figure gaps, on the
 // answers with the step taken, until #378 (ruling 5 on #322).
