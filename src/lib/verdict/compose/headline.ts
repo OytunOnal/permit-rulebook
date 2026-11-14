@@ -6,7 +6,7 @@ import {
 import { composeStepTitle } from "./card/cards.js";
 import { findStep, firstPlaceOfStep, standingOn } from "./drawn-cards.js";
 import type { Headline } from "./masthead.js";
-import type { HeadlineLayout, ReckonedComparison, WrittenStateKey } from "../reckon/reckon-verdict.js";
+import type { ReckonedComparison, WrittenStateKey } from "../reckon/reckon-verdict.js";
 import { printedShortfallOf } from "./printed-shortfall.js";
 import type { VerdictScreen } from "./types.js";
 import { unscoredVerdict } from "./unscored.js";
@@ -47,7 +47,8 @@ function writtenStateHeadline(screen: VerdictScreen, writtenStateKey: WrittenSta
  * of the one line (review J2); or the open routes, the nearest within reach
  * stressed.
  */
-export function comparedHeadlineOf(screen: VerdictScreen, compared: ReckonedComparison, reckoned: HeadlineLayout): Headline {
+export function comparedHeadlineOf(screen: VerdictScreen, compared: ReckonedComparison): Headline {
+  const reckoned = compared.layout.headline;
   switch (reckoned.kind) {
     case "written-state":
       return writtenStateHeadline(screen, reckoned.writtenStateKey);

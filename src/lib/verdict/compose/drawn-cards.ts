@@ -4,7 +4,7 @@ import {
   closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook, type RouteWithStanding,
 } from "./card/cards.js";
 import type {
-  ComparedLayout, ReckonedComparison, RouteStanding, Step, StepPlace, VerdictGroup, VerdictLayout,
+  ComparedLayout, ReckonedComparison, RouteStanding, Step, StepPlace, VerdictGroup,
 } from "../reckon/reckon-verdict.js";
 import type { VerdictScreen } from "./types.js";
 
@@ -129,11 +129,12 @@ function cardsById<T>(entries: DrawnEntry<T>[], placedTwice: (id: string) => str
  * the one-country layout a card carries its country's chip; a country's own
  * section names its country once, on its summary row.
  */
-export function drawnCardsOf(screen: VerdictScreen, compared: ReckonedComparison, layout: VerdictLayout): DrawnCards {
+export function drawnCardsOf(screen: VerdictScreen, compared: ReckonedComparison): DrawnCards {
   const at: Drawing = {
     screen, compared,
     results: new Map([...compared.inView.results, ...compared.inView.closed].map((r) => [r.route.id, r])),
   };
+  const { layout } = compared;
   const drawn: GroupCards[] = [];
   if (layout.kind === "one-country") drawn.push(...layout.groups.map((g) => drawGroup(at, g, "country")));
   if (layout.kind === "countries")

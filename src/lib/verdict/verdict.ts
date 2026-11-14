@@ -69,9 +69,9 @@ function noticesAbove(screen: VerdictScreen, inView: ResultsInView): string {
 function comparedVerdictOf(screen: VerdictScreen, compared: ReckonedComparison, interview: InterviewSoFar): Verdict {
   const notices = noticesAbove(screen, compared.inView);
   const { layout } = compared;
-  const headline = comparedHeadlineOf(screen, compared, layout.headline);
+  const headline = comparedHeadlineOf(screen, compared);
   const masthead = comparedMastheadOf(headline, interview.answered, compared.inView.results.length);
-  const cards = drawnCardsOf(screen, compared, layout);
+  const cards = drawnCardsOf(screen, compared);
   return { action: { kind: "compare", masthead }, notices, layout, cards, body: bodyHtml(screen, layout, cards) };
 }
 
