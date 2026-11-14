@@ -2454,6 +2454,16 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/verdict/reckon/layout/steps.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/steps.ts",
+   "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/verdict/reckon/layout/verdict-layout.ts",
    "to": "src/lib/situations.ts",
    "kind": "type-only"
@@ -2497,11 +2507,6 @@
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
    "to": "src/lib/verdict/reckon/layout/steps.ts",
    "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
-   "to": "src/lib/verdict/reckon/layout/steps.ts",
-   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
@@ -5881,11 +5886,6 @@
    },
    {
     "name": "unlockedRouteHtml",
-    "kind": "fn",
-    "exported": false
-   },
-   {
-    "name": "titlesABoundedGap",
     "kind": "fn",
     "exported": false
    },
@@ -9567,5 +9567,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "fa229aef4fd0b1c980bde4169eab2e5b3b4fd8230e45f5262c2e96cd4b8765be"
+ "digest": "d9c6507e0a2852b214f26a5c6ecb1c1160f0af58cf71053d75c6bca968a21817"
 }

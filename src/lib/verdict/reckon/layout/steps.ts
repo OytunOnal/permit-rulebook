@@ -1,8 +1,10 @@
 // @level application
 import {
-  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, routesAJobOfferFrees,
+  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, routesAJobOfferFrees, unlockProfile,
   type Dataset, type FieldOption, type Profile, type RoutesFreedByAJobOffer, type Unlock,
 } from "permit-rulebook-data";
+import { bandOf } from "./money-shortfall.js";
+import type { AnsweredDataset } from "./verdict-layout.js";
 
 /**
  * The unlock steps as the results screen offers them: which rows are steps,
@@ -154,6 +156,17 @@ export function arrangeSteps(ds: Dataset, rows: Unlock[]): Step[] {
 
 /** The step the hero names: the first one, in the order above. */
 export const nearestStep = (steps: Step[]): Step | undefined => steps[0];
+
+/** Whether a step's title is a distance on a money field from a band with a
+ * floor, "€304.20/year more": the reader sits anywhere in their band, so the
+ * distance is a bound. From a band open at the bottom the title is the line
+ * itself, "at least €45,630/year", and no distance. */
+export function titlesABoundedGap(screen: AnsweredDataset, step: Step): boolean {
+  const { field } = step.unlock;
+  if (screen.ds.fields.find((f) => f.id === field)?.type !== "money_band") return false;
+  const fromFloor = bandOf(screen.ds, field, screen.answers)?.min !== undefined;
+  return fromFloor && bandOf(screen.ds, field, unlockProfile(step.unlock, screen.answers))?.min !== undefined;
+}
 
 /** The rows of the answers the dataset marks arranged, in the engine's order. */
 export const arrangedRowsOf = (rows: Unlock[]): Unlock[] => rows.filter((u) => u.option.is_arranged);

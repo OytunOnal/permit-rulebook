@@ -19,7 +19,7 @@ export type {
 } from "./layout/verdict-layout.js";
 // For now, the helpers the drawing still calls (#373, Q15 on #372): the
 // tickets after it stop calling each, and #379 takes them away.
-export type { Step } from "./layout/steps.js";
+export { titlesABoundedGap, type Step } from "./layout/steps.js";
 export { stepKeyed } from "./layout/layout.js";
 export { bandOf, type MoneyShortfall } from "./layout/money-shortfall.js";
 // The step card's route list alone still calls the figure gaps, on the

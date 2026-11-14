@@ -25,7 +25,9 @@ import { glossedLearnLinkText } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
-import { bandOf, figureGapsOf, type FigureGap, type RouteStanding, type Step } from "../../reckon/reckon-verdict.js";
+import {
+  figureGapsOf, titlesABoundedGap, type FigureGap, type RouteStanding, type Step,
+} from "../../reckon/reckon-verdict.js";
 import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js";
 import type { VerdictScreen } from "../types.js";
 
@@ -238,17 +240,6 @@ function unlockedRouteHtml(screen: VerdictScreen, r: RouteResult, taken: Profile
   const gaps = printedFigureGapsOf(screen, figureGapsOf(screen.ds, r, taken));
   if (!gaps.length) throw new Error(`a step lists ${r.route.id}, which it neither meets nor leaves short on a figure`);
   return `<li>${esc(routeName(screen, r))} — <i>${esc(wouldThenBeShortOnly(gaps))}</i></li>`;
-}
-
-/** Whether a step's title is a distance on a money field from a band with a
- * floor, "€304.20/year more": the reader sits anywhere in their band, so the
- * distance is a bound. From a band open at the bottom the title is the line
- * itself, "at least €45,630/year", and no distance. */
-function titlesABoundedGap(screen: VerdictScreen, step: Step): boolean {
-  const { field } = step.unlock;
-  if (screen.ds.fields.find((f) => f.id === field)?.type !== "money_band") return false;
-  const fromFloor = bandOf(screen.ds, field, screen.answers)?.min !== undefined;
-  return fromFloor && bandOf(screen.ds, field, unlockProfile(step.unlock, screen.answers))?.min !== undefined;
 }
 
 /** A step's title, as its card, the steps group and the headline's Nearest
