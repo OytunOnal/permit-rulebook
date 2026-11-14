@@ -292,26 +292,34 @@ click on the tracker link. Answers never leave the device.
   announces and records one history entry per verdict. Steps are only what
   the reader can do; what a job offer would open and what someone else
   arranges are said beside them, never counted as steps.
-  Inside the verdict, its reckoning is `application` and makes no word, the
-  dataset's included: `in-view.ts` and `steps.ts` say which results are in
-  view, which steps there are and what each arranged answer or a job offer
-  would open, and the presentation files around them name it (#183). The
-  layout is reckoned once, as data, by `layout.ts`'s `layoutOf` (#310): each
-  section's groups in order, each fold's rows, which country sections open (any
-  holding something the reader can act on), the strip's and each tally's
-  numbers, the lead country, and the headline's kind and nearest route (the
-  smallest share of its amount still missing); `not-yet-group.ts` sorts the
-  Not yet rows and `figure-gaps.ts` says which figures a route is short on.
+  Inside the verdict, its reckoning is a deep module of its own,
+  `src/lib/verdict/reckon` (#372), at `application`, with no copy word or
+  markup, entered only through `reckon-verdict.ts`'s `reckonVerdict` and its
+  types. `verdictOf` asks it everything: which results are in view, whether a
+  notice answers outright, the steps and what each arranged answer or a job
+  offer would open, and the layout, reckoned once as data by `layoutOf`: each
+  section's groups in order, each fold's rows, which country sections open
+  (any holding something the reader can act on), the strip's and each tally's
+  numbers with each country's mark, the lead country, and the headline's kind,
+  its nearest route and the written state's key. Beside the groups, each
+  route's **route standing**, by its id: its money shortfall, what it is
+  measured on (the deciding criterion, the reader's band, and where the band
+  stands against each amount the rail draws), its figure gaps, its live
+  unknowns, and whether its row opens. Each step's place says whether its
+  title is a bounded gap and how each route it opens would stand with the
+  step taken.
   The files that draw read that layout and hold only words and cards;
-  `drawn-cards.ts` draws each route's and step's card once, by its id.
+  `drawn-cards.ts` draws each route's and step's card once, by its id, and
+  `find-route-standing.ts` finds a route standing, a step or a step's place
+  for the drawing.
   A Card is one deep module inside it, `compose/card` (#184): its entry,
   `cards.ts`, draws a route's card, a Not yet row, a closed row, a step's card
   and a Notice's card, and its blocks (the route statements, the rail, the
   provenance, the path line) are private behind it. A full card says the
   path it was met through, and each other path's unmet rule in the reader's
   own answer; a precondition bound to a path the card did not take is left
-  off it, its count and its sources (#310). A money shortfall is decided at
-  application, in numbers, by `money-shortfall.ts`; `printed-shortfall.ts`
+  off it, its count and its sources (#310). A money shortfall is decided in
+  the reckon module, in numbers, by `decideMoneyShortfall`; `printed-shortfall.ts`
   formats its amounts once, and `copy/verdict.ts` says it side by side as the
   card's note, a step's reach and the headline's emphasis.
   Every word a screen prints lives in `src/lib/copy/`, one file per screen or
