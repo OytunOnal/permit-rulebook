@@ -1,9 +1,10 @@
 // @level presentation
 import type { RouteResult } from "permit-rulebook-data";
 import {
-  closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook, type VerdictScreen,
+  closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook,
 } from "./card/cards.js";
 import { stepKeyed, type Compared, type StepPlace, type VerdictGroup, type VerdictLayout } from "../reckon/reckon-verdict.js";
+import type { VerdictScreen } from "./types.js";
 
 /** A step as the steps group offers it: its title, and its card's markup. */
 export interface StepCard {

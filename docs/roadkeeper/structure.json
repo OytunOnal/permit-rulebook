@@ -2084,11 +2084,6 @@
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
-   "kind": "inheritance"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/cards.ts",
-   "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
    "kind": "type-only"
   },
   {
@@ -2118,6 +2113,11 @@
   },
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "dependency"
   },
@@ -2125,6 +2125,11 @@
    "from": "src/lib/verdict/compose/drawn-cards.ts",
    "to": "src/lib/verdict/compose/card/cards.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/drawn-cards.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/drawn-cards.ts",
@@ -2150,6 +2155,11 @@
    "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/verdict/compose/printed-shortfall.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/headline.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
@@ -2193,11 +2203,6 @@
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
-   "to": "src/lib/verdict/compose/card/cards.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/verdict/compose/drawn-cards.ts",
    "kind": "dependency"
   },
@@ -2205,6 +2210,11 @@
    "from": "src/lib/verdict/compose/html.ts",
    "to": "src/lib/verdict/compose/not-yet.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/html.ts",
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
@@ -2263,13 +2273,13 @@
   },
   {
    "from": "src/lib/verdict/compose/not-yet.ts",
-   "to": "src/lib/verdict/compose/card/cards.ts",
-   "kind": "type-only"
+   "to": "src/lib/verdict/compose/drawn-cards.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/not-yet.ts",
-   "to": "src/lib/verdict/compose/drawn-cards.ts",
-   "kind": "dependency"
+   "to": "src/lib/verdict/compose/types.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/not-yet.ts",
@@ -2285,6 +2295,11 @@
    "from": "src/lib/verdict/compose/printed-shortfall.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/compose/types.ts",
+   "to": "src/lib/gloss.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/types.ts",
@@ -5702,11 +5717,6 @@
    }
   ],
   "src/lib/verdict/compose/card/cards.ts": [
-   {
-    "name": "VerdictScreen",
-    "kind": "type",
-    "exported": true
-   },
    {
     "name": "CardLook",
     "kind": "type",
@@ -9449,5 +9459,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "749bc68375dcc41e72a3b6d5e73fc17ff0b282d8ed935d2d0fcaadac53d14afb"
+ "digest": "ed8293ebf8c0e725d309a2c70d4a9df20582c4150adc3e4f13b2bd811136bd92"
 }

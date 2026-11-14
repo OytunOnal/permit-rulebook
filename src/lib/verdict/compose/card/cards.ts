@@ -29,6 +29,7 @@ import {
   bandOf, figureGapsOf, hasLiveUnknown, measuredCriterionOf, moneyShortfallOf, type Step,
 } from "../../reckon/reckon-verdict.js";
 import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js";
+import type { VerdictScreen } from "../types.js";
 
 /**
  * The blocks of a card that state what the dataset itself says: what else is
@@ -43,17 +44,6 @@ import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js"
  * verdict and a picture of the same person failing (2026-09-07). Neither is
  * caught by reading the markup in the page — only by reading the markup.
  */
-
-/**
- * What every card of one verdict is drawn on: the dataset, the answers, the
- * route the reader came from, and the screen's one memory of which
- * abbreviations it has explained — a card drawn first explains, the ones
- * after it do not.
- */
-export interface VerdictScreen extends CardScreen {
-  glossary: Glossary;
-  cameFrom: string | null;
-}
 
 /** How a full card is drawn, each value named for what it draws. */
 export interface CardLook {

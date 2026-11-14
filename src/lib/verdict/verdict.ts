@@ -12,7 +12,7 @@
  * route's and step's markup by its id (#314).
  */
 import { contradictionsIn, unlocks, type Dataset, type Notice, type Profile } from "permit-rulebook-data";
-import { noticeHtml, type VerdictScreen } from "./compose/card/cards.js";
+import { noticeHtml } from "./compose/card/cards.js";
 import { esc } from "../reason.js";
 import { drawnCardsOf } from "./compose/drawn-cards.js";
 import {
@@ -22,7 +22,7 @@ import {
 import { comparedHeadlineOf } from "./compose/headline.js";
 import { bodyHtml } from "./compose/html.js";
 import { comparedMastheadOf, noticeMastheadOf } from "./compose/masthead.js";
-import type { InterviewSoFar, Verdict } from "./compose/types.js";
+import type { InterviewSoFar, Verdict, VerdictScreen } from "./compose/types.js";
 // The verdict's look travels with its markup: the page that paints a verdict
 // links this stylesheet in its <head>.
 import "./verdict.css";

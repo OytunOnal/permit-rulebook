@@ -3,10 +3,11 @@ import {
   NOTHING_OPEN_HEADLINE, pointsAwayLine, routesOpenHeadline, shortfallHeadline, stepsWouldChangeHeadline,
   unsettledHeadline,
 } from "../../copy/verdict.js";
-import { composeStepTitle, type VerdictScreen } from "./card/cards.js";
+import { composeStepTitle } from "./card/cards.js";
 import type { Headline } from "./masthead.js";
 import { moneyShortfallOf, stepKeyed, type Compared, type HeadlineLayout } from "../reckon/reckon-verdict.js";
 import { printedShortfallOf } from "./printed-shortfall.js";
+import type { VerdictScreen } from "./types.js";
 import { unscoredVerdict } from "./unscored.js";
 
 /**
