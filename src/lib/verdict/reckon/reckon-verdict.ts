@@ -4,11 +4,13 @@
  * no markup — the results in view and their groups, whether nothing is open,
  * whether a notice answers outright, the steps, the arranged rows, what a job
  * offer frees, and the layout (#372). The verdict's entry asks this module
- * everything it reckons, and only draws what it is handed.
+ * everything it reckons, and only draws what it is handed. Only
+ * `reckonVerdict` and the types leave this entry, so no drawing file can
+ * reckon again (ruling 8 on #322).
  */
 import { unlocks, type Dataset, type Notice, type Profile } from "permit-rulebook-data";
 import { groupedRoutesOf, resultsInViewOf, type ResultsInView } from "./layout/in-view.js";
-import { layoutOf } from "./layout/layout.js";
+import { indexStepsByKey, layoutOf } from "./layout/layout.js";
 import { arrangeSteps, arrangedRowsOf, routesAJobOfferFreesFor, type Step } from "./layout/steps.js";
 import type { ComparedLayout } from "./layout/verdict-layout.js";
 
@@ -20,10 +22,7 @@ export type {
 } from "./layout/verdict-layout.js";
 export type { MoneyShortfall } from "./layout/money-shortfall.js";
 export type { FigureGap } from "./layout/figure-gaps.js";
-// For now, the helper the drawing still calls (#373, Q15 on #372): #379
-// takes it away.
 export type { Step } from "./layout/steps.js";
-export { stepKeyed } from "./layout/layout.js";
 
 /** The screen no route can produce: a notice answers instead of the routes,
  * with the notices that answer outright first and every other after. */
@@ -33,12 +32,13 @@ export interface ReckonedNoticeScreen {
   others: Notice[];
 }
 
-/** A comparison: the results in view and the steps the drawing names, and
- * the layout reckoned from them. */
+/** A comparison: the results in view, the steps the drawing names, each by
+ * the key its places in the layout name it by, and the layout reckoned from
+ * them. */
 export interface ReckonedComparison {
   kind: "compare";
   inView: ResultsInView;
-  steps: Step[];
+  steps: Record<string, Step>;
   layout: ComparedLayout;
 }
 
@@ -67,5 +67,5 @@ export function reckonVerdict(dataset: Dataset, answers: Profile, cameFrom: stri
   const layout = layoutOf({ ds: dataset, answers }, {
     inView, whole, zeroOpen, steps, arranged: arrangedRowsOf(rows), freed: routesAJobOfferFreesFor(dataset, answers),
   });
-  return { kind: "compare", inView, steps, layout };
+  return { kind: "compare", inView, steps: indexStepsByKey(steps), layout };
 }

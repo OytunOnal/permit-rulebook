@@ -3,9 +3,8 @@ import type { RouteResult } from "permit-rulebook-data";
 import {
   closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook, type RouteWithStanding,
 } from "./card/cards.js";
-import {
-  stepKeyed, type ComparedLayout, type ReckonedComparison, type RouteStanding, type StepPlace, type VerdictGroup,
-  type VerdictLayout,
+import type {
+  ComparedLayout, ReckonedComparison, RouteStanding, Step, StepPlace, VerdictGroup, VerdictLayout,
 } from "../reckon/reckon-verdict.js";
 import type { VerdictScreen } from "./types.js";
 
@@ -47,6 +46,13 @@ export function standingOn(layout: ComparedLayout, id: string): RouteStanding {
   return standing;
 }
 
+/** The step a key names on a comparison; a key the comparison holds no step
+ * under is refused. */
+export function findStep(compared: ReckonedComparison, key: string): Step {
+  if (!Object.hasOwn(compared.steps, key)) throw new Error(`no step is keyed ${key}`);
+  return compared.steps[key]!;
+}
+
 /** The groups of a comparison's layout, in the order drawn: the flat
  * layout's, or each country section's in turn. */
 const groupsOn = (layout: ComparedLayout): VerdictGroup[] =>
@@ -75,7 +81,7 @@ const drawRoute = (at: Drawing, id: string, html: (route: RouteWithStanding) => 
 /** A step's card, with the routes it opens in its section, in the order its
  * row lists them. */
 function drawStep(at: Drawing, place: StepPlace): DrawnEntry<StepCard> {
-  const step = stepKeyed(at.compared.steps, place.step);
+  const step = findStep(at.compared, place.step);
   const routes = step.unlock.routes.filter((r) => place.routes.includes(r.route.id));
   const placed = { step, place };
   return [place.id, { title: composeStepTitle(at.screen, placed), html: stepCardHtml(at.screen, placed, routes) }];
