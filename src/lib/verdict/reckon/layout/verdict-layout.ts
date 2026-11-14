@@ -1,14 +1,17 @@
 // @level application
 import type { Band, Dataset, Profile, ThresholdCriterion } from "permit-rulebook-data";
+import type { NotScoredMark } from "../../../situations.js";
 import type { FigureGap } from "./figure-gaps.js";
 import type { MoneyShortfall } from "./money-shortfall.js";
 
 /**
  * The results screen's layout as data: where each route stands, which
  * sections open, what each fold holds, what the strip and each summary row
- * count, which country leads, and what kind of headline it has. No words and
- * no markup: a route is its id, a country its code, an answer its field and
- * value, and the files that draw read this to word and draw it (#314).
+ * count, which country leads, and what kind of headline it has. No copy
+ * words and no markup: where it places a route, the route is its id; a
+ * country is its code, an answer its field and value; a country's mark is as
+ * the data package gives it, the country's phrase and the quoted route,
+ * dataset values. The files that draw read this to word and draw it (#314).
  */
 
 /** The dataset and the answers given to it: what the layout is reckoned on. */
@@ -100,9 +103,8 @@ export interface Strip {
   openUnknowns: number;
 }
 
-/** What one country's summary row counts, and whether the s19 sentence stands
- * in for its not-yet count: its scored routes do not take the reader's
- * situation. */
+/** What one country's summary row counts, and the country's mark, where the
+ * s19 sentence stands in for its not-yet count. */
 export interface Tally extends Strip {
   steps: number;
   /** The routes the country's job offer line would check (ruling 7 of #187). */
@@ -110,7 +112,10 @@ export interface Tally extends Strip {
   /** The routes the country's arranged line would open, each counted once
    * (ruling 7 of #187). */
   openedByArrangedAnswers: number;
-  situationNotTaken: boolean;
+  /** The s19 mark for the declared situation, where the country's scored
+   * routes do not take it, which its line words; null where they do, or no
+   * situation is declared (ruling 3 on #322). */
+  mark: NotScoredMark | null;
 }
 
 /** One country's section on the several-country layout, by the country's code. */
@@ -124,13 +129,25 @@ export interface CountrySection {
 /** How many countries the results screen is showing. */
 export type Explore = "one-country" | "several-countries";
 
+/** Where a written state stands: the answer it is keyed by, the destination
+ * answer of the country the reader named at question 3 on the four-country
+ * path only — the country whose section leads the result, open (s26); the
+ * direct path has no list of countries to lead — the mark, and the situation. */
+export interface WrittenStateKey {
+  key: string;
+  named: string | undefined;
+  mark: NotScoredMark;
+  situation: string;
+}
+
 /**
  * The headline's kind, with the numbers it counts and what its second
  * sentence names: the route nearest within reach, by id, or the nearest step,
- * by key. The written state is s19's; the others are a comparison's own.
+ * by key. The written state is s19's, with its key, once for the screen
+ * (ruling 3 on #322); the others are a comparison's own.
  */
 export type HeadlineLayout =
-  | { kind: "written-state" }
+  | { kind: "written-state"; writtenStateKey: WrittenStateKey }
   | { kind: "unsettled"; routes: number; nearest: string | null }
   | { kind: "steps"; steps: number; nearest: string }
   | { kind: "nothing-open"; explore: Explore }

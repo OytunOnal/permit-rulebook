@@ -10,7 +10,7 @@ import { routeStandingsOf } from "./route-standing.js";
 import { countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, type Step } from "./steps.js";
 import type {
   AnsweredDataset, ArrangedLine, ComparedLayout, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
-  RouteStanding, RouteStandings, StepPlace, Strip, Tally, VerdictGroup,
+  RouteStanding, RouteStandings, StepPlace, Strip, Tally, VerdictGroup, WrittenStateKey,
 } from "./verdict-layout.js";
 
 /**
@@ -21,24 +21,14 @@ import type {
  */
 
 /** The s19 mark on one country of the four-country result, for the declared
- * situation, or none: the one predicate its tally and its words read. */
-export const countryMarkOf = (ds: Dataset, country: Country, situation: string | undefined): NotScoredMark | null =>
+ * situation, or none: reckoned once, onto its tally, which its words read. */
+const countryMarkOf = (ds: Dataset, country: Country, situation: string | undefined): NotScoredMark | null =>
   situation === undefined ? null : notScoredFor(ds, country.code.toLowerCase(), situation);
 
-/** Where a written state stands: the answer it is keyed by, the destination
- * answer of the country the reader named at question 3 on the four-country
- * path only — the country whose section leads the result, open (s26); the
- * direct path has no list of countries to lead — the mark, and the situation. */
-export interface WrittenStateKey {
-  key: string;
-  named: string | undefined;
-  mark: NotScoredMark;
-  situation: string;
-}
-
-/** The written state's key for these answers, or none: the one derivation the
- * headline's kind, the lead country and the written state's words read. */
-export function writtenStateKeyOf(ds: Dataset, answers: Profile): WrittenStateKey | null {
+/** The written state's key for these answers, or none: reckoned once, onto
+ * the written-state headline, which the lead country and the written state's
+ * words read. */
+function writtenStateKeyOf(ds: Dataset, answers: Profile): WrittenStateKey | null {
   const destination = answers[DESTINATION_FIELD];
   const situation = answers[SITUATION_FIELD];
   if (destination === undefined || situation === undefined) return null;
@@ -242,7 +232,8 @@ function stepsOrNothingOpenHeadlineOf(compared: Compared): HeadlineLayout {
  */
 function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): HeadlineLayout {
   const { whole } = compared;
-  if (compared.zeroOpen && writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)) return { kind: "written-state" };
+  const writtenStateKey = compared.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers) : null;
+  if (writtenStateKey) return { kind: "written-state", writtenStateKey };
   const nearest = nearestRouteWithinReach(answeredDataset, whole.near);
   const unsettled = whole.unsettled.length;
   if (!whole.met.length && unsettled) return { kind: "unsettled", routes: unsettled, nearest };
@@ -324,7 +315,7 @@ function countrySection(answeredDataset: AnsweredDataset, compared: ComparedWith
     openUnknowns: openUnknownsIn(compared, countryResults), closed: grouped.closed.length, steps: steps.length,
     checkedWithJobOffer: section.jobOfferLine?.routes ?? 0,
     openedByArrangedAnswers: countDistinctRoutesOpenedByArrangedAnswers(compared, code),
-    situationNotTaken: countryMarkOf(answeredDataset.ds, country, answeredDataset.answers[SITUATION_FIELD]) !== null,
+    mark: countryMarkOf(answeredDataset.ds, country, answeredDataset.answers[SITUATION_FIELD]),
   };
   const open = holdsSomethingToActOn(section, tally) || leads(country, lead);
   return { country: code, open, tally, groups: groupsOf(answeredDataset, section) };
@@ -341,10 +332,11 @@ function countrySection(answeredDataset: AnsweredDataset, compared: ComparedWith
  */
 function countrySectionsLayoutOf(answeredDataset: AnsweredDataset, compared: ComparedWithStandings): ComparedLayout {
   const { visible } = compared.inView;
-  const lead = compared.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)?.named : undefined;
+  const headline = headlineOf(answeredDataset, compared);
+  const lead = headline.kind === "written-state" ? headline.writtenStateKey.named : undefined;
   const sections = namedFirst(visible, lead).map((country) => countrySection(answeredDataset, compared, { country, lead }));
   return {
-    kind: "countries", strip: stripOf(compared), headline: headlineOf(answeredDataset, compared),
+    kind: "countries", strip: stripOf(compared), headline,
     lead: visible.find((country) => leads(country, lead))?.code ?? null, sections, standings: compared.standings,
   };
 }

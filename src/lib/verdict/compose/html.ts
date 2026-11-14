@@ -10,6 +10,7 @@ import { FEEDBACK } from "../../copy/frame.js";
 import { countryOf } from "../../countries.js";
 import { esc, escAttr } from "../../reason.js";
 import { FEEDBACK_PATH, url } from "../../site.js";
+import type { NotScoredMark } from "../../situations.js";
 import { phraseOfAnswer, phraseOfAnswerRef } from "./answer-phrase.js";
 import { drawnRoutesHtml, drawnStepCard, type DrawnCards } from "./drawn-cards.js";
 import { notYetItemsHtml } from "./not-yet.js";
@@ -107,19 +108,19 @@ function stripHtml(s: Strip): string {
         </div>`;
 }
 
-/** The s19 sentence that stands in a country's not-yet count, where the
- * layout says its scored routes do not take the reader's situation (s21). */
-function situationNotTakenHtml(screen: VerdictScreen, code: string): string {
-  const said = unscoredTally(screen.ds, countryOf(screen.ds, code), screen.answers[SITUATION_FIELD]);
-  if (!said) throw new Error(`the layout says ${code} does not take the situation, and its mark says nothing`);
-  return said.html;
+/** The s19 sentence that stands in a country's not-yet count, worded from the
+ * mark its tally carries (s21). */
+function situationNotTakenHtml(screen: VerdictScreen, mark: NotScoredMark): string {
+  const situation = screen.answers[SITUATION_FIELD];
+  if (situation === undefined) throw new Error(`the layout marks ${mark.country} for a situation the answers do not declare`);
+  return unscoredTally(screen.ds, mark, situation).html;
 }
 
 /** A country's not-yet count, or the s19 sentence that stands in its place
  * (s21). */
 function notYetPart(screen: VerdictScreen, section: CountrySection): string {
   const { tally } = section;
-  if (tally.situationNotTaken) return situationNotTakenHtml(screen, section.country);
+  if (tally.mark) return situationNotTakenHtml(screen, tally.mark);
   if (!tally.notYet) return "";
   return esc(tally.openUnknowns ? notYetWithUnknowns(tally.notYet, tally.openUnknowns) : notYetCount(tally.notYet));
 }
@@ -141,7 +142,7 @@ function tallyHtml(screen: VerdictScreen, section: CountrySection): string {
 const STEPS_HERE = `<h2 class="ghead unlockh"><b>${esc(STEPS_HERE_HEADING)}</b></h2>`;
 
 function countrySectionHtml(drawing: BodyDrawing, section: CountrySection): string {
-  const said = section.tally.situationNotTaken;
+  const said = section.tally.mark !== null;
   const name = countryOf(drawing.screen.ds, section.country).name;
   return `<details class="country-sec"${section.open ? " open" : ""}>
             <summary${said ? ` class="said"` : ""}><span class="cname">${esc(name)}</span> <span class="tally${said ? " said" : ""}">${tallyHtml(drawing.screen, section)}</span></summary>
