@@ -25,11 +25,10 @@ import { glossedLearnLinkText } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
-import { figureGapsOf } from "../figure-gaps.js";
-import { hasLiveUnknown } from "../layout.js";
-import { bandOf, measuredCriterionOf, moneyShortfallOf } from "../money-shortfall.js";
+import {
+  bandOf, figureGapsOf, hasLiveUnknown, measuredCriterionOf, moneyShortfallOf, type Step,
+} from "../../reckon/reckon-verdict.js";
 import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js";
-import type { Step } from "../steps.js";
 
 /**
  * The blocks of a card that state what the dataset itself says: what else is

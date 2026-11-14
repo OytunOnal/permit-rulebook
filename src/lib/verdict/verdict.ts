@@ -15,12 +15,13 @@ import { contradictionsIn, unlocks, type Dataset, type Notice, type Profile } fr
 import { noticeHtml, type VerdictScreen } from "./compose/card/cards.js";
 import { esc } from "../reason.js";
 import { drawnCardsOf } from "./compose/drawn-cards.js";
-import { arrangeSteps, arrangedRowsOf, routesAJobOfferFreesFor } from "./compose/steps.js";
+import {
+  arrangeSteps, arrangedRowsOf, groupedRoutesOf, layoutOf, resultsInViewOf, routesAJobOfferFreesFor, type Compared,
+  type ResultsInView,
+} from "./reckon/reckon-verdict.js";
 import { comparedHeadlineOf } from "./compose/headline.js";
 import { bodyHtml } from "./compose/html.js";
 import { comparedMastheadOf, noticeMastheadOf } from "./compose/masthead.js";
-import { groupedRoutesOf, resultsInViewOf, type Compared, type ResultsInView } from "./compose/in-view.js";
-import { layoutOf } from "./compose/layout.js";
 import type { InterviewSoFar, Verdict } from "./compose/types.js";
 // The verdict's look travels with its markup: the page that paints a verdict
 // links this stylesheet in its <head>.
@@ -31,7 +32,7 @@ export type { StepCard } from "./compose/drawn-cards.js";
 export type {
   AnswerRef, ArrangedLine, ComparedLayout, CountrySection, Explore, Fold, HeadlineLayout, JobOfferLine, RouteGroupKind,
   StepPlace, Strip, Tally, VerdictGroup, VerdictLayout,
-} from "./compose/verdict-layout.js";
+} from "./reckon/reckon-verdict.js";
 
 /**
  * The screen no route can produce: this passport needs no permit at all, and

@@ -1,7 +1,7 @@
 // @level presentation
 import type { VerdictMasthead } from "../../screen.js";
 import type { DrawnCards } from "./drawn-cards.js";
-import type { VerdictLayout } from "./verdict-layout.js";
+import type { VerdictLayout } from "../reckon/reckon-verdict.js";
 
 /**
  * The interview as the verdict reads it: the questions answered so far, which

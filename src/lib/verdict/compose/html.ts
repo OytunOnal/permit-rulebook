@@ -17,7 +17,7 @@ import { notYetItemsHtml } from "./not-yet.js";
 import { unscoredTally } from "./unscored.js";
 import type {
   ArrangedLine, CountrySection, JobOfferLine, Strip, Tally, VerdictGroup, VerdictLayout,
-} from "./verdict-layout.js";
+} from "../reckon/reckon-verdict.js";
 
 /** What the body is drawn from: the screen it words things on, and the cards
  * already drawn, by id. */

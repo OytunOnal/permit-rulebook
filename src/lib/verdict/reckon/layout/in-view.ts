@@ -3,7 +3,7 @@ import {
   DESTINATION_FIELD, evaluate, isClosed, notices, type Country, type Dataset, type Notice, type Profile, type RouteResult,
   type RoutesFreedByAJobOffer, type Unlock,
 } from "permit-rulebook-data";
-import { scopedFirst } from "../../scope.js";
+import { scopedFirst } from "../../../scope.js";
 import type { Step } from "./steps.js";
 
 /** The results a verdict is drawn from, before any of them is placed. */

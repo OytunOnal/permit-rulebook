@@ -13,6 +13,7 @@
 - `src/lib/route-page`
 - `src/lib/verdict`
 - `src/lib/verdict/compose/card`
+- `src/lib/verdict/reckon`
 
 ## Levels
 <!-- innermost first; changing them takes an ADR -->

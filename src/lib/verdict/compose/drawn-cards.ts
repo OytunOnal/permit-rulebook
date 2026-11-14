@@ -3,9 +3,7 @@ import type { RouteResult } from "permit-rulebook-data";
 import {
   closedRowHtml, composeStepTitle, fullCardHtml, notYetRowHtml, stepCardHtml, type CardLook, type VerdictScreen,
 } from "./card/cards.js";
-import type { Compared } from "./in-view.js";
-import { stepKeyed } from "./layout.js";
-import type { StepPlace, VerdictGroup, VerdictLayout } from "./verdict-layout.js";
+import { stepKeyed, type Compared, type StepPlace, type VerdictGroup, type VerdictLayout } from "../reckon/reckon-verdict.js";
 
 /** A step as the steps group offers it: its title, and its card's markup. */
 export interface StepCard {

@@ -6,7 +6,7 @@ import { esc, escAttr } from "../../../../reason.js";
 import {
   ABOVE_THE_AMOUNT, BELOW_THE_AMOUNT, RAIL_ROWS_LABEL, WHAT_THIS_ROUTE_ASKS, YOUR_ANSWER, upToShort,
 } from "../../../../copy/verdict.js";
-import { bandOf, measuredCriterionOf } from "../../money-shortfall.js";
+import { bandOf, measuredCriterionOf } from "../../../reckon/reckon-verdict.js";
 import { amountAsPrinted } from "../../printed-shortfall.js";
 
 /**

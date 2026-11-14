@@ -175,20 +175,13 @@
    "files": [
     "src/lib/verdict/compose/answer-phrase.ts",
     "src/lib/verdict/compose/drawn-cards.ts",
-    "src/lib/verdict/compose/figure-gaps.ts",
     "src/lib/verdict/compose/headline.ts",
     "src/lib/verdict/compose/html.ts",
-    "src/lib/verdict/compose/in-view.ts",
-    "src/lib/verdict/compose/layout.ts",
     "src/lib/verdict/compose/masthead.ts",
-    "src/lib/verdict/compose/money-shortfall.ts",
-    "src/lib/verdict/compose/not-yet-group.ts",
     "src/lib/verdict/compose/not-yet.ts",
     "src/lib/verdict/compose/printed-shortfall.ts",
-    "src/lib/verdict/compose/steps.ts",
     "src/lib/verdict/compose/types.ts",
     "src/lib/verdict/compose/unscored.ts",
-    "src/lib/verdict/compose/verdict-layout.ts",
     "src/lib/verdict/verdict.css",
     "src/lib/verdict/verdict.ts"
    ]
@@ -208,6 +201,25 @@
     "src/lib/verdict/compose/card/blocks/rail.ts",
     "src/lib/verdict/compose/card/blocks/route-statements.ts",
     "src/lib/verdict/compose/card/cards.ts"
+   ]
+  },
+  {
+   "path": "src/lib/verdict/reckon",
+   "entries": [
+    {
+     "file": "src/lib/verdict/reckon/reckon-verdict.ts",
+     "level": "application"
+    }
+   ],
+   "files": [
+    "src/lib/verdict/reckon/layout/figure-gaps.ts",
+    "src/lib/verdict/reckon/layout/in-view.ts",
+    "src/lib/verdict/reckon/layout/layout.ts",
+    "src/lib/verdict/reckon/layout/money-shortfall.ts",
+    "src/lib/verdict/reckon/layout/not-yet-group.ts",
+    "src/lib/verdict/reckon/layout/steps.ts",
+    "src/lib/verdict/reckon/layout/verdict-layout.ts",
+    "src/lib/verdict/reckon/reckon-verdict.ts"
    ]
   }
  ],
@@ -353,20 +365,21 @@
   "src/lib/verdict/compose/card/blocks/route-statements.ts": "presentation",
   "src/lib/verdict/compose/card/cards.ts": "presentation",
   "src/lib/verdict/compose/drawn-cards.ts": "presentation",
-  "src/lib/verdict/compose/figure-gaps.ts": "application",
   "src/lib/verdict/compose/headline.ts": "presentation",
   "src/lib/verdict/compose/html.ts": "presentation",
-  "src/lib/verdict/compose/in-view.ts": "application",
-  "src/lib/verdict/compose/layout.ts": "application",
   "src/lib/verdict/compose/masthead.ts": "presentation",
-  "src/lib/verdict/compose/money-shortfall.ts": "application",
-  "src/lib/verdict/compose/not-yet-group.ts": "application",
   "src/lib/verdict/compose/not-yet.ts": "presentation",
   "src/lib/verdict/compose/printed-shortfall.ts": "presentation",
-  "src/lib/verdict/compose/steps.ts": "application",
   "src/lib/verdict/compose/types.ts": "presentation",
   "src/lib/verdict/compose/unscored.ts": "presentation",
-  "src/lib/verdict/compose/verdict-layout.ts": "application",
+  "src/lib/verdict/reckon/layout/figure-gaps.ts": "application",
+  "src/lib/verdict/reckon/layout/in-view.ts": "application",
+  "src/lib/verdict/reckon/layout/layout.ts": "application",
+  "src/lib/verdict/reckon/layout/money-shortfall.ts": "application",
+  "src/lib/verdict/reckon/layout/not-yet-group.ts": "application",
+  "src/lib/verdict/reckon/layout/steps.ts": "application",
+  "src/lib/verdict/reckon/layout/verdict-layout.ts": "application",
+  "src/lib/verdict/reckon/reckon-verdict.ts": "application",
   "src/lib/verdict/verdict.ts": "presentation",
   "src/pages/404.astro": "presentation",
   "src/pages/[country]/[route].astro": "presentation",
@@ -1925,7 +1938,7 @@
   },
   {
    "from": "src/lib/verdict/compose/answer-phrase.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2000,12 +2013,12 @@
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/rail.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "to": "src/lib/verdict/compose/printed-shortfall.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/rail.ts",
-   "to": "src/lib/verdict/compose/printed-shortfall.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "dependency"
   },
   {
@@ -2100,28 +2113,13 @@
   },
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
-   "to": "src/lib/verdict/compose/figure-gaps.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/cards.ts",
-   "to": "src/lib/verdict/compose/layout.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/cards.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/cards.ts",
    "to": "src/lib/verdict/compose/printed-shortfall.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/card/cards.ts",
-   "to": "src/lib/verdict/compose/steps.ts",
-   "kind": "type-only"
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/drawn-cards.ts",
@@ -2130,18 +2128,8 @@
   },
   {
    "from": "src/lib/verdict/compose/drawn-cards.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/drawn-cards.ts",
-   "to": "src/lib/verdict/compose/layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/drawn-cards.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
-   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
@@ -2155,23 +2143,8 @@
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/layout.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/headline.ts",
    "to": "src/lib/verdict/compose/masthead.ts",
    "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
-   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
@@ -2185,8 +2158,8 @@
   },
   {
    "from": "src/lib/verdict/compose/headline.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
-   "kind": "type-only"
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
@@ -2240,47 +2213,7 @@
   },
   {
    "from": "src/lib/verdict/compose/html.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/in-view.ts",
-   "to": "src/lib/scope.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/in-view.ts",
-   "to": "src/lib/verdict/compose/steps.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/situations.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/verdict/compose/not-yet-group.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/verdict/compose/steps.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/layout.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2305,17 +2238,7 @@
   },
   {
    "from": "src/lib/verdict/compose/masthead.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/not-yet-group.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/compose/not-yet-group.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2350,7 +2273,7 @@
   },
   {
    "from": "src/lib/verdict/compose/not-yet.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2360,12 +2283,7 @@
   },
   {
    "from": "src/lib/verdict/compose/printed-shortfall.ts",
-   "to": "src/lib/verdict/compose/figure-gaps.ts",
-   "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/printed-shortfall.ts",
-   "to": "src/lib/verdict/compose/money-shortfall.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "dependency"
   },
   {
@@ -2380,7 +2298,7 @@
   },
   {
    "from": "src/lib/verdict/compose/types.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -2415,8 +2333,88 @@
   },
   {
    "from": "src/lib/verdict/compose/unscored.ts",
-   "to": "src/lib/verdict/compose/layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/in-view.ts",
+   "to": "src/lib/scope.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/in-view.ts",
+   "to": "src/lib/verdict/reckon/layout/steps.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/not-yet-group.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/layout.ts",
+   "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/not-yet-group.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/not-yet-group.ts",
+   "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/figure-gaps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/in-view.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/layout.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/steps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/verdict.ts",
@@ -2450,22 +2448,7 @@
   },
   {
    "from": "src/lib/verdict/verdict.ts",
-   "to": "src/lib/verdict/compose/in-view.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/verdict.ts",
-   "to": "src/lib/verdict/compose/layout.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/verdict.ts",
    "to": "src/lib/verdict/compose/masthead.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/verdict/verdict.ts",
-   "to": "src/lib/verdict/compose/steps.ts",
    "kind": "dependency"
   },
   {
@@ -2475,7 +2458,12 @@
   },
   {
    "from": "src/lib/verdict/verdict.ts",
-   "to": "src/lib/verdict/compose/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/verdict.ts",
+   "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
   },
   {
@@ -5835,6 +5823,7 @@
     "exported": false
    }
   ],
+  "src/lib/verdict/reckon/reckon-verdict.ts": [],
   "astro.config.mjs": [
    {
     "name": "SITE_URL",
@@ -9460,5 +9449,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "b7fb325f2951d688c367138cf43413ca9b9af05d0348753762786eb6769ff7ca"
+ "digest": "749bc68375dcc41e72a3b6d5e73fc17ff0b282d8ed935d2d0fcaadac53d14afb"
 }

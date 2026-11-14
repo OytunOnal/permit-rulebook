@@ -5,12 +5,9 @@ import {
 } from "../../copy/verdict.js";
 import { composeStepTitle, type VerdictScreen } from "./card/cards.js";
 import type { Headline } from "./masthead.js";
-import type { Compared } from "./in-view.js";
-import { stepKeyed } from "./layout.js";
-import { moneyShortfallOf } from "./money-shortfall.js";
+import { moneyShortfallOf, stepKeyed, type Compared, type HeadlineLayout } from "../reckon/reckon-verdict.js";
 import { printedShortfallOf } from "./printed-shortfall.js";
 import { unscoredVerdict } from "./unscored.js";
-import type { HeadlineLayout } from "./verdict-layout.js";
 
 /**
  * How near the nearest route within reach is, or nothing: "up to" its gap on

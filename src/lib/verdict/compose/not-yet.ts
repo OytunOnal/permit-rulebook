@@ -8,7 +8,7 @@ import { esc } from "../../reason.js";
 import { phraseOfAnswerRef } from "./answer-phrase.js";
 import type { VerdictScreen } from "./card/cards.js";
 import { drawnRouteHtml, drawnRoutesHtml, type DrawnCards } from "./drawn-cards.js";
-import type { AnswerRef, Fold } from "./verdict-layout.js";
+import type { AnswerRef, Fold } from "../reckon/reckon-verdict.js";
 
 /** The path answers a fold's rows ask for, named by the dataset, each name
  * once. Fixed copy ("a job offer, transfer or hosting agreement") told a user
