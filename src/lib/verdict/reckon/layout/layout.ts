@@ -132,9 +132,9 @@ function linesIn(compared: Compared, code: string): Pick<Section, "jobOfferLine"
   };
 }
 
-/** Which steps one section offers: the section's country, and the routes
- * each step opens there. */
-interface StepsIn {
+/** The routes the steps open in one section: the section's country, and the
+ * routes each step opens there. */
+interface SectionStepRoutes {
   code: string;
   routesOf: (step: Step) => RouteResult[];
 }
@@ -142,7 +142,7 @@ interface StepsIn {
 /** Each step, placed in one section under the id its card is drawn by, with
  * the routes it opens there, whether its title is a bounded gap, and how each
  * of those routes would stand with the step taken (ruling 5 on #322). */
-function stepPlacesOf(answeredDataset: AnsweredDataset, steps: Step[], section: StepsIn): StepPlace[] {
+function stepPlacesOf(answeredDataset: AnsweredDataset, steps: Step[], section: SectionStepRoutes): StepPlace[] {
   return steps.map((step) => {
     const routes = section.routesOf(step);
     return {
