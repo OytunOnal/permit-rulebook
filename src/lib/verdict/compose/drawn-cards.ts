@@ -135,10 +135,8 @@ export function drawnCardsOf(screen: VerdictScreen, compared: ReckonedComparison
     results: new Map([...compared.inView.results, ...compared.inView.closed].map((r) => [r.route.id, r])),
   };
   const { layout } = compared;
-  const drawn: GroupCards[] = [];
-  if (layout.kind === "one-country") drawn.push(...layout.groups.map((g) => drawGroup(at, g, "country")));
-  if (layout.kind === "countries")
-    drawn.push(...layout.sections.flatMap((section) => section.groups.map((g) => drawGroup(at, g, "none"))));
+  const chip = layout.kind === "one-country" ? "country" : "none";
+  const drawn = groupsOn(layout).map((g) => drawGroup(at, g, chip));
   return {
     routes: cardsById(drawn.flatMap((g) => g.routes), (id) => `the layout places ${id} twice`),
     steps: cardsById(drawn.flatMap((g) => g.steps), (id) => `the layout places the step ${id} twice`),

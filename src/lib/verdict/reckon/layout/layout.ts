@@ -12,7 +12,7 @@ import {
 } from "./steps.js";
 import type {
   AnsweredDataset, ArrangedLine, ComparedLayout, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
-  RouteStanding, RouteStandings, StepPlace, Strip, Tally, VerdictGroup, WrittenStateKey,
+  RouteStandings, StepPlace, Strip, Tally, VerdictGroup, WrittenStateKey,
 } from "./verdict-layout.js";
 
 /**
@@ -159,25 +159,21 @@ interface ComparedWithStandings extends Compared {
   standings: RouteStandings;
 }
 
-/** A route's standing on the comparison; a route it stands nowhere is refused. */
-function standingOf(compared: ComparedWithStandings, r: RouteResult): RouteStanding {
-  const standing = compared.standings[r.route.id];
-  if (!standing) throw new Error(`${r.route.id} has no standing`);
-  return standing;
+/** Counted the way the rows read, from the live unknowns of each route
+ * standing the map holds for one of the rows: an unknown on a hard-failed
+ * route is moot, and no learn box offers to resolve it (critique #4). */
+function openUnknownsIn(standings: RouteStandings, rows: RouteResult[]): number {
+  const inRows = new Set(routeIdsOf(rows));
+  return Object.entries(standings)
+    .filter(([id, routeStanding]) => inRows.has(id) && routeStanding.liveUnknowns.length > 0).length;
 }
-
-/** Counted the way the rows read, from each route's live unknowns: an unknown
- * on a hard-failed route is moot, and no learn box offers to resolve it
- * (critique #4). */
-const openUnknownsIn = (compared: ComparedWithStandings, rows: RouteResult[]): number =>
-  rows.filter((r) => standingOf(compared, r).liveUnknowns.length > 0).length;
 
 function stripOf(compared: ComparedWithStandings): Strip {
   const { whole } = compared;
   return {
     open: whole.met.length, withinReach: whole.near.length, unsettled: whole.unsettled.length,
     closed: whole.closed.length, notYet: whole.hold.length,
-    openUnknowns: openUnknownsIn(compared, compared.inView.results),
+    openUnknowns: openUnknownsIn(compared.standings, compared.inView.results),
   };
 }
 
@@ -335,7 +331,7 @@ function countrySection(answeredDataset: AnsweredDataset, compared: ComparedWith
   const section: Section = { grouped, steps, ...linesIn(compared, code), results: countryResults };
   const tally: Tally = {
     open: grouped.met.length, unsettled: grouped.unsettled.length, withinReach: grouped.near.length, notYet: grouped.hold.length,
-    openUnknowns: openUnknownsIn(compared, countryResults), closed: grouped.closed.length, steps: steps.length,
+    openUnknowns: openUnknownsIn(compared.standings, countryResults), closed: grouped.closed.length, steps: steps.length,
     checkedWithJobOffer: section.jobOfferLine?.routes ?? 0,
     openedByArrangedAnswers: countDistinctRoutesOpenedByArrangedAnswers(compared, code),
     mark: countryMarkOf(answeredDataset.ds, country, answeredDataset.answers[SITUATION_FIELD]),
