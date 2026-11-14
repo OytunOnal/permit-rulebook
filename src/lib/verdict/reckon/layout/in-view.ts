@@ -23,6 +23,8 @@ export interface ResultsInView {
    * the permit is open to the passport at all is the notice's question (s8). */
   unsettledIds: Set<string>;
   notices: Notice[];
+  /** The route the reader came from, by its id, or none. */
+  cameFrom: string | null;
 }
 
 /** The destination answer that asks about every country at once. */
@@ -41,6 +43,7 @@ export function resultsInViewOf(ds: Dataset, answers: Profile, cameFrom: string 
     closed: scored.filter(isClosed),
     unsettledIds: new Set(applicable.filter((n) => n.kind === "open-question").flatMap((n) => n.routes ?? [])),
     notices: applicable,
+    cameFrom,
   };
 }
 

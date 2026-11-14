@@ -161,6 +161,14 @@ export interface RouteStanding {
    * shortfall decided as `shortfall` is, or points; none where it misses by
    * nothing an amount or points can close. */
   figureGaps: FigureGap[];
+  /** The questions whose unknown still binds on this route, by field, which
+   * its learn box links and the counts count; none on a hard-failed route,
+   * where nothing the reader finds out can change it, and none means no live
+   * unknown. */
+  liveUnknowns: string[];
+  /** Whether its row opens by itself: on a live unknown, or because it is the
+   * route the reader came from. */
+  rowOpens: boolean;
 }
 
 /** Each route's standing, by the route's id. */

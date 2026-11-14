@@ -1,6 +1,6 @@
 // @level presentation
 import {
-  closedBy, learnLinkOf, liveUnknowns, noticeSources, shortLabelOf, unlockMeansOf, unlockProfile, unlockTitleOf,
+  closedBy, learnLinkOf, noticeSources, shortLabelOf, unlockMeansOf, unlockProfile, unlockTitleOf,
   type Dataset, type Notice, type Profile, type RouteResult,
 } from "permit-rulebook-data";
 import type { CardScreen } from "./blocks/card-screen.js";
@@ -25,9 +25,7 @@ import { glossedLearnLinkText } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
-import {
-  bandOf, figureGapsOf, hasLiveUnknown, type FigureGap, type RouteStanding, type Step,
-} from "../../reckon/reckon-verdict.js";
+import { bandOf, figureGapsOf, type FigureGap, type RouteStanding, type Step } from "../../reckon/reckon-verdict.js";
 import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js";
 import type { VerdictScreen } from "../types.js";
 
@@ -186,7 +184,7 @@ export function fullCardHtml(screen: VerdictScreen, route: RouteWithStanding, lo
           ${r.status !== "hold" ? railHtml(ds, r, standing.measuredOn) : ""}
           ${gapNoteHtml(screen, standing)}
           ${pointsNoteHtml(r)}
-          ${learnBoxHtml(screen, r)}
+          ${learnBoxHtml(screen, standing)}
           <div class="foot">${provenanceHtml(screen, r, notTaken)}${sourceLinkHtml(r.route.info_url)}</div>
         </article>`;
 }
@@ -196,25 +194,24 @@ export function fullCardHtml(screen: VerdictScreen, route: RouteWithStanding, lo
  * figure gap and a live unknown: in the card's words, and the row stays under
  * "Not yet", since the unknown may already meet the route (ruling 10 on #187).
  */
-function gapFirstHtml(screen: VerdictScreen, { result: r, standing }: RouteWithStanding): string {
-  if (r.hard_fail || !hasLiveUnknown(screen, r)) return "";
+function gapFirstHtml(screen: VerdictScreen, standing: RouteStanding): string {
+  if (!standing.liveUnknowns.length) return "";
   const gaps = printedFigureGapsOf(screen, standing.figureGaps);
   return gaps.length ? `${esc(gaps.map(figureGapSentence).join(" "))} ` : "";
 }
 
 /**
- * A not-yet route, as a row that unfolds. It opens by itself only where an
- * unknown still binds — a row opened on a dead route promises an answer that
- * cannot change it (critique #4) — or where it is the route the reader came
- * from.
+ * A not-yet route, as a row that unfolds. It opens by itself where its
+ * standing says: only where an unknown still binds — a row opened on a dead
+ * route promises an answer that cannot change it (critique #4) — or where it
+ * is the route the reader came from.
  */
 export function notYetRowHtml(screen: VerdictScreen, route: RouteWithStanding): string {
   const { ds, answers, glossary } = screen;
-  const { result: r } = route;
-  const short = `${gapFirstHtml(screen, route)}${whyHtml(ds, r, answers).split(". ")[0].replace(/\.$/, "")}`;
-  const open = hasLiveUnknown(screen, r) || r.route.id === screen.cameFrom;
+  const { result: r, standing } = route;
+  const short = `${gapFirstHtml(screen, standing)}${whyHtml(ds, r, answers).split(". ")[0].replace(/\.$/, "")}`;
   return `
-        <details class="route-hold"${cameFromMark(screen, r)}${open ? " open" : ""}>
+        <details class="route-hold"${cameFromMark(screen, r)}${standing.rowOpens ? " open" : ""}>
           <summary><span class="country">${esc(r.country)}</span><span class="hold-name">${esc(routeName(screen, r))}</span><span class="hold-why">${short}</span></summary>
           <div class="hold-body">
             ${cameFromNote(screen, r)}
@@ -226,7 +223,7 @@ export function notYetRowHtml(screen: VerdictScreen, route: RouteWithStanding): 
             ${readingHtml(r.route, glossary)}
             ${pointsLineHtml(ds, r)}
             ${failDetailHtml(ds, r, answers)}
-            ${learnBoxHtml(screen, r)}
+            ${learnBoxHtml(screen, standing)}
             <div class="foot">${provenanceHtml(screen, r)}${sourceLinkHtml(r.route.info_url)}</div>
           </div>
         </details>`;
@@ -360,11 +357,11 @@ function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  * The way to look an unknown up, on the card it still binds — the dataset's
  * own `learn` link, never hardcoded (s3).
  *
- * Only where the unknown still binds: on a hard-failed route finding out
- * changes nothing, and the link sends the reader down a path that cannot open
- * (critique #4). The box ends on the link, with no full stop after it: the
- * link is a tap-height box the line it sits on cannot break inside (its own
- * label wraps within it), so on a phone a stop
+ * Only on the route's live unknowns, as its standing hands them: on a
+ * hard-failed route finding out changes nothing, and the link sends the reader
+ * down a path that cannot open (critique #4). The box ends on the link, with
+ * no full stop after it: the link is a tap-height box the line it sits on
+ * cannot break inside (its own label wraps within it), so on a phone a stop
  * after it wraps onto a line of its own (v1.1 gate critique, P5), as the
  * route page's own box has it.
  *
@@ -375,9 +372,9 @@ function pointsLineHtml(ds: Dataset, r: RouteResult): string {
  * is a consolidated text, the glossed label is followed by what the page is
  * (#158). Any route the label names is said in full (#159).
  */
-function learnBoxHtml(screen: CardScreen, r: RouteResult): string {
-  const { ds, answers, glossary: seen = new Set() } = screen;
-  const links = liveUnknowns(r, answers)
+function learnBoxHtml(screen: CardScreen, standing: RouteStanding): string {
+  const { ds, glossary: seen = new Set() } = screen;
+  const links = standing.liveUnknowns
     .map((f) => learnLinkOf(ds, f))
     .filter((l): l is { label: string; url: string } => !!l);
   if (!links.length) return "";
