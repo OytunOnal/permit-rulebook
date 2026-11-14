@@ -7,9 +7,11 @@ import type { MoneyShortfall } from "./money-shortfall.js";
 /**
  * The results screen's layout as data: where each route stands, which
  * sections open, what each fold holds, what the strip and each summary row
- * count, which country leads, and what kind of headline it has. No words and
- * no markup: a route is its id, a country its code, an answer its field and
- * value, and the files that draw read this to word and draw it (#314).
+ * count, which country leads, and what kind of headline it has. No copy
+ * words and no markup: where it places a route, the route is its id; a
+ * country is its code, an answer its field and value; a country's mark is as
+ * the data package gives it, the country's phrase and the quoted route,
+ * dataset values. The files that draw read this to word and draw it (#314).
  */
 
 /** The dataset and the answers given to it: what the layout is reckoned on. */
