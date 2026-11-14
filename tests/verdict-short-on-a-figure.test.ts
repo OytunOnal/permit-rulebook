@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  deriveBands, evaluate, reasonFor, shortLabelOf, type Band, type Criterion, type Dataset, type Profile,
+  deriveBands, evaluate, gapCriterionOf, reasonFor, shortLabelOf, unlockProfile, unlocks, type Band, type Criterion,
+  type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
   POINTS_FIGURE, SHORT_ON_A_FIGURE_HEADING, figureGapSentence, shortOn, shortOnAFigureCount, upToTitle, withStepHtml,
@@ -177,9 +178,21 @@ function salaryBand(id: string): Band {
 /** The question a recognition step answers. */
 const RECOGNITION = "recognition_de";
 
+/** The amount a route asks of a reader once the step a place names is taken,
+ * as the engine measures it on the answers with the step taken. */
+function amountAskedWithStepTaken(answers: Profile, place: StepPlace, route: string): number {
+  const unlock = unlocks(ds, answers).find((u) => `${u.field}=${u.option.value}` === place.step);
+  const result = unlock?.routes.find((r) => r.route.id === route);
+  if (!unlock || !result) throw new Error(`the step ${place.step} opens no ${route}`);
+  const criterion = gapCriterionOf(ds, result, unlockProfile(unlock, answers));
+  if (!criterion) throw new Error(`${route} asks no amount with the step ${place.step} taken`);
+  return criterion.threshold.amount;
+}
+
 describe("a step's place says whether its title is a bounded gap, and how each route it opens would stand (#378)", () => {
   /** €45,630–€45,934.20: a band with a floor. */
-  const fromAFloor = verdictFor({ ...PERSONA_A, salary_eur_year: "band_4" });
+  const FROM_A_FLOOR: Profile = { ...PERSONA_A, salary_eur_year: "band_4" };
+  const fromAFloor = verdictFor(FROM_A_FLOOR);
 
   it("a salary step from a band with a floor to a band with a floor has a bounded-gap title", () => {
     expect(salaryBand("band_4").min, "precondition: the reader's band has a floor").toBeDefined();
@@ -195,9 +208,10 @@ describe("a step's place says whether its title is a bounded gap, and how each r
 
   it("each route a step opens says met, or its figure gaps with the step taken", () => {
     const place = stepPlaceOn(fromAFloor, RECOGNITION);
+    const gap = amountAskedWithStepTaken(FROM_A_FLOOR, place, "de-blue-card-general") - salaryBand("band_4").min!;
     expect(place.withStepTaken).toEqual({
       "de-blue-card-general": {
-        kind: "short", figureGaps: [{ kind: "money", shortfall: { kind: "bounded", field: SALARY, gap: expect.closeTo(5070, 2) } }],
+        kind: "short", figureGaps: [{ kind: "money", shortfall: { kind: "bounded", field: SALARY, gap: expect.closeTo(gap, 2) } }],
       },
       "de-skilled-academic": { kind: "met" },
     });
@@ -206,10 +220,11 @@ describe("a step's place says whether its title is a bounded gap, and how each r
 
   it("from a band open at the bottom, a route the step leaves short carries the line it asks", () => {
     const place = stepPlaceOn(verdictFor(PERSONA_A_LOWEST), RECOGNITION);
+    const line = amountAskedWithStepTaken(PERSONA_A_LOWEST, place, "de-blue-card-general");
     expect(place.withStepTaken).toMatchObject({
       "de-blue-card-general": {
         kind: "short",
-        figureGaps: [{ kind: "money", shortfall: { kind: "open-below", field: SALARY, line: 50700, band: salaryBand("band_0") } }],
+        figureGaps: [{ kind: "money", shortfall: { kind: "open-below", field: SALARY, line, band: salaryBand("band_0") } }],
       },
     });
   });
