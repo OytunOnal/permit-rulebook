@@ -4,7 +4,8 @@ import { ABBREVIATIONS } from "../src/lib/gloss.js";
 import { esc } from "../src/lib/reason.js";
 import { plainTextOf } from "./reader-pages.js";
 import {
-  verdictHtml, verdictOf, type CountrySection, type HeadlineLayout, type StepCard, type Verdict, type VerdictGroup,
+  verdictHtml, verdictOf, type CountrySection, type HeadlineLayout, type RouteStanding, type StepCard, type Verdict,
+  type VerdictGroup,
 } from "../src/lib/verdict/verdict.js";
 
 const ds = dataset as unknown as Dataset;
@@ -81,6 +82,17 @@ export function drawnRouteOn(verdict: Verdict, route: string): string {
 /** Every route a verdict draws, card or row, in order, with its route's id. */
 export const everyDrawnRouteIn = (verdict: Verdict): DrawnRoute[] =>
   groupsIn(verdict).flatMap((g) => drawnRoutesIn(verdict, g));
+
+/** A route's standing on a comparison, by the route's id, as the layout
+ * carries it; a notice screen, or a route the layout stands nowhere, fails the
+ * case that asked for it. */
+export function standingOn(verdict: Verdict, route: string): RouteStanding {
+  const { layout } = verdict;
+  if (layout.kind === "notice") throw new Error("a notice screen stands no route");
+  const standing = layout.standings[route];
+  if (!standing) throw new Error(`${route} has no standing on this verdict`);
+  return standing;
+}
 
 /** The card a verdict draws a step with, by the id the layout gives it. */
 function stepCardOn(verdict: Verdict, id: string): StepCard {

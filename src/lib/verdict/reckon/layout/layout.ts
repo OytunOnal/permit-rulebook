@@ -6,10 +6,11 @@ import { SITUATION_COUNTRY_FIELD, notScoredFor, type NotScoredMark } from "../..
 import { EVERY_COUNTRY_ANSWER, groupedRoutesOf, routeIdsOf, type Compared, type GroupedRoutes } from "./in-view.js";
 import { measuredCriterionOf } from "./money-shortfall.js";
 import { notYetGroupOf } from "./not-yet-group.js";
+import { routeStandingsOf } from "./route-standing.js";
 import { countRoutesOpenedByArrangedAnswers, isExploring, nearestStep, type Step } from "./steps.js";
 import type {
   AnsweredDataset, ArrangedLine, ComparedLayout, CountrySection, HeadlineLayout, JobOfferLine, RouteGroupKind,
-  StepPlace, Strip, Tally, VerdictGroup,
+  RouteStandings, StepPlace, Strip, Tally, VerdictGroup,
 } from "./verdict-layout.js";
 
 /**
@@ -242,7 +243,7 @@ function headlineOf(answeredDataset: AnsweredDataset, compared: Compared): Headl
 }
 
 /** Single destination: the flat layout, no country chrome. */
-function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: Compared, standings: RouteStandings): ComparedLayout {
   const code = compared.inView.visible[0]!.code;
   const steps = stepPlacesOf(compared.steps, code, (step) => step.unlock.routes);
   const groups = groupsOf(answeredDataset, {
@@ -250,7 +251,7 @@ function oneCountryLayoutOf(answeredDataset: AnsweredDataset, compared: Compared
   });
   return {
     kind: "one-country", country: code, strip: stripOf(answeredDataset, compared),
-    headline: headlineOf(answeredDataset, compared), groups,
+    headline: headlineOf(answeredDataset, compared), groups, standings,
   };
 }
 
@@ -329,18 +330,24 @@ function countrySection(answeredDataset: AnsweredDataset, compared: Compared, at
  * country it names is the country that leads; with something open anywhere,
  * or a written state for nobody, the sections keep the dataset's order.
  */
-function countrySectionsLayoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+function countrySectionsLayoutOf(
+  answeredDataset: AnsweredDataset, compared: Compared, standings: RouteStandings,
+): ComparedLayout {
   const { visible } = compared.inView;
   const lead = compared.zeroOpen ? writtenStateKeyOf(answeredDataset.ds, answeredDataset.answers)?.named : undefined;
   const sections = namedFirst(visible, lead).map((country) => countrySection(answeredDataset, compared, { country, lead }));
   return {
     kind: "countries", strip: stripOf(answeredDataset, compared), headline: headlineOf(answeredDataset, compared),
-    lead: visible.find((country) => leads(country, lead))?.code ?? null, sections,
+    lead: visible.find((country) => leads(country, lead))?.code ?? null, sections, standings,
   };
 }
 
+/** The layout, one country flat or a section per country, with each route's
+ * standing by its id: every route the groups list, closed ones included. */
 export function layoutOf(answeredDataset: AnsweredDataset, compared: Compared): ComparedLayout {
+  const { results, closed } = compared.inView;
+  const standings = routeStandingsOf(answeredDataset, [...results, ...closed]);
   return compared.inView.visible.length === 1
-    ? oneCountryLayoutOf(answeredDataset, compared)
-    : countrySectionsLayoutOf(answeredDataset, compared);
+    ? oneCountryLayoutOf(answeredDataset, compared, standings)
+    : countrySectionsLayoutOf(answeredDataset, compared, standings);
 }

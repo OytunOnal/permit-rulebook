@@ -30,7 +30,7 @@ export type { InterviewSoFar, Verdict, VerdictAction } from "./compose/types.js"
 export type { StepCard } from "./compose/drawn-cards.js";
 export type {
   AnswerRef, ArrangedLine, ComparedLayout, CountrySection, Explore, Fold, HeadlineLayout, JobOfferLine, RouteGroupKind,
-  StepPlace, Strip, Tally, VerdictGroup, VerdictLayout,
+  RouteStanding, StepPlace, Strip, Tally, VerdictGroup, VerdictLayout,
 } from "./reckon/reckon-verdict.js";
 
 /**
