@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
-  deriveBands, evaluate, reasonFor, shortLabelOf, type Criterion, type Dataset, type Profile,
+  deriveBands, evaluate, reasonFor, shortLabelOf, type Band, type Criterion, type Dataset, type Profile,
 } from "permit-rulebook-data";
 import {
   POINTS_FIGURE, SHORT_ON_A_FIGURE_HEADING, figureGapSentence, shortOn, shortOnAFigureCount, upToTitle, withStepHtml,
@@ -9,10 +9,10 @@ import {
 } from "../src/lib/copy/verdict.js";
 import { PERSONA_A, PRIYA } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
-import type { RouteStanding } from "../src/lib/verdict/verdict.js";
+import type { RouteStanding, StepPlace, Verdict } from "../src/lib/verdict/verdict.js";
 import {
-  badgeOf, drawnRouteOn, foldedLineOf, groupHeadingsIn, placed, standingOn, stepsIn, stripTextOf, summaryRowOf,
-  verdictFor, verdictOn,
+  badgeOf, drawnRouteOn, foldedLineOf, groupHeadingsIn, groupsIn, placed, standingOn, stepsIn, stripTextOf,
+  summaryRowOf, verdictFor, verdictOn,
 } from "./verdict-cards.js";
 
 /**
@@ -155,6 +155,63 @@ describe("a step states the gap it leaves as a bound (ruling 9; ruling 1, leftov
       { kind: "money", shortfall: { kind: "open-below", line: "€50,700/year", band: "" }, field: YEARLY_SALARY },
     ]);
     expect(plainTextOf(recognition!.html)).toContain(`${GENERAL_BLUE_CARD} — ${leftShort}`);
+  });
+});
+
+/** The one step a verdict places on a question, by the question's field;
+ * none, or more than one, fails the case. */
+function stepPlaceOn(verdict: Verdict, field: string): StepPlace {
+  const places = groupsIn(verdict).flatMap((g) => (g.kind === "steps" ? g.steps : []))
+    .filter((place) => place.step.startsWith(`${field}=`));
+  if (places.length !== 1) throw new Error(`${places.length} steps on ${field} on this verdict`);
+  return places[0]!;
+}
+
+/** A yearly salary band of the shipped dataset, by its id. */
+function salaryBand(id: string): Band {
+  const band = deriveBands(ds, SALARY).find((b) => b.id === id);
+  if (!band) throw new Error(`no salary band ${id}`);
+  return band;
+}
+
+/** The question a recognition step answers. */
+const RECOGNITION = "recognition_de";
+
+describe("a step's place says whether its title is a bounded gap, and how each route it opens would stand (#378)", () => {
+  /** €45,630–€45,934.20: a band with a floor. */
+  const fromAFloor = verdictFor({ ...PERSONA_A, salary_eur_year: "band_4" });
+
+  it("a salary step from a band with a floor to a band with a floor has a bounded-gap title", () => {
+    expect(salaryBand("band_4").min, "precondition: the reader's band has a floor").toBeDefined();
+    const place = stepPlaceOn(fromAFloor, SALARY);
+    expect(salaryBand(place.step.split("=")[1]!).min, "precondition: the band the step asks has a floor").toBeDefined();
+    expect(place.titleIsBoundedGap).toBe(true);
+  });
+
+  it("a salary step from a band open at the bottom has not", () => {
+    expect(salaryBand(PERSONA_A_LOWEST[SALARY]!).min, "precondition: the band is open at the bottom").toBeUndefined();
+    expect(stepPlaceOn(verdictFor(PERSONA_A_LOWEST), SALARY).titleIsBoundedGap).toBe(false);
+  });
+
+  it("each route a step opens says met, or its figure gaps with the step taken", () => {
+    const place = stepPlaceOn(fromAFloor, RECOGNITION);
+    expect(place.withStepTaken).toEqual({
+      "de-blue-card-general": {
+        kind: "short", figureGaps: [{ kind: "money", shortfall: { kind: "bounded", field: SALARY, gap: expect.closeTo(5070, 2) } }],
+      },
+      "de-skilled-academic": { kind: "met" },
+    });
+    expect(Object.keys(place.withStepTaken), "each route the step opens, in its order").toEqual(place.routes);
+  });
+
+  it("from a band open at the bottom, a route the step leaves short carries the line it asks", () => {
+    const place = stepPlaceOn(verdictFor(PERSONA_A_LOWEST), RECOGNITION);
+    expect(place.withStepTaken).toMatchObject({
+      "de-blue-card-general": {
+        kind: "short",
+        figureGaps: [{ kind: "money", shortfall: { kind: "open-below", field: SALARY, line: 50700, band: salaryBand("band_0") } }],
+      },
+    });
   });
 });
 

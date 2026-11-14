@@ -4,7 +4,7 @@ import {
   unsettledHeadline,
 } from "../../copy/verdict.js";
 import { composeStepTitle } from "./card/cards.js";
-import { standingOn } from "./drawn-cards.js";
+import { firstPlaceOfStep, standingOn } from "./drawn-cards.js";
 import type { Headline } from "./masthead.js";
 import {
   stepKeyed, type HeadlineLayout, type ReckonedComparison, type WrittenStateKey,
@@ -56,7 +56,8 @@ export function comparedHeadlineOf(screen: VerdictScreen, compared: ReckonedComp
     case "unsettled":
       return withNearNote(unsettledHeadline(reckoned.routes), nearNote(screen, compared, reckoned.nearest));
     case "steps": {
-      const nearest = composeStepTitle(screen, stepKeyed(compared.steps, reckoned.nearest));
+      const step = stepKeyed(compared.steps, reckoned.nearest);
+      const nearest = composeStepTitle(screen, { step, place: firstPlaceOfStep(compared.layout, reckoned.nearest) });
       return { headline: stepsWouldChangeHeadline(reckoned.steps), nearest };
     }
     case "nothing-open":

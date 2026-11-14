@@ -66,12 +66,24 @@ export interface ArrangedLine {
   answers: (AnswerRef & { routes: number })[];
 }
 
+/** A route a step opens, as it would stand with the step taken: met, or still
+ * short on the figure gaps it would miss by, each money gap's shortfall
+ * decided on the answers with the step taken. */
+export type RouteWithStepTaken = { kind: "met" } | { kind: "short"; figureGaps: FigureGap[] };
+
 /** A step as one section offers it: the id its card is drawn under, the step's
- * key among the screen's steps, and the routes it opens in that section. */
+ * key among the screen's steps, the routes it opens in that section, and the
+ * step's own reckonings, which its card, the steps group and the headline's
+ * Nearest word (ruling 5 on #322). */
 export interface StepPlace {
   id: string;
   step: string;
   routes: string[];
+  /** Whether the step's title is a bounded gap, "up to …": a distance on a
+   * money question from a band with a floor to a band with a floor. */
+  titleIsBoundedGap: boolean;
+  /** Each route in `routes`, by its id, as it would stand with the step taken. */
+  withStepTaken: Record<string, RouteWithStepTaken>;
 }
 
 /**

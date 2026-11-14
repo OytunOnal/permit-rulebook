@@ -15,16 +15,15 @@ import type { ComparedLayout } from "./layout/verdict-layout.js";
 export type { ResultsInView } from "./layout/in-view.js";
 export type {
   AnswerRef, ArrangedLine, ComparedLayout, CountrySection, Explore, Fold, HeadlineLayout, JobOfferLine, MeasuredOn,
-  RouteGroupKind, RouteStanding, RouteStandings, StepPlace, Strip, Tally, VerdictGroup, VerdictLayout, WrittenStateKey,
+  RouteGroupKind, RouteStanding, RouteStandings, RouteWithStepTaken, StepPlace, Strip, Tally, VerdictGroup,
+  VerdictLayout, WrittenStateKey,
 } from "./layout/verdict-layout.js";
-// For now, the helpers the drawing still calls (#373, Q15 on #372): the
-// tickets after it stop calling each, and #379 takes them away.
+export type { MoneyShortfall } from "./layout/money-shortfall.js";
+export type { FigureGap } from "./layout/figure-gaps.js";
+// For now, the helper the drawing still calls (#373, Q15 on #372): #379
+// takes it away.
 export type { Step } from "./layout/steps.js";
 export { stepKeyed } from "./layout/layout.js";
-export { bandOf, type MoneyShortfall } from "./layout/money-shortfall.js";
-// The step card's route list alone still calls the figure gaps, on the
-// answers with the step taken, until #378 (ruling 5 on #322).
-export { figureGapsOf, type FigureGap } from "./layout/figure-gaps.js";
 
 /** The screen no route can produce: a notice answers instead of the routes,
  * with the notices that answer outright first and every other after. */

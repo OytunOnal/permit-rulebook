@@ -1,15 +1,20 @@
 // @level application
 import {
-  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, routesAJobOfferFrees,
-  type Dataset, type FieldOption, type Profile, type RoutesFreedByAJobOffer, type Unlock,
+  SITUATION_FIELD, fieldOptions, forEachCriterion, itemRows, routesAJobOfferFrees, unlockProfile,
+  type Dataset, type FieldOption, type Profile, type RouteResult, type RoutesFreedByAJobOffer, type Unlock,
 } from "permit-rulebook-data";
+import { figureGapsOf } from "./figure-gaps.js";
+import { bandOf } from "./money-shortfall.js";
+import type { AnsweredDataset, RouteWithStepTaken } from "./verdict-layout.js";
 
 /**
  * The unlock steps as the results screen offers them: which rows are steps,
  * which come first, which are one step, and whether the reader is exploring
  * (s23, F1, F4) — and what the two lines beside them stand on: what each
- * arranged answer opens, and the answer that is a job offer (#175). No words:
- * a step's title and the lines' words are made where they are drawn (#183).
+ * arranged answer opens, and the answer that is a job offer (#175); whether a
+ * step's title is a bounded gap, and how each route it opens would stand with
+ * it taken (ruling 5 on #322). No words: a step's title and the lines' words
+ * are made where they are drawn (#183).
  *
  * The engine's `unlocks` answers "what would each other answer open", in
  * dataset order, one row per answer. Read straight onto the screen that put
@@ -154,6 +159,30 @@ export function arrangeSteps(ds: Dataset, rows: Unlock[]): Step[] {
 
 /** The step the hero names: the first one, in the order above. */
 export const nearestStep = (steps: Step[]): Step | undefined => steps[0];
+
+/** Whether a step's title is a distance on a money field from a band with a
+ * floor, "€304.20/year more": the reader sits anywhere in their band, so the
+ * distance is a bound. From a band open at the bottom the title is the line
+ * itself, "at least €45,630/year", and no distance. */
+export function titlesABoundedGap(answeredDataset: AnsweredDataset, step: Step): boolean {
+  const { ds, answers } = answeredDataset;
+  const { field } = step.unlock;
+  if (ds.fields.find((f) => f.id === field)?.type !== "money_band") return false;
+  const fromFloor = bandOf(ds, field, answers)?.min !== undefined;
+  return fromFloor && bandOf(ds, field, unlockProfile(step.unlock, answers))?.min !== undefined;
+}
+
+/** A route a step opens, as it would stand with the step taken: met, or short
+ * only on the figures it would still miss by, measured on the answers with the
+ * step taken (ruling 9 on #187); a route it neither meets nor leaves short on
+ * a figure is refused. `r` is the route's result with the step taken. */
+export function routeWithStepTakenOf(answeredDataset: AnsweredDataset, step: Step, r: RouteResult): RouteWithStepTaken {
+  if (r.status === "met") return { kind: "met" };
+  const { ds, answers } = answeredDataset;
+  const figureGaps = figureGapsOf(ds, r, unlockProfile(step.unlock, answers));
+  if (!figureGaps.length) throw new Error(`a step lists ${r.route.id}, which it neither meets nor leaves short on a figure`);
+  return { kind: "short", figureGaps };
+}
 
 /** The rows of the answers the dataset marks arranged, in the engine's order. */
 export const arrangedRowsOf = (rows: Unlock[]): Unlock[] => rows.filter((u) => u.option.is_arranged);

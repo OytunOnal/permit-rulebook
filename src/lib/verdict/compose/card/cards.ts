@@ -1,7 +1,7 @@
 // @level presentation
 import {
-  closedBy, learnLinkOf, noticeSources, shortLabelOf, unlockMeansOf, unlockProfile, unlockTitleOf,
-  type Dataset, type Notice, type Profile, type RouteResult,
+  closedBy, learnLinkOf, noticeSources, shortLabelOf, unlockMeansOf, unlockTitleOf,
+  type Dataset, type Notice, type RouteResult,
 } from "permit-rulebook-data";
 import type { CardScreen } from "./blocks/card-screen.js";
 import { pathLinesHtml, pathsNotTakenOf } from "./blocks/path-line.js";
@@ -25,7 +25,9 @@ import { glossedLearnLinkText } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
-import { bandOf, figureGapsOf, type FigureGap, type RouteStanding, type Step } from "../../reckon/reckon-verdict.js";
+import type {
+  FigureGap, RouteStanding, RouteWithStepTaken, Step, StepPlace,
+} from "../../reckon/reckon-verdict.js";
 import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js";
 import type { VerdictScreen } from "../types.js";
 
@@ -229,46 +231,49 @@ export function notYetRowHtml(screen: VerdictScreen, route: RouteWithStanding): 
         </details>`;
 }
 
-/** One route a step opens, and how: met, or short only on the figures it
- * would still miss by, measured on the answers as they would stand with the
- * step taken, each as a bound (ruling 9 on #187). */
-function unlockedRouteHtml(screen: VerdictScreen, r: RouteResult, taken: Profile): string {
-  if (r.status === "met") return `<li>${esc(routeName(screen, r))} — <b>${esc(WOULD_BE_MET)}</b></li>`;
-  // For now: the step's place carries these once #378 lands (ruling 5 on #322).
-  const gaps = printedFigureGapsOf(screen, figureGapsOf(screen.ds, r, taken));
-  if (!gaps.length) throw new Error(`a step lists ${r.route.id}, which it neither meets nor leaves short on a figure`);
+/** A step as its card is drawn: the screen's step, and its place in the
+ * layout, which holds the step's own reckonings (ruling 5 on #322). */
+export interface StepWithPlace {
+  step: Step;
+  place: StepPlace;
+}
+
+/** How a route a step opens would stand with the step taken, as the step's
+ * place says; a route the place does not hold is refused. */
+function withStepTakenOf(place: StepPlace, r: RouteResult): RouteWithStepTaken {
+  const standing = place.withStepTaken[r.route.id];
+  if (!standing) throw new Error(`the step ${place.id} holds no ${r.route.id}`);
+  return standing;
+}
+
+/** One route a step opens, and how, as the step's place says: met, or short
+ * only on the figures it would still miss by, each as a bound (ruling 9 on
+ * #187). */
+function unlockedRouteHtml(screen: VerdictScreen, r: RouteResult, withStepTaken: RouteWithStepTaken): string {
+  if (withStepTaken.kind === "met") return `<li>${esc(routeName(screen, r))} — <b>${esc(WOULD_BE_MET)}</b></li>`;
+  const gaps = printedFigureGapsOf(screen, withStepTaken.figureGaps);
   return `<li>${esc(routeName(screen, r))} — <i>${esc(wouldThenBeShortOnly(gaps))}</i></li>`;
 }
 
-/** Whether a step's title is a distance on a money field from a band with a
- * floor, "€304.20/year more": the reader sits anywhere in their band, so the
- * distance is a bound. From a band open at the bottom the title is the line
- * itself, "at least €45,630/year", and no distance. */
-function titlesABoundedGap(screen: VerdictScreen, step: Step): boolean {
-  const { field } = step.unlock;
-  if (screen.ds.fields.find((f) => f.id === field)?.type !== "money_band") return false;
-  const fromFloor = bandOf(screen.ds, field, screen.answers)?.min !== undefined;
-  return fromFloor && bandOf(screen.ds, field, unlockProfile(step.unlock, screen.answers))?.min !== undefined;
-}
-
 /** A step's title, as its card, the steps group and the headline's Nearest
- * say it: the row's own, "up to …" on a bounded gap (ruling 1 on #187,
- * leftover 2), "… or above" where higher rungs folded into it. */
-export function composeStepTitle(screen: VerdictScreen, step: Step): string {
+ * say it: the row's own, "up to …" where its place says the title is a
+ * bounded gap (ruling 1 on #187, leftover 2), "… or above" where higher rungs
+ * folded into it. */
+export function composeStepTitle(screen: VerdictScreen, { step, place }: StepWithPlace): string {
   const row = unlockTitleOf(screen.ds, step.unlock, screen.answers);
-  const title = titlesABoundedGap(screen, step) ? upToTitle(row) : row;
+  const title = place.titleIsBoundedGap ? upToTitle(row) : row;
   return step.folded.length ? orAbove(title) : title;
 }
 
 /** A step, and the routes it opens on this section. */
-export function stepCardHtml(screen: VerdictScreen, step: Step, routes: RouteResult[]): string {
+export function stepCardHtml(screen: VerdictScreen, placed: StepWithPlace, routes: RouteResult[]): string {
+  const { step, place } = placed;
   const means = unlockMeansOf(screen.ds, step.unlock, screen.answers);
-  const taken = unlockProfile(step.unlock, screen.answers);
   return `
         <article class="unlock">
-          <h3>${withStepHtml(esc(composeStepTitle(screen, step)))}</h3>
+          <h3>${withStepHtml(esc(composeStepTitle(screen, placed)))}</h3>
           ${means ? `<p class="unlock-means">${esc(means)}</p>` : ""}
-          <ul>${routes.map((r) => unlockedRouteHtml(screen, r, taken)).join("")}
+          <ul>${routes.map((r) => unlockedRouteHtml(screen, r, withStepTakenOf(place, r))).join("")}
           </ul>
         </article>`;
 }

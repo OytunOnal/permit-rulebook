@@ -47,6 +47,20 @@ export function standingOn(layout: ComparedLayout, id: string): RouteStanding {
   return standing;
 }
 
+/** The groups of a comparison's layout, in the order drawn: the flat
+ * layout's, or each country section's in turn. */
+const groupsOn = (layout: ComparedLayout): VerdictGroup[] =>
+  (layout.kind === "one-country" ? layout.groups : layout.sections.flatMap((section) => section.groups));
+
+/** The first place a comparison's layout gives the step a key names: whether
+ * a step's title is a bounded gap is reckoned the same in every section it is
+ * placed in; a step the layout places nowhere is refused. */
+export function firstPlaceOfStep(layout: ComparedLayout, key: string): StepPlace {
+  const place = groupsOn(layout).flatMap((g) => (g.kind === "steps" ? g.steps : [])).find((s) => s.step === key);
+  if (!place) throw new Error(`the layout places no step keyed ${key}`);
+  return place;
+}
+
 /** A route the layout places, from the comparison, with its standing; one the
  * comparison does not hold is refused. */
 function routeOf(at: Drawing, id: string): RouteWithStanding {
@@ -63,7 +77,8 @@ const drawRoute = (at: Drawing, id: string, html: (route: RouteWithStanding) => 
 function drawStep(at: Drawing, place: StepPlace): DrawnEntry<StepCard> {
   const step = stepKeyed(at.compared.steps, place.step);
   const routes = step.unlock.routes.filter((r) => place.routes.includes(r.route.id));
-  return [place.id, { title: composeStepTitle(at.screen, step), html: stepCardHtml(at.screen, step, routes) }];
+  const placed = { step, place };
+  return [place.id, { title: composeStepTitle(at.screen, placed), html: stepCardHtml(at.screen, placed, routes) }];
 }
 
 /** A group's routes, each drawn by `html`, and no step. */
