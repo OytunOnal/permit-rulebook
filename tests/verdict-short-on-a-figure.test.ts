@@ -1,15 +1,18 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { evaluate, reasonFor, shortLabelOf, type Criterion, type Dataset, type Profile } from "permit-rulebook-data";
+import {
+  deriveBands, evaluate, reasonFor, shortLabelOf, type Criterion, type Dataset, type Profile,
+} from "permit-rulebook-data";
 import {
   POINTS_FIGURE, SHORT_ON_A_FIGURE_HEADING, figureGapSentence, shortOn, shortOnAFigureCount, upToTitle, withStepHtml,
   wouldThenBeShortOnly,
 } from "../src/lib/copy/verdict.js";
 import { PERSONA_A, PRIYA } from "./personas.js";
 import { plainTextOf } from "./reader-pages.js";
+import type { RouteStanding } from "../src/lib/verdict/verdict.js";
 import {
-  badgeOf, drawnRouteOn, foldedLineOf, groupHeadingsIn, placed, stepsIn, stripTextOf, summaryRowOf, verdictFor,
-  verdictOn,
+  badgeOf, drawnRouteOn, foldedLineOf, groupHeadingsIn, placed, standingOn, stepsIn, stripTextOf, summaryRowOf,
+  verdictFor, verdictOn,
 } from "./verdict-cards.js";
 
 /**
@@ -33,6 +36,15 @@ const PERSONA_A_LOWEST: Profile = { ...PERSONA_A, salary_eur_year: "band_0" };
  * shortage Blue Card and the experienced worker. */
 const BOTH_SHORT_ON_SALARY = ["de-blue-card-shortage", "de-experienced-worker"];
 
+/** The yearly salary's field: the money figure persona A is short on. */
+const SALARY = "salary_eur_year";
+
+/** One figure a route's standing says it is short on. */
+type FigureGap = RouteStanding["figureGaps"][number];
+
+/** The figure a gap is on: a money gap's field, or points. */
+const figureOf = (gap: FigureGap): string => (gap.kind === "money" ? gap.shortfall.field : gap.kind);
+
 /** A money field as a badge and a gap name it: its short label, in lower case. */
 const figureNamed = (field: string): string => shortLabelOf(ds, field).toLowerCase();
 const YEARLY_SALARY = figureNamed("salary_eur_year");  // persona A's figure
@@ -49,7 +61,10 @@ describe("the lowest band: the group says what is missing (rulings 8 and 9)", ()
   it("both routes sit under \"Short on a figure\", each badged \"Short on yearly salary\"", () => {
     for (const route of BOTH_SHORT_ON_SALARY) expect(placed(verdict, route)?.kind, route).toBe("within-reach");
     expect(groupHeadingsIn(verdict)).toContain(SHORT_ON_A_FIGURE_HEADING);
-    for (const route of BOTH_SHORT_ON_SALARY) expect(badgeOf(drawnRouteOn(verdict, route)), route).toBe(shortOn([YEARLY_SALARY]));
+    // The reckoning: each route is short on yearly salary alone, as its
+    // standing's figure gaps say (ruling 7 on #322); the badge words them.
+    for (const route of BOTH_SHORT_ON_SALARY)
+      expect(standingOn(verdict, route).figureGaps.map(figureOf), route).toEqual([SALARY]);
   });
 
   it("the strip and a country's summary row count \"2 short on a figure\"", () => {
@@ -94,6 +109,20 @@ describe("a route short on two figures names both (ruling 9)", () => {
     const verdict = verdictOn(written, POINTS_AND_SALARY_SHORT);
     expect(badgeOf(drawnRouteOn(verdict, "de-chancenkarte"))).toBe(shortOn([YEARLY_SALARY, POINTS_FIGURE]));
     expect(plainTextOf(verdict.body).toLowerCase()).not.toContain("within reach");
+  });
+
+  it("its standing carries both figure gaps, the amount first, the salary's a bounded gap (#375)", () => {
+    const written = salaryOnTheOpportunityCard();
+    const card = evaluate(written, POINTS_AND_SALARY_SHORT).find((r) => r.route.id === "de-chancenkarte")!;
+    const salary = written.countries.flatMap((c) => c.routes).find((r) => r.id === "de-chancenkarte")!.criteria.at(-1)!;
+    expect(salary.op, "precondition: the salary the written dataset adds").toBe("gte");
+    const line = salary.op === "gte" ? salary.threshold.amount : NaN;
+    const band = deriveBands(written, SALARY).find((b) => b.id === POINTS_AND_SALARY_SHORT[SALARY])!;
+    expect(band.min, "precondition: a band with a lower edge").toBeDefined();
+    expect(standingOn(verdictOn(written, POINTS_AND_SALARY_SHORT), "de-chancenkarte").figureGaps).toEqual([
+      { kind: "money", shortfall: { kind: "bounded", field: SALARY, gap: expect.closeTo(line - band.min!, 2) } },
+      { kind: "points", points: card.gap_points },
+    ]);
   });
 });
 

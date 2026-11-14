@@ -22,6 +22,8 @@ export type {
 export type { Step } from "./layout/steps.js";
 export { countryMarkOf, hasLiveUnknown, stepKeyed, writtenStateKeyOf } from "./layout/layout.js";
 export { bandOf, type MoneyShortfall } from "./layout/money-shortfall.js";
+// The step card's route list alone still calls the figure gaps, on the
+// answers with the step taken, until #378 (ruling 5 on #322).
 export { figureGapsOf, type FigureGap } from "./layout/figure-gaps.js";
 
 /** The screen no route can produce: a notice answers instead of the routes,

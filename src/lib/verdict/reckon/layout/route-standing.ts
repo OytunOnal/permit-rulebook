@@ -1,5 +1,6 @@
 // @level application
 import type { RouteResult } from "permit-rulebook-data";
+import { figureGapsOf, type FigureGap } from "./figure-gaps.js";
 import { bandOf, measuredCriterionOf, moneyShortfallOf, type MoneyShortfall } from "./money-shortfall.js";
 import type { AnsweredDataset, MeasuredOn, RouteStanding, RouteStandings } from "./verdict-layout.js";
 
@@ -16,10 +17,18 @@ function measuredOnOf(answeredDataset: AnsweredDataset, r: RouteResult): Measure
 const shortfallOf = (answeredDataset: AnsweredDataset, r: RouteResult): MoneyShortfall | null =>
   r.status === "near" ? moneyShortfallOf(answeredDataset.ds, r, answeredDataset.answers) ?? null : null;
 
+/** Each figure a route is short on, in the order its badge names them: each
+ * amount, then points (#375, ruling 4 on #322). */
+function standingFigureGapsOf(answeredDataset: AnsweredDataset, r: RouteResult): FigureGap[] {
+  const gaps = figureGapsOf(answeredDataset.ds, r, answeredDataset.answers);
+  return [...gaps.filter((g) => g.kind === "money"), ...gaps.filter((g) => g.kind === "points")];
+}
+
 /** One route's standing on the answers given (#372, ruling 4 on #322). */
 const routeStandingOf = (answeredDataset: AnsweredDataset, r: RouteResult): RouteStanding => ({
   shortfall: shortfallOf(answeredDataset, r),
   measuredOn: measuredOnOf(answeredDataset, r),
+  figureGaps: standingFigureGapsOf(answeredDataset, r),
 });
 
 /** Each route's standing, by its id: the one place the card, the headline and

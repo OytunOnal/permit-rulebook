@@ -1,5 +1,6 @@
 // @level application
 import type { Band, Dataset, Profile, ThresholdCriterion } from "permit-rulebook-data";
+import type { FigureGap } from "./figure-gaps.js";
 import type { MoneyShortfall } from "./money-shortfall.js";
 
 /**
@@ -155,6 +156,10 @@ export interface RouteStanding {
   /** The deciding criterion and the reader's band there, which the rail
    * draws; null where no amount decides the route. */
   measuredOn: MeasuredOn | null;
+  /** Each figure the route is short on, in the order its badge names them:
+   * each amount, its shortfall decided as `shortfall` is, then points; none
+   * where it misses by nothing an amount or points can close. */
+  figureGaps: FigureGap[];
 }
 
 /** Each route's standing, by the route's id. */

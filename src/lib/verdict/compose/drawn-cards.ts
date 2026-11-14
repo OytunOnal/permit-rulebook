@@ -83,7 +83,7 @@ function drawGroup(at: Drawing, group: VerdictGroup, chip: CardLook["chip"]): Gr
       return { routes: [], steps: group.steps.map((place) => drawStep(at, place)) };
     case "not-yet":
       return routeCards(at, group.items.flatMap((item) => (typeof item === "string" ? [item] : item.routes)),
-        ({ result }) => notYetRowHtml(screen, result));
+        (route) => notYetRowHtml(screen, route));
     case "closed":
       return routeCards(at, group.routes, ({ result }) => closedRowHtml(result, screen.glossary));
     case "arranged":

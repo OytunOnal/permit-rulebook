@@ -2301,7 +2301,7 @@
   {
    "from": "src/lib/verdict/compose/printed-shortfall.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
-   "kind": "dependency"
+   "kind": "type-only"
   },
   {
    "from": "src/lib/verdict/compose/types.ts",
@@ -2364,6 +2364,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/verdict/reckon/layout/figure-gaps.ts",
+   "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/verdict/reckon/layout/in-view.ts",
    "to": "src/lib/scope.ts",
    "kind": "dependency"
@@ -2420,12 +2425,22 @@
   },
   {
    "from": "src/lib/verdict/reckon/layout/route-standing.ts",
+   "to": "src/lib/verdict/reckon/layout/figure-gaps.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/route-standing.ts",
    "to": "src/lib/verdict/reckon/layout/money-shortfall.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/reckon/layout/route-standing.ts",
    "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/reckon/layout/verdict-layout.ts",
+   "to": "src/lib/verdict/reckon/layout/figure-gaps.ts",
    "kind": "type-only"
   },
   {
@@ -5412,6 +5427,11 @@
    "from": "tests/verdict-short-on-a-figure.test.ts",
    "to": "src/lib/copy/verdict.ts",
    "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-short-on-a-figure.test.ts",
+   "to": "src/lib/verdict/verdict.ts",
+   "kind": "type-only"
   },
   {
    "from": "tests/verdict-short-on-a-figure.test.ts",
@@ -9527,5 +9547,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "6cabaa24e1b90eaddf332da4faca48e4c8aa523647eabd826dc59e7ba76d5322"
+ "digest": "c7faffb0c127d9d0aa32d1be9feecb7acb05611dc5589073aa92e5a67dd8f28e"
 }
