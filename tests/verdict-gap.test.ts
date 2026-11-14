@@ -327,3 +327,22 @@ describe("a route standing carries its money shortfall and what it is measured o
     expect(drawn.length, "precondition: rails are drawn").toBeGreaterThan(1);
   });
 });
+
+describe("a route standing's money gap carries its shortfall decided (#375)", () => {
+  it("from a bounded band, its figure gap is the bounded gap", () => {
+    const band = boundedBelowTheLine();
+    const answers: Profile = { ...HOSTILE, [SALARY]: band.id };
+    const { route, threshold } = nearOn(answers);
+    expect(standingOn(verdictFor(answers), route).figureGaps).toEqual([
+      { kind: "money", shortfall: { kind: "bounded", field: SALARY, gap: expect.closeTo(threshold - band.min!, 2) } },
+    ]);
+  });
+
+  it("from a band open at the bottom, its figure gap is the line, with the reader's band", () => {
+    const answers: Profile = { ...HOSTILE, [SALARY]: lowest.id };
+    const { route, threshold } = nearOn(answers);
+    expect(standingOn(verdictFor(answers), route).figureGaps).toEqual([
+      { kind: "money", shortfall: { kind: "open-below", field: SALARY, line: threshold, band: lowest } },
+    ]);
+  });
+});

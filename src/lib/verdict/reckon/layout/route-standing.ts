@@ -1,5 +1,6 @@
 // @level application
 import type { RouteResult } from "permit-rulebook-data";
+import { figureGapsOf } from "./figure-gaps.js";
 import { bandOf, measuredCriterionOf, moneyShortfallOf, type MoneyShortfall } from "./money-shortfall.js";
 import type { AnsweredDataset, MeasuredOn, RouteStanding, RouteStandings } from "./verdict-layout.js";
 
@@ -20,6 +21,7 @@ const shortfallOf = (answeredDataset: AnsweredDataset, r: RouteResult): MoneySho
 const routeStandingOf = (answeredDataset: AnsweredDataset, r: RouteResult): RouteStanding => ({
   shortfall: shortfallOf(answeredDataset, r),
   measuredOn: measuredOnOf(answeredDataset, r),
+  figureGaps: figureGapsOf(answeredDataset.ds, r, answeredDataset.answers),
 });
 
 /** Each route's standing, by its id: the one place the card, the headline and

@@ -25,7 +25,9 @@ import { glossedLearnLinkText } from "../../../quote.js";
 import { esc, escAttr, failDetailHtml, whyHtml } from "../../../reason.js";
 import { url } from "../../../site.js";
 import { routePath } from "../../../slug.js";
-import { bandOf, figureGapsOf, hasLiveUnknown, type RouteStanding, type Step } from "../../reckon/reckon-verdict.js";
+import {
+  bandOf, figureGapsOf, hasLiveUnknown, type FigureGap, type RouteStanding, type Step,
+} from "../../reckon/reckon-verdict.js";
 import { printedFigureGapOf, printedShortfallOf } from "../printed-shortfall.js";
 import type { VerdictScreen } from "../types.js";
 
@@ -109,16 +111,16 @@ function pointsNoteHtml(r: RouteResult): string {
   return `<div class="gapnote"><b>${esc(shortByPoints(r.gap_points))}</b> ${esc(POINTS_TABLE_HINT)}</div>`;
 }
 
-/** Each figure a route is short on, printed on the answers given. */
-const printedFigureGapsOf = (screen: VerdictScreen, r: RouteResult, answers: Profile) =>
-  figureGapsOf(r).map((gap) => printedFigureGapOf(screen.ds, gap, answers));
+/** Each figure gap printed, in the order given. */
+const printedFigureGapsOf = (screen: VerdictScreen, gaps: FigureGap[]) =>
+  gaps.map((gap) => printedFigureGapOf(screen.ds, gap));
 
 /** What a route within reach is short on, as its badge names it: each amount
  * by its field's short label, then points (ruling 9 on #187). */
-function shortOnBadge(screen: VerdictScreen, r: RouteResult): string {
-  const gaps = figureGapsOf(r);
-  if (!gaps.length) throw new Error(`${r.route.id} is within reach and its results carry no figure gap`);
-  const amounts = gaps.flatMap((g) => (g.kind === "money" ? [shortLabelOf(screen.ds, g.criterion.field).toLowerCase()] : []));
+function shortOnBadge(screen: VerdictScreen, { result: r, standing }: RouteWithStanding): string {
+  const gaps = standing.figureGaps;
+  if (!gaps.length) throw new Error(`${r.route.id} is within reach and its standing carries no figure gap`);
+  const amounts = gaps.flatMap((g) => (g.kind === "money" ? [shortLabelOf(screen.ds, g.shortfall.field).toLowerCase()] : []));
   const points = gaps.some((g) => g.kind === "points") ? [POINTS_FIGURE] : [];
   return shortOn([...new Set(amounts), ...points]);
 }
@@ -134,9 +136,10 @@ interface BadgeFrame {
 
 /** A full card's badge: "Rules met" under "unsettled for your passport", what
  * a route within reach is short on, or the route's own status. */
-function badgeFrameOf(screen: VerdictScreen, r: RouteResult, look: CardLook): BadgeFrame {
+function badgeFrameOf(screen: VerdictScreen, route: RouteWithStanding, look: CardLook): BadgeFrame {
+  const { result: r } = route;
   if (look.badge === "rules-met") return { frame: "rules-met", cls: "unsettled", words: RULES_MET };
-  if (r.status === "near") return { frame: "short", cls: r.status, words: shortOnBadge(screen, r) };
+  if (r.status === "near") return { frame: "short", cls: r.status, words: shortOnBadge(screen, route) };
   return { frame: r.status === "met" ? "met" : "short", cls: r.status, words: STATUS_LABEL[r.status] };
 }
 
@@ -150,7 +153,7 @@ function leadLineHtml(screen: VerdictScreen, { result: r, standing }: RouteWithS
   const { ds, answers } = screen;
   const shortOnMeasuredMoneyAlone = r.gap_points === undefined && standing.measuredOn !== null;
   if (r.status !== "near" || shortOnMeasuredMoneyAlone) return whyHtml(ds, r, answers);
-  return esc(printedFigureGapsOf(screen, r, answers).map(figureGapSentence).join(" "));
+  return esc(printedFigureGapsOf(screen, standing.figureGaps).map(figureGapSentence).join(" "));
 }
 
 /**
@@ -163,7 +166,7 @@ function leadLineHtml(screen: VerdictScreen, { result: r, standing }: RouteWithS
 export function fullCardHtml(screen: VerdictScreen, route: RouteWithStanding, look: CardLook): string {
   const { ds } = screen;
   const { result: r, standing } = route;
-  const badge = badgeFrameOf(screen, r, look);
+  const badge = badgeFrameOf(screen, route, look);
   const notTaken = pathsNotTakenOf(r);
   return `
         <article class="route"${cameFromMark(screen, r)}>
@@ -193,9 +196,9 @@ export function fullCardHtml(screen: VerdictScreen, route: RouteWithStanding, lo
  * figure gap and a live unknown: in the card's words, and the row stays under
  * "Not yet", since the unknown may already meet the route (ruling 10 on #187).
  */
-function gapFirstHtml(screen: VerdictScreen, r: RouteResult): string {
+function gapFirstHtml(screen: VerdictScreen, { result: r, standing }: RouteWithStanding): string {
   if (r.hard_fail || !hasLiveUnknown(screen, r)) return "";
-  const gaps = printedFigureGapsOf(screen, r, screen.answers);
+  const gaps = printedFigureGapsOf(screen, standing.figureGaps);
   return gaps.length ? `${esc(gaps.map(figureGapSentence).join(" "))} ` : "";
 }
 
@@ -205,9 +208,10 @@ function gapFirstHtml(screen: VerdictScreen, r: RouteResult): string {
  * cannot change it (critique #4) — or where it is the route the reader came
  * from.
  */
-export function notYetRowHtml(screen: VerdictScreen, r: RouteResult): string {
+export function notYetRowHtml(screen: VerdictScreen, route: RouteWithStanding): string {
   const { ds, answers, glossary } = screen;
-  const short = `${gapFirstHtml(screen, r)}${whyHtml(ds, r, answers).split(". ")[0].replace(/\.$/, "")}`;
+  const { result: r } = route;
+  const short = `${gapFirstHtml(screen, route)}${whyHtml(ds, r, answers).split(". ")[0].replace(/\.$/, "")}`;
   const open = hasLiveUnknown(screen, r) || r.route.id === screen.cameFrom;
   return `
         <details class="route-hold"${cameFromMark(screen, r)}${open ? " open" : ""}>
@@ -233,7 +237,8 @@ export function notYetRowHtml(screen: VerdictScreen, r: RouteResult): string {
  * step taken, each as a bound (ruling 9 on #187). */
 function unlockedRouteHtml(screen: VerdictScreen, r: RouteResult, taken: Profile): string {
   if (r.status === "met") return `<li>${esc(routeName(screen, r))} — <b>${esc(WOULD_BE_MET)}</b></li>`;
-  const gaps = printedFigureGapsOf(screen, r, taken);
+  // For now: the step's place carries these once #378 lands (ruling 5 on #322).
+  const gaps = printedFigureGapsOf(screen, figureGapsOf(screen.ds, r, taken));
   if (!gaps.length) throw new Error(`a step lists ${r.route.id}, which it neither meets nor leaves short on a figure`);
   return `<li>${esc(routeName(screen, r))} — <i>${esc(wouldThenBeShortOnly(gaps))}</i></li>`;
 }
