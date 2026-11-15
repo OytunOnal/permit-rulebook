@@ -17,6 +17,10 @@ import { watchRunOf, type WatchRun } from "./dataset-wide/watch-run.js";
 export type { DatasetCounts } from "./dataset-wide/dataset-counts.js";
 export type { ReadRange } from "./dataset-wide/read-range.js";
 export type { WatchRun } from "./dataset-wide/watch-run.js";
+export {
+  audienceNotice, cardValues, noticesOn, ownUnread, pageStamp, printedNotices, routeSourceUrls, ruleCriteria,
+  valuesUnder,
+} from "./per-page/printed-quotes.js";
 
 /** What a page prints about the dataset as a whole. */
 export interface DatasetFacts {

@@ -88,6 +88,7 @@
     "src/lib/dataset-facts/dataset-wide/dataset-counts.ts",
     "src/lib/dataset-facts/dataset-wide/read-range.ts",
     "src/lib/dataset-facts/dataset-wide/watch-run.ts",
+    "src/lib/dataset-facts/per-page/printed-quotes.ts",
     "src/lib/dataset-facts/reckon-dataset-facts.ts"
    ]
   },
@@ -332,6 +333,7 @@
   "src/lib/dataset-facts/dataset-wide/dataset-counts.ts": "application",
   "src/lib/dataset-facts/dataset-wide/read-range.ts": "application",
   "src/lib/dataset-facts/dataset-wide/watch-run.ts": "application",
+  "src/lib/dataset-facts/per-page/printed-quotes.ts": "application",
   "src/lib/dataset-facts/reckon-dataset-facts.ts": "application",
   "src/lib/dataset-ld.ts": "presentation",
   "src/lib/feedback-page.ts": "presentation",
@@ -1186,6 +1188,11 @@
    "kind": "type-only"
   },
   {
+   "from": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "to": "src/lib/dataset-facts/per-page/printed-quotes.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/dataset-ld.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -1847,6 +1854,11 @@
   },
   {
    "from": "src/lib/route-page/blocks/route-figure.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/route-figure.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -1868,6 +1880,11 @@
   {
    "from": "src/lib/route-page/blocks/rule-card.ts",
    "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
   {
@@ -9824,5 +9841,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "314fe4a25d963922d7e2f5ae0b4650f9e9934afa9290aea79f4b39080ddeb723"
+ "digest": "71453d113882611374049ed8cedf1774b5675b2aa51b6ab55c85b6b444d03473"
 }

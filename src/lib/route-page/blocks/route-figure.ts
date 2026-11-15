@@ -7,7 +7,8 @@ import { esc } from "../../reason.js";
 import {
   ANSWER_SOURCED, NO_FIGURE, NO_FIGURE_LABEL, POINTS_FIGURE_LABEL, pointsFigure,
 } from "../../copy/route-page.js";
-import { readDateTime, ruleCriteria } from "./rule-card.js";
+import { ruleCriteria } from "../../dataset-facts/reckon-dataset-facts.js";
+import { readDateTime } from "./rule-card.js";
 
 /**
  * A route in one line, for the list of the country's other routes. The summary's
