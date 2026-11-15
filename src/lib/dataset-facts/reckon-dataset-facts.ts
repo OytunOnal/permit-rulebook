@@ -30,18 +30,12 @@ export interface DatasetFacts {
   counts: DatasetCounts;
 }
 
-/**
- * Every fact a page prints about the dataset, on the watch's `watchState`.
- * `run` asks about another run than the state's own; what it leaves out is
- * read from the state.
- */
-export function reckonDatasetFacts(
-  dataset: Dataset, watchState: WatchState, run: Partial<WatchRun> = {},
-): DatasetFacts {
+/** Every fact a page prints about the dataset, on the watch's `watchState`. */
+export function reckonDatasetFacts(dataset: Dataset, watchState: WatchState): DatasetFacts {
   return {
     readRange: readRangeOf(dataset),
     newestValueChanged: newestValueChangedOf(dataset),
-    watchRun: watchRunOf(dataset, watchState, run),
+    watchRun: watchRunOf(dataset, watchState),
     counts: datasetCountsOf(dataset),
   };
 }

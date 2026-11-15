@@ -1,7 +1,7 @@
 // @level presentation
 import {
   phraseOf, countryVocabulary, proseProvenance, unreadClause,
-  type Country, type Dataset,
+  type Country, type Dataset, type WatchState,
 } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
@@ -197,14 +197,14 @@ function takeSectionHtml(dataset: Dataset): string {
 }
 
 /**
- * `run.lastRun` and `run.unread` are the two facts on this page that move
- * without a person: the day the watch last ran, and the sources it could not
- * read that day. They are an argument for the reason the route page's run is
- * one — a render has to be askable about a run other than today's — and what
- * `run` leaves out is read from the live state, which is what the build does.
+ * The watch's last run and the sources it could not read are the two facts on
+ * this page that move without a person, and they come from `state`, the
+ * watch's state the page is built on: the live one, which is what the build
+ * does, or a copy that carries another run, so a render can be asked about a
+ * run other than today's.
  */
-export function dataPage(dataset: Dataset, run: Partial<WatchRun> = {}): DataPage {
-  const facts = reckonDatasetFacts(dataset, watchState, run);
+export function dataPage(dataset: Dataset, state: WatchState = watchState): DataPage {
+  const facts = reckonDatasetFacts(dataset, state);
   const { counts } = facts;
   const page: DataPageFacts = { dataset, facts, prose: proseProvenance(dataset) };
   const title = `The data · ${PRODUCT_NAME}`;

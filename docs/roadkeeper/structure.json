@@ -2947,6 +2947,11 @@
   },
   {
    "from": "tests/base-path.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/base-path.test.ts",
    "to": "tests/workflow-text.ts",
    "kind": "dependency"
   },
@@ -4156,6 +4161,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/read-range.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/reader-pages.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -4283,11 +4293,6 @@
   {
    "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/not-found.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/route-page-dates.test.ts",
-   "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
@@ -4461,6 +4466,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s11.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s12.test.ts",
    "to": "src/lib/copy/data-page.ts",
    "kind": "dependency"
@@ -4488,6 +4498,11 @@
   {
    "from": "tests/s12.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s12.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -4701,6 +4716,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s19.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s20.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -4853,6 +4873,11 @@
   {
    "from": "tests/s23.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s23.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -5111,6 +5136,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s28.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/s30.test.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -5311,6 +5341,11 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/s9.test.ts",
+   "to": "tests/watch-state-at.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/screen.test.ts",
    "to": "src/lib/copy/interview.ts",
    "kind": "dependency"
@@ -5413,6 +5448,11 @@
   {
    "from": "tests/shorthand.test.ts",
    "to": "tests/browser-walk.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/shorthand.test.ts",
+   "to": "tests/watch-state-at.ts",
    "kind": "dependency"
   },
   {
@@ -5703,6 +5743,11 @@
   {
    "from": "tests/walk-site.test.ts",
    "to": "tests/layout-shifts.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/watch-state-at.ts",
+   "to": "src/lib/site.ts",
    "kind": "dependency"
   },
   {
@@ -9779,5 +9824,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "968d1b7bb8e43c88b79d09595d3368234be754969877e0787814754af201b3d3"
+ "digest": "314fe4a25d963922d7e2f5ae0b4650f9e9934afa9290aea79f4b39080ddeb723"
 }

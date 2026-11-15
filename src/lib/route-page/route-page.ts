@@ -2,7 +2,7 @@
 import {
   scopeLine, phraseOf, possessiveAtStartOf, criterionPhrase, formatEURPer, forEachCriterion,
   isScored, joinAnd, periodOf, shortLabelOf,
-  type Country, type Dataset, type Route, type UnreadSource,
+  type Country, type Dataset, type Route, type UnreadSource, type WatchState,
 } from "permit-rulebook-data";
 // One module explains an abbreviation, so the route page and the results card
 // say the same words for the same token (2026-09-08).
@@ -15,7 +15,7 @@ import {
   DATA_LICENCE_FULL, DATA_LICENCE_NAME, FEEDBACK_PATH, REPO_DATA,
   absolute, url, watchState,
 } from "../site.js";
-import { reckonDatasetFacts, type WatchRun } from "../dataset-facts/reckon-dataset-facts.js";
+import { reckonDatasetFacts } from "../dataset-facts/reckon-dataset-facts.js";
 import {
   ROUTE_PAGE_ADDENDUM,
   NOT_ASKED_SCOPE_HEADING, ROUTE_PAGE_UNSCORED_ADDENDUM, ROUTE_TAGLINE, alsoInHeading, askedRouteDescription,
@@ -116,17 +116,17 @@ function description(dataset: Dataset, country: Country, route: Route): string {
 /**
  * One route page.
  *
- * `run.lastRun` is the day the watch last re-read every source — the single
- * value on this page that moves without anyone editing anything. It is an
- * argument rather than a read inside the footer so that a render over a frozen
- * dataset is genuinely frozen: the fingerprint case hashed a page that changed
- * by itself, and failed the first build a data change ever reached through the
- * dispatch (CI 2026-09-09). What that run could not read, `run.unread`, moves
- * with it, and is read the same way, for the same reason. Either one left out
- * is read from the watch's state.
+ * The day the watch last re-read every source is the single value on this
+ * page that moves without anyone editing anything, and what that run could not
+ * read moves with it. Both come from `state`, the watch's state the page is
+ * built on, an argument rather than a read inside the footer so that a render
+ * over a frozen dataset is genuinely frozen: the fingerprint case hashed a page
+ * that changed by itself, and failed the first build a data change ever
+ * reached through the dispatch (CI 2026-09-09). A render about another run is
+ * handed a copy of the state that carries that run.
  */
-export function routePage(dataset: Dataset, address: RouteAddress, run: Partial<WatchRun> = {}): RoutePage {
-  const facts = reckonDatasetFacts(dataset, watchState, run);
+export function routePage(dataset: Dataset, address: RouteAddress, state: WatchState = watchState): RoutePage {
+  const facts = reckonDatasetFacts(dataset, state);
   const watch = facts.watchRun;
   const { country, route } = address;
   const read = pageStamp(dataset, route);
@@ -156,8 +156,8 @@ export function routePage(dataset: Dataset, address: RouteAddress, run: Partial<
 }
 
 /** Every route page this dataset produces. 23 at launch. */
-export function routePages(dataset: Dataset, run: Partial<WatchRun> = {}): RoutePage[] {
-  return routeAddresses(dataset).map((a) => routePage(dataset, a, run));
+export function routePages(dataset: Dataset, state: WatchState = watchState): RoutePage[] {
+  return routeAddresses(dataset).map((a) => routePage(dataset, a, state));
 }
 
 /** The masthead: the route's name, the tagline, the lede and the read stamp. */

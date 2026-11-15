@@ -4,6 +4,7 @@ import { noticeSources, routeProvenance, type Dataset } from "permit-rulebook-da
 import { dataPage } from "../src/lib/data-page.js";
 import { NEWEST_VALUE_CHANGED } from "../src/lib/copy/data-page.js";
 import { footerIn } from "./frame-alone.js";
+import { watchStateAt } from "./watch-state-at.js";
 
 /**
  * The read range counts every sentence the site quotes, values and notices
@@ -20,7 +21,7 @@ import { footerIn } from "./frame-alone.js";
 const ds = dataset as unknown as Dataset;
 
 /** A fixed run, so no case reads the watch's live state. */
-const RUN = { lastRun: "2026-09-30", unread: [] };
+const RUN = watchStateAt("2026-09-30");
 
 /** Every day a value was read on, oldest first. */
 const valueDays = (d: Dataset): string[] =>

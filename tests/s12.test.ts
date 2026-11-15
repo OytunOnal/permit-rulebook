@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import type { Dataset, UnreadSource } from "permit-rulebook-data";
+import type { Dataset } from "permit-rulebook-data";
 import { dataPage } from "../src/lib/data-page.js";
 import { LAST_CHECKED, NEWEST_VALUE_CHANGED } from "../src/lib/copy/data-page.js";
 import { datasetDay } from "../src/lib/copy/frame.js";
 import { watchState } from "../src/lib/site.js";
 import { reckonDatasetFacts } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { siteReadDate } from "../src/lib/country-page.js";
+import { watchStateAt } from "./watch-state-at.js";
 
 /**
  * s12 — two labels that mean what they say.
@@ -57,11 +58,9 @@ const stampedDate = (html: string): string | undefined =>
   /<div class="stamps">[\s\S]*?<time datetime="([^"]*)"/.exec(html)?.[1];
 
 /** Spain's salary-threshold PDF: the source s11's partial run could not read. */
-const spain: UnreadSource = {
+const spain = {
   id: "es-uge-umbral-pdf",
   url: "https://www.inclusion.gob.es/documents/d/unidadgrandesempresas/umbral-salarial.pdf",
-  last_read: "2026-09-07",
-  countries: ["ES"],
 };
 
 describe("what /data/ says about when a value changed", () => {
@@ -104,7 +103,7 @@ describe("what /data/ says about when a value changed", () => {
     expect(NOTICE_DAY > factsOf(fake).newestValueChanged, "the bent date is not newer than every value").toBe(true);
     expect(siteReadDate(fake), "the bent notice did not reach the stamp").toBe(NOTICE_DAY);
 
-    const html = dataPage(fake, { lastRun: "2026-09-30", unread: [] }).html;
+    const html = dataPage(fake, watchStateAt("2026-09-30")).html;
     expect(under(html, NEWEST_VALUE_CHANGED), "a re-read notice moved a row about values changing")
       .toBe(factsOf(fake).newestValueChanged);
     expect(stampedDate(html), "the stamp lost the newest date the site published").toBe(NOTICE_DAY);
@@ -128,7 +127,7 @@ describe("what /data/ says about when everything was last checked", () => {
    */
   it("is the run the sentence below it prints, never a second copy", () => {
     for (const run of ["2026-09-15", "1970-01-01"]) {
-      const html = dataPage(ds, { lastRun: run, unread: [] }).html;
+      const html = dataPage(ds, watchStateAt(run)).html;
       expect(under(html, LAST_CHECKED)).toBe(run);
       expect(readerSees(html)).toContain(`last run ${run}`);
     }
@@ -141,7 +140,7 @@ describe("what /data/ says about when everything was last checked", () => {
    * in a list of one-line facts (s11, 2026-09-15, stands as it is).
    */
   it("states the run and leaves the exception to the sentence that can carry it", () => {
-    const html = dataPage(ds, { lastRun: "2026-09-15", unread: [spain] }).html;
+    const html = dataPage(ds, watchStateAt("2026-09-15", [spain])).html;
     expect(under(html, LAST_CHECKED)).toBe("2026-09-15");
     expect(readerSees(html)).toContain("A Spanish source did not answer on the last run");
   });
@@ -155,7 +154,7 @@ describe("what /data/ says about when everything was last checked", () => {
    * for a machine to read as a fact.
    */
   it("prints no row at all when the state has no run", () => {
-    const html = dataPage(ds, { lastRun: "", unread: [] }).html;
+    const html = dataPage(ds, watchStateAt("")).html;
     expect(termsOf(html)).not.toContain(LAST_CHECKED);
     expect(html).not.toContain(LAST_CHECKED);
     expect(html, "an empty date is on the page for a machine to read").not.toContain(`datetime=""`);
@@ -165,7 +164,7 @@ describe("what /data/ says about when everything was last checked", () => {
 
 describe("how the two rows are built", () => {
   it("both are dates, marked up as dates, like the rows around them", () => {
-    const html = dataPage(ds, { lastRun: "2026-09-15", unread: [] }).html;
+    const html = dataPage(ds, watchStateAt("2026-09-15")).html;
     const newest = factsOf(ds).newestValueChanged;
     expect(html).toContain(`<dt>${NEWEST_VALUE_CHANGED}</dt><dd><time datetime="${newest}">${newest}</time></dd>`);
     expect(html).toContain(`<dt>${LAST_CHECKED}</dt><dd><time datetime="2026-09-15">2026-09-15</time></dd>`);
@@ -177,7 +176,7 @@ describe("how the two rows are built", () => {
    * is what a second copy typed into the template would break.
    */
   it("says each label once, in the words the copy module holds", () => {
-    const html = dataPage(ds, { lastRun: "2026-09-15", unread: [] }).html;
+    const html = dataPage(ds, watchStateAt("2026-09-15")).html;
     for (const label of [NEWEST_VALUE_CHANGED, LAST_CHECKED])
       expect(html.split(label).length - 1, label).toBe(1);
   });

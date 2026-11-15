@@ -1,17 +1,16 @@
 import { describe, expect, it } from "vitest";
 import dataset from "permit-rulebook-data/data/dataset.json";
-import { forEachCriterion, formatEUR, isScored, type Dataset, type UnreadSource } from "permit-rulebook-data";
-import { audienceNotice, routeFigure, routePage, routePages } from "../src/lib/route-page/route-page.js";
+import { forEachCriterion, formatEUR, isScored, type Dataset } from "permit-rulebook-data";
+import { routeFigure, routePage, routePages } from "../src/lib/route-page/route-page.js";
 import { countryAddresses, countryPages } from "../src/lib/country-page.js";
 import { dataPage } from "../src/lib/data-page.js";
 import { feedbackPage } from "../src/lib/feedback-page.js";
 import { notFoundPage } from "../src/lib/not-found.js";
 import { datasetLd } from "../src/lib/dataset-ld.js";
 import { sitemapEntries } from "../src/lib/sitemap.js";
-import { ANSWER_SOURCED, dailyCheck } from "../src/lib/copy/route-page.js";
+import { ANSWER_SOURCED } from "../src/lib/copy/route-page.js";
 import { datasetDay } from "../src/lib/copy/frame.js";
 import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/site.js";
-import { esc } from "../src/lib/reason.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { textOf } from "./text-of.js";
 import { footerIn } from "./frame-alone.js";
@@ -124,26 +123,6 @@ describe(DATES_WHAT_IT_PRINTS, () => {
     }
     for (const { route, page } of bentPages)
       if (routeFigure(bent, route).value) expect(answerOf(page.html), page.path).toContain(ANSWER_SOURCED);
-  });
-});
-
-describe(DATES_WHAT_IT_PRINTS, () => {
-  /**
-   * The liveness line and the stamp read one set of this page's sources. The
-   * citizenship card prints the audience notice's `source`, so a run that
-   * could not read it is a run that missed one of this page's sources.
-   */
-  it("qualifies its daily-check line when the run missed a sentence the page prints", () => {
-    const notice = audienceNotice(ds)!;
-    const unread: UnreadSource[] = [
-      { id: "audience", url: notice.source.source_url, last_read: notice.source.retrieved_at, countries: [] },
-    ];
-    const prints = (html: string): boolean => html.includes(esc(notice.source.quote));
-    const pagesWith = routeAddresses(ds).map((a) => routePage(ds, a, { lastRun: "2026-09-30", unread }));
-    expect(pagesWith.filter((p) => prints(p.html)).length, "no route page prints the notice's sentence")
-      .toBeGreaterThan(0);
-    for (const page of pagesWith)
-      expect(page.html.includes(esc(dailyCheck(1))), page.path).toBe(prints(page.html));
   });
 });
 

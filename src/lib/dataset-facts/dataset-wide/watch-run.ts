@@ -17,17 +17,10 @@ export interface WatchRun {
 }
 
 /**
- * The watch run of `state`, or of the run `run` asks about: what `run` leaves
- * out is read from the state.
- *
- * A render has to be askable about a run other than the state's own, so a
- * render over a frozen dataset stays frozen (CI 2026-09-09). An unread list
- * belongs to the pass that wrote it, so a run other than the state's has
- * none: that is what keeps the root build's fingerprint frozen, which renders
- * the footer at a day no watch ever ran (2026-09-09).
+ * The run `state` records: its day, and the sources that pass could not read,
+ * of the ones a reader is looking at. A render about another run is handed a
+ * state that carries that run (#382, ruling 22).
  */
-export function watchRunOf(dataset: Dataset, state: WatchState, run: Partial<WatchRun> = {}): WatchRun {
-  const stateRun = state.last_run ?? "";
-  const lastRun = run.lastRun ?? stateRun;
-  return { lastRun, unread: run.unread ?? (lastRun === stateRun ? unreadSources(dataset, state) : []) };
+export function watchRunOf(dataset: Dataset, state: WatchState): WatchRun {
+  return { lastRun: state.last_run ?? "", unread: unreadSources(dataset, state) };
 }

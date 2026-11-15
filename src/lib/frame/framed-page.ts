@@ -1,7 +1,7 @@
 // @level presentation
 import type { Dataset } from "permit-rulebook-data";
 import { esc } from "../reason.js";
-import { reckonDatasetFacts, type DatasetFacts, type WatchRun } from "../dataset-facts/reckon-dataset-facts.js";
+import { reckonDatasetFacts, type DatasetFacts } from "../dataset-facts/reckon-dataset-facts.js";
 import { analyticsBeacon, headMeta, watchState } from "../site.js";
 import { contentSecurityPolicy } from "./head/csp.js";
 import { footerFacts } from "./body/footer-facts.js";
@@ -35,14 +35,11 @@ export interface PageInFrame {
   /** The page's own style rules, after the frame's. */
   css?: string;
   place?: PagePlace;
-  /** The page's own reckoning of the dataset's facts, which the footer prints. */
-  facts?: DatasetFacts;
   /**
-   * For a page that hands no facts: the watch run its footer reports, which
-   * the frame's own reckoning asks about. What it leaves out is read from the
-   * watch's state.
+   * The page's own reckoning of the dataset's facts, which the footer prints.
+   * A page that hands none in has the frame reckon them on the watch's state.
    */
-  run?: Partial<WatchRun>;
+  facts?: DatasetFacts;
   /** Everything between the header and the footer, the masthead included. */
   content: string;
   /** Inline scripts beyond the menu: feedback's copy script. */
@@ -74,7 +71,7 @@ function headerAndFooterOf(dataset: Dataset, place: PagePlace, facts: DatasetFac
 
 /** The document's body: the page's content between the header and the footer, then the scripts. */
 function bodyOf(dataset: Dataset, page: PageInFrame): string {
-  const facts = page.facts ?? reckonDatasetFacts(dataset, watchState, page.run);
+  const facts = page.facts ?? reckonDatasetFacts(dataset, watchState);
   const { header, footer } = headerAndFooterOf(dataset, page.place ?? {}, facts);
   const scripts = [MENU_SCRIPT, ...(page.scripts ?? [])].map((source) => `<script>${source}</script>\n`).join("");
   return `<div class="wrap">\n\n  ${header}\n\n  ${page.content}\n\n  ${footer}\n\n</div>\n${scripts}${analyticsBeacon()}`;
