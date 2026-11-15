@@ -109,6 +109,24 @@ export function datasetDay(version: string): string {
 export const capitalise = (words: string): string => words.charAt(0).toUpperCase() + words.slice(1);
 
 /**
+ * The words that explain each abbreviation the first time a page uses it,
+ * by the abbreviation, in the order `gloss.ts` looks for them (#392; ruling
+ * 39 on #382). Every page that glosses its prose says them.
+ */
+export const ABBREVIATION_WORDS: Readonly<Record<string, string>> = { // read by gloss.ts, which holds the matching
+  AufenthG: "the Residence Act",
+  BeschV: "the Employment Ordinance",
+  TFEU: "the Treaty on the Functioning of the European Union",
+  UGE: "Spain's large-companies unit",
+  IND: "the Dutch immigration service",
+  "CNO-2011": "Spain's occupation classification",
+  MVV: "the Dutch entry visa",
+  IELTS: "an English-language test",
+  Schengen: "the EU's border-free travel area",
+  "ISCO-08": "the international occupation codes",
+};
+
+/**
  * The feedback door, in the one word that opens it.
  *
  * It is said in four places — the header's row, the footer column's heading,

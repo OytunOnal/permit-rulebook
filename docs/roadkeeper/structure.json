@@ -1475,6 +1475,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/gloss.ts",
+   "to": "src/lib/copy/frame.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/identity.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -8077,6 +8082,11 @@
     "exported": true
    },
    {
+    "name": "ABBREVIATION_WORDS",
+    "kind": "const",
+    "exported": true
+   },
+   {
     "name": "FEEDBACK",
     "kind": "const",
     "exported": true
@@ -10604,5 +10614,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "3271e3e93d7b07a87d65794ec7cf7829361bda842fad8fb7a3ca602036b608b8"
+ "digest": "4afc45a57cef1231b1681044a70d16cebc8d486f081c6d618e3e32c9e18766a6"
 }
