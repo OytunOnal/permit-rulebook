@@ -14,6 +14,7 @@ import { DATA_PATH, FEEDBACK_PATH } from "../src/lib/site.js";
 import { esc } from "../src/lib/reason.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { textOf } from "./text-of.js";
+import { footerIn } from "./frame-alone.js";
 
 /**
  * The dates a route page prints: its stamp, each figure's reading, the
@@ -81,14 +82,22 @@ const audience = (bent.notices ?? []).find((n) => n.kind === "no-permit-needed")
 for (const value of audience?.sources ?? []) value.retrieved_at = NEVER_PRINTED;
 const bentPages = routeAddresses(bent).map((a) => ({ route: a.route, page: routePage(bent, a) }));
 
+/**
+ * A page without the footer every page shares. The footer's read range is the
+ * dataset's, every quoted sentence's (#323, rulings 1 and 6), so it ends on a
+ * day only the results card prints as readily as on one this page prints; the
+ * rest of the page dates only what it prints.
+ */
+const pageOwnHtml = (html: string): string => html.replace(footerIn(html), "");
+
 describe(DATES_WHAT_IT_PRINTS, () => {
   it("draws the stamp from no source the page leaves out", () => {
     expect(audience?.sources?.length, "the notice no longer carries a source the page leaves out").toBeTruthy();
     for (const { page } of bentPages) {
       expect(page.readDate, page.path).toBe(quoteDatesOf(page.html).sort().at(-1));
-      expect(page.html, page.path).not.toContain(NEVER_PRINTED);
+      expect(pageOwnHtml(page.html), page.path).not.toContain(NEVER_PRINTED);
     }
-    for (const page of countryPages(bent)) expect(page.html, page.path).not.toContain(NEVER_PRINTED);
+    for (const page of countryPages(bent)) expect(pageOwnHtml(page.html), page.path).not.toContain(NEVER_PRINTED);
   });
 
   it("a site-wide page dates the whole dataset, the sentences only the results card prints included", () => {

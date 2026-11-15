@@ -1,6 +1,5 @@
 // @level presentation
 import type { Dataset } from "permit-rulebook-data";
-import { siteReadDate } from "./country-page.js";
 import { reckonDatasetFacts, type DatasetFacts } from "./dataset-facts/reckon-dataset-facts.js";
 import { DATA_LICENCE_NAME, OWNER, REPO_DATA, absolute, watchState } from "./site.js";
 import { PRODUCT_NAME } from "./copy/frame.js";
@@ -18,7 +17,7 @@ import { datasetDescription } from "./copy/data-page.js";
  *
  * Every field below is a fact this repository already holds — the licence the
  * LICENSE file grants, the countries in the dataset, the version it carries,
- * the day its newest value was read, and the two endpoints the build actually
+ * the dataset's newest read day, and the two endpoints the build actually
  * emits. Nothing is asserted for the crawler's benefit that a reader could not
  * check on the same page.
  *
@@ -67,7 +66,8 @@ function datasetDownloads(): Record<string, string>[] {
 export function datasetLd(
   dataset: Dataset, path: string, facts: DatasetFacts = reckonDatasetFacts(dataset, watchState),
 ): string {
-  const read = siteReadDate(dataset);
+  // The end of the read range: the day the page's "Rules read" stamp prints.
+  const read = facts.readRange.newest;
   const countries = dataset.countries.map((c) => c.name);
   // Both numbers, for the same reason the page above prints both: a route the
   // product scores and a route it quotes without scoring are two different

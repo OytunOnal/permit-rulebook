@@ -1,8 +1,12 @@
 // @level application
-import { routeProvenance, type Dataset } from "permit-rulebook-data";
+import { noticeSources, routeProvenance, type Dataset } from "permit-rulebook-data";
 
 /**
- * The span of days the values on this site were read on.
+ * The read range: the span of days every sentence the site quotes was read
+ * on, values and notices alike (#323, rulings 1 and 6). Its newest day is the
+ * dataset's one newest read day, which the "Rules read" stamp and the end of
+ * the footer's range both print, so they cannot disagree; a notice re-read
+ * alone moves it, since a notice is a rule read.
  *
  * The footer says the range rather than the newest date alone: "read
  * 2026-09-08" is the flattering end of a set that starts earlier, and a reader
@@ -23,9 +27,17 @@ function valueReadDays(dataset: Dataset): string[] {
   return days.sort();
 }
 
-/** The read range: the oldest and the newest day a value was read on. */
-export function readRangeOf(dataset: Dataset): ReadRange {
+/** The day every sentence the site quotes was read on, every value's and every notice's, oldest first. */
+function quotedSentenceReadDays(dataset: Dataset): string[] {
   const days = valueReadDays(dataset);
+  for (const notice of dataset.notices ?? [])
+    for (const value of noticeSources(notice)) days.push(value.retrieved_at);
+  return days.sort();
+}
+
+/** The read range: the oldest and the newest day a quoted sentence was read on. */
+export function readRangeOf(dataset: Dataset): ReadRange {
+  const days = quotedSentenceReadDays(dataset);
   return { oldest: days[0] ?? "", newest: days[days.length - 1] ?? "" };
 }
 

@@ -1181,11 +1181,6 @@
   },
   {
    "from": "src/lib/dataset-ld.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/dataset-ld.ts",
    "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
@@ -4087,6 +4082,21 @@
   {
    "from": "tests/rail.test.ts",
    "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/copy/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/read-range.test.ts",
+   "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
   {
@@ -9680,5 +9690,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "df1dd3823d5232dd24ab19687f43ae537265d8c96230a469c5e5f0eeed457c63"
+ "digest": "90ca1a24efd37879213c66fda5878828688a79533a7fd661c3681f97fdc820c9"
 }

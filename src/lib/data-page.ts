@@ -60,12 +60,13 @@ interface DataPageFacts {
 
 /**
  * The masthead: the headline, the lede and the read stamp. The stamp takes the
- * dataset's newest read date, every sentence of every notice included, since
- * this page hands the whole dataset over: a notice re-read today is a page read
- * today, so the RULES READ stamp and the footer's range are right to take it.
+ * end of the read range, every sentence of every notice included, since this
+ * page hands the whole dataset over: a notice re-read today is a page read
+ * today. The footer's range ends on the same reckoned day, so the two cannot
+ * disagree (#323, ruling 1).
  */
 function dataMastheadHtml(page: DataPageFacts): string {
-  const { dataset, facts: { counts } } = page;
+  const { facts: { counts, readRange } } = page;
   return `<div class="masthead-with-stamps">
     <div>
       <h1>The data. <em>${esc(TAGLINE)}</em></h1>
@@ -75,7 +76,7 @@ function dataMastheadHtml(page: DataPageFacts): string {
     // s16 preview, 2026-09-16).
     dataLedeClose(`<a class="tap" href="${escAttr(url(FEEDBACK_PATH))}">${esc(DATA_LEDE_CLOSE_TAIL)}</a>`)}</p>
     </div>
-    ${rulesRead(siteReadDate(dataset))}
+    ${rulesRead(readRange.newest)}
   </div>`;
 }
 

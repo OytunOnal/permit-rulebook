@@ -26,7 +26,7 @@ export interface FooterPlace extends HeaderPlace {
 }
 
 export interface FooterFacts {
-  /** The span the values were read over, both ends. */
+  /** The read range, both ends: every quoted sentence's, notices included. */
   read: { oldest: string; newest: string };
   datasetVersion: string;
   /** The day the watch last ran — empty where it never has. */
