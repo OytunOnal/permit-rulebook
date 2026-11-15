@@ -216,8 +216,10 @@ h3{font:var(--text-route);margin:.15rem 0 .25rem}
 .foot{display:flex;justify-content:space-between;gap:1rem;align-items:baseline;border-top:var(--rule-dotted);
   margin-top:.85rem;padding-top:.6rem;flex-wrap:wrap}
 .srcs{display:grid;gap:.3rem;flex:1;min-width:16rem}
-.src{font:var(--text-source);color:var(--color-muted)}
-.src b{color:var(--color-met);font-weight:500}
+/* A quote line's look is quote-line.css, which the entry imports before this
+   sheet (#387). The first line of a card's list sits under the foot's own
+   rule, so on this screen it draws none. */
+.srcs > .src:first-child{border-top:none;padding-top:0;margin-top:0}
 .src.nosrc{font-style:italic}
 /* Where a route states two thresholds, both quotes stay — the reader may
    want to know the other exists — but only one of them is theirs. */

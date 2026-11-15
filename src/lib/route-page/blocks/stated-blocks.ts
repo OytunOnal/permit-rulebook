@@ -5,7 +5,7 @@ import {
 import { type Glossary, glossed } from "../../gloss.js";
 import { esc, escAttr } from "../../reason.js";
 import { PAGE_ALSO_SAYS, UNSOURCED_REASON_SAID, lastCheckedOn } from "../../copy/quotes.js";
-import { quoteBlock } from "./rule-card.js";
+import { quoteLineHtml } from "../../quote.js";
 
 // ---------------------------------------------------------------------------
 // The blocks beside the rules
@@ -36,7 +36,7 @@ function carveOutBlock(statement: { except?: StatementException }, seen: Glossar
   const except = statement.except;
   if (!except) return "";
   return `<div class="except"><b>Who this does not bind</b> ${
-    esc(glossed(except.text, seen))}${quoteBlock(except.source, {}, seen)}</div>`;
+    esc(glossed(except.text, seen))}${quoteLineHtml(except.source, {}, seen)}</div>`;
 }
 
 export function statedBlocks(route: Route, seen: Glossary): string {
@@ -59,9 +59,9 @@ export function statedBlocks(route: Route, seen: Glossary): string {
     // requirements, all of them, none of them checked here (s9).
     block("precond", isScored(route) ? "Also required — not checked here" : "What the authority requires",
       preconditions.map((s) =>
-        esc(glossed(s.text, seen)) + (s.source ? quoteBlock(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
+        esc(glossed(s.text, seen)) + (s.source ? quoteLineHtml(s.source, {}, seen) : "") + carveOutBlock(s, seen))),
     block("precond", PAGE_ALSO_SAYS, caveats.filter((s) => s.source).map((s) =>
-      esc(glossed(s.text, seen)) + quoteBlock(s.source!, {}, seen) + carveOutBlock(s, seen))),
+      esc(glossed(s.text, seen)) + quoteLineHtml(s.source!, {}, seen) + carveOutBlock(s, seen))),
     // A caveat we could not find the wording for is still a fact in the
     // reader's favour, so it stays — under a heading that says plainly that no
     // quote covers it, with the declared reason and the day we last looked.

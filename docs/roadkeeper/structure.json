@@ -382,6 +382,7 @@
   "src/lib/situations.ts": "application",
   "src/lib/slug.ts": "presentation",
   "src/lib/social-card.ts": "presentation",
+  "src/lib/tap.ts": "presentation",
   "src/lib/verdict/compose/answer-phrase.ts": "presentation",
   "src/lib/verdict/compose/card/blocks/card-screen.ts": "presentation",
   "src/lib/verdict/compose/card/blocks/path-line.ts": "presentation",
@@ -1455,6 +1456,11 @@
   },
   {
    "from": "src/lib/frame/head/frame-sheet.ts",
+   "to": "src/lib/quote-line.css",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/frame/head/frame-sheet.ts",
    "to": "tokens.css",
    "kind": "dependency"
   },
@@ -1844,6 +1850,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/quote.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/route-lines.ts",
    "to": "src/lib/copy/route-page.ts",
    "kind": "dependency"
@@ -1870,7 +1881,7 @@
   },
   {
    "from": "src/lib/route-page/blocks/notices.ts",
-   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/tap.ts",
    "kind": "dependency"
   },
   {
@@ -1890,6 +1901,11 @@
   },
   {
    "from": "src/lib/route-page/blocks/route-figure.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/route-figure.ts",
    "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
@@ -1899,18 +1915,8 @@
    "kind": "dependency"
   },
   {
-   "from": "src/lib/route-page/blocks/route-figure.ts",
-   "to": "src/lib/route-page/blocks/rule-card.ts",
-   "kind": "dependency"
-  },
-  {
    "from": "src/lib/route-page/blocks/rule-card.ts",
    "to": "src/lib/copy/frame.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/route-page/blocks/rule-card.ts",
-   "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
   },
   {
@@ -1944,6 +1950,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
    "to": "src/lib/copy/quotes.ts",
    "kind": "dependency"
@@ -1955,12 +1966,12 @@
   },
   {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
-   "to": "src/lib/reason.ts",
+   "to": "src/lib/quote.ts",
    "kind": "dependency"
   },
   {
    "from": "src/lib/route-page/blocks/stated-blocks.ts",
-   "to": "src/lib/route-page/blocks/rule-card.ts",
+   "to": "src/lib/reason.ts",
    "kind": "dependency"
   },
   {
@@ -2044,6 +2055,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/site.ts",
    "to": "src/lib/copy/frame.ts",
    "kind": "dependency"
@@ -2079,6 +2095,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/tap.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/lib/verdict/compose/answer-phrase.ts",
    "to": "src/lib/verdict/reckon/reckon-verdict.ts",
    "kind": "type-only"
@@ -2107,11 +2128,6 @@
    "from": "src/lib/verdict/compose/card/blocks/path-line.ts",
    "to": "src/lib/verdict/compose/card/blocks/card-screen.ts",
    "kind": "type-only"
-  },
-  {
-   "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
-   "to": "src/lib/copy/quotes.ts",
-   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/compose/card/blocks/provenance.ts",
@@ -2672,6 +2688,11 @@
    "from": "src/lib/verdict/reckon/reckon-verdict.ts",
    "to": "src/lib/verdict/reckon/layout/verdict-layout.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/verdict/verdict.ts",
+   "to": "src/lib/quote-line.css",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/verdict/verdict.ts",
@@ -4465,6 +4486,11 @@
   },
   {
    "from": "tests/route-page-frame.test.ts",
+   "to": "src/lib/tap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-frame.test.ts",
    "to": "tests/frame-alone.ts",
    "kind": "dependency"
   },
@@ -5820,6 +5846,31 @@
   },
   {
    "from": "tests/verdict-module.test.ts",
+   "to": "tests/verdict-cards.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "src/lib/copy/verdict.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "src/lib/quote.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
+   "to": "tests/personas.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/verdict-quote-lines.test.ts",
    "to": "tests/verdict-cards.ts",
    "kind": "dependency"
   },
@@ -9316,6 +9367,31 @@
     "name": "noteHtml",
     "kind": "fn",
     "exported": true
+   },
+   {
+    "name": "QuotedValue",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "QuoteLineOptions",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "readDateTime",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "quoteLineHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "trimmedQuote",
+    "kind": "fn",
+    "exported": false
    }
   ],
   "src/lib/reason.ts": [
@@ -9823,6 +9899,23 @@
     "exported": true
    }
   ],
+  "src/lib/tap.ts": [
+   {
+    "name": "TAP_CLASSES",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "tapMin",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "tapInline",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "src/pages/404.astro": [
    {
     "name": "dataset",
@@ -10061,6 +10154,7 @@
   "src/lib/situations.ts",
   "src/lib/slug.ts",
   "src/lib/social-card.ts",
+  "src/lib/tap.ts",
   "src/pages/404.astro",
   "src/pages/[country]/[route].astro",
   "src/pages/[country]/[route].json.ts",
@@ -10075,5 +10169,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "1cf408c0f0b5430e07cfc2a958a828e7e38882c351aaaff68230d6561e4d52d0"
+ "digest": "7af6d515bea14e05a9dd83f179207355dda07cf149d24d4681b3ae3078275eda"
 }

@@ -45,9 +45,13 @@ const sourcesOf = (card: string): string => blocksIn(card, "srcs");
 const sourceLines = (html: string): string[] =>
   [...html.matchAll(/<div class="src[^"]*">([\s\S]*?)<\/div>/g)].map((m) => m[1]);
 
+/** Markup with each `<q>` written as the marks the stylesheet draws round it,
+ * so a quote line reads as a person reads it (#387). */
+const marksDrawn = (html: string): string => html.replace(/<q\b[^>]*>/g, "“").replace(/<\/q>/g, "”");
+
 /** What a person actually reads: the card with its markup taken away, so the
  * quotation marks left are the ones the page shows, not the ones HTML uses. */
-const visible = (html: string): string => html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&");
+const visible = (html: string): string => marksDrawn(html).replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&");
 
 /**
  * The reader's OWN answers. A verdict quotes the button the person pressed —
@@ -110,7 +114,7 @@ describe("s5e — nothing reaches the screen in quotation marks without provenan
   it("every quote a card prints carries the host it came from and the day it was read", () => {
     for (const { r, html } of generatedCards(1357, 25))
       for (const line of sourceLines(html)) {
-        if (!/["“”]/.test(line)) continue; // the no-numeric-threshold honesty line
+        if (!/["“”]/.test(marksDrawn(line))) continue; // the no-numeric-threshold honesty line
         expect(line, r.route.id).toMatch(/read \d{4}-\d{2}-\d{2}/);
         expect(line.replace(/<[^>]+>/g, ""), r.route.id).toMatch(/·\s*[a-z0-9.-]+\.[a-z]{2,}/);
       }
@@ -300,7 +304,7 @@ describe("s5e — the card's source list grew without burying the verdict", () =
     // what the source said — never our gloss dressed as theirs.
     for (const { r, html } of generatedCards(8642, 20))
       for (const line of sourceLines(html)) {
-        const text = line.replace(/<[^>]+>/g, "");
+        const text = marksDrawn(line).replace(/<[^>]+>/g, "");
         for (const span of quotedSpans(text)) expect(span.length, r.route.id).toBeGreaterThan(4);
       }
   });

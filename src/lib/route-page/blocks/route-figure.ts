@@ -6,7 +6,7 @@ import {
 } from "../../copy/route-page.js";
 import type { PrintedQuotes } from "../../dataset-facts/reckon-dataset-facts.js";
 import { figuresOf } from "../../route-lines.js";
-import { readDateTime } from "./rule-card.js";
+import { readDateTime } from "../../quote.js";
 
 /**
  * The headline figures, each with the day its own page was read, which is the

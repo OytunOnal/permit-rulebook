@@ -31,11 +31,10 @@ import {
 import { audienceSentence, gist } from "../route-lines.js";
 import { noticeSection } from "./blocks/notices.js";
 import { answerBlock } from "./blocks/route-figure.js";
-import { ruleCard, tapMin, type RulePage } from "./blocks/rule-card.js";
+import { ruleCard, type RulePage } from "./blocks/rule-card.js";
 import { statedBlocks } from "./blocks/stated-blocks.js";
+import { tapMin } from "../tap.js";
 import ROUTE_PAGE_RULES from "./route-page.css?raw";
-
-export { TAP_CLASSES } from "./blocks/rule-card.js";
 
 /**
  * One page per route, generated from the dataset and never typed.

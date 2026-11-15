@@ -102,7 +102,8 @@ describe("the orientation year, on the card", () => {
       preconditions: ["<script>alert(1)</script>"],
       statements: [{
         id: "x", kind: "caveat", text: "a & b <em>c</em>",
-        source: { source_url: "https://example.org", quote: "quoted", retrieved_at: "2026-09-07" },
+        // On a listed host: a quote line labels its source link by the host's kind (#158, #387).
+        source: { source_url: "https://ind.nl/quoted", quote: "quoted", retrieved_at: "2026-09-07" },
       }],
     };
     const card = drawnRouteFor({}, route.id, withRoute(route));
@@ -357,8 +358,9 @@ describe("a quote on the results card is framed the way it is on a route page", 
     const html = blueCardSources();
     expect(html, "no German quote reached the card").toContain("Mindestbruttojahresgehalt");
     expect(html).toMatch(/lang="de"/);
-    // Every quote on the card is tagged, not just the first.
-    const quotes = html.match(/<i[^>]*>/g) ?? [];
+    // Every quote on the card is tagged, not just the first: a `<q>`, as on a
+    // route page, since the card's line became the route page's (#387).
+    const quotes = html.match(/<q\b[^>]*>/g) ?? [];
     expect(quotes.length).toBeGreaterThan(1);
     for (const q of quotes) expect(q, q).toContain("lang=");
   });

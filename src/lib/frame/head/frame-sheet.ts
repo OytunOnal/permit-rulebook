@@ -9,6 +9,9 @@ import IDENTITY from "../../../../identity.css?raw";
 // rules are that page's, beside its code, and reach the frame through `css`.
 import FRAME_RULES from "./frame.css?raw";
 import SHARED_BLOCKS from "./shared-blocks.css?raw";
+// The quote line's look, from the one file the results screen imports too, so
+// the two screens draw a quote alike (#387, ruling 36 on #382).
+import QUOTE_LINE from "../../quote-line.css?raw";
 /**
  * A stylesheet with line-feed line endings, whatever the checkout gave it.
  *
@@ -26,7 +29,8 @@ export const withLineFeedEndings = (css: string): string => css.split("\r\n").jo
 
 /**
  * The frame's stylesheet, before a page's own rules: the tokens, the frame's
- * own rules, the identity and the blocks several pages draw, in that order.
+ * own rules, the identity, the blocks several pages draw and the quote line,
+ * in that order.
  *
  * Inlined rather than linked: a page built as a string is one file a search
  * engine and a stranger both fetch cold, and a second request for its rules
@@ -36,4 +40,5 @@ export const FRAME_SHEET = `
 ${withLineFeedEndings(TOKENS)}
 ${withLineFeedEndings(FRAME_RULES)}
 ${withLineFeedEndings(IDENTITY)}
-${withLineFeedEndings(SHARED_BLOCKS)}`;
+${withLineFeedEndings(SHARED_BLOCKS)}
+${withLineFeedEndings(QUOTE_LINE)}`;

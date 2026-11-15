@@ -2,64 +2,18 @@
 import {
   criterionPhrase, fillRouteSlots, formatEURPer, joinAnd,
   learnLinkOf, periodOf, referencedFields, shortLabelOf, subjectOf, thresholdsUnder,
-  type Country, type Criterion, type Dataset, type Notice, type ProvenanceEntry, type Route,
+  type Country, type Criterion, type Dataset, type Notice, type Route,
 } from "permit-rulebook-data";
 import type { PrintedRule } from "../../dataset-facts/reckon-dataset-facts.js";
 import { type Glossary, glossed } from "../../gloss.js";
 // One frame for every quote the product shows, so the results card and these
 // pages cannot describe the same sentence differently (2026-09-08).
-import { glossedLearnLinkText, linkLabelOf, noteHtml, quoteFrame } from "../../quote.js";
+import { glossedLearnLinkText, quoteLineHtml } from "../../quote.js";
 import { esc, escAttr } from "../../reason.js";
+import { tapInline } from "../../tap.js";
 import { ANY_PATH, EITHER_PATH } from "../../copy/route-page.js";
 import { capitalise } from "../../copy/frame.js";
-import { readOn } from "../../copy/quotes.js";
 import { railHtml } from "./rail.js";
-
-// ---------------------------------------------------------------------------
-// The two ways an interactive element reaches the tap floor
-// ---------------------------------------------------------------------------
-
-/**
- * `tap-min` for anything that owns a box — a button, a crumb, a row in the
- * data door. `tap` for a link inside a sentence, where a taller line would
- * open a hole in the prose: it takes the height in vertical padding and gives
- * it back in negative margin.
- *
- * Every `<a>` and `<button>` on a generated page carries exactly one of them,
- * which is what makes the invariant checkable without a browser: the v0.7
- * critique measured 34/22/20 px controls, the token was written for it, and the
- * first mock designed afterwards broke it on seven of sixteen controls.
- */
-export const TAP_CLASSES = ["tap", "tap-min"] as const;
-
-export const tapMin = (extra = ""): string => `class="${escAttr(extra ? `${extra} ` : "")}tap-min"`;
-export const tapInline = (extra = ""): string => `class="${escAttr(extra ? `${extra} ` : "")}tap"`;
-
-// ---------------------------------------------------------------------------
-// The quote block
-// ---------------------------------------------------------------------------
-
-interface QuoteOptions {
-  /** The amount this quote is the proof of, where it is the proof of one. */
-  amount?: number;
-  /** What the value is called on its own line ("standard amount"). */
-  label?: string;
-}
-
-/** A read date as a quote and a headline figure both print it. */
-export const readDateTime = (day: string): string => `<time datetime="${escAttr(day)}">${esc(readOn(day))}</time>`;
-
-export function quoteBlock(value: ProvenanceEntry["value"], o: QuoteOptions = {}, seen: Glossary = new Set()): string {
-  const { lang, host, note } = quoteFrame(value, o.amount);
-  return `<div class="src">
-        <span><q${lang ? ` lang="${escAttr(lang)}"` : ""}>${esc(value.quote)}</q> · ${esc(host)}${
-    o.label ? ` · ${esc(o.label)}` : ""}${
-    value.legal_basis ? ` · ${esc(glossed(value.legal_basis, seen))}` : ""} · <b>${readDateTime(value.retrieved_at)}</b>${
-    noteHtml(note)}</span>
-        <a ${tapInline()} href="${escAttr(value.source_url)}" target="_blank" rel="noopener">${
-    esc(linkLabelOf(value.source_url))} &#8599;</a>
-      </div>`;
-}
 
 /**
  * What every rule card on one route page shares: the dataset, the country and
@@ -192,6 +146,6 @@ export function ruleCard(page: RulePage, rule: PrintedRule): string {
     thresholds.length ? `
       ${railHtml(page, thresholds[0])}` : ""}${asks}${
     values.map((e) => `
-      ${quoteBlock(e.value, { amount: e.amount, label: e.label }, seen)}`).join("")}
+      ${quoteLineHtml(e.value, { amount: e.amount, label: e.label }, seen)}`).join("")}
       </article>`;
 }
