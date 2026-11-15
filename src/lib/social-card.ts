@@ -50,9 +50,10 @@ export interface SocialCardFacts {
  * ruling 10).
  *
  * The render script is plain Node with no build step, and Node resolves a
- * specifier literally, so this module keeps its imports few: the words are
- * passed in rather than imported from the copy module (`lib/copy/`), the facts
- * are reckoned by the caller, and its relative imports name their `.ts` files.
+ * specifier literally, so this module keeps its imports few: the product's
+ * words are passed in, the card's own come from `copy/frame.ts`, which imports
+ * nothing, the facts are reckoned by the caller, and its relative imports name
+ * their `.ts` files.
  * That keeps it readable by the script, the site and the suite alike.
  */
 export function socialCardFacts(

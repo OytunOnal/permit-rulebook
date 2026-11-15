@@ -1,7 +1,8 @@
 // @level presentation
 /**
  * The words around a quote, wherever one is shown: whose page a source link
- * opens, the day it was read, and the heading over what a page also says.
+ * opens, the day it was read, the note under it, and the heading over what a
+ * page also says.
  *
  * Every word a reader reads lives in this folder, one file per screen or
  * part (CODING_STANDARDS.md, Rules).
