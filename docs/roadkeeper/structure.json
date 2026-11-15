@@ -7691,6 +7691,76 @@
     "name": "FEEDBACK_FOOTER_ROW",
     "kind": "const",
     "exported": true
+   },
+   {
+    "name": "CHECK_YOURS",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "THE_DATA",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "DATA_FOOTER_ROW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "ROUTE_AS_JSON",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "REPOSITORY_FOOTER_ROW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "licenceFooterRow",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "SPONSOR_FOOTER_ROW",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "CODE_LICENCE",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "dataLicence",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "copyrightNotice",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "readRangeHtml",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "READ_DAILY",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "LAST_RUN",
+    "kind": "const",
+    "exported": true
+   },
+   {
+    "name": "datasetVersionLabel",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "src/lib/copy/interview.ts": [
@@ -9824,5 +9894,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "314fe4a25d963922d7e2f5ae0b4650f9e9934afa9290aea79f4b39080ddeb723"
+ "digest": "3da80b1afea9e08764c7a5607d4053971e8290bb0f6cbaa9145b43f654dff5a8"
 }
