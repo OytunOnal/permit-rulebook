@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import dataset from "permit-rulebook-data/data/dataset.json";
 import {
   fieldOptions, forEachCriterion,
-  type Dataset, type Profile,
+  type Dataset,
 } from "permit-rulebook-data";
 import { EITHER_PATH, dailyCheck } from "../src/lib/copy/route-page.js";
 import { proseProvenanceCounts } from "../src/lib/copy/data-page.js";
@@ -19,6 +19,7 @@ import { watchStateAt } from "./watch-state-at.js";
 import { reckonDatasetFacts, routeFactsOf } from "../src/lib/dataset-facts/reckon-dataset-facts.js";
 import { routeAddresses } from "../src/lib/slug.js";
 import { blocksIn, drawnRouteOn, verdictFor } from "./verdict-cards.js";
+import { PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -37,13 +38,6 @@ const routeOf = (id: string) => ds.countries.flatMap((c) => c.routes).find((r) =
  * sentence that contradicted the reader, named what they could not see,
  * repeated itself, or spoke the model's language.
  */
-
-/** Priya: Indian analyst exploring all four (persona P2). No offer; one point short of the Opportunity Card. */
-const PRIYA: Profile = {
-  destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
-  occupation_shortage: "unknown", experience_5y: "2plus", experience_7y: "3to5", german: "none", english: "c1", nl_recent_grad: "no",
-  top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no", partner_ck: "no",
-};
 
 describe("the route page's liveness line names its own source or stays silent", () => {
   const run = reckonDatasetFacts(ds, watchState).watchRun.lastRun;
@@ -149,7 +143,7 @@ describe("a rule with limbs is one sentence", () => {
 
 describe("the curator's note stays in the data", () => {
   it("no card and no page carries it", () => {
-    expect(blocksIn(drawnRouteOn(verdictFor(PRIYA), "de-chancenkarte"), "srcs")).not.toContain("times out");
+    expect(blocksIn(drawnRouteOn(verdictFor(PRIYA_EXPLORING_ALL), "de-chancenkarte"), "srcs")).not.toContain("times out");
     for (const { path, text } of builtPages()) expect(text, path).not.toContain("times out");
   });
 });

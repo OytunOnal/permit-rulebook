@@ -12,6 +12,7 @@ import {
   PAINTED_AS_COMPOSED, blocksIn, drawnRouteOn, hintsIn, paintedAsComposedScript, placed, standingOn, stepsIn, verdictFor,
 } from "./verdict-cards.js";
 import { withSite } from "./browser-walk.js";
+import { PRIYA_EXPLORING_ALL } from "./personas.js";
 
 const ds = dataset as unknown as Dataset;
 const dist = fileURLToPath(new URL("../dist", import.meta.url));
@@ -34,13 +35,6 @@ const DENIZ: Profile = {
   destination: "de", citizenship: "TR", situation: "offer", situation_country: "de", qualification: "degree",
   recognition_de: "unknown", occupation_shortage: "yes", occupation_it: "yes", experience_5y: "lt2", experience_7y: "3to5", german: "a1",
   english: "c1", funds_eur_month: "band_1", salary_eur_year: "band_5", age_band: "a30to35",
-};
-
-/** Priya: Indian analyst exploring all four (persona P2). No offer; one point short of the Opportunity Card. */
-const PRIYA: Profile = {
-  destination: "all", citizenship: "IN", situation: "none", qualification: "degree", recognition_de: "unknown",
-  occupation_shortage: "unknown", experience_5y: "2plus", experience_7y: "3to5", german: "none", english: "c1", nl_recent_grad: "no",
-  top200_grad: "unknown", funds_eur_month: "band_1", age_band: "u30", de_stay6m: "no", partner_ck: "no",
 };
 
 const fieldKind = (id: string) => ds.fields.find((f) => f.id === id)?.kind;
@@ -75,7 +69,7 @@ describe("the job-search sentence reaches only a reader without an offer", () =>
 
   it("an explorer with an open job-search permit is told it is exactly for this", () => {
     // Priya, with the two unknowns answered her way, opens the Opportunity Card.
-    const explorer: Profile = { ...PRIYA, recognition_de: "recognized", occupation_shortage: "yes" };
+    const explorer: Profile = { ...PRIYA_EXPLORING_ALL, recognition_de: "recognized", occupation_shortage: "yes" };
     expect(seekOpen(explorer), "the profile no longer opens a job-search route").toBe(true);
     const html = hintsIn(verdictFor(explorer));
     expect(html).toContain(SEEK_HINT);
@@ -83,17 +77,17 @@ describe("the job-search sentence reaches only a reader without an offer", () =>
   });
 
   it("an offer-holder, a transferee and a researcher never see it — whatever their cards say", () => {
-    const explorer: Profile = { ...PRIYA, recognition_de: "recognized", occupation_shortage: "yes" };
+    const explorer: Profile = { ...PRIYA_EXPLORING_ALL, recognition_de: "recognized", occupation_shortage: "yes" };
     for (const situation of fieldOptions(ds, SITUATION_FIELD).filter((o) => !o.is_fallback && !o.is_unknown)) {
       const declared = { ...explorer, [SITUATION_FIELD]: situation.value };
       expect(hintsIn(verdictFor(declared)), situation.value).toBe("");
     }
     // Derived from the option the dataset marks as the fallback, not from a typed "none".
-    expect(fieldOptions(ds, SITUATION_FIELD).find((o) => o.is_fallback)?.value).toBe(PRIYA[SITUATION_FIELD]);
+    expect(fieldOptions(ds, SITUATION_FIELD).find((o) => o.is_fallback)?.value).toBe(PRIYA_EXPLORING_ALL[SITUATION_FIELD]);
   });
 
   it("and not without a step to take, nor without an open job-search permit", () => {
-    const explorer: Profile = { ...PRIYA, recognition_de: "recognized", occupation_shortage: "yes" };
+    const explorer: Profile = { ...PRIYA_EXPLORING_ALL, recognition_de: "recognized", occupation_shortage: "yes" };
     // The sentence stands under a section's steps, so a section that offers
     // none carries none, and only the section that holds the open job-search
     // permit carries it.
@@ -106,7 +100,7 @@ describe("the job-search sentence reaches only a reader without an offer", () =>
         && r.country === section.country);
       if (!steps || !seeks) expect(hint, section.country).toBe(false);
     }
-    expect(hintsIn(verdictFor(PRIYA))).toBe("");
+    expect(hintsIn(verdictFor(PRIYA_EXPLORING_ALL))).toBe("");
   });
 });
 
@@ -131,9 +125,9 @@ describe("the unlock steps are ordered by what the reader can do", () => {
     // The headline names a step where nothing is open: Priya's. Deniz has
     // routes open, so his headline names none, and his first step is the one
     // it would name.
-    const nearest = nearestNamed(PRIYA)!;
+    const nearest = nearestNamed(PRIYA_EXPLORING_ALL)!;
     expect(nearest).toBeDefined();
-    expect(stepsOffered(PRIYA).find((s) => s.title === nearest)!.field).not.toBe(SITUATION_FIELD);
+    expect(stepsOffered(PRIYA_EXPLORING_ALL).find((s) => s.title === nearest)!.field).not.toBe(SITUATION_FIELD);
     expect(nearest).not.toMatch(/transfer|hosting agreement/);
     expect(nearestNamed(DENIZ)).toBeUndefined();
     const first = stepsOffered(DENIZ)[0]!;
@@ -177,13 +171,13 @@ describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are 
     blocksIn(drawnRouteOn(verdictFor(answers), "de-chancenkarte"), "ptsline met", "ptsline short");
 
   it("the not-yet card carries the same tally line the open card does, from the same scorer", () => {
-    expect(evaluate(ds, PRIYA).find((r) => r.route.id === "de-chancenkarte")!.status).toBe("hold");
-    expect(textOf(tallyFor(PRIYA))).toContain(pointsOfNeeded(5, 6));
+    expect(evaluate(ds, PRIYA_EXPLORING_ALL).find((r) => r.route.id === "de-chancenkarte")!.status).toBe("hold");
+    expect(textOf(tallyFor(PRIYA_EXPLORING_ALL))).toContain(pointsOfNeeded(5, 6));
     // A count, not a verdict: the not-yet tally never wears the met colour.
-    expect(tallyFor(PRIYA)).toContain('class="ptsline short"');
+    expect(tallyFor(PRIYA_EXPLORING_ALL)).toContain('class="ptsline short"');
     // Open through the points path: a partial recognition scores, where a
     // full one takes the direct path and counts nothing.
-    const partial: Profile = { ...PRIYA, recognition_de: "partial", occupation_shortage: "yes" };
+    const partial: Profile = { ...PRIYA_EXPLORING_ALL, recognition_de: "partial", occupation_shortage: "yes" };
     const card = evaluate(ds, partial).find((r) => r.route.id === "de-chancenkarte")!;
     expect(card.status).toBe("met");
     expect(textOf(tallyFor(partial)).startsWith(`${pointsOfNeeded(card.points!.scored, 6)} · `)).toBe(true);
@@ -195,7 +189,7 @@ describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are 
   it("a ladder is an enum every rule reads as 'this rung or above'", () => {
     // Read where the verdict shows it: the rungs of a ladder fold into the
     // lowest one that changes a verdict, titled "… or above".
-    const steps = stepsOffered(PRIYA);
+    const steps = stepsOffered(PRIYA_EXPLORING_ALL);
     // The CEFR fields: every `in` names a tail of the options and the points
     // table climbs them in order.
     expect(steps.filter((s) => s.field === "german").map((s) => s.title.endsWith(orAbove("")))).toEqual([true]);
@@ -210,16 +204,16 @@ describe("the not-yet Opportunity Card prints its tally, and the CEFR rungs are 
   });
 
   it("the unlock list collapses A2 / B1 / B2 into 'German at A2 … or above'", () => {
-    const raw = unlocks(ds, PRIYA);
+    const raw = unlocks(ds, PRIYA_EXPLORING_ALL);
     const rungs = raw.filter((u) => u.field === "german");
     expect(rungs.map((u) => u.option.value)).toEqual(["a2", "b1", "b2plus"]);
-    const steps = stepsOffered(PRIYA);
+    const steps = stepsOffered(PRIYA_EXPLORING_ALL);
     const german = steps.filter((s) => s.field === "german");
     expect(german).toHaveLength(1);
-    expect(german[0]!.title).toBe(orAbove(unlockTitleOf(ds, rungs[0]!, PRIYA)));
+    expect(german[0]!.title).toBe(orAbove(unlockTitleOf(ds, rungs[0]!, PRIYA_EXPLORING_ALL)));
     expect(german[0]!.title).toMatch(/^German at A2 .*or above$/);
     // The rungs above it are folded into it: no step of their own.
-    for (const u of rungs.slice(1)) expect(steps.map((s) => s.title)).not.toContain(unlockTitleOf(ds, u, PRIYA));
+    for (const u of rungs.slice(1)) expect(steps.map((s) => s.title)).not.toContain(unlockTitleOf(ds, u, PRIYA_EXPLORING_ALL));
     // The two recognition answers are two steps still: not a ladder.
     expect(steps.filter((s) => s.field === "recognition_de")).toHaveLength(2);
     for (const s of steps) if (s.field !== "german") expect(s.title).not.toContain("or above");
@@ -263,7 +257,7 @@ describe("the Anabin link carries no stray full stop", () => {
 
 describe("the result screen, decided by the verdict", () => {
   it("Priya's not-yet Opportunity Card shows its tally; her steps start with one she can take; the German rungs are one", () => {
-    const verdict = verdictFor(PRIYA);
+    const verdict = verdictFor(PRIYA_EXPLORING_ALL);
     const ck = placed(verdict, "de-chancenkarte");
     expect(ck?.kind, "the not-yet Opportunity Card").toBe("not-yet");
     expect(textOf(ck!.html)).toContain(pointsOfNeeded(5, 6));
@@ -301,11 +295,11 @@ describe.skipIf(skipped !== null)("the result screen, as drawn", () => {
   it("Priya's not-yet Opportunity Card shows its tally; her steps start with one she can take; the German rungs are one", async () => {
     const seen = await withSite(async ({ page, url }) => {
       await page.goto(url("/"));
-      await page.evaluate(seed(PRIYA as Record<string, string>));
+      await page.evaluate(seed(PRIYA_EXPLORING_ALL as Record<string, string>));
       await page.goto(url("/"));
       return {
         state: await page.evaluate('document.querySelector("#app").dataset.state'),
-        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(PRIYA)))),
+        painted: JSON.parse(await page.evaluate(paintedAsComposedScript(verdictFor(PRIYA_EXPLORING_ALL)))),
       };
     }, { viewport: { width: 1100, height: 1200 }, mobile: false }) as
       { state: string; painted: typeof PAINTED_AS_COMPOSED };
