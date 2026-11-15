@@ -13,7 +13,7 @@ import {
 } from "./dataset-facts/reckon-dataset-facts.js";
 import {
   audienceSentence, gist, routeFigure,
-} from "./route-page/route-page.js";
+} from "./route-lines.js";
 import { TAGLINE, capitalise } from "./copy/frame.js";
 import {
   LISTED_WITH_THEIR_REASONS, LISTED_WITH_THE_REASONS, QUOTED_ONLY_HEADING, RESULT_NAMES_ASKED_ROUTES,
@@ -22,7 +22,7 @@ import {
 } from "./copy/country-page.js";
 import { readOn } from "./copy/quotes.js";
 import { EXCLUSIONS_URL, url, watchState } from "./site.js";
-import { countryCheckPath, countryPath, countrySlug, routePath } from "./slug.js";
+import { countryAddresses, countryCheckPath, routePath, type CountryAddress } from "./slug.js";
 // One set of elements for the identity, and one memory of what a page has
 // already explained: a country page is a crawl landing page like any other
 // (Standards and Spec review, 2026-09-08).
@@ -54,35 +54,6 @@ import COUNTRY_PAGE_RULES from "./country-page.css?raw";
  * stamps the day the dataset itself was last read, because nothing on it is
  * quoted (human amendment to decision 12, 2026-09-08).
  */
-
-export interface CountryAddress {
-  country: Country;
-  slug: string;
-  path: string;
-}
-
-/** Every country page this dataset produces. Four at launch. */
-export function countryAddresses(dataset: Dataset): CountryAddress[] {
-  return dataset.countries.map((country) => ({
-    country,
-    slug: countrySlug(country),
-    path: countryPath(country),
-  }));
-}
-
-/**
- * The four links the home page's footer carries — the first of the two clicks
- * that reach every route page. Generated here rather than written into the
- * template, so a fifth country is linked the day it lands in the dataset.
- */
-export interface CountryLink {
-  path: string;
-  name: string;
-}
-
-export function countryLinks(dataset: Dataset): CountryLink[] {
-  return countryAddresses(dataset).map(({ country, path }) => ({ path, name: country.name }));
-}
 
 export interface CountryPage {
   path: string;

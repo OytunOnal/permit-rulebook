@@ -368,6 +368,7 @@
   "src/lib/quote.ts": "presentation",
   "src/lib/reason.ts": "presentation",
   "src/lib/record.ts": "application",
+  "src/lib/route-lines.ts": "presentation",
   "src/lib/route-page/blocks/notices.ts": "presentation",
   "src/lib/route-page/blocks/rail.ts": "presentation",
   "src/lib/route-page/blocks/route-figure.ts": "presentation",
@@ -1005,7 +1006,7 @@
   },
   {
    "from": "src/lib/country-page.ts",
-   "to": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/route-lines.ts",
    "kind": "dependency"
   },
   {
@@ -1750,11 +1751,6 @@
   },
   {
    "from": "src/lib/not-found.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/not-found.ts",
    "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
@@ -1776,6 +1772,11 @@
   {
    "from": "src/lib/not-found.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/not-found.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -1849,6 +1850,16 @@
    "kind": "dependency"
   },
   {
+   "from": "src/lib/route-lines.ts",
+   "to": "src/lib/copy/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-lines.ts",
+   "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
+   "kind": "type-only"
+  },
+  {
    "from": "src/lib/route-page/blocks/notices.ts",
    "to": "src/lib/gloss.ts",
    "kind": "dependency"
@@ -1886,6 +1897,11 @@
   {
    "from": "src/lib/route-page/blocks/route-figure.ts",
    "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/blocks/route-figure.ts",
+   "to": "src/lib/route-lines.ts",
    "kind": "dependency"
   },
   {
@@ -1995,6 +2011,11 @@
   },
   {
    "from": "src/lib/route-page/route-page.ts",
+   "to": "src/lib/route-lines.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "src/lib/route-page/route-page.ts",
    "to": "src/lib/route-page/blocks/notices.ts",
    "kind": "dependency"
   },
@@ -2036,11 +2057,6 @@
   {
    "from": "src/lib/site.ts",
    "to": "src/lib/reason.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "src/lib/sitemap.ts",
-   "to": "src/lib/country-page.ts",
    "kind": "dependency"
   },
   {
@@ -2749,6 +2765,11 @@
    "kind": "dependency"
   },
   {
+   "from": "src/pages/[country]/index.astro",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "src/pages/countries.json.ts",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
@@ -3365,11 +3386,6 @@
   },
   {
    "from": "tests/checked-words.test.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/checked-words.test.ts",
    "to": "src/lib/dataset-facts/reckon-dataset-facts.ts",
    "kind": "dependency"
   },
@@ -3675,11 +3691,6 @@
   },
   {
    "from": "tests/footer.test.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/footer.test.ts",
    "to": "src/lib/data-page.ts",
    "kind": "dependency"
   },
@@ -3696,6 +3707,11 @@
   {
    "from": "tests/footer.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/footer.test.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -4040,17 +4056,17 @@
   },
   {
    "from": "tests/not-found.test.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/not-found.test.ts",
    "to": "src/lib/not-found.ts",
    "kind": "dependency"
   },
   {
    "from": "tests/not-found.test.ts",
    "to": "src/lib/site.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/not-found.test.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -4096,6 +4112,11 @@
   {
    "from": "tests/orientation.test.ts",
    "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/orientation.test.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -4275,11 +4296,6 @@
   },
   {
    "from": "tests/reader-pages.test.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/reader-pages.test.ts",
    "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
@@ -4405,6 +4421,11 @@
   },
   {
    "from": "tests/route-page-dates.test.ts",
+   "to": "src/lib/route-lines.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-dates.test.ts",
    "to": "src/lib/route-page/route-page.ts",
    "kind": "dependency"
   },
@@ -4481,6 +4502,11 @@
   {
    "from": "tests/route-page-reader-text.test.ts",
    "to": "src/lib/reason.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/route-page-reader-text.test.ts",
+   "to": "src/lib/route-lines.ts",
    "kind": "dependency"
   },
   {
@@ -4635,11 +4661,6 @@
   },
   {
    "from": "tests/s13.test.ts",
-   "to": "src/lib/country-page.ts",
-   "kind": "dependency"
-  },
-  {
-   "from": "tests/s13.test.ts",
    "to": "src/lib/feedback-page.ts",
    "kind": "dependency"
   },
@@ -4671,6 +4692,11 @@
   {
    "from": "tests/s13.test.ts",
    "to": "src/lib/sitemap.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s13.test.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -4791,6 +4817,11 @@
   {
    "from": "tests/s19.test.ts",
    "to": "src/lib/situations.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/s19.test.ts",
+   "to": "src/lib/slug.ts",
    "kind": "dependency"
   },
   {
@@ -6142,11 +6173,6 @@
    }
   ],
   "src/lib/route-page/route-page.ts": [
-   {
-    "name": "audienceSentence",
-    "kind": "fn",
-    "exported": true
-   },
    {
     "name": "neighbours",
     "kind": "fn",
@@ -8800,26 +8826,6 @@
   ],
   "src/lib/country-page.ts": [
    {
-    "name": "CountryAddress",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "countryAddresses",
-    "kind": "fn",
-    "exported": true
-   },
-   {
-    "name": "CountryLink",
-    "kind": "type",
-    "exported": true
-   },
-   {
-    "name": "countryLinks",
-    "kind": "fn",
-    "exported": true
-   },
-   {
     "name": "CountryPage",
     "kind": "type",
     "exported": true
@@ -9462,6 +9468,38 @@
     "exported": true
    }
   ],
+  "src/lib/route-lines.ts": [
+   {
+    "name": "audienceSentence",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "gist",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "RouteFigure",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "Points",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "figuresOf",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "routeFigure",
+    "kind": "fn",
+    "exported": true
+   }
+  ],
   "src/lib/scope.ts": [
    {
     "name": "ScopedArrival",
@@ -9784,6 +9822,26 @@
     "exported": true
    },
    {
+    "name": "CountryAddress",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "countryAddresses",
+    "kind": "fn",
+    "exported": true
+   },
+   {
+    "name": "CountryLink",
+    "kind": "type",
+    "exported": true
+   },
+   {
+    "name": "countryLinks",
+    "kind": "fn",
+    "exported": true
+   },
+   {
     "name": "routeJsonPath",
     "kind": "fn",
     "exported": true
@@ -10068,6 +10126,7 @@
   "src/lib/quote.ts",
   "src/lib/reason.ts",
   "src/lib/record.ts",
+  "src/lib/route-lines.ts",
   "src/lib/scope.ts",
   "src/lib/screen.ts",
   "src/lib/site.ts",
@@ -10090,5 +10149,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "7842c6c399adf4f7a9027adbd937f3f5736ae12fd003bbaa7587c1551dc567d4"
+ "digest": "c7049065005df9d7e953fa7e182f1065a29688dfcc3af2a5649d88fefc9e5abd"
 }

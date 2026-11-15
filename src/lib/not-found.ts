@@ -2,7 +2,7 @@
 import type { Dataset, WatchState } from "permit-rulebook-data";
 import { esc, escAttr } from "./reason.js";
 import { framedPageHtml } from "./frame/framed-page.js";
-import { countryLinks } from "./country-page.js";
+import { countryLinks } from "./slug.js";
 import { reckonDatasetFacts } from "./dataset-facts/reckon-dataset-facts.js";
 import { NOT_FOUND_START, NOT_FOUND_START_NOTE } from "./copy/not-found.js";
 import { PRODUCT_NAME, TAGLINE } from "./copy/frame.js";

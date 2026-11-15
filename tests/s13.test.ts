@@ -15,7 +15,7 @@ import {
 import { FIRST_PAINT_SCRIPT } from "../src/lib/first-paint.js";
 import { COPY_SCRIPT } from "../src/lib/clipboard.js";
 import { feedbackGmail, feedbackMailto, feedbackPage } from "../src/lib/feedback-page.js";
-import { countryLinks } from "../src/lib/country-page.js";
+import { countryLinks } from "../src/lib/slug.js";
 import { indexedPaths, sitemapXml } from "../src/lib/sitemap.js";
 import { serialize } from "../src/lib/record.js";
 import { replayRecord } from "../src/lib/scope.js";
