@@ -43,8 +43,9 @@ import { RECORD_MAX_LENGTH, STORAGE_KEY } from "./record.js";
  * The width from which the ledger is a fixed panel rather than a disclosure,
  * written once for the first paint: the head script's query, the stylesheet's
  * narrow rule, the page's live ledger and the browser gate's viewports all
- * read it from here. The site's own layout breakpoint, in the page's
- * stylesheet, is a separate copy.
+ * read it from here. The site's own layout breakpoint is this width too: each
+ * stylesheet names its narrow or wide side, and the build writes this width in
+ * its place (`breakpoint-widths.ts`).
  */
 export const WIDE_FROM_PX = 761;
 export const WIDE_QUERY = `(min-width: ${WIDE_FROM_PX}px)`;

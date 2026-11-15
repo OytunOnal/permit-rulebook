@@ -293,6 +293,7 @@
   "scripts/site-base.mjs": "infrastructure",
   "scripts/smoke.mjs": "infrastructure",
   "src/lib/arrival-line.ts": "presentation",
+  "src/lib/breakpoint-widths.ts": "presentation",
   "src/lib/browser-history.ts": "infrastructure",
   "src/lib/clipboard.ts": "presentation",
   "src/lib/copy/country-page.ts": "presentation",
@@ -400,6 +401,11 @@
   "vitest.config.ts": "main"
  },
  "edges": [
+  {
+   "from": "astro.config.mjs",
+   "to": "src/lib/breakpoint-widths.ts",
+   "kind": "dependency"
+  },
   {
    "from": "eslint.config.mjs",
    "to": "roadkeeper-lint/lint.mjs",
@@ -889,6 +895,11 @@
    "from": "src/lib/arrival-line.ts",
    "to": "src/lib/scope.ts",
    "kind": "type-only"
+  },
+  {
+   "from": "src/lib/breakpoint-widths.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
   },
   {
    "from": "src/lib/browser-history.ts",
@@ -2891,6 +2902,41 @@
    "kind": "dependency"
   },
   {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/country-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/data-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/feedback-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/first-paint.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/route-page/route-page.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "src/lib/slug.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/breakpoint-written-once.test.ts",
+   "to": "tests/frame-alone.ts",
+   "kind": "dependency"
+  },
+  {
    "from": "tests/browser-walk.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "dependency"
@@ -3723,6 +3769,11 @@
   {
    "from": "tests/identity-on-both-screens.test.ts",
    "to": "tests/seed-finished-record.ts",
+   "kind": "dependency"
+  },
+  {
+   "from": "tests/identity-written-once.test.ts",
+   "to": "identity.css",
    "kind": "dependency"
   },
   {
@@ -5549,6 +5600,11 @@
    "from": "tests/wire.ts",
    "to": "scripts/browser/browser.mjs",
    "kind": "type-only"
+  },
+  {
+   "from": "vitest.config.ts",
+   "to": "src/lib/breakpoint-widths.ts",
+   "kind": "dependency"
   }
  ],
  "declarations": {
@@ -7085,6 +7141,33 @@
     "name": "arrivalOpening",
     "kind": "fn",
     "exported": false
+   }
+  ],
+  "src/lib/breakpoint-widths.ts": [
+   {
+    "name": "QUERY_OF_NAME",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "withBreakpointWidths",
+    "kind": "fn",
+    "exported": false
+   },
+   {
+    "name": "SHEET_ID",
+    "kind": "const",
+    "exported": false
+   },
+   {
+    "name": "SheetStep",
+    "kind": "type",
+    "exported": false
+   },
+   {
+    "name": "breakpointWidthsStep",
+    "kind": "fn",
+    "exported": true
    }
   ],
   "src/lib/browser-history.ts": [
@@ -9559,6 +9642,7 @@
   "scripts/site-base.mjs",
   "scripts/smoke.mjs",
   "src/lib/arrival-line.ts",
+  "src/lib/breakpoint-widths.ts",
   "src/lib/browser-history.ts",
   "src/lib/clipboard.ts",
   "src/lib/copy/country-page.ts",
@@ -9604,5 +9688,5 @@
   "src/pages/status.astro",
   "vitest.config.ts"
  ],
- "digest": "56008a20c3829dae42cf2a79c93a637295bd3b38b59538aa3cc4d1d32d07bc6d"
+ "digest": "02174142222c5b6aa6262f7451b6e604a0f7c80498d4568d060694d9df72bb7b"
 }

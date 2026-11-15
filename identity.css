@@ -52,7 +52,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: va
 .stamps .stamp { position: absolute; left: 4rem; top: 3.55rem; width: max-content; max-width: 10.4rem; font: var(--stamp-text-390); color: var(--color-stamp); border: var(--stamp-border); padding: .35rem .6rem; transform: translateX(-50%) rotate(var(--stamp-rotate)); text-transform: uppercase; letter-spacing: var(--stamp-tracking); line-height: 1.25; text-align: center; mix-blend-mode: multiply; }
 
 /* Desktop: the pair one size up (human, 2026-09-07); the corner geometry is kept. */
-@media (min-width: 761px) {
+@media (--wide) {
   .stamps { width: 11.2rem; height: 8.7rem; }
   .stamps .mark { left: .7rem; width: 4.3rem; height: 4.3rem; font-size: 2.2rem; border-width: 3.5px; }
   .stamps .stamp { left: 5rem; top: 4.5rem; width: max-content; max-width: 12.4rem; font: var(--stamp-text); letter-spacing: var(--stamp-tracking); padding: .45rem .75rem; border-width: 3px; }
@@ -75,7 +75,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: va
 .masthead-with-stamps > :first-child { flex: 0 1 37rem; min-width: 0; }
 .masthead-with-stamps .stamps { margin: 0 auto; }
 
-@media (max-width: 760px) {
+@media (--narrow) {
   .masthead-with-stamps { flex-direction: column; align-items: stretch; }
   .masthead-with-stamps > :first-child { flex: 0 1 auto; }
   .masthead-with-stamps .stamps { align-self: flex-end; margin: 0 0 0 auto; }
@@ -193,7 +193,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-ink); font: va
    on how wide the page happens to be rather than on the design (Spec review,
    2026-09-08). */
 .site-foot .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); border-top: var(--rule-soft); padding-top: var(--space-4); }
-@media (max-width: 760px) { .site-foot .cols { grid-template-columns: 1fr 1fr; } }
+@media (--narrow) { .site-foot .cols { grid-template-columns: 1fr 1fr; } }
 .site-foot .col h3 { margin: 0 0 .2rem; font: var(--text-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); }
 .site-foot .col ul { list-style: none; margin: 0; padding: 0; }
 .site-foot .col a { color: var(--color-ink); display: inline-flex; align-items: center; min-height: var(--tap-min); text-decoration: underline; text-decoration-color: var(--color-line); text-underline-offset: .2em; }
